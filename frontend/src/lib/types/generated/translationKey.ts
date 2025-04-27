@@ -58,6 +58,7 @@ export type TranslationKey =
   | 'adminApp.questionInfo.generate.description'
   | 'adminApp.questionInfo.generate.error'
   | 'adminApp.questionInfo.generate.mayTakeTime'
+  | 'adminApp.questionInfo.generate.noQuestionSelected'
   | 'adminApp.questionInfo.generate.questionType'
   | 'adminApp.questionInfo.generate.selectButton'
   | 'adminApp.questionInfo.generate.selectedQuestions'

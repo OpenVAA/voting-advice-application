@@ -8,17 +8,17 @@ Page for generating and managing question information
   import { enhance } from '$app/forms';
   import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
   import { Button } from '$lib/components/button';
-  import { getAppContext } from '$lib/contexts/app';
-  import { getUUID } from '$lib/utils/components';
-  import type { ActionResult } from '@sveltejs/kit';
-  import MainContent from '../../../MainContent.svelte';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getUUID } from '$lib/utils/components';
+  import type { SubmitFunction } from '@sveltejs/kit';
+  import MainContent from '../../../MainContent.svelte';
 
   const { t } = getAppContext();
 
   let selectedOption = 'all';
-  let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
+  let status: 'idle' | 'loading' | 'success' | 'error' | 'no-selections' = 'idle';
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
@@ -46,10 +46,16 @@ Page for generating and managing question information
     return dp.getQuestionData().then((d) => d.questions);
   }
 
-  const handleSubmit = () => {
+  const handleSubmit: SubmitFunction = ({ cancel }) => {
     status = 'loading';
 
-    return async ({ result }: { result: ActionResult }) => {
+    if (selectedOption === 'selectedQuestions' && selectedIds.length === 0) {
+      status = 'no-selections';
+      cancel();
+      return;
+    }
+
+    return async ({ result }) => {
       if (result.type === 'error') {
         status = 'error';
       } else {
@@ -125,6 +131,8 @@ Page for generating and managing question information
 
       {#if status === 'error'}
         <ErrorMessage inline message={$t('adminApp.questionInfo.generate.error')} class="mb-md" />
+      {:else if status === 'no-selections'}
+        <ErrorMessage inline message={$t('adminApp.questionInfo.generate.noQuestionSelected')} class="mb-md" />
       {:else if status === 'success'}
         <SuccessMessage inline message={$t('common.success')} class="mb-md" />
       {/if}
