@@ -7,13 +7,12 @@
 -->
 
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
   import { initAdminContext } from '$lib/contexts/admin';
-  import { Loading } from '$lib/components/loading';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
 
   ////////////////////////////////////////////////////////////////////
@@ -42,23 +41,9 @@
 
   const menuId = 'admin-app-menu';
   let isDrawerOpen: boolean;
-
-  ////////////////////////////////////////////////////////////////////
-  // Data loading
-  ////////////////////////////////////////////////////////////////////
-
-  let ready = false;
-  onMount(() => {
-    // Wait for the next tick to ensure all data is loaded
-    setTimeout(() => {
-      ready = true;
-    }, 0);
-  });
 </script>
 
-{#if !ready}
-  <Loading />
-{:else if !$appSettings.dataAdapter.supportsAdminApp}
+{#if !$appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={$t('adminApp.notSupported.title')}
     content={$t('adminApp.notSupported.content')}
