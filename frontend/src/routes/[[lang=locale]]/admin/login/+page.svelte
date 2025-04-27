@@ -19,8 +19,8 @@
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { getAppContext } from '$lib/contexts/app';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import MainContent from '../../MainContent.svelte';
 

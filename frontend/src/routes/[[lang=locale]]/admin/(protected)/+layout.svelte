@@ -40,7 +40,7 @@
       ready = true;
     } else {
       error = new Error('No user data available');
-      logDebugError(`[Admin protected layout] Error: No user data available`);
+      logDebugError('[Admin protected layout] Error: No user data available');
     }
   }
 

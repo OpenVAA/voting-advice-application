@@ -12,7 +12,8 @@ import type {
   GetEntitiesOptions,
   GetFactorLoadingsOptions,
   GetNominationsOptions,
-  GetQuestionsOptions} from '$lib/api/base/getDataOptions.type';
+  GetQuestionsOptions
+} from '$lib/api/base/getDataOptions.type';
 import type { LocalDataType, ReadPath } from '../localPaths';
 
 export class LocalServerDataProvider extends LocalServerAdapter implements DataProvider<'server'> {

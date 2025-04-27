@@ -6,11 +6,13 @@ Page for computing and managing factor analysis for elections
 
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
+  import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../../MainContent.svelte';
+  import type { Id } from '@openvaa/core';
+  import type { Election } from '@openvaa/data';
   import type { ActionResult } from '@sveltejs/kit';
 
   // Get the data from the server
@@ -20,7 +22,7 @@ Page for computing and managing factor analysis for elections
   const { t } = getAppContext();
 
   // Track selected elections
-  let selectedElections: Record<number, boolean> = {};
+  let selectedElections: Record<Id, boolean> = {};
 
   // Reactive variable to track if any election is selected
   $: anyElectionSelected = Object.values(selectedElections).some(Boolean);
@@ -28,7 +30,7 @@ Page for computing and managing factor analysis for elections
   // Initialize all elections as selected if we have elections
   // Only initialize once when the component loads
   $: if (elections && elections.length > 0 && Object.keys(selectedElections).length === 0) {
-    elections.forEach((election: any) => {
+    elections.forEach((election: Election) => {
       selectedElections[election.id] = true;
     });
   }
@@ -36,7 +38,7 @@ Page for computing and managing factor analysis for elections
   let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
   let errorMessage: string | null = null;
 
-  const handleSubmit = () => {
+  function handleSubmit() {
     status = 'loading';
     errorMessage = null;
 
@@ -51,7 +53,7 @@ Page for computing and managing factor analysis for elections
       // Always cancel the form action to prevent page reload
       return { cancel: true };
     };
-  };
+  }
 </script>
 
 <MainContent title={$t('adminApp.factorAnalysis.title')}>

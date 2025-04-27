@@ -287,7 +287,4 @@ export type StrapiRegisterData = {
 /**
  * The custom candidate update API routes explicitly populate only some relations of the candidate object.
  */
-export type StrapiUpdateCandidateReturnData = Omit<
-  StrapiCandidateData,
-  'nominations' | 'party'
->;
+export type StrapiUpdateCandidateReturnData = Omit<StrapiCandidateData, 'nominations' | 'party'>;

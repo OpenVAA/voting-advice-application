@@ -20,9 +20,7 @@ describe('API Integration', () => {
         [1, 2, 3], // Different length!
         [1, 2, 3, 4]
       ];
-      expect(() => analyzeFactors({ responses: badResponses })).toThrow(
-        'All response rows must have same length'
-      );
+      expect(() => analyzeFactors({ responses: badResponses })).toThrow('All response rows must have same length');
     });
   });
 
