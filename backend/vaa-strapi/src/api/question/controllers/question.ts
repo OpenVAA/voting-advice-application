@@ -14,8 +14,9 @@ import { generateQuestionInfo } from '../../../functions/generateQuestionInfo';
 export default factories.createCoreController('api::question.question', () => ({
   async generateInfo(ctx: StrapiContext) {
     try {
-      const array = await handleGenerateInfo(ctx);
-      const generationResult = await generateQuestionInfo(array);
+      const ids = ctx.request?.body.data.ids;
+      if (!Array.isArray(ids)) throw new Error(`Non-array ids parameter: ${ids}`);
+      const generationResult = await generateQuestionInfo(ids);
       if (generationResult.type !== 'success') {
         throw new Error(
           'Failed to generate question info in generateQuestionInfo. Number of parameters given in request does not match number of questions found on server.'
@@ -36,14 +37,3 @@ export default factories.createCoreController('api::question.question', () => ({
     };
   }
 }));
-
-async function handleGenerateInfo(ctx: StrapiContext): Promise<Array<string>> {
-  try {
-    // Get array of Id:s from request body
-    const array: Array<string> = ctx.request?.body.data.ids;
-    return array;
-  } catch (error) {
-    console.error('Error: failed to turn the request body into an array of numbers');
-    throw new Error(`Error: , ${error}`);
-  }
-}
