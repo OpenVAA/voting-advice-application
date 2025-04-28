@@ -67,8 +67,8 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   on:open
   on:close>
   <div
-    class="relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-3rem)] max-w-2xl rounded-t-lg bg-base-100 p-24 pt-40 sm:translate-y-[1rem]"
-    in:fly={{ y: '100%', duration: 200 }}
+    class="relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-3rem)] max-w-2xl rounded-t-lg bg-base-100 p-24 pt-40 sm:translate-y-[1.5rem]"
+    in:fly={{ y: '100%', duration: 200, delay: 50 }}
     out:fly={{ y: '100%', duration: 200 }}>
     <h2 class="mb-lg text-center">{title}</h2>
     <slot />
