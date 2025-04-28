@@ -26,5 +26,11 @@
   "skipToResults": "Skip to Results",
   "title": "Opinions",
   "pickNext": "Pick Next Question",
-  "chooseForMe": "Choose For Me"
+  "chooseForMe": "Choose For Me",
+  "reliability": {
+    "thresholdMet": "Great! You've answered enough questions to get reliable results. You can still keep answering if you want to get even more accurate results.",
+    "thresholdNotMet": "Keep answering questions to reach an accuracy of at least {threshold}%. After that you can jump to matching results.",
+    "accuracy": "Accuracy",
+    "showResults": "Show Results"
+  }
 }

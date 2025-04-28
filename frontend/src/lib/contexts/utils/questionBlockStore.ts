@@ -82,7 +82,6 @@ export function questionBlockStore({
           });
         },
         resetShownQuestionIds: () => shownQuestionIds.set([]),
-
         // Get multiple next question choices
         getNextQuestionChoices: (numSuggestions = 3): Array<AnyQuestionVariant> => {
           const allQuestions = blocks.flat();

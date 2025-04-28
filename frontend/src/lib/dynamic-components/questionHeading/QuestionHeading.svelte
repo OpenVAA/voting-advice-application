@@ -110,7 +110,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   }
 </script>
 
-<HeadingGroup {...concatClass($$restProps, 'relative')}>
+<HeadingGroup {...concatClass($$restProps, 'relative')} {...$$restProps}>
   <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
     {#if $appSettings.elections.showElectionTags}
       {#each getElectionsToShow({ question, elections: $elections }) as election}

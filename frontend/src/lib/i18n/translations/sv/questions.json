@@ -26,5 +26,11 @@
   "skipToResults": "Hoppa till resultat",
   "title": "Yttranden",
   "pickNext": "Välj nästa fråga",
-  "chooseForMe": "Välj åt mig"
+  "chooseForMe": "Välj åt mig",
+  "reliability": {
+    "thresholdMet": "Utmärkt! Du har svarat på tillräckligt många frågor för att få pålitliga resultat. Du kan fortsätta svara om du vill få ännu mer exakta resultat.",
+    "thresholdNotMet": "Fortsätt svara på frågor för att nå en noggrannhet på minst {threshold}%. Därefter kan du hoppa direkt till matchningsresultaten.",
+    "accuracy": "Noggrannhet",
+    "showResults": "Visa resultat"
+  }
 }

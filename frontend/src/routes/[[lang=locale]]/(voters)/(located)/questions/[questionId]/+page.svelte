@@ -26,6 +26,8 @@ Display a question for answering.
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
   import { OpinionQuestionInput, QuestionActions, QuestionBasicInfo } from '$lib/components/questions';
+  import { ScoreGauge } from '$lib/components/scoreGauge';
+  import { Term } from '$lib/components/term';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
@@ -44,7 +46,9 @@ Display a question for answering.
   const {
     answers,
     appSettings,
+    confidenceScore,
     dataRoot,
+    resultsAvailable,
     firstQuestionId,
     selectedQuestionBlocks,
     selectedQuestionCategoryIds,
@@ -69,11 +73,8 @@ Display a question for answering.
     | undefined;
   let useQuestionOrdering = $appSettings.questions.dynamicOrdering?.enabled;
   let nextQuestionChoices: Array<AnyQuestionVariant> = [];
-
-  $: numSuggestions = (() => {
-    const config = $appSettings.questions.dynamicOrdering?.config;
-    return config?.type === 'factor-based' ? (config.numSuggestions ?? 3) : 3;
-  })();
+  const orderingConfig = $appSettings.questions.dynamicOrdering?.config;
+  const numSuggestions = (orderingConfig as { numSuggestions?: number })?.numSuggestions ?? 3;
 
   $: {
     // Get question
@@ -109,8 +110,7 @@ Display a question for answering.
   }
 
   $: shouldShowQuestionSelection =
-    useQuestionOrdering &&
-    $page.url.searchParams.get('showQuestionSelection') === 'true';
+    useQuestionOrdering && $page.url.searchParams.get('showQuestionSelection') === 'true';
 
   $: {
     if (shouldShowQuestionSelection && nextQuestionChoices.length === 0) {
@@ -213,7 +213,7 @@ Display a question for answering.
           });
         }
       }
-    // Default navigation
+      // Default navigation
     } else {
       const newIndex = questionBlock.index + steps;
       if (newIndex < 0) {
@@ -221,7 +221,7 @@ Display a question for answering.
         // Go to results if moving forward from the last question
       } else if (newIndex >= $selectedQuestionBlocks.questions.length) {
         url = $getRoute('Results');
-      // Show category intro if moving forward from the first question in a category
+        // Show category intro if moving forward from the first question in a category
       } else {
         const newQuestion = $selectedQuestionBlocks.questions[newIndex];
         // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
@@ -306,7 +306,38 @@ Display a question for answering.
     }
     progress.max.set($selectedQuestionBlocks.questions.length);
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Tooltip for reliability score
+  ////////////////////////////////////////////////////////////////////
+
+  let showTooltip = false;
+  let gaugeRef: HTMLAnchorElement;
+  let resultsAvailablePrevious = false;
+  
+  // Subscribe to changes in resultsAvailable
+  onMount(() => {
+    const unsubscribe = resultsAvailable.subscribe((available) => {
+      // Show tooltip when resultsAvailable changes from false to true
+      if (available && !resultsAvailablePrevious) {
+        showTooltip = true;
+      }
+      resultsAvailablePrevious = available;
+    });
+    
+    return () => {
+      unsubscribe();
+    };
+  });
+  // Handle document clicks to dismiss the tooltip
+  function handleDocumentClick(event: MouseEvent) {
+    if (showTooltip && gaugeRef && !gaugeRef.contains(event.target as Node)) {
+      showTooltip = false;
+    }
+  }
 </script>
+
+<svelte:document on:click={handleDocumentClick} />
 
 {#if question && questionBlock}
   {@const { info, text } = question}
@@ -383,19 +414,6 @@ Display a question for answering.
       {/each}
     </svelte:fragment>
 
-    <style>
-      .grid-line-x {
-        @apply relative before:absolute before:left-[40%] before:right-[40%] before:top-0 before:border-md before:content-[''];
-      }
-      /* Target all but first element */
-      .grid-line-x:not(:first-child) {
-        @apply mt-16 pt-16 before:block;
-      }
-      .grid-line-x:first-child {
-        @apply before:hidden;
-      }
-    </style>
-
     <!-- !videoProps && -->
     {#if !shouldShowQuestionSelection && $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
       <div class="flex items-center justify-center">
@@ -407,10 +425,7 @@ Display a question for answering.
 
     <svelte:fragment slot="primaryActions">
       {#if !shouldShowQuestionSelection}
-        <OpinionQuestionInput
-          {question}
-          answer={$answers[question.id]}
-          onChange={handleAnswer} />
+        <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
 
         <QuestionActions
           answered={$answers[question.id]?.value != null}
@@ -436,6 +451,8 @@ Display a question for answering.
       {/if}
 
       {#if shouldShowQuestionSelection}
+        {@const reliabilityScore = $confidenceScore}
+        {@const hasMetThreshold = $resultsAvailable}
         <div
           role="group"
           aria-label={$t('questions.additionalActions')}
@@ -451,6 +468,40 @@ Display a question for answering.
             class="content-start"
             icon="previous"
             text={$t('questions.previous')} />
+
+          <div class="flex items-center justify-center" style="grid-row: 1; grid-column: 2">
+            <div class="flex h-full w-full flex-col items-center justify-center">
+              <Term
+                definition={hasMetThreshold
+                  ? $t('questions.reliability.thresholdMet', { threshold: $appSettings.questions.dynamicOrdering?.config?.reliabilityThreshold ?? 75 })
+                  : $t('questions.reliability.thresholdNotMet', { threshold: $appSettings.questions.dynamicOrdering?.config?.reliabilityThreshold ?? 75 })}
+                position="top"
+                showUnderline={false}
+                forceShow={showTooltip}>
+                <a
+                  bind:this={gaugeRef}
+                  href={hasMetThreshold ? $getRoute('Results') : undefined}
+                  class:pointer-events-none={!hasMetThreshold}
+                  aria-disabled={!hasMetThreshold}
+                  tabindex={hasMetThreshold ? 0 : -1}
+                  class="gap-1 btn btn-ghost flex h-full min-h-touch w-full flex-col items-center justify-center">
+                  <div class="flex flex-col items-center justify-center">
+                    <ScoreGauge
+                      score={reliabilityScore}
+                      label={hasMetThreshold
+                        ? $t('questions.reliability.showResults')
+                        : $t('questions.reliability.accuracy')}
+                      variant="radial"
+                      showScore={true}
+                      unit="%"
+                      color={hasMetThreshold ? "secondary" : "#666666"}
+                      class="gap-1 !grid scale-90 !grid-cols-none !grid-rows-[auto_auto] justify-items-center" />
+                  </div>
+                </a>
+              </Term>
+            </div>
+          </div>
+
           <Button
             on:click={() => {
               const randomIndex = Math.floor(Math.random() * nextQuestionChoices.length);
@@ -467,6 +518,25 @@ Display a question for answering.
         </div>
       {/if}
     </svelte:fragment>
+
+    <style>
+      .grid-line-x {
+        @apply relative before:absolute before:left-[40%] before:right-[40%] before:top-0 before:border-md before:content-[''];
+      }
+      /* Target all but first element */
+      .grid-line-x:not(:first-child) {
+        @apply mt-16 pt-16 before:block;
+      }
+      .grid-line-x:first-child {
+        @apply before:hidden;
+      }
+      .vaa-score-gauge label {
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        color: 'secondary';
+      }
+    </style>
   </MainContent>
 {:else}
   <Loading class="mt-lg" />

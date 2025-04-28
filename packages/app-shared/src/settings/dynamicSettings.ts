@@ -58,7 +58,8 @@ export const dynamicSettings: DynamicSettings = {
       enabled: true,
       config: {
         type: 'factor-based',
-        numSuggestions: 3
+        numSuggestions: 3,
+        reliabilityThreshold: 75
       }
     }
   },
