@@ -96,8 +96,8 @@ Page for generating and managing question information
         {#if selectedOption === 'selectedQuestions'}
           <!-- <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={status === 'loading'} /> -->
           {#await questions then questions}
-            <div class="flex flex-col space-y-2">
-              <label class="flex items-center">
+            <div class="my-16 flex flex-col space-y-8">
+              <label class="flex items-center space-x-10 border-b border-base-200 pb-8">
                 <input
                   type="checkbox"
                   class="checkbox-primary checkbox"
@@ -112,14 +112,14 @@ Page for generating and managing question information
                 <span>{selectedIds.length === questions.length ? 'Unselect all' : 'Select all'}</span>
               </label>
               {#each questions as question, i}
-                <label class="flex items-center">
+                <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
                   <input
                     type="checkbox"
                     name="questionIds"
                     class="checkbox-primary checkbox"
                     value={question.id}
                     bind:group={selectedIds} />
-                  <span class="label-text">{i}: {question.name}</span>
+                  <span class="label-text mt-2">{i + 1}: {question.name}</span>
                 </label>
               {/each}
             </div>
