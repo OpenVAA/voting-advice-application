@@ -15,10 +15,6 @@ Display a question for answering.
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
-  import { error } from '@sveltejs/kit';
-  import { onDestroy, onMount } from 'svelte';
-  import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
@@ -29,14 +25,19 @@ Display a question for answering.
   import { ScoreGauge } from '$lib/components/scoreGauge';
   import { Term } from '$lib/components/term';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import { getVoterContext } from '$lib/contexts/voter';
+  import QuestionHeading from '$lib/dynamic-components/questionHeading/QuestionHeading.svelte';
   import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
-  import MainContent from '../../../../MainContent.svelte';
+  import { getCustomData } from '@openvaa/app-shared';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
+  import { error } from '@sveltejs/kit';
+  import { onDestroy, onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import MainContent from '../../../../MainContent.svelte';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -76,6 +77,13 @@ Display a question for answering.
   const orderingConfig = $appSettings.questions.dynamicOrdering?.config;
   const numSuggestions = (orderingConfig as { numSuggestions?: number })?.numSuggestions ?? 3;
 
+  $: dynamicOrderingConfig = $appSettings.questions.dynamicOrdering?.config;
+  $: reliabilityThreshold =
+    dynamicOrderingConfig &&
+    'reliabilityThreshold' in dynamicOrderingConfig &&
+    dynamicOrderingConfig.reliabilityThreshold
+      ? dynamicOrderingConfig.reliabilityThreshold
+      : 75;
   $: {
     // Get question
     const questionId = parseParams($page).questionId;
@@ -314,7 +322,7 @@ Display a question for answering.
   let showTooltip = false;
   let gaugeRef: HTMLAnchorElement;
   let resultsAvailablePrevious = false;
-  
+
   // Subscribe to changes in resultsAvailable
   onMount(() => {
     const unsubscribe = resultsAvailable.subscribe((available) => {
@@ -324,7 +332,7 @@ Display a question for answering.
       }
       resultsAvailablePrevious = available;
     });
-    
+
     return () => {
       unsubscribe();
     };
@@ -389,26 +397,11 @@ Display a question for answering.
               </HeadingGroup>
             </button>
           {:else}
-            <HeadingGroup id={`questionHeading-${question.id}`} class="relative">
-              <PreHeading>
-                {#if $appSettings.questions.showCategoryTags}
-                  <CategoryTag category={question.category} />
-                  {#if !useQuestionOrdering}
-                    <span class="text-secondary">
-                      {questionBlock.indexInBlock + 1}/{questionBlock.block.length}
-                    </span>
-                  {/if}
-                {:else}
-                  {$t('common.question')}
-                  {#if !useQuestionOrdering}
-                    <span class="text-secondary">
-                      {questionBlock.index + 1}/{questions.length}
-                    </span>
-                  {/if}
-                {/if}
-              </PreHeading>
-              <h1>{question.text}</h1>
-            </HeadingGroup>
+            <QuestionHeading
+              id={`questionHeading-${question.id}`}
+              {question}
+              questionBlocks={$selectedQuestionBlocks}
+              slot="heading" />
           {/if}
         </div>
       {/each}
@@ -473,8 +466,12 @@ Display a question for answering.
             <div class="flex h-full w-full flex-col items-center justify-center">
               <Term
                 definition={hasMetThreshold
-                  ? $t('questions.reliability.thresholdMet', { threshold: $appSettings.questions.dynamicOrdering?.config?.reliabilityThreshold ?? 75 })
-                  : $t('questions.reliability.thresholdNotMet', { threshold: $appSettings.questions.dynamicOrdering?.config?.reliabilityThreshold ?? 75 })}
+                  ? $t('questions.reliability.thresholdMet', {
+                      threshold: reliabilityThreshold
+                    })
+                  : $t('questions.reliability.thresholdNotMet', {
+                      threshold: reliabilityThreshold
+                    })}
                 position="top"
                 showUnderline={false}
                 forceShow={showTooltip}>
@@ -494,7 +491,7 @@ Display a question for answering.
                       variant="radial"
                       showScore={true}
                       unit="%"
-                      color={hasMetThreshold ? "secondary" : "#666666"}
+                      color={hasMetThreshold ? 'secondary' : '#666666'}
                       class="gap-1 !grid scale-90 !grid-cols-none !grid-rows-[auto_auto] justify-items-center" />
                   </div>
                 </a>

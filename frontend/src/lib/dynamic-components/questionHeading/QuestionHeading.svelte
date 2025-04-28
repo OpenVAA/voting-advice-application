@@ -71,6 +71,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let numQuestions: number | undefined;
+  let useQuestionOrdering = $appSettings.questions.dynamicOrdering?.enabled;
 
   $: customData = getCustomData(question);
   $: titleParts = addTermsToTitle(customData.terms);
@@ -122,10 +123,17 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
         category={question.category}
         suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
         {onShadedBg} />
+      {#if !useQuestionOrdering && blockWithStats}
+        <span class="text-secondary">
+          {blockWithStats.indexInBlock + 1}/{blockWithStats.block.length}
+        </span>
+      {/if}
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}
-      <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
+      {#if !useQuestionOrdering}
+        <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
+      {/if}
     {/if}
   </PreHeading>
   <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
