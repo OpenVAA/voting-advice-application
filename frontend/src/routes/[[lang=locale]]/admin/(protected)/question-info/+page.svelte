@@ -26,12 +26,10 @@ Page for generating and managing question information
   // Options for the radio group
   const options = [
     {
-      id: 'all',
       value: 'all',
       label: $t('adminApp.questionInfo.generate.allQuestions')
     },
     {
-      id: 'selectedQuestions',
       value: 'selectedQuestions',
       label: $t('adminApp.questionInfo.generate.selectedQuestions')
     }
