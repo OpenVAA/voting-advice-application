@@ -41,7 +41,8 @@ Page for computing and managing factor analysis for elections
   function handleSubmit() {
     status = 'loading';
     errorMessage = null;
-
+    // TODO: Check that error handling is working properly.
+    // There was at least one instance where it showed success even though it threw 500.
     return async ({ result }: { result: ActionResult }) => {
       if (result.type === 'error') {
         status = 'error';
