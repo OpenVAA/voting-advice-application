@@ -20,7 +20,7 @@ describe('Condenser', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.English });
+    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
   });
 
   test('should create a new Condenser instance', () => {
@@ -71,7 +71,7 @@ describe('Condenser Edge Cases', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.English });
+    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
   });
 
   test('should throw an error for empty comments array', async () => {
