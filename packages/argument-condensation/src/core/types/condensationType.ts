@@ -1,7 +1,7 @@
 export const CONDENSATION_TYPE = {
-  GENERAL: 'general',
-  SUPPORTING: 'supporting',
-  OPPOSING: 'opposing'
+  General: 'general',
+  Supporting: 'supporting',
+  Opposing: 'opposing'
 } as const;
 
 export type CondensationType = (typeof CONDENSATION_TYPE)[keyof typeof CONDENSATION_TYPE];

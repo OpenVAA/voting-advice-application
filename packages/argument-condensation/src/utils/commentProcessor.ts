@@ -21,7 +21,7 @@ export async function processComments({
   comments,
   topic,
   batchSize = 30,
-  condensationType = CONDENSATION_TYPE.GENERAL
+  condensationType = CONDENSATION_TYPE.General
 }: {
   llmProvider: LLMProvider;
   languageConfig: LanguageConfig;

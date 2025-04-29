@@ -3,7 +3,7 @@ import { Argument } from './types/argument';
 import { CONDENSATION_TYPE, CondensationType } from './types/condensationType';
 import { ArgumentCondensationError, LLMError } from './types/errors';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
-import { OutputParser } from '../utils/OutputParser';
+import { OutputParser } from '../utils/outputParser';
 
 /** Maximum cumulative length of comments in a single batch */
 const MAX_BATCH_CHARS = 30000;
@@ -86,7 +86,7 @@ export class Condenser {
     comments,
     topic,
     batchSize = 30,
-    condensationType = CONDENSATION_TYPE.GENERAL,
+    condensationType = CONDENSATION_TYPE.General,
     batchesPerArray = 3
   }: {
     comments: Array<string>;
@@ -217,9 +217,9 @@ export class Condenser {
     try {
       /** Instructions for the current condensation type (supporting, opposing, etc.) */
       let instructions = this.languageConfig.instructionsGeneral;
-      if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
+      if (condensationType === CONDENSATION_TYPE.Supporting) {
         instructions = this.languageConfig.instructionsSupportive;
-      } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
+      } else if (condensationType === CONDENSATION_TYPE.Opposing) {
         instructions = this.languageConfig.instructionsOpposing;
       }
 
@@ -255,7 +255,7 @@ export class Condenser {
         .replace('{comments}', commentsText);
 
       // Add prompt instructions at the end (now only for opposing condensation, because it's the hardest one for LLMs)
-      if (condensationType === CONDENSATION_TYPE.OPPOSING) {
+      if (condensationType === CONDENSATION_TYPE.Opposing) {
         prompt += this.languageConfig.opposingReminder;
       }
 
@@ -319,9 +319,9 @@ export class Condenser {
   }): Promise<Array<Argument>> {
     /** Instructions for the current condensation type */
     let instructions = this.languageConfig.instructionsGeneral;
-    if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
+    if (condensationType === CONDENSATION_TYPE.Supporting) {
       instructions = this.languageConfig.reduceInstructionsSupporting;
-    } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
+    } else if (condensationType === CONDENSATION_TYPE.Opposing) {
       instructions = this.languageConfig.reduceInstructionsOpposing;
     }
 
@@ -338,7 +338,7 @@ export class Condenser {
       .replace('{existingArguments}', formattedArgs);
 
     // Add prompt instructions for opposing condensation, because it's the hardest one for LLMs
-    if (condensationType === CONDENSATION_TYPE.OPPOSING) {
+    if (condensationType === CONDENSATION_TYPE.Opposing) {
       prompt += this.languageConfig.opposingReminder;
     }
 
