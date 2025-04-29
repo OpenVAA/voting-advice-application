@@ -49,7 +49,7 @@ describe('Condenser', () => {
       comments: longComments,
       topic,
       batchSize: 100,
-      condensationType: CONDENSATION_TYPE.GENERAL
+      condensationType: CONDENSATION_TYPE.General
     });
 
     expect(result).toBeDefined();
