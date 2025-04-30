@@ -59,9 +59,7 @@ describe('Condenser', () => {
     // Check that each argument has the required properties
     result.forEach((arg) => {
       expect(arg).toHaveProperty('argument');
-      expect(arg).toHaveProperty('topic');
       expect(typeof arg.argument).toBe('string');
-      expect(arg.topic).toBe(topic);
       expect(arg.argument.length).toBeGreaterThan(0);
     });
   });

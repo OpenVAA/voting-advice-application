@@ -103,7 +103,7 @@ export class Condenser {
           comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
         );
 
-      console.log(validatedComments);
+      console.info(validatedComments);
 
       // Check that the comment array is non-empty
       if (validatedComments.length === 0) {
@@ -173,12 +173,12 @@ export class Condenser {
       currentGroupArgs.push(...newArgs);
 
       // Logging (for debugging)
-      console.log('--------------------------------');
-      console.log('        Batch', i + 1, 'of', nIterations);
+      console.info('--------------------------------');
+      console.info('        Batch', i + 1, 'of', nIterations);
       for (const arg of currentGroupArgs) {
-        console.log(arg.argument);
+        console.info(arg.argument);
       }
-      console.log('--------------------------------');
+      console.info('--------------------------------');
 
       // After every batchesPerArray batches, store the Argument array and start a new one
       if ((i + 1) % batchesPerArray === 0 || i === nIterations - 1) {
@@ -355,11 +355,11 @@ export class Condenser {
     const newArgs = this.parser.parseArgumentCondensation({ output: response.content, topic });
 
     // Logging (for debugging)
-    console.log('\nOutput Arguments:\n');
+    console.info('\nOutput Arguments:\n');
     for (const arg of newArgs) {
-      console.log(arg.argument);
+      console.info(arg.argument);
     }
-    console.log('--------------------------------');
+    console.info('--------------------------------');
 
     return newArgs;
   }
@@ -385,11 +385,11 @@ export class Condenser {
     }
 
     // Logging (for debugging)
-    console.log('--------------------------------');
-    console.log(
+    console.info('--------------------------------');
+    console.info(
       `    Processing ${argumentArrays.length} Argument groups (will continue pair-wise until one array remains, e.g. 4 --> 2 --> 1)`
     );
-    console.log('--------------------------------');
+    console.info('--------------------------------');
 
     /** Array to populate with Argument arrays */
     const reducedArrays: Array<Array<Argument>> = [];

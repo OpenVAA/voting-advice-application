@@ -25,14 +25,13 @@ export async function exportResults({
       // Structured JSON format with all Argument details
       const jsonData = condensedArguments.map((arg, i) => ({
         argument_id: i + 1,
-        topic: arg.topic,
         main_argument: arg.argument
       }));
       output[fmt] = JSON.stringify(jsonData, null, 2);
     } else if (fmt === 'csv') {
       // CSV format for spreadsheet compatibility
-      const header = 'argument_id,topic,main_argument\n';
-      const rows = condensedArguments.map((arg, i) => [i + 1, arg.topic, arg.argument].join(','));
+      const header = 'argument_id,main_argument\n';
+      const rows = condensedArguments.map((arg, i) => [i + 1, arg.argument].join(','));
       output[fmt] = header + rows.join('\n');
     }
   }

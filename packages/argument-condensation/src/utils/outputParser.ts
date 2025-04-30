@@ -61,8 +61,7 @@ export class OutputParser {
           // Start of new Argument
           if (currentArg.length) {
             parsedArgs.push({
-              argument: currentArg,
-              topic: topic
+              argument: currentArg
             });
             currentArg = '';
           }
@@ -78,8 +77,7 @@ export class OutputParser {
     // Add the final Argument if it exists
     if (currentArg.length) {
       parsedArgs.push({
-        argument: currentArg,
-        topic: topic
+        argument: currentArg
       });
     }
 
@@ -113,8 +111,7 @@ export class OutputParser {
 
         // Create a new Argument with the condensed text
         args.push({
-          argument: argumentText,
-          topic: topic
+          argument: argumentText
         });
       }
     }
