@@ -103,8 +103,6 @@ export class Condenser {
           comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
         );
 
-      console.info(validatedComments);
-
       // Check that the comment array is non-empty
       if (validatedComments.length === 0) {
         throw new ArgumentCondensationError('Comments array cannot be empty');
@@ -175,9 +173,6 @@ export class Condenser {
       // Logging (for debugging)
       console.info('--------------------------------');
       console.info('        Batch', i + 1, 'of', nIterations);
-      for (const arg of currentGroupArgs) {
-        console.info(arg.argument);
-      }
       console.info('--------------------------------');
 
       // After every batchesPerArray batches, store the Argument array and start a new one
