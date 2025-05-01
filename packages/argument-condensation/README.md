@@ -1,21 +1,53 @@
-# Argument Condensation
+# openvaa/argument-condensation 
 
-// Stub of a README.md
+WHAT?
+A condensation algorithm used for finding pros and cons of a political decision.
 
-Tis but a TypeScript package for condensing multiple comments into distinct arguments using LLMs. Can be used in VAAs for extracting information from a large amount people. Expects an array of strings.
+WHY?
+To inform VAA users so they can reason for themselves and answer the questions accordingly.  
 
-## Features
+HOW?
+Using AI, specifically chatbots. 
 
-- Groups similar comments into distinct arguments
-- Maintains references to source comments
-- Supports Finnish and English languages
-- Processes comments in configurable batches
-- Exports to multiple formats (TXT, JSON, CSV)
-- Built-in error handling and retry logic
+
+## Example Usage
+
+```typescript
+import { CONDENSATION_TYPE, getLanguageConfig, processComments } from '@openvaa/argument-condensation';
+import { OpenAIProvider } from '@openvaa/llm'; // inherits LLMProvider
+
+// OpenVAA's way to communicate with LLMs 
+const llmProvider = new OpenAIProvider({
+  model: 'gpt-4o-mini',
+  apiKey: 'your-api-key-here'
+});
+
+// Configure the main class with provider & language of choice
+condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
+
+const comments = [
+      'Increasing the minimum wage would help reduce poverty and inequality',
+      'Higher minimum wages could force small businesses to lay off workers'
+];
+
+const result = await condenser.processComments({ comments, topic: 'Should the minimum wage be increased?' });
+console.log(result) // see the arguments 
+```
 
 ## Limitations
+Speed
+  - not parallelized = slow 
+  - ≈ few minutes per few hundred comments 
+  - t_processing ≈ n_comments / batch_size(default=30) * t_per_llm_call + some extra processing time (diminishing w.r.t. formula)
+Hallucinations
+  - is instructed to create 10ish arguments --> may hallucinate extra arguments to fulfill this requirement
+  - no evaluation loop
+Quality
+  - may not fully capture nuance of the arguments 
+  - using a smarted model (e.g. reasoning model) helps but slows the process down 5-10x
 
-- Maximum comment length: 2000 characters
-- Maximum topic length: 200 characters
-- Maximum batch size: 200 comments
-- Maximum prompt length: 30000 characters
+## Configuration Options
+  - llmProvider
+  - language
+  - batchSize = 30
+  - condensationType = CONDENSATION_TYPE.General

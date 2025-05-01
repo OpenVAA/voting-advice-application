@@ -1,12 +1,12 @@
 import { OpenAIProvider } from '@openvaa/llm';
 import { config } from 'dotenv';
 import path from 'path';
-import { afterAll, beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { Condenser } from '../src/core/condenser';
 import { CONDENSATION_TYPE } from '../src/core/types/condensationType';
-import { LanguageConfigs } from '../src/languageOptions/configs';
+import { getLanguageConfig } from '../src/languageOptions/configs';
 
-// Load environment variables
+// Load environment variables 
 const envPath = path.join(__dirname, '../../../.env');
 config({ path: envPath });
 
@@ -20,7 +20,7 @@ describe('Condenser', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
+    condenser = new Condenser({ llmProvider, languageConfig: getLanguageConfig('en') });
   });
 
   test('should create a new Condenser instance', () => {
@@ -69,7 +69,7 @@ describe('Condenser Edge Cases', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
+    condenser = new Condenser({ llmProvider, languageConfig: getLanguageConfig('en') });
   });
 
   test('should throw an error for empty comments array', async () => {

@@ -5,7 +5,10 @@ import { LanguageConfig } from './languageConfig.type';
  * Provides instructions and formatting for English language processing
  */
 
-// TO DO: Optimize the instructions for English
+// TODO(optimization): Refine instruction prompts to improve argument extraction and clarity
+// - Consider adding specific examples
+// - Add guidelines for maintaining consistent tone
+// - Evaluate optimal argument length parameters
 export const ENGLISH_CONFIG: LanguageConfig = {
   instructionsGeneral: `Go through the following comments on the topic "{topic}".
     If the comments contain perspectives that are not already present in the existing arguments:
