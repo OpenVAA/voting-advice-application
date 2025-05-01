@@ -18,10 +18,6 @@ interface ControllerOptions {
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
 
-// !!
-// Note: Logic for question selection and grouping will be refactored
-// !!
-
 interface LikertGroups {
   presumedPros: Array<string>;
   presumedCons: Array<string>;
@@ -171,7 +167,7 @@ export default {
                       comments: groupedAnswers.presumedPros,
                       topic: getQuestionText(question, localeCode),
                       batchSize: 30,
-                      condensationType: CONDENSATION_TYPE.SUPPORTING
+                      condensationType: CONDENSATION_TYPE.Supporting
                     })
                   : [],
               cons:
@@ -182,7 +178,7 @@ export default {
                       comments: groupedAnswers.presumedCons,
                       topic: getQuestionText(question, localeCode),
                       batchSize: 30,
-                      condensationType: CONDENSATION_TYPE.OPPOSING
+                      condensationType: CONDENSATION_TYPE.Opposing
                     })
                   : []
             };
@@ -201,7 +197,7 @@ export default {
                 comments,
                 topic: getQuestionText(question, localeCode),
                 batchSize: 30,
-                condensationType: CONDENSATION_TYPE.GENERAL
+                condensationType: CONDENSATION_TYPE.General
               });
             }
           } else {

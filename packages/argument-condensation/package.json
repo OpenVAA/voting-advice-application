@@ -5,8 +5,8 @@
   "scripts": {
     "package:cjs": "mkdir -p ./build/cjs/ && echo '{ \"type\": \"commonjs\" }' > ./build/cjs/package.json",
     "package:esm": "mkdir -p ./build/esm/ && echo '{ \"type\": \"module\" }' > ./build/esm/package.json",
-    "build:cjs": "yarn package:cjs && yarn tsc --build tsconfig.cjs.json",
-    "build:esm": "yarn package:esm && yarn tsc --build tsconfig.esm.json",
+    "build:cjs": "yarn package:cjs && yarn exec tsc --build tsconfig.cjs.json",
+    "build:esm": "yarn package:esm && yarn exec tsc --build tsconfig.esm.json",
     "build": "yarn build:cjs && yarn build:esm",
     "test": "vitest run",
     "test:watch": "vitest watch"
