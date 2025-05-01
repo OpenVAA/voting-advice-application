@@ -20,7 +20,8 @@ export type SupportedLanguage = keyof typeof LanguageConfigs;
  * @returns The corresponding language config or Finnish as fallback
  */
 export function getLanguageConfig(locale: string): LanguageConfig {
-  if (locale === 'fi') return FINNISH_CONFIG;
-  if (locale === 'en') return ENGLISH_CONFIG;
-  return FINNISH_CONFIG; // Default fallback
+  if (!LanguageConfigs[locale]) {
+    throw new Error(`Unsupported locale: ${locale}. Supported locales are: ${Object.keys(LanguageConfigs).join(', ')}`);
+  }
+  return LanguageConfigs[locale];
 }
