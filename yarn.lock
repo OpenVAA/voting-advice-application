@@ -4017,7 +4017,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/argument-condensation@workspace:packages/argument-condensation":
+"@openvaa/argument-condensation@workspace:^, @openvaa/argument-condensation@workspace:packages/argument-condensation":
   version: 0.0.0-use.local
   resolution: "@openvaa/argument-condensation@workspace:packages/argument-condensation"
   dependencies:
@@ -4215,6 +4215,7 @@ __metadata:
     "@babel/plugin-transform-modules-commonjs": "npm:^7.26.3"
     "@faker-js/faker": "npm:^8.4.1"
     "@openvaa/app-shared": "workspace:^"
+    "@openvaa/argument-condensation": "workspace:^"
     "@openvaa/llm": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@openvaa/strapi-admin-tools": "workspace:^"
