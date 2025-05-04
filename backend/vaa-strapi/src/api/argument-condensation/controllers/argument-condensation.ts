@@ -11,7 +11,7 @@ interface ControllerOptions {
   /**
    * The locale code to use for text content
    * @default "fi" // TODO: For default use the locale marked isDefault from staticSettings in app-shared.
-   */              // TODO: rename localeCode to locale everywhere
+   */ // TODO: rename localeCode to locale everywhere
   locale?: string;
 }
 

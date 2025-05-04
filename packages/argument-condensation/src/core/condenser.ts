@@ -14,7 +14,7 @@ const MAX_COMMENT_LENGTH = 2000;
 /**
  * Core class for condensing multiple comments into distinct arguments.
  * Processes comments in batches and maintains context between batches.
- * TODO: Parallelize the processComments function. Easily done by using multiple calls to function createArgumentArrays in parallel. 
+ * TODO: Parallelize the processComments function. Easily done by using multiple calls to function createArgumentArrays in parallel.
  */
 export class Condenser {
   private llmProvider: LLMProvider;
@@ -96,42 +96,38 @@ export class Condenser {
     condensationType?: CondensationType;
     batchesPerArray?: number;
   }): Promise<Array<Argument>> {
-    try {
-      // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
-      const validatedComments = comments
-        .filter((comment) => comment?.trim() !== '')
-        .map((comment) =>
-          comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
-        );
-
-      // Check that the comment array is non-empty
-      if (validatedComments.length === 0) {
-        throw new ArgumentCondensationError('Comments array cannot be empty');
-      }
-      // Check that the topic is non-empty
-      if (topic.trim().length === 0) {
-        throw new ArgumentCondensationError('Topic cannot be empty');
-      }
-
-      // First level of condensation: turn some k (batchesPerArray) comment batches into Argument arrays
-      this.existingArguments = await this.createArgumentArrays(
-        validatedComments,
-        topic,
-        batchSize,
-        condensationType,
-        batchesPerArray
+    // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
+    const validatedComments = comments
+      .filter((comment) => comment?.trim() !== '')
+      .map((comment) =>
+        comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
       );
 
-      // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array.
-      // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
-      return this.reduceArgumentArrays({
-        argumentArrays: this.existingArguments,
-        topic,
-        condensationType
-      });
-    } catch (error) {
-      throw error;
+    // Check that the comment array is non-empty
+    if (validatedComments.length === 0) {
+      throw new ArgumentCondensationError('Comments array cannot be empty');
     }
+    // Check that the topic is non-empty
+    if (topic.trim().length === 0) {
+      throw new ArgumentCondensationError('Topic cannot be empty');
+    }
+
+    // First level of condensation: turn some k (batchesPerArray) comment batches into Argument arrays
+    this.existingArguments = await this.createArgumentArrays(
+      validatedComments,
+      topic,
+      batchSize,
+      condensationType,
+      batchesPerArray
+    );
+
+    // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array.
+    // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
+    return this.reduceArgumentArrays({
+      argumentArrays: this.existingArguments,
+      topic,
+      condensationType
+    });
   }
 
   /**

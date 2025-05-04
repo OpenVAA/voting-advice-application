@@ -1,14 +1,13 @@
-# openvaa/argument-condensation 
+# openvaa/argument-condensation
 
 WHAT?
 A condensation algorithm used for finding pros and cons of a political decision.
 
 WHY?
-To inform VAA users so they can reason for themselves and answer the questions accordingly.  
+To inform VAA users so they can reason for themselves and answer the questions accordingly.
 
 HOW?
-Using AI, specifically chatbots. 
-
+Using AI, specifically chatbots.
 
 ## Example Usage
 
@@ -16,7 +15,7 @@ Using AI, specifically chatbots.
 import { CONDENSATION_TYPE, getLanguageConfig, processComments } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm'; // inherits LLMProvider
 
-// OpenVAA's way to communicate with LLMs 
+// OpenVAA's way to communicate with LLMs
 const llmProvider = new OpenAIProvider({
   model: 'gpt-4o-mini',
   apiKey: 'your-api-key-here'
@@ -26,28 +25,31 @@ const llmProvider = new OpenAIProvider({
 condenser = new Condenser({ llmProvider, languageConfig: LanguageConfigs.en });
 
 const comments = [
-      'Increasing the minimum wage would help reduce poverty and inequality',
-      'Higher minimum wages could force small businesses to lay off workers'
+  'Increasing the minimum wage would help reduce poverty and inequality',
+  'Higher minimum wages could force small businesses to lay off workers'
 ];
 
 const result = await condenser.processComments({ comments, topic: 'Should the minimum wage be increased?' });
-console.log(result) // see the arguments 
+console.log(result); // see the arguments
 ```
 
 ## Limitations
+
 Speed
-  - not parallelized (due to concerns of API reaching limits) = slow 
-  - ≈ few minutes per few hundred comments 
-  - t_processing ≈ n_comments / batch_size(default=30) * t_per_llm_call + some extra processing time (diminishing w.r.t. formula)
-Hallucinations
-  - is instructed to create 10ish arguments --> may hallucinate extra arguments to fulfill this requirement
-  - no evaluation loop
-Quality
-  - may not fully capture nuance of the arguments 
-  - using a smarted model (e.g. reasoning model) helps but slows the process down 5-10x
+
+- not parallelized (due to concerns of API reaching limits) = slow
+- ≈ few minutes per few hundred comments
+- t_processing ≈ n_comments / batch_size(default=30) \* t_per_llm_call + some extra processing time (diminishing w.r.t. formula)
+  Hallucinations
+- is instructed to create 10ish arguments --> may hallucinate extra arguments to fulfill this requirement
+- no evaluation loop
+  Quality
+- may not fully capture nuance of the arguments
+- using a smarted model (e.g. reasoning model) helps but slows the process down 5-10x
 
 ## Configuration Options
-  - llmProvider
-  - language
-  - batchSize = 30
-  - condensationType = CONDENSATION_TYPE.General
+
+- llmProvider
+- language
+- batchSize = 30
+- condensationType = CONDENSATION_TYPE.General

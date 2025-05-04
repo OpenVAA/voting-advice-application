@@ -6,7 +6,7 @@ import { Condenser } from '../src/core/condenser';
 import { CONDENSATION_TYPE } from '../src/core/types/condensationType';
 import { getLanguageConfig } from '../src/languageOptions/configs';
 
-// Load environment variables 
+// Load environment variables
 const envPath = path.join(__dirname, '../../../.env');
 config({ path: envPath });
 
