@@ -36,7 +36,7 @@ console.log(result) // see the arguments
 
 ## Limitations
 Speed
-  - not parallelized = slow 
+  - not parallelized (due to concerns of API reaching limits) = slow 
   - ≈ few minutes per few hundred comments 
   - t_processing ≈ n_comments / batch_size(default=30) * t_per_llm_call + some extra processing time (diminishing w.r.t. formula)
 Hallucinations

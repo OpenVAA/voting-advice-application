@@ -14,6 +14,7 @@ const MAX_COMMENT_LENGTH = 2000;
 /**
  * Core class for condensing multiple comments into distinct arguments.
  * Processes comments in batches and maintains context between batches.
+ * TODO: Parallelize the processComments function. Easily done by using multiple calls to function createArgumentArrays in parallel. 
  */
 export class Condenser {
   private llmProvider: LLMProvider;
