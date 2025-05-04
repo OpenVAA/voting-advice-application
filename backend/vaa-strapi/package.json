@@ -16,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.741.0",
     "@openvaa/app-shared": "workspace:^",
+    "@openvaa/argument-condensation": "workspace:^",
     "@openvaa/llm": "workspace:^",
     "@openvaa/strapi-admin-tools": "workspace:^",
     "@strapi/plugin-documentation": "^5.9.0",
