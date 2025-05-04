@@ -267,7 +267,6 @@ export default {
       const localeCode = options.locale || 'fi';
 
       const questions = await questionService.fetchProcessableQuestions();
-      questionService.logQuestionDetails(questions);
 
       ctx.body = {
         data: questions.map((q) => ({

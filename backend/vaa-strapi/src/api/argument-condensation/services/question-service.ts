@@ -125,32 +125,12 @@ async function fetchAnswersForQuestions(
 }
 
 /**
- * Logs detailed information about retrieved questions
- */
-function logQuestionDetails(questions) {
-  // Log full details of the first question to inspect structure
-  if (questions.length > 0) {
-    console.info('FIRST QUESTION DETAILS:');
-    console.info(JSON.stringify(questions[0], null, 2));
-
-    // Log all questions with key properties
-    console.info('\nALL QUESTIONS:');
-    questions.forEach((q, index) => {
-      console.info(
-        `[${index}] id: ${q.id}, documentId: ${q.documentId}, type: ${q.questionType?.settings?.type || 'unknown'}, text: ${JSON.stringify(q.text).substring(0, 50)}...`
-      );
-    });
-  }
-}
-
-/**
  * Test function to verify question retrieval
  */
 async function testQuestionRetrieval() {
   try {
     console.info('\n============ TESTING QUESTION RETRIEVAL ============');
     const questions = await fetchProcessableQuestions();
-    logQuestionDetails(questions);
     console.info('============ TEST COMPLETE ============\n');
     return questions;
   } catch (error) {
@@ -204,7 +184,6 @@ async function testAnswerRetrieval() {
 export default {
   fetchProcessableQuestions,
   fetchAnswersForQuestions,
-  logQuestionDetails,
   testQuestionRetrieval,
   testAnswerRetrieval
 };
