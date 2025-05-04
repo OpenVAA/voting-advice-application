@@ -19,9 +19,18 @@ export interface QuestionTypeSettings {
   // Add other possible properties here
 }
 
+// TODO: Use the existing types for this from app-shared.
+
+// TODO: You could use the auto-generated types for this along these lines:
+/* export type QuestionWithSettings = Data.ContentType<'api::question.question'> & {
+  questionType: Data.ContentType<'api::question-type.question-type'> & { 
+     settings: { type: string};
+  }
+} */
+
 // Add an interface at the top of the file
 export interface ArgumentCondensationQuestion {
-  id: string | number;
+  id: string | number; // TODO: Remove ids and rely exclusively on documentId
   documentId: string;
   text?: Record<string, string> | any;
   questionType: {
@@ -31,6 +40,7 @@ export interface ArgumentCondensationQuestion {
   };
 }
 
+// TODO: Maybe remove this param and just expect the user to filter the results after getting the full list
 /**
  * Fetches processable Likert questions (single choice ordinal type), filtered by documentIds if provided
  * @param documentIds Optional array of document IDs to filter by
