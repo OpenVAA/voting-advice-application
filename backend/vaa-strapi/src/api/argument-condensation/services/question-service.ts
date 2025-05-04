@@ -53,7 +53,7 @@ async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<A
       questionType: {
         fields: ['id', 'name', 'settings']
       }
-    }
+    } // TODO: You can remove fields from both places here
   });
 
   // Helper function to validate if the object is a valid QuestionTypeSettings
@@ -87,6 +87,7 @@ async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<A
     : processableQuestions;
 }
 
+// TODO: Use documentId instead. It does not need to be listed in fields.
 /**
  * Fetches all answers for the specified question IDs from all candidates
  * @param questionDocumentIds Array of question document IDs
@@ -104,11 +105,13 @@ async function fetchAnswersForQuestions(
       }
     }
   });
+  // TODO: convert to normal for loops for legibility
 
   const answersMap: Record<string, Array<CandidateAnswer>> = Object.fromEntries(
     questionDocumentIds.map((qId) => [qId, []])
   );
 
+  // TODO: remove the openAnswer assignment and check for openAnswerText !== null below
   candidates
     .filter((candidate) => typeof candidate.answers === 'object')
     .forEach((candidate) => {
