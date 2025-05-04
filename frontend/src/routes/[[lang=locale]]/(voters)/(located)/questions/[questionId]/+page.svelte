@@ -123,7 +123,12 @@ Display a question for answering.
   // Handle `start` query param
   ////////////////////////////////////////////////////////////////////
 
-  onMount(() => {
+  onMount(() => {    
+    //Manually activate question extended info
+    // If interactiveInfo is undefined, set it manually for this session
+    if (!$appSettings.questions.interactiveInfo) {
+      $appSettings.questions.interactiveInfo = { enabled: true };
+    }
     if ($page.url.searchParams.get('start')) {
       // Clear any possible selected categories, although there should under normal circumstances be none
       $selectedQuestionCategoryIds = [];
