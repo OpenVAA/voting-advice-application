@@ -10,12 +10,12 @@ import { CandidateAnswer } from '../services/question-service';
 interface ControllerOptions {
   /**
    * The locale code to use for text content
-   * @default "fi"
-   */
+   * @default "fi" // TODO: For default use the locale marked isDefault from staticSettings in app-shared.
+   */              // TODO: rename localeCode to locale everywhere
   locale?: string;
 }
 
-const model = 'gpt-4o-mini';
+const model = 'gpt-4o-mini'; // TODO: As this is effectively a constant, please move it to constants.ts as OPENAI_MODEL
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
 
 interface LikertGroups {
@@ -163,7 +163,7 @@ export default {
                 groupedAnswers.presumedPros.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: languageConfig,
+                      languageConfig,
                       comments: groupedAnswers.presumedPros,
                       topic: getQuestionText(question, localeCode),
                       batchSize: 30,
@@ -174,7 +174,7 @@ export default {
                 groupedAnswers.presumedCons.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: languageConfig,
+                      languageConfig,
                       comments: groupedAnswers.presumedCons,
                       topic: getQuestionText(question, localeCode),
                       batchSize: 30,
@@ -193,9 +193,9 @@ export default {
 
               processedResults[category] = await processComments({
                 llmProvider,
-                languageConfig: languageConfig,
+                languageConfig,
                 comments,
-                topic: getQuestionText(question, localeCode),
+                topic: getQuestionText(question, localeCode), // TODO: define topic earlier, it's the same in all cases. Use const topic = question.text[locale] ?? '' instead of getQuestionText(question, localeCode).
                 batchSize: 30,
                 condensationType: CONDENSATION_TYPE.General
               });
