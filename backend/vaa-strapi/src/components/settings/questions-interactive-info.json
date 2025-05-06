@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_settings_questions_interactive_info",
+  "info": {
+    "displayName": "Questions - Interactive Info",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "enabled": {
+      "type": "boolean"
+    }
+  }
+}
