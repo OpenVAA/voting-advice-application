@@ -42,6 +42,9 @@ export function FindData(): ReactElement {
           .join(' • ')}
         .
       </p>
+      <p>
+        NB. You must define <code>filters</code> even if it’s empty.
+      </p>
     </Flex>
   );
   return <DataBase intro={intro} submitLabel={submitLabel} submitHandler={submitHandler} />;
