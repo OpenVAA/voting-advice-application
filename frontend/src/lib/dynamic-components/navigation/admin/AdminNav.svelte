@@ -50,8 +50,8 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   </NavGroup>
 
   <NavGroup>
-    <NavItem href={$getRoute('AdminHelp')} icon="help" text={$t('help.title')} />
-    <NavItem href={$getRoute('AdminPrivacy')} icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={$getRoute('AdminHelp')} icon="help" text={$t('help.title')} disabled />
+    <NavItem href={$getRoute('AdminPrivacy')} icon="privacy" text={$t('privacy.title')} disabled />
   </NavGroup>
 
   <LanguageSelection />
