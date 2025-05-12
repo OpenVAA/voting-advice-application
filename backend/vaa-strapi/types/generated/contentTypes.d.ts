@@ -540,6 +540,7 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     electionStartDate: Schema.Attribute.Date & Schema.Attribute.Required;
     electionType: Schema.Attribute.Enumeration<['local', 'presidential', 'congress']>;
     externalId: Schema.Attribute.String & Schema.Attribute.Private;
+    factorLoading: Schema.Attribute.Relation<'oneToOne', 'api::factor-loading.factor-loading'>;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::election.election'> & Schema.Attribute.Private;
@@ -547,6 +548,32 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     nominations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'>;
     publishedAt: Schema.Attribute.DateTime;
     shortName: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+  };
+}
+
+export interface ApiFactorLoadingFactorLoading extends Struct.CollectionTypeSchema {
+  collectionName: 'factor_loadings';
+  info: {
+    displayName: 'Factor Loadings';
+    pluralName: 'factor-loadings';
+    singularName: 'factor-loading';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    election: Schema.Attribute.Relation<'oneToOne', 'api::election.election'>;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::factor-loading.factor-loading'> &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    results: Schema.Attribute.JSON & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -1189,6 +1216,7 @@ declare module '@strapi/strapi' {
       'api::constituency-group.constituency-group': ApiConstituencyGroupConstituencyGroup;
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
+      'api::factor-loading.factor-loading': ApiFactorLoadingFactorLoading;
       'api::feedback.feedback': ApiFeedbackFeedback;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;

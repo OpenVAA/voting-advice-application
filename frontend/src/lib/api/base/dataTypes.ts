@@ -9,6 +9,7 @@ import type {
 } from '@openvaa/data';
 import type { QuestionCategoryData } from '@openvaa/data';
 import type { AppCustomization } from '$lib/contexts/app';
+import type { FactorLoadingData } from '$lib/contexts/voter/factorLoadings/factorLoading.type';
 import type { DataProvider } from './dataProvider.type';
 
 /**
@@ -21,7 +22,8 @@ export const DP_METHOD: Record<keyof DPDataType, keyof DataProvider> = {
   constituencies: 'getConstituencyData',
   nominations: 'getNominationData',
   entities: 'getEntityData',
-  questions: 'getQuestionData'
+  questions: 'getQuestionData',
+  factorLoadings: 'getFactorLoadingData'
 } as const;
 
 /**
@@ -44,6 +46,7 @@ export type DPDataType = {
     categories: Array<QuestionCategoryData>;
     questions: Array<AnyQuestionVariantData>;
   };
+  factorLoadings: Array<FactorLoadingData>;
 };
 
 /**

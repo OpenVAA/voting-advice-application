@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "factor_loadings",
+  "info": {
+    "singularName": "factor-loading",
+    "pluralName": "factor-loadings",
+    "displayName": "Factor Loadings"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "election": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::election.election",
+      "inversedBy": "factorLoading"
+    },
+    "results": {
+      "type": "json",
+      "required": true,
+      "comment": "Stores factor analysis results including loadings per question"
+    },
+    "metadata": {
+      "type": "json",
+      "comment": "Additional metadata about the analysis"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
+    }
+  }
+}

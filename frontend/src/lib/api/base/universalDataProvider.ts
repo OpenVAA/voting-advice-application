@@ -1,5 +1,6 @@
 import { ensureColors } from '$lib/utils/color/ensureColors';
 import { UniversalAdapter } from './universalAdapter';
+import type { CustomData } from '@openvaa/app-shared';
 import type { DataObjectData } from '@openvaa/data';
 import type { DataProvider, DPReturnType } from './dataProvider.type';
 import type { DPDataType } from './dataTypes';
@@ -8,6 +9,7 @@ import type {
   GetConstituenciesOptions,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
   GetQuestionsOptions
 } from './getDataOptions.type';
@@ -52,8 +54,24 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   getQuestionData(options?: GetQuestionsOptions): DPReturnType<'questions'> {
     return this._getQuestionData(options).then(({ categories, questions }) => ({
       categories: this.ensureColors(categories),
-      questions
+      questions: questions.map((q) => {
+        const infoSections = (q.customData as CustomData['Question'])?.infoSections?.filter(
+          (s) => s.title && s.content && s.visible
+        );
+
+        return {
+          ...q,
+          customData: {
+            ...q.customData,
+            infoSections
+          }
+        };
+      })
     }));
+  }
+
+  getFactorLoadingData(options: GetFactorLoadingsOptions): DPReturnType<'factorLoadings'> {
+    return this._getFactorLoadingData(options);
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -81,4 +99,5 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   protected abstract _getNominationData(options?: GetNominationsOptions): Promise<DPDataType['nominations']>;
   protected abstract _getEntityData(options?: GetEntitiesOptions): Promise<DPDataType['entities']>;
   protected abstract _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']>;
+  protected abstract _getFactorLoadingData(options: GetFactorLoadingsOptions): Promise<DPDataType['factorLoadings']>;
 }

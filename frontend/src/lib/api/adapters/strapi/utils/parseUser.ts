@@ -5,7 +5,14 @@ import type { StrapiBasicUserData } from '../strapiData.type';
 /**
  * Parse a Strapi User data `BasicUserData` object.
  */
-export function parseUser({ documentId, username, email, confirmed, blocked }: StrapiBasicUserData): BasicUserData {
+export function parseUser({
+  documentId,
+  username,
+  email,
+  confirmed,
+  blocked,
+  role
+}: StrapiBasicUserData): BasicUserData {
   const id = formatId(documentId);
   return {
     id,
@@ -16,6 +23,7 @@ export function parseUser({ documentId, username, email, confirmed, blocked }: S
     username,
     email,
     confirmed,
-    blocked
+    blocked,
+    role: role ? role.type : undefined
   };
 }
