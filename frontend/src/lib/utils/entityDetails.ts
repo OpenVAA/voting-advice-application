@@ -35,7 +35,7 @@ export function getEntityAndTitle({
   if (nominationId) {
     // Find the nomination in the matches, so we get the score. Note that target may be either a Match or a Nomination
     const target = matches
-      ? findNomination({ matches, entityType, nominationId })
+      ? findNomination({ matches, entityType, nominationId })?.match
       : dataRoot.getNomination(entityType, nominationId);
     if (!target) throw new Error(`Nomination of type ${entityType} with id ${nominationId} not found.`);
     // Make sure that the nomination matches the entity we are looking for

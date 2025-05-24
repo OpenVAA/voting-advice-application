@@ -51,7 +51,7 @@ Displays information about the privacy policy of the app as well as the possible
       <h2>{$t('privacy.analytics.title')}</h2>
       <div>
         {@html sanitizeHtml(
-          $t(assertTranslationKey(`privacy.analyticsContent.${$appSettings.analytics.platform.name}`))
+          $t(assertTranslationKey(`privacy.analytics.content.${$appSettings.analytics.platform.name}`))
         )}
       </div>
     {/if}

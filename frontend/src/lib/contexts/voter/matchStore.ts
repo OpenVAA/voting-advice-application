@@ -1,9 +1,16 @@
+import {
+  type AnyNominationVariant,
+  ENTITY_TYPE,
+  type EntityType,
+  FactionNomination,
+  OrganizationNomination
+} from '@openvaa/data';
+import { imputeParentAnswers, MatchingProxy, unwrapProxiedMatch } from '$lib/utils/matching';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { countAnswers } from './countAnswers';
 import { Voter } from './voter';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
-import type { EntityType } from '@openvaa/data';
-import type { MatchingAlgorithm } from '@openvaa/matching';
+import type { Match, MatchingAlgorithm } from '@openvaa/matching';
 import type { Readable } from 'svelte/store';
 import type { AnswerStore } from './answerStore.type';
 import type { NominationAndQuestionTree } from './nominationAndQuestionStore';
@@ -17,6 +24,7 @@ import type { SelectionTree } from './selectionTree.type';
  * @param algorithm - The matching algorithm
  * @param minAnswers - A store containing the minimum number of answers required to perform matching, default `1`
  * @param calcSubmatches - A store containing the `entityType`s for which to calculate submatches, default `[]`
+ * @param parentMatchingMethod - A store containing the parent matching method. This is used to preimpute answers for `Nomination`s with children.
  * @returns An array of `Match`es or unmatched `WrappedNomination` for each `Election` and each `EntityType`.
  */
 export function matchStore({
@@ -24,17 +32,19 @@ export function matchStore({
   nominationsAndQuestions,
   algorithm,
   minAnswers,
-  calcSubmatches
+  calcSubmatches,
+  parentMatchingMethod
 }: {
   answers: AnswerStore;
   nominationsAndQuestions: Readable<NominationAndQuestionTree>;
   algorithm: MatchingAlgorithm;
   minAnswers: Readable<number>;
   calcSubmatches: Readable<Array<EntityType>>;
+  parentMatchingMethod: Readable<AppSettings['matching']['organizationMatching']>;
 }): Readable<MatchTree> {
   return parsimoniusDerived(
-    [answers, nominationsAndQuestions, minAnswers, calcSubmatches],
-    ([answers, nominationsAndQuestions, minAnswers, calcSubmatches]) => {
+    [answers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod],
+    ([answers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod]) => {
       minAnswers ??= 1;
       calcSubmatches ??= [];
 
@@ -53,13 +63,39 @@ export function matchStore({
               ? removeDuplicates(questions.map((q) => q.category))
               : undefined;
 
-            const matches = algorithm.match({
+            // Possibly impute parent entity answers
+            let proxies: Array<MatchingProxy<AnyNominationVariant>> | undefined;
+            if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
+              switch (parentMatchingMethod) {
+                case 'impute':
+                  proxies = imputeParentAnswers({
+                    nominations: nominations as Array<OrganizationNomination | FactionNomination>,
+                    questions
+                  });
+                  break;
+                case 'answersOnly':
+                case 'none':
+                  break;
+                default:
+                  throw new Error(`Unsupported parent matching method: ${parentMatchingMethod}`);
+              }
+            }
+
+            const matches = algorithm.match<AnyNominationVariant | MatchingProxy<AnyNominationVariant>>({
               questions,
               reference: voter,
-              targets: nominations,
+              // Use proxies in matching if available
+              targets: proxies ?? nominations,
               options: { questionGroups }
             });
-            return [entityType, matches];
+
+            return [
+              entityType,
+              // If we used proxies, unwrap them
+              proxies
+                ? matches.map((m) => unwrapProxiedMatch(m as Match<MatchingProxy<AnyNominationVariant>>))
+                : matches
+            ];
           })
         );
       }
