@@ -38,13 +38,13 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { EntityDetailsDrawer, type EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
+  import { logDebugError } from '$lib/utils/logger';
   import { parseParams, ROUTE } from '$lib/utils/route';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
-  import { logDebugError } from '$lib/utils/logger';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -166,7 +166,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
     cancel();
   });
 
-  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps | undefined {
+  function getDrawerProps(opts: {
+    entityType: EntityType;
+    entityId: Id;
+    nominationId?: Id;
+  }): EntityDetailsDrawerProps | undefined {
     try {
       return {
         entity: getEntityAndTitle({
@@ -177,9 +181,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
       };
     } catch (e) {
       // TODO: Show a notification to the user
-      logDebugError(`Could not get entity details for ${opts.entityType} ${opts.entityId} with nomination ${opts.nominationId ?? '-'}. Error: ${e instanceof Error ? e.message : '-'}`);
+      logDebugError(
+        `Could not get entity details for ${opts.entityType} ${opts.entityId} with nomination ${opts.nominationId ?? '-'}. Error: ${e instanceof Error ? e.message : '-'}`
+      );
       return undefined;
-    }    
+    }
   }
 
   ////////////////////////////////////////////////////////////////////
