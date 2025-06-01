@@ -62,5 +62,8 @@ export const staticSettings: StaticSettings = {
   },
   preRegistration: {
     enabled: false
+  },
+  sentry: {
+    enabled: false
   }
 };

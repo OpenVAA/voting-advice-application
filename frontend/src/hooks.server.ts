@@ -1,3 +1,4 @@
+import { staticSettings } from '@openvaa/app-shared';
 import * as Sentry from '@sentry/sveltekit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
@@ -7,121 +8,124 @@ import { constants } from '$lib/utils/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
-Sentry.init({
-  dsn: constants.PUBLIC_FRONTEND_SENTRY_DSN,
-  tracesSampleRate: 1
-});
-
-// Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
+if (staticSettings.sentry.enabled) {
+  Sentry.init({
+    dsn: constants.PUBLIC_FRONTEND_SENTRY_DSN,
+    tracesSampleRate: 1
+  });
+}
 
 /** Set to `true` to show debug log in console */
 const DEBUG = false;
 
-export const handle: Handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
-  const { params, route, url, request, isDataRequest } = event;
-  const { pathname, search } = url;
-  const requestedLocale = params.lang;
+export const handle: Handle = sequence(
+  staticSettings.sentry.enabled ? Sentry.sentryHandle() : async ({ event, resolve }) => resolve(event), // Use no-op if Sentry disabled.
+  (async ({ event, resolve }) => {
+    const { params, route, url, request, isDataRequest } = event;
+    const { pathname, search } = url;
+    const requestedLocale = params.lang;
 
-  const supportedLocales = locales.get();
-  let cleanPath = requestedLocale ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '') : pathname;
-  if (cleanPath === '') cleanPath = '/';
+    const supportedLocales = locales.get();
+    let cleanPath = requestedLocale ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '') : pathname;
+    if (cleanPath === '') cleanPath = '/';
 
-  debug('Route: START', { params, pathname, isDataRequest, route });
+    debug('Route: START', { params, pathname, isDataRequest, route });
 
-  //////////////////////////////////////////////////////////////////////////
-  // 1. Handle non-route requests
-  //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // 1. Handle non-route requests
+    //////////////////////////////////////////////////////////////////////////
 
-  // If this request is not a route request, resolve normally
-  // NB. If defining API routes that should return json, test cleanPath here and resolve
-  if (route?.id == null || pathname == null || pathname.startsWith(API_ROOT)) {
-    debug('Route: RESOLVE non-route request');
-    return resolve(event);
-  }
+    // If this request is not a route request, resolve normally
+    // NB. If defining API routes that should return json, test cleanPath here and resolve
+    if (route?.id == null || pathname == null || pathname.startsWith(API_ROOT)) {
+      debug('Route: RESOLVE non-route request');
+      return resolve(event);
+    }
 
-  //////////////////////////////////////////////////////////////////////////
-  // 2. Figure out which locale to serve
-  //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // 2. Figure out which locale to serve
+    //////////////////////////////////////////////////////////////////////////
 
-  let preferredLocale: string | undefined;
-  let servedLocale: string | undefined;
+    let preferredLocale: string | undefined;
+    let servedLocale: string | undefined;
 
-  // Get preferred locale from request headers
-  const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage) {
-    const preferredLocales = parseAcceptedLanguages(acceptLanguage);
-    preferredLocale = matchLocale(preferredLocales, supportedLocales);
-  }
+    // Get preferred locale from request headers
+    const acceptLanguage = request.headers.get('accept-language');
+    if (acceptLanguage) {
+      const preferredLocales = parseAcceptedLanguages(acceptLanguage);
+      preferredLocale = matchLocale(preferredLocales, supportedLocales);
+    }
 
-  if (supportedLocales.length === 1) {
-    // No need for locale matching if there's only one locale
-    servedLocale = defaultLocale;
-  } else if (requestedLocale) {
-    // We use soft locale matching for route parameters, so we need to map the param to a supported one
-    servedLocale = matchLocale(requestedLocale, supportedLocales);
-  }
-  // If we still don't have a locale use the preferred one or the default one
-  servedLocale ??= preferredLocale ?? defaultLocale;
-  debug(
-    `Route: LOCALE parsed to ${servedLocale} • PATH to '${cleanPath}' (requested ${requestedLocale}, preferred ${preferredLocale})`
-  );
+    if (supportedLocales.length === 1) {
+      // No need for locale matching if there's only one locale
+      servedLocale = defaultLocale;
+    } else if (requestedLocale) {
+      // We use soft locale matching for route parameters, so we need to map the param to a supported one
+      servedLocale = matchLocale(requestedLocale, supportedLocales);
+    }
+    // If we still don't have a locale use the preferred one or the default one
+    servedLocale ??= preferredLocale ?? defaultLocale;
+    debug(
+      `Route: LOCALE parsed to ${servedLocale} • PATH to '${cleanPath}' (requested ${requestedLocale}, preferred ${preferredLocale})`
+    );
 
-  //////////////////////////////////////////////////////////////////////////
-  // 3. Redirect if the locale param is not the same as the served locale
-  //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // 3. Redirect if the locale param is not the same as the served locale
+    //////////////////////////////////////////////////////////////////////////
 
-  if (requestedLocale !== servedLocale) {
-    debug(`Route: REDIRECT to locale ${servedLocale}`);
-    return new Response(undefined, {
-      headers: { location: `/${servedLocale}${cleanPath}${search}` },
-      status: 301
-    });
-  }
-
-  //////////////////////////////////////////////////////////////////////////
-  // 4. Handle candidate requests
-  //////////////////////////////////////////////////////////////////////////
-
-  if (pathname.startsWith(`/${servedLocale}/candidate`)) {
-    const token = event.cookies.get('token');
-
-    if (token && pathname.endsWith('candidate/login')) {
-      debug('Route: REDIRECT to home page');
+    if (requestedLocale !== servedLocale) {
+      debug(`Route: REDIRECT to locale ${servedLocale}`);
       return new Response(undefined, {
-        headers: { location: `/${servedLocale}/candidate` },
-        status: 303
+        headers: { location: `/${servedLocale}${cleanPath}${search}` },
+        status: 301
       });
     }
 
-    if (!token && route.id.includes('(protected)')) {
-      debug('Route: REDIRECT to login page');
-      return new Response(undefined, {
-        headers: { location: `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}` },
-        status: 303
-      });
-    }
-  }
+    //////////////////////////////////////////////////////////////////////////
+    // 4. Handle candidate requests
+    //////////////////////////////////////////////////////////////////////////
 
-  //////////////////////////////////////////////////////////////////////////
-  // 5. Serve content in the requested locale
-  //////////////////////////////////////////////////////////////////////////
+    if (pathname.startsWith(`/${servedLocale}/candidate`)) {
+      const token = event.cookies.get('token');
 
-  debug(`Route: SERVE with proper locale ${servedLocale}`);
-  return resolve(
-    {
-      ...event,
-      locals: {
-        currentLocale: servedLocale,
-        preferredLocale
+      if (token && pathname.endsWith('candidate/login')) {
+        debug('Route: REDIRECT to home page');
+        return new Response(undefined, {
+          headers: { location: `/${servedLocale}/candidate` },
+          status: 303
+        });
       }
-    },
-    {
-      transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
-    }
-  );
-}) satisfies Handle);
 
-export const handleError = Sentry.handleErrorWithSentry((async ({ error, event }) => {
+      if (!token && route.id.includes('(protected)')) {
+        debug('Route: REDIRECT to login page');
+        return new Response(undefined, {
+          headers: { location: `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}` },
+          status: 303
+        });
+      }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // 5. Serve content in the requested locale
+    //////////////////////////////////////////////////////////////////////////
+
+    debug(`Route: SERVE with proper locale ${servedLocale}`);
+    return resolve(
+      {
+        ...event,
+        locals: {
+          currentLocale: servedLocale,
+          preferredLocale
+        }
+      },
+      {
+        transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
+      }
+    );
+  }) satisfies Handle
+);
+
+const handleErrorDefault = (async ({ error, event }) => {
   const { locals } = event;
   const currentLocale = locals?.currentLocale;
   logDebugError('handleError', error);
@@ -129,9 +133,12 @@ export const handleError = Sentry.handleErrorWithSentry((async ({ error, event }
   return {
     message: '500'
   };
-}) satisfies HandleServerError);
+}) satisfies HandleServerError;
 
-/** Show debug message if `DEBUG` is `true` */
+export const handleError = staticSettings.sentry.enabled
+  ? Sentry.handleErrorWithSentry(handleErrorDefault)
+  : handleErrorDefault;
+
 function debug(message: unknown, error?: unknown) {
   if (DEBUG) logDebugError(message, error);
 }

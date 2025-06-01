@@ -137,4 +137,13 @@ export type StaticSettings = {
      */
     readonly enabled?: boolean;
   };
+  /**
+   * Settings related to Sentry plugin.
+   */
+  readonly sentry: {
+    /**
+     * Whether Sentry is enabled.
+     */
+    readonly enabled?: boolean;
+  };
 };

@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const aws = require('@aws-sdk/client-ses');
+import { staticSettings } from '@openvaa/app-shared';
 
 export default ({ env }) => {
   const isDev = env('NODE_ENV') === 'development';
@@ -85,7 +86,7 @@ export default ({ env }) => {
       resolve: './src/plugins/openvaa-admin-tools'
     },
     sentry: {
-      enabled: true,
+      enabled: staticSettings.sentry.enabled ?? false,
       config: {
         dsn: env('BACKEND_SENTRY_DSN'),
         environment: env('NODE_ENV'),
