@@ -123,7 +123,7 @@ In order to install dependencies for all modules and build all modules (although
 
 ```bash
 yarn install
-yarn workspaces foreach -A build
+yarn workspaces foreach -A --topological run build
 ```
 
 When adding interdependencies between the modules, use yarn’s `workspace:` syntax:

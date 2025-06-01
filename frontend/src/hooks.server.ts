@@ -1,15 +1,29 @@
+import * as Sentry from '@sentry/sveltekit';
+import { staticSettings } from '@openvaa/app-shared';
+import { sequence } from '@sveltejs/kit/hooks';
 import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
+import { constants } from '$lib/utils/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
+if (staticSettings.analytics.sentryErrorReporting) {
+  Sentry.init({
+    dsn: constants.PUBLIC_FRONTEND_SENTRY_DSN,
+    tracesSampleRate: 1
+  });
+}
 // Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
 
 /** Set to `true` to show debug log in console */
 const DEBUG = false;
 
-export const handle: Handle = (async ({ event, resolve }) => {
+const optionalSetryHandle: Handle = staticSettings.analytics.sentryErrorReporting ? Sentry.sentryHandle() : ({ event, resolve }) => {
+  return resolve(event);
+};
+
+export const handle: Handle = sequence(optionalSetryHandle, (async ({ event, resolve }) => {
   const { params, route, url, request, isDataRequest } = event;
   const { pathname, search } = url;
   const requestedLocale = params.lang;
@@ -111,9 +125,9 @@ export const handle: Handle = (async ({ event, resolve }) => {
       transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
     }
   );
-}) satisfies Handle;
+}) satisfies Handle);
 
-export const handleError = (async ({ error, event }) => {
+export const handleError = staticSettings.analytics.sentryErrorReporting ? Sentry.handleErrorWithSentry((async ({ error, event }) => {
   const { locals } = event;
   const currentLocale = locals?.currentLocale;
   logDebugError('handleError', error);
@@ -121,7 +135,7 @@ export const handleError = (async ({ error, event }) => {
   return {
     message: '500'
   };
-}) satisfies HandleServerError;
+}) satisfies HandleServerError) : () => {};
 
 /** Show debug message if `DEBUG` is `true` */
 function debug(message: unknown, error?: unknown) {

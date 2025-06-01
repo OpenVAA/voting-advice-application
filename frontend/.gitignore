@@ -13,3 +13,5 @@ package-lock.json
 
 # Locally stored data files
 /data
+# Sentry Config File
+.env.sentry-build-plugin

@@ -127,6 +127,10 @@ export type StaticSettings = {
      * Whether to collect anonymous usage data about all UI actions, including answers to statements. This will only have an effect if the analytics platform is defined.
      */
     readonly trackEvents: boolean;
+    /**
+     * Whether to report application errors to Sentry.
+     */
+    readonly sentryErrorReporting: boolean;
   };
   /**
    * Settings related to Candidate App pre-registration.
