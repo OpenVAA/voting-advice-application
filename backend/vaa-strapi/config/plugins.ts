@@ -1,3 +1,4 @@
+import { staticSettings } from '@openvaa/app-shared';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const aws = require('@aws-sdk/client-ses');
 
@@ -85,7 +86,7 @@ export default ({ env }) => {
       resolve: './src/plugins/openvaa-admin-tools'
     },
     sentry: {
-      enabled: true,
+      enabled: staticSettings.analytics.sentryErrorReporting,
       config: {
         dsn: env('BACKEND_SENTRY_DSN'),
         environment: env('NODE_ENV'),

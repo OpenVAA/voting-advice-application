@@ -58,7 +58,8 @@ export const staticSettings: StaticSettings = {
     }
   ],
   analytics: {
-    trackEvents: false
+    trackEvents: false,
+    sentryErrorReporting: false
   },
   preRegistration: {
     enabled: false

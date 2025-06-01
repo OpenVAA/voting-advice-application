@@ -1,4 +1,5 @@
 import { sentrySvelteKit } from '@sentry/sveltekit';
+import { staticSettings } from '@openvaa/app-shared';
 import { sveltekit } from '@sveltejs/kit/vite';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
 import type { UserConfig } from 'vite';
@@ -9,7 +10,7 @@ const config: UserConfig = {
   },
 
   plugins: [
-    sentrySvelteKit({
+    staticSettings.analytics.sentryErrorReporting && sentrySvelteKit({
       sourceMapsUploadOptions: {
         org: 'openvaa',
         project: 'openvaa-frontend'
