@@ -13,7 +13,7 @@ config({ path: envPath });
 // Initialize OpenAI provider with API key from environment
 const llmProvider = new OpenAIProvider({
   model: 'gpt-4o-mini',
-  apiKey: process.env.OPENAI_API_KEY || ''
+  apiKey: process.env.LLM_OPENAI_API_KEY || ''
 });
 
 describe('Condenser', () => {
