@@ -10,11 +10,11 @@ export {
 // Input types
 export type { 
   Comment, 
-  CondensationSessionInput as CondensationInput 
+  CondensationSessionInput
 } from './condensationInput';
 
 // Result and metrics types
 export type { 
-  CondensationSessionMetrics as CondensationMetrics,
+  CondensationSessionMetrics,
   CondensationSessionResult 
 } from './condensationResult'; 
