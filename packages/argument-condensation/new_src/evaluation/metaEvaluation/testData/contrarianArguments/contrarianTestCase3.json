@@ -1,0 +1,53 @@
+{
+  "topic": "Should the government increase funding for public transportation?",
+  "systemArguments": [
+    {
+      "id": "metaeval_contrarian3_example1",
+      "text": "Public transportation is expensive and requires ongoing taxpayer subsidies"
+    },
+    {
+      "id": "metaeval_contrarian3_example2",
+      "text": "Many people prefer the convenience and flexibility of driving their own cars"
+    },
+    {
+      "id": "metaeval_contrarian3_example3",
+      "text": "Public transit systems often have safety and cleanliness problems"
+    },
+    {
+      "id": "metaeval_contrarian3_example4",
+      "text": "Government money could be better spent on roads and infrastructure that everyone uses"
+    },
+    {
+      "id": "metaeval_contrarian3_example5",
+      "text": "Public transportation doesn't work well in suburban and rural areas where most people live"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_contrarian3_gold1",
+      "text": "Individual freedom includes the right to choose personal transportation methods"
+    },
+    {
+      "id": "metaeval_contrarian3_gold2",
+      "text": "Market-based transportation solutions are more efficient than government programs"
+    },
+    {
+      "id": "metaeval_contrarian3_gold3",
+      "text": "Taxpayer funds should not subsidize transportation choices that benefit only some citizens"
+    },
+    {
+      "id": "metaeval_contrarian3_gold4",
+      "text": "Public transit systems create ongoing fiscal obligations that strain government budgets"
+    },
+    {
+      "id": "metaeval_contrarian3_gold5",
+      "text": "Private vehicle ownership provides flexibility and convenience that mass transit cannot match"
+    },
+    {
+      "id": "metaeval_contrarian3_gold6",
+      "text": "Transportation infrastructure should serve all citizens, not just urban populations"
+    }
+  ],
+  "humanScore": 6,
+  "humanRationale": "System arguments capture practical concerns about cost, convenience, and effectiveness of public transportation. They demonstrate understanding of taxpayer burden and individual preferences. However, they focus primarily on practical objections rather than deeper principles about individual freedom, market efficiency, and the proper role of government. Missing sophisticated reasoning about transportation choice as a matter of personal liberty and the efficiency of market-based solutions."
+} 

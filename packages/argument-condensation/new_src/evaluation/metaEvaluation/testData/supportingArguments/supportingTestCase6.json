@@ -1,0 +1,89 @@
+{
+  "topic": "The government should provide universal basic income to all citizens",
+  "systemArguments": [
+    {
+      "id": "metaeval_supporting6_example1",
+      "text": "Universal basic income provides economic security and reduces poverty for all citizens"
+    },
+    {
+      "id": "metaeval_supporting6_example2",
+      "text": "UBI enables people to pursue education, entrepreneurship, and creative work without fear of destitution"
+    },
+    {
+      "id": "metaeval_supporting6_example3",
+      "text": "Automation and technological change threaten traditional employment, requiring new social safety nets"
+    },
+    {
+      "id": "metaeval_supporting6_example4",
+      "text": "Universal programs avoid the stigma and bureaucratic complexity of means-tested welfare systems"
+    },
+    {
+      "id": "metaeval_supporting6_example5",
+      "text": "UBI provides economic stimulus by increasing consumer spending power across the population"
+    },
+    {
+      "id": "metaeval_supporting6_example6",
+      "text": "Basic income recognizes the value of unpaid care work, volunteering, and community contributions"
+    },
+    {
+      "id": "metaeval_supporting6_example7",
+      "text": "UBI reduces administrative costs compared to complex welfare bureaucracies with eligibility requirements"
+    },
+    {
+      "id": "metaeval_supporting6_example8",
+      "text": "Economic security enables better health outcomes and reduces stress-related social problems"
+    },
+    {
+      "id": "metaeval_supporting6_example9",
+      "text": "UBI provides a foundation for human dignity by ensuring basic needs are met for all citizens"
+    },
+    {
+      "id": "metaeval_supporting6_example10",
+      "text": "Pilot programs have shown positive results in reducing poverty without significantly reducing work incentives"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_supporting6_gold1",
+      "text": "Economic security is a fundamental human right in a prosperous society"
+    },
+    {
+      "id": "metaeval_supporting6_gold2",
+      "text": "Society has a moral obligation to ensure basic needs are met for all citizens"
+    },
+    {
+      "id": "metaeval_supporting6_gold3",
+      "text": "Human dignity requires freedom from economic desperation and survival anxiety"
+    },
+    {
+      "id": "metaeval_supporting6_gold4",
+      "text": "UBI enables true freedom by providing genuine choice in work and life decisions"
+    },
+    {
+      "id": "metaeval_supporting6_gold5",
+      "text": "Universal basic income reduces poverty and inequality more effectively than targeted programs"
+    },
+    {
+      "id": "metaeval_supporting6_gold6",
+      "text": "Technological advancement should benefit all of society, not just capital owners"
+    },
+    {
+      "id": "metaeval_supporting6_gold7",
+      "text": "UBI recognizes and values unpaid care work and community contributions"
+    },
+    {
+      "id": "metaeval_supporting6_gold8",
+      "text": "Economic security improves health, education, and social outcomes for individuals and families"
+    },
+    {
+      "id": "metaeval_supporting6_gold9",
+      "text": "Universal programs build social solidarity and shared investment in collective welfare"
+    },
+    {
+      "id": "metaeval_supporting6_gold10",
+      "text": "UBI provides economic stimulus and stabilizes consumer demand during economic downturns"
+    }
+  ],
+  "humanScore": 8,
+  "humanRationale": "System arguments demonstrate strong understanding of UBI advocacy with sophisticated economic, social, and philosophical reasoning. They effectively cover poverty reduction, economic security, technological disruption, and administrative efficiency. The arguments show good integration of value-based reasoning (human dignity, care work) with policy analysis (pilot programs, economic effects). Minor gaps in articulating the deeper philosophical foundations about economic rights and social solidarity."
+} 

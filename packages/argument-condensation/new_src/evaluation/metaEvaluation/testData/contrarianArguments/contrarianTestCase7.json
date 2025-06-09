@@ -1,0 +1,89 @@
+{
+  "topic": "Social media platforms should be required to verify user identities",
+  "systemArguments": [
+    {
+      "id": "metaeval_contrarian7_example1",
+      "text": "Identity verification fundamentally violates the principle of anonymous speech that protects democratic discourse"
+    },
+    {
+      "id": "metaeval_contrarian7_example2",
+      "text": "Mandatory verification creates dangerous databases that authoritarian governments could exploit for surveillance and oppression"
+    },
+    {
+      "id": "metaeval_contrarian7_example3",
+      "text": "Anonymous communication protects whistleblowers, dissidents, and vulnerable populations from retaliation"
+    },
+    {
+      "id": "metaeval_contrarian7_example4",
+      "text": "Identity requirements disproportionately burden marginalized communities who face discrimination and harassment"
+    },
+    {
+      "id": "metaeval_contrarian7_example5",
+      "text": "Verification systems create massive privacy risks through data breaches and corporate misuse of personal information"
+    },
+    {
+      "id": "metaeval_contrarian7_example6",
+      "text": "Real-name policies have historically been used to silence minority voices and suppress legitimate political criticism"
+    },
+    {
+      "id": "metaeval_contrarian7_example7",
+      "text": "Technical implementation of identity verification is complex, expensive, and prone to errors that could exclude legitimate users"
+    },
+    {
+      "id": "metaeval_contrarian7_example8",
+      "text": "Verification requirements may drive users to less regulated platforms, fragmenting online discourse"
+    },
+    {
+      "id": "metaeval_contrarian7_example9",
+      "text": "Anonymous speech has deep historical roots in democratic movements and revolutionary thought"
+    },
+    {
+      "id": "metaeval_contrarian7_example10",
+      "text": "Identity verification gives platforms and governments unprecedented power to control who can participate in public discourse"
+    },
+    {
+      "id": "metaeval_contrarian7_example11",
+      "text": "Current content moderation tools can address harmful behavior without requiring identity disclosure"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_contrarian7_gold1",
+      "text": "Anonymous speech is a fundamental democratic right essential for free expression"
+    },
+    {
+      "id": "metaeval_contrarian7_gold2",
+      "text": "Privacy is a basic human right that must be protected from government and corporate intrusion"
+    },
+    {
+      "id": "metaeval_contrarian7_gold3",
+      "text": "Democratic societies require spaces for dissent and criticism without fear of retaliation"
+    },
+    {
+      "id": "metaeval_contrarian7_gold4",
+      "text": "Government power to control speech must be strictly limited to preserve freedom"
+    },
+    {
+      "id": "metaeval_contrarian7_gold5",
+      "text": "Identity verification creates surveillance infrastructure that threatens civil liberties"
+    },
+    {
+      "id": "metaeval_contrarian7_gold6",
+      "text": "Mandatory verification disproportionately silences vulnerable and marginalized voices"
+    },
+    {
+      "id": "metaeval_contrarian7_gold7",
+      "text": "Anonymous communication protects whistleblowers and enables accountability journalism"
+    },
+    {
+      "id": "metaeval_contrarian7_gold8",
+      "text": "Real-name requirements drive users to less regulated platforms and fragment discourse"
+    },
+    {
+      "id": "metaeval_contrarian7_gold9",
+      "text": "Technical verification systems are vulnerable to errors, hacking, and misuse"
+    }
+  ],
+  "humanScore": 10,
+  "humanRationale": "System arguments demonstrate exceptional sophistication in addressing identity verification from multiple angles - constitutional rights, historical precedent, technical implementation, and social impact. They effectively integrate fundamental democratic principles (anonymous speech, privacy rights) with practical policy concerns (surveillance risks, marginalized communities, technical challenges). The arguments show deep understanding of both philosophical foundations and real-world implications, closely matching the golden standard's separation of core democratic values from specific policy outcomes."
+}

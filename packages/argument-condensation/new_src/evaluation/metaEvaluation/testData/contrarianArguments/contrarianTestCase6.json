@@ -1,0 +1,89 @@
+{
+  "topic": "The government should provide universal basic income to all citizens",
+  "systemArguments": [
+    {
+      "id": "metaeval_contrarian6_example1",
+      "text": "Universal basic income undermines the fundamental principle that income should be earned through productive work"
+    },
+    {
+      "id": "metaeval_contrarian6_example2",
+      "text": "UBI programs would require massive tax increases that burden working families and businesses"
+    },
+    {
+      "id": "metaeval_contrarian6_example3",
+      "text": "Guaranteed income reduces incentives to work, develop skills, and contribute to economic productivity"
+    },
+    {
+      "id": "metaeval_contrarian6_example4",
+      "text": "Government resources should target assistance to those truly in need rather than universal payments"
+    },
+    {
+      "id": "metaeval_contrarian6_example5",
+      "text": "UBI could trigger inflation as increased purchasing power drives up prices across the economy"
+    },
+    {
+      "id": "metaeval_contrarian6_example6",
+      "text": "Work provides psychological benefits, social connection, and personal meaning that UBI cannot replace"
+    },
+    {
+      "id": "metaeval_contrarian6_example7",
+      "text": "Universal programs create unsustainable fiscal obligations that threaten long-term economic stability"
+    },
+    {
+      "id": "metaeval_contrarian6_example8",
+      "text": "UBI may reduce support for targeted social programs that address specific needs more effectively"
+    },
+    {
+      "id": "metaeval_contrarian6_example9",
+      "text": "Implementation challenges include determining payment amounts, eligibility criteria, and administrative systems"
+    },
+    {
+      "id": "metaeval_contrarian6_example10",
+      "text": "Economic resources should be invested in job creation and skills training rather than income redistribution"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_contrarian6_gold1",
+      "text": "Work is a fundamental human value that provides dignity, purpose, and social contribution"
+    },
+    {
+      "id": "metaeval_contrarian6_gold2",
+      "text": "Individual responsibility and self-reliance are essential principles of a free society"
+    },
+    {
+      "id": "metaeval_contrarian6_gold3",
+      "text": "Government should not redistribute wealth from productive citizens to support dependency"
+    },
+    {
+      "id": "metaeval_contrarian6_gold4",
+      "text": "Merit-based economic systems reward effort, innovation, and contribution to society"
+    },
+    {
+      "id": "metaeval_contrarian6_gold5",
+      "text": "Universal basic income reduces work incentives and economic productivity"
+    },
+    {
+      "id": "metaeval_contrarian6_gold6",
+      "text": "UBI requires unsustainable government spending and taxation levels"
+    },
+    {
+      "id": "metaeval_contrarian6_gold7",
+      "text": "Targeted welfare programs more efficiently address specific needs than universal payments"
+    },
+    {
+      "id": "metaeval_contrarian6_gold8",
+      "text": "Guaranteed income may trigger inflation and reduce purchasing power"
+    },
+    {
+      "id": "metaeval_contrarian6_gold9",
+      "text": "Investment in job creation and education provides better long-term economic outcomes"
+    },
+    {
+      "id": "metaeval_contrarian6_gold10",
+      "text": "UBI implementation faces significant administrative and political challenges"
+    }
+  ],
+  "humanScore": 8,
+  "humanRationale": "System arguments demonstrate strong understanding of UBI opposition with sophisticated economic, philosophical, and practical concerns. They effectively cover work incentives, fiscal sustainability, inflation risks, and implementation challenges. The arguments show good alignment with both value-based reasoning (work ethic, individual responsibility) and policy analysis (taxation, targeting, economic effects). Minor gaps in articulating the deeper philosophical foundations about human dignity and merit-based systems."
+}

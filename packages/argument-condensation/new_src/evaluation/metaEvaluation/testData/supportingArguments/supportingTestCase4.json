@@ -1,0 +1,69 @@
+{
+  "topic": "The government should ban single-use plastic bags",
+  "systemArguments": [
+    {
+      "id": "metaeval_supporting4_example1",
+      "text": "Plastic bags are bad for the environment"
+    },
+    {
+      "id": "metaeval_supporting4_example2",
+      "text": "Animals get hurt by plastic bags"
+    },
+    {
+      "id": "metaeval_supporting4_example3",
+      "text": "Reusable bags are better"
+    },
+    {
+      "id": "metaeval_supporting4_example4",
+      "text": "Plastic bags create litter everywhere"
+    },
+    {
+      "id": "metaeval_supporting4_example5",
+      "text": "Other countries have banned them successfully"
+    },
+    {
+      "id": "metaeval_supporting4_example6",
+      "text": "People will get used to bringing their own bags"
+    },
+    {
+      "id": "metaeval_supporting4_example7",
+      "text": "It's good for future generations"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_supporting4_gold1",
+      "text": "Society has a moral obligation to protect the environment for future generations"
+    },
+    {
+      "id": "metaeval_supporting4_gold2",
+      "text": "Government has a responsibility to prevent environmental harm when markets fail"
+    },
+    {
+      "id": "metaeval_supporting4_gold3",
+      "text": "Collective action is necessary to address environmental problems that individuals cannot solve alone"
+    },
+    {
+      "id": "metaeval_supporting4_gold4",
+      "text": "Sustainable practices should be prioritized over short-term convenience"
+    },
+    {
+      "id": "metaeval_supporting4_gold5",
+      "text": "Plastic bag bans reduce marine pollution and protect wildlife ecosystems"
+    },
+    {
+      "id": "metaeval_supporting4_gold6",
+      "text": "Single-use plastic bans decrease waste management costs for municipalities"
+    },
+    {
+      "id": "metaeval_supporting4_gold7",
+      "text": "Reusable bag adoption changes consumer behavior toward sustainability"
+    },
+    {
+      "id": "metaeval_supporting4_gold8",
+      "text": "Plastic bag bans have proven effective in reducing plastic waste in other jurisdictions"
+    }
+  ],
+  "humanScore": 4,
+  "humanRationale": "System arguments are overly simplistic and lack sophisticated reasoning. They state obvious environmental concerns but fail to articulate deeper principles about collective responsibility, government's role in market failures, or comprehensive policy analysis. Arguments read more like slogans than structured policy positions. Missing key philosophical foundations about environmental stewardship and the balance between regulation and individual freedom."
+} 

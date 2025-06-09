@@ -1,0 +1,53 @@
+{
+  "topic": "Should the government increase funding for public transportation?",
+  "systemArguments": [
+    {
+      "id": "metaeval_supporting3_example1",
+      "text": "Public transportation reduces traffic congestion in urban areas"
+    },
+    {
+      "id": "metaeval_supporting3_example2", 
+      "text": "Buses and trains are more environmentally friendly than individual cars"
+    },
+    {
+      "id": "metaeval_supporting3_example3",
+      "text": "Public transit helps low-income families save money on transportation costs"
+    },
+    {
+      "id": "metaeval_supporting3_example4",
+      "text": "Building transit systems creates construction jobs and ongoing employment"
+    },
+    {
+      "id": "metaeval_supporting3_example5",
+      "text": "Better public transportation makes cities more livable and attractive"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_supporting3_gold1",
+      "text": "Public transportation reduces traffic congestion and improves air quality"
+    },
+    {
+      "id": "metaeval_supporting3_gold2",  
+      "text": "Mass transit provides affordable transportation options for low-income residents"
+    },
+    {
+      "id": "metaeval_supporting3_gold3",
+      "text": "Investment in public transportation creates jobs and stimulates economic growth"
+    },
+    {
+      "id": "metaeval_supporting3_gold4",
+      "text": "Public transit reduces carbon emissions and environmental impact"
+    },
+    {
+      "id": "metaeval_supporting3_gold5",
+      "text": "Efficient transit systems improve urban mobility and quality of life"
+    },
+    {
+      "id": "metaeval_supporting3_gold6",
+      "text": "Public transportation reduces dependence on private vehicle ownership"
+    }
+  ],
+  "humanScore": 6,
+  "humanRationale": "System captured 4 out of 6 key arguments. Got traffic congestion (partial), environmental benefits (good match), affordability (good match), and job creation (good match). Missing arguments about urban quality of life and reducing car dependence. Arguments are well-formed but some lack nuance compared to golden standard."
+}

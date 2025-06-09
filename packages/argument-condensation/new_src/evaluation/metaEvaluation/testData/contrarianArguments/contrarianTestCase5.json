@@ -1,0 +1,73 @@
+{
+  "topic": "Universities should require students to take courses in climate science",
+  "systemArguments": [
+    {
+      "id": "metaeval_contrarian5_example1",
+      "text": "Students should have academic freedom to choose their own courses based on their interests and career goals"
+    },
+    {
+      "id": "metaeval_contrarian5_example2",
+      "text": "Mandatory climate science courses add unnecessary graduation requirements and extend time to degree"
+    },
+    {
+      "id": "metaeval_contrarian5_example3",
+      "text": "Universities should focus on core disciplinary knowledge rather than ideological education"
+    },
+    {
+      "id": "metaeval_contrarian5_example4",
+      "text": "Climate science requirements impose specific political viewpoints on students from diverse backgrounds"
+    },
+    {
+      "id": "metaeval_contrarian5_example5",
+      "text": "Additional course requirements increase tuition costs and student debt burdens"
+    },
+    {
+      "id": "metaeval_contrarian5_example6",
+      "text": "Many degree programs already lack sufficient time for specialized professional training"
+    },
+    {
+      "id": "metaeval_contrarian5_example7",
+      "text": "Faculty resources should be allocated to established academic disciplines rather than trendy topics"
+    },
+    {
+      "id": "metaeval_contrarian5_example8",
+      "text": "Students can learn about environmental issues through elective courses if they choose"
+    },
+    {
+      "id": "metaeval_contrarian5_example9",
+      "text": "Mandatory courses often result in superficial learning rather than genuine understanding"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_contrarian5_gold1",
+      "text": "Academic freedom requires protecting students from ideological indoctrination"
+    },
+    {
+      "id": "metaeval_contrarian5_gold2",
+      "text": "Educational institutions should respect intellectual diversity and viewpoint pluralism"
+    },
+    {
+      "id": "metaeval_contrarian5_gold3",
+      "text": "Students have the right to pursue their chosen field without unrelated requirements"
+    },
+    {
+      "id": "metaeval_contrarian5_gold4",
+      "text": "Mandatory climate courses increase educational costs and graduation time"
+    },
+    {
+      "id": "metaeval_contrarian5_gold5",
+      "text": "Universities should prioritize core academic skills over political advocacy"
+    },
+    {
+      "id": "metaeval_contrarian5_gold6",
+      "text": "Forced curriculum requirements reduce educational quality and student engagement"
+    },
+    {
+      "id": "metaeval_contrarian5_gold7",
+      "text": "Academic resources should focus on established disciplines rather than activist education"
+    }
+  ],
+  "humanScore": 6,
+  "humanRationale": "System arguments show moderate sophistication in addressing academic freedom, cost concerns, and curriculum priorities. They capture several key opposition themes but sometimes conflate different issues (political vs. practical concerns). The arguments demonstrate understanding of educational policy debates but lack the philosophical depth about academic freedom and intellectual diversity found in the golden standard."
+}

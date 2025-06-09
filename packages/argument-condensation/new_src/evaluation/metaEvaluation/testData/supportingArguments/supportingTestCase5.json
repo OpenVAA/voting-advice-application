@@ -1,0 +1,73 @@
+{
+  "topic": "Universities should require students to take courses in climate science",
+  "systemArguments": [
+    {
+      "id": "metaeval_supporting5_example1",
+      "text": "Climate change is the most pressing issue of our time and all educated citizens need to understand it"
+    },
+    {
+      "id": "metaeval_supporting5_example2",
+      "text": "Universities have a responsibility to prepare students for the challenges they will face in their careers"
+    },
+    {
+      "id": "metaeval_supporting5_example3",
+      "text": "Climate science literacy is essential for informed democratic participation and voting"
+    },
+    {
+      "id": "metaeval_supporting5_example4",
+      "text": "Many students would not choose to take climate courses without requirements, missing critical knowledge"
+    },
+    {
+      "id": "metaeval_supporting5_example5",
+      "text": "Climate impacts affect all fields of study and professional practice"
+    },
+    {
+      "id": "metaeval_supporting5_example6",
+      "text": "Universities already require general education courses in other important areas like mathematics and writing"
+    },
+    {
+      "id": "metaeval_supporting5_example7",
+      "text": "Climate education promotes critical thinking and scientific literacy skills"
+    },
+    {
+      "id": "metaeval_supporting5_example8",
+      "text": "Students need to understand climate science to make informed personal and professional decisions"
+    },
+    {
+      "id": "metaeval_supporting5_example9",
+      "text": "Climate requirements would help combat misinformation and science denial"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_supporting5_gold1",
+      "text": "Universities have a civic responsibility to educate citizens for democratic participation"
+    },
+    {
+      "id": "metaeval_supporting5_gold2",
+      "text": "Climate literacy is essential knowledge for functioning in modern society"
+    },
+    {
+      "id": "metaeval_supporting5_gold3",
+      "text": "Educational institutions should prepare students for the challenges they will face"
+    },
+    {
+      "id": "metaeval_supporting5_gold4",
+      "text": "Scientific literacy requirements promote evidence-based thinking and decision-making"
+    },
+    {
+      "id": "metaeval_supporting5_gold5",
+      "text": "Climate science affects all disciplines and professional fields"
+    },
+    {
+      "id": "metaeval_supporting5_gold6",
+      "text": "General education requirements ensure well-rounded knowledge for all graduates"
+    },
+    {
+      "id": "metaeval_supporting5_gold7",
+      "text": "Climate education combats misinformation and promotes scientific understanding"
+    }
+  ],
+  "humanScore": 6,
+  "humanRationale": "System arguments show moderate sophistication in addressing educational responsibility, civic preparation, and scientific literacy. They capture several key supporting themes and demonstrate understanding of general education principles. However, they sometimes conflate different justifications (practical vs. civic) and lack deeper philosophical reasoning about the university's role in society and the nature of essential knowledge for citizenship."
+} 

@@ -1,0 +1,69 @@
+{
+  "topic": "Should universities be free for all students?",
+  "systemArguments": [
+    {
+      "id": "metaeval_contrarian2_example1",
+      "text": "Free university education would require massive tax increases that burden working families"
+    },
+    {
+      "id": "metaeval_contrarian2_example2",
+      "text": "Students should have some financial investment in their education to value it properly"
+    },
+    {
+      "id": "metaeval_contrarian2_example3",
+      "text": "Government funding could lead to political control over university curricula and research"
+    },
+    {
+      "id": "metaeval_contrarian2_example4",
+      "text": "Free tuition might lead to oversupply of graduates and devalue degrees"
+    },
+    {
+      "id": "metaeval_contrarian2_example5",
+      "text": "Universities need tuition revenue to maintain quality facilities and attract top faculty"
+    },
+    {
+      "id": "metaeval_contrarian2_example6",
+      "text": "Means-tested financial aid can help those who need it without making education free for everyone"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_contrarian2_gold1",
+      "text": "Individual responsibility requires personal investment in one's own education"
+    },
+    {
+      "id": "metaeval_contrarian2_gold2",
+      "text": "Market mechanisms ensure educational quality and institutional accountability"
+    },
+    {
+      "id": "metaeval_contrarian2_gold3",
+      "text": "Academic freedom requires independence from government funding and control"
+    },
+    {
+      "id": "metaeval_contrarian2_gold4",
+      "text": "Taxpayers should not subsidize education for those who can afford to pay"
+    },
+    {
+      "id": "metaeval_contrarian2_gold5",
+      "text": "Free education may reduce student motivation and academic achievement"
+    },
+    {
+      "id": "metaeval_contrarian2_gold6",
+      "text": "University funding should reflect the private benefits graduates receive"
+    },
+    {
+      "id": "metaeval_contrarian2_gold7",
+      "text": "Targeted aid programs more efficiently help disadvantaged students than universal free tuition"
+    },
+    {
+      "id": "metaeval_contrarian2_gold8",
+      "text": "Competition between institutions drives innovation and educational excellence"
+    },
+    {
+      "id": "metaeval_contrarian2_gold9",
+      "text": "Free higher education creates unsustainable fiscal burdens on government budgets"
+    }
+  ],
+  "humanScore": 7,
+  "humanRationale": "System arguments are well-formed and capture key policy concerns about taxation, government control, and educational quality. They demonstrate understanding of both practical and philosophical objections to free higher education. However, they focus more on immediate policy concerns rather than deeper principles about individual responsibility, market mechanisms, and the proper role of government in education. Missing some sophisticated reasoning about academic freedom and institutional independence."
+} 

@@ -1,0 +1,89 @@
+{
+  "topic": "Social media platforms should be required to verify user identities",
+  "systemArguments": [
+    {
+      "id": "metaeval_supporting7_example1",
+      "text": "Identity verification is essential for combating harassment, cyberbullying, and online abuse that harms vulnerable users"
+    },
+    {
+      "id": "metaeval_supporting7_example2",
+      "text": "Anonymous accounts enable the spread of disinformation, conspiracy theories, and foreign interference in democratic processes"
+    },
+    {
+      "id": "metaeval_supporting7_example3",
+      "text": "Verified identities create accountability that improves the quality of online discourse and reduces toxic behavior"
+    },
+    {
+      "id": "metaeval_supporting7_example4",
+      "text": "Identity requirements protect children from predators and age-inappropriate content by enabling proper age verification"
+    },
+    {
+      "id": "metaeval_supporting7_example5",
+      "text": "Verification systems help prevent fraud, scams, and impersonation that victimize innocent users"
+    },
+    {
+      "id": "metaeval_supporting7_example6",
+      "text": "Democratic discourse requires good-faith participation from real citizens, not bots or foreign actors"
+    },
+    {
+      "id": "metaeval_supporting7_example7",
+      "text": "Identity verification enables better content moderation and enforcement of community standards"
+    },
+    {
+      "id": "metaeval_supporting7_example8",
+      "text": "Verified platforms create safer spaces for marginalized communities who face coordinated harassment campaigns"
+    },
+    {
+      "id": "metaeval_supporting7_example9",
+      "text": "Real-name policies have successfully reduced abuse and improved discourse quality on professional platforms"
+    },
+    {
+      "id": "metaeval_supporting7_example10",
+      "text": "Identity verification protects the integrity of online elections and political campaigns from manipulation"
+    },
+    {
+      "id": "metaeval_supporting7_example11",
+      "text": "Verification requirements balance free speech with the need to prevent harm and maintain civil discourse"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "metaeval_supporting7_gold1",
+      "text": "Society has a responsibility to protect citizens from online harm and abuse"
+    },
+    {
+      "id": "metaeval_supporting7_gold2",
+      "text": "Democratic institutions require protection from foreign interference and manipulation"
+    },
+    {
+      "id": "metaeval_supporting7_gold3",
+      "text": "Public safety justifies reasonable restrictions on anonymous communication"
+    },
+    {
+      "id": "metaeval_supporting7_gold4",
+      "text": "Accountability promotes responsible speech and civil discourse in public forums"
+    },
+    {
+      "id": "metaeval_supporting7_gold5",
+      "text": "Identity verification protects vulnerable populations from targeted harassment"
+    },
+    {
+      "id": "metaeval_supporting7_gold6",
+      "text": "Authentic democratic participation requires verification of citizen identity"
+    },
+    {
+      "id": "metaeval_supporting7_gold7",
+      "text": "Platform integrity depends on preventing fraud, impersonation, and manipulation"
+    },
+    {
+      "id": "metaeval_supporting7_gold8",
+      "text": "Child safety requires robust age verification and identity confirmation systems"
+    },
+    {
+      "id": "metaeval_supporting7_gold9",
+      "text": "Information integrity is essential for informed democratic decision-making"
+    }
+  ],
+  "humanScore": 10,
+  "humanRationale": "System arguments demonstrate exceptional sophistication in addressing identity verification from multiple complementary angles - public safety, democratic integrity, child protection, and platform accountability. They effectively integrate fundamental civic principles (democratic participation, public safety) with practical policy concerns (harassment prevention, content moderation, election integrity). The arguments show deep understanding of both philosophical foundations and real-world implementation, closely matching the golden standard's separation of core democratic values from specific policy mechanisms."
+} 
