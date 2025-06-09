@@ -20,6 +20,7 @@
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
     "tsc-esm-fix": "^3.1.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.3.3",
     "vitest": "^2.1.8"
   },
