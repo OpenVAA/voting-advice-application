@@ -9,7 +9,6 @@
 export interface MetaEvaluationResult {
   methodName: string;
   methodDescription: string;
-  correlationWithHuman: number;
   testResults: Array<{
     topic: string; // Corresponds exactly to the topic field of the test case
     humanScore: number;
@@ -17,4 +16,14 @@ export interface MetaEvaluationResult {
     difference: number;
     analysisOfDifference: string;
   }>;
+  metrics: {
+    differenceDistribution: {
+      [key: number]: number; // Key = difference, Value = count
+    };
+    averageDifference: number;
+    biggestDifference: number;
+    averageHumanScore: number;
+    averageEvaluatorScore: number;
+    correlationWithHuman: number;
+  };
 }
