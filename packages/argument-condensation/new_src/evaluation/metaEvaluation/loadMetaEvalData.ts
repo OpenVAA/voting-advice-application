@@ -8,9 +8,9 @@ import * as path from 'path';
  * @param category - Category name (e.g., 'contrarianArguments', 'supportingArguments')
  * @returns Promise<MetaEvaluationDataset> - The loaded dataset with all test cases from that category
  */
-export async function loadMetaEvaluationDataset(
+export async function loadMetaEvaluationDataFromDir(
   category: string
-): Promise<MetaEvaluationDataset> {
+): Promise<MetaEvaluationCase[]> {
   const categoryPath = path.join(__dirname, 'testData', category);
   const files = await fs.readdir(categoryPath);
   const jsonFiles = files.filter(file => file.endsWith('.json'));
@@ -24,27 +24,27 @@ export async function loadMetaEvaluationDataset(
     testCases.push(testCase);
   }
   
-  return {
-    description: `Meta-evaluation dataset for ${category}`,
-    testCases
-  };
+  return testCases;
 }
 
 /**
- * Loads all available meta-evaluation datasets.
+ * Loads the available meta-evaluation dataset by loading all data from multiple directories.
  * 
- * @returns Promise<MetaEvaluationDataset[]> - Array of all available datasets
+ * @returns Promise<MetaEvaluationDataset[]> - Array of all available meta-evaluation test cases
  */
-export async function loadAllMetaEvaluationDatasets(): Promise<MetaEvaluationDataset[]> {
+export async function loadMetaEvaluationDataset(): Promise<MetaEvaluationDataset[]> {
   const testDataPath = path.join(__dirname, 'testData');
   const categories = await fs.readdir(testDataPath);
   
-  const datasets: MetaEvaluationDataset[] = [];
+  const testCasesByCategory: MetaEvaluationDataset[] = [];
   
   for (const category of categories) {
-    const dataset = await loadMetaEvaluationDataset(category);
-    datasets.push(dataset);
+    const data = await loadMetaEvaluationDataFromDir(category);
+    testCasesByCategory.push({
+      description: `Meta-evaluation data for ${category}`,
+      testCases: data
+    });
   }
   
-  return datasets;
+  return testCasesByCategory;
 }
