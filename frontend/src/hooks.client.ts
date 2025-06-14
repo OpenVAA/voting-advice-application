@@ -20,9 +20,9 @@ if (staticSettings.sentry.enabled) {
 }
 
 // The default behaviour is to log the error:
-function handleErrorDefault({ error }: Parameters<HandleClientError>[0]) {
+const handleErrorDefault = (async ({ error }) => {
   console.error(error);
-}
+}) satisfies HandleClientError;
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`
 export const handleError = staticSettings.sentry.enabled
