@@ -1,4 +1,4 @@
-import { CondensationType } from './condensationType';
+import { CondensationType as CondensationOutputType } from './condensationType';
 
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
@@ -39,7 +39,7 @@ export interface CondensationSessionConfig {
   language: string;
   
   /** Type of condensation to perform (supporting, opposing, etc.) */
-  condensationType: CondensationType;
+  condensationType: CondensationOutputType;
 }
 
 /**
