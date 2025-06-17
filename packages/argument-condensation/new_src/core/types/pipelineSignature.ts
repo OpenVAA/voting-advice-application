@@ -1,22 +1,26 @@
 /**
- * Represents the signature of a pipeline with the IDs of the prompts used in each phase.
- * 
- * @param initialCondensationPromptId - The ID of the initial condensation prompt
- * @param mainCondensationPromptId - The ID of the main condensation prompt
- * @param argumentImprovementPromptId - The ID of the argument improvement prompt
+ * Represents a flexible pipeline signature as an ordered list of phase/prompt pairs.
+ * Allows for partial or full pipelines.
  */
-export interface PipelineSignature {
-  initialCondensationPromptId: string;
-  mainCondensationPromptId: string;
-  argumentImprovementPromptId: string;
+import type { CondensationPhase } from './condensationPhase';
+
+/**
+ * A single step in the pipeline: which phase, and which prompt was used.
+ */
+export interface PipelineStep {
+  phase: CondensationPhase;
+  promptId: string;
 }
 
 /**
- * Converts the pipeline signature to a string.
- * 
- * @param sig - The pipeline signature
- * @returns The string representation of the pipeline signature
+ * The signature of a pipeline: an ordered list of steps (can be partial or full).
+ */
+export type PipelineSignature = PipelineStep[];
+
+/**
+ * Converts the pipeline signature to a string (e.g. "initialCondensation:A1-mainCondensation:B2").
+ * Useful for filenames or analytics keys.
  */
 export function pipelineSignatureToString(sig: PipelineSignature): string {
-  return [sig.initialCondensationPromptId, sig.mainCondensationPromptId, sig.argumentImprovementPromptId].join('-');
+  return sig.map(step => `${step.phase}:${step.promptId}`).join('-');
 }
