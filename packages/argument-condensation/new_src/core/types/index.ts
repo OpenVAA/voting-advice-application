@@ -4,12 +4,12 @@ export type { Argument } from './argument';
 // Condensation configuration types
 export { 
   CONDENSATION_TYPE, 
-  type CondensationType 
+  type CondensationOutputType 
 } from './condensationType';
 
 // Input types
 export type { 
-  Comment, 
+  VAAComment, 
   CondensationSessionInput
 } from './condensationInput';
 

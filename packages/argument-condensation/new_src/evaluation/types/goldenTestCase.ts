@@ -1,4 +1,4 @@
-import { Argument, CondensationType } from '../../core/types';
+import { Argument, CondensationOutputType, VAAComment } from '../../core/types';
 
 /**
  * A single test case for evaluating the condensation system.
@@ -10,7 +10,7 @@ import { Argument, CondensationType } from '../../core/types';
  */
 export interface GoldenTestCase {
   topic: string;
-  comments: Comment[];
+  comments: VAAComment[];
   expectedArguments: Argument[];
-  condensationType: CondensationType;
+  condensationType: CondensationOutputType;
 }

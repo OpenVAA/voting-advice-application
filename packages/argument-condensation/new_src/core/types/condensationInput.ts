@@ -1,4 +1,4 @@
-import { CondensationType as CondensationOutputType } from './condensationType';
+import { CondensationOutputType } from './condensationType';
 
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
@@ -7,7 +7,7 @@ import { CondensationType as CondensationOutputType } from './condensationType';
  * @param candidateAnswer - Can be Likert number, categorical number, or categorical string
  * @param text - The actual comment
  */
-export interface Comment {
+export interface VAAComment {
   /** Unique identifier for this comment */
   id: string;
 
@@ -65,7 +65,7 @@ export interface CondensationSessionInput {
   sessionId: string;
 
   /** Array of comments to process */
-  comments: Comment[];
+  comments: VAAComment[];
   
   /** The topic/question these comments relate to */
   topic: string;
