@@ -1,0 +1,14 @@
+[
+  {
+    "id": "c1",
+    "candidateID": "candA",
+    "candidateAnswer": 5,
+    "text": "Raising the minimum wage will help reduce poverty."
+  },
+  {
+    "id": "c2",
+    "candidateID": "candB",
+    "candidateAnswer": 1,
+    "text": "It will hurt small businesses and lead to job losses."
+  }
+]
