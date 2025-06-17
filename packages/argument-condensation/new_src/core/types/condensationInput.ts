@@ -1,4 +1,5 @@
 import { CondensationOutputType } from './condensationType';
+import { CondensationPrompt } from './prompt';
 
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
@@ -27,19 +28,18 @@ export interface VAAComment {
  * @param nOutputArgs - Maximum number of arguments to extract
  * @param language - Language code (e.g., 'en', 'fi')
  * @param condensationType - Type of condensation to perform (supporting, opposing, etc.)
+ * @param initialCondensationPrompt - The prompt for the initial condensation
+ * @param mainCondensationPrompt - The prompt for the main condensation
+ * @param argumentImprovementPrompt - The prompt for the argument improvement
  */
 export interface CondensationSessionConfig {
-  /** Number of comments to process per batch */
   batchSize: number;
-  
-  /** Maximum number of arguments to extract */
   nOutputArgs: number;
-  
-  /** Language code (e.g., 'en', 'fi') */
   language: string;
-  
-  /** Type of condensation to perform (supporting, opposing, etc.) */
   condensationType: CondensationOutputType;
+  initialCondensationPrompt: CondensationPrompt;
+  mainCondensationPrompt: CondensationPrompt;
+  argumentImprovementPrompt: CondensationPrompt;
 }
 
 /**
