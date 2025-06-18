@@ -21,7 +21,7 @@ export interface CondensationRunMetrics {
 };
 
 /**
- * Complete result of a condensation session.
+ * Complete result of a condensation run.
  * Contains arguments, metadata, and evaluation metrics.
  * 
  * @property runId - Unique identifier for this run
@@ -31,7 +31,7 @@ export interface CondensationRunMetrics {
  * @property success - Whether the run was successful
  * @property metadata - Additional metadata
  */
-export interface CondensationSessionResult {
+export interface CondensationRunResult {
   runId: string;
   input: CondensationRunInput;
   arguments: Argument[];
