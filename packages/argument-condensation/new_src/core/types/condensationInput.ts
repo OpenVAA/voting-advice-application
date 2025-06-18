@@ -32,7 +32,7 @@ export interface VAAComment {
  * @param mainCondensationPrompt - The prompt for the main condensation
  * @param argumentImprovementPrompt - The prompt for the argument improvement
  */
-export interface CondensationSessionConfig {
+export interface CondensationRunConfig {
   batchSize: number;
   nOutputArgs: number;
   language: string;
@@ -49,27 +49,26 @@ export interface CondensationSessionConfig {
  * @param language - Language code (e.g., 'en', 'fi')
  * @param condensationType - Type of condensation to perform (supporting, opposing, etc.)
  */
-export interface MapReduceConfig extends CondensationSessionConfig {
+export interface MapReduceConfig extends CondensationRunConfig {
   // If changes to the base config are needed, add them here.
 }
 
 /**
  * Input parameters for the condensation process.
- * @param sessionId - Unique identifier for this session
+ * @param runId - Unique identifier for this run
+ * @param electionId - Unique identifier for the election
+ * @param question - The topic/question these comments relate to
  * @param comments - Array of comments to process
- * @param topic - The topic/question these comments relate to
  * @param config - Strategy-specific configuration
  */
-export interface CondensationSessionInput {
-  /** Unique identifier for this session */
-  sessionId: string;
-
-  /** Array of comments to process */
+export interface CondensationRunInput {
+  runId: string;
+  electionId: string;
+  question: {
+    id: string;
+    topic: string;
+    answerType: CondensationOutputType;
+  };
   comments: VAAComment[];
-  
-  /** The topic/question these comments relate to */
-  topic: string;
-  
-  /** Strategy-specific configuration */
-  config: CondensationSessionConfig;
+  config: CondensationRunConfig;
 } 
