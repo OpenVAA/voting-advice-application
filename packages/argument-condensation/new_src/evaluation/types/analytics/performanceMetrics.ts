@@ -3,6 +3,7 @@ import { PipelineSignature } from '../../../core/types/pipelineSignature';
  * Performance metrics for a question.
  * 
  * @property questionId - The ID of the VAA question
+ * @property totalRuns - The total number of runs for this question
  * @property historyOfRuns - The history of condensation runs for this question
  * @property historicalAverage - The average score of all runs
  * @property bestScore - The best score of the condensation runs
@@ -11,6 +12,7 @@ import { PipelineSignature } from '../../../core/types/pipelineSignature';
  */
 export interface QuestionPerformanceMetrics {
   questionId: string;
+  totalRuns: number;
   historyOfRuns: {
     runId: string;
     pipelineSignature: PipelineSignature;
@@ -32,6 +34,7 @@ export interface QuestionPerformanceMetrics {
  * Represents a coordinated run over the whole golden set to evaluate the performance of a specific set of prompts.
  *
  * @property batchRunId - The ID of the batched run
+ * @property nTestCases - The number of golden test cases included in this batch
  * @property pipelineSignature - The pipeline signature: {phase, promptId} pairs
  * @property questionIds - The set of questions included in this batch
  * @property runIdsByQuestion - A map of question IDs to run IDs
@@ -41,6 +44,7 @@ export interface QuestionPerformanceMetrics {
  */
 export interface GoldenDatasetBatchRun {
   batchRunId: string;
+  nTestCases: number;
   pipelineSignature: PipelineSignature;
   questionIds: string[];
   runIdsByQuestion: { [questionId: string]: string };
@@ -54,6 +58,7 @@ export interface GoldenDatasetBatchRun {
  * Global performance metrics used to track the best performing pipeline signature across the whole golden dataset. 
  * 
  * @property batchRunIds - The IDs of all batch runs (each covers all golden test cases with the same prompts)
+ * @property totalBatchRuns - The total number of batch runs
  * @property historicalAverageScore - The average score of all batch runs
  * @property bestScore - The best average score across all batch runs
  * @property bestBatchRun - The batch run with the best average score
@@ -61,6 +66,7 @@ export interface GoldenDatasetBatchRun {
  */
 export interface GlobalPerformanceMetrics {
   batchRunIds: string[];
+  totalBatchRuns: number;
   historicalAverageScore: number;
   bestScore: number;
   bestBatchRun: GoldenDatasetBatchRun;
