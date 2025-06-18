@@ -1,28 +1,21 @@
 import { Argument } from './argument';
-import { CondensationSessionInput } from './condensationInput';
+import { CondensationRunInput } from './condensationInput';
 
 /**
  * Performance metrics for evaluating condensation quality and efficiency.
+ * 
+ * @property duration - Time taken for the condensation process (seconds)
+ * @property nLlmCalls - Number of LLM API calls made
+ * @property cost - Cost of the condensation process (EUR)
+ * @property tokensUsed - Number of tokens used in the condensation process
  */
-export interface CondensationSessionMetrics {
-  /** Total processing time in seconds */
-  duration: number;
-  
-  /** Number of LLM API calls made */
+export interface CondensationRunMetrics {
+  duration: number; // seconds
   nLlmCalls: number;
-
-  /** Cost in EUR */
-  cost: number;
-
-  /** Tokens used */
+  cost: number; // EUR
   tokensUsed: {
-    /** Input tokens used */
     inputs: number;
-
-    /** Output tokens used */
     outputs: number;
-  
-    /** Total tokens used (input + output) */
     total: number;
   }
 };
@@ -30,35 +23,24 @@ export interface CondensationSessionMetrics {
 /**
  * Complete result of a condensation session.
  * Contains arguments, metadata, and evaluation metrics.
+ * 
+ * @property runId - Unique identifier for this run
+ * @property input - Input parameters used for this run
+ * @property arguments - Extracted arguments
+ * @property metrics - Performance metrics
+ * @property success - Whether the run was successful
+ * @property metadata - Additional metadata
  */
 export interface CondensationSessionResult {
-  /** Unique identifier for this session */
-  sessionId: string;
-  
-  /** Input parameters used for this session */
-  input: CondensationSessionInput;
-  
-  /** Extracted arguments */
+  runId: string;
+  input: CondensationRunInput;
   arguments: Argument[];
-  
-  /** Performance and quality metrics */
-  metrics: CondensationSessionMetrics;
-  
-  /** Success status */
+  metrics: CondensationRunMetrics;
   success: boolean;
-
-  /** Additional metadata for evaluation and debugging */
   metadata: {
-    /** LLM model used */
     llmModel: string;
-    
-    /** Language configuration used */
     language: string;
-
-    /** Timestamp when processing started */
     startTime: Date;
-    
-    /** Timestamp when processing completed */
     endTime: Date;
   };
 } 
