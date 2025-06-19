@@ -25,6 +25,8 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@openvaa/llm": "workspace:^"
+    "@openvaa/llm": "workspace:^",
+    "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.1.0"
   }
 }
