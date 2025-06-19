@@ -67,7 +67,7 @@ export interface CondensationRunInput {
   question: {
     id: string;
     topic: string;
-    answerType: CondensationOutputType;
+    answerType: string; // TODO: make this more robust
   };
   comments: VAAComment[];
   config: CondensationRunConfig;

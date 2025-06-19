@@ -12,7 +12,7 @@ export class CacheManager {
   private deprecatedPrompts: Set<string> = new Set();
 
   constructor(electionId: string = 'election1') {
-    this.baseDir = path.join(__dirname, 'savedResults', electionId);
+    this.baseDir = path.join(__dirname, 'savedResults', 'singleRuns', electionId);
   }
 
   /**
