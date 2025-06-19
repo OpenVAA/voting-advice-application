@@ -3,6 +3,7 @@ import { Condenser } from './core/condenser';
 import { GoldenTestCase } from './evaluation/types/goldenTestCase';
 import { BatchCondensationConfig } from './evaluation/types/performanceEvalConfig';
 import { PerformanceTracker } from './evaluation/performanceTracker';
+import { PerformanceAnalytics } from './cli/performanceAnalytics';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CONDENSATION_TYPE } from './core/types/condensationType';
@@ -125,6 +126,16 @@ async function main() {
       averageScore: 7,
     };
     await tracker.saveBatchRunAndUpdateGlobal(batchRun);
+
+    // 6. Run performance analytics and display results
+    const analytics = new PerformanceAnalytics();
+    const testCaseScores = Object.entries(batchRun.scoresByQuestion).map(([testCaseId, score]) => ({
+      testCaseId,
+      score
+    }));
+    
+    const analyticsResult = await analytics.analyzePerformance(batchRun.averageScore, testCaseScores);
+    analytics.displayAnalytics(analyticsResult);
   } catch (error) {
     console.error("Error in main:", error);
   }
