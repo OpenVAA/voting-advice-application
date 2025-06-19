@@ -5,6 +5,7 @@ import { PipelineSignature } from './types/pipelineSignature';
 import { PartialCondensationRunRecord, FullCondensationRunRecord } from '../evaluation/types/analytics/runRecord';
 import { CacheManager } from '../evaluation/cacheManager';
 import { CONDENSATION_METHOD } from './types/condensationMethod';
+import { PerformanceTracker } from '../evaluation/performanceTracker';
 
 /**
  * Stateful condenser that manages the three-phase condensation process.
@@ -15,6 +16,7 @@ export class Condenser {
   private pipelineSignature: PipelineSignature = [];
   private allPromptCalls: PromptCall[] = [];
   private cacheManager: CacheManager;
+  private performanceTracker = new PerformanceTracker();
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.runId;
@@ -164,7 +166,7 @@ export class Condenser {
       runId: this.runId,
       phase,
       method: CONDENSATION_METHOD.SEQUENTIAL,
-      outputType: this.input.question.answerType,
+      outputType: this.input.config.condensationType,
       pipelineSignature: [...this.pipelineSignature],
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString()
@@ -182,17 +184,25 @@ export class Condenser {
       runId: this.runId,
       phase: 'full',  
       method: CONDENSATION_METHOD.SEQUENTIAL,
-      outputType: this.input.question.answerType,
+      outputType: this.input.config.condensationType,
       pipelineSignature: [...this.pipelineSignature],
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString(),
       evaluation: {
-        score: 7, // stubbed evaluation
+        score: 8, // stubbed evaluation
         explanation: 'Stub evaluation explanation'
       }
     };
 
     await this.cacheManager.saveFinalResult(record);
+
+    // Update per-question performance metrics
+    await this.performanceTracker.updateQuestionMetrics(
+      this.input.electionId,
+      this.input.config.condensationType,
+      this.input.question.id,
+      record
+    );
   }
 }
 
