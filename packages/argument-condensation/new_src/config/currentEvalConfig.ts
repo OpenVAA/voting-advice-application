@@ -6,22 +6,25 @@ const currentEvalConfig: BatchCondensationConfig = {
   testCases: [],
   pipelineSignature: {
     initialCondensationPrompt: {
-      promptId: "init-v1",
+      promptId: "initializePros_v0",
       promptText: "...",
-      condensationOutputType: "likertPros",
-      condensationMethod: CONDENSATION_METHOD.SEQUENTIAL
+      method: CONDENSATION_METHOD.SEQUENTIAL,
+      outputType: "likertPros",
+      phase: "initialCondensation"
     },
     mainCondensationPrompt: {
-      promptId: "main-v1",
+      promptId: "refinePros_v0",
       promptText: "...",
-      condensationOutputType: "likertPros",
-      condensationMethod: CONDENSATION_METHOD.SEQUENTIAL
+      method: CONDENSATION_METHOD.SEQUENTIAL,
+      outputType: "likertPros",
+      phase: "mainCondensation"
     },
     argumentImprovementPrompt: {
-      promptId: "improve-v1",
+      promptId: "improvePros_v0",
       promptText: "...",
-      condensationOutputType: "likertPros",
-      condensationMethod: CONDENSATION_METHOD.SEQUENTIAL
+      method: CONDENSATION_METHOD.SEQUENTIAL,
+      outputType: "likertPros",
+      phase: "full"
     }
   },
   batchSize: 20,
