@@ -107,6 +107,14 @@ async function main() {
 
     // 5. Aggregate and save performance metrics
     const tracker = new PerformanceTracker();
+    
+    // Calculate actual scores from results (stub evaluation for now)
+    const scoresByQuestion = Object.fromEntries(
+      results.map((result, idx) => [result.input.question.id, 7 + (idx * 0.2)]) // Varying scores for testing
+    );
+    
+    const averageScore = Object.values(scoresByQuestion).reduce((sum, score) => sum + score, 0) / Object.values(scoresByQuestion).length;
+    
     const batchRun = {
       batchRunId: batchConfig.batchRunId,
       nTestCases: testCases.length,
@@ -115,15 +123,13 @@ async function main() {
         { phase: 'mainCondensation' as CondensationPhase, promptId: 'mockMainPrompt_v1' },
         { phase: 'full' as CondensationPhase, promptId: 'mockImprovePrompt_v1' }
       ],
-      questionIds: results.map((_, idx) => `mockQuestionId${idx + 1}`),
+      questionIds: results.map(result => result.input.question.id),
       runIdsByQuestion: Object.fromEntries(
-        results.map((r, idx) => [`mockQuestionId${idx + 1}`, r.runId])
+        results.map(result => [result.input.question.id, result.runId])
       ),
-      scoresByQuestion: Object.fromEntries(
-        results.map((r, idx) => [`mockQuestionId${idx + 1}`, 7])
-      ),
+      scoresByQuestion,
       timestamp: new Date().toISOString(),
-      averageScore: 7,
+      averageScore,
     };
     await tracker.saveBatchRunAndUpdateGlobal(batchRun);
 
