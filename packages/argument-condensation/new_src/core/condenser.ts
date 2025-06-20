@@ -6,6 +6,8 @@ import { PartialCondensationRunRecord, FullCondensationRunRecord } from '../eval
 import { CacheManager } from '../evaluation/cacheManager';
 import { CONDENSATION_METHOD } from './types/condensationMethod';
 import { PerformanceTracker } from '../evaluation/performanceTracker';
+import { LlmParser } from './parser/llmParser';
+import { ResponseWithArguments } from './types/responseWithArguments';
 
 /**
  * Stateful condenser that manages the three-phase condensation process.
@@ -70,13 +72,35 @@ export class Condenser {
     const promptId = this.input.config.initialCondensationPrompt.promptId;
     this.pipelineSignature.push({ phase: 'initialCondensation', promptId });
 
-    // Stub implementation - in real code, this would make LLM calls
+    // Stub LLM response
+    const response = `{
+      "arguments": [
+        {
+          "id": "pro_arg_1",
+          "text": "Raising minimum wage reduces poverty and inequality"
+        },
+        {
+          "id": "pro_arg_2", 
+          "text": "Higher wages improve worker productivity and morale"
+        }
+      ],
+      "reasoning": "Extracted two main pro arguments from the comments: economic benefits and worker welfare improvements."
+    }`;
+
+    // Parse and validate the response
+    let parsedResponse: ResponseWithArguments;
+    try {
+      parsedResponse = LlmParser.parseArguments(response);
+    } catch (error) {
+      throw new Error(`Failed to parse initial condensation response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
     const promptCalls: PromptCall[] = [
       {
         promptId,
         phase: 'initialCondensation',
         rawInputText: `Initial condensation for question: ${this.input.question.topic}`,
-        rawOutputText: 'Stub initial arguments',
+        rawOutputText: response,
         model: 'mock',
         timestamp: new Date().toISOString(),
         metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
@@ -86,10 +110,7 @@ export class Condenser {
     this.allPromptCalls.push(...promptCalls);
 
     return {
-      arguments: [
-        { id: 'init-1', text: 'Initial argument 1' },
-        { id: 'init-2', text: 'Initial argument 2' }
-      ],
+      arguments: parsedResponse.arguments,
       promptCalls
     };
   }
@@ -101,13 +122,39 @@ export class Condenser {
     const promptId = this.input.config.mainCondensationPrompt.promptId;
     this.pipelineSignature.push({ phase: 'mainCondensation', promptId });
 
-    // Stub implementation
+    // Stub LLM response
+    const response = `{
+      "arguments": [
+        {
+          "id": "refined_pro_arg_1",
+          "text": "Minimum wage increases reduce poverty and improve economic equality"
+        },
+        {
+          "id": "refined_pro_arg_2", 
+          "text": "Higher wages boost worker productivity and reduce turnover"
+        },
+        {
+          "id": "refined_pro_arg_3",
+          "text": "Increased wages stimulate consumer spending and economic growth"
+        }
+      ],
+      "reasoning": "Refined and consolidated the initial arguments, adding economic stimulus as a new perspective from the additional comments."
+    }`;
+
+    // Parse and validate the response
+    let parsedResponse: ResponseWithArguments;
+    try {
+      parsedResponse = LlmParser.parseArguments(response);
+    } catch (error) {
+      throw new Error(`Failed to parse main condensation response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
     const promptCalls: PromptCall[] = [
       {
         promptId,
         phase: 'mainCondensation',
         rawInputText: `Main condensation for question: ${this.input.question.topic} with ${initialArgs.length} initial arguments`,
-        rawOutputText: 'Stub condensed arguments',
+        rawOutputText: response,
         model: 'mock',
         timestamp: new Date().toISOString(),
         metadata: { tokens: { input: 200, output: 100, total: 300 }, latency: 1.0 }
@@ -117,11 +164,7 @@ export class Condenser {
     this.allPromptCalls.push(...promptCalls);
 
     return {
-      arguments: [
-        { id: 'main-1', text: 'Main condensed argument 1' },
-        { id: 'main-2', text: 'Main condensed argument 2' },
-        { id: 'main-3', text: 'Main condensed argument 3' }
-      ],
+      arguments: parsedResponse.arguments,
       promptCalls
     };
   }
@@ -133,13 +176,35 @@ export class Condenser {
     const promptId = this.input.config.argumentImprovementPrompt.promptId;
     this.pipelineSignature.push({ phase: 'full', promptId });
 
-    // Stub implementation
+    // Stub LLM response
+    const response = `{
+      "arguments": [
+        {
+          "id": "final_pro_arg_1",
+          "text": "Minimum wage increases effectively reduce poverty and improve economic equality"
+        },
+        {
+          "id": "final_pro_arg_2", 
+          "text": "Higher wages boost worker productivity, reduce turnover, and improve job satisfaction"
+        }
+      ],
+      "reasoning": "Improved argument clarity and combined related points for better impact and readability."
+    }`;
+
+    // Parse and validate the response
+    let parsedResponse: ResponseWithArguments;
+    try {
+      parsedResponse = LlmParser.parseArguments(response);
+    } catch (error) {
+      throw new Error(`Failed to parse argument improvement response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
     const promptCalls: PromptCall[] = [
       {
         promptId,
         phase: 'full',
         rawInputText: `Improve arguments for question: ${this.input.question.topic} with ${condensedArgs.length} arguments`,
-        rawOutputText: 'Stub improved arguments',
+        rawOutputText: response,
         model: 'mock',
         timestamp: new Date().toISOString(),
         metadata: { tokens: { input: 150, output: 75, total: 225 }, latency: 0.8 }
@@ -149,10 +214,7 @@ export class Condenser {
     this.allPromptCalls.push(...promptCalls);
 
     return {
-      arguments: [
-        { id: 'final-1', text: 'Final improved argument 1' },
-        { id: 'final-2', text: 'Final improved argument 2' }
-      ],
+      arguments: parsedResponse.arguments,
       promptCalls
     };
   }
