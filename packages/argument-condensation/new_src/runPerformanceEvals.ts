@@ -4,12 +4,14 @@ import { GoldenTestCase } from './evaluation/types/goldenTestCase';
 import { BatchCondensationConfig } from './evaluation/types/performanceEvalConfig';
 import { PerformanceTracker } from './evaluation/performanceTracker';
 import { PerformanceAnalytics } from './cli/performanceAnalytics';
+import { BaseEvaluator } from './evaluation/evaluators/abstractEvaluator';
+import { StubEvaluator } from './evaluation/evaluators/stubEvaluator';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CONDENSATION_TYPE } from './core/types/condensationType';
 import { CondensationPhase } from './core/types/condensationPhase';
 import { CondensationRunResult } from './core/types';
-
+import { SystemEvaluationResult } from './evaluation/types/evaluationOutput';
 // Utility: Recursively find all test case directories
 async function findTestCaseDirs(root: string): Promise<string[]> {
   const dirs: string[] = [];
@@ -105,15 +107,39 @@ async function main() {
 
     const results: CondensationRunResult[] = await Promise.all(runPromises);
 
-    // 5. Aggregate and save performance metrics
-    const tracker = new PerformanceTracker();
+    // 5. Evaluate results using evaluator
+    const evaluator: BaseEvaluator = new StubEvaluator(7.5, "Stub evaluation for testing");
     
-    // Calculate actual scores from results (stub evaluation for now)
-    const scoresByQuestion = Object.fromEntries(
-      results.map((result, idx) => [result.input.question.id, 7 + (idx * 0.2)]) // Varying scores for testing
+    // Create evaluation inputs from results and test cases
+    const evaluationInputs = results.map((result, idx) => ({
+      topic: testCases[idx].topic,
+      systemArguments: result.arguments,
+      expectedArguments: testCases[idx].expectedArguments
+    }));
+    
+    // Run evaluation for each test case
+    const evaluationResult: SystemEvaluationResult = await evaluator.evaluateSystem({ 
+      description: "Batch evaluation of condensation system",
+      inputs: evaluationInputs 
+    });
+    
+    // Create a map of evaluation results (to ensure results are in correct order)
+    const evaluationResultsByTopic = new Map(
+      evaluationResult.results.map(result => [result.topic, result])
     );
     
-    const averageScore = Object.values(scoresByQuestion).reduce((sum, score) => sum + score, 0) / Object.values(scoresByQuestion).length;
+    // Extract scores from evaluation results using topic matching (order-agnostic)
+    const scoresByQuestion = Object.fromEntries(
+      results.map(result => [
+        result.input.question.id, 
+        evaluationResultsByTopic.get(result.input.question.topic)?.score ?? 0
+      ])
+    );
+    
+    const averageScore = evaluationResult.metrics.averageScore;
+
+    // 6. Aggregate and save performance metrics
+    const tracker = new PerformanceTracker();
     
     const batchRun = {
       batchRunId: batchConfig.batchRunId,
@@ -133,7 +159,7 @@ async function main() {
     };
     await tracker.saveBatchRunAndUpdateGlobal(batchRun);
 
-    // 6. Run performance analytics and display results
+    // 7. Run performance analytics and display results
     const analytics = new PerformanceAnalytics();
     const testCaseScores = Object.entries(batchRun.scoresByQuestion).map(([testCaseId, score]) => ({
       testCaseId,
