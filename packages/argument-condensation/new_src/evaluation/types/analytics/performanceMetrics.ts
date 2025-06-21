@@ -1,4 +1,4 @@
-import { PipelineSignature } from '../../../core/types/pipelineSignature';
+import { CondensationPlan } from '../../../core/types/condensation/processDefinition';
 /**
  * Performance metrics for a question.
  * 
@@ -15,7 +15,7 @@ export interface QuestionPerformanceMetrics {
   totalRuns: number;
   historyOfRuns: {
     runId: string;
-    pipelineSignature: PipelineSignature;
+    plan: CondensationPlan;
     score: number;
     timestamp: string;
   }[];
@@ -23,7 +23,7 @@ export interface QuestionPerformanceMetrics {
   bestScore: number;
   bestRun: {
     runId: string;
-    pipelineSignature: PipelineSignature;
+    plan: CondensationPlan;
     score: number;
     timestamp: string;
   };
@@ -35,7 +35,7 @@ export interface QuestionPerformanceMetrics {
  *
  * @property batchRunId - The ID of the batched run
  * @property nTestCases - The number of golden test cases included in this batch
- * @property pipelineSignature - The pipeline signature: {phase, promptId} pairs
+ * @property plan - The condensation plan used for this batch
  * @property questionIds - The set of questions included in this batch
  * @property runIdsByQuestion - A map of question IDs to run IDs
  * @property scoresByQuestion - A map of question IDs to scores
@@ -45,7 +45,7 @@ export interface QuestionPerformanceMetrics {
 export interface GoldenDatasetBatchRun {
   batchRunId: string;
   nTestCases: number;
-  pipelineSignature: PipelineSignature;
+  plan: CondensationPlan;
   questionIds: string[];
   runIdsByQuestion: { [questionId: string]: string };
   scoresByQuestion: { [questionId: string]: number };
@@ -55,9 +55,9 @@ export interface GoldenDatasetBatchRun {
 
 
 /**
- * Global performance metrics used to track the best performing pipeline signature across the whole golden dataset. 
+ * Global performance metrics used to track the best performing plan across the whole golden dataset. 
  * 
- * @property batchRunIds - The IDs of all batch runs (each covers all golden test cases with the same prompts)
+ * @property batchRunIds - The IDs of all batch runs (each covers all golden test cases with the same plan)
  * @property totalBatchRuns - The total number of batch runs
  * @property historicalAverageScore - The average score of all batch runs
  * @property bestScore - The best average score across all batch runs

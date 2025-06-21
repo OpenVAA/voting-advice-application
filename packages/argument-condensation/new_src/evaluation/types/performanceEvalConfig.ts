@@ -1,24 +1,24 @@
-import { CondensationPrompt } from "../../core/types/prompt";
+import { CondensationPlan } from "../../core/types/condensation/processDefinition";
 import { GoldenTestCase } from "./goldenTestCase";
 
 /**
  * Configuration for a batch of condensation runs.
  * @param batchRunId - The unique identifier for the batch run
- * @param pipelineSignature - The pipeline signature for the batch run
+ * @param plan - The condensation plan for the batch run
  * @param testCases - The test cases for the batch run
- * @param batchSize - The number of runs in the batch
- * @param nOutputArgs - The number of output arguments for the batch run
- * @param language - The language of the batch run
+ * @param promptIds - Mapping operation types to prompt IDs from the registry
  */
 export interface BatchCondensationConfig {
   batchRunId: string;
-  pipelineSignature: {
-    initialCondensationPrompt: CondensationPrompt;
-    mainCondensationPrompt: CondensationPrompt;
-    argumentImprovementPrompt: CondensationPrompt;
-  };
+  plan: CondensationPlan;
   testCases: GoldenTestCase[];
-  batchSize: number;
-  nOutputArgs: number;
-  language: string;
+  promptIds: {
+    refine?: {
+      initial: string;
+      refining: string;
+    }  
+    map?: string;    
+    reduce?: string;  
+    ground?: string;  
+  };
 }
