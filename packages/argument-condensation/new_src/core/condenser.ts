@@ -1,21 +1,20 @@
-import { Argument, CondensationRunInput, CondensationRunResult } from './types';
-import { CondensationPhase } from './types/condensationPhase';
+import { Argument, CondensationRunInput, CondensationRunResult, VAAComment } from './types';
 import { PromptCall } from './types/promptCall';
-import { PipelineSignature } from './types/pipelineSignature';
 import { PartialCondensationRunRecord, FullCondensationRunRecord } from '../evaluation/types/analytics/runRecord';
 import { CacheManager } from '../evaluation/cacheManager';
-import { CONDENSATION_METHOD } from './types/condensationMethod';
 import { PerformanceTracker } from '../evaluation/performanceTracker';
 import { LlmParser } from './parser/llmParser';
 import { ResponseWithArguments } from './types/responseWithArguments';
+import { CondensationPlan, ProcessingStep } from './types/condensation/processDefinition';
+import { CondensationOperations } from './types/condensation/operation';
+import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
 
 /**
- * Stateful condenser that manages the three-phase condensation process.
- * Saves partial results after each phase for caching and performance testing.
+ * Stateful condenser that manages the condensation process based on a customizable plan.
+ * Saves partial results after each step for caching and performance testing.
  */
 export class Condenser {
   private runId: string;
-  private pipelineSignature: PipelineSignature = [];
   private allPromptCalls: PromptCall[] = [];
   private cacheManager: CacheManager;
   private performanceTracker = new PerformanceTracker();
@@ -26,29 +25,141 @@ export class Condenser {
   }
 
   /**
-   * Run the complete three-phase condensation process.
+   * Validate a condensation plan before execution
+   */
+  private validatePlan(plan: CondensationPlan): void {
+    if (plan.steps.length === 0) {
+      throw new Error('Condensation plan must have at least one step');
+    }
+
+    // Validate each step and the flow between steps
+    for (let i = 0; i < plan.steps.length; i++) {
+      const currentStep = plan.steps[i];
+      const nextStep = plan.steps[i + 1];
+
+      // Validate current step parameters
+      this.validateStepParameters(currentStep);
+
+      // Validate flow between steps
+      if (nextStep) {
+        this.validateStepFlow(currentStep, nextStep);
+      }
+    }
+
+    // Validate final step produces arguments (not argument lists)
+    const finalStep = plan.steps[plan.steps.length - 1];
+    if (finalStep.operation === CondensationOperations.MAP) {
+      throw new Error('MAP operation cannot be the final step - it produces argument lists, not arguments');
+    }
+  }
+
+  /**
+   * Validate individual step parameters
+   */
+  private validateStepParameters(step: ProcessingStep): void {
+    switch (step.operation) {
+      case CondensationOperations.REFINE:
+        const refineParams = step.params as any; // Type assertion needed due to union type
+        if (refineParams.batchSize <= 0) {
+          throw new Error('REFINE operation batchSize must be positive');
+        }
+        if (!refineParams.initialBatchPrompt || !refineParams.refinementPrompt) {
+          throw new Error('REFINE operation requires both initialBatchPrompt and refinementPrompt');
+        }
+        break;
+
+      case CondensationOperations.MAP:
+        const mapParams = step.params as any; // Type assertion needed due to union type
+        if (mapParams.batchSize <= 0) {
+          throw new Error('MAP operation batchSize must be positive');
+        }
+        if (!mapParams.condensationPrompt) {
+          throw new Error('MAP operation requires condensationPrompt');
+        }
+        break;
+
+      case CondensationOperations.REDUCE:
+        const reduceParams = step.params as any; // Type assertion needed due to union type
+        if (reduceParams.denominator <= 0) {
+          throw new Error('REDUCE operation denominator must be positive');
+        }
+        if (!reduceParams.coalescingPrompt) {
+          throw new Error('REDUCE operation requires coalescingPrompt');
+        }
+        break;
+
+      case CondensationOperations.GROUND:
+        const groundParams = step.params as any; // Type assertion needed due to union type
+        if (groundParams.batchSize <= 0) {
+          throw new Error('GROUND operation batchSize must be positive');
+        }
+        if (!groundParams.groundingPrompt) {
+          throw new Error('GROUND operation requires groundingPrompt');
+        }
+        break;
+    }
+  }
+
+  /**
+   * Validate flow between two consecutive steps
+   */
+  private validateStepFlow(currentStep: ProcessingStep, nextStep: ProcessingStep): void {
+    // MAP must be followed by REDUCE
+    if (currentStep.operation === CondensationOperations.MAP && nextStep.operation !== CondensationOperations.REDUCE) {
+      throw new Error('MAP operation must be followed by REDUCE operation');
+    }
+
+    // REDUCE can be followed by GROUND or be final
+    if (currentStep.operation === CondensationOperations.REDUCE && 
+        nextStep.operation !== CondensationOperations.GROUND) {
+      // This is valid - REDUCE can be final
+    }
+
+    // REFINE can be followed by GROUND or be final
+    if (currentStep.operation === CondensationOperations.REFINE && 
+        nextStep.operation !== CondensationOperations.GROUND) {
+      // This is valid - REFINE can be final
+    }
+
+    // GROUND can be followed by REDUCE or be final
+    if (currentStep.operation === CondensationOperations.GROUND && 
+        nextStep.operation !== CondensationOperations.REDUCE) {
+      // This is valid - GROUND can be final
+    }
+  }
+
+  /**
+   * Run the condensation process based on the provided plan.
    */
   async run(): Promise<CondensationRunResult> {
-    // Load deprecated prompts
-    await this.cacheManager.loadDeprecatedPrompts();
+    // Get plan from input config
+    const plan = this.input.config;
 
-    // Phase 1: Initial batch condensation
-    const phase1Result = await this.runInitialBatchCondensation();
-    await this.savePartialResult('initialCondensation', phase1Result);
+    // Validate the plan before execution
+    this.validatePlan(plan);
 
-    // Phase 2: Main condensation
-    const phase2Result = await this.runMainCondensation(phase1Result.arguments);
-    await this.savePartialResult('mainCondensation', phase2Result);
+    // Execute plan steps sequentially
+    let currentData: Argument[] | Argument[][] = this.input.comments;
+    
+    for (let i = 0; i < plan.steps.length; i++) {
+      const step = plan.steps[i];
+      const stepResult = await this.executeStep(step, currentData, i);
+      
+      // Save partial result after each step
+      await this.savePartialResult(i, stepResult);
+      
+      // Update current data for next step
+      currentData = stepResult.arguments;
+    }
 
-    // Phase 3: Argument list improvement
-    const phase3Result = await this.runArgumentListImprovement(phase2Result.arguments);
-    await this.saveFinalResult(phase3Result);
+    // Save final result
+    await this.saveFinalResult({ arguments: currentData as Argument[], promptCalls: [] });
 
     // Return the final result
     return {
       runId: this.runId,
       input: this.input,
-      arguments: phase3Result.arguments,
+      arguments: currentData as Argument[],
       metrics: {
         duration: 1.5, // stubbed
         nLlmCalls: this.allPromptCalls.length,
@@ -58,7 +169,7 @@ export class Condenser {
       success: true,
       metadata: {
         llmModel: 'mock',
-        language: this.input.config.language,
+        language: plan.language,
         startTime: new Date(),
         endTime: new Date()
       }
@@ -66,170 +177,261 @@ export class Condenser {
   }
 
   /**
-   * Phase 1: Initial batch condensation
+   * Execute a single step in the condensation plan
    */
-  private async runInitialBatchCondensation(): Promise<PhaseResult> {
-    const promptId = this.input.config.initialCondensationPrompt.promptId;
-    this.pipelineSignature.push({ phase: 'initialCondensation', promptId });
+  private async executeStep(step: ProcessingStep, inputData: Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
+    switch (step.operation) {
+      case CondensationOperations.REFINE:
+        return await this.executeRefine(step, inputData as VAAComment[], stepIndex);
+      
+      case CondensationOperations.MAP:
+        return await this.executeMap(step, inputData as VAAComment[], stepIndex);
+      
+      case CondensationOperations.REDUCE:
+        return await this.executeReduce(step, inputData as Argument[][], stepIndex);
+      
+      case CondensationOperations.GROUND:
+        return await this.executeGround(step, inputData as Argument[][], stepIndex);
+      
+      default:
+        throw new Error(`Unknown operation: ${step.operation}`);
+    }
+  }
 
-    // Stub LLM response
-    const response = `{
-      "arguments": [
+  /**
+   * Execute REFINE operation
+   */
+  private async executeRefine(step: ProcessingStep, comments: VAAComment[], stepIndex: number): Promise<StepResult> {
+    const params = step.params as any;
+    const batchSize = params.batchSize;
+    
+    // Split comments into batches
+    const batches = this.createBatches(comments, batchSize);
+    
+    let currentArguments: Argument[] = [];
+    
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      const isFirstBatch = i === 0;
+      
+      // Use initialization prompt for first batch, refinement prompt for others
+      const prompt = isFirstBatch ? params.initialBatchPrompt : params.refinementPrompt;
+      
+      // Stub LLM response
+      const response = this.generateStubResponse(currentArguments, batch, isFirstBatch);
+      
+      // Parse and validate the response
+      let parsedResponse: ResponseWithArguments;
+      try {
+        parsedResponse = LlmParser.parseArguments(response);
+      } catch (error) {
+        throw new Error(`Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      
+      const promptCalls: PromptCall[] = [
         {
-          "id": "pro_arg_1",
-          "text": "Raising minimum wage reduces poverty and inequality"
-        },
-        {
-          "id": "pro_arg_2", 
-          "text": "Higher wages improve worker productivity and morale"
+          promptId: `refine_${stepIndex}_${i}`,
+          operation: step.operation,
+          rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
+          rawOutputText: response,
+          model: 'mock',
+          timestamp: new Date().toISOString(),
+          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
         }
-      ],
-      "reasoning": "Extracted two main pro arguments from the comments: economic benefits and worker welfare improvements."
-    }`;
+      ];
+      
+      this.allPromptCalls.push(...promptCalls);
+      currentArguments = parsedResponse.arguments;
+    }
+    
+    return {
+      arguments: currentArguments,
+      promptCalls: []
+    };
+  }
 
+  /**
+   * Execute MAP operation
+   */
+  private async executeMap(step: ProcessingStep, comments: VAAComment[], stepIndex: number): Promise<StepResult> {
+    const params = step.params as any;
+    const batchSize = params.batchSize;
+    
+    // Split comments into batches
+    const batches = this.createBatches(comments, batchSize);
+    const argumentLists: Argument[][] = [];
+    
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      
+      // Stub LLM response
+      const response = this.generateStubResponse([], batch, true);
+      
+      // Parse and validate the response
+      let parsedResponse: ResponseWithArguments;
+      try {
+        parsedResponse = LlmParser.parseArguments(response);
+      } catch (error) {
+        throw new Error(`Failed to parse map response for batch ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      
+      const promptCalls: PromptCall[] = [
+        {
+          promptId: `map_${stepIndex}_${i}`,
+          operation: step.operation,
+          rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
+          rawOutputText: response,
+          model: 'mock',
+          timestamp: new Date().toISOString(),
+          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
+        }
+      ];
+      
+      this.allPromptCalls.push(...promptCalls);
+      argumentLists.push(parsedResponse.arguments);
+    }
+    
+    return {
+      arguments: argumentLists,
+      promptCalls: []
+    };
+  }
+
+  /**
+   * Execute REDUCE operation
+   */
+  private async executeReduce(step: ProcessingStep, argumentLists: Argument[][], stepIndex: number): Promise<StepResult> {
+    const params = step.params as any;
+    const denominator = params.denominator;
+    
+    // If we have fewer lists than denominator, return as is
+    if (argumentLists.length <= denominator) {
+      return {
+        arguments: argumentLists,
+        promptCalls: []
+      };
+    }
+    
+    // Stub LLM response for reduction
+    const response = this.generateStubResponse([], [], false);
+    
     // Parse and validate the response
     let parsedResponse: ResponseWithArguments;
     try {
       parsedResponse = LlmParser.parseArguments(response);
     } catch (error) {
-      throw new Error(`Failed to parse initial condensation response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to parse reduce response: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
+    
     const promptCalls: PromptCall[] = [
       {
-        promptId,
-        phase: 'initialCondensation',
-        rawInputText: `Initial condensation for question: ${this.input.question.topic}`,
+        promptId: `reduce_${stepIndex}`,
+        operation: step.operation,
+        rawInputText: `Reduce operation on ${argumentLists.length} argument lists`,
         rawOutputText: response,
         model: 'mock',
         timestamp: new Date().toISOString(),
         metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
       }
     ];
-
+    
     this.allPromptCalls.push(...promptCalls);
-
+    
     return {
       arguments: parsedResponse.arguments,
-      promptCalls
+      promptCalls: []
     };
   }
 
   /**
-   * Phase 2: Main condensation
+   * Execute GROUND operation
    */
-  private async runMainCondensation(initialArgs: Argument[]): Promise<PhaseResult> {
-    const promptId = this.input.config.mainCondensationPrompt.promptId;
-    this.pipelineSignature.push({ phase: 'mainCondensation', promptId });
-
-    // Stub LLM response
-    const response = `{
-      "arguments": [
-        {
-          "id": "refined_pro_arg_1",
-          "text": "Minimum wage increases reduce poverty and improve economic equality"
-        },
-        {
-          "id": "refined_pro_arg_2", 
-          "text": "Higher wages boost worker productivity and reduce turnover"
-        },
-        {
-          "id": "refined_pro_arg_3",
-          "text": "Increased wages stimulate consumer spending and economic growth"
-        }
-      ],
-      "reasoning": "Refined and consolidated the initial arguments, adding economic stimulus as a new perspective from the additional comments."
-    }`;
-
-    // Parse and validate the response
-    let parsedResponse: ResponseWithArguments;
-    try {
-      parsedResponse = LlmParser.parseArguments(response);
-    } catch (error) {
-      throw new Error(`Failed to parse main condensation response: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-
-    const promptCalls: PromptCall[] = [
-      {
-        promptId,
-        phase: 'mainCondensation',
-        rawInputText: `Main condensation for question: ${this.input.question.topic} with ${initialArgs.length} initial arguments`,
-        rawOutputText: response,
-        model: 'mock',
-        timestamp: new Date().toISOString(),
-        metadata: { tokens: { input: 200, output: 100, total: 300 }, latency: 1.0 }
+  private async executeGround(step: ProcessingStep, argumentLists: Argument[][], stepIndex: number): Promise<StepResult> {
+    const params = step.params as any;
+    
+    // For grounding, we need comment lists that correspond to argument lists
+    // For now, we'll stub this with empty comment lists
+    const commentLists: VAAComment[][] = argumentLists.map(() => []);
+    
+    const groundedArgumentLists: Argument[][] = [];
+    
+    for (let i = 0; i < argumentLists.length; i++) {
+      const argumentList = argumentLists[i];
+      const commentList = commentLists[i];
+      
+      // Stub LLM response for grounding
+      const response = this.generateStubResponse(argumentList, commentList, false);
+      
+      // Parse and validate the response
+      let parsedResponse: ResponseWithArguments;
+      try {
+        parsedResponse = LlmParser.parseArguments(response);
+      } catch (error) {
+        throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    ];
-
-    this.allPromptCalls.push(...promptCalls);
-
-    return {
-      arguments: parsedResponse.arguments,
-      promptCalls
-    };
-  }
-
-  /**
-   * Phase 3: Argument list improvement
-   */
-  private async runArgumentListImprovement(condensedArgs: Argument[]): Promise<PhaseResult> {
-    const promptId = this.input.config.argumentImprovementPrompt.promptId;
-    this.pipelineSignature.push({ phase: 'full', promptId });
-
-    // Stub LLM response
-    const response = `{
-      "arguments": [
+      
+      const promptCalls: PromptCall[] = [
         {
-          "id": "final_pro_arg_1",
-          "text": "Minimum wage increases effectively reduce poverty and improve economic equality"
-        },
-        {
-          "id": "final_pro_arg_2", 
-          "text": "Higher wages boost worker productivity, reduce turnover, and improve job satisfaction"
+          promptId: `ground_${stepIndex}_${i}`,
+          operation: step.operation,
+          rawInputText: `Ground operation for argument list ${i + 1}/${argumentLists.length}`,
+          rawOutputText: response,
+          model: 'mock',
+          timestamp: new Date().toISOString(),
+          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
         }
-      ],
-      "reasoning": "Improved argument clarity and combined related points for better impact and readability."
-    }`;
-
-    // Parse and validate the response
-    let parsedResponse: ResponseWithArguments;
-    try {
-      parsedResponse = LlmParser.parseArguments(response);
-    } catch (error) {
-      throw new Error(`Failed to parse argument improvement response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      ];
+      
+      this.allPromptCalls.push(...promptCalls);
+      groundedArgumentLists.push(parsedResponse.arguments);
     }
-
-    const promptCalls: PromptCall[] = [
-      {
-        promptId,
-        phase: 'full',
-        rawInputText: `Improve arguments for question: ${this.input.question.topic} with ${condensedArgs.length} arguments`,
-        rawOutputText: response,
-        model: 'mock',
-        timestamp: new Date().toISOString(),
-        metadata: { tokens: { input: 150, output: 75, total: 225 }, latency: 0.8 }
-      }
-    ];
-
-    this.allPromptCalls.push(...promptCalls);
-
+    
     return {
-      arguments: parsedResponse.arguments,
-      promptCalls
+      arguments: groundedArgumentLists,
+      promptCalls: []
     };
   }
 
   /**
-   * Save partial result after each phase
+   * Create batches from an array
    */
-  private async savePartialResult(phase: CondensationPhase, result: PhaseResult) {
+  private createBatches<T>(array: T[], batchSize: number): T[][] {
+    const batches: T[][] = [];
+    for (let i = 0; i < array.length; i += batchSize) {
+      batches.push(array.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  /**
+   * Generate stub LLM response for testing
+   */
+  private generateStubResponse(existingArgs: Argument[], comments: VAAComment[], isInitial: boolean): string {
+    const argCount = isInitial ? 2 : Math.min(existingArgs.length + 1, 3);
+    const args: Argument[] = [];
+    
+    for (let i = 0; i < argCount; i++) {
+      args.push({
+        id: `stub_arg_${i + 1}`,
+        text: `Stub argument ${i + 1} for testing purposes`
+      });
+    }
+    
+    return JSON.stringify({
+      arguments: args,
+      reasoning: `Generated ${argCount} stub arguments for testing`
+    });
+  }
+
+  /**
+   * Save partial result after each step
+   */
+  private async savePartialResult(stepIndex: number, result: StepResult) {
     const record: PartialCondensationRunRecord = {
       questionId: this.input.question.id,
       runId: this.runId,
-      phase,
-      method: CONDENSATION_METHOD.SEQUENTIAL,
-      outputType: this.input.config.condensationType,
-      pipelineSignature: [...this.pipelineSignature],
+      outputType: this.input.config.outputType,
+      plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString()
     };
@@ -240,19 +442,33 @@ export class Condenser {
   /**
    * Save final result with evaluation
    */
-  private async saveFinalResult(result: PhaseResult) {
+  private async saveFinalResult(result: StepResult) {
+    // Use the same evaluator as the evaluation script
+    const evaluator = new StubEvaluator(8, "Stub evaluation for testing");
+    
+    // Create a simple evaluation input for the final arguments
+    const evaluationInput = {
+      topic: this.input.question.topic,
+      systemArguments: result.arguments as Argument[],
+      expectedArguments: [] // No expected arguments in this context, but evaluator will handle it
+    };
+    
+    // Run evaluation
+    const evaluationResult = await evaluator.evaluateSystem({
+      description: "Individual run evaluation",
+      inputs: [evaluationInput]
+    });
+    
     const record: FullCondensationRunRecord = {
       questionId: this.input.question.id,
       runId: this.runId,
-      phase: 'full',  
-      method: CONDENSATION_METHOD.SEQUENTIAL,
-      outputType: this.input.config.condensationType,
-      pipelineSignature: [...this.pipelineSignature],
+      outputType: this.input.config.outputType,
+      plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString(),
       evaluation: {
-        score: 8, // stubbed evaluation
-        explanation: 'Stub evaluation explanation'
+        score: evaluationResult.metrics.averageScore,
+        explanation: evaluationResult.results[0]?.explanation || 'Evaluation completed'
       }
     };
 
@@ -261,7 +477,7 @@ export class Condenser {
     // Update per-question performance metrics
     await this.performanceTracker.updateQuestionMetrics(
       this.input.electionId,
-      this.input.config.condensationType,
+      this.input.config.outputType,
       this.input.question.id,
       record
     );
@@ -269,9 +485,9 @@ export class Condenser {
 }
 
 /**
- * Result from a single phase
+ * Result from a single step
  */
-interface PhaseResult {
-  arguments: Argument[];
+interface StepResult {
+  arguments: Argument[] | Argument[][];
   promptCalls: PromptCall[];
 } 
