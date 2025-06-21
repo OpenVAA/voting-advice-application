@@ -9,9 +9,11 @@ import { StubEvaluator } from './evaluation/evaluators/stubEvaluator';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CONDENSATION_TYPE } from './core/types/condensationType';
-import { CondensationPhase } from './core/types/condensationPhase';
 import { CondensationRunResult } from './core/types';
 import { SystemEvaluationResult } from './evaluation/types/evaluationOutput';
+import { CondensationPlan } from './core/types/condensation/processDefinition';
+import { CondensationOperations } from './core/types/condensation/operation';
+
 // Utility: Recursively find all test case directories
 async function findTestCaseDirs(root: string): Promise<string[]> {
   const dirs: string[] = [];
@@ -84,23 +86,15 @@ async function main() {
     // 4. Run all condensers
     const runPromises = testCases.map(testCase => {
       const runInput = {
-        runId: `mockRunId-001`,
+        runId: batchConfig.batchRunId,
         electionId: 'mockElectionId',
         question: {
           id: 'mockQuestionId',
           topic: testCase.topic ?? 'Mock Topic', // If available
           answerType: 'likert-5',
         },
-        comments: [],
-        config: {
-          batchSize: batchConfig.batchSize,
-          nOutputArgs: batchConfig.nOutputArgs,
-          language: batchConfig.language,
-          initialCondensationPrompt: batchConfig.pipelineSignature.initialCondensationPrompt,
-          mainCondensationPrompt: batchConfig.pipelineSignature.mainCondensationPrompt,
-          argumentImprovementPrompt: batchConfig.pipelineSignature.argumentImprovementPrompt,
-          condensationType: CONDENSATION_TYPE.LIKERT.PROS,
-        }
+        comments: testCase.comments,
+        config: batchConfig.plan
       };
       return new Condenser(runInput).run();
     });
@@ -108,7 +102,7 @@ async function main() {
     const results: CondensationRunResult[] = await Promise.all(runPromises);
 
     // 5. Evaluate results using evaluator
-    const evaluator: BaseEvaluator = new StubEvaluator(7.5, "Stub evaluation for testing");
+    const evaluator: BaseEvaluator = new StubEvaluator(8.7, "Stub evaluation for testing");
     
     // Create evaluation inputs from results and test cases
     const evaluationInputs = results.map((result, idx) => ({
@@ -144,11 +138,7 @@ async function main() {
     const batchRun = {
       batchRunId: batchConfig.batchRunId,
       nTestCases: testCases.length,
-      pipelineSignature: [
-        { phase: 'initialCondensation' as CondensationPhase, promptId: 'mockInitialPrompt_v1' },
-        { phase: 'mainCondensation' as CondensationPhase, promptId: 'mockMainPrompt_v1' },
-        { phase: 'full' as CondensationPhase, promptId: 'mockImprovePrompt_v1' }
-      ],
+      plan: batchConfig.plan,
       questionIds: results.map(result => result.input.question.id),
       runIdsByQuestion: Object.fromEntries(
         results.map(result => [result.input.question.id, result.runId])
