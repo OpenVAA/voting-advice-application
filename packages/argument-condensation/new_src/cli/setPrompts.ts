@@ -1,8 +1,10 @@
-#!/usr/bin/env node
-
 import { PromptRegistry } from '../core/prompts/promptRegistry';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { CondensationOperations } from '../core/types/condensation/operation';
+import { CONDENSATION_TYPE } from '../core/types/condensationType';
+import { ProcessingStep, CondensationPlan } from '../core/types/condensation/processDefinition';
+import { RefineOperationParams, MapOperationParams, ReduceOperationParams, GroundingOperationParams } from '../core/types/condensation/processParams';
 import { CliArgs } from './types/cliArgs';
 
 /**
@@ -12,89 +14,105 @@ import { CliArgs } from './types/cliArgs';
  */
 function parseArgs(): CliArgs {
   const args = process.argv.slice(2);
-  const parsed: CliArgs = {};
+  const result: CliArgs = {};
   
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
-      case '-i':
-      case '--initial':
-        if (args[i + 1] && !args[i + 1].startsWith('-')) {
-          parsed.initial = args[++i];
-        } else {
-          parsed.showInitial = true;
-        }
-        break;
-      case '-m':
-      case '--main':
-        if (args[i + 1] && !args[i + 1].startsWith('-')) {
-          parsed.main = args[++i];
-        } else {
-          parsed.showMain = true;
-        }
-        break;
-      case '-f':
-      case '--improve':
-        if (args[i + 1] && !args[i + 1].startsWith('-')) {
-          parsed.improve = args[++i];
-        } else {
-          parsed.showImprove = true;
-        }
-        break;
       case '-h':
       case '--help':
-        parsed.help = true;
+        result.help = true;
         break;
-      case 'showAvailable':
-        parsed.showAvailable = true;
+      case '-s':
+      case '--show':
+        result.showAvailable = true;
+        break;
+      case '--show-refine':
+        result.showRefine = true;
+        break;
+      case '--show-map':
+        result.showMap = true;
+        break;
+      case '--show-reduce':
+        result.showReduce = true;
+        break;
+      case '--show-ground':
+        result.showGround = true;
+        break;
+      case '--show-pros':
+        result.showPros = true;
+        break;
+      case '--show-cons':
+        result.showCons = true;
+        break;
+      case '--refine':
+        result.refine = args[++i];
+        break;
+      case '--map':
+        result.map = args[++i];
+        break;
+      case '--reduce':
+        result.reduce = args[++i];
+        break;
+      case '--ground':
+        result.ground = args[++i];
+        break;
+      case '--output-type':
+        result.outputType = args[++i] as 'likertPros' | 'likertCons';
         break;
     }
   }
   
-  return parsed;
+  return result;
 }
 
 function showHelp() {
   console.log(`
-🔧 Set Prompts CLI Tool
+🎯 Operation-Based Prompt Management Tool
 
 Usage: yarn tsx new_src/cli/setPrompts.ts [options]
 
 Options:
-  -i, --initial <promptId>    Set initial condensation prompt
-  -m, --main <promptId>       Set main condensation prompt  
-  -f, --improve <promptId>    Set argument improvement prompt
-  -h, --help                  Show this help message
-
-Commands:
-  showAvailable               Show all available prompts
-  -i, --initial               Show only initial condensation prompts
-  -m, --main                  Show only main condensation prompts
-  -f, --improve               Show only argument improvement prompts
+  -h, --help              Show this help message
+  -s, --show              Show all available prompts
+  --show-refine           Show all REFINE prompts
+  --show-map              Show all MAP prompts
+  --show-reduce           Show all REDUCE prompts
+  --show-ground           Show all GROUND prompts
+  --show-pros             Show all likertPros prompts
+  --show-cons             Show all likertCons prompts
+  --refine <promptId>     Set REFINE prompt for current config
+  --map <promptId>        Set MAP prompt for current config
+  --reduce <promptId>     Set REDUCE prompt for current config
+  --ground <promptId>     Set GROUND prompt for current config
+  --output-type <type>    Specify output type (likertPros or likertCons)
 
 Examples:
-  yarn tsx new_src/cli/setPrompts.ts --i initializePros_v0
-  yarn tsx new_src/cli/setPrompts.ts showAvailable
-  yarn tsx new_src/cli/setPrompts.ts -i
-  yarn tsx new_src/cli/setPrompts.ts -m
+  yarn tsx new_src/cli/setPrompts.ts --show
+  yarn tsx new_src/cli/setPrompts.ts --show-refine
+  yarn tsx new_src/cli/setPrompts.ts --refine refine_likertPros_initial_v1 --output-type likertPros
+  yarn tsx new_src/cli/setPrompts.ts --map map_likertPros_condensation_v1 --reduce reduce_likertPros_coalescing_v1 --output-type likertPros
 `);
 }
 
 /**
- * Shows all available prompts for a given phase or all phases.
+ * Shows all available prompts for a given operation or output type.
  * 
  * @param registry The prompt registry.
  * @param filter The filter to apply to the prompts.
  */
-function showAvailablePrompts(registry: PromptRegistry, filter?: 'initial' | 'main' | 'improve') {
+function showAvailablePrompts(registry: PromptRegistry, filter?: 'refine' | 'map' | 'reduce' | 'ground' | 'pros' | 'cons') {
   const availablePrompts = registry.listPrompts();
   
   if (filter) {
     const filteredPrompts = availablePrompts.filter(p => {
       switch (filter) {
-        case 'initial': return p.phase === 'initialCondensation';
-        case 'main': return p.phase === 'mainCondensation';
-        case 'improve': return p.phase === 'finalImprovements';
+        case 'refine': return p.operation === CondensationOperations.REFINE;
+        case 'map': return p.operation === CondensationOperations.MAP;
+        case 'reduce': return p.operation === CondensationOperations.REDUCE;
+        case 'ground': return p.operation === CondensationOperations.GROUND;
+        case 'pros': return p.outputType === CONDENSATION_TYPE.LIKERT.PROS;
+        case 'cons': return p.outputType === CONDENSATION_TYPE.LIKERT.CONS;
         default: return true;
       }
     });
@@ -106,31 +124,20 @@ function showAvailablePrompts(registry: PromptRegistry, filter?: 'initial' | 'ma
     
     console.log(`📋 Available ${filter} prompts:`);
     filteredPrompts.forEach(p => {
-      if (p.phase === 'initialCondensation') {
-        console.log(`   ${p.promptId} (${p.phase}/${p.outputType})`);
-      } else {
-        console.log(`   ${p.promptId} (${p.phase}/${p.outputType}/${p.method})`);
-      }
+      console.log(`   ${p.promptId} (${p.operation}/${p.outputType})`);
     });
   } else {
     console.log('📋 Available prompts:');
-    const byPhase = {
-      initialCondensation: availablePrompts.filter(p => p.phase === 'initialCondensation'),
-      mainCondensation: availablePrompts.filter(p => p.phase === 'mainCondensation'),
-      finalImprovements: availablePrompts.filter(p => p.phase === 'finalImprovements')
-    };
+    const organized = registry.getPromptsByOperationAndTypeMap();
     
-    Object.entries(byPhase).forEach(([phase, prompts]) => {
-      if (prompts.length > 0) {
-        console.log(`\n   ${phase}:`);
+    Object.entries(organized).forEach(([operation, typeMap]) => {
+      console.log(`\n   ${operation}:`);
+      Object.entries(typeMap).forEach(([outputType, prompts]) => {
+        console.log(`     ${outputType}:`);
         prompts.forEach(p => {
-          if (p.phase === 'initialCondensation') {
-            console.log(`     ${p.promptId} (${p.phase}/${p.outputType})`);
-          } else {
-            console.log(`     ${p.promptId} (${p.phase}/${p.outputType}/${p.method})`);
-          }
+          console.log(`       ${p.promptId}`);
         });
-      }
+      });
     });
   }
 }
@@ -139,67 +146,96 @@ function showAvailablePrompts(registry: PromptRegistry, filter?: 'initial' | 'ma
  * Updates the current evaluation configuration with the provided prompt IDs.
  * 
  * @param promptIds The prompt IDs to update.
+ * @param outputType The output type for the configuration.
  */
-async function updateConfig(promptIds: { initial?: string; main?: string; improve?: string }) {
+async function updateConfig(promptIds: { refine?: string; map?: string; reduce?: string; ground?: string }, outputType: string) {
   const configPath = path.join(__dirname, '..', 'config', 'currentEvalConfig.ts');
   let configContent = await fs.readFile(configPath, 'utf-8');
   
   const registry = new PromptRegistry();
   await registry.loadPrompts();
   
-  // Update each prompt if provided
-  if (promptIds.initial) {
-    const prompt = registry.getPrompt(promptIds.initial);
+  // Create a new plan with the specified prompts
+  const steps: ProcessingStep[] = [];
+  
+  if (promptIds.refine) {
+    const prompt = registry.getPrompt(promptIds.refine);
     if (prompt) {
-      const promptObject = `{
-      promptId: "${prompt.promptId}",
-      promptText: \`${prompt.promptText.replace(/`/g, '\\`')}\`,
-      method: "${prompt.method}",
-      outputType: "${prompt.outputType}",
-      phase: "${prompt.phase}"
-    }`;
-      
-      configContent = configContent.replace(
-        /initialCondensationPrompt:\s*{[^}]*}/s,
-        `initialCondensationPrompt: ${promptObject}`
-      );
+      const params: RefineOperationParams = {
+        batchSize: (prompt.params as any).batchSize || 10,
+        initialBatchPrompt: prompt.promptText,
+        refinementPrompt: prompt.promptText // For now, using same prompt for both
+      };
+      steps.push({
+        operation: CondensationOperations.REFINE,
+        params
+      });
     }
   }
   
-  if (promptIds.main) {
-    const prompt = registry.getPrompt(promptIds.main);
+  if (promptIds.map) {
+    const prompt = registry.getPrompt(promptIds.map);
     if (prompt) {
-      const promptObject = `{
-      promptId: "${prompt.promptId}",
-      promptText: \`${prompt.promptText.replace(/`/g, '\\`')}\`,
-      method: "${prompt.method}",
-      outputType: "${prompt.outputType}",
-      phase: "${prompt.phase}"
-    }`;
-      
-      configContent = configContent.replace(
-        /mainCondensationPrompt:\s*{[^}]*}/s,
-        `mainCondensationPrompt: ${promptObject}`
-      );
+      const params: MapOperationParams = {
+        batchSize: (prompt.params as any).batchSize || 15,
+        condensationPrompt: prompt.promptText
+      };
+      steps.push({
+        operation: CondensationOperations.MAP,
+        params
+      });
     }
   }
   
-  if (promptIds.improve) {
-    const prompt = registry.getPrompt(promptIds.improve);
+  if (promptIds.reduce) {
+    const prompt = registry.getPrompt(promptIds.reduce);
     if (prompt) {
-      const promptObject = `{
-      promptId: "${prompt.promptId}",
-      promptText: \`${prompt.promptText.replace(/`/g, '\\`')}\`,
-      method: "${prompt.method}",
-      outputType: "${prompt.outputType}",
-      phase: "${prompt.phase}"
-    }`;
-      
-      configContent = configContent.replace(
-        /argumentImprovementPrompt:\s*{[^}]*}/s,
-        `argumentImprovementPrompt: ${promptObject}`
-      );
+      const params: ReduceOperationParams = {
+        denominator: (prompt.params as any).denominator || 3,
+        coalescingPrompt: prompt.promptText
+      };
+      steps.push({
+        operation: CondensationOperations.REDUCE,
+        params
+      });
     }
+  }
+  
+  if (promptIds.ground) {
+    const prompt = registry.getPrompt(promptIds.ground);
+    if (prompt) {
+      const params: GroundingOperationParams = {
+        batchSize: (prompt.params as any).batchSize || 10,
+        groundingPrompt: prompt.promptText
+      };
+      steps.push({
+        operation: CondensationOperations.GROUND,
+        params
+      });
+    }
+  }
+  
+  // Update the config with the new plan
+  const newPlan: CondensationPlan = {
+    outputType: outputType === 'likertPros' ? CONDENSATION_TYPE.LIKERT.PROS : CONDENSATION_TYPE.LIKERT.CONS,
+    steps,
+    nOutputArgs: 10,
+    language: "fi"
+  };
+  
+  // Replace the plan in the config
+  const planRegex = /plan:\s*{[^}]*}/s;
+  const newPlanString = `plan: ${JSON.stringify(newPlan, null, 2).replace(/"/g, "'")}`;
+  
+  if (planRegex.test(configContent)) {
+    configContent = configContent.replace(planRegex, newPlanString);
+  } else {
+    // If no plan exists, add it
+    configContent = configContent.replace(
+      /const currentEvalConfig: BatchCondensationConfig = {/,
+      `const currentEvalConfig: BatchCondensationConfig = {
+  plan: ${newPlanString},`
+    );
   }
   
   await fs.writeFile(configPath, configContent);
@@ -222,21 +258,32 @@ async function main() {
   await registry.loadPrompts();
   
   // Handle show commands
-  if (args.showAvailable || args.showInitial || args.showMain || args.showImprove) {
-    if (args.showInitial) {
-      showAvailablePrompts(registry, 'initial');
-    } else if (args.showMain) {
-      showAvailablePrompts(registry, 'main');
-    } else if (args.showImprove) {
-      showAvailablePrompts(registry, 'improve');
+  if (args.showAvailable || args.showRefine || args.showMap || args.showReduce || args.showGround || args.showPros || args.showCons) {
+    if (args.showRefine) {
+      showAvailablePrompts(registry, 'refine');
+    } else if (args.showMap) {
+      showAvailablePrompts(registry, 'map');
+    } else if (args.showReduce) {
+      showAvailablePrompts(registry, 'reduce');
+    } else if (args.showGround) {
+      showAvailablePrompts(registry, 'ground');
+    } else if (args.showPros) {
+      showAvailablePrompts(registry, 'pros');
+    } else if (args.showCons) {
+      showAvailablePrompts(registry, 'cons');
     } else {
       showAvailablePrompts(registry);
     }
     return;
   }
   
-  if (!args.initial && !args.main && !args.improve) {
+  if (!args.refine && !args.map && !args.reduce && !args.ground) {
     console.log('❌ No prompt IDs provided. Use -h for help.');
+    return;
+  }
+  
+  if (!args.outputType) {
+    console.log('❌ Output type must be specified with --output-type (likertPros or likertCons)');
     return;
   }
   
@@ -244,16 +291,20 @@ async function main() {
     // Validate provided prompt IDs
     const validationErrors: string[] = [];
     
-    if (args.initial && !registry.getPrompt(args.initial)) {
-      validationErrors.push(`Initial prompt "${args.initial}" not found`);
+    if (args.refine && !registry.getPrompt(args.refine)) {
+      validationErrors.push(`REFINE prompt "${args.refine}" not found`);
     }
     
-    if (args.main && !registry.getPrompt(args.main)) {
-      validationErrors.push(`Main prompt "${args.main}" not found`);
+    if (args.map && !registry.getPrompt(args.map)) {
+      validationErrors.push(`MAP prompt "${args.map}" not found`);
     }
     
-    if (args.improve && !registry.getPrompt(args.improve)) {
-      validationErrors.push(`Improve prompt "${args.improve}" not found`);
+    if (args.reduce && !registry.getPrompt(args.reduce)) {
+      validationErrors.push(`REDUCE prompt "${args.reduce}" not found`);
+    }
+    
+    if (args.ground && !registry.getPrompt(args.ground)) {
+      validationErrors.push(`GROUND prompt "${args.ground}" not found`);
     }
     
     if (validationErrors.length > 0) {
@@ -263,12 +314,14 @@ async function main() {
     }
     
     // Update config
-    await updateConfig(args);
+    await updateConfig(args, args.outputType);
     
     console.log('\n🎯 Updated prompts:');
-    if (args.initial) console.log(`   Initial: ${args.initial}`);
-    if (args.main) console.log(`   Main: ${args.main}`);
-    if (args.improve) console.log(`   Improve: ${args.improve}`);
+    if (args.refine) console.log(`   REFINE: ${args.refine}`);
+    if (args.map) console.log(`   MAP: ${args.map}`);
+    if (args.reduce) console.log(`   REDUCE: ${args.reduce}`);
+    if (args.ground) console.log(`   GROUND: ${args.ground}`);
+    console.log(`   Output Type: ${args.outputType}`);
     
   } catch (error) {
     console.error('❌ Error:', error);
