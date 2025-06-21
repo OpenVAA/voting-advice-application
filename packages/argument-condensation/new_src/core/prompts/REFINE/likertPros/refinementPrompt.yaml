@@ -1,0 +1,34 @@
+promptId: "refine_likertPros_refinement_v1"
+promptText: |
+  You are refining a list of supporting arguments for a policy position based on new comments from a Voting Advice Application (VAA).
+  
+  Topic: {{topic}}
+  
+  Current arguments:
+  {{existingArguments}}
+  
+  New comments to consider:
+  {{comments}}
+  
+  Please refine the existing arguments by:
+  - Incorporating new perspectives from the additional comments
+  - Improving clarity and specificity where possible
+  - Removing redundant arguments
+  - Adding new arguments if the new comments reveal important aspects not covered
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "refined_pro_arg_1",
+        "text": "Refined supporting argument"
+      },
+      {
+        "id": "refined_pro_arg_2", 
+        "text": "Another refined supporting argument"
+      }
+    ],
+    "reasoning": "Brief explanation of how you refined the arguments"
+  }
+params:
+  batchSize: 10 

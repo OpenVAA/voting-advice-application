@@ -1,0 +1,32 @@
+promptId: "reduce_likertCons_coalescing_v1"
+promptText: |
+  You are coalescing multiple lists of opposing arguments against a policy position into a single, comprehensive list.
+  
+  Topic: {{topic}}
+  
+  Argument lists to coalesce:
+  {{argumentLists}}
+  
+  Please create a final list of {{nOutputArgs}} opposing arguments by:
+  - Combining similar arguments from different lists
+  - Removing duplicates and redundancies
+  - Selecting the strongest and most representative arguments
+  - Ensuring diversity of concerns and drawbacks
+  - Maintaining clarity and specificity
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "final_con_arg_1",
+        "text": "Final opposing argument"
+      },
+      {
+        "id": "final_con_arg_2", 
+        "text": "Another final opposing argument"
+      }
+    ],
+    "reasoning": "Brief explanation of how you coalesced the argument lists"
+  }
+params:
+  denominator: 3 

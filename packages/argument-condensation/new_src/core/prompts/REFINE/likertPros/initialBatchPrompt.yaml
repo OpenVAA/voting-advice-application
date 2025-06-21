@@ -1,0 +1,31 @@
+promptId: "refine_likertPros_initial_v1"
+promptText: |
+  You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position.
+  
+  Topic: {{topic}}
+  
+  Comments to analyze:
+  {{comments}}
+  
+  Please extract {{nOutputArgs}} clear, distinct supporting arguments from these comments. Each argument should:
+  - Be specific and actionable
+  - Represent a different aspect or perspective
+  - Be written in clear, concise language
+  - Focus on the benefits or positive aspects of the policy
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "pro_arg_1",
+        "text": "First supporting argument"
+      },
+      {
+        "id": "pro_arg_2", 
+        "text": "Second supporting argument"
+      }
+    ],
+    "reasoning": "Brief explanation of how you extracted these arguments"
+  }
+params:
+  batchSize: 10 

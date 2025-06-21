@@ -1,0 +1,31 @@
+promptId: "map_likertPros_condensation_v1"
+promptText: |
+  You are analyzing a batch of comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position.
+  
+  Topic: {{topic}}
+  
+  Comments to analyze:
+  {{comments}}
+  
+  Please extract {{nOutputArgs}} clear, distinct supporting arguments from these comments. Each argument should:
+  - Be specific and actionable
+  - Represent a different aspect or perspective
+  - Be written in clear, concise language
+  - Focus on the benefits or positive aspects of the policy
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "map_pro_arg_1",
+        "text": "Supporting argument from this batch"
+      },
+      {
+        "id": "map_pro_arg_2", 
+        "text": "Another supporting argument from this batch"
+      }
+    ],
+    "reasoning": "Brief explanation of how you extracted these arguments from this batch"
+  }
+params:
+  batchSize: 15 

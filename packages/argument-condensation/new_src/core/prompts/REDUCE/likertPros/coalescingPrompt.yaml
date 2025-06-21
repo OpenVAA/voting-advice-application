@@ -1,0 +1,32 @@
+promptId: "reduce_likertPros_coalescing_v1"
+promptText: |
+  You are coalescing multiple lists of supporting arguments for a policy position into a single, comprehensive list.
+  
+  Topic: {{topic}}
+  
+  Argument lists to coalesce:
+  {{argumentLists}}
+  
+  Please create a final list of {{nOutputArgs}} supporting arguments by:
+  - Combining similar arguments from different lists
+  - Removing duplicates and redundancies
+  - Selecting the strongest and most representative arguments
+  - Ensuring diversity of perspectives and aspects
+  - Maintaining clarity and specificity
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "final_pro_arg_1",
+        "text": "Final supporting argument"
+      },
+      {
+        "id": "final_pro_arg_2", 
+        "text": "Another final supporting argument"
+      }
+    ],
+    "reasoning": "Brief explanation of how you coalesced the argument lists"
+  }
+params:
+  denominator: 3 

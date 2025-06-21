@@ -1,0 +1,31 @@
+promptId: "map_likertCons_condensation_v1"
+promptText: |
+  You are analyzing a batch of comments from a Voting Advice Application (VAA) to extract opposing arguments against a policy position.
+  
+  Topic: {{topic}}
+  
+  Comments to analyze:
+  {{comments}}
+  
+  Please extract {{nOutputArgs}} clear, distinct opposing arguments from these comments. Each argument should:
+  - Be specific and actionable
+  - Represent a different concern or drawback
+  - Be written in clear, concise language
+  - Focus on the problems or negative aspects of the policy
+  
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "map_con_arg_1",
+        "text": "Opposing argument from this batch"
+      },
+      {
+        "id": "map_con_arg_2", 
+        "text": "Another opposing argument from this batch"
+      }
+    ],
+    "reasoning": "Brief explanation of how you extracted these arguments from this batch"
+  }
+params:
+  batchSize: 15 

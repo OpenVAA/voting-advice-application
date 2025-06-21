@@ -2,10 +2,12 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { CondensationPrompt } from '../types/prompt';
-import { CondensationPhase } from '../types/condensationPhase';
+import { CondensationOperations } from '../types/condensation/operation';
+import { CONDENSATION_TYPE } from '../types/condensationType';
 
 /**
- * Manages condensation prompts
+ * Manages condensation prompts organized by operations and output types.
+ * Directory structure: prompts/operation/outputType/prompt.yaml
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);
@@ -33,57 +35,76 @@ export class PromptRegistry {
   }
 
   /**
-   * Load all prompts from the registry. 
-   * 
+   * Load all prompts from the registry.
+   * Expected directory structure:
+   * prompts/
+   * ├── REFINE/
+   * │   ├── likertPros/
+   * │   │   ├── initialBatchPrompt.yaml
+   * │   │   └── refinementPrompt.yaml
+   * │   └── likertCons/
+   * │       ├── initialBatchPrompt.yaml
+   * │       └── refinementPrompt.yaml
+   * ├── MAP/
+   * │   ├── likertPros/
+   * │   │   └── condensationPrompt.yaml
+   * │   └── likertCons/
+   * │       └── condensationPrompt.yaml
+   * ├── REDUCE/
+   * │   ├── likertPros/
+   * │   │   └── coalescingPrompt.yaml
+   * │   └── likertCons/
+   * │       └── coalescingPrompt.yaml
+   * └── GROUND/
+   *     ├── likertPros/
+   *     │   └── groundingPrompt.yaml
+   *     └── likertCons/
+   *         └── groundingPrompt.yaml
    */
   async loadPrompts(): Promise<void> {
-    const phases = await fs.readdir(this.promptsDir);
-    for (const phase of phases) {
-      const phaseDir = path.join(this.promptsDir, phase);
-      const phaseStat = await fs.stat(phaseDir).catch(() => null);
-      if (!phaseStat || !phaseStat.isDirectory()) continue;
+    const operations = await fs.readdir(this.promptsDir);
+    
+    for (const operation of operations) {
+      const operationDir = path.join(this.promptsDir, operation);
+      const operationStat = await fs.stat(operationDir).catch(() => null);
+      if (!operationStat || !operationStat.isDirectory()) continue;
       
-      const typeDirs = await fs.readdir(phaseDir);
-      for (const type of typeDirs) {
-        const typeDir = path.join(phaseDir, type);
-        const typeStat = await fs.stat(typeDir).catch(() => null);
-        if (!typeStat || !typeStat.isDirectory()) continue;
+      // Validate that this is a valid operation
+      if (!Object.values(CondensationOperations).includes(operation as CondensationOperations)) {
+        console.warn(`Skipping invalid operation directory: ${operation}`);
+        continue;
+      }
+      
+      const outputTypes = await fs.readdir(operationDir);
+      for (const outputType of outputTypes) {
+        const outputTypeDir = path.join(operationDir, outputType);
+        const outputTypeStat = await fs.stat(outputTypeDir).catch(() => null);
+        if (!outputTypeStat || !outputTypeStat.isDirectory()) continue;
         
-        if (phase === 'initialCondensation') {
-          // Two-level structure for initial condensation (doesn't need a condensation method)
-          const yamlFiles = await this.findYamlFiles(typeDir);
-          for (const yamlFile of yamlFiles) {
+        // Validate that this is a valid output type
+        if (!Object.values(CONDENSATION_TYPE.LIKERT).includes(outputType as any)) {
+          console.warn(`Skipping invalid output type directory: ${outputType}`);
+          continue;
+        }
+        
+        const yamlFiles = await this.findYamlFiles(outputTypeDir);
+        for (const yamlFile of yamlFiles) {
+          try {
             const content = await fs.readFile(yamlFile, 'utf-8');
-            const promptData = yaml.load(content) as CondensationPrompt;
+            const promptData = yaml.load(content) as any;
+            
             const prompt: CondensationPrompt = {
               promptId: promptData.promptId,
               promptText: promptData.promptText,
-              method: promptData.method as any,
-              outputType: type as any,
-              phase: phase as CondensationPhase
+              operation: operation as CondensationOperations,
+              condensationGoal: outputType as any,
+              params: promptData.params || {}
             };
+            
             this.registry.set(prompt.promptId, prompt);
-          }
-        } else {
-          // Three-level structure for other phases
-          const methodDirs = await fs.readdir(typeDir);
-          for (const method of methodDirs) {
-            const methodDir = path.join(typeDir, method);
-            const methodStat = await fs.stat(methodDir).catch(() => null);
-            if (!methodStat || !methodStat.isDirectory()) continue;
-            const yamlFiles = await this.findYamlFiles(methodDir);
-            for (const yamlFile of yamlFiles) {
-              const content = await fs.readFile(yamlFile, 'utf-8');
-              const promptData = yaml.load(content) as CondensationPrompt;
-              const prompt: CondensationPrompt = {
-                promptId: promptData.promptId,
-                promptText: promptData.promptText,
-                method: method as any,
-                outputType: type as any,
-                phase: phase as CondensationPhase
-              };
-              this.registry.set(prompt.promptId, prompt);
-            }
+            console.log(`Loaded prompt: ${prompt.promptId} (${operation}/${outputType})`);
+          } catch (error) {
+            console.error(`Failed to load prompt from ${yamlFile}:`, error);
           }
         }
       }
@@ -98,10 +119,19 @@ export class PromptRegistry {
   }
 
   /**
-   * Get all prompts for a specific phase
+   * Get all prompts for a specific operation
    */
-  getPromptsByPhase(phase: CondensationPhase): CondensationPrompt[] {
-    return Array.from(this.registry.values()).filter(p => p.phase === phase);
+  getPromptsByOperation(operation: CondensationOperations): CondensationPrompt[] {
+    return Array.from(this.registry.values()).filter(p => p.operation === operation);
+  }
+
+  /**
+   * Get all prompts for a specific operation and output type
+   */
+  getPromptsByOperationAndType(operation: CondensationOperations, outputType: string): CondensationPrompt[] {
+    return Array.from(this.registry.values()).filter(p => 
+      p.operation === operation && p.condensationGoal === outputType
+    );
   }
 
   /**
@@ -138,12 +168,30 @@ export class PromptRegistry {
   /**
    * List all available prompts
    */
-  listPrompts(): { promptId: string; phase: string; method: string; outputType: string }[] {
+  listPrompts(): { promptId: string; operation: string; outputType: string }[] {
     return Array.from(this.registry.values()).map(p => ({
       promptId: p.promptId,
-      phase: p.phase,
-      method: p.method,
-      outputType: p.outputType
+      operation: p.operation,
+      outputType: p.condensationGoal
     }));
+  }
+
+  /**
+   * Get prompts organized by operation and output type
+   */
+  getPromptsByOperationAndTypeMap(): Record<string, Record<string, CondensationPrompt[]>> {
+    const result: Record<string, Record<string, CondensationPrompt[]>> = {};
+    
+    for (const prompt of this.registry.values()) {
+      if (!result[prompt.operation]) {
+        result[prompt.operation] = {};
+      }
+      if (!result[prompt.operation][prompt.condensationGoal]) {
+        result[prompt.operation][prompt.condensationGoal] = [];
+      }
+      result[prompt.operation][prompt.condensationGoal].push(prompt);
+    }
+    
+    return result;
   }
 } 
