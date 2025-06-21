@@ -1,10 +1,10 @@
-import type { CondensationPhase } from './condensationPhase';
+import { CondensationOperation } from "./condensation/operation";
 
 /**
  * Represents an API call instance of a prompt.
  * 
  * @param promptId - The ID of the prompt to call
- * @param phase - The phase of the condensation pipeline this prompt call is for
+ * @param operation - The operation this prompt is associated with
  * @param rawInputText - The raw input text for the prompt
  * @param rawOutputText - The raw output text for the prompt
  * @param model - The model to use for the prompt
@@ -13,7 +13,7 @@ import type { CondensationPhase } from './condensationPhase';
  */
 export interface PromptCall {
   promptId: string;
-  phase: CondensationPhase;
+  operation: CondensationOperation;
   rawInputText: string;
   rawOutputText: string;
   model: string;

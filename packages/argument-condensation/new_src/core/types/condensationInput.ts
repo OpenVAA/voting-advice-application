@@ -1,5 +1,4 @@
-import { CondensationOutputType } from './condensationType';
-import { CondensationPrompt } from './prompt';
+import { CondensationPlan } from './condensation/processDefinition';
 
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
@@ -23,37 +22,6 @@ export interface VAAComment {
 }
 
 /**
- * Base interface that all strategy configs must implement.
- * @param batchSize - Number of comments to process per batch
- * @param nOutputArgs - Maximum number of arguments to extract
- * @param language - Language code (e.g., 'en', 'fi')
- * @param condensationType - Type of condensation to perform (supporting, opposing, etc.)
- * @param initialCondensationPrompt - The prompt for the initial condensation
- * @param mainCondensationPrompt - The prompt for the main condensation
- * @param argumentImprovementPrompt - The prompt for the argument improvement
- */
-export interface CondensationRunConfig {
-  batchSize: number;
-  nOutputArgs: number;
-  language: string;
-  condensationType: CondensationOutputType;
-  initialCondensationPrompt: CondensationPrompt;
-  mainCondensationPrompt: CondensationPrompt;
-  argumentImprovementPrompt: CondensationPrompt;
-}
-
-/**
- * Configuration for MapReduce condensation strategy.
- * @param batchSize - Number of comments to process per batch
- * @param nOutputArgs - Number of arguments to extract
- * @param language - Language code (e.g., 'en', 'fi')
- * @param condensationType - Type of condensation to perform (supporting, opposing, etc.)
- */
-export interface MapReduceConfig extends CondensationRunConfig {
-  // If changes to the base config are needed, add them here.
-}
-
-/**
  * Input parameters for the condensation process.
  * @param runId - Unique identifier for this run
  * @param electionId - Unique identifier for the election
@@ -70,5 +38,5 @@ export interface CondensationRunInput {
     answerType: string; // TODO: make this more robust
   };
   comments: VAAComment[];
-  config: CondensationRunConfig;
+  config: CondensationPlan;
 } 
