@@ -28,7 +28,12 @@ export class PerformanceTracker {
     // Add new run
     metrics.historyOfRuns.push({
       runId: run.runId,
-      pipelineSignature: run.pipelineSignature,
+      plan: {
+        outputType: run.outputType,
+        steps: run.plan.steps,
+        nOutputArgs: run.plan.nOutputArgs,
+        language: run.plan.language
+      },
       score: run.evaluation.score,
       timestamp: run.timestamp,
     });

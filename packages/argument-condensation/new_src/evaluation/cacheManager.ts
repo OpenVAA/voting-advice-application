@@ -1,96 +1,103 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { PartialCondensationRunRecord, FullCondensationRunRecord } from './types/analytics/runRecord';
-import { PipelineSignature } from '../core/types/pipelineSignature';
 
 /**
  * Manages saving and loading cached condensation results.
- * Handles the directory structure: savedResults/electionID/condensationType/questionId/
+ * Handles the directory structure: savedResults/singleRuns/electionID/condensationType/questionId/
  */
 export class CacheManager {
   private readonly baseDir: string;
-  private deprecatedPrompts: Set<string> = new Set();
 
   constructor(electionId: string = 'election1') {
     this.baseDir = path.join(__dirname, 'savedResults', 'singleRuns', electionId);
   }
 
   /**
-   * Load the list of deprecated prompts
-   */
-  async loadDeprecatedPrompts(): Promise<void> {
-    try {
-      const deprecatedPath = path.join(__dirname, '../core/prompts/deprecatedPrompts.json');
-      const content = await fs.readFile(deprecatedPath, 'utf-8');
-      const deprecated = JSON.parse(content) as string[];
-      this.deprecatedPrompts = new Set(deprecated);
-    } catch (error) {
-      console.warn('No deprecated prompts file found, using empty set');
-      this.deprecatedPrompts = new Set();
-    }
-  }
-
-  /**
-   * Check if a pipeline signature contains any deprecated prompts
-   */
-  private hasDeprecatedPrompts(pipelineSignature: PipelineSignature): boolean {
-    return pipelineSignature.some(step => this.deprecatedPrompts.has(step.promptId));
-  }
-
-  /**
    * Get the directory path for a specific result
    */
-  private getResultPath(condensationType: string, questionId: string, runId: string, phase: string): string {
-    return path.join(this.baseDir, condensationType, questionId, `${runId}`, `${phase}.json`);
+  private getResultPath(condensationType: string, questionId: string, runId: string): string {
+    return path.join(this.baseDir, condensationType, questionId, `${runId}.json`);
   }
 
   /**
-   * Save a partial result (after each phase)
+   * Save a partial result (after each step) - appends to existing file
    */
   async savePartialResult(record: PartialCondensationRunRecord): Promise<void> {
-    const filePath = this.getResultPath(record.outputType, record.questionId, record.runId, record.phase);
+    const filePath = this.getResultPath(record.outputType, record.questionId, record.runId);
     
     // Ensure directory exists
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     
-    // Save the record
-    await fs.writeFile(filePath, JSON.stringify(record, null, 2));
-    console.log(`Saved partial result: ${filePath}`);
+    // Read existing content if file exists
+    let existingContent: any = { steps: [], finalResult: null };
+    try {
+      const existingData = await fs.readFile(filePath, 'utf-8');
+      existingContent = JSON.parse(existingData);
+    } catch (error) {
+      // File doesn't exist, start fresh
+    }
+    
+    // Add the new step result
+    const stepResult = {
+      stepIndex: existingContent.steps.length,
+      timestamp: record.timestamp,
+      outputType: record.outputType,
+      plan: record.plan,
+      promptCalls: record.promptCalls
+    };
+    
+    existingContent.steps.push(stepResult);
+    
+    // Save the updated content
+    await fs.writeFile(filePath, JSON.stringify(existingContent, null, 2));
+    console.log(`Appended step ${stepResult.stepIndex} to: ${filePath}`);
   }
 
   /**
-   * Save a final result (after full pipeline)
+   * Save a final result (after full pipeline) - updates the same file
    */
   async saveFinalResult(record: FullCondensationRunRecord): Promise<void> {
-    const filePath = this.getResultPath(record.outputType, record.questionId, record.runId, record.phase);
+    const filePath = this.getResultPath(record.outputType, record.questionId, record.runId);
     
     // Ensure directory exists
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     
-    // Save the record
-    await fs.writeFile(filePath, JSON.stringify(record, null, 2));
-    console.log(`Saved final result: ${filePath}`);
+    // Read existing content if file exists
+    let existingContent: any = { steps: [], finalResult: null };
+    try {
+      const existingData = await fs.readFile(filePath, 'utf-8');
+      existingContent = JSON.parse(existingData);
+    } catch (error) {
+      // File doesn't exist, start fresh
+    }
+    
+    // Add the final result
+    existingContent.finalResult = {
+      timestamp: record.timestamp,
+      outputType: record.outputType,
+      plan: record.plan,
+      promptCalls: record.promptCalls,
+      evaluation: record.evaluation
+    };
+    
+    // Save the updated content
+    await fs.writeFile(filePath, JSON.stringify(existingContent, null, 2));
+    console.log(`Saved final result to: ${filePath}`);
   }
 
   /**
-   * Load a cached result for a specific pipeline and phase
+   * Load a cached result for a specific run
    */
-  async loadCachedPhaseResult(
+  async loadCachedResult(
     condensationType: string,
     questionId: string,
-    runId: string,
-    phase: string
-  ): Promise<PartialCondensationRunRecord | FullCondensationRunRecord | null> {
+    runId: string
+  ): Promise<{ steps: any[], finalResult: any } | null> {
     try {
-      const filePath = this.getResultPath(condensationType, questionId, runId, phase);
+      const filePath = this.getResultPath(condensationType, questionId, runId);
       const content = await fs.readFile(filePath, 'utf-8');
-      const record = JSON.parse(content) as PartialCondensationRunRecord | FullCondensationRunRecord;
-      
-      // Check if this result contains deprecated prompts
-      if (this.hasDeprecatedPrompts(record.pipelineSignature)) {
-        console.log(`Skipping cached result with deprecated prompts: ${filePath}`);
-        return null;
-      }
+      const record = JSON.parse(content);
       
       console.log(`Loaded cached result: ${filePath}`);
       return record;
@@ -101,29 +108,26 @@ export class CacheManager {
   }
 
   /**
-   * Find all cached results for a question, filtering out deprecated prompts
+   * Find all cached results for a question
    */
   async findCachedResultsForQuestion(
     condensationType: string,
     questionId: string
-  ): Promise<(PartialCondensationRunRecord | FullCondensationRunRecord)[]> {
+  ): Promise<{ runId: string, steps: any[], finalResult: any }[]> {
     try {
       const questionDir = path.join(this.baseDir, condensationType, questionId);
       const files = await fs.readdir(questionDir);
       
-      const results: (PartialCondensationRunRecord | FullCondensationRunRecord)[] = [];
+      const results: { runId: string, steps: any[], finalResult: any }[] = [];
       
       for (const file of files) {
         if (file.endsWith('.json')) {
           try {
             const filePath = path.join(questionDir, file);
             const content = await fs.readFile(filePath, 'utf-8');
-            const record = JSON.parse(content) as PartialCondensationRunRecord | FullCondensationRunRecord;
-            
-            // Filter out results with deprecated prompts
-            if (!this.hasDeprecatedPrompts(record.pipelineSignature)) {
-              results.push(record);
-            }
+            const record = JSON.parse(content);
+            const runId = file.replace('.json', '');
+            results.push({ runId, ...record });
           } catch (error) {
             console.warn(`Failed to load cached result from ${file}:`, error);
           }
