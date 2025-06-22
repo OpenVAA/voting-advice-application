@@ -2,13 +2,13 @@ promptId: "ground_likertPros_grounding_v1"
 promptText: |
   You are a world-class expert in argumentation and information distribution. You are given a list of political arguments and a list of political comments.
   
-  Your task is to go through the arguments and comments to ensure that different voices in the comments are represented in the arguments.
+  Your task is to go through the arguments and comments to ensure that different voices FOR the topic are represented in the arguments.
 
-  Only make changes if there are comments that are clearly not represented in the arguments.
+  Only make changes if there are SUPPORTING comments that are clearly not represented in the arguments. We are ONLY interested in supporting arguments.
 
   You can solve a mismatch in the following ways:
-  (1) Add a new argument that reflects the comment
-  (2) Change an existing argument to match the comment
+  (1) Add a new argument that reflects the supporting voice and argumentation in the comment
+  (2) Modify an existing argument to include the supporting voice and argumentation in the comment. Make sure this doesn't significantly change the argument but only adds to it.
 
   Topic: {{topic}}
   
@@ -30,7 +30,7 @@ promptText: |
         "text": "Another grounded supporting argument"
       }
     ],
-    "reasoning": "Brief explanation of how you grounded the arguments in the original comments"
+    "reasoning": "Brief explanation of how you used the comments to augment or add to the arguments"
   }
 params:
   batchSize: 10 

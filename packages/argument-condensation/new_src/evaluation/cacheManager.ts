@@ -77,8 +77,8 @@ export class CacheManager {
       timestamp: record.timestamp,
       outputType: record.outputType,
       plan: record.plan,
-      promptCalls: record.promptCalls,
-      evaluation: record.evaluation
+      evaluation: record.evaluation,
+      promptCalls: record.promptCalls
     };
     
     // Save the updated content
