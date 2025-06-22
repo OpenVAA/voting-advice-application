@@ -83,6 +83,49 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   /**
+   * Generates multiple responses from the LLM by processing requests sequentially
+   * @param inputs Array of generation input parameters
+   * @returns Promise that resolves to an array of LLM responses in the same order as inputs
+   */
+  async generateMultiple(inputs: Array<{
+    messages: Array<Message>;
+    temperature: number;
+    maxTokens?: number;
+  }>): Promise<LLMResponse[]> {
+    if (!inputs || inputs.length === 0) {
+      return [];
+    }
+
+    // Validate inputs before processing
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      if (!input.messages || input.messages.length === 0) {
+        throw new Error(`Input at index ${i}: At least one message is required for generation`);
+      }
+      if (input.temperature < 0 || input.temperature > 1) {
+        throw new Error(`Input at index ${i}: Temperature must be between 0 and 1`);
+      }
+    }
+
+    // Process all requests sequentially to avoid rate limits
+    // TODO: Implement faster processing by getting rate limit updates from OpenAI
+    const results: LLMResponse[] = [];
+    for (let i = 0; i < inputs.length; i++) {
+      try {
+        const response = await this.generate(inputs[i]);
+        results.push(response);
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(`Request ${i} failed: ${error.message}`);
+        }
+        throw new Error(`Request ${i} failed with unknown error`);
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Estimates the number of tokens in a text string. Note: This is a simple approximation. For production use, consider using a proper tokenizer.
    */
   async countTokens(text: string) {

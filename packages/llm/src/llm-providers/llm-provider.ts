@@ -92,6 +92,17 @@ export abstract class LLMProvider {
   }): Promise<LLMResponse>;
 
   /**
+   * Generates multiple responses from the LLM based on an array of input requests
+   * @param inputs Array of generation input parameters
+   * @returns Promise that resolves to an array of LLM responses in the same order as inputs
+   */
+  abstract generateMultiple(inputs: Array<{
+    messages: Array<Message>;
+    temperature: number;
+    maxTokens?: number;
+  }>): Promise<LLMResponse[]>;
+
+  /**
    * Estimates the number of tokens in a text string
    */
   abstract countTokens(text: string): Promise<{
