@@ -1,4 +1,5 @@
 import { ResponseWithArguments } from '../types/responseWithArguments';
+import { jsonrepair } from 'jsonrepair';
 
 /**
  * Generic contract for LLM response validation
@@ -77,17 +78,12 @@ export class LlmParser {
       cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
     }
     
-    // Fix common JSON formatting issues
-    cleaned = cleaned
-      // Fix unescaped quotes in strings
-      .replace(/(?<!\\)"/g, '"')
-      // Fix trailing commas
-      .replace(/,(\s*[}\]])/g, '$1')
-      // Fix missing quotes around property names
-      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-      // Fix single quotes to double quotes
-      .replace(/'/g, '"');
-    
-    return cleaned;
+    // Use jsonrepair to fix malformed JSON
+    try {
+      return jsonrepair(cleaned);
+    } catch (error) {
+      // If jsonrepair fails, return the cleaned string as-is
+      return cleaned;
+    }
   }
 } 
