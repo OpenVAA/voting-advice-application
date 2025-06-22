@@ -1,5 +1,5 @@
 import { CondensationPlan } from './condensation/processDefinition';
-
+import { LLMProvider } from '@openvaa/llm';
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
  * @param id - Unique identifier
@@ -28,6 +28,7 @@ export interface VAAComment {
  * @param question - The topic/question these comments relate to
  * @param comments - Array of comments to process
  * @param config - Strategy-specific configuration
+ * @param llmProvider - LLM provider to use for the condensation process
  */
 export interface CondensationRunInput {
   runId: string;
@@ -37,6 +38,7 @@ export interface CondensationRunInput {
     topic: string;
     answerType: string; // TODO: make this more robust
   };
+  llmProvider: LLMProvider;
   comments: VAAComment[];
   config: CondensationPlan;
 } 

@@ -26,6 +26,25 @@ export class Condenser {
   }
 
   /**
+   * Utility function to embed template literals in prompt text
+   * @param promptText The prompt text with {{variable}} placeholders
+   * @param variables The variables to embed
+   * @returns The prompt text with variables embedded
+   */
+  private embedTemplateVariables(promptText: string, variables: Record<string, any>): string {
+    let result = promptText;
+    
+    // Replace template variables using {{variable}} syntax
+    for (const [key, value] of Object.entries(variables)) {
+      const placeholder = `{{${key}}}`;
+      const valueStr = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+      result = result.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), valueStr);
+    }
+    
+    return result;
+  }
+
+  /**
    * Validate a condensation plan before execution
    */
   public validatePlan(plan: CondensationPlan): void {
@@ -127,7 +146,7 @@ export class Condenser {
   private validateStepParameters(step: ProcessingStep): void {
     switch (step.operation) {
       case CondensationOperations.REFINE:
-        const refineParams = step.params as any; // Type assertion needed due to union type
+        const refineParams = step.params as RefineOperationParams; // Type assertion needed due to union type
         if (refineParams.batchSize <= 0) {
           throw new Error('REFINE operation batchSize must be positive');
         }
@@ -250,7 +269,7 @@ export class Condenser {
   private async executeStep(step: ProcessingStep, inputData: VAAComment[] | Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
     switch (step.operation) {
       case CondensationOperations.REFINE:
-        return await this.executeRefine(step, inputData as VAAComment[], stepIndex);
+        return await this.executeRefine(step, inputData as VAAComment[]);
       
       case CondensationOperations.MAP:
         return await this.executeMap(step, inputData as VAAComment[], stepIndex);
@@ -269,52 +288,95 @@ export class Condenser {
   /**
    * Execute REFINE operation
    */
-  private async executeRefine(step: ProcessingStep, comments: VAAComment[], stepIndex: number): Promise<StepResult> {
-    const params = step.params as any;
+  private async executeRefine(step: ProcessingStep, comments: VAAComment[]): Promise<StepResult> {
+    const params = step.params as RefineOperationParams;
     const batchSize = params.batchSize;
     
     // Split comments into batches
     const batches = this.createBatches(comments, batchSize);
     
     let currentArguments: Argument[] = [];
+    let prompt = params.initialBatchPrompt;
+    const allPromptCalls: PromptCall[] = [];
     
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const isFirstBatch = i === 0;
+    
+      // Prepare template variables
+      const templateVariables: Record<string, any> = {
+        topic: this.input.question.topic,
+        comments: JSON.stringify(batch, null, 2),
+      };
       
-      // Use initialization prompt for first batch, refinement prompt for others
-      const prompt = isFirstBatch ? params.initialBatchPrompt : params.refinementPrompt;
+      // Add existing arguments for refinement prompts
+      if (!isFirstBatch) {
+        templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
+      }
       
-      // Stub LLM response
-      const response = this.generateStubResponse(currentArguments, batch, isFirstBatch);
+      const promptText = this.embedTemplateVariables(prompt, templateVariables);
+      
+      // Prepare messages for LLM
+      const messages = [
+        { role: 'system' as const, content: promptText },
+        { 
+          role: 'user' as const, 
+          content: isFirstBatch 
+            ? `Please process these comments and extract ${templateVariables.nOutputArgs} supporting arguments.`
+            : `Please refine the existing arguments by incorporating these new comments.`
+        }
+      ];
+      
+      // Make real LLM call
+      const llmResponse = await this.input.llmProvider.generate({
+        messages,
+        temperature: 0.7
+      });
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(response);
+        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        
+        // Log the parsed response for debugging
+        console.log(`\n=== REFINE ${isFirstBatch ? 'INITIAL' : 'REFINEMENT'} BATCH ${i + 1}/${batches.length} ===`);
+        console.log('Arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+        if (parsedResponse.reasoning) {
+          console.log('Reasoning:', parsedResponse.reasoning);
+        }
+        console.log('=====================================\n');
+        
       } catch (error) {
         throw new Error(`Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
-      const promptCalls: PromptCall[] = [
-        {
-          promptId: `refine_${stepIndex}_${i}`,
-          operation: step.operation,
-          rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
-          rawOutputText: response,
-          model: 'mock',
-          timestamp: new Date().toISOString(),
-          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
+      const promptCall: PromptCall = {
+        promptId: 'MockPromptId',
+        operation: step.operation,
+        rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
+        rawOutputText: llmResponse.content,
+        model: llmResponse.model,
+        timestamp: new Date().toISOString(),
+        metadata: { 
+          tokens: { 
+            input: llmResponse.usage.promptTokens, 
+            output: llmResponse.usage.completionTokens, 
+            total: llmResponse.usage.totalTokens 
+          }, 
+          latency: 0.5 // TODO: track actual latency
         }
-      ];
+      };
       
-      this.allPromptCalls.push(...promptCalls);
+      allPromptCalls.push(promptCall);
+      this.allPromptCalls.push(promptCall);
+      
+      // Update current arguments for next iteration
       currentArguments = parsedResponse.arguments;
     }
     
     return {
       arguments: currentArguments,
-      promptCalls: []
+      promptCalls: allPromptCalls
     };
   }
 
@@ -541,6 +603,7 @@ export class Condenser {
       questionId: this.input.question.id,
       runId: this.runId,
       outputType: this.input.config.outputType,
+      model: this.input.llmProvider.model,
       plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString()
@@ -576,6 +639,7 @@ export class Condenser {
       plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString(),
+      model: this.input.llmProvider.model,
       evaluation: {
         score: evaluationResult.metrics.averageScore,
         explanation: evaluationResult.results[0]?.explanation || 'Evaluation completed'
