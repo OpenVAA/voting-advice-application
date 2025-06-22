@@ -10,11 +10,10 @@ promptText: |
   New comments to consider:
   {{comments}}
   
-  Please refine the existing arguments by:
-  - Incorporating new perspectives from the additional comments
-  - Improving clarity and specificity where possible
-  - Removing redundant arguments
-  - Adding new arguments if the new comments reveal important aspects not covered
+  Please refine the existing arguments by incorporating new perspectives from the additional comments. Focus on meaning — group different phrasings of the same idea. 
+  Introduce each high-level idea with a single argument. A good argument includes a short description of different variations and examples of it in the comments.
+
+  You may add new arguments, remove existing ones, or modify existing arguments. 
   
   Return your response as a JSON object with the following structure:
   {
