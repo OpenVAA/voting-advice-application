@@ -7,6 +7,7 @@ import { CondensationPlan } from '../../../core/types/condensation/processDefini
  * 
  * @property questionId - The ID of the VAA question
  * @property runId - The ID of the run
+ * @property model - The model that was used for this run
  * @property plan - The condensation plan that was used for this run
  * @property promptCalls - The prompt calls made up to this point
  * @property timestamp - The timestamp of when this result was generated
@@ -15,6 +16,7 @@ export interface PartialCondensationRunRecord {
   questionId: string;
   runId: string;
   outputType: CondensationOutputType; 
+  model: string;
   plan: CondensationPlan; // The plan that was used for this run
   promptCalls: PromptCall[];
   timestamp: string;

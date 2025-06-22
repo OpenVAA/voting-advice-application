@@ -36,6 +36,7 @@ export interface QuestionPerformanceMetrics {
  * @property batchRunId - The ID of the batched run
  * @property nTestCases - The number of golden test cases included in this batch
  * @property plan - The condensation plan used for this batch
+ * @property model - The model that was used for this batch
  * @property questionIds - The set of questions included in this batch
  * @property runIdsByQuestion - A map of question IDs to run IDs
  * @property scoresByQuestion - A map of question IDs to scores
@@ -46,6 +47,7 @@ export interface GoldenDatasetBatchRun {
   batchRunId: string;
   nTestCases: number;
   plan: CondensationPlan;
+  model: string;
   questionIds: string[];
   runIdsByQuestion: { [questionId: string]: string };
   scoresByQuestion: { [questionId: string]: number };
