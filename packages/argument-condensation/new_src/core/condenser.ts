@@ -318,13 +318,7 @@ export class Condenser {
       
       // Prepare messages for LLM
       const messages = [
-        { role: 'system' as const, content: promptText },
-        { 
-          role: 'user' as const, 
-          content: isFirstBatch 
-            ? `Please process these comments and extract ${templateVariables.nOutputArgs} supporting arguments.`
-            : `Please refine the existing arguments by incorporating these new comments.`
-        }
+        { role: 'system' as const, content: promptText }
       ];
       
       // Make real LLM call
@@ -477,91 +471,114 @@ export class Condenser {
    * Execute GROUND operation
    */
   private async executeGround(step: ProcessingStep, argumentData: Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
-    const params = step.params as any;
+    const params = step.params as GroundingOperationParams;
     
-    // Check if input is a single list or list of lists
-    const isSingleList = Array.isArray(argumentData) && argumentData.length > 0 && 
-                        !Array.isArray(argumentData[0]);
+    // Normalize input to always be an array of lists for simplicity
+    const argumentLists: Argument[][] = Array.isArray(argumentData[0]) 
+      ? argumentData as Argument[][]
+      : [argumentData as Argument[]]; // if input is a single list, wrap it in an array
     
-    if (isSingleList) {
-      // Handle single list: Argument[] → Argument[]
-      const argumentList = argumentData as Argument[];
+    // Prepare comment batches - each argument list gets its own batch
+    const availableComments = this.input.comments;
+    const numArgumentLists = argumentLists.length;
+    
+    // Calculate how many comment batches we can create with current comments
+    const availableCommentBatches = Math.floor(availableComments.length / params.batchSize);
+    
+    let commentsToUse = availableComments;
+    
+    // If we don't have enough comment batches, multiply the comment array
+    if (availableCommentBatches < numArgumentLists) {
+      const coefficient = Math.ceil(numArgumentLists / availableCommentBatches);
+      commentsToUse = [];
+      for (let i = 0; i < coefficient; i++) {
+        commentsToUse.push(...availableComments);
+      }
+    }
+    
+    // Prepare comment batches
+    const commentBatches = this.createBatches(commentsToUse, params.batchSize);
+    
+    const groundedArgumentLists: Argument[][] = [];
+    const allPromptCalls: PromptCall[] = [];
+    
+    // Process each argument list with its dedicated comment batch
+    for (let i = 0; i < argumentLists.length; i++) {
+      const argumentList = argumentLists[i];
+      const commentsForGrounding = commentBatches[i];
       
-      // Stub LLM response for grounding single list
-      const response = this.generateStubResponse(argumentList, [], false);
+      // Prepare template variables for grounding prompt
+      const templateVariables: Record<string, any> = {
+        topic: this.input.question.topic,
+        arguments: JSON.stringify(argumentList, null, 2),
+        comments: JSON.stringify(commentsForGrounding, null, 2),
+      };
+      
+      const promptText = this.embedTemplateVariables(params.groundingPrompt, templateVariables);
+      
+      // Prepare messages for LLM
+      const messages = [
+        { role: 'system' as const, content: promptText },
+      ];
+      
+      // Make real LLM call
+      const llmResponse = await this.input.llmProvider.generate({
+        messages,
+        temperature: 0.7
+      });
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(response);
+        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        
+        // Log the parsed response for debugging
+        console.log(`\n=== GROUND LIST ${i + 1}/${argumentLists.length} ===`);
+        console.log('Original arguments:', JSON.stringify(argumentList, null, 2));
+        console.log('Grounded arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+        console.log(`Used ${commentsForGrounding.length} comments for grounding`);
+        if (parsedResponse.reasoning) {
+          console.log('Reasoning:', parsedResponse.reasoning);
+        }
+        console.log('=====================================\n');
+        
       } catch (error) {
-        throw new Error(`Failed to parse ground response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
-      const promptCalls: PromptCall[] = [
-        {
-          promptId: `groundMockId`,
-          operation: step.operation,
-          rawInputText: `Ground operation on single argument list`,
-          rawOutputText: response,
-          model: 'mockModel',
-          timestamp: new Date().toISOString(),
-          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
+      const promptCall: PromptCall = {
+        promptId: 'GroundMockId', // TODO: get from prompt registry
+        operation: step.operation,
+        rawInputText: `Ground operation for list ${i + 1}/${argumentLists.length}`,
+        rawOutputText: llmResponse.content,
+        model: llmResponse.model,
+        timestamp: new Date().toISOString(),
+        metadata: { 
+          tokens: { 
+            input: llmResponse.usage.promptTokens, 
+            output: llmResponse.usage.completionTokens, 
+            total: llmResponse.usage.totalTokens 
+          }, 
+          latency: 0.5 // TODO: track actual latency
         }
-      ];
-      
-      this.allPromptCalls.push(...promptCalls);
-      
-      return {
-        arguments: parsedResponse.arguments, // Return single list
-        promptCalls: []
       };
-    } else {
-      // Handle list of lists: Argument[][] → Argument[][]
-      const argumentLists = argumentData as Argument[][];
       
-      // For grounding, we need comment lists that correspond to argument lists
-      // For now, we'll stub this with empty comment lists
-      const commentLists: VAAComment[][] = argumentLists.map(() => []);
+      allPromptCalls.push(promptCall);
+      this.allPromptCalls.push(promptCall);
       
-      const groundedArgumentLists: Argument[][] = [];
-      
-      for (let i = 0; i < argumentLists.length; i++) {
-        const argumentList = argumentLists[i];
-        const commentList = commentLists[i];
-        
-        // Stub LLM response for grounding
-        const response = this.generateStubResponse(argumentList, commentList, false);
-        
-        // Parse and validate the response
-        let parsedResponse: ResponseWithArguments;
-        try {
-          parsedResponse = LlmParser.parseArguments(response);
-        } catch (error) {
-          throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-        
-        const promptCalls: PromptCall[] = [
-          {
-            promptId: `ground_${stepIndex}_${i}`,
-            operation: step.operation,
-            rawInputText: `Ground operation for argument list ${i + 1}/${argumentLists.length}`,
-            rawOutputText: response,
-            model: 'mock',
-            timestamp: new Date().toISOString(),
-            metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
-          }
-        ];
-        
-        this.allPromptCalls.push(...promptCalls);
-        groundedArgumentLists.push(parsedResponse.arguments);
-      }
-      
-      return {
-        arguments: groundedArgumentLists, // Return list of lists
-        promptCalls: []
-      };
+      // Use the grounded arguments
+      groundedArgumentLists.push(parsedResponse.arguments);
     }
+    
+    // Return the same structure as input: single list if input was single list, multiple lists if input was multiple lists
+    const outputArguments = Array.isArray(argumentData[0]) 
+      ? groundedArgumentLists 
+      : groundedArgumentLists[0];
+    
+    return {
+      arguments: outputArguments,
+      promptCalls: allPromptCalls
+    };
   }
 
   /**

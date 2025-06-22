@@ -1,20 +1,22 @@
 promptId: "ground_likertPros_grounding_v1"
 promptText: |
-  You are grounding a list of supporting arguments for a policy position by refining them based on the original comments that inspired them.
+  You are a world-class expert in argumentation and information distribution. You are given a list of political arguments and a list of political comments.
   
+  Your task is to go through the arguments and comments to ensure that different voices in the comments are represented in the arguments.
+
+  Only make changes if there are comments that are clearly not represented in the arguments.
+
+  You can solve a mismatch in the following ways:
+  (1) Add a new argument that reflects the comment
+  (2) Change an existing argument to match the comment
+
   Topic: {{topic}}
   
-  Arguments to ground:
+  Arguments:
   {{arguments}}
   
-  Original comments for context:
+  Comments:
   {{comments}}
-  
-  Please refine these arguments by:
-  - Ensuring they accurately reflect the sentiments expressed in the original comments
-  - Adding specific details or examples mentioned in the comments
-  - Adjusting language to better match the tone and style of the original comments
-  - Maintaining the supporting (pro) perspective while being grounded in the actual comment content
   
   Return your response as a JSON object with the following structure:
   {
