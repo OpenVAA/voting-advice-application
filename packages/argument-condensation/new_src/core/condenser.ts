@@ -603,7 +603,7 @@ export class Condenser {
       questionId: this.input.question.id,
       runId: this.runId,
       outputType: this.input.config.outputType,
-      model: this.input.llmProvider.model,
+      model: this.input.model,
       plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString()
@@ -639,7 +639,7 @@ export class Condenser {
       plan: this.input.config,
       promptCalls: [...this.allPromptCalls],
       timestamp: new Date().toISOString(),
-      model: this.input.llmProvider.model,
+      model: this.input.model,
       evaluation: {
         score: evaluationResult.metrics.averageScore,
         explanation: evaluationResult.results[0]?.explanation || 'Evaluation completed'

@@ -69,6 +69,7 @@ async function runCondensationScript() {
       topic: topic,
       answerType: 'likert-5'
     },
+    model: 'gpt-4o',
     comments: comments,
     config: config,
     llmProvider: new OpenAIProvider({ 

@@ -29,6 +29,7 @@ export interface VAAComment {
  * @param comments - Array of comments to process
  * @param config - Strategy-specific configuration
  * @param llmProvider - LLM provider to use for the condensation process
+ * @param model - The model to use for the condensation process
  */
 export interface CondensationRunInput {
   runId: string;
@@ -38,6 +39,7 @@ export interface CondensationRunInput {
     topic: string;
     answerType: string; // TODO: make this more robust
   };
+  model: string;
   llmProvider: LLMProvider;
   comments: VAAComment[];
   config: CondensationPlan;
