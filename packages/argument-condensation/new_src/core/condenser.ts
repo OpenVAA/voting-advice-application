@@ -8,6 +8,7 @@ import { ResponseWithArguments } from './types/responseWithArguments';
 import { CondensationPlan, ProcessingStep } from './types/condensation/processDefinition';
 import { CondensationOperations } from './types/condensation/operation';
 import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
+import { MapOperationParams, ReduceOperationParams, RefineOperationParams, GroundingOperationParams } from './types/condensation/processParams';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -27,7 +28,7 @@ export class Condenser {
   /**
    * Validate a condensation plan before execution
    */
-  private validatePlan(plan: CondensationPlan): void {
+  public validatePlan(plan: CondensationPlan): void {
     if (plan.steps.length === 0) {
       throw new Error('Condensation plan must have at least one step');
     }
@@ -50,6 +51,73 @@ export class Condenser {
     const finalStep = plan.steps[plan.steps.length - 1];
     if (finalStep.operation === CondensationOperations.MAP) {
       throw new Error('MAP operation cannot be the final step - it produces argument lists, not arguments');
+    }
+
+    // Validate mathematical output structure
+    this.validatePipelineOutputs(plan, this.input.comments.length);
+  }
+
+  /**
+   * Validate that the pipeline configuration will mathematically produce a single list of arguments
+   */
+  private validatePipelineOutputs(plan: CondensationPlan, commentCount: number): void {
+    let currentStructure: 'comments' | 'list' | 'listOfLists' = 'comments';
+    let currentBatchCount = 1;
+
+    for (let i = 0; i < plan.steps.length; i++) {
+      const step = plan.steps[i];
+
+      switch (step.operation) {
+        case CondensationOperations.REFINE:
+          if (currentStructure !== 'comments') {
+            throw new Error(`REFINE operation can only process comments as first step, got ${currentStructure} at step ${i}`);
+          }
+          const refineParams = step.params as RefineOperationParams;
+          currentBatchCount = Math.ceil(commentCount / refineParams.batchSize);
+          currentStructure = 'list'; // REFINE always produces a single list
+          break;
+
+        case CondensationOperations.MAP:
+          if (currentStructure !== 'comments') {
+            throw new Error(`MAP operation can only process comments as first step, got ${currentStructure} at step ${i}`);
+          }
+          const mapParams = step.params as MapOperationParams;
+          currentBatchCount = Math.ceil(commentCount / mapParams.batchSize);
+          // MAP can produce either list or listOfLists - we need to check the actual implementation
+          // For validation purposes, assume it produces listOfLists if batchCount > 1
+          currentStructure = currentBatchCount > 1 ? 'listOfLists' : 'list';
+          break;
+
+        case CondensationOperations.REDUCE:
+          if (currentStructure !== 'listOfLists') {
+            throw new Error(`REDUCE operation can only process list of lists, got ${currentStructure} at step ${i}`);
+          }
+          const reduceParams = step.params as ReduceOperationParams;
+          const newBatchCount = Math.ceil(currentBatchCount / reduceParams.denominator);
+          currentBatchCount = newBatchCount;
+          // REDUCE can output either list or listOfLists depending on the result
+          currentStructure = newBatchCount === 1 ? 'list' : 'listOfLists';
+          break;
+
+        case CondensationOperations.GROUND:
+          // GROUND preserves structure: list → list, listOfLists → listOfLists
+          // No change to currentStructure or currentBatchCount
+          break;
+
+        default:
+          throw new Error(`Unknown operation: ${step.operation} at step ${i}`);
+      }
+
+      // Log the progression for debugging
+      console.log(`Step ${i} (${step.operation}): ${currentStructure} with ${currentBatchCount} batch(es)`);
+    }
+
+    // Final validation: must end with a single list
+    if (currentStructure !== 'list') {
+      throw new Error(
+        `Pipeline must produce a single list of arguments as final output, but produces ${currentStructure} with ${currentBatchCount} batch(es). ` +
+        `Consider adjusting REDUCE denominators or adding additional REDUCE steps to consolidate to a single list.`
+      );
     }
   }
 
@@ -139,7 +207,7 @@ export class Condenser {
     this.validatePlan(plan);
 
     // Execute plan steps sequentially
-    let currentData: Argument[] | Argument[][] = this.input.comments;
+    let currentData: VAAComment[] | Argument[] | Argument[][] = this.input.comments;
     
     for (let i = 0; i < plan.steps.length; i++) {
       const step = plan.steps[i];
@@ -179,7 +247,7 @@ export class Condenser {
   /**
    * Execute a single step in the condensation plan
    */
-  private async executeStep(step: ProcessingStep, inputData: Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
+  private async executeStep(step: ProcessingStep, inputData: VAAComment[] | Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
     switch (step.operation) {
       case CondensationOperations.REFINE:
         return await this.executeRefine(step, inputData as VAAComment[], stepIndex);
@@ -191,7 +259,7 @@ export class Condenser {
         return await this.executeReduce(step, inputData as Argument[][], stepIndex);
       
       case CondensationOperations.GROUND:
-        return await this.executeGround(step, inputData as Argument[][], stepIndex);
+        return await this.executeGround(step, inputData as Argument[] | Argument[][], stepIndex);
       
       default:
         throw new Error(`Unknown operation: ${step.operation}`);
@@ -346,50 +414,92 @@ export class Condenser {
   /**
    * Execute GROUND operation
    */
-  private async executeGround(step: ProcessingStep, argumentLists: Argument[][], stepIndex: number): Promise<StepResult> {
+  private async executeGround(step: ProcessingStep, argumentData: Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
     const params = step.params as any;
     
-    // For grounding, we need comment lists that correspond to argument lists
-    // For now, we'll stub this with empty comment lists
-    const commentLists: VAAComment[][] = argumentLists.map(() => []);
+    // Check if input is a single list or list of lists
+    const isSingleList = Array.isArray(argumentData) && argumentData.length > 0 && 
+                        !Array.isArray(argumentData[0]);
     
-    const groundedArgumentLists: Argument[][] = [];
-    
-    for (let i = 0; i < argumentLists.length; i++) {
-      const argumentList = argumentLists[i];
-      const commentList = commentLists[i];
+    if (isSingleList) {
+      // Handle single list: Argument[] → Argument[]
+      const argumentList = argumentData as Argument[];
       
-      // Stub LLM response for grounding
-      const response = this.generateStubResponse(argumentList, commentList, false);
+      // Stub LLM response for grounding single list
+      const response = this.generateStubResponse(argumentList, [], false);
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
         parsedResponse = LlmParser.parseArguments(response);
       } catch (error) {
-        throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(`Failed to parse ground response: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
       const promptCalls: PromptCall[] = [
         {
-          promptId: `ground_${stepIndex}_${i}`,
+          promptId: `groundMockId`,
           operation: step.operation,
-          rawInputText: `Ground operation for argument list ${i + 1}/${argumentLists.length}`,
+          rawInputText: `Ground operation on single argument list`,
           rawOutputText: response,
-          model: 'mock',
+          model: 'mockModel',
           timestamp: new Date().toISOString(),
           metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
         }
       ];
       
       this.allPromptCalls.push(...promptCalls);
-      groundedArgumentLists.push(parsedResponse.arguments);
+      
+      return {
+        arguments: parsedResponse.arguments, // Return single list
+        promptCalls: []
+      };
+    } else {
+      // Handle list of lists: Argument[][] → Argument[][]
+      const argumentLists = argumentData as Argument[][];
+      
+      // For grounding, we need comment lists that correspond to argument lists
+      // For now, we'll stub this with empty comment lists
+      const commentLists: VAAComment[][] = argumentLists.map(() => []);
+      
+      const groundedArgumentLists: Argument[][] = [];
+      
+      for (let i = 0; i < argumentLists.length; i++) {
+        const argumentList = argumentLists[i];
+        const commentList = commentLists[i];
+        
+        // Stub LLM response for grounding
+        const response = this.generateStubResponse(argumentList, commentList, false);
+        
+        // Parse and validate the response
+        let parsedResponse: ResponseWithArguments;
+        try {
+          parsedResponse = LlmParser.parseArguments(response);
+        } catch (error) {
+          throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        const promptCalls: PromptCall[] = [
+          {
+            promptId: `ground_${stepIndex}_${i}`,
+            operation: step.operation,
+            rawInputText: `Ground operation for argument list ${i + 1}/${argumentLists.length}`,
+            rawOutputText: response,
+            model: 'mock',
+            timestamp: new Date().toISOString(),
+            metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
+          }
+        ];
+        
+        this.allPromptCalls.push(...promptCalls);
+        groundedArgumentLists.push(parsedResponse.arguments);
+      }
+      
+      return {
+        arguments: groundedArgumentLists, // Return list of lists
+        promptCalls: []
+      };
     }
-    
-    return {
-      arguments: groundedArgumentLists,
-      promptCalls: []
-    };
   }
 
   /**
