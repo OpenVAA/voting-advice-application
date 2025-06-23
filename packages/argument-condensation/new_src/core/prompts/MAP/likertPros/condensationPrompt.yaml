@@ -1,17 +1,19 @@
 promptId: "map_likertPros_condensation_v1"
+params:
+  topic: string
+  comments: string
 promptText: |
   You are analyzing a batch of comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position.
   
+  Please extract and cluster the most common reasons or arguments used in support of this policy. Focus on meaning — group different phrasings of the same idea. 
+  Introduce each high-level idea with a single argument. A good argument includes a short description of different variations and examples of it in the comments.
+
+  You don't need to name the source comments. Cite their ideas indirectly. 
+
   Topic: {{topic}}
   
   Comments to analyze:
   {{comments}}
-  
-  Please extract {{nOutputArgs}} clear, distinct supporting arguments from these comments. Each argument should:
-  - Be specific and actionable
-  - Represent a different aspect or perspective
-  - Be written in clear, concise language
-  - Focus on the benefits or positive aspects of the policy
   
   Return your response as a JSON object with the following structure:
   {
@@ -27,5 +29,3 @@ promptText: |
     ],
     "reasoning": "Brief explanation of how you extracted these arguments from this batch"
   }
-params:
-  batchSize: 15 
