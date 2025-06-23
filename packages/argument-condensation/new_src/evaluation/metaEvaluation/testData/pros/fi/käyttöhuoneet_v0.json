@@ -1,0 +1,51 @@
+{
+  "topic": "Helsingissä ei tule aloittaa huumeiden käyttöhuonekokeilua, vaikka laki sen sallisi.",
+  "systemArguments": [
+    {
+      "id": "MOCK käyttöhuone system argument - these will be overwritten by some example system output",
+      "text": "MOCK this will we overwritten by some example system output"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "käyttöhuone_1",
+      "text": "Ehdokkaiden mukaan kansainväliset esimerkit, kuten Portugali ja Tanska, ovat osoittaneet, että käyttöhuoneet vähentävät huumekuolemia, estävät tartuntatautien leviämistä ja parantavat katujen turvallisuutta. Monet ehdokkaat painottavat, että käyttöhuoneet eivät lisää huumeiden käyttöä."
+    },
+    {
+      "id": "käyttöhuone_2",
+      "text": "Addiktien on tavallista vaikeampaa hakeutua hoitoon. Käyttöhuoneet ovat paikka aloittaa hoitosuhde ja saada matalan kynnyksen tukea, kuten mielenterveyspalveluita, vieroitushoitoa ja apua asunnon etsimiseen."
+    },
+    {
+      "id": "käyttöhuone_3",
+      "text": "Käyttöhuoneissa voisi olla puhtaita neuloja sekä mahdollisuus testata huumeiden sisältämiä aineita, mikä vähentäisi huumeiden käytön fyysisiä riskejä, kuten yliannostuksia, infektioita ja tartuntatauteja (esim. HIV ja C-hepatiitti)."
+    },
+    {
+      "id": "käyttöhuone_4",
+      "text": "Huumeiden käyttäjät hyödyntävät usein julkisia vessoja, puistoja ja muita yleisiä tiloja. Käyttöhuoneet vähentäisivät huumeiden käytöä näillä paikoilla ja parantaisivat siten turvallisuutta (esim. vähentämällä neulojen määrää leikkipuistoissa). Esimerkiksi Kallion katukuvassa huumeiden käyttö näkyy erityisen voimakkaasti, mikä häiritsee myös muita ihmisiä."
+    },
+    {
+      "id": "käyttöhuone_5",
+      "text": "Monien mielestä käyttöhuoneiden perustaminen olisi eettistä. Huumeidenkäyttö aiheuttaa käyttäjille usein kärsimystä ja voi johtaa jopa kuolemaan."
+    },
+    {
+      "id": "käyttöhuone_6",
+      "text": "Käyttöhuoneet voivat vähentää nuorten altistumista huumeidenkäytölle."
+    },
+    {
+      "id": "käyttöhuone_7",
+      "text": "Joidenkin ehdokkaiden mukaan Suomen Terveyden ja hyvinvoinnin laitos (THL) ja HUS Ensihoito suosittelevat käyttöhuoneiden käyttöönottoa."
+    },
+    {
+      "id": "käyttöhuone_8",
+      "text": "Joidenkin ehdokkaiden mukaan huumelähtöisten ongelmien ja kuolemien määrä Suomessa on kasvussa. Tämä kertoo, että uuden lähestymistavan kokeilu on tarpeen."
+    },
+    {
+      "id": "käyttöhuone_9",
+      "text": "Käyttöhuoneet voisivat säästää yhteiskunnan resurssien käyttöä ennaltaehkäisemällä terveydenhuollon ja rikosoikeudellisten prosessien kuluja."
+    },
+    {
+      "id": "käyttöhuone_10",
+      "text": "Kyse ei ole huumeiden käytön hyväksymisestä. Huumeriippuvuus on sairaus, ja siihen pitäisi saada hoitoa, jota käyttöhuoneet voivat tarjota."
+    }
+  ]
+}
