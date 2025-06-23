@@ -272,10 +272,10 @@ export class Condenser {
         return await this.executeRefine(step, inputData as VAAComment[]);
       
       case CondensationOperations.MAP:
-        return await this.executeMap(step, inputData as VAAComment[], stepIndex);
+        return await this.executeMap(step, inputData as VAAComment[]);
       
       case CondensationOperations.REDUCE:
-        return await this.executeReduce(step, inputData as Argument[][], stepIndex);
+        return await this.executeReduce(step, inputData as Argument[][]);
       
       case CondensationOperations.GROUND:
         return await this.executeGround(step, inputData as Argument[] | Argument[][], stepIndex);
@@ -377,93 +377,190 @@ export class Condenser {
   /**
    * Execute MAP operation
    */
-  private async executeMap(step: ProcessingStep, comments: VAAComment[], stepIndex: number): Promise<StepResult> {
-    const params = step.params as any;
+  private async executeMap(step: ProcessingStep, comments: VAAComment[]): Promise<StepResult> {
+    const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
     
     // Split comments into batches
     const batches = this.createBatches(comments, batchSize);
-    const argumentLists: Argument[][] = [];
     
+    // Prepare all LLM inputs for parallel processing
+    const llmInputs = batches.map(batch => {
+      // Prepare template variables for MAP prompt
+      const templateVariables: Record<string, any> = {
+        topic: this.input.question.topic,
+        comments: JSON.stringify(batch, null, 2)
+      };
+      
+      const promptText = this.embedTemplateVariables(params.condensationPrompt, templateVariables);
+      
+      return {
+        messages: [
+          { role: 'system' as const, content: promptText }
+        ],
+        temperature: 0.7
+      };
+    });
+    
+    // Queue all LLM calls
+    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    
+    const argumentLists: Argument[][] = [];
+    const allPromptCalls: PromptCall[] = [];
+    
+    // Process all responses
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
-      
-      // Stub LLM response
-      const response = this.generateStubResponse([], batch, true);
+      const llmResponse = llmResponses[i];
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(response);
+        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        
+        // Log the parsed response for debugging
+        console.log(`\n=== MAP BATCH ${i + 1}/${batches.length} ===`);
+        console.log('Comments processed:', batch.length);
+        console.log('Arguments extracted:', JSON.stringify(parsedResponse.arguments, null, 2));
+        if (parsedResponse.reasoning) {
+          console.log('Reasoning:', parsedResponse.reasoning);
+        }
+        console.log('=====================================\n');
+        
       } catch (error) {
         throw new Error(`Failed to parse map response for batch ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
-      const promptCalls: PromptCall[] = [
-        {
-          promptId: `map_${stepIndex}_${i}`,
-          operation: step.operation,
-          rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
-          rawOutputText: response,
-          model: 'mock',
-          timestamp: new Date().toISOString(),
-          metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
+      const promptCall: PromptCall = {
+        promptId: 'MapMockId', // TODO: get from prompt registry
+        operation: step.operation,
+        rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
+        rawOutputText: llmResponse.content,
+        model: llmResponse.model,
+        timestamp: new Date().toISOString(),
+        metadata: { 
+          tokens: { 
+            input: llmResponse.usage.promptTokens, 
+            output: llmResponse.usage.completionTokens, 
+            total: llmResponse.usage.totalTokens 
+          }, 
+          latency: 0.5 // TODO: track actual latency
         }
-      ];
+      };
       
-      this.allPromptCalls.push(...promptCalls);
+      allPromptCalls.push(promptCall);
+      this.allPromptCalls.push(promptCall);
       argumentLists.push(parsedResponse.arguments);
     }
     
     return {
       arguments: argumentLists,
-      promptCalls: []
+      promptCalls: allPromptCalls
     };
   }
 
   /**
    * Execute REDUCE operation
    */
-  private async executeReduce(step: ProcessingStep, argumentLists: Argument[][], stepIndex: number): Promise<StepResult> {
-    const params = step.params as any;
+  private async executeReduce(step: ProcessingStep, argumentLists: Argument[][]): Promise<StepResult> {
+    const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
     
-    // If we have fewer lists than denominator, return as is
-    if (argumentLists.length <= denominator) {
+    // If we only have one list, return as is (no reduction needed)
+    if (argumentLists.length <= 1) {
       return {
         arguments: argumentLists,
         promptCalls: []
       };
     }
     
-    // Stub LLM response for reduction
-    const response = this.generateStubResponse([], [], false);
-    
-    // Parse and validate the response
-    let parsedResponse: ResponseWithArguments;
-    try {
-      parsedResponse = LlmParser.parseArguments(response);
-    } catch (error) {
-      throw new Error(`Failed to parse reduce response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Group argument lists into chunks based on denominator
+    const chunks: Argument[][][] = [];
+    for (let i = 0; i < argumentLists.length; i += denominator) {
+      chunks.push(argumentLists.slice(i, i + denominator));
     }
     
-    const promptCalls: PromptCall[] = [
-      {
-        promptId: `reduce_${stepIndex}`,
-        operation: step.operation,
-        rawInputText: `Reduce operation on ${argumentLists.length} argument lists`,
-        rawOutputText: response,
-        model: 'mock',
-        timestamp: new Date().toISOString(),
-        metadata: { tokens: { input: 100, output: 50, total: 150 }, latency: 0.5 }
-      }
-    ];
+    // Prepare all LLM inputs for parallel processing
+    const llmInputs = chunks.map(chunk => {
+      // Prepare template variables for REDUCE prompt
+      const templateVariables: Record<string, any> = {
+        topic: this.input.question.topic,
+        argumentLists: JSON.stringify(chunk, null, 2),
+      };
+      
+      const promptText = this.embedTemplateVariables(params.coalescingPrompt, templateVariables);
+      
+      return {
+        messages: [
+          { role: 'system' as const, content: promptText }
+        ],
+        temperature: 0.7
+      };
+    });
     
-    this.allPromptCalls.push(...promptCalls);
+    // Queue all LLM calls
+    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    
+    const reducedArgumentLists: Argument[][] = [];
+    const allPromptCalls: PromptCall[] = [];
+    
+    // Process all responses
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const llmResponse = llmResponses[i];
+      
+      // Parse and validate the response
+      let parsedResponse: ResponseWithArguments;
+      try {
+        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        
+        // Log the parsed response for debugging
+        console.log(`\n=== REDUCE CHUNK ${i + 1}/${chunks.length} ===`);
+        console.log(`Coalescing ${chunk.length} argument lists into 1`);
+        console.log('Input lists:', chunk.length);
+        console.log('Output arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+        if (parsedResponse.reasoning) {
+          console.log('Reasoning:', parsedResponse.reasoning);
+        }
+        console.log('=====================================\n');
+        
+      } catch (error) {
+        throw new Error(`Failed to parse reduce response for chunk ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      
+      const promptCall: PromptCall = {
+        promptId: 'ReduceMockId', // TODO: get from prompt registry
+        operation: step.operation,
+        rawInputText: `Reduce operation for chunk ${i + 1}/${chunks.length}`,
+        rawOutputText: llmResponse.content,
+        model: llmResponse.model,
+        timestamp: new Date().toISOString(),
+        metadata: { 
+          tokens: { 
+            input: llmResponse.usage.promptTokens, 
+            output: llmResponse.usage.completionTokens, 
+            total: llmResponse.usage.totalTokens 
+          }, 
+          latency: 0.5 // TODO: track actual latency
+        }
+      };
+      
+      allPromptCalls.push(promptCall);
+      this.allPromptCalls.push(promptCall);
+      
+      // Each REDUCE operation should produce a single list, but we collect them as separate lists
+      // in case we need multiple REDUCE steps
+      reducedArgumentLists.push(parsedResponse.arguments);
+    }
+    
+    // If we only have one result, return it as a single list
+    const outputArguments = reducedArgumentLists.length === 1 
+      ? reducedArgumentLists[0] 
+      : reducedArgumentLists;
     
     return {
-      arguments: parsedResponse.arguments,
-      promptCalls: []
+      arguments: outputArguments,
+      promptCalls: allPromptCalls
     };
   }
 

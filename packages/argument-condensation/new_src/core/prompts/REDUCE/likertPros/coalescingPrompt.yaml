@@ -7,12 +7,9 @@ promptText: |
   Argument lists to coalesce:
   {{argumentLists}}
   
-  Please create a final list of {{nOutputArgs}} supporting arguments by:
-  - Combining similar arguments from different lists
-  - Removing duplicates and redundancies
-  - Selecting the strongest and most representative arguments
-  - Ensuring diversity of perspectives and aspects
-  - Maintaining clarity and specificity
+  Write a final list of distinct pro arguments that are easy to understand. 
+  Give concrete examples and variations of the arguments in the final list.
+  Avoid repeating the same argument in different forms. 
   
   Return your response as a JSON object with the following structure:
   {
