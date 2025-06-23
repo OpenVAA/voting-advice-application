@@ -499,12 +499,8 @@ export class Condenser {
     // Prepare comment batches
     const commentBatches = this.createBatches(commentsToUse, params.batchSize);
     
-    const groundedArgumentLists: Argument[][] = [];
-    const allPromptCalls: PromptCall[] = [];
-    
-    // Process each argument list with its dedicated comment batch
-    for (let i = 0; i < argumentLists.length; i++) {
-      const argumentList = argumentLists[i];
+    // Prepare all LLM inputs for parallel processing
+    const llmInputs = argumentLists.map((argumentList, i) => {
       const commentsForGrounding = commentBatches[i];
       
       // Prepare template variables for grounding prompt
@@ -516,16 +512,25 @@ export class Condenser {
       
       const promptText = this.embedTemplateVariables(params.groundingPrompt, templateVariables);
       
-      // Prepare messages for LLM
-      const messages = [
-        { role: 'system' as const, content: promptText },
-      ];
-      
-      // Make real LLM call
-      const llmResponse = await this.input.llmProvider.generate({
-        messages,
+      return {
+        messages: [
+          { role: 'system' as const, content: promptText }
+        ],
         temperature: 0.7
-      });
+      };
+    });
+    
+    // Queue all LLM calls
+    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    
+    const groundedArgumentLists: Argument[][] = [];
+    const allPromptCalls: PromptCall[] = [];
+    
+    // Process all responses
+    for (let i = 0; i < argumentLists.length; i++) {
+      const argumentList = argumentLists[i];
+      const commentsForGrounding = commentBatches[i];
+      const llmResponse = llmResponses[i];
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
