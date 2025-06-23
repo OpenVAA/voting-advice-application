@@ -9,7 +9,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import fs from 'fs';
 import { CondensationPrompt } from './core/types/prompt';
-import { GroundingOperationParams, RefineOperationParams } from './core/types/condensation/processParams';
+import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } from './core/types/condensation/processParams';
 
 // Configure the file to use
 const fileToUse = 'kaivoshommia.json';
@@ -31,12 +31,12 @@ async function runCondensationScript() {
   const promptRegistry = new PromptRegistry();
   await promptRegistry.loadPrompts();
 
-  // Get the refine prompts for pros
-  const initialBatchPrompt = promptRegistry.getPrompt('refine_likertPros_initial_v1') as CondensationPrompt;
-  const refinementPrompt = promptRegistry.getPrompt('refine_likertPros_refinement_v1') as CondensationPrompt;
+  // Get the prompts for the MAP → REDUCE → GROUND pipeline
+  const mapPrompt = promptRegistry.getPrompt('map_likertPros_condensation_v1') as CondensationPrompt;
+  const reducePrompt = promptRegistry.getPrompt('reduce_likertPros_coalescing_v1') as CondensationPrompt;
   const groundingPrompt = promptRegistry.getPrompt('ground_likertPros_grounding_v1') as CondensationPrompt;
 
-  if (!initialBatchPrompt || !refinementPrompt || !groundingPrompt) {
+  if (!mapPrompt || !reducePrompt || !groundingPrompt) {
     console.error('❌ Error: Required prompts not found in registry');
     console.error('Available prompts:', promptRegistry.listPrompts());
     process.exit(1);
@@ -52,18 +52,24 @@ async function runCondensationScript() {
     outputType: CONDENSATION_TYPE.LIKERT.PROS,
     steps: [
       {
-        operation: CondensationOperations.REFINE,
+        operation: CondensationOperations.MAP,
         params: {
-          batchSize: 15, // Process 15 comments at a time
-          initialBatchPrompt: initialBatchPrompt.promptText,
-          refinementPrompt: refinementPrompt.promptText
-        } as RefineOperationParams
+          batchSize: 20, // Process 20 comments per batch
+          condensationPrompt: mapPrompt.promptText
+        } as MapOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 3, // Coalesce 3 argument lists into 1
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
       },
       {
         operation: CondensationOperations.GROUND,
         params: {
           groundingPrompt: groundingPrompt.promptText,
-          batchSize: 15
+          batchSize: 25 // Use 15 comments for grounding evidence
         } as GroundingOperationParams
       }
     ],
@@ -73,7 +79,7 @@ async function runCondensationScript() {
 
   // Create the condensation input
   const input: CondensationRunInput = {
-    runId: 'grounding-test-001',
+    runId: 'map-reduce-ground-test-001',
     electionId: 'test-election',
     question: {
       id: 'kaivoshommia tai jotain',
@@ -89,24 +95,27 @@ async function runCondensationScript() {
     })
   };
 
-  const refineParams = config.steps[0].params as RefineOperationParams;
-  const groundParams = config.steps[1].params as GroundingOperationParams;
+  const mapParams = config.steps[0].params as MapOperationParams;
+  const reduceParams = config.steps[1].params as ReduceOperationParams;
+  const groundParams = config.steps[2].params as GroundingOperationParams;
 
   try {
     console.log('📋 Configuration:');
     console.log(`- Pipeline: ${config.steps.map(s => s.operation).join(' → ')}`);
-    console.log(`- REFINE Batch Size: ${refineParams.batchSize}`);
+    console.log(`- MAP Batch Size: ${mapParams.batchSize}`);
+    console.log(`- REDUCE Denominator: ${reduceParams.denominator}`);
     console.log(`- GROUND Batch Size: ${groundParams.batchSize}`);
     console.log(`- Output Type: ${config.outputType}`);
     console.log(`- Target Arguments: ${config.nOutputArgs}`);
     console.log(`- Total Comments: ${comments.length}`);
-    console.log(`- Expected REFINE Batches: ${Math.ceil(comments.length / refineParams.batchSize)}`);
+    console.log(`- Expected MAP Batches: ${Math.ceil(comments.length / mapParams.batchSize)}`);
+    console.log(`- REDUCE will coalesce ${reduceParams.denominator} lists at a time`);
     console.log(`- GROUND will use ${groundParams.batchSize} comments for evidence\n`);
 
     // Create and run the condenser
     const condenser = new Condenser(input);
     
-    console.log('🔄 Running condensation process...\n');
+    console.log('\n\n 🔄 Running condensation process...\n');
     const result = await condenser.run();
 
     console.log('✅ Condensation completed successfully!');
