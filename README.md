@@ -35,6 +35,8 @@ See full list of [features](/docs/features/).
 
 ## 🚧 Project status: Alpha
 
+> Our latest VAA release is the [2025 Finnish Local Elections Election Compass for Youth](https://nuortenvaalikone.openvaa.org).
+
 > To stay up to speed, please ⭐️ star the repo or [📧 subscribe to our newsletter](https://openvaa.org/newsletter).
 
 The project is currently in an alpha phase with the onus being on refactoring the existing code base for greater robustness and a better developer experience, as well as implementing some missing features.
@@ -43,7 +45,7 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 | Video-based VAA                                                                                                                                                                  |  Traditional VAA                                                                                                                                  |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  <a href="https://nuortenvaalikone.openvaa.org" target="_blank"><img src="images/youthvaa-animation.gif" width="300" alt="The Election Compass for Young People – EE 2024"/></a> | <a href="https://vaalikone.openvaa.org" target="_blank"><img src="images/ee24-vaa-animation.gif" width="300" alt="EE 2024 Election Compass"/></a> |
+|  <img src="images/youthvaa-animation.gif" width="300" alt="The Election Compass for Young People – EE 2024"/> | <a href="https://vaalikone.openvaa.org" target="_blank"><img src="images/ee24-vaa-animation.gif" width="300" alt="EE 2024 Election Compass"/></a> |
 |  Finnish, Swedish and English                                                                                                                                                    |  Finnish only                                                                                                                                     |
 | Features custom video content                                                                                                                                                    | Select questions by theme                                                                                                                         |
 | User survey and extended analytics                                                                                                                                               | No analytics                                                                                                                                      |
@@ -53,22 +55,18 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 ## 🎢 Roadmap
 
-**2025 Q1** — Refactor the current codebase and release a VAA in the Finnish county elections in association with Nuorisoala
-
-- Stress test and improve performance for massive elections (especially Finnish local elections)
-- Expand unit and end-to-end test coverage
-- Implement bank authentication for candidates
-- Implement simple educational mode for use in schools
-- Implement experimental AI-features with Aalto University
-
-**2025 Q2** — Expand documentation and improve developer-friendliness
+**2025 H2** — Expand documentation and improve developer-friendliness and first release
 
 - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
 - Create a research-backed methodological guide to supplement the technical documentation
+- Integrate experimental AI features into the codebase (currently in a test branch)
 - Build application manager UI
-- Enable plugins or easier customisation of pages and main components
+— First production release
 
-**2025 Q3** — First production release
+**2026** - Added features for developer-friendliness
+
+- Enable plugins or easier customisation of pages and main components
+- Multi-tenant model
 
 ## 🪢 Collaborate
 
