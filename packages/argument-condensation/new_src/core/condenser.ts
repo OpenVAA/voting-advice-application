@@ -9,20 +9,24 @@ import { CondensationPlan, ProcessingStep } from './types/condensation/processDe
 import { CondensationOperations } from './types/condensation/operation';
 import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
 import { MapOperationParams, ReduceOperationParams, RefineOperationParams, GroundingOperationParams } from './types/condensation/processParams';
+import { OperationTreeBuilder } from './operationTreeBuilder';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
  * Saves partial results after each step for caching and performance testing.
+ * Automatically generates operation tree visualization data.
  */
 export class Condenser {
   private runId: string;
   private allPromptCalls: PromptCall[] = [];
   private cacheManager: CacheManager;
   private performanceTracker = new PerformanceTracker();
+  private treeBuilder: OperationTreeBuilder;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.runId;
     this.cacheManager = new CacheManager(input.electionId); // TODO: make this configurable
+    this.treeBuilder = new OperationTreeBuilder(this.runId);
   }
 
   /**
@@ -50,6 +54,14 @@ export class Condenser {
   public validatePlan(plan: CondensationPlan): void {
     if (plan.steps.length === 0) {
       throw new Error('Condensation plan must have at least one step');
+    }
+
+    // REFINE can only be the first operation
+    for (let i = 0; i < plan.steps.length; i++) {
+      const step = plan.steps[i];
+      if (step.operation === CondensationOperations.REFINE && i !== 0) {
+        throw new Error(`REFINE operation can only be the first step in the pipeline, found at step ${i}`);
+      }
     }
 
     // Validate each step and the flow between steps
@@ -196,16 +208,16 @@ export class Condenser {
       throw new Error('MAP operation must be followed by REDUCE operation');
     }
 
+    // REFINE can ONLY be followed by GROUND (not by MAP, REDUCE, or other REFINE)
+    if (currentStep.operation === CondensationOperations.REFINE && 
+        nextStep.operation !== CondensationOperations.GROUND) {
+      throw new Error('REFINE operation can only be followed by GROUND operation');
+    }
+
     // REDUCE can be followed by GROUND or be final
     if (currentStep.operation === CondensationOperations.REDUCE && 
         nextStep.operation !== CondensationOperations.GROUND) {
       // This is valid - REDUCE can be final
-    }
-
-    // REFINE can be followed by GROUND or be final
-    if (currentStep.operation === CondensationOperations.REFINE && 
-        nextStep.operation !== CondensationOperations.GROUND) {
-      // This is valid - REFINE can be final
     }
 
     // GROUND can be followed by REDUCE or be final
@@ -227,20 +239,31 @@ export class Condenser {
 
     // Execute plan steps sequentially
     let currentData: VAAComment[] | Argument[] | Argument[][] = this.input.comments;
+    let previousNodeIds: string[] = []; // Start with empty array - first step will create root nodes
     
     for (let i = 0; i < plan.steps.length; i++) {
       const step = plan.steps[i];
-      const stepResult = await this.executeStep(step, currentData, i);
+      const stepResult = await this.executeStep(step, currentData, i, previousNodeIds);
       
       // Save partial result after each step
       await this.savePartialResult(i, stepResult);
       
       // Update current data for next step
       currentData = stepResult.arguments;
+      previousNodeIds = stepResult.nodeIds || [];
     }
 
     // Save final result
     await this.saveFinalResult({ arguments: currentData as Argument[], promptCalls: [] });
+
+    // Set final arguments in tree and save operation tree to JSON file
+    this.treeBuilder.setFinalArguments(currentData as Argument[]);
+    await this.treeBuilder.saveTree(`./operationTrees/${this.runId}.json`);
+    
+    // Print tree summary
+    console.log('\n=== OPERATION TREE SUMMARY ===');
+    console.log(this.treeBuilder.getTreeSummary());
+    console.log('===============================\n');
 
     // Return the final result
     return {
@@ -266,19 +289,19 @@ export class Condenser {
   /**
    * Execute a single step in the condensation plan
    */
-  private async executeStep(step: ProcessingStep, inputData: VAAComment[] | Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
+  private async executeStep(step: ProcessingStep, inputData: VAAComment[] | Argument[] | Argument[][], stepIndex: number, previousNodeIds: string[]): Promise<StepResult> {
     switch (step.operation) {
       case CondensationOperations.REFINE:
-        return await this.executeRefine(step, inputData as VAAComment[]);
+        return await this.executeRefine(step, inputData as VAAComment[], stepIndex, previousNodeIds);
       
       case CondensationOperations.MAP:
-        return await this.executeMap(step, inputData as VAAComment[]);
+        return await this.executeMap(step, inputData as VAAComment[], stepIndex, previousNodeIds);
       
       case CondensationOperations.REDUCE:
-        return await this.executeReduce(step, inputData as Argument[][]);
+        return await this.executeReduce(step, inputData as Argument[][], stepIndex, previousNodeIds);
       
       case CondensationOperations.GROUND:
-        return await this.executeGround(step, inputData as Argument[] | Argument[][], stepIndex);
+        return await this.executeGround(step, inputData as Argument[] | Argument[][], stepIndex, previousNodeIds);
       
       default:
         throw new Error(`Unknown operation: ${step.operation}`);
@@ -288,12 +311,29 @@ export class Condenser {
   /**
    * Execute REFINE operation
    */
-  private async executeRefine(step: ProcessingStep, comments: VAAComment[]): Promise<StepResult> {
+  private async executeRefine(step: ProcessingStep, comments: VAAComment[], stepIndex: number, previousNodeIds: string[]): Promise<StepResult> {
     const params = step.params as RefineOperationParams;
     const batchSize = params.batchSize;
     
     // Split comments into batches
     const batches = this.createBatches(comments, batchSize);
+    
+    // Create tree nodes for each batch
+    const batchNodeIds: string[] = [];
+    for (let i = 0; i < batches.length; i++) {
+      const nodeId = this.treeBuilder.createNode(CondensationOperations.REFINE, stepIndex, i);
+      this.treeBuilder.setNodeInput(nodeId, { comments: batches[i] });
+      
+      // Link to previous nodes (only if they exist - first step has no parents)
+      if (previousNodeIds.length > 0) {
+        for (const parentId of previousNodeIds) {
+          this.treeBuilder.linkNodes(parentId, nodeId);
+        }
+      }
+      
+      batchNodeIds.push(nodeId);
+      this.treeBuilder.startNode(nodeId);
+    }
     
     let currentArguments: Argument[] = [];
     let prompt = params.initialBatchPrompt;
@@ -302,6 +342,7 @@ export class Condenser {
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const isFirstBatch = i === 0;
+      const nodeId = batchNodeIds[i];
     
       // Prepare template variables
       const templateVariables: Record<string, any> = {
@@ -340,7 +381,13 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Update tree node with output
+        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+        this.treeBuilder.completeNode(nodeId, 1, true);
+        
       } catch (error) {
+        // Mark node as failed
+        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(`Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
@@ -370,19 +417,37 @@ export class Condenser {
     
     return {
       arguments: currentArguments,
-      promptCalls: allPromptCalls
+      promptCalls: allPromptCalls,
+      nodeIds: batchNodeIds
     };
   }
 
   /**
    * Execute MAP operation
    */
-  private async executeMap(step: ProcessingStep, comments: VAAComment[]): Promise<StepResult> {
+  private async executeMap(step: ProcessingStep, comments: VAAComment[], stepIndex: number, previousNodeIds: string[]): Promise<StepResult> {
     const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
     
     // Split comments into batches
     const batches = this.createBatches(comments, batchSize);
+    
+    // Create tree nodes for each batch
+    const batchNodeIds: string[] = [];
+    for (let i = 0; i < batches.length; i++) {
+      const nodeId = this.treeBuilder.createNode(CondensationOperations.MAP, stepIndex, i);
+      this.treeBuilder.setNodeInput(nodeId, { comments: batches[i] });
+      
+      // Link to previous nodes (only if they exist - first step has no parents)
+      if (previousNodeIds.length > 0) {
+        for (const parentId of previousNodeIds) {
+          this.treeBuilder.linkNodes(parentId, nodeId);
+        }
+      }
+      
+      batchNodeIds.push(nodeId);
+      this.treeBuilder.startNode(nodeId);
+    }
     
     // Prepare all LLM inputs for parallel processing
     const llmInputs = batches.map(batch => {
@@ -412,6 +477,7 @@ export class Condenser {
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const llmResponse = llmResponses[i];
+      const nodeId = batchNodeIds[i];
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
@@ -427,7 +493,13 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Update tree node with output
+        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+        this.treeBuilder.completeNode(nodeId, 1, true);
+        
       } catch (error) {
+        // Mark node as failed
+        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(`Failed to parse map response for batch ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
@@ -455,14 +527,15 @@ export class Condenser {
     
     return {
       arguments: argumentLists,
-      promptCalls: allPromptCalls
+      promptCalls: allPromptCalls,
+      nodeIds: batchNodeIds
     };
   }
 
   /**
    * Execute REDUCE operation
    */
-  private async executeReduce(step: ProcessingStep, argumentLists: Argument[][]): Promise<StepResult> {
+  private async executeReduce(step: ProcessingStep, argumentLists: Argument[][], stepIndex: number, previousNodeIds: string[]): Promise<StepResult> {
     const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
     
@@ -470,7 +543,8 @@ export class Condenser {
     if (argumentLists.length <= 1) {
       return {
         arguments: argumentLists,
-        promptCalls: []
+        promptCalls: [],
+        nodeIds: previousNodeIds
       };
     }
     
@@ -478,6 +552,21 @@ export class Condenser {
     const chunks: Argument[][][] = [];
     for (let i = 0; i < argumentLists.length; i += denominator) {
       chunks.push(argumentLists.slice(i, i + denominator));
+    }
+    
+    // Create tree nodes for each chunk
+    const chunkNodeIds: string[] = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const nodeId = this.treeBuilder.createNode(CondensationOperations.REDUCE, stepIndex, i);
+      this.treeBuilder.setNodeInput(nodeId, { argumentLists: chunks[i] });
+      
+      // Link to previous nodes
+      for (const parentId of previousNodeIds) {
+        this.treeBuilder.linkNodes(parentId, nodeId);
+      }
+      
+      chunkNodeIds.push(nodeId);
+      this.treeBuilder.startNode(nodeId);
     }
     
     // Prepare all LLM inputs for parallel processing
@@ -508,6 +597,7 @@ export class Condenser {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       const llmResponse = llmResponses[i];
+      const nodeId = chunkNodeIds[i];
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
@@ -524,7 +614,13 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Update tree node with output
+        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+        this.treeBuilder.completeNode(nodeId, 1, true);
+        
       } catch (error) {
+        // Mark node as failed
+        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(`Failed to parse reduce response for chunk ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
@@ -560,20 +656,36 @@ export class Condenser {
     
     return {
       arguments: outputArguments,
-      promptCalls: allPromptCalls
+      promptCalls: allPromptCalls,
+      nodeIds: chunkNodeIds
     };
   }
 
   /**
    * Execute GROUND operation
    */
-  private async executeGround(step: ProcessingStep, argumentData: Argument[] | Argument[][], stepIndex: number): Promise<StepResult> {
+  private async executeGround(step: ProcessingStep, argumentData: Argument[] | Argument[][], stepIndex: number, previousNodeIds: string[]): Promise<StepResult> {
     const params = step.params as GroundingOperationParams;
     
     // Normalize input to always be an array of lists for simplicity
     const argumentLists: Argument[][] = Array.isArray(argumentData[0]) 
       ? argumentData as Argument[][]
       : [argumentData as Argument[]]; // if input is a single list, wrap it in an array
+    
+    // Create tree nodes for each argument list
+    const listNodeIds: string[] = [];
+    for (let i = 0; i < argumentLists.length; i++) {
+      const nodeId = this.treeBuilder.createNode(CondensationOperations.GROUND, stepIndex, i);
+      this.treeBuilder.setNodeInput(nodeId, { arguments: argumentLists[i] });
+      
+      // Link to previous nodes
+      for (const parentId of previousNodeIds) {
+        this.treeBuilder.linkNodes(parentId, nodeId);
+      }
+      
+      listNodeIds.push(nodeId);
+      this.treeBuilder.startNode(nodeId);
+    }
     
     // Prepare comment batches - each argument list gets its own batch
     const availableComments = this.input.comments;
@@ -628,6 +740,7 @@ export class Condenser {
       const argumentList = argumentLists[i];
       const commentsForGrounding = commentBatches[i];
       const llmResponse = llmResponses[i];
+      const nodeId = listNodeIds[i];
       
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
@@ -644,7 +757,13 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Update tree node with output
+        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+        this.treeBuilder.completeNode(nodeId, 1, true);
+        
       } catch (error) {
+        // Mark node as failed
+        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
@@ -679,7 +798,8 @@ export class Condenser {
     
     return {
       arguments: outputArguments,
-      promptCalls: allPromptCalls
+      promptCalls: allPromptCalls,
+      nodeIds: listNodeIds
     };
   }
 
@@ -783,4 +903,5 @@ export class Condenser {
 interface StepResult {
   arguments: Argument[] | Argument[][];
   promptCalls: PromptCall[];
+  nodeIds?: string[];
 } 
