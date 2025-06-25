@@ -272,113 +272,6 @@ class OperationTreeApp {
             }
         }, 5000);
     }
-
-    /**
-     * Generate sample tree data for testing
-     */
-    generateSampleTree() {
-        const sampleTree = {
-            runId: `sample-${Date.now()}`,
-            roots: ['node-1'],
-            nodes: {
-                'node-1': {
-                    operation: 'MAP',
-                    stepIndex: 0,
-                    batchIndex: 0,
-                    input: {
-                        comments: [
-                            { id: '1', text: 'Sample comment 1' },
-                            { id: '2', text: 'Sample comment 2' },
-                            { id: '3', text: 'Sample comment 3' }
-                        ]
-                    },
-                    output: {
-                        arguments: [
-                            { text: 'Mapped argument 1' },
-                            { text: 'Mapped argument 2' }
-                        ]
-                    },
-                    metadata: {
-                        success: true,
-                        duration: 1500,
-                        llmCalls: 1,
-                        startTime: Date.now() - 2000,
-                        endTime: Date.now() - 500
-                    },
-                    children: ['node-2']
-                },
-                'node-2': {
-                    operation: 'REDUCE',
-                    stepIndex: 1,
-                    input: {
-                        argumentLists: [
-                            [{ text: 'Mapped argument 1' }, { text: 'Mapped argument 2' }]
-                        ]
-                    },
-                    output: {
-                        arguments: [
-                            { text: 'Reduced argument 1' }
-                        ]
-                    },
-                    metadata: {
-                        success: true,
-                        duration: 800,
-                        llmCalls: 1,
-                        startTime: Date.now() - 1000,
-                        endTime: Date.now() - 200
-                    },
-                    children: ['node-3']
-                },
-                'node-3': {
-                    operation: 'GROUND',
-                    stepIndex: 2,
-                    input: {
-                        arguments: [{ text: 'Reduced argument 1' }],
-                        comments: [
-                            { id: '1', text: 'Sample comment 1' },
-                            { id: '2', text: 'Sample comment 2' }
-                        ]
-                    },
-                    output: {
-                        arguments: [
-                            { text: 'Final grounded argument' }
-                        ]
-                    },
-                    metadata: {
-                        success: true,
-                        duration: 1200,
-                        llmCalls: 1,
-                        startTime: Date.now() - 500,
-                        endTime: Date.now()
-                    },
-                    children: []
-                }
-            },
-            metadata: {
-                totalOperations: 3,
-                maxDepth: 3,
-                totalDuration: 3500,
-                totalLlmCalls: 3,
-                startTime: Date.now() - 2000,
-                endTime: Date.now()
-            },
-            finalArguments: [
-                { text: 'Final grounded argument' }
-            ]
-        };
-
-        return sampleTree;
-    }
-
-    /**
-     * Load sample tree for demonstration
-     */
-    loadSampleTree() {
-        const sampleTree = this.generateSampleTree();
-        this.currentTreeData = sampleTree;
-        this.visualizer.loadTree(sampleTree);
-        this.showSuccessMessage('Loaded sample tree for demonstration');
-    }
 }
 
 // Add CSS animations
@@ -411,16 +304,6 @@ document.head.appendChild(style);
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new OperationTreeApp();
-    
-    // Add sample tree button for development
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        const controls = document.querySelector('.view-controls');
-        const sampleBtn = document.createElement('button');
-        sampleBtn.className = 'btn btn-secondary';
-        sampleBtn.textContent = '🧪 Load Sample';
-        sampleBtn.addEventListener('click', () => window.app.loadSampleTree());
-        controls.appendChild(sampleBtn);
-    }
     
     console.log('🌳 Operation Tree Visualizer initialized');
     console.log('Keyboard shortcuts:');
