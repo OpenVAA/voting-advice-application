@@ -18,3 +18,7 @@ export type {
   CondensationRunMetrics,
   CondensationRunResult 
 } from './condensationResult'; 
+
+export type {
+  VAAQuestion
+} from './vaaQuestion';
