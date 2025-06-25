@@ -1,0 +1,33 @@
+{
+  "topic": "Suomen tulee pyrkiä hiilineutraaliuteen vuoteen 2035 mennessä.",
+  "systemArguments": [
+    {
+      "id": "MOCK hiilineutraalius system argument - these will be overwritten by some example system output",
+      "text": "MOCK this will be overwritten by some example system output"
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "hiilineutraalius_cons_1",
+      "text": "Suomen osuus maailman hiilidioksidipäästöistä on vain noin 0,13%, joten Suomen toimilla ei ole merkittävää vaikutusta globaaliin ilmastonmuutokseen. Resurssit tulisi kohdentaa sinne, missä niillä on todellista vaikutusta."
+    },
+    {
+      "id": "hiilineutraalius_cons_2", 
+      "text": "Hiilineutraaliustavoite aiheuttaa merkittäviä taloudellisia kustannuksia kunnille, yrityksille ja kansalaisille. Liian kunnianhimoiset tavoitteet voivat heikentää Suomen kilpailukykyä ja aiheuttaa työpaikkojen menetyksiä."
+    },
+    {
+      "id": "hiilineutraalius_cons_3",
+      "text": "Suomi on jo metsäisen luontonsa ansiosta hiilineutraali tai jopa hiilinegatiivinen. Suomen metsät toimivat merkittävänä hiilinieluna, joten lisätoimenpiteet eivät ole välttämättömiä."
+    },
+    {
+      "id": "hiilineutraalius_cons_4",
+      "text": "Vuoden 2035 tavoite on epärealistinen verrattuna EU:n vuoden 2050 tavoitteeseen. Suomen tulisi noudattaa samaa aikataulua muun Euroopan kanssa eikä asettaa itselleen kohtuuttoman tiukkoja tavoitteita."
+    },
+    {
+      "id": "hiilineutraalius_cons_5",
+      "text": "Peruspalveluiden, kuten terveydenhuollon, koulutuksen ja sosiaalipalveluiden, turvaamiseen tulisi keskittyä ennen ympäristötavoitteita. Kuntien rajalliset resurssit tulisi kohdentaa ensisijaisesti asukkaiden hyvinvoinnin varmistamiseen."
+    }
+  ],
+  "humanScore": 7,
+  "humanRationale": "PLACEHOLDER: will be overwritten when a human has reviewed the system's output arguments"
+} 
