@@ -1,5 +1,5 @@
 {
-  "topic": "Suomen tulee pyrkiä hiilineutraaliuteen vuoteen 2035 mennessä.",
+  "topic": "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen.",
   "systemArguments": [
     {
       "id": "MOCK hiilineutraalius system argument - these will be overwritten by some example system output",
@@ -9,23 +9,39 @@
   "goldenArguments": [
     {
       "id": "hiilineutraalius_cons_1",
-      "text": "Suomen osuus maailman hiilidioksidipäästöistä on vain noin 0,13%, joten Suomen toimilla ei ole merkittävää vaikutusta globaaliin ilmastonmuutokseen. Resurssit tulisi kohdentaa sinne, missä niillä on todellista vaikutusta."
+      "text": "Monien mielestä hiilineutraaliuteen pyrkiminen ei kuulu kunnan tai hyvinvointialueen keskeisimpiin tehtäviin. Kuntien ja hyvinvointialueiden rajalliset resurssit tulisi kohdentaa peruspalveluiden, kuten terveydenhuollon ja koulutuksen, rahoittamiseen. Ilmastonmuutosta ei tulisi torjua kansalaisten hyvinvoinnin kustannuksella."
     },
     {
       "id": "hiilineutraalius_cons_2", 
-      "text": "Hiilineutraaliustavoite aiheuttaa merkittäviä taloudellisia kustannuksia kunnille, yrityksille ja kansalaisille. Liian kunnianhimoiset tavoitteet voivat heikentää Suomen kilpailukykyä ja aiheuttaa työpaikkojen menetyksiä."
+      "text": "Liian monimutkaiset tavoitteet voivat aiheuttaa kunnalle ja sen yrityksille taloudellisia haasteita ja vähentää kunnan houkuttelevuutta. Suomen pitäisi sen sijaan keskittyä suoraviivaisiin toimiin, kuten avohakkuiden lopettamiseen, yksilöllisiin valintoihin kannustamiseen (esim. kierrätys) ja ympäristöystävällisen teknologian kehittämiseen."
     },
     {
       "id": "hiilineutraalius_cons_3",
-      "text": "Suomi on jo metsäisen luontonsa ansiosta hiilineutraali tai jopa hiilinegatiivinen. Suomen metsät toimivat merkittävänä hiilinieluna, joten lisätoimenpiteet eivät ole välttämättömiä."
+      "text": "Suomi on jo nyt ilmastotoimien edelläkävijä. Toimia pitäisi vaatia sen sijaan muilta mailta ja suurilta yrityksiltä. Tällä olisi myös suurempi vaikutus koko maapallon päästöihin. Monien mukaan Suomi on jo hiilineutraali tai jopa hiilinegatiivinen mm. laajojen metsäalueiden vuoksi."
     },
     {
       "id": "hiilineutraalius_cons_4",
-      "text": "Vuoden 2035 tavoite on epärealistinen verrattuna EU:n vuoden 2050 tavoitteeseen. Suomen tulisi noudattaa samaa aikataulua muun Euroopan kanssa eikä asettaa itselleen kohtuuttoman tiukkoja tavoitteita."
+      "text": "Energian hinnan ja elinkustannusten nousu vaikeuttavat hiilineutraaliuuden saavuttamista käytännössä. Monien ehdokkaiden mukaan esimerkiksi energiatuotannon uudistamisen kustannukset ovat viime aikoina nousseet. Myös Suomen maantiede, kuten kylmä ilmasto ja pitkät etäisyydet, ovat haasteita tavoitteiden saavuttamisessa."
     },
     {
       "id": "hiilineutraalius_cons_5",
-      "text": "Peruspalveluiden, kuten terveydenhuollon, koulutuksen ja sosiaalipalveluiden, turvaamiseen tulisi keskittyä ennen ympäristötavoitteita. Kuntien rajalliset resurssit tulisi kohdentaa ensisijaisesti asukkaiden hyvinvoinnin varmistamiseen."
+      "text": "Suomen nykyiset tavoitteet ovat monien mielestä jo riittävät tai jopa liian kunnianhimoiset. Etenkin kuntien ja hyvinvointialueiden toimien vaikutukset ovat globaalissa mittakaavassa marginaaliset."
+    },
+    {
+      "id": "hiilineutraalius_cons_6",
+      "text": "Hiilineutraaliuden tavoittelu voi heikentää energian saatavuutta ja sitä kautta kuntien huoltovarmuutta."
+    },
+    {
+      "id": "hiilineutraalius_cons_7",
+      "text": "Hiilineutraalius edistää asukkaiden hyvinvoinnin sijaan yritysten intressejä."
+    },
+    {
+      "id": "hiilineutraalius_cons_8",
+      "text": "Hiilineutraaliuden mittaus- ja laskentamenetelmiä voi manipuloida ja tulkita monella tavalla. Aitoa ilmastovaikutusta on siis haastavaa mitata luotettavasti. Ilmastonmuutoksen tutkimustieto on monien mielestä ristiriitaista."
+    },
+    {
+      "id": "hiilineutraalius_cons_9",
+      "text": "Ilmastotavoitteet ovat monien mielestä symbolisia, ja niitä käytetään moraalisena poseerauksena kansainvälisten toimijoiden, kuten EU:n, miellyttämiseksi."
     }
   ],
   "humanScore": 7,

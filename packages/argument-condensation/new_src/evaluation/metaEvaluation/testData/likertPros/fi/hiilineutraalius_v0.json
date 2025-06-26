@@ -25,23 +25,43 @@
   "goldenArguments": [
     {
       "id": "hiilineutraalius_pros_1",
-      "text": "Hiilineutraaliuteen pyrkiminen parantaa paikallista ilmanlaatua ja ympäristön hyvinvointia, mikä edistää kaikkien asukkaiden elämänlaatua ja terveyttä. Puhtaampi ilma vähentää hengityssairauksia ja muita ympäristöstä johtuvia terveysongelmia."
+      "text": "Ilmastonmuutos on monien asiantuntijoiden mukaan aikamme suurin uhka. Vastuu sen torjumisesta kuuluu kaikille - myös kunnille ja hyvinvointialueille."
     },
     {
       "id": "hiilineutraalius_pros_2",
-      "text": "Energiatehokkuuden parantaminen ja uusiutuvan energian käyttö voivat tuoda pitkällä aikavälillä merkittäviä taloudellisia säästöjä pienentyneiden energiakustannusten kautta. Investoinnit vihreään teknologiaan voivat myös luoda uusia työpaikkoja ja parantaa alueen elinvoimaa."
+      "text": "Hiilineutraalius parantaa ilmanlaatua ja asukkaiden terveyttä. Se on tärkeää myös luonnon monimuotoisuudelle ja hyvinvoinnille."
     },
     {
       "id": "hiilineutraalius_pros_3",
-      "text": "Kunnat ja hyvinvointialueet voivat toimia esimerkkeinä kestävästä kehityksestä ja houkutella asukkaita sekä yrityksiä, jotka arvostavat ympäristövastuullisuutta. Tämä voi parantaa alueen imagoa ja vetovoimaa."
+      "text": "Hiilineutraaliuteen pyrkiminen on vastuunottoa tulevien sukupolvien hyvinvoinnista ja elinympäristön turvaamisesta."
     },
     {
       "id": "hiilineutraalius_pros_4",
-      "text": "Ilmastotavoitteet ovat erityisen tärkeitä nuorten kannalta, jotka joutuvat elämään maapallolla vielä pitkään. Hiilineutraaliuteen pyrkiminen on vastuunottoa tulevien sukupolvien hyvinvoinnista ja elinympäristön turvaamisesta."
+      "text": "Investoinnit ympäristöystävälliseen teknologiaan, kuten energiatehokkuuteen ja kiertotalouteen, voivat tuoda alueelle merkittäviä säästöjä energia- ja materiaalikustannuksissa."
     },
     {
       "id": "hiilineutraalius_pros_5",
-      "text": "Hiilineutraaliuteen siirtyminen vähentää riippuvuutta fossiilisista polttoaineista ja parantaa energiaturvallisuutta. Uusiutuva energia ja energiatehokkuus tekevät yhteiskunnasta kestävämmän ja vähemmän haavoittuvan energiakriiseille."
+      "text": "Ilmastotoimien lisääminen käytännön ratkaisuilla tuo alueelle yrittäjyyttä ja innovaatioita, jotka kasvattavat paikallista taloutta. Samalla yksityisen ja julkisen sektorin yhteistyötä voidaan parantaa yhteisien tavoitteiden avulla."
+    },
+    {
+      "id": "hiilineutraalius_pros_6",
+      "text": "Hiilineutraaliuteen siirtyminen vähentää riippuvuutta fossiilisista polttoaineista ja parantaa energiaturvallisuutta."
+    },
+    {
+      "id": "hiilineutraalius_pros_7",
+      "text": "Kuntien päätökset ovat keskeinen osa Suomen ilmastostrategiaa. Niillä on kansainvälisten sopimusten mukainen velvoite ilmastotavoitteiden saavuttamiseksi. EU voi rahoittaa kuntien ja hyvinvointialueiden toimintaa ilmastotavoitteiden saavuttamiseksi, mikä tekee siitä taloudellisesti kestävää."
+    },
+    {
+      "id": "hiilineutraalius_pros_8",
+      "text": "Kunnan tai hyvinvointialueen näyttämä myönteinen esimerkki voi inspiroida muita ja edistää laajempaa siirtymää kohti kestävämpää yhteiskuntaa."
+    },
+    {
+      "id": "hiilineutraalius_pros_9",
+      "text": "Ilmastotoimet voivat lisätä kuntien vetovoimaa, mikä voi tuoda alueelle uusia investointeja ja asukkaita. Myös edelläkävijän maine ja myönteiset mielikuvat ovat tavoittelemisen arvoisia."
+    },
+    {
+      "id": "hiilineutraalius_pros_10",
+      "text": "Suomen kunnat ovat globaalisti merkittävässä roolissa ilmastotavoitteiden saavuttamisessa. Niiltä löytyy poikkeuksellisen paljon asiantuntemusta ja resursseja konkreettisiin toimiin."
     }
   ],
   "humanScore": 8,
