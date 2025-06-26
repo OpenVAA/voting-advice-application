@@ -35,5 +35,3 @@ promptText: |
     ],
     "reasoning": "Brief explanation of how you refined the arguments"
   }
-params:
-  batchSize: 10 
