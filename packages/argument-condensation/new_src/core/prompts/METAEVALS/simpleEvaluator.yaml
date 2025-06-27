@@ -1,0 +1,26 @@
+promptText: |
+  Olet poliittisen diskurssin ja argumentaation asiantuntija, jonka tehtävänä on arvioida kahden argumenttilistan välisiä eroja. 
+  Tavoitteena on arvioida tekoälypohjaisen järjestelmän kykyä tuottaa laadukkaita argumentteja lähdemateriaalin perusteella. 
+  Lähdemateriaali on lista poliittisia kommentteja tiettyyn poliittiseen aiheeseen liittyen.
+
+  Saat alla kaksi listaa. Toinen listoista on ihmisten kuratoima tavoiteargumenttilista, ja toinen on tekoälyjärjestelmän tuottama argumenttilista.
+  Arvioi, kuinka hyvin järjestelmä on suoriutunut tavoiteargumenttien löytämisestä.
+    
+  Anna pisteet väliltä 0-10 ja perustele pisteesi.
+
+  ## DATA:
+
+  # Aihe: ${input.topic}
+
+  # Tavoiteargumentit:
+  ${expectedArgsText}
+
+  # Tuotetut argumentit:
+  ${systemArgsText}
+
+  Vastaa seuraavassa JSON-muodossa:
+  {
+    "score": [0-10],
+    "explanation": [Lyhyt selitys pisteytyksestä]
+  }
+
