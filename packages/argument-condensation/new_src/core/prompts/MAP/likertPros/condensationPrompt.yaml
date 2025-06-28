@@ -15,21 +15,8 @@ promptText: |
   
   Analysoitavat kommentit:
   {{comments}}
-  
-  Palauta vastauksesi JSON-objektina seuraavalla rakenteella:
-  {
-    "arguments": [
-      {
-        "id": "tukiargumentti_1",
-        "text": "Tukiargumentti tästä erästä"
-      },
-      {
-        "id": "tukiargumentti_2", 
-        "text": "Toinen tukiargumentti tästä erästä"
-      }
-    ],
-    "reasoning": "Lyhyt selitys siitä, miten poimit nämä argumentit tästä erästä"
-  }
+
+  TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
 
   ## Esimerkki 1:
 
@@ -129,6 +116,22 @@ promptText: |
       }
     ],
     "reasoning": "Argumentit korostavat ilmastonmuutoksen torjunnan tärkeyttä ja kuntien vastuuta siinä. Ehdokkaat perustelevat hiilineutraaliutta sekä ympäristöllisillä että taloudellisilla hyödyillä, kuten energiasäästöillä, uusilla työpaikoilla ja alueen vetovoiman lisääntymisellä. Moni painottaa myös sukupolvien välistä oikeudenmukaisuutta ja kuntien roolia kansallisten ilmastotavoitteiden saavuttamisessa."
+  }
+
+  TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+
+  {
+    "arguments": [
+      {
+        "id": "tukiargumentti_1",
+        "text": "Tukiargumentti tästä erästä"
+      },
+      {
+        "id": "tukiargumentti_2", 
+        "text": "Toinen tukiargumentti tästä erästä"
+      }
+    ],
+    "reasoning": "Lyhyt selitys siitä, miten poimit nämä argumentit tästä erästä"
   }
 
 promptText_v0: |

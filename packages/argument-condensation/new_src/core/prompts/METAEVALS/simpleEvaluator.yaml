@@ -1,10 +1,11 @@
 promptText: |
   Olet poliittisen diskurssin ja argumentaation asiantuntija, jonka tehtävänä on arvioida kahden argumenttilistan välisiä eroja. 
   Tavoitteena on arvioida tekoälypohjaisen järjestelmän kykyä tuottaa laadukkaita argumentteja lähdemateriaalin perusteella. 
-  Lähdemateriaali on lista poliittisia kommentteja tiettyyn poliittiseen aiheeseen liittyen.
+  Lähdemateriaali on lista poliittisia kommentteja tiettyyn poliittiseen aiheeseen liittyen. Yksi argumenttilista on aina joko aiheen kannalla tai sitä vastaan. 
 
-  Saat alla kaksi listaa. Toinen listoista on ihmisten kuratoima tavoiteargumenttilista, ja toinen on tekoälyjärjestelmän tuottama argumenttilista.
+  Saat alla kaksi argumenttilistaa. Toinen listoista on ihmisten kuratoima tavoiteargumenttilista, ja toinen on tekoälyjärjestelmän tuottama argumenttilista.
   Arvioi, kuinka hyvin järjestelmä on suoriutunut tavoiteargumenttien löytämisestä.
+  Tekoälyn löytämiä argumentteja käytetään vaalikoneen käyttäjien ymmärryksen lisäämiseksi. Siksi on tärkeää, että ne ovat selkeitä ja helposti luettavia. 
     
   Anna pisteet väliltä 0-10 ja perustele pisteesi.
 
@@ -24,3 +25,65 @@ promptText: |
     "explanation": [Lyhyt selitys pisteytyksestä]
   }
 
+  ### ESIMERKKEJÄ:
+
+  ## Esimerkki puolesta annettujen argumenttilistojen välisestä erosta:
+
+  # Aihe: Hyvinvointialueilla pitäisi olla verotusoikeus.
+
+  # Tavoiteargumentit:
+
+  1. Koska hyvinvointialueiden budjetti on hallituksen käsissä, alueita ei kannusteta ylijäämään eli palveluiden taloudelliseen tehostamiseen. Orpon hallitus leikkasi Helsingin rahoitusta, kun tämä oli tarjonnut palvelunsa muita alueita tehokkaammin.
+  2. Tällä hetkellä hyvinvointialueet ovat voimattomia, jos hallitus päättää leikata hyvinvointialueiden budjettia. Hallitus on tehnyt aiemminkin talouspäätöksiä, jotka ovat heikentäneet hyvinvointialueiden kykyä turvata palveluiden taso. 
+  3. Tällä hetkellä hyvinvointialueilla ei voida tarjota parempaa palvelua, vaikka alueen asukkaat sellaista toivoisivat ja olisivat sitä valmiita rahoittamaan.
+  4. Hyvinvointialueilta löytyy omat paikalliset päättäjät, joilla on parempi käsitys oman alueensa tarpeista kuin hallituksella. Samalla päättäjien valintaan ja ylläpitoon käytettyjä resursseja menee hukkaan, kun alueiden valtaa siirretään kansalliselle tasolle.
+  5. Taloudellinen itsenäisyys parantaisi resurssien kohdentamista alueen tarpeiden mukaan. Tämä voisi edistää alueiden välistä tasa-arvoa. 
+  6. Hyvinvointialueiden päättäjät saattavat jopa joutua rikkomaan lakia, jos alueiden budjetit eivät riitä lakisääteisten palveluiden tarjoamiseen.
+  7. Nykyinen malli ei kannusta palveluiden pitkäjänteiseen kehittämiseen tai menojen ennaltaehkäisyyn. 
+  8. Hyvinvointialueiden päättäjien ohittaminen ei vastaa paikallisen demokratian toteutumista. Tästä on huomauttanut myös Euroopan komissio.
+  9. Ekonomistit kannattavat hyvinvointialueiden verotusoikeutta. 
+
+  # Tekoälyn tuottamat argumentit:
+  
+  1. Hyvinvointialueiden verotusoikeus vahvistaa niiden itsehallintoa ja päätöksentekoa, mahdollistaen nopeamman ja tehokkaamman reagoinnin paikallisiin tarpeisiin. Tämä lisää alueiden autonomiaa ja joustavuutta, mikä voi johtaa parempaan palveluiden kohdentamiseen ja parantaa palveluiden laatua ja saavutettavuutta.
+  2. Verotusoikeus antaa hyvinvointialueille mahdollisuuden turvata riittävät resurssit erityisesti terveys- ja sosiaalipalveluiden järjestämiseen, vähentäen valtion taloudellisten leikkausten vaikutuksia ja tarjoten alueille enemmän valtaa ja vastuuta omasta taloudestaan.
+  3. Verotusoikeus kannustaa alueita taloudelliseen tehokkuuteen ja vastuulliseen budjetointiin. Alueilla olisi suora vastuu sekä varojen keräämisestä että niiden käytöstä, vähentäen moraalikatoa ja luoden kannustimia kustannustehokkaaseen palveluiden tuottamiseen.
+  4. Verotusoikeus voisi edistää alueiden kilpailukykyä ja elinvoimaisuutta, sillä alueet pystyisivät paremmin kilpailemaan keskenään ja houkuttelemaan uusia asukkaita ja investointeja. Tämä voisi luoda positiivisen kierteen taloudelliselle ja sosiaaliselle kehitykselle.
+  5. Verotusoikeus mahdollistaa paremman resurssien kohdentamisen alueen erityistarpeiden mukaan, edistäen alueellista tasa-arvoa ja vastuun jakamista julkisten palveluiden rahoittamisesta. Tämä parantaa alueiden motivaatiota ja kykyä kehittää palveluitaan.
+  6. Verotusoikeus kannustaisi vastuulliseen palveluiden järjestämiseen ja lisäisi kansalaisten mahdollisuuksia vaikuttaa heitä koskeviin päätöksiin. Tämä lisäisi demokratiaa ja läpinäkyvyyttä, sillä kansalaiset voisivat suoremmin vaikuttaa paikalliseen verotukseen ja palveluiden järjestämiseen.
+  7. Hyvinvointialueiden verotusoikeus voisi tehdä niistä aitoja toimijoita ja perustella niiden olemassaolon paremmin, sillä taloudellinen itsemääräämisoikeus antaa niille mahdollisuuden hallita budjettiaan ja vastata omista taloudellisista haasteistaan tehokkaammin.
+
+  # Esimerkillinen arvostelu aiheelle "Hyvinvointialueilla pitäisi olla verotusoikeus":
+  {
+    "score": 9,
+    "explanation": "Tuotetut argumentit sisältävät kaikki kriittisimmät argumentit tavoiteargumenttilistasta. Ei ole ongelmallista, että esimerkiksi ekonomistien kannatusta ei ole tuotu esiin, sillä se ei merkittävästi muuta argumenttilistan sisältämän argumentaation kokonaisrakennetta. Tärkeimmät pointit on löydetty: hyvinvointialueiden taloudellinen autonomia kehittäisi palveluita ja validoisi hyvinvointialueiden omaa alueelliseen demokraatiaan perustuvaa päätöksentekoa sekä alueiden olemassaolon. Syy yhden pisteen pudotukselle tuleekin argumentaation sisällön sijaan argumenttien muotoilusta. Ihmisen luomat argumentit ovat konkreettisempia - niissä on esimerkkejä, helpommin luettavia virkkeitä ja vähemmän abstraktia toistoa. Esimerkiksi LLM:n tuottama argumentti 2 on hyvin pitkä ja vaikeasti luettava. Sitä voisi lyhentää esimerkiksi poistamalla lopusta 'ja tarjoten alueille enemmän valtaa ja vastuuta omasta taloudestaan'. Lisäksi argumentista puuttuu ihmisen luoman argumenttilistan konkretia: sama idea verotusoikeuden ja palvelutason turvaamisesta on konkretisoitu toteamuksella, että 'hallitus on tehnyt aiemminkin talouspäätöksiä, jotka ovat heikentäneet hyvinvointialueiden kykyä turvata palveluiden taso'. Tekoälyn luomat argumentit ovat siis hieman ihmisen luomaa abstraktimpia ja täten vaikeammin ymmärrettäviä vaalikoneen käyttäjän näkökulmasta. Perusajatukseltaan argumentit ovat kuitenkin erittäin lähellä ihmisen luomia argumentteja. Kokonaisuudessaan tehtävässä on siis onnistuttu hyvin, minkä vuoksi pistevähennys on minimaalinen."
+  }
+
+  ## Esimerkki vastaan annettujen argumenttilistojen välisestä erosta:
+
+  # Aihe: Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen.
+
+  # Tavoiteargumentit:
+
+  1. Monien mielestä hiilineutraaliuteen pyrkiminen ei kuulu kunnan tai hyvinvointialueen keskeisimpiin tehtäviin. Kuntien ja hyvinvointialueiden rajalliset resurssit tulisi kohdentaa peruspalveluiden, kuten terveydenhuollon ja koulutuksen, rahoittamiseen. Ilmastonmuutosta ei tulisi torjua kansalaisten hyvinvoinnin kustannuksella.
+  2. Liian monimutkaiset tavoitteet voivat aiheuttaa kunnalle ja sen yrityksille taloudellisia haasteita ja vähentää kunnan houkuttelevuutta. Suomen pitäisi sen sijaan keskittyä suoraviivaisiin toimiin, kuten avohakkuiden lopettamiseen, yksilöllisiin valintoihin kannustamiseen (esim. kierrätys) ja ympäristöystävällisen teknologian kehittämiseen.
+  3. Suomi on jo nyt ilmastotoimien edelläkävijä. Toimia pitäisi vaatia sen sijaan muilta mailta ja suurilta yrityksiltä. Tällä olisi myös suurempi vaikutus koko maapallon päästöihin. Monien mukaan Suomi on jo hiilineutraali tai jopa hiilinegatiivinen mm. laajojen metsäalueiden vuoksi.
+  4. Energian hinnan ja elinkustannusten nousu vaikeuttavat hiilineutraaliuuden saavuttamista käytännössä. Monien ehdokkaiden mukaan esimerkiksi energiatuotannon uudistamisen kustannukset ovat viime aikoina nousseet. Myös Suomen maantiede, kuten kylmä ilmasto ja pitkät etäisyydet, ovat haasteita tavoitteiden saavuttamisessa.
+  5. Suomen nykyiset tavoitteet ovat monien mielestä jo riittävät tai jopa liian kunnianhimoiset. Etenkin kuntien ja hyvinvointialueiden toimien vaikutukset ovat globaalissa mittakaavassa marginaaliset.
+  6. Hiilineutraaliuden tavoittelu voi heikentää energian saatavuutta ja sitä kautta kuntien huoltovarmuutta.
+  7. Hiilineutraalius edistää asukkaiden hyvinvoinnin sijaan yritysten intressejä.
+  8. Hiilineutraaliuden mittaus- ja laskentamenetelmiä voi manipuloida ja tulkita monella tavalla. Aitoa ilmastovaikutusta on siis haastavaa mitata luotettavasti. Ilmastonmuutoksen tutkimustieto on monien mielestä ristiriitaista.
+  9. Ilmastotavoitteet ovat monien mielestä symbolisia, ja niitä käytetään moraalisena poseerauksena kansainvälisten toimijoiden, kuten EU:n, miellyttämiseksi.
+
+  # Tekoälyn tuottamat argumentit:
+  1. Hiilineutraaliuden tavoittelu voi olla taloudellisesti raskasta kunnille ja hyvinvointialueille, mikä voi johtaa lisäkustannuksiin, verojen nousuun ja palveluiden leikkauksiin. Tämä voi heikentää asukkaiden elintasoa ja kuntien taloudellista tilannetta.
+  2. Vaikka hiilineutraaliutta tavoiteltaisiin, Suomen ja yksittäisten kuntien osuus maailmanlaajuisista päästöistä on marginaalinen. Siksi ponnistelut eivät merkittävästi vaikuta globaaliin ilmastonmuutokseen ilman kansainvälistä yhteistyötä.
+  3. Hiilineutraaliuden tavoittelu voi ohjata resursseja pois kuntien ja hyvinvointialueiden ydintehtävistä, kuten asukkaiden peruspalveluiden laadun ja sujuvuuden varmistamisesta, mikä voi heikentää palveluiden saatavuutta ja laatua.
+  4. Monissa kunnissa ympäristöasiat ovat jo hyvällä mallilla, ja Suomen metsät sekä muut luonnonvarat tekevät maasta jo hiilineutraalin tai hiilinegatiivisen. Lisätoimet saattavat olla tarpeettomia tai liiallisia.
+  5. Hiilineutraaliuden tavoittelu on epärealistista kaikkien kuntien olosuhteet huomioon ottaen, sillä kuntien tilanteet ja päästölähteet vaihtelevat merkittävästi. Tämä tekee tavoitteesta haastavan tai jopa mahdottoman tietyille kunnille.
+
+  # Esimerkillinen arvostelu aiheelle "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen":
+  {
+    "score": 7,
+    "explanation": "Tekoäly on löytänyt paljon oikeanlaisia argumentteja, kuten hiilineutraaliuden mahdolliset lisäkustannukset ja kustannusten vaikutukset elintasoon. Myös Suomen marginaalisuus ja tavoitteiden epärealistisuushuolet on nostettu hyvin esiin. Ei ole erityisen merkittävää, että esimerkiksi tavoiteargumentti 7 puuttuu, sillä puuttuminen ei vaikuta merkittävästi pääpointteihin. Argumenteissa voisi kuitenkin olla enemmän erilaisia näkökulmia, kuten lyhyt kritiikki moraaliposeerauksesta ja yleisestä ilmastokriittisyydestä. Moraaliposeerausargumentin voisi tuoda esiin pehmeästi esimerkiksi samankaltaisella argumentilla kuin tavoiteargumentti 9. Ilmastokriittisyyden voisi taas tuoda esiin esimerkiksi sanomalla, että 'jotkut ehdokkaista epäilevät kykyä mitata ilmastonmuutoksen komplekseja vaikutuksia luotettavasti'. Ongelmallista on, että huolia huoltovarmuudesta, pitkistä välimatkoista ja energian hinnan noususta ei ole tuotu tekoälyn puolesta esiin yhtä selkeästi kuin ihmisen luomissa argumenteissa. Yleiskuva on kuitenkin varsin hyvä, ja siksi pistevähennys on pieni."
+  }

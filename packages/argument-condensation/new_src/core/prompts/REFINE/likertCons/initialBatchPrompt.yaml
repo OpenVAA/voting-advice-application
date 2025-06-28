@@ -13,6 +13,8 @@ promptText: |
   - Be written in clear, concise language
   - Focus on the problems or negative aspects of the policy
   
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+  
   Return your response as a JSON object with the following structure:
   {
     "arguments": [

@@ -16,6 +16,8 @@ promptText: |
 
   You don't need to name the source comments. Cite their ideas indirectly. 
 
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
   Return your response as a JSON object with the following structure:
   {
     "arguments": [

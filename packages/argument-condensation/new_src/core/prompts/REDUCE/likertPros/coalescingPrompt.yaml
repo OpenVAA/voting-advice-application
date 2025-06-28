@@ -12,22 +12,7 @@ promptText: |
   
   Kirjoita lopullinen lista erillisistä argumenteista. Niiden pitää olla helposti ymmärrettäviä ja luettavissa. 
   Anna esimerkkejä vaikutuksista ja tavoista, joilla argumentit tuovat tähän väitteeseen tukea. Anna esimerkkejä, joita argumenteissa mainitaan.
-  Vältä saman argumentin toistamista eri muodoissa. 
-  
-  Palauta vastauksesi seuraavassa JSON-muodossa:
-  {
-    "arguments": [
-      {
-        "id": "tukiargumentti_1",
-        "text": "Lopullinen tukiargumentti"
-      },
-      {
-        "id": "tukiargumentti_2", 
-        "text": "Toinen lopullinen tukiargumentti"
-      }
-    ],
-    "reasoning": "Lyhyt selitys siitä, miten päädyit lopulliseen argumenttilistaan"
-  }
+  Vältä saman argumentin toistamista eri muodoissa. Pyri olemaan selkeä ilman abstraktia kieltä.
 
   ## Esimerkki 1:
 
@@ -128,5 +113,20 @@ promptText: |
     ],
     "reasoning": "Argumentit korostavat ilmastonmuutoksen torjunnan tärkeyttä ja kuntien vastuuta siinä. Ehdokkaat perustelevat hiilineutraaliutta sekä ympäristöllisillä että taloudellisilla hyödyillä, kuten energiasäästöillä, uusilla työpaikoilla ja alueen vetovoiman lisääntymisellä. Moni painottaa myös sukupolvien välistä oikeudenmukaisuutta ja kuntien roolia kansallisten ilmastotavoitteiden saavuttamisessa."
   }
-params:
-  denominator: 3 
+
+  Palauta vastauksesi seuraavassa JSON-muodossa. TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+  
+  Käytä seuraavaa JSON-rakennetta:
+  {
+    "arguments": [
+      {
+        "id": "tukiargumentti_1",
+        "text": "Lopullinen tukiargumentti"
+      },
+      {
+        "id": "tukiargumentti_2", 
+        "text": "Toinen lopullinen tukiargumentti"
+      }
+    ],
+    "reasoning": "Lyhyt selitys siitä, miten päädyit lopulliseen argumenttilistaan"
+  }
