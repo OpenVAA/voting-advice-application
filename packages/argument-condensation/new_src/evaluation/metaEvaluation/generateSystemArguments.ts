@@ -19,30 +19,37 @@ console.log('🔧 Loading environment variables from the path:', path.join(__dir
 // ================================
 const CONFIG = {
   // File paths
-  commentFilePath: 'testData/comments/hiilineutraalius.txt',
-  jsonFilePath: 'testData/likertPros/fi/hiilineutraalius_v0.json',
+  commentFilePath: 'testData/comments/ulkomaaPalkkaus.txt',
+  jsonFilePath: 'testData/likertPros/fi/ulkomaaPalkkaus_v1.json',
   
   // Output configuration
   outputType: CONDENSATION_TYPE.LIKERT.PROS as CondensationOutputType,
   language: 'fi',
   
-  // Set to null or undefined to include all Likert values
-  includeLikertValues: [5] as number[] | null,
-  
-  // Prompt IDs to use - modify these to test different prompts
-  prompts: {
-    mapPromptId: 'map_likertPros_condensation_v1',
-    reducePromptId: 'reduce_likertPros_coalescing_v1',
-    groundPromptId: 'ground_likertPros_grounding_v1'
-  },
-  
-  // Pipeline parameters
-  pipeline: {
-    mapBatchSize: 44,
-    reduceDenominator: 3, 
-    groundBatchSize: 40
-  }
+  // Set to null or undefined to include all Likert values (otherwise [5] or [4, 5], etc.)
+  includeLikertValues: [1, 2, 3, 4, 5] as number[] | null,
+
+  promptVersion: 'v1',
 } as const;
+
+// Select prompts based on output type
+const getPrompts = (outputType: CondensationOutputType, version: string) => {
+  if (outputType === CONDENSATION_TYPE.LIKERT.PROS) {
+    return {
+      mapPromptId: `map_likertPros_condensation_${version}`,
+      reducePromptId: `reduce_likertPros_coalescing_${version}`,
+      groundPromptId: `ground_likertPros_grounding_${version}`
+    };
+  } else {
+    return {
+      mapPromptId: `map_likertCons_condensation_${version}`,
+      reducePromptId: `reduce_likertCons_coalescing_${version}`,
+      groundPromptId: `ground_likertCons_grounding_${version}`
+    };
+  }
+};
+
+const PROMPTS = getPrompts(CONFIG.outputType, CONFIG.promptVersion);
 
 const OPENAI_API_KEY = process.env.LLM_OPENAI_API_KEY;
 
@@ -280,25 +287,25 @@ async function generateSystemArguments() {
   await promptRegistry.loadPrompts();
 
   // Get the prompts from registry using configured IDs
-  const mapPrompt = promptRegistry.getPrompt(CONFIG.prompts.mapPromptId);
-  const reducePrompt = promptRegistry.getPrompt(CONFIG.prompts.reducePromptId);
-  const groundPrompt = promptRegistry.getPrompt(CONFIG.prompts.groundPromptId);
+  const mapPrompt = promptRegistry.getPrompt(PROMPTS.mapPromptId);
+  const reducePrompt = promptRegistry.getPrompt(PROMPTS.reducePromptId);
+  const groundPrompt = promptRegistry.getPrompt(PROMPTS.groundPromptId);
 
   if (!mapPrompt || !reducePrompt || !groundPrompt) {
     console.error('❌ Error: Required prompts not found in registry');
     console.error(`Missing prompts:`);
-    if (!mapPrompt) console.error(`  - MAP: ${CONFIG.prompts.mapPromptId}`);
-    if (!reducePrompt) console.error(`  - REDUCE: ${CONFIG.prompts.reducePromptId}`);
-    if (!groundPrompt) console.error(`  - GROUND: ${CONFIG.prompts.groundPromptId}`);
+    if (!mapPrompt) console.error(`  - MAP: ${PROMPTS.mapPromptId}`);
+    if (!reducePrompt) console.error(`  - REDUCE: ${PROMPTS.reducePromptId}`);
+    if (!groundPrompt) console.error(`  - GROUND: ${PROMPTS.groundPromptId}`);
     console.error('\nAvailable prompts:');
     promptRegistry.listPrompts().forEach(p => console.error(`  - ${p.promptId} (${p.operation}/${p.outputType})`));
     process.exit(1);
   }
 
   console.log('🎯 Using prompts:');
-  console.log(`  - MAP: ${CONFIG.prompts.mapPromptId}`);
-  console.log(`  - REDUCE: ${CONFIG.prompts.reducePromptId}`);
-  console.log(`  - GROUND: ${CONFIG.prompts.groundPromptId}`);
+  console.log(`  - MAP: ${PROMPTS.mapPromptId}`);
+  console.log(`  - REDUCE: ${PROMPTS.reducePromptId}`);
+  console.log(`  - GROUND: ${PROMPTS.groundPromptId}`);
 
   // Define the condensation configuration
   const condensationConfig: CondensationPlan = {
@@ -307,23 +314,30 @@ async function generateSystemArguments() {
       {
         operation: CondensationOperations.MAP,
         params: {
-          batchSize: CONFIG.pipeline.mapBatchSize,
+          batchSize: 20,
           condensationPrompt: mapPrompt.promptText
         } as MapOperationParams
       },
       {
         operation: CondensationOperations.REDUCE,
         params: {
-          denominator: CONFIG.pipeline.reduceDenominator,
+          denominator: 2,
           coalescingPrompt: reducePrompt.promptText
         } as ReduceOperationParams
       },
       {
-        operation: CondensationOperations.GROUND,
+        operation: CondensationOperations.REDUCE,
         params: {
-          groundingPrompt: groundPrompt.promptText,
-          batchSize: CONFIG.pipeline.groundBatchSize
-        } as GroundingOperationParams
+          denominator: 5,
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 2,
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
       }
     ],
     nOutputArgs: testCase.goldenArguments.length, // Match number of golden arguments
@@ -352,7 +366,7 @@ async function generateSystemArguments() {
     console.log('\n🔧 Configuration:');
     console.log(`- Output Type: ${CONFIG.outputType}`);
     console.log(`- Language: ${CONFIG.language}`);
-    console.log(`- Likert Filter: ${CONFIG.includeLikertValues ? CONFIG.includeLikertValues.join(', ') : 'All values'}`);
+    console.log(`- Likert Filter: ${CONFIG.includeLikertValues ? (CONFIG.includeLikertValues as number[]).join(', ') : 'All values'}`);
     console.log(`- Pipeline: ${condensationConfig.steps.map(s => s.operation).join(' → ')}`);
     console.log(`- Target Arguments: ${condensationConfig.nOutputArgs}`);
     console.log(`- Total Comments: ${comments.length}`);
