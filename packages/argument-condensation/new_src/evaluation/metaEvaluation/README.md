@@ -13,3 +13,9 @@ We create a metaevaluation test set. It consists of multiple test cases. A singl
   - The golden output to compare against. A curated list of arguments we expect the example output arguments to have a high correspondence with (at least in theory). 
   - The "correct" score the LLM should give for the system output (0-10). We are interested in how well the evaluator can align with this human-given score. 
   - Explanation of why the human gave this score to the example argument list. What was missing? Was there something that wasn't present in the golden dataset at all? This information is good not only for traceability of the process of choosing an evaluator but also for potentially using an LLM to analyze why an evaluator is not aligned. 
+
+## Usage:
+(1) define evaluators in evaluation/evaluators
+(2) define test cases in evaluation/metaEvaluation/testData/likertPros/fi (and testData/likertCons/fi)
+(3) run the command: yarn tsx new_src/evaluation/metaEvaluation/runMetaEvaluationCLI.ts
+--> this will automatically load the evaluators (excluding the stub and abstract evaluator) and give you analytics on evaluator performance to help you choose and improve the best one
