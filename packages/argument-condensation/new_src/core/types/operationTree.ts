@@ -45,6 +45,7 @@ export interface OperationNode {
 /**
  * Complete tree structure for a condensation run.
  * 
+ * @param createdAt - Date and time as a string (e.g. 1746_28_6_2025)
  * @param runId - Run identifier
  * @param roots - Root operation nodes (operations that start with comments)
  * @param nodes - All operation nodes indexed by their ID
@@ -52,6 +53,7 @@ export interface OperationNode {
  * @param metadata - Overall tree metadata
  */
 export interface OperationTree {
+  createdAt: string;
   runId: string;
   roots: string[];
   nodes: Record<string, OperationNode>;

@@ -1,6 +1,7 @@
 import { OperationTree, OperationNode } from './types/operationTree';
 import { Argument, VAAComment } from './types';
 import { CondensationOperations } from './types/condensation/operation';
+import { readableTimestamp } from './utils/readableTimestamp';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,16 +14,17 @@ export class OperationTreeBuilder {
 
   constructor(runId: string) {
     this.tree = {
+      createdAt: readableTimestamp(),
       runId,
-      roots: [],
-      nodes: {},
-      finalArguments: [],
       metadata: {
         totalOperations: 0,
         maxDepth: 0,
         totalDuration: 0,
         totalLlmCalls: 0
-      }
+      },
+      roots: [],
+      nodes: {},
+      finalArguments: [],
     };
   }
 
@@ -190,6 +192,7 @@ export class OperationTreeBuilder {
   getTreeSummary(): string {
     const lines: string[] = [];
     lines.push(`🌳 Operation Tree for ${this.tree.runId}`);
+    lines.push(`🕐 Created at: ${this.tree.createdAt}`);
     lines.push(`📊 ${this.tree.metadata.totalOperations} operations, ${this.tree.metadata.maxDepth} max depth`);
     lines.push(`⏱️  ${this.tree.metadata.totalDuration}ms total, ${this.tree.metadata.totalLlmCalls} LLM calls`);
     lines.push('');

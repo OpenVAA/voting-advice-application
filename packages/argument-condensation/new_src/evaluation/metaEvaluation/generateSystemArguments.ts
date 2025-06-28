@@ -7,6 +7,7 @@ import { OpenAIProvider } from '@openvaa/llm';
 import { PromptRegistry } from '../../core/prompts/promptRegistry';
 import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } from '../../core/types/condensation/processParams';
 import { MetaEvaluationCase } from './types/testCase';
+import { readableTimestamp } from '../../core/utils/readableTimestamp';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -346,10 +347,10 @@ async function generateSystemArguments() {
 
   // Create the condensation input
   const input: CondensationRunInput = {
-    runId: `metaeval-kuntavaaalit2025-${Date.now()}`,
-    electionId: 'kuntavaaalit2025',
+    runId: `arguments-${readableTimestamp()}`,
+    electionId: 'MOCK_ELECTION_ID (generateSystemArguments.ts)',
     question: {
-      id: 'MOCK QUESTION ID',
+      id: 'MOCK_QUESTION_ID (generateSystemArguments.ts)',
       topic: testCase.topic,
       answerType: 'likert-5'
     },
