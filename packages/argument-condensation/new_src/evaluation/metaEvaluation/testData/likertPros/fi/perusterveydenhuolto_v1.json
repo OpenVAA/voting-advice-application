@@ -1,0 +1,49 @@
+{
+  "topic": "Perusterveydenhuollon järjestämisessä tulee hyödyntää nykyistä enemmän yksityisiä palveluntarjoajia.",
+  "systemArguments": [
+    {
+      "id": "tukiargumentti_1",
+      "text": "Yksityisten palveluntarjoajien hyödyntäminen voi keventää julkisen sektorin kuormitusta."
+    },
+    {
+      "id": "tukiargumentti_2",
+      "text": "Kilpailu yksityisten ja julkisten palveluntarjoajien välillä voi parantaa palveluiden laatua ja tehokkuutta. Yksityiset toimijat voivat tuoda innovatiivisia ratkaisuja, jotka parantavat asiakkaiden kokemusta ja johtavat parempaan hinta-laatusuhteeseen."
+    },
+    {
+      "id": "tukiargumentti_3",
+      "text": "Yksityiset palveluntarjoajat voivat lisätä joustavuutta ja valinnanmahdollisuuksia asiakkaille. Esimerkiksi palvelusetelimalli mahdollistaa asiakkaiden valita itselleen sopivimman palveluntarjoajan, mikä tukee yksilöllisiä tarpeita ja preferenssejä."
+    }
+  ],
+  "goldenArguments": [
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden1",
+      "text": "Pohjimmiltaan ei ole väliä, kuka palveluita tuottaa, kunhan ne toimivat hyvin. Jos julkisen sektorin palvelut ovat ruuhkautuneet, mahdollisuus yksityisen sektorin käytöstä esimerkiksi palvelusetelillä on kaikkien etu."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden2",
+      "text": "On tärkeää, että asukkaat saavat hoitoa silloin, kun he sitä tarvitsevat."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden3",
+      "text": "Yksityisen terveydenhuollon lisääntynyt käyttö flunssien ja pitkäaikaussairauksien hoidossa avaisi julkiselle sektorille resursseja monimutkaisten sairauksien hoitoon."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden4",
+      "text": "Palveluiden saatavuus ja laatu voivat parantua, sillä yksityisellä sektorilla on enemmän kilpailua kuin julkisella."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden5",
+      "text": "Yksityisesti tuotettu sosiaali- ja terveyspalvelu voi olla edullisemmin tuotettu kuin julkinen palvelu."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden6",
+      "text": "Yksityisten palveluntarjoajien käyttöönotto voi helpottaa siirtymää omalääkärimalliin, joka parantaa hoidon tuloksia."
+    },
+    {
+      "id": "käyttöhuoneet_helsinki_pros_v0_golden7",
+      "text": "Valinnanvapaus yksityisen ja julkisen sektorin välillä lisää tyytyväisyyttä ja varmistaa, että jokainen saa palvelua omien tarpeidensa mukaan. Suomen hallitus onkin käynnistänyt yli 65-vuotiaille kohdennetun valinnanvapauskokeilun, jonka avulla ikäihmiset pääsevät yksityiselle lääkärille terveyskeskusmaksun hinnalla."
+    }
+  ],
+  "humanScore": 6,
+  "humanRationale": "Järjestelmän löytämät argumentit eivät kata yhtä laajaa kirjoa kuin ihmiset löytämät. Järjestelmä ei ole esimerkiksi sisällyttänyt kriittistä mainintaa hoitojonojen lyhentämisestä. Abstraktimpi ilmaisu julkisen sektorin kuormituksesta ei ole yhtä vaikuttava tai kuvaava. Argumenteissa ei myöskään painoteta, että hoitoon pääsyn nopeus on merkittävä argumentti yksityisen sektorin osallistamisen puolesta. Ei ole myöskään eksplisiittistä mainintaa perusajatuksesta: ei ole väliä, kuka palveluita tuottaa, jos ne toimivat hyvin. Tämä argumentti on hyvin tärkeä. Maininta innovatiivisuudesta ei myöskään ole vakuuttava; yksityinen sektori on toiminut jo vuosikymmenien ajan, eikä potilashoitoon ole odotettavissa merkittäviä innovaatioita muutoksen myötä. Moni argumenteista on kuitenkin löydetty hyvin. Siksi arvio 6."
+}
