@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
 
 export class OpenAIProvider extends LLMProvider {
-  private model: string;
+  public model: string;
   private openai: OpenAI;
   public readonly maxContextTokens: number;
 
