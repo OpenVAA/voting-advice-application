@@ -3,38 +3,17 @@ import { SingleEvaluationInput } from '../types/evaluationInput';
 import { SingleEvaluationResult } from '../types/evaluationOutput';
 import { LLMProvider, Message } from '@openvaa/llm';
 import { Argument } from '../../core/types';
-import { LlmParser, LLMResponseContract } from '../../core/parser/llmParser';
-
+import { LlmParser } from '../../core/parser/llmParser';
+import { EvaluationResponseContract } from './abstractEvaluator';
+import { loadPromptTemplate } from '../../core/utils/loadPrompt';
 /**
- * Evaluation response structure
+ * Uses an LLM to compare arguments with a two-shot prompt.
  */
-interface EvaluationResponse {
-  score: number;
-  explanation: string;
-}
-
-/**
- * Contract for EvaluationResponse validation
- */
-const EvaluationResponseContract: LLMResponseContract<EvaluationResponse> = {
-  validate(obj: any): obj is EvaluationResponse {
-    return (
-      obj &&
-      typeof obj === 'object' &&
-      typeof obj.score === 'number' &&
-      typeof obj.explanation === 'string'
-    );
-  }
-};
-
-/**
- * Uses an LLM to compare arguments with a simple prompt.
- */
-export class SimpleEvaluator extends BaseEvaluator {
+export class TwoShotEvaluator extends BaseEvaluator {
   private readonly llmProvider: LLMProvider;
 
   constructor(llmProvider: LLMProvider) {
-    super("SimpleEvaluator");
+    super("TwoShotEvaluator");
     this.llmProvider = llmProvider;
   }
 
@@ -43,7 +22,7 @@ export class SimpleEvaluator extends BaseEvaluator {
    */
   async evaluateSingle(input: SingleEvaluationInput): Promise<SingleEvaluationResult> {
     try {
-      const prompt = this.buildEvaluationPrompt(input);
+      const prompt = await this.buildEvaluationPrompt(input);
       
       const response = await this.llmProvider.generate({
         messages: [
@@ -66,34 +45,21 @@ export class SimpleEvaluator extends BaseEvaluator {
   }
 
   /**
-   * Builds the evaluation prompt for comparing arguments.
+   * Builds the evaluation prompt for comparing arguments using the loaded template.
    */
-  private buildEvaluationPrompt(input: SingleEvaluationInput): string {
+  private async buildEvaluationPrompt(input: SingleEvaluationInput): Promise<string> {
+    const template = loadPromptTemplate('EVALS', 'twoShotEvaluator');
     const systemArgsText = this.formatArguments(input.systemArguments);
     const expectedArgsText = this.formatArguments(input.expectedArguments);
 
-    return `You are an expert evaluator tasked with evaluating the quality of arguments produced by an autonomous argument finding system.
-    
-    Your job is to analyze how well the system has performed its job. 
-    Do this by analyzing how well the produced arguments align with the target arguments curated by a human doing the same argument finding task.
-    Provide a score between 0 and 10 with your reasoning for the score.
+    // Replace template variables
+    let prompt = template;
+    prompt = prompt.replace(/\$\{input\.topic\}/g, input.topic);
+    prompt = prompt.replace(/\$\{expectedArgsText\}/g, expectedArgsText);
+    prompt = prompt.replace(/\$\{systemArgsText\}/g, systemArgsText);
 
-    ## DATA:
-
-    # Topic: ${input.topic}
-
-    # Target Arguments (Expected):
-    ${expectedArgsText}
-
-    # Produced Arguments (System Output):
-    ${systemArgsText}
-
-    Respond in the following JSON format:
-    {
-      "score": [0-10],
-      "explanation": [Brief explanation of the score focusing on alignment quality]
-    }`;
-}
+    return prompt;
+  }
 
   /**
    * Formats arguments for display in the prompt.

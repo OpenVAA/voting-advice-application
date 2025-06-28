@@ -1,3 +1,4 @@
+promptId: "two_shot_evaluator"
 promptText: |
   Olet poliittisen diskurssin ja argumentaation asiantuntija, jonka tehtävänä on arvioida kahden argumenttilistan välisiä eroja. 
   Tavoitteena on arvioida tekoälypohjaisen järjestelmän kykyä tuottaa laadukkaita argumentteja lähdemateriaalin perusteella. 

@@ -1,5 +1,28 @@
+import { LLMResponseContract } from '../../core/parser/llmParser';
 import { SingleEvaluationInput, SystemEvaluationInput } from '../types/evaluationInput';
 import { SingleEvaluationResult, SystemEvaluationResult } from '../types/evaluationOutput';
+
+/**
+ * Evaluation response structure
+ */
+interface EvaluationResponse {
+  score: number;
+  explanation: string;
+}
+
+/**
+ * Contract for EvaluationResponse validation
+ */
+export const EvaluationResponseContract: LLMResponseContract<EvaluationResponse> = {
+  validate(obj: any): obj is EvaluationResponse {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      typeof obj.score === 'number' &&
+      typeof obj.explanation === 'string'
+    );
+  }
+};
 
 /**
  * Abstract base class for all evaluators.

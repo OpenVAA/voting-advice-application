@@ -1,0 +1,24 @@
+promptId: "baseline_evaluator"
+promptText: |
+  Arvioi tekoälyjärjestelmän tuottamien argumenttien laatua verrattuna ihmisten luomiin tavoiteargumentteihin.
+
+  ARVIOITAVA AIHE: ${input.topic}
+
+  TAVOITEARGUMENTIT (ihmisten luomat):
+  ${expectedArgsText}
+
+  JÄRJESTELMÄN ARGUMENTIT (tekoälyn tuottamat):
+  ${systemArgsText}
+
+  ARVIOI ASTEIKOLLA 0-10:
+  - 0-2: Huonot argumentit, eivät vastaa tavoitteita
+  - 3-4: Heikot argumentit, suuria puutteita
+  - 5-6: Keskinkertaiset argumentit, joitakin puutteita
+  - 7-8: Hyvät argumentit, pieniä puutteita
+  - 9-10: Erinomaiset argumentit, vastaavat hyvin tavoitteita
+
+  Vastaa JSON-muodossa:
+  {
+    "score": [0-10],
+    "explanation": "Lyhyt perustelu"
+  }
