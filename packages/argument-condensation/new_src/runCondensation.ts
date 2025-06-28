@@ -11,11 +11,47 @@ import fs from 'fs';
 import { CondensationPrompt } from './core/types/prompt';
 import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } from './core/types/condensation/processParams';
 
-// Configure the file to use
-const fileToUse = 'kaivoshommia.json';
+// Configure the file path to use - user can modify this path
+const INPUT_FILE_PATH = 'evaluation/metaEvaluation/testData/comments/hiilineutraalius_succinct.txt';
+const runId = 'first_cons_run'; 
 
 // Load environment variables from root .env file
 dotenv.config({ path: path.join(__dirname, '../../../.env') });
+
+// Function to parse the metaevaluation test data format
+function parseMetaEvaluationFile(filePath: string): { topic: string; comments: Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }> } {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
+  
+  const topic = 'Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen.';
+  const comments: Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }> = [];
+  
+  let currentLikertValue = 0;
+  let commentIndex = 0;
+  
+  for (const line of lines) { 
+    // Parse section headers like "=== LIKERT_VALUE:1 LABEL:Täysin eri mieltä COUNT:47 ==="
+    const sectionMatch = line.match(/=== LIKERT_VALUE:(\d+) LABEL:(.+?) COUNT:(\d+) ===/);
+    if (sectionMatch) {
+      currentLikertValue = parseInt(sectionMatch[1]);
+      continue;
+    }
+    
+    // Parse comment lines like '[1] CANDIDATE_ID:827 "En kannata uusien veromuotojen luomista."'
+    const commentMatch = line.match(/^\[(\d+)\] CANDIDATE_ID:(\d+) "(.+)"$/);
+    if (commentMatch) {
+      commentIndex++;
+      comments.push({
+        id: `comment-${commentIndex}`,
+        candidateID: commentMatch[2],
+        candidateAnswer: currentLikertValue,
+        text: commentMatch[3]
+      });
+    }
+  }
+  
+  return { topic, comments };
+}
 
 async function runCondensationScript() {
   console.log('🚀 Starting Argument Condensation Script...\n');
@@ -32,9 +68,9 @@ async function runCondensationScript() {
   await promptRegistry.loadPrompts();
 
   // Get the prompts for the MAP → REDUCE → GROUND pipeline
-  const mapPrompt = promptRegistry.getPrompt('map_likertPros_condensation_v1') as CondensationPrompt;
-  const reducePrompt = promptRegistry.getPrompt('reduce_likertPros_coalescing_v1') as CondensationPrompt;
-  const groundingPrompt = promptRegistry.getPrompt('ground_likertPros_grounding_v1') as CondensationPrompt;
+  const mapPrompt = promptRegistry.getPrompt('map_likertCons_condensation_v1') as CondensationPrompt;
+  const reducePrompt = promptRegistry.getPrompt('reduce_likertCons_coalescing_v1') as CondensationPrompt;
+  const groundingPrompt = promptRegistry.getPrompt('ground_likertCons_grounding_v1') as CondensationPrompt;
 
   if (!mapPrompt || !reducePrompt || !groundingPrompt) {
     console.error('❌ Error: Required prompts not found in registry');
@@ -42,47 +78,58 @@ async function runCondensationScript() {
     process.exit(1);
   }
 
-  // Create mock input data
-  const parsedData = JSON.parse(fs.readFileSync(path.join(__dirname, `./testData/${fileToUse}`), 'utf8'));
+  // Parse the metaevaluation test data file
+  const inputFilePath = path.join(__dirname, INPUT_FILE_PATH);
+  
+  if (!fs.existsSync(inputFilePath)) {
+    console.error(`❌ Error: Input file not found at ${inputFilePath}`);
+    console.error('Please check the INPUT_FILE_PATH constant in the script');
+    process.exit(1);
+  }
+
+  console.log(`📁 Loading data from: ${INPUT_FILE_PATH}`);
+  const parsedData = parseMetaEvaluationFile(inputFilePath);
   const comments = parsedData.comments;
   const topic = parsedData.topic;
 
+  console.log(`📋 Parsed ${comments.length} comments for topic: "${topic}"`);
+
   // Define the condensation configuration
   const config: CondensationPlan = {
-    outputType: CONDENSATION_TYPE.LIKERT.PROS,
+    outputType: CONDENSATION_TYPE.LIKERT.CONS,
     steps: [
       {
         operation: CondensationOperations.MAP,
         params: {
-          batchSize: 20, // Process 20 comments per batch
+          batchSize: 46,
           condensationPrompt: mapPrompt.promptText
         } as MapOperationParams
       },
       {
         operation: CondensationOperations.REDUCE,
         params: {
-          denominator: 3, // Coalesce 3 argument lists into 1
+          denominator: 3, 
           coalescingPrompt: reducePrompt.promptText
         } as ReduceOperationParams
       },
       {
-        operation: CondensationOperations.GROUND,
+        operation: CondensationOperations.REDUCE,
         params: {
-          groundingPrompt: groundingPrompt.promptText,
-          batchSize: 25 // Use 15 comments for grounding evidence
-        } as GroundingOperationParams
+          denominator: 2, 
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
       }
     ],
     nOutputArgs: 3,
-    language: 'en'
+    language: 'fi'
   };
 
   // Create the condensation input
   const input: CondensationRunInput = {
-    runId: 'map-reduce-ground-test-001',
+    runId: runId,
     electionId: 'test-election',
     question: {
-      id: 'kaivoshommia tai jotain',
+      id: path.basename(INPUT_FILE_PATH, '.txt'),
       topic: topic,
       answerType: 'likert-5'
     },
@@ -101,6 +148,8 @@ async function runCondensationScript() {
 
   try {
     console.log('📋 Configuration:');
+    console.log(`- Input File: ${INPUT_FILE_PATH}`);
+    console.log(`- Topic: ${topic}`);
     console.log(`- Pipeline: ${config.steps.map(s => s.operation).join(' → ')}`);
     console.log(`- MAP Batch Size: ${mapParams.batchSize}`);
     console.log(`- REDUCE Denominator: ${reduceParams.denominator}`);
