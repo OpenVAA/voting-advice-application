@@ -11,6 +11,7 @@ import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
 import { MapOperationParams, ReduceOperationParams, RefineOperationParams, GroundingOperationParams } from './types/condensation/processParams';
 import { OperationTreeBuilder } from './operationTreeBuilder';
 import { LLMResponse, Message } from '@openvaa/llm';
+import * as path from 'path';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -259,7 +260,7 @@ export class Condenser {
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Argument[]);
-    await this.treeBuilder.saveTree(`./operationTrees/${this.runId}.json`);
+    await this.treeBuilder.saveTree(path.join(__dirname, '../data/operationTrees', `${this.runId}.json`));
     
     // Print tree summary
     console.log('\n=== OPERATION TREE SUMMARY ===');
