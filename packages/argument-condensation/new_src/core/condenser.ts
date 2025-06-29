@@ -10,6 +10,7 @@ import { CondensationOperations } from './types/condensation/operation';
 import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
 import { MapOperationParams, ReduceOperationParams, RefineOperationParams, GroundingOperationParams } from './types/condensation/processParams';
 import { OperationTreeBuilder } from './operationTreeBuilder';
+import { LLMResponse, Message } from '@openvaa/llm';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -472,17 +473,18 @@ export class Condenser {
     
     const argumentLists: Argument[][] = [];
     const allPromptCalls: PromptCall[] = [];
+    const failedIndices: number[] = [];
+    const successfulResponses: { [index: number]: LLMResponse } = {};
     
-    // Process all responses
+    // First pass: process all responses and collect failures
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const llmResponse = llmResponses[i];
       const nodeId = batchNodeIds[i];
       
       // Parse and validate the response
-      let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
         
         // Log the parsed response for debugging
         console.log(`\n=== MAP BATCH ${i + 1}/${batches.length} ===`);
@@ -493,36 +495,97 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Store successful response
+        successfulResponses[i] = llmResponse;
+        
         // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
         
+        argumentLists[i] = parsedResponse.arguments;
+        
       } catch (error) {
-        // Mark node as failed
-        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
-        throw new Error(`Failed to parse map response for batch ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.log(`\n❌ MAP BATCH ${i + 1}/${batches.length} FAILED ===`);
+        console.log('Parse error:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('Raw response:', llmResponse.content.substring(0, 200) + '...');
+        console.log('=====================================\n');
+        
+        // Mark for retry
+        failedIndices.push(i);
+        
+        // Mark node as temporarily failed (will be updated if retry succeeds)
+        this.treeBuilder.completeNode(nodeId, 1, false, `Initial parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Retry failed calls individually
+    if (failedIndices.length > 0) {
+      console.log(`\n🔄 Retrying ${failedIndices.length} failed MAP batches...`);
+      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'MAP');
+      
+      // Process retry results
+      for (const { index, response } of retryResults) {
+        const batch = batches[index];
+        const nodeId = batchNodeIds[index];
+        
+        try {
+          const parsedResponse = LlmParser.parseArguments(response.content);
+          
+          console.log(`\n=== MAP BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
+          console.log('Comments processed:', batch.length);
+          console.log('Arguments extracted:', JSON.stringify(parsedResponse.arguments, null, 2));
+          if (parsedResponse.reasoning) {
+            console.log('Reasoning:', parsedResponse.reasoning);
+          }
+          console.log('=====================================\n');
+          
+          // Store successful retry response
+          successfulResponses[index] = response;
+          
+          // Update tree node with successful output
+          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+          this.treeBuilder.completeNode(nodeId, 1, true);
+          
+          argumentLists[index] = parsedResponse.arguments;
+          
+        } catch (retryError) {
+          // Even retry failed - mark as permanently failed
+          this.treeBuilder.completeNode(nodeId, 1, false, `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+          throw new Error(`Failed to parse MAP response for batch ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+        }
       }
       
-      const promptCall: PromptCall = {
-        promptId: 'MapMockId', // TODO: get from prompt registry
-        operation: step.operation,
-        rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
-        rawOutputText: llmResponse.content,
-        model: llmResponse.model,
-        timestamp: new Date().toISOString(),
-        metadata: { 
-          tokens: { 
-            input: llmResponse.usage.promptTokens, 
-            output: llmResponse.usage.completionTokens, 
-            total: llmResponse.usage.totalTokens 
-          }, 
-          latency: 0.5 // TODO: track actual latency
-        }
-      };
-      
-      allPromptCalls.push(promptCall);
-      this.allPromptCalls.push(promptCall);
-      argumentLists.push(parsedResponse.arguments);
+      // Check if any batches still failed after retries
+      const stillFailedIndices = failedIndices.filter(i => !successfulResponses[i]);
+      if (stillFailedIndices.length > 0) {
+        throw new Error(`MAP operation failed for batches: ${stillFailedIndices.map(i => i + 1).join(', ')} after all retry attempts`);
+      }
+    }
+    
+    // Create prompt calls for all successful responses (including retries)
+    for (let i = 0; i < batches.length; i++) {
+      const llmResponse = successfulResponses[i];
+      if (llmResponse) {
+        const promptCall: PromptCall = {
+          promptId: 'MapMockId', // TODO: get from prompt registry
+          operation: step.operation,
+          rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
+          rawOutputText: llmResponse.content,
+          model: llmResponse.model,
+          timestamp: new Date().toISOString(),
+          metadata: { 
+            tokens: { 
+              input: llmResponse.usage.promptTokens, 
+              output: llmResponse.usage.completionTokens, 
+              total: llmResponse.usage.totalTokens 
+            }, 
+            latency: 0.5 // TODO: track actual latency
+          }
+        };
+        
+        allPromptCalls.push(promptCall);
+        this.allPromptCalls.push(promptCall);
+      }
     }
     
     return {
@@ -592,17 +655,18 @@ export class Condenser {
     
     const reducedArgumentLists: Argument[][] = [];
     const allPromptCalls: PromptCall[] = [];
+    const failedIndices: number[] = [];
+    const successfulResponses: { [index: number]: LLMResponse } = {};
     
-    // Process all responses
+    // First pass: process all responses and collect failures
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
       const llmResponse = llmResponses[i];
       const nodeId = chunkNodeIds[i];
       
       // Parse and validate the response
-      let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
         
         // Log the parsed response for debugging
         console.log(`\n=== REDUCE CHUNK ${i + 1}/${chunks.length} ===`);
@@ -614,39 +678,98 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Store successful response
+        successfulResponses[i] = llmResponse;
+        
         // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
         
+        reducedArgumentLists[i] = parsedResponse.arguments;
+        
       } catch (error) {
-        // Mark node as failed
-        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
-        throw new Error(`Failed to parse reduce response for chunk ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.log(`\n❌ REDUCE CHUNK ${i + 1}/${chunks.length} FAILED ===`);
+        console.log('Parse error:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('Raw response:', llmResponse.content.substring(0, 200) + '...');
+        console.log('=====================================\n');
+        
+        // Mark for retry
+        failedIndices.push(i);
+        
+        // Mark node as temporarily failed (will be updated if retry succeeds)
+        this.treeBuilder.completeNode(nodeId, 1, false, `Initial parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Retry failed calls individually
+    if (failedIndices.length > 0) {
+      console.log(`\n🔄 Retrying ${failedIndices.length} failed REDUCE chunks...`);
+      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'REDUCE');
+      
+      // Process retry results
+      for (const { index, response } of retryResults) {
+        const chunk = chunks[index];
+        const nodeId = chunkNodeIds[index];
+        
+        try {
+          const parsedResponse = LlmParser.parseArguments(response.content);
+          
+          console.log(`\n=== REDUCE CHUNK ${index + 1}/${chunks.length} (RETRY SUCCESS) ===`);
+          console.log(`Coalescing ${chunk.length} argument lists into 1`);
+          console.log('Input lists:', chunk.length);
+          console.log('Output arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+          if (parsedResponse.reasoning) {
+            console.log('Reasoning:', parsedResponse.reasoning);
+          }
+          console.log('=====================================\n');
+          
+          // Store successful retry response
+          successfulResponses[index] = response;
+          
+          // Update tree node with successful output
+          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+          this.treeBuilder.completeNode(nodeId, 1, true);
+          
+          reducedArgumentLists[index] = parsedResponse.arguments;
+          
+        } catch (retryError) {
+          // Even retry failed - mark as permanently failed
+          this.treeBuilder.completeNode(nodeId, 1, false, `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+          throw new Error(`Failed to parse REDUCE response for chunk ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+        }
       }
       
-      const promptCall: PromptCall = {
-        promptId: 'ReduceMockId', // TODO: get from prompt registry
-        operation: step.operation,
-        rawInputText: `Reduce operation for chunk ${i + 1}/${chunks.length}`,
-        rawOutputText: llmResponse.content,
-        model: llmResponse.model,
-        timestamp: new Date().toISOString(),
-        metadata: { 
-          tokens: { 
-            input: llmResponse.usage.promptTokens, 
-            output: llmResponse.usage.completionTokens, 
-            total: llmResponse.usage.totalTokens 
-          }, 
-          latency: 0.5 // TODO: track actual latency
-        }
-      };
-      
-      allPromptCalls.push(promptCall);
-      this.allPromptCalls.push(promptCall);
-      
-      // Each REDUCE operation should produce a single list, but we collect them as separate lists
-      // in case we need multiple REDUCE steps
-      reducedArgumentLists.push(parsedResponse.arguments);
+      // Check if any chunks still failed after retries
+      const stillFailedIndices = failedIndices.filter(i => !successfulResponses[i]);
+      if (stillFailedIndices.length > 0) {
+        throw new Error(`REDUCE operation failed for chunks: ${stillFailedIndices.map(i => i + 1).join(', ')} after all retry attempts`);
+      }
+    }
+    
+    // Create prompt calls for all successful responses (including retries)
+    for (let i = 0; i < chunks.length; i++) {
+      const llmResponse = successfulResponses[i];
+      if (llmResponse) {
+        const promptCall: PromptCall = {
+          promptId: 'ReduceMockId', // TODO: get from prompt registry
+          operation: step.operation,
+          rawInputText: `Reduce operation for chunk ${i + 1}/${chunks.length}`,
+          rawOutputText: llmResponse.content,
+          model: llmResponse.model,
+          timestamp: new Date().toISOString(),
+          metadata: { 
+            tokens: { 
+              input: llmResponse.usage.promptTokens, 
+              output: llmResponse.usage.completionTokens, 
+              total: llmResponse.usage.totalTokens 
+            }, 
+            latency: 0.5 // TODO: track actual latency
+          }
+        };
+        
+        allPromptCalls.push(promptCall);
+        this.allPromptCalls.push(promptCall);
+      }
     }
     
     // If we only have one result, return it as a single list
@@ -734,8 +857,10 @@ export class Condenser {
     
     const groundedArgumentLists: Argument[][] = [];
     const allPromptCalls: PromptCall[] = [];
+    const failedIndices: number[] = [];
+    const successfulResponses: { [index: number]: LLMResponse } = {};
     
-    // Process all responses
+    // First pass: process all responses and collect failures
     for (let i = 0; i < argumentLists.length; i++) {
       const argumentList = argumentLists[i];
       const commentsForGrounding = commentBatches[i];
@@ -743,9 +868,8 @@ export class Condenser {
       const nodeId = listNodeIds[i];
       
       // Parse and validate the response
-      let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
         
         // Log the parsed response for debugging
         console.log(`\n=== GROUND LIST ${i + 1}/${argumentLists.length} ===`);
@@ -757,38 +881,99 @@ export class Condenser {
         }
         console.log('=====================================\n');
         
+        // Store successful response
+        successfulResponses[i] = llmResponse;
+        
         // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
         
+        groundedArgumentLists[i] = parsedResponse.arguments;
+        
       } catch (error) {
-        // Mark node as failed
-        this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
-        throw new Error(`Failed to parse ground response for list ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.log(`\n❌ GROUND LIST ${i + 1}/${argumentLists.length} FAILED ===`);
+        console.log('Parse error:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('Raw response:', llmResponse.content.substring(0, 200) + '...');
+        console.log('=====================================\n');
+        
+        // Mark for retry
+        failedIndices.push(i);
+        
+        // Mark node as temporarily failed (will be updated if retry succeeds)
+        this.treeBuilder.completeNode(nodeId, 1, false, `Initial parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Retry failed calls individually
+    if (failedIndices.length > 0) {
+      console.log(`\n🔄 Retrying ${failedIndices.length} failed GROUND lists...`);
+      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'GROUND');
+      
+      // Process retry results
+      for (const { index, response } of retryResults) {
+        const argumentList = argumentLists[index];
+        const commentsForGrounding = commentBatches[index];
+        const nodeId = listNodeIds[index];
+        
+        try {
+          const parsedResponse = LlmParser.parseArguments(response.content);
+          
+          console.log(`\n=== GROUND LIST ${index + 1}/${argumentLists.length} (RETRY SUCCESS) ===`);
+          console.log('Original arguments:', JSON.stringify(argumentList, null, 2));
+          console.log('Grounded arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+          console.log(`Used ${commentsForGrounding.length} comments for grounding`);
+          if (parsedResponse.reasoning) {
+            console.log('Reasoning:', parsedResponse.reasoning);
+          }
+          console.log('=====================================\n');
+          
+          // Store successful retry response
+          successfulResponses[index] = response;
+          
+          // Update tree node with successful output
+          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+          this.treeBuilder.completeNode(nodeId, 1, true);
+          
+          groundedArgumentLists[index] = parsedResponse.arguments;
+          
+        } catch (retryError) {
+          // Even retry failed - mark as permanently failed
+          this.treeBuilder.completeNode(nodeId, 1, false, `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+          throw new Error(`Failed to parse GROUND response for list ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+        }
       }
       
-      const promptCall: PromptCall = {
-        promptId: 'GroundMockId', // TODO: get from prompt registry
-        operation: step.operation,
-        rawInputText: `Ground operation for list ${i + 1}/${argumentLists.length}`,
-        rawOutputText: llmResponse.content,
-        model: llmResponse.model,
-        timestamp: new Date().toISOString(),
-        metadata: { 
-          tokens: { 
-            input: llmResponse.usage.promptTokens, 
-            output: llmResponse.usage.completionTokens, 
-            total: llmResponse.usage.totalTokens 
-          }, 
-          latency: 0.5 // TODO: track actual latency
-        }
-      };
-      
-      allPromptCalls.push(promptCall);
-      this.allPromptCalls.push(promptCall);
-      
-      // Use the grounded arguments
-      groundedArgumentLists.push(parsedResponse.arguments);
+      // Check if any lists still failed after retries
+      const stillFailedIndices = failedIndices.filter(i => !successfulResponses[i]);
+      if (stillFailedIndices.length > 0) {
+        throw new Error(`GROUND operation failed for lists: ${stillFailedIndices.map(i => i + 1).join(', ')} after all retry attempts`);
+      }
+    }
+    
+    // Create prompt calls for all successful responses (including retries)
+    for (let i = 0; i < argumentLists.length; i++) {
+      const llmResponse = successfulResponses[i];
+      if (llmResponse) {
+        const promptCall: PromptCall = {
+          promptId: 'GroundMockId', // TODO: get from prompt registry
+          operation: step.operation,
+          rawInputText: `Ground operation for list ${i + 1}/${argumentLists.length}`,
+          rawOutputText: llmResponse.content,
+          model: llmResponse.model,
+          timestamp: new Date().toISOString(),
+          metadata: { 
+            tokens: { 
+              input: llmResponse.usage.promptTokens, 
+              output: llmResponse.usage.completionTokens, 
+              total: llmResponse.usage.totalTokens 
+            }, 
+            latency: 0.5 // TODO: track actual latency
+          }
+        };
+        
+        allPromptCalls.push(promptCall);
+        this.allPromptCalls.push(promptCall);
+      }
     }
     
     // Return the same structure as input: single list if input was single list, multiple lists if input was multiple lists
@@ -894,6 +1079,57 @@ export class Condenser {
       this.input.question.id,
       record
     );
+  }
+
+  /**
+   * Retry helper function for failed parsing attempts
+   * @param failedIndices Array of indices that failed in the batch
+   * @param llmInputs Original LLM inputs
+   * @param operation Operation name for logging
+   * @param maxRetries Maximum number of retry attempts
+   * @returns Array of successful LLM responses
+   */
+  private async retryFailedCalls(
+    failedIndices: number[],
+    llmInputs: Array<{
+      messages: Array<Message>;
+      temperature: number;
+      maxTokens?: number;
+    }>,
+    operation: string,
+    maxRetries: number = 2
+  ): Promise<{ index: number; response: LLMResponse }[]> {
+    const successfulRetries: { index: number; response: LLMResponse }[] = [];
+    
+    for (const failedIndex of failedIndices) {
+      const input = llmInputs[failedIndex];
+      let lastError: Error | null = null;
+      
+      console.log(`\n⚠️  Retrying ${operation} for batch ${failedIndex + 1} (up to ${maxRetries} attempts)`);
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`   Attempt ${attempt}/${maxRetries}...`);
+          const response = await this.input.llmProvider.generate(input);
+          
+          // Try to parse the response to make sure it's valid
+          LlmParser.parseArguments(response.content);
+          
+          console.log(`   ✅ Success on attempt ${attempt}`);
+          successfulRetries.push({ index: failedIndex, response });
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error('Unknown error');
+          console.log(`   ❌ Attempt ${attempt} failed: ${lastError.message}`);
+          
+          if (attempt === maxRetries) {
+            console.log(`   🚫 All ${maxRetries} retry attempts failed for batch ${failedIndex + 1}`);
+          }
+        }
+      }
+    }
+    
+    return successfulRetries;
   }
 }
 
