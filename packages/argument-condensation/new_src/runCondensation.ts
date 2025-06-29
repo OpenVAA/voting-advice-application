@@ -11,9 +11,62 @@ import fs from 'fs';
 import { CondensationPrompt } from './core/types/prompt';
 import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } from './core/types/condensation/processParams';
 
-// Configure the file path to use - user can modify this path
-const INPUT_FILE_PATH = 'evaluation/metaEvaluation/testData/comments/hiilineutraalius_succinct.txt';
-const runId = 'first_cons_run'; 
+// Configure the run
+const condensationType = CONDENSATION_TYPE.LIKERT.PROS;
+const runId = 'demo_aanestysikaraja_pros';
+const topic = 'Äänestysikärajaa tulee laskea 16 ikävuoteen kunta- ja aluevaaleissa.';
+const INPUT_FILE_PATH = 'data/comments/aanestysikaraja.txt';
+const nCommentsPerLikert = new Map<number, number>([
+  [1, 0],  // Include max 15 comments with Likert value 1
+  [2, 0],  // Include max 12 comments with Likert value 2
+  [3, 100],  // Include max 10 comments with Likert value 3
+  [4, 300],  // Include max 12 comments with Likert value 4
+  [5, 500]   // Include max 15 comments with Likert value 5
+]);
+
+// Get prompts according to the condensation type
+const mapPromptId = `map_${condensationType}_condensation_v1`;
+const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
+const groundingPromptId = `ground_${condensationType}_grounding_v1`;
+
+// Define the condensation configuration here (in a function because top-level definition of the prompt registry is not allowed)
+function createCondensationConfig(mapPrompt: CondensationPrompt, reducePrompt: CondensationPrompt, groundingPrompt: CondensationPrompt): CondensationPlan {
+  return {
+    outputType: CONDENSATION_TYPE.LIKERT.CONS,
+    steps: [
+      {
+        operation: CondensationOperations.MAP,
+        params: {
+          batchSize: 30,
+          condensationPrompt: mapPrompt.promptText
+        } as MapOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 2, 
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 3, 
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 5, 
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
+      }
+    ],
+    nOutputArgs: 3,
+    language: 'fi'
+  };
+}
 
 // Load environment variables from root .env file
 dotenv.config({ path: path.join(__dirname, '../../../.env') });
@@ -23,7 +76,7 @@ function parseMetaEvaluationFile(filePath: string): { topic: string; comments: A
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   
-  const topic = 'Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen.';
+  
   const comments: Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }> = [];
   
   let currentLikertValue = 0;
@@ -53,6 +106,65 @@ function parseMetaEvaluationFile(filePath: string): { topic: string; comments: A
   return { topic, comments };
 }
 
+/**
+ * Filter comments based on the nCommentsPerLikert configuration.
+ * For each Likert value, randomly selects up to the specified number of comments.
+ * @param comments Array of all comments
+ * @param nCommentsPerLikert Map of Likert value to max number of comments
+ * @returns Filtered array of comments
+ */
+function filterCommentsByLikert(
+  comments: Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }>,
+  nCommentsPerLikert: Map<number, number>
+): Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }> {
+  // Group comments by Likert value
+  const commentsByLikert = new Map<number, Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }>>();
+  
+  for (const comment of comments) {
+    const likertValue = comment.candidateAnswer;
+    if (!commentsByLikert.has(likertValue)) {
+      commentsByLikert.set(likertValue, []);
+    }
+    commentsByLikert.get(likertValue)!.push(comment);
+  }
+  
+  // Filter comments for each Likert value
+  const filteredComments: Array<{ id: string; candidateID: string; candidateAnswer: number; text: string }> = [];
+  const likertStats: Array<{ likert: number; original: number; filtered: number }> = [];
+  
+  for (const [likertValue, likertComments] of commentsByLikert.entries()) {
+    const maxComments = nCommentsPerLikert.get(likertValue);
+    let selectedComments = likertComments;
+    
+    if (maxComments !== undefined && likertComments.length > maxComments) {
+      // Randomly shuffle and select the specified number of comments
+      const shuffled = [...likertComments].sort(() => Math.random() - 0.5);
+      selectedComments = shuffled.slice(0, maxComments);
+    }
+    
+    filteredComments.push(...selectedComments);
+    likertStats.push({
+      likert: likertValue,
+      original: likertComments.length,
+      filtered: selectedComments.length
+    });
+  }
+  
+  // Sort stats by Likert value for consistent output
+  likertStats.sort((a, b) => a.likert - b.likert);
+  
+  // Log filtering statistics
+  console.log('📊 Comment Filtering Statistics:');
+  for (const stat of likertStats) {
+    const wasFiltered = stat.original > stat.filtered;
+    const status = wasFiltered ? `(filtered from ${stat.original})` : '(all included)';
+    console.log(`   Likert ${stat.likert}: ${stat.filtered} comments ${status}`);
+  }
+  console.log(`   Total: ${filteredComments.length} comments (from ${comments.length} original)\n`);
+  
+  return filteredComments;
+}
+
 async function runCondensationScript() {
   console.log('🚀 Starting Argument Condensation Script...\n');
 
@@ -68,15 +180,18 @@ async function runCondensationScript() {
   await promptRegistry.loadPrompts();
 
   // Get the prompts for the MAP → REDUCE → GROUND pipeline
-  const mapPrompt = promptRegistry.getPrompt('map_likertCons_condensation_v1') as CondensationPrompt;
-  const reducePrompt = promptRegistry.getPrompt('reduce_likertCons_coalescing_v1') as CondensationPrompt;
-  const groundingPrompt = promptRegistry.getPrompt('ground_likertCons_grounding_v1') as CondensationPrompt;
+  const mapPrompt = promptRegistry.getPrompt(mapPromptId) as CondensationPrompt;
+  const reducePrompt = promptRegistry.getPrompt(reducePromptId) as CondensationPrompt;
+  const groundingPrompt = promptRegistry.getPrompt(groundingPromptId) as CondensationPrompt;
 
   if (!mapPrompt || !reducePrompt || !groundingPrompt) {
     console.error('❌ Error: Required prompts not found in registry');
     console.error('Available prompts:', promptRegistry.listPrompts());
     process.exit(1);
   }
+
+  // Create the condensation configuration
+  const config = createCondensationConfig(mapPrompt, reducePrompt, groundingPrompt);
 
   // Parse the metaevaluation test data file
   const inputFilePath = path.join(__dirname, INPUT_FILE_PATH);
@@ -94,35 +209,8 @@ async function runCondensationScript() {
 
   console.log(`📋 Parsed ${comments.length} comments for topic: "${topic}"`);
 
-  // Define the condensation configuration
-  const config: CondensationPlan = {
-    outputType: CONDENSATION_TYPE.LIKERT.CONS,
-    steps: [
-      {
-        operation: CondensationOperations.MAP,
-        params: {
-          batchSize: 46,
-          condensationPrompt: mapPrompt.promptText
-        } as MapOperationParams
-      },
-      {
-        operation: CondensationOperations.REDUCE,
-        params: {
-          denominator: 3, 
-          coalescingPrompt: reducePrompt.promptText
-        } as ReduceOperationParams
-      },
-      {
-        operation: CondensationOperations.REDUCE,
-        params: {
-          denominator: 2, 
-          coalescingPrompt: reducePrompt.promptText
-        } as ReduceOperationParams
-      }
-    ],
-    nOutputArgs: 3,
-    language: 'fi'
-  };
+  // Filter comments based on the nCommentsPerLikert configuration
+  const filteredComments = filterCommentsByLikert(comments, nCommentsPerLikert);
 
   // Create the condensation input
   const input: CondensationRunInput = {
@@ -134,7 +222,7 @@ async function runCondensationScript() {
       answerType: 'likert-5'
     },
     model: 'gpt-4o',
-    comments: comments,
+    comments: filteredComments,
     config: config,
     llmProvider: new OpenAIProvider({ 
       apiKey: apiKey,
@@ -144,22 +232,32 @@ async function runCondensationScript() {
 
   const mapParams = config.steps[0].params as MapOperationParams;
   const reduceParams = config.steps[1].params as ReduceOperationParams;
-  const groundParams = config.steps[2].params as GroundingOperationParams;
+  const groundStep = config.steps.find(step => step.operation === CondensationOperations.GROUND);
+  const groundParams = groundStep?.params as GroundingOperationParams | undefined;
 
   try {
     console.log('📋 Configuration:');
     console.log(`- Input File: ${INPUT_FILE_PATH}`);
     console.log(`- Topic: ${topic}`);
+    console.log(`- Comment Filtering:`);
+    for (const [likert, maxComments] of nCommentsPerLikert.entries()) {
+      console.log(`  • Likert ${likert}: max ${maxComments} comments`);
+    }
     console.log(`- Pipeline: ${config.steps.map(s => s.operation).join(' → ')}`);
     console.log(`- MAP Batch Size: ${mapParams.batchSize}`);
     console.log(`- REDUCE Denominator: ${reduceParams.denominator}`);
-    console.log(`- GROUND Batch Size: ${groundParams.batchSize}`);
+    if (groundParams) {
+      console.log(`- GROUND Batch Size: ${groundParams.batchSize}`);
+    }
     console.log(`- Output Type: ${config.outputType}`);
     console.log(`- Target Arguments: ${config.nOutputArgs}`);
-    console.log(`- Total Comments: ${comments.length}`);
-    console.log(`- Expected MAP Batches: ${Math.ceil(comments.length / mapParams.batchSize)}`);
+    console.log(`- Total Comments (after filtering): ${filteredComments.length}`);
+    console.log(`- Expected MAP Batches: ${Math.ceil(filteredComments.length / mapParams.batchSize)}`);
     console.log(`- REDUCE will coalesce ${reduceParams.denominator} lists at a time`);
-    console.log(`- GROUND will use ${groundParams.batchSize} comments for evidence\n`);
+    if (groundParams) {
+      console.log(`- GROUND will use ${groundParams.batchSize} comments for evidence`);
+    }
+    console.log('');
 
     // Create and run the condenser
     const condenser = new Condenser(input);
