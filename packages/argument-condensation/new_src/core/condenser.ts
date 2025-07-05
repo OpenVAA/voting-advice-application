@@ -456,7 +456,7 @@ export class Condenser {
       // Prepare template variables for MAP prompt
       const templateVariables: Record<string, any> = {
         topic: this.input.question.topic,
-        comments: JSON.stringify(batch, null, 2)
+        comments: comments.map(c => c.text).join('\n')
       };
       
       const promptText = this.embedTemplateVariables(params.condensationPrompt, templateVariables);
