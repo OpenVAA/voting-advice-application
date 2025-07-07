@@ -17,16 +17,12 @@ Configure in `runCondensation.ts` using consts:
 - `INPUT_FILE_PATH`: Path to comments file
 - `nCommentsPerLikert`: Max comments per Likert value (1-5)
 
-### Run Meta-Evaluation
+Automatically saves an operation tree that can be used in the following way.
 
-Meta-evaluation is the process of analyzing how well evaluators perform output quality evaluation. Test cases are defined so that a human has evaluated the output already and we are looking at how well the evaluator aligns with the human evals. 
-
-(1) Define output evaluators in evaluation/evaluators
-(2) Define test cases in evaluation/metaEvaluation/testData/likertPros/fi (and testData/likertCons/fi)
-(3) Run meta-evaluation using yarn tsx
+Go to new_src/core/visualization and run:
 
 ```bash
-yarn tsx evaluation/metaEvaluation/runMetaEvaluationCLI.ts fi
+python3 -m http.server 8080
 ```
 
-The script will automatically load the evaluators (excluding the stub and abstract evaluator) and give you analytics on each evaluator's performance to help you improve and choose the best one.
+UI will prompt you to download an operation tree. You can find one in new_src/data/operationTrees. This will show a visualization of the condensation process, including inputs and outputs of each prompt. 
