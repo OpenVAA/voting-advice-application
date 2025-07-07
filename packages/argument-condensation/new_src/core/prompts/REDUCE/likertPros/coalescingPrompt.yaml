@@ -1,13 +1,16 @@
 promptId: "reduce_likertPros_coalescing_v1"
 promptText: |
-  Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen tukemisessa.
+  Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") tukemisessa.
   Tehtäväsi on muodostaa saamasi argumentit yhdeksi argumenttilistaksi, jonka avulla poliittisten vaalikoneiden käyttäjät voivat ymmärtää poliittista diskurssia väitteen tueksi. 
   
   Argumenttien jaottelun pitää olla sulavaa, että niiden lukeminen on helppoa. 
+
+  Mikäli argumentteja ei ole, palauta tyhjä lista ja tyhjä reasoning-kenttä.
+
+  ## Väite: 
+  {{topic}}
   
-  Väite: {{topic}}
-  
-  Argumentit, joita on annettu:
+  ## Argumentit, joita on annettu:
   {{argumentLists}}
   
   Kirjoita lopullinen lista erillisistä argumenteista. Niiden pitää olla helposti ymmärrettäviä ja luettavissa. 

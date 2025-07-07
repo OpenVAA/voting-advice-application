@@ -4,16 +4,17 @@ params:
   comments: string
 
 promptText: |
-  Analysoit erää kommentteja äänestysneuvontasovelluksesta (VAA) poimiaksesi tukiargumentteja politiikkakannan puolesta.
+  Analysoit erää kommentteja äänestysneuvontasovelluksesta (VAA) poimiaksesi tukiargumentteja politiikkakannan ("{{topic}}") puolesta.
   
   Poimi ja ryhmittele syyt tai argumentit, joita käytetään tämän politiikan tukemisessa. Keskity merkitykseen — ryhmittele saman idean erilaiset ilmaisutavat. 
   Hyvä argumentti sisältää lyhyen kuvauksen eri variaatioista ja esimerkkejä siitä kommenteissa. Viittaa kommenttien antamiin esimerkkeihin epäsuorasti ilman nimeä tai ID:tä. 
 
-  Mikäli et löydä argumentteja väitteen tueksi, palauta tyhjä lista. 
+  Mikäli et löydä argumentteja väitteen tueksi, palauta tyhjä lista ja tyhjä reasoning-kenttä.
 
-  Väite: {{topic}}
+  ## Väite: 
+  {{topic}}
   
-  Analysoitavat kommentit:
+  ## Analysoitavat kommentit:
   {{comments}}
 
   TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
