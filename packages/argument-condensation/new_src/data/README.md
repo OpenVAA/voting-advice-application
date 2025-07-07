@@ -8,3 +8,8 @@ Aiheet kommenttitiedostoille:
 
   ulkomaaPalkkaus.txt = "Hyvinvointialueelleni tulee palkata ulkomailta lisää henkilöstöä, esimerkiksi sairaanhoitajia."
 
+Validation set aiheet:
+
+  maalittaminen: EU:n pitää säätää vihapuhe ja maalittaminen rangaistaviksi.
+
+  tekoalyRegulaatio: EU:n tulee kiristää tekoälyyn liittyvää sääntelyä.
