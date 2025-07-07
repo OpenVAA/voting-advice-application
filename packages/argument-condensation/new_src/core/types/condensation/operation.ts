@@ -5,6 +5,7 @@
 export enum CondensationOperations {
   REFINE = 'REFINE',
   MAP = 'MAP',
+  ITERATE_MAP = 'ITERATE_MAP',
   REDUCE = 'REDUCE',
   GROUND = 'GROUND'
 }

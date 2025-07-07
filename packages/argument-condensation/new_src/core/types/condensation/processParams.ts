@@ -12,11 +12,13 @@ export interface RefineOperationParams {
 
 /**
  * Parameters for the map operation.
- * @param batchSize - The number of arguments to process in each batch.
  * @param condensationPrompt - The prompt to use for the condensation.
+ * @param iterationPrompt - Prompt to use for improving the initial batches of arguments.
+ * @param batchSize - The number of arguments to process in each batch.
  */
 export interface MapOperationParams {
   condensationPrompt: string;
+  iterationPrompt: string;
   batchSize: number;
 }
 

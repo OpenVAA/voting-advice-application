@@ -242,10 +242,11 @@ export class Condenser {
     // Execute plan steps sequentially
     let currentData: VAAComment[] | Argument[] | Argument[][] = this.input.comments;
     let previousNodeIds: string[] = []; // Start with empty array - first step will create root nodes
+    let currentStepIndex = 0; // Track actual step index accounting for multi-level operations
     
     for (let i = 0; i < plan.steps.length; i++) {
       const step = plan.steps[i];
-      const stepResult = await this.executeStep(step, currentData, i, previousNodeIds);
+      const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
       
       // Save partial result after each step
       await this.savePartialResult(i, stepResult);
@@ -253,6 +254,9 @@ export class Condenser {
       // Update current data for next step
       currentData = stepResult.arguments;
       previousNodeIds = stepResult.nodeIds || [];
+      
+      // Update step index based on how many levels this operation consumed
+      currentStepIndex += stepResult.stepLevelsConsumed || 1;
     }
 
     // Save final result
@@ -489,7 +493,6 @@ export class Condenser {
         
         // Log the parsed response for debugging
         console.log(`\n=== MAP BATCH ${i + 1}/${batches.length} ===`);
-        console.log('Comments processed:', batch.length);
         console.log('Arguments extracted:', JSON.stringify(parsedResponse.arguments, null, 2));
         if (parsedResponse.reasoning) {
           console.log('Reasoning:', parsedResponse.reasoning);
@@ -588,11 +591,163 @@ export class Condenser {
         this.allPromptCalls.push(promptCall);
       }
     }
+
+    console.log('\n🔄 Starting MAP iteration step...');
+    
+    // Create iteration nodes for each batch as children of MAP nodes
+    const iterationNodeIds: string[] = [];
+    for (let i = 0; i < batches.length; i++) {
+      const nodeId = this.treeBuilder.createNode(CondensationOperations.ITERATE_MAP, stepIndex + 1, i);
+      this.treeBuilder.setNodeInput(nodeId, { 
+        arguments: argumentLists[i] // Only show arguments as input, comments are in parent MAP node
+      });
+      
+      // Link to the corresponding initial MAP node
+      this.treeBuilder.linkNodes(batchNodeIds[i], nodeId);
+      
+      iterationNodeIds.push(nodeId);
+      this.treeBuilder.startNode(nodeId);
+    }
+    
+    // Prepare iteration LLM inputs
+    const iterationLlmInputs = batches.map((batch, i) => {
+      // Prepare template variables for iteration prompt
+      const templateVariables: Record<string, any> = {
+        topic: this.input.question.topic,
+        arguments: JSON.stringify(argumentLists[i], null, 2),
+        comments: batch.map(c => c.text).join('\n')
+      };
+      
+      const promptText = this.embedTemplateVariables(params.iterationPrompt, templateVariables);
+      
+      return {
+        messages: [
+          { role: 'system' as const, content: promptText }
+        ],
+        temperature: 0.7
+      };
+    });
+    
+    // Queue iteration LLM calls
+    const iterationLlmResponses = await this.input.llmProvider.generateMultiple(iterationLlmInputs);
+    
+    const iterationFailedIndices: number[] = [];
+    const iterationSuccessfulResponses: { [index: number]: LLMResponse } = {};
+    
+    // Process iteration responses
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      const llmResponse = iterationLlmResponses[i];
+      const nodeId = iterationNodeIds[i];
+      
+      try {
+        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        
+        console.log(`\n=== MAP ITERATION BATCH ${i + 1}/${batches.length} ===`);
+        console.log('Refined arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+        if (parsedResponse.reasoning) {
+          console.log('Reasoning:', parsedResponse.reasoning);
+        }
+        console.log('=====================================\n');
+        
+        // Store successful iteration response
+        iterationSuccessfulResponses[i] = llmResponse;
+        
+        // Update tree node with iteration output
+        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+        this.treeBuilder.completeNode(nodeId, 1, true);
+        
+        // Replace the initial arguments with the refined ones
+        argumentLists[i] = parsedResponse.arguments;
+        
+      } catch (error) {
+        console.log(`\n❌ MAP ITERATION BATCH ${i + 1}/${batches.length} FAILED ===`);
+        console.log('Parse error:', error instanceof Error ? error.message : 'Unknown error');
+        console.log('Raw response:', llmResponse.content.substring(0, 200) + '...');
+        console.log('=====================================\n');
+        
+        // Mark for retry
+        iterationFailedIndices.push(i);
+        
+        // Mark node as temporarily failed
+        this.treeBuilder.completeNode(nodeId, 1, false, `Iteration parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Retry failed iteration calls
+    if (iterationFailedIndices.length > 0) {
+      console.log(`\n🔄 Retrying ${iterationFailedIndices.length} failed MAP iteration batches...`);
+      const iterationRetryResults = await this.retryFailedCalls(iterationFailedIndices, iterationLlmInputs, 'MAP_ITERATION');
+      
+      for (const { index, response } of iterationRetryResults) {
+        const nodeId = iterationNodeIds[index];
+        
+        try {
+          const parsedResponse = LlmParser.parseArguments(response.content);
+          
+          console.log(`\n=== MAP ITERATION BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
+          console.log('Refined arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
+          if (parsedResponse.reasoning) {
+            console.log('Reasoning:', parsedResponse.reasoning);
+          }
+          console.log('=====================================\n');
+          
+          // Store successful retry response
+          iterationSuccessfulResponses[index] = response;
+          
+          // Update tree node with successful iteration output
+          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
+          this.treeBuilder.completeNode(nodeId, 1, true);
+          
+          // Replace the initial arguments with the refined ones
+          argumentLists[index] = parsedResponse.arguments;
+          
+        } catch (retryError) {
+          // Iteration retry failed - keep initial arguments and mark as failed
+          console.log(`\n⚠️  MAP ITERATION BATCH ${index + 1} failed after retries, keeping initial arguments`);
+          this.treeBuilder.completeNode(nodeId, 1, false, `All iteration retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`);
+        }
+      }
+    }
+    
+    // Create prompt calls for successful iteration responses
+    const iterationPromptCalls: PromptCall[] = [];
+    for (let i = 0; i < batches.length; i++) {
+      const llmResponse = iterationSuccessfulResponses[i];
+      if (llmResponse) {
+        const promptCall: PromptCall = {
+          promptId: 'MapIterationPromptId', // TODO: get from prompt registry or params
+          operation: CondensationOperations.ITERATE_MAP, // Use ITERATE_MAP instead of step.operation
+          rawInputText: `Map iteration for batch ${i + 1}/${batches.length}`,
+          rawOutputText: llmResponse.content,
+          model: llmResponse.model,
+          timestamp: new Date().toISOString(),
+          metadata: { 
+            tokens: { 
+              input: llmResponse.usage.promptTokens, 
+              output: llmResponse.usage.completionTokens, 
+              total: llmResponse.usage.totalTokens 
+            },
+            latency: 0.5 // TODO: track actual latency
+          }
+        };
+        
+        iterationPromptCalls.push(promptCall);
+        this.allPromptCalls.push(promptCall);
+      }
+    }
+    
+    // Add iteration prompt calls to the main prompt calls array
+    allPromptCalls.push(...iterationPromptCalls);
+    
+    // Update nodeIds to include iteration nodes
+    batchNodeIds.push(...iterationNodeIds);
     
     return {
       arguments: argumentLists,
       promptCalls: allPromptCalls,
-      nodeIds: batchNodeIds
+      nodeIds: batchNodeIds,
+      stepLevelsConsumed: 2 // MAP operation uses 2 step levels (MAP + ITERATE_MAP)
     };
   }
 
@@ -1141,4 +1296,5 @@ interface StepResult {
   arguments: Argument[] | Argument[][];
   promptCalls: PromptCall[];
   nodeIds?: string[];
+  stepLevelsConsumed?: number; // How many step levels this operation consumed (default 1)
 } 

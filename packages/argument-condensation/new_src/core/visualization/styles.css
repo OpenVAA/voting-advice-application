@@ -23,6 +23,8 @@
     /* Operation Colors */
     --color-map: var(--color-success);
     --color-map-bg: #ecfdf5;
+    --color-iterate-map: #6366f1;
+    --color-iterate-map-bg: #f0f9ff;
     --color-reduce: var(--color-warning);
     --color-reduce-bg: #fefce8;
     --color-refine: var(--color-purple);
@@ -313,6 +315,11 @@ body {
 .node-circle.map { 
     stroke: var(--color-map); 
     fill: var(--color-map-bg); 
+}
+
+.node-circle.iterate_map { 
+    stroke: var(--color-iterate-map); 
+    fill: var(--color-iterate-map-bg); 
 }
 
 .node-circle.reduce { 

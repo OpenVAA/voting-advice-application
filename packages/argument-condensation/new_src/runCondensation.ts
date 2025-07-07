@@ -13,52 +13,40 @@ import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } f
 
 // Configure the run
 const condensationType = CONDENSATION_TYPE.LIKERT.PROS;
-const runId = 'demo_aanestysikaraja_pros';
-const topic = 'Äänestysikärajaa tulee laskea 16 ikävuoteen kunta- ja aluevaaleissa.';
-const INPUT_FILE_PATH = 'data/comments/aanestysikaraja.txt';
+const runId = 'validation_ydinvoima_pros';
+const topic = 'EU:n tulee tukea uusien ydinvoimaloiden rakentamista.';
+const INPUT_FILE_PATH = 'data/validationSet/ydinvoima.txt';
 const nCommentsPerLikert = new Map<number, number>([
   [1, 0],  // Include max 15 comments with Likert value 1
   [2, 0],  // Include max 12 comments with Likert value 2
-  [3, 100],  // Include max 10 comments with Likert value 3
-  [4, 300],  // Include max 12 comments with Likert value 4
-  [5, 500]   // Include max 15 comments with Likert value 5
+  [3, 0],  // Include max 10 comments with Likert value 3
+  [4, 0],  // Include max 12 comments with Likert value 4
+  [5, 40]   // Include max 15 comments with Likert value 5
 ]);
 
 // Get prompts according to the condensation type
 const mapPromptId = `map_${condensationType}_condensation_v1`;
 const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
 const groundingPromptId = `ground_${condensationType}_grounding_v1`;
+const iterationPromptId = `map_${condensationType}_feedback_v1`; // Dynamic ID based on condensation type
 
 // Define the condensation configuration here (in a function because top-level definition of the prompt registry is not allowed)
-function createCondensationConfig(mapPrompt: CondensationPrompt, reducePrompt: CondensationPrompt, groundingPrompt: CondensationPrompt): CondensationPlan {
+function createCondensationConfig(mapPrompt: CondensationPrompt, reducePrompt: CondensationPrompt, iterationPrompt: CondensationPrompt): CondensationPlan {
   return {
-    outputType: CONDENSATION_TYPE.LIKERT.CONS,
+    outputType: condensationType,
     steps: [
       {
         operation: CondensationOperations.MAP,
         params: {
-          batchSize: 30,
-          condensationPrompt: mapPrompt.promptText
+          batchSize: 20,
+          condensationPrompt: mapPrompt.promptText,
+          iterationPrompt: iterationPrompt.promptText
         } as MapOperationParams
       },
       {
         operation: CondensationOperations.REDUCE,
         params: {
           denominator: 2, 
-          coalescingPrompt: reducePrompt.promptText
-        } as ReduceOperationParams
-      },
-      {
-        operation: CondensationOperations.REDUCE,
-        params: {
-          denominator: 3, 
-          coalescingPrompt: reducePrompt.promptText
-        } as ReduceOperationParams
-      },
-      {
-        operation: CondensationOperations.REDUCE,
-        params: {
-          denominator: 5, 
           coalescingPrompt: reducePrompt.promptText
         } as ReduceOperationParams
       }
@@ -182,16 +170,16 @@ async function runCondensationScript() {
   // Get the prompts for the MAP → REDUCE → GROUND pipeline
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as CondensationPrompt;
   const reducePrompt = promptRegistry.getPrompt(reducePromptId) as CondensationPrompt;
-  const groundingPrompt = promptRegistry.getPrompt(groundingPromptId) as CondensationPrompt;
+  const iterationPrompt = promptRegistry.getPrompt(iterationPromptId) as CondensationPrompt;
 
-  if (!mapPrompt || !reducePrompt || !groundingPrompt) {
+  if (!mapPrompt || !reducePrompt || !iterationPrompt) {
     console.error('❌ Error: Required prompts not found in registry');
     console.error('Available prompts:', promptRegistry.listPrompts());
     process.exit(1);
   }
 
   // Create the condensation configuration
-  const config = createCondensationConfig(mapPrompt, reducePrompt, groundingPrompt);
+  const config = createCondensationConfig(mapPrompt, reducePrompt, iterationPrompt);
 
   // Parse the metaevaluation test data file
   const inputFilePath = path.join(__dirname, INPUT_FILE_PATH);

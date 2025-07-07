@@ -25,6 +25,7 @@ export const VISUALIZATION_CONFIG = {
     colors: {
         operations: {
             MAP: { stroke: '#10b981', fill: '#ecfdf5' },
+            ITERATE_MAP: { stroke: '#6366f1', fill: '#f0f9ff' },
             REDUCE: { stroke: '#f59e0b', fill: '#fefce8' },
             REFINE: { stroke: '#8b5cf6', fill: '#f3e8ff' },
             GROUND: { stroke: '#ef4444', fill: '#fef2f2' }
@@ -44,7 +45,8 @@ export const VISUALIZATION_CONFIG = {
     icons: {
         operations: {
             MAP: '🗺️',
-            REDUCE: '🔄',
+            ITERATE_MAP: '🔁',
+            REDUCE: '⚡',
             REFINE: '✨',
             GROUND: '🏗️',
             ROOT: '🌳',

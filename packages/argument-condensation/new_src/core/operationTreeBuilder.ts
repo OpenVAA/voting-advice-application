@@ -248,7 +248,8 @@ export class OperationTreeBuilder {
   private getOperationIcon(operation: CondensationOperations): string {
     switch (operation) {
       case CondensationOperations.MAP: return '🗺️';
-      case CondensationOperations.REDUCE: return '🔄';
+      case CondensationOperations.ITERATE_MAP: return '🔁';
+      case CondensationOperations.REDUCE: return '⚡';
       case CondensationOperations.REFINE: return '✨';
       case CondensationOperations.GROUND: return '🏗️';
       default: return '❓';
