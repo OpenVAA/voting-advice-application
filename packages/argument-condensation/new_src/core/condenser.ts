@@ -1,13 +1,9 @@
 import { Argument, CondensationRunInput, CondensationRunResult, VAAComment } from './types';
 import { PromptCall } from './types/promptCall';
-import { PartialCondensationRunRecord, FullCondensationRunRecord } from '../evaluation/types/analytics/runRecord';
-import { CacheManager } from '../evaluation/cacheManager';
-import { PerformanceTracker } from '../evaluation/performanceTracker';
 import { LlmParser } from './parser/llmParser';
 import { ResponseWithArguments } from './types/responseWithArguments';
 import { CondensationPlan, ProcessingStep } from './types/condensation/processDefinition';
 import { CondensationOperations } from './types/condensation/operation';
-import { StubEvaluator } from '../evaluation/evaluators/stubEvaluator';
 import { MapOperationParams, ReduceOperationParams, RefineOperationParams, GroundingOperationParams } from './types/condensation/processParams';
 import { OperationTreeBuilder } from './operationTreeBuilder';
 import { LLMResponse, Message } from '@openvaa/llm';
@@ -15,19 +11,15 @@ import * as path from 'path';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
- * Saves partial results after each step for caching and performance testing.
  * Automatically generates operation tree visualization data.
  */
 export class Condenser {
   private runId: string;
   private allPromptCalls: PromptCall[] = [];
-  private cacheManager: CacheManager;
-  private performanceTracker = new PerformanceTracker();
   private treeBuilder: OperationTreeBuilder;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.runId;
-    this.cacheManager = new CacheManager(input.electionId); // TODO: make this configurable
     this.treeBuilder = new OperationTreeBuilder(this.runId);
   }
 
@@ -248,9 +240,6 @@ export class Condenser {
       const step = plan.steps[i];
       const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
       
-      // Save partial result after each step
-      await this.savePartialResult(i, stepResult);
-      
       // Update current data for next step
       currentData = stepResult.arguments;
       previousNodeIds = stepResult.nodeIds || [];
@@ -258,9 +247,6 @@ export class Condenser {
       // Update step index based on how many levels this operation consumed
       currentStepIndex += stepResult.stepLevelsConsumed || 1;
     }
-
-    // Save final result
-    await this.saveFinalResult({ arguments: currentData as Argument[], promptCalls: [] });
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Argument[]);
@@ -460,7 +446,7 @@ export class Condenser {
       // Prepare template variables for MAP prompt
       const templateVariables: Record<string, any> = {
         topic: this.input.question.topic,
-        comments: comments.map(c => c.text).join('\n')
+        comments: batch.map(c => c.text).join('\n')
       };
       
       const promptText = this.embedTemplateVariables(params.condensationPrompt, templateVariables);
@@ -473,10 +459,41 @@ export class Condenser {
       };
     });
     
-    // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    // Validate batch token counts before sending to LLM
+    const MAX_TOKENS_PER_BATCH = 28500;
+    const llmBatchSize = 7;
     
-    const argumentLists: Argument[][] = [];
+    // Calculate character count for each LLM input and group into batches
+    const promptCharsCounts = llmInputs.map(input => 
+      input.messages.reduce((total, message) => total + message.content.length, 0)
+    );
+    
+    // Check consecutive batches of llmBatchSize
+    for (let i = 0; i < promptCharsCounts.length; i += llmBatchSize) {
+      const batchEnd = Math.min(i + llmBatchSize, promptCharsCounts.length);
+      const batchCharSum = promptCharsCounts.slice(i, batchEnd).reduce((sum, count) => sum + count, 0);
+      const estimatedTokens = batchCharSum / 4 * 1.3;  // Simple token estimation: (characters / 4 * 1.3 buffer)
+      
+      console.info(`CONDENSER: Batch ${Math.floor(i / llmBatchSize) + 1} estimated tokens:`, estimatedTokens);
+      
+      if (estimatedTokens > MAX_TOKENS_PER_BATCH) {
+        const batchIndices = Array.from({length: batchEnd - i}, (_, idx) => i + idx + 1);
+        throw new Error(
+          `❌ MAP BATCH EXCEEDS TOKEN LIMIT\n` +
+          `📊 Batch ${Math.floor(i / llmBatchSize) + 1} (inputs ${batchIndices.join(', ')}) has ${estimatedTokens.toFixed(0)} tokens (max: ${MAX_TOKENS_PER_BATCH})\n` +
+          ` SOLUTIONS:\n` +
+          `   1. Reduce batch size from ${batchSize}\n` +
+          `   2. Clean up/shorten comment text in your input data\n`
+        );
+      }
+    }
+    
+
+    // Queue all LLM calls
+    const llmResponses = await this.input.llmProvider.generateMultiple({inputs: llmInputs});
+    
+    // Initialize argumentLists array with proper size
+    const argumentLists: Argument[][] = new Array(batches.length);
     const allPromptCalls: PromptCall[] = [];
     const failedIndices: number[] = [];
     const successfulResponses: { [index: number]: LLMResponse } = {};
@@ -490,16 +507,6 @@ export class Condenser {
       // Parse and validate the response
       try {
         const parsedResponse = LlmParser.parseArguments(llmResponse.content);
-        
-        // Log the parsed response for debugging
-        console.log(`\n=== MAP BATCH ${i + 1}/${batches.length} ===`);
-        console.log('Arguments extracted:', JSON.stringify(parsedResponse.arguments, null, 2));
-        if (parsedResponse.reasoning) {
-          console.log('Reasoning:', parsedResponse.reasoning);
-        }
-        console.log('=====================================\n');
-        
-        // Store successful response
         successfulResponses[i] = llmResponse;
         
         // Update tree node with output
@@ -536,11 +543,6 @@ export class Condenser {
           const parsedResponse = LlmParser.parseArguments(response.content);
           
           console.log(`\n=== MAP BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
-          console.log('Comments processed:', batch.length);
-          console.log('Arguments extracted:', JSON.stringify(parsedResponse.arguments, null, 2));
-          if (parsedResponse.reasoning) {
-            console.log('Reasoning:', parsedResponse.reasoning);
-          }
           console.log('=====================================\n');
           
           // Store successful retry response
@@ -629,7 +631,7 @@ export class Condenser {
     });
     
     // Queue iteration LLM calls
-    const iterationLlmResponses = await this.input.llmProvider.generateMultiple(iterationLlmInputs);
+    const iterationLlmResponses = await this.input.llmProvider.generateMultiple({inputs: iterationLlmInputs});
     
     const iterationFailedIndices: number[] = [];
     const iterationSuccessfulResponses: { [index: number]: LLMResponse } = {};
@@ -642,15 +644,6 @@ export class Condenser {
       
       try {
         const parsedResponse = LlmParser.parseArguments(llmResponse.content);
-        
-        console.log(`\n=== MAP ITERATION BATCH ${i + 1}/${batches.length} ===`);
-        console.log('Refined arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-        if (parsedResponse.reasoning) {
-          console.log('Reasoning:', parsedResponse.reasoning);
-        }
-        console.log('=====================================\n');
-        
-        // Store successful iteration response
         iterationSuccessfulResponses[i] = llmResponse;
         
         // Update tree node with iteration output
@@ -686,11 +679,6 @@ export class Condenser {
           const parsedResponse = LlmParser.parseArguments(response.content);
           
           console.log(`\n=== MAP ITERATION BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
-          console.log('Refined arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-          if (parsedResponse.reasoning) {
-            console.log('Reasoning:', parsedResponse.reasoning);
-          }
-          console.log('=====================================\n');
           
           // Store successful retry response
           iterationSuccessfulResponses[index] = response;
@@ -807,7 +795,7 @@ export class Condenser {
     });
     
     // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    const llmResponses = await this.input.llmProvider.generateMultiple({inputs: llmInputs});
     
     const reducedArgumentLists: Argument[][] = [];
     const allPromptCalls: PromptCall[] = [];
@@ -823,18 +811,6 @@ export class Condenser {
       // Parse and validate the response
       try {
         const parsedResponse = LlmParser.parseArguments(llmResponse.content);
-        
-        // Log the parsed response for debugging
-        console.log(`\n=== REDUCE CHUNK ${i + 1}/${chunks.length} ===`);
-        console.log(`Coalescing ${chunk.length} argument lists into 1`);
-        console.log('Input lists:', chunk.length);
-        console.log('Output arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-        if (parsedResponse.reasoning) {
-          console.log('Reasoning:', parsedResponse.reasoning);
-        }
-        console.log('=====================================\n');
-        
-        // Store successful response
         successfulResponses[i] = llmResponse;
         
         // Update tree node with output
@@ -871,13 +847,6 @@ export class Condenser {
           const parsedResponse = LlmParser.parseArguments(response.content);
           
           console.log(`\n=== REDUCE CHUNK ${index + 1}/${chunks.length} (RETRY SUCCESS) ===`);
-          console.log(`Coalescing ${chunk.length} argument lists into 1`);
-          console.log('Input lists:', chunk.length);
-          console.log('Output arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-          if (parsedResponse.reasoning) {
-            console.log('Reasoning:', parsedResponse.reasoning);
-          }
-          console.log('=====================================\n');
           
           // Store successful retry response
           successfulResponses[index] = response;
@@ -1009,7 +978,7 @@ export class Condenser {
     });
     
     // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple(llmInputs);
+    const llmResponses = await this.input.llmProvider.generateMultiple({inputs: llmInputs});
     
     const groundedArgumentLists: Argument[][] = [];
     const allPromptCalls: PromptCall[] = [];
@@ -1156,88 +1125,6 @@ export class Condenser {
   }
 
   /**
-   * Generate stub LLM response for testing
-   */
-  private generateStubResponse(existingArgs: Argument[], comments: VAAComment[], isInitial: boolean): string {
-    const argCount = isInitial ? 2 : Math.min(existingArgs.length + 1, 3);
-    const args: Argument[] = [];
-    
-    for (let i = 0; i < argCount; i++) {
-      args.push({
-        id: `stub_arg_${i + 1}`,
-        text: `Stub argument ${i + 1} for testing purposes`
-      });
-    }
-    
-    return JSON.stringify({
-      arguments: args,
-      reasoning: `Generated ${argCount} stub arguments for testing`
-    });
-  }
-
-  /**
-   * Save partial result after each step
-   */
-  private async savePartialResult(stepIndex: number, result: StepResult) {
-    const record: PartialCondensationRunRecord = {
-      questionId: this.input.question.id,
-      runId: this.runId,
-      outputType: this.input.config.outputType,
-      model: this.input.model,
-      plan: this.input.config,
-      promptCalls: [...this.allPromptCalls],
-      timestamp: new Date().toISOString()
-    };
-
-    await this.cacheManager.savePartialResult(record);
-  }
-
-  /**
-   * Save final result with evaluation
-   */
-  private async saveFinalResult(result: StepResult) {
-    // Use the same evaluator as the evaluation script
-    const evaluator = new StubEvaluator(8, "Stub evaluation for testing");
-    
-    // Create a simple evaluation input for the final arguments
-    const evaluationInput = {
-      topic: this.input.question.topic,
-      systemArguments: result.arguments as Argument[],
-      expectedArguments: [] // No expected arguments in this context, but evaluator will handle it
-    };
-    
-    // Run evaluation
-    const evaluationResult = await evaluator.evaluateSystem({
-      description: "Individual run evaluation",
-      inputs: [evaluationInput]
-    });
-    
-    const record: FullCondensationRunRecord = {
-      questionId: this.input.question.id,
-      runId: this.runId,
-      outputType: this.input.config.outputType,
-      plan: this.input.config,
-      promptCalls: [...this.allPromptCalls],
-      timestamp: new Date().toISOString(),
-      model: this.input.model,
-      evaluation: {
-        score: evaluationResult.metrics.averageScore,
-        explanation: evaluationResult.results[0]?.explanation || 'Evaluation completed'
-      }
-    };
-
-    await this.cacheManager.saveFinalResult(record);
-
-    // Update per-question performance metrics
-    await this.performanceTracker.updateQuestionMetrics(
-      this.input.electionId,
-      this.input.config.outputType,
-      this.input.question.id,
-      record
-    );
-  }
-
-  /**
    * Retry helper function for failed parsing attempts
    * @param failedIndices Array of indices that failed in the batch
    * @param llmInputs Original LLM inputs
@@ -1257,7 +1144,8 @@ export class Condenser {
   ): Promise<{ index: number; response: LLMResponse }[]> {
     const successfulRetries: { index: number; response: LLMResponse }[] = [];
     
-    for (const failedIndex of failedIndices) {
+    // Process all failed indices in parallel
+    const retryPromises = failedIndices.map(async (failedIndex) => {
       const input = llmInputs[failedIndex];
       let lastError: Error | null = null;
       
@@ -1272,8 +1160,7 @@ export class Condenser {
           LlmParser.parseArguments(response.content);
           
           console.log(`   ✅ Success on attempt ${attempt}`);
-          successfulRetries.push({ index: failedIndex, response });
-          break;
+          return { index: failedIndex, response };
         } catch (error) {
           lastError = error instanceof Error ? error : new Error('Unknown error');
           console.log(`   ❌ Attempt ${attempt} failed: ${lastError.message}`);
@@ -1282,6 +1169,19 @@ export class Condenser {
             console.log(`   🚫 All ${maxRetries} retry attempts failed for batch ${failedIndex + 1}`);
           }
         }
+      }
+      
+      // If we get here, all retry attempts failed
+      return null;
+    });
+    
+    // Wait for all retry attempts to complete
+    const retryResults = await Promise.all(retryPromises);
+    
+    // Filter out null results (failed retries) and collect successful ones
+    for (const result of retryResults) {
+      if (result !== null) {
+        successfulRetries.push(result);
       }
     }
     

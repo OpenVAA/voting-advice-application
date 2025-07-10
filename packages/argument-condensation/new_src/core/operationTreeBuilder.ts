@@ -195,13 +195,6 @@ export class OperationTreeBuilder {
     lines.push(`🕐 Created at: ${this.tree.createdAt}`);
     lines.push(`📊 ${this.tree.metadata.totalOperations} operations, ${this.tree.metadata.maxDepth} max depth`);
     lines.push(`⏱️  ${this.tree.metadata.totalDuration}ms total, ${this.tree.metadata.totalLlmCalls} LLM calls`);
-    lines.push('');
-    
-    // Print tree structure
-    for (const rootId of this.tree.roots) {
-      this.addNodeToSummary(lines, rootId, 0);
-    }
-    
     return lines.join('\n');
   }
 

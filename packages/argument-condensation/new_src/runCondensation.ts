@@ -13,21 +13,20 @@ import { MapOperationParams, ReduceOperationParams, GroundingOperationParams } f
 
 // Configure the run
 const condensationType = CONDENSATION_TYPE.LIKERT.PROS;
-const runId = 'validation_ydinvoima_pros';
-const topic = 'EU:n tulee tukea uusien ydinvoimaloiden rakentamista.';
-const INPUT_FILE_PATH = 'data/validationSet/ydinvoima.txt';
+const runId = 'battre_test_v0';
+const topic = 'Äänestysikärajaa tulee laskea 16 ikävuoteen kunta- ja aluevaaleissa.';
+const INPUT_FILE_PATH = 'data/comments/aanestysikaraja.txt';
 const nCommentsPerLikert = new Map<number, number>([
   [1, 0],  // Include max 15 comments with Likert value 1
   [2, 0],  // Include max 12 comments with Likert value 2
   [3, 0],  // Include max 10 comments with Likert value 3
-  [4, 0],  // Include max 12 comments with Likert value 4
-  [5, 40]   // Include max 15 comments with Likert value 5
+  [4, 150],  // Include max 12 comments with Likert value 4
+  [5, 300]   // Include max 15 comments with Likert value 5
 ]);
 
 // Get prompts according to the condensation type
 const mapPromptId = `map_${condensationType}_condensation_v1`;
 const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
-const groundingPromptId = `ground_${condensationType}_grounding_v1`;
 const iterationPromptId = `map_${condensationType}_feedback_v1`; // Dynamic ID based on condensation type
 
 // Define the condensation configuration here (in a function because top-level definition of the prompt registry is not allowed)
@@ -38,7 +37,7 @@ function createCondensationConfig(mapPrompt: CondensationPrompt, reducePrompt: C
       {
         operation: CondensationOperations.MAP,
         params: {
-          batchSize: 20,
+          batchSize: 15,
           condensationPrompt: mapPrompt.promptText,
           iterationPrompt: iterationPrompt.promptText
         } as MapOperationParams
@@ -46,7 +45,14 @@ function createCondensationConfig(mapPrompt: CondensationPrompt, reducePrompt: C
       {
         operation: CondensationOperations.REDUCE,
         params: {
-          denominator: 2, 
+          denominator: 5, 
+          coalescingPrompt: reducePrompt.promptText
+        } as ReduceOperationParams
+      },
+      {
+        operation: CondensationOperations.REDUCE,
+        params: {
+          denominator: 6, 
           coalescingPrompt: reducePrompt.promptText
         } as ReduceOperationParams
       }
@@ -214,7 +220,8 @@ async function runCondensationScript() {
     config: config,
     llmProvider: new OpenAIProvider({ 
       apiKey: apiKey,
-      model: 'gpt-4o'
+      model: 'gpt-4o',
+      fallbackModel: 'gpt-4.1'
     })
   };
 
@@ -254,8 +261,6 @@ async function runCondensationScript() {
     const result = await condenser.run();
 
     console.log('✅ Condensation completed successfully!');
-    console.log('\n📊 Final Results:');
-    console.log('Arguments:', JSON.stringify(result.arguments, null, 2));
     console.log('\n📈 Metrics:');
     console.log(`- LLM Calls: ${result.metrics.nLlmCalls}`);
     console.log(`- Duration: ${result.metrics.duration}s`);
