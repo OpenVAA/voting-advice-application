@@ -104,9 +104,42 @@ describe('OpenAIProvider', () => {
     expect(result.tokens).toBe(4); // ~13 characters / 4 = 4 tokens
   });
 
-  it('should calculate fit comment args count', async () => {
-    const provider = new OpenAIProvider({ apiKey: 'test-key', maxContextTokens: 1000 });
-    const count = await provider.fitCommentArgsCount();
-    expect(count).toBe(20); // 1000 / 50 = 20
+
+  it('should initialize with fallback model', () => {
+    const provider = new OpenAIProvider({
+      model: 'gpt-4o',
+      fallbackModel: 'gpt-4o-mini',
+      apiKey: 'test-key'
+    });
+    expect(provider).toBeInstanceOf(OpenAIProvider);
+    expect(provider.model).toBe('gpt-4o');
   });
+
+  it('should work with generateMultipleParallel', async () => {
+    const provider = new OpenAIProvider({ apiKey: 'test-key' });
+    const inputs = [
+      { messages: [new Message({ role: 'user', content: 'Hello 1' })], temperature: 0.7 },
+      { messages: [new Message({ role: 'user', content: 'Hello 2' })], temperature: 0.7 }
+    ];
+
+    const responses = await provider.generateMultipleParallel({ inputs });
+    expect(responses).toHaveLength(2);
+    expect(responses[0].content).toBe('Test response');
+    expect(responses[1].content).toBe('Test response');
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it('should work with generateMultipleSequential', async () => {
+    const provider = new OpenAIProvider({ apiKey: 'test-key' });
+    const inputs = [
+      { messages: [new Message({ role: 'user', content: 'Hello 1' })], temperature: 0.7 },
+      { messages: [new Message({ role: 'user', content: 'Hello 2' })], temperature: 0.7 }
+    ];
+
+    const responses = await provider.generateMultipleSequential({ inputs });
+    expect(responses).toHaveLength(2);
+    expect(responses[0].content).toBe('Test response');
+    expect(responses[1].content).toBe('Test response');
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  }); 
 });

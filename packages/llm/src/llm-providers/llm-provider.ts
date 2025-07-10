@@ -80,27 +80,46 @@ export abstract class LLMProvider {
    * @param messages Array of messages to send to the LLM
    * @param temperature Controls randomness in the response (0-1)
    * @param maxTokens Optional maximum number of tokens to generate
+   * @param model Optional model to use for this request, overriding the provider's default model
    */
   abstract generate({
     messages,
     temperature,
-    maxTokens
+    maxTokens,
+    model
   }: {
     messages: Array<Message>;
     temperature: number;
     maxTokens?: number;
+    model?: string;
   }): Promise<LLMResponse>;
 
   /**
    * Generates multiple responses from the LLM based on an array of input requests
-   * @param inputs Array of generation input parameters
+   * @param inputs Array of input requests, each containing messages, temperature, and optional parameters
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
-  abstract generateMultiple(inputs: Array<{
-    messages: Array<Message>;
-    temperature: number;
-    maxTokens?: number;
-  }>): Promise<LLMResponse[]>;
+  abstract generateMultipleParallel({
+    inputs
+  }: {
+    inputs: Array<{
+      messages: Array<Message>;
+      temperature: number;
+      maxTokens?: number;
+      model?: string;
+    }>;
+  }): Promise<LLMResponse[]>;
+
+  abstract generateMultipleSequential({
+    inputs
+  }: {
+    inputs: Array<{
+      messages: Array<Message>;
+      temperature: number;
+      maxTokens?: number;
+      model?: string;
+    }>;
+  }): Promise<LLMResponse[]>;
 
   /**
    * Estimates the number of tokens in a text string
@@ -108,17 +127,4 @@ export abstract class LLMProvider {
   abstract countTokens(text: string): Promise<{
     tokens: number;
   }>;
-
-  /**
-   * Maximum number of tokens that can be processed in a single request
-   */
-  abstract get maxContextTokens(): number;
-
-  /**
-   * Calculates how many messages can fit within the context window while maintaining good model performance
-   *
-   * To do: implement such that the fitting doesn't happen according to context length but performance
-   * This needs to be done because model performance drops if the input is too large
-   */
-  abstract fitCommentArgsCount(): Promise<number>;
 }

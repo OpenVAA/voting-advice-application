@@ -1,19 +1,28 @@
 import OpenAI from 'openai';
 import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
+import { OpenAIRateLimiter } from '../rateLimiters/openaiRateLimiter';
+import { ModelState } from '../rateLimiters/modelState';
+import { selectModelForGeneration, getRateLimiter } from '../utils/selectModel';
+import { isDailyLimitError } from '../utils/dailyLimitError';
+import { estimateTokens } from '../utils/tokenCounter';
 
 export class OpenAIProvider extends LLMProvider {
   public model: string;
   private openai: OpenAI;
   public readonly maxContextTokens: number;
+  private rateLimiters = new Map<string, OpenAIRateLimiter>();
+  private modelState: ModelState;
 
   constructor({
     model = 'gpt-4o-mini',
     apiKey,
-    maxContextTokens = 4096
+    maxContextTokens = 4096,
+    fallbackModel
   }: {
-    model?: string;
     apiKey: string;
+    model?: string;
     maxContextTokens?: number;
+    fallbackModel?: string;
   }) {
     if (!apiKey) {
       throw new Error('OpenAI API key is required in constructor options.');
@@ -22,16 +31,19 @@ export class OpenAIProvider extends LLMProvider {
     this.model = model;
     this.maxContextTokens = maxContextTokens;
     this.openai = new OpenAI({ apiKey });
+    this.modelState = new ModelState(model, fallbackModel);
   }
 
   async generate({
     messages,
     temperature = 0.7,
-    maxTokens
+    maxTokens,
+    model
   }: {
     messages: Array<Message>;
     temperature?: number;
     maxTokens?: number;
+    model?: string;
   }): Promise<LLMResponse> {
     if (!messages || messages.length === 0) {
       throw new Error('At least one message is required for generation');
@@ -41,11 +53,20 @@ export class OpenAIProvider extends LLMProvider {
       throw new Error('Temperature must be between 0 and 1');
     }
 
-    const openAIMessages: Array<OpenAI.ChatCompletionMessageParam> = messages.map(mapToMessageParam);
+    const estimatedTokens = estimateTokens({ messages });
+    
+    // Use the provided model or fall back to the provider's default model selection logic
+    const modelToUse = model || await selectModelForGeneration({ 
+      estimatedTokens, 
+      modelState: this.modelState, 
+      rateLimiters: this.rateLimiters 
+    });
 
     try {
+      const openAIMessages: Array<OpenAI.ChatCompletionMessageParam> = messages.map(mapToMessageParam);
+
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: modelToUse,
         messages: openAIMessages,
         temperature,
         max_tokens: maxTokens
@@ -72,9 +93,24 @@ export class OpenAIProvider extends LLMProvider {
         model: response.model,
         finishReason: choice.finish_reason
       });
-
+      
       return llmResponse;
+      
     } catch (error) {
+      if (isDailyLimitError({ error: error as Error })) {
+        console.info(`📅 DAILY LIMIT REACHED: Model ${modelToUse} has hit daily limit, rotating to next available model`);
+        this.modelState.markDailyLimitReached(modelToUse);
+        this.modelState.rotateModels();
+        
+        const newModel = await selectModelForGeneration({ 
+          estimatedTokens, 
+          modelState: this.modelState, 
+          rateLimiters: this.rateLimiters 
+        });        
+        return this.generate({ messages, temperature, maxTokens, model: newModel });
+      }
+      
+      // Non-daily-limit error - rethrow
       if (error instanceof Error) {
         throw new Error(`OpenAI API error: ${error.message}`);
       }
@@ -83,18 +119,25 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   /**
-   * Generates multiple responses from the LLM by processing requests sequentially
+   * Generates multiple responses from the LLM by processing requests in parallel batches. Tries to prevent rate limit errors by pre-checking limits. 
    * @param inputs Array of generation input parameters
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
-  async generateMultiple(inputs: Array<{
-    messages: Array<Message>;
-    temperature: number;
-    maxTokens?: number;
-  }>): Promise<LLMResponse[]> {
+  async generateMultipleParallel({ inputs }:
+    {
+      inputs: Array<{
+        messages: Array<Message>;
+        temperature: number;
+        maxTokens?: number;
+        model?: string;
+      }>
+    }
+  ): Promise<LLMResponse[]> {
     if (!inputs || inputs.length === 0) {
       return [];
     }
+
+    console.info(`🚀 OPENAI PROVIDER: Starting ${inputs.length} parallel LLM calls`);
 
     // Validate inputs before processing
     for (let i = 0; i < inputs.length; i++) {
@@ -107,24 +150,151 @@ export class OpenAIProvider extends LLMProvider {
       }
     }
 
-    // Process all requests sequentially to avoid rate limits
-    // TODO: Implement faster processing by getting rate limit updates from OpenAI
     const results: LLMResponse[] = [];
-    for (let i = 0; i < inputs.length; i++) {
-      try {
-        const response = await this.generate(inputs[i]);
-        results.push(response);
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new Error(`Request ${i} failed: ${error.message}`);
-        }
-        throw new Error(`Request ${i} failed with unknown error`);
+    const batchSize = 7;
+    let totalTokensUsed = 0;
+    
+    for (let i = 0; i < inputs.length; i += batchSize) {
+      const batch = inputs.slice(i, i + batchSize);
+
+      console.info(`🚀 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(inputs.length/batchSize)} (${batch.length} calls)`);
+      let modelForBatch = inputs[0].model || this.model;
+      console.info(`🔄 OPENAI PROVIDER: Trying to use model ${modelForBatch} for batch processing`);
+      
+      // Check whether the model can handle the batch after waiting or if it's simply too big
+      const batchTokens = batch.reduce((sum, input) => sum + estimateTokens({ messages: input.messages }), 0);
+      const modelRateLimiter = getRateLimiter({ model: modelForBatch, rateLimiters: this.rateLimiters });
+
+      // Use main model if available, otherwise use fallback model or wait
+      if (modelRateLimiter.hasEnoughTPM({ estimatedTokens: batchTokens })) {
+        console.info(`🔄 OPENAI PROVIDER: Using main model ${modelForBatch} for batch processing`);
       }
+      else {
+        if (this.modelState.fallbackModel) {
+          const fallbackRateLimiter = getRateLimiter({ model: this.modelState.fallbackModel, rateLimiters: this.rateLimiters });
+          const fallbackStatus = fallbackRateLimiter.getStatus();
+          const fallbackRemainingTPM = fallbackStatus.tpm.limit - fallbackStatus.tpm.used;
+          console.info(`📊 FALLBACK CHECK: Model ${this.modelState.fallbackModel} - Remaining TPM: ${fallbackRemainingTPM}, Batch estimated tokens: ${batchTokens}`);
+          
+          // Check if fallback model can handle the batch
+          if (fallbackRateLimiter.hasEnoughTPM({ estimatedTokens: batchTokens })) {
+            modelForBatch = this.modelState.fallbackModel;
+            console.info(`🔄 OPENAI PROVIDER: Switching to fallback model ${modelForBatch} for batch processing`);
+          }
+          else {
+            // Both main and fallback are rate limited, wait for main model
+            const waitTime = modelRateLimiter.getWaitTime({ estimatedTokens: batchTokens });
+            console.info(`🔄 OPENAI PROVIDER: Throttling. Both main and fallback models are expected to hit rate limits. Waiting for ${waitTime}ms for ${modelForBatch}`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+        }
+        else {
+          const waitTime = modelRateLimiter.getWaitTime({ estimatedTokens: batchTokens });
+          console.info(`🔄 OPENAI PROVIDER: Throttling. Main model is expected to hit rate limit. Waiting for ${waitTime}ms for ${modelForBatch}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+
+      // Process each item in the batch individually with its own fallback logic
+      const batchPromises = batch.map(async (input, batchIndex) => {
+        const globalIndex = i + batchIndex;
+        try {
+          const result = await this.generate({
+            messages: input.messages,
+            temperature: input.temperature,
+            maxTokens: input.maxTokens,
+            model: modelForBatch
+          });
+          
+          // Record tokens for this individual call
+          const rateLimiter = getRateLimiter({ model: modelForBatch, rateLimiters: this.rateLimiters });
+          rateLimiter.recordUsage({ tokensUsed: result.usage.totalTokens });
+          
+          return result;
+        } catch (error) {
+          // Handle daily limit errors
+          if (isDailyLimitError({ error: error as Error })) {
+            this.modelState.markDailyLimitReached(modelForBatch);
+            this.modelState.rotateModels();
+
+            const newModel = await selectModelForGeneration({ 
+              estimatedTokens: estimateTokens({ messages: input.messages }), 
+              modelState: this.modelState, 
+              rateLimiters: this.rateLimiters 
+            });
+
+            console.info(`📅 DAILY LIMIT REACHED for ${modelForBatch}: Retrying with new model ${newModel}`);
+
+            const result = await this.generate({
+              messages: input.messages,
+              temperature: input.temperature,
+              maxTokens: input.maxTokens,
+              model: newModel
+            });
+            
+            // Record tokens for this retry call
+            const rateLimiter = getRateLimiter({ model: result.model, rateLimiters: this.rateLimiters });
+            rateLimiter.recordUsage({ tokensUsed: result.usage.totalTokens });
+            
+            return result;
+          }
+          // Rethrow unknown error
+          throw new Error(`Request ${globalIndex} failed with unknown error`);
+        }
+      });
+
+      // Wait for current batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+
+      // Update running total of tokens used
+      const batchActualTokens = batchResults.reduce((sum, result) => sum + result.usage.totalTokens, 0);
+      totalTokensUsed += batchActualTokens;
+      console.info(`📊 BATCH COMPLETE: Batch ${Math.floor(i/batchSize) + 1} used ${batchActualTokens} actual tokens (estimated: ${batchTokens}), Running total: ${totalTokensUsed}`);
+
+      // Show progress
+      console.info(`📈 OPENAI PROVIDER: Completed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(inputs.length / batchSize)} (${results.length}/${inputs.length} total)`);
+    }
+
+    console.info(`🏁 OPENAI PROVIDER: All ${inputs.length} LLM calls completed`);
+    return results;
+  }
+
+  /**
+   * Generates multiple responses from the LLM by processing requests in sequence. 
+   * @param inputs Array of generation input parameters
+   * @returns Promise that resolves to an array of LLM responses in the same order as inputs
+   */
+  async generateMultipleSequential({ inputs }: // TODO: Error handling. 
+    {
+      inputs: Array<{
+        messages: Array<Message>;
+        temperature: number;
+        maxTokens?: number;
+        model?: string;
+      }>
+    }
+  ): Promise<LLMResponse[]> {
+    if (!inputs || inputs.length === 0) {
+      return [];
+    }
+
+    console.info(`🚀 OPENAI PROVIDER: Starting ${inputs.length} sequential LLM calls`);
+    const results: LLMResponse[] = [];
+
+    for (const input of inputs) {
+      const result = await this.generate({
+        messages: input.messages,
+        temperature: input.temperature,
+        maxTokens: input.maxTokens,
+        model: input.model
+      });
+      results.push(result);
     }
 
     return results;
   }
-
+  
   /**
    * Estimates the number of tokens in a text string. Note: This is a simple approximation. For production use, consider using a proper tokenizer.
    */
@@ -132,14 +302,6 @@ export class OpenAIProvider extends LLMProvider {
     return {
       tokens: Math.ceil(text.length / 4)
     };
-  }
-
-  /**
-   * Calculates how many messages can fit within the context window. Uses a conservative estimate of average tokens per message to ensure we don't exceed the model's context limit.
-   */
-  async fitCommentArgsCount(): Promise<number> {
-    const averageTokensPerMessage = 50;
-    return Math.floor(this.maxContextTokens / averageTokensPerMessage);
   }
 }
 
