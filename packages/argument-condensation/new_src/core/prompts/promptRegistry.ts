@@ -5,13 +5,22 @@ import { CondensationPrompt } from '../types/prompt';
 import { CondensationOperations } from '../types/condensation/operation';
 import { CONDENSATION_TYPE } from '../types/condensationType';
 
+// TODO: (low priority): load only the specific prompt we need
+// TODO: (low priority): code can be cleaned up to use 
+// TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to promptText)
+
 /**
- * Manages condensation prompts organized by operations and output types.
- * Directory structure: prompts/operation/outputType/prompt.yaml
+ * Manages condensation prompts organized by operations and output types (likert pros or cons).
+ * Loads the prompt from the promptText variable of the yaml and ignores the rest of the yaml.
+ * Directory structure: core/prompts/operation/outputType/prompt.yaml
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);
   private registry: Map<string, CondensationPrompt> = new Map();
+
+  constructor() {
+    this.loadPrompts();
+  }
 
   /**
    * Recursively find all YAML files under a directory
@@ -36,30 +45,6 @@ export class PromptRegistry {
 
   /**
    * Load all prompts from the registry.
-   * Expected directory structure:
-   * prompts/
-   * ├── REFINE/
-   * │   ├── likertPros/
-   * │   │   ├── initialBatchPrompt.yaml
-   * │   │   └── refinementPrompt.yaml
-   * │   └── likertCons/
-   * │       ├── initialBatchPrompt.yaml
-   * │       └── refinementPrompt.yaml
-   * ├── MAP/
-   * │   ├── likertPros/
-   * │   │   └── condensationPrompt.yaml
-   * │   └── likertCons/
-   * │       └── condensationPrompt.yaml
-   * ├── REDUCE/
-   * │   ├── likertPros/
-   * │   │   └── coalescingPrompt.yaml
-   * │   └── likertCons/
-   * │       └── coalescingPrompt.yaml
-   * └── GROUND/
-   *     ├── likertPros/
-   *     │   └── groundingPrompt.yaml
-   *     └── likertCons/
-   *         └── groundingPrompt.yaml
    */
   async loadPrompts(): Promise<void> {
     const operations = await fs.readdir(this.promptsDir);
@@ -71,7 +56,7 @@ export class PromptRegistry {
       
       // Validate that this is a valid operation
       if (!Object.values(CondensationOperations).includes(operation as CondensationOperations)) {
-        console.warn(`Skipping invalid operation directory: ${operation}`);
+        console.warn(`PROMPT REGISTRY: Skipping invalid operation directory: ${operation}`);
         continue;
       }
       
@@ -83,7 +68,7 @@ export class PromptRegistry {
         
         // Validate that this is a valid output type
         if (!Object.values(CONDENSATION_TYPE.LIKERT).includes(outputType as any)) {
-          console.warn(`Skipping invalid output type directory: ${outputType}`);
+          console.warn(`PROMPT REGISTRY: Skipping invalid output type directory: ${outputType}`);
           continue;
         }
         
@@ -102,9 +87,8 @@ export class PromptRegistry {
             };
             
             this.registry.set(prompt.promptId, prompt);
-            console.log(`Loaded prompt: ${prompt.promptId} (${operation}/${outputType})`);
           } catch (error) {
-            console.error(`Failed to load prompt from ${yamlFile}:`, error);
+            console.warn(`PROMPT REGISTRY: Failed to load prompt from ${yamlFile}:`, error);
           }
         }
       }
@@ -119,53 +103,6 @@ export class PromptRegistry {
   }
 
   /**
-   * Get all prompts for a specific operation
-   */
-  getPromptsByOperation(operation: CondensationOperations): CondensationPrompt[] {
-    return Array.from(this.registry.values()).filter(p => p.operation === operation);
-  }
-
-  /**
-   * Get all prompts for a specific operation and output type
-   */
-  getPromptsByOperationAndType(operation: CondensationOperations, outputType: string): CondensationPrompt[] {
-    return Array.from(this.registry.values()).filter(p => 
-      p.operation === operation && p.condensationGoal === outputType
-    );
-  }
-
-  /**
-   * Get the latest version of a prompt by base ID (without version)
-   */
-  getLatestPrompt(baseId: string): CondensationPrompt | undefined {
-    const matchingPrompts = Array.from(this.registry.values())
-      .filter(p => p.promptId.startsWith(baseId))
-      .sort((a, b) => b.promptId.localeCompare(a.promptId));
-    
-    return matchingPrompts[0];
-  }
-
-  /**
-   * Render a prompt template with variables
-   */
-  renderPrompt(promptId: string, variables: Record<string, any>): string {
-    const prompt = this.getPrompt(promptId);
-    if (!prompt) {
-      throw new Error(`Prompt not found: ${promptId}`);
-    }
-
-    let renderedText = prompt.promptText;
-    
-    // Replace template variables
-    for (const [key, value] of Object.entries(variables)) {
-      const placeholder = `{{${key}}}`;
-      renderedText = renderedText.replace(new RegExp(placeholder, 'g'), String(value));
-    }
-    
-    return renderedText;
-  }
-
-  /**
    * List all available prompts
    */
   listPrompts(): { promptId: string; operation: string; outputType: string }[] {
@@ -174,24 +111,5 @@ export class PromptRegistry {
       operation: p.operation,
       outputType: p.condensationGoal
     }));
-  }
-
-  /**
-   * Get prompts organized by operation and output type
-   */
-  getPromptsByOperationAndTypeMap(): Record<string, Record<string, CondensationPrompt[]>> {
-    const result: Record<string, Record<string, CondensationPrompt[]>> = {};
-    
-    for (const prompt of this.registry.values()) {
-      if (!result[prompt.operation]) {
-        result[prompt.operation] = {};
-      }
-      if (!result[prompt.operation][prompt.condensationGoal]) {
-        result[prompt.operation][prompt.condensationGoal] = [];
-      }
-      result[prompt.operation][prompt.condensationGoal].push(prompt);
-    }
-    
-    return result;
   }
 } 
