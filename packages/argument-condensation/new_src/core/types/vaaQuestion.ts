@@ -1,4 +1,4 @@
-import { VAAComment } from "./condensationInput";
+import { VAAComment } from './condensationInput';
 
 /**
  * Represents a question from the VAA.
@@ -13,5 +13,5 @@ export interface VAAQuestion {
   topic: string;
   electionId: string;
   answerType: string | number;
-  comments: VAAComment[];
+  comments: Array<VAAComment>;
 }

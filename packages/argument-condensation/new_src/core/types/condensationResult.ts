@@ -34,7 +34,7 @@ export interface CondensationRunMetrics {
 export interface CondensationRunResult {
   runId: string;
   input: CondensationRunInput;
-  arguments: Argument[];
+  arguments: Array<Argument>;
   metrics: CondensationRunMetrics;
   success: boolean;
   metadata: {

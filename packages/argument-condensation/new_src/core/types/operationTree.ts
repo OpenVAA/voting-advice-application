@@ -1,6 +1,6 @@
-import { Argument, VAAComment } from './index';
-import { CondensationOperations } from './condensation/operation';
-
+import { Argument } from './argument';
+import { CondensationOperation } from './condensation/operation';
+import { VAAComment } from './condensationInput';
 /**
  * Represents a single operation node in the condensation tree.
  * 
@@ -17,20 +17,20 @@ import { CondensationOperations } from './condensation/operation';
  */
 export interface OperationNode {
   id: string;
-  operation: CondensationOperations;
+  operation: CondensationOperation;
   stepIndex: number;
   batchIndex?: number;
   input: {
-    comments?: VAAComment[];
-    arguments?: Argument[];
-    argumentLists?: Argument[][];
+    comments?: Array<VAAComment>;
+    arguments?: Array<Argument>;
+    argumentLists?: Array<Array<Argument>>;
   };
   output: {
-    arguments?: Argument[];
-    argumentLists?: Argument[][];
+    arguments?: Array<Argument>;
+    argumentLists?: Array<Array<Argument>>;
   };
-  children: string[];
-  parents?: string[];
+  children: Array<string>;
+  parents?: Array<string>;
   parent?: string;
   metadata: {
     startTime: Date;
@@ -55,9 +55,9 @@ export interface OperationNode {
 export interface OperationTree {
   createdAt: string;
   runId: string;
-  roots: string[];
+  roots: Array<string>;
   nodes: Record<string, OperationNode>;
-  finalArguments: Argument[];
+  finalArguments: Array<Argument>;
   metadata: {
     totalOperations: number;
     maxDepth: number;
@@ -73,8 +73,8 @@ export class OperationTreeUtils {
   /**
    * Get all leaf nodes (operations with no children).
    */
-  static getLeafNodes(tree: OperationTree): OperationNode[] {
-    return Object.values(tree.nodes).filter(node => node.children.length === 0);
+  static getLeafNodes(tree: OperationTree): Array<OperationNode> {
+    return Object.values(tree.nodes).filter((node) => node.children.length === 0);
   }
   
   /**
@@ -84,23 +84,21 @@ export class OperationTreeUtils {
     const node = tree.nodes[nodeId];
     if (!node || !node.parents || node.parents.length === 0) return 0;
     // For nodes with multiple parents, use the maximum depth
-    return 1 + Math.max(...node.parents.map(parentId => this.getNodeDepth(tree, parentId)));
+    return 1 + Math.max(...node.parents.map((parentId) => this.getNodeDepth(tree, parentId)));
   }
-  
+
   /**
    * Get all nodes at a specific depth level.
    */
-  static getNodesAtDepth(tree: OperationTree, depth: number): OperationNode[] {
-    return Object.values(tree.nodes).filter(node => 
-      this.getNodeDepth(tree, node.id) === depth
-    );
+  static getNodesAtDepth(tree: OperationTree, depth: number): Array<OperationNode> {
+    return Object.values(tree.nodes).filter((node) => this.getNodeDepth(tree, node.id) === depth);
   }
   
   /**
    * Get the path from root to a specific node (uses first parent for nodes with multiple parents).
    */
-  static getPathToNode(tree: OperationTree, nodeId: string): OperationNode[] {
-    const path: OperationNode[] = [];
+  static getPathToNode(tree: OperationTree, nodeId: string): Array<OperationNode> {
+    const path: Array<OperationNode> = [];
     let currentId: string | undefined = nodeId;
     
     while (currentId) {
@@ -117,15 +115,15 @@ export class OperationTreeUtils {
   /**
    * Get all paths from roots to a specific node (for nodes with multiple parents).
    */
-  static getAllPathsToNode(tree: OperationTree, nodeId: string): OperationNode[][] {
-    const paths: OperationNode[][] = [];
-    
-    const buildPaths = (currentId: string, currentPath: OperationNode[]): void => {
+  static getAllPathsToNode(tree: OperationTree, nodeId: string): Array<Array<OperationNode>> {
+    const paths: Array<Array<OperationNode>> = [];
+
+    function buildPaths(currentId: string, currentPath: Array<OperationNode>): void {
       const node = tree.nodes[currentId];
       if (!node) return;
-      
+
       const newPath = [node, ...currentPath];
-      
+
       if (!node.parents || node.parents.length === 0) {
         // This is a root node, add the complete path
         paths.push(newPath);
@@ -135,8 +133,8 @@ export class OperationTreeUtils {
           buildPaths(parentId, newPath);
         }
       }
-    };
-    
+    }
+
     buildPaths(nodeId, []);
     return paths;
   }

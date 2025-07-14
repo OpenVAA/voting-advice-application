@@ -1,10 +1,15 @@
-import type { CondensationOutputType } from './condensationType';
 import { CondensationOperation, CondensationOperations } from './condensation/operation';
-import type { RefineOperationParams, MapOperationParams, ReduceOperationParams, GroundingOperationParams } from './condensation/processParams';
+import type {
+  GroundingOperationParams,
+  MapOperationParams,
+  ReduceOperationParams,
+  RefineOperationParams
+} from './condensation/processParams';
+import type { CondensationOutputType } from './condensationType';
 
 /**
  * Describes a prompt used in the condensation process.
- * 
+ *
  * @param promptId - Unique identifier for this prompt
  * @param promptText - The main prompt text or template
  * @param operation - The operation this prompt is associated with
@@ -14,7 +19,7 @@ import type { RefineOperationParams, MapOperationParams, ReduceOperationParams, 
 export interface CondensationPrompt {
   promptId: string;
   promptText: string;
-  operation: CondensationOperation; 
+  operation: CondensationOperation;
   condensationGoal: CondensationOutputType;
   params: RefineOperationParams | MapOperationParams | ReduceOperationParams | GroundingOperationParams;
 }
@@ -27,10 +32,10 @@ export interface CondensationPrompt {
  * @param outputType - The type of output this prompt is designed to produce
  */
 export interface RefinePrompt extends CondensationPrompt {
-  operation: CondensationOperations.REFINE;
+  operation: typeof CondensationOperations.REFINE;
   params: RefineOperationParams;
-  }
-  
+}
+
 /**
  * A prompt for the map operation.
  * @param promptId - Unique identifier for this prompt
@@ -39,16 +44,16 @@ export interface RefinePrompt extends CondensationPrompt {
  * @param outputType - The type of output this prompt is designed to produce
  */
 export interface MapPrompt extends CondensationPrompt {
-  operation: CondensationOperations.MAP;
+  operation: typeof CondensationOperations.MAP;
   params: MapOperationParams;
-} 
+}
 
 export interface ReducePrompt extends CondensationPrompt {
-  operation: CondensationOperations.REDUCE;
+  operation: typeof CondensationOperations.REDUCE;
   params: ReduceOperationParams;
 }
 
 export interface GroundingPrompt extends CondensationPrompt {
-  operation: CondensationOperations.GROUND;
+  operation: typeof CondensationOperations.GROUND;
   params: GroundingOperationParams;
 }

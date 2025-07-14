@@ -9,16 +9,14 @@ export {
 
 // Input types
 export type { 
-  VAAComment, 
-  CondensationRunInput
-} from './condensationInput';
+  CondensationRunInput,
+  VAAComment} from './condensationInput';
 
 // Result and metrics types
 export type { 
   CondensationRunMetrics,
   CondensationRunResult 
 } from './condensationResult'; 
-
 export type {
   VAAQuestion
 } from './vaaQuestion';
