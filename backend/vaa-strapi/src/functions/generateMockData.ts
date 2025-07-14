@@ -558,8 +558,6 @@ async function createAlliances(numParties: Array<number>) {
   if (!numParties.length) return;
   if (numParties.some((n) => n === 0)) throw new Error('numParties must contain non-zero values');
 
-  console.warn('Alliance creation not yet implemented!');
-
   // Find all nominations with a party
   const nominations = await strapi.documents('api::nomination.nomination').findMany({
     filter: {
@@ -586,12 +584,9 @@ async function createAlliances(numParties: Array<number>) {
 
   // Create alliances
   for (const electionId in possibleAllies) {
-    console.error(electionId);
     for (const constituencyId in possibleAllies[electionId]) {
-      console.error(constituencyId);
       const parties = Array.from(possibleAllies[electionId][constituencyId]);
       for (const n of numParties) {
-        console.error('Create', n);
         if (n > parties.length) continue;
         const allies = spliceRandom(parties, n);
         console.error({ electionId, constituencyId, allies });
