@@ -104,10 +104,6 @@
     startPageview(to?.url?.href ?? '', from?.url?.href);
   });
 
-  // Stashed for use with [video]
-  // let screenWidth = 0;
-  // <svelte:window bind:innerWidth={screenWidth} />
-
   ////////////////////////////////////////////////////////////////////
   // Other global effects
   ////////////////////////////////////////////////////////////////////

@@ -47,9 +47,9 @@ export type CustomData = {
  * The properties for defining generated question info in customData
  */
 export type QuestionInfoSection = {
-  title?: string;
-  content?: string;
-  visible?: boolean;
+  title: string;
+  content: string;
+  visible: boolean;
 };
 
 /**

@@ -47,6 +47,10 @@ export const IMPORTABLE_COLLECTIONS: Record<
       constituencyGroups: 'api::constituency-group.constituency-group',
     },
   },
+  feedbacks: {
+    api: 'api::feedback.feedback',
+    externalRelations: {},
+  },
   nominations: {
     api: 'api::nomination.nomination',
     externalRelations: {

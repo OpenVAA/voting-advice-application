@@ -38,9 +38,9 @@
     },
     "parties": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::party.party",
-      "mappedBy": "alliance"
+      "mappedBy": "alliances"
     },
     "election": {
       "type": "relation",
