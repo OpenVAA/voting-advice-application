@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-02-22T12:10:52.777Z"
+    "x-generation-date": "2025-07-14T07:47:42.297Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6750,14 +6750,17 @@
                 "externalId": {
                   "type": "string"
                 },
-                "alliance": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "number"
-                    },
-                    "documentId": {
-                      "type": "string"
+                "alliances": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number"
+                      },
+                      "documentId": {
+                        "type": "string"
+                      }
                     }
                   }
                 },
@@ -9676,8 +9679,7 @@
             "enum": [
               "none",
               "answersOnly",
-              "mean",
-              "median"
+              "impute"
             ]
           }
         }
@@ -11714,14 +11716,17 @@
                       "externalId": {
                         "type": "string"
                       },
-                      "alliance": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "number"
-                          },
-                          "documentId": {
-                            "type": "string"
+                      "alliances": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "number"
+                            },
+                            "documentId": {
+                              "type": "string"
+                            }
                           }
                         }
                       },
@@ -13722,14 +13727,17 @@
                                           "externalId": {
                                             "type": "string"
                                           },
-                                          "alliance": {
-                                            "type": "object",
-                                            "properties": {
-                                              "id": {
-                                                "type": "number"
-                                              },
-                                              "documentId": {
-                                                "type": "string"
+                                          "alliances": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "id": {
+                                                  "type": "number"
+                                                },
+                                                "documentId": {
+                                                  "type": "string"
+                                                }
                                               }
                                             }
                                           },
@@ -15805,14 +15813,17 @@
                                     "externalId": {
                                       "type": "string"
                                     },
-                                    "alliance": {
-                                      "type": "object",
-                                      "properties": {
-                                        "id": {
-                                          "type": "number"
-                                        },
-                                        "documentId": {
-                                          "type": "string"
+                                    "alliances": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "number"
+                                          },
+                                          "documentId": {
+                                            "type": "string"
+                                          }
                                         }
                                       }
                                     },
@@ -17806,14 +17817,17 @@
                                           "externalId": {
                                             "type": "string"
                                           },
-                                          "alliance": {
-                                            "type": "object",
-                                            "properties": {
-                                              "id": {
-                                                "type": "number"
-                                              },
-                                              "documentId": {
-                                                "type": "string"
+                                          "alliances": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "id": {
+                                                  "type": "number"
+                                                },
+                                                "documentId": {
+                                                  "type": "string"
+                                                }
                                               }
                                             }
                                           },
@@ -20708,14 +20722,17 @@
                                   "externalId": {
                                     "type": "string"
                                   },
-                                  "alliance": {
-                                    "type": "object",
-                                    "properties": {
-                                      "id": {
-                                        "type": "number"
-                                      },
-                                      "documentId": {
-                                        "type": "string"
+                                  "alliances": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "number"
+                                        },
+                                        "documentId": {
+                                          "type": "string"
+                                        }
                                       }
                                     }
                                   },
@@ -23129,14 +23146,17 @@
                     "externalId": {
                       "type": "string"
                     },
-                    "alliance": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "number"
-                        },
-                        "documentId": {
-                          "type": "string"
+                    "alliances": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "documentId": {
+                            "type": "string"
+                          }
                         }
                       }
                     },
@@ -23360,14 +23380,17 @@
           "externalId": {
             "type": "string"
           },
-          "alliance": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "number"
-              },
-              "documentId": {
-                "type": "string"
+          "alliances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "documentId": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -25015,14 +25038,17 @@
                                         "externalId": {
                                           "type": "string"
                                         },
-                                        "alliance": {
-                                          "type": "object",
-                                          "properties": {
-                                            "id": {
-                                              "type": "number"
-                                            },
-                                            "documentId": {
-                                              "type": "string"
+                                        "alliances": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "type": "number"
+                                              },
+                                              "documentId": {
+                                                "type": "string"
+                                              }
                                             }
                                           }
                                         },
@@ -27319,14 +27345,17 @@
                                     "externalId": {
                                       "type": "string"
                                     },
-                                    "alliance": {
-                                      "type": "object",
-                                      "properties": {
-                                        "id": {
-                                          "type": "number"
-                                        },
-                                        "documentId": {
-                                          "type": "string"
+                                    "alliances": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "number"
+                                          },
+                                          "documentId": {
+                                            "type": "string"
+                                          }
                                         }
                                       }
                                     },

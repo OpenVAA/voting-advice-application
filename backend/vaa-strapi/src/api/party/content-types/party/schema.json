@@ -59,9 +59,9 @@
       "type": "string",
       "private": true
     },
-    "alliance": {
+    "alliances": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::alliance.alliance",
       "inversedBy": "parties"
     }
