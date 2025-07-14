@@ -43,15 +43,15 @@ The project is currently in an alpha phase with the onus being on refactoring th
 
 We released two pilot VAAs for the 2024 EU Elections, which you can try out to see the software in action.
 
-| Video-based VAA                                                                                                                                                                  |  Traditional VAA                                                                                                                                  |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Video-based VAA                                                                                               |  Traditional VAA                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 |  <img src="images/youthvaa-animation.gif" width="300" alt="The Election Compass for Young People – EE 2024"/> | <a href="https://vaalikone.openvaa.org" target="_blank"><img src="images/ee24-vaa-animation.gif" width="300" alt="EE 2024 Election Compass"/></a> |
-|  Finnish, Swedish and English                                                                                                                                                    |  Finnish only                                                                                                                                     |
-| Features custom video content                                                                                                                                                    | Select questions by theme                                                                                                                         |
-| User survey and extended analytics                                                                                                                                               | No analytics                                                                                                                                      |
-|  Data stored in Strapi backend                                                                                                                                                   | Data stored in local JSON files                                                                                                                   |
-|  Postgres server and two Docker containers running on Render                                                                                                                     | Single Docker container running on Render                                                                                                         |
-| nuortenvaalikone.openvaa.org                                                                                                                                                     | vaalikone.openvaa.org                                                                                                                             |
+|  Finnish, Swedish and English                                                                                 |  Finnish only                                                                                                                                     |
+| Features custom video content                                                                                 | Select questions by theme                                                                                                                         |
+| User survey and extended analytics                                                                            | No analytics                                                                                                                                      |
+|  Data stored in Strapi backend                                                                                | Data stored in local JSON files                                                                                                                   |
+|  Postgres server and two Docker containers running on Render                                                  | Single Docker container running on Render                                                                                                         |
+| nuortenvaalikone.openvaa.org                                                                                  | vaalikone.openvaa.org                                                                                                                             |
 
 ## 🎢 Roadmap
 
@@ -61,7 +61,7 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 - Create a research-backed methodological guide to supplement the technical documentation
 - Integrate experimental AI features into the codebase (currently in a test branch)
 - Build application manager UI
-— First production release
+  — First production release
 
 **2026** - Added features for developer-friendliness
 
