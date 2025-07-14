@@ -45,7 +45,7 @@ export function getImpliedConstituencyIds({
   // To imply the constituencyIds, all elections must have a single constituency
   for (const election of elections) {
     const constituency = election.singleConstituency;
-    if (!constituency) return undefined;
+    if (!constituency) return undefined; // A non-single constituency election is included, so we cannot imply constituencyIds
     ids.push(constituency.id);
   }
   return ids;
