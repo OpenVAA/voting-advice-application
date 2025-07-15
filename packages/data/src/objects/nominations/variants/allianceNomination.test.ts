@@ -1,12 +1,7 @@
 import { expect, test } from 'vitest';
-import {
-  Alliance,
-  AllianceNomination,
-  ENTITY_TYPE,
-  parseNominationTree,
-  PublicAllianceNominationData
-} from '../../../internal';
+import { ENTITY_TYPE, parseNominationTree } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
+import type { Alliance, AllianceNomination, PublicAllianceNominationData } from '../../../internal';
 
 const root = getTestDataRoot();
 const data = getTestData();

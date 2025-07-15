@@ -1,15 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import {
-  AnyNominationVariant,
   DataRoot,
   DateQuestion,
   ENTITY_TYPE,
-  EntityType,
   MultipleChoiceCategoricalQuestion,
   NumberQuestion,
   QUESTION_CATEGORY_TYPE
 } from '../internal';
 import { ENTITY_NOMINATIONS, getTestData, getTestDataRoot, NOMINATION_COUNTS } from '../testUtils';
+import type { AnyNominationVariant, EntityType } from '../internal';
 
 /**
  * Some of `DataRoot`’s methods are in effect tested by `getDataRoot` or the object classes and will not be repeated here, e.g.:

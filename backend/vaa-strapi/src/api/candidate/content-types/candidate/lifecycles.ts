@@ -1,5 +1,5 @@
-import { Event } from '@strapi/database/dist/lifecycles';
 import crypto from 'crypto';
+import type { Event } from '@strapi/database/dist/lifecycles';
 
 export default {
   /**

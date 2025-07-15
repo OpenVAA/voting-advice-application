@@ -1,4 +1,5 @@
-import { isLocalizedValue, LocalizedArray, LocalizedObject, LocalizedValue, TRANSLATIONS_KEY } from './localized';
+import { isLocalizedValue, TRANSLATIONS_KEY } from './localized';
+import type { LocalizedArray, LocalizedObject, LocalizedValue } from './localized';
 
 /**
  * Translate recursively any data structure containing some `LocalizedValues`.

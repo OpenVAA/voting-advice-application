@@ -1,12 +1,10 @@
 import {
-  Answer,
   type AnswerFormatterParams,
   type AnswerValue,
   type ArrayAnswerFormatterOptions,
   type CoordinateOrMissing,
   type DataAccessor,
   DataTypeError,
-  FilterTargets,
   isMissingValue,
   type MatchableQuestion,
   MISSING_VALUE,
@@ -14,9 +12,9 @@ import {
   QuestionAndCategoryBase,
   type QuestionCategory,
   type QuestionData,
-  type QuestionType,
-  QuestionVariant
+  type QuestionType
 } from '../../../internal';
+import type { Answer, FilterTargets, QuestionVariant } from '../../../internal';
 
 /**
  * An abstract base class for all questions. The non-abstract subclasses are contained in the `variants` directory. They implement the `_ensureValue` and `normalizeValue` methods and may override the `normalizedDimensions` and `isMatchable` getters. They may also accept more data properties.

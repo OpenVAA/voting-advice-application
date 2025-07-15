@@ -1,4 +1,5 @@
-import { MultipleChoiceQuestion, QUESTION_TYPE } from '../../../internal';
+import { MultipleChoiceQuestion } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * Used for all questions which allow choosing multiple answering choices and whose values [cannot be ordered numerically](https://en.wikipedia.org/wiki/Nominal_category), i.e. the data is categorical or nominal. The answers selected may form an ordered or unordered list.

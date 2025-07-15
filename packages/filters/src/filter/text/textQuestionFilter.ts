@@ -1,6 +1,7 @@
-import { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import { MultipleTextQuestion, TextQuestion } from '@openvaa/data';
+import { MultipleTextQuestion } from '@openvaa/data';
 import { TextFilter } from './textFilter';
+import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
+import type { TextQuestion } from '@openvaa/data';
 
 export class TextQuestionFilter<TEntity extends MaybeWrappedEntity> extends TextFilter<TEntity> {
   /**

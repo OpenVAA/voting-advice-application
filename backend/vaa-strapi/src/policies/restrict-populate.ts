@@ -1,6 +1,6 @@
-import { StrapiContext } from '../../types/customStrapiTypes';
 import { isAllowedPopulate } from '../util/isAllowedPopulate';
 import { warn } from '../util/logger';
+import type { StrapiContext } from '../../types/customStrapiTypes';
 
 /**
  * A policy that disallows populating (and thus filter) private resources.

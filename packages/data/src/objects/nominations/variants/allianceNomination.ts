@@ -1,11 +1,8 @@
-import {
+import { DataNotFoundError, DataProvisionError, ENTITY_TYPE, Nomination } from '../../../internal';
+import type {
   AllianceNominationData,
   DataAccessor,
-  DataNotFoundError,
-  DataProvisionError,
   DataRoot,
-  ENTITY_TYPE,
-  Nomination,
   OrganizationNomination,
   WithOptional
 } from '../../../internal';

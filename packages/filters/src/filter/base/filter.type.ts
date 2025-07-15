@@ -1,5 +1,5 @@
-import { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import {
+import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
+import type {
   MultipleChoiceCategoricalQuestion,
   MultipleTextQuestion,
   NumberQuestion,

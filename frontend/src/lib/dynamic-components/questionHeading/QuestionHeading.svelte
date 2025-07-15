@@ -28,7 +28,6 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 -->
 
 <script lang="ts">
-  import { Election } from '@openvaa/data';
   import { type Readable, readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
@@ -38,6 +37,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
+  import type { Election } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
 

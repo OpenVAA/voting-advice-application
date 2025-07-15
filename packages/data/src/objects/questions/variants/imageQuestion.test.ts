@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { Image, ImageQuestion, MISSING_VALUE, QUESTION_TYPE } from '../../../internal';
+import { ImageQuestion, MISSING_VALUE, QUESTION_TYPE } from '../../../internal';
 import { getTestData, getTestDataRoot } from '../../../testUtils';
+import type { Image } from '../../../internal';
 
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;

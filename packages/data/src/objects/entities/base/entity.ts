@@ -1,19 +1,21 @@
 import {
   type Answer,
-  AnswerFormatterParams,
   type Answers,
   type AnswerValue,
   type AnyQuestionVariant,
-  ArrayAnswerFormatterOptions,
-  Constituency,
-  CoreEntity,
   type DataAccessor,
   DataObject,
-  Election,
   type EntityData,
   type EntityType,
   type HasAnswers,
   type NominationVariant
+} from '../../../internal';
+import type {
+  AnswerFormatterParams,
+  ArrayAnswerFormatterOptions,
+  Constituency,
+  CoreEntity,
+  Election
 } from '../../../internal';
 
 /**

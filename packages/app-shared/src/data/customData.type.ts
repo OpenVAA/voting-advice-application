@@ -1,4 +1,4 @@
-import { AnyNominationVariant, AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
+import type { AnyNominationVariant, AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
 
 /**
  * Custom data properties for different `DataObject`s.

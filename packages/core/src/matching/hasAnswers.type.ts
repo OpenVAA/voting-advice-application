@@ -1,4 +1,4 @@
-import { Id } from '../id/id.type';
+import type { Id } from '../id/id.type';
 
 /**
  * Entities to be matched must implement this interface.

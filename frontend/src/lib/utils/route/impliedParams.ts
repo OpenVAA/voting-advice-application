@@ -1,5 +1,5 @@
-import { DataRoot } from '@openvaa/data';
 import type { Id } from '@openvaa/core';
+import type { DataRoot } from '@openvaa/data';
 
 /**
  * Try to imply the `electionIds` in cases when they need not to be selected.

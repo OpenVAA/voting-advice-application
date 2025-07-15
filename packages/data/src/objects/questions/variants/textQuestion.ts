@@ -1,4 +1,5 @@
-import { ensureString, Question, QUESTION_TYPE } from '../../../internal';
+import { ensureString, Question } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * A non-matchable simple question whose answer is a string.

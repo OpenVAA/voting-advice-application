@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { order } from './order';
-import { DataObject, DataObjectData, DataRoot } from '../internal';
+import { DataObject, DataRoot } from '../internal';
+import type { DataObjectData } from '../internal';
 
 describe('order', () => {
   class MockDataObject extends DataObject {}

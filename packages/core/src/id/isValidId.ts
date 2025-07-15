@@ -1,4 +1,4 @@
-import { Id } from './id.type';
+import type { Id } from './id.type';
 
 const INVALID_ID_CHAR_RE = /\s/;
 

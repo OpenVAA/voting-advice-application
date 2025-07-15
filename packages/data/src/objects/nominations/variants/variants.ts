@@ -1,10 +1,10 @@
-import {
+import { type Id } from '../../../internal';
+import type {
   AllianceNomination,
   CandidateNomination,
   ENTITY_TYPE,
   EntityType,
   FactionNomination,
-  type Id,
   OrganizationNomination,
   PublicAllianceNominationData,
   PublicCandidateNominationData,

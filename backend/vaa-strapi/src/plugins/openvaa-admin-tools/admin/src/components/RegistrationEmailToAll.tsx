@@ -1,7 +1,7 @@
-import { ReactElement } from 'react';
 import { RegistrationEmailButton } from './RegistrationEmailButton';
 import { REGISTRATION_LINK_PLACEHOLDER } from '../../../server/src/services/utils/emailPlaceholders';
 import { sendEmailToUnregistered } from '../api/email';
+import type { ReactElement } from 'react';
 
 export function RegistrationEmailToAll(): ReactElement | null {
   return RegistrationEmailButton({

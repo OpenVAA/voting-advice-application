@@ -11,7 +11,7 @@ Shows the candidate's basic information, some of which is editable.
 
 <script lang="ts">
   import { getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
-  import { type AnyQuestionVariant, CandidateNomination, ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
+import { type AnyQuestionVariant, ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -26,6 +26,7 @@ Shows the candidate's basic information, some of which is editable.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
+  import type { CandidateNomination} from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

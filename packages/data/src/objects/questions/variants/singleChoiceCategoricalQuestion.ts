@@ -5,9 +5,9 @@ import {
   isMissingValue,
   MISSING_VALUE,
   type MissingValue,
-  QUESTION_TYPE,
   SingleChoiceQuestion
 } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * Used for all questions which allow choosing a single enumerated answering choice and whose values [cannot be ordered numerically](https://en.wikipedia.org/wiki/Nominal_category), i.e. the data is categorical or nominal.

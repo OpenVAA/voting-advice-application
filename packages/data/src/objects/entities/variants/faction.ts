@@ -1,13 +1,5 @@
-import {
-  Candidate,
-  type DataAccessor,
-  DataNotFoundError,
-  Entity,
-  ENTITY_TYPE,
-  type FactionData,
-  Organization,
-  removeDuplicates
-} from '../../../internal';
+import { type DataAccessor, DataNotFoundError, Entity, type FactionData, removeDuplicates } from '../../../internal';
+import type { Candidate, ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
  * A subgroup of a party, used in ’ley de lemas’ electoral systems.

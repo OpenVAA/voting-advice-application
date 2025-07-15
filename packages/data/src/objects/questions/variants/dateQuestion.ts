@@ -2,7 +2,6 @@ import {
   type AnswerValue,
   type CoordinateOrMissing,
   type DataAccessor,
-  DataRoot,
   DataTypeError,
   type DateQuestionData,
   ensureDate,
@@ -10,9 +9,9 @@ import {
   MISSING_VALUE,
   type MissingValue,
   normalizeCoordinate,
-  Question,
-  QUESTION_TYPE
+  Question
 } from '../../../internal';
+import type { DataRoot, QUESTION_TYPE } from '../../../internal';
 
 /**
  * A possibly matchable simple question whose answer is a date.

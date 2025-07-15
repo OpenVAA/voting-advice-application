@@ -1,7 +1,8 @@
 import { Button, Field, Modal, Textarea, TextInput, Typography } from '@strapi/design-system';
 import { CheckCircle, Mail, WarningCircle } from '@strapi/icons';
-import { ReactElement, useState } from 'react';
+import { useState } from 'react';
 import { REGISTRATION_LINK_PLACEHOLDER } from '../../../server/src/services/utils/emailPlaceholders';
+import type { ReactElement } from 'react';
 import type { SendEmailResult } from '../../../server/src/services/email.type';
 
 export function RegistrationEmailButton({

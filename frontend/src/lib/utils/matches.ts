@@ -1,13 +1,8 @@
-import {
-  CandidateNomination,
-  ENTITY_TYPE,
-  type EntityType,
-  OrganizationNomination,
-  QuestionCategory
-} from '@openvaa/data';
+import { ENTITY_TYPE, type EntityType } from '@openvaa/data';
 import { unwrapEntity } from './entities';
 import { compareMaybeWrappedEntities } from './sorting';
 import type { Id } from '@openvaa/core';
+import type { CandidateNomination, OrganizationNomination, QuestionCategory } from '@openvaa/data';
 import type { Match } from '@openvaa/matching';
 import type { MatchTree } from '$lib/contexts/voter/matchStore';
 

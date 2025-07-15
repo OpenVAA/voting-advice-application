@@ -1,10 +1,11 @@
-import { chromium, expect, FullConfig } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import path from 'path';
 import { buildRoute } from './utils/buildRoute';
 import { TESTS_DIR } from './utils/testsDir';
 import { TRANSLATIONS as T } from './utils/translations';
 import mockUsers from '../../backend/vaa-strapi/src/functions/mockData/mockUsers.json' assert { type: 'json' };
 import { STORAGE_STATE } from '../playwright.config';
+import type { FullConfig } from '@playwright/test';
 
 const mockUser = mockUsers[1];
 /** The setup report must be stored in a separate directory from `playwright-report` because the latter will be overwritten after the setup */

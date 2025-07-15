@@ -1,6 +1,6 @@
 import { REGISTRATION_LINK_PLACEHOLDER } from './emailPlaceholders';
-import { SendEmailResult } from '../email.type';
 import type { Data } from '@strapi/strapi';
+import type { SendEmailResult } from '../email.type';
 
 if (!process.env.PUBLIC_BROWSER_FRONTEND_URL)
   throw new Error('Missing PUBLIC_BROWSER_FRONTEND_URL environment variable');

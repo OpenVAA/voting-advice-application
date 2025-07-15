@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { DataObject, DataRoot, parseFullVaaData } from '../internal';
+import { DataRoot, parseFullVaaData } from '../internal';
 import { getTestData } from '../testUtils';
+import type { DataObject } from '../internal';
 
 const data = getTestData();
 const unparsed = new DataRoot({ data });

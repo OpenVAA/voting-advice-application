@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { AnyQuestionVariantData, Constituency, DataRoot, Election, MultipleTextQuestion } from '../../../internal';
+import { DataRoot, MultipleTextQuestion } from '../../../internal';
 import { getTestData, getTestDataRoot } from '../../../testUtils';
+import type { AnyQuestionVariantData, Constituency, Election } from '../../../internal';
 
 /**
  * NB. We test the methods handling answer values separately for each question type in their own test files.

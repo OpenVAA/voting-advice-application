@@ -6,9 +6,9 @@ import {
   isMissingValue,
   MISSING_VALUE,
   type MissingValue,
-  Question,
-  QUESTION_TYPE
+  Question
 } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * A matchable simple question whose answer is a boolean.

@@ -8,9 +8,7 @@ Usually accessed by direct link only and not meant for the wide public.
 -->
 
 <script lang="ts">
-  import {
-    Candidate,
-    CandidateNomination,
+import {
     type Organization,
     SingleChoiceCategoricalQuestion,
     SingleChoiceOrdinalQuestion
@@ -23,6 +21,9 @@ Usually accessed by direct link only and not meant for the wide public.
   import { removeDuplicates } from '$lib/utils/removeDuplicates';
   import MainContent from '../../../../MainContent.svelte';
   import type { Id, MaybeWrappedEntity } from '@openvaa/core';
+  import type {
+    Candidate,
+    CandidateNomination} from '@openvaa/data';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
 
   ////////////////////////////////////////////////////////////////////

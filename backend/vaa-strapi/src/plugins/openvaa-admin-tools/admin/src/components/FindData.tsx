@@ -1,9 +1,9 @@
 import { Flex } from '@strapi/design-system';
-import { ReactElement } from 'react';
-import { ApiResult } from 'src/api/utils/apiResult.type';
 import { DataBase } from './DataBase';
 import { IMPORTABLE_COLLECTIONS } from '../../../server/src/services/utils/importableCollections';
 import { findData } from '../api/data';
+import type { ReactElement } from 'react';
+import type { ApiResult } from 'src/api/utils/apiResult.type';
 
 /**
  * A component for accessing the `/openvaa-admin-tools/find-data` endpoint.

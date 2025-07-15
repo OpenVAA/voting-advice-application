@@ -1,12 +1,10 @@
-import {
+import { type ChoiceQuestionData, ENTITY_TYPE, QUESTION_TYPE } from '../internal';
+import type {
   CandidateData,
-  type ChoiceQuestionData,
   ConstituencyData,
   ElectionData,
-  ENTITY_TYPE,
   LocalizedObject,
-  PublicAllianceNominationData,
-  QUESTION_TYPE
+  PublicAllianceNominationData
 } from '../internal';
 
 /**

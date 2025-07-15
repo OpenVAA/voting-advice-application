@@ -1,6 +1,6 @@
-import { Id } from '@openvaa/core';
-import { LocalizedString } from '../data/extendedData.type';
+import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
+import type { LocalizedString } from '../data/extendedData.type';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.

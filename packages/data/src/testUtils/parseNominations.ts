@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import {
+import { ENTITY_TYPE } from '../internal';
+import type {
   AnyNominationVariantData,
   AnyNominationVariantPublicData,
-  ENTITY_TYPE,
   EntityType,
   Id,
   NestedNomination,

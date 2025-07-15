@@ -2,8 +2,9 @@
  * app-customization controller
  */
 
-import { Data, factories } from '@strapi/strapi';
-import { StrapiContext } from '../../../../types/customStrapiTypes';
+import { factories } from '@strapi/strapi';
+import type { Data } from '@strapi/strapi';
+import type { StrapiContext } from '../../../../types/customStrapiTypes';
 
 export default factories.createCoreController('api::app-customization.app-customization', () => ({
   async find(ctx: StrapiContext) {

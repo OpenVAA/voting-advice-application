@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { Choice, COORDINATE, MISSING_VALUE, QUESTION_TYPE, SingleChoiceCategoricalQuestion } from '../../../internal';
+import { COORDINATE, MISSING_VALUE, QUESTION_TYPE, SingleChoiceCategoricalQuestion } from '../../../internal';
 import { getTestData, getTestDataRoot } from '../../../testUtils';
+import type { Choice } from '../../../internal';
 
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;
