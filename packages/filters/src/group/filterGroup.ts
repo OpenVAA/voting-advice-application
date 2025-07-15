@@ -1,5 +1,5 @@
-import { MaybeWrappedEntity } from '@openvaa/core';
 import { combineResults, LOGIC_OP, type LogicOp } from './combineResults';
+import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { Filter } from '../filter';
 
 /**

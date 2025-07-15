@@ -1,4 +1,4 @@
-import { HasAnswers } from '../matching/hasAnswers.type';
+import type { HasAnswers } from '../matching/hasAnswers.type';
 
 /**
  * `Entity`s are the targets that VAAs match with the voter. The actual `Entity` objects are defined in the `@openvaa/data` module.

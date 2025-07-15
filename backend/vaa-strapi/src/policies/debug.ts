@@ -1,4 +1,4 @@
-import { StrapiContext } from '../../types/customStrapiTypes';
+import type { StrapiContext } from '../../types/customStrapiTypes';
 
 /**
  * A policy for debugging that always returns `true` and logs the context.

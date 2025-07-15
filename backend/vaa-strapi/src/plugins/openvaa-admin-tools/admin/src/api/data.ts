@@ -1,5 +1,5 @@
-import { Data } from '@strapi/strapi';
 import { apiPost } from './utils/apiPost';
+import type { Data } from '@strapi/strapi';
 import type {
   DeleteDataResult,
   FindDataResult,

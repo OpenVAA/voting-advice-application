@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { RestrictPopulateConfig } from '../../../policies/restrict-populate';
+import type { RestrictPopulateConfig } from '../../../policies/restrict-populate';
 
 export default factories.createCoreRouter('api::app-customization.app-customization', {
   only: ['find'],

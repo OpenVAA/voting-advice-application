@@ -1,7 +1,8 @@
 import { Button, Field, Flex, JSONInput, Typography } from '@strapi/design-system';
 import { Upload } from '@strapi/icons';
-import { ReactElement, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { findData, importData } from '../api/data';
+import type { ReactElement } from 'react';
 
 const QUESTION_IDS = {
   occupation: 'cuucnobngt536gysyjyxwjux',

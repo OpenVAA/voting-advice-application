@@ -1,4 +1,4 @@
-import { ActionResult } from './actionResult.type';
+import type { ActionResult } from './actionResult.type';
 
 export interface SendEmailResult extends ActionResult {
   /**

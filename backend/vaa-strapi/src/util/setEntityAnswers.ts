@@ -1,7 +1,7 @@
-import { LocalizedAnswer } from '@openvaa/app-shared';
 import { getEntity } from './getEntity';
 import { getEntityApi } from './getEntityApi';
 import { removeNullishProps } from './removeNullishProps';
+import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { EntityData, EntityType } from '../../types/entities';
 
 /**

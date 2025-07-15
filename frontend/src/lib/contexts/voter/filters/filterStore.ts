@@ -1,10 +1,11 @@
 import { getCustomData } from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
-import { Filter, FilterGroup } from '@openvaa/filters';
+import { FilterGroup } from '@openvaa/filters';
 import { parsimoniusDerived } from '$lib/contexts/utils/parsimoniusDerived';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
+import type { Filter } from '@openvaa/filters';
 import type { Readable } from 'svelte/store';
 import type { TranslationKey } from '$types';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionStore';

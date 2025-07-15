@@ -1,6 +1,6 @@
-import { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import type { PropertyFilterOptions } from '../base';
 
 /**

@@ -1,4 +1,5 @@
-import { ensureImage, Question, QUESTION_TYPE } from '../../../internal';
+import { ensureImage, Question } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * A non-matchable simple question whose answer is an Image object.

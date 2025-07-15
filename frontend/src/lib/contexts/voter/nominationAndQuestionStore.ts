@@ -6,12 +6,12 @@ import {
   type Election,
   ENTITY_TYPE,
   type EntityType,
-  OrganizationNomination,
   QUESTION_CATEGORY_TYPE
 } from '@openvaa/data';
 import { type Readable } from 'svelte/store';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { Id } from '@openvaa/core';
+import type { OrganizationNomination } from '@openvaa/data';
 import type { SelectionTree } from './selectionTree.type';
 
 /**

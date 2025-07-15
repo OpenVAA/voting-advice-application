@@ -1,15 +1,17 @@
 import {
   type AllianceNomination,
-  CandidateNomination,
-  CandidateNominationData,
   type DataAccessor,
   DataProvisionError,
-  DataRoot,
   ENTITY_TYPE,
+  Nomination,
+  type OrganizationNominationData
+} from '../../../internal';
+import type {
+  CandidateNomination,
+  CandidateNominationData,
+  DataRoot,
   FactionNomination,
   FactionNominationData,
-  Nomination,
-  type OrganizationNominationData,
   WithOptional
 } from '../../../internal';
 

@@ -1,14 +1,5 @@
-import {
-  Choice,
-  ENTITY_TYPE,
-  EntityType,
-  EntityVariantTree,
-  type FullVaaData,
-  Id,
-  NominationVariantTree,
-  QUESTION_CATEGORY_TYPE,
-  QUESTION_TYPE
-} from '../internal';
+import { ENTITY_TYPE, type FullVaaData, QUESTION_CATEGORY_TYPE, QUESTION_TYPE } from '../internal';
+import type { Choice, EntityType, EntityVariantTree, Id, NominationVariantTree } from '../internal';
 
 export const LIKERT_5_CHOICES: Array<Choice<number>> = [
   {

@@ -1,5 +1,5 @@
-import { Entity, ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
 import { TextFilter } from './textFilter';
+import type { Entity, ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
 import type { PropertyFilterOptions } from '../base';
 
 export class TextPropertyFilter<TEntity extends MaybeWrappedEntity> extends TextFilter<TEntity> {

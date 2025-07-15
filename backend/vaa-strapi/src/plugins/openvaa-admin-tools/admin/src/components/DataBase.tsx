@@ -1,7 +1,8 @@
 import { Button, Field, Flex, JSONInput, Typography } from '@strapi/design-system';
 import { CheckCircle, Upload, WarningCircle } from '@strapi/icons';
-import { FormEvent, ReactElement, useState } from 'react';
-import { ApiResult } from 'src/api/utils/apiResult.type';
+import { useState } from 'react';
+import type { FormEvent, ReactElement } from 'react';
+import type { ApiResult } from 'src/api/utils/apiResult.type';
 
 /**
  * A base component for handling posting JSON data to the `/openvaa-admin-tools/data-{foo}` endpoints.

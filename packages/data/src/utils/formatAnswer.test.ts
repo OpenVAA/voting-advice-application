@@ -1,13 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import {
-  DateQuestion,
   formatBooleanAnswer,
   formatDateAnswer,
   formatImageAnswer,
   formatMultipleTextAnswer,
-  formatNumberAnswer,
-  NumberQuestion
+  formatNumberAnswer
 } from '../internal';
+import type { DateQuestion, NumberQuestion } from '../internal';
 
 describe('formatBooleanAnswer', () => {
   test('Should return "Yes" when the input value is true for the formatBooleanAnswer function', () => {

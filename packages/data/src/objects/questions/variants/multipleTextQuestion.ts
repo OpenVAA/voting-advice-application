@@ -1,4 +1,5 @@
-import { ensureArray, ensureString, Question, QUESTION_TYPE } from '../../../internal';
+import { ensureArray, ensureString, Question } from '../../../internal';
+import type { QUESTION_TYPE } from '../../../internal';
 
 /**
  * A non-matchable question whose answer is an array of strings.

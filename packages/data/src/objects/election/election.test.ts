@@ -1,7 +1,8 @@
 import { describe } from 'node:test';
 import { expect, test } from 'vitest';
-import { Constituency, QUESTION_CATEGORY_TYPE } from '../../internal';
+import { QUESTION_CATEGORY_TYPE } from '../../internal';
 import { getTestData, getTestDataRoot, NOMINATION_COUNTS, NOMINATION_COUNTS_ROUND_2 } from '../../testUtils';
+import type { Constituency } from '../../internal';
 
 const root = getTestDataRoot();
 const data = getTestData();

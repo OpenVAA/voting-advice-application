@@ -1,6 +1,6 @@
-import { StrapiContext } from '../../types/customStrapiTypes';
 import { getUsersCandidate } from '../util/getUsersCandidate';
 import { warn } from '../util/logger';
+import type { StrapiContext } from '../../types/customStrapiTypes';
 
 /**
  * A policy that requires the `User` to be authenticated and own the `Candidate` targeted.

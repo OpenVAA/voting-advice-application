@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { ENTITY_TYPE, Id } from '../../../internal';
+import { ENTITY_TYPE } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
+import type { Id } from '../../../internal';
 
 const root = getTestDataRoot();
 const categoryData = getTestData().questions.categories;

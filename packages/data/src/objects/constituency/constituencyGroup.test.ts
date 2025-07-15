@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { Constituency, Id } from '../../internal';
+import { Constituency } from '../../internal';
 import { getTestData, getTestDataRoot } from '../../testUtils';
+import type { Id } from '../../internal';
 
 const root = getTestDataRoot();
 const data = getTestData();

@@ -1,15 +1,14 @@
 import crypto from 'crypto';
 import { describe, expect, test } from 'vitest';
-import {
+import { ENTITY_TYPE, QuestionAndCategoryBase } from '../../../internal';
+import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
+import type {
   AnyQuestionVariant,
-  ENTITY_TYPE,
   FilterValue,
   Id,
-  QuestionAndCategoryBase,
   QuestionAndCategoryBaseData,
   QuestionCategory
 } from '../../../internal';
-import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;

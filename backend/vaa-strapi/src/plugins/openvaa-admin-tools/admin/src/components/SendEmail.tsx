@@ -9,10 +9,11 @@ import {
   Typography,
 } from '@strapi/design-system';
 import { CheckCircle, Mail, Upload, WarningCircle } from '@strapi/icons';
-import { Data } from '@strapi/strapi';
-import { ReactElement, useState } from 'react';
+import { useState } from 'react';
 import { findCandidates } from '../api/data';
 import { sendEmailToCandidate } from '../api/email';
+import type { Data } from '@strapi/strapi';
+import type { ReactElement } from 'react';
 import type { RegistrationStatus } from '../../../server/src/services/data.type';
 
 /**

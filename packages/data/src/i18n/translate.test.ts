@@ -1,10 +1,11 @@
 import { expect, test } from 'vitest';
-import { LocalizedValue, translate, TRANSLATIONS_KEY } from '../internal';
+import { translate, TRANSLATIONS_KEY } from '../internal';
 import {
   getLocalizedTestData,
   getTranslatedTestData,
   TRANSLATED_TEST_DATA_LOCALE
 } from '../testUtils/localizedTestData';
+import type { LocalizedValue } from '../internal';
 
 test('Should translate individual LocalizedValues', () => {
   const value: LocalizedValue = { [TRANSLATIONS_KEY]: { en: 'Hello', fi: 'Moi', sv: '' } };

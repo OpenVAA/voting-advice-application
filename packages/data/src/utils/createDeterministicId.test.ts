@@ -1,6 +1,7 @@
-import { Id } from '@openvaa/core';
 import { describe, expect, test } from 'vitest';
-import { createDeterministicId, IdentityProps } from './createDeterministicId';
+import { createDeterministicId } from './createDeterministicId';
+import type { Id } from '@openvaa/core';
+import type { IdentityProps } from './createDeterministicId';
 
 describe('createDeterministicId', () => {
   test('Should return the same id regardless of children order', () => {

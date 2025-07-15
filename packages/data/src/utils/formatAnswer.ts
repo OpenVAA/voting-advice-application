@@ -1,4 +1,4 @@
-import { DateQuestion, Image, NumberQuestion } from '../internal';
+import type { DateQuestion, Image, NumberQuestion } from '../internal';
 
 /**
  * The default format used for `Date` formatting.

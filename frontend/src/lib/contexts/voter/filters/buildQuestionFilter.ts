@@ -1,6 +1,7 @@
 import { type AnyQuestionVariant, QUESTION_TYPE } from '@openvaa/data';
-import { ChoiceQuestionFilter, Filter, NumberQuestionFilter, TextQuestionFilter } from '@openvaa/filters';
+import { ChoiceQuestionFilter, NumberQuestionFilter, TextQuestionFilter } from '@openvaa/filters';
 import { logDebugError } from '$lib/utils/logger';
+import type { Filter } from '@openvaa/filters';
 
 /**
  * Create a filter for the given `Question`.

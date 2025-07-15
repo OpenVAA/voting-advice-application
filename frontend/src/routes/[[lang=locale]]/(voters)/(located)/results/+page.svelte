@@ -25,7 +25,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 -->
 
 <script lang="ts">
-  import { Election, type EntityType } from '@openvaa/data';
+import { type EntityType } from '@openvaa/data';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { beforeNavigate, pushState } from '$app/navigation';
@@ -45,6 +45,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
+  import type { Election} from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

@@ -1,4 +1,4 @@
-import { CustomDataMap } from './customData.type';
+import type { CustomDataMap } from './customData.type';
 
 /**
  * A utility for getting the typed `CustomData` for any `DataObject`.

@@ -1,6 +1,5 @@
 import {
   BooleanQuestion,
-  DataRoot,
   DateQuestion,
   ImageQuestion,
   MultipleChoiceCategoricalQuestion,
@@ -12,6 +11,7 @@ import {
   SingleChoiceOrdinalQuestion,
   TextQuestion
 } from '../../../internal';
+import type { DataRoot } from '../../../internal';
 
 /**
  * Question variants

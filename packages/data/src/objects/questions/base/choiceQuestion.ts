@@ -4,7 +4,6 @@ import {
   type ChoiceQuestionType,
   type DataAccessor,
   DataProvisionError,
-  DataRoot,
   ensureString,
   type Id,
   MISSING_VALUE,
@@ -12,6 +11,7 @@ import {
   Question,
   validateChoices
 } from '../../../internal';
+import type { DataRoot } from '../../../internal';
 
 /**
  * An abstract base class for all questions which have enumerated answering choices. Non-abstract subclasses should inherit from either of the two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.

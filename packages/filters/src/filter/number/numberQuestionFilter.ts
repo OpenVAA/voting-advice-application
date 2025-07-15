@@ -1,6 +1,6 @@
-import { MaybeWrappedEntity } from '@openvaa/core';
-import { NumberQuestion } from '@openvaa/data';
 import { NumberFilter } from './numberFilter';
+import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { NumberQuestion } from '@openvaa/data';
 
 /**
  * A filter for number questions.

@@ -1,4 +1,5 @@
-import { type DynamicSettings, dynamicSettings, QuestionInCardContent } from '@openvaa/app-shared';
+import { type DynamicSettings, dynamicSettings } from '@openvaa/app-shared';
+import type { QuestionInCardContent } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
 /**

@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest';
-import { CandidateNomination, ENTITY_TYPE, parseNominationTree } from '../../../internal';
-import { ExtendedNominationData, getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
+import { ENTITY_TYPE, parseNominationTree } from '../../../internal';
+import { getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
+import type { CandidateNomination } from '../../../internal';
+import type { ExtendedNominationData } from '../../../testUtils';
 
 const root = getTestDataRoot();
 const data = getTestData();

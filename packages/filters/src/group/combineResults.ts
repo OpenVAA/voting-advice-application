@@ -1,4 +1,4 @@
-import { MaybeWrappedEntity } from '@openvaa/core';
+import type { MaybeWrappedEntity } from '@openvaa/core';
 
 /**
  * A logic operator for combining results from multiple filters.

@@ -1,7 +1,7 @@
-import { StrapiContext } from '../../../../types/customStrapiTypes';
-import { EntityData } from '../../../../types/entities';
 import { error } from '../../../util/logger';
 import { setEntityProperties } from '../../../util/setEntityProperties';
+import type { StrapiContext } from '../../../../types/customStrapiTypes';
+import type { EntityData } from '../../../../types/entities';
 
 export default {
   /**

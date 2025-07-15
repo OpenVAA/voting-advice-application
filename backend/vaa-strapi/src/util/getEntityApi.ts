@@ -1,4 +1,4 @@
-import { UID } from '@strapi/strapi';
+import type { UID } from '@strapi/strapi';
 import type { EntityType } from '../../types/entities';
 
 export function getEntityApi(entityType: EntityType): UID.ContentType {

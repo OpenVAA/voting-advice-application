@@ -1,7 +1,7 @@
-import { SendEmailResult } from './email.type';
 import { REGISTRATION_LINK_PLACEHOLDER } from './utils/emailPlaceholders';
 import { sendToAll } from './utils/sendToAll';
 import type { Core } from '@strapi/strapi';
+import type { SendEmailResult } from './email.type';
 
 export default function service({ strapi }: { strapi: Core.Strapi }) {
   return {

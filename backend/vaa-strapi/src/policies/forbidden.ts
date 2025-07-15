@@ -1,5 +1,5 @@
-import { StrapiContext } from '../../types/customStrapiTypes';
 import { warn } from '../util/logger';
+import type { StrapiContext } from '../../types/customStrapiTypes';
 
 /**
  * A placeholder policy that always returns false.

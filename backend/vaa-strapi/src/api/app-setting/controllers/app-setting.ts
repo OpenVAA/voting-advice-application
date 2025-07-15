@@ -4,9 +4,10 @@
  * The controller is customised to convert the `results.cardContents` from Strapi to the format used in `DynamicSettings`.
  */
 
-import { Data, factories } from '@strapi/strapi';
-import { StrapiContext } from '../../../../types/customStrapiTypes';
+import { factories } from '@strapi/strapi';
 import { parseStrapiCardContents } from '../../..//util/appSettings';
+import type { Data } from '@strapi/strapi';
+import type { StrapiContext } from '../../../../types/customStrapiTypes';
 
 export default factories.createCoreController('api::app-setting.app-setting', () => ({
   async find(ctx: StrapiContext) {

@@ -1,10 +1,5 @@
-import {
-  AnyEntityVariantData,
-  AnyNominationVariantPublicData,
-  FullVaaData,
-  parseEntityTree,
-  parseNominationTree
-} from '../internal';
+import { parseEntityTree, parseNominationTree } from '../internal';
+import type { AnyEntityVariantData, AnyNominationVariantPublicData, FullVaaData } from '../internal';
 
 /**
  * Expands a `FullVaaData` object with possibly tree-like `AnyEntityVariantData` and `AnyNominationVariantPublicData` data into a flat data arrays.

@@ -1,4 +1,4 @@
-import { Entity, MaybeWrappedEntity } from './entity.type';
+import type { Entity, MaybeWrappedEntity } from './entity.type';
 
 /**
  * Return the entity for a wrapped entity or the entity itself if it's not wrapped.
