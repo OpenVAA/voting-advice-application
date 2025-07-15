@@ -25,11 +25,8 @@ following these steps.
 2. Add a descriptive description.
 3. Assign the issue to the Voting Advice Application project.
 4. [Add labels](how-to-use-labels.md). At least the following types of labels should be added
-   - persona: [WHO]
    - task: [INVOLVES]
    - type: [TYPE OF ISSUE] (👁 this is optional, depending on the type of issue)
-5. Mark the target scope of the issue with Milestones (whether the feature should be included in the Alpha release, Beta
-   release, future bugfix patch, etc.)
 
 #### Search for an issue
 
@@ -47,6 +44,21 @@ If you want to make changes to the project, you must follow the following steps.
 1. Clone the repository
 2. Create a new branch with a descriptive yet short name. For example, `fix-404-page` or `add-privacy-policy-page`.
 3. Once you start adding changes, make sure you split your work into small, meaningful, manageable commits.
+
+For the best developer experience when using Code, install the following plugins to automatically format code according the repo’s standards:
+
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Prettier – Code Formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+
+And apply these settings:
+
+```json
+"editor.defaultFormatter": "esbenp.prettier-vscode",
+"editor.formatOnSave": true,
+"editor.codeActionsOnSave": {
+  "source.fixAll": "explicit",
+},
+```
 
 ### Commit your update
 
