@@ -113,6 +113,8 @@ export default [
         }
       ],
 
+      '@typescript-eslint/consistent-type-imports': 'error',
+
       'simple-import-sort/exports': 'error',
 
       'simple-import-sort/imports': [
