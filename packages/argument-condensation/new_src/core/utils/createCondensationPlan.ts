@@ -1,8 +1,12 @@
-import { CondensationOperations } from '../types/condensation/operation';
-import { CondensationPlan } from '../types/condensation/processDefinition';
-import { MapOperationParams, ReduceOperationParams } from '../types/condensation/processParams';
-import { CondensationOutputType } from '../types/condensationType';
-import { MapPrompt, ReducePrompt } from '../types/prompt';
+import {
+  CondensationOperations,
+  CondensationOutputType,
+  CondensationPlan,
+  MapOperationParams,
+  MapPrompt,
+  ReduceOperationParams,
+  ReducePrompt
+} from '../types';
 
 /**
  * Create a condensation configuration plan
@@ -53,4 +57,4 @@ export function createCondensationPlan({
     nOutputArgs,
     language
   };
-} 
+}

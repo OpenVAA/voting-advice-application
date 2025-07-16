@@ -2,17 +2,21 @@ import { LLMResponse, Message } from '@openvaa/llm';
 import * as path from 'path';
 import { OperationTreeBuilder } from './operationTreeBuilder';
 import { LlmParser } from './parser/llmParser';
-import { Argument, CondensationRunInput, CondensationRunResult, VAAComment } from './types';
-import { CondensationOperations } from './types/condensation/operation';
-import { CondensationPlan, ProcessingStep } from './types/condensation/processDefinition';
 import {
+  Argument,
+  CondensationOperations,
+  CondensationPlan,
+  CondensationRunInput,
+  CondensationRunResult,
   GroundingOperationParams,
   MapOperationParams,
+  ProcessingStep,
+  PromptCall,
   ReduceOperationParams,
-  RefineOperationParams
-} from './types/condensation/processParams';
-import { PromptCall } from './types/promptCall';
-import { ResponseWithArguments } from './types/responseWithArguments';
+  RefineOperationParams,
+  ResponseWithArguments,
+  VAAComment
+} from './types';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.

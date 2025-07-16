@@ -1,9 +1,14 @@
-import { OperationTree, OperationNode } from './types/operationTree';
-import { Argument, VAAComment } from './types';
-import { CondensationOperations } from './types/condensation/operation';
-import { readableTimestamp } from './utils/readableTimestamp';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  Argument,
+  CondensationOperation,
+  CondensationOperations,
+  OperationNode,
+  OperationTree,
+  VAAComment
+} from './types';
+import { readableTimestamp } from './utils/readableTimestamp';
 
 /**
  * Builds and manages the operation tree during condensation execution
@@ -24,20 +29,16 @@ export class OperationTreeBuilder {
       },
       roots: [],
       nodes: {},
-      finalArguments: [],
+      finalArguments: []
     };
   }
 
   /**
    * Create a new operation node
    */
-  createNode(
-    operation: CondensationOperations,
-    stepIndex: number,
-    batchIndex?: number
-  ): string {
+  createNode(operation: CondensationOperation, stepIndex: number, batchIndex?: number): string {
     const nodeId = `${operation}_${stepIndex}_${batchIndex ?? 0}_${this.nodeCounter++}`;
-    
+
     const node: OperationNode = {
       id: nodeId,
       operation,
@@ -58,23 +59,26 @@ export class OperationTreeBuilder {
 
     this.tree.nodes[nodeId] = node;
     this.tree.metadata.totalOperations++;
-    
+
     return nodeId;
   }
 
   /**
    * Set input data for a node
    */
-  setNodeInput(nodeId: string, input: {
-    comments?: VAAComment[];
-    arguments?: Argument[];
-    argumentLists?: Argument[][];
-  }): void {
+  setNodeInput(
+    nodeId: string,
+    input: {
+      comments?: Array<VAAComment>;
+      arguments?: Array<Argument>;
+      argumentLists?: Array<Array<Argument>>;
+    }
+  ): void {
     const node = this.tree.nodes[nodeId];
     if (!node) throw new Error(`Node ${nodeId} not found`);
-    
+
     node.input = input;
-    
+
     // If this is a root node (starts with comments), add to roots
     if (input.comments && (!node.parents || node.parents.length === 0)) {
       this.tree.roots.push(nodeId);
@@ -84,13 +88,16 @@ export class OperationTreeBuilder {
   /**
    * Set output data for a node
    */
-  setNodeOutput(nodeId: string, output: {
-    arguments?: Argument[];
-    argumentLists?: Argument[][];
-  }): void {
+  setNodeOutput(
+    nodeId: string,
+    output: {
+      arguments?: Array<Argument>;
+      argumentLists?: Array<Array<Argument>>;
+    }
+  ): void {
     const node = this.tree.nodes[nodeId];
     if (!node) throw new Error(`Node ${nodeId} not found`);
-    
+
     node.output = output;
   }
 
@@ -100,16 +107,16 @@ export class OperationTreeBuilder {
   linkNodes(parentId: string, childId: string): void {
     const parent = this.tree.nodes[parentId];
     const child = this.tree.nodes[childId];
-    
+
     if (!parent || !child) {
       throw new Error(`Cannot link nodes: parent=${!!parent}, child=${!!child}`);
     }
-    
+
     // Add child to parent's children list (avoid duplicates)
     if (!parent.children.includes(childId)) {
       parent.children.push(childId);
     }
-    
+
     // Add parent to child's parents list (avoid duplicates)
     if (!child.parents) {
       child.parents = [];
@@ -117,7 +124,7 @@ export class OperationTreeBuilder {
     if (!child.parents.includes(parentId)) {
       child.parents.push(parentId);
     }
-    
+
     // Set backward compatibility parent field to the first parent
     if (!child.parent) {
       child.parent = parentId;
@@ -130,7 +137,7 @@ export class OperationTreeBuilder {
   startNode(nodeId: string): void {
     const node = this.tree.nodes[nodeId];
     if (!node) throw new Error(`Node ${nodeId} not found`);
-    
+
     node.metadata.startTime = new Date();
   }
 
@@ -140,13 +147,13 @@ export class OperationTreeBuilder {
   completeNode(nodeId: string, llmCalls: number, success: boolean = true, error?: string): void {
     const node = this.tree.nodes[nodeId];
     if (!node) throw new Error(`Node ${nodeId} not found`);
-    
+
     node.metadata.endTime = new Date();
     node.metadata.duration = node.metadata.endTime.getTime() - node.metadata.startTime.getTime();
     node.metadata.llmCalls = llmCalls;
     node.metadata.success = success;
     if (error) node.metadata.error = error;
-    
+
     // Update tree metadata
     this.tree.metadata.totalDuration += node.metadata.duration;
     this.tree.metadata.totalLlmCalls += llmCalls;
@@ -155,13 +162,11 @@ export class OperationTreeBuilder {
   /**
    * Set the final arguments for the tree
    */
-  setFinalArguments(args: Argument[]): void {
+  setFinalArguments(args: Array<Argument>): void {
     this.tree.finalArguments = args;
-    
+
     // Calculate max depth
-    this.tree.metadata.maxDepth = Math.max(
-      ...Object.keys(this.tree.nodes).map(nodeId => this.getNodeDepth(nodeId))
-    );
+    this.tree.metadata.maxDepth = Math.max(...Object.keys(this.tree.nodes).map((nodeId) => this.getNodeDepth(nodeId)));
   }
 
   /**
@@ -180,7 +185,7 @@ export class OperationTreeBuilder {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
+
     // Save tree with pretty formatting
     const treeJson = JSON.stringify(this.tree, null, 2);
     fs.writeFileSync(outputPath, treeJson);
@@ -190,7 +195,7 @@ export class OperationTreeBuilder {
    * Create a simplified tree view for console logging
    */
   getTreeSummary(): string {
-    const lines: string[] = [];
+    const lines: Array<string> = [];
     lines.push(`🌳 Operation Tree for ${this.tree.runId}`);
     lines.push(`🕐 Created at: ${this.tree.createdAt}`);
     lines.push(`📊 ${this.tree.metadata.totalOperations} operations, ${this.tree.metadata.maxDepth} max depth`);
@@ -201,32 +206,35 @@ export class OperationTreeBuilder {
   /**
    * Helper to add a node and its children to the summary
    */
-  private addNodeToSummary(lines: string[], nodeId: string, depth: number, visited: Set<string> = new Set()): void {
+  private addNodeToSummary(
+    lines: Array<string>,
+    nodeId: string,
+    depth: number,
+    visited: Set<string> = new Set()
+  ): void {
     const node = this.tree.nodes[nodeId];
     if (!node || visited.has(nodeId)) return;
-    
+
     visited.add(nodeId);
-    
+
     const indent = '  '.repeat(depth);
     const icon = this.getOperationIcon(node.operation);
     const status = node.metadata.success ? '✅' : '❌';
     const batchInfo = node.batchIndex !== undefined ? ` [batch ${node.batchIndex}]` : '';
-    
+
     // Input/output summary
-    const inputCount = node.input.comments?.length || 
-                      node.input.arguments?.length || 
-                      node.input.argumentLists?.length || 0;
-    const outputCount = node.output.arguments?.length || 
-                       node.output.argumentLists?.length || 0;
-    
+    const inputCount =
+      node.input.comments?.length || node.input.arguments?.length || node.input.argumentLists?.length || 0;
+    const outputCount = node.output.arguments?.length || node.output.argumentLists?.length || 0;
+
     // Show parent info for nodes with multiple parents
-    const parentInfo = node.parents && node.parents.length > 1 
-      ? ` (parents: ${node.parents.length})` 
-      : '';
-    
+    const parentInfo = node.parents && node.parents.length > 1 ? ` (parents: ${node.parents.length})` : '';
+
     lines.push(`${indent}${icon} ${node.operation}${batchInfo}${parentInfo} ${status}`);
-    lines.push(`${indent}   📥 ${inputCount} inputs → 📤 ${outputCount} outputs (${node.metadata.duration}ms, ${node.metadata.llmCalls} calls)`);
-    
+    lines.push(
+      `${indent}   📥 ${inputCount} inputs → 📤 ${outputCount} outputs (${node.metadata.duration}ms, ${node.metadata.llmCalls} calls)`
+    );
+
     // Add children (only if not already visited)
     for (const childId of node.children) {
       if (!visited.has(childId)) {
@@ -238,14 +246,20 @@ export class OperationTreeBuilder {
   /**
    * Get an emoji icon for each operation type
    */
-  private getOperationIcon(operation: CondensationOperations): string {
+  private getOperationIcon(operation: CondensationOperation): string {
     switch (operation) {
-      case CondensationOperations.MAP: return '🗺️';
-      case CondensationOperations.ITERATE_MAP: return '🔁';
-      case CondensationOperations.REDUCE: return '⚡';
-      case CondensationOperations.REFINE: return '✨';
-      case CondensationOperations.GROUND: return '🏗️';
-      default: return '❓';
+      case CondensationOperations.MAP:
+        return '🗺️';
+      case CondensationOperations.ITERATE_MAP:
+        return '🔁';
+      case CondensationOperations.REDUCE:
+        return '⚡';
+      case CondensationOperations.REFINE:
+        return '✨';
+      case CondensationOperations.GROUND:
+        return '🏗️';
+      default:
+        return '❓';
     }
   }
 
@@ -256,6 +270,6 @@ export class OperationTreeBuilder {
     const node = this.tree.nodes[nodeId];
     if (!node || !node.parents || node.parents.length === 0) return 0;
     // For nodes with multiple parents, use the maximum depth
-    return 1 + Math.max(...node.parents.map(parentId => this.getNodeDepth(parentId)));
+    return 1 + Math.max(...node.parents.map((parentId) => this.getNodeDepth(parentId)));
   }
-} 
+}

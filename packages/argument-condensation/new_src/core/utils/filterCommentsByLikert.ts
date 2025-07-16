@@ -1,4 +1,4 @@
-import { VAAComment } from '../types/condensationInput';
+import { VAAComment } from '../types';
 
 /**
  * Filter comments based on Likert values.

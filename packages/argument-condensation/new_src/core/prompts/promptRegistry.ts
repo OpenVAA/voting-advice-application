@@ -1,9 +1,7 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { CondensationOperation, CondensationOperations } from '../types/condensation/operation';
-import { CONDENSATION_TYPE } from '../types/condensationType';
-import { CondensationPrompt } from '../types/prompt';
+import { CONDENSATION_TYPE, CondensationOperation, CondensationOperations, CondensationPrompt } from '../types';
 
 // TODO: (low priority): load only the specific prompt we need
 // TODO: (low priority): code can be cleaned up to use

@@ -3,10 +3,15 @@ import { createCondensationPlan } from './createCondensationPlan';
 import { filterCommentsByLikert } from './filterCommentsByLikert';
 import { Condenser } from '../condenser';
 import { PromptRegistry } from '../prompts/promptRegistry';
-import { CondensationRunInput, CondensationRunResult } from '../types';
-import { VAAComment } from '../types/condensationInput';
-import { CONDENSATION_TYPE, CondensationOutputType } from '../types/condensationType';
-import { MapPrompt, ReducePrompt } from '../types/prompt';
+import {
+  CONDENSATION_TYPE,
+  CondensationOutputType,
+  CondensationRunInput,
+  CondensationRunResult,
+  MapPrompt,
+  ReducePrompt,
+  VAAComment
+} from '../types';
 
 /**
  * Condense comments into arguments using the new condensation system.

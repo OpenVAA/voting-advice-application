@@ -4,16 +4,15 @@ import fs from 'fs';
 import * as path from 'path';
 import { Condenser } from '../core/condenser';
 import { PromptRegistry } from '../core/prompts/promptRegistry';
-import { CondensationRunInput } from '../core/types';
-import { CondensationOperations } from '../core/types/condensation/operation';
-import { CondensationPlan } from '../core/types/condensation/processDefinition';
 import {
+  CONDENSATION_TYPE,
+  CondensationOperations,
+  CondensationPlan,
+  CondensationPrompt,
+  CondensationRunInput,
   GroundingOperationParams,
   MapOperationParams,
-  ReduceOperationParams
-} from '../core/types/condensation/processParams';
-import { CONDENSATION_TYPE } from '../core/types/condensationType';
-import { CondensationPrompt } from '../core/types/prompt';
+  ReduceOperationParams} from '../core/types';
 
 dotenv.config({ path: path.join(__dirname, '../../../../.env') });
 

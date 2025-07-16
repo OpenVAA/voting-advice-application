@@ -1,5 +1,5 @@
 import { jsonrepair } from 'jsonrepair';
-import { ResponseWithArguments } from '../types/responseWithArguments';
+import { ResponseWithArguments } from '../types';
 
 /**
  * Generic contract for LLM response validation

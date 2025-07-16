@@ -1,22 +1,32 @@
-// Core argument types
+// Core argument type
 export type { Argument } from './argument';
 
-// Condensation configuration types
-export { 
-  CONDENSATION_TYPE, 
-  type CondensationOutputType 
-} from './condensationType';
-
-// Input types
-export type { 
-  CondensationRunInput,
-  VAAComment} from './condensationInput';
-
-// Result and metrics types
-export type { 
-  CondensationRunMetrics,
-  CondensationRunResult 
-} from './condensationResult'; 
+// Condensation primitives (operations, their params & processing step interface)
+export type { CondensationOperation } from './condensation/operation';
+export { CondensationOperations } from './condensation/operation';
+export type { CondensationPlan, ProcessingStep } from './condensation/processDefinition';
 export type {
-  VAAQuestion
-} from './vaaQuestion';
+  GroundingOperationParams,
+  MapOperationParams,
+  ReduceOperationParams,
+  RefineOperationParams
+} from './condensation/processParams';
+
+// Condensation inputs & outputs
+export type { CondensationRunInput, VAAComment } from './condensationInput';
+export type { CondensationRunMetrics, CondensationRunResult } from './condensationResult';
+export { CONDENSATION_TYPE, type CondensationOutputType } from './condensationType';
+
+// Operation tree structures & helpers
+export type { OperationNode, OperationTree } from './operationTree';
+export { OperationTreeUtils } from './operationTree';
+
+// Prompt-related types
+export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, RefinePrompt } from './prompt';
+export type { PromptCall } from './promptCall';
+
+// LLM response wrapper
+export type { ResponseWithArguments } from './responseWithArguments';
+
+// Other domain types
+export type { VAAQuestion } from './vaaQuestion';
