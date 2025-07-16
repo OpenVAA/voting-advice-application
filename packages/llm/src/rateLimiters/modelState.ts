@@ -5,7 +5,7 @@
  */
 export class ModelState {
   private dailyLimitReached = new Set<string>();
-  private allModels: string[];
+  private allModels: Array<string>;
   private currentMainModel: string;
   private currentFallbackModel: string | null;
   
@@ -71,7 +71,7 @@ export class ModelState {
     return this.allModels.filter(m => !this.dailyLimitReached.has(m)).length;
   }
   
-  get allAvailableModels(): string[] {
+  get allAvailableModels(): Array<string> {
     return this.allModels.filter(m => !this.dailyLimitReached.has(m));
   }
 }

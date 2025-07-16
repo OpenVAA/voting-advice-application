@@ -108,7 +108,7 @@ export abstract class LLMProvider {
       maxTokens?: number;
       model?: string;
     }>;
-  }): Promise<LLMResponse[]>;
+  }): Promise<Array<LLMResponse>>;
 
   abstract generateMultipleSequential({
     inputs
@@ -119,7 +119,7 @@ export abstract class LLMProvider {
       maxTokens?: number;
       model?: string;
     }>;
-  }): Promise<LLMResponse[]>;
+  }): Promise<Array<LLMResponse>>;
 
   /**
    * Estimates the number of tokens in a text string

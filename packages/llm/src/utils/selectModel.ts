@@ -1,5 +1,5 @@
-import { ModelState } from "../rateLimiters/modelState";
-import { OpenAIRateLimiter } from "../rateLimiters/openaiRateLimiter";
+import { ModelState } from '../rateLimiters/modelState';
+import { OpenAIRateLimiter } from '../rateLimiters/openaiRateLimiter';
 
 /**
  * Get or create rate limiter for a specific model
@@ -33,7 +33,7 @@ export async function selectModelForGeneration({
   if (!modelState.isDailyLimited(modelState.mainModel)) {
     const mainRateLimiter = getRateLimiter({ model: modelState.mainModel, rateLimiters });
     const canUseMainModel = mainRateLimiter.hasEnoughTPM({ estimatedTokens });
-    
+
     // If we can use main, do it
     if (canUseMainModel) {
       console.info(`🔄 Using main model ${modelState.mainModel} (has TPM capacity)`);
@@ -72,7 +72,7 @@ export async function selectModelForGeneration({
       }
     }
     else {
-      console.info(`No constructor fallback model available. Waiting for main model to become available again. `);
+      console.info('No constructor fallback model available. Waiting for main model to become available again.');
       return modelState.mainModel;
     }
   }

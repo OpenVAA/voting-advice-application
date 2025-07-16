@@ -1,9 +1,9 @@
 import OpenAI from 'openai';
 import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
-import { OpenAIRateLimiter } from '../rateLimiters/openaiRateLimiter';
 import { ModelState } from '../rateLimiters/modelState';
-import { selectModelForGeneration, getRateLimiter } from '../utils/selectModel';
+import { OpenAIRateLimiter } from '../rateLimiters/openaiRateLimiter';
 import { isDailyLimitError } from '../utils/dailyLimitError';
+import { getRateLimiter,selectModelForGeneration } from '../utils/selectModel';
 import { estimateTokens } from '../utils/tokenCounter';
 
 export class OpenAIProvider extends LLMProvider {
@@ -132,7 +132,7 @@ export class OpenAIProvider extends LLMProvider {
         model?: string;
       }>
     }
-  ): Promise<LLMResponse[]> {
+  ): Promise<Array<LLMResponse>> {
     if (!inputs || inputs.length === 0) {
       return [];
     }
@@ -150,7 +150,7 @@ export class OpenAIProvider extends LLMProvider {
       }
     }
 
-    const results: LLMResponse[] = [];
+    const results: Array<LLMResponse> = [];
     const batchSize = 7;
     let totalTokensUsed = 0;
     
@@ -274,13 +274,13 @@ export class OpenAIProvider extends LLMProvider {
         model?: string;
       }>
     }
-  ): Promise<LLMResponse[]> {
+  ): Promise<Array<LLMResponse>> {
     if (!inputs || inputs.length === 0) {
       return [];
     }
 
     console.info(`🚀 OPENAI PROVIDER: Starting ${inputs.length} sequential LLM calls`);
-    const results: LLMResponse[] = [];
+    const results: Array<LLMResponse> = [];
 
     for (const input of inputs) {
       const result = await this.generate({
