@@ -5,9 +5,9 @@ export { validatePlan } from './planValidation';
 export { createCondensationPlan } from './createCondensationPlan';
 
 // Prompt utilities
-export { LlmParser } from './llmParser';
 export { loadPromptTemplate } from './loadPrompt';
 export { setPromptVars } from './setPromptVars';
+export { LlmParser } from '@openvaa/llm'; // re-export for convinience
 
 // Readable timestamp
 export { readableTimestamp } from './readableTimestamp';

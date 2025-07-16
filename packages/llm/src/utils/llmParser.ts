@@ -1,5 +1,4 @@
 import { jsonrepair } from 'jsonrepair';
-import { ResponseWithArguments } from '../types';
 
 /**
  * Generic contract for LLM response validation
@@ -7,31 +6,6 @@ import { ResponseWithArguments } from '../types';
 export interface LLMResponseContract<TType> {
   validate(obj: unknown): obj is TType;
 }
-
-/**
- * Contract for ResponseWithArguments validation
- */
-export const ResponseWithArgumentsContract: LLMResponseContract<ResponseWithArguments> = {
-  validate(obj: unknown): obj is ResponseWithArguments {
-    if (!obj || typeof obj !== 'object') {
-      return false;
-    }
-
-    const candidate = obj as Record<string, unknown>;
-
-    return (
-      Array.isArray(candidate.arguments) &&
-      typeof candidate.reasoning === 'string' &&
-      candidate.arguments.every((arg: unknown) => {
-        if (!arg || typeof arg !== 'object') {
-          return false;
-        }
-        const argCandidate = arg as Record<string, unknown>;
-        return typeof argCandidate.id === 'string' && typeof argCandidate.text === 'string';
-      })
-    );
-  }
-};
 
 /**
  * Generic LLM response parser that handles JSON cleaning and validation
@@ -54,13 +28,6 @@ export class LlmParser {
     } catch (error) {
       throw new Error(`JSON parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }
-
-  /**
-   * Parse LLM response expecting ResponseWithArguments format
-   */
-  static parseArguments(response: string): ResponseWithArguments {
-    return this.parse(response, ResponseWithArgumentsContract);
   }
 
   /**

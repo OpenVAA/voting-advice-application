@@ -1,4 +1,5 @@
-import { LLMResponse, Message } from '@openvaa/llm';
+import { LLMResponse } from '@openvaa/llm';
+import { retryFailedCalls } from '@openvaa/llm';
 import * as path from 'path';
 import {
   Argument,
@@ -15,8 +16,10 @@ import {
   ResponseWithArguments,
   VAAComment
 } from './types';
+import { ResponseWithArgumentsContract } from './types/llm/responseWithArguments';
 import { LlmParser, setPromptVars, validatePlan } from './utils';
 import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
+
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
  * Automatically generates operation tree visualization data.
@@ -186,7 +189,7 @@ export class Condenser {
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
 
         // Log the parsed response for debugging
         console.info(`\n=== REFINE ${isFirstBatch ? 'INITIAL' : 'REFINEMENT'} BATCH ${i + 1}/${batches.length} ===`);
@@ -316,7 +319,7 @@ export class Condenser {
     }
 
     // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple({ inputs: llmInputs });
+    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
 
     // Initialize argumentLists array with proper size
     const argumentLists: Array<Array<Argument>> = new Array(batches.length);
@@ -331,7 +334,7 @@ export class Condenser {
 
       // Parse and validate the response
       try {
-        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
         successfulResponses[i] = llmResponse;
 
         // Update tree node with output
@@ -361,14 +364,14 @@ export class Condenser {
     // Retry failed calls individually
     if (failedIndices.length > 0) {
       console.info(`\n🔄 Retrying ${failedIndices.length} failed MAP batches...`);
-      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'MAP');
+      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'MAP', 2, ResponseWithArgumentsContract, this.input.llmProvider);
 
       // Process retry results
       for (const { index, response } of retryResults) {
         const nodeId = batchNodeIds[index];
 
         try {
-          const parsedResponse = LlmParser.parseArguments(response.content);
+          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
 
           console.info(`\n=== MAP BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
           console.info('=====================================\n');
@@ -465,7 +468,7 @@ export class Condenser {
     });
 
     // Queue iteration LLM calls
-    const iterationLlmResponses = await this.input.llmProvider.generateMultiple({ inputs: iterationLlmInputs });
+    const iterationLlmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: iterationLlmInputs });
 
     const iterationFailedIndices: Array<number> = [];
     const iterationSuccessfulResponses: { [index: number]: LLMResponse } = {};
@@ -476,7 +479,7 @@ export class Condenser {
       const nodeId = iterationNodeIds[i];
 
       try {
-        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
         iterationSuccessfulResponses[i] = llmResponse;
 
         // Update tree node with iteration output
@@ -507,17 +510,20 @@ export class Condenser {
     // Retry failed iteration calls
     if (iterationFailedIndices.length > 0) {
       console.info(`\n🔄 Retrying ${iterationFailedIndices.length} failed MAP iteration batches...`);
-      const iterationRetryResults = await this.retryFailedCalls(
+      const iterationRetryResults = await retryFailedCalls(
         iterationFailedIndices,
         iterationLlmInputs,
-        'MAP_ITERATION'
+        'MAP_ITERATION',
+        2,
+        ResponseWithArgumentsContract,
+        this.input.llmProvider
       );
 
       for (const { index, response } of iterationRetryResults) {
         const nodeId = iterationNodeIds[index];
 
         try {
-          const parsedResponse = LlmParser.parseArguments(response.content);
+          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
 
           console.info(`\n=== MAP ITERATION BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
 
@@ -643,7 +649,7 @@ export class Condenser {
     });
 
     // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple({ inputs: llmInputs });
+    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
 
     const reducedArgumentLists: Array<Array<Argument>> = [];
     const allPromptCalls: Array<PromptCall> = [];
@@ -657,7 +663,7 @@ export class Condenser {
 
       // Parse and validate the response
       try {
-        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
         successfulResponses[i] = llmResponse;
 
         // Update tree node with output
@@ -687,14 +693,14 @@ export class Condenser {
     // Retry failed calls individually
     if (failedIndices.length > 0) {
       console.info(`\n🔄 Retrying ${failedIndices.length} failed REDUCE chunks...`);
-      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'REDUCE');
+      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'REDUCE', 2, ResponseWithArgumentsContract, this.input.llmProvider);
 
       // Process retry results
       for (const { index, response } of retryResults) {
         const nodeId = chunkNodeIds[index];
 
         try {
-          const parsedResponse = LlmParser.parseArguments(response.content);
+          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
 
           console.info(`\n=== REDUCE CHUNK ${index + 1}/${chunks.length} (RETRY SUCCESS) ===`);
 
@@ -836,8 +842,8 @@ export class Condenser {
       };
     });
 
-    // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultiple({ inputs: llmInputs });
+    // Queue all LLM calls  
+    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
 
     const groundedArgumentLists: Array<Array<Argument>> = [];
     const allPromptCalls: Array<PromptCall> = [];
@@ -853,7 +859,7 @@ export class Condenser {
 
       // Parse and validate the response
       try {
-        const parsedResponse = LlmParser.parseArguments(llmResponse.content);
+        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
 
         // Log the parsed response for debugging
         console.info(`\n=== GROUND LIST ${i + 1}/${argumentLists.length} ===`);
@@ -895,7 +901,7 @@ export class Condenser {
     // Retry failed calls individually
     if (failedIndices.length > 0) {
       console.info(`\n🔄 Retrying ${failedIndices.length} failed GROUND lists...`);
-      const retryResults = await this.retryFailedCalls(failedIndices, llmInputs, 'GROUND');
+      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'GROUND', 2, ResponseWithArgumentsContract, this.input.llmProvider);
 
       // Process retry results
       for (const { index, response } of retryResults) {
@@ -904,7 +910,7 @@ export class Condenser {
         const nodeId = listNodeIds[index];
 
         try {
-          const parsedResponse = LlmParser.parseArguments(response.content);
+          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
 
           console.info(`\n=== GROUND LIST ${index + 1}/${argumentLists.length} (RETRY SUCCESS) ===`);
           console.info('Original arguments:', JSON.stringify(argumentList, null, 2));
@@ -991,69 +997,5 @@ export class Condenser {
       batches.push(array.slice(i, i + batchSize));
     }
     return batches;
-  }
-
-  /**
-   * Retry helper function for failed parsing attempts
-   * @param failedIndices Array of indices that failed in the batch
-   * @param llmInputs Original LLM inputs
-   * @param operation Operation name for logging
-   * @param maxRetries Maximum number of retry attempts
-   * @returns Array of successful LLM responses
-   */
-  private async retryFailedCalls(
-    failedIndices: Array<number>,
-    llmInputs: Array<{
-      messages: Array<Message>;
-      temperature: number;
-      maxTokens?: number;
-    }>,
-    operation: string,
-    maxRetries: number = 2
-  ): Promise<Array<{ index: number; response: LLMResponse }>> {
-    const successfulRetries: Array<{ index: number; response: LLMResponse }> = [];
-
-    // Process all failed indices in parallel
-    const retryPromises = failedIndices.map(async (failedIndex) => {
-      const input = llmInputs[failedIndex];
-      let lastError: Error | null = null;
-
-      console.info(`\n⚠️  Retrying ${operation} for batch ${failedIndex + 1} (up to ${maxRetries} attempts)`);
-
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          console.info(`   Attempt ${attempt}/${maxRetries}...`);
-          const response = await this.input.llmProvider.generate(input);
-
-          // Try to parse the response to make sure it's valid
-          LlmParser.parseArguments(response.content);
-
-          console.info(`   ✅ Success on attempt ${attempt}`);
-          return { index: failedIndex, response };
-        } catch (error) {
-          lastError = error instanceof Error ? error : new Error('Unknown error');
-          console.info(`   ❌ Attempt ${attempt} failed: ${lastError.message}`);
-
-          if (attempt === maxRetries) {
-            console.info(`   🚫 All ${maxRetries} retry attempts failed for batch ${failedIndex + 1}`);
-          }
-        }
-      }
-
-      // If we get here, all retry attempts failed
-      return null;
-    });
-
-    // Wait for all retry attempts to complete
-    const retryResults = await Promise.all(retryPromises);
-
-    // Filter out null results (failed retries) and collect successful ones
-    for (const result of retryResults) {
-      if (result !== null) {
-        successfulRetries.push(result);
-      }
-    }
-
-    return successfulRetries;
   }
 }

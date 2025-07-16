@@ -12,6 +12,7 @@ export type {
   RefineOperationParams
 } from './condensation/processParams';
 export type { CondensationStepResult } from './condensation/processStepResult';
+
 // Condensation inputs & outputs
 export type { CondensationRunInput, VAAComment } from './condensationInput';
 export type { CondensationRunMetrics, CondensationRunResult } from './condensationResult';
@@ -26,7 +27,8 @@ export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, Refi
 export type { PromptCall } from './promptCall';
 
 // LLM response wrapper
-export type { ResponseWithArguments } from './responseWithArguments';
+export type { ResponseWithArguments } from './llm/responseWithArguments';
+export { ResponseWithArgumentsContract } from './llm/responseWithArguments';
 
 // Other domain types
 export type { VAAQuestion } from './vaaQuestion';
