@@ -17,6 +17,7 @@ import {
   VAAComment
 } from './types';
 import { validatePlan } from './utils/planValidation';
+import { setPromptVars } from './utils/setPromptVars';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -30,25 +31,6 @@ export class Condenser {
   constructor(private input: CondensationRunInput) {
     this.runId = input.runId;
     this.treeBuilder = new OperationTreeBuilder(this.runId);
-  }
-
-  /**
-   * Utility function to embed template literals in prompt text
-   * @param promptText The prompt text with {{variable}} placeholders
-   * @param variables The variables to embed
-   * @returns The prompt text with variables embedded
-   */
-  private embedTemplateVariables(promptText: string, variables: Record<string, unknown>): string {
-    let result = promptText;
-
-    // Replace template variables using {{variable}} syntax
-    for (const [key, value] of Object.entries(variables)) {
-      const placeholder = `{{${key}}}`;
-      const valueStr = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
-      result = result.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), valueStr);
-    }
-
-    return result;
   }
 
   /**
@@ -192,7 +174,7 @@ export class Condenser {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
 
-      const promptText = this.embedTemplateVariables(prompt, templateVariables);
+      const promptText = setPromptVars(prompt, templateVariables);
 
       // Prepare messages for LLM
       const messages = [{ role: 'system' as const, content: promptText }];
@@ -298,7 +280,7 @@ export class Condenser {
         comments: batch.map((c) => c.text).join('\n')
       };
 
-      const promptText = this.embedTemplateVariables(params.condensationPrompt, templateVariables);
+      const promptText = setPromptVars(params.condensationPrompt, templateVariables);
 
       return {
         messages: [{ role: 'system' as const, content: promptText }],
@@ -476,7 +458,7 @@ export class Condenser {
         comments: batch.map((c) => c.text).join('\n')
       };
 
-      const promptText = this.embedTemplateVariables(params.iterationPrompt, templateVariables);
+      const promptText = setPromptVars(params.iterationPrompt, templateVariables);
 
       return {
         messages: [{ role: 'system' as const, content: promptText }],
@@ -654,7 +636,7 @@ export class Condenser {
         argumentLists: JSON.stringify(chunk, null, 2)
       };
 
-      const promptText = this.embedTemplateVariables(params.coalescingPrompt, templateVariables);
+      const promptText = setPromptVars(params.coalescingPrompt, templateVariables);
 
       return {
         messages: [{ role: 'system' as const, content: promptText }],
@@ -848,7 +830,7 @@ export class Condenser {
         comments: JSON.stringify(commentsForGrounding, null, 2)
       };
 
-      const promptText = this.embedTemplateVariables(params.groundingPrompt, templateVariables);
+      const promptText = setPromptVars(params.groundingPrompt, templateVariables);
 
       return {
         messages: [{ role: 'system' as const, content: promptText }],
