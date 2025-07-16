@@ -1,7 +1,5 @@
 import { LLMResponse, Message } from '@openvaa/llm';
 import * as path from 'path';
-import { OperationTreeBuilder } from './operationTreeBuilder';
-import { LlmParser } from './parser/llmParser';
 import {
   Argument,
   CondensationOperations,
@@ -16,9 +14,8 @@ import {
   ResponseWithArguments,
   VAAComment
 } from './types';
-import { validatePlan } from './utils/planValidation';
-import { setPromptVars } from './utils/setPromptVars';
-
+import { LlmParser, setPromptVars, validatePlan } from './utils';
+import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
  * Automatically generates operation tree visualization data.

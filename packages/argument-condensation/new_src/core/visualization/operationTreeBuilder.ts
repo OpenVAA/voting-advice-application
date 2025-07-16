@@ -7,8 +7,8 @@ import {
   OperationNode,
   OperationTree,
   VAAComment
-} from './types';
-import { readableTimestamp } from './utils/readableTimestamp';
+} from '../types';
+import { readableTimestamp } from '../utils';
 
 /**
  * Builds and manages the operation tree during condensation execution
