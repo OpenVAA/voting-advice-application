@@ -5,7 +5,6 @@ import { LlmParser } from './parser/llmParser';
 import {
   Argument,
   CondensationOperations,
-  CondensationPlan,
   CondensationRunInput,
   CondensationRunResult,
   GroundingOperationParams,
@@ -17,6 +16,7 @@ import {
   ResponseWithArguments,
   VAAComment
 } from './types';
+import { validatePlan } from './utils/planValidation';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -52,203 +52,6 @@ export class Condenser {
   }
 
   /**
-   * Validate a condensation plan before execution
-   */
-  public validatePlan(plan: CondensationPlan): void {
-    if (plan.steps.length === 0) {
-      throw new Error('Condensation plan must have at least one step');
-    }
-
-    // REFINE can only be the first operation
-    for (let i = 0; i < plan.steps.length; i++) {
-      const step = plan.steps[i];
-      if (step.operation === CondensationOperations.REFINE && i !== 0) {
-        throw new Error(`REFINE operation can only be the first step in the pipeline, found at step ${i}`);
-      }
-    }
-
-    // Validate each step and the flow between steps
-    for (let i = 0; i < plan.steps.length; i++) {
-      const currentStep = plan.steps[i];
-      const nextStep = plan.steps[i + 1];
-
-      // Validate current step parameters
-      this.validateStepParameters(currentStep);
-
-      // Validate flow between steps
-      if (nextStep) {
-        this.validateStepFlow(currentStep, nextStep);
-      }
-    }
-
-    // Validate final step produces arguments (not argument lists)
-    const finalStep = plan.steps[plan.steps.length - 1];
-    if (finalStep.operation === CondensationOperations.MAP) {
-      throw new Error('MAP operation cannot be the final step - it produces argument lists, not arguments');
-    }
-
-    // Validate mathematical output structure
-    this.validatePipelineOutputs(plan, this.input.comments.length);
-  }
-
-  /**
-   * Validate that the pipeline configuration will mathematically produce a single list of arguments
-   */
-  private validatePipelineOutputs(plan: CondensationPlan, commentCount: number): void {
-    let currentStructure: 'comments' | 'list' | 'listOfLists' = 'comments';
-    let currentBatchCount = 1;
-
-    for (let i = 0; i < plan.steps.length; i++) {
-      const step = plan.steps[i];
-
-      switch (step.operation) {
-        case CondensationOperations.REFINE: {
-          if (currentStructure !== 'comments') {
-            throw new Error(
-              `REFINE operation can only process comments as first step, got ${currentStructure} at step ${i}`
-            );
-          }
-          const refineParams = step.params as RefineOperationParams;
-          currentBatchCount = Math.ceil(commentCount / refineParams.batchSize);
-          currentStructure = 'list'; // REFINE always produces a single list
-          break;
-        }
-
-        case CondensationOperations.MAP: {
-          if (currentStructure !== 'comments') {
-            throw new Error(
-              `MAP operation can only process comments as first step, got ${currentStructure} at step ${i}`
-            );
-          }
-          const mapParams = step.params as MapOperationParams;
-          currentBatchCount = Math.ceil(commentCount / mapParams.batchSize);
-          // MAP can produce either list or listOfLists - we need to check the actual implementation
-          // For validation purposes, assume it produces listOfLists if batchCount > 1
-          currentStructure = currentBatchCount > 1 ? 'listOfLists' : 'list';
-          break;
-        }
-
-        case CondensationOperations.REDUCE: {
-          if (currentStructure !== 'listOfLists') {
-            throw new Error(`REDUCE operation can only process list of lists, got ${currentStructure} at step ${i}`);
-          }
-          const reduceParams = step.params as ReduceOperationParams;
-          const newBatchCount = Math.ceil(currentBatchCount / reduceParams.denominator);
-          currentBatchCount = newBatchCount;
-          // REDUCE can output either list or listOfLists depending on the result
-          currentStructure = newBatchCount === 1 ? 'list' : 'listOfLists';
-          break;
-        }
-
-        case CondensationOperations.GROUND: {
-          // GROUND preserves structure: list → list, listOfLists → listOfLists
-          // No change to currentStructure or currentBatchCount
-          break;
-        }
-
-        default:
-          throw new Error(`Unknown operation: ${step.operation} at step ${i}`);
-      }
-
-      // Log the progression for debugging
-      console.info(`Step ${i} (${step.operation}): ${currentStructure} with ${currentBatchCount} batch(es)`);
-    }
-
-    // Final validation: must end with a single list
-    if (currentStructure !== 'list') {
-      throw new Error(
-        `Pipeline must produce a single list of arguments as final output, but produces ${currentStructure} with ${currentBatchCount} batch(es). ` +
-          'Consider adjusting REDUCE denominators or adding additional REDUCE steps to consolidate to a single list.'
-      );
-    }
-  }
-
-  /**
-   * Validate individual step parameters
-   */
-  private validateStepParameters(step: ProcessingStep): void {
-    switch (step.operation) {
-      case CondensationOperations.REFINE: {
-        const refineParams = step.params as RefineOperationParams; // Type assertion needed due to union type
-        if (refineParams.batchSize <= 0) {
-          throw new Error('REFINE operation batchSize must be positive');
-        }
-        if (!refineParams.initialBatchPrompt || !refineParams.refinementPrompt) {
-          throw new Error('REFINE operation requires both initialBatchPrompt and refinementPrompt');
-        }
-        break;
-      }
-
-      case CondensationOperations.MAP: {
-        const mapParams = step.params as MapOperationParams; // Type assertion needed due to union type
-        if (mapParams.batchSize <= 0) {
-          throw new Error('MAP operation batchSize must be positive');
-        }
-        if (!mapParams.condensationPrompt) {
-          throw new Error('MAP operation requires condensationPrompt');
-        }
-        break;
-      }
-
-      case CondensationOperations.REDUCE: {
-        const reduceParams = step.params as ReduceOperationParams; // Type assertion needed due to union type
-        if (reduceParams.denominator <= 0) {
-          throw new Error('REDUCE operation denominator must be positive');
-        }
-        if (!reduceParams.coalescingPrompt) {
-          throw new Error('REDUCE operation requires coalescingPrompt');
-        }
-        break;
-      }
-
-      case CondensationOperations.GROUND: {
-        const groundParams = step.params as GroundingOperationParams; // Type assertion needed due to union type
-        if (groundParams.batchSize <= 0) {
-          throw new Error('GROUND operation batchSize must be positive');
-        }
-        if (!groundParams.groundingPrompt) {
-          throw new Error('GROUND operation requires groundingPrompt');
-        }
-        break;
-      }
-    }
-  }
-
-  /**
-   * Validate flow between two consecutive steps
-   */
-  private validateStepFlow(currentStep: ProcessingStep, nextStep: ProcessingStep): void {
-    // MAP must be followed by REDUCE
-    if (currentStep.operation === CondensationOperations.MAP && nextStep.operation !== CondensationOperations.REDUCE) {
-      throw new Error('MAP operation must be followed by REDUCE operation');
-    }
-
-    // REFINE can ONLY be followed by GROUND (not by MAP, REDUCE, or other REFINE)
-    if (
-      currentStep.operation === CondensationOperations.REFINE &&
-      nextStep.operation !== CondensationOperations.GROUND
-    ) {
-      throw new Error('REFINE operation can only be followed by GROUND operation');
-    }
-
-    // REDUCE can be followed by GROUND or be final
-    if (
-      currentStep.operation === CondensationOperations.REDUCE &&
-      nextStep.operation !== CondensationOperations.GROUND
-    ) {
-      // This is valid - REDUCE can be final
-    }
-
-    // GROUND can be followed by REDUCE or be final
-    if (
-      currentStep.operation === CondensationOperations.GROUND &&
-      nextStep.operation !== CondensationOperations.REDUCE
-    ) {
-      // This is valid - GROUND can be final
-    }
-  }
-
-  /**
    * Run the condensation process based on the provided plan.
    */
   async run(): Promise<CondensationRunResult> {
@@ -256,7 +59,7 @@ export class Condenser {
     const plan = this.input.config;
 
     // Validate the plan before execution
-    this.validatePlan(plan);
+    validatePlan(plan, this.input.comments.length);
 
     // Execute plan steps sequentially
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments;

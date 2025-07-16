@@ -26,3 +26,5 @@ python3 -m http.server 8080
 ```
 
 UI will prompt you to download an operation tree. You can find one in new_src/data/operationTrees. This will show a visualization of the condensation process, including inputs and outputs of each prompt. 
+
+Running a condensation process will create a new operation tree. 
