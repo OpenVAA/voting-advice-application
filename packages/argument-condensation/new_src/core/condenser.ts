@@ -17,7 +17,7 @@ import {
   VAAComment
 } from './types';
 import { ResponseWithArgumentsContract } from './types/llm/responseWithArguments';
-import { LlmParser, setPromptVars, validatePlan } from './utils';
+import { createBatches, LlmParser, setPromptVars, validatePlan } from './utils';
 import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
 
 /**
@@ -136,7 +136,7 @@ export class Condenser {
     const batchSize = params.batchSize;
 
     // Split comments into batches
-    const batches = this.createBatches(comments, batchSize);
+    const batches = createBatches(comments, batchSize);
 
     // Create tree nodes for each batch
     const batchNodeIds: Array<string> = [];
@@ -254,7 +254,7 @@ export class Condenser {
     const batchSize = params.batchSize;
 
     // Split comments into batches
-    const batches = this.createBatches(comments, batchSize);
+    const batches = createBatches(comments, batchSize);
 
     // Create tree nodes for each batch
     const batchNodeIds: Array<string> = [];
@@ -821,7 +821,7 @@ export class Condenser {
     }
 
     // Prepare comment batches
-    const commentBatches = this.createBatches(commentsToUse, params.batchSize);
+    const commentBatches = createBatches(commentsToUse, params.batchSize);
 
     // Prepare all LLM inputs for parallel processing
     const llmInputs = argumentLists.map((argumentList, i) => {
@@ -986,16 +986,5 @@ export class Condenser {
       promptCalls: allPromptCalls,
       nodeIds: listNodeIds
     };
-  }
-
-  /**
-   * Create batches from an array
-   */
-  private createBatches<TElement>(array: Array<TElement>, batchSize: number): Array<Array<TElement>> {
-    const batches: Array<Array<TElement>> = [];
-    for (let i = 0; i < array.length; i += batchSize) {
-      batches.push(array.slice(i, i + batchSize));
-    }
-    return batches;
   }
 }

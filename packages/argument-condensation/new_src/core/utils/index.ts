@@ -1,3 +1,6 @@
+// Main condensation function that can be used as a standalone function with a config object
+export { condenseComments } from './condenseComments';
+
 // Validation utilities
 export { validatePlan } from './planValidation';
 
@@ -15,5 +18,5 @@ export { readableTimestamp } from './readableTimestamp';
 // Filter comments by Likert
 export { filterCommentsByLikert } from './filterCommentsByLikert';
 
-// Main function
-export { condenseComments } from './condenseComments';
+// Create batches
+export { createBatches } from './createBatches';
