@@ -11,7 +11,7 @@ export type {
   ReduceOperationParams,
   RefineOperationParams
 } from './condensation/processParams';
-
+export type { CondensationStepResult } from './condensation/processStepResult';
 // Condensation inputs & outputs
 export type { CondensationRunInput, VAAComment } from './condensationInput';
 export type { CondensationRunMetrics, CondensationRunResult } from './condensationResult';

@@ -5,6 +5,7 @@ import {
   CondensationOperations,
   CondensationRunInput,
   CondensationRunResult,
+  CondensationStepResult,
   GroundingOperationParams,
   MapOperationParams,
   ProcessingStep,
@@ -95,7 +96,7 @@ export class Condenser {
     inputData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>>,
     stepIndex: number,
     previousNodeIds: Array<string>
-  ): Promise<StepResult> {
+  ): Promise<CondensationStepResult> {
     switch (step.operation) {
       case CondensationOperations.REFINE:
         return await this.executeRefine(step, inputData as Array<VAAComment>, stepIndex, previousNodeIds);
@@ -127,7 +128,7 @@ export class Condenser {
     comments: Array<VAAComment>,
     stepIndex: number,
     previousNodeIds: Array<string>
-  ): Promise<StepResult> {
+  ): Promise<CondensationStepResult> {
     const params = step.params as RefineOperationParams;
     const batchSize = params.batchSize;
 
@@ -245,7 +246,7 @@ export class Condenser {
     comments: Array<VAAComment>,
     stepIndex: number,
     previousNodeIds: Array<string>
-  ): Promise<StepResult> {
+  ): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
 
@@ -591,7 +592,7 @@ export class Condenser {
     argumentLists: Array<Array<Argument>>,
     stepIndex: number,
     previousNodeIds: Array<string>
-  ): Promise<StepResult> {
+  ): Promise<CondensationStepResult> {
     const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
 
@@ -772,7 +773,7 @@ export class Condenser {
     argumentData: Array<Argument> | Array<Array<Argument>>,
     stepIndex: number,
     previousNodeIds: Array<string>
-  ): Promise<StepResult> {
+  ): Promise<CondensationStepResult> {
     const params = step.params as GroundingOperationParams;
 
     // Normalize input to always be an array of lists for simplicity
@@ -1055,14 +1056,4 @@ export class Condenser {
 
     return successfulRetries;
   }
-}
-
-/**
- * Result from a single step
- */
-interface StepResult {
-  arguments: Array<Argument> | Array<Array<Argument>>;
-  promptCalls: Array<PromptCall>;
-  nodeIds?: Array<string>;
-  stepLevelsConsumed?: number; // How many step levels this operation consumed (default 1)
 }
