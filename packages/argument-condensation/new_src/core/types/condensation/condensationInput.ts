@@ -1,5 +1,5 @@
 import { LLMProvider } from '@openvaa/llm';
-import { CondensationPlan } from './condensation/processDefinition';
+import { CondensationPlan } from './processDefinition';
 /**
  * Represents a single non-empty comment given by a candidate in the VAA. 
  * @param id - Unique identifier

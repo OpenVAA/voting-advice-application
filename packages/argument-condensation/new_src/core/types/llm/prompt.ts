@@ -1,10 +1,10 @@
-import { CondensationOperation, CondensationOperations } from './condensation/operation';
+import { CondensationOperation, CondensationOperations } from '../condensation/operation';
 import type {
   GroundingOperationParams,
   MapOperationParams,
   ReduceOperationParams,
   RefineOperationParams
-} from './condensation/processParams';
+} from '../condensation/processParams';
 import type { CondensationOutputType } from './condensationType';
 
 /**

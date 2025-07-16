@@ -1,5 +1,5 @@
-import { Argument } from '../argument';
-import { PromptCall } from '../promptCall';
+import { Argument } from '../base/argument';
+import { PromptCall } from '../llm/promptCall';
 
 /**
  * Result from a single condensation step (map, reduce, iterateMap, refine)

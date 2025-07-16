@@ -1,9 +1,9 @@
 import { Argument } from './argument';
-import { CondensationOperation } from './condensation/operation';
-import { VAAComment } from './condensationInput';
+import { CondensationOperation } from '../condensation/operation';
+import { VAAComment } from '../condensation/condensationInput';
 /**
  * Represents a single operation node in the condensation tree.
- * 
+ *
  * @param id - Unique identifier for this operation instance
  * @param operation - Type of operation performed
  * @param stepIndex - Step index in the overall plan
@@ -44,7 +44,7 @@ export interface OperationNode {
 
 /**
  * Complete tree structure for a condensation run.
- * 
+ *
  * @param createdAt - Date and time as a string (e.g. 1746_28_6_2025)
  * @param runId - Run identifier
  * @param roots - Root operation nodes (operations that start with comments)
@@ -76,7 +76,7 @@ export class OperationTreeUtils {
   static getLeafNodes(tree: OperationTree): Array<OperationNode> {
     return Object.values(tree.nodes).filter((node) => node.children.length === 0);
   }
-  
+
   /**
    * Get the depth of a specific node.
    */
@@ -93,14 +93,14 @@ export class OperationTreeUtils {
   static getNodesAtDepth(tree: OperationTree, depth: number): Array<OperationNode> {
     return Object.values(tree.nodes).filter((node) => this.getNodeDepth(tree, node.id) === depth);
   }
-  
+
   /**
    * Get the path from root to a specific node (uses first parent for nodes with multiple parents).
    */
   static getPathToNode(tree: OperationTree, nodeId: string): Array<OperationNode> {
     const path: Array<OperationNode> = [];
     let currentId: string | undefined = nodeId;
-    
+
     while (currentId) {
       const node = tree.nodes[currentId];
       if (!node) break;
@@ -108,10 +108,10 @@ export class OperationTreeUtils {
       // Use first parent for backward compatibility, or legacy parent field
       currentId = node.parents?.[0] || node.parent;
     }
-    
+
     return path;
   }
-  
+
   /**
    * Get all paths from roots to a specific node (for nodes with multiple parents).
    */
@@ -138,4 +138,4 @@ export class OperationTreeUtils {
     buildPaths(nodeId, []);
     return paths;
   }
-} 
+}

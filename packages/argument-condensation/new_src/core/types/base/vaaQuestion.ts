@@ -1,4 +1,4 @@
-import { VAAComment } from './condensationInput';
+import { VAAComment } from '../condensation/condensationInput';
 
 /**
  * Represents a question from the VAA.

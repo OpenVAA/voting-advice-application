@@ -1,5 +1,5 @@
 import { LLMResponseContract } from '../../../../../llm/src/utils/llmParser';
-import { Argument } from '../argument';
+import { Argument } from '../base/argument';
 /**
  * Expected structure for LLM response containing arguments and reasoning
  */

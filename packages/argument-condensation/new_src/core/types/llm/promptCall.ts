@@ -1,4 +1,4 @@
-import { CondensationOperation } from './condensation/operation';
+import { CondensationOperation } from '../condensation/operation';
 
 /**
  * Represents an API call instance of a prompt.

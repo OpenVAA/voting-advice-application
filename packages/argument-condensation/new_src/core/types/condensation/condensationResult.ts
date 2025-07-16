@@ -1,9 +1,9 @@
-import { Argument } from './argument';
+import { Argument } from '../base/argument';
 import { CondensationRunInput } from './condensationInput';
 
 /**
  * Performance metrics for evaluating condensation quality and efficiency.
- * 
+ *
  * @property duration - Time taken for the condensation process (seconds)
  * @property nLlmCalls - Number of LLM API calls made
  * @property cost - Cost of the condensation process (EUR)
@@ -17,13 +17,13 @@ export interface CondensationRunMetrics {
     inputs: number;
     outputs: number;
     total: number;
-  }
-};
+  };
+}
 
 /**
  * Complete result of a condensation run.
  * Contains arguments, metadata, and evaluation metrics.
- * 
+ *
  * @property runId - Unique identifier for this run
  * @property input - Input parameters used for this run
  * @property arguments - Extracted arguments
@@ -43,4 +43,4 @@ export interface CondensationRunResult {
     startTime: Date;
     endTime: Date;
   };
-} 
+}
