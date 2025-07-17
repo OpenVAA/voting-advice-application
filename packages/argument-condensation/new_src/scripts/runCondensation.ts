@@ -184,7 +184,7 @@ async function runCondensationScript() {
   }
 
   // Initialize and load the prompt registry
-  const promptRegistry = await PromptRegistry.create();
+  const promptRegistry = await PromptRegistry.create('fi');
   console.info('condensation script: prompt registry created and loaded successfully');
 
   // Get the prompts for the MAP → REDUCE → GROUND pipeline

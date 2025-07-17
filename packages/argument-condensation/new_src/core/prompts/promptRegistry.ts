@@ -19,9 +19,9 @@ export class PromptRegistry {
   /**
    * Static factory method to create and initialize a PromptRegistry
    */
-  static async create(): Promise<PromptRegistry> {
+  static async create(language: string): Promise<PromptRegistry> {
     const registry = new PromptRegistry();
-    await registry.loadPrompts();
+    await registry.loadPrompts(language);
     return registry;
   }
 
@@ -49,14 +49,14 @@ export class PromptRegistry {
   /**
    * Load all prompts from the registry.
    */
-  async loadPrompts(): Promise<void> {
+  async loadPrompts(language: string): Promise<void> {
     console.info('🔍 Loading prompts from registry...');
-    console.info('Prompts directory: ', this.promptsDir);
-    const operations = await fs.readdir(this.promptsDir);
+    console.info('Prompts directory: ', `${this.promptsDir}/${language}`);
+    const operations = await fs.readdir(`${this.promptsDir}/${language}`);
     console.info('Found operations: ', operations);
 
     for (const operation of operations) {
-      const operationDir = path.join(this.promptsDir, operation);
+      const operationDir = path.join(`${this.promptsDir}/${language}`, operation);
       console.info(`🔍 Loading operations from: ${operationDir}`);
       const operationStat = await fs.stat(operationDir).catch(() => null);
       if (!operationStat || !operationStat.isDirectory()) continue;
