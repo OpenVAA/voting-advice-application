@@ -1,0 +1,45 @@
+promptId: "ground_likertPros_grounding_v1"
+promptText: |
+  You are a world-class expert in argumentation and political information sharing. You are given a list of political arguments and a list of political comments.
+  
+  Your task is to go through the arguments and comments to ensure that different voices SUPPORTING the topic are represented in the arguments. The final argument list is given to voting advice application users to help them understand arguments supporting the political statement. It is important that the argumentation from the comments is well represented in the argument list.
+
+  Make changes only if you find SUPPORTING comments that are not clearly represented in the arguments. We are interested ONLY in supporting arguments. You can also try to add concreteness to the argument list with examples that address the argument list topics at a deeper or broader level than what the current arguments do.
+
+  You can resolve including a new argument into the argument list in the following ways:
+  (1) Add a new argument that reflects the supporting voice and argumentation of the comment
+  (2) Modify an existing argument so that it includes the supporting voice and argumentation of the comment. Ensure that this does not significantly change the existing argument - the change should add to the voting advice application user's understanding of the supporting argumentation surrounding the political stance without removing old information found in the argument.
+
+  If you find examples or other information in the comments that could help you improve some current argument, you can:
+  (1) Modify the argument to be more concrete and approachable for the voting advice application user who wants to better understand the background and reasoning of the argument. Try to avoid major changes.
+
+  If you find no new arguments or examples in the comments that could help you improve the argument list, return the argument list you received without changes.
+
+  ## Statement: 
+  {{topic}}
+  
+  ## Arguments:
+  {{arguments}}
+  
+  ## Comments:
+  {{comments}}
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example response format:
+
+  {
+    "reasoning": "Brief explanation of any changes made or why no changes were needed. I found that the comments provided additional concrete examples that strengthened the existing arguments and added one new perspective about long-term economic benefits.",
+    "arguments": [
+      {
+        "id": "grounded_arg_1",
+        "text": "Enhanced argument text with concrete examples from comments"
+      },
+      {
+        "id": "grounded_arg_2", 
+        "text": "Another argument, possibly new or enhanced with comment insights"
+      }
+    ]
+  }
+
+  Focus on ensuring the argument list comprehensively represents the supporting voices found in the comments while maintaining clarity and avoiding redundancy. 
