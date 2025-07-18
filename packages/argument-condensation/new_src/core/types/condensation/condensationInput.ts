@@ -8,16 +8,9 @@ import { CondensationPlan } from './processDefinition';
  * @param text - The actual comment
  */
 export interface VAAComment {
-  /** Unique identifier for this comment */
   id: string;
-
-  /** The candidate who wrote the comment */
   candidateID: string;
-
-  /** Can be Likert number, categorical number, or categorical string */
   candidateAnswer: number | string;
-
-  /** The actual comment */
   text: string;
 }
 

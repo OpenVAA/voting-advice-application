@@ -66,7 +66,6 @@ function createCondensationConfig(
         } as ReduceOperationParams
       }
     ],
-    nOutputArgs: 3,
     language: 'fi'
   };
 }
@@ -259,7 +258,6 @@ async function runCondensationScript() {
       console.info(`- GROUND Batch Size: ${groundParams.batchSize}`);
     }
     console.info(`- Output Type: ${config.outputType}`);
-    console.info(`- Target Arguments: ${config.nOutputArgs}`);
     console.info(`- Total Comments (after filtering): ${filteredComments.length}`);
     console.info(`- Expected MAP Batches: ${Math.ceil(filteredComments.length / mapParams.batchSize)}`);
     console.info(`- REDUCE will coalesce ${reduceParams.denominator} lists at a time`);

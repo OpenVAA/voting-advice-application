@@ -1,3 +1,4 @@
+import { CondensationOutputType } from './condensationType';
 import { CondensationOperation } from './operation';
 import {
   GroundingOperationParams,
@@ -5,7 +6,6 @@ import {
   ReduceOperationParams,
   RefineOperationParams
 } from './processParams';
-import { CondensationOutputType } from '../llm/condensationType';
 
 /**
  * A processing step in the condensation pipeline.
@@ -31,6 +31,5 @@ export interface ProcessingStep {
 export interface CondensationPlan {
   outputType: CondensationOutputType;
   steps: Array<ProcessingStep>;
-  nOutputArgs: number;
   language: string;
 }

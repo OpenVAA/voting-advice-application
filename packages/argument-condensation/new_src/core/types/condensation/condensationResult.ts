@@ -1,5 +1,5 @@
-import { Argument } from '../base/argument';
 import { CondensationRunInput } from './condensationInput';
+import { Argument } from '../base/argument';
 
 /**
  * Performance metrics for evaluating condensation quality and efficiency.
