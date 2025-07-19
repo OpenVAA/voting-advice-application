@@ -23,7 +23,6 @@ export interface ProcessingStep {
 /**
  * A customized plan for the condensation process. Consists of a sequence of pre-defined operations.
  *
- * @param nOutputArgs - The number of arguments to output.
  * @param steps - The steps (operations) used to condense the arguments.
  * @param language - The language of the arguments.
  * @param outputType - The type of condensation this plan is designed to produce (pros or cons)

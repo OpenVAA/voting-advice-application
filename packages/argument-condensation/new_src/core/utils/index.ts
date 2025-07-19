@@ -14,3 +14,7 @@ export { filterCommentsByLikert } from './filterCommentsByLikert';
 
 // Create batches
 export { createBatches } from './createBatches';
+
+// Cost calculation and latency tracking
+export { calculateLLMCost } from './costCalculator';
+export { LatencyTracker } from './latencyTracker';

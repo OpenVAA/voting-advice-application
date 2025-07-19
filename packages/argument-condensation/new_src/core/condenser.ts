@@ -1,9 +1,10 @@
-import { LLMResponse } from '@openvaa/llm';
-import { retryFailedCalls } from '@openvaa/llm';
+import { LLMResponse, retryFailedCalls } from '@openvaa/llm';
 import * as path from 'path';
 import {
   Argument,
+  CondensationOperation,
   CondensationOperations,
+  CondensationPlan,
   CondensationRunInput,
   CondensationRunResult,
   CondensationStepResult,
@@ -17,82 +18,129 @@ import {
   VAAComment
 } from './types';
 import { ResponseWithArgumentsContract } from './types/llm/responseWithArguments';
-import { createBatches, LlmParser, setPromptVars, validatePlan } from './utils';
+import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from './utils';
 import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
- * Automatically generates operation tree visualization data.
+ * Automatically generates operation tree visualization data for debugging and analysis.
  */
 export class Condenser {
   private runId: string;
   private allPromptCalls: Array<PromptCall> = [];
   private treeBuilder: OperationTreeBuilder;
+  private latencyTracker: LatencyTracker;
+  private totalCost: number = 0;
+  private startTime: Date;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.runId;
     this.treeBuilder = new OperationTreeBuilder(this.runId);
+    this.latencyTracker = new LatencyTracker();
+    this.startTime = new Date();
   }
 
   /**
-   * Run the condensation process based on the provided plan.
+   * MAIN EXECUTION METHOD
+   *
+   * Orchestrates the entire condensation process according to the provided plan.
+   *
+   * EXECUTION FLOW:
+   * 1. Validate the plan against input data
+   * 2. Execute each step sequentially (steps may contain parallel operations)
+   * 3. Pass output from each step as input to the next step
+   * 4. Generate operation tree visualization data
+   * 5. Return final results with metadata
    */
   async run(): Promise<CondensationRunResult> {
-    // Get plan from input config
-    const plan = this.input.config;
+    this.latencyTracker.start('total_run');
+
+    // Get condensation plan from input config
+    const plan: CondensationPlan = this.input.config;
 
     // Validate the plan before execution
     validatePlan(plan, this.input.comments.length);
 
-    // Execute plan steps sequentially
-    let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments;
+    // Execute plan steps sequentially - each step transforms the data for the next
+    let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
     let previousNodeIds: Array<string> = []; // Start with empty array - first step will create root nodes
-    let currentStepIndex = 0; // Track actual step index accounting for multi-level operations
+    let currentStepIndex = 0; // Track actual step index accounting for multi-level operations (MAP + ITERATE_MAP)
 
     for (let i = 0; i < plan.steps.length; i++) {
       const step = plan.steps[i];
       const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
 
-      // Update current data for next step
+      // Update current data for next step - this is the key data flow mechanism
       currentData = stepResult.arguments;
       previousNodeIds = stepResult.nodeIds || [];
 
       // Update step index based on how many levels this operation consumed
+      // (MAP operations consume 2 levels: MAP + ITERATE_MAP)
       currentStepIndex += stepResult.stepLevelsConsumed || 1;
     }
+
+    // Calculate total execution time
+    const totalDuration = this.latencyTracker.stop('total_run') || 0;
+    const endTime = new Date();
+
+    // Calculate total token usage from all prompt calls
+    const totalTokens = this.allPromptCalls.reduce(
+      (acc, call) => ({
+        inputs: acc.inputs + call.metadata.tokens.input,
+        outputs: acc.outputs + call.metadata.tokens.output,
+        total: acc.total + call.metadata.tokens.total
+      }),
+      { inputs: 0, outputs: 0, total: 0 }
+    );
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
     await this.treeBuilder.saveTree(path.join(__dirname, '../data/operationTrees', `${this.runId}.json`));
 
-    // Print tree summary
+    // Print tree summary for debugging
     console.info('\n=== OPERATION TREE SUMMARY ===');
     console.info(this.treeBuilder.getTreeSummary());
     console.info('===============================\n');
 
-    // Return the final result
+    // Print cost and performance summary
+    console.info('\n=== COST & PERFORMANCE SUMMARY ===');
+    console.info(`Total Duration: ${(totalDuration / 1000).toFixed(2)}s`);
+    console.info(`Total LLM Calls: ${this.allPromptCalls.length}`);
+    console.info(`Total Cost: $${this.totalCost.toFixed(4)}`);
+    console.info(`Total Tokens: ${totalTokens.total.toLocaleString()}`);
+    console.info('====================================\n');
+
+    // Return the final result with all metadata
     return {
       runId: this.runId,
-      input: this.input,
       arguments: currentData as Array<Argument>,
       metrics: {
-        duration: 1.5, // stubbed
+        duration: totalDuration / 1000, // Convert to seconds
         nLlmCalls: this.allPromptCalls.length,
-        cost: 0.05, // stubbed
-        tokensUsed: { inputs: 1000, outputs: 200, total: 1200 } // stubbed
+        cost: this.totalCost,
+        tokensUsed: totalTokens
       },
       success: true,
       metadata: {
-        llmModel: 'mock',
+        llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].model : 'unknown',
         language: plan.language,
-        startTime: new Date(),
-        endTime: new Date()
+        startTime: this.startTime,
+        endTime: endTime
       }
     };
   }
 
   /**
-   * Execute a single step in the condensation plan
+   * STEP DISPATCHER
+   *
+   * Routes each processing step to the appropriate operation handler.
+   * This is the main branching point that determines how data flows through the system.
+   *
+   * OPERATION TYPES:
+   * - REFINE: Sequential processing, accumulates arguments across batches
+   * - MAP: Parallel processing, extracts arguments from comment batches
+   * - REDUCE: Parallel processing, consolidates multiple argument lists
+   * - GROUND: Parallel processing, connects arguments to source comments
    */
   private async executeStep(
     step: ProcessingStep,
@@ -135,10 +183,10 @@ export class Condenser {
     const params = step.params as RefineOperationParams;
     const batchSize = params.batchSize;
 
-    // Split comments into batches
+    // Split comments into batches for sequential processing
     const batches = createBatches(comments, batchSize);
 
-    // Create tree nodes for each batch
+    // Create tree nodes for each batch - these will be processed sequentially
     const batchNodeIds: Array<string> = [];
     for (let i = 0; i < batches.length; i++) {
       const nodeId = this.treeBuilder.createNode(CondensationOperations.REFINE, stepIndex, i);
@@ -155,7 +203,8 @@ export class Condenser {
       this.treeBuilder.startNode(nodeId);
     }
 
-    let currentArguments: Array<Argument> = [];
+    // Sequential processing - each batch builds upon previous results
+    let currentArguments: Array<Argument> = []; // Accumulates arguments across batches
     const prompt = params.initialBatchPrompt;
     const allPromptCalls: Array<PromptCall> = [];
 
@@ -164,13 +213,13 @@ export class Condenser {
       const isFirstBatch = i === 0;
       const nodeId = batchNodeIds[i];
 
-      // Prepare template variables
+      // Prepare template variables - note how existing arguments are included for refinement
       const templateVariables: Record<string, unknown> = {
         topic: this.input.question.topic,
         comments: JSON.stringify(batch, null, 2)
       };
 
-      // Add existing arguments for refinement prompts
+      // Add existing arguments for refinement prompts (key difference from MAP)
       if (!isFirstBatch) {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
@@ -180,52 +229,43 @@ export class Condenser {
       // Prepare messages for LLM
       const messages = [{ role: 'system' as const, content: promptText }];
 
-      // Make real LLM call
+      // Track latency for this LLM call
+      const callOperationId = `refine_${nodeId}`;
+      this.latencyTracker.start(callOperationId);
+
+      // Make LLM call and process response
       const llmResponse = await this.input.llmProvider.generate({
         messages,
         temperature: 0.7
       });
+
+      // Stop latency tracking
+      this.latencyTracker.stop(callOperationId);
 
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
         parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
 
-        // Log the parsed response for debugging
-        console.info(`\n=== REFINE ${isFirstBatch ? 'INITIAL' : 'REFINEMENT'} BATCH ${i + 1}/${batches.length} ===`);
-        console.info('Arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-        if (parsedResponse.reasoning) {
-          console.info('Reasoning:', parsedResponse.reasoning);
-        }
-        console.info('=====================================\n');
-
         // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
       } catch (error) {
-        // Mark node as failed
+        // Mark node as failed and stop processing (sequential dependency)
         this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(
           `Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
       }
 
-      const promptCall: PromptCall = {
-        promptId: 'MockPromptId',
-        operation: step.operation,
-        rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
-        rawOutputText: llmResponse.content,
-        model: llmResponse.model,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          tokens: {
-            input: llmResponse.usage.promptTokens,
-            output: llmResponse.usage.completionTokens,
-            total: llmResponse.usage.totalTokens
-          },
-          latency: 0.5 // TODO: track actual latency
-        }
-      };
+      // Track the LLM call for metrics
+      const promptCall: PromptCall = this.createPromptCall(
+        CondensationOperations.REFINE,
+        'RefineMockId',
+        `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
+        llmResponse,
+        callOperationId
+      );
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
@@ -252,57 +292,33 @@ export class Condenser {
   ): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
-
-    // Split comments into batches
     const batches = createBatches(comments, batchSize);
 
-    // Create tree nodes for each batch
-    const batchNodeIds: Array<string> = [];
-    for (let i = 0; i < batches.length; i++) {
-      const nodeId = this.treeBuilder.createNode(CondensationOperations.MAP, stepIndex, i);
-      this.treeBuilder.setNodeInput(nodeId, { comments: batches[i] });
+    // PRE-PROCESSING: Validate batch token counts to prevent API failures
+    // This is specific to MAP because it typically processes the largest comment volumes
+    const MAX_TOKENS_PER_BATCH = 28500; // Conservative limit for most LLM providers
+    const llmBatchSize = 7; // How many batches we send in parallel
 
-      // Link to previous nodes (only if they exist - first step has no parents)
-      if (previousNodeIds.length > 0) {
-        for (const parentId of previousNodeIds) {
-          this.treeBuilder.linkNodes(parentId, nodeId);
-        }
-      }
-
-      batchNodeIds.push(nodeId);
-      this.treeBuilder.startNode(nodeId);
-    }
-
-    // Prepare all LLM inputs for parallel processing
-    const llmInputs = batches.map((batch) => {
-      // Prepare template variables for MAP prompt
+    // Estimate token usage by creating sample prompts
+    const llmInputsForTokenCheck = batches.map((batch) => {
       const templateVariables: Record<string, unknown> = {
         topic: this.input.question.topic,
         comments: batch.map((c) => c.text).join('\n')
       };
-
       const promptText = setPromptVars(params.condensationPrompt, templateVariables);
-
-      return {
-        messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7
-      };
+      return { messages: [{ role: 'system' as const, content: promptText }] };
     });
 
-    // Validate batch token counts before sending to LLM
-    const MAX_TOKENS_PER_BATCH = 28500;
-    const llmBatchSize = 7;
-
-    // Calculate character count for each LLM input and group into batches
-    const promptCharsCounts = llmInputs.map((input) =>
+    // Rough token estimation: characters / 4 * safety margin
+    const promptCharsCounts = llmInputsForTokenCheck.map((input) =>
       input.messages.reduce((total, message) => total + message.content.length, 0)
     );
 
-    // Check consecutive batches of llmBatchSize
+    // Check consecutive batches that would be sent together
     for (let i = 0; i < promptCharsCounts.length; i += llmBatchSize) {
       const batchEnd = Math.min(i + llmBatchSize, promptCharsCounts.length);
       const batchCharSum = promptCharsCounts.slice(i, batchEnd).reduce((sum, count) => sum + count, 0);
-      const estimatedTokens = (batchCharSum / 4) * 1.3; // Simple token estimation: (characters / 4 * 1.3 buffer)
+      const estimatedTokens = (batchCharSum / 4) * 1.3; // Simple token estimation with buffer
 
       console.info(`CONDENSER: Batch ${Math.floor(i / llmBatchSize) + 1} estimated tokens:`, estimatedTokens);
 
@@ -318,274 +334,56 @@ export class Condenser {
       }
     }
 
-    // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
-
-    // Initialize argumentLists array with proper size
-    const argumentLists: Array<Array<Argument>> = new Array(batches.length);
-    const allPromptCalls: Array<PromptCall> = [];
-    const failedIndices: Array<number> = [];
-    const successfulResponses: { [index: number]: LLMResponse } = {};
-
-    // First pass: process all responses and collect failures
-    for (let i = 0; i < batches.length; i++) {
-      const llmResponse = llmResponses[i];
-      const nodeId = batchNodeIds[i];
-
-      // Parse and validate the response
-      try {
-        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
-        successfulResponses[i] = llmResponse;
-
-        // Update tree node with output
-        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-        this.treeBuilder.completeNode(nodeId, 1, true);
-
-        argumentLists[i] = parsedResponse.arguments;
-      } catch (error) {
-        console.info(`\n❌ MAP BATCH ${i + 1}/${batches.length} FAILED ===`);
-        console.info('Parse error:', error instanceof Error ? error.message : 'Unknown error');
-        console.info('Raw response:', llmResponse.content.substring(0, 200) + '...');
-        console.info('=====================================\n');
-
-        // Mark for retry
-        failedIndices.push(i);
-
-        // Mark node as temporarily failed (will be updated if retry succeeds)
-        this.treeBuilder.completeNode(
-          nodeId,
-          1,
-          false,
-          `Initial parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-    }
-
-    // Retry failed calls individually
-    if (failedIndices.length > 0) {
-      console.info(`\n🔄 Retrying ${failedIndices.length} failed MAP batches...`);
-      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'MAP', 2, ResponseWithArgumentsContract, this.input.llmProvider);
-
-      // Process retry results
-      for (const { index, response } of retryResults) {
-        const nodeId = batchNodeIds[index];
-
-        try {
-          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
-
-          console.info(`\n=== MAP BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
-          console.info('=====================================\n');
-
-          // Store successful retry response
-          successfulResponses[index] = response;
-
-          // Update tree node with successful output
-          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-          this.treeBuilder.completeNode(nodeId, 1, true);
-
-          argumentLists[index] = parsedResponse.arguments;
-        } catch (retryError) {
-          // Even retry failed - mark as permanently failed
-          this.treeBuilder.completeNode(
-            nodeId,
-            1,
-            false,
-            `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
-          throw new Error(
-            `Failed to parse MAP response for batch ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
-        }
-      }
-
-      // Check if any batches still failed after retries
-      const stillFailedIndices = failedIndices.filter((i) => !successfulResponses[i]);
-      if (stillFailedIndices.length > 0) {
-        throw new Error(
-          `MAP operation failed for batches: ${stillFailedIndices.map((i) => i + 1).join(', ')} after all retry attempts`
-        );
-      }
-    }
-
-    // Create prompt calls for all successful responses (including retries)
-    for (let i = 0; i < batches.length; i++) {
-      const llmResponse = successfulResponses[i];
-      if (llmResponse) {
-        const promptCall: PromptCall = {
-          promptId: 'MapMockId', // TODO: get from prompt registry
-          operation: step.operation,
-          rawInputText: `Map operation for batch ${i + 1}/${batches.length}`,
-          rawOutputText: llmResponse.content,
-          model: llmResponse.model,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            tokens: {
-              input: llmResponse.usage.promptTokens,
-              output: llmResponse.usage.completionTokens,
-              total: llmResponse.usage.totalTokens
-            },
-            latency: 0.5 // TODO: track actual latency
-          }
-        };
-
-        allPromptCalls.push(promptCall);
-        this.allPromptCalls.push(promptCall);
-      }
-    }
+    // PHASE 1: Initial MAP step - parallel argument extraction
+    const mapResult = await this._executeParallelOperation({
+      items: batches,
+      stepIndex,
+      previousNodeIds,
+      operation: CondensationOperations.MAP,
+      prompt: params.condensationPrompt,
+      logIdentifier: 'BATCH',
+      promptId: 'MapMockId',
+      prepareTemplateVars: (batch) => ({
+        topic: this.input.question.topic,
+        comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n')
+      })
+    });
 
     console.info('\n🔄 Starting MAP iteration step...');
 
-    // Create iteration nodes for each batch as children of MAP nodes
-    const iterationNodeIds: Array<string> = [];
-    for (let i = 0; i < batches.length; i++) {
-      const nodeId = this.treeBuilder.createNode(CondensationOperations.ITERATE_MAP, stepIndex + 1, i);
-      this.treeBuilder.setNodeInput(nodeId, {
-        arguments: argumentLists[i] // Only show arguments as input, comments are in parent MAP node
-      });
-
-      // Link to the corresponding initial MAP node
-      this.treeBuilder.linkNodes(batchNodeIds[i], nodeId);
-
-      iterationNodeIds.push(nodeId);
-      this.treeBuilder.startNode(nodeId);
-    }
-
-    // Prepare iteration LLM inputs
-    const iterationLlmInputs = batches.map((batch, i) => {
-      // Prepare template variables for iteration prompt
-      const templateVariables: Record<string, unknown> = {
+    // PHASE 2: ITERATE_MAP step - refinement using original comments + extracted arguments
+    const iterationResult = await this._executeParallelOperation({
+      items: mapResult.arguments.map((argList, i) => ({ argList, batch: batches[i] })),
+      stepIndex: stepIndex + 1,
+      previousNodeIds: mapResult.nodeIds, // Link iteration nodes to initial MAP nodes
+      operation: CondensationOperations.ITERATE_MAP,
+      prompt: params.iterationPrompt,
+      logIdentifier: 'ITERATION BATCH',
+      promptId: 'MapIterationPromptId',
+      prepareTemplateVars: (item) => ({
         topic: this.input.question.topic,
-        arguments: JSON.stringify(argumentLists[i], null, 2),
-        comments: batch.map((c) => c.text).join('\n')
-      };
-
-      const promptText = setPromptVars(params.iterationPrompt, templateVariables);
-
-      return {
-        messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7
-      };
+        arguments: JSON.stringify(item.argList, null, 2), // Previous arguments
+        comments: item.batch.map((c) => c.text).join('\n') // Original comments
+      }),
+      // GRACEFUL DEGRADATION: If iteration fails, we keep the initial MAP results
+      shouldThrowOnRetryFailure: false,
+      onSuccess: (result, index) => {
+        // Successful iteration replaces the original arguments with refined ones
+        mapResult.arguments[index] = result.parsedResponse.arguments;
+      },
+      onFailure: (index) => {
+        console.info(`\n⚠️  MAP ITERATION BATCH ${index + 1} failed after retries, keeping initial arguments`);
+        // Note: mapResult.arguments[index] remains unchanged (initial MAP result)
+      }
     });
 
-    // Queue iteration LLM calls
-    const iterationLlmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: iterationLlmInputs });
-
-    const iterationFailedIndices: Array<number> = [];
-    const iterationSuccessfulResponses: { [index: number]: LLMResponse } = {};
-
-    // Process iteration responses
-    for (let i = 0; i < batches.length; i++) {
-      const llmResponse = iterationLlmResponses[i];
-      const nodeId = iterationNodeIds[i];
-
-      try {
-        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
-        iterationSuccessfulResponses[i] = llmResponse;
-
-        // Update tree node with iteration output
-        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-        this.treeBuilder.completeNode(nodeId, 1, true);
-
-        // Replace the initial arguments with the refined ones
-        argumentLists[i] = parsedResponse.arguments;
-      } catch (error) {
-        console.info(`\n❌ MAP ITERATION BATCH ${i + 1}/${batches.length} FAILED ===`);
-        console.info('Parse error:', error instanceof Error ? error.message : 'Unknown error');
-        console.info('Raw response:', llmResponse.content.substring(0, 200) + '...');
-        console.info('=====================================\n');
-
-        // Mark for retry
-        iterationFailedIndices.push(i);
-
-        // Mark node as temporarily failed
-        this.treeBuilder.completeNode(
-          nodeId,
-          1,
-          false,
-          `Iteration parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-    }
-
-    // Retry failed iteration calls
-    if (iterationFailedIndices.length > 0) {
-      console.info(`\n🔄 Retrying ${iterationFailedIndices.length} failed MAP iteration batches...`);
-      const iterationRetryResults = await retryFailedCalls(
-        iterationFailedIndices,
-        iterationLlmInputs,
-        'MAP_ITERATION',
-        2,
-        ResponseWithArgumentsContract,
-        this.input.llmProvider
-      );
-
-      for (const { index, response } of iterationRetryResults) {
-        const nodeId = iterationNodeIds[index];
-
-        try {
-          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
-
-          console.info(`\n=== MAP ITERATION BATCH ${index + 1}/${batches.length} (RETRY SUCCESS) ===`);
-
-          // Store successful retry response
-          iterationSuccessfulResponses[index] = response;
-
-          // Update tree node with successful iteration output
-          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-          this.treeBuilder.completeNode(nodeId, 1, true);
-
-          // Replace the initial arguments with the refined ones
-          argumentLists[index] = parsedResponse.arguments;
-        } catch (retryError) {
-          // Iteration retry failed - keep initial arguments and mark as failed
-          console.info(`\n⚠️  MAP ITERATION BATCH ${index + 1} failed after retries, keeping initial arguments`);
-          this.treeBuilder.completeNode(
-            nodeId,
-            1,
-            false,
-            `All iteration retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
-        }
-      }
-    }
-
-    // Create prompt calls for successful iteration responses
-    const iterationPromptCalls: Array<PromptCall> = [];
-    for (let i = 0; i < batches.length; i++) {
-      const llmResponse = iterationSuccessfulResponses[i];
-      if (llmResponse) {
-        const promptCall: PromptCall = {
-          promptId: 'MapIterationPromptId', // TODO: get from prompt registry or params
-          operation: CondensationOperations.ITERATE_MAP, // Use ITERATE_MAP instead of step.operation
-          rawInputText: `Map iteration for batch ${i + 1}/${batches.length}`,
-          rawOutputText: llmResponse.content,
-          model: llmResponse.model,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            tokens: {
-              input: llmResponse.usage.promptTokens,
-              output: llmResponse.usage.completionTokens,
-              total: llmResponse.usage.totalTokens
-            },
-            latency: 0.5 // TODO: track actual latency
-          }
-        };
-
-        iterationPromptCalls.push(promptCall);
-        this.allPromptCalls.push(promptCall);
-      }
-    }
-
-    // Add iteration prompt calls to the main prompt calls array
-    allPromptCalls.push(...iterationPromptCalls);
-
-    // Update nodeIds to include iteration nodes
-    batchNodeIds.push(...iterationNodeIds);
+    // Return the final arguments (either refined or original if iteration failed)
+    const finalArguments = mapResult.arguments;
 
     return {
-      arguments: argumentLists,
-      promptCalls: allPromptCalls,
-      nodeIds: batchNodeIds,
+      arguments: finalArguments,
+      promptCalls: [...mapResult.promptCalls, ...iterationResult.promptCalls],
+      nodeIds: [...mapResult.nodeIds, ...iterationResult.nodeIds],
       stepLevelsConsumed: 2 // MAP operation uses 2 step levels (MAP + ITERATE_MAP)
     };
   }
@@ -602,172 +400,39 @@ export class Condenser {
     const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
 
-    // If we only have one list, return as is (no reduction needed)
+    // Early return if no reduction is needed
     if (argumentLists.length <= 1) {
-      return {
-        arguments: argumentLists,
-        promptCalls: [],
-        nodeIds: previousNodeIds
-      };
+      return { arguments: argumentLists, promptCalls: [], nodeIds: previousNodeIds };
     }
 
-    // Group argument lists into chunks based on denominator
+    // Group argument lists into chunks for parallel processing
     const chunks: Array<Array<Array<Argument>>> = [];
     for (let i = 0; i < argumentLists.length; i += denominator) {
       chunks.push(argumentLists.slice(i, i + denominator));
     }
 
-    // Create tree nodes for each chunk
-    const chunkNodeIds: Array<string> = [];
-    for (let i = 0; i < chunks.length; i++) {
-      const nodeId = this.treeBuilder.createNode(CondensationOperations.REDUCE, stepIndex, i);
-      this.treeBuilder.setNodeInput(nodeId, { argumentLists: chunks[i] });
-
-      // Link to previous nodes
-      for (const parentId of previousNodeIds) {
-        this.treeBuilder.linkNodes(parentId, nodeId);
-      }
-
-      chunkNodeIds.push(nodeId);
-      this.treeBuilder.startNode(nodeId);
-    }
-
-    // Prepare all LLM inputs for parallel processing
-    const llmInputs = chunks.map((chunk) => {
-      // Prepare template variables for REDUCE prompt
-      const templateVariables: Record<string, unknown> = {
+    // Use the common parallel processing infrastructure
+    const result = await this._executeParallelOperation({
+      items: chunks,
+      stepIndex,
+      previousNodeIds,
+      operation: CondensationOperations.REDUCE,
+      prompt: params.coalescingPrompt,
+      logIdentifier: 'CHUNK',
+      promptId: 'ReduceMockId',
+      prepareTemplateVars: (chunk) => ({
         topic: this.input.question.topic,
-        argumentLists: JSON.stringify(chunk, null, 2)
-      };
-
-      const promptText = setPromptVars(params.coalescingPrompt, templateVariables);
-
-      return {
-        messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7
-      };
+        argumentLists: JSON.stringify(chunk, null, 2) // Multiple argument lists to merge
+      })
     });
 
-    // Queue all LLM calls
-    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
-
-    const reducedArgumentLists: Array<Array<Argument>> = [];
-    const allPromptCalls: Array<PromptCall> = [];
-    const failedIndices: Array<number> = [];
-    const successfulResponses: { [index: number]: LLMResponse } = {};
-
-    // First pass: process all responses and collect failures
-    for (let i = 0; i < chunks.length; i++) {
-      const llmResponse = llmResponses[i];
-      const nodeId = chunkNodeIds[i];
-
-      // Parse and validate the response
-      try {
-        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
-        successfulResponses[i] = llmResponse;
-
-        // Update tree node with output
-        this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-        this.treeBuilder.completeNode(nodeId, 1, true);
-
-        reducedArgumentLists[i] = parsedResponse.arguments;
-      } catch (error) {
-        console.info(`\n❌ REDUCE CHUNK ${i + 1}/${chunks.length} FAILED ===`);
-        console.info('Parse error:', error instanceof Error ? error.message : 'Unknown error');
-        console.info('Raw response:', llmResponse.content.substring(0, 200) + '...');
-        console.info('=====================================\n');
-
-        // Mark for retry
-        failedIndices.push(i);
-
-        // Mark node as temporarily failed (will be updated if retry succeeds)
-        this.treeBuilder.completeNode(
-          nodeId,
-          1,
-          false,
-          `Initial parse failed, retrying: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-    }
-
-    // Retry failed calls individually
-    if (failedIndices.length > 0) {
-      console.info(`\n🔄 Retrying ${failedIndices.length} failed REDUCE chunks...`);
-      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'REDUCE', 2, ResponseWithArgumentsContract, this.input.llmProvider);
-
-      // Process retry results
-      for (const { index, response } of retryResults) {
-        const nodeId = chunkNodeIds[index];
-
-        try {
-          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
-
-          console.info(`\n=== REDUCE CHUNK ${index + 1}/${chunks.length} (RETRY SUCCESS) ===`);
-
-          // Store successful retry response
-          successfulResponses[index] = response;
-
-          // Update tree node with successful output
-          this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-          this.treeBuilder.completeNode(nodeId, 1, true);
-
-          reducedArgumentLists[index] = parsedResponse.arguments;
-        } catch (retryError) {
-          // Even retry failed - mark as permanently failed
-          this.treeBuilder.completeNode(
-            nodeId,
-            1,
-            false,
-            `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
-          throw new Error(
-            `Failed to parse REDUCE response for chunk ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
-        }
-      }
-
-      // Check if any chunks still failed after retries
-      const stillFailedIndices = failedIndices.filter((i) => !successfulResponses[i]);
-      if (stillFailedIndices.length > 0) {
-        throw new Error(
-          `REDUCE operation failed for chunks: ${stillFailedIndices.map((i) => i + 1).join(', ')} after all retry attempts`
-        );
-      }
-    }
-
-    // Create prompt calls for all successful responses (including retries)
-    for (let i = 0; i < chunks.length; i++) {
-      const llmResponse = successfulResponses[i];
-      if (llmResponse) {
-        const promptCall: PromptCall = {
-          promptId: 'ReduceMockId', // TODO: get from prompt registry
-          operation: step.operation,
-          rawInputText: `Reduce operation for chunk ${i + 1}/${chunks.length}`,
-          rawOutputText: llmResponse.content,
-          model: llmResponse.model,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            tokens: {
-              input: llmResponse.usage.promptTokens,
-              output: llmResponse.usage.completionTokens,
-              total: llmResponse.usage.totalTokens
-            },
-            latency: 0.5 // TODO: track actual latency
-          }
-        };
-
-        allPromptCalls.push(promptCall);
-        this.allPromptCalls.push(promptCall);
-      }
-    }
-
-    // If we only have one result, return it as a single list
-    const outputArguments = reducedArgumentLists.length === 1 ? reducedArgumentLists[0] : reducedArgumentLists;
+    // Handle the output format - if we only have one result, unwrap it
+    const outputArguments = result.arguments.length === 1 ? result.arguments[0] : result.arguments;
 
     return {
       arguments: outputArguments,
-      promptCalls: allPromptCalls,
-      nodeIds: chunkNodeIds
+      promptCalls: result.promptCalls,
+      nodeIds: result.nodeIds
     };
   }
 
@@ -782,113 +447,179 @@ export class Condenser {
   ): Promise<CondensationStepResult> {
     const params = step.params as GroundingOperationParams;
 
-    // Normalize input to always be an array of lists for simplicity
+    // Normalize input to always be an array of argument lists for convinience (even if single list)
     const argumentLists: Array<Array<Argument>> = Array.isArray(argumentData[0])
       ? (argumentData as Array<Array<Argument>>)
-      : [argumentData as Array<Argument>]; // if input is a single list, wrap it in an array
+      : [argumentData as Array<Argument>]; // Single list wrapped in array
 
-    // Create tree nodes for each argument list
-    const listNodeIds: Array<string> = [];
-    for (let i = 0; i < argumentLists.length; i++) {
-      const nodeId = this.treeBuilder.createNode(CondensationOperations.GROUND, stepIndex, i);
-      this.treeBuilder.setNodeInput(nodeId, { arguments: argumentLists[i] });
+    // COMMENT ALLOCATION STRATEGY
+    // Ensure we have enough comment batches for all argument lists
+    const availableComments = this.input.comments;
+    const numArgumentLists = argumentLists.length;
+    const availableCommentBatches = Math.floor(availableComments.length / params.batchSize);
+    let commentsToUse = availableComments;
 
-      // Link to previous nodes
-      for (const parentId of previousNodeIds) {
-        this.treeBuilder.linkNodes(parentId, nodeId);
+    // If we don't have enough comment batches, replicate the comment array
+    if (availableCommentBatches > 0 && availableCommentBatches < numArgumentLists) {
+      const coefficient = Math.ceil(numArgumentLists / availableCommentBatches);
+      commentsToUse = Array.from({ length: coefficient }, () => availableComments).flat();
+    }
+    const commentBatches = createBatches(commentsToUse, params.batchSize);
+
+    // Use the common parallel processing infrastructure
+    const result = await this._executeParallelOperation({
+      items: argumentLists,
+      stepIndex,
+      previousNodeIds,
+      operation: CondensationOperations.GROUND,
+      prompt: params.groundingPrompt,
+      logIdentifier: 'LIST',
+      promptId: 'GroundMockId',
+      prepareTemplateVars: (argumentList, i) => ({
+        topic: this.input.question.topic,
+        arguments: JSON.stringify(argumentList, null, 2), // Arguments to ground
+        comments: JSON.stringify(commentBatches[i], null, 2) // Comments for evidence
+      }),
+      // Custom success handler for detailed logging
+      onSuccess: (result, index) => {
+        const commentsForGrounding = commentBatches[index];
+        console.info(`\n=== GROUND LIST ${index + 1}/${argumentLists.length} ===`);
+        console.info('Original arguments:', JSON.stringify(result.item, null, 2));
+        console.info('Grounded arguments:', JSON.stringify(result.parsedResponse.arguments, null, 2));
+        console.info(`Used ${commentsForGrounding.length} comments for grounding`);
+        if (result.parsedResponse.reasoning) {
+          console.info('Reasoning:', result.parsedResponse.reasoning);
+        }
+        console.info('=====================================\n');
+      }
+    });
+
+    // Preserve input structure in output - single list stays single, multiple stays multiple
+    const outputArguments = Array.isArray(argumentData[0]) ? result.arguments : result.arguments[0];
+
+    return {
+      arguments: outputArguments,
+      promptCalls: result.promptCalls,
+      nodeIds: result.nodeIds
+    };
+  }
+
+  /**
+   * A generic executor for parallel condensation operations MAP, REDUCE, and GROUND operations. It abstracts away the common patterns:
+   * 1. Tree node creation and management
+   * 2. Parallel LLM call execution
+   * 3. Response parsing and validation
+   * 4. Robust retry mechanisms for failed calls
+   * 5. Success/failure tracking and logging
+   * 6. Graceful degradation options
+   */
+  private async _executeParallelOperation<TInputItem>(config: {
+    items: Array<TInputItem>;
+    stepIndex: number;
+    previousNodeIds: Array<string>;
+    operation: CondensationOperation;
+    prompt: string;
+    logIdentifier: string;
+    promptId: string;
+    prepareTemplateVars: (item: TInputItem, index: number) => Record<string, unknown>;
+    shouldThrowOnRetryFailure?: boolean;
+    onSuccess?: (result: { parsedResponse: ResponseWithArguments; item: TInputItem }, index: number) => void;
+    onFailure?: (index: number) => void;
+  }): Promise<{
+    arguments: Array<Array<Argument>>;
+    promptCalls: Array<PromptCall>;
+    nodeIds: Array<string>;
+  }> {
+    const {
+      items,
+      stepIndex,
+      previousNodeIds,
+      operation,
+      prompt,
+      logIdentifier,
+      promptId,
+      prepareTemplateVars,
+      shouldThrowOnRetryFailure = true,
+      onSuccess,
+      onFailure
+    } = config;
+
+    // PHASE 1: CREATE TREE NODES
+    // Create a tree node for each item we'll process
+    const nodeIds: Array<string> = [];
+    for (let i = 0; i < items.length; i++) {
+      const nodeId = this.treeBuilder.createNode(operation, stepIndex, i);
+
+      // Set appropriate input based on operation type for proper visualization
+      let nodeInput: {
+        comments?: Array<VAAComment>;
+        arguments?: Array<Argument>;
+        argumentLists?: Array<Array<Argument>>;
+      };
+      if (operation === CondensationOperations.MAP) {
+        nodeInput = { comments: items[i] as Array<VAAComment> };
+      } else if (operation === CondensationOperations.ITERATE_MAP) {
+        const item = items[i] as { argList: Array<Argument>; batch: Array<VAAComment> };
+        nodeInput = { arguments: item.argList };
+      } else if (operation === CondensationOperations.REDUCE) {
+        nodeInput = { argumentLists: items[i] as Array<Array<Argument>> };
+      } else if (operation === CondensationOperations.GROUND) {
+        nodeInput = { arguments: items[i] as Array<Argument> };
+      } else {
+        // Fallback for unknown operations
+        nodeInput = { arguments: items[i] as Array<Argument> };
       }
 
-      listNodeIds.push(nodeId);
+      this.treeBuilder.setNodeInput(nodeId, nodeInput);
+
+      // Link to parent nodes (creates the tree structure)
+      if (previousNodeIds.length > 0) {
+        for (const parentId of previousNodeIds) {
+          this.treeBuilder.linkNodes(parentId, nodeId);
+        }
+      }
+      nodeIds.push(nodeId);
       this.treeBuilder.startNode(nodeId);
     }
 
-    // Prepare comment batches - each argument list gets its own batch
-    const availableComments = this.input.comments;
-    const numArgumentLists = argumentLists.length;
-
-    // Calculate how many comment batches we can create with current comments
-    const availableCommentBatches = Math.floor(availableComments.length / params.batchSize);
-
-    let commentsToUse = availableComments;
-
-    // If we don't have enough comment batches, multiply the comment array
-    if (availableCommentBatches < numArgumentLists) {
-      const coefficient = Math.ceil(numArgumentLists / availableCommentBatches);
-      commentsToUse = [];
-      for (let i = 0; i < coefficient; i++) {
-        commentsToUse.push(...availableComments);
-      }
-    }
-
-    // Prepare comment batches
-    const commentBatches = createBatches(commentsToUse, params.batchSize);
-
-    // Prepare all LLM inputs for parallel processing
-    const llmInputs = argumentLists.map((argumentList, i) => {
-      const commentsForGrounding = commentBatches[i];
-
-      // Prepare template variables for grounding prompt
-      const templateVariables: Record<string, unknown> = {
-        topic: this.input.question.topic,
-        arguments: JSON.stringify(argumentList, null, 2),
-        comments: JSON.stringify(commentsForGrounding, null, 2)
-      };
-
-      const promptText = setPromptVars(params.groundingPrompt, templateVariables);
-
+    // PHASE 2: PREPARE LLM INPUTS
+    // Transform each item into an LLM input using operation-specific logic
+    const llmInputs = items.map((item, i) => {
+      const templateVariables = prepareTemplateVars(item, i);
+      const promptText = setPromptVars(prompt, templateVariables);
       return {
         messages: [{ role: 'system' as const, content: promptText }],
         temperature: 0.7
       };
     });
 
-    // Queue all LLM calls  
+    // PHASE 3: EXECUTE PARALLEL LLM CALLS
     const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
 
-    const groundedArgumentLists: Array<Array<Argument>> = [];
+    // PHASE 4: PROCESS RESPONSES (FIRST ATTEMPT)
+    const finalArguments: Array<Array<Argument>> = new Array(items.length);
     const allPromptCalls: Array<PromptCall> = [];
     const failedIndices: Array<number> = [];
     const successfulResponses: { [index: number]: LLMResponse } = {};
 
-    // First pass: process all responses and collect failures
-    for (let i = 0; i < argumentLists.length; i++) {
-      const argumentList = argumentLists[i];
-      const commentsForGrounding = commentBatches[i];
+    // Try to parse each response
+    for (let i = 0; i < items.length; i++) {
       const llmResponse = llmResponses[i];
-      const nodeId = listNodeIds[i];
+      const nodeId = nodeIds[i];
 
-      // Parse and validate the response
       try {
         const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
-
-        // Log the parsed response for debugging
-        console.info(`\n=== GROUND LIST ${i + 1}/${argumentLists.length} ===`);
-        console.info('Original arguments:', JSON.stringify(argumentList, null, 2));
-        console.info('Grounded arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-        console.info(`Used ${commentsForGrounding.length} comments for grounding`);
-        if (parsedResponse.reasoning) {
-          console.info('Reasoning:', parsedResponse.reasoning);
-        }
-        console.info('=====================================\n');
-
-        // Store successful response
         successfulResponses[i] = llmResponse;
-
-        // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
-
-        groundedArgumentLists[i] = parsedResponse.arguments;
+        finalArguments[i] = parsedResponse.arguments;
+        if (onSuccess) onSuccess({ parsedResponse, item: items[i] }, i);
       } catch (error) {
-        console.info(`\n❌ GROUND LIST ${i + 1}/${argumentLists.length} FAILED ===`);
+        console.info(`\n❌ ${operation} ${logIdentifier} ${i + 1}/${items.length} FAILED ===`);
         console.info('Parse error:', error instanceof Error ? error.message : 'Unknown error');
         console.info('Raw response:', llmResponse.content.substring(0, 200) + '...');
         console.info('=====================================\n');
-
-        // Mark for retry
         failedIndices.push(i);
-
-        // Mark node as temporarily failed (will be updated if retry succeeds)
         this.treeBuilder.completeNode(
           nodeId,
           1,
@@ -898,93 +629,124 @@ export class Condenser {
       }
     }
 
-    // Retry failed calls individually
+    // PHASE 5: RETRY FAILED CALLS
+    // Robust retry mechanism for any calls that failed to parse
     if (failedIndices.length > 0) {
-      console.info(`\n🔄 Retrying ${failedIndices.length} failed GROUND lists...`);
-      const retryResults = await retryFailedCalls(failedIndices, llmInputs, 'GROUND', 2, ResponseWithArgumentsContract, this.input.llmProvider);
+      console.info(`\n🔄 Retrying ${failedIndices.length} failed ${operation} ${logIdentifier}s...`);
+      const retryResults = await retryFailedCalls(
+        failedIndices,
+        llmInputs,
+        operation,
+        2, // max retries
+        ResponseWithArgumentsContract,
+        this.input.llmProvider
+      );
 
-      // Process retry results
+      const retriedSuccessIndices = new Set<number>();
       for (const { index, response } of retryResults) {
-        const argumentList = argumentLists[index];
-        const commentsForGrounding = commentBatches[index];
-        const nodeId = listNodeIds[index];
-
+        const nodeId = nodeIds[index];
         try {
           const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
-
-          console.info(`\n=== GROUND LIST ${index + 1}/${argumentLists.length} (RETRY SUCCESS) ===`);
-          console.info('Original arguments:', JSON.stringify(argumentList, null, 2));
-          console.info('Grounded arguments:', JSON.stringify(parsedResponse.arguments, null, 2));
-          console.info(`Used ${commentsForGrounding.length} comments for grounding`);
-          if (parsedResponse.reasoning) {
-            console.info('Reasoning:', parsedResponse.reasoning);
-          }
-          console.info('=====================================\n');
-
-          // Store successful retry response
+          console.info(`\n=== ${operation} ${logIdentifier} ${index + 1}/${items.length} (RETRY SUCCESS) ===`);
           successfulResponses[index] = response;
-
-          // Update tree node with successful output
           this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
           this.treeBuilder.completeNode(nodeId, 1, true);
-
-          groundedArgumentLists[index] = parsedResponse.arguments;
+          finalArguments[index] = parsedResponse.arguments;
+          retriedSuccessIndices.add(index);
+          if (onSuccess) onSuccess({ parsedResponse, item: items[index] }, index);
         } catch (retryError) {
-          // Even retry failed - mark as permanently failed
           this.treeBuilder.completeNode(
             nodeId,
             1,
             false,
             `All retries failed: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
           );
-          throw new Error(
-            `Failed to parse GROUND response for list ${index + 1} after retries: ${retryError instanceof Error ? retryError.message : 'Unknown error'}`
-          );
+          if (shouldThrowOnRetryFailure) {
+            throw new Error(
+              `Failed to parse ${operation} response for ${logIdentifier} ${index + 1} after retries: ${
+                retryError instanceof Error ? retryError.message : 'Unknown error'
+              }`
+            );
+          }
         }
       }
 
-      // Check if any lists still failed after retries
-      const stillFailedIndices = failedIndices.filter((i) => !successfulResponses[i]);
+      // GRACEFUL DEGRADATION: Handle remaining failures
+      const stillFailedIndices = failedIndices.filter((i) => !retriedSuccessIndices.has(i));
       if (stillFailedIndices.length > 0) {
-        throw new Error(
-          `GROUND operation failed for lists: ${stillFailedIndices.map((i) => i + 1).join(', ')} after all retry attempts`
-        );
+        if (onFailure) stillFailedIndices.forEach((i) => onFailure(i));
+        if (shouldThrowOnRetryFailure) {
+          throw new Error(
+            `${operation} operation failed for ${logIdentifier}s: ${stillFailedIndices
+              .map((i) => i + 1)
+              .join(', ')} after all retry attempts`
+          );
+        }
       }
     }
 
-    // Create prompt calls for all successful responses (including retries)
-    for (let i = 0; i < argumentLists.length; i++) {
+    // PHASE 6: COLLECT METRICS
+    // Track all successful LLM calls for cost and usage analysis
+    for (let i = 0; i < items.length; i++) {
       const llmResponse = successfulResponses[i];
       if (llmResponse) {
-        const promptCall: PromptCall = {
-          promptId: 'GroundMockId', // TODO: get from prompt registry
-          operation: step.operation,
-          rawInputText: `Ground operation for list ${i + 1}/${argumentLists.length}`,
-          rawOutputText: llmResponse.content,
-          model: llmResponse.model,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            tokens: {
-              input: llmResponse.usage.promptTokens,
-              output: llmResponse.usage.completionTokens,
-              total: llmResponse.usage.totalTokens
-            },
-            latency: 0.5 // TODO: track actual latency
-          }
-        };
-
+        const promptCall: PromptCall = this.createPromptCall(
+          operation,
+          promptId,
+          `${operation} for ${logIdentifier} ${i + 1}/${items.length}`,
+          llmResponse,
+          nodeIds[i]
+        );
         allPromptCalls.push(promptCall);
         this.allPromptCalls.push(promptCall);
       }
     }
 
-    // Return the same structure as input: single list if input was single list, multiple lists if input was multiple lists
-    const outputArguments = Array.isArray(argumentData[0]) ? groundedArgumentLists : groundedArgumentLists[0];
+    return { arguments: finalArguments, promptCalls: allPromptCalls, nodeIds };
+  }
+
+  /**
+   * Helper method to create a PromptCall with proper latency and cost tracking
+   */
+  private createPromptCall(
+    operation: CondensationOperation,
+    promptId: string,
+    rawInputText: string,
+    llmResponse: LLMResponse,
+    operationId: string
+  ): PromptCall {
+    const latency = this.latencyTracker.getDuration(operationId) || 0;
+
+    // Calculate cost for this LLM call
+    const callCost = calculateLLMCost(
+      'openai', // TODO: get actual provider from llmProvider
+      llmResponse.model,
+      {
+        promptTokens: llmResponse.usage.promptTokens,
+        completionTokens: llmResponse.usage.completionTokens,
+        totalTokens: llmResponse.usage.totalTokens
+      }
+    );
+
+    // Add to total cost
+    this.totalCost += callCost;
 
     return {
-      arguments: outputArguments,
-      promptCalls: allPromptCalls,
-      nodeIds: listNodeIds
+      promptId,
+      operation,
+      rawInputText,
+      rawOutputText: llmResponse.content,
+      model: llmResponse.model,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        tokens: {
+          input: llmResponse.usage.promptTokens,
+          output: llmResponse.usage.completionTokens,
+          total: llmResponse.usage.totalTokens
+        },
+        latency,
+        cost: callCost
+      }
     };
   }
 }
