@@ -1,4 +1,4 @@
-promptId: 'map_likertPros_condensation_v1'
+promptId: 'map_booleanPros_condensation_v1'
 params:
   topic: string
   comments: string
@@ -23,21 +23,21 @@ promptText: |
   ## Example response format:
 
   {
-    "reasoning": "Brief explanation of the arguments found supporting the position. Many candidates support this policy because they believe it would improve economic conditions and social welfare. The arguments focus on poverty reduction, economic growth, and worker rights.",
+    "reasoning": "Brief explanation of the arguments found supporting the position. Many candidates support this policy because they believe it would improve social outcomes and environmental protection. The arguments focus on long-term benefits, ethical considerations, and evidence-based effectiveness.",
     "arguments": [
       {
         "id": "pro_arg_1",
-        "text": "This policy would reduce poverty and inequality by ensuring workers earn enough to support their families and meet basic needs."
+        "text": "This policy would generate significant social and economic benefits by addressing systemic problems and creating opportunities for positive change."
       },
       {
         "id": "pro_arg_2", 
-        "text": "Higher wages would boost economic growth by increasing consumer purchasing power and stimulating demand for goods and services."
+        "text": "Evidence from similar implementations shows measurable improvements in key outcomes, demonstrating the policy's effectiveness and value."
       },
       {
         "id": "pro_arg_3",
-        "text": "Fair compensation improves workplace conditions by reducing employee turnover, increasing productivity, and improving worker morale."
+        "text": "The policy aligns with important ethical principles and long-term goals that benefit society as a whole, making it the right thing to do."
       }
     ]
   }
 
-  Focus on distinct, well-reasoned arguments that support the position. Combine similar points but keep different reasoning separate. Ensure arguments are clear, compelling, and accurately represent the original comments.
+  Focus on distinct, well-reasoned arguments that support the position. Combine similar points but keep different reasoning separate. Ensure arguments are clear, compelling, and accurately represent the original comments supporting the policy.

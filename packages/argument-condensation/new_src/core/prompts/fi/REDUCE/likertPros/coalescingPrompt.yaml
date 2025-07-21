@@ -1,18 +1,18 @@
-promptId: "reduce_likertPros_coalescing_v1"
+promptId: 'reduce_likertPros_coalescing_v1'
 promptText: |
   Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") tukemisessa.
   Tehtäväsi on muodostaa saamasi argumentit yhdeksi argumenttilistaksi, jonka avulla poliittisten vaalikoneiden käyttäjät voivat ymmärtää poliittista diskurssia väitteen tueksi. 
-  
+
   Argumenttien jaottelun pitää olla sulavaa, että niiden lukeminen on helppoa. 
 
   Mikäli argumentteja ei ole, palauta tyhjä lista ja tyhjä reasoning-kenttä.
 
   ## Väite: 
   {{topic}}
-  
+
   ## Argumentit, joita on annettu:
   {{argumentLists}}
-  
+
   Kirjoita lopullinen lista erillisistä argumenteista. Niiden pitää olla helposti ymmärrettäviä ja luettavissa. 
   Anna esimerkkejä vaikutuksista ja tavoista, joilla argumentit tuovat tähän väitteeseen tukea. Anna esimerkkejä, joita argumenteissa mainitaan.
   Vältä saman argumentin toistamista eri muodoissa. Pyri olemaan selkeä ilman abstraktia kieltä.
@@ -122,7 +122,7 @@ promptText: |
   }
 
   Palauta vastauksesi seuraavassa JSON-muodossa. TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
-  
+
   Käytä seuraavaa JSON-rakennetta:
   {
     "arguments": [

@@ -1,11 +1,11 @@
-promptId: "map_likertPros_condensation_v1"
+promptId: 'map_likertPros_condensation_v1'
 params:
   topic: string
   comments: string
 
 promptText: |
   Analysoit erää kommentteja äänestysneuvontasovelluksesta (VAA) poimiaksesi tukiargumentteja politiikkakannan ("{{topic}}") puolesta.
-  
+
   Poimi ja ryhmittele syyt tai argumentit, joita käytetään tämän politiikan tukemisessa. Keskity merkitykseen — ryhmittele saman idean erilaiset ilmaisutavat. 
   Hyvä argumentti sisältää lyhyen kuvauksen eri variaatioista ja esimerkkejä siitä kommenteissa. Viittaa kommenttien antamiin esimerkkeihin epäsuorasti ilman nimeä tai ID:tä. 
 
@@ -13,7 +13,7 @@ promptText: |
 
   ## Väite: 
   {{topic}}
-  
+
   ## Analysoitavat kommentit:
   {{comments}}
 
@@ -137,17 +137,17 @@ promptText: |
 
 promptText_v0: |
   Analysoit erää kommentteja äänestysneuvontasovelluksesta (VAA) poimiaksesi tukiargumentteja politiikkakannan puolesta.
-  
+
   Poimi ja ryhmittele syyt tai argumentit, joita käytetään tämän politiikan tukemisessa. Keskity merkitykseen — ryhmittele saman idean erilaiset ilmaisutavat. 
   Hyvä argumentti sisältää lyhyen kuvauksen eri variaatioista ja esimerkkejä siitä kommenteissa. Viittaa kommenttien antamiin esimerkkeihin epäsuorasti ilman nimeä tai ID:tä. 
 
   Mikäli et löydä argumentteja väitteen tueksi, palauta tyhjä lista. 
 
   Väite: {{topic}}
-  
+
   Analysoitavat kommentit:
   {{comments}}
-  
+
   Palauta vastauksesi JSON-objektina seuraavalla rakenteella:
   {
     "arguments": [

@@ -1,20 +1,20 @@
-promptId: "refine_likertPros_refinement_v1"
+promptId: 'refine_likertPros_refinement_v1'
 params:
   topic: string
   comments: string
   existingArguments: string
 promptText: |
   You are refining arguments extracted from Voting Advice Application (VAA) comments to support a policy position.
-  
+
   ## Statement: 
   {{topic}}
-  
+
   ## Current arguments:
   {{existingArguments}}
-  
+
   ## New comments to analyze:
   {{comments}}
-  
+
   Your task is to refine the current argument list by incorporating insights from the new comments. You may:
   1. Add new arguments if you find distinctly different supporting reasons
   2. Enhance existing arguments with additional examples or perspectives
@@ -39,4 +39,4 @@ promptText: |
       }
     ],
     "reasoning": "Brief explanation of the refinements made"
-  } 
+  }

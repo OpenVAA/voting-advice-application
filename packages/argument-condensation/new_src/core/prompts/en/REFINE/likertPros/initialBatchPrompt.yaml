@@ -1,17 +1,17 @@
-promptId: "refine_likertPros_initial_v1"
+promptId: 'refine_likertPros_initial_v1'
 params:
   topic: string
   comments: string
   nOutputArgs?: number
 promptText: |
   You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position.
-  
+
   ## Statement: 
   {{topic}}
-  
+
   ## Comments to analyze:
   {{comments}}
-  
+
   Please extract and cluster the most common reasons or arguments used in support of this stance. Focus on meaning — group different phrasings of the same idea. 
   Introduce each high-level idea with a single argument. A good argument includes a short description of different variations and examples of it in the comments.
 
@@ -34,4 +34,4 @@ promptText: |
       }
     ],
     "reasoning": "Brief explanation of how you extracted these arguments"
-  } 
+  }

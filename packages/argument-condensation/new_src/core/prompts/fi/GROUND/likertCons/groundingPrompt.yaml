@@ -1,7 +1,7 @@
-promptId: "ground_likertCons_grounding_v1"
+promptId: 'ground_likertCons_grounding_v1'
 promptText: |
   Olet maailmanluokan asiantuntija argumentoinnissa ja poliittisen tiedon jakamisessa. Sinulle annetaan lista poliittisia argumentteja ja lista poliittisia kommentteja.
-  
+
   Tehtäväsi on käydä läpi argumentit ja kommentit varmistaaksesi, että eri äänet aiheen VASTAAN ovat edustettuina argumenteissa. Lopullinen argumenttilista annetaan vaalikoneiden käyttäjille avuksi ymmärtämään poliittista väitettä vastustavista argumenteista. On tärkeää, että kommenttien argumentaatio on hyvin edustettuna argumenttilistassa.
 
   Tee muutoksia vain, jos löydät VASTUSTAVIA kommentteja, jotka eivät selvästi ole edustettuina argumenteissa. Olemme kiinnostuneita VAIN vastustavista argumenteista. Voit myös pyrkiä lisäämään argumenttilistan konkretiaa esimerkeillä, jotka käsittelevät argumenttilistan aiheita syvemmällä tai laajemmalla tasolla kuin mitä nykyiset argumentit.
@@ -16,10 +16,10 @@ promptText: |
   Jos kommenteissa ei löydy uusia argumentteja tai esimerkkejä, joiden avulla voisit parantaa argumenttilistaa, palauta saamasi argumenttilista ilman muutoksia.
 
   Aihe: {{topic}}
-  
+
   Argumentit:
   {{arguments}}
-  
+
   Kommentit:
   {{comments}}
 
@@ -112,7 +112,7 @@ promptText: |
   }
 
   ### TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
-  
+
   Palauta vastauksesi seuraavassa JSON-muodossa:
   {
     "arguments": [

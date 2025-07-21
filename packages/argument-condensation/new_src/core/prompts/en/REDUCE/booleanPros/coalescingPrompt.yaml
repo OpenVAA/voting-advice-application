@@ -1,4 +1,4 @@
-promptId: 'reduce_likertPros_coalescing_v1'
+promptId: 'reduce_booleanPros_coalescing_v1'
 params:
   denominator: 5
 promptText: |
@@ -26,21 +26,21 @@ promptText: |
   ## Example response format:
 
   {
-    "reasoning": "Brief explanation of how you consolidated the argument lists. I merged similar arguments about economic benefits and combined overlapping points about worker welfare while preserving the strongest reasoning from each list.",
+    "reasoning": "Brief explanation of how you consolidated the argument lists. I merged similar arguments about social benefits and combined overlapping points about evidence-based effectiveness while preserving the strongest supporting reasoning from each list.",
     "arguments": [
       {
-        "id": "consolidated_arg_1",
-        "text": "This policy would significantly reduce poverty and income inequality by ensuring all workers earn wages sufficient to support their families and meet basic living costs."
+        "id": "consolidated_pro_arg_1",
+        "text": "This policy would generate significant social and economic benefits by addressing systemic inequalities and creating opportunities for sustainable growth and improved quality of life."
       },
       {
-        "id": "consolidated_arg_2", 
-        "text": "Economic growth would be stimulated through increased consumer spending power, as workers with higher wages would have more money to spend on goods and services, benefiting businesses across all sectors."
+        "id": "consolidated_pro_arg_2", 
+        "text": "Evidence from successful implementations demonstrates measurable improvements in key outcomes, proving the policy's effectiveness and validating the investment in positive change."
       },
       {
-        "id": "consolidated_arg_3",
-        "text": "Workplace conditions and productivity would improve as fair compensation reduces employee turnover, increases job satisfaction, and motivates workers to perform better."
+        "id": "consolidated_pro_arg_3",
+        "text": "The policy aligns with fundamental ethical principles and long-term societal goals, representing responsible governance that prioritizes collective well-being and future generations."
       }
     ]
   }
 
-  Focus on creating 3-5 distinct, powerful arguments that capture the essence of all input lists. Ensure each argument is compelling, clearly written, and represents the strongest points from the source material.
+  Focus on creating 3-5 distinct, powerful arguments that capture the strongest supporting points from all input lists. Ensure each argument is compelling, clearly written, and represents the most persuasive benefits of the policy.
