@@ -4,7 +4,6 @@ import {
   Argument,
   CondensationOperation,
   CondensationOperations,
-  CondensationPlan,
   CondensationRunInput,
   CondensationRunResult,
   CondensationStepResult,
@@ -34,7 +33,7 @@ export class Condenser {
   private startTime: Date;
 
   constructor(private input: CondensationRunInput) {
-    this.runId = input.runId;
+    this.runId = input.options.runId || 'default-run-id-from-condenser'; // TODO: hash?
     this.treeBuilder = new OperationTreeBuilder(this.runId);
     this.latencyTracker = new LatencyTracker();
     this.startTime = new Date();
@@ -56,18 +55,18 @@ export class Condenser {
     this.latencyTracker.start('total_run');
 
     // Get condensation plan from input config
-    const plan: CondensationPlan = this.input.config;
+    const processingSteps: Array<ProcessingStep> = this.input.options.processingSteps || [];
 
     // Validate the plan before execution
-    validatePlan(plan, this.input.comments.length);
+    validatePlan(processingSteps, this.input.comments.length);
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
     let previousNodeIds: Array<string> = []; // Start with empty array - first step will create root nodes
     let currentStepIndex = 0; // Track actual step index accounting for multi-level operations (MAP + ITERATE_MAP)
 
-    for (let i = 0; i < plan.steps.length; i++) {
-      const step = plan.steps[i];
+    for (let i = 0; i < processingSteps.length; i++) {
+      const step = processingSteps[i];
       const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
 
       // Update current data for next step - this is the key data flow mechanism
@@ -113,6 +112,7 @@ export class Condenser {
     // Return the final result with all metadata
     return {
       runId: this.runId,
+      condensationType: this.input.options.outputType,
       arguments: currentData as Array<Argument>,
       metrics: {
         duration: totalDuration / 1000, // Convert to seconds
@@ -123,7 +123,7 @@ export class Condenser {
       success: true,
       metadata: {
         llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].model : 'unknown',
-        language: plan.language,
+        language: this.input.options.language,
         startTime: this.startTime,
         endTime: endTime
       }
@@ -215,7 +215,7 @@ export class Condenser {
 
       // Prepare template variables - note how existing arguments are included for refinement
       const templateVariables: Record<string, unknown> = {
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         comments: JSON.stringify(batch, null, 2)
       };
 
@@ -234,7 +234,7 @@ export class Condenser {
       this.latencyTracker.start(callOperationId);
 
       // Make LLM call and process response
-      const llmResponse = await this.input.llmProvider.generate({
+      const llmResponse = await this.input.options.llmProvider.generate({
         messages,
         temperature: 0.7
       });
@@ -302,7 +302,7 @@ export class Condenser {
     // Estimate token usage by creating sample prompts
     const llmInputsForTokenCheck = batches.map((batch) => {
       const templateVariables: Record<string, unknown> = {
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         comments: batch.map((c) => c.text).join('\n')
       };
       const promptText = setPromptVars(params.condensationPrompt, templateVariables);
@@ -344,7 +344,7 @@ export class Condenser {
       logIdentifier: 'BATCH',
       promptId: 'MapMockId',
       prepareTemplateVars: (batch) => ({
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n')
       })
     });
@@ -361,7 +361,7 @@ export class Condenser {
       logIdentifier: 'ITERATION BATCH',
       promptId: 'MapIterationPromptId',
       prepareTemplateVars: (item) => ({
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         arguments: JSON.stringify(item.argList, null, 2), // Previous arguments
         comments: item.batch.map((c) => c.text).join('\n') // Original comments
       }),
@@ -421,7 +421,7 @@ export class Condenser {
       logIdentifier: 'CHUNK',
       promptId: 'ReduceMockId',
       prepareTemplateVars: (chunk) => ({
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         argumentLists: JSON.stringify(chunk, null, 2) // Multiple argument lists to merge
       })
     });
@@ -476,7 +476,7 @@ export class Condenser {
       logIdentifier: 'LIST',
       promptId: 'GroundMockId',
       prepareTemplateVars: (argumentList, i) => ({
-        topic: this.input.question.topic,
+        topic: this.input.question.name,
         arguments: JSON.stringify(argumentList, null, 2), // Arguments to ground
         comments: JSON.stringify(commentBatches[i], null, 2) // Comments for evidence
       }),
@@ -594,7 +594,7 @@ export class Condenser {
     });
 
     // PHASE 3: EXECUTE PARALLEL LLM CALLS
-    const llmResponses = await this.input.llmProvider.generateMultipleParallel({ inputs: llmInputs });
+    const llmResponses = await this.input.options.llmProvider.generateMultipleParallel({ inputs: llmInputs });
 
     // PHASE 4: PROCESS RESPONSES (FIRST ATTEMPT)
     const finalArguments: Array<Array<Argument>> = new Array(items.length);
@@ -639,7 +639,7 @@ export class Condenser {
         operation,
         2, // max retries
         ResponseWithArgumentsContract,
-        this.input.llmProvider
+        this.input.options.llmProvider
       );
 
       const retriedSuccessIndices = new Set<number>();
