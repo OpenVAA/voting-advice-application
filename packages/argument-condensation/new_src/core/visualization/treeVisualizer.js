@@ -66,21 +66,13 @@ class TreeVisualizer {
      * Load tree data and render
      */
     loadTree(treeData) {
-        console.log('=== LOAD TREE START ===');
         this.currentTree = treeData;
         this.treeData = treeData; // Keep both for compatibility
         
         // Hide empty state
         this.hideEmptyState();
-        
-        // Check container contents
-        console.log('Container contents before render:', this.container.node().innerHTML.substring(0, 200));
-        
+
         this.renderTree();
-        
-        // Check container contents after render
-        console.log('Container contents after render:', this.container.node().innerHTML.substring(0, 500));
-        console.log('=== LOAD TREE END ===');
     }
 
     /**
@@ -133,18 +125,12 @@ class TreeVisualizer {
         const width = containerNode.clientWidth || 800;
         const height = containerNode.clientHeight || 600;
 
-        console.log('Setting up SVG with dimensions:', { width, height });
-        console.log('Container node:', containerNode);
-        console.log('Container computed style:', window.getComputedStyle(containerNode));
-
         this.svg = this.container
             .append('svg')
             .attr('class', 'tree-svg')
             .attr('width', width)
             .attr('height', height)
             .call(this.zoom);
-
-        console.log('SVG created:', this.svg.node());
 
         this.g = this.svg.append('g');
 
@@ -161,8 +147,6 @@ class TreeVisualizer {
             .append('path')
             .attr('d', 'M0,-5L10,0L0,5')
             .attr('fill', '#cbd5e1');
-            
-        console.log('SVG setup complete, dimensions:', { width, height });
     }
 
     /**
@@ -170,17 +154,6 @@ class TreeVisualizer {
      * This handles DAG structures where nodes can have multiple parents
      */
     convertToHierarchy(operationTree) {
-        const nodes = operationTree.nodes;
-        const roots = operationTree.roots;
-
-        // First, create a flat list of all unique nodes
-        const allNodes = Object.keys(nodes).map(nodeId => ({
-            id: nodeId,
-            data: nodes[nodeId]
-        }));
-
-        // For DAG visualization, we need to use a different approach
-        // Instead of true hierarchy, we'll create a network layout
         return this.convertToNetwork(operationTree);
     }
 
@@ -228,16 +201,10 @@ class TreeVisualizer {
      * Render tree using network layout for DAG visualization
      */
     renderTree() {
-        console.log('=== renderTree called ===');
-        console.trace('renderTree call stack');
-        
         if (!this.currentTree) {
             console.warn('No tree data to render');
             return;
         }
-
-        console.log('Rendering tree:', this.currentTree.runId);
-        
         // Clear and setup SVG
         this.clearVisualization();
         this.setupSVG();
@@ -248,7 +215,6 @@ class TreeVisualizer {
         }
 
         const networkData = this.convertToNetwork(this.currentTree);
-        console.log('Network data:', networkData);
         
         if (networkData.nodes.length === 0) {
             console.warn('No nodes to render');
@@ -262,8 +228,6 @@ class TreeVisualizer {
         
         // Fit to screen after a short delay to ensure rendering is complete
         setTimeout(() => this.fitToScreen(), 100);
-        
-        console.log('=== renderTree complete ===');
     }
 
     /**
@@ -271,8 +235,6 @@ class TreeVisualizer {
      */
     renderDAG(networkData) {
         const { nodes, links } = networkData;
-        
-        console.log('Rendering DAG with:', nodes.length, 'nodes and', links.length, 'links');
         
         // Group nodes by level (step index)
         const nodesByLevel = {};
@@ -284,11 +246,8 @@ class TreeVisualizer {
             nodesByLevel[level].push(node);
         });
 
-        console.log('Nodes by level:', nodesByLevel);
-
         // Get SVG dimensions for proper centering
         const svgWidth = parseFloat(this.svg.attr('width')) || 800;
-        const svgHeight = parseFloat(this.svg.attr('height')) || 600;
         
         // Calculate positions with proper centering
         const levelHeight = 150;
@@ -296,7 +255,6 @@ class TreeVisualizer {
         const levels = Object.keys(nodesByLevel).sort((a, b) => parseInt(a) - parseInt(b));
         
         // Add margins so nodes aren't right at the edge
-        const marginX = 100;
         const marginY = 80;
         
         levels.forEach((level, levelIndex) => {
@@ -331,20 +289,11 @@ class TreeVisualizer {
             };
         }).filter(Boolean);
 
-        console.log('Final node positions:', nodeData.map(n => ({ id: n.id, x: n.x, y: n.y })));
-        console.log('Final link data:', linkData);
-        console.log('SVG dimensions for positioning reference:', {
-            width: svgWidth,
-            height: svgHeight
-        });
-
         // Render links first (so they appear behind nodes)
         this.renderLinks(linkData);
         
         // Render nodes
         this.renderNodes(nodeData);
-        
-        console.log('DAG rendering complete');
     }
 
     /**
@@ -368,10 +317,6 @@ class TreeVisualizer {
      * Render tree nodes
      */
     renderNodes(nodes) {
-        console.log('Rendering nodes:', nodes.length);
-        console.log('Node data:', nodes);
-        console.log('SVG group exists:', !!this.g);
-        
         const nodeGroups = this.g.selectAll('.node')
             .data(nodes)
             .enter()
@@ -379,22 +324,18 @@ class TreeVisualizer {
             .attr('class', 'node')
             .attr('transform', d => {
                 const transform = `translate(${d.x},${d.y})`;
-                console.log(`Node ${d.id} transform:`, transform, 'position:', { x: d.x, y: d.y });
                 return transform;
             })
             .on('click', (event, d) => this.selectNode(d))
             .on('mouseover', (event, d) => this.showTooltip(event, d))
             .on('mouseout', () => this.hideTooltip());
-
-        console.log('Node groups created:', nodeGroups.size());
-
         // Add circles
         const circles = nodeGroups.append('circle')
             .attr('class', d => `node-circle ${d.data.data.operation.toLowerCase()}`)
             .attr('r', this.nodeRadius)
             .style('opacity', d => d.data.data.virtual ? 0.3 : 1);
             
-        console.log('Circles created:', circles.size());
+        console.info('Circles created:', circles.size());
 
         // Add operation icons
         const icons = nodeGroups.append('text')
@@ -402,7 +343,7 @@ class TreeVisualizer {
             .attr('dy', '0.35em')
             .text(d => this.getOperationIcon(d.data.data.operation));
             
-        console.log('Icons created:', icons.size());
+        console.info('Icons created:', icons.size());
 
         // Add operation labels
         const labels = nodeGroups.append('text')
@@ -415,15 +356,15 @@ class TreeVisualizer {
                 return `${op}${batch}`;
             });
             
-        console.log('Labels created:', labels.size());
+        console.info('Labels created:', labels.size());
 
         // Debug: Let's inspect the actual DOM elements
-        console.log('=== DOM DEBUGGING ===');
+        console.info('=== DOM DEBUGGING ===');
         const allNodes = this.g.selectAll('.node').nodes();
-        console.log('Actual DOM node elements:', allNodes);
+        console.info('Actual DOM node elements:', allNodes);
         
         allNodes.forEach((nodeElement, index) => {
-            console.log(`Node ${index}:`, {
+            console.info(`Node ${index}:`, {
                 element: nodeElement,
                 transform: nodeElement.getAttribute('transform'),
                 computedStyle: window.getComputedStyle(nodeElement),
@@ -435,7 +376,7 @@ class TreeVisualizer {
             const icon = nodeElement.querySelector('.node-icon');
             const text = nodeElement.querySelector('.node-text');
             
-            console.log(`Node ${index} children:`, {
+            console.info(`Node ${index} children:`, {
                 circle: circle ? {
                     element: circle,
                     r: circle.getAttribute('r'),
@@ -457,12 +398,6 @@ class TreeVisualizer {
                 } : 'No text'
             });
         });
-        
-        // Debug SVG container
-        console.log('SVG element:', this.svg.node());
-        console.log('SVG computed style:', window.getComputedStyle(this.svg.node()));
-        console.log('SVG innerHTML preview:', this.svg.node().innerHTML.substring(0, 500));
-        console.log('=== END DOM DEBUGGING ===');
 
         // Add batch info if details are enabled
         if (this.showDetails) {
@@ -487,8 +422,8 @@ class TreeVisualizer {
             .style('fill', d => d.data.data.metadata?.success ? '#10b981' : '#ef4444')
             .style('opacity', d => d.data.data.virtual ? 0 : 1);
             
-        console.log('Status indicators created:', indicators.size());
-        console.log('Node rendering complete');
+        console.info('Status indicators created:', indicators.size());
+        console.info('Node rendering complete');
     }
 
     /**

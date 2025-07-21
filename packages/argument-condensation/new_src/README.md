@@ -2,7 +2,7 @@
 
 ## Environment
 
-Set `LLM_OPENAI_API_KEY` in root `.env` file. 
+Set `LLM_OPENAI_API_KEY` in root `.env` file.
 
 ## Usage
 
@@ -13,6 +13,7 @@ yarn tsx runCondensation.ts
 ```
 
 Configure in `runCondensation.ts` using consts:
+
 - `condensationType`: Set to `CONDENSATION_TYPE.LIKERT.PROS` or `CONDENSATION_TYPE.LIKERT.CONS`
 - `INPUT_FILE_PATH`: Path to comments file
 - `nCommentsPerLikert`: Max comments per Likert value (1-5)
@@ -25,6 +26,6 @@ Go to new_src/core/visualization and run:
 python3 -m http.server 8080
 ```
 
-UI will prompt you to download an operation tree. You can find one in new_src/data/operationTrees. This will show a visualization of the condensation process, including inputs and outputs of each prompt. 
+UI will prompt you to download an operation tree. You can find one in new_src/data/operationTrees. This will show a visualization of the condensation process, including inputs and outputs of each prompt.
 
-Running a condensation process will create a new operation tree. 
+Running a condensation process will create a new operation tree.

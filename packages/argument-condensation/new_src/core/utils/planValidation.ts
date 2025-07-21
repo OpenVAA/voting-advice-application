@@ -1,6 +1,5 @@
 import {
   CondensationOperations,
-  CondensationPlan,
   GroundingOperationParams,
   MapOperationParams,
   ProcessingStep,
@@ -14,33 +13,33 @@ import {
  * Validate an entire condensation plan.
  * Throws if something is wrong – no return value on success.
  */
-export function validatePlan(plan: CondensationPlan, commentCount: number): void {
-  if (plan.steps.length === 0) {
+export function validatePlan(steps: Array<ProcessingStep>, commentCount: number): void {
+  if (steps.length === 0) {
     throw new Error('Condensation plan must have at least one step');
   }
 
   // 1. rule-based checks on individual steps & flow
-  for (let i = 0; i < plan.steps.length; i++) {
-    if (plan.steps[i].operation === CondensationOperations.REFINE && i !== 0) {
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].operation === CondensationOperations.REFINE && i !== 0) {
       throw new Error(`REFINE operation can only be the first step, found at step ${i}`);
     }
 
-    validateStepParameters(plan.steps[i]);
+    validateStepParameters(steps[i]);
 
-    const nextStep = plan.steps[i + 1];
+    const nextStep = steps[i + 1];
     if (nextStep) {
-      validateStepFlow(plan.steps[i], nextStep);
+      validateStepFlow(steps[i], nextStep);
     }
   }
 
   // MAP cannot be the last op
-  const finalStep = plan.steps.at(-1)!;
+  const finalStep = steps.at(-1)!;
   if (finalStep.operation === CondensationOperations.MAP) {
     throw new Error('MAP operation cannot be the final step – it produces argument lists, not arguments');
   }
 
   // 2. mathematical output-shape check
-  validatePipelineOutputs(plan, commentCount);
+  validatePipelineOutputs(steps, commentCount);
 }
 
 /*********** Internal helpers ************************************************/
@@ -88,12 +87,12 @@ function validateStepFlow(current: ProcessingStep, next: ProcessingStep): void {
   // (other constraints are already implicitly satisfied or allowed)
 }
 
-function validatePipelineOutputs(plan: CondensationPlan, commentCount: number): void {
+function validatePipelineOutputs(steps: Array<ProcessingStep>, commentCount: number): void {
   let structure: 'comments' | 'list' | 'listOfLists' = 'comments';
   let batchCount = 1;
 
-  for (let idx = 0; idx < plan.steps.length; idx++) {
-    const step = plan.steps[idx];
+  for (let idx = 0; idx < steps.length; idx++) {
+    const step = steps[idx];
 
     switch (step.operation) {
       case CondensationOperations.REFINE: {

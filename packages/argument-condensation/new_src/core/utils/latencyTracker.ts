@@ -150,7 +150,10 @@ export const globalLatencyTracker = new LatencyTracker();
  * @param fn - Function to measure
  * @returns Tuple of [result, duration in milliseconds]
  */
-export async function measureLatency<TResult>(operationId: string, fn: () => Promise<TResult>): Promise<[TResult, number]> {
+export async function measureLatency<TResult>(
+  operationId: string,
+  fn: () => Promise<TResult>
+): Promise<[TResult, number]> {
   return globalLatencyTracker.measure(operationId, fn);
 }
 

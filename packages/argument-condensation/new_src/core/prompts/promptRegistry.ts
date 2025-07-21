@@ -1,7 +1,13 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { CONDENSATION_TYPE, CondensationOperation, CondensationOperations, CondensationPrompt } from '../types';
+import {
+  CONDENSATION_TYPE,
+  CondensationOperation,
+  CondensationOperations,
+  CondensationOutputType,
+  CondensationPrompt
+} from '../types';
 
 // TODO: (low priority): load only the specific prompt we need
 // TODO: (low priority): code can be cleaned up to use
@@ -73,12 +79,14 @@ export class PromptRegistry {
         const outputTypeStat = await fs.stat(outputTypeDir).catch(() => null);
         if (!outputTypeStat || !outputTypeStat.isDirectory()) continue;
 
-        // Validate that this is a valid output type
-        if (
-          !Object.values(CONDENSATION_TYPE.LIKERT).includes(
-            outputType as typeof CONDENSATION_TYPE.LIKERT.PROS | typeof CONDENSATION_TYPE.LIKERT.CONS
-          )
-        ) {
+        // Validate that this is a valid output type ()
+        const allCondensationTypes = [
+          ...Object.values(CONDENSATION_TYPE.LIKERT),
+          ...Object.values(CONDENSATION_TYPE.BOOLEAN),
+          ...Object.values(CONDENSATION_TYPE.CATEGORICAL)
+        ];
+
+        if (!allCondensationTypes.includes(outputType as CondensationOutputType)) {
           console.warn(`PROMPT REGISTRY: Skipping invalid output type directory: ${outputType}`);
           continue;
         }
