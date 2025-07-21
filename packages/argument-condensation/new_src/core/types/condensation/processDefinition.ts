@@ -1,4 +1,3 @@
-import { CondensationOutputType } from './condensationType';
 import { CondensationOperation } from './operation';
 import {
   GroundingOperationParams,
@@ -18,17 +17,4 @@ import {
 export interface ProcessingStep {
   operation: CondensationOperation;
   params: RefineOperationParams | MapOperationParams | ReduceOperationParams | GroundingOperationParams;
-}
-
-/**
- * A customized plan for the condensation process. Consists of a sequence of pre-defined operations.
- *
- * @param steps - The steps (operations) used to condense the arguments.
- * @param language - The language of the arguments.
- * @param outputType - The type of condensation this plan is designed to produce (pros or cons)
- */
-export interface CondensationPlan {
-  outputType: CondensationOutputType;
-  steps: Array<ProcessingStep>;
-  language: string;
 }

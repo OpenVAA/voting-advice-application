@@ -1,0 +1,1 @@
+export { condenseQuestion } from './condenseQuestion';

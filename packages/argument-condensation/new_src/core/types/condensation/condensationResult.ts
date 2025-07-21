@@ -1,3 +1,4 @@
+import { CondensationOutputType } from './condensationType';
 import { Argument } from '../base/argument';
 
 /**
@@ -24,6 +25,7 @@ export interface CondensationRunMetrics {
  * Contains arguments, metadata, and evaluation metrics.
  *
  * @property runId - Unique identifier for this run
+ * @property condensationType - Type of condensation run
  * @property arguments - Extracted arguments
  * @property metrics - Performance metrics
  * @property success - Whether the run was successful
@@ -31,6 +33,7 @@ export interface CondensationRunMetrics {
  */
 export interface CondensationRunResult {
   runId: string;
+  condensationType: CondensationOutputType;
   arguments: Array<Argument>;
   metrics: CondensationRunMetrics;
   success: boolean;

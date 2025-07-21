@@ -4,7 +4,7 @@ export type { Argument } from './base/argument';
 // Condensation primitives (operations, their params & processing step interface)
 export type { CondensationOperation } from './condensation/operation';
 export { CondensationOperations } from './condensation/operation';
-export type { CondensationPlan, ProcessingStep } from './condensation/processDefinition';
+export type { ProcessingStep } from './condensation/processDefinition';
 export type {
   GroundingOperationParams,
   MapOperationParams,
@@ -14,6 +14,7 @@ export type {
 export type { CondensationStepResult } from './condensation/processStepResult';
 
 // Condensation inputs & outputs
+export type { SupportedQuestion } from './base/supportedQuestion';
 export type { CondensationRunInput, VAAComment } from './condensation/condensationInput';
 export type { CondensationRunMetrics, CondensationRunResult } from './condensation/condensationResult';
 export { CONDENSATION_TYPE, type CondensationOutputType } from './condensation/condensationType';

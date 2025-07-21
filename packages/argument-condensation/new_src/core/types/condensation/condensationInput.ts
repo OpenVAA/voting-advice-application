@@ -1,7 +1,9 @@
 import { LLMProvider } from '@openvaa/llm';
-import { CondensationPlan } from './processDefinition';
+import { CondensationOutputType } from './condensationType';
+import { ProcessingStep } from './processDefinition';
+import { SupportedQuestion } from '../base/supportedQuestion';
 /**
- * Represents a single non-empty comment given by a candidate in the VAA. 
+ * Represents a single non-empty comment given by a candidate in the VAA.
  * @param id - Unique identifier
  * @param candidateID - The candidate who wrote the comment
  * @param candidateAnswer - Can be Likert number, categorical number, or categorical string
@@ -15,25 +17,28 @@ export interface VAAComment {
 }
 
 /**
+ * Options for question condensation
+ */
+export interface CondensationOptions {
+  llmProvider: LLMProvider;
+  language: string;
+  outputType: CondensationOutputType;
+  processingSteps?: Array<ProcessingStep>;
+  model?: string;
+  fallbackModel?: string; // For parallelization (alternates between models to avoid rate limiting)
+  runId?: string;
+  electionId?: string;
+  maxCommentsPerGroup?: number;
+}
+
+/**
  * Input parameters for the condensation process.
- * @param runId - Unique identifier for this run
- * @param electionId - Unique identifier for the election
  * @param question - The topic/question these comments relate to
  * @param comments - Array of comments to process
- * @param config - Strategy-specific configuration
- * @param llmProvider - LLM provider to use for the condensation process
- * @param model - The model to use for the condensation process
+ * @param options - Options for the condensation process
  */
 export interface CondensationRunInput {
-  runId: string;
-  electionId: string;
-  question: {
-    id: string;
-    topic: string;
-    answerType: string; // TODO: make this more robust
-  };
-  model: string;
-  llmProvider: LLMProvider;
+  question: SupportedQuestion;
   comments: Array<VAAComment>;
-  config: CondensationPlan;
-} 
+  options: CondensationOptions;
+}
