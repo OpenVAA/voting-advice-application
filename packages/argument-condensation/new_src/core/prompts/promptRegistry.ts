@@ -4,7 +4,6 @@ import * as path from 'path';
 import {
   CONDENSATION_TYPE,
   CondensationOperation,
-  CondensationOperations,
   CondensationOutputType,
   CondensationPrompt
 } from '../types';
@@ -56,22 +55,12 @@ export class PromptRegistry {
    * Load all prompts from the registry.
    */
   async loadPrompts(language: string): Promise<void> {
-    console.info('🔍 Loading prompts from registry...');
-    console.info('Prompts directory: ', `${this.promptsDir}/${language}`);
     const operations = await fs.readdir(`${this.promptsDir}/${language}`);
-    console.info('Found operations: ', operations);
 
     for (const operation of operations) {
       const operationDir = path.join(`${this.promptsDir}/${language}`, operation);
-      console.info(`🔍 Loading operations from: ${operationDir}`);
       const operationStat = await fs.stat(operationDir).catch(() => null);
       if (!operationStat || !operationStat.isDirectory()) continue;
-
-      // Validate that this is a valid operation
-      if (!Object.values(CondensationOperations).includes(operation as CondensationOperation)) {
-        console.warn(`PROMPT REGISTRY: Skipping invalid operation directory: ${operation}`);
-        continue;
-      }
 
       const outputTypes = await fs.readdir(operationDir);
       for (const outputType of outputTypes) {
@@ -118,8 +107,6 @@ export class PromptRegistry {
         }
       }
     }
-
-    console.info(`✅ Loaded ${this.registry.size} prompts from registry`);
   }
 
   /**

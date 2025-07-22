@@ -96,19 +96,6 @@ export class Condenser {
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
     await this.treeBuilder.saveTree(path.join(__dirname, '../data/operationTrees', `${this.runId}.json`));
 
-    // Print tree summary for debugging
-    console.info('\n=== OPERATION TREE SUMMARY ===');
-    console.info(this.treeBuilder.getTreeSummary());
-    console.info('===============================\n');
-
-    // Print cost and performance summary
-    console.info('\n=== COST & PERFORMANCE SUMMARY ===');
-    console.info(`Total Duration: ${(totalDuration / 1000).toFixed(2)}s`);
-    console.info(`Total LLM Calls: ${this.allPromptCalls.length}`);
-    console.info(`Total Cost: $${this.totalCost.toFixed(4)}`);
-    console.info(`Total Tokens: ${totalTokens.total.toLocaleString()}`);
-    console.info('====================================\n');
-
     // Return the final result with all metadata
     return {
       runId: this.runId,
@@ -348,8 +335,6 @@ export class Condenser {
         comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n')
       })
     });
-
-    console.info('\n🔄 Starting MAP iteration step...');
 
     // PHASE 2: ITERATE_MAP step - refinement using original comments + extracted arguments
     const iterationResult = await this._executeParallelOperation({

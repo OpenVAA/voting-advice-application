@@ -116,8 +116,6 @@ function validatePipelineOutputs(steps: Array<ProcessingStep>, commentCount: num
       case CondensationOperations.GROUND:
         /* structure unchanged */ break;
     }
-
-    console.info(`Step ${idx} (${step.operation}): ${structure} / ${batchCount} batch(es)`);
   }
 
   if (structure !== 'list') {
