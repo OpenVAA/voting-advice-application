@@ -18,17 +18,28 @@ export interface VAAComment {
 
 /**
  * Options for question condensation
+ * @param llmProvider - The LLM provider to use
+ * @param language - The language of the comments
+ * @param outputType - The type of output to generate
+ * @param processingSteps - The steps to process the comments
+ * @param llmModel - The LLM model to use
+ * @param fallbackModel - The fallback LLM model to use for parallelization
+ * @param runId - The ID of the run
+ * @param electionId - The ID of the election
+ * @param maxCommentsPerGroup - The maximum number of comments to use for a single condensation run
+ * @param invertProsAndCons - For ordinal questions invert the pro/con classification
  */
 export interface CondensationOptions {
   llmProvider: LLMProvider;
   language: string;
   outputType: CondensationOutputType;
   processingSteps?: Array<ProcessingStep>;
-  model?: string;
+  llmModel?: string;
   fallbackModel?: string; // For parallelization (alternates between models to avoid rate limiting)
   runId?: string;
   electionId?: string;
   maxCommentsPerGroup?: number;
+  invertProsAndCons?: boolean; // For ordinal questions, invert the pro/con classification
 }
 
 /**

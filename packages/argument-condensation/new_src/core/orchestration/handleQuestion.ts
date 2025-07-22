@@ -1,3 +1,4 @@
+import { type HasAnswers } from '@openvaa/core';
 import {
   BooleanQuestion,
   QUESTION_TYPE,
@@ -9,37 +10,53 @@ import { Condenser } from '../condenser';
 import { PromptRegistry } from '../prompts/promptRegistry';
 import {
   CONDENSATION_TYPE,
-  CondensationOperations,
   CondensationOutputType,
   CondensationRunInput,
   CondensationRunResult,
-  MapOperationParams,
   MapPrompt,
-  ReduceOperationParams,
+  ProcessingStep,
   ReducePrompt,
   VAAComment
 } from '../types';
+import { CommentGroup } from '../types/api/commentGroup';
 import { SupportedQuestion } from '../types/base/supportedQuestion';
+import { createCondensationSteps } from '../utils/defineCondensationSteps';
+import { getComments } from '../utils/getComments';
+
 /**
- * Orchestrates condensation based on question type.
- * Automatically filters comments and runs appropriate condensations.
+ * Main API: Condense arguments for a single question.
+ *
+ * Takes a question and entities with answers, then runs condensation based on the question type:
+ * - Boolean: Generates pros (true) and cons (false) arguments
+ * - Ordinal: Generates pros (high values) and cons (low values) arguments
+ * - Categorical: Generates pros arguments for each category
  */
 export async function handleQuestion({
   question,
-  comments,
+  entities,
   llmProvider,
-  model = 'gpt-4o-mini',
-  language = 'en',
-  runId = 'question_condensation',
-  maxCommentsPerGroup = 50
+  language,
+  llmModel = 'gpt-4o',
+  runId = 'default_run_id_if_not_provided',
+  maxCommentsPerGroup = 200,
+  invertProsAndCons = false // Only applicable to ordinal questions, rarely needed
+}: {
+  question: SupportedQuestion;
+  entities: Array<HasAnswers>;
+  llmProvider: LLMProvider;
+  language: string;
+  llmModel?: string;
+  runId?: string;
+  maxCommentsPerGroup?: number;
+  invertProsAndCons?: boolean;
 }): Promise<Array<CondensationRunResult>> {
   switch (question.type) {
     case QUESTION_TYPE.Boolean:
       return await handleBooleanQuestion({
         question: question as BooleanQuestion,
-        comments,
+        entities,
         llmProvider,
-        model,
+        llmModel,
         language,
         runId,
         maxCommentsPerGroup
@@ -48,207 +65,189 @@ export async function handleQuestion({
     case QUESTION_TYPE.SingleChoiceOrdinal:
       return await handleOrdinalQuestion({
         question: question as SingleChoiceOrdinalQuestion,
-        comments,
+        entities,
         llmProvider,
-        model,
+        llmModel,
         language,
         runId,
-        maxCommentsPerGroup
+        maxCommentsPerGroup,
+        invertProsAndCons // Ordinal questions may have an inverted scale
       });
 
     case QUESTION_TYPE.SingleChoiceCategorical:
       return await handleCategoricalQuestion({
         question: question as SingleChoiceCategoricalQuestion,
-        comments,
+        entities,
         llmProvider,
-        model,
+        llmModel,
         language,
         runId,
         maxCommentsPerGroup
       });
 
+    // Should never happen if the supportedQuestion type is updated correctly
     default:
       throw new Error(`Unsupported question type: ${(question as unknown as { type: string }).type}`);
   }
 }
 
+/**
+ * Condense arguments for a boolean question.
+ * Generates pros (true) and cons (false) arguments.
+ */
 async function handleBooleanQuestion({
   question,
-  comments,
+  entities,
   llmProvider,
-  model,
+  llmModel,
   language,
   runId,
   maxCommentsPerGroup
 }: {
   question: BooleanQuestion;
-  comments: Array<VAAComment>;
+  entities: Array<HasAnswers>;
   llmProvider: LLMProvider;
-  model: string;
+  llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
 }): Promise<Array<CondensationRunResult>> {
-  // Filter comments for TRUE (pros) and FALSE (cons)
-  const trueComments = comments.filter((c) => c.candidateAnswer === 'true' || c.candidateAnswer === 1);
-  const falseComments = comments.filter((c) => c.candidateAnswer === 'false' || c.candidateAnswer === 0);
+  // Extract comments
+  const commentGroups: Array<CommentGroup> = getComments(question, entities);
 
   const results: Array<CondensationRunResult> = [];
 
-  // Run condensation for TRUE answers (pros)
-  if (trueComments.length > 0) {
-    const selectedTrueComments = trueComments.slice(0, Math.min(maxCommentsPerGroup, trueComments.length));
-    const prosResult = await runSingleCondensation({
-      question,
-      comments: selectedTrueComments,
-      condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
-      llmProvider,
-      model,
-      language,
-      runId,
-      maxCommentsPerGroup
-    });
-
-    results.push(prosResult);
-  }
-
-  // Run condensation for FALSE answers (cons)
-  if (falseComments.length > 0) {
-    const selectedFalseComments = falseComments.slice(0, Math.min(maxCommentsPerGroup, falseComments.length));
-    const consResult = await runSingleCondensation({
-      question,
-      comments: selectedFalseComments,
-      condensationType: CONDENSATION_TYPE.BOOLEAN.CONS,
-      llmProvider,
-      model,
-      language,
-      runId,
-      maxCommentsPerGroup
-    });
-
-    results.push(consResult);
+  // Condense comments into pros and cons using intelligently filtered comments
+  for (const group of commentGroups) {
+    if (group.type === 'pro') {
+      const prosResult = await runSingleCondensation({
+        question,
+        comments: group.comments,
+        condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
+        llmProvider,
+        llmModel,
+        language,
+        runId,
+        maxCommentsPerGroup
+      });
+      results.push(prosResult);
+    } else if (group.type === 'con') {
+      const consResult = await runSingleCondensation({
+        question,
+        comments: group.comments,
+        condensationType: CONDENSATION_TYPE.BOOLEAN.CONS,
+        llmProvider,
+        llmModel,
+        language,
+        runId,
+        maxCommentsPerGroup
+      });
+      results.push(consResult);
+    }
   }
 
   return results;
 }
 
+/**
+ * Condense arguments for an ordinal question.
+ * Generates pros (high values) and cons (low values) arguments.
+ */
 async function handleOrdinalQuestion({
   question,
-  comments,
+  entities,
   llmProvider,
-  model,
+  llmModel,
   language,
   runId,
-  maxCommentsPerGroup
+  maxCommentsPerGroup,
+  invertProsAndCons
 }: {
   question: SingleChoiceOrdinalQuestion;
-  comments: Array<VAAComment>;
+  entities: Array<HasAnswers>;
   llmProvider: LLMProvider;
-  model: string;
+  llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
+  invertProsAndCons: boolean;
 }): Promise<Array<CondensationRunResult>> {
-  // Detect scale from comments
-  const numericAnswers = comments.map((c) => Number(c.candidateAnswer)).filter((n) => !isNaN(n));
-
-  if (numericAnswers.length === 0) {
-    return [];
-  }
+  // Get approapriate comments for this condensation process
+  const commentGroups = getComments(question, entities, { invertProsAndCons });
 
   const results: Array<CondensationRunResult> = [];
 
-  const minValue = Math.min(...numericAnswers);
-  const maxValue = Math.max(...numericAnswers);
-  const midpoint = (minValue + maxValue) / 2;
-
-  // Filter for high values (pros) and low values (cons)
-  const prosComments = comments.filter((c) => {
-    const value = Number(c.candidateAnswer);
-    return !isNaN(value) && value > midpoint;
-  });
-
-  const consComments = comments.filter((c) => {
-    const value = Number(c.candidateAnswer);
-    return !isNaN(value) && value < midpoint;
-  });
-
-  // Run condensation for high values (pros)
-  if (prosComments.length > 0) {
-    const selectedProsComments = prosComments.slice(0, Math.min(maxCommentsPerGroup, prosComments.length));
-    const prosResult = await runSingleCondensation({
-      question,
-      comments: selectedProsComments,
-      condensationType: CONDENSATION_TYPE.LIKERT.PROS,
-      llmProvider,
-      model,
-      language,
-      runId,
-      maxCommentsPerGroup
-    });
-
-    results.push(prosResult);
-  }
-
-  // Run condensation for low values (cons)
-  if (consComments.length > 0) {
-    const selectedConsComments = consComments.slice(0, Math.min(maxCommentsPerGroup, consComments.length));
-    const consResult = await runSingleCondensation({
-      question,
-      comments: selectedConsComments,
-      condensationType: CONDENSATION_TYPE.LIKERT.CONS,
-      llmProvider,
-      model,
-      language,
-      runId,
-      maxCommentsPerGroup
-    });
-
-    results.push(consResult);
+  // Condense comments into pros and cons using intelligently filtered comments
+  for (const group of commentGroups) {
+    if (group.type === 'pro') {
+      const prosResult = await runSingleCondensation({
+        question,
+        comments: group.comments,
+        condensationType: CONDENSATION_TYPE.LIKERT.PROS,
+        llmProvider,
+        llmModel,
+        language,
+        runId,
+        maxCommentsPerGroup
+      });
+      results.push(prosResult);
+    } else if (group.type === 'con') {
+      const consResult = await runSingleCondensation({
+        question,
+        comments: group.comments,
+        condensationType: CONDENSATION_TYPE.LIKERT.CONS,
+        llmProvider,
+        llmModel,
+        language,
+        runId,
+        maxCommentsPerGroup
+      });
+      results.push(consResult);
+    }
   }
 
   return results;
 }
 
+/**
+ * Condense arguments for a categorical question.
+ * Generates pros arguments for each category.
+ */
 async function handleCategoricalQuestion({
   question,
-  comments,
+  entities,
   llmProvider,
-  model,
+  llmModel,
   language,
   runId,
   maxCommentsPerGroup
 }: {
   question: SingleChoiceCategoricalQuestion;
-  comments: Array<VAAComment>;
+  entities: Array<HasAnswers>;
   llmProvider: LLMProvider;
-  model: string;
+  llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
 }): Promise<Array<CondensationRunResult>> {
-  // Get unique category values from comments
-  const uniqueAnswers = [...new Set(comments.map((c) => c.candidateAnswer))];
+  // Extract comments
+  const commentGroups = getComments(question, entities);
 
   const results: Array<CondensationRunResult> = [];
 
-  // Run condensation for each category
-  for (const categoryValue of uniqueAnswers) {
-    const categoryComments = comments.filter((c) => c.candidateAnswer === categoryValue);
-
-    if (categoryComments.length > 0) {
-      const selectedComments = categoryComments.slice(0, Math.min(maxCommentsPerGroup, categoryComments.length));
+  // Condense comments into pros for each category
+  for (const group of commentGroups) {
+    if (group.type === 'categoricalChoice') {
       const categoryResult = await runSingleCondensation({
         question,
-        comments: selectedComments,
+        comments: group.comments,
         condensationType: CONDENSATION_TYPE.CATEGORICAL.PROS,
         llmProvider,
-        model,
+        llmModel,
         language,
         runId,
         maxCommentsPerGroup
       });
-
       results.push(categoryResult);
     }
   }
@@ -261,7 +260,7 @@ async function runSingleCondensation({
   comments,
   condensationType,
   llmProvider,
-  model,
+  llmModel,
   language,
   runId,
   maxCommentsPerGroup
@@ -270,60 +269,43 @@ async function runSingleCondensation({
   comments: Array<VAAComment>;
   condensationType: string;
   llmProvider: LLMProvider;
-  model: string;
+  llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
 }): Promise<CondensationRunResult> {
   // Get prompts from registry
+  // TODO: Make configurable - makes it possible to test different prompts
   const mapPromptId = `map_${condensationType}_condensation_v1`;
   const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
   const iterationPromptId = `map_${condensationType}_feedback_v1`;
 
   const promptRegistry = await PromptRegistry.create(language);
 
+  // TODO: clean up getting prompts from registry
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;
   const reducePrompt = promptRegistry.getPrompt(reducePromptId) as ReducePrompt;
   const iterationPrompt = promptRegistry.getPrompt(iterationPromptId) as MapPrompt;
 
+  // TODO: depends on the plan which prompts are needed
   if (!mapPrompt || !reducePrompt || !iterationPrompt) {
     throw new Error(`Required prompts not found for condensation type: ${condensationType}`);
   }
 
   // Create condensation plan
-  const config = {
-    outputType: condensationType as CondensationOutputType,
-    steps: [
-      {
-        operation: CondensationOperations.MAP,
-        params: {
-          batchSize: mapPrompt.params.batchSize,
-          condensationPrompt: mapPrompt.promptText,
-          iterationPrompt: iterationPrompt.promptText
-        } as MapOperationParams
-      },
-      {
-        operation: CondensationOperations.REDUCE,
-        params: {
-          denominator: reducePrompt.params.denominator,
-          coalescingPrompt: reducePrompt.promptText
-        } as ReduceOperationParams
-      }
-    ],
-    nOutputArgs: 3,
-    language
-  };
+  // TODO: implement actual calculation of batch size and denominator (defaults to Map-Reduce)
+  const steps: Array<ProcessingStep> = await createCondensationSteps(mapPromptId, iterationPromptId, reducePromptId, language);
 
   // Create condensation input
   const input: CondensationRunInput = {
     question,
     comments,
     options: {
-      model,
+      llmModel,
       language,
       runId,
       llmProvider,
-      processingSteps: config.steps,
+      processingSteps: steps,
       outputType: condensationType as CondensationOutputType,
       maxCommentsPerGroup
     }

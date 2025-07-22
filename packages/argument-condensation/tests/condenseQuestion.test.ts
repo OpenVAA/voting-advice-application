@@ -1,6 +1,6 @@
 import { type Answer, DataRoot, QUESTION_TYPE, SingleChoiceOrdinalQuestion } from '@openvaa/data';
 import { describe, expect, it, vi } from 'vitest';
-import { condenseQuestion } from '../new_src/api/condenseQuestion';
+import { handleQuestion } from '../new_src/core/orchestration/handleQuestion';
 import { CONDENSATION_TYPE } from '../new_src/core/types';
 import type { HasAnswers } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
@@ -23,11 +23,11 @@ const mockLLMProvider: LLMProvider = {
     return Promise.resolve(Array(inputs.length).fill(mockResponse));
   }),
   generateMultipleSequential: vi.fn().mockResolvedValue([]),
-  countTokens: vi.fn().mockResolvedValue({ tokens: 100 })
+  countTokens: vi.fn().mockResolvedValue(100)
 };
 
-describe('condenseQuestion', () => {
-  it('should condense arguments for a likert question', async () => {
+describe('handleQuestion', () => {
+  it('should condense arguments for both pros and cons of a likert question', async () => {
     // Create a 5-point likert question
     const question = new SingleChoiceOrdinalQuestion({
       data: {
@@ -36,11 +36,11 @@ describe('condenseQuestion', () => {
         name: 'Test likert question',
         categoryId: 'test-category',
         choices: [
-          { id: '1', label: 'Strongly disagree', normalizableValue: 1 },
-          { id: '2', label: 'Disagree', normalizableValue: 2 },
-          { id: '3', label: 'Neutral', normalizableValue: 3 },
-          { id: '4', label: 'Agree', normalizableValue: 4 },
-          { id: '5', label: 'Strongly agree', normalizableValue: 5 }
+          { id: '1', label: 'Strongly disagree', normalizableValue: 0 },
+          { id: '2', label: 'Disagree', normalizableValue: 0.25 },
+          { id: '3', label: 'Neutral', normalizableValue: 0.5 },
+          { id: '4', label: 'Agree', normalizableValue: 0.75 },
+          { id: '5', label: 'Strongly agree', normalizableValue: 1 }
         ]
       },
       root: new DataRoot()
@@ -67,29 +67,24 @@ describe('condenseQuestion', () => {
     ];
 
     // Run condensation
-    const results = await condenseQuestion(question, entities, {
+    const results = await handleQuestion({
+      question,
+      entities,
       llmProvider: mockLLMProvider,
-      language: 'en',
-      outputType: CONDENSATION_TYPE.LIKERT.PROS
+      language: 'en'
     });
 
     // Verify results
     expect(results).toBeDefined();
-    expect(Array.isArray(results)).toBe(true);
-    expect(results.length).toBeGreaterThan(0);
+    expect(results).toHaveLength(2); // Should have one result for pros, one for cons
 
-    // Each result should be a CondensationRunResult
-    results.forEach((result) => {
-      expect(result.runId).toBeDefined();
-      expect(result.arguments).toBeDefined();
-      expect(result.metrics).toBeDefined();
-      expect(result.success).toBe(true);
-      expect(result.metadata).toBeDefined();
-      expect(result.condensationType).toBeDefined();
-    });
+    // Check that we have one of each type
+    const types = results.map((r) => r.condensationType);
+    expect(types).toContain(CONDENSATION_TYPE.LIKERT.PROS);
+    expect(types).toContain(CONDENSATION_TYPE.LIKERT.CONS);
   });
 
-  it('should throw error when no valid comments found', async () => {
+  it('should return an empty array when no valid comments are found', async () => {
     const question = new SingleChoiceOrdinalQuestion({
       data: {
         id: 'test-question',
@@ -116,12 +111,13 @@ describe('condenseQuestion', () => {
       }
     ];
 
-    await expect(
-      condenseQuestion(question, entities, {
-        llmProvider: mockLLMProvider,
-        language: 'en',
-        outputType: CONDENSATION_TYPE.LIKERT.PROS
-      })
-    ).rejects.toThrow('No valid comments found');
+    const results = await handleQuestion({
+      question,
+      entities,
+      llmProvider: mockLLMProvider,
+      language: 'en'
+    });
+
+    expect(results).toEqual([]);
   });
 });
