@@ -32,10 +32,13 @@ export function validatePlan(steps: Array<ProcessingStep>, commentCount: number)
     }
   }
 
-  // MAP cannot be the last op
+  // Make that if MAP is the last step, there is only one batch
   const finalStep = steps.at(-1)!;
   if (finalStep.operation === CondensationOperations.MAP) {
-    throw new Error('MAP operation cannot be the final step – it produces argument lists, not arguments');
+    const p = finalStep.params as MapOperationParams;
+    if (p.batchSize !== 1) {
+      throw new Error('MAP operation must produce a single batch if it is the final step');
+    }
   }
 
   // 2. mathematical output-shape check
