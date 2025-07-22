@@ -11,9 +11,15 @@ import type { SupportedQuestion } from '../types/base/supportedQuestion';
 import type { VAAComment } from '../types/condensation/condensationInput';
 
 /**
- * Transform repository entities to grouped VAAComments for condensation in a single pass.
- * Groups comments based on their answer values and question type.
- * Uses the question's own normalization logic for validation.
+ * Transforms and groups candidate comments for argument condensation.
+ * This function uses the question's built-in `normalizeValue()` method
+ * to systematically group comments for all question types
+ *
+ * The classification logic is based on the [-0.5, 0.5] coordinate space
+ * returned by `normalizeValue()`:
+ * - Pro-arguments: normalized value > 0
+ * - Con-arguments: normalized value < 0
+ * - Neutral-arguments (ignored): normalized value = 0
  */
 export function getComments(
   question: SupportedQuestion,
@@ -22,113 +28,97 @@ export function getComments(
 ): Array<CommentGroup> {
   const { invertProsAndCons = false } = options;
 
-  // Final group containers
   const prosComments: Array<VAAComment> = [];
   const consComments: Array<VAAComment> = [];
   const commentsByChoice = new Map<Id, Array<VAAComment>>();
 
-  // Single loop through entities
   for (const [i, entity] of entities.entries()) {
-    // Cast question and answer to specific types for normalizeValue typing
-    let answer: Answer<boolean | string>;
-    let normalizedValue: number | undefined;
+    const answer = entity.answers[question.id] as Answer<boolean | string>;
 
-    // Handle different question types differently
-    switch (question.type) {
-      case QUESTION_TYPE.Boolean: {
-        const boolQuestion = question as BooleanQuestion;
-        const boolAnswer = entity.answers[question.id] as Answer<boolean>;
-        if (!boolAnswer?.info?.trim()) continue; // If no info, skip
-        answer = boolAnswer;
-
-        try {
-          const normalized = boolQuestion.normalizeValue(boolAnswer.value);
-          if (isMissingValue(normalized)) continue;
-          normalizedValue = Array.isArray(normalized) ? normalized[0] : normalized;
-        } catch (error) {
-          console.warn(`Skipping invalid answer for entity ${i}, question ${question.id}:`, error);
-          continue;
-        }
-        break;
-      }
-      case QUESTION_TYPE.SingleChoiceOrdinal: {
-        const ordinalQuestion = question as SingleChoiceOrdinalQuestion;
-        const ordinalAnswer = entity.answers[question.id] as Answer<string>;
-        if (!ordinalAnswer?.info?.trim()) continue; // If no info, skip
-        answer = ordinalAnswer;
-
-        try {
-          const normalized = ordinalQuestion.normalizeValue(ordinalAnswer.value);
-          if (isMissingValue(normalized)) continue;
-          normalizedValue = Array.isArray(normalized) ? normalized[0] : normalized;
-        } catch (error) {
-          console.warn(`Skipping invalid answer for entity ${i}, question ${question.id}:`, error);
-          continue;
-        }
-        break;
-      }
-      case QUESTION_TYPE.SingleChoiceCategorical: {
-        const categoricalQuestion = question as SingleChoiceCategoricalQuestion;
-        const categoricalAnswer = entity.answers[question.id] as Answer<string>;
-        if (!categoricalAnswer?.info?.trim()) continue; // If no info, skip
-        answer = categoricalAnswer;
-
-        try {
-          if (isMissingValue(categoricalQuestion.normalizeValue(categoricalAnswer.value))) continue;
-        } catch (error) {
-          console.warn(`Skipping invalid answer for entity ${i}, question ${question.id}:`, error);
-          continue;
-        }
-        break;
-      }
+    if (!answer?.info?.trim()) {
+      continue;
     }
 
-    // Prefer a real ID, fallback to index.
-    const entityId = (entity as { id?: Id }).id ?? `entity_index_${i}`; // TODO: Does it even make sense to use an ID?
-
-    // Create the VAAComment object used in the condensation package
+    const entityId = (entity as { id?: Id }).id ?? `entity_index_${i}`;
     const vaaComment: VAAComment = {
       id: `${entityId}_${question.id}`,
       candidateID: entityId,
       candidateAnswer: String(answer.value ?? ''),
-      text: answer.info as string
+      text: answer.info
     };
 
-    // Add the validated comment to the correct group
-    // TODO: Use limits from options & other kinds of logic for which input comments to use
-    if (question.type === QUESTION_TYPE.Boolean || question.type === QUESTION_TYPE.SingleChoiceOrdinal) {
-      if (normalizedValue === undefined) {
-        console.warn('Missing normalized value for boolean/ordinal comment');
-        continue;
+    switch (question.type) {
+      case QUESTION_TYPE.Boolean:
+      case QUESTION_TYPE.SingleChoiceOrdinal: {
+        let normalizedValue: number | undefined;
+
+        try {
+          // Use the question's built-in normalization, which returns a value in the [-0.5, 0.5] range
+          const normalized =
+            question.type === QUESTION_TYPE.Boolean
+              ? (question as BooleanQuestion).normalizeValue((answer as Answer<boolean>).value)
+              : (question as SingleChoiceOrdinalQuestion).normalizeValue((answer as Answer<string>).value);
+
+          if (isMissingValue(normalized)) {
+            continue;
+          }
+          // Handle the array case for type safety
+          normalizedValue = Array.isArray(normalized) ? normalized[0] : normalized;
+        } catch (error) {
+          console.warn(`Skipping invalid answer for entity ${i}, question ${question.id}:`, error);
+          continue;
+        }
+
+        // Ignore neutral values, which are normalized to 0
+        if (normalizedValue === 0) {
+          continue;
+        }
+
+        // Ditch undefined values
+        if (normalizedValue === undefined) {
+          console.warn(`Could not determine normalized value for entity ${i}, question ${question.id}`);
+          continue;
+        }
+
+        // Invert if needed
+        let isPro = normalizedValue > 0;
+        if (question.type === QUESTION_TYPE.SingleChoiceOrdinal && invertProsAndCons) {
+          isPro = !isPro;
+        }
+
+        // Add to the correct list
+        if (isPro) {
+          prosComments.push(vaaComment);
+        } else {
+          consComments.push(vaaComment);
+        }
+        break;
       }
 
-      if (normalizedValue === 0.5) {
-        continue; // Ignore neutral/midpoint values for ordinal scales
-      }
+      case QUESTION_TYPE.SingleChoiceCategorical: {
+        const categoricalQuestion = question as SingleChoiceCategoricalQuestion;
+        const choiceId = answer.value as Id;
 
-      const isPro = normalizedValue > 0.5;
+        // For categorical questions, function normalizeValue is used only to validate the choice
+        // The actual grouping is done by the choiceId from the answer's value
+        try {
+          if (isMissingValue(categoricalQuestion.normalizeValue(choiceId))) {
+            continue;
+          }
+        } catch (error) {
+          console.warn(`Skipping invalid answer for entity ${i}, question ${question.id}:`, error);
+          continue;
+        }
 
-      // The inversion flag should only apply to ordinal questions with a reversed scale.
-      let classification = isPro;
-      if (question.type === QUESTION_TYPE.SingleChoiceOrdinal && invertProsAndCons) {
-        classification = !isPro;
+        if (!commentsByChoice.has(choiceId)) {
+          commentsByChoice.set(choiceId, []);
+        }
+        commentsByChoice.get(choiceId)!.push(vaaComment);
+        break;
       }
-
-      if (classification) {
-        prosComments.push(vaaComment);
-      } else {
-        consComments.push(vaaComment);
-      }
-    } else if (question.type === QUESTION_TYPE.SingleChoiceCategorical) {
-      const choiceId = answer.value as Id;
-      if (!commentsByChoice.has(choiceId)) {
-        commentsByChoice.set(choiceId, []);
-      }
-      commentsByChoice.get(choiceId)!.push(vaaComment);
     }
   }
 
-  // Assemble the CommentGroup array from the populated comment groups
   const groups: Array<CommentGroup> = [];
   if (prosComments.length > 0) {
     groups.push({ type: 'pro', comments: prosComments });
