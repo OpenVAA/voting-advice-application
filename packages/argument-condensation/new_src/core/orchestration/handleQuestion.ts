@@ -38,7 +38,7 @@ export async function handleQuestion({
   language,
   llmModel = 'gpt-4o',
   runId = 'default_run_id_if_not_provided',
-  maxCommentsPerGroup = 200,
+  maxCommentsPerGroup = 1000,
   invertProsAndCons = false // Only applicable to ordinal questions, rarely needed
 }: {
   question: SupportedQuestion;
@@ -50,11 +50,31 @@ export async function handleQuestion({
   maxCommentsPerGroup?: number;
   invertProsAndCons?: boolean;
 }): Promise<Array<CondensationRunResult>> {
+  const commentGroups = getComments(question, entities, { invertProsAndCons });
+
+  // Check comment group sizes and issue warnings if necessary
+  for (const group of commentGroups) {
+    const groupDescription =
+      group.type === 'categoricalChoice' ? `for choice ${String(group.choiceId)}` : `for ${group.type} arguments`;
+
+    if (group.comments.length < 10) {
+      console.warn(
+        `Warning: Too few comments for condensation (${group.comments.length} < 10) in group ${groupDescription}. The results may not be meaningful.`
+      );
+    }
+    if (group.comments.length > maxCommentsPerGroup) {
+      console.warn(
+        `Warning: Too many comments for condensation (${group.comments.length} > ${maxCommentsPerGroup}) in group ${groupDescription}. The list will be truncated to ${maxCommentsPerGroup} comments.`
+      );
+      group.comments = group.comments.slice(0, maxCommentsPerGroup);
+    }
+  }
+
   switch (question.type) {
     case QUESTION_TYPE.Boolean:
       return await handleBooleanQuestion({
         question: question as BooleanQuestion,
-        entities,
+        commentGroups,
         llmProvider,
         llmModel,
         language,
@@ -65,19 +85,18 @@ export async function handleQuestion({
     case QUESTION_TYPE.SingleChoiceOrdinal:
       return await handleOrdinalQuestion({
         question: question as SingleChoiceOrdinalQuestion,
-        entities,
+        commentGroups,
         llmProvider,
         llmModel,
         language,
         runId,
-        maxCommentsPerGroup,
-        invertProsAndCons // Ordinal questions may have an inverted scale
+        maxCommentsPerGroup
       });
 
     case QUESTION_TYPE.SingleChoiceCategorical:
       return await handleCategoricalQuestion({
         question: question as SingleChoiceCategoricalQuestion,
-        entities,
+        commentGroups,
         llmProvider,
         llmModel,
         language,
@@ -97,7 +116,7 @@ export async function handleQuestion({
  */
 async function handleBooleanQuestion({
   question,
-  entities,
+  commentGroups,
   llmProvider,
   llmModel,
   language,
@@ -105,16 +124,13 @@ async function handleBooleanQuestion({
   maxCommentsPerGroup
 }: {
   question: BooleanQuestion;
-  entities: Array<HasAnswers>;
+  commentGroups: Array<CommentGroup>;
   llmProvider: LLMProvider;
   llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
 }): Promise<Array<CondensationRunResult>> {
-  // Extract comments
-  const commentGroups: Array<CommentGroup> = getComments(question, entities);
-
   const results: Array<CondensationRunResult> = [];
 
   // Condense comments into pros and cons using intelligently filtered comments
@@ -155,26 +171,21 @@ async function handleBooleanQuestion({
  */
 async function handleOrdinalQuestion({
   question,
-  entities,
+  commentGroups,
   llmProvider,
   llmModel,
   language,
   runId,
-  maxCommentsPerGroup,
-  invertProsAndCons
+  maxCommentsPerGroup
 }: {
   question: SingleChoiceOrdinalQuestion;
-  entities: Array<HasAnswers>;
+  commentGroups: Array<CommentGroup>;
   llmProvider: LLMProvider;
   llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
-  invertProsAndCons: boolean;
 }): Promise<Array<CondensationRunResult>> {
-  // Get approapriate comments for this condensation process
-  const commentGroups = getComments(question, entities, { invertProsAndCons });
-
   const results: Array<CondensationRunResult> = [];
 
   // Condense comments into pros and cons using intelligently filtered comments
@@ -215,7 +226,7 @@ async function handleOrdinalQuestion({
  */
 async function handleCategoricalQuestion({
   question,
-  entities,
+  commentGroups,
   llmProvider,
   llmModel,
   language,
@@ -223,16 +234,13 @@ async function handleCategoricalQuestion({
   maxCommentsPerGroup
 }: {
   question: SingleChoiceCategoricalQuestion;
-  entities: Array<HasAnswers>;
+  commentGroups: Array<CommentGroup>;
   llmProvider: LLMProvider;
   llmModel: string;
   language: string;
   runId: string;
   maxCommentsPerGroup: number;
 }): Promise<Array<CondensationRunResult>> {
-  // Extract comments
-  const commentGroups = getComments(question, entities);
-
   const results: Array<CondensationRunResult> = [];
 
   // Condense comments into pros for each category
@@ -292,9 +300,14 @@ async function runSingleCondensation({
     throw new Error(`Required prompts not found for condensation type: ${condensationType}`);
   }
 
-  // Create condensation plan
-  // TODO: implement actual calculation of batch size and denominator (defaults to Map-Reduce)
-  const steps: Array<ProcessingStep> = await createCondensationSteps(mapPromptId, iterationPromptId, reducePromptId, language);
+  // Get parameters batchSize and denominators for map-reduce
+  const steps: Array<ProcessingStep> = await createCondensationSteps(
+    comments.length,
+    mapPromptId,
+    iterationPromptId,
+    reducePromptId,
+    language
+  );
 
   // Create condensation input
   const input: CondensationRunInput = {
