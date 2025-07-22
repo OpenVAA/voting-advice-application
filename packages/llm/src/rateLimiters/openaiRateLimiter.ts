@@ -64,46 +64,40 @@ export class OpenAIRateLimiter {
     this.cleanupOldTPMRecords();
     
     const currentTPMUsage = this.tokenUsage.reduce((sum, record) => sum + record.tokens, 0);
-    return (currentTPMUsage + estimatedTokens) <= this.tpmLimit;
-  }
-
-  /**
-   * Calculate how long to wait before making a request
-   */
-  getWaitTimeTPM({ estimatedTokens }: { estimatedTokens: number }): number {
-    const current = this.getCurrentTPMUsage();
-    
-    // If we're within limits, no wait needed
-    if (this.hasEnoughTPM({ estimatedTokens })) {
-      return 0;
-    }
-
-    // Calculate wait time based on when oldest records will expire
-    const oldestTokenRecord = this.tokenUsage[0];
-    const oldestRequestRecord = this.requestUsage[0];
-    
-    let waitTime = 0;
-    
-    // Check token limit
-    if ((current.tokens + estimatedTokens) > this.tpmLimit && oldestTokenRecord) {
-      const tokenWaitTime = (oldestTokenRecord.timestamp + 60000) - Date.now();
-      waitTime = Math.max(waitTime, tokenWaitTime);
-    }
-    
-    // Check request limit
-    if ((current.requests + 1) > this.rpmLimit && oldestRequestRecord) {
-      const requestWaitTime = (oldestRequestRecord.timestamp + 60000) - Date.now();
-      waitTime = Math.max(waitTime, requestWaitTime);
-    }
-    
-    return Math.max(0, waitTime);
+    return currentTPMUsage + estimatedTokens <= this.tpmLimit;
   }
 
   /**
    * Calculate how long to wait before making a request
    */
   getWaitTime({ estimatedTokens }: { estimatedTokens: number }): number {
-    return this.getWaitTimeTPM({ estimatedTokens });
+    this.cleanupOldTPMRecords();
+    const currentUsage = this.getCurrentTPMUsage();
+
+    const tokensOverLimit = currentUsage.tokens + estimatedTokens - this.tpmLimit;
+
+    if (tokensOverLimit <= 0) {
+      return 0; // No wait needed if we are within limits
+    }
+
+    let freedTokens = 0;
+    // Records are sorted oldest to newest. Iterate through them to find
+    // how many need to expire to free up enough capacity.
+    for (const record of this.tokenUsage) {
+      freedTokens += record.tokens;
+      if (freedTokens >= tokensOverLimit) {
+        // This is the latest record that needs to expire.
+        // The wait time is the time until this record is 60s old.
+        const waitTime = record.timestamp + 60000 - Date.now();
+        return Math.max(0, waitTime); // Return positive wait time
+      }
+    }
+
+    // This case would mean we can't free enough tokens. This might happen if
+    // tokenUsage is empty, but estimatedTokens > tpmLimit. The request
+    // should probably be rejected, but for now we return 0, assuming
+    // a single request won't exceed the total limit.
+    return 0;
   }
 
   /**
@@ -125,7 +119,10 @@ export class OpenAIRateLimiter {
   /**
    * Get current rate limit status
    */
-  getStatus(): { tpm: { used: number; limit: number; percentage: number }, rpm: { used: number; limit: number; percentage: number } } {
+  getStatus(): {
+    tpm: { used: number; limit: number; percentage: number };
+    rpm: { used: number; limit: number; percentage: number };
+  } {
     const current = this.getCurrentTPMUsage();
     
     return {

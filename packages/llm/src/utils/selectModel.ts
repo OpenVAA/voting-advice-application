@@ -58,8 +58,8 @@ export async function selectModelForGeneration({
       }
       else {
         console.info(`🔄 Fallback model ${modelState.fallbackModel} would hit rate limit, comparing wait times`);
-        const waitTimeFallback = fallbackRateLimiter.getWaitTimeTPM({ estimatedTokens });
-        const waitTimeMain = mainRateLimiter.getWaitTimeTPM({ estimatedTokens });
+        const waitTimeFallback = fallbackRateLimiter.getWaitTime({ estimatedTokens });
+        const waitTimeMain = mainRateLimiter.getWaitTime({ estimatedTokens });
         console.info(`🔄 Wait times: ${modelState.fallbackModel} ${waitTimeFallback}ms, ${modelState.mainModel} ${waitTimeMain}ms`);
         if (waitTimeFallback <= waitTimeMain) {
           console.info(`🔄 Using fallback model ${modelState.fallbackModel} due to lower wait time`);
