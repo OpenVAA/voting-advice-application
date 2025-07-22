@@ -21,7 +21,8 @@ export async function retryFailedCalls<TType>(
   operation: string,
   maxRetries: number = 2,
   responseContract: LLMResponseContract<TType>,
-  provider: LLMProvider
+  provider: LLMProvider,
+  model?: string
 ): Promise<Array<{ index: number; response: LLMResponse }>> {
   const successfulRetries: Array<{ index: number; response: LLMResponse }> = [];
 
@@ -35,7 +36,10 @@ export async function retryFailedCalls<TType>(
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.info(`   Attempt ${attempt}/${maxRetries}...`);
-        const response = await provider.generate(input);
+        const response = await provider.generate({
+          ...input,
+          ...(model && { model })
+        });
 
         // Try to parse the response to make sure it's valid
         LlmParser.parse(response.content, responseContract);
@@ -66,5 +70,5 @@ export async function retryFailedCalls<TType>(
     }
   }
 
-    return successfulRetries;
+  return successfulRetries;
 }

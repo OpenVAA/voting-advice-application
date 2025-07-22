@@ -223,7 +223,8 @@ export class Condenser {
       // Make LLM call and process response
       const llmResponse = await this.input.options.llmProvider.generate({
         messages,
-        temperature: 0.7
+        temperature: 0.7,
+        model: this.input.options.llmModel
       });
 
       // Stop latency tracking
@@ -284,7 +285,7 @@ export class Condenser {
     // PRE-PROCESSING: Validate batch token counts to prevent API failures
     // This is specific to MAP because it typically processes the largest comment volumes
     const MAX_TOKENS_PER_BATCH = 28500; // Conservative limit for most LLM providers
-    const llmBatchSize = 7; // How many batches we send in parallel
+    const llmBatchSize = 3; // How many batches we send in parallel
 
     // Estimate token usage by creating sample prompts
     const llmInputsForTokenCheck = batches.map((batch) => {
@@ -306,8 +307,6 @@ export class Condenser {
       const batchEnd = Math.min(i + llmBatchSize, promptCharsCounts.length);
       const batchCharSum = promptCharsCounts.slice(i, batchEnd).reduce((sum, count) => sum + count, 0);
       const estimatedTokens = (batchCharSum / 4) * 1.3; // Simple token estimation with buffer
-
-      console.info(`CONDENSER: Batch ${Math.floor(i / llmBatchSize) + 1} estimated tokens:`, estimatedTokens);
 
       if (estimatedTokens > MAX_TOKENS_PER_BATCH) {
         const batchIndices = Array.from({ length: batchEnd - i }, (_, idx) => i + idx + 1);
@@ -574,7 +573,8 @@ export class Condenser {
       const promptText = setPromptVars(prompt, templateVariables);
       return {
         messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7
+        temperature: 0.7,
+        model: this.input.options.llmModel
       };
     });
 
@@ -624,7 +624,8 @@ export class Condenser {
         operation,
         2, // max retries
         ResponseWithArgumentsContract,
-        this.input.options.llmProvider
+        this.input.options.llmProvider,
+        this.input.options.llmModel
       );
 
       const retriedSuccessIndices = new Set<number>();
