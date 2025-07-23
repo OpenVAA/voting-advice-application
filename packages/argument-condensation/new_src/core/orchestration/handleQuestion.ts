@@ -29,6 +29,16 @@ import { createCondensationSteps, getComments } from '../utils';
  * - Boolean: Generates pros (true) and cons (false) arguments
  * - Ordinal: Generates pros (high values) and cons (low values) arguments
  * - Categorical: Generates pros arguments for each category
+ * 
+ * @param question - The question to condense arguments for
+ * @param entities - The entities with answers
+ * @param llmProvider - The LLM provider
+ * @param language - The language of the question
+ * @param llmModel - The LLM model to use
+ * @param runId - The ID of the run
+ * @param maxCommentsPerGroup - The maximum number of comments per group
+ * @param invertProsAndCons - Whether to invert the pros and cons for ordinal questions
+ * @returns The condensation results as an array of CondensationRunResult
  */
 export async function handleQuestion({
   question,
@@ -69,6 +79,7 @@ export async function handleQuestion({
     }
   }
 
+  // Condense arguments for the question
   switch (question.type) {
     case QUESTION_TYPE.Boolean:
       return await handleBooleanQuestion({
@@ -112,6 +123,14 @@ export async function handleQuestion({
 /**
  * Condense arguments for a boolean question.
  * Generates pros (true) and cons (false) arguments.
+ * 
+ * @param question - The question to condense arguments for
+ * @param commentGroups - The comment groups to condense
+ * @param llmProvider - The LLM provider
+ * @param llmModel - The LLM model to use
+ * @param language - The language of the question
+ * @param runId - The ID of the run
+ * @param maxCommentsPerGroup - The maximum number of comments per group
  */
 async function handleBooleanQuestion({
   question,
@@ -167,6 +186,14 @@ async function handleBooleanQuestion({
 /**
  * Condense arguments for an ordinal question.
  * Generates pros (high values) and cons (low values) arguments.
+ * 
+ * @param question - The question to condense arguments for
+ * @param commentGroups - The comment groups to condense
+ * @param llmProvider - The LLM provider
+ * @param llmModel - The LLM model to use
+ * @param language - The language of the question
+ * @param runId - The ID of the run
+ * @param maxCommentsPerGroup - The maximum number of comments per group
  */
 async function handleOrdinalQuestion({
   question,
@@ -222,6 +249,14 @@ async function handleOrdinalQuestion({
 /**
  * Condense arguments for a categorical question.
  * Generates pros arguments for each category.
+ * 
+ * @param question - The question to condense arguments for
+ * @param commentGroups - The comment groups to condense
+ * @param llmProvider - The LLM provider
+ * @param llmModel - The LLM model to use
+ * @param language - The language of the question
+ * @param runId - The ID of the run
+ * @param maxCommentsPerGroup - The maximum number of comments per group
  */
 async function handleCategoricalQuestion({
   question,
@@ -262,6 +297,19 @@ async function handleCategoricalQuestion({
   return results;
 }
 
+/**
+ * Condense arguments for a single question.
+ * 
+ * @param question - The question to condense arguments for
+ * @param comments - The comments to condense
+ * @param condensationType - The type of condensation to perform
+ * @param llmProvider - The LLM provider
+ * @param llmModel - The LLM model to use
+ * @param language - The language of the question
+ * @param runId - The ID of the run
+ * @param maxCommentsPerGroup - The maximum number of comments per group
+ * @returns The condensation results as a CondensationRunResult
+ */
 async function runSingleCondensation({
   question,
   comments,
