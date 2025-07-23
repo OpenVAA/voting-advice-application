@@ -147,7 +147,7 @@ export class OpenAIProvider extends LLMProvider {
     }
 
     const results: Array<LLMResponse> = [];
-    const batchSize = 3; // TODO: Make this configurable
+    const batchSize = 3; // TODO: Make this configurable (& it should depend on the model's TPM limit)
     const mainModelRateLimiter = getRateLimiter({ model: this.model, rateLimiters: this.rateLimiters });
 
     for (let i = 0; i < inputs.length; i += batchSize) {
@@ -201,15 +201,38 @@ export class OpenAIProvider extends LLMProvider {
       // Process each item in the batch individually with its own fallback logic
       const batchPromises = batch.map(async (input, batchIndex) => {
         const globalIndex = i + batchIndex;
-        try {
-          const result = await this.generate({
-            messages: input.messages,
-            temperature: input.temperature,
-            maxTokens: input.maxTokens,
-            model: modelForBatch
-          });
 
-          // Record tokens for this individual call
+        const makeRequest = async (): Promise<LLMResponse> => {
+          let attempt = 0;
+          const maxAttempts = 3; // Original + 2 retries
+
+          while (attempt < maxAttempts) {
+            try {
+              return await this.generate({
+                messages: input.messages,
+                temperature: input.temperature,
+                maxTokens: input.maxTokens,
+                model: modelForBatch
+              });
+            } catch (error) {
+              attempt++;
+
+              if (error instanceof Error && error.message.includes('429') && attempt < maxAttempts) {
+                const waitTime = parseWaitTimeFromError(error.message) || 5000;
+                console.info(
+                  `🔄 Request ${globalIndex} rate limited (attempt ${attempt}/${maxAttempts}). Waiting ${waitTime}ms and retrying...`
+                );
+                await new Promise((resolve) => setTimeout(resolve, waitTime));
+              } else {
+                throw error; // Either not a rate limit error, or we've exhausted retries
+              }
+            }
+          }
+          throw new Error(`Request ${globalIndex} failed after ${maxAttempts} attempts`);
+        };
+
+        try {
+          const result = await makeRequest();
           const rateLimiter = getRateLimiter({ model: modelForBatch, rateLimiters: this.rateLimiters });
           rateLimiter.recordUsage({ tokensUsed: result.usage.promptTokens });
 
@@ -234,26 +257,13 @@ export class OpenAIProvider extends LLMProvider {
               maxTokens: input.maxTokens,
               model: newModel
             });
-            
+
             // Record tokens for this retry call
             const rateLimiter = getRateLimiter({ model: result.model, rateLimiters: this.rateLimiters });
             rateLimiter.recordUsage({ tokensUsed: result.usage.promptTokens });
 
             return result;
           }
-
-          // Handle rate limit errors
-          if (error instanceof Error && error.message.includes('429')) {
-            const waitTime = parseWaitTimeFromError(error.message);
-            if (waitTime) {
-              console.info(`🔄 OPENAI PROVIDER: Rate limit error for ${modelForBatch}. Waiting for ${waitTime}ms`);
-              await new Promise((resolve) => setTimeout(resolve, waitTime));
-            } else {
-              throw new Error(`Request ${globalIndex} failed & we couldn't parse the wait time: ${error.message}`);
-            }
-          }
-
-          // Rethrow unknown error with original error details
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           throw new Error(`Request ${globalIndex} failed: ${errorMessage}`);
         }
@@ -267,7 +277,7 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   /**
-   * Generates multiple responses from the LLM by processing requests in sequence. 
+   * Generates multiple responses from the LLM by processing requests in sequence.
    * @param inputs Array of generation input parameters
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
@@ -300,7 +310,7 @@ export class OpenAIProvider extends LLMProvider {
 
     return results;
   }
-  
+
   /**
    * Estimates the number of tokens in a text string. Note: This is a simple approximation.
    * TODO: For production use, consider using a proper tokenizer.
