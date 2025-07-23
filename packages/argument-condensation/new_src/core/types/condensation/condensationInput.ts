@@ -4,10 +4,6 @@ import { ProcessingStep } from './processDefinition';
 import { SupportedQuestion } from '../base/supportedQuestion';
 /**
  * Represents a single non-empty comment given by a candidate in the VAA.
- * @param id - Unique identifier
- * @param candidateID - The candidate who wrote the comment
- * @param candidateAnswer - Can be Likert number, categorical number, or categorical string
- * @param text - The actual comment
  */
 export interface VAAComment {
   id: string;
@@ -18,38 +14,38 @@ export interface VAAComment {
 
 /**
  * Options for question condensation
- * @param llmProvider - The LLM provider to use
- * @param language - The language of the comments
- * @param outputType - The type of output to generate
- * @param processingSteps - The steps to process the comments
- * @param llmModel - The LLM model to use
- * @param fallbackModel - The fallback LLM model to use for parallelization
- * @param runId - The ID of the run
- * @param electionId - The ID of the election
- * @param maxCommentsPerGroup - The maximum number of comments to use for a single condensation run
- * @param invertProsAndCons - For ordinal questions invert the pro/con classification
  */
 export interface CondensationOptions {
+  /** The LLM provider to use */
   llmProvider: LLMProvider;
+  /** The language of the comments */
   language: string;
+  /** The type of output to generate */
   outputType: CondensationOutputType;
+  /** The steps to process the comments */
   processingSteps?: Array<ProcessingStep>;
+  /** The LLM model to use */
   llmModel?: string;
-  fallbackModel?: string; // For parallelization (alternates between models to avoid rate limiting)
+  /** The fallback LLM model to use for parallelization (alternates between models to avoid rate limiting) */
+  fallbackModel?: string;
+  /** The ID of the run */
   runId?: string;
+  /** The ID of the election */
   electionId?: string;
+  /** The maximum number of comments to use for a single condensation run */
   maxCommentsPerGroup?: number;
-  invertProsAndCons?: boolean; // For ordinal questions, invert the pro/con classification
+  /** For ordinal questions, invert the pro/con classification */
+  invertProsAndCons?: boolean;
 }
 
 /**
  * Input parameters for the condensation process.
- * @param question - The topic/question these comments relate to
- * @param comments - Array of comments to process
- * @param options - Options for the condensation process
  */
 export interface CondensationRunInput {
+  /** The question these comments relate to */
   question: SupportedQuestion;
+  /** Array of comments to process */
   comments: Array<VAAComment>;
+  /** Options for the condensation process */
   options: CondensationOptions;
 }

@@ -4,65 +4,71 @@ import { CondensationOperation } from '../condensation/operation';
 
 /**
  * Represents a single operation node in the condensation tree.
- *
- * @param id - Unique identifier for this operation instance
- * @param operation - Type of operation performed
- * @param stepIndex - Step index in the overall plan
- * @param batchIndex - Batch index within the step (for parallel operations)
- * @param input - Input data for this operation
- * @param output - Output data from this operation
- * @param children - References to child operations (operations that use this output as input)
- * @param parents - References to parent operations (operations that produced this input) - can have multiple parents for REDUCE operations
- * @param parent - Use parents array instead. Kept for backward compatibility
- * @param metadata - Metadata about the operation execution
  */
 export interface OperationNode {
+  /** The unique identifier for this operation node */
   id: string;
+  /** The type of operation performed */
   operation: CondensationOperation;
+  /** The step index in the overall plan */
   stepIndex: number;
+  /** The batch index within the step (for parallel operations) */
   batchIndex?: number;
+  /** The input data for this operation */
   input: {
     comments?: Array<VAAComment>;
     arguments?: Array<Argument>;
     argumentLists?: Array<Array<Argument>>;
   };
+  /** The output data from this operation */
   output: {
     arguments?: Array<Argument>;
     argumentLists?: Array<Array<Argument>>;
   };
+  /** References to child operations (operations that use this output as input) */
   children: Array<string>;
+  /** References to parent operations (operations that produced this input) - can have multiple parents for REDUCE operations */
   parents?: Array<string>;
-  parent?: string;
+  /** Metadata about the operation execution */
   metadata: {
+    /** When this operation started */
     startTime: Date;
+    /** When this operation ended */
     endTime: Date;
+    /** The duration of the operation (ms) */
     duration: number;
+    /** The number of LLM calls made */
     llmCalls: number;
+    /** Whether the operation was successful */
     success: boolean;
+    /** Error message if the operation failed */
     error?: string;
   };
 }
 
 /**
- * Complete tree structure for a condensation run.
- *
- * @param createdAt - Date and time as a string (e.g. 1746_28_6_2025)
- * @param runId - Run identifier
- * @param roots - Root operation nodes (operations that start with comments)
- * @param nodes - All operation nodes indexed by their ID
- * @param finalArguments - Final output arguments
- * @param metadata - Overall tree metadata
+ * Complete visualization of the tree structure for a condensation run.
  */
 export interface OperationTree {
+  /** The date and time as a string (e.g. 1746_28_6_2025) */
   createdAt: string;
+  /** The run identifier */
   runId: string;
+  /** The root operation nodes (operations that start with comments) */
   roots: Array<string>;
+  /** All operation nodes indexed by their ID */
   nodes: Record<string, OperationNode>;
+  /** The final output arguments */
   finalArguments: Array<Argument>;
+  /** Overall tree metadata */
   metadata: {
+    /** Total number of operations in the tree */
     totalOperations: number;
+    /** Maximum depth of the tree */
     maxDepth: number;
+    /** Total duration of all operations (ms) */
     totalDuration: number;
+    /** Total number of LLM calls made */
     totalLlmCalls: number;
   };
 }

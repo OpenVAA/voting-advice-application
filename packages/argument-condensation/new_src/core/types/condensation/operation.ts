@@ -1,5 +1,11 @@
 /**
- * The operations that can be chained in the condensation process (certain rules apply).
+ * The operations that can be chained in the condensation process (certain rules apply)
+ * 
+ * - REFINE: Refine the arguments
+ * - MAP: Map the arguments to the question
+ * - ITERATE_MAP: Iterate the mapping of the arguments
+ * - REDUCE: Reduce the arguments
+ * - GROUND: Ground the arguments
  */
 export const CondensationOperations = {
   REFINE: 'REFINE',

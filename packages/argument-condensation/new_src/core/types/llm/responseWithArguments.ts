@@ -1,5 +1,6 @@
 import { LLMResponseContract } from '../../../../../llm/src/utils/llmParser';
 import { Argument } from '../base/argument';
+
 /**
  * Expected structure for LLM response containing arguments and reasoning
  */
@@ -11,11 +12,9 @@ export interface ResponseWithArguments {
 /**
  * Contract for ResponseWithArguments validation
  */
-export const ResponseWithArgumentsContract: LLMResponseContract<ResponseWithArguments> = {
+export const RESPONSE_WITH_ARGUMENTS_CONTRACT: LLMResponseContract<ResponseWithArguments> = {
   validate(obj: unknown): obj is ResponseWithArguments {
-    if (!obj || typeof obj !== 'object') {
-      return false;
-    }
+    if (!obj || typeof obj !== 'object') return false;
 
     const candidate = obj as Record<string, unknown>;
 

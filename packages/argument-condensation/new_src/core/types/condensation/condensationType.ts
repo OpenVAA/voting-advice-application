@@ -1,5 +1,7 @@
 /**
- * Defines input and output characteristics for the condensation process.
+ * Defines input and output characteristics for the condensation process:
+ * - The type of question being processed
+ * - The type of output to generate
  */
 export const CONDENSATION_TYPE = {
   LIKERT: {

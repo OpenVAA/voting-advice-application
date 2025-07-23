@@ -1,43 +1,43 @@
 /**
  * Parameters for the refine operation.
- * @param batchSize - The number of arguments to process in each batch.
- * @param initialBatchPrompt - The prompt to use for the initial batch.
- * @param refinementPrompt - The prompt to use for the refinement.
  */
 export interface RefineOperationParams {
+  /** The prompt to use for the initial batch */
   initialBatchPrompt: string;
+  /** The prompt to use for the refinement */
   refinementPrompt: string;
+  /** The number of arguments to process in each batch */
   batchSize: number;
 }
 
 /**
  * Parameters for the map operation.
- * @param condensationPrompt - The prompt to use for the condensation.
- * @param iterationPrompt - Prompt to use for improving the initial batches of arguments.
- * @param batchSize - The number of arguments to process in each batch.
  */
 export interface MapOperationParams {
+  /** The prompt to use for the condensation */
   condensationPrompt: string;
+  /** Prompt to use for improving the initial batches of arguments */
   iterationPrompt: string;
+  /** The number of arguments to process in each batch */
   batchSize: number;
 }
 
 /**
  * Parameters for the reduce operation.
- * @param denominator - How many argument lists to coalesce into one?
- * @param coalescingPrompt - The prompt to use for the coalescing.
  */
 export interface ReduceOperationParams {
+  /** The prompt to use for the coalescing */
   coalescingPrompt: string;
+  /** How many argument lists to coalesce into one? */
   denominator: number;
 }
 
 /**
  * Parameters for the grounding operation.
- * @param groundingPrompt - The prompt to use for the grounding.
- * @param batchSize - The number of arguments to process in each batch.
  */
 export interface GroundingOperationParams {
+  /** The prompt to use for the grounding */
   groundingPrompt: string;
+  /** The number of arguments to process in each batch */
   batchSize: number;
 }

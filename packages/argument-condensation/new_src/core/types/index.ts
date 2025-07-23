@@ -28,4 +28,4 @@ export type { PromptCall } from './llm/promptCall';
 
 // LLM response wrapper
 export type { ResponseWithArguments } from './llm/responseWithArguments';
-export { ResponseWithArgumentsContract } from './llm/responseWithArguments';
+export { RESPONSE_WITH_ARGUMENTS_CONTRACT as ResponseWithArgumentsContract } from './llm/responseWithArguments';

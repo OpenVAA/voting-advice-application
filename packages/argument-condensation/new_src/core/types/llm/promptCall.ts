@@ -2,29 +2,31 @@ import { CondensationOperation } from '../condensation/operation';
 
 /**
  * Represents an API call instance of a prompt.
- *
- * @param promptId - The ID of the prompt to call
- * @param operation - The operation this prompt is associated with
- * @param rawInputText - The raw input text for the prompt
- * @param rawOutputText - The raw output text for the prompt
- * @param model - The model to use for the prompt
- * @param timestamp - When this call was made
- * @param metadata - Token usage, latency, and cost information
  */
 export interface PromptCall {
+  /** The unique identifier for this prompt call */
   promptId: string;
+  /** The operation this prompt is associated with */
   operation: CondensationOperation;
+  /** The raw input text for the prompt */
   rawInputText: string;
+  /** The raw output text for the prompt */
   rawOutputText: string;
+  /** The model to use for the prompt */
   model: string;
+  /** When this call was made */
   timestamp: string;
+  /** Metadata about the prompt call */
   metadata: {
+    /** The number of tokens used for the prompt */
     tokens: {
       input: number;
       output: number;
       total: number;
     };
-    latency: number; // in milliseconds
-    cost: number; // in USD (optional for backward compatibility)
+    /** The latency of the prompt (ms) */
+    latency: number;
+    /** The cost of the prompt ($) */
+    cost: number;
   };
 }
