@@ -2,6 +2,8 @@ export * from './entity/entity.type';
 export * from './entity/getEntity';
 export * from './id/id.type';
 export * from './id/isValidId';
+export * from './logger/logger';
+export * from './logger/logger.type';
 export * from './matching/distance';
 export * from './matching/distance.type';
 export * from './matching/hasAnswers';
