@@ -1,3 +1,4 @@
+import { VISUALIZATION_CONFIG } from './config.js';
 import { TreeVisualizer } from './treeVisualizer.js';
 
 // Main application class
@@ -37,7 +38,7 @@ class OperationTreeApp {
         clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
           this.visualizer.fitToScreen();
-        }, 250);
+        }, VISUALIZATION_CONFIG.timing.resizeDebounce);
       }
     });
 
@@ -218,58 +219,19 @@ class OperationTreeApp {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
-            <span>${message}</span>
-            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
-        `;
-
-    // Add styles
-    Object.assign(notification.style, {
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      padding: '12px 16px',
-      borderRadius: '6px',
-      color: 'white',
-      fontWeight: '500',
-      zIndex: '10000',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: '12px',
-      minWidth: '300px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      animation: 'slideInRight 0.3s ease-out'
-    });
-
-    // Set background color based on type
-    const colors = {
-      success: '#10b981',
-      error: '#ef4444',
-      info: '#3b82f6'
-    };
-    notification.style.backgroundColor = colors[type] || colors.info;
-
-    // Style close button
-    const closeBtn = notification.querySelector('.notification-close');
-    Object.assign(closeBtn.style, {
-      background: 'none',
-      border: 'none',
-      color: 'white',
-      fontSize: '18px',
-      cursor: 'pointer',
-      padding: '0',
-      lineHeight: '1'
-    });
+      <span>${message}</span>
+      <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+    `;
 
     document.body.appendChild(notification);
 
-    // Auto-remove after 5 seconds
+    // Auto-remove after configured delay
     setTimeout(() => {
       if (notification.parentElement) {
         notification.style.animation = 'slideOutRight 0.3s ease-in';
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => notification.remove(), VISUALIZATION_CONFIG.timing.notificationAnimation);
       }
-    }, 5000);
+    }, VISUALIZATION_CONFIG.timing.notificationAutoRemove);
   }
 }
 

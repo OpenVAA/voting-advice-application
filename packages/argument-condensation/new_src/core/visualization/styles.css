@@ -459,6 +459,27 @@ body {
   margin-bottom: var(--space-sm);
 }
 
+.section-title {
+  color: var(--color-gray-800);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.subsection-title {
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.list-title {
+  color: var(--color-gray-500);
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+}
+
 .data-subsection {
   margin-bottom: var(--space-md);
 }
@@ -473,14 +494,91 @@ body {
   border-left: 3px solid var(--color-primary);
 }
 
+.comment-item {
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-bottom: var(--space-sm);
+}
+
+.argument-item {
+  background: var(--color-map-bg);
+  border: 1px solid #d1fae5;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-bottom: var(--space-sm);
+}
+
+.argument-item.nested {
+  background: var(--color-reduce-bg);
+  border: 1px solid #fde68a;
+  border-radius: 4px;
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  margin-left: var(--space-md);
+}
+
+.item-header {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-xs);
+}
+
+.comment-item .item-header {
+  color: var(--color-gray-500);
+}
+
+.argument-item .item-header {
+  color: #065f46;
+}
+
+.item-content {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  line-height: 1.4;
+}
+
+.argument-item .item-content {
+  color: #064e3b;
+  font-weight: 500;
+}
+
+.argument-item.nested .item-content {
+  color: #92400e;
+  font-size: var(--font-size-xs);
+  line-height: 1.3;
+}
+
+.item-meta {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: var(--space-xs);
+}
+
 .argument-lists {
   margin-bottom: var(--space-md);
 }
 
 .argument-list {
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
   padding-left: var(--space-md);
   border-left: 2px solid var(--color-gray-200);
+}
+
+.no-data-message {
+  color: var(--color-gray-500);
+  font-style: italic;
+}
+
+.error-text {
+  color: var(--color-error);
+}
+
+.detail-separator {
+  margin: var(--space-md) 0;
+  border: none;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 /* Notification styles */

@@ -21,6 +21,15 @@ export const VISUALIZATION_CONFIG = {
     transitionEasing: 'ease-out'
   },
 
+  // Timing settings
+  timing: {
+    notificationAutoRemove: 5000,
+    notificationAnimation: 300,
+    resizeDebounce: 250,
+    renderDelay: 100,
+    fitToScreenDelay: 750
+  },
+
   // Colors
   colors: {
     operations: {
@@ -38,6 +47,11 @@ export const VISUALIZATION_CONFIG = {
       success: '#10b981',
       error: '#ef4444',
       info: '#3b82f6'
+    },
+    ui: {
+      arrowhead: '#cbd5e1',
+      errorText: '#ef4444',
+      separator: '#e2e8f0'
     }
   },
 
@@ -52,12 +66,6 @@ export const VISUALIZATION_CONFIG = {
       ROOT: '🌳',
       EMPTY: '❓'
     }
-  },
-
-  // Notification settings
-  notifications: {
-    autoRemoveDelay: 5000,
-    animationDuration: 300
   }
 };
 

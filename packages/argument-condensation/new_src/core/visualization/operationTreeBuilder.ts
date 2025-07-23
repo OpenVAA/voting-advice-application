@@ -124,11 +124,6 @@ export class OperationTreeBuilder {
     if (!child.parents.includes(parentId)) {
       child.parents.push(parentId);
     }
-
-    // Set backward compatibility parent field to the first parent
-    if (!child.parent) {
-      child.parent = parentId;
-    }
   }
 
   /**
