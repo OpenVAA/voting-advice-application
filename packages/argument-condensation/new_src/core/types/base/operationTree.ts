@@ -14,6 +14,8 @@ export interface OperationNode {
   stepIndex: number;
   /** The batch index within the step (for parallel operations) */
   batchIndex?: number;
+  /** Whether this is a virtual node (used for layout purposes) */
+  virtual?: boolean;
   /** The input data for this operation */
   input: {
     comments?: Array<VAAComment>;
@@ -28,7 +30,7 @@ export interface OperationNode {
   /** References to child operations (operations that use this output as input) */
   children: Array<string>;
   /** References to parent operations (operations that produced this input) - can have multiple parents for REDUCE operations */
-  parents?: Array<string>;
+  parents: Array<string>;
   /** Metadata about the operation execution */
   metadata: {
     /** When this operation started */

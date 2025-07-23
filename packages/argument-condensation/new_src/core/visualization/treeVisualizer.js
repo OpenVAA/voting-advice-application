@@ -61,7 +61,8 @@ class TreeVisualizer {
   }
 
   /**
-   * Load tree data and render
+   * Load tree data and render the visualization
+   * @param {Object} treeData - The operation tree data to visualize
    */
   loadTree(treeData) {
     this.currentTree = treeData;
@@ -146,14 +147,6 @@ class TreeVisualizer {
   }
 
   /**
-   * Convert operation tree to D3 hierarchy format
-   * This handles DAG structures where nodes can have multiple parents
-   */
-  convertToHierarchy(operationTree) {
-    return this.convertToNetwork(operationTree);
-  }
-
-  /**
    * Convert operation tree to network format for DAG visualization
    */
   convertToNetwork(operationTree) {
@@ -175,7 +168,7 @@ class TreeVisualizer {
     Object.keys(nodes).forEach((nodeId) => {
       const node = nodes[nodeId];
 
-      // Use the new parents array if available, fallback to legacy parent
+      // Use the parents array - fallback to legacy parent field for compatibility
       const parents = node.parents && node.parents.length > 0 ? node.parents : node.parent ? [node.parent] : [];
 
       parents.forEach((parentId) => {
@@ -244,13 +237,9 @@ class TreeVisualizer {
     // Get SVG dimensions for proper centering
     const svgWidth = parseFloat(this.svg.attr('width')) || 800;
 
-    // Calculate positions with proper centering
-    const levelHeight = 150;
-    const nodeSpacing = 200;
+    // Use configuration values for layout
+    const { levelHeight, nodeSpacing, marginY } = VISUALIZATION_CONFIG.layout;
     const levels = Object.keys(nodesByLevel).sort((a, b) => parseInt(a) - parseInt(b));
-
-    // Add margins so nodes aren't right at the edge
-    const marginY = 80;
 
     levels.forEach((level, levelIndex) => {
       const levelNodes = nodesByLevel[level];
@@ -265,11 +254,8 @@ class TreeVisualizer {
       });
     });
 
-    // Create node and link data for D3
-    const nodeData = nodes.map((n) => ({
-      ...n,
-      data: { data: n.data } // Wrap for compatibility with existing methods
-    }));
+    // Create node data for D3
+    const nodeData = nodes;
 
     const linkData = links
       .map((link) => {
@@ -330,16 +316,16 @@ class TreeVisualizer {
     // Add circles
     nodeGroups
       .append('circle')
-      .attr('class', (d) => `node-circle ${d.data.data.operation.toLowerCase()}`)
+      .attr('class', (d) => `node-circle ${d.data.operation.toLowerCase()}`)
       .attr('r', this.nodeRadius)
-      .style('opacity', (d) => (d.data.data.virtual ? 0.3 : 1));
+      .style('opacity', (d) => (d.data.virtual ? 0.3 : 1));
 
     // Add operation icons
     nodeGroups
       .append('text')
       .attr('class', 'node-icon')
       .attr('dy', '0.35em')
-      .text((d) => this.getOperationIcon(d.data.data.operation));
+      .text((d) => this.getOperationIcon(d.data.operation));
 
     // Add operation labels
     nodeGroups
@@ -347,9 +333,9 @@ class TreeVisualizer {
       .attr('class', 'node-text')
       .attr('dy', this.nodeRadius + 15)
       .text((d) => {
-        if (d.data.data.virtual) return '';
-        const op = d.data.data.operation;
-        const batch = d.data.data.batchIndex !== undefined ? ` [${d.data.data.batchIndex}]` : '';
+        if (d.data.virtual) return '';
+        const op = d.data.operation;
+        const batch = d.data.batchIndex !== undefined ? ` [${d.data.batchIndex}]` : '';
         return `${op}${batch}`;
       });
 
@@ -360,8 +346,8 @@ class TreeVisualizer {
         .attr('class', 'node-batch-info')
         .attr('dy', this.nodeRadius + 28)
         .text((d) => {
-          if (d.data.data.virtual) return '';
-          const node = d.data.data;
+          if (d.data.virtual) return '';
+          const node = d.data;
           const inputCount = this.getInputCount(node);
           const outputCount = this.getOutputCount(node);
           return `${inputCount}→${outputCount}`;
@@ -376,11 +362,9 @@ class TreeVisualizer {
       .attr('cx', this.nodeRadius - 8)
       .attr('cy', -this.nodeRadius + 8)
       .style('fill', (d) =>
-        d.data.data.metadata?.success
-          ? VISUALIZATION_CONFIG.colors.status.success
-          : VISUALIZATION_CONFIG.colors.status.error
+        d.data.metadata?.success ? VISUALIZATION_CONFIG.colors.status.success : VISUALIZATION_CONFIG.colors.status.error
       )
-      .style('opacity', (d) => (d.data.data.virtual ? 0 : 1));
+      .style('opacity', (d) => (d.data.virtual ? 0 : 1));
   }
 
   /**
@@ -416,7 +400,7 @@ class TreeVisualizer {
     // Add selection to current node
     d3.select(event.currentTarget).classed('selected', true);
 
-    this.selectedNode = d.data.data;
+    this.selectedNode = d.data;
     this.updateNodeDetails();
   }
 
@@ -424,9 +408,9 @@ class TreeVisualizer {
    * Show tooltip on hover
    */
   showTooltip(event, d) {
-    if (d.data.data.virtual) return;
+    if (d.data.virtual) return;
 
-    const node = d.data.data;
+    const node = d.data;
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0);
 
     const content = `
@@ -696,7 +680,7 @@ class TreeVisualizer {
   }
 
   /**
-   * Fit tree to screen
+   * Fit tree to screen with appropriate zoom and centering
    */
   fitToScreen() {
     if (!this.g || !this.svg) return;
@@ -721,7 +705,7 @@ class TreeVisualizer {
   }
 
   /**
-   * Toggle detail display
+   * Toggle display of detailed node information (input/output counts)
    */
   toggleDetails() {
     this.showDetails = !this.showDetails;
@@ -731,7 +715,7 @@ class TreeVisualizer {
   }
 
   /**
-   * Export tree as SVG
+   * Export the current tree visualization as an SVG file
    */
   exportSVG() {
     if (!this.svg) return;

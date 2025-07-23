@@ -7,6 +7,9 @@ export const VISUALIZATION_CONFIG = {
     nodeRadius: 25,
     horizontalSpacing: 150,
     verticalSpacing: 100,
+    levelHeight: 150,
+    nodeSpacing: 200,
+    marginY: 80,
     padding: {
       top: 50,
       right: 50,

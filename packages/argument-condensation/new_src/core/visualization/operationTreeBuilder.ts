@@ -8,7 +8,6 @@ import {
   OperationTree,
   VAAComment
 } from '../types';
-import { readableTimestamp } from '../utils';
 
 /**
  * Builds and manages the operation tree during condensation execution
@@ -19,7 +18,7 @@ export class OperationTreeBuilder {
 
   constructor(runId: string) {
     this.tree = {
-      createdAt: readableTimestamp(),
+      createdAt: new Date().toISOString(),
       runId,
       metadata: {
         totalOperations: 0,
@@ -50,7 +49,7 @@ export class OperationTreeBuilder {
       parents: [],
       metadata: {
         startTime: new Date(),
-        endTime: new Date(),
+        endTime: new Date(), // Will be set properly in completeNode
         duration: 0,
         llmCalls: 0,
         success: false
