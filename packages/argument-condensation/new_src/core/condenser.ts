@@ -57,6 +57,13 @@ export class Condenser {
     // Get condensation plan from input config
     const processingSteps: Array<ProcessingStep> = this.input.options.processingSteps || [];
 
+    // Early validation: check for empty comments
+    if (this.input.comments.length === 0) {
+      throw new Error(
+        'Cannot run condensation with empty comments array. At least one comment is required.'
+      );
+    }
+
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
