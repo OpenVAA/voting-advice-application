@@ -38,6 +38,7 @@ export class OperationTreeBuilder {
   createNode(operation: CondensationOperation, stepIndex: number, batchIndex?: number): string {
     const nodeId = `${operation}_${stepIndex}_${batchIndex ?? 0}_${this.nodeCounter++}`;
 
+    const startTime = new Date();
     const node: OperationNode = {
       id: nodeId,
       operation,
@@ -48,8 +49,8 @@ export class OperationTreeBuilder {
       children: [],
       parents: [],
       metadata: {
-        startTime: new Date(),
-        endTime: new Date(), // Will be set properly in completeNode
+        startTime,
+        endTime: startTime, // Will be updated in completeNode
         duration: 0,
         llmCalls: 0,
         success: false

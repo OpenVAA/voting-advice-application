@@ -6,6 +6,15 @@ class OperationTreeApp {
   constructor() {
     this.visualizer = new TreeVisualizer('tree-container');
     this.currentTreeData = null;
+
+    // Cache DOM elements to avoid repeated lookups
+    this.elements = {
+      fileInput: document.getElementById('tree-file'),
+      fitBtn: document.getElementById('fit-btn'),
+      toggleDetails: document.getElementById('toggle-details'),
+      exportSvg: document.getElementById('export-svg')
+    };
+
     this.initializeEventListeners();
   }
 
@@ -14,20 +23,19 @@ class OperationTreeApp {
    */
   initializeEventListeners() {
     // File input handler
-    const fileInput = document.getElementById('tree-file');
-    fileInput.addEventListener('change', (event) => this.handleFileLoad(event));
+    this.elements.fileInput.addEventListener('change', (event) => this.handleFileLoad(event));
 
     // Control buttons
-    document.getElementById('fit-btn').addEventListener('click', () => {
+    this.elements.fitBtn.addEventListener('click', () => {
       this.visualizer.fitToScreen();
     });
 
-    document.getElementById('toggle-details').addEventListener('click', () => {
+    this.elements.toggleDetails.addEventListener('click', () => {
       this.visualizer.toggleDetails();
       this.updateToggleButton();
     });
 
-    document.getElementById('export-svg').addEventListener('click', () => {
+    this.elements.exportSvg.addEventListener('click', () => {
       this.visualizer.exportSVG();
     });
 
@@ -179,7 +187,7 @@ class OperationTreeApp {
       case 'O':
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
-          document.getElementById('tree-file').click();
+          this.elements.fileInput.click();
         }
         break;
     }
@@ -189,8 +197,7 @@ class OperationTreeApp {
    * Update toggle button text
    */
   updateToggleButton() {
-    const button = document.getElementById('toggle-details');
-    button.textContent = this.visualizer.showDetails ? '📊 Hide Details' : '📊 Show Details';
+    this.elements.toggleDetails.textContent = this.visualizer.showDetails ? '📊 Hide Details' : '📊 Show Details';
   }
 
   /**

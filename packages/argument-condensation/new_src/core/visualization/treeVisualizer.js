@@ -13,6 +13,15 @@ class TreeVisualizer {
     this.selectedNode = null;
     this.showDetails = false;
 
+    // Create reusable tooltip to prevent memory leaks
+    this.tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0)
+      .style('position', 'absolute')
+      .style('pointer-events', 'none');
+
     // Initialize D3 zoom behavior
     this.zoom = d3
       .zoom()
@@ -43,18 +52,22 @@ class TreeVisualizer {
     if (!containerNode || !window.ResizeObserver) return;
 
     this.resizeObserver = new ResizeObserver(() => {
-      if (this.svg) {
-        // Update SVG dimensions
-        const width = containerNode.clientWidth || 800;
-        const height = containerNode.clientHeight || 600;
+      // Throttle resize events to improve performance
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = setTimeout(() => {
+        if (this.svg) {
+          // Update SVG dimensions
+          const width = containerNode.clientWidth || 800;
+          const height = containerNode.clientHeight || 600;
 
-        this.svg.attr('width', width).attr('height', height);
+          this.svg.attr('width', width).attr('height', height);
 
-        // Re-fit to screen if we have tree data
-        if (this.currentTree) {
-          setTimeout(() => this.fitToScreen(), VISUALIZATION_CONFIG.timing.renderDelay);
+          // Re-fit to screen if we have tree data
+          if (this.currentTree) {
+            this.fitToScreen();
+          }
         }
-      }
+      }, VISUALIZATION_CONFIG.timing.resizeDebounce);
     });
 
     this.resizeObserver.observe(containerNode);
@@ -150,72 +163,100 @@ class TreeVisualizer {
    * Convert operation tree to network format for DAG visualization
    */
   convertToNetwork(operationTree) {
-    const nodes = operationTree.nodes;
-    const nodeList = [];
-    const linkList = [];
+    try {
+      const nodes = operationTree.nodes;
+      const nodeList = [];
+      const linkList = [];
 
-    // Create nodes
-    Object.keys(nodes).forEach((nodeId) => {
-      nodeList.push({
-        id: nodeId,
-        data: nodes[nodeId],
-        // Calculate level based on step index for better positioning
-        level: nodes[nodeId].stepIndex >= 0 ? nodes[nodeId].stepIndex : 0
-      });
-    });
+      // Validate input
+      if (!nodes || typeof nodes !== 'object') {
+        throw new Error('Invalid nodes data structure');
+      }
 
-    // Create links based on parent-child relationships
-    Object.keys(nodes).forEach((nodeId) => {
-      const node = nodes[nodeId];
+      // Create nodes
+      Object.keys(nodes).forEach((nodeId) => {
+        const nodeData = nodes[nodeId];
+        if (!nodeData) {
+          console.warn(`Skipping invalid node: ${nodeId}`);
+          return;
+        }
 
-      // Use the parents array - fallback to legacy parent field for compatibility
-      const parents = node.parents && node.parents.length > 0 ? node.parents : node.parent ? [node.parent] : [];
-
-      parents.forEach((parentId) => {
-        linkList.push({
-          source: parentId,
-          target: nodeId
+        nodeList.push({
+          id: nodeId,
+          data: nodeData,
+          // Calculate level based on step index for better positioning
+          level: nodeData.stepIndex >= 0 ? nodeData.stepIndex : 0
         });
       });
-    });
 
-    return {
-      nodes: nodeList,
-      links: linkList
-    };
+      // Create links based on parent-child relationships
+      Object.keys(nodes).forEach((nodeId) => {
+        const node = nodes[nodeId];
+        if (!node) return;
+
+        // Use the parents array - fallback to legacy parent field for compatibility
+        const parents = node.parents && node.parents.length > 0 ? node.parents : node.parent ? [node.parent] : [];
+
+        parents.forEach((parentId) => {
+          // Validate that parent exists
+          if (nodes[parentId]) {
+            linkList.push({
+              source: parentId,
+              target: nodeId
+            });
+          } else {
+            console.warn(`Parent node ${parentId} not found for node ${nodeId}`);
+          }
+        });
+      });
+
+      return {
+        nodes: nodeList,
+        links: linkList
+      };
+    } catch (error) {
+      console.error('Error converting tree to network format:', error);
+      return { nodes: [], links: [] };
+    }
   }
 
   /**
    * Render tree using network layout for DAG visualization
    */
   renderTree() {
-    if (!this.currentTree) {
-      console.warn('No tree data to render');
-      return;
+    try {
+      if (!this.currentTree) {
+        console.warn('No tree data to render');
+        return;
+      }
+
+      // Clear and setup SVG
+      this.clearVisualization();
+      this.setupSVG();
+
+      if (!this.svg || !this.g) {
+        console.error('Failed to setup SVG');
+        return;
+      }
+
+      const networkData = this.convertToNetwork(this.currentTree);
+
+      if (networkData.nodes.length === 0) {
+        console.warn('No nodes to render');
+        return;
+      }
+
+      // Use a simple layered layout based on step index
+      this.renderDAG(networkData);
+
+      this.updateTreeStats();
+
+      // Fit to screen after a short delay to ensure rendering is complete
+      setTimeout(() => this.fitToScreen(), VISUALIZATION_CONFIG.timing.renderDelay);
+    } catch (error) {
+      console.error('Error rendering tree:', error);
+      this.showEmptyState();
     }
-    // Clear and setup SVG
-    this.clearVisualization();
-    this.setupSVG();
-
-    if (!this.svg || !this.g) {
-      console.error('Failed to setup SVG');
-      return;
-    }
-
-    const networkData = this.convertToNetwork(this.currentTree);
-
-    if (networkData.nodes.length === 0) {
-      console.warn('No nodes to render');
-      return;
-    }
-
-    // Use a simple layered layout based on step index
-    this.renderDAG(networkData);
-
-    this.updateTreeStats();
-
-    // Fit to screen after a short delay to ensure rendering is complete
-    setTimeout(() => this.fitToScreen(), VISUALIZATION_CONFIG.timing.renderDelay);
   }
 
   /**
@@ -411,8 +452,6 @@ class TreeVisualizer {
     if (d.data.virtual) return;
 
     const node = d.data;
-    const tooltip = d3.select('body').append('div').attr('class', 'tooltip').style('opacity', 0);
-
     const content = `
             <strong>${node.operation}</strong><br/>
             Duration: ${node.metadata.duration}ms<br/>
@@ -420,7 +459,7 @@ class TreeVisualizer {
             Status: ${node.metadata.success ? 'Success' : 'Failed'}
         `;
 
-    tooltip
+    this.tooltip
       .html(content)
       .style('left', event.pageX + 10 + 'px')
       .style('top', event.pageY - 10 + 'px')
@@ -433,7 +472,7 @@ class TreeVisualizer {
    * Hide tooltip
    */
   hideTooltip() {
-    d3.selectAll('.tooltip').remove();
+    this.tooltip.style('opacity', 0);
   }
 
   /**
