@@ -6,9 +6,9 @@ import {
   type SingleChoiceCategoricalQuestion,
   type SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
-import type { CommentGroup, CommentGroupingOptions } from '../types/api/commentGroup';
-import type { SupportedQuestion } from '../types/base/supportedQuestion';
-import type { VAAComment } from '../types/condensation/condensationInput';
+import type { CommentGroup, CommentGroupingOptions } from '../../types/api/commentGroup';
+import type { SupportedQuestion } from '../../types/base/supportedQuestion';
+import type { VAAComment } from '../../types/condensation/condensationInput';
 
 /**
  * Transforms and groups candidate comments for argument condensation.
@@ -20,12 +20,21 @@ import type { VAAComment } from '../types/condensation/condensationInput';
  * - Pro-arguments: normalized value > 0
  * - Con-arguments: normalized value < 0
  * - Neutral-arguments (ignored): normalized value = 0
+ * 
+ * @param question - The question to group comments for
+ * @param entities - The entities to get comments from
+ * @param options - The options for grouping comments
+ * @returns An array of comment groups
  */
-export function getComments(
+export function getComments({
+  question,
+  entities,
+  options
+}: {
   question: SupportedQuestion,
   entities: Array<HasAnswers>,
-  options: CommentGroupingOptions = {}
-): Array<CommentGroup> {
+  options: CommentGroupingOptions
+}): Array<CommentGroup> {
   const { invertProsAndCons = false } = options;
 
   const prosComments: Array<VAAComment> = [];
@@ -99,10 +108,10 @@ export function getComments(
         const categoricalQuestion = question as SingleChoiceCategoricalQuestion;
         const choiceId = answer.value as Id;
 
-        // For categorical questions, function normalizeValue is used only to validate the choice
+        // For categorical questions, use function ensureValue to validate the choice
         // The actual grouping is done by the choiceId from the answer's value
         try {
-          if (isMissingValue(categoricalQuestion.normalizeValue(choiceId))) {
+          if (isMissingValue(categoricalQuestion.ensureValue(choiceId))) {
             continue;
           }
         } catch (error) {

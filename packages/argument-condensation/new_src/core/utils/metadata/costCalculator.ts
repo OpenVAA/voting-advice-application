@@ -1,20 +1,22 @@
 /**
- * LLM Cost Calculator
- *
- * Calculates the cost of LLM calls based on provider and model pricing.
- * Currently supports OpenAI models with their latest pricing.
+ * Token usage information
  */
-
 export interface TokenUsage {
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
 }
 
+/**
+ * Model pricing information
+ */
 export interface ModelPricing {
-  input: number; // Cost per 1M input tokens
-  cachedInput: number; // Cost per 1M cached input tokens
-  output: number; // Cost per 1M output tokens
+  /** Cost per 1M input tokens */
+  input: number;
+  /** Cost per 1M cached input tokens */
+  cachedInput: number;
+  /** Cost per 1M output tokens */
+  output: number;
 }
 
 // OpenAI Model Pricing (as of latest update)
@@ -73,6 +75,9 @@ const OPENAI_MODEL_PRICING: Record<string, ModelPricing> = {
 
 /**
  * Determines if a provider is OpenAI based on common provider identifiers
+ * 
+ * @param provider - The LLM provider
+ * @returns True if the provider is OpenAI, false otherwise
  */
 function isOpenAIProvider(provider: string): boolean {
   const normalizedProvider = provider.toLowerCase();
@@ -93,12 +98,17 @@ function isOpenAIProvider(provider: string): boolean {
  * @param useCachedInput - Whether input tokens should be treated as cached (optional)
  * @returns Cost in USD, or 0 if provider is not supported or model not found
  */
-export function calculateLLMCost(
-  provider: string,
-  model: string,
-  usage: TokenUsage,
-  useCachedInput: boolean = false
-): number {
+export function calculateLLMCost({
+  provider,
+  model,
+  usage,
+  useCachedInput = false
+}: {
+  provider: string;
+  model: string;
+  usage: TokenUsage;
+  useCachedInput?: boolean;
+}): number {
   // Only support OpenAI for now, return 0 for other providers
   // TODO: Add support for other providers
   if (!isOpenAIProvider(provider)) {

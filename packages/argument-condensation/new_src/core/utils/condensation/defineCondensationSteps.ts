@@ -1,6 +1,6 @@
-import { PromptRegistry } from '../prompts/promptRegistry';
-import { CondensationOperations, MapOperationParams, ProcessingStep, ReduceOperationParams } from '../types';
-import { MapPrompt, ReducePrompt } from '../types/llm/prompt';
+import { PromptRegistry } from '../../prompts/promptRegistry';
+import { CondensationOperations, MapOperationParams, ProcessingStep, ReduceOperationParams } from '../../types';
+import { MapPrompt, ReducePrompt } from '../../types/llm/prompt';
 
 /**
  * Defines the steps for a condensation operation based on the number of comments.
@@ -14,13 +14,19 @@ import { MapPrompt, ReducePrompt } from '../types/llm/prompt';
  * @param language - The language for the prompts.
  * @returns An array of processing steps for the condensation operation.
  */
-export async function createCondensationSteps(
+export async function createCondensationSteps({
+  totalComments,
+  mapPromptId,
+  mapIterationPromptId,
+  reducePromptId,
+  language
+}: {
   totalComments: number,
   mapPromptId: string,
   mapIterationPromptId: string,
   reducePromptId: string,
   language: string
-): Promise<Array<ProcessingStep>> {
+}): Promise<Array<ProcessingStep>> {
   const promptRegistry = await PromptRegistry.create(language);
 
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;

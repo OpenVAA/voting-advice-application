@@ -4,7 +4,9 @@
  * @param variables The variables to embed
  * @returns The prompt text with variables embedded
  */
-export function setPromptVars(promptText: string, variables: Record<string, unknown>): string {
+export function setPromptVars( 
+  { promptText, variables }: { promptText: string, variables: Record<string, unknown> }
+ ): string {
   let result = promptText;
 
   // Replace template variables using {{variable}} syntax

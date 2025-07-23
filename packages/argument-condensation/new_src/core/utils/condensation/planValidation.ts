@@ -5,15 +5,18 @@ import {
   ProcessingStep,
   ReduceOperationParams,
   RefineOperationParams
-} from '../types';
+} from '../../types';
 
 /*********** Public API ******************************************************/
 
 /**
  * Validate an entire condensation plan.
  * Throws if something is wrong – no return value on success.
+ * 
+ * @param steps - The steps of the condensation plan
+ * @param commentCount - The number of comments in the input
  */
-export function validatePlan(steps: Array<ProcessingStep>, commentCount: number): void {
+export function validatePlan({ steps, commentCount }: { steps: Array<ProcessingStep>, commentCount: number }): void {
   if (steps.length === 0) {
     throw new Error('Condensation plan must have at least one step');
   }

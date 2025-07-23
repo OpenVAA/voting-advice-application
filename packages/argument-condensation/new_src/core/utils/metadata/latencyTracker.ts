@@ -1,14 +1,13 @@
 /**
- * Latency Tracker
- *
- * Utility class for tracking execution time of operations, particularly LLM calls.
- * Provides high-precision timing measurements using performance.now().
+ * A measurement of the execution time of an operation
  */
-
 export interface LatencyMeasurement {
+  /** The start time of the operation */
   startTime: number;
+  /** The end time of the operation */
   endTime?: number;
-  duration?: number; // in milliseconds
+  /** The duration of the operation in milliseconds */
+  duration?: number;
 }
 
 /**
