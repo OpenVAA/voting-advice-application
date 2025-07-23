@@ -9,20 +9,18 @@ export class OpenAIRateLimiter {
   public readonly tpmLimit: number;
   public readonly rpmLimit: number;
   public model: string;
-  private readonly safetyMargin: number = 0.95; // Use 95% of capacity
-  
 
   constructor(model: string) {
     this.model = model;
     // Set limits based on model - these are typical OpenAI limits
     const limits = this.getModelTPMLimits(model);
-    this.tpmLimit = Math.floor(limits.tpm * this.safetyMargin);
-    this.rpmLimit = Math.floor(limits.rpm * this.safetyMargin); 
+    this.tpmLimit = limits.tpm;
+    this.rpmLimit = limits.rpm;
   }
 
   private getModelTPMLimits(model: string): { tpm: number; rpm: number } {
     const modelLimits: Record<string, { tpm: number; rpm: number }> = {
-      'gpt-4o': { tpm: 30000, rpm: 500 },
+      'gpt-4o': { tpm: 40000, rpm: 500 },
       'gpt-4o-mini': { tpm: 200000, rpm: 500 },
       'o1-mini': { tpm: 200000, rpm: 500 },
       'o3-mini': { tpm: 200000, rpm: 500 },

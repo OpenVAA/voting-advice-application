@@ -27,7 +27,6 @@ export class ModelState {
     } else {
       this.currentFallbackModel = null; // No fallback until daily limit hit
     }
-    console.info(`🔄 INITIALIZATION: Model rotation: Main=${this.currentMainModel}, Fallback=${this.currentFallbackModel || 'none'}`);
   }
   
   isDailyLimited(model: string): boolean {
