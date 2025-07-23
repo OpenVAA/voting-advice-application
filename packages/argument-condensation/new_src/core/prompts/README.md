@@ -1,6 +1,7 @@
 Expected directory structure:
 
 prompts/
+|-fi/
 ├── REFINE/
 │ ├── likertPros/
 │ │ ├── initialBatchPrompt.yaml
@@ -23,5 +24,8 @@ prompts/
 │ └── groundingPrompt.yaml
 └── likertCons/
 └── groundingPrompt.yaml
+|
+|-en/
+|    etc.
 
 The filenames are currently hardcoded in the condenser.

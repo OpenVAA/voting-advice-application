@@ -1,6 +1,9 @@
 // Core argument type
 export type { Argument } from './base/argument';
 
+// API types
+export type { CommentGroup } from './api/commentGroup';
+
 // Condensation primitives (operations, their params & processing step interface)
 export type { CondensationOperation } from './condensation/operation';
 export { CondensationOperations } from './condensation/operation';
@@ -28,4 +31,4 @@ export type { PromptCall } from './llm/promptCall';
 
 // LLM response wrapper
 export type { ResponseWithArguments } from './llm/responseWithArguments';
-export { RESPONSE_WITH_ARGUMENTS_CONTRACT as ResponseWithArgumentsContract } from './llm/responseWithArguments';
+export { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './llm/responseWithArguments';

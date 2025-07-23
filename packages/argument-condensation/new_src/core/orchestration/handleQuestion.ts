@@ -9,6 +9,7 @@ import { LLMProvider } from '@openvaa/llm';
 import { Condenser } from '../condenser';
 import { PromptRegistry } from '../prompts/promptRegistry';
 import {
+  CommentGroup,
   CONDENSATION_TYPE,
   CondensationOutputType,
   CondensationRunInput,
@@ -16,12 +17,10 @@ import {
   MapPrompt,
   ProcessingStep,
   ReducePrompt,
+  SupportedQuestion,
   VAAComment
 } from '../types';
-import { CommentGroup } from '../types/api/commentGroup';
-import { SupportedQuestion } from '../types/base/supportedQuestion';
-import { createCondensationSteps } from '../utils/defineCondensationSteps';
-import { getComments } from '../utils/getComments';
+import { createCondensationSteps, getComments } from '../utils';
 
 /**
  * Main API: Condense arguments for a single question.
@@ -50,7 +49,7 @@ export async function handleQuestion({
   maxCommentsPerGroup?: number;
   invertProsAndCons?: boolean;
 }): Promise<Array<CondensationRunResult>> {
-  const commentGroups = getComments(question, entities, { invertProsAndCons });
+  const commentGroups = getComments({ question, entities, options: { invertProsAndCons } });
 
   // Check comment group sizes and issue warnings if necessary
   for (const group of commentGroups) {
@@ -301,13 +300,13 @@ async function runSingleCondensation({
   }
 
   // Get parameters batchSize and denominators for map-reduce
-  const steps: Array<ProcessingStep> = await createCondensationSteps(
-    comments.length,
+  const steps: Array<ProcessingStep> = await createCondensationSteps({
+    totalComments: comments.length,
     mapPromptId,
-    iterationPromptId,
+    mapIterationPromptId: iterationPromptId,
     reducePromptId,
     language
-  );
+  });
 
   // Create condensation input
   const input: CondensationRunInput = {

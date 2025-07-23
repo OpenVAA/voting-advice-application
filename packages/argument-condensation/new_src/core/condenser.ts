@@ -13,10 +13,10 @@ import {
   PromptCall,
   ReduceOperationParams,
   RefineOperationParams,
+  RESPONSE_WITH_ARGUMENTS_CONTRACT,
   ResponseWithArguments,
   VAAComment
 } from './types';
-import { ResponseWithArgumentsContract } from './types/llm/responseWithArguments';
 import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from './utils';
 import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
 
@@ -58,7 +58,7 @@ export class Condenser {
     const processingSteps: Array<ProcessingStep> = this.input.options.processingSteps || [];
 
     // Validate the plan before execution
-    validatePlan(processingSteps, this.input.comments.length);
+    validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
@@ -171,7 +171,7 @@ export class Condenser {
     const batchSize = params.batchSize;
 
     // Split comments into batches for sequential processing
-    const batches = createBatches(comments, batchSize);
+    const batches = createBatches({ array: comments, batchSize });
 
     // Create tree nodes for each batch - these will be processed sequentially
     const batchNodeIds: Array<string> = [];
@@ -211,7 +211,7 @@ export class Condenser {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
 
-      const promptText = setPromptVars(prompt, templateVariables);
+      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables });
 
       // Prepare messages for LLM
       const messages = [{ role: 'system' as const, content: promptText }];
@@ -233,7 +233,7 @@ export class Condenser {
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
+        parsedResponse = LlmParser.parse(llmResponse.content, RESPONSE_WITH_ARGUMENTS_CONTRACT);
 
         // Update tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
@@ -280,7 +280,7 @@ export class Condenser {
   ): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
-    const batches = createBatches(comments, batchSize);
+    const batches = createBatches({ array: comments, batchSize });
 
     // PRE-PROCESSING: Validate batch token counts to prevent API failures
     // This is specific to MAP because it typically processes the largest comment volumes
@@ -293,7 +293,7 @@ export class Condenser {
         topic: this.input.question.name,
         comments: batch.map((c) => c.text).join('\n')
       };
-      const promptText = setPromptVars(params.condensationPrompt, templateVariables);
+      const promptText = setPromptVars({ promptText: params.condensationPrompt, variables: templateVariables });
       return { messages: [{ role: 'system' as const, content: promptText }] };
     });
 
@@ -448,7 +448,7 @@ export class Condenser {
       const coefficient = Math.ceil(numArgumentLists / availableCommentBatches);
       commentsToUse = Array.from({ length: coefficient }, () => availableComments).flat();
     }
-    const commentBatches = createBatches(commentsToUse, params.batchSize);
+    const commentBatches = createBatches({ array: commentsToUse, batchSize: params.batchSize });
 
     // Use the common parallel processing infrastructure
     const result = await this._executeParallelOperation({
@@ -570,7 +570,7 @@ export class Condenser {
     // Transform each item into an LLM input using operation-specific logic
     const llmInputs = items.map((item, i) => {
       const templateVariables = prepareTemplateVars(item, i);
-      const promptText = setPromptVars(prompt, templateVariables);
+      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables });
       return {
         messages: [{ role: 'system' as const, content: promptText }],
         temperature: 0.7,
@@ -593,7 +593,7 @@ export class Condenser {
       const nodeId = nodeIds[i];
 
       try {
-        const parsedResponse = LlmParser.parse(llmResponse.content, ResponseWithArgumentsContract);
+        const parsedResponse = LlmParser.parse(llmResponse.content, RESPONSE_WITH_ARGUMENTS_CONTRACT);
         successfulResponses[i] = llmResponse;
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
@@ -623,7 +623,7 @@ export class Condenser {
         llmInputs,
         operation,
         2, // max retries
-        ResponseWithArgumentsContract,
+        RESPONSE_WITH_ARGUMENTS_CONTRACT,
         this.input.options.llmProvider,
         this.input.options.llmModel
       );
@@ -632,7 +632,7 @@ export class Condenser {
       for (const { index, response } of retryResults) {
         const nodeId = nodeIds[index];
         try {
-          const parsedResponse = LlmParser.parse(response.content, ResponseWithArgumentsContract);
+          const parsedResponse = LlmParser.parse(response.content, RESPONSE_WITH_ARGUMENTS_CONTRACT);
           console.info(`\n=== ${operation} ${logIdentifier} ${index + 1}/${items.length} (RETRY SUCCESS) ===`);
           successfulResponses[index] = response;
           this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
@@ -704,15 +704,15 @@ export class Condenser {
     const latency = this.latencyTracker.getDuration(operationId) || 0;
 
     // Calculate cost for this LLM call
-    const callCost = calculateLLMCost(
-      'openai', // TODO: get actual provider from llmProvider
-      llmResponse.model,
-      {
+    const callCost = calculateLLMCost({
+      provider: 'openai', // TODO: get actual provider from llmProvider
+      model: llmResponse.model,
+      usage: {
         promptTokens: llmResponse.usage.promptTokens,
         completionTokens: llmResponse.usage.completionTokens,
         totalTokens: llmResponse.usage.totalTokens
       }
-    );
+    });
 
     // Add to total cost
     this.totalCost += callCost;
