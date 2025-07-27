@@ -1,33 +1,17 @@
-import { LLMResponseContract } from '../../../../../llm/src/utils/llmParser';
 import { Argument } from '../base/argument';
 
 /**
  * Expected structure for LLM response containing arguments and reasoning
+ * 
+ * @example
+ * const response: ResponseWithArguments = {
+ *   arguments: [{ id: '123', text: 'This is an argument' }],
+ *   reasoning: 'Reasoning for why the arguments are valid'
+ * };
+ * 
+ * 
  */
 export interface ResponseWithArguments {
   arguments: Array<Argument>;
   reasoning: string;
 }
-
-/**
- * Contract for ResponseWithArguments validation
- */
-export const RESPONSE_WITH_ARGUMENTS_CONTRACT: LLMResponseContract<ResponseWithArguments> = {
-  validate(obj: unknown): obj is ResponseWithArguments {
-    if (!obj || typeof obj !== 'object') return false;
-
-    const candidate = obj as Record<string, unknown>;
-
-    return (
-      Array.isArray(candidate.arguments) &&
-      typeof candidate.reasoning === 'string' &&
-      candidate.arguments.every((arg: unknown) => {
-        if (!arg || typeof arg !== 'object') {
-          return false;
-        }
-        const argCandidate = arg as Record<string, unknown>;
-        return typeof argCandidate.id === 'string' && typeof argCandidate.text === 'string';
-      })
-    );
-  }
-};

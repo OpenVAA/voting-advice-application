@@ -2,22 +2,27 @@ import { CondensationOutputType } from './condensationType';
 import { Argument } from '../base/argument';
 
 /**
- * Performance metrics for evaluating condensation quality and efficiency.
+ * Performance metrics for evaluating condensation quality and efficiency. 
+ * This interface can contain either metrics for a single run or for multiple runs.
+ * 
+ * @example
+ * 
+ * const metrics: CondensationRunMetrics = {
+ *   duration: 420,
+ *   nLlmCalls: 66,
+ *   cost: 1.01,
+ *   tokensUsed: { inputs: 6700, outputs: 6800, total: 13500 }
+ * };
  */
 export interface CondensationRunMetrics {
-  /** The duration of the condensation process (seconds) */
-  duration: number; // seconds
-  /** The number of LLM API calls made */
+  /** Duration in seconds */
+  duration: number;
   nLlmCalls: number;
-  /** The cost of the condensation process (EUR) */
-  cost: number; // EUR
-  /** The number of tokens used in the condensation process */
+  /** Cost in dollars */
+  cost: number;
   tokensUsed: {
-    /** The number of input tokens used */
     inputs: number;
-    /** The number of output tokens used */
     outputs: number;
-    /** The total number of tokens used */
     total: number;
   };
 }
@@ -25,27 +30,42 @@ export interface CondensationRunMetrics {
 /**
  * Complete result of a condensation run.
  * Contains arguments, metadata, and evaluation metrics.
+ * A single run contains only one type of output, so processing a question usually 
+ * involves multiple runs with different output types, e.g. finding pros and cons separately.
+ * 
+ * @example
+ * 
+ * const result: CondensationRunResult = {
+ *   runId: 'i-am-a-unique-run-id',
+ *   condensationType: 'likertCons',
+ *   arguments: [],
+ *   metrics: { 
+ *     duration: 420,
+ *     nLlmCalls: 66,
+ *     cost: 1.01,
+ *     tokensUsed: { inputs: 6700, outputs: 6800, total: 13500 }
+ *   },
+ *   success: true,
+ *   metadata: {
+ *     llmModel: 'gpt-4o',
+ *     language: 'en',
+ *     startTime: new Date(),
+ *     endTime: new Date()
+ *   }
  */
 export interface CondensationRunResult {
-  /** The unique identifier for this run */
   runId: string;
-  /** The type of condensation run */
+  /** The type of condensation run. Common types are likertCons, likertPros, categoricalPros, booleanCons and booleanPros */
   condensationType: CondensationOutputType;
-  /** The extracted arguments */
   arguments: Array<Argument>;
-  /** Performance metrics */
+  /** Performance metrics containing duration, number of LLM calls, cost, and token usage */
   metrics: CondensationRunMetrics;
-  /** Whether the run was successful */
   success: boolean;
-  /** Additional metadata */
+  /** Metadata containing the LLM model, language, start and end times */
   metadata: {
-    /** The LLM model used */
     llmModel: string;
-    /** The language of the input data */
     language: string;
-    /** The start time of the run */
     startTime: Date;
-    /** The end time of the run */
     endTime: Date;
   }; 
 }

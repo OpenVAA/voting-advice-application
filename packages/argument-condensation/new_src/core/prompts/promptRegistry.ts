@@ -1,21 +1,17 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import {
-  CONDENSATION_TYPE,
-  CondensationOperation,
-  CondensationOutputType,
-  CondensationPrompt
-} from '../types';
+import { CONDENSATION_TYPE, CondensationOperation, CondensationOutputType, CondensationPrompt } from '../types';
 
 // TODO: (low priority): load only the specific prompt we need
-// TODO: (low priority): code can be cleaned up to use
-// TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to promptText)
+// TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to 'promptText'),
+// so the yaml's other variables are unreachable - if someone wants to test out different prompts using the same yaml,
+// this needs to be changed. 
 
 /**
- * Manages condensation prompts organized by operations and output types (likert pros or cons).
- * Loads the prompt from the promptText variable of the yaml and ignores the rest of the yaml.
- * Directory structure: core/prompts/operation/outputType/prompt.yaml
+ * Manages condensation prompts organized by operations and condensation types.
+ * Loads the prompt from the 'promptText' variable of the yaml. 
+ * Directory structure: core/prompts/'operation'/'condensationType'/'promptType'.yaml
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);
@@ -31,7 +27,7 @@ export class PromptRegistry {
   }
 
   /**
-   * Recursively find all YAML files under a directory
+   * Recursively find all YAML files under a directory. Helper function for loadPrompts
    */
   private async findYamlFiles(dir: string): Promise<Array<string>> {
     let results: Array<string> = [];
@@ -52,23 +48,28 @@ export class PromptRegistry {
   }
 
   /**
-   * Load all prompts from the registry.
+   * Load all prompts from the registry. 
+   * 
+   * @param language - The language to load prompts for
    */
   async loadPrompts(language: string): Promise<void> {
     const operations = await fs.readdir(`${this.promptsDir}/${language}`);
 
+    // Iterate over all operations to load prompts for
+    // Goes through all operations, even though we may not use all of them!
+    // Can be optimized but it's not really a significant performance improvement
     for (const operation of operations) {
       const operationDir = path.join(`${this.promptsDir}/${language}`, operation);
       const operationStat = await fs.stat(operationDir).catch(() => null);
-      if (!operationStat || !operationStat.isDirectory()) continue;
+      if (!operationStat || !operationStat.isDirectory()) continue; // Skip if not a directory
 
       const outputTypes = await fs.readdir(operationDir);
       for (const outputType of outputTypes) {
         const outputTypeDir = path.join(operationDir, outputType);
         const outputTypeStat = await fs.stat(outputTypeDir).catch(() => null);
-        if (!outputTypeStat || !outputTypeStat.isDirectory()) continue;
+        if (!outputTypeStat || !outputTypeStat.isDirectory()) continue; // Skip if not a directory
 
-        // Validate that this is a valid output type ()
+        // Validate that the condensation type exists
         const allCondensationTypes = [
           ...Object.values(CONDENSATION_TYPE.LIKERT),
           ...Object.values(CONDENSATION_TYPE.BOOLEAN),
@@ -80,6 +81,7 @@ export class PromptRegistry {
           continue;
         }
 
+        // Load all prompts for the current operation and output type
         const yamlFiles = await this.findYamlFiles(outputTypeDir);
         for (const yamlFile of yamlFiles) {
           try {
@@ -90,11 +92,12 @@ export class PromptRegistry {
               params?: Record<string, unknown>;
             };
 
+            // Create the prompt object and set it in the registry for later use
             const prompt: CondensationPrompt = {
               promptId: promptData.promptId,
               promptText: promptData.promptText,
               operation: operation as CondensationOperation,
-              condensationGoal: outputType as
+              condensationType: outputType as
                 | typeof CONDENSATION_TYPE.LIKERT.PROS
                 | typeof CONDENSATION_TYPE.LIKERT.CONS,
               params: (promptData.params || {}) as unknown as CondensationPrompt['params']
@@ -111,6 +114,9 @@ export class PromptRegistry {
 
   /**
    * Get a prompt by ID
+   * 
+   * @param promptId - The ID of the prompt to get
+   * @returns The prompt if found, otherwise undefined
    */
   getPrompt(promptId: string): CondensationPrompt | undefined {
     return this.registry.get(promptId);
@@ -118,12 +124,14 @@ export class PromptRegistry {
 
   /**
    * List all available prompts
+   * 
+   * @returns An array of all prompts in the registry (provides their IDs, operation and outputType)
    */
   listPrompts(): Array<{ promptId: string; operation: string; outputType: string }> {
     return Array.from(this.registry.values()).map((p) => ({
       promptId: p.promptId,
       operation: p.operation,
-      outputType: p.condensationGoal
+      outputType: p.condensationType
     }));
   }
 }

@@ -1,22 +1,37 @@
 import { CondensationOperation } from '../condensation/operation';
 
 /**
- * Represents an API call instance of a prompt.
+ * Represents a single API call. Contains the raw input and output of the call with knowledge of the usage context
+ *
+ * @example
+ *
+ * const promptCall: PromptCall = {
+ *   promptTemplateId: '123',
+ *   operation: "MAP",
+ *   rawInputText: 'The input text for the prompt',
+ *   rawOutputText: 'The output text for the prompt',
+ *   modelUsed: 'gpt-4o',
+ *   timestamp: '2021-01-01T00:00:00.000Z',
+ *   metadata: {
+ *     tokens: {
+ *       input: 100,
+ *       output: 200,
+ *       total: 300
+ *     },
+ *     latency: 1000,
+ *     cost: 0.10
+ *   }
+ * };
  */
 export interface PromptCall {
-  /** The unique identifier for this prompt call */
-  promptId: string;
-  /** The operation this prompt is associated with */
+  /** The prompt template this call used */
+  promptTemplateId: string;
+  /** The operation this prompt is associated with, e.g. MAP, REFINE, etc */
   operation: CondensationOperation;
-  /** The raw input text for the prompt */
   rawInputText: string;
-  /** The raw output text for the prompt */
   rawOutputText: string;
-  /** The model to use for the prompt */
-  model: string;
-  /** When this call was made */
+  modelUsed: string;
   timestamp: string;
-  /** Metadata about the prompt call */
   metadata: {
     /** The number of tokens used for the prompt */
     tokens: {

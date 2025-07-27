@@ -13,11 +13,11 @@ import {
   PromptCall,
   ReduceOperationParams,
   RefineOperationParams,
-  RESPONSE_WITH_ARGUMENTS_CONTRACT,
   ResponseWithArguments,
   VAAComment
 } from './types';
 import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from './utils';
+import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './validators';
 import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
 
 /**
@@ -59,9 +59,7 @@ export class Condenser {
 
     // Early validation: check for empty comments
     if (this.input.comments.length === 0) {
-      throw new Error(
-        'Cannot run condensation with empty comments array. At least one comment is required.'
-      );
+      throw new Error('Cannot run condensation with empty comments array. At least one comment is required.');
     }
 
     // Validate the plan before execution
@@ -116,7 +114,7 @@ export class Condenser {
       },
       success: true,
       metadata: {
-        llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].model : 'unknown',
+        llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].modelUsed : 'unknown',
         language: this.input.options.language,
         startTime: this.startTime,
         endTime: endTime
@@ -725,11 +723,11 @@ export class Condenser {
     this.totalCost += callCost;
 
     return {
-      promptId,
+      promptTemplateId: promptId,
       operation,
       rawInputText,
       rawOutputText: llmResponse.content,
-      model: llmResponse.model,
+      modelUsed: llmResponse.model,
       timestamp: new Date().toISOString(),
       metadata: {
         tokens: {

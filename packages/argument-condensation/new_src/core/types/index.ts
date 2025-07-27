@@ -29,6 +29,5 @@ export type { OperationNode, OperationTree } from './base/operationTree';
 export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, RefinePrompt } from './llm/prompt';
 export type { PromptCall } from './llm/promptCall';
 
-// LLM response wrapper
+// LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
-export { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './llm/responseWithArguments';

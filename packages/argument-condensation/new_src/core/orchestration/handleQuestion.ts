@@ -59,6 +59,7 @@ export async function handleQuestion({
   maxCommentsPerGroup?: number;
   invertProsAndCons?: boolean;
 }): Promise<Array<CondensationRunResult>> {
+  // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
   const commentGroups = getComments({ question, entities, options: { invertProsAndCons } });
 
   // Check comment group sizes and issue warnings if necessary
@@ -122,7 +123,7 @@ export async function handleQuestion({
 
 /**
  * Condense arguments for a boolean question.
- * Generates pros (true) and cons (false) arguments.
+ * Generates pros (true) and cons (false) arguments using separate condensation runs & different comments
  * 
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
@@ -185,7 +186,7 @@ async function handleBooleanQuestion({
 
 /**
  * Condense arguments for an ordinal question.
- * Generates pros (high values) and cons (low values) arguments.
+ * Generates pros (high values) and cons (low values) arguments using separate condensation runs & different comments
  * 
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
@@ -214,7 +215,8 @@ async function handleOrdinalQuestion({
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
-  // Condense comments into pros and cons using intelligently filtered comments
+  // Condense comments into pros and cons using comments that have been chosen by their answer value
+  // E.g. for likert-5: use low-scale (1-2) for cons, high-scale (4-5) for pros
   for (const group of commentGroups) {
     if (group.type === 'pro') {
       const prosResult = await runSingleCondensation({
@@ -248,7 +250,8 @@ async function handleOrdinalQuestion({
 
 /**
  * Condense arguments for a categorical question.
- * Generates pros arguments for each category.
+ * Generates pros arguments for each category using separate condensation runs.
+ * Uses category X's comments exclusively to find pros for category X
  * 
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
@@ -298,7 +301,11 @@ async function handleCategoricalQuestion({
 }
 
 /**
- * Condense arguments for a single question.
+ * Condense arguments for a single group of comments. 
+ * A question usually has multiple groups of comments (e.g. pro and con comment groups for boolean and likert questions),
+ * so this function is called multiple times for a single question.
+ * Condensation type determines both the input and output type. First level is question type (input), second level is output type.
+ * E.g. CONDENSATION_TYPE.BOOLEAN.PROS is a boolean question with pros as output.
  * 
  * @param question - The question to condense arguments for
  * @param comments - The comments to condense
@@ -309,6 +316,18 @@ async function handleCategoricalQuestion({
  * @param runId - The ID of the run
  * @param maxCommentsPerGroup - The maximum number of comments per group
  * @returns The condensation results as a CondensationRunResult
+ * 
+ * @example
+ * const results = await runSingleCondensation({
+ *   question: question as BooleanQuestion,
+ *   comments: Array<VAAComment>,
+ *   condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
+ *   llmProvider: OpenAIProvider,
+ *   llmModel: 'gpt-4o',
+ *   language: 'en',
+ *   runId: 'example-run-id',
+ *   maxCommentsPerGroup: 1000,
+ * });
  */
 async function runSingleCondensation({
   question,
@@ -330,24 +349,36 @@ async function runSingleCondensation({
   maxCommentsPerGroup: number;
 }): Promise<CondensationRunResult> {
   // Get prompts from registry
-  // TODO: Make configurable - makes it possible to test different prompts
+  // TODO: Make configurable - makes it possible to test different prompts (not needed for now)
+  // There are two ways to improve configuration: 
+  // 1. Take in prompt ids in the handleQuestion function --> we can configure which yaml's prompt to use
+  // = providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder provides
+  // flexibility to test different prompts without further modifications
+  // 2. Modify the promptRegistry to be able to load prompts with a different variable than 'promptText' (which is currentlyhardcoded)
+  // = you could test different prompts without having to create a new yaml file
   const mapPromptId = `map_${condensationType}_condensation_v1`;
   const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
   const iterationPromptId = `map_${condensationType}_feedback_v1`;
 
   const promptRegistry = await PromptRegistry.create(language);
 
-  // TODO: clean up getting prompts from registry
+  // Get prompts (here it still includes some metadata like the promptId)
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;
   const reducePrompt = promptRegistry.getPrompt(reducePromptId) as ReducePrompt;
   const iterationPrompt = promptRegistry.getPrompt(iterationPromptId) as MapPrompt;
 
-  // TODO: depends on the plan which prompts are needed
+  // Check that the required prompts are found. By default we use map-reduce,
+  // with a single iteration pass over the map results.
+  // If you want to use a custom plan, you need to implement your own steps and own sanity checks here
   if (!mapPrompt || !reducePrompt || !iterationPrompt) {
     throw new Error(`Required prompts not found for condensation type: ${condensationType}`);
   }
 
-  // Get parameters batchSize and denominators for map-reduce
+  // Get parameters for map-reduce using a helper. 
+  // Namely, calculate a sensible 'batchSize' (how many comments to map at a time?) 
+  // and 'denominators' (how many argument lists to reduce to one list at a time?).   
+  // If you want to use other parameters or operations (like refine or ground), 
+  // you must implement your own helper or simply create your own steps here
   const steps: Array<ProcessingStep> = await createCondensationSteps({
     totalComments: comments.length,
     mapPromptId,
@@ -356,7 +387,8 @@ async function runSingleCondensation({
     language
   });
 
-  // Create condensation input
+  // Create condensation input that defines all inputs and the configuration for the condenser,
+  // which is the condensation logic engine that orchestrates LLM calls and their parsing
   const input: CondensationRunInput = {
     question,
     comments,
