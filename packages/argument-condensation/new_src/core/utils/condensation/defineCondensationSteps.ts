@@ -1,4 +1,4 @@
-import { PromptRegistry } from '../../prompts/promptRegistry';
+import { PromptRegistry } from '../../condensation/prompts/promptRegistry';
 import { CondensationOperations, MapOperationParams, ProcessingStep, ReduceOperationParams } from '../../types';
 import { MapPrompt, ReducePrompt } from '../../types/llm/prompt';
 

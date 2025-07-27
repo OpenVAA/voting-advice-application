@@ -1,5 +1,5 @@
-import { LLMResponseContract } from '../../../../llm/src/utils/llmParser';
-import { ResponseWithArguments } from '../types/llm/responseWithArguments';
+import { LLMResponseContract } from '../../../../../llm/src/utils/llmParser';
+import { ResponseWithArguments } from '../../types/llm/responseWithArguments';
 
 /**
  * Contract for validating `ResponseWithArguments`.

@@ -1,5 +1,6 @@
 import { LLMResponse, retryFailedCalls } from '@openvaa/llm';
 import * as path from 'path';
+import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './validators';
 import {
   Argument,
   CondensationOperation,
@@ -15,10 +16,9 @@ import {
   RefineOperationParams,
   ResponseWithArguments,
   VAAComment
-} from './types';
-import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from './utils';
-import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './validators';
-import { OperationTreeBuilder } from './visualization/operationTreeBuilder';
+} from '../types';
+import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from '../utils';
+import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
 
 /**
  * Stateful condenser that manages the condensation process based on a customizable plan.
@@ -99,7 +99,7 @@ export class Condenser {
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
-    await this.treeBuilder.saveTree(path.join(__dirname, '../data/operationTrees', `${this.runId}.json`));
+    await this.treeBuilder.saveTree(path.join(__dirname, '../../data/operationTrees', `${this.runId}.json`));
 
     // Return the final result with all metadata
     return {

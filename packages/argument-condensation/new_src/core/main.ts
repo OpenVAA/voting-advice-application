@@ -6,8 +6,8 @@ import {
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
 import { LLMProvider } from '@openvaa/llm';
-import { Condenser } from '../condenser';
-import { PromptRegistry } from '../prompts/promptRegistry';
+import { Condenser } from './condensation/condenser';
+import { PromptRegistry } from './condensation/prompts/promptRegistry';
 import {
   CommentGroup,
   CONDENSATION_TYPE,
@@ -19,8 +19,8 @@ import {
   ReducePrompt,
   SupportedQuestion,
   VAAComment
-} from '../types';
-import { createCondensationSteps, getComments } from '../utils';
+} from './types';
+import { createCondensationSteps, getComments } from './utils';
 
 /**
  * Main API: Condense arguments for a single question.
@@ -29,7 +29,7 @@ import { createCondensationSteps, getComments } from '../utils';
  * - Boolean: Generates pros (true) and cons (false) arguments
  * - Ordinal: Generates pros (high values) and cons (low values) arguments
  * - Categorical: Generates pros arguments for each category
- * 
+ *
  * @param question - The question to condense arguments for
  * @param entities - The entities with answers
  * @param llmProvider - The LLM provider
@@ -124,7 +124,7 @@ export async function handleQuestion({
 /**
  * Condense arguments for a boolean question.
  * Generates pros (true) and cons (false) arguments using separate condensation runs & different comments
- * 
+ *
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
  * @param llmProvider - The LLM provider
@@ -187,7 +187,7 @@ async function handleBooleanQuestion({
 /**
  * Condense arguments for an ordinal question.
  * Generates pros (high values) and cons (low values) arguments using separate condensation runs & different comments
- * 
+ *
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
  * @param llmProvider - The LLM provider
@@ -252,7 +252,7 @@ async function handleOrdinalQuestion({
  * Condense arguments for a categorical question.
  * Generates pros arguments for each category using separate condensation runs.
  * Uses category X's comments exclusively to find pros for category X
- * 
+ *
  * @param question - The question to condense arguments for
  * @param commentGroups - The comment groups to condense
  * @param llmProvider - The LLM provider
@@ -301,12 +301,12 @@ async function handleCategoricalQuestion({
 }
 
 /**
- * Condense arguments for a single group of comments. 
+ * Condense arguments for a single group of comments.
  * A question usually has multiple groups of comments (e.g. pro and con comment groups for boolean and likert questions),
  * so this function is called multiple times for a single question.
  * Condensation type determines both the input and output type. First level is question type (input), second level is output type.
  * E.g. CONDENSATION_TYPE.BOOLEAN.PROS is a boolean question with pros as output.
- * 
+ *
  * @param question - The question to condense arguments for
  * @param comments - The comments to condense
  * @param condensationType - The type of condensation to perform
@@ -316,7 +316,7 @@ async function handleCategoricalQuestion({
  * @param runId - The ID of the run
  * @param maxCommentsPerGroup - The maximum number of comments per group
  * @returns The condensation results as a CondensationRunResult
- * 
+ *
  * @example
  * const results = await runSingleCondensation({
  *   question: question as BooleanQuestion,
@@ -350,7 +350,7 @@ async function runSingleCondensation({
 }): Promise<CondensationRunResult> {
   // Get prompts from registry
   // TODO: Make configurable - makes it possible to test different prompts (not needed for now)
-  // There are two ways to improve configuration: 
+  // There are two ways to improve configuration:
   // 1. Take in prompt ids in the handleQuestion function --> we can configure which yaml's prompt to use
   // = providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder provides
   // flexibility to test different prompts without further modifications
@@ -374,10 +374,10 @@ async function runSingleCondensation({
     throw new Error(`Required prompts not found for condensation type: ${condensationType}`);
   }
 
-  // Get parameters for map-reduce using a helper. 
-  // Namely, calculate a sensible 'batchSize' (how many comments to map at a time?) 
-  // and 'denominators' (how many argument lists to reduce to one list at a time?).   
-  // If you want to use other parameters or operations (like refine or ground), 
+  // Get parameters for map-reduce using a helper.
+  // Namely, calculate a sensible 'batchSize' (how many comments to map at a time?)
+  // and 'denominators' (how many argument lists to reduce to one list at a time?).
+  // If you want to use other parameters or operations (like refine or ground),
   // you must implement your own helper or simply create your own steps here
   const steps: Array<ProcessingStep> = await createCondensationSteps({
     totalComments: comments.length,

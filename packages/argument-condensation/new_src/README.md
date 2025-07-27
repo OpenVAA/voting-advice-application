@@ -20,10 +20,10 @@ Configure in `runCondensation.ts` using consts:
 
 Automatically saves an operation tree that can be used in the following way.
 
-Go to new_src/core/visualization and run:
+Go to src/core/visualization and run:
 
 ```bash
-python3 -m http.server 8080
+python3 -m http.server 8080 # configure your own port! 
 ```
 
 UI will prompt you to download an operation tree. You can find one in new_src/data/operationTrees. This will show a visualization of the condensation process, including inputs and outputs of each prompt.

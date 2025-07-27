@@ -1,5 +1,5 @@
 // Export main functionality
-export { Condenser } from './core/condenser';
+export { Condenser } from './core/condensation/condenser';
 
 // Export types
 export type { CondensationRunInput, CondensationRunResult } from './core/types';
