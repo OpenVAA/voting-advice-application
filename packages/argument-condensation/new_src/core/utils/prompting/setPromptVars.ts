@@ -2,7 +2,7 @@
  * Utility function to embed template literals in prompt text
  * @param promptText The prompt text with {{variable}} placeholders
  * @param variables The variables to embed
- * @returns The prompt text with variables embedded
+ * @returns The prompt text string with variables embedded
  */
 export function setPromptVars( 
   { promptText, variables }: { promptText: string, variables: Record<string, unknown> }

@@ -5,9 +5,6 @@ export { validatePlan } from './condensation/planValidation';
 export { setPromptVars } from './prompting/setPromptVars';
 export { LlmParser } from '@openvaa/llm'; // re-export for convinience
 
-// Readable timestamp
-export { readableTimestamp } from './metadata/readableTimestamp';
-
 // Create batches
 export { createBatches } from './condensation/createBatches';
 

@@ -24,7 +24,7 @@ import type { VAAComment } from '../../types/condensation/condensationInput';
  * @param question - The question to group comments for
  * @param entities - The entities to get comments from
  * @param options - The options for grouping comments
- * @returns An array of comment groups
+ * @returns An array of comment groups (type commentGroup)
  */
 export function getComments({
   question,

@@ -6,6 +6,8 @@ import { MapPrompt, ReducePrompt } from '../../types/llm/prompt';
  * Defines the steps for a condensation operation based on the number of comments.
  * This function dynamically calculates the optimal batch size for the MAP step
  * and the optimal denominator for each REDUCE step to ensure efficient processing.
+ * Note: this function is ad hoc for our Map-Reduce default condensation process. If you want to use a custom condensation process,
+ * you need to create your own steps with your own logic for parameters are chosen for each step.
  *
  * @param totalComments - The total number of comments to be processed.
  * @param mapPromptId - The ID for the map prompt.
@@ -62,7 +64,7 @@ export async function createCondensationSteps({
 
   // 2. Determine REDUCE denominators
   let numArgumentLists = Math.ceil(totalComments / batchSize);
-  const MAX_DENOMINATOR = 6;
+  const MAX_DENOMINATOR = 6; // TODO: make configurable 
   const MIN_DENOMINATOR = 2;
 
   while (numArgumentLists > 1) {

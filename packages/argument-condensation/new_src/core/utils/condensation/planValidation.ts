@@ -12,6 +12,11 @@ import {
 /**
  * Validate an entire condensation plan.
  * Throws if something is wrong – no return value on success.
+ * Works by checking:
+ * - if the plan has at least one step
+ * - if REFINE is found at any other position than the first step (if yes, throw)
+ * - if the steps are valid (parameters are correct)
+ * - if the output after performing all steps is exactly one argument list (if not, throw)
  * 
  * @param steps - The steps of the condensation plan
  * @param commentCount - The number of comments in the input
@@ -44,12 +49,17 @@ export function validatePlan({ steps, commentCount }: { steps: Array<ProcessingS
     }
   }
 
-  // 2. mathematical output-shape check
+  // 2. mathematical output-shape check: is the output of the pipeline exactly one argument list?
   validatePipelineOutputs(steps, commentCount);
 }
 
 /*********** Internal helpers ************************************************/
 
+/**
+ * Validate the parameters of a step by checking they are of the correct type and have the correct values.
+ * 
+ * @param step - The step to validate
+ */
 function validateStepParameters(step: ProcessingStep): void {
   switch (step.operation) {
     case CondensationOperations.REFINE: {
@@ -82,6 +92,12 @@ function validateStepParameters(step: ProcessingStep): void {
   }
 }
 
+/**
+ * Validate the flow of steps by 
+ * 
+ * @param current - The current step
+ * @param next - The next step
+ */
 function validateStepFlow(current: ProcessingStep, next: ProcessingStep): void {
   if (current.operation === CondensationOperations.MAP && next.operation !== CondensationOperations.REDUCE) {
     throw new Error('MAP must be followed by REDUCE');
@@ -120,7 +136,9 @@ function validatePipelineOutputs(steps: Array<ProcessingStep>, commentCount: num
         break;
       }
       case CondensationOperations.GROUND:
-        /* structure unchanged */ break;
+        // structure unchanged, as ground just makes sure the argument list actually reflects the input comments
+        // even if we have done a lot of refine operations that use LLM-generated outputs as inputs
+        break;
     }
   }
 

@@ -1,25 +1,6 @@
-/**
- * Token usage information
- */
-export interface TokenUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-}
+import { ModelPricing, TokenUsage } from '../../types';
 
-/**
- * Model pricing information
- */
-export interface ModelPricing {
-  /** Cost per 1M input tokens */
-  input: number;
-  /** Cost per 1M cached input tokens */
-  cachedInput: number;
-  /** Cost per 1M output tokens */
-  output: number;
-}
-
-// OpenAI Model Pricing (as of latest update)
+// OpenAI Model Pricing (as of latest update in 7/2025)
 // Prices are per 1M tokens in USD
 const OPENAI_MODEL_PRICING: Record<string, ModelPricing> = {
   // GPT-4.1 family
@@ -109,7 +90,7 @@ export function calculateLLMCost({
   usage: TokenUsage;
   useCachedInput?: boolean;
 }): number {
-  // Only support OpenAI for now, return 0 for other providers
+  // Only supports OpenAI for now, return 0 for other providers
   // TODO: Add support for other providers
   if (!isOpenAIProvider(provider)) {
     return 0;
@@ -154,7 +135,7 @@ export function getModelPricing(provider: string, model: string): ModelPricing |
  */
 export function getSupportedModels(provider: string): Array<string> {
   if (!isOpenAIProvider(provider)) {
-    return [];
+    return []; // only OpenAI supported for now
   }
 
   return Object.keys(OPENAI_MODEL_PRICING);

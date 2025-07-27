@@ -31,3 +31,10 @@ export type { PromptCall } from './llm/promptCall';
 
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
+
+// LLM token & pricing types
+export type { ModelPricing } from './llm/apiCosts';
+export type { TokenUsage } from './llm/tokenUsage';
+
+// LLM latency
+export type { LatencyMeasurement } from './llm/latency';

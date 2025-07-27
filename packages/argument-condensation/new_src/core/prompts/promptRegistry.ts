@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import * as path from 'path';
 import { CONDENSATION_TYPE, CondensationOperation, CondensationOutputType, CondensationPrompt } from '../types';
 
-// TODO: (low priority): load only the specific prompt we need
+// TODO: (low priority): load only the specific yamls we need (currently we load all yamls for a all operations and output types)
 // TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to 'promptText'),
 // so the yaml's other variables are unreachable - if someone wants to test out different prompts using the same yaml,
 // this needs to be changed. 
@@ -15,7 +15,7 @@ import { CONDENSATION_TYPE, CondensationOperation, CondensationOutputType, Conde
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);
-  private registry: Map<string, CondensationPrompt> = new Map();
+  private registry: Map<string, CondensationPrompt> = new Map(); // The key is promptId!
 
   /**
    * Static factory method to create and initialize a PromptRegistry
