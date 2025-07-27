@@ -2,7 +2,7 @@ import { LLMResponseContract } from '../../../../../llm/src/utils/llmParser';
 import { ResponseWithArguments } from '../../types/llm/responseWithArguments';
 
 /**
- * Contract for validating `ResponseWithArguments`.
+ * Contract for validating `ResponseWithArguments` (see example below).
  * This ensures that the LLM output conforms to the expected structure
  * containing arguments and reasoning before it is used further in the application.
  *
@@ -12,7 +12,7 @@ import { ResponseWithArguments } from '../../types/llm/responseWithArguments';
  *   reasoning: 'This is a reason'
  * };
  *
- * const isValid = RESPONSE_WITH_ARGUMENTS_CONTRACT.validate(response); // returns true
+ * const isValid = RESPONSE_WITH_ARGUMENTS_CONTRACT.validate(response); // returns true for this example
  * 
  */
 export const RESPONSE_WITH_ARGUMENTS_CONTRACT: LLMResponseContract<ResponseWithArguments> = {

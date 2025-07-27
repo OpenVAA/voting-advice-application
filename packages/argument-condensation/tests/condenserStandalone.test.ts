@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Condenser } from '../new_src/core/condenser';
-import { PromptRegistry } from '../new_src/core/prompts/promptRegistry';
+import { Condenser } from '../new_src/core/condensation/condenser';
+import { PromptRegistry } from '../new_src/core/condensation/prompts/promptRegistry';
 import { CONDENSATION_TYPE } from '../new_src/core/types';
 import type { CondensationRunInput } from '../new_src/core/types';
 

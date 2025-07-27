@@ -1,6 +1,6 @@
 import { LLMResponse, retryFailedCalls } from '@openvaa/llm';
 import * as path from 'path';
-import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './validators';
+import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import {
   Argument,
   CondensationOperation,
@@ -21,8 +21,49 @@ import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVa
 import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
 
 /**
- * Stateful condenser that manages the condensation process based on a customizable plan.
- * Automatically generates operation tree visualization data for debugging and analysis.
+ * Takes in an array of comments and a configuration object and orchestrates the condensation process using these inputs.
+ * Outputs a list of arguments and automatically generates operation tree visualization data for debugging and analysis.
+ * 
+ * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`. 
+ * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons, 
+ * whereas `handleQuestion` automatically runs both pros and cons. 
+ * 
+ * The data needed for visualizing a run through the condenser will be automatically saved to `data/operationTrees` regardless of 
+ * whether you use the `handleQuestion` function or the condenser class directly.
+ * 
+ * You can choose the condensation run you want to visualize from the `data/operationTrees` folder when the visualization UI is running.
+ * 
+ * @example 
+ * const condenser = new Condenser({
+ *   comments: comments,
+ *   question: question,
+ *   options: {
+ *     runId: 'my-run-id',
+ *     outputType: 'cons',
+ *     processingSteps: [
+ *       { operation: CondensationOperations.MAP, params: { batchSize: 10 } },
+ *       { operation: CondensationOperations.REFINE, params: { batchSize: 10 } },
+ *       { operation: CondensationOperations.REDUCE, params: { batchSize: 10 } },
+ *       { operation: CondensationOperations.GROUND, params: { batchSize: 10 } }
+ *     ]
+ *   }
+ * });
+ * 
+ * const result = await condenser.run();
+ * 
+ * // result is a CondensationRunResult object:
+ * {
+ *   runId: 'my-run-id',
+ *   condensationType: 'likertCons',
+ *   arguments: [...],
+ *   metrics: {...},
+ *   success: true,
+ *   metadata: {...}
+ * }
+ * 
+ * @remarks Input data structure contrain current usage to political comment processing but
+ * the underlying operations (REFINE, MAP, REDUCE, GROUND) are agnostic to the input data structure. So, in theory,
+ * you could modify the condenser to summarize any unstructured data by modifying the input data structures and the underlying prompts. 
  */
 export class Condenser {
   private runId: string;

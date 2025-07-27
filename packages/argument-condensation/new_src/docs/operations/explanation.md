@@ -12,4 +12,4 @@ Takes in multiple argument lists and coalesces them into fewer lists (or one fin
 
 ## GROUND
 
-Takes in argument lists and comment lists, refining arguments based on the comments.
+Takes in argument lists and comment lists, refining arguments based on the comments. This operation doesn't have a visual explanation. 
