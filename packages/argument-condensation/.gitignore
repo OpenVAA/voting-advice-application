@@ -1,9 +1,5 @@
 .DS_STORE
 build/
 playground/
-testParser.ts
 todo.txt
-specs.txt
-new_src/evaluation/savedResults/
-new_src/data/comments/
 new_src/data/operationTrees

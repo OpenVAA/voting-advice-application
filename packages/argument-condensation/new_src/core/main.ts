@@ -7,16 +7,13 @@ import {
 } from '@openvaa/data';
 import { LLMProvider } from '@openvaa/llm';
 import { Condenser } from './condensation/condenser';
-import { PromptRegistry } from './condensation/prompts/promptRegistry';
 import {
   CommentGroup,
   CONDENSATION_TYPE,
   CondensationOutputType,
   CondensationRunInput,
   CondensationRunResult,
-  MapPrompt,
   ProcessingStep,
-  ReducePrompt,
   SupportedQuestion,
   VAAComment
 } from './types';
@@ -31,23 +28,60 @@ import { createCondensationSteps, getComments } from './utils';
  * - Categorical: Generates pros arguments for each category
  *
  * @param question - The question to condense arguments for
- * @param entities - The entities with answers
- * @param llmProvider - The LLM provider
- * @param language - The language of the question
+ * @param entities - The entity objects (e.g. candidates or parties) with an 'answers' property
+ * @param llmProvider - The LLM provider: an abstract to-implement class for provider-agnostic LLM calls
+ * @param language - The language of the question and entity answers
  * @param llmModel - The LLM model to use
- * @param runId - The ID of the run
+ * @param runId - The ID of the run: useful for tracking and visualizing multiple runs
  * @param maxCommentsPerGroup - The maximum number of comments per group
- * @param invertProsAndCons - Whether to invert the pros and cons for ordinal questions
+ * @param invertProsAndCons - Whether to invert the pros and cons for ordinal questions (rarely needed)
  * @returns The condensation results as an array of CondensationRunResult
+ *
+ * @example
+ * // 1. Set up your question, entities, and LLM provider
+ * // See types/base/supportedQuestion.ts for the supported question types.
+ *
+ * const question = {
+ *   id: 'q1',
+ *   type: 'boolean',
+ *   text: {
+ *     en: 'Should the government increase funding for renewable energy?'
+ *   }
+ * };
+ *
+ * const entities: Array<HasAnswers> = [ // HasAnswers can be any entity with answers to the question: candidates, parties, etc.
+ *   {
+ *     id: 'c1',
+ *     answers: { 'q1': { value: true, comment: 'Absolutely, it is crucial for the future of our planet.' } }
+ *   },
+ *   {
+ *     id: 'c2',
+ *     answers: { 'q1': { value: false, comment: 'No, we should prioritize economic growth and traditional energy sectors.' } }
+ *   }
+ * ];
+ *
+ * const llmProvider = new OpenAIProvider({ apiKey: '...' });
+ *
+ * // 2. Call handleQuestion with the setup
+ * const results = await handleQuestion({
+ *   question, 
+ *   entities, 
+ *   llmProvider, 
+ *   language: 'en',
+ *   llmModel: 'gpt-4o',
+ *   runId: 'some-run-id', 
+ *   maxCommentsPerGroup: 1000, 
+ *   invertProsAndCons: false
+ * });
  */
 export async function handleQuestion({
   question,
   entities,
-  llmProvider,
+  llmProvider, // Of type LLMProvider which OpenAIProvider implements. See packages/llm for details
   language,
   llmModel = 'gpt-4o',
-  runId = 'default_run_id_if_not_provided',
-  maxCommentsPerGroup = 1000,
+  runId = 'default_run_id_if_not_provided', // It is advisable to provide a runId so that visualization data is not overwritten
+  maxCommentsPerGroup = 1000, // Information saturation happens quite quickly, so we don't want to process thousands of comments
   invertProsAndCons = false // Only applicable to ordinal questions, rarely needed
 }: {
   question: SupportedQuestion;
@@ -349,36 +383,21 @@ async function runSingleCondensation({
   maxCommentsPerGroup: number;
 }): Promise<CondensationRunResult> {
   // Get prompts from registry
-  // TODO: Make configurable - makes it possible to test different prompts (not needed for now)
-  // There are two ways to improve configuration:
-  // 1. Take in prompt ids in the handleQuestion function --> we can configure which yaml's prompt to use
-  // = providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder provides
-  // flexibility to test different prompts without further modifications
-  // 2. Modify the promptRegistry to be able to load prompts with a different variable than 'promptText' (which is currentlyhardcoded)
-  // = you could test different prompts without having to create a new yaml file
+  // If you are interested in testing different prompts, there are two ways to improve configuration:
+  // 1. Take in prompt ids in the handleQuestion function --> you can choose which yaml's prompt to use (hardcoded for now)
+  // --> providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder makes a prompt easily available
+  // 2. Modify the promptRegistry to load prompts with a different variable than just 'promptText' (which is currently hardcoded)
+  // --> you could test different prompts without having to create a new yaml file, simply adding a new variable in a current yaml file 
+  // with a specific promptId would suffice (of course you would have to specify somehow which prompt to use from the yaml file)
   const mapPromptId = `map_${condensationType}_condensation_v1`;
   const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
   const iterationPromptId = `map_${condensationType}_feedback_v1`;
 
-  const promptRegistry = await PromptRegistry.create(language);
-
-  // Get prompts (here it still includes some metadata like the promptId)
-  const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;
-  const reducePrompt = promptRegistry.getPrompt(reducePromptId) as ReducePrompt;
-  const iterationPrompt = promptRegistry.getPrompt(iterationPromptId) as MapPrompt;
-
-  // Check that the required prompts are found. By default we use map-reduce,
-  // with a single iteration pass over the map results.
-  // If you want to use a custom plan, you need to implement your own steps and own sanity checks here
-  if (!mapPrompt || !reducePrompt || !iterationPrompt) {
-    throw new Error(`Required prompts not found for condensation type: ${condensationType}`);
-  }
-
-  // Get parameters for map-reduce using a helper.
-  // Namely, calculate a sensible 'batchSize' (how many comments to map at a time?)
-  // and 'denominators' (how many argument lists to reduce to one list at a time?).
+  // Get prompts and their required parameters using a helper. Currently hardcoded to use map-reduce with specific prompts.
+  // The helper calculates a sensible 'batchSize' (how many comments to map at a time?) for the map operation.
+  // For reduce, it finds 'denominators' (how many argument lists to coalesce to one list at a time?). 
   // If you want to use other parameters or operations (like refine or ground),
-  // you must implement your own helper or simply create your own steps here
+  // you must implement your own helper logic or simply configure your own steps here with consts
   const steps: Array<ProcessingStep> = await createCondensationSteps({
     totalComments: comments.length,
     mapPromptId,

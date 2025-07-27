@@ -4,9 +4,9 @@ import { ProcessingStep } from './processDefinition';
 import { SupportedQuestion } from '../base/supportedQuestion';
 /**
  * Represents a single non-empty comment given by a candidate in the VAA.
- * 
+ *
  * @example
- * 
+ *
  * const comment: VAAComment = {
  *   id: '123',
  *   candidateID: '456',
@@ -24,27 +24,28 @@ export interface VAAComment {
 /**
  * Options for condensing a group of comments into a single argument list with a specified output type.
  * A single question usually has comments containing arguments for multiple categories
- * like why taxes should be higher (pros) or lower (cons) or why X is better than Y and Z. 
- * 
+ * like why taxes should be higher (pros) or lower (cons) or why X is better than Y and Z.
+ *
  * @example
- * 
+ *
+ * // const llmProvider = new OpenAIProvider({ apiKey: '...' });
  * const options: CondensationOptions = {
- *   llmProvider: OpenAIProvider,
+ *   llmProvider, // An instance of LLMProvider
  *   language: 'en',
  *   outputType: 'categoricalPros',
  *   processingSteps: [
  *     {
- *       operation: CondensationOperation.MAP,
+ *       operation: 'map',
  *       params: {
- *         condensationPrompt: 'Condense there comments into a single argument list',
- *         iterationPrompt: 'Improve the argument list with these comments',
- *         batchSize: 42
+ *         condensationPrompt: 'Find arguments from these comments',
+ *         iterationPrompt: 'Improve these arguments',
+ *         batchSize: 20
  *       }
  *     },
  *     {
- *       operation: CondensationOperation.REDUCE,
+ *       operation: 'reduce',
  *       params: {
- *         coalescingPrompt: 'Coalesce these argument lists into a single argument list',
+ *         coalescingPrompt: 'Remove overlap between these argument lists and output one coalesced list',
  *         denominator: 5
  *       }
  *     }
@@ -80,11 +81,56 @@ export interface CondensationOptions {
 
 /**
  * Input parameters for the condensation process.
- * 
+ *
  * @example
- * 
+ *
+ * // 1. Define the question. See types/base/supportedQuestion.ts for the supported question types.
+ * const question = {
+ *   id: 'q2',
+ *   type: 'single-choice-categorical',
+ *   text: { en: 'What is the best way to improve public transport?' },
+ *   choices: [
+ *     { id: 'choice1', text: { en: 'Invest in new subway lines' } },
+ *     { id: 'choice2', text: { en: 'Increase bus frequency' } },
+ *     { id: 'choice3', text: { en: 'Introduce more bike lanes' } }
+ *   ]
+ * };
+ *
+ * // 2. Provide comments from VAA
+ * const comments = [
+ *   { id: 'c1', candidateID: 'cand1', candidateAnswer: 'choice1', text: 'New subways are essential for a growing city.' },
+ *   { id: 'c2', candidateID: 'cand2', candidateAnswer: 'choice2', text: 'Buses are more flexible and cheaper to expand.' }
+ * ];
+ *
+ * // 3. Configure condensation options
+ * // Note that the processing steps use pre-defined prompts, so they are not given as params.
+ * // If you wish to use custom prompts, see core/main.ts for the available options.
+ * const llmProvider = new OpenAIProvider({ apiKey: 'i-am-not-a-real-api-key-i-think' });
+ * const options = {
+ *   llmProvider, // An instance of an LLMProvider
+ *   language: 'en',
+ *   outputType: 'categoricalPros',
+ *   processingSteps: [
+ *     {
+ *       operation: 'map',
+ *       params: {
+ *         batchSize: 20
+ *       }
+ *     },
+ *     {
+ *       operation: 'reduce',
+ *       params: {
+ *         denominator: 5
+ *       }
+ *     }
+ *   ],
+ *   llmModel: 'gpt-4o',
+ *   runId: 'run-456'
+ * };
+ *
+ * // 4. Combine into condensation input
  * const input: CondensationRunInput = {
- *   question,
+ *   question, // as SupportedQuestion
  *   comments,
  *   options
  * };
