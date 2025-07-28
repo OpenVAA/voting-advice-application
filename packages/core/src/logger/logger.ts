@@ -4,15 +4,15 @@ import { DefaultLoggerOptions, Logger, LogLevel } from './logger.type';
  * A simple implementation of the `Logger` interface, which can be provided overrides for the default functions.
  */
 export class DefaultLogger implements Logger {
-  onInfo: DefaultLoggerOptions['onInfo'];
+  onMessage: DefaultLoggerOptions['onMessage'];
   onProgress: DefaultLoggerOptions['onProgress'];
 
   /**
    * @param options - Optional overrides for the default log methods.
    */
-  constructor({ onProgress, onInfo }: DefaultLoggerOptions = {}) {
+  constructor({ onProgress, onMessage }: DefaultLoggerOptions = {}) {
     this.onProgress = onProgress;
-    this.onInfo = onInfo;
+    this.onMessage = onMessage;
   }
 
   info(message: string): void {
@@ -33,7 +33,7 @@ export class DefaultLogger implements Logger {
   }
 
   protected handleInfo(message: string, type: LogLevel = 'info'): unknown {
-    if (this.onInfo) return this.onInfo(message, type);
+    if (this.onMessage) return this.onMessage(message, type);
     this.defaultLogInfo(message, type);
   }
 

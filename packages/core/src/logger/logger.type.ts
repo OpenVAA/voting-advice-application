@@ -37,15 +37,15 @@ export interface Logger {
    */
   progress: (value: number) => unknown;
   /**
-   * Called for info messages.
+   * Called for info messages. Used for transient status updates (e.g. estimate of time of completion), metrics (e.g. current cost), or info on auto-recovered issues (e.g. call for operation X failed - retrying).
    */
   info: (message: string) => unknown;
   /**
-   * Called for warnings.
+   * Called for warnings. Used for strategic issues that require admin awareness but do not stop the process (e.g. data quality issues or performance degradation).
    */
   warning: (message: string) => unknown;
   /**
-   * Called for error messages.
+   * Called for error messages. Used for critical, iteration-stopping issues. Note that a normal `Error` should be thrown by the process in case of unrecoverable errors.
    */
   error: (message: string) => unknown;
 }
@@ -62,12 +62,12 @@ export type DefaultLoggerOptions = {
   /**
    * Called when the status of an operation changes.
    * @param message - A message describing the current status of the operation.
-   * @param type - Optional, a level of severity for the message. Defaults to 'info'.
+   * @param type - Optional, a level of severity for the message. Defaults to 'info'. See {@link Logger} for the available levels.
    */
-  onInfo?: (message: string, type?: LogLevel) => unknown;
+  onMessage?: (message: string, type?: LogLevel) => unknown;
 };
 
 /**
- * The log level for messages.
+ * The log level for messages. See the associated methods in {@link Logger} for descriptions of the levels.
  */
 export type LogLevel = 'warning' | 'error' | 'info';
