@@ -1,18 +1,13 @@
 import OpenAI from 'openai';
 import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
-import { ModelState } from '../rateLimiters/modelState';
-import { OpenAIRateLimiter } from '../rateLimiters/openaiRateLimiter';
-import { isDailyLimitError } from '../utils/dailyLimitError';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
-import { getRateLimiter, selectModelForGeneration } from '../utils/selectModel';
-import { estimateTokens } from '../utils/tokenCounter';
 
 export class OpenAIProvider extends LLMProvider {
   public model: string;
   private openai: OpenAI;
   public readonly maxContextTokens: number;
-  private rateLimiters = new Map<string, OpenAIRateLimiter>();
-  private modelState: ModelState;
+  private fallbackModel?: string;
+  private nTokensUsed: number = 0;
 
   constructor({
     model = 'gpt-4o',
@@ -32,7 +27,7 @@ export class OpenAIProvider extends LLMProvider {
     this.model = model;
     this.maxContextTokens = maxContextTokens;
     this.openai = new OpenAI({ apiKey });
-    this.modelState = new ModelState(model, fallbackModel);
+    this.fallbackModel = fallbackModel;
   }
 
   async generate({
@@ -54,8 +49,6 @@ export class OpenAIProvider extends LLMProvider {
       throw new Error('Temperature must be between 0 and 1');
     }
 
-    const estimatedTokens = estimateTokens({ messages });
-
     // Use model given as a parameter or fall back to the default provider model (can also be set in the constructor)
     const modelToUse = model || this.model;
 
@@ -73,42 +66,30 @@ export class OpenAIProvider extends LLMProvider {
         throw new Error('OpenAI API returned no choices');
       }
 
-      const choice = response.choices[0];
+      const contentObject = response.choices[0];
       const usage = response.usage;
 
-      if (!choice.message.content) {
+      if (!contentObject.message.content) {
         throw new Error('OpenAI API returned empty content');
       }
 
       const llmResponse = new LLMResponse({
-        content: choice.message.content,
+        content: contentObject.message.content,
         usage: new UsageStats({
           promptTokens: usage?.prompt_tokens ?? 0,
           completionTokens: usage?.completion_tokens ?? 0,
           totalTokens: usage?.total_tokens ?? 0
         }),
         model: response.model,
-        finishReason: choice.finish_reason
+        finishReason: contentObject.finish_reason
       });
-      
+
+      this.nTokensUsed += llmResponse.usage.totalTokens;
+      console.info(`[Generate] Total tokens used: ${this.nTokensUsed}`);
+
       return llmResponse;
     } catch (error) {
-      if (isDailyLimitError({ error: error as Error })) {
-        console.info(
-          `📅 DAILY LIMIT REACHED: Model ${modelToUse} has hit daily limit, rotating to next available model`
-        );
-        this.modelState.markDailyLimitReached(modelToUse);
-        this.modelState.rotateModels();
-
-        const newModel = await selectModelForGeneration({
-          estimatedTokens,
-          modelState: this.modelState,
-          rateLimiters: this.rateLimiters
-        });
-        return this.generate({ messages, temperature, maxTokens, model: newModel });
-      }
-
-      // Non-daily-limit error - rethrow & handle retry logic in caller code
+      // Handle error gracefully in caller
       if (error instanceof Error) {
         throw new Error(`OpenAI API error: ${error.message}`);
       }
@@ -116,13 +97,78 @@ export class OpenAIProvider extends LLMProvider {
     }
   }
 
+  async generateWithRetry({
+    messages,
+    temperature = 0.7,
+    maxTokens,
+    model,
+    maxAttempts = 3,
+    defaultWaitTime = 0
+  }: {
+    messages: Array<Message>;
+    temperature?: number;
+    maxTokens?: number;
+    model?: string;
+    maxAttempts?: number;
+    defaultWaitTime?: number;
+  }): Promise<LLMResponse> {
+    const modelToUse = model || this.model;
+    let lastError: Error | null = null;
+
+    // Try to generate the response up to maxAttempts times 
+    // If we get a rate limit error (429), try to parse the wait time and retry afterwards, otherwise use default wait time
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        return await this.generate({
+          messages,
+          temperature,
+          maxTokens,
+          model: modelToUse
+        });
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error during generation');
+        // If it's not the last attempt, wait and retry
+        if (attempt < maxAttempts - 1) {
+          const waitTime =
+            error instanceof Error && error.message.includes('429') // Yes, you can use a more robust method but this works too as edge cases are trivial
+              ? parseWaitTimeFromError(error.message) || defaultWaitTime
+              : defaultWaitTime;
+          console.info(
+            `Attempt ${attempt + 1} failed for model ${modelToUse}. Waiting ${waitTime}ms before retrying...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+
+    // If all retries fail, try the fallback model if it exists and wasn't the one that just failed
+    if (this.fallbackModel && modelToUse !== this.fallbackModel) {
+      console.info(`All retries failed for ${modelToUse}. Attempting to use fallback model ${this.fallbackModel}...`);
+      try {
+        return await this.generate({
+          messages,
+          temperature,
+          maxTokens,
+          model: this.fallbackModel
+        });
+      } catch (fallbackError) {
+        lastError = new Error(
+          `Primary model '${modelToUse}' failed after ${maxAttempts} attempts. Fallback model '${this.fallbackModel}' also failed. Last error: ${(fallbackError as Error).message}`
+        );
+        throw lastError;
+      }
+    }
+    throw lastError;
+  }
+
   /**
-   * Generates multiple responses from the LLM by processing requests in parallel batches. Tries to prevent rate limit errors by pre-checking limits. 
+   * Generates multiple responses from the LLM by processing requests in parallel batches. Tries to prevent rate limit errors by pre-checking limits.
    * @param inputs Array of generation input parameters
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
   async generateMultipleParallel({
-    inputs
+    inputs,
+    parallelBatches = 3
   }: {
     inputs: Array<{
       messages: Array<Message>;
@@ -130,6 +176,7 @@ export class OpenAIProvider extends LLMProvider {
       maxTokens?: number;
       model?: string;
     }>;
+    parallelBatches: number;
   }): Promise<Array<LLMResponse>> {
     if (!inputs || inputs.length === 0) {
       return [];
@@ -147,126 +194,20 @@ export class OpenAIProvider extends LLMProvider {
     }
 
     const results: Array<LLMResponse> = [];
-    const batchSize = 3; // TODO: Make this configurable (& it should depend on the model's TPM limit)
-    const mainModelRateLimiter = getRateLimiter({ model: this.model, rateLimiters: this.rateLimiters });
 
-    for (let i = 0; i < inputs.length; i += batchSize) {
-      const batch = inputs.slice(i, i + batchSize);
+    for (let i = 0; i < inputs.length; i += parallelBatches) {
+      const batch = inputs.slice(i, i + parallelBatches);
 
-      let modelForBatch = inputs[0].model || this.model;
-
-      const preBatchStatus = mainModelRateLimiter.getStatus();
-      console.info(
-        `📊 PRE-BATCH STATUS (${mainModelRateLimiter.model}): TPM ${preBatchStatus.tpm.used}/${preBatchStatus.tpm.limit} (${preBatchStatus.tpm.percentage.toFixed(2)}%)`
-      );
-
-      // Check whether the model can handle the batch after waiting or if it's simply too big
-      const batchTokens = batch.reduce((sum, input) => sum + estimateTokens({ messages: input.messages }), 0);
-      const modelRateLimiter = getRateLimiter({ model: modelForBatch, rateLimiters: this.rateLimiters });
-
-      // Use main model if available, otherwise use fallback model or wait
-      if (modelRateLimiter.hasEnoughTPM({ estimatedTokens: batchTokens })) {
-        console.info(`🔄 OPENAI PROVIDER: Using main model ${modelForBatch}`);
-      } else {
-        if (this.modelState.fallbackModel) {
-          const fallbackRateLimiter = getRateLimiter({
-            model: this.modelState.fallbackModel,
-            rateLimiters: this.rateLimiters
-          });
-
-          // Check if fallback model can handle the batch
-          if (fallbackRateLimiter.hasEnoughTPM({ estimatedTokens: batchTokens })) {
-            modelForBatch = this.modelState.fallbackModel;
-            console.info(`🔄 OPENAI PROVIDER: Switching to fallback model ${modelForBatch} for batch processing`);
-          } else {
-            // Both main and fallback are rate limited, wait for the one with the least wait time
-            const waitTime = Math.min(
-              modelRateLimiter.getWaitTime({ estimatedTokens: batchTokens }),
-              fallbackRateLimiter.getWaitTime({ estimatedTokens: batchTokens })
-            );
-            console.info(
-              `🔄 OPENAI PROVIDER: Throttling. Both main and fallback models are expected to hit rate limits. Waiting for ${waitTime}ms for ${modelForBatch}`
-            );
-            await new Promise((resolve) => setTimeout(resolve, waitTime));
-          }
-        } else {
-          const waitTime = modelRateLimiter.getWaitTime({ estimatedTokens: batchTokens });
-          console.info(
-            `🔄 OPENAI PROVIDER: Throttling. Main model is expected to hit rate limit. Waiting for ${waitTime}ms for ${modelForBatch}`
-          );
-          await new Promise((resolve) => setTimeout(resolve, waitTime));
-        }
-      }
+      const modelForBatch = inputs[0].model || this.model;
 
       // Process each item in the batch individually with its own fallback logic
-      const batchPromises = batch.map(async (input, batchIndex) => {
-        const globalIndex = i + batchIndex;
-
-        const makeRequest = async (): Promise<LLMResponse> => {
-          let attempt = 0;
-          const maxAttempts = 3; // Original + 2 retries
-
-          while (attempt < maxAttempts) {
-            try {
-              return await this.generate({
-                messages: input.messages,
-                temperature: input.temperature,
-                maxTokens: input.maxTokens,
-                model: modelForBatch
-              });
-            } catch (error) {
-              attempt++;
-
-              if (error instanceof Error && error.message.includes('429') && attempt < maxAttempts) {
-                const waitTime = parseWaitTimeFromError(error.message) || 5000;
-                console.info(
-                  `🔄 Request ${globalIndex} rate limited (attempt ${attempt}/${maxAttempts}). Waiting ${waitTime}ms and retrying...`
-                );
-                await new Promise((resolve) => setTimeout(resolve, waitTime));
-              } else {
-                throw error; // Either not a rate limit error, or we've exhausted retries
-              }
-            }
-          }
-          throw new Error(`Request ${globalIndex} failed after ${maxAttempts} attempts`);
-        };
-
-        try {
-          const result = await makeRequest();
-          const rateLimiter = getRateLimiter({ model: modelForBatch, rateLimiters: this.rateLimiters });
-          rateLimiter.recordUsage({ tokensUsed: result.usage.promptTokens });
-
-          return result;
-        } catch (error) {
-          // Handle daily limit errors
-          if (isDailyLimitError({ error: error as Error })) {
-            this.modelState.markDailyLimitReached(modelForBatch);
-            this.modelState.rotateModels();
-
-            const newModel = await selectModelForGeneration({
-              estimatedTokens: estimateTokens({ messages: input.messages }),
-              modelState: this.modelState,
-              rateLimiters: this.rateLimiters
-            });
-
-            console.info(`📅 DAILY LIMIT REACHED for ${modelForBatch}: Retrying with new model ${newModel}`);
-
-            const result = await this.generate({
-              messages: input.messages,
-              temperature: input.temperature,
-              maxTokens: input.maxTokens,
-              model: newModel
-            });
-
-            // Record tokens for this retry call
-            const rateLimiter = getRateLimiter({ model: result.model, rateLimiters: this.rateLimiters });
-            rateLimiter.recordUsage({ tokensUsed: result.usage.promptTokens });
-
-            return result;
-          }
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          throw new Error(`Request ${globalIndex} failed: ${errorMessage}`);
-        }
+      const batchPromises = batch.map(async (input) => {
+        return this.generateWithRetry({
+          messages: input.messages,
+          temperature: input.temperature,
+          maxTokens: input.maxTokens,
+          model: modelForBatch
+        });
       });
 
       // Wait for current batch to complete
@@ -309,16 +250,6 @@ export class OpenAIProvider extends LLMProvider {
     }
 
     return results;
-  }
-
-  /**
-   * Estimates the number of tokens in a text string. Note: This is a simple approximation.
-   * TODO: For production use, consider using a proper tokenizer.
-   */
-  async countTokens(text: string) {
-    return {
-      tokens: Math.ceil(text.length / 4)
-    };
   }
 }
 

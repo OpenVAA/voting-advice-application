@@ -34,9 +34,25 @@ vi.mock('openai', () => {
   };
 });
 
-describe('OpenAIProvider', () => {
+describe.sequential('OpenAIProvider', () => {
   beforeEach(() => {
     mockCreate.mockClear();
+    mockCreate.mockImplementation((params) =>
+      Promise.resolve({
+        choices: [
+          {
+            message: { content: 'Test response' },
+            finish_reason: 'stop'
+          }
+        ],
+        model: params.model,
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 5,
+          total_tokens: 15
+        }
+      })
+    );
   });
 
   it('should initialize with default values', async () => {
@@ -47,10 +63,10 @@ describe('OpenAIProvider', () => {
     const response = await provider.generate({ messages: [new Message({ role: 'user', content: 'test' })] });
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'gpt-4o-mini'
+        model: 'gpt-4o'
       })
     );
-    expect(response.model).toBe('gpt-4o-mini');
+    expect(response.model).toBe('gpt-4o');
   });
 
   it('should initialize with custom values', () => {
@@ -81,7 +97,7 @@ describe('OpenAIProvider', () => {
 
     const response = await provider.generate({ messages });
     expect(response.content).toBe('Test response');
-    expect(response.model).toBe('gpt-4o-mini');
+    expect(response.model).toBe('gpt-4o');
     expect(response.usage.totalTokens).toBe(15);
   });
 
@@ -97,13 +113,6 @@ describe('OpenAIProvider', () => {
       'Temperature must be between 0 and 1'
     );
   });
-
-  it('should count tokens approximately', async () => {
-    const provider = new OpenAIProvider({ apiKey: 'test-key' });
-    const result = await provider.countTokens('Hello, world!');
-    expect(result.tokens).toBe(4); // ~13 characters / 4 = 4 tokens
-  });
-
 
   it('should initialize with fallback model', () => {
     const provider = new OpenAIProvider({
@@ -122,7 +131,7 @@ describe('OpenAIProvider', () => {
       { messages: [new Message({ role: 'user', content: 'Hello 2' })], temperature: 0.7 }
     ];
 
-    const responses = await provider.generateMultipleParallel({ inputs });
+    const responses = await provider.generateMultipleParallel({ inputs, parallelBatches: 2 });
     expect(responses).toHaveLength(2);
     expect(responses[0].content).toBe('Test response');
     expect(responses[1].content).toBe('Test response');
@@ -141,5 +150,71 @@ describe('OpenAIProvider', () => {
     expect(responses[0].content).toBe('Test response');
     expect(responses[1].content).toBe('Test response');
     expect(mockCreate).toHaveBeenCalledTimes(2);
-  }); 
+  });
+
+  it('should retry on failure with generateWithRetry', async () => {
+    const provider = new OpenAIProvider({ apiKey: 'test-key' });
+    const messages = [new Message({ role: 'user', content: 'Hello!' })];
+
+    mockCreate
+      .mockRejectedValueOnce(new Error('API error 1'))
+      .mockRejectedValueOnce(new Error('API error 2'))
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: 'Successful response' }, finish_reason: 'stop' }],
+        model: 'gpt-4o',
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
+      });
+
+    const response = await provider.generateWithRetry({
+      messages,
+      maxAttempts: 3,
+      defaultWaitTime: 0
+    });
+
+    expect(response.content).toBe('Successful response');
+    expect(mockCreate).toHaveBeenCalledTimes(3);
+  }, 10000);
+
+  it('should switch to fallback model on persistent failure', async () => {
+    const provider = new OpenAIProvider({
+      apiKey: 'test-key',
+      model: 'gpt-4o',
+      fallbackModel: 'gpt-4o-mini'
+    });
+    const messages = [new Message({ role: 'user', content: 'Hello!' })];
+
+    mockCreate
+      .mockRejectedValueOnce(new Error('API error 1'))
+      .mockRejectedValueOnce(new Error('API error 2'))
+      .mockRejectedValueOnce(new Error('API error 3'))
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: 'Fallback response' }, finish_reason: 'stop' }],
+        model: 'gpt-4o-mini',
+        usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
+      });
+
+    const response = await provider.generateWithRetry({ messages, maxAttempts: 3, defaultWaitTime: 0 });
+
+    expect(response.content).toBe('Fallback response');
+    expect(response.model).toBe('gpt-4o-mini');
+    expect(mockCreate).toHaveBeenCalledTimes(4);
+    expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ model: 'gpt-4o' }));
+    expect(mockCreate).toHaveBeenLastCalledWith(expect.objectContaining({ model: 'gpt-4o-mini' }));
+  }, 10000);
+
+  it('should throw error if fallback model also fails', async () => {
+    const provider = new OpenAIProvider({
+      apiKey: 'test-key',
+      model: 'gpt-4o',
+      fallbackModel: 'gpt-4o-mini'
+    });
+    const messages = [new Message({ role: 'user', content: 'Hello!' })];
+
+    mockCreate.mockRejectedValue(new Error('Persistent API error'));
+
+    await expect(provider.generateWithRetry({ messages, maxAttempts: 3, defaultWaitTime: 0 })).rejects.toThrow(
+      "Primary model 'gpt-4o' failed after 3 attempts. Fallback model 'gpt-4o-mini' also failed. Last error: OpenAI API error: Persistent API error"
+    );
+    expect(mockCreate).toHaveBeenCalledTimes(4);
+  }, 20000);
 });

@@ -1,6 +1,5 @@
-import { LLMProvider, Message } from '../llm-providers/llm-provider';
-import { LLMResponse } from '../llm-providers/llm-provider';
-import { LlmParser, LLMResponseContract } from '../utils/llmParser';
+import { LlmParser, LLMResponseContract } from './llmParser';
+import { LLMProvider, LLMResponse,Message } from '../llm-providers/llm-provider';
 
 /**
  * Retry helper function for failed parsing attempts
@@ -11,7 +10,7 @@ import { LlmParser, LLMResponseContract } from '../utils/llmParser';
  * @returns Array of successful LLM responses
  */
 
-export async function retryFailedCalls<TType>(
+export async function retryUnvalidResponses<TType>(
   failedIndices: Array<number>,
   llmInputs: Array<{
     messages: Array<Message>;

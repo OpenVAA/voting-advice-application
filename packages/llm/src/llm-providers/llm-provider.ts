@@ -120,11 +120,4 @@ export abstract class LLMProvider {
       model?: string;
     }>;
   }): Promise<Array<LLMResponse>>;
-
-  /**
-   * Estimates the number of tokens in a text string
-   */
-  abstract countTokens(text: string): Promise<{
-    tokens: number;
-  }>;
 }
