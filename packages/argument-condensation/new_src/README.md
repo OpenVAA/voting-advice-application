@@ -1,8 +1,29 @@
 # Argument Condensation
 
-## Environment
+## Problem Description
 
-Set `LLM_OPENAI_API_KEY` in root `.env` file.
+There are valuable insights embedded in VAA comments given by candidates (or other entities like parties) but it's costly to go through the comments to extract these insights manually. It would be helpful for the user if they could get summary of what kind of opinions candidates have about a given topic.
+
+## Solution
+
+This package is designed to automate opinion extraction from comments in the VAA context. Namely, it extracts arguments used to argue for or against a given political topic. This is done with large language models (LLMs), which are instructed to detect and condense candidate views into pros and cons. Pros and cons are extracted using separate prompts as LLMs perform best when given as narrow a task as possible.
+
+## Example
+
+Topic: "The capital tax should be increased."
+
+Input Comments:
+"Raising taxes lowers incentives to work hard and contribute to the overall economy"
+"Raising taxes secures affordable healthcare services to support everyone's wellbeing"
+etc.
+
+Cons:
+"Raising taxes can be detrimental for motivation to work, decreasing the overall economy"
+
+Pros:
+"Tax revenue supports healthcare service providers that are crucial for people's wellbeing"
+
+NOTE: The output arguments are never a word-for-word match to any of the source comments. Output arguments are usually more abstract and a tad clunky in their formulation, as the LLM's writing style is not as engaging and fluent as what humans can produce. They are, however, very informative and easy to understand.
 
 ## Usage
 
@@ -120,9 +141,9 @@ const results = await handleQuestion({
 });
 ```
 
-Note: It may seem a bit confusing that the map operation isn't a traditional map but instead it is currently coupled with an extra 
-iteration step, iterateMap. Naturally this shouldn't pose issues if the usage of the system isn't greatly altered from the original use 
-case. The reasoning for the extra step was to make sure that information gathered from the source data is maximized before moving onto 
+Note: It may seem a bit confusing that the map operation isn't a traditional map but instead it is currently coupled with an extra
+iteration step, iterateMap. Naturally this shouldn't pose issues if the usage of the system isn't greatly altered from the original use
+case. The reasoning for the extra step was to make sure that information gathered from the source data is maximized before moving onto
 processing generated arguments.
 
 ### Visualization
@@ -138,4 +159,31 @@ UI will prompt you to download an operation tree. You can find one in src/data/o
 
 If you have run your own condensation process, it will also be available in this directory for visualization.
 
-The visualization includes inputs and outputs of each prompt. These are shown when you press on a node of the tree structure.
+The visualization includes inputs and outputs of each prompt. These are shown when you press on a node of the tree structure. The prompts themselves are not shown in the UI. Please consult condensation/prompts/your-language-code/the-operation-you-want-to-check/ to see the prompts used.
+
+If you wish to use your own prompt but do not want to delete the old prompts, please create a new .yaml file in the same directory as the other prompts and merely change the prompt ids to use in main.ts's runSingleCondensation method. The prompt registry will find your prompts automatically.
+
+## Package Structure
+
+- `/core`: Contains the main logic of the package.
+  - `main.ts`: Entry point for the main API function `handleQuestion`. This is where you should start your investigation of the system
+  - `/condensation`: The `Condenser` class and other core logic for running the condensation process. Good place to dive deeper into the implementation details
+  - `/prompts`: Has all of the condensation prompts in YAML files, organized by language and operation type. 
+  - `/types`: All TypeScript type definitions used in the package.
+  - `/utils`: Utility functions, e.g., for comment processing. Some utility functions perform crucial operations whose logic is neatly abstracted from the callers, e.g. finding the comments to use for pro and con extraction based on whether the associated likert answer is high-end (e.g. 5 = pro comment) or low-end (e.g. 2 = con comment). 
+- `/data`: For clarity, operationTrees is under data, because it helps discern what an operationTree is (I hope).  
+  - `/operationTrees`: JSON files for visualizing the condensation process are saved here. An operation tree is created automatically and there exist no flag to turn off their creation. 
+
+## Data Structures
+
+The most important data structures you'll interact with are:
+
+- `SupportedQuestion`: The question you want to condense arguments for. It's a subset of the question types from `@openvaa/data`. 
+- `HasAnswers`: A generic entity (like a candidate or party) that has answers and comments for questions. A minimal condensation process doesn't need anything else than VAA answers with non-empty comments. Every HasAnswers entity conforms to this minimal requirement. 
+- `CondensationRunInput`: Configuration for the condensation process. See types/condensation/condensationInput.ts. 
+- `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that contributed to each argument. See types/condensation/condensationResult.ts. 
+- `Argument`: A single condensed argument, including its text and an ID, although the ID is currently a bit redundant. Still, they are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without a need to change anything. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract with both 'id' and 'text'. 
+
+## Environment
+
+Set `LLM_OPENAI_API_KEY` in root `.env` file.
