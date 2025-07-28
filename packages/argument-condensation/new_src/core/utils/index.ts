@@ -17,3 +17,6 @@ export { getComments } from './condensation/getComments';
 
 // Create condensation steps
 export { createCondensationSteps } from './condensation/defineCondensationSteps';
+
+// Get parallelization factor
+export { getParallelFactor } from './condensation/getParallelFactor';

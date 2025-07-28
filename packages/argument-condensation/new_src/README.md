@@ -80,6 +80,7 @@ const options = {
     }
   ],
   llmModel: 'gpt-4o',
+  modelTPMLimit: 30000,
   runId: 'run-456'
 };
 
@@ -135,6 +136,7 @@ const results = await handleQuestion({
   llmProvider,
   language: 'en',
   llmModel: 'gpt-4o',
+  modelTPMLimit: 30000,
   runId: 'some-run-id',
   maxCommentsPerGroup: 1000,
   invertProsAndCons: false
@@ -168,21 +170,21 @@ If you wish to use your own prompt but do not want to delete the old prompts, pl
 - `/core`: Contains the main logic of the package.
   - `main.ts`: Entry point for the main API function `handleQuestion`. This is where you should start your investigation of the system
   - `/condensation`: The `Condenser` class and other core logic for running the condensation process. Good place to dive deeper into the implementation details
-  - `/prompts`: Has all of the condensation prompts in YAML files, organized by language and operation type. 
+  - `/prompts`: Has all of the condensation prompts in YAML files, organized by language and operation type.
   - `/types`: All TypeScript type definitions used in the package.
-  - `/utils`: Utility functions, e.g., for comment processing. Some utility functions perform crucial operations whose logic is neatly abstracted from the callers, e.g. finding the comments to use for pro and con extraction based on whether the associated likert answer is high-end (e.g. 5 = pro comment) or low-end (e.g. 2 = con comment). 
-- `/data`: For clarity, operationTrees is under data, because it helps discern what an operationTree is (I hope).  
-  - `/operationTrees`: JSON files for visualizing the condensation process are saved here. An operation tree is created automatically and there exist no flag to turn off their creation. 
+  - `/utils`: Utility functions, e.g., for comment processing. Some utility functions perform crucial operations whose logic is neatly abstracted from the callers, e.g. finding the comments to use for pro and con extraction based on whether the associated likert answer is high-end (e.g. 5 = pro comment) or low-end (e.g. 2 = con comment).
+- `/data`: For clarity, operationTrees is under data, because it helps discern what an operationTree is (I hope).
+  - `/operationTrees`: JSON files for visualizing the condensation process are saved here. An operation tree is created automatically and there exist no flag to turn off their creation.
 
 ## Data Structures
 
 The most important data structures you'll interact with are:
 
-- `SupportedQuestion`: The question you want to condense arguments for. It's a subset of the question types from `@openvaa/data`. 
-- `HasAnswers`: A generic entity (like a candidate or party) that has answers and comments for questions. A minimal condensation process doesn't need anything else than VAA answers with non-empty comments. Every HasAnswers entity conforms to this minimal requirement. 
-- `CondensationRunInput`: Configuration for the condensation process. See types/condensation/condensationInput.ts. 
-- `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that contributed to each argument. See types/condensation/condensationResult.ts. 
-- `Argument`: A single condensed argument, including its text and an ID, although the ID is currently a bit redundant. Still, they are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without a need to change anything. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract with both 'id' and 'text'. 
+- `SupportedQuestion`: The question you want to condense arguments for. It's a subset of the question types from `@openvaa/data`.
+- `HasAnswers`: A generic entity (like a candidate or party) that has answers and comments for questions. A minimal condensation process doesn't need anything else than VAA answers with non-empty comments. Every HasAnswers entity conforms to this minimal requirement.
+- `CondensationRunInput`: Configuration for the condensation process. See types/condensation/condensationInput.ts.
+- `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that contributed to each argument. See types/condensation/condensationResult.ts.
+- `Argument`: A single condensed argument, including its text and an ID, although the ID is currently a bit redundant. Still, they are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without a need to change anything. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract with both 'id' and 'text'.
 
 ## Environment
 

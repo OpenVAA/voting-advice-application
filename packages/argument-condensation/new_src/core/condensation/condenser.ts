@@ -1,4 +1,4 @@
-import { LLMResponse, retryFailedCalls } from '@openvaa/llm';
+import { LLMResponse, retryUnvalidResponses } from '@openvaa/llm';
 import * as path from 'path';
 import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import {
@@ -331,7 +331,8 @@ export class Condenser {
     // PRE-PROCESSING: Validate batch token counts to prevent API failures
     // This is specific to MAP because it typically processes the largest comment volumes
     const MAX_TOKENS_PER_BATCH = 28500; // Conservative limit for most LLM providers
-    const llmBatchSize = 3; // How many batches we send in parallel
+    // How many batches we send in parallel? 
+    const llmBatchSize = this.input.options.parallelBatches || 3;
 
     // Estimate token usage by creating sample prompts
     const llmInputsForTokenCheck = batches.map((batch) => {
@@ -660,11 +661,10 @@ export class Condenser {
       }
     }
 
-    // PHASE 5: RETRY FAILED CALLS
-    // Robust retry mechanism for any calls that failed to parse
+    // PHASE 5: RETRY CALLS THAT FAILED TO PARSE
     if (failedIndices.length > 0) {
       console.info(`\n🔄 Retrying ${failedIndices.length} failed ${operation} ${logIdentifier}s...`);
-      const retryResults = await retryFailedCalls(
+      const retryResults = await retryUnvalidResponses(
         failedIndices,
         llmInputs,
         operation,

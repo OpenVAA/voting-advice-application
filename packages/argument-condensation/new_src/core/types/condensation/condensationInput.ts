@@ -77,6 +77,8 @@ export interface CondensationOptions {
   maxCommentsPerGroup?: number;
   /** For ordinal questions, optionallyinvert the pro/con classification */
   invertProsAndCons?: boolean;
+  /** The number of parallel batches to use for parallelizable operations */
+  parallelBatches?: number;
 }
 
 /**
