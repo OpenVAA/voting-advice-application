@@ -34,7 +34,7 @@ You need to use the OpenVAA-native data types as input:
 OPTION 1: Direct Condenser usage (not recommended - see OPTION 2: Package API Usage):
 
 ```typescript
-// 1. Define the question. See `new_src/core/types/base/supportedQuestion.ts` for supported types.
+// 1. Define the question. See `src/core/types/base/supportedQuestion.ts` for supported types.
 const question = {
   id: 'q2',
   type: 'single-choice-categorical',

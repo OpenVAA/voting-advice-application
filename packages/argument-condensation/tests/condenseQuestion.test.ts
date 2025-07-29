@@ -7,8 +7,8 @@ import {
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
 import { describe, expect, it, vi } from 'vitest';
-import { CONDENSATION_TYPE } from '../new_src/core/types';
-import { handleQuestion } from '../new_src/main.ts';
+import { CONDENSATION_TYPE } from '../src/core/types';
+import { handleQuestion } from '../src/main.ts';
 import type { HasAnswers } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
 
