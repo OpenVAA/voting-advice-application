@@ -1,0 +1,3154 @@
+{
+  "createdAt": "2025-07-29T14:41:56.994Z",
+  "runId": "vis-test-29-7-pros",
+  "metadata": {
+    "totalOperations": 19,
+    "maxDepth": 3,
+    "totalDuration": 964233,
+    "totalLlmCalls": 19
+  },
+  "roots": [
+    "MAP_0_0_0",
+    "MAP_0_1_1",
+    "MAP_0_2_2",
+    "MAP_0_3_3",
+    "MAP_0_4_4",
+    "MAP_0_5_5",
+    "MAP_0_6_6",
+    "MAP_0_7_7"
+  ],
+  "nodes": {
+    "MAP_0_0_0": {
+      "id": "MAP_0_0_0",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 0,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1468_stress-test-question",
+            "candidateID": "entity_index_1468",
+            "candidateAnswer": "4",
+            "text": "Kannatan kokeilua seuraavissa vaaleissa."
+          },
+          {
+            "id": "entity_index_1469_stress-test-question",
+            "candidateID": "entity_index_1469",
+            "candidateAnswer": "4",
+            "text": "Nuorten vaikutusmahdollisuuksia ja äänen kuulumista tulisi vahvistaa, joten ehkä äänestysikärajan lasku voisi olla ihan kannatettava asia. Joka tapauksessa kuntien tulisi järjestää enemmän oikeita kuulemistilaisuuksia, joissa nuoret saisivat kertoa kantansa etenkin heihin vaikuttaviin päätöksiin ja nämä mielipiteet myös huomioitaisiin, kun asiasta päätetään."
+          },
+          {
+            "id": "entity_index_1470_stress-test-question",
+            "candidateID": "entity_index_1470",
+            "candidateAnswer": "4",
+            "text": "Nuorten pitää saada vaikuttaa päätöksiin, jotka koskevat heidän elinympäristöään ja tulevaisuuttaan. 16-vuotiaat voivat jo tehdä töitä, maksaa veroja ja kantaa monia yhteiskunnallisia vastuita – heidän pitäisi siis myös saada äänestää paikallisista asioista. Kunta- ja aluevaalit ovat suora keino vaikuttaa koulutukseen, nuorisopalveluihin ja muihin lähipalveluihin, jotka koskettavat nuoria erityisen paljon. Äänestysikärajan laskeminen voisi myös lisätä nuorten kiinnostusta politiikkaan ja vahvistaa demokratiaa pitkällä aikavälillä."
+          },
+          {
+            "id": "entity_index_1471_stress-test-question",
+            "candidateID": "entity_index_1471",
+            "candidateAnswer": "4",
+            "text": "Mielestäni tämä on hyvä idea. Tämä aktivoisi nuoria poliittisesti kiinnostumaan yhteiskunnallisista asioista. Ja ennen kaikkea nuorten mielipiteellä olisi vaikutusta."
+          },
+          {
+            "id": "entity_index_1472_stress-test-question",
+            "candidateID": "entity_index_1472",
+            "candidateAnswer": "4",
+            "text": "Nykyisin useat 16-vuotiaat ovat valveutuneita yhteiskunnallisista asioista. Se voisi myös motivoida ottamaan kantaa asioihin ja samalla alkaa ottaa vastuuta. Nuorisossa on kuitenkin tulevaisuus."
+          },
+          {
+            "id": "entity_index_1473_stress-test-question",
+            "candidateID": "entity_index_1473",
+            "candidateAnswer": "4",
+            "text": "Kunta- ja aluevaalien asioista monet ovat asioita, jotka koskettavat nuoria. Mielestäni ei olisi haittaa ikärajan laskemisesta näissä vaaleissa. Äänestämään oppiminen on tärkeä osa demokratiakasvatusta ja näin esimerkiksi opetuksessa voitaisiin vielä enemmän kannustaa äänestämään ja puhumaan ajankohtaisista aiheista. Näin esimerkiksi myös kuntavaalien asiat tulisivat mahdollisesti nuorille tutummiksi, mikä helpottaisi äänestämisen tärkeyden ymmärtämistä."
+          },
+          {
+            "id": "entity_index_1474_stress-test-question",
+            "candidateID": "entity_index_1474",
+            "candidateAnswer": "4",
+            "text": "Jotta kunta voisi parantaa houkuttelevuutta, täytyy myös nuorempien ääni saada perille. 16 vuotias pystyy esittämään järkevästi juuri oman ikäluokan kehityskohteet esille."
+          },
+          {
+            "id": "entity_index_1475_stress-test-question",
+            "candidateID": "entity_index_1475",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääntä tulisi muutoinkin kuunnella enemmän päätöksiä tehdessä."
+          },
+          {
+            "id": "entity_index_1476_stress-test-question",
+            "candidateID": "entity_index_1476",
+            "candidateAnswer": "4",
+            "text": "Tärkeää olisi saada nuorten ääni kuuluviin mutta olisiko muitakin tapoja kuin äänestys iän laskeminen."
+          },
+          {
+            "id": "entity_index_1477_stress-test-question",
+            "candidateID": "entity_index_1477",
+            "candidateAnswer": "4",
+            "text": "16-vuotiaat ovat jo yhteiskunnallisesti valveutuneita, maksavat veroja esimerkiksi työnteon kautta ja käyttävät kunnallisia palveluita, kuten kouluja ja joukkoliikennettä. Heidän tulisi siksi saada vaikuttaa päätöksiin, jotka koskevat heidän arkeaan. Äänestysikärajan laskeminen voisi myös vahvistaa nuorten kiinnostusta politiikkaan ja lisätä osallistumista demokraattiseen päätöksentekoon. On kuitenkin tärkeää, että samalla panostetaan kansalaiskasvatukseen ja nuorten osallisuuden tukemiseen, jotta päätökset perustuvat tietoon ja ymmärrykseen."
+          },
+          {
+            "id": "entity_index_1478_stress-test-question",
+            "candidateID": "entity_index_1478",
+            "candidateAnswer": "4",
+            "text": "Hyvin toimii seurakuntavaaleissakin, joten sietäisi asiaa ainakin kokeilla myös kunta- ja aluevaaleissa."
+          },
+          {
+            "id": "entity_index_1479_stress-test-question",
+            "candidateID": "entity_index_1479",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääni tulee kuulua kunnissa, jotka vastaavat mm. nuorille suunnatusta harrastustoiminnasta. Jos halutaan koittaa kuntavaaleissa 16 vuoden äänestysikärajaa, kannatan kokeilua. Aluevaaleissa voisin harkita ikärajan laskua, mutta aloittaisin kuntavaaleista."
+          },
+          {
+            "id": "entity_index_1480_stress-test-question",
+            "candidateID": "entity_index_1480",
+            "candidateAnswer": "4",
+            "text": "Kunnissa päätetään tärkeistä ihmisten arkea koskettavista asioista, jotka koskettavat usein nuoria. On perusteltua, että lähellä täysi-ikäisyyttä olevilla kaupunkilaisilla voisi olla oikeus olla vaikuttamassa, millaiseen kaupunkiin he aikuistuvat. Mikäli äänestysikärajaa laskettaisiin, tulisi kuitenkin huolehtia koulujen riittävästä demokratiakasvatuksesta."
+          },
+          {
+            "id": "entity_index_1481_stress-test-question",
+            "candidateID": "entity_index_1481",
+            "candidateAnswer": "4",
+            "text": "Yhteiskunnallinen aktiivisuus on vähentynyt kaikissa ikäryhmissä, Nuorilla on usein mielipiteitä muistakin kuin heitä itseään koskevista asioista. Osallistumista, vaikuttamista ja valveutuneisuutta on kuitenkin pidettävä esillä, jotta nuoret tietävät, mihin äänestäminen vaikuttaa."
+          },
+          {
+            "id": "entity_index_1482_stress-test-question",
+            "candidateID": "entity_index_1482",
+            "candidateAnswer": "4",
+            "text": "On hyvä luottaa nuoriin ja antaa heillekin mahdollisuus vaikuttaa."
+          },
+          {
+            "id": "entity_index_1483_stress-test-question",
+            "candidateID": "entity_index_1483",
+            "candidateAnswer": "4",
+            "text": "On tärkeää että nuoret saavat mahdollisuuden osallistua yhteiskunnallisesti vaikuttaviin asioihin. Jokaisen äänellä on merkitystä. Nuorten kuunteleminen päätöksenteossa tulisi huomioida, mutta kokonaisuutta ajatellen nuoret tarvitsevat päätöksen teon tueksi myös kokemusta. On tärkeää, että päätöksentekoon voisi osallistua useasta ikäluokasta. Kunta- ja aluevaalien äänestysprosentti on toisinaan ollut melko alhainen, joten nuorten osallisuutta voisi olla syytä lisätä."
+          },
+          {
+            "id": "entity_index_1484_stress-test-question",
+            "candidateID": "entity_index_1484",
+            "candidateAnswer": "4",
+            "text": "Myös nuorilla on oikeus osallistua päättäjien valintaan halutessaan."
+          },
+          {
+            "id": "entity_index_1485_stress-test-question",
+            "candidateID": "entity_index_1485",
+            "candidateAnswer": "4",
+            "text": "Kokemuksieni mukaan 16 vuotta täyttäneet nuoret ovat usein hyvin valveutuneita ja heillä on kypsät mielipiteet sekä ajatukset yhteiskunnallisissa asioissa."
+          },
+          {
+            "id": "entity_index_1486_stress-test-question",
+            "candidateID": "entity_index_1486",
+            "candidateAnswer": "4",
+            "text": "Äänioikeus voi olla, mutta oikeus asettua ehdolle on 18 vuotta, ja se tulee pitää sellaisena. Meillä on kuitenkin nuorisovaltuutetuilla lähettää edustaja lautakuntiin, ja he voivat tulla kuulluksi heitä koskevissa asioissa, sekä nuorten vaikuttajaryhmiä, lisäksi yhdeksäsluokkalaiset tekee aloitteita ja joka koululla toimii aktiivinen nuorten ryhmä. Aluevaalien asiat saatta myös joissain lautakuntapaikoissa sisältää yksityisiä salassa pidettäviä asioita."
+          },
+          {
+            "id": "entity_index_1487_stress-test-question",
+            "candidateID": "entity_index_1487",
+            "candidateAnswer": "4",
+            "text": "Suomen väestö ikääntyy koko ajan, jolloin äänestäjien keski-ikä myös kasvaa. Tätä \\\"vääristymää\\\" tasapainottaisi se, että myös nuorilla olisi mahdollisuus kertoa mielipiteensä vaaleissa. Mikäli ikärajaa laskettaisiin, niin äänestämässä kävisivät todennäköisesti vain ne nuoret, joita aihe oikeasti kiinnostaa. Samalla nuorten kiinnostus yhteisten asioiden hoitamisesta ja kunnallisesta ja alueellisesta vaikuttamisesta voisi muutenkin kasvaa, ja jatkossa myös ehdokkaiksi voitaisiin saada enemmän nuoria aikuisia - kun nyt ehdokkaiden keski-ikä on 50 vuoden hujakoilla."
+          },
+          {
+            "id": "entity_index_1488_stress-test-question",
+            "candidateID": "entity_index_1488",
+            "candidateAnswer": "4",
+            "text": "Nuoret aikuiset ovat nykyään valmiimpia ja taidokkaampia arvioimaan yhteiskunnallisia asioita, joten äänestysikärajaa voisi laskea."
+          },
+          {
+            "id": "entity_index_1489_stress-test-question",
+            "candidateID": "entity_index_1489",
+            "candidateAnswer": "4",
+            "text": "Tämä huomioisi myös nuoremmat ikäluokat paremmin päätöksenteossa."
+          },
+          {
+            "id": "entity_index_1490_stress-test-question",
+            "candidateID": "entity_index_1490",
+            "candidateAnswer": "4",
+            "text": "Muissa maissa noin 6 % on maita, joissa äänestysikä on 16 v paikallisvaaleissa, mm. Virossa. Tämä voisi olla hyvä asia meilläkin. Nuorten vaikutusvallan lisääminen olisi hyvä asia."
+          },
+          {
+            "id": "entity_index_1491_stress-test-question",
+            "candidateID": "entity_index_1491",
+            "candidateAnswer": "4",
+            "text": "Tällä uudistuksella voitaisiin saada kiinnostavuutta yhteiskunnallisiin asioihin aiemmin"
+          },
+          {
+            "id": "entity_index_1492_stress-test-question",
+            "candidateID": "entity_index_1492",
+            "candidateAnswer": "4",
+            "text": "Mielestäni 16-vuotta täyttäneiden tulisi saada äänestää kuntavaaleissa, sillä kuntien pitää ottaa paremmin huomioon myös nuorten asiat. Demokratiaan ja äänioikeuteen tulee kuitenkin suhtautua kaikella vakavuudella, joten tämän edistämiseksi kouluissa perehtyä yhteiskuntaoppiin syvällisemmin."
+          },
+          {
+            "id": "entity_index_1493_stress-test-question",
+            "candidateID": "entity_index_1493",
+            "candidateAnswer": "4",
+            "text": "Monet nuoria läheisesti koskettavat päätökset tehdään kunnissa."
+          },
+          {
+            "id": "entity_index_1494_stress-test-question",
+            "candidateID": "entity_index_1494",
+            "candidateAnswer": "4",
+            "text": "Ei haittaa vaikka nuorempia saataisiin mukaan vaikuttamaan yhteisiin asioihin, voisi olla ihan positiivinen juttu."
+          },
+          {
+            "id": "entity_index_1495_stress-test-question",
+            "candidateID": "entity_index_1495",
+            "candidateAnswer": "4",
+            "text": "16vuotias osaa jo tehdä tarvittavia päätöksiä ja valintoja koulutuksestaan ,asumisestaan miksei siis politiikastakin."
+          },
+          {
+            "id": "entity_index_1496_stress-test-question",
+            "candidateID": "entity_index_1496",
+            "candidateAnswer": "4",
+            "text": "Nuoret ovat yhtä lailla osa yhteiskuntaa, jonka tulevaisuudesta päätetään. Heillä on oikeus vaikuttaa heitä koskeviin asioihin, kuten koulutukseen, työllisyyteen ja ilmastopolitiikkaan"
+          },
+          {
+            "id": "entity_index_1497_stress-test-question",
+            "candidateID": "entity_index_1497",
+            "candidateAnswer": "4",
+            "text": "Nuorten pitää saada osallistua päätöksentekoon."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret 16-vuotiaat ovat jo yhteiskunnallisesti valveutuneita, maksavat veroja ja kantavat monia vastuuta, joten heidän tulisi saada äänestää asioista, jotka koskevat heidän elinympäristöään ja tulevaisuuttaan."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja aktivoida heitä osallistumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunta- ja aluevaalit koskevat suoraan nuoria ja heidän mielipiteensä tulisi huomioida päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestämään oppiminen on tärkeä osa demokratiakasvatusta, ja nuorille tulisi tarjota mahdollisuus osallistua päätöksentekoon aikaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten kuunteleminen päätöksenteossa voisi parantaa kuntien houkuttelevuutta ja lisätä äänestysprosenttia."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Muissa maissa, kuten Virossa, on 16 vuoden äänestysoikeus paikallisvaaleissa, mikä osoittaa, että tämä käytäntö voi toimia myös Suomessa."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten mielipiteet ovat tärkeitä ja heidän osallistumisensa päätöksentekoon voi tuoda uusia näkökulmia ja parantaa päätösten laatua."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_0_8"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.728Z",
+        "duration": 57733,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_1_1": {
+      "id": "MAP_0_1_1",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 1,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1498_stress-test-question",
+            "candidateID": "entity_index_1498",
+            "candidateAnswer": "4",
+            "text": "Tätä voisi ainakin kokeilla että miten vaikuttaisi oikeasti. Jos kaikki menee hyvin niin sitten voisi olla pysyvä olotila."
+          },
+          {
+            "id": "entity_index_1499_stress-test-question",
+            "candidateID": "entity_index_1499",
+            "candidateAnswer": "4",
+            "text": "Miksipä ei, nuorillakin on tietynlaista omaa näkemystä asioihin, varsinkin heitä koskeviin asioihin."
+          },
+          {
+            "id": "entity_index_1500_stress-test-question",
+            "candidateID": "entity_index_1500",
+            "candidateAnswer": "4",
+            "text": "Lähivaaleissa on hyvä tutustua ja tottua äänestämiseen."
+          },
+          {
+            "id": "entity_index_1501_stress-test-question",
+            "candidateID": "entity_index_1501",
+            "candidateAnswer": "4",
+            "text": "nuorten vaikuttamismahdollisuuksia tulee lisätä"
+          },
+          {
+            "id": "entity_index_1502_stress-test-question",
+            "candidateID": "entity_index_1502",
+            "candidateAnswer": "4",
+            "text": "Jo nuorena on hyvä tutustua vaikuttamismahdollisuuksiin, vastuunkantamiseen ja yhteisiin asioihin."
+          },
+          {
+            "id": "entity_index_1503_stress-test-question",
+            "candidateID": "entity_index_1503",
+            "candidateAnswer": "4",
+            "text": "Kokeilemisen arvoinen asia ja maailmalla saatu hyviä tuloksia. Voisi lisätä äänestysaktiivisuutta. Nykyajan 16-vuotiailla myös varmasti paljon mielipiteitä asioista ja halua vaikuttaa."
+          },
+          {
+            "id": "entity_index_1504_stress-test-question",
+            "candidateID": "entity_index_1504",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskemisella on mahdollista kannustaa nuoria yhteiskunnalliseen vaikuttamiseen ja yhteisistä asioista huolehtimiseen. Mielestäni tämän tulisi kuitenkin koskea ainoastaan kunta- ja aluevaaleja eikä esimerkiksi eduskuntavaaleja."
+          },
+          {
+            "id": "entity_index_1505_stress-test-question",
+            "candidateID": "entity_index_1505",
+            "candidateAnswer": "4",
+            "text": "Jos äänestysiän laskemisella saadaan nuoret kiinnostumaan politiikasta niin se on hyvä asia."
+          },
+          {
+            "id": "entity_index_1506_stress-test-question",
+            "candidateID": "entity_index_1506",
+            "candidateAnswer": "4",
+            "text": "Kannatan nuorten poliittisen osallistumisen lisäämistä ja uskon, että äänestysikärajan laskeminen 16 vuoteen voisi herättää nuoret kiinnostumaan yhteiskunnasta jo varhaisessa vaiheessa. Tämä ei ainoastaan vahvistaisi demokratiaa, vaan toisi nuorille todellisen mahdollisuuden vaikuttaa heidän tulevaisuuteensa. Kuitenkin ennen kuin teemme tämän muutoksen, meidän on varmistettava, että kouluissa annetaan nuorille tarvittavat yhteiskuntaopin ja poliittisen valistuksen taidot, jotta he voivat tehdä vastuullisia ja tietoisia päätöksiä vaaleissa. Näin voimme varmistaa, että he ovat valmiita ottamaan vastuun ja käyttämään oikeuksiaan harkitusti."
+          },
+          {
+            "id": "entity_index_1507_stress-test-question",
+            "candidateID": "entity_index_1507",
+            "candidateAnswer": "4",
+            "text": "Tämä voisi lisätä äänestyaktiivisuutta monessa pienessä kunnassa."
+          },
+          {
+            "id": "entity_index_1508_stress-test-question",
+            "candidateID": "entity_index_1508",
+            "candidateAnswer": "4",
+            "text": "Kuntavaalit ovat koulutuspalveluiden vaalit. Mielestäni 16-vuotias on kykenevä tekemään lähiympäristöään koskevia päätöksiä, erityisesti kouluihin liittyen. Aluevaalit voisi olla vielä 18-vuoden ikärajalla."
+          },
+          {
+            "id": "entity_index_1509_stress-test-question",
+            "candidateID": "entity_index_1509",
+            "candidateAnswer": "4",
+            "text": "Nuorten tulisi pystyä vaikuttamaan aktiivisemmin omaan elinympäristöönsä ja äänioikeus kunta- ja aluevaaleissa olisi yksi askel tähän suuntaan. Muitakin vaikuttamisen keinoja on toki olemassa ja nuorten edustajia voitaisiin ottaa paremmin mukaan päättäviin elimiin."
+          },
+          {
+            "id": "entity_index_1510_stress-test-question",
+            "candidateID": "entity_index_1510",
+            "candidateAnswer": "4",
+            "text": "-Nuoret ovat valmiita päätöksentekoon Ajatus siitä, että 16-vuotias ei osaisi tehdä järkeviä äänestyspäätöksiä, on vanhentunut. Nykyajan nuoret ovat tietoisia ja osaavat hankkia tietoa monista eri lähteistä. Heille on tarjolla koulutusta yhteiskunnallisista asioista, ja sosiaalinen media tuo päätöksenteon yhä lähemmäs nuorten maailmaa. -Nuorilla on paljon pelissä Kunta- ja aluevaalit eivät ole vain “aikuisten juttu”. Päätökset koskevat nuorten koulutusta, harrastusmahdollisuuksia, terveyspalveluja ja ilmastopolitiikkaa – asioita, jotka vaikuttavat heidän tulevaisuuteensa enemmän kuin monien vanhempien ihmisten elämään. Miksi siis heitä ei kuunneltaisi jo varhaisessa vaiheessa? Yhteenveto: Äänestysikärajan laskeminen 16 vuoteen ei ole vain reilua, vaan myös järkevää. Se kasvattaa aktiivisia kansalaisia, tuo uusia näkökulmia päätöksentekoon ja tekee demokratiasta aidosti osallistavan. Nuoret eivät ole vain tulevaisuus – he ovat tässä ja nyt. Ja heidän äänellään on väliä."
+          },
+          {
+            "id": "entity_index_1511_stress-test-question",
+            "candidateID": "entity_index_1511",
+            "candidateAnswer": "4",
+            "text": "Mielestäni 16-vuotiailla on jo tietoa ja kiinnostusta vaikuttaa oman kuntansa ja hyvinvointialueen asioihin. Nuoret käyttävät palveluita, kuten koulutusta, terveydenhuoltoa ja joukkoliikennettä, joten heillä tulisi olla myös mahdollisuus vaikuttaa ratkaisemiseen, jotka koskevat heidän arkeaan. Äänestysiän laskeminen lisäisi myös nuorten kiinnostusta politiikkaan ja osallisuutta yhteiskunnassa jo varhaisessa iässä, mikä voisi parantaa äänestysaktiivisuutta. Monet Euroopan maat ovat jo kokeilleet tätä menestyksekkäästi ja Suomessa se voisi vahvistaa demokratiaa sekä tuoda päätöksentekoon uusia näkökulmia nuorten arjesta."
+          },
+          {
+            "id": "entity_index_1512_stress-test-question",
+            "candidateID": "entity_index_1512",
+            "candidateAnswer": "4",
+            "text": "Yhteiskunnassa 16-vuotiaalla on jo monenlaista yhteiskunnallista vastuuta, kuten rikosoikeudellinen vastuu ja seurakunnan vaaleissa äänestäminen. Esimerkiksi Itävallan kokemukset ovat positiivisia äänestysiän laskemisesta."
+          },
+          {
+            "id": "entity_index_1513_stress-test-question",
+            "candidateID": "entity_index_1513",
+            "candidateAnswer": "4",
+            "text": "Sitä voisi kokeilla, nythän se on jo seurakuntavaaleissa."
+          },
+          {
+            "id": "entity_index_1514_stress-test-question",
+            "candidateID": "entity_index_1514",
+            "candidateAnswer": "4",
+            "text": "Nuorilla on oikeus vaikuttaa heitä koskeviin päätöksiin, ja 16-vuotiaana monilla on jo vahva kiinnostus yhteiskunnallisiin asioihin. Äänestysikärajan laskeminen kunta- ja aluevaaleissa voisi vahvistaa nuorten osallisuutta ja lisätä demokratian toteutumista käytännössä. Monet päätökset, kuten koulutukseen, hyvinvointipalveluihin ja nuorten elinympäristöön liittyvät asiat, vaikuttavat suoraan nuorten arkeen. Mahdollisuus äänestää kannustaisi osallistumaan yhteiskunnalliseen keskusteluun ja lisäisi kiinnostusta vaikuttamiseen jo varhaisessa vaiheessa."
+          },
+          {
+            "id": "entity_index_1515_stress-test-question",
+            "candidateID": "entity_index_1515",
+            "candidateAnswer": "4",
+            "text": "Nuoret ovat hyvin tietoisia yhteiskunnallisista asioista ja haluavat vaikuttaa. Miksi emme sitä mahdollistaisi?"
+          },
+          {
+            "id": "entity_index_1516_stress-test-question",
+            "candidateID": "entity_index_1516",
+            "candidateAnswer": "4",
+            "text": "Ikärajaa alentamalla voitaisiin lisätä nuorten kiinnostusta yhteiskunnallisiin asioihin. 16 vuotiaan on muutenkin otettava jo paljon vastuuta itsestään ja tehtävä elämäänsä liittyviä valintoja. Varmasti he osaisivat valita itseään miellyttävän ehdokkaan. Yhteiskunnassamme on samalla esimerkiksi paljon muistisairaita, jotka äänestävät ymmärtämättä tämän päivän asioista paljoakaan. Miksi siis nuorten oikeuksia pitäisi rajata?"
+          },
+          {
+            "id": "entity_index_1517_stress-test-question",
+            "candidateID": "entity_index_1517",
+            "candidateAnswer": "4",
+            "text": "Monet nuoret ovat kiinnostuneitapolitiikasta heille tulisi olla äänioikeus."
+          },
+          {
+            "id": "entity_index_1518_stress-test-question",
+            "candidateID": "entity_index_1518",
+            "candidateAnswer": "4",
+            "text": "Nuorten äänen saaminen paremmin kuuluvaksi ja mukaan yhteiskunnalliseen päätöksentekoon olisi tärkeää."
+          },
+          {
+            "id": "entity_index_1519_stress-test-question",
+            "candidateID": "entity_index_1519",
+            "candidateAnswer": "4",
+            "text": "Kannatan äänestysikärajan laskemista, koska nuorille sallitaan töissä käyminen, verojen maksaminen ja äänestämisessä on kyse heidän tulevaisuudestaan. En pidä reiluna, että he eivät saisi olla päättämässä tulevaisuudestaan. En pidä uskottavana, että tämä juurikaan lisäisi äänestäjien määrää. Ja viimeiseksi: minusta tällaisen muutoksen myötä pitää lisätä yhteiskuntaopin opetusta peruskoulussa. Tällaisen vastuun lisääminen edellyttää minusta tietoa vastuista, jotka siihen liittyvät."
+          },
+          {
+            "id": "entity_index_1520_stress-test-question",
+            "candidateID": "entity_index_1520",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan alentaminen ei itsessään ratkaise nuorten yhteiskunnallisen osallistumisen ongelmia, mutta kannustaa ja mahdollistaa osallistumaan demokraattiseen järjestelmään. On kuitenkin ensin mietittävä, tuleeko ehdolle asettumista ja muita täysi-ikäisyyteen sidottuja oikeuksia muuttaa samalla."
+          },
+          {
+            "id": "entity_index_1521_stress-test-question",
+            "candidateID": "entity_index_1521",
+            "candidateAnswer": "4",
+            "text": "Kyllä tuon ikäinen nuori jo ymmärtää mitä omassa kaupungissa tapahtuu. Lisäksi seuraavan 4 vuotta (jolloin hän on jo 20 vuotias) hän kongreettisesti elää näiden päätösten kanssa mitä valtuustoon valitut ihmiset päättävät."
+          },
+          {
+            "id": "entity_index_1522_stress-test-question",
+            "candidateID": "entity_index_1522",
+            "candidateAnswer": "4",
+            "text": "Vanhoilla ihmisillä on liikaa valtaa ja nuorilla liian vähän. Äänestysikärajan alentaminen innostaisi nuoria poliittiseen vaikuttamiseen. 16-vuotias on kypsä äänestämään."
+          },
+          {
+            "id": "entity_index_1523_stress-test-question",
+            "candidateID": "entity_index_1523",
+            "candidateAnswer": "4",
+            "text": "Nykyisin jo 16 vuotiaat ovat aika kiinnostuneita yhteiskunnallisista asioista ja tarpeeksi valveutuneita ottaakseen osaa heitäkin koskevaan päätöksentekoon."
+          },
+          {
+            "id": "entity_index_1524_stress-test-question",
+            "candidateID": "entity_index_1524",
+            "candidateAnswer": "4",
+            "text": "16-vuotiailla on jo monia yhteiskunnallisia velvollisuuksia, kuten veronmaksu ja työskentelymahdollisuus, joten heille tulisi myös antaa oikeus vaikuttaa paikalliseen päätöksentekoon. Kunta- ja aluevaaleissa päätetään palveluista, kuten koulutuksesta, joukkoliikenteestä ja nuorisotyöstä, jotka koskettavat suoraan nuoria. Äänestysiän laskeminen voisi myös lisätä poliittista kiinnostusta ja aktiivisuutta nuorten keskuudessa, mikä vahvistaisi demokratiaa pitkällä aikavälillä. On kuitenkin tärkeää panostaa samalla kansalaiskasvatukseen, jotta nuoret saavat riittävästi tietoa ja valmiuksia tehdä perusteltuja äänestyspäätöksiä."
+          },
+          {
+            "id": "entity_index_1525_stress-test-question",
+            "candidateID": "entity_index_1525",
+            "candidateAnswer": "4",
+            "text": "Nuoret 16-vuotiaat käyttävät kunnan palveluita ja maksavat mahdolliset verotulonsa kuntaan, kuten kaikki muutkin. Siksi mielestäni myös 16-vuotiaiden tulisi saada äänestää vaaleissa."
+          },
+          {
+            "id": "entity_index_1526_stress-test-question",
+            "candidateID": "entity_index_1526",
+            "candidateAnswer": "4",
+            "text": "Mielestäni voisi ainakin kokeilla kuntavaaleissa. Kokeilun perusteella tehtäisiin lopullinen ratkaisu. Monet pelkäävät, että 16-vuotias ei ole tarpeeksi kypsä ja valveutunut yhteiskunnallisissa asioissa ja siksi ei olisi hyvä ratkaisu. Siksi on hyvä testata asiaa."
+          },
+          {
+            "id": "entity_index_1527_stress-test-question",
+            "candidateID": "entity_index_1527",
+            "candidateAnswer": "4",
+            "text": "16-vuotiaat ovat todella fiksuja peruskoulun päättäneitä nuoria, joilla on teräviä mielipiteitä. Antamalla heille äänioikeuden parannettaisiin nuorten äänen kuulumista päätöksenteossa!"
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorilla on kyky tehdä järkeviä päätöksiä ja he ovat tietoisia yhteiskunnallisista asioista, mikä tekee heistä kykeneviä äänestämään jo 16-vuotiaana."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja kannustaa heitä osallistumaan aktiivisesti yhteiskunnalliseen keskusteluun."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunta- ja aluevaalit koskevat suoraan nuorten elämää, kuten koulutusta ja terveyspalveluja, joten heidän tulisi saada mahdollisuus vaikuttaa näihin päätöksiin."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Monet Euroopan maat ovat onnistuneesti kokeilleet 16-vuotiaiden äänestysoikeutta, mikä osoittaa, että tämä malli voi toimia myös Suomessa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan alentaminen voisi auttaa nuoria ottamaan vastuuta yhteiskunnallisista asioista ja valmistaa heitä tulevaisuuden päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Nuorten osallistuminen päätöksentekoon voi parantaa demokratian toteutumista ja varmistaa, että nuorten ääni kuuluu tärkeissä asioissa."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuoret käyttävät kunnallisia palveluita ja maksavat veroja, joten heidän tulisi myös voida vaikuttaa niihin liittyviin päätöksiin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Alentamalla äänestysikää voidaan nostaa nuorten äänen kantavuutta ja tuoda heidän näkökulmiaan päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_1_9"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.729Z",
+        "duration": 57734,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_2_2": {
+      "id": "MAP_0_2_2",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 2,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1528_stress-test-question",
+            "candidateID": "entity_index_1528",
+            "candidateAnswer": "4",
+            "text": "En näe suurta eroa 16- ja 18-vuotiaiden kyvyssä äänestää vastuuntuntoisesti."
+          },
+          {
+            "id": "entity_index_1529_stress-test-question",
+            "candidateID": "entity_index_1529",
+            "candidateAnswer": "4",
+            "text": "Jos nuori kiinnostuu vaikuttamisesta, äänestäminen voisi olla mahdollista."
+          },
+          {
+            "id": "entity_index_1530_stress-test-question",
+            "candidateID": "entity_index_1530",
+            "candidateAnswer": "4",
+            "text": "Uskon että 16 vuotias on kykenevä ilmaisemaan mielipiteensä ja olisi hyvä jos yhä nuorempien ääni kuuluisi paremmin. Toki vielä uupuu kokemus, mutta tämän kautta myös kokemusta karttuu."
+          },
+          {
+            "id": "entity_index_1531_stress-test-question",
+            "candidateID": "entity_index_1531",
+            "candidateAnswer": "4",
+            "text": "16-vuotias on täysin kykenevä ottamaan selvää yhteiskunnallisista asioista eikä mielestäni pitäisi joutua odottelemaan niin sanotusti turhan takia ennen kuin saa osallistua aktiivisesti yhteiskunnalliseen päätöksentekoon. Jos nuori on kiinnostunut politiikasta ja hän kokee ettei häntä kuunnella, hänen kiinnostuksensa politiikkaan voi hälvetä ja jopa lakata. Tässä puolueiden nuorisojärjestöillä on petrattavaa jotta kaikki nämä nuoret saadaan poimittua mukaan toimintaan"
+          },
+          {
+            "id": "entity_index_1532_stress-test-question",
+            "candidateID": "entity_index_1532",
+            "candidateAnswer": "4",
+            "text": "Nyt kun hyvinvointialue-järjestelmän myötä sosiaali - ja terveyspalvelut ovat siirtyneet aluevaltuustoiden vastuulle, niin näkisin, että kuntavaalien äänestysikärajaa voitaisiin hyvinkin laskea 16 vuoteen, jolloin myös nuorille syntyy mahdollisuus osallistua suoraan lähiympäristöä koskettavaan päätöksentekoon. Aluevaaleissa kuitenkin säilyttäisin edelleen 18 ikävuoden rajan. Ehdokkaaksi asettautumisen ikärajan säilyttäisin molemmissa edelleen 18 ikävuodessa."
+          },
+          {
+            "id": "entity_index_1533_stress-test-question",
+            "candidateID": "entity_index_1533",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta vaikuttamiseen ja tehdä päätöksenteosta tasapainoisempaa. Tällä hetkellä nuorten ääni jää heikommaksi verrattuna ikäihmisiin, mikä luo epätasapainoa demokratiaan. Jotta 16-vuotiaat voisivat tehdä tietoon perustuvia päätöksiä, kouluihin tulisi lisätä kansalaiskasvatusta ja tarjota enemmän mahdollisuuksia osallistua vaikuttamiseen, esimerkiksi nuorisovaltuustojen kautta."
+          },
+          {
+            "id": "entity_index_1534_stress-test-question",
+            "candidateID": "entity_index_1534",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen 18 vuodesta 16 vuoteen alue- ja kuntavaaleissa saattaisi lisätä nuorten kiinnostusta politiikkaan. Äänestysikärajan laskeminen voi pitkällä aikavälillä kasvattaa äänestysaktiivisuutta ja lisätä nuorten osallistumis- ja vaikuttamismahdollisuuksia yhteiskunnassa. Joissakin Euroopan maissa, mm. Itävallassa ja Virossa, äänestysikäraja on laskettu 16 vuotta. Kokemukset äänestysiän laskemisesta ovat näissä maissa olleet pääosin myönteisiä. Äänestysikärajan laskua vastustavat esittävät, että äänestysiän laskeminen saattaa vähentää vaalien arvovaltaa, eivätkä 16-vuotiaat ole aina tarpeeksi kypsiä tekemään perusteltuja päätöksiä vaaleissa. Itse uskon 16-vuotiaan pystyvän tekemään kypsän äänestyspäätöksen, etenkin, jos kouluissa lisätään yhteiskuntaopin opetusta ja tutustutetaan nuoret politiikkaan. En usko äänestysikärajan laskemisen mitenkään vaikuttavan vaalien arvovaltaan. Äänestysikäraja tarkoittaa ikärajaa, joka määrittää sen, minkä ikäisenä ihminen saa äänestää vaaleissa. Suomessa tämä äänestysikäraja on tällä hetkellä 18 vuotta. Seurakuntavaaleissa äänestysikäraja on jo tällä hetkellä 16 vuotta. On kurjaa, että harva nuori silti äänioikeuttaan seurakuntavaaleissa käyttää."
+          },
+          {
+            "id": "entity_index_1535_stress-test-question",
+            "candidateID": "entity_index_1535",
+            "candidateAnswer": "4",
+            "text": "Nuorille pitää mielestäni antaa paremmat mahdollisuudet vaikuttaa omiin asioihinsa. Se miten se tapahtuisi parhaiten, voi tuoda paljon hyvää keskustelua erilaisista vaihtoehdoista ja olisin avoin kuulemaan asiantuntijoiden mielipiteet näistä."
+          },
+          {
+            "id": "entity_index_1536_stress-test-question",
+            "candidateID": "entity_index_1536",
+            "candidateAnswer": "4",
+            "text": "Mielestäni nykynuoriso on jo valveutunutta ja osaa äänestää."
+          },
+          {
+            "id": "entity_index_1537_stress-test-question",
+            "candidateID": "entity_index_1537",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajaa voisi harkita 16 ikävuoteen. Nuoret tulee ottaa jo varhain mukaan päätöksentekoon ja heidän ääni tulee saada kuuluviin"
+          },
+          {
+            "id": "entity_index_1538_stress-test-question",
+            "candidateID": "entity_index_1538",
+            "candidateAnswer": "4",
+            "text": "Olen varovaisen samaa mieltä väitteen kanssa. Kunnat ja hyvinvointialueet nimittäin päättävät 16-17-vuotiaille tärkeistä palveluista eli koulutuksesta ja sosiaali- ja terveydenhuollosta. Mikäli äänestysikärajaa laskettaisiin, jouduttaisiin miettimään uudelleen nuorivaltuustojen rooli, sillä ne on luotu maailmaan, jossa vain täysi-ikäiset ovat äänioikeutettuja."
+          },
+          {
+            "id": "entity_index_1539_stress-test-question",
+            "candidateID": "entity_index_1539",
+            "candidateAnswer": "4",
+            "text": "Kyllä 16 vuotias olisi jo valmis äänestämään."
+          },
+          {
+            "id": "entity_index_1540_stress-test-question",
+            "candidateID": "entity_index_1540",
+            "candidateAnswer": "4",
+            "text": "Tämä voisi lisätä nuorten kiinnostusta politiikkaan ja edistää nuorten osallisuutta yhteisessä päätöksenteossa. Suomessahan 16-vuotiaat saavat jo äänestää seurakuntavaaleista, mistä on saatu hyviä kokemuksia."
+          },
+          {
+            "id": "entity_index_1541_stress-test-question",
+            "candidateID": "entity_index_1541",
+            "candidateAnswer": "4",
+            "text": "On perusteltua, että ikärajaa lasketaan nykyisestä nuorten osallisuuden lisäämiseksi. Monet päätökset, joita vain täysi-ikäiset voivat tehdä, vaikuttavat nuoriin ilman, että nuoret itse voisivat tähän vaikuttaa. Huoleni on kuitenkin, että samaan aikaan kun yhteiskunta ja maailmanpoliittinen tilanne on äärimmäisessä myrskyssä, ja tietäen, että nuorten ajattelu on suoraviivaista ja vielä kehittyvää, on mahdollista, että jonkintasoista jyrkkyyttä ja ehdottomuutta alkaa ilmetä äänestyskäyttäytymisessä. Radikaalit ehdokkaat voivat saada valtaa ilman, että kaikki äänestäjät ovat ymmärtäneet asian yhteiskunnallisia vaikutuksia. Nuorilla on myös lakiin kirjattu oikeus olla läsnä kunnan ja hyvinvointialueiden päätöksenteossa esimerkiksi nuorisovaltuuston ja heidän edustajiensa kautta. Vastaavaa järjestelyä ei ole esimerkiksi vammaisilla."
+          },
+          {
+            "id": "entity_index_1542_stress-test-question",
+            "candidateID": "entity_index_1542",
+            "candidateAnswer": "4",
+            "text": "Nuorilla tulee olla mahdollisuus vaikuttaa jo nuoresta iästä lähtien."
+          },
+          {
+            "id": "entity_index_1543_stress-test-question",
+            "candidateID": "entity_index_1543",
+            "candidateAnswer": "4",
+            "text": "Äänestysiän laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän ääntään päätöksenteossa, joten pidän sitä osittain hyvänä ehdotuksena. Kuitenkin siihen liittyy merkittäviä juridisia ongelmia, sillä 16-vuotiaat eivät ole oikeustoimikelpoisia eivätkä täysivaltaisia kansalaisia. Tämä luo ristiriidan, jossa henkilö voisi vaikuttaa lainsäädäntöön, mutta ei olisi itse täysin sen alainen. Siksi en voi täysin kannattaa ehdotusta"
+          },
+          {
+            "id": "entity_index_1544_stress-test-question",
+            "candidateID": "entity_index_1544",
+            "candidateAnswer": "4",
+            "text": "Työskentelen päivittäin 16-18 vuotiaiden kanssa ja näkisin että nuorilla on intoa ja halua päästä vaikuttamaan kotikuntansa asioihin. Keskimääräinen lukiolainen ja ammattikoululainen on nähdäkseni hyvin perillä kuntaan vaikuttavista asioista joten juuri kunnallisvaalit ovat Suomen vaaleista ne joissa äänestysikärajan laskua voisi vakavasti harkita."
+          },
+          {
+            "id": "entity_index_1545_stress-test-question",
+            "candidateID": "entity_index_1545",
+            "candidateAnswer": "4",
+            "text": "Jotta kuntaa voidaan aidosti kehittää kaikkien ehdoilla, olisi hyvä saada nuoret mukaan ja äänestämällä vaikuttamaan asuinkuntansa päätöksentekoon."
+          },
+          {
+            "id": "entity_index_1546_stress-test-question",
+            "candidateID": "entity_index_1546",
+            "candidateAnswer": "4",
+            "text": "Äänestysaktiivisuus vanhempana lisääntyisi? Omaan tulevaisuuteen vaikuttaminen. Nuoret 16-vuotiaat voivat jo nyt maksaa veroja, solmia työsopimuksia yms. Miksei sitten myös äänestää?"
+          },
+          {
+            "id": "entity_index_1547_stress-test-question",
+            "candidateID": "entity_index_1547",
+            "candidateAnswer": "4",
+            "text": "16-vuotias tietää kyllä, mihin asioihin haluaa muutosta ja mitä pitää tärkeänä, siinä mielessä hänellä on valmiudet äänestää. 16-vuotias on kuitenkin sen ikäinen, että hän on kohta lähdössä opiskelemaan ja poismuutto kunnasta voi olla ajankohtaista pian, jolloin kunnan asiat ei välttämättä enää kosketa häntä."
+          },
+          {
+            "id": "entity_index_1548_stress-test-question",
+            "candidateID": "entity_index_1548",
+            "candidateAnswer": "4",
+            "text": "Kyllä nuorten ääni pitää myös kuulua"
+          },
+          {
+            "id": "entity_index_1549_stress-test-question",
+            "candidateID": "entity_index_1549",
+            "candidateAnswer": "4",
+            "text": "Äänioikeuden alentaminen 16-vuotiaille antaisi nuorille äänen asioissa, jotka vaikuttavat heidän tulevaisuuteensa. On kuitenkin tärkeää varmistaa, että nuoret äänestäjät ovat hyvin informoituja ja kykenevät tekemään vastuullisia valintoja, ja siksi kansalaiskasvatusta tulisi kehittää."
+          },
+          {
+            "id": "entity_index_1550_stress-test-question",
+            "candidateID": "entity_index_1550",
+            "candidateAnswer": "4",
+            "text": "Seurakuntavaaleissa voi jo äänestää 16-vuotiaat. Kunnissa ja hyvinvointialueilla päätetään monesta nuoria koskevasta asiasta, kuten koulutuksesta ja oppilashuollosta. Sen vuoksi voisi olla hyvä, että kunta- ja aluevaaleissa voisi äänestää jo 16-vuotiaana."
+          },
+          {
+            "id": "entity_index_1551_stress-test-question",
+            "candidateID": "entity_index_1551",
+            "candidateAnswer": "4",
+            "text": "Varmasti saataisiin lisää hyviä äänestäjiä ja mielipiteitä"
+          },
+          {
+            "id": "entity_index_1552_stress-test-question",
+            "candidateID": "entity_index_1552",
+            "candidateAnswer": "4",
+            "text": "Eivät nuoret ainakaan vastuuttomampia äänestäjiä voi olla kuin nykyinen äänestäjäkunta."
+          },
+          {
+            "id": "entity_index_1553_stress-test-question",
+            "candidateID": "entity_index_1553",
+            "candidateAnswer": "4",
+            "text": "Voisi ainakin kokeilla."
+          },
+          {
+            "id": "entity_index_1554_stress-test-question",
+            "candidateID": "entity_index_1554",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan lasku voisi lisätä nuorten mielenkiintoa yhteiskunnallisiin asioihin. Osallisuuden tunteen lisääntyminen vahvistuisi."
+          },
+          {
+            "id": "entity_index_1555_stress-test-question",
+            "candidateID": "entity_index_1555",
+            "candidateAnswer": "4",
+            "text": "Useat alle 18- vuotiaat ovat nykyään hyvin valveutuneita poliittisesti."
+          },
+          {
+            "id": "entity_index_1556_stress-test-question",
+            "candidateID": "entity_index_1556",
+            "candidateAnswer": "4",
+            "text": "Näissä vaaleissa äänestään asioista, jotka ovat kaikista lähinnä nuoria itseään. Mutta saadaanko sillä äänestysprosentttia nousemaan, jos äänestysikäraja lasketaan? Tämä on vaikea kysymys."
+          },
+          {
+            "id": "entity_index_1557_stress-test-question",
+            "candidateID": "entity_index_1557",
+            "candidateAnswer": "4",
+            "text": "Äänestyikärajan laskeminen mahdollistaa laajemmin demokratian toteutumisen. Samanaikaisesti on varmistettava laadukas demokratia kasvatus, jotta äänestysikä voisi olla 16 vuotta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret, kuten 16-vuotiaat, ovat kyvykkäitä ottamaan selvää yhteiskunnallisista asioista ja ilmaisemaan mielipiteensä. Tämä kyky ei eroa merkittävästi 18-vuotiaiden kyvystä äänestää vastuuntuntoisesti."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän osallisuuttaan yhteiskunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunnalliset ja alueelliset päätökset vaikuttavat suoraan nuoriin, mutta heillä ei ole mahdollisuutta vaikuttaa näihin päätöksiin, ellei äänestysikärajaa lasketa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorilla on jo nyt oikeus äänestää seurakuntavaaleissa 16-vuotiaana, mikä viittaa siihen, että he ovat kypsiä osallistumaan myös kunnallisissa ja aluevaaleissa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Äänestysikärajan laskeminen voi parantaa nuorten äänestysaktiivisuutta tulevaisuudessa, sillä nuoret, jotka ovat mukana politiikassa nuoresta iästä alkaen, todennäköisesti äänestävät myös aikuisina."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voi johtaa tasapainoisempaan demokratiaan, jossa nuorten ääni kuuluu paremmin verrattuna ikäihmisiin."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_2_10"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.729Z",
+        "duration": 57734,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_3_3": {
+      "id": "MAP_0_3_3",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 3,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1558_stress-test-question",
+            "candidateID": "entity_index_1558",
+            "candidateAnswer": "4",
+            "text": "Nuorien asiat. Nuorilla pitää olla mahdollisuus vaikuttaa yhteiskunnan asioihin."
+          },
+          {
+            "id": "entity_index_1559_stress-test-question",
+            "candidateID": "entity_index_1559",
+            "candidateAnswer": "4",
+            "text": "Nuorissa on tulevaisuus ja koska nuorten osuus koko ajan kaventuu yhteiskunnassamme, on heidän äänensä myös saatava kuuluviin. Kokemukseni mukaan 16-vuotiaat ovat jo hyvinkin valveutuneita myös yhteiskunnallisista asioista."
+          },
+          {
+            "id": "entity_index_1560_stress-test-question",
+            "candidateID": "entity_index_1560",
+            "candidateAnswer": "4",
+            "text": "Nuorilla tulee olla mahdollisuus vaikuttaa tulevaisuuteen äänestämällä."
+          },
+          {
+            "id": "entity_index_1561_stress-test-question",
+            "candidateID": "entity_index_1561",
+            "candidateAnswer": "4",
+            "text": "Kunhan oppivat äänestämään muita, kuin jotain median puolueita."
+          },
+          {
+            "id": "entity_index_1562_stress-test-question",
+            "candidateID": "entity_index_1562",
+            "candidateAnswer": "4",
+            "text": "Tällä tavalla saisi nuoria paremmin osallistumaan päätöksentekoon."
+          },
+          {
+            "id": "entity_index_1563_stress-test-question",
+            "candidateID": "entity_index_1563",
+            "candidateAnswer": "4",
+            "text": "Näin saataisiin nuorten ääni paremmin kuuluviin, joka nyky-yhteiskunnassa olisi enemmän kuin toivottavaa."
+          },
+          {
+            "id": "entity_index_1564_stress-test-question",
+            "candidateID": "entity_index_1564",
+            "candidateAnswer": "4",
+            "text": "Tämä voisi lisätä nuorten kiinnostusta vaaleista ja politiikasta yleensä."
+          },
+          {
+            "id": "entity_index_1565_stress-test-question",
+            "candidateID": "entity_index_1565",
+            "candidateAnswer": "4",
+            "text": "Tätä voisi kokeilla kunta- ja aluevaaleissa. Lopullista kantaa en ole muodostanut."
+          },
+          {
+            "id": "entity_index_1566_stress-test-question",
+            "candidateID": "entity_index_1566",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen 16 ikävuoteen voisi tuoda nuorten näkökulmat paremmin esiin kunta- ja aluevaaleissa. Nuorten motivoimiseksi ehkä ennen äänestystä tulisi suorittaa pienimuotoinen testi siitä että on varmasti tietoinen siitä miten tärkeää asiaan he pääsevät vaikuttamaan."
+          },
+          {
+            "id": "entity_index_1567_stress-test-question",
+            "candidateID": "entity_index_1567",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskemisesta on hyviä kokemuksia muualta Euroopasta. Esimerkiksi Virossa kuntavaaleissa äänestysikäraja on 16 vuotta ja Itävallassa kaikkien vaalien äänestysikäraja on 16 vuotta."
+          },
+          {
+            "id": "entity_index_1568_stress-test-question",
+            "candidateID": "entity_index_1568",
+            "candidateAnswer": "4",
+            "text": "Se voisi olla pitkällä tähtäimellä hyvä ajatus, että opittaisiin äänestyskulttuuria, ja miten asioihin voi vaikuttaa."
+          },
+          {
+            "id": "entity_index_1569_stress-test-question",
+            "candidateID": "entity_index_1569",
+            "candidateAnswer": "4",
+            "text": "Tässä asiassa olen muuttanut mieltäni aiemmasta. Tarvitsemme lisää nuoria mukaan politiikkaan. Se onnistuu parhaiten, kun annetaan aiempaa nuoremmille mahdollisuudet vaikuttaa poliittiseen päätöksentekoon esimerkiksi äänestämällä."
+          },
+          {
+            "id": "entity_index_1570_stress-test-question",
+            "candidateID": "entity_index_1570",
+            "candidateAnswer": "4",
+            "text": "Nuorilla on jo hyvät ja kypsät ajatukset"
+          },
+          {
+            "id": "entity_index_1571_stress-test-question",
+            "candidateID": "entity_index_1571",
+            "candidateAnswer": "4",
+            "text": "Nuorissa, kuten muissakin ikäluokissa, on valveutuneempia ja passiivisempia yksilöitä. Aiempaa nuoremmat omaavat päättelykyvyn jota tarvitaan perusteltuihin päätöksiin."
+          },
+          {
+            "id": "entity_index_1572_stress-test-question",
+            "candidateID": "entity_index_1572",
+            "candidateAnswer": "4",
+            "text": "Nuorten osallisuus päätöksentekoon on tärkeää, ja 16-vuotiaat ovat jo monella tapaa yhteiskunnan aktiivisia jäseniä. He maksavat veroja, voivat työskennellä ja vaikuttavat yhteiskuntaan monin tavoin. Äänioikeuden laajentaminen voisi lisätä nuorten kiinnostusta politiikkaan ja demokratiaan sekä tuoda päätöksentekoon heidän näkökulmiaan. Kuitenkin samalla on tärkeää varmistaa, että kouluissa ja muissa yhteisöissä tarjotaan riittävästi yhteiskunnallista kasvatusta ja tietoa vaaleista, jotta nuoret voivat tehdä perusteltuja päätöksiä. Äänestysiän laskeminen voisi olla hyvä askel kohti laajempaa nuorten osallisuutta, mutta sen vaikutuksia tulee seurata ja arvioida huolellisesti."
+          },
+          {
+            "id": "entity_index_1573_stress-test-question",
+            "candidateID": "entity_index_1573",
+            "candidateAnswer": "4",
+            "text": "16-vuotiaat ovat hyvin perillä siitä mitä yhteiskunnassamme tapahtuu. Se mitä halutaan kehittää lasten-ja nuorten hyvinvoinnin kehittämiseen alueellisesti pystyvät nuoret arvioimaan ketä äänestävät. Tällä tuemme osallistamista tärkeisiin asioihin."
+          },
+          {
+            "id": "entity_index_1574_stress-test-question",
+            "candidateID": "entity_index_1574",
+            "candidateAnswer": "4",
+            "text": "16 vuotiaat ovat usein jo erittäin perillä yhteiskunnallisissa näkemyksissä!"
+          },
+          {
+            "id": "entity_index_1575_stress-test-question",
+            "candidateID": "entity_index_1575",
+            "candidateAnswer": "4",
+            "text": "Nuoria on suhteessa vähemmän väestön vanhetessa joten äänestysikärajan lasku olisi tapa korjata tätä vinoumaa ja antaa nuorille enemmän vaikutusvaltaa."
+          },
+          {
+            "id": "entity_index_1576_stress-test-question",
+            "candidateID": "entity_index_1576",
+            "candidateAnswer": "4",
+            "text": "Äänioikeuden laskua voisi kokeilla ja arvioida tulosten perusteella jatkoa: lisäksikö se aidosti äänestysaktiivisuutta ja nuorten äänen kuulumista. Äänioikeuden ja oikeuden asettua ehdolle tulee kulkea käsikkäin, joten näkisin, että jos voi äänestää, pitäisi voida myös päättää asioista valtuustossa. Vastuut nousevat merkittävästi 18-vuotiaana (esim. rikosoikeudellinen vastuu), joten sillä äänioikeuden linkittäminen täysikäisyyden kohtaa on ymmärrettävä."
+          },
+          {
+            "id": "entity_index_1577_stress-test-question",
+            "candidateID": "entity_index_1577",
+            "candidateAnswer": "4",
+            "text": "mielestäni voi 16 osallistua päätöksentekoon ja äänestämiseeen"
+          },
+          {
+            "id": "entity_index_1578_stress-test-question",
+            "candidateID": "entity_index_1578",
+            "candidateAnswer": "4",
+            "text": "Uskon, että 16-vuotiaiden nuorten äänestysikärajan alentaminen kunta- ja aluevaaleissa olisi perusteltua, sillä he ovat opiskelleet yhteiskuntatieteitä ja historiaa riittävästi ja voivat jo omalta osaltaan ymmärtää nykyiset yhteiskunnalliset kysymykset."
+          },
+          {
+            "id": "entity_index_1579_stress-test-question",
+            "candidateID": "entity_index_1579",
+            "candidateAnswer": "4",
+            "text": "Ainakin kuntavaaleissa äänestysikärajaa voisi laskea, sillä päätökset koskevat esimerkiksi koulutusta ja vapaa-ajan palveluja. Tämä voisi kannustaa nuoria yhteiskunnalliseen aktiivisuuteen."
+          },
+          {
+            "id": "entity_index_1580_stress-test-question",
+            "candidateID": "entity_index_1580",
+            "candidateAnswer": "4",
+            "text": "Laskisin pelkästään kuntavaaleissa. Monissa kunnissa, varsinkin pienissä, ikäpyramidi on aika lailla vinksallaan ja nuorten ääntä saisi paremmin kuuluviin näin."
+          },
+          {
+            "id": "entity_index_1581_stress-test-question",
+            "candidateID": "entity_index_1581",
+            "candidateAnswer": "4",
+            "text": "Tämä olisi hyvä tapa lisätä nuorten kiinnostusta politiikkaan, jotta nuoret saavat kokea miten demokratia toimii Suomessa. Samalla tavalla 16-vuotiaat käyttävät julkisia palveluita ja joutuvat noudattamaan lakeja – on perusteltua, että heillä on myös sananvaltaa niitä koskevissa päätöksissä."
+          },
+          {
+            "id": "entity_index_1582_stress-test-question",
+            "candidateID": "entity_index_1582",
+            "candidateAnswer": "4",
+            "text": "16-18 vuotiaat käyttävät itsenäisesti kunnallisia / julkisia palveluita ja he voisivat vaikuttaa vaalien kautta."
+          },
+          {
+            "id": "entity_index_1583_stress-test-question",
+            "candidateID": "entity_index_1583",
+            "candidateAnswer": "4",
+            "text": "saataisiin valtuustoa nuorennettua ja uusia ajatuksia mietittäväksi"
+          },
+          {
+            "id": "entity_index_1584_stress-test-question",
+            "candidateID": "entity_index_1584",
+            "candidateAnswer": "4",
+            "text": "Mielestäni äänestysikärajan voisi laskea 16 ikävuoteen muissakin vaaleissa. Näin voitaisiin innostaa nuoria vaikuttamaan."
+          },
+          {
+            "id": "entity_index_1585_stress-test-question",
+            "candidateID": "entity_index_1585",
+            "candidateAnswer": "4",
+            "text": "Mielestäni 16 vuotias ymmärtää ja pystyy tekemään oikeita valintoja myös vaalien äänestyksessä. Tämä voisi edistää nuorten osallistumista poliittiseen toimintaan."
+          },
+          {
+            "id": "entity_index_1586_stress-test-question",
+            "candidateID": "entity_index_1586",
+            "candidateAnswer": "4",
+            "text": "16-vuotiaat ovat jo kiinnostuneita omasta kotikunnastaan ja sen mahdollisuuksista. Paikalliset asiat kiinnostavat ja olisi hienoa, jos nuoret pääsisivät vaikuttamaan aiempaa nuorempina."
+          },
+          {
+            "id": "entity_index_1587_stress-test-question",
+            "candidateID": "entity_index_1587",
+            "candidateAnswer": "4",
+            "text": "Kyllä 16 vuotias jo ymmärtää yhteiskunnan toimintaa riittävästi"
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorien tulee saada mahdollisuus vaikuttaa yhteiskunnan asioihin, sillä he ovat tulevaisuus ja heidän äänensä on saatava kuuluviin."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "16-vuotiaat ovat usein hyvin valveutuneita yhteiskunnallisista asioista ja kykenevät tekemään perusteltuja päätöksiä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysoikeuden laajentaminen voisi lisätä nuorten kiinnostusta politiikkaan ja demokratiaan."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat aktiivisia yhteiskunnan jäseniä, jotka maksavat veroja ja käyttävät julkisia palveluita, joten heillä on oikeus vaikuttaa päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voisi tuoda nuorten näkökulmat paremmin esiin päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "On tärkeää, että nuoret saavat kokemusta demokratian toiminnasta ja äänestämisestä jo nuorella iällä."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Esimerkit muista maista, kuten Virosta ja Itävallasta, osoittavat, että äänestysikärajan laskeminen on toiminut hyvin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten osallistaminen päätöksentekoon voi innostaa heitä yhteiskunnalliseen aktiivisuuteen ja vaikuttamiseen."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "16-vuotiaat ymmärtävät jo hyvin yhteiskunnan toimintaa ja voivat tehdä oikeita valintoja vaaleissa."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuorten osallisuus voisi nuorentaa valtuustoja ja tuoda uusia ajatuksia päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_3_11"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.730Z",
+        "duration": 57735,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_4_4": {
+      "id": "MAP_0_4_4",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 4,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1588_stress-test-question",
+            "candidateID": "entity_index_1588",
+            "candidateAnswer": "4",
+            "text": "Nuorten äänioikeudella voitasiin taata se, että edustajisto vastaa kaikkia ikäryhmiä."
+          },
+          {
+            "id": "entity_index_1589_stress-test-question",
+            "candidateID": "entity_index_1589",
+            "candidateAnswer": "4",
+            "text": "Osa porukasta jo hyvin yhteiskuntatietoinen, osa äänestää summanmutikassa."
+          },
+          {
+            "id": "entity_index_1590_stress-test-question",
+            "candidateID": "entity_index_1590",
+            "candidateAnswer": "4",
+            "text": "Nuoret ovat myös kunnan asukkaita ja nuorten mielipiteet ja heidän osallistumisensa on otettava tasavertaisesti huomioon."
+          },
+          {
+            "id": "entity_index_1591_stress-test-question",
+            "candidateID": "entity_index_1591",
+            "candidateAnswer": "4",
+            "text": "Kyllä nykyään nuoret ovat hyvin valveutuneita ja perillä yhteiskunnallisista asioista."
+          },
+          {
+            "id": "entity_index_1592_stress-test-question",
+            "candidateID": "entity_index_1592",
+            "candidateAnswer": "4",
+            "text": "Ihminen on juridinen henkilö 18 vuotta täytettyään. Äänestysiänmuutosta tulee punnita tarkkaan- millaisia juridisia esteitä se asettaa."
+          },
+          {
+            "id": "entity_index_1593_stress-test-question",
+            "candidateID": "entity_index_1593",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääni pitää saada paremmin esiin. Lapsia syntyy vähemmän ja tämän takia suhteellinen määrä alenee."
+          },
+          {
+            "id": "entity_index_1594_stress-test-question",
+            "candidateID": "entity_index_1594",
+            "candidateAnswer": "4",
+            "text": "Äänestysiän laskeminen voisi mahdollisesti nostaa nuorten äänestysaktiivisuutta. Se myös lisäisi nuorten osallisuutta poliittisessa päätöksenteossa."
+          },
+          {
+            "id": "entity_index_1595_stress-test-question",
+            "candidateID": "entity_index_1595",
+            "candidateAnswer": "4",
+            "text": "Nykyinen 18 vuoden ikäraja on sopiva."
+          },
+          {
+            "id": "entity_index_1596_stress-test-question",
+            "candidateID": "entity_index_1596",
+            "candidateAnswer": "4",
+            "text": "Mielestäni nuorten tulisi päästä päättämään enemmän kunnan asioista."
+          },
+          {
+            "id": "entity_index_1597_stress-test-question",
+            "candidateID": "entity_index_1597",
+            "candidateAnswer": "4",
+            "text": "Alle 18-vuotiaat ovat jo valveutuneita äänestäjiä."
+          },
+          {
+            "id": "entity_index_1598_stress-test-question",
+            "candidateID": "entity_index_1598",
+            "candidateAnswer": "4",
+            "text": "16 vuotias on jo riittävän kypsä kertomaan oman mielipiteensä asioihin."
+          },
+          {
+            "id": "entity_index_1599_stress-test-question",
+            "candidateID": "entity_index_1599",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääni voisi näin kuulua paremmin. Äänestys ikäiset tulevat myös pienenemään"
+          },
+          {
+            "id": "entity_index_1600_stress-test-question",
+            "candidateID": "entity_index_1600",
+            "candidateAnswer": "4",
+            "text": "Varsinkin kunta- ja aluevaaleissa 16-vuotiaiden ääni tulisi saada kuulluksi, sillä kuntien ja hyvinvointialueiden tehtäviin kuuluu monia nuoria koskevia asioita, kuten koulutus ja mielenterveystyö. Tätä tulee kuitenkin vielä tarkastella alle 16-vuotiaiden ehdokkuuden osalta."
+          },
+          {
+            "id": "entity_index_1601_stress-test-question",
+            "candidateID": "entity_index_1601",
+            "candidateAnswer": "4",
+            "text": "Suuressa osassa kuntia asukkaat ovat jo iäkkäitä ja päättävät nuorten tulevaisuudesta. Nuorisolle pitäisi myös antaa jonkinlainen mahdollisuus olla mukana päätöksen teossa. Ikärajaa tulisi kumminkin laskea portaittain aloittaen 17 ikävuodesta"
+          },
+          {
+            "id": "entity_index_1602_stress-test-question",
+            "candidateID": "entity_index_1602",
+            "candidateAnswer": "4",
+            "text": "Maybe in municipal election it might be good idea."
+          },
+          {
+            "id": "entity_index_1603_stress-test-question",
+            "candidateID": "entity_index_1603",
+            "candidateAnswer": "4",
+            "text": "Nuoria tulee houkutella mukaan poliittiseen päätöksentekoon ja laskemalla ikärajaa saan heitä aktivoitua."
+          },
+          {
+            "id": "entity_index_1604_stress-test-question",
+            "candidateID": "entity_index_1604",
+            "candidateAnswer": "4",
+            "text": "Kuntavaaleissa olisi hyvä testata tämän toimivuutta."
+          },
+          {
+            "id": "entity_index_1605_stress-test-question",
+            "candidateID": "entity_index_1605",
+            "candidateAnswer": "4",
+            "text": "Lasten ja nuorten osallistaminen paikallisiin vaaleihin vahvistaisivat tämän 16-18 v. ikäryhmien kuuluvuutta."
+          },
+          {
+            "id": "entity_index_1606_stress-test-question",
+            "candidateID": "entity_index_1606",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen voisi olla askel kohti nuorten osallisuutta demokratiassa, mutta sen onnistuminen vaatisi tarkkaa valmistelua."
+          },
+          {
+            "id": "entity_index_1607_stress-test-question",
+            "candidateID": "entity_index_1607",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen 16 vuoteen kuntavaaleissa ja aluevaaleissa on kiinnostava kysymys. Toisaalta se voisi lisätä nuorten kiinnostusta yhteiskunnallisiin asioihin ja päätöksentekoon jo varhaisessa vaiheessa. Tärkeintä on edistää nuorten osallistumista ja vaikuttamismahdollisuuksia, oli äänestysikäraja mikä tahansa."
+          },
+          {
+            "id": "entity_index_1608_stress-test-question",
+            "candidateID": "entity_index_1608",
+            "candidateAnswer": "4",
+            "text": "Kysymys on vaikea mihin vedetään äänestysen ikäraja. Ja kysymys äänioikeudesta linkittyy usein myös oikeuteen asettua ehdolle. Näkisin 16-vuotiaan kykenevänä äänestämään vaaleissa, mutta en näkisi 16-vuotiasta viellä kykenevänä ehdolle. Ja hoitamaan valtuutettuna yhteisiä asioita mikäli hän tulisi valituksi."
+          },
+          {
+            "id": "entity_index_1609_stress-test-question",
+            "candidateID": "entity_index_1609",
+            "candidateAnswer": "4",
+            "text": "Uskon, että moni 16-vuotias on hyvin perillä yhteiskunnallisista asioista ja olisi valmis äänestämään perustellusti. Nuorten osallistaminen äänestämiseen voisi lisätä heidän kiinnostustaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "entity_index_1610_stress-test-question",
+            "candidateID": "entity_index_1610",
+            "candidateAnswer": "4",
+            "text": "Täytyisi antaa mahdollisuus niille jotka haluavat vaikuttaa"
+          },
+          {
+            "id": "entity_index_1611_stress-test-question",
+            "candidateID": "entity_index_1611",
+            "candidateAnswer": "4",
+            "text": "Myös nuorilla on oikeus vaikuttaa heitä koskeviin päätöksiin ja he omaavat 16-vuotiaina riittävää yhteiskunnallinen tietoisuutta. Äänestäminen nuoremmalla iällä saattaa myös lisätä poliittista aktiivisuutta myöhemmin elämässä. On tärkeää kuitenkin varmistaa, että nuoret saavat riittävästi demokratiakasvatusta sekä tietoa mis- ja disinformaatiovaikuttamisesta, jotta he saavat mahdollisuuden tehdä omaa tulevaisuuttaan koskevia päätöksiä vahvalta tietopohjalta."
+          },
+          {
+            "id": "entity_index_1612_stress-test-question",
+            "candidateID": "entity_index_1612",
+            "candidateAnswer": "4",
+            "text": "Mielestäni tämä olisi hyvä suunta, että saadaan nuoret myös tuomaan oma näkemys yhteiskunnan toiminnasta alentamalla äänestysikää nykyisestä. Toki ennen äänestystä on syytä pyrkiä esim. koulun kautta tuomaan hyvin esiin, mistä äänestämisessä on kyse. Ja tuoda esiin esim. eri puolueiden näkemyksiä asioiden hoitamisesta neutraalilla tavalla."
+          },
+          {
+            "id": "entity_index_1613_stress-test-question",
+            "candidateID": "entity_index_1613",
+            "candidateAnswer": "4",
+            "text": "Tämä mahdollistaisi sen, että nuorten toiveita kuunneltaisiin sekä toteutettaisiin paremmin. Jos ikäraja olisi 16V niin se loisi päättäjille painetta lisää."
+          },
+          {
+            "id": "entity_index_1614_stress-test-question",
+            "candidateID": "entity_index_1614",
+            "candidateAnswer": "4",
+            "text": "En näe syytä, miksi ei. Luotan nuorten kykyyn osallistua yhteiseen päätöksentekoon. Nuoria koskevista asioista ei myöskään pitäisi päättää ilman nuoria."
+          },
+          {
+            "id": "entity_index_1615_stress-test-question",
+            "candidateID": "entity_index_1615",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen 16 vuoteen voisi vahvistaa nuorten osallisuutta ja sitoutumista yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "entity_index_1616_stress-test-question",
+            "candidateID": "entity_index_1616",
+            "candidateAnswer": "4",
+            "text": "Aika monet aikuiset äänestää puhtaasti intuition pohjalta tai jopa vain omaa kaveria tai tuttua. Siksi ei ole minusta perusteltua väittää, etteikö 16-vuotiaat tekisi perusteltuja äänestyspäätöksiä – ne voisivat olla jopa enemmän perusteltuja kuin aikuisten. Äänestysikärajan maltillinen laskeminen olisi mainio tapa edistää nuorten yhteiskunnallista aktiivisuutta ja äänestysaktiivisuutta myös pitkällä aikavälillä."
+          },
+          {
+            "id": "entity_index_1617_stress-test-question",
+            "candidateID": "entity_index_1617",
+            "candidateAnswer": "4",
+            "text": "Maailmalla joissain maissa on otettu käyttöön 16-vuotiaana äänestäminen. Näissä maissa tulokset ovat olleet positiivisia nuorten kiintyessä enemmän politiikkaan, sekä saavan enemmän tietoisuutta politiikasta nuorella iällä. Asian kannattavuuteen ja mahdollisuuksiin kannattaa mielestäni perehtyä lähitulevaisuudessa."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten äänioikeus voisi taata, että edustajisto vastaa kaikkia ikäryhmiä. Nuorten mielipiteet ja osallistuminen on otettava tasavertaisesti huomioon, sillä he ovat kunnan asukkaita."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Monet nuoret ovat hyvin valveutuneita ja perillä yhteiskunnallisista asioista, joten he voisivat tehdä perusteltuja äänestyspäätöksiä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat kiinnostuneita heitä koskevista asioista, kuten koulutuksesta ja mielenterveystyöstä, ja heidän ääniensä kuuleminen on tärkeää kunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voisi myös edistää nuorten kiinnostusta yhteiskunnallisiin asioihin ja päätöksentekoon jo varhaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Nuorten osallistaminen äänestämiseen voisi lisätä heidän poliittista aktiivisuuttaan myöhemmin elämässä."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Joissain maissa on otettu käyttöön 16-vuotiaana äänestäminen, ja tulokset ovat olleet positiivisia nuorten kiinnittyessä enemmän politiikkaan ja saaden enemmän tietoisuutta nuorella iällä."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Äänestysikärajan laskeminen voisi vahvistaa nuorten osallisuutta ja sitoutumista yhteiskunnallisiin asioihin, mikä on tärkeää demokratian kannalta."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_4_12"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.731Z",
+        "duration": 57736,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_5_5": {
+      "id": "MAP_0_5_5",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 5,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1618_stress-test-question",
+            "candidateID": "entity_index_1618",
+            "candidateAnswer": "4",
+            "text": "Voisi tätä kokeilla, mut tässä on muutamia käytännön ongelmia. 16-vuotiaat ovat kuitenkin alaikäisiä, joten heillä ei ole samanlaista vastuuta tästä maailmasta kuin aikuisilla. Seurakuntavaaleissa tätä on kai kokeiltu."
+          },
+          {
+            "id": "entity_index_1619_stress-test-question",
+            "candidateID": "entity_index_1619",
+            "candidateAnswer": "4",
+            "text": "16 vuoden ikäraja voisi saada nuoret enemmän kiinnostumaan politiikasta ja yhteiskunnallisesta vaikuttamisesta varsinkin omaan kotikuntaan liittyvissä asioissa. Äänestysikärajan laskua tukee myös opetussuunnitelma, joka luo pohjaa vaikuttamiselle. Jos äänestysikäraja laskettaisiin, voitaisiin vaaleja hyödyntää myös koulussa aidon elämän pohjalta."
+          },
+          {
+            "id": "entity_index_1620_stress-test-question",
+            "candidateID": "entity_index_1620",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen voisi nostaa äänestysaktiivisuutta. Tämän lisäksi valtuustoissa päätetään paljon nuoria koskevia asioita, niin olisi oikeutettua että myös nuoret saisivat äänestää. Kouluissa tulisi olla myös riittävästi demokratiakasvatusta."
+          },
+          {
+            "id": "entity_index_1621_stress-test-question",
+            "candidateID": "entity_index_1621",
+            "candidateAnswer": "4",
+            "text": "Nuorten osallisuuden vahvistamiseksi äänestysikärajan laskeminen olisi järkevää. Kunnissa ja hyvinvointialueilla päätetään nuorten elämään suoraan vaikuttavista asioista ja olisi tärkeä saada myös nuorten ääni kuulumaan paremmin. Nuorten äänestysaktiivisuus on melko matala täysi-ikäisilläkin, joten äänestysikärajan lasku voisi lisätä äänestysaktiivisuutta. Kouluilla tehtävä demokratiakasvatus saisi syvemmän merkityksen, kun nuoret pääsisivät varhaisemmassa vaiheessa äänestämään. Ainakin tätä kannattaisi kokeilla vaikkapa vain kuntavaaleissa aluksi."
+          },
+          {
+            "id": "entity_index_1622_stress-test-question",
+            "candidateID": "entity_index_1622",
+            "candidateAnswer": "4",
+            "text": "Äänestysprosentit ovat olleet viime vuosina melko alhaisia, joten yksi keino niiden nostamiseksi voisi olla äänestysikärajan laskeminen kunta- ja aluevaaleissa. Mielestäni kuitenkin ensisijaisesti kouluissa tulee keskustella enemmän kansalaisvaikuttamisesta sekä siitä mitä jokainen voi tehdä yhteiskunnallisella tasolla."
+          },
+          {
+            "id": "entity_index_1623_stress-test-question",
+            "candidateID": "entity_index_1623",
+            "candidateAnswer": "4",
+            "text": "Nuoria pitäisi kannustaa yhteiskunnalliseen osallisuuteen ja vaikuttamiseen nykyistä enemmän."
+          },
+          {
+            "id": "entity_index_1624_stress-test-question",
+            "candidateID": "entity_index_1624",
+            "candidateAnswer": "4",
+            "text": "Kunta- ja aluevaalit ovat lasten ja nuorten vaalit. Valitut ehdokkaat tulevat tekemään päätöksiä, jotka vaikuttavat isosti suoraan lasten ja nuorten arkeen. Lasten ja nuorten ääni tulee kuulua näissä vaaleissa, ja olisi suotavaa, että nuorilta itseltä kysyttäisiin heidän kiinnostusta äänestää vaaleissa. Nuoret ovat erittäin valvelutuneita omasta ympäristöstään, ja kantavat huolta tulevaisuudestaan. Meidän tulee kysyä tätä asiaa nuorilta itseltään, ja tarkastella heidän halukkuuttaan ja valmiuttaan osallistua äänestämiseen."
+          },
+          {
+            "id": "entity_index_1625_stress-test-question",
+            "candidateID": "entity_index_1625",
+            "candidateAnswer": "4",
+            "text": "Päätöksenteko koskee niin nuorten, aikuisten kuin vanhuksienkin elämää joten osallistavaan päätöksentekoon kuuluisi osallistaa jokaista ryhmää"
+          },
+          {
+            "id": "entity_index_1626_stress-test-question",
+            "candidateID": "entity_index_1626",
+            "candidateAnswer": "4",
+            "text": "Kannatan varauksella, vaikka nuorten alttius disinformaatiolle ja heikko medialukutaito hieman huolettaakin."
+          },
+          {
+            "id": "entity_index_1627_stress-test-question",
+            "candidateID": "entity_index_1627",
+            "candidateAnswer": "4",
+            "text": "Tämä muutos lisäisi nuorten osallisuutta ja kiinnostusta politiikkaan"
+          },
+          {
+            "id": "entity_index_1628_stress-test-question",
+            "candidateID": "entity_index_1628",
+            "candidateAnswer": "4",
+            "text": "Nuorilla tulisi olla mahdollisuus vaikuttaa."
+          },
+          {
+            "id": "entity_index_1629_stress-test-question",
+            "candidateID": "entity_index_1629",
+            "candidateAnswer": "4",
+            "text": "16 vuotiaana on jo melko hyvin selvillä oman asuinseudun asioista ja myös niistä asioista, jotka tarvitsevat remonttia."
+          },
+          {
+            "id": "entity_index_1630_stress-test-question",
+            "candidateID": "entity_index_1630",
+            "candidateAnswer": "4",
+            "text": "Osa nuorista on jo 16-vuotiaana hyvinkin kypsiä miettimään politiikkaan ja ylipäänsä oman kunnan palveluihin ja hyvinvointiin liittyviä asioita. Koska äänestysaktiivisuus oli viimeksi kuntavaaleissa jopa poikkeuksellisen alhainen, voisi olla hyvä idea kokeilla äänestysikärajan laskemista, josko se motivoisi nuoret vaikuttamaan asioihin ja sitä myöten loisi paineita myös vanhempia käyttämään äänioikeuttaan."
+          },
+          {
+            "id": "entity_index_1631_stress-test-question",
+            "candidateID": "entity_index_1631",
+            "candidateAnswer": "4",
+            "text": "Kunnallispolitiikka koskettaa myös nuoria joten tätä voisi tutkia. Jos äänestysikärajaa laskettaisiin, olisi kuitenkin tarkkaan valvottava entistä tarkemmin, että politiikka ei päädy osaksi peruskouluja. Opettajien poliittisia kantoja tulisi tarkastella entistä tarkemmin."
+          },
+          {
+            "id": "entity_index_1632_stress-test-question",
+            "candidateID": "entity_index_1632",
+            "candidateAnswer": "4",
+            "text": "Ihmisten aktivoiminen omien asioiden hoitoon on tärkeää, toisaalta ihmisten oikeustoimikelpoisuus ja lain silmissä täysi-ikäisyys puoltaa 18v ikärajaa."
+          },
+          {
+            "id": "entity_index_1633_stress-test-question",
+            "candidateID": "entity_index_1633",
+            "candidateAnswer": "4",
+            "text": "16-vuotiaana on oikea aika alkaa pohtimaan yhteiskunnallisia kysymyksiä. Koen, että äänioikeus vaaleissa tekisi hyvää demokratiakasvatukselle ja voisi lisätä äänestysaktiivisuutta pitkällä aikajänteellä."
+          },
+          {
+            "id": "entity_index_1634_stress-test-question",
+            "candidateID": "entity_index_1634",
+            "candidateAnswer": "4",
+            "text": "Tätä voisi minusta ihan hyvin laskea, sillä näissä vaaleissa kyse on konkreettisesti lasten- ja nuorten omista vaikutusmahdollisuuksista oman kunnan tai kaupungin asioihin ja myös nuorison ääntä olisi hyvä kuulla paikallisesti."
+          },
+          {
+            "id": "entity_index_1635_stress-test-question",
+            "candidateID": "entity_index_1635",
+            "candidateAnswer": "4",
+            "text": "16 vuotias on jo sen verran \\\"aikuinen\\\", että olisi todellakin hyvä asia, että tämä ikäiset jo pääsisivät vaikuttamaan asioihin, koska nuorissa on voimaa ja varmasti haluakin valita ehdokkaat, jotka ovat asiantuntevia ja ajavat asioita niiden oikeilla nimillään. Toimeentulo, työllisyys, mielenterveys, julkiset palvelut, terveyshuolto. Siinä tiivistettynä asiat, mitkä minun mielestäni pitää olla kunnossa, ja saatavilla."
+          },
+          {
+            "id": "entity_index_1636_stress-test-question",
+            "candidateID": "entity_index_1636",
+            "candidateAnswer": "4",
+            "text": "Kuntien asemat koskettaa jokaista kuntalista, siksipä olisi hyvä että myös nuoret saisi äänestää."
+          },
+          {
+            "id": "entity_index_1637_stress-test-question",
+            "candidateID": "entity_index_1637",
+            "candidateAnswer": "4",
+            "text": "Nyt jo on hieman ongelmallista saada nuoria äänestämään, joten miten kokonaisuutena saadaan äänestysaktiivisuus kasvamaan? Muuten koen, että jo 16 vuotias saisi antaa oman kantansa yhteiskunnallisiisn asioihin."
+          },
+          {
+            "id": "entity_index_1638_stress-test-question",
+            "candidateID": "entity_index_1638",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääntä tulisi saada enemmän kuuluviin päätösten teossa. Se toteutuisi varmasti paremmin, jos nuoret saisivat äänestää aiemmin."
+          },
+          {
+            "id": "entity_index_1639_stress-test-question",
+            "candidateID": "entity_index_1639",
+            "candidateAnswer": "4",
+            "text": "Pilottikokeilut kunta- ja aluevaaleissa ovat kannatettavia, sillä tämä voisi lisätä nuorten yhteiskunnallista kiinnostusta. Äänestysikärajan laskeminen on lisännyt nuorten osallisuutta esimerkiksi Saksassa ja Itävallassa. Jos ikärajaa laskettaisiin ottaisivat todennäköisemmin paremmin huomioon nuoria koskevat asiat. Demokratiakasvatusta, kunta- ja alueopetusta tulisi lisätä kouluihin."
+          },
+          {
+            "id": "entity_index_1640_stress-test-question",
+            "candidateID": "entity_index_1640",
+            "candidateAnswer": "4",
+            "text": "On järkevää, että myös nuoret voivat äänestää."
+          },
+          {
+            "id": "entity_index_1641_stress-test-question",
+            "candidateID": "entity_index_1641",
+            "candidateAnswer": "4",
+            "text": "Tällä voitaisiin saada nuorten äänestys aktiivisuutta nostettua, kun pääsevät jo aikaisemmin äänestämään esimerkiksi vanhempien esimerkillä."
+          },
+          {
+            "id": "entity_index_1642_stress-test-question",
+            "candidateID": "entity_index_1642",
+            "candidateAnswer": "4",
+            "text": "Minusta nuorilla tulisi olla äänestysoikeus, ja heitä voitaisiin ottaa mukaan nuorisovaltuustoon. Päättämään ja kertomaan näkemyksensä nuorten asioista. Näitä näkemyksiä voisimme ottaa huomioon kunnanvaltuustoissa."
+          },
+          {
+            "id": "entity_index_1643_stress-test-question",
+            "candidateID": "entity_index_1643",
+            "candidateAnswer": "4",
+            "text": "Nuorten mielipide kaupungista ja sen toimivuudesta pitäisi tulla esille nykyistä paremmin."
+          },
+          {
+            "id": "entity_index_1644_stress-test-question",
+            "candidateID": "entity_index_1644",
+            "candidateAnswer": "4",
+            "text": "Nuorille tulee tarjota nykyistä paremmat mahdollisuudet osallistua politiikkaan."
+          },
+          {
+            "id": "entity_index_1645_stress-test-question",
+            "candidateID": "entity_index_1645",
+            "candidateAnswer": "4",
+            "text": "Nuorten äänestysaktiivisuus on ollut valitettavan alhainen, mutta on myös valveutuneita nuoria, jotka varmasti jo 16-vuotiaana osaavat ottaa fiksusti kantaa ja voisivat äänestää."
+          },
+          {
+            "id": "entity_index_1646_stress-test-question",
+            "candidateID": "entity_index_1646",
+            "candidateAnswer": "4",
+            "text": "Todella moni nuori on valveutunut ja osaisi varmasti valita ehdokkaan. On kuitenkin paljon nuoria, jotka ovat vaikutteille alttiita eivätkä seuraa politiikkaa pidemmällä aikavälillä, jotta pystyisivät arvioimaan millaista politiikkaa kukin tekee ja millaisia arvoja kannattaa. Tätä tapahtuu täysi-ikäistenkin kohdalla."
+          },
+          {
+            "id": "entity_index_1647_stress-test-question",
+            "candidateID": "entity_index_1647",
+            "candidateAnswer": "4",
+            "text": "Näen, että 16-vuotiaat ovat tarpeeksi kypsiä äänestämään vaaleissa. Ehdolle asettumisen ikäraja tulee kuitenkin pitää nykyisellään."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Laskemalla äänestysikää voidaan lisätä nuorten kiinnostusta politiikkaan ja yhteiskunnalliseen vaikuttamiseen, erityisesti oman kotikunnan asioissa."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta, sillä valtuustoissa päätetään paljon nuoria koskevista asioista."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Demokratiakasvatuksen merkitys korostuu, kun nuoret pääsevät äänestämään aikaisemmassa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuorten osallisuus päätöksenteossa on tärkeää, koska kunnissa ja hyvinvointialueilla päätetään asioista, jotka vaikuttavat suoraan heidän elämäänsä."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuoret ovat usein valveutuneita ja tietoisia omasta ympäristöstään, joten he voivat antaa arvokkaita näkemyksiä päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Muutos voisi herättää nuorten kiinnostusta yhteiskunnallista osallistumista kohtaan ja lisätä heidän haluaan vaikuttaa asioihin."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Kansainväliset esimerkit, kuten Saksassa ja Itävallassa, osoittavat, että ikärajan laskeminen on voinut lisätä nuorten osallisuutta."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Kuntavaaleissa päätetään konkreettisista asioista, jotka vaikuttavat lasten ja nuorten arkeen, joten heidän äänensä tulee kuulua."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_5_13"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.731Z",
+        "duration": 57736,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_6_6": {
+      "id": "MAP_0_6_6",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 6,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1648_stress-test-question",
+            "candidateID": "entity_index_1648",
+            "candidateAnswer": "4",
+            "text": "Kuntatasolla päätetään nuorten arjen elämää lähinnä olevista asioista, joten nuorten vaikuttamismahdollisuuksia ja osallisuutta päätöksentekoon on voitava lisätä."
+          },
+          {
+            "id": "entity_index_1649_stress-test-question",
+            "candidateID": "entity_index_1649",
+            "candidateAnswer": "4",
+            "text": "Uskon, että laskemalla äänestysrajaa pystymme laajentamaan demokratiaa ja sitouttamaan nuoria entistä paremmin yhteisten asioiden hoitoon."
+          },
+          {
+            "id": "entity_index_1650_stress-test-question",
+            "candidateID": "entity_index_1650",
+            "candidateAnswer": "4",
+            "text": "Miksipä ei! Tuossa iässä ihmisellä alkaa olla jo riittävästi tuntemusta ja tietämystä paikallisista asioista."
+          },
+          {
+            "id": "entity_index_1651_stress-test-question",
+            "candidateID": "entity_index_1651",
+            "candidateAnswer": "4",
+            "text": "Siitä voisi keskustelua käydä."
+          },
+          {
+            "id": "entity_index_1652_stress-test-question",
+            "candidateID": "entity_index_1652",
+            "candidateAnswer": "4",
+            "text": "Asiaa tulisi ainakin vakavasti pohtia. Mielestäni nuoret pitäisi saada nykyistä paremmin innostumaan yhteisestä päätöksenteosta ja mukaan myös ehdokkaiksi. Ikärajan laskulla voisi olla positiivinen vaikutus asiaan."
+          },
+          {
+            "id": "entity_index_1653_stress-test-question",
+            "candidateID": "entity_index_1653",
+            "candidateAnswer": "4",
+            "text": "Monet päätökset, erityisesti kunnallisella ja alueellisella tasolla (esim. koulutus, liikenne, nuorisopalvelut), koskettavat suoraan nuoria. Äänestysikärajan laskeminen antaisi heille mahdollisuuden vaikuttaa omiin elinoloihinsa. Tutkimusten mukaan 16-vuotiaat pystyvät tekemään harkittuja päätöksiä varsinkin, jos heillä on riittävästi tietoa ja mahdollisuus keskustella poliittisista kysymyksistä. Monissa maissa, kuten Itävallassa ja Saksassa, 16-vuotiaat saavat jo äänestää paikallisvaaleissa. Politiikkaan osallistuminen nuoresta pitäen voi lisätä äänestysaktiivisuutta myös myöhemmin elämässä. Jos nuoret oppivat vaikuttamisen kulttuurin jo koulussa, he saattavat olla aktiivisempia myös jatkossa."
+          },
+          {
+            "id": "entity_index_1654_stress-test-question",
+            "candidateID": "entity_index_1654",
+            "candidateAnswer": "4",
+            "text": "Tämä olisi hyvä vaihtoehto nuorille vaikuttaa omaan toisen asteen koulutukseen."
+          },
+          {
+            "id": "entity_index_1655_stress-test-question",
+            "candidateID": "entity_index_1655",
+            "candidateAnswer": "4",
+            "text": "Olisi tärkeä saada nuoria kiinnostumaan yhteiskunnallisista asioista ja vaikuttamisesta. Tämä voisi onnistua laskemalla äänestysikärajaa kunta- ja aluevaaleissa."
+          },
+          {
+            "id": "entity_index_1656_stress-test-question",
+            "candidateID": "entity_index_1656",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskeminen on sinänsä kannatettava ajatus, mutta uskon sen houkuttelevan lähinnä niitä, jotka ovat jo valmiiksi hyvin valveutuneita poliittisessa päätöksenteossa. Kaikista suurin kysymys on kuitenkin se, miten saamme nuoret laajemmin kiinnostumaan vaaleista ja politiikasta. Tähän on löydettävä myös muita keinoja. On tärkeää tuoda politiikka ja päätöksenteko lähelle nuorten arkea muun muassa kouluissa ja harrastuksissa."
+          },
+          {
+            "id": "entity_index_1657_stress-test-question",
+            "candidateID": "entity_index_1657",
+            "candidateAnswer": "4",
+            "text": "Nuorten ääni tulisi saada paremmin kuuluviin päätöksenteossa. Ikärajan laskeminen pakottaisi ehdokkaat huomioimaan nuoremmat äänestäjät ja nostaisi nuorten asioita enemmän esille. Samalla on tärkeää vahvistaa kouluissa medialukutaitoa ja kriittistä ajattelua, jotta nuorilla on valmiudet tehdä tietoon pohjautuvia päätöksiä."
+          },
+          {
+            "id": "entity_index_1658_stress-test-question",
+            "candidateID": "entity_index_1658",
+            "candidateAnswer": "4",
+            "text": "Tämä olisi hyvä asia."
+          },
+          {
+            "id": "entity_index_1659_stress-test-question",
+            "candidateID": "entity_index_1659",
+            "candidateAnswer": "4",
+            "text": "Valtuustojen tekemät päätökset vaikuttavat nuoriin joten mielestäni nuorilla tulisi olla myös valtaa äänestää heitä, keiden haluavat tekevän päätöksiä."
+          },
+          {
+            "id": "entity_index_1660_stress-test-question",
+            "candidateID": "entity_index_1660",
+            "candidateAnswer": "4",
+            "text": "Monet alaikäiset tietävät, tuntevat ja ymmärtävät politiikasta ja poliittisesta päätöksenteosta enemmän kuin jo täysi-ikäiset. Tämän lisäksi heidän tulisi saada äänestämällä vaikuttaa oman kuntansa päättäjiin ja heidän valintaansa."
+          },
+          {
+            "id": "entity_index_1661_stress-test-question",
+            "candidateID": "entity_index_1661",
+            "candidateAnswer": "4",
+            "text": "Mielestäni 16-vuotiaana on riittävän kyvykäs arvioimaan kuka soveltuisi parhaiten kaupungin päätöksentekijäksi. Nuoret osaavat halutessaan toimia ihan yhtä vastuullisesti, kuin vanhemmatkin."
+          },
+          {
+            "id": "entity_index_1662_stress-test-question",
+            "candidateID": "entity_index_1662",
+            "candidateAnswer": "4",
+            "text": "Kunnan tulee huolehtia, että kaikki kuntalaiset saavat mahdollisuuden vaikuttaa kunnan tulevaisuuteen. Nuorten osallistamiseen tulee kiinnittää erityistä huomiota, koska alaikäisten äänioikeudettomuus rajaa heiltä osallistumisen mahdollisuuksia. Kannatan valtakunnallisen selvityksen tekemistä äänioikeuden ikärajan laskemisesta 16 vuoteen kunta- ja aluevaaleissa."
+          },
+          {
+            "id": "entity_index_1663_stress-test-question",
+            "candidateID": "entity_index_1663",
+            "candidateAnswer": "4",
+            "text": "Tämä voisi edesauttaa myös sitä että demokratia toteutuisi paremmin. Nuoret pääsisivät myös vaikuttamaan päätöksentekoon tällä tavoin."
+          },
+          {
+            "id": "entity_index_1664_stress-test-question",
+            "candidateID": "entity_index_1664",
+            "candidateAnswer": "4",
+            "text": "Nuorten vaikutusmahdollisuudet omaan elinympäristöön ovat melko rajalliset, nuorivaltuustojen tullessa pakollisiksi joka kuntaan lain määrittämänä, helpottivat tätä tilannetta. En näe että pelkällä äänestysiän laskemisella saadaan lisää nuorten ääntä päätöksentekoon ja saadaan nuoria osallistettua enemmän yhteiskuntaan. Näkisin että äänestysikäraja voidaan pitää kannattavana mutta se ei yksinään riitä."
+          },
+          {
+            "id": "entity_index_1665_stress-test-question",
+            "candidateID": "entity_index_1665",
+            "candidateAnswer": "4",
+            "text": "Erityisesti kunta- ja aluevaltuustoissa päätetään myös nuoriin liittyvistä asioista, eli äänestysikärajan laskeminen ei välttämättä ole huono ajatus."
+          },
+          {
+            "id": "entity_index_1666_stress-test-question",
+            "candidateID": "entity_index_1666",
+            "candidateAnswer": "4",
+            "text": "Suomessa rikosvastuu ikä 15 voisi toimia myös vastuullisena äänestäjänä."
+          },
+          {
+            "id": "entity_index_1667_stress-test-question",
+            "candidateID": "entity_index_1667",
+            "candidateAnswer": "4",
+            "text": "Kunta- ja aluevaaleissa päätetään monista asioista, jotka koskettavat myös nuoria 16-18-vuotiaita. Sen vuoksi äänestysoikeus olisi perusteltua."
+          },
+          {
+            "id": "entity_index_1668_stress-test-question",
+            "candidateID": "entity_index_1668",
+            "candidateAnswer": "4",
+            "text": "Nuoret ovat koko ajan vaan fiksumpia minun mielestäni. Nimenomaan polku varmaankin olisi se, että kunta -ja aluevaaleissa tarjottaisiin tilaisuus 16-vuotiaasta alkaen äänestää, mutta ei vielä muissa vaaleissa. Ensin tulee katsoa yksissä vaaleissa vaikutusta ennen kuin alettaisiin alentamaan muualla ikärajaa."
+          },
+          {
+            "id": "entity_index_1669_stress-test-question",
+            "candidateID": "entity_index_1669",
+            "candidateAnswer": "4",
+            "text": "On tärkeää, että nuoret pääsevät myös päättämään asioista."
+          },
+          {
+            "id": "entity_index_1670_stress-test-question",
+            "candidateID": "entity_index_1670",
+            "candidateAnswer": "4",
+            "text": "Seurakuntavaaleissa tätä on kokeiltu, olisi mahdollista jossain kohtaa ulottaa tämä myös valtiollisiin vaaleihin"
+          },
+          {
+            "id": "entity_index_1671_stress-test-question",
+            "candidateID": "entity_index_1671",
+            "candidateAnswer": "4",
+            "text": "Ikärajan laskemista tulisi ehdottomasti harkita vakavasti ja selvittää mahdollisuuksia. Nuorten ääni on tärkeä, eikä heidän valmiuttaan tulisi aliarvioida, vaikka se usein tuodaan esiin esteenä."
+          },
+          {
+            "id": "entity_index_1672_stress-test-question",
+            "candidateID": "entity_index_1672",
+            "candidateAnswer": "4",
+            "text": "Tähän tarvitaan poliittista valmennusta koulun puolelta"
+          },
+          {
+            "id": "entity_index_1673_stress-test-question",
+            "candidateID": "entity_index_1673",
+            "candidateAnswer": "4",
+            "text": "Tätä olisi harkittava vakavasti"
+          },
+          {
+            "id": "entity_index_1674_stress-test-question",
+            "candidateID": "entity_index_1674",
+            "candidateAnswer": "4",
+            "text": "Tällä voisi olla vaikutus yhteiskunnallisten asioiden kiinnostuksen herättämiseksi jo nuoremmalla iällä."
+          },
+          {
+            "id": "entity_index_1675_stress-test-question",
+            "candidateID": "entity_index_1675",
+            "candidateAnswer": "4",
+            "text": "Paikallisvaalit on erinomainen paikka laskea äänestysikärajaa ja ottaa nuoret mukaan."
+          },
+          {
+            "id": "entity_index_1676_stress-test-question",
+            "candidateID": "entity_index_1676",
+            "candidateAnswer": "4",
+            "text": "Kyllä tuossa iässä moni on jo perillä asioista"
+          },
+          {
+            "id": "entity_index_1677_stress-test-question",
+            "candidateID": "entity_index_1677",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskemisella voidaan pyrkiä luomaan äänestämisestä perinnettä jo nuoruudesta lähtien. Laadukasta yhteiskuntaopin opetusta tulisi samalla lisätä, mutta jokainen 16-vuotias on vähintään yhtä pätevä äänestämään kuin vanhempikin pelkän kansakoulun käynyt henkilö tai somekeskustelija."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_6_14"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.731Z",
+        "duration": 57736,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_7_7": {
+      "id": "MAP_0_7_7",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 7,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_1678_stress-test-question",
+            "candidateID": "entity_index_1678",
+            "candidateAnswer": "4",
+            "text": "Kyllä minusta 16 vuotias on jo päätös kelpoinen kunnan asioista."
+          },
+          {
+            "id": "entity_index_1679_stress-test-question",
+            "candidateID": "entity_index_1679",
+            "candidateAnswer": "4",
+            "text": "Ehdokkaaksi asettumiselle pitäisin ikärajan samana eli 18-vuotta. Mutta kyllä yksittäinen äänestäjä voisi olla vähän tätä nuorempikin."
+          },
+          {
+            "id": "entity_index_1680_stress-test-question",
+            "candidateID": "entity_index_1680",
+            "candidateAnswer": "4",
+            "text": "Otetaan nuoret mukaan mahdollisimman aikaisin päätöksentekoon ja annetaan mahdollisuus vaikuttamiseen."
+          },
+          {
+            "id": "entity_index_1681_stress-test-question",
+            "candidateID": "entity_index_1681",
+            "candidateAnswer": "4",
+            "text": "Seurakuntavaaleissa on jo käytössä 16 ikävuotta äänestysikärajana. Olen sitä mieltä, että äänestysaktiivisuus nousee nuorten ja nuorten aikuisten keskuudessa, kun ikärajaa lasketaan. Lisäksi tämän päivän nuoret ovat valveutuneempia yhteiskunnallisissa asioissa kuin edeltäneet sukupolvet."
+          },
+          {
+            "id": "entity_index_1682_stress-test-question",
+            "candidateID": "entity_index_1682",
+            "candidateAnswer": "4",
+            "text": "Erityisesti kuntavaaleissa nuorten mielipiteet ja vaikuttamismahdollisuudet pitäisivät olla suuremmat. Päätökset koskettavat usein nuorten palveluita kuten kouluja ja opiskelua, joten näissä päätöksissä tulisi nuorten äänet kuulua myös valtuutettujen valinoissa. Aluevaaleissa tulisi nuorten ääni kuulua vielä voimakkaammin ja nuorisovaltuuston mukana oloa pitäisi kaikissa päätöksissä lisätä. Valtuutettujen tulisi kyetä katsomaan asioita myös nuorten silmin ja tämä mahdollistuu kun nuoriso valtuustot aktivoidaan mukaan. Muutoin on turha sanoa, \\\"Lapsissa ja nuorissa on tulevaisuus\\\" jos ei heitä kuunnella!"
+          },
+          {
+            "id": "entity_index_1683_stress-test-question",
+            "candidateID": "entity_index_1683",
+            "candidateAnswer": "4",
+            "text": "Nuorten äänestysprosentti on perinteisesti alhainen. Alle 18-vuotiaita olisi tärkeää saada kiinnostumaan enemmän politiikasta."
+          },
+          {
+            "id": "entity_index_1684_stress-test-question",
+            "candidateID": "entity_index_1684",
+            "candidateAnswer": "4",
+            "text": "Tutkimukset osoittavat, että äänestysikärajan laskeminen lisää nuorten kiinnostusta politiikkaa kohtaan. Samalla on kuitenkin huomattu, että moni nuori edelleen jättää äänestämättä. Aloittaisin kokeilun nostamalla ikärajaa 17 vuoteen seuraavissa eduskuntavaaleissa."
+          },
+          {
+            "id": "entity_index_1685_stress-test-question",
+            "candidateID": "entity_index_1685",
+            "candidateAnswer": "4",
+            "text": "Kunta- ja aluevaaleissa päätetään kaikistä lähimpänä olevista palveluista: kaduista, kouluista ja sosiaali- ja terveyspalveluista. Nuorten pitäisi päästä nykyistä voimakkaammin vaikuttamaan omaan lähiympäristöön."
+          },
+          {
+            "id": "entity_index_1686_stress-test-question",
+            "candidateID": "entity_index_1686",
+            "candidateAnswer": "4",
+            "text": "Minusta olisi viisasta osallistuttaa nuoria päätöksenteossa ja budjetoinnissa jo hyvissä ajoin. Nuorilla on oikeus vaikuttaa arkeensa."
+          },
+          {
+            "id": "entity_index_1687_stress-test-question",
+            "candidateID": "entity_index_1687",
+            "candidateAnswer": "4",
+            "text": "Nuorten mahdollisuus osallistua politiikkaan on turvattava. Nuorten aktiivisuutta pitää pyrkiä kasvattamaan monin keinoin. Tällä hetkellä nuorten ääni ei kuulu riittävästi, ja valtuuston ikäjakaumat ovat nuorten näkökulmasta epäsuotuisia monissa kunnissa."
+          },
+          {
+            "id": "entity_index_1688_stress-test-question",
+            "candidateID": "entity_index_1688",
+            "candidateAnswer": "4",
+            "text": "Nuorten osallistaminen tärkeää. Heidän ääni pitää saada kuulumaan päätöksenteossa."
+          },
+          {
+            "id": "entity_index_1689_stress-test-question",
+            "candidateID": "entity_index_1689",
+            "candidateAnswer": "4",
+            "text": "Nykyisin nuoret ovat yhteiskunnallisesti valistuneita. Yhteiskunnassa on paljon nuoria koskettavia kysymyksiä. Tämän arvioin lisäävän nuorten äänestysintoa."
+          },
+          {
+            "id": "entity_index_1690_stress-test-question",
+            "candidateID": "entity_index_1690",
+            "candidateAnswer": "4",
+            "text": "Nuoret saavat nykyään ajaa autoa jo 17 vuotiaana ja oavt aktiivisia kunnan palveluiden käyttäjiä. On hassua, että äänestysikä on rajattu 18 ikävuoteen. Nuorten äänen tulee kuulua myös vaaleissa! Asiaa ei kuitenkaan ratkaista kuntavaaleissa vaan kansallisessa lainsäädännössä."
+          },
+          {
+            "id": "entity_index_1691_stress-test-question",
+            "candidateID": "entity_index_1691",
+            "candidateAnswer": "4",
+            "text": "Tämä voisi saada nuoret ja etenkin toisen asteen opiskelijat kiinnostumaan enemmän äänestämisestä ja yhteiskunnallisesta päätöksenteosta, ja siitä mistä siinä on todella kyse."
+          },
+          {
+            "id": "entity_index_1692_stress-test-question",
+            "candidateID": "entity_index_1692",
+            "candidateAnswer": "4",
+            "text": "Tämä olisi hyvä tapa vahvistaa demokratiaa ja antaa nuorille mahdollisuus saada äänensä kuuluviin. Monet nuoret eivät kuitenkaan ole perehtyneet politiikkaan eivätkä välttämättä tee tietoon perustuvia päätöksiä. Näin on kuitenkin myös yli 18-vuotiaiden kohdalla."
+          },
+          {
+            "id": "entity_index_1693_stress-test-question",
+            "candidateID": "entity_index_1693",
+            "candidateAnswer": "4",
+            "text": "Nuoret ovat valveutuneita ja kiinnostus päätöksiin lisääntyy kun pystyvät vaikuttamaan asioihin."
+          },
+          {
+            "id": "entity_index_1694_stress-test-question",
+            "candidateID": "entity_index_1694",
+            "candidateAnswer": "4",
+            "text": "Kunta- ja aluetasolla päätöksenteko vaikuttaa suorasti myös nuoriin. Äänestämistä voisi hyvin \\\"harjoitella\\\" jo näissä ns. lähivaaleissa. Äänestysikärajan laskeminen voisi myös sitouttaa nuoria äänestämiseen entistä paremmin, kun ei tarvitsisi odottaa täysi-ikäisyyteen asti. Omat arvot muotoutuvat vahvasti nuoruusiässä itseä etsiessään, joten silloin olisi hyvä päästä myös käyttämään niitä yhteiskunnallisesti."
+          },
+          {
+            "id": "entity_index_1695_stress-test-question",
+            "candidateID": "entity_index_1695",
+            "candidateAnswer": "4",
+            "text": "Mielestäni se on yksi hyvä vaihtoehto äänestysaktiivisuuden kohottamisessa."
+          },
+          {
+            "id": "entity_index_1696_stress-test-question",
+            "candidateID": "entity_index_1696",
+            "candidateAnswer": "4",
+            "text": "Nuorten äänestysprosentti on valitettavan alhainen, vaikka kunnallispolitiikassa tehdään juuri nuorten elämään konkreettisesti vaikuttavia päätöksiä. Tutkimukset ja kokemukset eri maista (esimerkiksi Norja ja Itävalta) antavat viitteitä siitä, että äänestysikärajan laskeminen 16 vuoteen voi lisätä nuorten äänestysaktiivisuutta. Samalla toivoisin yhteiskuntaopin oppikokonaisuuteen vielä enemmän tietoa ja vaikkapa kokemusasiantuntijoita nimenomaan poliitikassa toimimisesta nuorena. Meillä on Keravan vasemmistossa ilahduttavasti yksi lukioikäinenkin ehdokas!"
+          },
+          {
+            "id": "entity_index_1697_stress-test-question",
+            "candidateID": "entity_index_1697",
+            "candidateAnswer": "4",
+            "text": "Jos tämä tulisi päätöksen tekoon, en vastustaisi sitä mutta pohdin onko 16-vuotias nuori riittävän ymmärtäväinen yhteiskunnallisista asioista, jotkut nuoret kyllä voivat olla kiinnostuneita jo nuoresta alkaen yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "entity_index_1698_stress-test-question",
+            "candidateID": "entity_index_1698",
+            "candidateAnswer": "4",
+            "text": "On nuoria, jotka haluavat vaikuttaa jo nuorena asioihin."
+          },
+          {
+            "id": "entity_index_1699_stress-test-question",
+            "candidateID": "entity_index_1699",
+            "candidateAnswer": "4",
+            "text": "Toisi laajemmin eri-ikäisten näkökulmia ja ajatuksia esille."
+          },
+          {
+            "id": "entity_index_1700_stress-test-question",
+            "candidateID": "entity_index_1700",
+            "candidateAnswer": "4",
+            "text": "Nuorison pitäisi pystyä nuorisovaltuustoa laajemmin päästä vaikuttamaan."
+          },
+          {
+            "id": "entity_index_1701_stress-test-question",
+            "candidateID": "entity_index_1701",
+            "candidateAnswer": "4",
+            "text": "Kuntapolitiikan keski-ikä on noussut merkittävästi, ja nuoria tarvitaan enemmän mukaan päätöksentekoon. Äänestysiän laskeminen voisi innostaa nuoria osallistumaan yhteiskunnalliseen vaikuttamiseen jo varhaisessa vaiheessa ja vahvistaa demokratiaa pitkällä aikavälillä."
+          },
+          {
+            "id": "entity_index_1702_stress-test-question",
+            "candidateID": "entity_index_1702",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan lasku parantaisi palveluiden käyttäjien eli myös nuorten mahdollisuutta vaikuttaa itseään koskeviin, alueellisiin päätöksiin."
+          },
+          {
+            "id": "entity_index_1703_stress-test-question",
+            "candidateID": "entity_index_1703",
+            "candidateAnswer": "4",
+            "text": "Vastuunkantaminen nuoresta iästä alkaen lisää yhteiskunnallista vaikuttavuutta."
+          },
+          {
+            "id": "entity_index_1704_stress-test-question",
+            "candidateID": "entity_index_1704",
+            "candidateAnswer": "4",
+            "text": "16 -vuotiaat ovat jo moni hyvin valveutuneita ja tietävät paljon asioista. Olisi hyvä, että päättäjissä olisi enemmänkin sellaisia päättäjiä, jotka nuoret ovat voineet äänestää heidän edustajakseen."
+          },
+          {
+            "id": "entity_index_1705_stress-test-question",
+            "candidateID": "entity_index_1705",
+            "candidateAnswer": "4",
+            "text": "Näissä tehtävät päätökset koskevat tulevaisuutta, on hyvä ottaa nuoria päättämään heitä koskevia asioita"
+          },
+          {
+            "id": "entity_index_1706_stress-test-question",
+            "candidateID": "entity_index_1706",
+            "candidateAnswer": "4",
+            "text": "Äänestysikärajan laskemista 16 vuoteen tulisi harkita. Pelkän ikärajan alennuksen lisäksi tulee myös lisätä nuorten mahdollisuutta vaikuttaa päätöksentekoon jo ennen äänioikeutta. Nuorilla tulee olla aiempaa paremmat mahdollisuudet vaikuttaa heitä koskeviin asioihin, kuten kouluihin ja nuorisotiloihin, esimerkiksi kannanotoilla ja Nuorisovaltuustossa. Näin nuorille voisi tarjota ikään kuin kevyempi ja matalamman kynnyksen mahdollisuus osallistua päätöksentekoon ennen varsinaista äänioikeutta. Nuorten parempi mukaan otto päätöksentekoon voisi myös innostaa nuoria täysi-ikäistyttyään äänestämään aktiivisemmin."
+          },
+          {
+            "id": "entity_index_1707_stress-test-question",
+            "candidateID": "entity_index_1707",
+            "candidateAnswer": "4",
+            "text": "Nykynuorilla on mahdollisuus seurata maailmaa paremmin, mitä menneillä sukupolvilla. Äänestys ikärajan laskua voitaisiin kokeilla kuntatasolla"
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret ovat jo 16-vuotiaana päättäväisiä ja valveutuneita, mikä tekee heistä kykeneviä osallistumaan kunnalliseen päätöksentekoon. Esimerkiksi monet nuoret ovat kiinnostuneita yhteiskunnallisista asioista ja haluavat vaikuttaa."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten osallistumista politiikkaan ja parantaa heidän äänestysaktiivisuuttaan. On havaittu, että alhaisempi ikäraja voi innostaa nuoria äänestämään ja sitoutumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Päätökset kunnallistasolla vaikuttavat suoraan nuorten elämään, kuten koulujen ja nuorisotilojen osalta. Nuorten mielipiteet ja vaikuttamismahdollisuudet pitäisi ottaa paremmin huomioon päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuorten osallistaminen päätöksentekoon jo aikaisessa vaiheessa voi auttaa heitä kehittämään omia arvojaan ja ymmärrystään yhteiskunnallisista kysymyksistä, mikä voi sitouttaa heitä äänestämään myös myöhemmin."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Tutkimukset eri maista, kuten Norjasta ja Itävallasta, tukevat ajatusta siitä, että äänestysikärajan laskeminen voi parantaa nuorten äänestysprosenttia ja vahvistaa demokratiaa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Kuntapolitiikan keski-iän nousu osoittaa, että nuoria tarvitaan enemmän päätöksentekoon. Äänestysikärajan laskeminen voisi tuoda nuoria ääniä ja näkökulmia päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_7_15"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:41:56.995Z",
+        "endTime": "2025-07-29T14:42:54.731Z",
+        "duration": 57736,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_0_8": {
+      "id": "ITERATE_MAP_1_0_8",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 0,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret 16-vuotiaat ovat jo yhteiskunnallisesti valveutuneita, maksavat veroja ja kantavat monia vastuuta, joten heidän tulisi saada äänestää asioista, jotka koskevat heidän elinympäristöään ja tulevaisuuttaan."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja aktivoida heitä osallistumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunta- ja aluevaalit koskevat suoraan nuoria ja heidän mielipiteensä tulisi huomioida päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestämään oppiminen on tärkeä osa demokratiakasvatusta, ja nuorille tulisi tarjota mahdollisuus osallistua päätöksentekoon aikaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten kuunteleminen päätöksenteossa voisi parantaa kuntien houkuttelevuutta ja lisätä äänestysprosenttia."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Muissa maissa, kuten Virossa, on 16 vuoden äänestysoikeus paikallisvaaleissa, mikä osoittaa, että tämä käytäntö voi toimia myös Suomessa."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten mielipiteet ovat tärkeitä ja heidän osallistumisensa päätöksentekoon voi tuoda uusia näkökulmia ja parantaa päätösten laatua."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuorten osallistuminen päätöksentekoon voisi lisätä äänestysprosenttia kuntavaaleissa ja aluevaaleissa, sillä se tarjoaisi heille mahdollisuuden vaikuttaa heitä koskeviin asioihin jo nuoresta iästä alkaen."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_0_0"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.989Z",
+        "duration": 55257,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_1_9": {
+      "id": "ITERATE_MAP_1_1_9",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 1,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorilla on kyky tehdä järkeviä päätöksiä ja he ovat tietoisia yhteiskunnallisista asioista, mikä tekee heistä kykeneviä äänestämään jo 16-vuotiaana."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja kannustaa heitä osallistumaan aktiivisesti yhteiskunnalliseen keskusteluun."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunta- ja aluevaalit koskevat suoraan nuorten elämää, kuten koulutusta ja terveyspalveluja, joten heidän tulisi saada mahdollisuus vaikuttaa näihin päätöksiin."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Monet Euroopan maat ovat onnistuneesti kokeilleet 16-vuotiaiden äänestysoikeutta, mikä osoittaa, että tämä malli voi toimia myös Suomessa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan alentaminen voisi auttaa nuoria ottamaan vastuuta yhteiskunnallisista asioista ja valmistaa heitä tulevaisuuden päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Nuorten osallistuminen päätöksentekoon voi parantaa demokratian toteutumista ja varmistaa, että nuorten ääni kuuluu tärkeissä asioissa."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuoret käyttävät kunnallisia palveluita ja maksavat veroja, joten heidän tulisi myös voida vaikuttaa niihin liittyviin päätöksiin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Alentamalla äänestysikää voidaan nostaa nuorten äänen kantavuutta ja tuoda heidän näkökulmiaan päätöksentekoon."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_9",
+            "text": "Nuorille tulisi tarjota mahdollisuus tutustua ja tottua äänestämiseen jo nuorena, mikä voisi parantaa heidän aktiivisuuttaan tulevaisuudessa."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuoret ovat valmiita kantamaan vastuuta yhteiskunnallisista asioista, ja heillä on jo monia velvollisuuksia, kuten veronmaksu ja työskentelymahdollisuus."
+          },
+          {
+            "id": "tukiargumentti_11",
+            "text": "Äänestysikärajan laskeminen voi kannustaa nuoria osallistumaan yhteiskunnalliseen vaikuttamiseen ja huolehtimaan yhteisistä asioista jo varhaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_12",
+            "text": "Nuorten äänen kuuluminen päätöksentekoon on tärkeää, sillä monet päätökset vaikuttavat suoraan heidän elämäänsä, kuten koulutukseen ja terveyspalveluihin."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_1_1"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.989Z",
+        "duration": 55257,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_2_10": {
+      "id": "ITERATE_MAP_1_2_10",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 2,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret, kuten 16-vuotiaat, ovat kyvykkäitä ottamaan selvää yhteiskunnallisista asioista ja ilmaisemaan mielipiteensä. Tämä kyky ei eroa merkittävästi 18-vuotiaiden kyvystä äänestää vastuuntuntoisesti."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän osallisuuttaan yhteiskunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunnalliset ja alueelliset päätökset vaikuttavat suoraan nuoriin, mutta heillä ei ole mahdollisuutta vaikuttaa näihin päätöksiin, ellei äänestysikärajaa lasketa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorilla on jo nyt oikeus äänestää seurakuntavaaleissa 16-vuotiaana, mikä viittaa siihen, että he ovat kypsiä osallistumaan myös kunnallisissa ja aluevaaleissa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Äänestysikärajan laskeminen voi parantaa nuorten äänestysaktiivisuutta tulevaisuudessa, sillä nuoret, jotka ovat mukana politiikassa nuoresta iästä alkaen, todennäköisesti äänestävät myös aikuisina."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voi johtaa tasapainoisempaan demokratiaan, jossa nuorten ääni kuuluu paremmin verrattuna ikäihmisiin."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret, kuten 16-vuotiaat, ovat kyvykkäitä ottamaan selvää yhteiskunnallisista asioista ja ilmaisemaan mielipiteensä. Tämä kyky ei eroa merkittävästi 18-vuotiaiden kyvystä äänestää vastuuntuntoisesti."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän osallisuuttaan yhteiskunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Kunnalliset ja alueelliset päätökset vaikuttavat suoraan nuoriin, mutta heillä ei ole mahdollisuutta vaikuttaa näihin päätöksiin, ellei äänestysikärajaa lasketa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorilla on jo nyt oikeus äänestää seurakuntavaaleissa 16-vuotiaana, mikä viittaa siihen, että he ovat kypsiä osallistumaan myös kunnallisissa ja aluevaaleissa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Äänestysikärajan laskeminen voi parantaa nuorten äänestysaktiivisuutta tulevaisuudessa, sillä nuoret, jotka ovat mukana politiikassa nuoresta iästä alkaen, todennäköisesti äänestävät myös aikuisina."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voi johtaa tasapainoisempaan demokratiaan, jossa nuorten ääni kuuluu paremmin verrattuna ikäihmisiin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten äänestysikärajan laskeminen voisi lisätä heidän kiinnostustaan politiikkaan ja edistää heidän osallisuuttaan yhteisessä päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Nuoret 16-vuotiaat voivat jo nyt maksaa veroja ja solmia työsopimuksia, joten myös äänestämiseen tulisi antaa mahdollisuus."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret oppivat tekemään tietoon perustuvia päätöksiä ja saavat kokemusta, mikä parantaa heidän kykyään vaikuttaa tulevaisuudessa."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_2_2"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.990Z",
+        "duration": 55258,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_3_11": {
+      "id": "ITERATE_MAP_1_3_11",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 3,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorien tulee saada mahdollisuus vaikuttaa yhteiskunnan asioihin, sillä he ovat tulevaisuus ja heidän äänensä on saatava kuuluviin."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "16-vuotiaat ovat usein hyvin valveutuneita yhteiskunnallisista asioista ja kykenevät tekemään perusteltuja päätöksiä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysoikeuden laajentaminen voisi lisätä nuorten kiinnostusta politiikkaan ja demokratiaan."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat aktiivisia yhteiskunnan jäseniä, jotka maksavat veroja ja käyttävät julkisia palveluita, joten heillä on oikeus vaikuttaa päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voisi tuoda nuorten näkökulmat paremmin esiin päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "On tärkeää, että nuoret saavat kokemusta demokratian toiminnasta ja äänestämisestä jo nuorella iällä."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Esimerkit muista maista, kuten Virosta ja Itävallasta, osoittavat, että äänestysikärajan laskeminen on toiminut hyvin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten osallistaminen päätöksentekoon voi innostaa heitä yhteiskunnalliseen aktiivisuuteen ja vaikuttamiseen."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "16-vuotiaat ymmärtävät jo hyvin yhteiskunnan toimintaa ja voivat tehdä oikeita valintoja vaaleissa."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuorten osallisuus voisi nuorentaa valtuustoja ja tuoda uusia ajatuksia päätöksentekoon."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_11",
+            "text": "Nuorten osuus yhteiskunnasta on pienentynyt, joten äänestysoikeuden laajentaminen voisi korjata tätä vinoumaa ja antaa nuorille enemmän vaikutusvaltaa."
+          },
+          {
+            "id": "tukiargumentti_12",
+            "text": "16-vuotiaat nuoret ovat jo opiskelleet yhteiskuntatieteitä ja historiaa, mikä antaa heille valmiudet ymmärtää nykyiset yhteiskunnalliset kysymykset ja tehdä perusteltuja päätöksiä vaaleissa."
+          },
+          {
+            "id": "tukiargumentti_13",
+            "text": "Äänestysoikeuden laskeminen voisi edistää nuorten osallistumista poliittiseen toimintaan ja innostaa heitä vaikuttamaan oman kotikuntansa asioihin."
+          },
+          {
+            "id": "tukiargumentti_14",
+            "text": "Nuoret käyttävät itsenäisesti kunnallisia ja julkisia palveluita, joten on perusteltua, että heillä on sananvaltaa niitä koskevissa päätöksissä."
+          },
+          {
+            "id": "tukiargumentti_15",
+            "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_3_3"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.990Z",
+        "duration": 55258,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_4_12": {
+      "id": "ITERATE_MAP_1_4_12",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 4,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten äänioikeus voisi taata, että edustajisto vastaa kaikkia ikäryhmiä. Nuorten mielipiteet ja osallistuminen on otettava tasavertaisesti huomioon, sillä he ovat kunnan asukkaita."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Monet nuoret ovat hyvin valveutuneita ja perillä yhteiskunnallisista asioista, joten he voisivat tehdä perusteltuja äänestyspäätöksiä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat kiinnostuneita heitä koskevista asioista, kuten koulutuksesta ja mielenterveystyöstä, ja heidän ääniensä kuuleminen on tärkeää kunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voisi myös edistää nuorten kiinnostusta yhteiskunnallisiin asioihin ja päätöksentekoon jo varhaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Nuorten osallistaminen äänestämiseen voisi lisätä heidän poliittista aktiivisuuttaan myöhemmin elämässä."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Joissain maissa on otettu käyttöön 16-vuotiaana äänestäminen, ja tulokset ovat olleet positiivisia nuorten kiinnittyessä enemmän politiikkaan ja saaden enemmän tietoisuutta nuorella iällä."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Äänestysikärajan laskeminen voisi vahvistaa nuorten osallisuutta ja sitoutumista yhteiskunnallisiin asioihin, mikä on tärkeää demokratian kannalta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten äänioikeus voisi taata, että edustajisto vastaa kaikkia ikäryhmiä. Nuorten mielipiteet ja osallistuminen on otettava tasavertaisesti huomioon, sillä he ovat kunnan asukkaita."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Monet nuoret ovat hyvin valveutuneita ja perillä yhteiskunnallisista asioista, joten he voisivat tehdä perusteltuja äänestyspäätöksiä. Erityisesti 16-vuotiaat ovat riittävän kypsiä kertomaan oman mielipiteensä asioista."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa. Nuorten osallistaminen äänestämiseen voisi myös lisätä heidän poliittista aktiivisuuttaan myöhemmin elämässä."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat kiinnostuneita heitä koskevista asioista, kuten koulutuksesta ja mielenterveystyöstä, ja heidän ääniensä kuuleminen on tärkeää kunnallisessa päätöksenteossa. Tämä voisi vahvistaa nuorten osallisuutta ja sitoutumista yhteiskunnallisiin asioihin, mikä on tärkeää demokratian kannalta."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voisi edistää nuorten kiinnostusta yhteiskunnallisiin asioihin ja päätöksentekoon jo varhaisessa vaiheessa. Tämä mahdollistaisi sen, että nuorten toiveita kuunneltaisiin ja toteutettaisiin paremmin."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Joissain maissa on otettu käyttöön 16-vuotiaana äänestäminen, ja tulokset ovat olleet positiivisia nuorten kiinnittyessä enemmän politiikkaan ja saaden enemmän tietoisuutta nuorella iällä."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Äänestysikärajan laskeminen voisi myös luoda painetta päättäjille ottaa nuorten näkemykset paremmin huomioon ja siten parantaa päätöksenteon laatua."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten oikeus vaikuttaa heitä koskeviin päätöksiin on keskeinen eettinen periaate. Heidän mielipiteensä ovat tärkeitä, ja heidän tulee saada mahdollisuus osallistua päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_4_4"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.990Z",
+        "duration": 55258,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_5_13": {
+      "id": "ITERATE_MAP_1_5_13",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 5,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Laskemalla äänestysikää voidaan lisätä nuorten kiinnostusta politiikkaan ja yhteiskunnalliseen vaikuttamiseen, erityisesti oman kotikunnan asioissa."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta, sillä valtuustoissa päätetään paljon nuoria koskevista asioista."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Demokratiakasvatuksen merkitys korostuu, kun nuoret pääsevät äänestämään aikaisemmassa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuorten osallisuus päätöksenteossa on tärkeää, koska kunnissa ja hyvinvointialueilla päätetään asioista, jotka vaikuttavat suoraan heidän elämäänsä."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuoret ovat usein valveutuneita ja tietoisia omasta ympäristöstään, joten he voivat antaa arvokkaita näkemyksiä päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Muutos voisi herättää nuorten kiinnostusta yhteiskunnallista osallistumista kohtaan ja lisätä heidän haluaan vaikuttaa asioihin."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Kansainväliset esimerkit, kuten Saksassa ja Itävallassa, osoittavat, että ikärajan laskeminen on voinut lisätä nuorten osallisuutta."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Kuntavaaleissa päätetään konkreettisista asioista, jotka vaikuttavat lasten ja nuorten arkeen, joten heidän äänensä tulee kuulua."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_9",
+            "text": "Nuoret ovat jo 16-vuotiaana melko hyvin selvillä oman asuinseudun asioista ja voivat osallistua päätöksentekoon, joka vaikuttaa heidän elämäänsä."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja yhteiskunnalliseen vaikuttamiseen, kun heille tarjotaan mahdollisuus äänestää aikaisemmassa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_11",
+            "text": "Nuorten osallisuuden vahvistaminen päätöksenteossa voisi parantaa äänestysaktiivisuutta ja saada nuoret tuntemaan itsensä tärkeiksi ja kuulluiksi."
+          },
+          {
+            "id": "tukiargumentti_12",
+            "text": "Nuorten mielipiteet ja näkemykset ovat tärkeitä, ja heidän tulisi saada mahdollisuus vaikuttaa päätöksiin, jotka koskevat heidän elämäänsä."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_5_5"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.990Z",
+        "duration": 55258,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_6_14": {
+      "id": "ITERATE_MAP_1_6_14",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 6,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_1_17"
+      ],
+      "parents": [
+        "MAP_0_6_6"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.991Z",
+        "duration": 55259,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_7_15": {
+      "id": "ITERATE_MAP_1_7_15",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 7,
+      "input": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret ovat jo 16-vuotiaana päättäväisiä ja valveutuneita, mikä tekee heistä kykeneviä osallistumaan kunnalliseen päätöksentekoon. Esimerkiksi monet nuoret ovat kiinnostuneita yhteiskunnallisista asioista ja haluavat vaikuttaa."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten osallistumista politiikkaan ja parantaa heidän äänestysaktiivisuuttaan. On havaittu, että alhaisempi ikäraja voi innostaa nuoria äänestämään ja sitoutumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Päätökset kunnallistasolla vaikuttavat suoraan nuorten elämään, kuten koulujen ja nuorisotilojen osalta. Nuorten mielipiteet ja vaikuttamismahdollisuudet pitäisi ottaa paremmin huomioon päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuorten osallistaminen päätöksentekoon jo aikaisessa vaiheessa voi auttaa heitä kehittämään omia arvojaan ja ymmärrystään yhteiskunnallisista kysymyksistä, mikä voi sitouttaa heitä äänestämään myös myöhemmin."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Tutkimukset eri maista, kuten Norjasta ja Itävallasta, tukevat ajatusta siitä, että äänestysikärajan laskeminen voi parantaa nuorten äänestysprosenttia ja vahvistaa demokratiaa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Kuntapolitiikan keski-iän nousu osoittaa, että nuoria tarvitaan enemmän päätöksentekoon. Äänestysikärajan laskeminen voisi tuoda nuoria ääniä ja näkökulmia päätöksentekoon."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret ovat jo 16-vuotiaana päättäväisiä ja valveutuneita, mikä tekee heistä kykeneviä osallistumaan kunnalliseen päätöksentekoon. Esimerkiksi monet nuoret ovat kiinnostuneita yhteiskunnallisista asioista ja haluavat vaikuttaa."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi lisätä nuorten osallistumista politiikkaan ja parantaa heidän äänestysaktiivisuuttaan. On havaittu, että alhaisempi ikäraja voi innostaa nuoria äänestämään ja sitoutumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Päätökset kunnallistasolla vaikuttavat suoraan nuorten elämään, kuten koulujen ja nuorisotilojen osalta. Nuorten mielipiteet ja vaikuttamismahdollisuudet pitäisi ottaa paremmin huomioon päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuorten osallistaminen päätöksentekoon jo aikaisessa vaiheessa voi auttaa heitä kehittämään omia arvojaan ja ymmärrystään yhteiskunnallisista kysymyksistä, mikä voi sitouttaa heitä äänestämään myös myöhemmin."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Tutkimukset eri maista, kuten Norjasta ja Itävallasta, tukevat ajatusta siitä, että äänestysikärajan laskeminen voi parantaa nuorten äänestysprosenttia ja vahvistaa demokratiaa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Kuntapolitiikan keski-iän nousu osoittaa, että nuoria tarvitaan enemmän päätöksentekoon. Äänestysikärajan laskeminen voisi tuoda nuoria ääniä ja näkökulmia päätöksentekoon."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten äänestysprosentti on perinteisesti alhainen, ja äänestysikärajan laskeminen voisi auttaa innostamaan nuoria osallistumaan politiikkaan ja sitoutumaan yhteiskunnallisiin asioihin."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten osallistaminen päätöksentekoon jo nuoresta iästä alkaen vahvistaa heidän yhteiskunnallista vaikuttavuuttaan ja kiinnostustaan politiikkaan tulevaisuudessa."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Kunta- ja aluevaaleissa päätetään nuoria lähellä olevista asioista, joten heidän äänensä on tärkeä ja pitäisi saada kuuluviin."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuorten mahdollisuus osallistua päätöksentekoon nuoresta iästä alkaen voi johtaa heitä ottamaan vastuuta omista asioistaan ja yhteiskunnasta laajemmin."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_1_17"
+      ],
+      "parents": [
+        "MAP_0_7_7"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:42:54.732Z",
+        "endTime": "2025-07-29T14:43:49.992Z",
+        "duration": 55260,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_2_0_16": {
+      "id": "REDUCE_2_0_16",
+      "operation": "REDUCE",
+      "stepIndex": 2,
+      "batchIndex": 0,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Nuorten osallistuminen päätöksentekoon voisi lisätä äänestysprosenttia kuntavaaleissa ja aluevaaleissa, sillä se tarjoaisi heille mahdollisuuden vaikuttaa heitä koskeviin asioihin jo nuoresta iästä alkaen."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_9",
+              "text": "Nuorille tulisi tarjota mahdollisuus tutustua ja tottua äänestämiseen jo nuorena, mikä voisi parantaa heidän aktiivisuuttaan tulevaisuudessa."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Nuoret ovat valmiita kantamaan vastuuta yhteiskunnallisista asioista, ja heillä on jo monia velvollisuuksia, kuten veronmaksu ja työskentelymahdollisuus."
+            },
+            {
+              "id": "tukiargumentti_11",
+              "text": "Äänestysikärajan laskeminen voi kannustaa nuoria osallistumaan yhteiskunnalliseen vaikuttamiseen ja huolehtimaan yhteisistä asioista jo varhaisessa vaiheessa."
+            },
+            {
+              "id": "tukiargumentti_12",
+              "text": "Nuorten äänen kuuluminen päätöksentekoon on tärkeää, sillä monet päätökset vaikuttavat suoraan heidän elämäänsä, kuten koulutukseen ja terveyspalveluihin."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuoret, kuten 16-vuotiaat, ovat kyvykkäitä ottamaan selvää yhteiskunnallisista asioista ja ilmaisemaan mielipiteensä. Tämä kyky ei eroa merkittävästi 18-vuotiaiden kyvystä äänestää vastuuntuntoisesti."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän osallisuuttaan yhteiskunnallisessa päätöksenteossa."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Kunnalliset ja alueelliset päätökset vaikuttavat suoraan nuoriin, mutta heillä ei ole mahdollisuutta vaikuttaa näihin päätöksiin, ellei äänestysikärajaa lasketa."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Nuorilla on jo nyt oikeus äänestää seurakuntavaaleissa 16-vuotiaana, mikä viittaa siihen, että he ovat kypsiä osallistumaan myös kunnallisissa ja aluevaaleissa."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Äänestysikärajan laskeminen voi parantaa nuorten äänestysaktiivisuutta tulevaisuudessa, sillä nuoret, jotka ovat mukana politiikassa nuoresta iästä alkaen, todennäköisesti äänestävät myös aikuisina."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Nuorten osallistumisen lisääminen päätöksentekoon voi johtaa tasapainoisempaan demokratiaan, jossa nuorten ääni kuuluu paremmin verrattuna ikäihmisiin."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten äänestysikärajan laskeminen voisi lisätä heidän kiinnostustaan politiikkaan ja edistää heidän osallisuuttaan yhteisessä päätöksenteossa."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Nuoret 16-vuotiaat voivat jo nyt maksaa veroja ja solmia työsopimuksia, joten myös äänestämiseen tulisi antaa mahdollisuus."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret oppivat tekemään tietoon perustuvia päätöksiä ja saavat kokemusta, mikä parantaa heidän kykyään vaikuttaa tulevaisuudessa."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_11",
+              "text": "Nuorten osuus yhteiskunnasta on pienentynyt, joten äänestysoikeuden laajentaminen voisi korjata tätä vinoumaa ja antaa nuorille enemmän vaikutusvaltaa."
+            },
+            {
+              "id": "tukiargumentti_12",
+              "text": "16-vuotiaat nuoret ovat jo opiskelleet yhteiskuntatieteitä ja historiaa, mikä antaa heille valmiudet ymmärtää nykyiset yhteiskunnalliset kysymykset ja tehdä perusteltuja päätöksiä vaaleissa."
+            },
+            {
+              "id": "tukiargumentti_13",
+              "text": "Äänestysoikeuden laskeminen voisi edistää nuorten osallistumista poliittiseen toimintaan ja innostaa heitä vaikuttamaan oman kotikuntansa asioihin."
+            },
+            {
+              "id": "tukiargumentti_14",
+              "text": "Nuoret käyttävät itsenäisesti kunnallisia ja julkisia palveluita, joten on perusteltua, että heillä on sananvaltaa niitä koskevissa päätöksissä."
+            },
+            {
+              "id": "tukiargumentti_15",
+              "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuorten äänioikeus voisi taata, että edustajisto vastaa kaikkia ikäryhmiä. Nuorten mielipiteet ja osallistuminen on otettava tasavertaisesti huomioon, sillä he ovat kunnan asukkaita."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Monet nuoret ovat hyvin valveutuneita ja perillä yhteiskunnallisista asioista, joten he voisivat tehdä perusteltuja äänestyspäätöksiä. Erityisesti 16-vuotiaat ovat riittävän kypsiä kertomaan oman mielipiteensä asioista."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa. Nuorten osallistaminen äänestämiseen voisi myös lisätä heidän poliittista aktiivisuuttaan myöhemmin elämässä."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Nuoret ovat kiinnostuneita heitä koskevista asioista, kuten koulutuksesta ja mielenterveystyöstä, ja heidän ääniensä kuuleminen on tärkeää kunnallisessa päätöksenteossa. Tämä voisi vahvistaa nuorten osallisuutta ja sitoutumista yhteiskunnallisiin asioihin, mikä on tärkeää demokratian kannalta."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Äänestysikärajan laskeminen voisi edistää nuorten kiinnostusta yhteiskunnallisiin asioihin ja päätöksentekoon jo varhaisessa vaiheessa. Tämä mahdollistaisi sen, että nuorten toiveita kuunneltaisiin ja toteutettaisiin paremmin."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Joissain maissa on otettu käyttöön 16-vuotiaana äänestäminen, ja tulokset ovat olleet positiivisia nuorten kiinnittyessä enemmän politiikkaan ja saaden enemmän tietoisuutta nuorella iällä."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Äänestysikärajan laskeminen voisi myös luoda painetta päättäjille ottaa nuorten näkemykset paremmin huomioon ja siten parantaa päätöksenteon laatua."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten oikeus vaikuttaa heitä koskeviin päätöksiin on keskeinen eettinen periaate. Heidän mielipiteensä ovat tärkeitä, ja heidän tulee saada mahdollisuus osallistua päätöksentekoon."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_9",
+              "text": "Nuoret ovat jo 16-vuotiaana melko hyvin selvillä oman asuinseudun asioista ja voivat osallistua päätöksentekoon, joka vaikuttaa heidän elämäänsä."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Äänestysikärajan laskeminen voisi lisätä nuorten kiinnostusta politiikkaan ja yhteiskunnalliseen vaikuttamiseen, kun heille tarjotaan mahdollisuus äänestää aikaisemmassa vaiheessa."
+            },
+            {
+              "id": "tukiargumentti_11",
+              "text": "Nuorten osallisuuden vahvistaminen päätöksenteossa voisi parantaa äänestysaktiivisuutta ja saada nuoret tuntemaan itsensä tärkeiksi ja kuulluiksi."
+            },
+            {
+              "id": "tukiargumentti_12",
+              "text": "Nuorten mielipiteet ja näkemykset ovat tärkeitä, ja heidän tulisi saada mahdollisuus vaikuttaa päätöksiin, jotka koskevat heidän elämäänsä."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Nuorten osallistuminen päätöksentekoon voisi lisätä äänestysprosenttia kuntavaaleissa ja aluevaaleissa, sillä se tarjoaisi heille mahdollisuuden vaikuttaa heitä koskeviin asioihin jo nuoresta iästä alkaen."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Nuoret ovat valmiita kantamaan vastuuta yhteiskunnallisista asioista, ja heillä on jo monia velvollisuuksia, kuten veronmaksu ja työskentelymahdollisuus."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen voi kannustaa nuoria osallistumaan yhteiskunnalliseen vaikuttamiseen ja huolehtimaan yhteisistä asioista jo varhaisessa vaiheessa."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten mielipiteet ja näkemykset ovat tärkeitä, ja heidän tulisi saada mahdollisuus vaikuttaa päätöksiin, jotka koskevat heidän elämäänsä."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret oppivat tekemään tietoon perustuvia päätöksiä ja saavat kokemusta, mikä parantaa heidän kykyään vaikuttaa tulevaisuudessa."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_3_0_18"
+      ],
+      "parents": [
+        "ITERATE_MAP_1_0_8",
+        "ITERATE_MAP_1_1_9",
+        "ITERATE_MAP_1_2_10",
+        "ITERATE_MAP_1_3_11",
+        "ITERATE_MAP_1_4_12",
+        "ITERATE_MAP_1_5_13"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:43:49.993Z",
+        "endTime": "2025-07-29T14:44:10.208Z",
+        "duration": 20215,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_2_1_17": {
+      "id": "REDUCE_2_1_17",
+      "operation": "REDUCE",
+      "stepIndex": 2,
+      "batchIndex": 1,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuoret ovat jo 16-vuotiaana päättäväisiä ja valveutuneita, mikä tekee heistä kykeneviä osallistumaan kunnalliseen päätöksentekoon. Esimerkiksi monet nuoret ovat kiinnostuneita yhteiskunnallisista asioista ja haluavat vaikuttaa."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Äänestysikärajan laskeminen voisi lisätä nuorten osallistumista politiikkaan ja parantaa heidän äänestysaktiivisuuttaan. On havaittu, että alhaisempi ikäraja voi innostaa nuoria äänestämään ja sitoutumaan yhteiskunnallisiin asioihin."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Päätökset kunnallistasolla vaikuttavat suoraan nuorten elämään, kuten koulujen ja nuorisotilojen osalta. Nuorten mielipiteet ja vaikuttamismahdollisuudet pitäisi ottaa paremmin huomioon päätöksenteossa."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Nuorten osallistaminen päätöksentekoon jo aikaisessa vaiheessa voi auttaa heitä kehittämään omia arvojaan ja ymmärrystään yhteiskunnallisista kysymyksistä, mikä voi sitouttaa heitä äänestämään myös myöhemmin."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Tutkimukset eri maista, kuten Norjasta ja Itävallasta, tukevat ajatusta siitä, että äänestysikärajan laskeminen voi parantaa nuorten äänestysprosenttia ja vahvistaa demokratiaa."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Kuntapolitiikan keski-iän nousu osoittaa, että nuoria tarvitaan enemmän päätöksentekoon. Äänestysikärajan laskeminen voisi tuoda nuoria ääniä ja näkökulmia päätöksentekoon."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Nuorten äänestysprosentti on perinteisesti alhainen, ja äänestysikärajan laskeminen voisi auttaa innostamaan nuoria osallistumaan politiikkaan ja sitoutumaan yhteiskunnallisiin asioihin."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten osallistaminen päätöksentekoon jo nuoresta iästä alkaen vahvistaa heidän yhteiskunnallista vaikuttavuuttaan ja kiinnostustaan politiikkaan tulevaisuudessa."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Kunta- ja aluevaaleissa päätetään nuoria lähellä olevista asioista, joten heidän äänensä on tärkeä ja pitäisi saada kuuluviin."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Nuorten mahdollisuus osallistua päätöksentekoon nuoresta iästä alkaen voi johtaa heitä ottamaan vastuuta omista asioistaan ja yhteiskunnasta laajemmin."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_3_0_18"
+      ],
+      "parents": [
+        "ITERATE_MAP_1_6_14",
+        "ITERATE_MAP_1_7_15"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:43:49.993Z",
+        "endTime": "2025-07-29T14:44:10.208Z",
+        "duration": 20215,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_3_0_18": {
+      "id": "REDUCE_3_0_18",
+      "operation": "REDUCE",
+      "stepIndex": 3,
+      "batchIndex": 0,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Nuorten osallistuminen päätöksentekoon voisi lisätä äänestysprosenttia kuntavaaleissa ja aluevaaleissa, sillä se tarjoaisi heille mahdollisuuden vaikuttaa heitä koskeviin asioihin jo nuoresta iästä alkaen."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Nuoret ovat valmiita kantamaan vastuuta yhteiskunnallisista asioista, ja heillä on jo monia velvollisuuksia, kuten veronmaksu ja työskentelymahdollisuus."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Äänestysikärajan laskeminen voi kannustaa nuoria osallistumaan yhteiskunnalliseen vaikuttamiseen ja huolehtimaan yhteisistä asioista jo varhaisessa vaiheessa."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten mielipiteet ja näkemykset ovat tärkeitä, ja heidän tulisi saada mahdollisuus vaikuttaa päätöksiin, jotka koskevat heidän elämäänsä."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret oppivat tekemään tietoon perustuvia päätöksiä ja saavat kokemusta, mikä parantaa heidän kykyään vaikuttaa tulevaisuudessa."
+            }
+          ],
+          [
+            {
+              "id": "tukiargumentti_1",
+              "text": "Nuorten arjen asioista päätetään kunnissa, ja heidän osallistumisensa päätöksentekoon lisää heidän vaikuttamismahdollisuuksiaan. Äänestysikärajan laskeminen mahdollistaisi nuorten äänen kuulumisen."
+            },
+            {
+              "id": "tukiargumentti_2",
+              "text": "Äänestysrajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+            },
+            {
+              "id": "tukiargumentti_3",
+              "text": "Monet nuoret ovat jo kyvykkäitä arvioimaan poliittisia kysymyksiä ja päätöksentekijöitä, joten heillä on oikeus vaikuttaa omaan elinympäristöönsä."
+            },
+            {
+              "id": "tukiargumentti_4",
+              "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+            },
+            {
+              "id": "tukiargumentti_5",
+              "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+            },
+            {
+              "id": "tukiargumentti_6",
+              "text": "Monissa maissa, kuten Itävallassa ja Saksassa, nuoret 16-vuotiaat saavat jo äänestää paikallisvaaleissa, mikä osoittaa, että he voivat toimia vastuullisesti."
+            },
+            {
+              "id": "tukiargumentti_7",
+              "text": "Nuorten poliittinen osallistuminen nuoresta pitäen voi auttaa heitä tulemaan aktiivisiksi kansalaisiksi myöhemminkin elämässään."
+            },
+            {
+              "id": "tukiargumentti_8",
+              "text": "Nuorten äänioikeuden laajentaminen voisi parantaa yhteiskunnallista keskustelua ja lisätä nuorten tietämystä politiikasta ja päätöksenteosta."
+            },
+            {
+              "id": "tukiargumentti_9",
+              "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+            },
+            {
+              "id": "tukiargumentti_10",
+              "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "tukiargumentti_1",
+            "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+          },
+          {
+            "id": "tukiargumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+          },
+          {
+            "id": "tukiargumentti_3",
+            "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+          },
+          {
+            "id": "tukiargumentti_4",
+            "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+          },
+          {
+            "id": "tukiargumentti_5",
+            "text": "Äänestysikärajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+          },
+          {
+            "id": "tukiargumentti_6",
+            "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+          },
+          {
+            "id": "tukiargumentti_7",
+            "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+          },
+          {
+            "id": "tukiargumentti_8",
+            "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+          },
+          {
+            "id": "tukiargumentti_9",
+            "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+          },
+          {
+            "id": "tukiargumentti_10",
+            "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+          }
+        ]
+      },
+      "children": [],
+      "parents": [
+        "REDUCE_2_0_16",
+        "REDUCE_2_1_17"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:10.209Z",
+        "endTime": "2025-07-29T14:44:30.067Z",
+        "duration": 19858,
+        "llmCalls": 1,
+        "success": true
+      }
+    }
+  },
+  "finalArguments": [
+    {
+      "id": "tukiargumentti_1",
+      "text": "Nuoret, jotka ovat 16-vuotiaita, ovat usein hyvin valveutuneita ja kykeneviä tekemään järkeviä päätöksiä yhteiskunnallisista asioista, kuten koulutuksesta, työllisyydestä ja ilmastopolitiikasta."
+    },
+    {
+      "id": "tukiargumentti_2",
+      "text": "Äänestysikärajan laskeminen voisi parantaa nuorten osallisuutta päätöksenteossa ja auttaa kunnallisia päättäjiä ymmärtämään paremmin nuorten tarpeita ja mielipiteitä."
+    },
+    {
+      "id": "tukiargumentti_3",
+      "text": "Äänestysikärajan laskeminen voisi nostaa nuorten äänestysaktiivisuutta ja lisätä heidän osallisuuttaan poliittisessa päätöksenteossa."
+    },
+    {
+      "id": "tukiargumentti_4",
+      "text": "Useissa Euroopan maissa, kuten Itävallassa ja Virossa, on onnistuneesti laskettu äänestysikärajaa 16 vuoteen, mikä on tuottanut myönteisiä tuloksia."
+    },
+    {
+      "id": "tukiargumentti_5",
+      "text": "Äänestysikärajan laskeminen laajentaisi demokratiaa ja sitouttaisi nuoria yhteisten asioiden hoitoon, mikä voisi parantaa heidän kiinnostustaan politiikkaan ja vaaleihin."
+    },
+    {
+      "id": "tukiargumentti_6",
+      "text": "Nuorten äänioikeuden myöntäminen voisi edistää heidän kiinnostustaan yhteiskunnallisiin asioihin ja vaikuttamiseen, mikä on tärkeää tulevaisuuden demokratian kannalta."
+    },
+    {
+      "id": "tukiargumentti_7",
+      "text": "Nuorten osallistumisen lisääminen päätöksentekoon voisi johtaa siihen, että heidän asioitaan ja tarpeitaan huomioidaan paremmin, mikä parantaa heidän elinolojaan."
+    },
+    {
+      "id": "tukiargumentti_8",
+      "text": "Äänestysikärajan laskeminen voisi myös lisätä nuorten äänestysaktiivisuutta tulevaisuudessa, mikä on tärkeää demokratian elinvoimaisuuden kannalta."
+    },
+    {
+      "id": "tukiargumentti_9",
+      "text": "Kouluissa ja muissa yhteisöissä tulee tarjota riittävästi yhteiskunnallista kasvatusta, jotta nuoret voivat tehdä perusteltuja päätöksiä, mikä on tärkeää äänestysoikeuden laajentamisessa."
+    },
+    {
+      "id": "tukiargumentti_10",
+      "text": "Nuoret ovat yhä fiksumpia ja tietoisempia poliittisista asioista, joten heillä on oikeus osallistua päätöksentekoon."
+    }
+  ]
+}

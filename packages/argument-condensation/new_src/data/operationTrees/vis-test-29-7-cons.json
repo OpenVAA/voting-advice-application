@@ -1,0 +1,2962 @@
+{
+  "createdAt": "2025-07-29T14:44:30.086Z",
+  "runId": "vis-test-29-7-cons",
+  "metadata": {
+    "totalOperations": 19,
+    "maxDepth": 3,
+    "totalDuration": 895564,
+    "totalLlmCalls": 19
+  },
+  "roots": [
+    "MAP_0_0_0",
+    "MAP_0_1_1",
+    "MAP_0_2_2",
+    "MAP_0_3_3",
+    "MAP_0_4_4",
+    "MAP_0_5_5",
+    "MAP_0_6_6",
+    "MAP_0_7_7"
+  ],
+  "nodes": {
+    "MAP_0_0_0": {
+      "id": "MAP_0_0_0",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 0,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_0_stress-test-question",
+            "candidateID": "entity_index_0",
+            "candidateAnswer": "1",
+            "text": "Olen ihan tyytyväinen nykyiseen äänestysikärajaan. Kuntavaaleihin voisin harkita ja minut voidaan puhua ikärajan laskemisen puolelle, kun kunnan päätöksillä voidaan vaikuttaa nuorten elämään huomattavasti. Mm. maankäytön avulla uusien nuorille tarkoitettujen alueiden kuten skeittiparkkien rakennuttamisessa ynnä muussa. Mutta näissäkin voi nuorisovaltuustojen kautta vaikutta ja tuoda mielipiteensä kuuluviin. Aluevaaleissa mennään jo sellaiselle alueelle etten mielelläni, eivät maksa palvelujen kuluja ja näin."
+          },
+          {
+            "id": "entity_index_1_stress-test-question",
+            "candidateID": "entity_index_1",
+            "candidateAnswer": "1",
+            "text": "Ajatus on kaunis. Ollaan kuitenkin rehellisiä ja realisteja siinä, että kaikki 16-vuotiaat eivät siinä iässä ole vielä käyneet henkistä kasvuaan valmiiksi. Se vaatii aikaa, kilometrejä sekä kasvukipuilua. Tiedän tämän kokemuksesta."
+          },
+          {
+            "id": "entity_index_2_stress-test-question",
+            "candidateID": "entity_index_2",
+            "candidateAnswer": "1",
+            "text": "Nykyinen äänestysikäraja on varsin hyvä. Äänestysoikeuden on hyvä kulkea käsi kädessä sen kanssa, että on täysivaltainen aikuinen."
+          },
+          {
+            "id": "entity_index_3_stress-test-question",
+            "candidateID": "entity_index_3",
+            "candidateAnswer": "1",
+            "text": "18-vuotiaat ovat lain mukaan aikuisia, joten äänestysikäkin tulisi määräytyä sen mukaan selkeyden säilyttämiseksi."
+          },
+          {
+            "id": "entity_index_4_stress-test-question",
+            "candidateID": "entity_index_4",
+            "candidateAnswer": "1",
+            "text": "Ei pidä laskea. Kertakaikkiaan ei ole matemaattisesti mahdollista, että niin nuorella olisi kertynyt tietoa, kokemusta ja ymmärrystä maailmasta ja elämästä niin paljon, että voisi olla päättämässä kaikkien muidenkin puolesta. Ei sitä toki ole kaikilla aikuisillakaan, mutta keillä on, sen ratkaiskoon äänestäjät."
+          },
+          {
+            "id": "entity_index_5_stress-test-question",
+            "candidateID": "entity_index_5",
+            "candidateAnswer": "1",
+            "text": "Oikeudet ja vastuut kulkevat käsikädessä. Kun ihminen opiskelee ja/tai tekee töitä, ja kantaa omalta osaltaan muutenkin vastuunsa omasta ja perheensä elämästä ja toimeentulosta, voi myös saada oikeuksia mm vaikuttaa vaaleilla tärkeiksi pitämiinsä asioihin. Ei voi olla oikeuksia, ilman vastuuta."
+          },
+          {
+            "id": "entity_index_6_stress-test-question",
+            "candidateID": "entity_index_6",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18 vuotta on ihan hyvä ikäraja."
+          },
+          {
+            "id": "entity_index_7_stress-test-question",
+            "candidateID": "entity_index_7",
+            "candidateAnswer": "1",
+            "text": "Nykyinen käytäntö on toimiva. Sen sijaan meidän pitää rohkaista nuoria äänestämään entistä aktiivisemmin, jotta myös nuorten ääni kuuluu valtuustoissa."
+          },
+          {
+            "id": "entity_index_8_stress-test-question",
+            "candidateID": "entity_index_8",
+            "candidateAnswer": "1",
+            "text": "Nuoria ei siinä ikä vaiheessa, kiinnosta vielä politiikka."
+          },
+          {
+            "id": "entity_index_9_stress-test-question",
+            "candidateID": "entity_index_9",
+            "candidateAnswer": "1",
+            "text": "Täysikäisyyden ikärajaa ei ole mielestäni syytä muuttaa. Äänestysoikeuden ja ehdolle asettumisen oikeuden on kuljettava käsi kädessä täysikäisyyden määritelmän kanssa."
+          },
+          {
+            "id": "entity_index_10_stress-test-question",
+            "candidateID": "entity_index_10",
+            "candidateAnswer": "1",
+            "text": "Jotta 16-vuotiaat voisivat äänestää, heidän tulisi pystyä myös asettumaan vaaleissa ehdolle."
+          },
+          {
+            "id": "entity_index_11_stress-test-question",
+            "candidateID": "entity_index_11",
+            "candidateAnswer": "1",
+            "text": "Nykyinen malli on toimiva ja erityiesesti Suomessa todettu luotettavaksi sekä varmaksi, jossa äänestäjä on jo riittävän kypsä sekä kykenevä tekemään itse päätökset ilman ulkopuolista vaikuttamista."
+          },
+          {
+            "id": "entity_index_12_stress-test-question",
+            "candidateID": "entity_index_12",
+            "candidateAnswer": "1",
+            "text": "18-vuotias on Suomessa lain mukaan täysi-ikäinen ja noudattaisin äänestysikärajassa tätä samaa."
+          },
+          {
+            "id": "entity_index_13_stress-test-question",
+            "candidateID": "entity_index_13",
+            "candidateAnswer": "1",
+            "text": "Vaikka nuorten poliittinen aktiivisuus on tärkeää ja kokemukset maailmalta ovat osin myönteisiä, täysi-ikäisyys on sopiva ja selkeä raja äänioikeudelle. Nuorten vaikutusmahdollisuuksia kannattaa lisätä ennemmin nuorisovaltuustojen ja osallistavan demokratiakasvatuksen kautta kuin äänestysikärajaa laskemalla. Vastuu äänestämisestä vaatii myös kypsyyttä ja täysi-ikäisyyden tuomaa elämänkokemusta."
+          },
+          {
+            "id": "entity_index_14_stress-test-question",
+            "candidateID": "entity_index_14",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että ääniä annettaisiin enemmän pinnallisilla perusteilla kuin harkitun pohdinnan jälkeen. Nuoret saattavat helposti valita ehdokkaita, jotka tuntuvat hetkellisesti kiinnostavilta tai hauskoilta, mutta tämä ei takaa, että he äänestäisivät omien arvojensa ja tietojensa mukaisesti. Esimerkiksi nuorten varjovaalituloksissa 2023 suosituimmat ehdokkaat olivat numero 69 ja somesta tutut nimet, mikä osoittaa, että nuorten äänestys saattaa perustua enemmän someilmiöihin kuin poliittisen sisällön ymmärtämiseen. – Mutta kyllä ihmiset saa äänestää ketä haluaa."
+          },
+          {
+            "id": "entity_index_15_stress-test-question",
+            "candidateID": "entity_index_15",
+            "candidateAnswer": "1",
+            "text": "Itsenäinen ajattelu ja sen myötä poliittiset näkemykset kypsyvät iän myötä. Mielestäni nykyinen täysi-ikäisyyden raja, johon sisältyy myös äänioikeus, on hyvä, eikä sitä pidä muuttaa."
+          },
+          {
+            "id": "entity_index_16_stress-test-question",
+            "candidateID": "entity_index_16",
+            "candidateAnswer": "1",
+            "text": "16-vuotias on vielä liian nuori äänestämään."
+          },
+          {
+            "id": "entity_index_17_stress-test-question",
+            "candidateID": "entity_index_17",
+            "candidateAnswer": "1",
+            "text": "Äänestäjän tulee olla täysi-ikäinen"
+          },
+          {
+            "id": "entity_index_18_stress-test-question",
+            "candidateID": "entity_index_18",
+            "candidateAnswer": "1",
+            "text": "Äänestysikäraja pitää sitoa täysi-ikäisyyteen."
+          },
+          {
+            "id": "entity_index_19_stress-test-question",
+            "candidateID": "entity_index_19",
+            "candidateAnswer": "1",
+            "text": "16v ei ole vielä tarpeeksi kypsä ajattelemaan asioita kokonaisvaltaisesti ja järkevästi."
+          },
+          {
+            "id": "entity_index_20_stress-test-question",
+            "candidateID": "entity_index_20",
+            "candidateAnswer": "1",
+            "text": "Pidän tärkeänä, että äänestämiseen oikeutetuilla on riittävästi elämänkokemusta ja kykyä arvioida äänestämisen vaikutuksia paitsi äänestäjän omaan elämään, myös yhteiskuntaan yleisemminkin. Olen ehdottomasti sitä mieltä, että nuorten mielipiteet ovat tärkeitä. Nuoria onkin kuunneltava ja osallistettava yhteiskunnalliseen vaikuttamiseen. Äänestysikärajan laskua en kuitenkaan kannattaisi."
+          },
+          {
+            "id": "entity_index_21_stress-test-question",
+            "candidateID": "entity_index_21",
+            "candidateAnswer": "1",
+            "text": "Ei missään nimessä. 16-v. eivät ymmärrä asioista riittävästi."
+          },
+          {
+            "id": "entity_index_22_stress-test-question",
+            "candidateID": "entity_index_22",
+            "candidateAnswer": "1",
+            "text": "Koska täysi-ikäisyyden rajana on 18 vuotta, mielestäni äänioikeuskin tulee suoda ihmisille vasta sen jälkeen. On toki hyvä, jos nuoret ihmiset ovat kiinnostuneita politiikasta ja yhteisten asioitten hoitamisesta jo ennen sitä. Jokainen kyllä aikanaan ehtii äänestää ja asettua vaaleissa ehdokkaaksikin."
+          },
+          {
+            "id": "entity_index_23_stress-test-question",
+            "candidateID": "entity_index_23",
+            "candidateAnswer": "1",
+            "text": "Nuorisovaalit erikseen. Täysi ikäisyys hyvä rajanveto."
+          },
+          {
+            "id": "entity_index_24_stress-test-question",
+            "candidateID": "entity_index_24",
+            "candidateAnswer": "1",
+            "text": "16-vuotiailla ei ole tarpeeksi elämän kokemusta ja ymmärrystä, jota teikee heistä alttiita manipuloinnille. Tiedän hyvin sillä olen itsekkin kerran ollut 16."
+          },
+          {
+            "id": "entity_index_25_stress-test-question",
+            "candidateID": "entity_index_25",
+            "candidateAnswer": "1",
+            "text": "Miettiessäni itseäni tai lapsiani 16 vuotiaana ei päätökset olisivat olleet vielä kovin järkiperusteisia, Siksi äännestysiän tulee olla 18 vuotta."
+          },
+          {
+            "id": "entity_index_26_stress-test-question",
+            "candidateID": "entity_index_26",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan on mentävä käsi kädessä täysi-ikäistymisen kanssa ja sen tuomien etujen ja velvollisuuksien myötä. Näen itse äänioikeuden osoituksena siitä, että on silloin kelvollinen toimimaan myös itse valtuutettuna. Tämä jouduttaisiin kuitenkin väistämättä eriyttämään, mikäli äänestysikärajaa laskettaisiin."
+          },
+          {
+            "id": "entity_index_27_stress-test-question",
+            "candidateID": "entity_index_27",
+            "candidateAnswer": "1",
+            "text": "Mielestäni täysi-ikäiset ovat valideja äänestämään. Äänestysikärajaa voisi jopa nostaa."
+          },
+          {
+            "id": "entity_index_28_stress-test-question",
+            "candidateID": "entity_index_28",
+            "candidateAnswer": "1",
+            "text": "Minusta nykyinen 18 vuoden ikäraja on ihan hyvä"
+          },
+          {
+            "id": "entity_index_29_stress-test-question",
+            "candidateID": "entity_index_29",
+            "candidateAnswer": "1",
+            "text": "18 vuotta on sopiva ikäraja, silloin ihminen on vastuussa myös oikeudellisesti."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat uskovat, että 16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan, ja että henkinen kehitys vaatii aikaa ja kokemusta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Nykyinen äänestysikäraja 18 vuotta on monien mielestä hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja siihen, että äänestäjät ovat lain mukaan aikuisia."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Argumentoidaan, että nuoret voivat olla alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, kuten sosiaalisen median vaikutuksista, eikä heidän äänestämisensä perustu riittävään tietoon tai ymmärrykseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Vastustajat korostavat, että äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä, ja että nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä varhaista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Monet uskovat, että nuorten kiinnostus politiikkaan ei ole vielä riittävää, ja että heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_0_8"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.430Z",
+        "duration": 49343,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_1_1": {
+      "id": "MAP_0_1_1",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 1,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_30_stress-test-question",
+            "candidateID": "entity_index_30",
+            "candidateAnswer": "1",
+            "text": "En näe estettä sille, että nuorilta 16 - 17 vuotiailta voisi kysyä kansanäänestyksen tavoilla mielipiteitä heitä koskevissa asioissa, mutta pitäisin kuitenkin äänestysikärajan 18 vuodessa. Perusteluna aivojen kypsymisen fysiologia, ne kehittyvät aina jopa 25 vuotiaaksi saakka."
+          },
+          {
+            "id": "entity_index_31_stress-test-question",
+            "candidateID": "entity_index_31",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18 vuotta on hyvä ikä, nuoremmat voivat tosin olla mukana nuorisovaltuutettuina ja oppivat siinä politiikasta ja miten päätöksen teko toimii"
+          },
+          {
+            "id": "entity_index_32_stress-test-question",
+            "candidateID": "entity_index_32",
+            "candidateAnswer": "1",
+            "text": "Äänestysaktiivisuus on ollut Joensuussa luokkaa 45-50% Tämä on käsittämättömän pieni lukema. Yleensä äänetysaktiivisuus on suurinta vanhimmissa ikäluokissa ja nuoremmissa huomattavasti pienempää. Ei siis ole merkitystä äänestysikärajan alentamisella, kun nyt edes saisi ne 18 vuotta täyttäneet äänestämään edes 80 %, niin oltaisiin paremmilla vesillä"
+          },
+          {
+            "id": "entity_index_33_stress-test-question",
+            "candidateID": "entity_index_33",
+            "candidateAnswer": "1",
+            "text": "Mielestäni täysi-ikäisenä tulee avautua mahdollisuus äänestämiseen. Suomessa ongelmana on heikko äänestysprosentti varsinkin lähivaaleissa. Äänestysprosenttia tulisi pyrkiä kasvattamaan. Mielestäni vaalien yhteydessä pitäisi tarvittaessa järjestään kansanäänestyksiä, niin siten äänestysprosentti saattaisi nousta"
+          },
+          {
+            "id": "entity_index_34_stress-test-question",
+            "candidateID": "entity_index_34",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys on hyvä peruste myös äänestämisessä"
+          },
+          {
+            "id": "entity_index_35_stress-test-question",
+            "candidateID": "entity_index_35",
+            "candidateAnswer": "1",
+            "text": "En näe tälle syytä. Nykyinen täysi-ikäisyyden raja on hyvä."
+          },
+          {
+            "id": "entity_index_36_stress-test-question",
+            "candidateID": "entity_index_36",
+            "candidateAnswer": "1",
+            "text": "16-vuotiaat ovat vielä niin nuoria. Olen itsekin huomannut, että järkeä moneen poliittiseen asiaan on tullut vasta vanhemmiten ja kokemuksien myötä. 16-vuotiaiden pitäisi ennemmin aktivoitua muilla tavoin (mm. nuorisovaltuusto), jos he haluavat heidän äänensä kuuluviin."
+          },
+          {
+            "id": "entity_index_37_stress-test-question",
+            "candidateID": "entity_index_37",
+            "candidateAnswer": "1",
+            "text": "18v on täysi-ikäisyyden raja."
+          },
+          {
+            "id": "entity_index_38_stress-test-question",
+            "candidateID": "entity_index_38",
+            "candidateAnswer": "1",
+            "text": "Ikäraja on pidettävä 18 ikävuodessa. Antaa ensin aivojen kehittyä siihen pisteeseen että kykenee ymmärtämään omia äänestyspäätöksiä. Nuorten osallistumista politiikkaan voi edesauttaa ja kehittää muilla keinoin."
+          },
+          {
+            "id": "entity_index_39_stress-test-question",
+            "candidateID": "entity_index_39",
+            "candidateAnswer": "1",
+            "text": "Nykyinen raja on sopiva. On kyllä hyvä kuulla nuoria ennen päätöksen tekoa heitä koskevissa asioissa."
+          },
+          {
+            "id": "entity_index_40_stress-test-question",
+            "candidateID": "entity_index_40",
+            "candidateAnswer": "1",
+            "text": "On hyvä, että äänestäjillä on vähän enempi ikää, jotta muiden vaikuttaminen äänestyskäyttäytymiseen on vähäisempi."
+          },
+          {
+            "id": "entity_index_41_stress-test-question",
+            "candidateID": "entity_index_41",
+            "candidateAnswer": "1",
+            "text": "Jos ajokortin saa erikoisluvalla 17v ja täysi-ikäseksi kelpaa 18v niin en halua lasten olevan päättämässä miten työikäset elää."
+          },
+          {
+            "id": "entity_index_42_stress-test-question",
+            "candidateID": "entity_index_42",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan laskeminen lisäisi todennäköisesti puolueeni kannatusta. Tästä huolimatta olen sitä mieltä, että äänioikeutta ja täysi-ikäisyyttä ei pidä erottaa toisistaan."
+          },
+          {
+            "id": "entity_index_43_stress-test-question",
+            "candidateID": "entity_index_43",
+            "candidateAnswer": "1",
+            "text": "Tässä on hyvä noudattaa täysi-ikäisyyden rajaa, kuten esimerkiksi ajokorttia myönnettäessä."
+          },
+          {
+            "id": "entity_index_44_stress-test-question",
+            "candidateID": "entity_index_44",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nykyinen 18 vuoden ikäraja on riittävä. Nuorten osallistumista päätöksentekoon voidaan kehittää niiden osalta jotka eivät vielä voi äänestää"
+          },
+          {
+            "id": "entity_index_45_stress-test-question",
+            "candidateID": "entity_index_45",
+            "candidateAnswer": "1",
+            "text": "Koen tässä iässä että lakisääteinen 18v tuo riittävät edellytykset ja ymmärryksen äänestämiselle"
+          },
+          {
+            "id": "entity_index_46_stress-test-question",
+            "candidateID": "entity_index_46",
+            "candidateAnswer": "1",
+            "text": "Mielestäni suurin osa 16-vuotiaista eivät ole vielä kyllin kypsiä ajattelemaan politiikan kysymyksiä tarpeeksi syvällisesti saatika äänestämään niistä."
+          },
+          {
+            "id": "entity_index_47_stress-test-question",
+            "candidateID": "entity_index_47",
+            "candidateAnswer": "1",
+            "text": "Nykyinen käytäntö hyvä."
+          },
+          {
+            "id": "entity_index_48_stress-test-question",
+            "candidateID": "entity_index_48",
+            "candidateAnswer": "1",
+            "text": "Hyvin harva alaikäinen on valmis tähän, se on nähty jo seurakuntavaaleissa. ja jos siihen mennään, niin myös ehdokkuus pitää hyväksyä alaikäisiltä"
+          },
+          {
+            "id": "entity_index_49_stress-test-question",
+            "candidateID": "entity_index_49",
+            "candidateAnswer": "1",
+            "text": "Kyllä äänioikeuden ikäraja kuuluu säilyttää nykyisellään. 16-vuotias on vielä nuori, eikä heidän pitäisi tarvita murehtia vielä kuntapäättäjien asioista. Mielestäni näiden nuorten ääntä täytyisi kuunnella muulla foorumilla."
+          },
+          {
+            "id": "entity_index_50_stress-test-question",
+            "candidateID": "entity_index_50",
+            "candidateAnswer": "1",
+            "text": "En kannata äänestysikärajan laskemista. Äänestäminen vaatii harkintaa ja vastuuta, ja 18 vuotta on siihen sopiva ikäraja. Nuorten osallistumista politiikkaan voi edistää muilla tavoin, kuten koulujen demokratiakasvatuksella ja nuorisovaltuustojen vaikutusvallan lisäämisellä."
+          },
+          {
+            "id": "entity_index_51_stress-test-question",
+            "candidateID": "entity_index_51",
+            "candidateAnswer": "1",
+            "text": "18 vuotta on hyvä ikä. Siihen saakka joutuu vain sietämään aikuisten päätökset."
+          },
+          {
+            "id": "entity_index_52_stress-test-question",
+            "candidateID": "entity_index_52",
+            "candidateAnswer": "1",
+            "text": "Nuorilla on hyvä mahdollisuus vaikuttaa nuoriso valtuustossa. Varsinaiseen äänestämiseen mielestäni saa osallistua vasta täysi ikäisenä kun on muutoinkin täysi vastuu omasta elämästä."
+          },
+          {
+            "id": "entity_index_53_stress-test-question",
+            "candidateID": "entity_index_53",
+            "candidateAnswer": "1",
+            "text": "Keskimäärin tavallinen 16-vuotias ei ole kovin kiinnostunut politiikasta. Uskon, että riski ääriliikkeiden tai meemiedustajien nousuun kasvaisi tämän myötä, sillä nuoret asuvat somessa ja ovat herkästi vaikutuksille sitä kautta alttiita (kuten kyllä myös aikuisetkin)."
+          },
+          {
+            "id": "entity_index_54_stress-test-question",
+            "candidateID": "entity_index_54",
+            "candidateAnswer": "1",
+            "text": "Koen, että tälle uudistukselle ei ole tarvetta, koska 16-vuotiaalla nuorella ei välttämättä ole vielä omaa arvopohjaa, jonka perusteella hän lähtisi äänestämään ja päättämään omasta sekä muiden tulevaisuudesta. Näiden asioiden kanssa ei ole kiire."
+          },
+          {
+            "id": "entity_index_55_stress-test-question",
+            "candidateID": "entity_index_55",
+            "candidateAnswer": "1",
+            "text": "Ei ole tarvittavaan kyvykkyyttä erottaa oikea ja väärä tieto. Oikea tieto ja laadukas journalismi vaatii paljon taustatiedon oikeellisuuden eli faktojen tarksistamista."
+          },
+          {
+            "id": "entity_index_56_stress-test-question",
+            "candidateID": "entity_index_56",
+            "candidateAnswer": "1",
+            "text": "Äänestysikäraja on hyvä pitää sidoksissa täysi-ikäisyyteen. Osa 16-vuotiaista on taatusti kypsiä äänestämään ja osa ei. Sama tosin pätee myös kaikkiin muihin ikäluokkiin."
+          },
+          {
+            "id": "entity_index_57_stress-test-question",
+            "candidateID": "entity_index_57",
+            "candidateAnswer": "1",
+            "text": "Nykyinen juridinen täysi -ikäisyyden raja on hyvä"
+          },
+          {
+            "id": "entity_index_58_stress-test-question",
+            "candidateID": "entity_index_58",
+            "candidateAnswer": "1",
+            "text": "18 on ihan hyvä ikäraja tässä asiassa"
+          },
+          {
+            "id": "entity_index_59_stress-test-question",
+            "candidateID": "entity_index_59",
+            "candidateAnswer": "1",
+            "text": "Ajattelen niin, että ikävuosien karttuessa näkemykset asioihin syventyvät ja perustuvat enemmän kokemukseen. Iän karttuessa harkinta kasvaa ja vaikuttaa enemmän päätöksiin."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat korostavat, että 18 vuotta on hyvä ikäraja äänestämiselle, sillä se liittyy täysi-ikäisyyteen ja aivojen kypsymiseen. Heidän mielestään nuoret eivät ole tarpeeksi kypsiä tekemään harkittuja päätöksiä politiikasta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Useat kommentit mainitsevat, että nuoret voivat osallistua politiikkaan muilla tavoin, kuten nuorisovaltuustojen kautta, ja että äänestysaktiivisuus on tällä hetkellä heikko jopa täysi-ikäisten keskuudessa. Tämä viittaa siihen, että 16-vuotiaiden äänestämisen ei katsota parantavan tilannetta."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Vastustajat pitävät myös 16-vuotiaiden mahdollisuutta äänestää huonona, sillä he uskovat, että nuoret ovat helposti alttiita ulkoisille vaikutteille, kuten sosiaalisen median mielipiteille, mikä voisi vääristää äänestyskäyttäytymistä."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Erityisesti korostuu ajatus siitä, että 16-vuotiaat eivät välttämättä omaa riittävää arvopohjaa tai ymmärrystä äänestyspäätöksiin, mikä tekee heidät huonosti varustetuiksi politiikkaan liittyvissä kysymyksissä."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Monet kommentoijat pitävät nykyistä 18 vuoden ikärajaa riittävänä, ja he korostavat, että iän myötä ihmiset saavat enemmän kokemusta ja syvempää näkemystä asioista, mikä parantaa päätöksentekokykyä."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_1_9"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.430Z",
+        "duration": 49343,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_2_2": {
+      "id": "MAP_0_2_2",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 2,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_60_stress-test-question",
+            "candidateID": "entity_index_60",
+            "candidateAnswer": "1",
+            "text": "Ei ole tarkoituksenmukaista, että alaikäisille annetaan mahdollisuus vaikuttaa politiikkaan johon heillä ei ole luonnollisesti vastuutakaan."
+          },
+          {
+            "id": "entity_index_61_stress-test-question",
+            "candidateID": "entity_index_61",
+            "candidateAnswer": "1",
+            "text": "Äänestysoikeus tuo mukanaan vastuuta. Vasta täysi-ikäinen kantaa vastuuta juridisesti itsestään. Oikeus tuo mukanaan vastuuta."
+          },
+          {
+            "id": "entity_index_62_stress-test-question",
+            "candidateID": "entity_index_62",
+            "candidateAnswer": "1",
+            "text": "Politiikka on huumausaineitakin vaarallisempi ja voi johtaa psykoottisiin harhoihin vallankäytöstä."
+          },
+          {
+            "id": "entity_index_63_stress-test-question",
+            "candidateID": "entity_index_63",
+            "candidateAnswer": "1",
+            "text": "Nykyinen äänestysikäraja on perusteltu. Nuorten ääni saadaan kuuluville päätöksentekijöille valtuuskuntien ja kannanottojen kautta."
+          },
+          {
+            "id": "entity_index_64_stress-test-question",
+            "candidateID": "entity_index_64",
+            "candidateAnswer": "1",
+            "text": "16 vuotias on vielä lapsi, ja lapsi tekee hyvin usein niin kuin oma vanhempi sanoo tai tekee. Olisi siis hyvinkin mahdollista että 16 vuotias äänestäisi kuten vanhempansa, eikä niinkään miten itse äänestäisi."
+          },
+          {
+            "id": "entity_index_65_stress-test-question",
+            "candidateID": "entity_index_65",
+            "candidateAnswer": "1",
+            "text": "16-vuotiaat ovat jo monessa suhteessa vastuullisia kansalaisia, ja heidän kuulemisensa kunnallisessa päätöksenteossa on arvokasta. Samalla on kuitenkin varmistettava, että heillä on riittävästi tietoa ja ymmärrystä yhteiskunnallisista asioista, jotta he voivat tehdä harkittuja päätöksiä äänestäessään vaaleissa. Espoossa nuorisovaltuustolla on merkittävä rooli nuorten äänen tuomisessa osaksi kaupungin päätöksentekoa, ja yhteistyötä kaupunginvaltuuston kanssa voidaan kehittää entisestään. Nuorten vaikuttamismahdollisuuksia tulee vahvistaa esimerkiksi lisäämällä heidän osallistumistaan lautakuntien ja valtuuston työskentelyyn sekä varmistamalla, että heidän näkemyksensä otetaan aidosti huomioon. On tärkeää, että nuoret saavat riittävästi tietoa ja mahdollisuuksia osallistua päätöksentekoon, jotta he voivat kasvaa vastuullisiksi äänestäjiksi ja vaikuttajiksi. Kaupungin valtuustossa käsitellään laajoja kokonaisuuksia, joiden käsittelemisessä tarvitaan kokemusta. Teini-ikään kuuluu luontaisesti suurempi ryhmäpaineen mukana meneminen, joten äänestämisen kriteerit eivät välttämättä olisi järkiperäiset kaikkien 16-17-vuotiaiden osalta, vaikka osa heidän ikätovereistaan olisikin erittäin tietoisia yhteiskunnan asioista. Vaikka on erittäin monia kypsiä 16-vuotiaita nuoria Espoossakin ja arvostan kaikkien nuorten näkökantoja, äänestysikärajan laskeminen ei ole oikea ratkaisu. Nuorten ääni tulee saada kuuluviin myös ilman äänestysikärajan laskua. Minuun saa aina olla yhteydessä nuoria askarruttavissa asioissa, lämpimästi tervetuloa luokseni!"
+          },
+          {
+            "id": "entity_index_66_stress-test-question",
+            "candidateID": "entity_index_66",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nykyinen ikäraja on hyvä ja selkeä. On selvää, että nuoremmillakin on mielipiteitä ja halua osallistua yhteiskunnalliseen vaikuttamiseen, ja se on hyvä asia. Äänestäminen on kuitenkin ensisijaisesti täysi-ikäisille suunnattua."
+          },
+          {
+            "id": "entity_index_67_stress-test-question",
+            "candidateID": "entity_index_67",
+            "candidateAnswer": "1",
+            "text": "Äänestysikäraja tulee pitää sellaisenaan, koska 18 vuoden ikäisenä on vasta täysivaltainen aikuinen. Ehdolle pitäisi kuitenkin saada asettua nuorempanakin."
+          },
+          {
+            "id": "entity_index_68_stress-test-question",
+            "candidateID": "entity_index_68",
+            "candidateAnswer": "1",
+            "text": "Nykyinen on hyvä, Suomen lain mukaan 18 vuotias on täysivaltainen kansalainen niin siihen kuuluu äänestysoikeuskin"
+          },
+          {
+            "id": "entity_index_69_stress-test-question",
+            "candidateID": "entity_index_69",
+            "candidateAnswer": "1",
+            "text": "Ajattelen että nuorten osallisuus on tärkeää, mutta on perusteltua että vasta täysi-ikäisenä voi äänestää kunta- ja aluevaaleissa. Nuorisovaltuuston toimintaa tulee kehittää ja ylläpitää kunta- ja aluevaltuustoissa."
+          },
+          {
+            "id": "entity_index_70_stress-test-question",
+            "candidateID": "entity_index_70",
+            "candidateAnswer": "1",
+            "text": "Mielestäni keskiverto 16-vuotias ei ole tarpeeksi kehittynyt ja kypsä. Näin nuorelle en antaisi mandaattia äänestää. Täysi-ikäisyyden äänestysraja on mielestäni hyvä rajanveto."
+          },
+          {
+            "id": "entity_index_71_stress-test-question",
+            "candidateID": "entity_index_71",
+            "candidateAnswer": "1",
+            "text": "Mielestäni äänestämisikärajan tulee olla linjassa täysi-ikäisyyden kanssa."
+          },
+          {
+            "id": "entity_index_72_stress-test-question",
+            "candidateID": "entity_index_72",
+            "candidateAnswer": "1",
+            "text": "Äänestysikä on hyvä pitää 18 vuodessa. 16 ja 18 vuoden välillä tapahtuu valtava harppaus kehityksessä ja oppimisessa ja toisen asteen koulutus avaa hyvin hallinnon rakenteen ja demokratian perusteet, jotta äänestäjällä on riittävästi tietoa vaikuttamismahdollisuuksiensa merkityksestä. Kouluissa suoritettavien koululaisvaalien tulokset huomioidaan aina politiikassa suurella mielenkiinnolla, vaikka niiden tulokset eivät vaikutakaan viralliseen ääntenlaskentaan, ja niillä on suuri suuntaa antava merkitys puolueiden kehityksessä."
+          },
+          {
+            "id": "entity_index_73_stress-test-question",
+            "candidateID": "entity_index_73",
+            "candidateAnswer": "1",
+            "text": "Alaikäiselle voisi olla muunlaisia vaikuttamisen muotoja"
+          },
+          {
+            "id": "entity_index_74_stress-test-question",
+            "candidateID": "entity_index_74",
+            "candidateAnswer": "1",
+            "text": "Koen kunta- ja hyvinvointialuetason päättämisen kuuluvan täysikäisille. Päättäjien tulee kuitenkin huomioida päätöstensä seuraukset lapsiin ja nuoriin aina mahdollisuuksien mukaan."
+          },
+          {
+            "id": "entity_index_75_stress-test-question",
+            "candidateID": "entity_index_75",
+            "candidateAnswer": "1",
+            "text": "Suomen lain mukaan 18 vuotta täyttänyt on täysi-ikäinen. Pidän sitä itse hyvänä ikärajana äänestyksissä."
+          },
+          {
+            "id": "entity_index_76_stress-test-question",
+            "candidateID": "entity_index_76",
+            "candidateAnswer": "1",
+            "text": "Nuorten ääni tulee esiin valtuustoissa nuorisovaltuustojen kautta, joihin kannustan nuoria rohkeasti lähtemään. Mielestäni äänioikeuden tulee kulkea rinnakkain täyden oikeustoimikelpoisuuden ikärajan kanssa, eli 18-vuotias saa äänestää."
+          },
+          {
+            "id": "entity_index_77_stress-test-question",
+            "candidateID": "entity_index_77",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyydellä on suuri merkitys vastuullisuudessa. Äänioikeus on erittäin vastuullinen ja velvoittava ihmisoikeus. Alle 18 vuotias on vielä huoltajiensa vastuulla, sellainen henkilö ei vielä voi ottaa vastuuta velvollisuuksista ja vastuista kanssaihmisistä. Muutenhan se olisi hieno asia. Mutta henkilö joka on viellä huollettava, ei voi ottaa vielä vastuuta muista ihmisistä, johon äänioikeus vaikuttaa."
+          },
+          {
+            "id": "entity_index_78_stress-test-question",
+            "candidateID": "entity_index_78",
+            "candidateAnswer": "1",
+            "text": "Jälkeenpäin ajateltuna olen iloinen siitä, ettei minulla ollut äänioikeutta 16-vuotiaana."
+          },
+          {
+            "id": "entity_index_79_stress-test-question",
+            "candidateID": "entity_index_79",
+            "candidateAnswer": "1",
+            "text": "Nykyinen äänestysikäraja on hyvä."
+          },
+          {
+            "id": "entity_index_80_stress-test-question",
+            "candidateID": "entity_index_80",
+            "candidateAnswer": "1",
+            "text": "Kannatan ehdottomasti nuorten osallistumista politiikkaan, sekä aktiivista asioiden seuraamista, mutta niin kauan kuin suomalainen yhteiskunta kokee nuoren ihmisen olevan aikuinen vasta 18-vuotiaana hyvin monessa asiassa, on äänestysikä myös yksi näistä asioista."
+          },
+          {
+            "id": "entity_index_81_stress-test-question",
+            "candidateID": "entity_index_81",
+            "candidateAnswer": "1",
+            "text": "Suurinosa 16-vuotiaista ovat liian kokemattomia elämästä ja infrastuktuureista pystyäkseen ajattelemaan asioita useassa näkökulmasta, eikä vaan omastaan."
+          },
+          {
+            "id": "entity_index_82_stress-test-question",
+            "candidateID": "entity_index_82",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18-vuoden ikä äänestyksessä on ihan riittävä. Nuorilla on paljon hyviä ajatuksia ja ehdotuksia, mutta äänestysasioissa tulee huomioida monenlaisia asioita. Alle 18-vuotiaille tulee antaa paljon mahdollisuuksia vaikuttaa kunnan asioihin ja niissä esimerkiksi Kempeleessä oikkuparlamentti ja nuorisovaltuusto on hyviä esimerkkejä siinä."
+          },
+          {
+            "id": "entity_index_83_stress-test-question",
+            "candidateID": "entity_index_83",
+            "candidateAnswer": "1",
+            "text": "Nuorilla pitää olla muita keinoja vaikuttaa Kunnan asioihin. Esim. Aktiivinen moniääninen nuorisovaltuusto on keino tuoda nuorten asioita esille kunnan päätöksen tekoon."
+          },
+          {
+            "id": "entity_index_84_stress-test-question",
+            "candidateID": "entity_index_84",
+            "candidateAnswer": "1",
+            "text": "Kyllä se saa olla 18v."
+          },
+          {
+            "id": "entity_index_85_stress-test-question",
+            "candidateID": "entity_index_85",
+            "candidateAnswer": "1",
+            "text": "Äänioikeuden ikäraja on perustellusti sama kuin täysi-ikäisyyden ikäraja. Nuorisovaltuusto tuo nuorten ääntä esiin kaupungin päätöksenteossa."
+          },
+          {
+            "id": "entity_index_86_stress-test-question",
+            "candidateID": "entity_index_86",
+            "candidateAnswer": "1",
+            "text": "Poliittiseen päätöksentekoon osallistuminen vaatii ymmäryystä yhiteskunnalista ongelmista. Jotkut ihmiset voivat hyvinki olla tarpeeksi kypsiä jo 16 vuoden varhaisessa iässä, mutta jos joku yleisesti kattava ikäraja pitää valita, niin 16 on liian nuori."
+          },
+          {
+            "id": "entity_index_87_stress-test-question",
+            "candidateID": "entity_index_87",
+            "candidateAnswer": "1",
+            "text": "Kaikki nuoret eivät ole riittävän tietoisia, vaan ovat helposti johdateltavissa"
+          },
+          {
+            "id": "entity_index_88_stress-test-question",
+            "candidateID": "entity_index_88",
+            "candidateAnswer": "1",
+            "text": "Ensin on saatava 18 vuotta täyttäneet vaaliuurnille. Vasta sitten voidaan harkita äänestysiän laskua."
+          },
+          {
+            "id": "entity_index_89_stress-test-question",
+            "candidateID": "entity_index_89",
+            "candidateAnswer": "1",
+            "text": "18-v on sopiva ikä äänestää vaaleissa."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Alaikäisille ei tulisi antaa mahdollisuutta vaikuttaa politiikkaan, koska he eivät ole vielä juridisesti vastuullisia aikuisia."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysoikeus tuo mukanaan vastuun, ja täysi-ikäisyys on tärkeä raja, joka määrittelee, kuka voi kantaa tämän vastuun."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuoret, erityisesti 16-vuotiaat, ovat usein altteja vanhempiensa vaikutuksille, mikä voi vääristää heidän omaa äänestämistään."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Keskiverto 16-vuotias ei ole tarpeeksi kehittynyt ja kypsä tekemään monimutkaisia päätöksiä yhteiskunnallisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Äänestysikärajan tulisi olla linjassa täysi-ikäisyyden kanssa, mikä tarkoittaa, että 18-vuotiaat ovat ainoita, joilla on oikeus äänestää."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Alaikäisille tulisi tarjota muita keinoja vaikuttaa kuin äänestys, kuten nuorisovaltuustot, jotta heidän mielipiteensä tulevat kuulluiksi."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nuorten osallisuus on tärkeää, mutta se voidaan saavuttaa ilman äänestysikärajan laskemista."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Äänestysikärajan laskeminen ei ole oikea ratkaisu, koska on tärkeää, että äänestäjillä on riittävästi tietoa ja ymmärrystä päätöksenteosta."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_2_10"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_3_3": {
+      "id": "MAP_0_3_3",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 3,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_90_stress-test-question",
+            "candidateID": "entity_index_90",
+            "candidateAnswer": "1",
+            "text": "Omaksi kokemansa puolueen toimintaan voi lähteä vaikuttamaan nuorisojärjestöjen kautta jo alaikäisenä. Tällä hetkellä äänestämisen ikärajaa ei ola syytä lähteä laskemaan nykyisestä täysikäisyyden rajasta."
+          },
+          {
+            "id": "entity_index_91_stress-test-question",
+            "candidateID": "entity_index_91",
+            "candidateAnswer": "1",
+            "text": "Mielpide kypsyy yleensä iän myötä, en usko että äänestysikärajan laskeminen tuottaa parempia ehdokkaita."
+          },
+          {
+            "id": "entity_index_92_stress-test-question",
+            "candidateID": "entity_index_92",
+            "candidateAnswer": "1",
+            "text": "On hyvä, että äänestäjillä on hieman elämänkokemusta ja tietoa asioista ja niiden hoitamisesta."
+          },
+          {
+            "id": "entity_index_93_stress-test-question",
+            "candidateID": "entity_index_93",
+            "candidateAnswer": "1",
+            "text": "Äänestysvastuu pitää kuulua täysi-ikäisille jatkossakin. Vanhempien vastuulla kuunnella alle 18 vuotiaita"
+          },
+          {
+            "id": "entity_index_94_stress-test-question",
+            "candidateID": "entity_index_94",
+            "candidateAnswer": "1",
+            "text": "Ikärajaa tulisi nostaa 23 ikävuoteen. 16-vuotiaat ovat lapsia. Yhteiskunnallisia kysymyksiä sitäpaitsi opetetaan vasta ammattikorkeassa tai yliopistossa."
+          },
+          {
+            "id": "entity_index_95_stress-test-question",
+            "candidateID": "entity_index_95",
+            "candidateAnswer": "1",
+            "text": "Kunta- ja aluevaalit ovat tärkeät juuri päätöksenteon paikallisuuden kannalta. Alle 18-vuotiaan ei tarvitse ottaa sellaisista asioista tarpeetonta stressiä ja vastuuta."
+          },
+          {
+            "id": "entity_index_96_stress-test-question",
+            "candidateID": "entity_index_96",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18 vuoden ikäraja on riittävä."
+          },
+          {
+            "id": "entity_index_97_stress-test-question",
+            "candidateID": "entity_index_97",
+            "candidateAnswer": "1",
+            "text": "18 ikävuotta on oikein hyvä myös jatkossa. Kyllä ihminen ehtii elämänsä aikana monta kertaa äänestää monissa eri vaaleissa."
+          },
+          {
+            "id": "entity_index_98_stress-test-question",
+            "candidateID": "entity_index_98",
+            "candidateAnswer": "1",
+            "text": "Täysiikäsisyys tuo tullessaan vastuuta, samoin päätöksien teossa paljon vastuuta. Nykyinen asetelma on sellainen, että mielellään antaisi enempi vastuuta teille nuorille, mutta en näe, että teillä on mahdollisuuksia kantaa tätä vastuuta. Tässä on myös ristiriita, jos te ette voisi asettua myös ehdolle vaaleissa. Ennemminkin lähtisin kehittämään nuorisoneuvostoja ja neuvostolle asetettuja tehtäviä. Antaisin myös valtuuston kokouksiin paikan myös nuorisvaltuuston edustajalle, osana muuta vlaltuustoa."
+          },
+          {
+            "id": "entity_index_99_stress-test-question",
+            "candidateID": "entity_index_99",
+            "candidateAnswer": "1",
+            "text": "Nuoret ovat niin eri tasoisia, jos ikärajaa laskettaisiin, voisi vanhempien toiveet mennä nuorten omien toiveiden sijasta äänestyskoppiin"
+          },
+          {
+            "id": "entity_index_100_stress-test-question",
+            "candidateID": "entity_index_100",
+            "candidateAnswer": "1",
+            "text": "Myös täysi-ikäisyyden rajan laskeminen ja rangaistusten koventaminen nuorille olisi selvä jatkumo."
+          },
+          {
+            "id": "entity_index_101_stress-test-question",
+            "candidateID": "entity_index_101",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan laskemisessa on ongelmana se, että kaikki 16-vuotiaat eivät välttämättä ole tarpeeksi kypsiä tekemään tärkeitä päätöksiä tai ole kiinnostunut äänestämisestä lainkaan."
+          },
+          {
+            "id": "entity_index_102_stress-test-question",
+            "candidateID": "entity_index_102",
+            "candidateAnswer": "1",
+            "text": "18v on hyvä raja."
+          },
+          {
+            "id": "entity_index_103_stress-test-question",
+            "candidateID": "entity_index_103",
+            "candidateAnswer": "1",
+            "text": "Säilyttäisin äänioikeudellisena ikärajana 18:sta vuotta, koska silloin on jo hieman enemmän elämänkokemusta ja mahdollisesti työelämästäkin sekä muista yhteiskunnallisista asioista."
+          },
+          {
+            "id": "entity_index_104_stress-test-question",
+            "candidateID": "entity_index_104",
+            "candidateAnswer": "1",
+            "text": "The current voting age will remain the same, adults have a sufficiently broad understanding of the issue to make a voting decision"
+          },
+          {
+            "id": "entity_index_105_stress-test-question",
+            "candidateID": "entity_index_105",
+            "candidateAnswer": "1",
+            "text": "Olen sitä mieltä, että nuoria on kannustettava vaikuttamaan yhteisiin asioihin. Mielestäni esimerkiksi nykyisen kaltaiset nuorisovaalit on hyvä keino herätellä mielenkiintoa asioihin ja tuoda tietoa vaalikäytännöistä, äänioikeuden käyttämisestä ja demokratian toteutumisesta. Kuitenkin varsinainen äänestysikäraja on selkeintä pitää yhtenäisenä täysi-ikäisyyden kanssa."
+          },
+          {
+            "id": "entity_index_106_stress-test-question",
+            "candidateID": "entity_index_106",
+            "candidateAnswer": "1",
+            "text": "Valta ja vastuu pitäisi kulkea käsikädessä, joten jos saa äänestää, niin pitäisi myös osallistua toiminnan rahoittamiseen."
+          },
+          {
+            "id": "entity_index_107_stress-test-question",
+            "candidateID": "entity_index_107",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18-vuoden äänestysikäraja on toimiva."
+          },
+          {
+            "id": "entity_index_108_stress-test-question",
+            "candidateID": "entity_index_108",
+            "candidateAnswer": "1",
+            "text": "18-vuotta on hyvä alaikäraja."
+          },
+          {
+            "id": "entity_index_109_stress-test-question",
+            "candidateID": "entity_index_109",
+            "candidateAnswer": "1",
+            "text": "16 vuotiaista suurin osa on vielä vahvasti johdateltavissa äänestyspaikalla. Oma ajattelu ja tietoisuus päätöksenteosta tulevat yleensä myöhemmässä iässä."
+          },
+          {
+            "id": "entity_index_110_stress-test-question",
+            "candidateID": "entity_index_110",
+            "candidateAnswer": "1",
+            "text": "Mielestäni on tärkeää saada nuorten ääni kuuluviin, mutta 16-vuotias on harvoin tarpeeksi kypsä tekemään kauaskantoisia päätöksia."
+          },
+          {
+            "id": "entity_index_111_stress-test-question",
+            "candidateID": "entity_index_111",
+            "candidateAnswer": "1",
+            "text": "Politiikka ja yhteiskunnalliset asiat kiinnostavat harvoja nuoria aidosti. Usein mennään \\\" muodin\\\" mukaan mielipiteissä, selvittämättä mitä se oikeasti ihmiselle tarkoittaa, esimerkiksi tietyn puolueen äänestäminen."
+          },
+          {
+            "id": "entity_index_112_stress-test-question",
+            "candidateID": "entity_index_112",
+            "candidateAnswer": "1",
+            "text": "Äänestysoikeus kuuluu täysi ikäisille"
+          },
+          {
+            "id": "entity_index_113_stress-test-question",
+            "candidateID": "entity_index_113",
+            "candidateAnswer": "1",
+            "text": "Nuoret eivät voi kantaa vastuuta veloista yms. ennen aikuistumista."
+          },
+          {
+            "id": "entity_index_114_stress-test-question",
+            "candidateID": "entity_index_114",
+            "candidateAnswer": "1",
+            "text": "Nykyinen ikäraja on hyvä ja toimiva."
+          },
+          {
+            "id": "entity_index_115_stress-test-question",
+            "candidateID": "entity_index_115",
+            "candidateAnswer": "1",
+            "text": "Mielestäni täysi-ikäisyys on hyvä raja. Valitettavasti koulujen varjovaalitulokset osoittavat, että äänestyspäätös tehdään alle 18-vuotiaiden osalta usein hyvin populistisin ja heikoin perustein (tämä lienee varsin epätoivottu vastaus ja omaan jalkaan ampumista, kun kyseessä on nuorten vaalikone, mutta en voi valehdella)."
+          },
+          {
+            "id": "entity_index_116_stress-test-question",
+            "candidateID": "entity_index_116",
+            "candidateAnswer": "1",
+            "text": "Nuorten mielipide tulee saada paremmin esiin ja siihen tulee luoda enemmän mahdollisuuksia. Nuorissa on suuri merkitys kunnan tulevaisuuden kannalta. Äänestysikärajan tulisi kuitenkin pysyä entisellään."
+          },
+          {
+            "id": "entity_index_117_stress-test-question",
+            "candidateID": "entity_index_117",
+            "candidateAnswer": "1",
+            "text": "ei lisää teennäisiä ikärajoja. Täysi-ikäisyys 18v tuo velvoitteet ja oikeudet kuten äänestäminen, alkoholin osto, ajokortti jne."
+          },
+          {
+            "id": "entity_index_118_stress-test-question",
+            "candidateID": "entity_index_118",
+            "candidateAnswer": "1",
+            "text": "18 on täysi-ikäisyyden raja. Mielestäni 18 alkaa olla jo aika alhaalla äänestääkseen."
+          },
+          {
+            "id": "entity_index_119_stress-test-question",
+            "candidateID": "entity_index_119",
+            "candidateAnswer": "1",
+            "text": "Nykyinen rajaus täysi-ikäisiin on perusteltu, eikä laskemiseen ole syytä."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat korostavat, että äänestysikärajan laskeminen ei ole järkevää, koska nuoret eivät ole tarpeeksi kypsiä tekemään tärkeitä päätöksiä, ja heillä ei ole riittävästi elämänkokemusta tai kiinnostusta yhteiskunnallisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Useat ehdokkaat katsovat, että 16-vuotiaat ovat vielä lapsia, ja he ovat helposti johdateltavissa äänestyspaikoilla, mikä voi vaarantaa äänestyspäätösten objektiivisuuden."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Kommentoijat pitävät nykyistä 18 vuoden ikärajaa riittävänä, koska se antaa nuorille enemmän aikaa kehittää omaa mielipidettään ja ymmärrystään poliittisista kysymyksistä."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Monet ovat huolissaan siitä, että nuoret voisivat tehdä päätöksiä populistisin perustein ilman syvällistä ymmärrystä asioista, mikä heikentäisi demokratiaa."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Vastustajat korostavat, että äänestysoikeuden tulisi kuulua vain täysi-ikäisille, koska siihen liittyy myös vastuu yhteiskunnallisista asioista ja päätöksenteosta."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_3_11"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_4_4": {
+      "id": "MAP_0_4_4",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 4,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_120_stress-test-question",
+            "candidateID": "entity_index_120",
+            "candidateAnswer": "1",
+            "text": "Vaikka nuoret ovatkin usein erittäin valveutuneita ja kiinnostuneita yhteiskunnallisista asioista, 18 vuoden ikäraja tarjoaa vielä mahdollisuuden varmistaa, että äänestäjillä on riittävästi elämänkokemusta ja tietoa, jotta he voivat tehdä pitkäjänteisiä päätöksiä. Nuorten aktiivisuus ja osallisuus on kuitenkin tärkeää, ja sitä voidaan edistää muilla tavoilla, kuten lisäämällä nuorten osallistumismahdollisuuksia päätöksentekoon."
+          },
+          {
+            "id": "entity_index_121_stress-test-question",
+            "candidateID": "entity_index_121",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikä on hyvä raja, joten pysytään siinä jatkossakin."
+          },
+          {
+            "id": "entity_index_122_stress-test-question",
+            "candidateID": "entity_index_122",
+            "candidateAnswer": "1",
+            "text": "En näe tarvetta, että äänestysikärajaa laskettaisiin."
+          },
+          {
+            "id": "entity_index_123_stress-test-question",
+            "candidateID": "entity_index_123",
+            "candidateAnswer": "1",
+            "text": "Harva noin nuori ymmärtää vielä tarpeeksi hyvin yhteiskunnallisesti merkittävistä asioista ja päätösten seurauksista"
+          },
+          {
+            "id": "entity_index_124_stress-test-question",
+            "candidateID": "entity_index_124",
+            "candidateAnswer": "1",
+            "text": "Nykyinen järjestelmä on toimiva ja kehittynyt historian saatossa. Tällä hetkellä en näe tarvetta sen muuttamiseen."
+          },
+          {
+            "id": "entity_index_125_stress-test-question",
+            "candidateID": "entity_index_125",
+            "candidateAnswer": "1",
+            "text": "Omana elinaikanani äänioikeuden ikärajaa on jatkuvasti alennettu, jotta poliitikot saisivat lisää äänestäjiä. 16-vuotias on vielä lapsi, nuoruusiässä, jolloin aivot kehittyvät voimakkaasti. Lopullisen rakenteensa ja toimintakykynsä aivot saavuttavat noin 25-vuotiaana, jolloin muutokset ohimo- ja otsalohkossa loppuvat. Aivojen etuotsalohkojen tehtävä on hillitä impulsiivisuutta ja auttaa ajattelemaan myös tunnepitoisissa tilanteissa. Etuotsalohkot saavuttavat kehityksensä huipun vasta noin 25-vuotiaana. Kun miettii tuota aivojen kehitystä, ihminen on täten vasta täysi-ikäinen 25-vuotiaana. Aivojen voi siis sanoa olevan \\\"valmiit\\\" vasta silloin. Luonnollisesti aivojen hermoverkot muuttuvat vielä aikuisiälläkin, kun ihminen esimerkiksi oppii uutta tai toipuu aivovauriosta. Näin ollen, sen sijaan, että äänioikeuden ikäraja pitäisi laskea 16 vuoteen, se kenties pitäisi nostaa kaikissa vaaleissa 25 vuoteen."
+          },
+          {
+            "id": "entity_index_126_stress-test-question",
+            "candidateID": "entity_index_126",
+            "candidateAnswer": "1",
+            "text": "16-vuotias ei ole välttämättä tarpeeksi kypsä päättämään koko kuntaa tai hv-aluetta koskevissa asioissa. Jos on kiinnostunut politiikasta ja päätöksen teosta jo sen ikäisenä, kannattaa tuoda näkemyksensä esiin esim. omien vanhempiensa kanssa."
+          },
+          {
+            "id": "entity_index_127_stress-test-question",
+            "candidateID": "entity_index_127",
+            "candidateAnswer": "1",
+            "text": "Yli 40-vee, alkaa ehkä maailman asiat selkenemään. Tai aikaisintaan asuntolainan kanssa."
+          },
+          {
+            "id": "entity_index_128_stress-test-question",
+            "candidateID": "entity_index_128",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan vetäminen täysi-ikäisyyteen on mielestäni hyvä ja toimiva ratkaisu. On valittujen ehdokkaiden vastuulla, että tätä nuoremmat tulevat riittävästi kuulluksi."
+          },
+          {
+            "id": "entity_index_129_stress-test-question",
+            "candidateID": "entity_index_129",
+            "candidateAnswer": "1",
+            "text": "Mielestäni suurin osa 16-vuotiaista, eivät ole tarpeeksi kypsiä elämänkokemuksen suhteen ymmärtämään yhteiskunnallisia ongelmia. Tosin alle 18-vuotiaille voisi järjestää omaan ikätasoon nähden omat viralliset vaalit. En tiedä , tuleeko laki vastaan tässä ehdotuksessani."
+          },
+          {
+            "id": "entity_index_130_stress-test-question",
+            "candidateID": "entity_index_130",
+            "candidateAnswer": "1",
+            "text": "Mieluummin 18v-ikäraja."
+          },
+          {
+            "id": "entity_index_131_stress-test-question",
+            "candidateID": "entity_index_131",
+            "candidateAnswer": "1",
+            "text": "Kyllä äänestys kuuluu kaikille, mutta vasta kun on täysi-ikäinen"
+          },
+          {
+            "id": "entity_index_132_stress-test-question",
+            "candidateID": "entity_index_132",
+            "candidateAnswer": "1",
+            "text": "Olisin 16-vuotiaana ollut aivan liian nuori tietämään mikä on paras. Tilanne on nykynuorilla täysin sama."
+          },
+          {
+            "id": "entity_index_133_stress-test-question",
+            "candidateID": "entity_index_133",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajaa tulisi nostaa 21 ikävuoteen"
+          },
+          {
+            "id": "entity_index_134_stress-test-question",
+            "candidateID": "entity_index_134",
+            "candidateAnswer": "1",
+            "text": "Alle 18-vuotiaat harvoin seuraavat politiikkaa tai yhteiskunnallisia asioita. Tämä johtaa siihen, että nuoret äänestävät vanhempien antaman mallin mukaan. Tämä johtaa siihen, että lapsiperheiden vaikutus vaaleissa korostuu. Toki tämä voi olla hyvä asia, mutta ei paranna demokratiaa."
+          },
+          {
+            "id": "entity_index_135_stress-test-question",
+            "candidateID": "entity_index_135",
+            "candidateAnswer": "1",
+            "text": "En kannata äänestysikärajan laskemista, sillä täysi-ikäisyys Suomessa on 18 vuotta. 16-vuotiaat ovat vielä vanhempiensa holhouksen alaisia, eikä heillä ole kaikkia itsenäisiä oikeuksia, kuten sopimusten tekemistä tai taloudellista vastuuta."
+          },
+          {
+            "id": "entity_index_136_stress-test-question",
+            "candidateID": "entity_index_136",
+            "candidateAnswer": "1",
+            "text": "18 on hyvä ikä äänioikeudelle. Se on täysi-ikäisyyden raja ja äänioikeuteen kuuluu myös vastuu."
+          },
+          {
+            "id": "entity_index_137_stress-test-question",
+            "candidateID": "entity_index_137",
+            "candidateAnswer": "1",
+            "text": "Alaikäinen on vielä liikaa toisten ohjaamassa tilanteessa."
+          },
+          {
+            "id": "entity_index_138_stress-test-question",
+            "candidateID": "entity_index_138",
+            "candidateAnswer": "1",
+            "text": "Oman näkemykseni mukaan Suomessa hallitsee yhteiskuntasopimus, jossa oikeudet ja velvollisuudet pyritään pitämään tasapainossa. Kaikki oikeudet ja velvollisuudet eivät kuitenkaan koske kaikkia suomalaisia tasapuolisesti iän perusteella. Lapsilla, eli alle 18-vuotiailla on omat erikoisoikeudet YK:n lastenoikeuksien kautta, jotka on aikuisten velvollisuus täyttää. Tällä hetkellä Suomessa hallitsee konsensus, jossa 18 vuotta pidetään aikuisuuden ikärajana, jonka jälkeen yksilön oikeudet ja velvollisuudet laajenevat. Äänestysoikeus on yksi tämän kaltainen oikeus. Samaan tapaan kuin alle 18-vuotiailla ei ole oikeutta avioliittoon sen vuoksi, että nykyisen käsityksen mukaan nuorten aivot eivät ole vielä kehittyneet silloin riittävän pitkälle, niin minusta samalla periaatteella on ymmärrettävää raja myös äänioikeus alle 18-vuotiailta. Tämä ei kuitenkaan tarkoita, ettei nuoret voisi osallistua politiikkaan mitenkään ennen täysi-ikäisyyttä. Tärkeintä olisi seurata uutisten kautta niin maailman kuin Suomen menoa ja poliittista päätöksentekoa. Aktiivisimmat voivat myös halutessaan liittyä puolueiden nuorisojärjestöihin, tai perustamalla vaikka omia ryhmittyä, joko virallisia tai epävirallisia."
+          },
+          {
+            "id": "entity_index_139_stress-test-question",
+            "candidateID": "entity_index_139",
+            "candidateAnswer": "1",
+            "text": "18 on mielestäni oikein hyvä raja jatkossakin."
+          },
+          {
+            "id": "entity_index_140_stress-test-question",
+            "candidateID": "entity_index_140",
+            "candidateAnswer": "1",
+            "text": "We could further raise the voting age to 21 rather than lowering it."
+          },
+          {
+            "id": "entity_index_141_stress-test-question",
+            "candidateID": "entity_index_141",
+            "candidateAnswer": "1",
+            "text": "16-vuotias ei ole lain näkökulmasta riittävän kypsä päättämään omista asioistaan, joten hänen ei vielä tule päättää myöskään muiden asioista. Nuorten äänestämiseen liittyvä haaste ei ole liian korkea ikäraja, vaan se, että nuorten äänestysaktiivisuus laahaa muita ikäryhmiä jäljessä."
+          },
+          {
+            "id": "entity_index_142_stress-test-question",
+            "candidateID": "entity_index_142",
+            "candidateAnswer": "1",
+            "text": "Nykyinen, täysi-ikäisyyden raja äänestämisessä on hyvä ja perusteltu."
+          },
+          {
+            "id": "entity_index_143_stress-test-question",
+            "candidateID": "entity_index_143",
+            "candidateAnswer": "1",
+            "text": "18 vuotta on hyvä ikäraja. Tätä nuorempien ääntä voidaan kuulla muuta kautta."
+          },
+          {
+            "id": "entity_index_144_stress-test-question",
+            "candidateID": "entity_index_144",
+            "candidateAnswer": "1",
+            "text": "!8 on hyvä ikäraja, mutta jo nuorempana on mahdollista päästä vaikuttamaan asioihin nuorisovaltuuston kautta. Suosittelen jokaiselle nuorelle! Lautakunnissa on nuorisovaltuuston edustajat aina läsnä."
+          },
+          {
+            "id": "entity_index_145_stress-test-question",
+            "candidateID": "entity_index_145",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys on oikein hyvä rajapyykki myös äänioikeudelle."
+          },
+          {
+            "id": "entity_index_146_stress-test-question",
+            "candidateID": "entity_index_146",
+            "candidateAnswer": "1",
+            "text": "Nykyinen ikäraja on hyvä. Ihmiset ovat yleensä harkitsevaisempia miettimään asioita eri näkökulmista, kun päätökset kohdistuvat omaan rahapussiin ja pitää ottaa vastuuta omasta elämästä ja toimeentulosta."
+          },
+          {
+            "id": "entity_index_147_stress-test-question",
+            "candidateID": "entity_index_147",
+            "candidateAnswer": "1",
+            "text": "Nuoria tulee kannustaa vaikuttamaan nuorisovaltuustossa."
+          },
+          {
+            "id": "entity_index_148_stress-test-question",
+            "candidateID": "entity_index_148",
+            "candidateAnswer": "1",
+            "text": "Lähes kaikissa EU-maissa äänioikeusikä on 18 vuotta myös kunnallisissa vaaleissa."
+          },
+          {
+            "id": "entity_index_149_stress-test-question",
+            "candidateID": "entity_index_149",
+            "candidateAnswer": "1",
+            "text": "Näen 18 vuoden ikärajan olevan hyvä raja myös äänestyksen osalta"
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "18 vuoden ikäraja takaa, että äänestäjillä on riittävästi elämänkokemusta ja tietoa tehdä pitkäjänteisiä päätöksiä."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "16-vuotiaat eivät ole tarpeeksi kypsiä ymmärtämään yhteiskunnallisia ongelmia ja päätösten seurauksia."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nykyinen, 18 vuoden ikäraja on ollut toimiva ja perusteltu, eikä sitä ole tarpeen muuttaa."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuoret ovat usein vanhempiensa vaikutuspiirissä, mikä voi vääristää vaalituloksia ja heikentää demokratiaa."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Aivojen kehitys jatkuu nuoruusiässä, ja päätöksentekokyky ei ole täysipainoinen ennen 25 vuoden ikää."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Alle 18-vuotiaat eivät ole lain mukaan riittävän kypsiä tekemään itsenäisiä päätöksiä, mikä heijastuu myös äänestämiseen."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nykyinen ikäraja 18 vuotta on tasapainoinen ja pitää oikeudet ja velvollisuudet yhteiskunnassa järkevästi."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_4_12"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_5_5": {
+      "id": "MAP_0_5_5",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 5,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_150_stress-test-question",
+            "candidateID": "entity_index_150",
+            "candidateAnswer": "1",
+            "text": "Äänestysiän laskeminen 16 ikävuoteen voisi olla erinomainen tapa lisätä nuorten osallistumista ja vaikuttavuutta yhteiskunnassa. Nuorilla on tänä päivänä monia resursseja ja tietoa, ja he voivat tuoda tärkeää näkökulmaa poliittisiin päätöksiin. Alentamalla äänestysikää, voimme edistää nuorten osallisuutta ja sitoutumista demokratiaan."
+          },
+          {
+            "id": "entity_index_151_stress-test-question",
+            "candidateID": "entity_index_151",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys tuo mukanaan oikeudet ja velvollisuudet, äänioikeus tulee olla yksi niistä tulevaisuudessakin."
+          },
+          {
+            "id": "entity_index_152_stress-test-question",
+            "candidateID": "entity_index_152",
+            "candidateAnswer": "1",
+            "text": "Harva 18 vuotta täyttänytkään tietää mitä oikeasti haluaa. Äänestäessään ihminen käyttää valtaa ja osallistuu demokratian kehitykseen, olisi kovin valitettavaa jos jengi äänestää läpällä."
+          },
+          {
+            "id": "entity_index_153_stress-test-question",
+            "candidateID": "entity_index_153",
+            "candidateAnswer": "1",
+            "text": "Kokemusta elämästä on oltava muualtakin kuin kodin ja koulun piiristä. Laajempi näkemys vahvistaa kykyä arvioida yhteiskuntaa kypsästi."
+          },
+          {
+            "id": "entity_index_154_stress-test-question",
+            "candidateID": "entity_index_154",
+            "candidateAnswer": "1",
+            "text": "Vaikka nuoret saattavat olla kiinnostuneita politiikasta, osa heistä ei ole välttämättä tarpeeksi sitoutuneita eikä osaa arvioida poliittisten päätösten seurauksia pitkällä aikavälillä. Äänestäminen on muutakin kuin oikeus, se tuo myös vastuuta. Ikärajan laskeminen saattaisi aiheuttaa sen, että suurin osa nuorista äänestäjistä ei käyttäisi äänioikeuttaan aktiivisesti tai harkitusti. Mutta tärkeää on että on kiinnostunut, haluaa vaikuttaa ja tuoda omia näkökulmia sekä mielipiteitä esiin! Päättäjien ja edunvalvojien tehtävänä on kuunnella ja ottaa näitä asioita huomioon."
+          },
+          {
+            "id": "entity_index_155_stress-test-question",
+            "candidateID": "entity_index_155",
+            "candidateAnswer": "1",
+            "text": "Nuorten osallistuminen esim. nuorisovaltuustojen kautta on tärkeää ja kunnissa täytyy järjestää muutoinkin tilaisuuksia, joissa nuoret voivat kertoa oman näkemyksensä ja vaikuttaa asioihin."
+          },
+          {
+            "id": "entity_index_156_stress-test-question",
+            "candidateID": "entity_index_156",
+            "candidateAnswer": "1",
+            "text": "Äänestysikärajan laskeminen 16 vuoteen ei ole perusteltua, sillä äänestäminen edellyttää kykyä arvioida päätösten pitkäaikaisia vaikutuksia ja kantaa vastuuta yhteiskunnallisessa päätöksenteossa. Nuorten osallistumista politiikkaan on tärkeää tukea, mutta siihen on parempia keinoja, kuten demokratiakasvatus kouluissa ja nuorisovaltuustojen vahvistaminen. Täysi-ikäisyyden saavuttaminen 18-vuotiaana on luonteva äänestysraja, koska siihen liittyy myös muita yhteiskunnallisia velvollisuuksia, kuten verovelvollisuus ja mahdollinen asevelvollisuus. Siksi äänestysikärajan laskeminen ei ole tarpeellista."
+          },
+          {
+            "id": "entity_index_157_stress-test-question",
+            "candidateID": "entity_index_157",
+            "candidateAnswer": "1",
+            "text": "Äänioikeus on yksi täysi-ikäisyyden merkki. Nykyään jo kovin varhain ruvetaan sysäämään nuorille paljon paineita ja asioita päätettäväksi. Annetaan nuorten olla vielä nuoria ilman liikaa vastuuta ja pidetään äänestysikä 18 ikävuodessa, muiden täysi-ikäisyyden vastuiden ja velvotteiden kanssa."
+          },
+          {
+            "id": "entity_index_158_stress-test-question",
+            "candidateID": "entity_index_158",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyyden raja on 18-vuotta, joka on vaaleissakin hyvä pitää samana. Ei liikaa vastuuta nuorille liian varhaisessa vaiheessa. Nuorilla on monta kanavaa vaikuttaa tärkeiksi kokemiinsa asioihin esim. nuorisovaltuusto."
+          },
+          {
+            "id": "entity_index_159_stress-test-question",
+            "candidateID": "entity_index_159",
+            "candidateAnswer": "1",
+            "text": "Ei ole hyväksi laskea, koska asiat joita kunta- ja aluevaltuustoissa käsitellään ja päätetään ovat monisäikeisiä ja vaativat toisinaan päättäjiltäkin perusteellista perehtymistä."
+          },
+          {
+            "id": "entity_index_160_stress-test-question",
+            "candidateID": "entity_index_160",
+            "candidateAnswer": "1",
+            "text": "Joskus tuntuu siltä, että 18-vuotiaskin on liian nuori äänestämään. Toisaalta on hienoa, että äänestysoikeus kulkee käsi kädessä täysi-ikäisyyden kanssa."
+          },
+          {
+            "id": "entity_index_161_stress-test-question",
+            "candidateID": "entity_index_161",
+            "candidateAnswer": "1",
+            "text": "Valitettavasti laskemalla ikärajaa, ei voida välttyä kiusanteolta. On paljon nuoria, joita oman kunnan päätöksien teko ja politiikka kiinnostaa, mutta se on valitettavasti se murto-osa."
+          },
+          {
+            "id": "entity_index_162_stress-test-question",
+            "candidateID": "entity_index_162",
+            "candidateAnswer": "1",
+            "text": "Äänestäminen on oikeus, joka vaatii hiukan enemmän aikuisuutta kuin 16-vuotiaalla keskimäärin on. Opiskelu, mahdollinen asevelvollisuuden suorittaminen ja työllistyminen, nämä kaikki ovat tärkeä osa jokaisen oman maailmankuvan muodostumiseen."
+          },
+          {
+            "id": "entity_index_163_stress-test-question",
+            "candidateID": "entity_index_163",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nykyinen ikäraja on sopiva."
+          },
+          {
+            "id": "entity_index_164_stress-test-question",
+            "candidateID": "entity_index_164",
+            "candidateAnswer": "1",
+            "text": "Seurakuntavaaleissa saatujen kokemusten mukaan kovinkaan monet alle 18 vuotiaista nuorista ei ole kiinnostunut vaaleista tai niissä vaikuttamisesta."
+          },
+          {
+            "id": "entity_index_165_stress-test-question",
+            "candidateID": "entity_index_165",
+            "candidateAnswer": "1",
+            "text": "!6-vuotias ei ole vielä riittävän kypsä äänestämään vaaleissa."
+          },
+          {
+            "id": "entity_index_166_stress-test-question",
+            "candidateID": "entity_index_166",
+            "candidateAnswer": "1",
+            "text": "Oikeuksien mukana tulee myös vastuu omista ratkaisuistaan. Lainsäädännössämme vastuu monissa kysymyksissä on määritetty 18 ikävuoteen ja myös nämä vastuukysymykset tulisi arvioida, mikäli äänestysikärajaa laskettaisiin. Meidän tulee kehittää nuorille muita vaikutuskanavia ja mahdollisuuksia tulla kuulluksi yhteiskunnallisessa päätöksenteossa."
+          },
+          {
+            "id": "entity_index_167_stress-test-question",
+            "candidateID": "entity_index_167",
+            "candidateAnswer": "1",
+            "text": "Ei tarvitse."
+          },
+          {
+            "id": "entity_index_168_stress-test-question",
+            "candidateID": "entity_index_168",
+            "candidateAnswer": "1",
+            "text": "18 tullaan täysikäisiksi jolloin myös äänioikeus vaaleissa"
+          },
+          {
+            "id": "entity_index_169_stress-test-question",
+            "candidateID": "entity_index_169",
+            "candidateAnswer": "1",
+            "text": "18 on täysi-ikäisyyden ikä Suomessa ja hyvä ikä myös äänestämisen aloittamiseen. Äänestämisen on yksi niitä oikeuksia jotka tekevät 18vuodesta erityisen merkittävän iän."
+          },
+          {
+            "id": "entity_index_170_stress-test-question",
+            "candidateID": "entity_index_170",
+            "candidateAnswer": "1",
+            "text": "Aikuinen jokainen kerkeää kyllä olemaan lopun elämäänsä nuori vain \\\"hetken\\\"."
+          },
+          {
+            "id": "entity_index_171_stress-test-question",
+            "candidateID": "entity_index_171",
+            "candidateAnswer": "1",
+            "text": "Tästä ei ole mitään hyötyä mihinkään. Aikuisetkaan eivät jaksa tutustua päätettäviin asioihin, niin miksi lapset jaksaisi?"
+          },
+          {
+            "id": "entity_index_172_stress-test-question",
+            "candidateID": "entity_index_172",
+            "candidateAnswer": "1",
+            "text": "Eri some-alustojen vaikutus vielä tuossakin iässä voi aiheuttaa täysin hallitsemattomia tilanteita."
+          },
+          {
+            "id": "entity_index_173_stress-test-question",
+            "candidateID": "entity_index_173",
+            "candidateAnswer": "1",
+            "text": "Ikäraja on hyvä pitää 18-vuodessa."
+          },
+          {
+            "id": "entity_index_174_stress-test-question",
+            "candidateID": "entity_index_174",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nuoret saavat olla nuoria ilman yhteiskunnallista vaikuttamistakin ja vaikuttaa voi myös ilman äänioikeuttakin. Suomessa on täysikäisyyden raja määritelty tietyin kriteerein ja siihen on varmasti tarkasteltu myös kehityspsykologian asioita."
+          },
+          {
+            "id": "entity_index_175_stress-test-question",
+            "candidateID": "entity_index_175",
+            "candidateAnswer": "1",
+            "text": "Olemme tilanteessa, jossa TikTok on lukuisten nuorten tärkein uutismedia. Somevaikuttajien kautta osa nuorista omaksuu vihamielisiä asenteita muun muassa naisia ja vähemmistöjä kohtaan. Ryhmäpaine ruokkii näitä asenteita entisestään. Pidän asetelmaa vaarallisena demokratian ja ihmisoikeuksien kannalta."
+          },
+          {
+            "id": "entity_index_176_stress-test-question",
+            "candidateID": "entity_index_176",
+            "candidateAnswer": "1",
+            "text": "18 vuotta on hyvä ikäraja, sitä ennen on nuorisovaltuustotoimintaa ja muita mahdollisuuksia vaikuttaa"
+          },
+          {
+            "id": "entity_index_177_stress-test-question",
+            "candidateID": "entity_index_177",
+            "candidateAnswer": "1",
+            "text": "Nuoret ovat jo nyt laiskoja äänestämään. En näe, että ikärajan alentaminen auttaisi."
+          },
+          {
+            "id": "entity_index_178_stress-test-question",
+            "candidateID": "entity_index_178",
+            "candidateAnswer": "1",
+            "text": "Moni 16 vuotias ei ole henkisesti tarpeeksi kypsä päättämään yhteiskunnallisista asioista."
+          },
+          {
+            "id": "entity_index_179_stress-test-question",
+            "candidateID": "entity_index_179",
+            "candidateAnswer": "1",
+            "text": "Suoraan sanottuna hyvin harvaa nuorta viä kiinnostaa politiikka"
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kokevat, että 16-vuotiaat eivät ole riittävän kypsiä tekemään yhteiskunnallisia päätöksiä, koska he eivät välttämättä osaa arvioida poliittisten päätösten pitkän aikavälin seurauksia."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret äänestäjät eivät käyttäisi äänioikeuttaan aktiivisesti tai harkitusti, mikä heikentäisi demokratian toimintaa."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Äänestämiseen liittyy myös vastuu, ja monet uskovat, että 16-vuotiaat eivät ole valmiita kantamaan tätä vastuuta."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuoret ovat jo nyt vähemmän aktiivisia äänestämään, ja ikärajan alentaminen ei välttämättä lisää kiinnostusta politiikkaan."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Nuorille on olemassa muitakin tapoja vaikuttaa yhteiskunnallisiin asioihin, kuten nuorisovaltuustot, mikä voi olla tehokkaampi keino kuin äänestysikärajan laskeminen."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nykyinen 18 vuoden ikäraja on liitetty täysi-ikäisyyteen, joka tuo mukanaan muitakin velvollisuuksia, kuten verovelvollisuus ja mahdollinen asevelvollisuus."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Äänestysikärajan laskeminen voi johtaa myös nuorten altistumiseen sosiaalisen median ja muiden hallitsemattomien vaikutusten riskeille, mikä voi vaarantaa demokratian."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_5_13"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_6_6": {
+      "id": "MAP_0_6_6",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 6,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_180_stress-test-question",
+            "candidateID": "entity_index_180",
+            "candidateAnswer": "1",
+            "text": "Mielestäni täysi-ikäisyyden ja äänestysiän raja on hyvä tuo 18 v. Vaikuttamistoimielimien kautta nuorten ääni tulee kuulluksi."
+          },
+          {
+            "id": "entity_index_181_stress-test-question",
+            "candidateID": "entity_index_181",
+            "candidateAnswer": "1",
+            "text": "18-vuotta on sopiva ikäraja äänestämiseen."
+          },
+          {
+            "id": "entity_index_182_stress-test-question",
+            "candidateID": "entity_index_182",
+            "candidateAnswer": "1",
+            "text": "Monion lukiolaisille oli teetetty aiheesta hiljan kysely ja oppilaat olivat sen kannalla, ettei äänestysikärajanlasku olisi hyvä idea. Itse ajattelen samoin."
+          },
+          {
+            "id": "entity_index_183_stress-test-question",
+            "candidateID": "entity_index_183",
+            "candidateAnswer": "1",
+            "text": "Nuoret ovat liian vietävissä vielä tuossa iässä."
+          },
+          {
+            "id": "entity_index_184_stress-test-question",
+            "candidateID": "entity_index_184",
+            "candidateAnswer": "1",
+            "text": "Miksi meidän pitää kiirehtiä aikuistumisessa? Jo nyt eletään maailmassa, jossa lapsi ei oikein pysty olemaan lapsi erilaisten suorituspaineiden vuoksi. Nuori hakee identiteettiäänja kokee ahdistusta. Annetaan lapsille ja nuorille kasvurauha! Kyllä äänestää ehtii myöhemmin vaikka kuinka paljon."
+          },
+          {
+            "id": "entity_index_185_stress-test-question",
+            "candidateID": "entity_index_185",
+            "candidateAnswer": "1",
+            "text": "16 is too young and most teenagers are not so aware of politics probably."
+          },
+          {
+            "id": "entity_index_186_stress-test-question",
+            "candidateID": "entity_index_186",
+            "candidateAnswer": "1",
+            "text": "Äänestysaktiivisuus on laskenut, mutta on tärkeää olla kaikin tavoin täysi-ikäinen ja päätösvastuullinen äänestyshetkellä."
+          },
+          {
+            "id": "entity_index_187_stress-test-question",
+            "candidateID": "entity_index_187",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys on hyvä peruste myös äänestysoikeudelle. Miten saisi vielä nuorempia kannustettua äänestämään ??"
+          },
+          {
+            "id": "entity_index_188_stress-test-question",
+            "candidateID": "entity_index_188",
+            "candidateAnswer": "1",
+            "text": "The human brain does not finish developing until age 25. This often leads to irresponsible decisions and behavior. I hear from many young people that they are better than old people and that in order for things to be fixed it only has to wait until old people die. However, I hear just as much transphobic, homophobic, racist and xenophobic attitudes from younger people as I do from people my age."
+          },
+          {
+            "id": "entity_index_189_stress-test-question",
+            "candidateID": "entity_index_189",
+            "candidateAnswer": "1",
+            "text": "18 years of age is sufficient. Under 18s can \\\"practice\\\" voting and influencing in schools, for example by holding shadow elections and by following the news during lessons."
+          },
+          {
+            "id": "entity_index_190_stress-test-question",
+            "candidateID": "entity_index_190",
+            "candidateAnswer": "1",
+            "text": "Ikä ei ole vielä tarpeeksi kypsä tehdä päätöksiä"
+          },
+          {
+            "id": "entity_index_191_stress-test-question",
+            "candidateID": "entity_index_191",
+            "candidateAnswer": "1",
+            "text": "The problem with the youth not being heard in societal decision-making is not the age limit for voting. It's lack of interest in politics. We need politicians and influencers that can ''make politics cool'' but at the same time talk about important matters that the youth actually cares about."
+          },
+          {
+            "id": "entity_index_192_stress-test-question",
+            "candidateID": "entity_index_192",
+            "candidateAnswer": "1",
+            "text": "Nuoria ei pidä rasittaa vaikeilla yheiskunnallisilla monesti hvyinkin vaikeilla ja ikävillä asiolla, vaan antaa nuorille koulu- ja opiskelurauha."
+          },
+          {
+            "id": "entity_index_193_stress-test-question",
+            "candidateID": "entity_index_193",
+            "candidateAnswer": "1",
+            "text": "Päätökset kuuluvat aikuisille. Nuoria on toki hyvä kuulla."
+          },
+          {
+            "id": "entity_index_194_stress-test-question",
+            "candidateID": "entity_index_194",
+            "candidateAnswer": "1",
+            "text": "Nuoret on fiksuja, mutta myös johdateltavissa. Kokemusta ja näkemystä ei vielä ole kertynyt tarpeeksi."
+          },
+          {
+            "id": "entity_index_195_stress-test-question",
+            "candidateID": "entity_index_195",
+            "candidateAnswer": "1",
+            "text": "Olen sitä mieltä että 18 vuotta on hyvä ikä"
+          },
+          {
+            "id": "entity_index_196_stress-test-question",
+            "candidateID": "entity_index_196",
+            "candidateAnswer": "1",
+            "text": "Vielä tässä vaiheessa aika harva on kiinnostunut politiikasta"
+          },
+          {
+            "id": "entity_index_197_stress-test-question",
+            "candidateID": "entity_index_197",
+            "candidateAnswer": "1",
+            "text": "Äänestysoikeus kuuluu täysi-ikäisille, joilla on myös juridinen vastuu omista päätöksistään."
+          },
+          {
+            "id": "entity_index_198_stress-test-question",
+            "candidateID": "entity_index_198",
+            "candidateAnswer": "1",
+            "text": "Aikuisten päätettävissä asiat"
+          },
+          {
+            "id": "entity_index_199_stress-test-question",
+            "candidateID": "entity_index_199",
+            "candidateAnswer": "1",
+            "text": "Olen varma, että osalla 16-vuotiaista on varsin hyvääkin kosketuspintaa poliittiseen päätöksentekoon. Näen kuitenkin, että nykyinen äänioikeuden saaminen on edelleen relevantti."
+          },
+          {
+            "id": "entity_index_200_stress-test-question",
+            "candidateID": "entity_index_200",
+            "candidateAnswer": "1",
+            "text": "Omia lapsiani seuratessani, mieleeni tulee äänestysikärajan nosto 25-30v. Mutta 18v on varmaan ihan hyvä."
+          },
+          {
+            "id": "entity_index_201_stress-test-question",
+            "candidateID": "entity_index_201",
+            "candidateAnswer": "1",
+            "text": "Meillä jokaisella on vain yksi ääni. Haluan varmistaa, että se on täysin oma, täysi-ikäisen aikuisen, riippumattoman äänestäjän omiin arvoihin ja kokemukseen perustuva ääni."
+          },
+          {
+            "id": "entity_index_202_stress-test-question",
+            "candidateID": "entity_index_202",
+            "candidateAnswer": "1",
+            "text": "Pitäisi ensin saada edes 18-vuotiaiden äänestysaktiivisuus nousuun."
+          },
+          {
+            "id": "entity_index_203_stress-test-question",
+            "candidateID": "entity_index_203",
+            "candidateAnswer": "1",
+            "text": "Ei ole vielä kehittynyt riittävän laajaa näkemystä yhteiskunnan toiminnasta"
+          },
+          {
+            "id": "entity_index_204_stress-test-question",
+            "candidateID": "entity_index_204",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 16-vuotiaiden äänioikeus voisi olla hyvä idea, mutta nykyisin 18 vuotta on se ikäraja, joka varmistaa, että nuoret ovat saaneet riittävän elämänkokemuksen ja koulutuksen tehdäksensä tietoisia päätöksiä. Kunnallisessa päätöksenteossa tarvitaan monenlaista ymmärrystä ja kokemusta, ja 18 vuotta tarjoaa siihen riittävästi pohjaa."
+          },
+          {
+            "id": "entity_index_205_stress-test-question",
+            "candidateID": "entity_index_205",
+            "candidateAnswer": "1",
+            "text": "In Finland there is a balance between responsibility and freedom. At 18 years you get the full amount of both."
+          },
+          {
+            "id": "entity_index_206_stress-test-question",
+            "candidateID": "entity_index_206",
+            "candidateAnswer": "1",
+            "text": "18 vuotta, täysi-ikäisyyden ikäraja on hyvällä tasolla."
+          },
+          {
+            "id": "entity_index_207_stress-test-question",
+            "candidateID": "entity_index_207",
+            "candidateAnswer": "1",
+            "text": "Minusta perustuslaissa suotua täysi-ikäisten äänestysoikeutta ei tule muuttaa alue- ja kuntavaaleihin. Minusta äänestysoikeus tulee pitää täysi-ikäisillä. Nuoremmat pystyvät vaikuttamaan asioihin esimerkiksi nuorisovaltuuston kautta."
+          },
+          {
+            "id": "entity_index_208_stress-test-question",
+            "candidateID": "entity_index_208",
+            "candidateAnswer": "1",
+            "text": "ChatGPT sanoi: Äänestysikärajan laskeminen 16 ikävuoteen ei ole tarpeellista, sillä 18 vuotta on vakiintunut täysi-ikäisyyden raja, jolloin kansalaisella on laajempi oikeudellinen vastuu. Poliittiseen päätöksentekoon osallistuminen vaatii kypsyyttä ja ymmärrystä yhteiskunnallisista asioista, jotka kehittyvät usein vasta täysi-ikäisyyden kynnyksellä. Nuorten vaikutusmahdollisuuksia voidaan sen sijaan edistää esimerkiksi nuorisovaltuustojen kautta."
+          },
+          {
+            "id": "entity_index_209_stress-test-question",
+            "candidateID": "entity_index_209",
+            "candidateAnswer": "1",
+            "text": "16-vuotias on vielä aivan lapsi eikä näe syy seuraus suhteita."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Nuorten kypsyys ja kyky tehdä vastuullisia päätöksiä on riittämätöntä 16-vuotiaana. Useat kommentit korostavat, että nuoret ovat vielä lapsia, eivätkä he näe syy-seuraussuhteita tai ymmärrä politiikan monimutkaisuutta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "18 vuotta on vakiintunut täysi-ikäisyyden raja, joka takaa riittävän elämänkokemuksen ja juridisen vastuun omista päätöksistä. Kommentoijat viittaavat siihen, että täysi-ikäisyys tuo mukanaan enemmän vastuuta ja kykyä ymmärtää yhteiskunnallisia asioita."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuorten kiinnostus politiikkaan on alhaista, ja monet nuoret eivät ole vielä kiinnostuneita tai valmiita osallistumaan vaalimenettelyihin. Kommentit viittaavat siihen, että ennen 18-vuotiaita tulisi keskittyä enemmän koulutukseen ja nuorten rauhoittamiseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuorten päätöksentekoa ei tulisi rasittaa aikuisille kuuluvilla vastuilla ja vaikeilla yhteiskunnallisilla kysymyksillä. Kommentoijat korostavat, että nuorille tulisi antaa rauha kasvaa ja kehittää identiteettiään ilman poliittista painetta."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Äänestysaktiivisuus on jo nyt alhainen, ja sen nostaminen 18-vuotiaiden keskuudessa on tärkeämpää kuin 16-vuotiaiden äänestysoikeuden myöntäminen. Useat kommentit ehdottavat, että nuoret voivat harjoitella vaikuttamista muilla tavoin, kuten koulussa."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_6_14"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "MAP_0_7_7": {
+      "id": "MAP_0_7_7",
+      "operation": "MAP",
+      "stepIndex": 0,
+      "batchIndex": 7,
+      "input": {
+        "comments": [
+          {
+            "id": "entity_index_210_stress-test-question",
+            "candidateID": "entity_index_210",
+            "candidateAnswer": "1",
+            "text": "Mielestäni 18 vuotta on hyvä ikä äänestyksen aloitukseen."
+          },
+          {
+            "id": "entity_index_211_stress-test-question",
+            "candidateID": "entity_index_211",
+            "candidateAnswer": "1",
+            "text": "Ei tarvitse."
+          },
+          {
+            "id": "entity_index_212_stress-test-question",
+            "candidateID": "entity_index_212",
+            "candidateAnswer": "1",
+            "text": "Aikuisuuden ikä 18 vuotta on edelleen hyvä"
+          },
+          {
+            "id": "entity_index_213_stress-test-question",
+            "candidateID": "entity_index_213",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys on mielestäni riittävä raja äänestämiseen ."
+          },
+          {
+            "id": "entity_index_214_stress-test-question",
+            "candidateID": "entity_index_214",
+            "candidateAnswer": "1",
+            "text": "On tärkeää, että äänioikeus säilyy vastuullisille ja kypsille kansalaisille, jotka ymmärtävät päätösten vaikutukset yhteiskuntaan. 16-vuotiaat nuoret eivät usein ole tarpeeksi kypsiä tekemään sellaisia tärkeitä valintoja, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä. On tärkeää säilyttää äänestysikä 18 vuodessa, jotta vaalien arvovalta ja päätöksenteon laatu säilyvät korkealla tasolla."
+          },
+          {
+            "id": "entity_index_215_stress-test-question",
+            "candidateID": "entity_index_215",
+            "candidateAnswer": "1",
+            "text": "En näe mitään syytä tähän. En kannata muutosta muutoksen vuoksi. Nykyinen äänestysikäraja on hyvä ja linjassa muiden maiden kanssa."
+          },
+          {
+            "id": "entity_index_216_stress-test-question",
+            "candidateID": "entity_index_216",
+            "candidateAnswer": "1",
+            "text": "Äänestysikää ei mielestäni tulisi laskea, mutta sen sijaan nuorisovaltuustolle voisi antaa enemmän valtaa osallistua nuoria koskevaan päätöksentekoon."
+          },
+          {
+            "id": "entity_index_217_stress-test-question",
+            "candidateID": "entity_index_217",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nuorison edustaja tuo sitä lisäarvoa mitä valtuusto kaipaa, mutta en näe että nuoruutta kannattaa haaskata sillä että tarvitsisi liian tosissaan miettiä yhteiskunnallisia asioita. Nuorilla on parempaakin tekemistä, ja kasvakaa rauhassa kohti äänioikeus vastuita."
+          },
+          {
+            "id": "entity_index_218_stress-test-question",
+            "candidateID": "entity_index_218",
+            "candidateAnswer": "1",
+            "text": "Muut olevat vaikuttamistavat on parempia, en haluaisi olla kohdentamassa vaalimainontaa nykyistä enempää nykyistä nuorempiin."
+          },
+          {
+            "id": "entity_index_219_stress-test-question",
+            "candidateID": "entity_index_219",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyyden raja on 18 vuotta ja sillon saa oikeuden tehdä itseään koskevia päätöksiä kuten äänestää ja solmia sopimuksia. Vastuu omista asioista mahdollistuu kun on täysi-ikäinen ja vanhemmat eivät enää ole vastuussa lapsensa huolenpidosta. Nuorisovaltuustojen ja Lasten Parlamentin roolia pitää entisestään vahvistaa ja heitä on kuultava säännöllisesti ja nuorilla pitää olla edustus esim kaupungin ja alueen luottamustoimielimissä ja valtuustossa. Tämä vahvistaa nuorten asemaa päätöksenteossa. Lapsia ja nuoria on myös osallistettava esim. Lähipuistojen ja koulujen suunnitteluun entistä aktiivisemmin."
+          },
+          {
+            "id": "entity_index_220_stress-test-question",
+            "candidateID": "entity_index_220",
+            "candidateAnswer": "1",
+            "text": "Nuorilla on vapaus olla nuoria ilman liiallisia yhteiskunnallisia velvoitteita."
+          },
+          {
+            "id": "entity_index_221_stress-test-question",
+            "candidateID": "entity_index_221",
+            "candidateAnswer": "1",
+            "text": "ihmisen aivot ovat täysi-ikäiset 24 -25 - vuotiaana, jolloin järkeily on luonut yhteydet tunnekeskukseen mikäli sitä on kasvatuksella ym tuettu. 18 vuoden ikärajakin on liian matala -se on tehty kuluttamiseen. Lapsi- ja nuorivaikutus tulisi kuitenkin aina evaluoida, nyt esimerkiksi, vaikka se on suositus, sitä EI tehdä Helsingissä rakentamisessa eikä monessa muussakaan mikä on järjetöntä ja tyhmääkin."
+          },
+          {
+            "id": "entity_index_222_stress-test-question",
+            "candidateID": "entity_index_222",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys on hyvä eli 18-vuoden ikä"
+          },
+          {
+            "id": "entity_index_223_stress-test-question",
+            "candidateID": "entity_index_223",
+            "candidateAnswer": "1",
+            "text": "Äänestämisoikeus on merkittävä demokraattinen oikeus, joka edellyttää kykyä arvioida poliittisia päätöksiä ja niiden vaikutuksia laajasti. 16-vuotiailla ei yleensä ole vielä riittävää elämänkokemusta, taloudellista vastuuta tai ymmärrystä yhteiskunnallisista prosesseista, jotta he voisivat tehdä perusteltuja päätöksiä vaaleissa. Äänestysiän laskeminen voisi myös johtaa siihen, että päätöksiin vaikuttaisi enemmän esimerkiksi koulumaailmassa esiintyvä painostus ja ohjailu. Nykyinen 18 vuoden ikäraja on perusteltu, koska se vastaa täysi-ikäisyyden ja itsenäisen päätöksenteon rajaa yhteiskunnassa."
+          },
+          {
+            "id": "entity_index_224_stress-test-question",
+            "candidateID": "entity_index_224",
+            "candidateAnswer": "1",
+            "text": "Kannatan sitä, että täysi-ikäiset saavat äänestää vaaleissa ja asettua ehdolle."
+          },
+          {
+            "id": "entity_index_225_stress-test-question",
+            "candidateID": "entity_index_225",
+            "candidateAnswer": "1",
+            "text": "Ihmisen aivot kehittyvät aina 25 ikävuoteen saakka. Suurimmat virheet tehdään juuri liian nuorena ja ne johtavat usein turmion tielle. Jos haluaa välttää suurempia virheitä, niin kannattaa lukea joka päivä ihmisen käyttöoppaasta Raamatun käännöksestä 33/38 kuinka pysyn kaidalla tiellä, joka johtaa Taivaan Isän luokse ikuiseen elämään."
+          },
+          {
+            "id": "entity_index_226_stress-test-question",
+            "candidateID": "entity_index_226",
+            "candidateAnswer": "1",
+            "text": "Annetaan nuorten olla vielä nuoria. Kyllä sitä myöhemminkin ehtii äänestämään."
+          },
+          {
+            "id": "entity_index_227_stress-test-question",
+            "candidateID": "entity_index_227",
+            "candidateAnswer": "1",
+            "text": "Useimmat korkeasti koulutetut aikuisetkin ovat täysin pihalla kunnan asioista, joten miksi suurentaa pihalla olevien äänestäjien määrää? Mielestäni iän sijaan äänioikeuden tulisi perustua mitattavissa olevaan kykyyn ymmärtää yhteisiä asioita."
+          },
+          {
+            "id": "entity_index_228_stress-test-question",
+            "candidateID": "entity_index_228",
+            "candidateAnswer": "1",
+            "text": "18 vuotta on sopiva ikäraja, koska 18 vuotta on täysi-ikäisyyden raja monessa muussakin yhteydessä."
+          },
+          {
+            "id": "entity_index_229_stress-test-question",
+            "candidateID": "entity_index_229",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyyden raja on 18 vuotta. Äänestämistä ja ehdokkaaksi asettumista on jo aiemmin hieman helpotettu. Nyt riittää, että on vaalipäivänä 18-vuotias. Ehkä sellainen olisi perusteltua, että esim. koko ikäluokka joka täyttää tänä vuonna 18 vuotta olisivat myös äänioikeutettuja ja voisivat olla ehdokkaina. Silloin ikäluokkaa kohdeltaisiin yhdenvertaisesti."
+          },
+          {
+            "id": "entity_index_230_stress-test-question",
+            "candidateID": "entity_index_230",
+            "candidateAnswer": "1",
+            "text": "Pidän nykyistä järjestelmää hyvänä."
+          },
+          {
+            "id": "entity_index_231_stress-test-question",
+            "candidateID": "entity_index_231",
+            "candidateAnswer": "1",
+            "text": "Medialukutaito, mediakriittisyys ja somenilmöiden vaikutusten ymmärtäminen ei ole helppoa edes aikuisille - asiat, jotka tällä hetkellä voimakkaasti määrittävät poliittista näkyvyyttä ja etenemistä politiikassa. Someilmiöt eivät voi määritellä niitä valintoja ja arvoja, jotka lopulta määrittävät meistä jokaista koskevista asioista. Ajattelen alle 18-vuotiaiden olevan vielä liian impulsiivisia arvojensa kanssa äänestämään vaaleissa."
+          },
+          {
+            "id": "entity_index_232_stress-test-question",
+            "candidateID": "entity_index_232",
+            "candidateAnswer": "1",
+            "text": "Ei tule"
+          },
+          {
+            "id": "entity_index_233_stress-test-question",
+            "candidateID": "entity_index_233",
+            "candidateAnswer": "1",
+            "text": "Tällä hetkellä äänestämisen ja ehdolle asettumisen ikärajat ovat linjassa laissa määritellyn täysi-ikäisyyden rajan kanssa. En näitä lähtisi erottamaan toisistaan."
+          },
+          {
+            "id": "entity_index_234_stress-test-question",
+            "candidateID": "entity_index_234",
+            "candidateAnswer": "1",
+            "text": "Äänioikeuden tulee perustua kansalaisen kykyyn tehdä itsenäisiä ja harkittuja päätöksiä. 16-vuotiaat eivät tähän vielä pysty."
+          },
+          {
+            "id": "entity_index_235_stress-test-question",
+            "candidateID": "entity_index_235",
+            "candidateAnswer": "1",
+            "text": "Vaikka maailmassa ylenpalttisesti ylistetäänkin demokratiaa, se ei toimi mikäli jokaisella on äänioikeus, tiesi politiikasta tai ei. Kaikkien ei kannattaisi äänestää ja olisi kansalle edullista mikäli tähän äänestämiseen asetettaisiin joitakin ehtoja."
+          },
+          {
+            "id": "entity_index_236_stress-test-question",
+            "candidateID": "entity_index_236",
+            "candidateAnswer": "1",
+            "text": "Kaikenlaisten humpuukimaakareitten on vielä turhan helppo houkutella ääniä monilta 16 vuotiailta."
+          },
+          {
+            "id": "entity_index_237_stress-test-question",
+            "candidateID": "entity_index_237",
+            "candidateAnswer": "1",
+            "text": "Äänestysikäraja on hyvä säilyttää ennallaan, jotta henkilö on tarpeeksi kypsä ymmärtämään kyseisen oikeuden merkityksen, sekä vastuun joka siitä seuraa. Myös kiinnostus yhteiskunnallisiin asioihin lisääntyy iän myötä."
+          },
+          {
+            "id": "entity_index_238_stress-test-question",
+            "candidateID": "entity_index_238",
+            "candidateAnswer": "1",
+            "text": "Mielestäni nykyinen 18 vuoden ikäraja on riittävä eikä sitä ole tarpeen muuttaa. Osa nuoremmista varmasti haluaisi äänestää ja on hienoa että kiinnostusta riittää mutta 18 on ikärajana hyvin yleinen raja."
+          },
+          {
+            "id": "entity_index_239_stress-test-question",
+            "candidateID": "entity_index_239",
+            "candidateAnswer": "1",
+            "text": "Täysi-ikäisyys tuo mukanaan äänestysoikeuden ja mielestäni se on hyvä sitoa siihen."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Nuoret 16-vuotiaat eivät ole tarpeeksi kypsiä tekemään tärkeitä päätöksiä, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä. Heillä ei ole riittävästi elämänkokemusta tai ymmärrystä yhteiskunnallisista prosesseista."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysoikeus edellyttää kykyä arvioida poliittisia päätöksiä, ja monet nuoret eivät vielä omaa tätä kykyä. Tämä voi johtaa siihen, että päätöksiin vaikuttavat ulkoiset paineet, erityisesti koulumaailmassa."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nykyinen 18 vuoden ikäraja on linjassa muiden maiden kanssa ja se on hyvä, koska se on täysi-ikäisyyden raja monessa muussakin asiassa."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Äänestysoikeuden antaminen nuoremmille voisi kasvattaa äänestäjien määrää, mutta monet aikuisetkin ovat pihalla kunnallisasioista, joten nuorten äänestäminen ei automaattisesti paranna päätöksenteon laatua."
+          }
+        ]
+      },
+      "children": [
+        "ITERATE_MAP_1_7_15"
+      ],
+      "parents": [],
+      "metadata": {
+        "startTime": "2025-07-29T14:44:30.087Z",
+        "endTime": "2025-07-29T14:45:19.431Z",
+        "duration": 49344,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_0_8": {
+      "id": "ITERATE_MAP_1_0_8",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 0,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat uskovat, että 16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan, ja että henkinen kehitys vaatii aikaa ja kokemusta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Nykyinen äänestysikäraja 18 vuotta on monien mielestä hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja siihen, että äänestäjät ovat lain mukaan aikuisia."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Argumentoidaan, että nuoret voivat olla alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, kuten sosiaalisen median vaikutuksista, eikä heidän äänestämisensä perustu riittävään tietoon tai ymmärrykseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Vastustajat korostavat, että äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä, ja että nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä varhaista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Monet uskovat, että nuorten kiinnostus politiikkaan ei ole vielä riittävää, ja että heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Kommenttien mukaan 16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan, ja henkinen kehitys vaatii aikaa ja elämänkokemusta."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nykyinen 18 vuoden ikäraja on useiden kommentoijien mielestä hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Nuoret voivat olla alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä, ja nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+          },
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Nuorten kiinnostus politiikkaan ei ole riittävää ja heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_0_0"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.922Z",
+        "duration": 55490,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_1_9": {
+      "id": "ITERATE_MAP_1_1_9",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 1,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat korostavat, että 18 vuotta on hyvä ikäraja äänestämiselle, sillä se liittyy täysi-ikäisyyteen ja aivojen kypsymiseen. Heidän mielestään nuoret eivät ole tarpeeksi kypsiä tekemään harkittuja päätöksiä politiikasta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Useat kommentit mainitsevat, että nuoret voivat osallistua politiikkaan muilla tavoin, kuten nuorisovaltuustojen kautta, ja että äänestysaktiivisuus on tällä hetkellä heikko jopa täysi-ikäisten keskuudessa. Tämä viittaa siihen, että 16-vuotiaiden äänestämisen ei katsota parantavan tilannetta."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Vastustajat pitävät myös 16-vuotiaiden mahdollisuutta äänestää huonona, sillä he uskovat, että nuoret ovat helposti alttiita ulkoisille vaikutteille, kuten sosiaalisen median mielipiteille, mikä voisi vääristää äänestyskäyttäytymistä."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Erityisesti korostuu ajatus siitä, että 16-vuotiaat eivät välttämättä omaa riittävää arvopohjaa tai ymmärrystä äänestyspäätöksiin, mikä tekee heidät huonosti varustetuiksi politiikkaan liittyvissä kysymyksissä."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Monet kommentoijat pitävät nykyistä 18 vuoden ikärajaa riittävänä, ja he korostavat, että iän myötä ihmiset saavat enemmän kokemusta ja syvempää näkemystä asioista, mikä parantaa päätöksentekokykyä."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja monet kommentoijat uskovat, että 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "Nuoret voivat osallistua politiikkaan muilla tavoin, kuten nuorisovaltuustojen kautta, ja nykyinen äänestysaktiivisuus on jo alhainen täysi-ikäisten keskuudessa. Tämä viittaa siihen, että 16-vuotiaiden äänestämisellä ei välttämättä parannettaisi tilannetta."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "Monet vastustajat uskovat, että nuoret ovat alttiita sosiaalisen median mielipiteille ja muille ulkoisille vaikutteille, mikä voisi vääristää heidän äänestyspäätöksiään ja heikentää demokratian laatua."
+          },
+          {
+            "id": "vastustava_argumentti_13",
+            "text": "Vastustajat korostavat, että 16-vuotiailla ei välttämättä ole riittävää arvopohjaa tai ymmärrystä äänestyspäätöksiin, mikä tekee heidät huonosti varustetuiksi politiikkaan liittyvissä kysymyksissä ja päätöksenteossa."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_1_1"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.922Z",
+        "duration": 55490,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_2_10": {
+      "id": "ITERATE_MAP_1_2_10",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 2,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Alaikäisille ei tulisi antaa mahdollisuutta vaikuttaa politiikkaan, koska he eivät ole vielä juridisesti vastuullisia aikuisia."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysoikeus tuo mukanaan vastuun, ja täysi-ikäisyys on tärkeä raja, joka määrittelee, kuka voi kantaa tämän vastuun."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuoret, erityisesti 16-vuotiaat, ovat usein altteja vanhempiensa vaikutuksille, mikä voi vääristää heidän omaa äänestämistään."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Keskiverto 16-vuotias ei ole tarpeeksi kehittynyt ja kypsä tekemään monimutkaisia päätöksiä yhteiskunnallisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Äänestysikärajan tulisi olla linjassa täysi-ikäisyyden kanssa, mikä tarkoittaa, että 18-vuotiaat ovat ainoita, joilla on oikeus äänestää."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Alaikäisille tulisi tarjota muita keinoja vaikuttaa kuin äänestys, kuten nuorisovaltuustot, jotta heidän mielipiteensä tulevat kuulluiksi."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nuorten osallisuus on tärkeää, mutta se voidaan saavuttaa ilman äänestysikärajan laskemista."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Äänestysikärajan laskeminen ei ole oikea ratkaisu, koska on tärkeää, että äänestäjillä on riittävästi tietoa ja ymmärrystä päätöksenteosta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Alaikäisille ei tulisi antaa mahdollisuutta vaikuttaa politiikkaan, koska he eivät ole vielä juridisesti vastuullisia aikuisia."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysoikeus tuo mukanaan vastuun, ja täysi-ikäisyys on tärkeä raja, joka määrittelee, kuka voi kantaa tämän vastuun."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuoret, erityisesti 16-vuotiaat, ovat usein altteja vanhempiensa vaikutuksille, mikä voi vääristää heidän omaa äänestämistään."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Keskiverto 16-vuotias ei ole tarpeeksi kehittynyt ja kypsä tekemään monimutkaisia päätöksiä yhteiskunnallisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Äänestysikärajan tulisi olla linjassa täysi-ikäisyyden kanssa, mikä tarkoittaa, että 18-vuotiaat ovat ainoita, joilla on oikeus äänestää."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Alaikäisille tulisi tarjota muita keinoja vaikuttaa kuin äänestys, kuten nuorisovaltuustot, jotta heidän mielipiteensä tulevat kuulluiksi."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nuorten osallisuus on tärkeää, mutta se voidaan saavuttaa ilman äänestysikärajan laskemista."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Äänestysikärajan laskeminen ei ole oikea ratkaisu, koska on tärkeää, että äänestäjillä on riittävästi tietoa ja ymmärrystä päätöksenteosta."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Nuorten kypsyyden ja kokemuksen puute tekee 16-vuotiaista liian nuoria tekemään vastuullisia päätöksiä poliittisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Vaikka osa 16-vuotiaista on kypsiä, yleisesti ottaen nuoret eivät ole riittävän tietoisia yhteiskunnallisista ongelmista."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "Nuorten vaikuttamisen mahdollisuuksia tulisi kehittää muilla tavoilla, kuten nuorisovaltuustojen ja muiden osallistumismahdollisuuksien kautta."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "18 vuoden ikä on perusteltu, koska se on yleinen raja täysi-ikäisyyden saavuttamiselle ja se heijastaa laajempaa yhteiskunnallista ymmärrystä."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_2_2"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.922Z",
+        "duration": 55490,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_3_11": {
+      "id": "ITERATE_MAP_1_3_11",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 3,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kommentoijat korostavat, että äänestysikärajan laskeminen ei ole järkevää, koska nuoret eivät ole tarpeeksi kypsiä tekemään tärkeitä päätöksiä, ja heillä ei ole riittävästi elämänkokemusta tai kiinnostusta yhteiskunnallisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Useat ehdokkaat katsovat, että 16-vuotiaat ovat vielä lapsia, ja he ovat helposti johdateltavissa äänestyspaikoilla, mikä voi vaarantaa äänestyspäätösten objektiivisuuden."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Kommentoijat pitävät nykyistä 18 vuoden ikärajaa riittävänä, koska se antaa nuorille enemmän aikaa kehittää omaa mielipidettään ja ymmärrystään poliittisista kysymyksistä."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Monet ovat huolissaan siitä, että nuoret voisivat tehdä päätöksiä populistisin perustein ilman syvällistä ymmärrystä asioista, mikä heikentäisi demokratiaa."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Vastustajat korostavat, että äänestysoikeuden tulisi kuulua vain täysi-ikäisille, koska siihen liittyy myös vastuu yhteiskunnallisista asioista ja päätöksenteosta."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Nuoret ovat usein vielä kypsymättömiä ja heillä ei ole riittävästi elämänkokemusta tai kiinnostusta yhteiskunnallisista asioista, mikä voi johtaa huonosti perusteltuihin äänestyspäätöksiin."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "16-vuotiaat ovat vielä lapsia, ja heitä voidaan helposti johdatella äänestyspaikoilla, mikä vaarantaa äänestyspäätösten objektiivisuuden ja demokraattisen prosessin."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nykyinen 18 vuoden ikäraja antaa nuorille enemmän aikaa kehittää oma mielipidettään ja ymmärrystään poliittisista kysymyksistä, mikä on tärkeää vastuullisen äänestäjän kannalta."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Äänestysoikeuden tulisi kuulua vain täysi-ikäisille, sillä se tuo mukanaan myös vastuun yhteiskunnallisista asioista ja päätöksenteosta."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Kunta- ja aluevaalit ovat tärkeitä päätöksentekopaikkoja, eikä alle 18-vuotiaiden tulisi kantaa tarpeetonta stressiä ja vastuuta tällaisista asioista."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nuorten äänestyspäätökset voivat perustua usein populistisiin ja heikosti perusteltuihin mielipiteisiin, mikä heikentäisi demokratian laatua."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nuorten mielipide tulee saada esiin muilla tavoilla, kuten nuorisovaltuustoissa, eikä äänestysikärajan laskeminen ole ainoa ratkaisu nuorten vaikutusmahdollisuuksien parantamiseksi."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_3_3"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.922Z",
+        "duration": 55490,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_4_12": {
+      "id": "ITERATE_MAP_1_4_12",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 4,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "18 vuoden ikäraja takaa, että äänestäjillä on riittävästi elämänkokemusta ja tietoa tehdä pitkäjänteisiä päätöksiä."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "16-vuotiaat eivät ole tarpeeksi kypsiä ymmärtämään yhteiskunnallisia ongelmia ja päätösten seurauksia."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nykyinen, 18 vuoden ikäraja on ollut toimiva ja perusteltu, eikä sitä ole tarpeen muuttaa."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuoret ovat usein vanhempiensa vaikutuspiirissä, mikä voi vääristää vaalituloksia ja heikentää demokratiaa."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Aivojen kehitys jatkuu nuoruusiässä, ja päätöksentekokyky ei ole täysipainoinen ennen 25 vuoden ikää."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Alle 18-vuotiaat eivät ole lain mukaan riittävän kypsiä tekemään itsenäisiä päätöksiä, mikä heijastuu myös äänestämiseen."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nykyinen ikäraja 18 vuotta on tasapainoinen ja pitää oikeudet ja velvollisuudet yhteiskunnassa järkevästi."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Vaikka nuoret voivat olla kiinnostuneita yhteiskunnallisista asioista, heiltä puuttuu usein elämänkokemus ja tieto, jotka ovat tarpeen pitkäjänteisten päätösten tekemiseen."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Aivojen kehitys jatkuu nuoruusiässä, ja päätöksentekokyky ei ole täysipainoinen ennen 25 vuoden ikää, mikä tukee nykyisen 18 vuoden ikärajan säilyttämistä."
+          },
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Nykyinen 18 vuoden ikäraja on ollut toimiva ja se on kehitetty yhteiskunnan tarpeiden mukaan historian saatossa, eikä sitä ole tarpeen muuttaa."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "Alle 18-vuotiaat ovat usein vanhempiensa vaikutuspiirissä, mikä voi vääristää vaalituloksia ja heikentää demokratiaa."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "Alle 18-vuotiailla ei ole lain mukaan riittäviä itsenäisiä oikeuksia, jolloin heidän ei tule tehdä päätöksiä, jotka vaikuttavat laajemmin yhteiskuntaan."
+          },
+          {
+            "id": "vastustava_argumentti_13",
+            "text": "Nykyisessä järjestelmässä, jossa äänestysoikeus on 18 vuotta, nuoret voivat silti osallistua politiikkaan ja vaikuttaa asioihin muilla tavoilla, kuten nuorisovaltuustojen kautta."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_4_4"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.923Z",
+        "duration": 55491,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_5_13": {
+      "id": "ITERATE_MAP_1_5_13",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 5,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet kokevat, että 16-vuotiaat eivät ole riittävän kypsiä tekemään yhteiskunnallisia päätöksiä, koska he eivät välttämättä osaa arvioida poliittisten päätösten pitkän aikavälin seurauksia."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysikärajan laskeminen voisi johtaa siihen, että nuoret äänestäjät eivät käyttäisi äänioikeuttaan aktiivisesti tai harkitusti, mikä heikentäisi demokratian toimintaa."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Äänestämiseen liittyy myös vastuu, ja monet uskovat, että 16-vuotiaat eivät ole valmiita kantamaan tätä vastuuta."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuoret ovat jo nyt vähemmän aktiivisia äänestämään, ja ikärajan alentaminen ei välttämättä lisää kiinnostusta politiikkaan."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Nuorille on olemassa muitakin tapoja vaikuttaa yhteiskunnallisiin asioihin, kuten nuorisovaltuustot, mikä voi olla tehokkaampi keino kuin äänestysikärajan laskeminen."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nykyinen 18 vuoden ikäraja on liitetty täysi-ikäisyyteen, joka tuo mukanaan muitakin velvollisuuksia, kuten verovelvollisuus ja mahdollinen asevelvollisuus."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Äänestysikärajan laskeminen voi johtaa myös nuorten altistumiseen sosiaalisen median ja muiden hallitsemattomien vaikutusten riskeille, mikä voi vaarantaa demokratian."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Nuoret ovat jo nyt laiskoja äänestämään, ja äänestysikärajan alentaminen ei todennäköisesti lisää heidän kiinnostustaan politiikkaan."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+          },
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet, ja tämän rajan pitäminen voi suojata nuoria liialliselta vastuulta."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "Nuorten osallistuminen yhteiskunnallisiin asioihin on tärkeää, mutta siihen on kehitetty muita kanavia, kuten nuorisovaltuustot ja demokratiakasvatus, jotka voivat olla tehokkaampia kuin äänestysikärajan laskeminen."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "Nuorten altistuminen sosiaalisen median hallitsemattomille vaikutuksille voi aiheuttaa vaaroja demokraattiselle prosessille, jos äänestysikä lasketaan."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_0_16"
+      ],
+      "parents": [
+        "MAP_0_5_5"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.923Z",
+        "duration": 55491,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_6_14": {
+      "id": "ITERATE_MAP_1_6_14",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 6,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Nuorten kypsyys ja kyky tehdä vastuullisia päätöksiä on riittämätöntä 16-vuotiaana. Useat kommentit korostavat, että nuoret ovat vielä lapsia, eivätkä he näe syy-seuraussuhteita tai ymmärrä politiikan monimutkaisuutta."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "18 vuotta on vakiintunut täysi-ikäisyyden raja, joka takaa riittävän elämänkokemuksen ja juridisen vastuun omista päätöksistä. Kommentoijat viittaavat siihen, että täysi-ikäisyys tuo mukanaan enemmän vastuuta ja kykyä ymmärtää yhteiskunnallisia asioita."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuorten kiinnostus politiikkaan on alhaista, ja monet nuoret eivät ole vielä kiinnostuneita tai valmiita osallistumaan vaalimenettelyihin. Kommentit viittaavat siihen, että ennen 18-vuotiaita tulisi keskittyä enemmän koulutukseen ja nuorten rauhoittamiseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Nuorten päätöksentekoa ei tulisi rasittaa aikuisille kuuluvilla vastuilla ja vaikeilla yhteiskunnallisilla kysymyksillä. Kommentoijat korostavat, että nuorille tulisi antaa rauha kasvaa ja kehittää identiteettiään ilman poliittista painetta."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Äänestysaktiivisuus on jo nyt alhainen, ja sen nostaminen 18-vuotiaiden keskuudessa on tärkeämpää kuin 16-vuotiaiden äänestysoikeuden myöntäminen. Useat kommentit ehdottavat, että nuoret voivat harjoitella vaikuttamista muilla tavoin, kuten koulussa."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "16-vuotiaat nuoret ovat vielä lapsia, joiden kyky ymmärtää syy-seuraussuhteita ja yhteiskunnallisia kysymyksiä on rajallinen. Heidän tulisi saada rauhassa kehittää identiteettiään ilman poliittista painetta."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "Äänestysoikeus kuuluu täysi-ikäisille, joilla on juridinen vastuu omista päätöksistään. Tämä takaa sen, että äänestäjät ovat kypsiä ja kykeneviä arvioimaan yhteiskunnallisia asioita."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_1_17"
+      ],
+      "parents": [
+        "MAP_0_6_6"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.924Z",
+        "duration": 55492,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "ITERATE_MAP_1_7_15": {
+      "id": "ITERATE_MAP_1_7_15",
+      "operation": "ITERATE_MAP",
+      "stepIndex": 1,
+      "batchIndex": 7,
+      "input": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Nuoret 16-vuotiaat eivät ole tarpeeksi kypsiä tekemään tärkeitä päätöksiä, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä. Heillä ei ole riittävästi elämänkokemusta tai ymmärrystä yhteiskunnallisista prosesseista."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Äänestysoikeus edellyttää kykyä arvioida poliittisia päätöksiä, ja monet nuoret eivät vielä omaa tätä kykyä. Tämä voi johtaa siihen, että päätöksiin vaikuttavat ulkoiset paineet, erityisesti koulumaailmassa."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nykyinen 18 vuoden ikäraja on linjassa muiden maiden kanssa ja se on hyvä, koska se on täysi-ikäisyyden raja monessa muussakin asiassa."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Äänestysoikeuden antaminen nuoremmille voisi kasvattaa äänestäjien määrää, mutta monet aikuisetkin ovat pihalla kunnallisasioista, joten nuorten äänestäminen ei automaattisesti paranna päätöksenteon laatua."
+          }
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "On tärkeää säilyttää äänestysikä 18 vuodessa, jotta vaalien arvovalta ja päätöksenteon laatu säilyvät korkealla tasolla. Nuoret 16-vuotiaat eivät usein ole tarpeeksi kypsiä tekemään tärkeitä valintoja, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Ihmisen aivot kehittyvät aina 25 ikävuoteen saakka, joten 16-vuotiaat saattavat olla liian impulsiivisia ja heillä ei ole riittävää kykyä arvioida poliittisia päätöksiä ja niiden vaikutuksia."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Nykyinen 18 vuoden ikäraja on perusteltu, koska se vastaa täysi-ikäisyyden ja itsenäisen päätöksenteon rajaa yhteiskunnassa."
+          },
+          {
+            "id": "vastustava_argumentti_10",
+            "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+          },
+          {
+            "id": "vastustava_argumentti_11",
+            "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+          },
+          {
+            "id": "vastustava_argumentti_12",
+            "text": "Useimmat korkeasti koulutetut aikuisetkin ovat täysin pihalla kunnallisista asioista, joten nuorten äänestämisen lisääminen ei automaattisesti paranna päätöksenteon laatua."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_2_1_17"
+      ],
+      "parents": [
+        "MAP_0_7_7"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:45:19.432Z",
+        "endTime": "2025-07-29T14:46:14.924Z",
+        "duration": 55492,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_2_0_16": {
+      "id": "REDUCE_2_0_16",
+      "operation": "REDUCE",
+      "stepIndex": 2,
+      "batchIndex": 0,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "vastustava_argumentti_6",
+              "text": "Kommenttien mukaan 16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan, ja henkinen kehitys vaatii aikaa ja elämänkokemusta."
+            },
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "Nykyinen 18 vuoden ikäraja on useiden kommentoijien mielestä hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen."
+            },
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Nuoret voivat olla alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä, ja nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+            },
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Nuorten kiinnostus politiikkaan ei ole riittävää ja heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja monet kommentoijat uskovat, että 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "Nuoret voivat osallistua politiikkaan muilla tavoin, kuten nuorisovaltuustojen kautta, ja nykyinen äänestysaktiivisuus on jo alhainen täysi-ikäisten keskuudessa. Tämä viittaa siihen, että 16-vuotiaiden äänestämisellä ei välttämättä parannettaisi tilannetta."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "Monet vastustajat uskovat, että nuoret ovat alttiita sosiaalisen median mielipiteille ja muille ulkoisille vaikutteille, mikä voisi vääristää heidän äänestyspäätöksiään ja heikentää demokratian laatua."
+            },
+            {
+              "id": "vastustava_argumentti_13",
+              "text": "Vastustajat korostavat, että 16-vuotiailla ei välttämättä ole riittävää arvopohjaa tai ymmärrystä äänestyspäätöksiin, mikä tekee heidät huonosti varustetuiksi politiikkaan liittyvissä kysymyksissä ja päätöksenteossa."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_1",
+              "text": "Alaikäisille ei tulisi antaa mahdollisuutta vaikuttaa politiikkaan, koska he eivät ole vielä juridisesti vastuullisia aikuisia."
+            },
+            {
+              "id": "vastustava_argumentti_2",
+              "text": "Äänestysoikeus tuo mukanaan vastuun, ja täysi-ikäisyys on tärkeä raja, joka määrittelee, kuka voi kantaa tämän vastuun."
+            },
+            {
+              "id": "vastustava_argumentti_3",
+              "text": "Nuoret, erityisesti 16-vuotiaat, ovat usein altteja vanhempiensa vaikutuksille, mikä voi vääristää heidän omaa äänestämistään."
+            },
+            {
+              "id": "vastustava_argumentti_4",
+              "text": "Keskiverto 16-vuotias ei ole tarpeeksi kehittynyt ja kypsä tekemään monimutkaisia päätöksiä yhteiskunnallisista asioista."
+            },
+            {
+              "id": "vastustava_argumentti_5",
+              "text": "Äänestysikärajan tulisi olla linjassa täysi-ikäisyyden kanssa, mikä tarkoittaa, että 18-vuotiaat ovat ainoita, joilla on oikeus äänestää."
+            },
+            {
+              "id": "vastustava_argumentti_6",
+              "text": "Alaikäisille tulisi tarjota muita keinoja vaikuttaa kuin äänestys, kuten nuorisovaltuustot, jotta heidän mielipiteensä tulevat kuulluiksi."
+            },
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "Nuorten osallisuus on tärkeää, mutta se voidaan saavuttaa ilman äänestysikärajan laskemista."
+            },
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Äänestysikärajan laskeminen ei ole oikea ratkaisu, koska on tärkeää, että äänestäjillä on riittävästi tietoa ja ymmärrystä päätöksenteosta."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Nuorten kypsyyden ja kokemuksen puute tekee 16-vuotiaista liian nuoria tekemään vastuullisia päätöksiä poliittisista asioista."
+            },
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Vaikka osa 16-vuotiaista on kypsiä, yleisesti ottaen nuoret eivät ole riittävän tietoisia yhteiskunnallisista ongelmista."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "Nuorten vaikuttamisen mahdollisuuksia tulisi kehittää muilla tavoilla, kuten nuorisovaltuustojen ja muiden osallistumismahdollisuuksien kautta."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "18 vuoden ikä on perusteltu, koska se on yleinen raja täysi-ikäisyyden saavuttamiselle ja se heijastaa laajempaa yhteiskunnallista ymmärrystä."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_1",
+              "text": "Nuoret ovat usein vielä kypsymättömiä ja heillä ei ole riittävästi elämänkokemusta tai kiinnostusta yhteiskunnallisista asioista, mikä voi johtaa huonosti perusteltuihin äänestyspäätöksiin."
+            },
+            {
+              "id": "vastustava_argumentti_2",
+              "text": "16-vuotiaat ovat vielä lapsia, ja heitä voidaan helposti johdatella äänestyspaikoilla, mikä vaarantaa äänestyspäätösten objektiivisuuden ja demokraattisen prosessin."
+            },
+            {
+              "id": "vastustava_argumentti_3",
+              "text": "Nykyinen 18 vuoden ikäraja antaa nuorille enemmän aikaa kehittää oma mielipidettään ja ymmärrystään poliittisista kysymyksistä, mikä on tärkeää vastuullisen äänestäjän kannalta."
+            },
+            {
+              "id": "vastustava_argumentti_4",
+              "text": "Äänestysoikeuden tulisi kuulua vain täysi-ikäisille, sillä se tuo mukanaan myös vastuun yhteiskunnallisista asioista ja päätöksenteosta."
+            },
+            {
+              "id": "vastustava_argumentti_5",
+              "text": "Kunta- ja aluevaalit ovat tärkeitä päätöksentekopaikkoja, eikä alle 18-vuotiaiden tulisi kantaa tarpeetonta stressiä ja vastuuta tällaisista asioista."
+            },
+            {
+              "id": "vastustava_argumentti_6",
+              "text": "Nuorten äänestyspäätökset voivat perustua usein populistisiin ja heikosti perusteltuihin mielipiteisiin, mikä heikentäisi demokratian laatua."
+            },
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "Nuorten mielipide tulee saada esiin muilla tavoilla, kuten nuorisovaltuustoissa, eikä äänestysikärajan laskeminen ole ainoa ratkaisu nuorten vaikutusmahdollisuuksien parantamiseksi."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Vaikka nuoret voivat olla kiinnostuneita yhteiskunnallisista asioista, heiltä puuttuu usein elämänkokemus ja tieto, jotka ovat tarpeen pitkäjänteisten päätösten tekemiseen."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Aivojen kehitys jatkuu nuoruusiässä, ja päätöksentekokyky ei ole täysipainoinen ennen 25 vuoden ikää, mikä tukee nykyisen 18 vuoden ikärajan säilyttämistä."
+            },
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Nykyinen 18 vuoden ikäraja on ollut toimiva ja se on kehitetty yhteiskunnan tarpeiden mukaan historian saatossa, eikä sitä ole tarpeen muuttaa."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "Alle 18-vuotiaat ovat usein vanhempiensa vaikutuspiirissä, mikä voi vääristää vaalituloksia ja heikentää demokratiaa."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "Alle 18-vuotiailla ei ole lain mukaan riittäviä itsenäisiä oikeuksia, jolloin heidän ei tule tehdä päätöksiä, jotka vaikuttavat laajemmin yhteiskuntaan."
+            },
+            {
+              "id": "vastustava_argumentti_13",
+              "text": "Nykyisessä järjestelmässä, jossa äänestysoikeus on 18 vuotta, nuoret voivat silti osallistua politiikkaan ja vaikuttaa asioihin muilla tavoilla, kuten nuorisovaltuustojen kautta."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Nuoret ovat jo nyt laiskoja äänestämään, ja äänestysikärajan alentaminen ei todennäköisesti lisää heidän kiinnostustaan politiikkaan."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+            },
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet, ja tämän rajan pitäminen voi suojata nuoria liialliselta vastuulta."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "Nuorten osallistuminen yhteiskunnallisiin asioihin on tärkeää, mutta siihen on kehitetty muita kanavia, kuten nuorisovaltuustot ja demokratiakasvatus, jotka voivat olla tehokkaampia kuin äänestysikärajan laskeminen."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "Nuorten altistuminen sosiaalisen median hallitsemattomille vaikutuksille voi aiheuttaa vaaroja demokraattiselle prosessille, jos äänestysikä lasketaan."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan. Henkinen kehitys vaatii aikaa ja elämänkokemusta, jota nuorilla ei usein ole."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Nykyinen 18 vuoden ikäraja on hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen. Tämä raja suojaa nuoria liialliselta vastuulta."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuoret ovat usein alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä. Nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Nuoret eivät ole riittävän kiinnostuneita politiikasta, ja heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta. Tämä voisi edistää heidän vaikuttamismahdollisuuksiaan ilman äänestysikärajan laskemista."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Nuoret ovat edelleen vanhempiensa vaikutuspiirissä, mikä voi vääristää heidän äänestyspäätöksiään ja heikentää demokratian laatua."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet. Tämä raja on suojellut nuoria liialliselta vastuulta."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_3_0_18"
+      ],
+      "parents": [
+        "ITERATE_MAP_1_0_8",
+        "ITERATE_MAP_1_1_9",
+        "ITERATE_MAP_1_2_10",
+        "ITERATE_MAP_1_3_11",
+        "ITERATE_MAP_1_4_12",
+        "ITERATE_MAP_1_5_13"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:46:14.924Z",
+        "endTime": "2025-07-29T14:46:35.650Z",
+        "duration": 20726,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_2_1_17": {
+      "id": "REDUCE_2_1_17",
+      "operation": "REDUCE",
+      "stepIndex": 2,
+      "batchIndex": 1,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "16-vuotiaat nuoret ovat vielä lapsia, joiden kyky ymmärtää syy-seuraussuhteita ja yhteiskunnallisia kysymyksiä on rajallinen. Heidän tulisi saada rauhassa kehittää identiteettiään ilman poliittista painetta."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "Äänestysoikeus kuuluu täysi-ikäisille, joilla on juridinen vastuu omista päätöksistään. Tämä takaa sen, että äänestäjät ovat kypsiä ja kykeneviä arvioimaan yhteiskunnallisia asioita."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "On tärkeää säilyttää äänestysikä 18 vuodessa, jotta vaalien arvovalta ja päätöksenteon laatu säilyvät korkealla tasolla. Nuoret 16-vuotiaat eivät usein ole tarpeeksi kypsiä tekemään tärkeitä valintoja, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä."
+            },
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Ihmisen aivot kehittyvät aina 25 ikävuoteen saakka, joten 16-vuotiaat saattavat olla liian impulsiivisia ja heillä ei ole riittävää kykyä arvioida poliittisia päätöksiä ja niiden vaikutuksia."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Nykyinen 18 vuoden ikäraja on perusteltu, koska se vastaa täysi-ikäisyyden ja itsenäisen päätöksenteon rajaa yhteiskunnassa."
+            },
+            {
+              "id": "vastustava_argumentti_10",
+              "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+            },
+            {
+              "id": "vastustava_argumentti_11",
+              "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+            },
+            {
+              "id": "vastustava_argumentti_12",
+              "text": "Useimmat korkeasti koulutetut aikuisetkin ovat täysin pihalla kunnallisista asioista, joten nuorten äänestämisen lisääminen ei automaattisesti paranna päätöksenteon laatua."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "16-vuotiaat nuoret ovat vielä lapsia, joiden kyky ymmärtää syy-seuraussuhteita ja yhteiskunnallisia kysymyksiä on rajallinen. Heidän tulisi saada rauhassa kehittää identiteettiään ilman poliittista painetta."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Äänestysoikeus kuuluu täysi-ikäisille, joilla on juridinen vastuu omista päätöksistään. Tämä takaa sen, että äänestäjät ovat kypsiä ja kykeneviä arvioimaan yhteiskunnallisia asioita."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "On tärkeää säilyttää äänestysikä 18 vuodessa, jotta vaalien arvovalta ja päätöksenteon laatu säilyvät korkealla tasolla. Nuoret 16-vuotiaat eivät usein ole tarpeeksi kypsiä tekemään tärkeitä valintoja, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Ihmisen aivot kehittyvät aina 25 ikävuoteen saakka, joten 16-vuotiaat saattavat olla liian impulsiivisia ja heillä ei ole riittävää kykyä arvioida poliittisia päätöksiä ja niiden vaikutuksia."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nykyinen 18 vuoden ikäraja on perusteltu, koska se vastaa täysi-ikäisyyden ja itsenäisen päätöksenteon rajaa yhteiskunnassa."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+          },
+          {
+            "id": "vastustava_argumentti_9",
+            "text": "Useimmat korkeasti koulutetut aikuisetkin ovat täysin pihalla kunnallisista asioista, joten nuorten äänestämisen lisääminen ei automaattisesti paranna päätöksenteon laatua."
+          }
+        ]
+      },
+      "children": [
+        "REDUCE_3_0_18"
+      ],
+      "parents": [
+        "ITERATE_MAP_1_6_14",
+        "ITERATE_MAP_1_7_15"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:46:14.924Z",
+        "endTime": "2025-07-29T14:46:35.650Z",
+        "duration": 20726,
+        "llmCalls": 1,
+        "success": true
+      }
+    },
+    "REDUCE_3_0_18": {
+      "id": "REDUCE_3_0_18",
+      "operation": "REDUCE",
+      "stepIndex": 3,
+      "batchIndex": 0,
+      "input": {
+        "argumentLists": [
+          [
+            {
+              "id": "vastustava_argumentti_1",
+              "text": "16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan. Henkinen kehitys vaatii aikaa ja elämänkokemusta, jota nuorilla ei usein ole."
+            },
+            {
+              "id": "vastustava_argumentti_2",
+              "text": "Nykyinen 18 vuoden ikäraja on hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen. Tämä raja suojaa nuoria liialliselta vastuulta."
+            },
+            {
+              "id": "vastustava_argumentti_3",
+              "text": "Nuoret ovat usein alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+            },
+            {
+              "id": "vastustava_argumentti_4",
+              "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä. Nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+            },
+            {
+              "id": "vastustava_argumentti_5",
+              "text": "Nuoret eivät ole riittävän kiinnostuneita politiikasta, ja heitä tulisi enemmän osallistuttaa muilla tavoilla, kuten nuorisovaltuustojen kautta. Tämä voisi edistää heidän vaikuttamismahdollisuuksiaan ilman äänestysikärajan laskemista."
+            },
+            {
+              "id": "vastustava_argumentti_6",
+              "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+            },
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "Nuoret ovat edelleen vanhempiensa vaikutuspiirissä, mikä voi vääristää heidän äänestyspäätöksiään ja heikentää demokratian laatua."
+            },
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet. Tämä raja on suojellut nuoria liialliselta vastuulta."
+            }
+          ],
+          [
+            {
+              "id": "vastustava_argumentti_1",
+              "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+            },
+            {
+              "id": "vastustava_argumentti_2",
+              "text": "16-vuotiaat nuoret ovat vielä lapsia, joiden kyky ymmärtää syy-seuraussuhteita ja yhteiskunnallisia kysymyksiä on rajallinen. Heidän tulisi saada rauhassa kehittää identiteettiään ilman poliittista painetta."
+            },
+            {
+              "id": "vastustava_argumentti_3",
+              "text": "Äänestysoikeus kuuluu täysi-ikäisille, joilla on juridinen vastuu omista päätöksistään. Tämä takaa sen, että äänestäjät ovat kypsiä ja kykeneviä arvioimaan yhteiskunnallisia asioita."
+            },
+            {
+              "id": "vastustava_argumentti_4",
+              "text": "On tärkeää säilyttää äänestysikä 18 vuodessa, jotta vaalien arvovalta ja päätöksenteon laatu säilyvät korkealla tasolla. Nuoret 16-vuotiaat eivät usein ole tarpeeksi kypsiä tekemään tärkeitä valintoja, jotka vaikuttavat koko yhteiskuntaan pitkällä aikavälillä."
+            },
+            {
+              "id": "vastustava_argumentti_5",
+              "text": "Ihmisen aivot kehittyvät aina 25 ikävuoteen saakka, joten 16-vuotiaat saattavat olla liian impulsiivisia ja heillä ei ole riittävää kykyä arvioida poliittisia päätöksiä ja niiden vaikutuksia."
+            },
+            {
+              "id": "vastustava_argumentti_6",
+              "text": "Nykyinen 18 vuoden ikäraja on perusteltu, koska se vastaa täysi-ikäisyyden ja itsenäisen päätöksenteon rajaa yhteiskunnassa."
+            },
+            {
+              "id": "vastustava_argumentti_7",
+              "text": "Äänestysoikeuden tulisi perustua kykyyn tehdä harkittuja päätöksiä, eikä iän perusteella, ja nuoret eivät vielä ole riittävän vastuullisia yhteiskunnallisten asioiden suhteen."
+            },
+            {
+              "id": "vastustava_argumentti_8",
+              "text": "Nuorille on tärkeää antaa aikaa kasvaa ja kehittyä ilman liiallisia yhteiskunnallisia velvoitteita, ja äänestysikärajan laskeminen ei palvele tätä tavoitetta."
+            },
+            {
+              "id": "vastustava_argumentti_9",
+              "text": "Useimmat korkeasti koulutetut aikuisetkin ovat täysin pihalla kunnallisista asioista, joten nuorten äänestämisen lisääminen ei automaattisesti paranna päätöksenteon laatua."
+            }
+          ]
+        ]
+      },
+      "output": {
+        "arguments": [
+          {
+            "id": "vastustava_argumentti_1",
+            "text": "16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan. Henkinen kehitys vaatii aikaa ja elämänkokemusta, jota nuorilla ei usein ole."
+          },
+          {
+            "id": "vastustava_argumentti_2",
+            "text": "Nykyinen 18 vuoden ikäraja on hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen. Tämä raja suojaa nuoria liialliselta vastuulta."
+          },
+          {
+            "id": "vastustava_argumentti_3",
+            "text": "Nuoret ovat usein alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+          },
+          {
+            "id": "vastustava_argumentti_4",
+            "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä. Nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+          },
+          {
+            "id": "vastustava_argumentti_5",
+            "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+          },
+          {
+            "id": "vastustava_argumentti_6",
+            "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+          },
+          {
+            "id": "vastustava_argumentti_7",
+            "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+          },
+          {
+            "id": "vastustava_argumentti_8",
+            "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet. Tämä raja on suojellut nuoria liialliselta vastuulta."
+          }
+        ]
+      },
+      "children": [],
+      "parents": [
+        "REDUCE_2_0_16",
+        "REDUCE_2_1_17"
+      ],
+      "metadata": {
+        "startTime": "2025-07-29T14:46:35.650Z",
+        "endTime": "2025-07-29T14:46:51.086Z",
+        "duration": 15436,
+        "llmCalls": 1,
+        "success": true
+      }
+    }
+  },
+  "finalArguments": [
+    {
+      "id": "vastustava_argumentti_1",
+      "text": "16-vuotiaat eivät ole vielä henkisesti kypsiä tekemään päätöksiä, jotka vaikuttavat laajasti yhteiskuntaan. Henkinen kehitys vaatii aikaa ja elämänkokemusta, jota nuorilla ei usein ole."
+    },
+    {
+      "id": "vastustava_argumentti_2",
+      "text": "Nykyinen 18 vuoden ikäraja on hyvä ja selkeä, sillä se liittyy täysi-ikäisyyteen ja lain mukaan aikuisuuteen. Tämä raja suojaa nuoria liialliselta vastuulta."
+    },
+    {
+      "id": "vastustava_argumentti_3",
+      "text": "Nuoret ovat usein alttiita manipuloinnille ja saattavat äänestää pinnallisista syistä, mikä voi johtaa siihen, että heidän äänestämisensä ei perustu riittävään tietoon tai ymmärrykseen."
+    },
+    {
+      "id": "vastustava_argumentti_4",
+      "text": "Äänestysoikeuden ja vastuiden tulisi kulkea käsi kädessä. Nuoret eivät ole vielä ottaneet vastuuta omasta elämästään, mikä tekee äänestämisestä heille liian varhaista."
+    },
+    {
+      "id": "vastustava_argumentti_5",
+      "text": "Monet nuoret eivät ole vielä tarpeeksi kiinnostuneita politiikasta, ja heidän tulisi keskittyä enemmän koulutukseen ja henkilökohtaiseen kehitykseen. Vaalimenettelyihin osallistumisen sijasta nuorten pitäisi harjoitella vaikuttamista koulussa ja muissa ympäristöissä."
+    },
+    {
+      "id": "vastustava_argumentti_6",
+      "text": "Nuorten aivojen kehitys jatkuu usein 25 vuoteen saakka, ja 18 vuotta on riittävä ikä äänestämiseen, sillä se liittyy aivojen kypsymiseen ja vastuulliseen päätöksentekoon."
+    },
+    {
+      "id": "vastustava_argumentti_7",
+      "text": "Äänestävät nuoret eivät välttämättä ole sitoutuneita tai kykeneviä arvioimaan poliittisten päätösten pitkäaikaisia vaikutuksia, mikä voi vaarantaa demokraattisen päätöksenteon."
+    },
+    {
+      "id": "vastustava_argumentti_8",
+      "text": "Historiallisesti 18 vuotta on ollut täysi-ikäisyyden raja, joka tuo mukanaan sekä oikeudet että velvollisuudet. Tämä raja on suojellut nuoria liialliselta vastuulta."
+    }
+  ]
+}
