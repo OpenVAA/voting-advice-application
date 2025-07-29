@@ -111,16 +111,18 @@ export class Condenser {
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
-    let previousNodeIds: Array<string> = []; // Start with empty array - first step will create root nodes
+    let previousNodeMapping: Array<Array<string>> = []; // Start with empty mapping - first step will create root nodes
     let currentStepIndex = 0; // Track actual step index accounting for multi-level operations (MAP + ITERATE_MAP)
 
     // Execute each step in the plan sequentially (although the steps themselves may contain parallel operations)
     for (const step of processingSteps) {
-      const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
+      const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeMapping);
 
-      // Update current data for next step - this is the key data flow mechanism
+      // Update current data for next step: the output of the current step becomes the input for the next step
       currentData = stepResult.arguments;
-      previousNodeIds = stepResult.nodeIds || [];
+      // The node IDs from the completed step become the potential parents for the next step.
+      // Each node ID is wrapped in its own array to represent a distinct data source that the next step can group.
+      previousNodeMapping = stepResult.nodeIds?.map((id) => [id]) || [];
 
       // Update step index based on how many levels this operation consumed
       // (MAP operations consume 2 levels: MAP + ITERATE_MAP). Not that clean, I know...
@@ -181,24 +183,24 @@ export class Condenser {
     step: ProcessingStep,
     inputData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>>,
     stepIndex: number,
-    previousNodeIds: Array<string>
+    previousNodeMapping: Array<Array<string>>
   ): Promise<CondensationStepResult> {
     switch (step.operation) {
       case CondensationOperations.REFINE:
-        return await this.executeRefine(step, inputData as Array<VAAComment>, stepIndex, previousNodeIds);
+        return await this.executeRefine(step, inputData as Array<VAAComment>, stepIndex, previousNodeMapping);
 
       case CondensationOperations.MAP:
-        return await this.executeMap(step, inputData as Array<VAAComment>, stepIndex, previousNodeIds);
+        return await this.executeMap(step, inputData as Array<VAAComment>, stepIndex, previousNodeMapping);
 
       case CondensationOperations.REDUCE:
-        return await this.executeReduce(step, inputData as Array<Array<Argument>>, stepIndex, previousNodeIds);
+        return await this.executeReduce(step, inputData as Array<Array<Argument>>, stepIndex, previousNodeMapping);
 
       case CondensationOperations.GROUND:
         return await this.executeGround(
           step,
           inputData as Array<Argument> | Array<Array<Argument>>,
           stepIndex,
-          previousNodeIds
+          previousNodeMapping
         );
 
       default:
@@ -217,7 +219,7 @@ export class Condenser {
     step: ProcessingStep,
     comments: Array<VAAComment>,
     stepIndex: number,
-    previousNodeIds: Array<string>
+    previousNodeMapping: Array<Array<string>>
   ): Promise<CondensationStepResult> {
     const params = step.params as RefineOperationParams;
     const batchSize = params.batchSize;
@@ -231,11 +233,10 @@ export class Condenser {
       const nodeId = this.treeBuilder.createNode(CondensationOperations.REFINE, stepIndex, i);
       this.treeBuilder.setNodeInput(nodeId, { comments: batches[i] });
 
-      // Link to previous nodes (only if they exist, first step has no parents)
-      if (previousNodeIds.length > 0) {
-        for (const parentId of previousNodeIds) {
-          this.treeBuilder.linkNodes(parentId, nodeId);
-        }
+      // Link to parent nodes: first batch links to previous step, subsequent batches link to previous batch
+      const parentIds = i === 0 ? previousNodeMapping[0] || [] : [batchNodeIds[i - 1]];
+      for (const parentId of parentIds) {
+        this.treeBuilder.linkNodes(parentId, nodeId);
       }
 
       batchNodeIds.push(nodeId);
@@ -320,7 +321,8 @@ export class Condenser {
     return {
       arguments: currentArguments,
       promptCalls: allPromptCalls,
-      nodeIds: batchNodeIds
+      nodeIds: batchNodeIds,
+      nodeMapping: batchNodeIds.map((_, i) => (i === 0 ? previousNodeMapping[0] || [] : [batchNodeIds[i - 1]]))
     };
   }
 
@@ -331,7 +333,7 @@ export class Condenser {
     step: ProcessingStep,
     comments: Array<VAAComment>,
     stepIndex: number,
-    previousNodeIds: Array<string>
+    previousNodeMapping: Array<Array<string>>
   ): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
     const batchSize = params.batchSize;
@@ -377,7 +379,7 @@ export class Condenser {
     const mapResult = await this._executeParallelOperation({
       items: batches,
       stepIndex,
-      previousNodeIds,
+      previousNodeMapping,
       operation: CondensationOperations.MAP,
       prompt: params.condensationPrompt,
       logIdentifier: 'BATCH',
@@ -394,7 +396,7 @@ export class Condenser {
     const iterationResult = await this._executeParallelOperation({
       items: mapResult.arguments.map((argList, i) => ({ argList, batch: batches[i] })),
       stepIndex: stepIndex + 1,
-      previousNodeIds: mapResult.nodeIds, // Link iteration nodes to initial MAP nodes
+      previousNodeMapping: mapResult.nodeIds?.map((id) => [id]) || [], // Link iteration nodes to initial MAP nodes
       operation: CondensationOperations.ITERATE_MAP,
       prompt: params.iterationPrompt,
       logIdentifier: 'ITERATION BATCH',
@@ -421,7 +423,12 @@ export class Condenser {
     return {
       arguments: finalArguments,
       promptCalls: [...mapResult.promptCalls, ...iterationResult.promptCalls],
-      nodeIds: [...mapResult.nodeIds, ...iterationResult.nodeIds],
+      // `nodeIds`: The final output nodes of this step (the ITERATE_MAP nodes).
+      // These will serve as parents for the next condensation step.
+      nodeIds: iterationResult.nodeIds,
+      // `nodeMapping`: The internal wiring for visualization. This links each ITERATE_MAP node
+      // back to its parent MAP node, showing the two-phase nature of this operation.
+      nodeMapping: iterationResult.nodeIds.map((_, i) => [mapResult.nodeIds[i]]),
       stepLevelsConsumed: 2 // MAP operation uses 2 step levels (MAP + ITERATE_MAP)
     };
   }
@@ -433,7 +440,7 @@ export class Condenser {
     step: ProcessingStep,
     argumentLists: Array<Array<Argument>>,
     stepIndex: number,
-    previousNodeIds: Array<string>
+    previousNodeMapping: Array<Array<string>>
   ): Promise<CondensationStepResult> {
     const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
@@ -441,7 +448,12 @@ export class Condenser {
 
     // Early return if no reduction is needed
     if (argumentLists.length <= 1) {
-      return { arguments: argumentLists, promptCalls: [], nodeIds: previousNodeIds };
+      return {
+        arguments: argumentLists,
+        promptCalls: [],
+        nodeIds: previousNodeMapping.map((_, i) => `passthrough_${i}`),
+        nodeMapping: previousNodeMapping
+      };
     }
 
     // Group argument lists into chunks for parallel processing
@@ -450,11 +462,18 @@ export class Condenser {
       chunks.push(argumentLists.slice(i, i + denominator));
     }
 
-    // Use the common parallel processing infrastructure
+    // Create the parent mapping for each new REDUCE node. Each node will be linked
+    // to the group of parent nodes that produced the argument lists it is reducing.
+    const chunkNodeMapping = chunks.map((chunk, chunkIndex) => {
+      const startIdx = chunkIndex * denominator;
+      const endIdx = Math.min(startIdx + denominator, previousNodeMapping.length);
+      return previousNodeMapping.slice(startIdx, endIdx).flat();
+    });
+
     const result = await this._executeParallelOperation({
       items: chunks,
       stepIndex,
-      previousNodeIds,
+      previousNodeMapping: chunkNodeMapping,
       operation: CondensationOperations.REDUCE,
       prompt: params.coalescingPrompt,
       logIdentifier: 'CHUNK',
@@ -472,7 +491,8 @@ export class Condenser {
     return {
       arguments: outputArguments,
       promptCalls: result.promptCalls,
-      nodeIds: result.nodeIds
+      nodeIds: result.nodeIds,
+      nodeMapping: chunkNodeMapping
     };
   }
 
@@ -483,7 +503,7 @@ export class Condenser {
     step: ProcessingStep,
     argumentData: Array<Argument> | Array<Array<Argument>>,
     stepIndex: number,
-    previousNodeIds: Array<string>
+    previousNodeMapping: Array<Array<string>>
   ): Promise<CondensationStepResult> {
     const params = step.params as GroundingOperationParams;
     const parallelFactor = this.input.options.parallelBatches || 3; // How many batches to process in parallel?
@@ -510,7 +530,7 @@ export class Condenser {
     const result = await this._executeParallelOperation({
       items: argumentLists,
       stepIndex,
-      previousNodeIds,
+      previousNodeMapping,
       operation: CondensationOperations.GROUND,
       prompt: params.groundingPrompt,
       logIdentifier: 'LIST',
@@ -529,7 +549,8 @@ export class Condenser {
     return {
       arguments: outputArguments,
       promptCalls: result.promptCalls,
-      nodeIds: result.nodeIds
+      nodeIds: result.nodeIds,
+      nodeMapping: previousNodeMapping // Pass through the same mapping
     };
   }
 
@@ -545,7 +566,7 @@ export class Condenser {
   private async _executeParallelOperation<TInputItem>(config: {
     items: Array<TInputItem>;
     stepIndex: number;
-    previousNodeIds: Array<string>;
+    previousNodeMapping: Array<Array<string>>;
     operation: CondensationOperation;
     prompt: string;
     logIdentifier: string;
@@ -561,7 +582,7 @@ export class Condenser {
     const {
       items,
       stepIndex,
-      previousNodeIds,
+      previousNodeMapping,
       operation,
       prompt,
       logIdentifier,
@@ -599,12 +620,13 @@ export class Condenser {
 
       this.treeBuilder.setNodeInput(nodeId, nodeInput);
 
-      // Link to parent nodes (creates the tree structure)
-      if (previousNodeIds.length > 0) {
-        for (const parentId of previousNodeIds) {
-          this.treeBuilder.linkNodes(parentId, nodeId);
-        }
+      // Link to parent nodes using the specific mapping for this item.
+      // This ensures that nodes are only linked to the parents that directly produced their input data
+      const parentIds = previousNodeMapping[i] || [];
+      for (const parentId of parentIds) {
+        this.treeBuilder.linkNodes(parentId, nodeId);
       }
+
       nodeIds.push(nodeId);
       this.treeBuilder.startNode(nodeId);
     }
