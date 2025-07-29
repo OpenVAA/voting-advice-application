@@ -15,8 +15,11 @@ import {
  * const step: ProcessingStep = {
  *   operation: CondensationOperation.MAP,
  *   params: {
+ *     condensationPromptId: 'Condensation-id',
+ *     condensationPrompt: 'Get this prompt from the prompt registry',
+ *     iterationPromptId: 'Iteration-id',
+ *     iterationPrompt: 'Get this prompt from the prompt registry',
  *     batchSize: 42,
- *     denominator: 10
  *   }
  * };
  */

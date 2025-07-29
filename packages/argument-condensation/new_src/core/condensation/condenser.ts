@@ -123,7 +123,7 @@ export class Condenser {
       previousNodeIds = stepResult.nodeIds || [];
 
       // Update step index based on how many levels this operation consumed
-      // (MAP operations consume 2 levels: MAP + ITERATE_MAP). Not that clean, I know... 
+      // (MAP operations consume 2 levels: MAP + ITERATE_MAP). Not that clean, I know...
       currentStepIndex += stepResult.stepLevelsConsumed || 1;
     }
 
@@ -169,7 +169,7 @@ export class Condenser {
   /**
    * STEP DISPATCHER
    *
-   * Routes each processing step to the appropriate operation handler. 
+   * Routes each processing step to the appropriate operation handler.
    *
    * OPERATION TYPES:
    * - REFINE: Sequential processing, accumulates arguments across batches
@@ -244,7 +244,7 @@ export class Condenser {
 
     // Sequential processing: each batch builds upon previous results
     let currentArguments: Array<Argument> = []; // Accumulates arguments across batches
-    const prompt = params.initialBatchPrompt; // Initial doesn't get arguments as input. Separate prompt for this is kept for clarity 
+    const prompt = params.initialBatchPrompt; // Initial doesn't get arguments as input. Separate prompt for this is kept for clarity
     const allPromptCalls: Array<PromptCall> = [];
 
     // Go through each batch and refine it
@@ -303,7 +303,7 @@ export class Condenser {
       const latency = this.latencyTracker.getDuration(callOperationId) || 0;
       const promptCall: PromptCall = createPromptInstance({
         operation: CondensationOperations.REFINE,
-        promptId: 'RefineMockId', 
+        promptId: isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId,
         rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
         llmResponse,
         latency
@@ -381,7 +381,7 @@ export class Condenser {
       operation: CondensationOperations.MAP,
       prompt: params.condensationPrompt,
       logIdentifier: 'BATCH',
-      promptId: 'MapMockId',
+      promptId: params.condensationPromptId,
       prepareTemplateVars: (batch) => ({
         topic: this.input.question.name,
         comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n'),
@@ -398,7 +398,7 @@ export class Condenser {
       operation: CondensationOperations.ITERATE_MAP,
       prompt: params.iterationPrompt,
       logIdentifier: 'ITERATION BATCH',
-      promptId: 'MapIterationPromptId',
+      promptId: params.iterationPromptId,
       prepareTemplateVars: (item) => ({
         topic: this.input.question.name,
         arguments: JSON.stringify(item.argList, null, 2), // Previous arguments
@@ -458,7 +458,7 @@ export class Condenser {
       operation: CondensationOperations.REDUCE,
       prompt: params.coalescingPrompt,
       logIdentifier: 'CHUNK',
-      promptId: 'ReduceMockId',
+      promptId: params.coalescingPromptId,
       prepareTemplateVars: (chunk) => ({
         topic: this.input.question.name,
         argumentLists: JSON.stringify(chunk, null, 2) // Multiple argument lists to merge
@@ -514,7 +514,7 @@ export class Condenser {
       operation: CondensationOperations.GROUND,
       prompt: params.groundingPrompt,
       logIdentifier: 'LIST',
-      promptId: 'GroundMockId',
+      promptId: params.groundingPromptId,
       prepareTemplateVars: (argumentList, i) => ({
         topic: this.input.question.name,
         arguments: JSON.stringify(argumentList, null, 2), // Arguments to ground

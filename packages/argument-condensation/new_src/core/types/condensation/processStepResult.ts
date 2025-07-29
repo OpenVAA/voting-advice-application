@@ -20,6 +20,7 @@ export interface CondensationStepResult {
   promptCalls: Array<CondensationPromptCall>;
   /** The node IDs of the arguments */
   nodeIds?: Array<string>;
-  /** How many step levels this operation consumed (default 1) */
+  /** How many step levels this operation consumed (default 1). Relevant for the visualization of the condensation plan. 
+   * It is an up-down tree structure */
   stepLevelsConsumed?: number;
 }

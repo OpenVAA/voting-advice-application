@@ -56,7 +56,9 @@ export async function createCondensationSteps({
       operation: CondensationOperations.MAP,
       params: {
         batchSize,
+        condensationPromptId: mapPromptId,
         condensationPrompt: mapPrompt.promptText,
+        iterationPromptId: mapIterationPromptId,
         iterationPrompt: mapIterationPrompt.promptText
       } as MapOperationParams
     }
@@ -78,6 +80,7 @@ export async function createCondensationSteps({
       operation: CondensationOperations.REDUCE,
       params: {
         denominator,
+        coalescingPromptId: reducePromptId,
         coalescingPrompt: reducePrompt.promptText
       } as ReduceOperationParams
     });
