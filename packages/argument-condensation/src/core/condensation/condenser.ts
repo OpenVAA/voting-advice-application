@@ -396,7 +396,7 @@ export class Condenser {
     const iterationResult = await this._executeParallelOperation({
       items: mapResult.arguments.map((argList, i) => ({ argList, batch: batches[i] })),
       stepIndex: stepIndex + 1,
-      previousNodeMapping: mapResult.nodeIds?.map((id) => [id]) || [], // Link iteration nodes to initial MAP nodes
+      previousNodeMapping: mapResult.nodeIds?.map((id) => [id]) || [], // Link iteration nodes to initial MAP nodes directly
       operation: CondensationOperations.ITERATE_MAP,
       prompt: params.iterationPrompt,
       logIdentifier: 'ITERATION BATCH',

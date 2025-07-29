@@ -13,15 +13,16 @@ This package is designed to automate opinion extraction from comments in the VAA
 Topic: "The capital tax should be increased."
 
 Input Comments:
-"Raising taxes lowers incentives to work hard and contribute to the overall economy"
-"Raising taxes secures affordable healthcare services to support everyone's wellbeing"
+- "Raising taxes lowers incentives to work hard and contribute to the overall economy"
+- "Raising taxes secures affordable healthcare services to support everyone's wellbeing"
 etc.
 
-Cons:
-"Raising taxes can be detrimental for motivation to work, decreasing the overall economy"
+Run 1: Find Cons
+- Con 1 = "Raising taxes can be detrimental for motivation to work, decreasing the overall economy"
+- Con 2 = ...
 
-Pros:
-"Tax revenue supports healthcare service providers that are crucial for people's wellbeing"
+Run 2: Find Pros
+- Pro 1 = "Tax revenue supports healthcare service providers that are crucial for people's wellbeing"
 
 NOTE: The output arguments are never a word-for-word match to any of the source comments. Output arguments are usually more abstract and a tad clunky in their formulation, as the LLM's writing style is not as engaging and fluent as what humans can produce. They are, however, very informative and easy to understand.
 
@@ -98,6 +99,7 @@ const output = await condenser.run(); // the arguments with metadata and other j
 OPTION 2: Package API Usage:
 
 This is the recommended way to use the package, as it abstracts away the details of comment grouping and prompt selection.
+
 If you want to configure comment grouping and prompt selection, please consult core/main.ts.
 
 ```typescript
@@ -143,10 +145,9 @@ const results = await handleQuestion({
 });
 ```
 
-Note: It may seem a bit confusing that the map operation isn't a traditional map but instead it is currently coupled with an extra
-iteration step, iterateMap. Naturally this shouldn't pose issues if the usage of the system isn't greatly altered from the original use
-case. The reasoning for the extra step was to make sure that information gathered from the source data is maximized before moving onto
-processing generated arguments.
+Note: It may seem a bit confusing that the map operation isn't a traditional map but instead it is currently coupled with an extra iteration step, iterateMap. This shouldn't pose issues if the usage of the system isn't greatly altered from the original use ase. 
+
+The reasoning for the extra step was to make sure that information gathered from the source data is maximized before moving onto processing generated arguments.
 
 ### Visualization
 
@@ -154,37 +155,37 @@ Running the condensation automatically saves a so-called operation tree that con
 data to visualize the process and its the inputs and outputs in each sub-step. To see the visualization run this:
 
 ```bash
-npm run dev:vis # accept the 'serve' download so the UI server can be hosted
+npm run dev:vis # uses the package 'serve'
 ```
 
 UI will prompt you to download an operation tree. You can find one in src/data/operationTrees.
 
-If you have run your own condensation process, it will also be available in this directory for visualization.
+If you have run your own condensation process before, it will also be available in this directory for visualization.
 
 The visualization includes inputs and outputs of each prompt. These are shown when you press on a node of the tree structure. The prompts themselves are not shown in the UI. Please consult condensation/prompts/your-language-code/the-operation-you-want-to-check/ to see the prompts used.
 
-If you wish to use your own prompt but do not want to delete the old prompts, please create a new .yaml file in the same directory as the other prompts and merely change the prompt ids to use in main.ts's runSingleCondensation method. The prompt registry will find your prompts automatically.
+If you wish to use your own prompt but do not want to delete the old prompts, please create a new .yaml file in the same directory as the other prompts and change the prompt ids to use in main.ts's runSingleCondensation method. The prompt registry will find your prompts automatically if they are in the correct directory and the 'promptId' is set correctly.
 
 ## Package Structure
 
-- `/core`: Contains the main logic of the package.
-  - `main.ts`: Entry point for the main API function `handleQuestion`. This is where you should start your investigation of the system
+- `main.ts`: Contains outward-facing API function `handleQuestion`. This is where you should start your investigation of the system. 
+- `/core`: Contains the condensation logic. Many subtasks are delegated to utils/
   - `/condensation`: The `Condenser` class and other core logic for running the condensation process. Good place to dive deeper into the implementation details
   - `/prompts`: Has all of the condensation prompts in YAML files, organized by language and operation type.
   - `/types`: All TypeScript type definitions used in the package.
   - `/utils`: Utility functions, e.g., for comment processing. Some utility functions perform crucial operations whose logic is neatly abstracted from the callers, e.g. finding the comments to use for pro and con extraction based on whether the associated likert answer is high-end (e.g. 5 = pro comment) or low-end (e.g. 2 = con comment).
-- `/data`: For clarity, operationTrees is under data, because it helps discern what an operationTree is (I hope).
-  - `/operationTrees`: JSON files for visualizing the condensation process are saved here. An operation tree is created automatically and there exist no flag to turn off their creation.
+- `/data`: For clarity, operationTrees is under data/.  
+  - `/operationTrees`: JSON files for visualizing the condensation process are saved here. An operation tree is created automatically and there exists no flag to turn off automatic creation.
 
 ## Data Structures
 
-The most important data structures you'll interact with are:
+The most important data structures you need to know about are:
 
-- `SupportedQuestion`: The question you want to condense arguments for. It's a subset of the question types from `@openvaa/data`.
-- `HasAnswers`: A generic entity (like a candidate or party) that has answers and comments for questions. A minimal condensation process doesn't need anything else than VAA answers with non-empty comments. Every HasAnswers entity conforms to this minimal requirement.
+- `SupportedQuestion`: Type of the questions you can condense arguments for in the OpenVAA repo. It's a subset of the question types from `@openvaa/data`.
+- `HasAnswers`: A generic entity (like a candidate or party) that has answers and some freely drafted texts regarding a particular quesetion. A condensation run doesn't need anything else than VAA answers with non-empty accompanied texts. Every HasAnswers entity has answers but may not have non-empty comments on why they answered as they did. 
 - `CondensationRunInput`: Configuration for the condensation process. See types/condensation/condensationInput.ts.
-- `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that contributed to each argument. See types/condensation/condensationResult.ts.
-- `Argument`: A single condensed argument, including its text and an ID, although the ID is currently a bit redundant. Still, they are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without a need to change anything. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract with both 'id' and 'text'.
+- `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that were processed. See types/condensation/condensationResult.ts.
+- `Argument`: A single condensed argument, including its text and an ID. Note that the ID is currently without much purpose other than being a placeholder. They are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without needing to change it. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract instead of having different contracts for id-free and id-able arguments.
 
 ## Environment
 

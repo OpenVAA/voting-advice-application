@@ -20,6 +20,9 @@ const mockLLMProvider: LLMProvider = {
     model: 'gpt-4o-mini',
     usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
   }),
+  generateWithRetry: vi.fn().mockImplementation(({ messages, temperature, maxTokens, model }) => {
+    return mockLLMProvider.generate({ messages, temperature, maxTokens, model });
+  }),
   generateMultipleParallel: vi.fn().mockImplementation(({ inputs }) => {
     const mockResponse = {
       content:
