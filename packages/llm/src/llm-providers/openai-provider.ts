@@ -7,7 +7,6 @@ export class OpenAIProvider extends LLMProvider {
   private openai: OpenAI;
   public readonly maxContextTokens: number;
   private fallbackModel?: string;
-  private nTokensUsed: number = 0;
 
   constructor({
     model = 'gpt-4o',
@@ -83,10 +82,6 @@ export class OpenAIProvider extends LLMProvider {
         model: response.model,
         finishReason: contentObject.finish_reason
       });
-
-      this.nTokensUsed += llmResponse.usage.totalTokens;
-      console.info(`[Generate] Total tokens used: ${this.nTokensUsed}`);
-
       return llmResponse;
     } catch (error) {
       // Handle error gracefully in caller
@@ -130,7 +125,7 @@ export class OpenAIProvider extends LLMProvider {
         // If it's not the last attempt, wait and retry
         if (attempt < maxAttempts - 1) {
           const waitTime =
-            error instanceof Error && error.message.includes('429') // Yes, you can use a more robust method but this works too as edge cases are trivial
+            error instanceof Error && error.message.includes('429') // Yes, you can use a more robust method but this works too
               ? parseWaitTimeFromError(error.message) || defaultWaitTime
               : defaultWaitTime;
           console.info(
@@ -163,7 +158,8 @@ export class OpenAIProvider extends LLMProvider {
 
   /**
    * Generates multiple responses from the LLM by processing requests in parallel batches. Tries to prevent rate limit errors by pre-checking limits.
-   * @param inputs Array of generation input parameters
+   * @param inputs Array of generation inputs with messages
+   * @param parallelBatches Number of parallel batches to process. Default is 3.
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
   async generateMultipleParallel({
@@ -182,6 +178,7 @@ export class OpenAIProvider extends LLMProvider {
       return [];
     }
 
+    console.info(`${parallelBatches} parallel batches...`);
     // Validate inputs before processing
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];

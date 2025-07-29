@@ -17,23 +17,31 @@ import {
   ResponseWithArguments,
   VAAComment
 } from '../types';
-import { calculateLLMCost, createBatches, LatencyTracker, LlmParser, setPromptVars, validatePlan } from '../utils';
+import {
+  calculateLLMCost,
+  createBatches,
+  LatencyTracker,
+  LlmParser,
+  setPromptVars,
+  validateInputTokenCount,
+  validatePlan
+} from '../utils';
 import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
 
 /**
  * Takes in an array of comments and a configuration object and orchestrates the condensation process using these inputs.
  * Outputs a list of arguments and automatically generates operation tree visualization data for debugging and analysis.
- * 
- * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`. 
- * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons, 
- * whereas `handleQuestion` automatically runs both pros and cons. 
- * 
- * The data needed for visualizing a run through the condenser will be automatically saved to `data/operationTrees` regardless of 
+ *
+ * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`.
+ * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons,
+ * whereas `handleQuestion` automatically runs both pros and cons.
+ *
+ * The data needed for visualizing a run through the condenser will be automatically saved to `data/operationTrees` regardless of
  * whether you use the `handleQuestion` function or the condenser class directly.
- * 
+ *
  * You can choose the condensation run you want to visualize from the `data/operationTrees` folder when the visualization UI is running.
- * 
- * @example 
+ *
+ * @example
  * const condenser = new Condenser({
  *   comments: comments,
  *   question: question,
@@ -48,9 +56,9 @@ import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
  *     ]
  *   }
  * });
- * 
+ *
  * const result = await condenser.run();
- * 
+ *
  * // result is a CondensationRunResult object:
  * {
  *   runId: 'my-run-id',
@@ -60,10 +68,10 @@ import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
  *   success: true,
  *   metadata: {...}
  * }
- * 
+ *
  * @remarks Input data structure contrain current usage to political comment processing but
  * the underlying operations (REFINE, MAP, REDUCE, GROUND) are agnostic to the input data structure. So, in theory,
- * you could modify the condenser to summarize any unstructured data by modifying the input data structures and the underlying prompts. 
+ * you could modify the condenser to summarize any unstructured data by modifying the input data structures and the underlying prompts.
  */
 export class Condenser {
   private runId: string;
@@ -241,6 +249,7 @@ export class Condenser {
     const prompt = params.initialBatchPrompt;
     const allPromptCalls: Array<PromptCall> = [];
 
+    // Go through each batch and refine it
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       const isFirstBatch = i === 0;
@@ -273,7 +282,7 @@ export class Condenser {
         model: this.input.options.llmModel
       });
 
-      // Stop latency tracking
+      // Stop latency tracking for LLM call after it has completed
       this.latencyTracker.stop(callOperationId);
 
       // Parse and validate the response
@@ -281,9 +290,9 @@ export class Condenser {
       try {
         parsedResponse = LlmParser.parse(llmResponse.content, RESPONSE_WITH_ARGUMENTS_CONTRACT);
 
-        // Update tree node with output
+        // Update visualization tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
-        this.treeBuilder.completeNode(nodeId, 1, true);
+        this.treeBuilder.completeNode(nodeId, 1, true); // Mark as completed
       } catch (error) {
         // Mark node as failed and stop processing (sequential dependency)
         this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
@@ -328,43 +337,40 @@ export class Condenser {
     const batchSize = params.batchSize;
     const batches = createBatches({ array: comments, batchSize });
 
-    // PRE-PROCESSING: Validate batch token counts to prevent API failures
-    // This is specific to MAP because it typically processes the largest comment volumes
-    const MAX_TOKENS_PER_BATCH = 28500; // Conservative limit for most LLM providers
-    // How many batches we send in parallel? 
-    const llmBatchSize = this.input.options.parallelBatches || 3;
-
-    // Estimate token usage by creating sample prompts
-    const llmInputsForTokenCheck = batches.map((batch) => {
-      const templateVariables: Record<string, unknown> = {
-        topic: this.input.question.name,
-        comments: batch.map((c) => c.text).join('\n')
-      };
-      const promptText = setPromptVars({ promptText: params.condensationPrompt, variables: templateVariables });
-      return { messages: [{ role: 'system' as const, content: promptText }] };
+    // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures
+    // Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
+    const parallelFactor = this.input.options.parallelBatches || 3; // How many batches to process in parallel?
+    const validationResult = validateInputTokenCount({
+      batches,
+      topic: this.input.question.name,
+      condensationPrompt: params.condensationPrompt,
+      parallelFactor,
+      modelTPMLimit: this.input.options.modelTPMLimit || 30000 // A common conservative limit at least for OpenAI
     });
 
-    // Rough token estimation: characters / 4 * safety margin
-    const promptCharsCounts = llmInputsForTokenCheck.map((input) =>
-      input.messages.reduce((total, message) => total + message.content.length, 0)
-    );
-
-    // Check consecutive batches that would be sent together
-    for (let i = 0; i < promptCharsCounts.length; i += llmBatchSize) {
-      const batchEnd = Math.min(i + llmBatchSize, promptCharsCounts.length);
-      const batchCharSum = promptCharsCounts.slice(i, batchEnd).reduce((sum, count) => sum + count, 0);
-      const estimatedTokens = (batchCharSum / 4) * 1.3; // Simple token estimation with buffer
-
-      if (estimatedTokens > MAX_TOKENS_PER_BATCH) {
-        const batchIndices = Array.from({ length: batchEnd - i }, (_, idx) => i + idx + 1);
-        throw new Error(
-          '❌ MAP BATCH EXCEEDS TOKEN LIMIT\n' +
-            `📊 Batch ${Math.floor(i / llmBatchSize) + 1} (inputs ${batchIndices.join(', ')}) has ${estimatedTokens.toFixed(0)} tokens (max: ${MAX_TOKENS_PER_BATCH})\n` +
-            ' SOLUTIONS:\n' +
-            `   1. Reduce batch size from ${batchSize}\n` +
-            '   2. Clean up/shorten comment text in your input data\n'
-        );
-      }
+    // Currently, if the batch exceeds the token limit, we throw an error. This happens so rarely, if ever, that it's not a big issue.
+    // To improve: add a graceful degradation mechanism, e.g. reduce batch size automatically
+    if (!validationResult.success) {
+      const failedIndex = validationResult.failedBatchIndex || 0;
+      const i = failedIndex * parallelFactor;
+      const batchEnd = Math.min(i + parallelFactor, batches.length);
+      const batchIndices = Array.from({ length: batchEnd - i }, (_, idx) => i + idx + 1);
+      const modelTPMLimit = this.input.options.modelTPMLimit || 30000;
+      throw new Error(
+        'Map batch exceeds the model tokens per minute (TPM) limit. Halting execution to prevent a persistent API failure. \n\n' +
+          `Batch ${failedIndex + 1} (inputs ${batchIndices.join(', ')}) has ${(
+            validationResult.tokenCount || 0
+          ).toFixed(0)} tokens (max: ${modelTPMLimit})\n\n` +
+          `The TPM limit has been set ${
+            this.input.options.modelTPMLimit
+              ? 'in the input configuration'
+              : 'automatically as a conservative default because it was not provided in the input config'
+          }.\n\n` +
+          ' SOLUTIONS:\n' +
+          '   1. Clean up your input data\n' +
+          '   2. Use a different LLM with a higher TPM limit (also, if you have configured the limit yourself, maybe check that it is correct) \n' +
+          `   3. Reduce batch size from ${batchSize} (currently only possible for developers - see function createCondensationSteps) \n`
+      );
     }
 
     // PHASE 1: Initial MAP step - parallel argument extraction
@@ -378,8 +384,10 @@ export class Condenser {
       promptId: 'MapMockId',
       prepareTemplateVars: (batch) => ({
         topic: this.input.question.name,
-        comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n')
-      })
+        comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n'),
+        parallelBatches: parallelFactor
+      }),
+      parallelBatches: parallelFactor
     });
 
     // PHASE 2: ITERATE_MAP step - refinement using original comments + extracted arguments
@@ -396,17 +404,16 @@ export class Condenser {
         arguments: JSON.stringify(item.argList, null, 2), // Previous arguments
         comments: item.batch.map((c) => c.text).join('\n') // Original comments
       }),
-      // GRACEFUL DEGRADATION: If iteration fails, we keep the initial MAP results
       shouldThrowOnRetryFailure: false,
-      onSuccess: (result, index) => {
-        // Successful iteration replaces the original arguments with refined ones
-        mapResult.arguments[index] = result.parsedResponse.arguments;
-      },
-      onFailure: (index) => {
-        console.info(`\n⚠️  MAP ITERATION BATCH ${index + 1} failed after retries, keeping initial arguments`);
-        // Note: mapResult.arguments[index] remains unchanged (initial MAP result)
-      }
+      parallelBatches: parallelFactor
     });
+
+    // Update mapResult with successful iterations
+    for (let i = 0; i < iterationResult.arguments.length; i++) {
+      if (iterationResult.arguments[i]) {
+        mapResult.arguments[i] = iterationResult.arguments[i];
+      }
+    }
 
     // Return the final arguments (either refined or original if iteration failed)
     const finalArguments = mapResult.arguments;
@@ -430,6 +437,7 @@ export class Condenser {
   ): Promise<CondensationStepResult> {
     const params = step.params as ReduceOperationParams;
     const denominator = params.denominator;
+    const parallelFactor = this.input.options.parallelBatches || 3; // How many batches to process in parallel?
 
     // Early return if no reduction is needed
     if (argumentLists.length <= 1) {
@@ -454,7 +462,8 @@ export class Condenser {
       prepareTemplateVars: (chunk) => ({
         topic: this.input.question.name,
         argumentLists: JSON.stringify(chunk, null, 2) // Multiple argument lists to merge
-      })
+      }),
+      parallelBatches: parallelFactor
     });
 
     // Handle the output format - if we only have one result, unwrap it
@@ -477,7 +486,7 @@ export class Condenser {
     previousNodeIds: Array<string>
   ): Promise<CondensationStepResult> {
     const params = step.params as GroundingOperationParams;
-
+    const parallelFactor = this.input.options.parallelBatches || 3; // How many batches to process in parallel?
     // Normalize input to always be an array of argument lists for convinience (even if single list)
     const argumentLists: Array<Array<Argument>> = Array.isArray(argumentData[0])
       ? (argumentData as Array<Array<Argument>>)
@@ -511,18 +520,7 @@ export class Condenser {
         arguments: JSON.stringify(argumentList, null, 2), // Arguments to ground
         comments: JSON.stringify(commentBatches[i], null, 2) // Comments for evidence
       }),
-      // Custom success handler for detailed logging
-      onSuccess: (result, index) => {
-        const commentsForGrounding = commentBatches[index];
-        console.info(`\n=== GROUND LIST ${index + 1}/${argumentLists.length} ===`);
-        console.info('Original arguments:', JSON.stringify(result.item, null, 2));
-        console.info('Grounded arguments:', JSON.stringify(result.parsedResponse.arguments, null, 2));
-        console.info(`Used ${commentsForGrounding.length} comments for grounding`);
-        if (result.parsedResponse.reasoning) {
-          console.info('Reasoning:', result.parsedResponse.reasoning);
-        }
-        console.info('=====================================\n');
-      }
+      parallelBatches: parallelFactor
     });
 
     // Preserve input structure in output - single list stays single, multiple stays multiple
@@ -552,10 +550,9 @@ export class Condenser {
     prompt: string;
     logIdentifier: string;
     promptId: string;
-    prepareTemplateVars: (item: TInputItem, index: number) => Record<string, unknown>;
-    shouldThrowOnRetryFailure?: boolean;
-    onSuccess?: (result: { parsedResponse: ResponseWithArguments; item: TInputItem }, index: number) => void;
-    onFailure?: (index: number) => void;
+    prepareTemplateVars: (item: TInputItem, index: number) => Record<string, unknown>; // Custom logic for how to format variables
+    shouldThrowOnRetryFailure?: boolean; // false for map iteration because we can continue even if some batches fail, otherwise true
+    parallelBatches?: number;
   }): Promise<{
     arguments: Array<Array<Argument>>;
     promptCalls: Array<PromptCall>;
@@ -571,8 +568,7 @@ export class Condenser {
       promptId,
       prepareTemplateVars,
       shouldThrowOnRetryFailure = true,
-      onSuccess,
-      onFailure
+      parallelBatches = 3
     } = config;
 
     // PHASE 1: CREATE TREE NODES
@@ -626,7 +622,10 @@ export class Condenser {
     });
 
     // PHASE 3: EXECUTE PARALLEL LLM CALLS
-    const llmResponses = await this.input.options.llmProvider.generateMultipleParallel({ inputs: llmInputs });
+    const llmResponses = await this.input.options.llmProvider.generateMultipleParallel({
+      inputs: llmInputs,
+      parallelBatches
+    });
 
     // PHASE 4: PROCESS RESPONSES (FIRST ATTEMPT)
     const finalArguments: Array<Array<Argument>> = new Array(items.length);
@@ -645,11 +644,9 @@ export class Condenser {
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
         this.treeBuilder.completeNode(nodeId, 1, true);
         finalArguments[i] = parsedResponse.arguments;
-        if (onSuccess) onSuccess({ parsedResponse, item: items[i] }, i);
       } catch (error) {
         console.info(`\n❌ ${operation} ${logIdentifier} ${i + 1}/${items.length} FAILED ===`);
         console.info('Parse error:', error instanceof Error ? error.message : 'Unknown error');
-        console.info('Raw response:', llmResponse.content.substring(0, 200) + '...');
         console.info('=====================================\n');
         failedIndices.push(i);
         this.treeBuilder.completeNode(
@@ -685,7 +682,6 @@ export class Condenser {
           this.treeBuilder.completeNode(nodeId, 1, true);
           finalArguments[index] = parsedResponse.arguments;
           retriedSuccessIndices.add(index);
-          if (onSuccess) onSuccess({ parsedResponse, item: items[index] }, index);
         } catch (retryError) {
           this.treeBuilder.completeNode(
             nodeId,
@@ -706,7 +702,6 @@ export class Condenser {
       // GRACEFUL DEGRADATION: Handle remaining failures
       const stillFailedIndices = failedIndices.filter((i) => !retriedSuccessIndices.has(i));
       if (stillFailedIndices.length > 0) {
-        if (onFailure) stillFailedIndices.forEach((i) => onFailure(i));
         if (shouldThrowOnRetryFailure) {
           throw new Error(
             `${operation} operation failed for ${logIdentifier}s: ${stillFailedIndices

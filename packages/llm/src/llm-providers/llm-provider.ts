@@ -97,6 +97,7 @@ export abstract class LLMProvider {
   /**
    * Generates multiple responses from the LLM based on an array of input requests
    * @param inputs Array of input requests, each containing messages, temperature, and optional parameters
+   * @param parallelBatches Optional maximum number of parallel batches to use. Default is 3.
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
    */
   abstract generateMultipleParallel({
@@ -108,6 +109,7 @@ export abstract class LLMProvider {
       maxTokens?: number;
       model?: string;
     }>;
+    parallelBatches?: number;
   }): Promise<Array<LLMResponse>>;
 
   abstract generateMultipleSequential({

@@ -1,5 +1,6 @@
 // Validation utilities
 export { validatePlan } from './condensation/planValidation';
+export * from './condensation/validateInputTokenCount';
 
 // Prompt utilities
 export { setPromptVars } from './prompting/setPromptVars';

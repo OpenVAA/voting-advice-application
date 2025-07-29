@@ -79,6 +79,8 @@ export interface CondensationOptions {
   invertProsAndCons?: boolean;
   /** The number of parallel batches to use for parallelizable operations */
   parallelBatches?: number;
+  /** The number of tokens per minute the LLM model can handle */
+  modelTPMLimit?: number;
 }
 
 /**

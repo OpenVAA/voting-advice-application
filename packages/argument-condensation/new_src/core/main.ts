@@ -131,7 +131,8 @@ export async function handleQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
 
     case QUESTION_TYPE.SingleChoiceOrdinal:
@@ -143,7 +144,8 @@ export async function handleQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
 
     case QUESTION_TYPE.SingleChoiceCategorical:
@@ -155,7 +157,8 @@ export async function handleQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
 
     // Should never happen if the supportedQuestion type is updated correctly
@@ -184,7 +187,8 @@ async function handleBooleanQuestion({
   language,
   runId,
   maxCommentsPerGroup,
-  parallelBatches
+  parallelBatches,
+  modelTPMLimit
 }: {
   question: BooleanQuestion;
   commentGroups: Array<CommentGroup>;
@@ -194,6 +198,7 @@ async function handleBooleanQuestion({
   runId: string;
   maxCommentsPerGroup: number;
   parallelBatches: number;
+  modelTPMLimit: number;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -209,7 +214,8 @@ async function handleBooleanQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
       results.push(prosResult);
     } else if (group.type === 'con') {
@@ -222,7 +228,8 @@ async function handleBooleanQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
       results.push(consResult);
     }
@@ -242,6 +249,8 @@ async function handleBooleanQuestion({
  * @param language - The language of the question
  * @param runId - The ID of the run
  * @param maxCommentsPerGroup - The maximum number of comments per group
+ * @param parallelBatches - The number of parallel batches to use
+ * @param modelTPMLimit - The number of tokens per minute the LLM model can handle
  */
 async function handleOrdinalQuestion({
   question,
@@ -251,7 +260,8 @@ async function handleOrdinalQuestion({
   language,
   runId,
   maxCommentsPerGroup,
-  parallelBatches
+  parallelBatches,
+  modelTPMLimit
 }: {
   question: SingleChoiceOrdinalQuestion;
   commentGroups: Array<CommentGroup>;
@@ -261,6 +271,7 @@ async function handleOrdinalQuestion({
   runId: string;
   maxCommentsPerGroup: number;
   parallelBatches: number;
+  modelTPMLimit: number;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -277,7 +288,8 @@ async function handleOrdinalQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
       results.push(prosResult);
     } else if (group.type === 'con') {
@@ -290,7 +302,8 @@ async function handleOrdinalQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
       results.push(consResult);
     }
@@ -320,7 +333,8 @@ async function handleCategoricalQuestion({
   language,
   runId,
   maxCommentsPerGroup,
-  parallelBatches
+  parallelBatches,
+  modelTPMLimit
 }: {
   question: SingleChoiceCategoricalQuestion;
   commentGroups: Array<CommentGroup>;
@@ -330,6 +344,7 @@ async function handleCategoricalQuestion({
   runId: string;
   maxCommentsPerGroup: number;
   parallelBatches: number;
+  modelTPMLimit: number;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -345,7 +360,8 @@ async function handleCategoricalQuestion({
         language,
         runId,
         maxCommentsPerGroup,
-        parallelBatches
+        parallelBatches,
+        modelTPMLimit
       });
       results.push(categoryResult);
     }
@@ -392,7 +408,8 @@ async function runSingleCondensation({
   language,
   runId,
   maxCommentsPerGroup,
-  parallelBatches
+  parallelBatches,
+  modelTPMLimit
 }: {
   question: SupportedQuestion;
   comments: Array<VAAComment>;
@@ -403,6 +420,7 @@ async function runSingleCondensation({
   runId: string;
   maxCommentsPerGroup: number;
   parallelBatches: number;
+  modelTPMLimit: number;
 }): Promise<CondensationRunResult> {
   // Get prompts from registry
   // If you are interested in testing different prompts, there are two ways to improve configuration:
@@ -441,7 +459,8 @@ async function runSingleCondensation({
       processingSteps: steps,
       outputType: condensationType as CondensationOutputType,
       maxCommentsPerGroup,
-      parallelBatches
+      parallelBatches,
+      modelTPMLimit
     }
   };
 

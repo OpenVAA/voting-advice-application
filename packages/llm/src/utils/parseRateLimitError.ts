@@ -14,7 +14,7 @@ export function parseWaitTimeFromError(errorMessage: string): number | null {
   if (match && match[1]) {
     const waitTimeInSeconds = parseFloat(match[1]);
     if (!isNaN(waitTimeInSeconds)) {
-      return Math.ceil(waitTimeInSeconds * 1000) + 200; // Add 200 ms buffer just to be safe
+      return Math.ceil(waitTimeInSeconds * 1000) + 5000; // Add 5s buffer just to be safe(r)
     }
   }
 
