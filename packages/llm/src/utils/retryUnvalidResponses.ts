@@ -1,5 +1,6 @@
 import { LlmParser, LLMResponseContract } from './llmParser';
-import { LLMProvider, LLMResponse,Message } from '../llm-providers/llm-provider';
+import { LLMProvider } from '../llm-providers/llm-provider';
+import { LLMResponse, Message } from '../types';
 
 /**
  * Retry helper function for failed parsing attempts

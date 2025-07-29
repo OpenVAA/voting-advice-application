@@ -1,4 +1,4 @@
-import { LLMResponse,Message } from '../types';
+import { LLMResponse, Message } from '../types';
 
 /**
  * Abstract base class for LLM providers.

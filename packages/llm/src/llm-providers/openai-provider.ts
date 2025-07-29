@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { LLMProvider } from './llm-provider';
 import { LLMResponse, Message, TokenUsage, } from '../types';
+import { mapToMessageParam } from '../utils';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
 
 /** OpenAI implementation of the LLMProvider class. 
@@ -221,7 +222,6 @@ export class OpenAIProvider extends LLMProvider {
       return [];
     }
 
-    console.info(`${parallelBatches} parallel batches...`);
     // Validate inputs before processing
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
@@ -290,26 +290,5 @@ export class OpenAIProvider extends LLMProvider {
     }
 
     return results;
-  }
-}
-
-function mapToMessageParam({ role, content }: { role: string; content: string }): OpenAI.ChatCompletionMessageParam {
-  const normalizedRole = role.toLowerCase();
-
-  switch (normalizedRole) {
-    case 'system':
-      return { role: 'system', content } as OpenAI.ChatCompletionSystemMessageParam;
-
-    case 'user':
-      return { role: 'user', content } as OpenAI.ChatCompletionUserMessageParam;
-
-    case 'assistant':
-      return { role: 'assistant', content } as OpenAI.ChatCompletionAssistantMessageParam;
-
-    case 'developer':
-      return { role: 'developer', content } as OpenAI.ChatCompletionDeveloperMessageParam;
-
-    default:
-      throw new Error(`Unsupported role: ${normalizedRole}`);
   }
 }
