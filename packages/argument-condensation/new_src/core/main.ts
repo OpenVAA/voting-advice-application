@@ -212,7 +212,7 @@ async function handleBooleanQuestion({
         llmProvider,
         llmModel,
         language,
-        runId,
+        runId: runId + '-pros',
         maxCommentsPerGroup,
         parallelBatches,
         modelTPMLimit
@@ -226,7 +226,7 @@ async function handleBooleanQuestion({
         llmProvider,
         llmModel,
         language,
-        runId,
+        runId: runId + '-cons',
         maxCommentsPerGroup,
         parallelBatches,
         modelTPMLimit
@@ -286,7 +286,7 @@ async function handleOrdinalQuestion({
         llmProvider,
         llmModel,
         language,
-        runId,
+        runId: runId + '-pros',
         maxCommentsPerGroup,
         parallelBatches,
         modelTPMLimit
@@ -300,7 +300,7 @@ async function handleOrdinalQuestion({
         llmProvider,
         llmModel,
         language,
-        runId,
+        runId: runId + '-cons',
         maxCommentsPerGroup,
         parallelBatches,
         modelTPMLimit
@@ -358,7 +358,7 @@ async function handleCategoricalQuestion({
         llmProvider,
         llmModel,
         language,
-        runId,
+        runId: runId + group.choiceId,
         maxCommentsPerGroup,
         parallelBatches,
         modelTPMLimit
