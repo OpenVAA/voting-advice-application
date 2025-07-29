@@ -16,7 +16,7 @@ const OPENAI_MODEL_PRICING: Record<string, ModelPricing> = {
   'gpt-4.5-preview-2025-02-27': { input: 75.0, cachedInput: 37.5, output: 150.0 },
 
   // GPT-4o family
-  'gpt-4o': { input: 2.5, cachedInput: 1.25, output: 10.0 },
+  'gpt-4o': { input: 5.0, cachedInput: 2.5, output: 20.0 },
   'gpt-4o-2024-08-06': { input: 2.5, cachedInput: 1.25, output: 10.0 },
   'gpt-4o-audio-preview': { input: 2.5, cachedInput: 0, output: 10.0 },
   'gpt-4o-audio-preview-2024-12-17': { input: 2.5, cachedInput: 0, output: 10.0 },

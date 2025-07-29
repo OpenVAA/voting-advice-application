@@ -27,14 +27,12 @@ export type { OperationNode, OperationTree } from './base/operationTree';
 
 // Prompt-related types
 export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, RefinePrompt } from './llm/prompt';
-export type { PromptCall } from './llm/promptCall';
+export type { CondensationPromptCall as PromptCall } from './llm/promptCall';
 
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
 
-// LLM token & pricing types
-export type { ModelPricing } from './llm/apiCosts';
-export type { TokenUsage } from './llm/tokenUsage';
-
-// LLM latency
-export type { LatencyMeasurement } from './llm/latency';
+// LLM latency, token & pricing types (re-exported from @openvaa/llm for convenience)
+export type { ModelPricing } from '@openvaa/llm';
+export type { TokenUsage } from '@openvaa/llm';
+export type { LatencyMeasurement } from '@openvaa/llm';

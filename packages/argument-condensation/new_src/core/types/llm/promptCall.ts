@@ -23,7 +23,7 @@ import { CondensationOperation } from '../condensation/operation';
  *   }
  * };
  */
-export interface PromptCall {
+export interface CondensationPromptCall {
   /** The prompt template this call used */
   promptTemplateId: string;
   /** The operation this prompt is associated with, e.g. MAP, REFINE, etc */
