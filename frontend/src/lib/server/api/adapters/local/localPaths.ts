@@ -1,4 +1,6 @@
+import path from 'path';
 import { DP_METHOD } from '$lib/api/base/dataTypes';
+import { constants } from '$lib/server/constants';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type {
   AnyEntityVariantData,
@@ -13,13 +15,13 @@ import type {
 import type { AppCustomization } from '$lib/contexts/app';
 
 export const READ_PATHS = Object.fromEntries(
-  Object.keys(DP_METHOD).map((collection) => [collection, `/data/${collection}.json`])
+  Object.keys(DP_METHOD).map((collection) => [collection, path.join(constants.LOCAL_DATA_DIR, `${collection}.json`)])
 ) as Record<keyof typeof DP_METHOD, string>;
 
 export type ReadPath = keyof typeof READ_PATHS;
 
 export const CREATE_PATHS = {
-  feedbacks: '/data/feedbacks'
+  feedbacks: path.join(constants.LOCAL_DATA_DIR, 'feedbacks')
 };
 
 export type CreatePath = keyof typeof CREATE_PATHS;

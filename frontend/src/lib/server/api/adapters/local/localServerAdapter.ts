@@ -15,9 +15,8 @@ export abstract class LocalServerAdapter {
    * @throws Error on failure.
    */
   async exists(endpoint: ReadPath): Promise<boolean> {
-    const fp = path.join(process.cwd(), READ_PATHS[endpoint]);
     try {
-      await fs.access(fp);
+      await fs.access(READ_PATHS[endpoint]);
       return true;
     } catch {
       return false;
@@ -31,8 +30,7 @@ export abstract class LocalServerAdapter {
    * @throws Error on failure.
    */
   async read(endpoint: ReadPath): Promise<string> {
-    const fp = path.join(process.cwd(), READ_PATHS[endpoint]);
-    const data = await fs.readFile(fp).catch((e) => {
+    const data = await fs.readFile(READ_PATHS[endpoint]).catch((e) => {
       throw new Error(`Error with readData ${endpoint}: : ${e instanceof Error ? e.message : e}`);
     });
     return data.toString();
@@ -46,7 +44,7 @@ export abstract class LocalServerAdapter {
    * @throws Error on failure.
    */
   async create({ endpoint, data }: { endpoint: CreatePath; data: string }): Promise<Response> {
-    const folder = path.join(process.cwd(), CREATE_PATHS[endpoint]);
+    const folder = CREATE_PATHS[endpoint];
     await fs.mkdir(folder, { recursive: true });
     const baseName = new Date().toJSON().replace(/[.:]/g, '-');
     let fp = path.join(folder, `${baseName}.json`);
