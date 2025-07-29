@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
-import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider';
+import { LLMProvider } from './llm-provider';
+import { LLMResponse, Message, TokenUsage, } from '../types';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
 
 /** OpenAI implementation of the LLMProvider class. 
@@ -96,16 +97,16 @@ export class OpenAIProvider extends LLMProvider {
         throw new Error('OpenAI API returned empty content');
       }
 
-      const llmResponse = new LLMResponse({
+      const llmResponse: LLMResponse = {
         content: contentObject.message.content,
-        usage: new UsageStats({
+        usage: {
           promptTokens: usage?.prompt_tokens ?? 0,
           completionTokens: usage?.completion_tokens ?? 0,
           totalTokens: usage?.total_tokens ?? 0
-        }),
+        } as TokenUsage,
         model: response.model,
         finishReason: contentObject.finish_reason
-      });
+      };
       return llmResponse;
     } catch (error) {
       // Handle error gracefully in caller

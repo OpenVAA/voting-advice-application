@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Message } from './llm-provider';
 import { OpenAIProvider } from './openai-provider';
+import { Message } from '../types';
 
 // Mock the OpenAI API responses - no actual API calls will be made
 const mockCreate = vi.fn().mockImplementation((params) =>
@@ -181,7 +181,7 @@ describe.sequential('OpenAIProvider', () => {
       model: 'gpt-4o',
       fallbackModel: 'gpt-4o-mini'
     });
-    const messages = [new Message({ role: 'user', content: 'Hello!' })];
+    const messages = [{ role: 'user', content: 'Hello!' }] as Array<Message>;
 
     mockCreate
       .mockRejectedValueOnce(new Error('API error 1'))
