@@ -27,7 +27,7 @@ export type { OperationNode, OperationTree } from './base/operationTree';
 
 // Prompt-related types
 export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, RefinePrompt } from './llm/prompt';
-export type { CondensationPromptCall as PromptCall } from './llm/promptCall';
+export type { CondensationPromptCall as PromptCall } from './llm/promptInstance';
 
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';

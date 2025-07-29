@@ -22,6 +22,10 @@ import {
  * @param commentCount - The number of comments in the input
  */
 export function validatePlan({ steps, commentCount }: { steps: Array<ProcessingStep>, commentCount: number }): void {
+  if (commentCount === 0) {
+    throw new Error('Cannot run condensation with empty comments array. At least one comment is required.');
+  }
+
   if (steps.length === 0) {
     throw new Error('Condensation plan must have at least one step');
   }

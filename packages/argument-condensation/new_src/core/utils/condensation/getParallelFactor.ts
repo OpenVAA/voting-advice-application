@@ -20,6 +20,5 @@ export function getParallelFactor(modelTPMLimit: number): number {
   // Note that some calls fail contract validation (wrong answer format) and are retried as a new batch, which slows things down quite a bit.
   // So this is a 'natural' throttle, which may very well become less relevant as model response reliability improves with time. 
   const theoreticalMaxFactor = modelTPMLimit / TOKENS_PER_CALL_ESTIMATE;
-  console.info(`Parallel factor: ${Math.ceil(theoreticalMaxFactor / 3)}`);
   return Math.ceil(theoreticalMaxFactor / 3);
 }

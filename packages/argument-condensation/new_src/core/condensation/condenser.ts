@@ -18,8 +18,8 @@ import {
   VAAComment
 } from '../types';
 import {
-  calculateLLMCost,
   createBatches,
+  createPromptInstance,
   LatencyTracker,
   LlmParser,
   setPromptVars,
@@ -101,15 +101,10 @@ export class Condenser {
    * 5. Return final results with metadata
    */
   async run(): Promise<CondensationRunResult> {
-    this.latencyTracker.start('total_run');
+    this.latencyTracker.start('total_run'); // Track the total run time in addition to the individual calls
 
     // Get condensation plan from input config
     const processingSteps: Array<ProcessingStep> = this.input.options.processingSteps || [];
-
-    // Early validation: check for empty comments
-    if (this.input.comments.length === 0) {
-      throw new Error('Cannot run condensation with empty comments array. At least one comment is required.');
-    }
 
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
@@ -119,8 +114,8 @@ export class Condenser {
     let previousNodeIds: Array<string> = []; // Start with empty array - first step will create root nodes
     let currentStepIndex = 0; // Track actual step index accounting for multi-level operations (MAP + ITERATE_MAP)
 
-    for (let i = 0; i < processingSteps.length; i++) {
-      const step = processingSteps[i];
+    // Execute each step in the plan sequentially (although the steps themselves may contain parallel operations)
+    for (const step of processingSteps) {
       const stepResult = await this.executeStep(step, currentData, currentStepIndex, previousNodeIds);
 
       // Update current data for next step - this is the key data flow mechanism
@@ -128,12 +123,12 @@ export class Condenser {
       previousNodeIds = stepResult.nodeIds || [];
 
       // Update step index based on how many levels this operation consumed
-      // (MAP operations consume 2 levels: MAP + ITERATE_MAP)
+      // (MAP operations consume 2 levels: MAP + ITERATE_MAP). Not that clean, I know... 
       currentStepIndex += stepResult.stepLevelsConsumed || 1;
     }
 
     // Calculate total execution time
-    const totalDuration = this.latencyTracker.stop('total_run') || 0;
+    const totalDuration = this.latencyTracker.stop('total_run') || -1;
     const endTime = new Date();
 
     // Calculate total token usage from all prompt calls
@@ -174,14 +169,13 @@ export class Condenser {
   /**
    * STEP DISPATCHER
    *
-   * Routes each processing step to the appropriate operation handler.
-   * This is the main branching point that determines how data flows through the system.
+   * Routes each processing step to the appropriate operation handler. 
    *
    * OPERATION TYPES:
    * - REFINE: Sequential processing, accumulates arguments across batches
    * - MAP: Parallel processing, extracts arguments from comment batches
-   * - REDUCE: Parallel processing, consolidates multiple argument lists
-   * - GROUND: Parallel processing, connects arguments to source comments
+   * - REDUCE: Parallel processing, consolidates multiple argument lists into one
+   * - GROUND: Parallel processing, iterates arguments with source comments
    */
   private async executeStep(
     step: ProcessingStep,
@@ -212,6 +206,10 @@ export class Condenser {
     }
   }
 
+  // *****************************************************
+  // -------------- OPERATION HANDLERS ---------------- :)
+  // *****************************************************
+
   /**
    * Execute REFINE operation
    */
@@ -227,13 +225,13 @@ export class Condenser {
     // Split comments into batches for sequential processing
     const batches = createBatches({ array: comments, batchSize });
 
-    // Create tree nodes for each batch - these will be processed sequentially
+    // Create tree nodes for each batch. These will be processed sequentially
     const batchNodeIds: Array<string> = [];
     for (let i = 0; i < batches.length; i++) {
       const nodeId = this.treeBuilder.createNode(CondensationOperations.REFINE, stepIndex, i);
       this.treeBuilder.setNodeInput(nodeId, { comments: batches[i] });
 
-      // Link to previous nodes (only if they exist - first step has no parents)
+      // Link to previous nodes (only if they exist, first step has no parents)
       if (previousNodeIds.length > 0) {
         for (const parentId of previousNodeIds) {
           this.treeBuilder.linkNodes(parentId, nodeId);
@@ -244,9 +242,9 @@ export class Condenser {
       this.treeBuilder.startNode(nodeId);
     }
 
-    // Sequential processing - each batch builds upon previous results
+    // Sequential processing: each batch builds upon previous results
     let currentArguments: Array<Argument> = []; // Accumulates arguments across batches
-    const prompt = params.initialBatchPrompt;
+    const prompt = params.initialBatchPrompt; // Initial doesn't get arguments as input. Separate prompt for this is kept for clarity 
     const allPromptCalls: Array<PromptCall> = [];
 
     // Go through each batch and refine it
@@ -255,13 +253,13 @@ export class Condenser {
       const isFirstBatch = i === 0;
       const nodeId = batchNodeIds[i];
 
-      // Prepare template variables - note how existing arguments are included for refinement
+      // Prepare template variables
       const templateVariables: Record<string, unknown> = {
         topic: this.input.question.name,
         comments: JSON.stringify(batch, null, 2)
       };
 
-      // Add existing arguments for refinement prompts (key difference from MAP)
+      // Existing arguments are included for refinement if not the first batch
       if (!isFirstBatch) {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
@@ -302,13 +300,15 @@ export class Condenser {
       }
 
       // Track the LLM call for metrics
-      const promptCall: PromptCall = this.createPromptCall(
-        CondensationOperations.REFINE,
-        'RefineMockId',
-        `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
+      const latency = this.latencyTracker.getDuration(callOperationId) || 0;
+      const promptCall: PromptCall = createPromptInstance({
+        operation: CondensationOperations.REFINE,
+        promptId: 'RefineMockId', 
+        rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
         llmResponse,
-        callOperationId
-      );
+        latency
+      });
+      this.totalCost += promptCall.metadata.cost;
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
@@ -699,7 +699,7 @@ export class Condenser {
         }
       }
 
-      // GRACEFUL DEGRADATION: Handle remaining failures
+      // Handle remaining failures. We wait for these patiently! :)
       const stillFailedIndices = failedIndices.filter((i) => !retriedSuccessIndices.has(i));
       if (stillFailedIndices.length > 0) {
         if (shouldThrowOnRetryFailure) {
@@ -716,64 +716,21 @@ export class Condenser {
     // Track all successful LLM calls for cost and usage analysis
     for (let i = 0; i < items.length; i++) {
       const llmResponse = successfulResponses[i];
+      const latency = this.latencyTracker.getDuration(nodeIds[i]) || 0;
       if (llmResponse) {
-        const promptCall: PromptCall = this.createPromptCall(
+        const promptCall: PromptCall = createPromptInstance({
           operation,
           promptId,
-          `${operation} for ${logIdentifier} ${i + 1}/${items.length}`,
+          rawInputText: `${operation} for ${logIdentifier} ${i + 1}/${items.length}`,
           llmResponse,
-          nodeIds[i]
-        );
+          latency
+        });
         allPromptCalls.push(promptCall);
         this.allPromptCalls.push(promptCall);
+        this.totalCost += promptCall.metadata.cost;
       }
     }
 
     return { arguments: finalArguments, promptCalls: allPromptCalls, nodeIds };
-  }
-
-  /**
-   * Helper method to create a PromptCall with proper latency and cost tracking
-   */
-  private createPromptCall(
-    operation: CondensationOperation,
-    promptId: string,
-    rawInputText: string,
-    llmResponse: LLMResponse,
-    operationId: string
-  ): PromptCall {
-    const latency = this.latencyTracker.getDuration(operationId) || 0;
-
-    // Calculate cost for this LLM call
-    const callCost = calculateLLMCost({
-      provider: 'openai', // TODO: get actual provider from llmProvider
-      model: llmResponse.model,
-      usage: {
-        promptTokens: llmResponse.usage.promptTokens,
-        completionTokens: llmResponse.usage.completionTokens,
-        totalTokens: llmResponse.usage.totalTokens
-      }
-    });
-
-    // Add to total cost
-    this.totalCost += callCost;
-
-    return {
-      promptTemplateId: promptId,
-      operation,
-      rawInputText,
-      rawOutputText: llmResponse.content,
-      modelUsed: llmResponse.model,
-      timestamp: new Date().toISOString(),
-      metadata: {
-        tokens: {
-          input: llmResponse.usage.promptTokens,
-          output: llmResponse.usage.completionTokens,
-          total: llmResponse.usage.totalTokens
-        },
-        latency,
-        cost: callCost
-      }
-    };
   }
 }
