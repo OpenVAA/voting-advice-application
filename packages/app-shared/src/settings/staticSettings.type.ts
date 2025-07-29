@@ -29,7 +29,7 @@ export type StaticSettings = {
     readonly source: string;
   };
   /**
-   * Settings defining the data adapters to use, which may be a database interface or one using local files.
+   * Settings defining the data adapters to use, which may be a database interface or one using local files. When using the `local` adapter, check also that the `LOCAL_DATA_DIR` environment variable is set correctly.
    */
   readonly dataAdapter:
     | {
