@@ -1,7 +1,31 @@
 import OpenAI from 'openai';
-import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
+import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
 
+/** OpenAI implementation of the LLMProvider class. 
+ * 
+ * @example
+ * const openaiProvider = new OpenAIProvider({
+ *   apiKey: 'your-openai-api-key',
+ *   model: 'gpt-4o',
+ *   maxContextTokens: 4096,
+ *   fallbackModel: 'gpt-3.5-turbo'
+ * });
+ * 
+ * const response = await openaiProvider.generate({
+ *   messages: [{ role: 'user', content: 'Hello, world!' }],
+ *   temperature: 0.7,
+ *   maxTokens: 100
+ * });
+ * 
+ * const parallelResponses = await openaiProvider.generateMultipleParallel({
+ *   inputs: [
+ *     { messages: [{ role: 'user', content: 'Hello, world!' }], temperature: 0.7, maxTokens: 100 },
+ *     { messages: [{ role: 'user', content: 'Hello, world!', temperature: 0.7, maxTokens: 100 }],
+ *   ],
+ *   parallelBatches: 3
+ * });
+ */
 export class OpenAIProvider extends LLMProvider {
   public model: string;
   private openai: OpenAI;
@@ -92,6 +116,15 @@ export class OpenAIProvider extends LLMProvider {
     }
   }
 
+  /**
+   * Generates a response from the LLM with retry logic
+   * @param messages Array of messages to send to the LLM
+   * @param temperature Controls randomness in the response (0-1)
+   * @param maxTokens Optional maximum number of tokens to generate
+   * @param model Optional model to use for this request, overriding the provider's default model
+   * @param maxAttempts Optional maximum number of attempts to generate a response. Default is 3.
+   * @param defaultWaitTime Optional default wait time in milliseconds between attempts. Default is 0.
+   */
   async generateWithRetry({
     messages,
     temperature = 0.7,
@@ -161,6 +194,15 @@ export class OpenAIProvider extends LLMProvider {
    * @param inputs Array of generation inputs with messages
    * @param parallelBatches Number of parallel batches to process. Default is 3.
    * @returns Promise that resolves to an array of LLM responses in the same order as inputs
+   * 
+   * @example
+   * const parallelResponses = await openaiProvider.generateMultipleParallel({
+   *   inputs: [
+   *     { messages: [{ role: 'user', content: 'Hello, world!' }], temperature: 0.7, maxTokens: 100 },
+   *     { messages: [{ role: 'user', content: 'Hello, world!', temperature: 0.7, maxTokens: 100 }],
+   *   ],
+   *   parallelBatches: 3
+   * });
    */
   async generateMultipleParallel({
     inputs,
@@ -221,7 +263,7 @@ export class OpenAIProvider extends LLMProvider {
    */
   async generateMultipleSequential({
     inputs
-  }: // TODO: Error handling.
+  }: 
   {
     inputs: Array<{
       messages: Array<Message>;
@@ -237,7 +279,7 @@ export class OpenAIProvider extends LLMProvider {
     const results: Array<LLMResponse> = [];
 
     for (const input of inputs) {
-      const result = await this.generate({
+      const result = await this.generateWithRetry({
         messages: input.messages,
         temperature: input.temperature,
         maxTokens: input.maxTokens,

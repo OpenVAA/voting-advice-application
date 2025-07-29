@@ -95,6 +95,25 @@ export abstract class LLMProvider {
   }): Promise<LLMResponse>;
 
   /**
+   * Generates a response from the LLM with retry logic
+   * @param messages Array of messages to send to the LLM
+   * @param temperature Controls randomness in the response (0-1)
+   * @param maxTokens Optional maximum number of tokens to generate
+   * @param model Optional model to use for this request, overriding the provider's default model
+   */
+  abstract generateWithRetry({
+    messages,
+    temperature,
+    maxTokens,
+    model
+  }: {
+    messages: Array<Message>;
+    temperature: number;
+    maxTokens?: number;
+    model?: string;
+  }): Promise<LLMResponse>;
+
+  /**
    * Generates multiple responses from the LLM based on an array of input requests
    * @param inputs Array of input requests, each containing messages, temperature, and optional parameters
    * @param parallelBatches Optional maximum number of parallel batches to use. Default is 3.
