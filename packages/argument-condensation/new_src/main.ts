@@ -6,7 +6,7 @@ import {
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
 import { LLMProvider } from '@openvaa/llm';
-import { Condenser } from './condensation/condenser';
+import { Condenser } from './core/condensation/condenser';
 import {
   CommentGroup,
   CONDENSATION_TYPE,
@@ -16,8 +16,8 @@ import {
   ProcessingStep,
   SupportedQuestion,
   VAAComment
-} from './types';
-import { createCondensationSteps, getComments, getParallelFactor } from './utils';
+} from './core/types';
+import { createCondensationSteps, getComments, getParallelFactor } from './core/utils';
 
 /**
  * Main API: Condense arguments for a single question.
