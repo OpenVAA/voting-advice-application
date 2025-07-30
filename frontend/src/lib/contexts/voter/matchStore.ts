@@ -54,6 +54,9 @@ export function matchStore({
             // If there are no applicable answers, just return the nominations.
             if (numAnswers < minAnswers) return [entityType, nominations];
 
+            // If there are no nominations, return an empty array
+            if (!nominations.length) return [entityType, []];
+
             // Get question categories for submatches if necessary
             const questionGroups = calcSubmatches.includes(entityType as EntityType)
               ? removeDuplicates(questions.map((q) => q.category))
