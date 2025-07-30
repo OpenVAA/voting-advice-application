@@ -17,11 +17,10 @@ The module can be used by itself to build an easily traversable, hierarchical mo
 
 ### Test data
 
-Test data is available in [testData.ts](./src/testUtils/testData.ts). It’s in a tree-like format and can be exported into multiple json files with the [`exportTestData`](./src/testUtils/exportTestData.ts) utility:
+Test data is available in [testData.ts](./src/testUtils/testData.ts). It’s in a tree-like format and can be exported into multiple json files with the [`exportTestData`](./tools/exportTestData.ts) tool:
 
-```ts
-import { exportTestData } from './src/exportTestData'; // Not included in module exports
-exportTestData('path-to-export-folder');
+```bash
+yarn tsx ./tools/exportTestData.ts path/to/export-folder
 ```
 
 ## Quick start
