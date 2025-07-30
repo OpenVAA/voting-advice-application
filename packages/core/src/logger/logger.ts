@@ -1,4 +1,4 @@
-import { DefaultLoggerOptions, Logger, LogLevel } from './logger.type';
+import type { DefaultLoggerOptions, Logger, LogLevel } from './logger.type';
 
 /**
  * A simple implementation of the `Logger` interface, which can be provided overrides for the default functions.

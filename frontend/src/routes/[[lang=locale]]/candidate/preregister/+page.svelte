@@ -25,15 +25,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    constituenciesSelectable,
-    electionsSelectable,
-    getRoute,
-    idTokenClaims,
-    isPreregistered,
-    popupQueue,
-    t
-  } = getCandidateContext();
+  const { constituenciesSelectable, electionsSelectable, getRoute, idTokenClaims, isPreregistered, popupQueue, t } =
+    getCandidateContext();
   const { navigationSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
