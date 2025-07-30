@@ -1,4 +1,4 @@
-promptId: 'map_booleanPros_feedback_v1'
+promptId: 'map_booleanPros_iterate_v1'
 params:
   topic: string
   arguments: string

@@ -29,6 +29,10 @@ export async function createCondensationSteps({
   reducePromptId: string,
   language: string
 }): Promise<Array<ProcessingStep>> {
+  if (totalComments < 0) {
+    throw new Error('Total comments must be a non-negative number.');
+  }
+
   const promptRegistry = await PromptRegistry.create(language);
 
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;

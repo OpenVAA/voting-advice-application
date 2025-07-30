@@ -14,6 +14,8 @@ import {
   CondensationRunInput,
   CondensationRunResult,
   ProcessingStep,
+  SUPPORTED_LANGUAGES,
+  SupportedLanguage,
   SupportedQuestion,
   VAAComment
 } from './core/types';
@@ -68,7 +70,7 @@ import { createCondensationSteps, getComments, getParallelFactor } from './core/
  *   question, 
  *   entities, 
  *   llmProvider, 
- *   language: 'en',
+ *   language: 'en', // or 'fi'
  *   llmModel: 'gpt-4o',
  *   runId: 'some-run-id', 
  *   maxCommentsPerGroup: 1000, 
@@ -96,6 +98,11 @@ export async function handleQuestion({
   maxCommentsPerGroup?: number;
   invertProsAndCons?: boolean;
 }): Promise<Array<CondensationRunResult>> {
+  // Check that the language is supported
+  if (!SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {
+    throw new Error(`Unsupported language: ${language}. Please use a supported language: ` + SUPPORTED_LANGUAGES.join(', '));
+  }
+
   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
   const commentGroups = getComments({ question, entities, options: { invertProsAndCons } });
 
@@ -431,7 +438,7 @@ async function runSingleCondensation({
   // with a specific promptId would suffice (of course you would have to specify somehow which prompt to use from the yaml file)
   const mapPromptId = `map_${condensationType}_condensation_v1`;
   const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
-  const iterationPromptId = `map_${condensationType}_feedback_v1`;
+  const iterationPromptId = `map_${condensationType}_iterate_v1`;
 
   // Get prompts and their required parameters using a helper. Currently hardcoded to use map-reduce with specific prompts.
   // The helper calculates a sensible 'batchSize' (how many comments to map at a time?) for the map operation.

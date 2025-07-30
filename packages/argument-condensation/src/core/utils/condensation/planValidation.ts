@@ -30,12 +30,15 @@ export function validatePlan({ steps, commentCount }: { steps: Array<ProcessingS
     throw new Error('Condensation plan must have at least one step');
   }
 
-  // 1. rule-based checks on individual steps & flow
+  // 1. First, check for global structural rules, like the position of REFINE.
   for (let i = 0; i < steps.length; i++) {
     if (steps[i].operation === CondensationOperations.REFINE && i !== 0) {
       throw new Error(`REFINE operation can only be the first step, found at step ${i}`);
     }
+  }
 
+  // 2. Then, check parameters and step-to-step flow.
+  for (let i = 0; i < steps.length; i++) {
     validateStepParameters(steps[i]);
 
     const nextStep = steps[i + 1];
@@ -70,7 +73,7 @@ function validateStepParameters(step: ProcessingStep): void {
       const p = step.params as RefineOperationParams;
       if (p.batchSize <= 0) throw new Error('REFINE batchSize must be positive');
       if (!p.initialBatchPrompt || !p.refinementPrompt) {
-        throw new Error('REFINE needs initialBatchPrompt and refinementPrompt');
+        throw new Error('REFINE needs initialBatchPrompt and refinementPrompt.');
       }
       break;
     }
@@ -97,14 +100,16 @@ function validateStepParameters(step: ProcessingStep): void {
 }
 
 /**
- * Validate the flow of steps by 
+ * Validate the flow of steps by checking that:
+ * - MAP must be followed by REDUCE
+ * - REFINE can only be followed by GROUND (or nothing)
  * 
  * @param current - The current step
  * @param next - The next step
  */
 function validateStepFlow(current: ProcessingStep, next: ProcessingStep): void {
   if (current.operation === CondensationOperations.MAP && next.operation !== CondensationOperations.REDUCE) {
-    throw new Error('MAP must be followed by REDUCE');
+    throw new Error('MAP must be followed by REDUCE. If you want to condense only one batch, please use REFINE instead of MAP.');
   }
 
   if (current.operation === CondensationOperations.REFINE && next.operation !== CondensationOperations.GROUND) {

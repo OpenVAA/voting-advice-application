@@ -36,3 +36,6 @@ export type { ResponseWithArguments } from './llm/responseWithArguments';
 export type { ModelPricing } from '@openvaa/llm';
 export type { TokenUsage } from '@openvaa/llm';
 export type { LatencyMeasurement } from '@openvaa/llm';
+
+// Supported languages (update as needed)
+export { SUPPORTED_LANGUAGES, type SupportedLanguage } from './base/supportedLanguages';
