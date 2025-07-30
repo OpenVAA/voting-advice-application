@@ -3984,6 +3984,7 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     tsc-esm-fix: "npm:^3.1.2"
+    tsx: "npm:^4.19.2"
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
   languageName: unknown
