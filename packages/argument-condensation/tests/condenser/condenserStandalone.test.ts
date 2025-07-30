@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Condenser } from '../src/core/condensation/condenser';
-import { PromptRegistry } from '../src/core/condensation/prompts/promptRegistry';
-import { CONDENSATION_TYPE } from '../src/core/types';
-import type { CondensationRunInput } from '../src/core/types';
+import { Condenser } from '../../src/core/condensation/condenser';
+import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
+import { CONDENSATION_TYPE } from '../../src/core/types';
+import type { CondensationRunInput } from '../../src/core/types';
 
 // Define minimal LLM Provider interface
 interface MockLLMProvider {

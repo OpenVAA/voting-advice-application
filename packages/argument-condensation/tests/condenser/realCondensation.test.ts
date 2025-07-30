@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { describe, expect, it } from 'vitest';
-import { Condenser } from '../src/core/condensation/condenser';
-import { PromptRegistry } from '../src/core/condensation/prompts/promptRegistry';
+import { Condenser } from '../../src/core/condensation/condenser';
+import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import {
   CONDENSATION_TYPE,
   CondensationOperations,
@@ -11,7 +11,7 @@ import {
   type MapOperationParams,
   type ProcessingStep,
   type ReduceOperationParams
-} from '../src/core/types';
+} from '../../src/core/types';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../../.env') });
