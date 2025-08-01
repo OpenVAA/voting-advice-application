@@ -82,7 +82,7 @@ export class Condenser {
   private startTime: Date;
 
   constructor(private input: CondensationRunInput) {
-    this.runId = input.options.runId || 'default-run-id-from-condenser'; // TODO: hash?
+    this.runId = input.options.runId; 
     this.treeBuilder = new OperationTreeBuilder(this.runId);
     this.latencyTracker = new LatencyTracker();
     this.startTime = new Date();

@@ -85,7 +85,7 @@ export async function handleQuestion({
   language,
   llmModel = 'gpt-4o',
   modelTPMLimit = 30000, // A common value for powerful models, at least for OpenAI
-  runId = 'default_run_id_if_not_provided', // It is advisable to provide a runId so that visualization data is not overwritten
+  runId, // It is advisable to provide a runId so that visualization data is not overwritten
   maxCommentsPerGroup = 1000, // Information saturation happens quite quickly, so we don't want to process thousands of comments
   invertProsAndCons = false // Only applicable to ordinal questions, rarely needed
 }: {
@@ -134,7 +134,7 @@ export async function handleQuestion({
     llmProvider,
     llmModel,
     language,
-    runId,
+    runId: runId || new Date().toISOString(), // Fallback runId = current date and time
     parallelBatches,
     modelTPMLimit
   };

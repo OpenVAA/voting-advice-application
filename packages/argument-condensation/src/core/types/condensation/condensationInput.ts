@@ -67,11 +67,12 @@ export interface CondensationOptions {
   outputType: CondensationOutputType;
   /** The steps to process the comments. Usually used to create a map-reduce pipeline */
   processingSteps: Array<ProcessingStep>;
+  /** Used to identify the run in the visualization UI */
+  runId: string;
   /** The LLM model to use. We use a default model if this is not provided */
   llmModel?: string;
   /** The fallback LLM model to use for parallelization (alternates between models to avoid rate limiting) */
   fallbackModel?: string;
-  runId?: string;
   electionId?: string;
   /** For ordinal questions, optionallyinvert the pro/con classification */
   invertProsAndCons?: boolean;
