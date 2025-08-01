@@ -8,6 +8,7 @@ import {
 import { Condenser } from './core/condensation/condenser';
 import {
   CommentGroup,
+  CommentGroupingOptions,
   CONDENSATION_TYPE,
   CondensationAPIOptions,
   CondensationOutputType,
@@ -17,11 +18,9 @@ import {
   SUPPORTED_LANGUAGES,
   SupportedLanguage,
   SupportedQuestion,
-  VAAComment
+  VAAComment,
 } from './core/types';
-import { CommentGroupingOptions } from './core/types/api/commentGroup';
 import { createCondensationSteps, getAndSliceComments, getParallelFactor } from './core/utils';
-
 /**
  * Main API: Condense arguments for a single question.
  *
@@ -70,12 +69,27 @@ import { createCondensationSteps, getAndSliceComments, getParallelFactor } from 
  * const results = await handleQuestion({
  *   question,
  *   entities,
- *   llmProvider,
- *   language: 'en', // or 'fi'
- *   llmModel: 'gpt-4o',
- *   runId: 'some-run-id',
- *   maxCommentsPerGroup: 1000,
- *   invertProsAndCons: false
+ *   options: {
+ *     llmProvider,
+ *     language: 'en', // or 'fi'
+ *     llmModel: 'gpt-4o',
+ *     runId: 'some-run-id',
+ *     maxCommentsPerGroup: 1000,
+ *     invertProsAndCons: false,
+ *     createVisualizationData: true, // Recommended! See core/visualization/README.md 
+ *     prompts: { // Each condensation type has its own set of prompts! 
+ *       [CONDENSATION_TYPE.BOOLEAN.PROS]: {
+ *         map: 'map_booleanPros_condensation_v1',
+ *         reduce: 'reduce_booleanPros_coalescing_v1',
+ *         mapIteration: 'map_booleanPros_iterate_v1'
+ *       },
+ *       [CONDENSATION_TYPE.BOOLEAN.CONS]: {
+ *         map: 'map_booleanCons_condensation_v1',
+ *         reduce: 'reduce_booleanCons_coalescing_v1',
+ *         mapIteration: 'map_booleanCons_iterate_v1'
+ *       }
+ *     }
+ *   }
  * });
  */
 export async function handleQuestion({
@@ -87,13 +101,13 @@ export async function handleQuestion({
   entities: Array<HasAnswers>;
   options: CondensationAPIOptions;
 }): Promise<Array<CondensationRunResult>> {
-  // Set default values for optional parameters 
+  // Set default values for some optional parameters 
+  // Default promptIds and the visualization flag (false) are set in runSingleCondensation
   const options = {
     ...userOptions,
-    createVisualizationData: userOptions.createVisualizationData ?? false, 
     modelTPMLimit: userOptions.modelTPMLimit ?? 30000, // A conservative limit for low-TPM models of OpenAI (8/25)
     invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed
-  }
+  }; 
 
   // Destructure for easier use
   const { language, maxCommentsPerGroup, modelTPMLimit, invertProsAndCons } = options;
@@ -106,10 +120,10 @@ export async function handleQuestion({
   }
 
   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
-  const commentGroups = getAndSliceComments({ 
-    question, 
-    entities, 
-    options: { invertProsAndCons, maxCommentsPerGroup } as CommentGroupingOptions 
+  const commentGroups = getAndSliceComments({
+    question,
+    entities,
+    options: { invertProsAndCons, maxCommentsPerGroup } as CommentGroupingOptions
   });
 
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit
@@ -333,21 +347,20 @@ async function runSingleCondensation({
 }: {
   question: SupportedQuestion;
   comments: Array<VAAComment>;
-  condensationType: string;
+  condensationType: CondensationOutputType;
   options: CondensationAPIOptions;
   parallelBatches: number;
 }): Promise<CondensationRunResult> {
-  const { llmProvider, llmModel, language, runId, modelTPMLimit, createVisualizationData } = options;
+  const { llmProvider, llmModel, language, runId, modelTPMLimit, createVisualizationData, prompts } = options;
   // Get prompts from registry
-  // If you are interested in testing different prompts, there are two ways to improve configuration:
-  // 1. Take in prompt ids in the handleQuestion function --> you can choose which yaml's prompt to use (hardcoded for now)
-  // --> providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder makes a prompt easily available
-  // 2. Modify the promptRegistry to load prompts with a different variable than just 'promptText' (which is currently hardcoded)
-  // --> you could test different prompts without having to create a new yaml file, simply adding a new variable in a current yaml file
-  // with a specific promptId would suffice (of course you would have to specify somehow which prompt to use from the yaml file)
-  const mapPromptId = `map_${condensationType}_condensation_v1`;
-  const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
-  const iterationPromptId = `map_${condensationType}_iterate_v1`;
+  // If you are interested in testing different prompts, you can:
+  //  - Set your own prompts in src/core/prompts/.../yourPrompt.yaml files with a promptText variable holding your prompts.
+  //   This will make it available to use in the handleQuestion function with the 'prompts' by configuring your own promptIds. 
+
+  const promptsForType = prompts?.[condensationType];
+  const mapPromptId = promptsForType?.map ?? `map_${condensationType}_condensation_v1`;
+  const reducePromptId = promptsForType?.reduce ?? `reduce_${condensationType}_coalescing_v1`;
+  const iterationPromptId = promptsForType?.mapIteration ?? `map_${condensationType}_iterate_v1`;
 
   // Get prompts and their required parameters using a helper. Currently hardcoded to use map-reduce with specific prompts.
   // The helper calculates a sensible 'batchSize' (how many comments to map at a time?) for the map operation.

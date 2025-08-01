@@ -97,12 +97,15 @@ export class PromptRegistry {
               promptId: promptData.promptId,
               promptText: promptData.promptText,
               operation: operation as CondensationOperation,
-              condensationType: outputType as
-                | typeof CONDENSATION_TYPE.LIKERT.PROS
-                | typeof CONDENSATION_TYPE.LIKERT.CONS,
+              condensationType: outputType as CondensationOutputType,
               params: (promptData.params || {}) as unknown as CondensationPrompt['params']
             };
 
+            if (this.registry.has(prompt.promptId)) {
+              console.warn(
+                `PROMPT REGISTRY: Duplicate promptId '${prompt.promptId}' found in ${yamlFile}. Overwriting.`
+              );
+            }
             this.registry.set(prompt.promptId, prompt);
           } catch (error) {
             console.warn(`PROMPT REGISTRY: Failed to load prompt from ${yamlFile}:`, error);

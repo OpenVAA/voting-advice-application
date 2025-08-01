@@ -2,8 +2,8 @@
 export type { Argument } from './base/argument';
 
 // API types
-export type { CondensationAPIOptions } from './api/apiConfig';
-export type { CommentGroup } from './api/commentGroup';
+export type { CondensationAPIOptions, PromptConfig } from './api/apiConfig';
+export type { CommentGroup, CommentGroupingOptions } from './api/commentGroup';
 
 // Condensation primitives (operations, their params & processing step interface)
 export type { CondensationOperation } from './condensation/operation';
@@ -29,7 +29,6 @@ export type { OperationNode, OperationTree } from './base/operationTree';
 // Prompt-related types
 export type { CondensationPrompt, GroundingPrompt, MapPrompt, ReducePrompt, RefinePrompt } from './llm/prompt';
 export type { CondensationPromptCall as PromptCall } from './llm/promptInstance';
-
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
 

@@ -1,4 +1,19 @@
 import { LLMProvider } from '@openvaa/llm';
+import { CondensationOutputType } from '../condensation/condensationType';
+
+/**
+ * Prompt IDs for different condensation types and operations.
+ * The keys of the inner object are roles for prompts within an operation,
+ * e.g., 'map' and 'mapIteration' for the 'MAP' operation.
+ */
+export type PromptConfig = {
+  [key in CondensationOutputType]?: {
+    map?: string;
+    mapIteration?: string;
+    reduce?: string;
+    // Future operations like 'refine' or 'ground' can be added here.
+  };
+};
 
 /**
  * Configuration options for the condensation API.
@@ -24,4 +39,5 @@ export type CondensationAPIOptions = {
   createVisualizationData?: boolean;
   invertProsAndCons?: boolean;
   modelTPMLimit?: number;
+  prompts?: PromptConfig;
 };
