@@ -13,29 +13,31 @@ import type { VAAComment } from '../../types/condensation/condensationInput';
 /**
  * Transforms and groups candidate comments for argument condensation.
  * This function uses the question's built-in `normalizeValue()` method
- * to systematically group comments for all question types
+ * to systematically group comments for all question types. Also slices
+ * the correct number of comments according to the `maxCommentsPerGroup` 
+ * option if there are more comments than necessary.
  *
  * The classification logic is based on the [-0.5, 0.5] coordinate space
  * returned by `normalizeValue()`:
  * - Pro-arguments: normalized value > 0
  * - Con-arguments: normalized value < 0
  * - Neutral-arguments (ignored): normalized value = 0
- * 
+ *
  * @param question - The question to group comments for
  * @param entities - The entities to get comments from
  * @param options - The options for grouping comments
  * @returns An array of comment groups (type commentGroup)
  */
-export function getComments({
+export function getAndSliceComments({
   question,
   entities,
   options
 }: {
-  question: SupportedQuestion,
-  entities: Array<HasAnswers>,
-  options: CommentGroupingOptions
+  question: SupportedQuestion;
+  entities: Array<HasAnswers>;
+  options: CommentGroupingOptions;
 }): Array<CommentGroup> {
-  const { invertProsAndCons = false } = options;
+  const { invertProsAndCons = false, maxCommentsPerGroup } = options;
 
   const prosComments: Array<VAAComment> = [];
   const consComments: Array<VAAComment> = [];
@@ -137,6 +139,26 @@ export function getComments({
   }
   for (const [choiceId, comments] of commentsByChoice.entries()) {
     groups.push({ type: 'categoricalChoice', choiceId, comments });
+  }
+
+  // Check comment group sizes and issue warnings if necessary, and truncate if needed
+  if (maxCommentsPerGroup !== undefined) {
+    for (const group of groups) {
+      const groupDescription =
+        group.type === 'categoricalChoice' ? `for choice ${String(group.choiceId)}` : `for ${group.type} arguments`;
+
+      if (group.comments.length < 10) {
+        console.warn(
+          `Warning: Too few comments for condensation (${group.comments.length} < 10) in group ${groupDescription}. The results may not be meaningful.`
+        );
+      }
+      if (group.comments.length > maxCommentsPerGroup) {
+        console.warn(
+          `Warning: Too many comments for condensation (${group.comments.length} > ${maxCommentsPerGroup}) in group ${groupDescription}. The list will be truncated to ${maxCommentsPerGroup} comments.`
+        );
+        group.comments = group.comments.slice(0, maxCommentsPerGroup);
+      }
+    }
   }
 
   return groups;

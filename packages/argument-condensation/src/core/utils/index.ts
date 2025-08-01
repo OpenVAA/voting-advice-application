@@ -15,7 +15,7 @@ export { calculateLLMCost } from './metadata/costCalculator';
 export { LatencyTracker } from './metadata/latencyTracker';
 
 // Get and group comments
-export { getComments } from './condensation/getComments';
+export { getAndSliceComments } from './condensation/getAndSliceComments';
 
 // Create condensation steps
 export { createCondensationSteps } from './condensation/defineCondensationSteps';

@@ -19,7 +19,7 @@ import {
   SupportedQuestion,
   VAAComment
 } from './core/types';
-import { createCondensationSteps, getComments, getParallelFactor } from './core/utils';
+import { createCondensationSteps, getAndSliceComments, getParallelFactor } from './core/utils';
 
 /**
  * Main API: Condense arguments for a single question.
@@ -105,25 +105,7 @@ export async function handleQuestion({
   }
 
   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
-  const commentGroups = getComments({ question, entities, options: { invertProsAndCons } });
-
-  // Check comment group sizes and issue warnings if necessary
-  for (const group of commentGroups) {
-    const groupDescription =
-      group.type === 'categoricalChoice' ? `for choice ${String(group.choiceId)}` : `for ${group.type} arguments`;
-
-    if (group.comments.length < 10) {
-      console.warn(
-        `Warning: Too few comments for condensation (${group.comments.length} < 10) in group ${groupDescription}. The results may not be meaningful.`
-      );
-    }
-    if (group.comments.length > maxCommentsPerGroup) {
-      console.warn(
-        `Warning: Too many comments for condensation (${group.comments.length} > ${maxCommentsPerGroup}) in group ${groupDescription}. The list will be truncated to ${maxCommentsPerGroup} comments.`
-      );
-      group.comments = group.comments.slice(0, maxCommentsPerGroup);
-    }
-  }
+  const commentGroups = getAndSliceComments({ question, entities, options: { invertProsAndCons, maxCommentsPerGroup } });
 
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit
   const parallelBatches = getParallelFactor(modelTPMLimit);
