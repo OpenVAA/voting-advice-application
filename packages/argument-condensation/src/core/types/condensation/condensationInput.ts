@@ -59,23 +59,22 @@ export interface VAAComment {
  * };
  */
 export interface CondensationOptions {
+  /** Used to identify the run in the visualization UI */
+  runId: string;
   /** The LLM provider to use, e.g. OpenAIProvider. See LLM package for more details */
   llmProvider: LLMProvider;
+  /** The LLM model to use. We use a default model if this is not provided */
+  llmModel: string;
   /** The language of the comments. This also impacts the language of the prompts used */
   language: string;
   /** The type of output to generate. E.g. categoricalPros, booleanPros, likertPros, etc */
   outputType: CondensationOutputType;
   /** The steps to process the comments. Usually used to create a map-reduce pipeline */
   processingSteps: Array<ProcessingStep>;
-  /** Used to identify the run in the visualization UI */
-  runId: string;
-  /** The LLM model to use. We use a default model if this is not provided */
-  llmModel?: string;
+  /** Whether to enable the operation tree data creation */
+  createVisualizationData: boolean;
   /** The fallback LLM model to use for parallelization (alternates between models to avoid rate limiting) */
   fallbackModel?: string;
-  electionId?: string;
-  /** For ordinal questions, optionallyinvert the pro/con classification */
-  invertProsAndCons?: boolean;
   /** The number of parallel batches to use for parallelizable operations */
   parallelBatches?: number;
   /** The number of tokens per minute the LLM model can handle */

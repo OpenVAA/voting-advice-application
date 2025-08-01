@@ -28,18 +28,32 @@ import {
 } from '../utils';
 import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
 
+/** A no-op version of OperationTreeBuilder for when visualization data creation is disabled */
+class DummyTreeBuilder {
+  createNode(operation: string, stepIndex: number, itemIndex: number): string {
+    return `${operation}-${stepIndex}-${itemIndex}`;
+  }
+  setNodeInput() {}
+  linkNodes() {}
+  startNode() {}
+  setFinalArguments() {}
+  async saveTree(): Promise<void> {}
+  setNodeOutput(){}
+  completeNode(){}
+}
+
 /**
  * Takes in an array of comments and a configuration object and orchestrates the condensation process using these inputs.
- * Outputs a list of arguments and automatically generates operation tree visualization data for debugging and analysis.
+ * Outputs a list of arguments and generates operation tree visualization data for debugging and analysis.
  *
  * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`.
  * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons,
  * whereas `handleQuestion` automatically runs both pros and cons.
  *
- * The data needed for visualizing a run through the condenser will be automatically saved to `data/operationTrees` regardless of
- * whether you use the `handleQuestion` function or the condenser class directly.
- *
- * You can choose the condensation run you want to visualize from the `data/operationTrees` folder when the visualization UI is running.
+ * The data needed for visualizing a run through the condenser will be saved to `data/operationTrees` if the flag
+ * `createVisualizationData` is set to `true`. 
+ * 
+ * You can choose the condensation run you want to visualize from the `data/operationTrees` folder in  the visualization UI.
  *
  * @example
  * const condenser = new Condenser({
@@ -54,7 +68,12 @@ import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
  *       { operation: CondensationOperations.REDUCE, params: { batchSize: 10 } },
  *       { operation: CondensationOperations.GROUND, params: { batchSize: 10 } }
  *     ]
- *   }
+ *   },
+ *   createVisualizationData: true,
+ *   llmProvider: new OpenAIProvider({ apiKey: 'your-api-key' }),
+ *   llmModel: 'gpt-4o',
+ *   language: 'en',
+ *   modelTPMLimit: 30000,
  * });
  *
  * const result = await condenser.run();
@@ -76,16 +95,21 @@ import { OperationTreeBuilder } from '../visualization/operationTreeBuilder';
 export class Condenser {
   private runId: string;
   private allPromptCalls: Array<PromptCall> = [];
-  private treeBuilder: OperationTreeBuilder;
+  private treeBuilder: OperationTreeBuilder | DummyTreeBuilder;
   private latencyTracker: LatencyTracker;
   private totalCost: number = 0;
   private startTime: Date;
 
   constructor(private input: CondensationRunInput) {
-    this.runId = input.options.runId; 
-    this.treeBuilder = new OperationTreeBuilder(this.runId);
+    this.runId = input.options.runId;
     this.latencyTracker = new LatencyTracker();
     this.startTime = new Date();
+
+    if (input.options.createVisualizationData) {
+      this.treeBuilder = new OperationTreeBuilder(this.runId);
+    } else {
+      this.treeBuilder = new DummyTreeBuilder();
+    }
   }
 
   /**
@@ -145,7 +169,9 @@ export class Condenser {
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
-    await this.treeBuilder.saveTree(path.join(__dirname, '../../data/operationTrees', `${this.runId}.json`));
+    if (this.treeBuilder instanceof OperationTreeBuilder) {
+      await this.treeBuilder.saveTree(path.join(__dirname, '../../data/operationTrees', `${this.runId}.json`));
+    }
 
     // Return the final result with all metadata
     return {
