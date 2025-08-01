@@ -10,6 +10,7 @@ import { Condenser } from './core/condensation/condenser';
 import {
   CommentGroup,
   CONDENSATION_TYPE,
+  CondensationAPIOptions,
   CondensationOutputType,
   CondensationRunInput,
   CondensationRunResult,
@@ -67,13 +68,13 @@ import { createCondensationSteps, getComments, getParallelFactor } from './core/
  *
  * // 2. Call handleQuestion with the setup
  * const results = await handleQuestion({
- *   question, 
- *   entities, 
- *   llmProvider, 
+ *   question,
+ *   entities,
+ *   llmProvider,
  *   language: 'en', // or 'fi'
  *   llmModel: 'gpt-4o',
- *   runId: 'some-run-id', 
- *   maxCommentsPerGroup: 1000, 
+ *   runId: 'some-run-id',
+ *   maxCommentsPerGroup: 1000,
  *   invertProsAndCons: false
  * });
  */
@@ -86,7 +87,7 @@ export async function handleQuestion({
   modelTPMLimit = 30000, // A common value for powerful models, at least for OpenAI
   runId = 'default_run_id_if_not_provided', // It is advisable to provide a runId so that visualization data is not overwritten
   maxCommentsPerGroup = 1000, // Information saturation happens quite quickly, so we don't want to process thousands of comments
-  invertProsAndCons = false, // Only applicable to ordinal questions, rarely needed
+  invertProsAndCons = false // Only applicable to ordinal questions, rarely needed
 }: {
   question: SupportedQuestion;
   entities: Array<HasAnswers>;
@@ -100,7 +101,9 @@ export async function handleQuestion({
 }): Promise<Array<CondensationRunResult>> {
   // Check that the language is supported
   if (!SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {
-    throw new Error(`Unsupported language: ${language}. Please use a supported language: ` + SUPPORTED_LANGUAGES.join(', '));
+    throw new Error(
+      `Unsupported language: ${language}. Please use a supported language: ` + SUPPORTED_LANGUAGES.join(', ')
+    );
   }
 
   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
@@ -127,45 +130,36 @@ export async function handleQuestion({
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit
   const parallelBatches = getParallelFactor(modelTPMLimit);
 
+  const condensationOptions: CondensationAPIOptions = {
+    llmProvider,
+    llmModel,
+    language,
+    runId,
+    parallelBatches,
+    modelTPMLimit
+  };
+
   // Condense arguments for the question
   switch (question.type) {
     case QUESTION_TYPE.Boolean:
       return await handleBooleanQuestion({
         question: question as BooleanQuestion,
         commentGroups,
-        llmProvider,
-        llmModel,
-        language,
-        runId,
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: condensationOptions
       });
 
     case QUESTION_TYPE.SingleChoiceOrdinal:
       return await handleOrdinalQuestion({
         question: question as SingleChoiceOrdinalQuestion,
         commentGroups,
-        llmProvider,
-        llmModel,
-        language,
-        runId,
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: condensationOptions
       });
 
     case QUESTION_TYPE.SingleChoiceCategorical:
       return await handleCategoricalQuestion({
         question: question as SingleChoiceCategoricalQuestion,
         commentGroups,
-        llmProvider,
-        llmModel,
-        language,
-        runId,
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: condensationOptions
       });
 
     // Should never happen if the supportedQuestion type is updated correctly
@@ -189,23 +183,11 @@ export async function handleQuestion({
 async function handleBooleanQuestion({
   question,
   commentGroups,
-  llmProvider,
-  llmModel,
-  language,
-  runId,
-  maxCommentsPerGroup,
-  parallelBatches,
-  modelTPMLimit
+  options
 }: {
   question: BooleanQuestion;
   commentGroups: Array<CommentGroup>;
-  llmProvider: LLMProvider;
-  llmModel: string;
-  language: string;
-  runId: string;
-  maxCommentsPerGroup: number;
-  parallelBatches: number;
-  modelTPMLimit: number;
+  options: CondensationAPIOptions;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -216,13 +198,7 @@ async function handleBooleanQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
-        llmProvider,
-        llmModel,
-        language,
-        runId: runId + '-pros',
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: { ...options, runId: options.runId + '-pros' }
       });
       results.push(prosResult);
     } else if (group.type === 'con') {
@@ -230,13 +206,7 @@ async function handleBooleanQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.BOOLEAN.CONS,
-        llmProvider,
-        llmModel,
-        language,
-        runId: runId + '-cons',
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: { ...options, runId: options.runId + '-cons' }
       });
       results.push(consResult);
     }
@@ -262,23 +232,11 @@ async function handleBooleanQuestion({
 async function handleOrdinalQuestion({
   question,
   commentGroups,
-  llmProvider,
-  llmModel,
-  language,
-  runId,
-  maxCommentsPerGroup,
-  parallelBatches,
-  modelTPMLimit
+  options
 }: {
   question: SingleChoiceOrdinalQuestion;
   commentGroups: Array<CommentGroup>;
-  llmProvider: LLMProvider;
-  llmModel: string;
-  language: string;
-  runId: string;
-  maxCommentsPerGroup: number;
-  parallelBatches: number;
-  modelTPMLimit: number;
+  options: CondensationAPIOptions;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -290,13 +248,7 @@ async function handleOrdinalQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.LIKERT.PROS,
-        llmProvider,
-        llmModel,
-        language,
-        runId: runId + '-pros',
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: { ...options, runId: options.runId + '-pros' }
       });
       results.push(prosResult);
     } else if (group.type === 'con') {
@@ -304,13 +256,7 @@ async function handleOrdinalQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.LIKERT.CONS,
-        llmProvider,
-        llmModel,
-        language,
-        runId: runId + '-cons',
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: { ...options, runId: options.runId + '-cons' }
       });
       results.push(consResult);
     }
@@ -335,23 +281,11 @@ async function handleOrdinalQuestion({
 async function handleCategoricalQuestion({
   question,
   commentGroups,
-  llmProvider,
-  llmModel,
-  language,
-  runId,
-  maxCommentsPerGroup,
-  parallelBatches,
-  modelTPMLimit
+  options
 }: {
   question: SingleChoiceCategoricalQuestion;
   commentGroups: Array<CommentGroup>;
-  llmProvider: LLMProvider;
-  llmModel: string;
-  language: string;
-  runId: string;
-  maxCommentsPerGroup: number;
-  parallelBatches: number;
-  modelTPMLimit: number;
+  options: CondensationAPIOptions;
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
@@ -362,13 +296,7 @@ async function handleCategoricalQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.CATEGORICAL.PROS,
-        llmProvider,
-        llmModel,
-        language,
-        runId: runId + group.choiceId,
-        maxCommentsPerGroup,
-        parallelBatches,
-        modelTPMLimit
+        options: { ...options, runId: options.runId + group.choiceId }
       });
       results.push(categoryResult);
     }
@@ -410,31 +338,20 @@ async function runSingleCondensation({
   question,
   comments,
   condensationType,
-  llmProvider,
-  llmModel,
-  language,
-  runId,
-  maxCommentsPerGroup,
-  parallelBatches,
-  modelTPMLimit
+  options
 }: {
   question: SupportedQuestion;
   comments: Array<VAAComment>;
   condensationType: string;
-  llmProvider: LLMProvider;
-  llmModel: string;
-  language: string;
-  runId: string;
-  maxCommentsPerGroup: number;
-  parallelBatches: number;
-  modelTPMLimit: number;
+  options: CondensationAPIOptions;
 }): Promise<CondensationRunResult> {
+  const { llmProvider, llmModel, language, runId, parallelBatches, modelTPMLimit } = options;
   // Get prompts from registry
   // If you are interested in testing different prompts, there are two ways to improve configuration:
   // 1. Take in prompt ids in the handleQuestion function --> you can choose which yaml's prompt to use (hardcoded for now)
   // --> providing your own yaml file (with 'promptText' and 'promptId' variables) in the core/prompts folder makes a prompt easily available
   // 2. Modify the promptRegistry to load prompts with a different variable than just 'promptText' (which is currently hardcoded)
-  // --> you could test different prompts without having to create a new yaml file, simply adding a new variable in a current yaml file 
+  // --> you could test different prompts without having to create a new yaml file, simply adding a new variable in a current yaml file
   // with a specific promptId would suffice (of course you would have to specify somehow which prompt to use from the yaml file)
   const mapPromptId = `map_${condensationType}_condensation_v1`;
   const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
@@ -442,7 +359,7 @@ async function runSingleCondensation({
 
   // Get prompts and their required parameters using a helper. Currently hardcoded to use map-reduce with specific prompts.
   // The helper calculates a sensible 'batchSize' (how many comments to map at a time?) for the map operation.
-  // For reduce, it finds 'denominators' (how many argument lists to coalesce to one list at a time?). 
+  // For reduce, it finds 'denominators' (how many argument lists to coalesce to one list at a time?).
   // If you want to use other parameters or operations (like refine or ground),
   // you must implement your own helper logic or simply configure your own steps here with consts
   const steps: Array<ProcessingStep> = await createCondensationSteps({
@@ -465,7 +382,6 @@ async function runSingleCondensation({
       llmProvider,
       processingSteps: steps,
       outputType: condensationType as CondensationOutputType,
-      maxCommentsPerGroup,
       parallelBatches,
       modelTPMLimit
     }

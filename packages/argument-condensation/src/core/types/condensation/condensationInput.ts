@@ -73,8 +73,6 @@ export interface CondensationOptions {
   fallbackModel?: string;
   runId?: string;
   electionId?: string;
-  /** A question can have multiple groups of comments. This is the maximum number of comments per group */
-  maxCommentsPerGroup?: number;
   /** For ordinal questions, optionallyinvert the pro/con classification */
   invertProsAndCons?: boolean;
   /** The number of parallel batches to use for parallelizable operations */

@@ -2,6 +2,7 @@
 export type { Argument } from './base/argument';
 
 // API types
+export type { CondensationAPIOptions } from './api/apiConfig';
 export type { CommentGroup } from './api/commentGroup';
 
 // Condensation primitives (operations, their params & processing step interface)
