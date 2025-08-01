@@ -11,7 +11,7 @@ import { CONDENSATION_TYPE, CondensationOperation, CondensationOutputType, Conde
 /**
  * Manages condensation prompts organized by operations and condensation types.
  * Loads the prompt from the 'promptText' variable of the yaml. 
- * Directory structure: core/prompts/'operation'/'condensationType'/'promptType'.yaml
+ * Directory structure: core/condensation/prompts/'language'/'operation'/'condensationType'/'promptType'.yaml
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);

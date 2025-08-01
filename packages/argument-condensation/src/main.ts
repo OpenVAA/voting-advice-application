@@ -19,6 +19,7 @@ import {
   SupportedQuestion,
   VAAComment
 } from './core/types';
+import { CommentGroupingOptions } from './core/types/api/commentGroup';
 import { createCondensationSteps, getAndSliceComments, getParallelFactor } from './core/utils';
 
 /**
@@ -105,7 +106,11 @@ export async function handleQuestion({
   }
 
   // Separate the comments into argumentation groups (e.g. for tax cuts vs. against tax cuts)
-  const commentGroups = getAndSliceComments({ question, entities, options: { invertProsAndCons, maxCommentsPerGroup } });
+  const commentGroups = getAndSliceComments({ 
+    question, 
+    entities, 
+    options: { invertProsAndCons, maxCommentsPerGroup } as CommentGroupingOptions 
+  });
 
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit
   const parallelBatches = getParallelFactor(modelTPMLimit);

@@ -31,7 +31,7 @@ export type CommentGroup = {
  */
 export interface CommentGroupingOptions {
   /** We can invert the pro/con classification for questions with a semantic order (e.g. ordinal questions) */
-  invertProsAndCons?: boolean;
+  invertProsAndCons: boolean;
   /** Maximum number of comments from a single answer option to use for a single condensation run */
-  maxCommentsPerGroup?: number;
+  maxCommentsPerGroup: number;
 }

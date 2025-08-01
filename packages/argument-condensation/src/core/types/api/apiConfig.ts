@@ -13,10 +13,7 @@ import { LLMProvider } from '@openvaa/llm';
  *   modelTPMLimit: 30000,
  *   createVisualizationData: true
  * };
- * 
- * @remarks
- * 
- * Same as the CondensationOptions type in the CondensationRunInput type, but without the question and comments.
+ * .
  */
 export type CondensationAPIOptions = {
   runId: string;
