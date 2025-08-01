@@ -107,10 +107,12 @@ describe('Condenser Integration Tests', () => {
       comments: mockComments,
       options: {
         llmProvider: llmProvider,
+        llmModel: 'gpt-4o',
         language: 'en',
         outputType: 'booleanPros',
         processingSteps: steps,
-        runId: 'happy-path-test'
+        runId: 'happy-path-test',
+        createVisualizationData: false
       }
     };
 
@@ -165,10 +167,12 @@ describe('Condenser Integration Tests', () => {
       comments: mockComments,
       options: {
         llmProvider: llmProvider,
+        llmModel: 'gpt-4o',
         language: 'en',
         outputType: 'booleanPros',
         processingSteps: steps,
-        runId: 'retry-test'
+        runId: 'retry-test',
+        createVisualizationData: false
       }
     };
 

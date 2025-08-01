@@ -103,8 +103,13 @@ describe('handleQuestion', () => {
     const results = await handleQuestion({
       question,
       entities,
-      llmProvider: mockLLMProvider,
-      language: 'en'
+      options: {
+        llmProvider: mockLLMProvider,
+        llmModel: 'gpt-4o',
+        language: 'en',
+        runId: 'test-run',
+        maxCommentsPerGroup: 1000
+      }
     });
 
     // Verify results
@@ -174,8 +179,13 @@ describe('handleQuestion', () => {
     const results = await handleQuestion({
       question,
       entities,
-      llmProvider: mockLLMProvider,
-      language: 'en'
+      options: {
+        llmProvider: mockLLMProvider,
+        llmModel: 'gpt-4o',
+        language: 'en',
+        runId: 'test-run',
+        maxCommentsPerGroup: 1000
+      }
     });
 
     // Verify results
@@ -222,8 +232,13 @@ describe('handleQuestion', () => {
     const results = await handleQuestion({
       question,
       entities,
-      llmProvider: mockLLMProvider,
-      language: 'en'
+      options: {
+        llmProvider: mockLLMProvider,
+        llmModel: 'gpt-4o',
+        language: 'en',
+        runId: 'test-run',
+        maxCommentsPerGroup: 1000
+      }
     });
 
     // Verify results

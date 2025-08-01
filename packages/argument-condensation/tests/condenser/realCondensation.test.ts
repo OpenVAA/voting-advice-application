@@ -14,7 +14,7 @@ import {
 } from '../../src/core/types';
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '../../../.env') });
+dotenv.config({ path: path.join(__dirname, '../../../../.env') });
 
 // Define the condensation configuration (mirroring runCondensation.ts)
 function createCondensationConfig(
@@ -121,7 +121,7 @@ describe('Real Condensation Test', () => {
     const condensationType = CONDENSATION_TYPE.LIKERT.PROS;
     const mapPromptId = `map_${condensationType}_condensation_v1`;
     const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
-    const iterationPromptId = `map_${condensationType}_feedback_v1`;
+    const iterationPromptId = `map_${condensationType}_iterate_v1`;
 
     // Initialize prompt registry
     const promptRegistry = await PromptRegistry.create('fi');
@@ -209,7 +209,7 @@ describe('Real Condensation Test', () => {
     const condensationType = CONDENSATION_TYPE.LIKERT.CONS;
     const mapPromptId = `map_${condensationType}_condensation_v1`;
     const reducePromptId = `reduce_${condensationType}_coalescing_v1`;
-    const iterationPromptId = `map_${condensationType}_feedback_v1`;
+    const iterationPromptId = `map_${condensationType}_iterate_v1`;
 
     const promptRegistry = await PromptRegistry.create('fi');
     const mapPrompt = promptRegistry.getPrompt(mapPromptId) as CondensationPrompt;

@@ -55,8 +55,13 @@ describe('handleQuestion', () => {
       handleQuestion({
         question,
         entities,
-        llmProvider,
-        language: unsupportedLanguage
+        options: {
+          language: unsupportedLanguage,
+          llmProvider,
+          llmModel: 'gpt-4o',
+          runId: 'test-run',
+          maxCommentsPerGroup: 1000
+        }
       })
     ).rejects.toThrow(
       `Unsupported language: ${unsupportedLanguage}. Please use a supported language: ${SUPPORTED_LANGUAGES.join(', ')}`
