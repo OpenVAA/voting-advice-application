@@ -32,7 +32,7 @@ const mockLLMProvider: LLMProvider = {
     };
     return Promise.resolve(Array(inputs.length).fill(mockResponse));
   }),
-  generateMultipleSequential: vi.fn().mockResolvedValue([]),
+  generateMultipleSequential: vi.fn().mockResolvedValue([])
 };
 
 describe('handleQuestion', () => {
@@ -249,5 +249,59 @@ describe('handleQuestion', () => {
     const types = results.map((r) => r.condensationType);
     expect(types).toContain(CONDENSATION_TYPE.BOOLEAN.PROS);
     expect(types).toContain(CONDENSATION_TYPE.BOOLEAN.CONS);
+  });
+
+  it('should throw an error if invalid prompt IDs are provided', async () => {
+    // Create a boolean question
+    const question = new BooleanQuestion({
+      data: {
+        id: 'boolean-question',
+        type: QUESTION_TYPE.Boolean,
+        name: 'Test boolean question',
+        categoryId: 'test-category'
+      },
+      root: new DataRoot()
+    });
+
+    // Create entities with answers that have info text
+    const entities: Array<HasAnswers> = [
+      {
+        answers: {
+          'boolean-question': { value: true, info: 'I agree with this.' } as Answer
+        }
+      },
+      {
+        answers: {
+          'boolean-question': { value: false, info: 'I do not agree with this.' } as Answer
+        }
+      }
+    ];
+
+    // Run condensation with absurd prompt IDs and expect it to fail
+    await expect(
+      handleQuestion({
+        question,
+        entities,
+        options: {
+          llmProvider: mockLLMProvider,
+          llmModel: 'gpt-4o',
+          language: 'en',
+          runId: 'test-run-invalid-prompts',
+          maxCommentsPerGroup: 1000,
+          prompts: {
+            [CONDENSATION_TYPE.BOOLEAN.PROS]: {
+              map: 'map-pros-42-haha',
+              reduce: 'reduce-pros-42-haha',
+              mapIteration: 'map-iterate-pros-42-haha'
+            },
+            [CONDENSATION_TYPE.BOOLEAN.CONS]: {
+              map: 'map-cons-42-haha',
+              reduce: 'reduce-cons-42-haha',
+              mapIteration: 'map-iterate-cons-42-haha'
+            }
+          }
+        }
+      })
+    ).rejects.toThrow();
   });
 });

@@ -18,7 +18,7 @@ import {
   SUPPORTED_LANGUAGES,
   SupportedLanguage,
   SupportedQuestion,
-  VAAComment,
+  VAAComment
 } from './core/types';
 import { createCondensationSteps, getAndSliceComments, getParallelFactor } from './core/utils';
 /**
@@ -106,8 +106,8 @@ export async function handleQuestion({
   const options = {
     ...userOptions,
     modelTPMLimit: userOptions.modelTPMLimit ?? 30000, // A conservative limit for low-TPM models of OpenAI (8/25)
-    invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed
-  }; 
+    invertProsAndCons: userOptions.invertProsAndCons ?? false // Rarely needed
+  };
 
   // Destructure for easier use
   const { language, maxCommentsPerGroup, modelTPMLimit, invertProsAndCons } = options;
