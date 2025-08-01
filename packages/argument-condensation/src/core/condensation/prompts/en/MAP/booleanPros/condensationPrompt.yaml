@@ -2,7 +2,6 @@ promptId: 'map_booleanPros_condensation_v1'
 params:
   topic: string
   comments: string
-  batchSize: 3
 
 promptText: |
   You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position ("{{topic}}").

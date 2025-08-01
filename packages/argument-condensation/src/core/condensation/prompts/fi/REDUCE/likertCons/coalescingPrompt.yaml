@@ -1,4 +1,8 @@
 promptId: 'reduce_likertCons_coalescing_v1'
+params:
+  topic: string
+  argumentLists: string
+
 promptText: |
   Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") vastustamisessa.
   Tehtäväsi on muodostaa saamasi argumentit yhdeksi argumenttilistaksi, jonka avulla poliittisten vaalikoneiden käyttäjät voivat ymmärtää poliittista diskurssia väitettä vastaan. 

@@ -1,6 +1,8 @@
 promptId: 'reduce_categoricalPros_coalescing_v1'
 params:
-  denominator: 5
+  topic: string
+  argumentLists: string
+
 promptText: |
   You are an expert in argumentation and political discourse. Below you are given multiple argument lists that are used to support a specific option in a categorical choice ("{{topic}}").
   Your task is to form the arguments you receive into a single argument list, which will help voting advice application users understand why this particular option is preferred.
