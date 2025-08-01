@@ -23,6 +23,11 @@ describe('PromptRegistry integration with real prompts', () => {
         expect(mapPrompts.length, `Expected at least one MAP prompt for language '${lang}'`).toBeGreaterThan(0);
       });
 
+      it('should have at least one prompt for ITERATE_MAP operation', () => {
+        const iterateMapPrompts = prompts.filter((p) => p.operation === 'ITERATE_MAP');
+        expect(iterateMapPrompts.length, `Expected at least one ITERATE_MAP prompt for language '${lang}'`).toBeGreaterThan(0);
+      });
+
       it('should have at least one prompt for REDUCE operation', () => {
         const reducePrompts = prompts.filter((p) => p.operation === 'REDUCE');
         expect(reducePrompts.length, `Expected at least one REDUCE prompt for language '${lang}'`).toBeGreaterThan(0);

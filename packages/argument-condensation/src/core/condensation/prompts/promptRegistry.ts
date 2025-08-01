@@ -1,7 +1,12 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { CONDENSATION_TYPE, CondensationOperation, CondensationOutputType, CondensationPrompt } from '../../types';
+import { CONDENSATION_TYPE, 
+  CondensationOperation, 
+  CondensationOperations, 
+  CondensationOutputType, 
+  CondensationPrompt } 
+  from '../../types';
 
 // TODO: (low priority): load only the specific yamls we need (currently we load all yamls for a all operations and output types)
 // TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to 'promptText'),
@@ -60,8 +65,14 @@ export class PromptRegistry {
     // Can be optimized but it's not really a significant performance improvement
     for (const operation of operations) {
       const operationDir = path.join(`${this.promptsDir}/${language}`, operation);
-      const operationStat = await fs.stat(operationDir).catch(() => null);
+      const operationStat = await fs.stat(operationDir).catch(() => null); // Ignore errors if the directory doesn't exist
       if (!operationStat || !operationStat.isDirectory()) continue; // Skip if not a directory
+
+      // Make sure that the operation directory name is a valid operation (e.g. MAP, REFINE, etc.)
+      if (!Object.values(CondensationOperations).includes(operation as CondensationOperation)) {
+        console.warn(`PROMPT REGISTRY: Skipping invalid operation directory: ${operation}`);
+        continue;
+      }
 
       const outputTypes = await fs.readdir(operationDir);
       for (const outputType of outputTypes) {
