@@ -59,8 +59,8 @@ jobs:
       - name: "Run Frontend and shared module tests"
         run: yarn test:unit
 
-      - name: "Configure frontend environment"
-        run: cp frontend/.env.example frontend/.env
+      - name: "Configure frontend environment using the repo root .env.example file"
+        run: cp .env.example frontend/.env
 
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
