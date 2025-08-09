@@ -1,16 +1,9 @@
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import {
-  CONDENSATION_TYPE,
-  CondensationOperations
-} from '../../types';
+import { CONDENSATION_TYPE, CondensationOperations } from '../../types';
 import type { Logger } from '@openvaa/core';
-import type {
-  CondensationOperation,
-  CondensationOutputType,
-  CondensationPrompt
-} from '../../types';
+import type { CondensationOperation, CondensationOutputType, CondensationPrompt } from '../../types';
 
 // TODO: (low priority): load only the specific yamls we need (currently we load all yamls for a all operations and output types)
 // TODO: (low priority): make it possible load a customized prompt variable (currently this is hardcoded to 'promptText'),

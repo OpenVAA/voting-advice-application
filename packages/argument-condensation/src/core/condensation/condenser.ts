@@ -2,9 +2,7 @@ import { DefaultLogger } from '@openvaa/core';
 import * as path from 'path';
 import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
-import {
-  CondensationOperations
-} from '../types';
+import { CondensationOperations } from '../types';
 import {
   createBatches,
   createPromptInstance,

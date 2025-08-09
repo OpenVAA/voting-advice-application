@@ -1,7 +1,7 @@
 import { parse } from './llmParsing';
 import type { LLMProvider } from '../llm-providers/llm-provider';
 import type { LLMResponse, Message } from '../types';
-import type { LLMResponseContract} from './llmParsing';
+import type { LLMResponseContract } from './llmParsing';
 
 /**
  * Retry helper function for failed parsing attempts

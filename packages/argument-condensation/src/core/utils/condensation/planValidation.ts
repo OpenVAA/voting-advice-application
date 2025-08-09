@@ -1,6 +1,4 @@
-import {
-  CondensationOperations
-} from '../../types';
+import { CondensationOperations } from '../../types';
 import type {
   GroundingOperationParams,
   IterateMapOperationParams,

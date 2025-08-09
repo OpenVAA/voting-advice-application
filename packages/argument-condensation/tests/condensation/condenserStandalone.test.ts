@@ -4,7 +4,7 @@ import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegist
 import { CONDENSATION_TYPE } from '../../src/core/types';
 import type { Logger } from '@openvaa/core';
 import type { ParsedLLMResponse } from '@openvaa/llm';
-import type { CondensationRunInput , ResponseWithArguments } from '../../src/core/types';
+import type { CondensationRunInput, ResponseWithArguments } from '../../src/core/types';
 
 // No-op logger for tests to prevent logging output
 const noOpLogger: Logger = {

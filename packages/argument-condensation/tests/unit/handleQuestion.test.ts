@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { SUPPORTED_LANGUAGES } from '../../src';
 import { handleQuestion } from '../../src/api';
 import type { HasAnswers, Logger } from '@openvaa/core';
-import type { DataRoot} from '@openvaa/data';
+import type { DataRoot } from '@openvaa/data';
 import type { LLMResponse, ParsedLLMResponse } from '@openvaa/llm';
 
 // No-op logger for tests to prevent logging output
