@@ -49,7 +49,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         survey: 'true'
       }
     };
-    const data = await this.apiGet({ endpoint: 'appSettings', params });
+    const data = await this.apiGet({ endpoint: 'appSettings', params, disableCache: true });
     if (!data) throw new Error('Expected one AppSettings object, but got none.');
     return data;
   }
@@ -70,7 +70,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         candPosterDark: 'true'
       }
     };
-    const data = await this.apiGet({ endpoint: 'appCustomization', params });
+    const data = await this.apiGet({ endpoint: 'appCustomization', params, disableCache: true });
     if (!data) throw new Error('Expected one AppCustomization object, but got none.');
     return {
       translationOverrides: translateObject(data.translationOverrides, locale),
@@ -136,10 +136,6 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
-    if (!options.includeUnconfirmed) {
-      params.filters ??= {};
-      params.filters.unconfirmed = { $ne: 'true' };
-    }
     params.populate = {
       constituency: 'true',
       election: 'true',
@@ -151,6 +147,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       },
       party: { populate: { image: 'true' } }
     };
+    if (!options.includeUnconfirmed) {
+      params.filters ??= {};
+      params.filters.unconfirmed = { $ne: 'true' };
+    }
     const data = await this.apiGet({ endpoint: 'nominations', params });
     return parseNominations(data, locale);
   }
@@ -211,6 +211,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           { elections: { documentId: { $null: 'true' } } }
         ]
       };
+
     const data = await this.apiGet({ endpoint: 'questionCategories', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();

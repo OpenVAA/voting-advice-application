@@ -13,7 +13,7 @@ switch (type) {
   default:
     module = new Promise(() => {
       logDebugError(
-        `DataWriter imported when using an unsupported data adapter (${type}). Any attempts to use the dataWriter will fail.`
+        `[dataWriter] DataWriter imported when using an unsupported data adapter (${type}). Any attempts to use the dataWriter will fail. This will only be a problem if the Admin or Candidate Apps are used with this adapter. If only the Voter App is to be used, you may disregard this warning.`
       );
       return { dataWriter: undefined };
     });
