@@ -12,6 +12,7 @@
     "@typescript-eslint/parser": "^8.19.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3"

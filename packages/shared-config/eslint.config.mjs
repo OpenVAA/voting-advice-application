@@ -4,6 +4,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 
@@ -37,7 +38,8 @@ export default [
   {
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      'simple-import-sort': simpleImportSort //https://github.com/lydell/eslint-plugin-simple-import-sort?tab=readme-ov-file
+      'simple-import-sort': simpleImportSort, // https://github.com/lydell/eslint-plugin-simple-import-sort?tab=readme-ov-file
+      import: importPlugin
     },
 
     languageOptions: {
@@ -113,7 +115,14 @@ export default [
         }
       ],
 
-      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          disallowTypeAnnotations: true,
+          fixStyle: 'separate-type-imports',
+          prefer: 'type-imports'
+        }
+      ],
 
       'simple-import-sort/exports': 'error',
 
@@ -136,7 +145,15 @@ export default [
             ]
           ]
         }
-      ]
+      ],
+
+      'import/first': 'error',
+
+      'import/newline-after-import': 'error',
+
+      'import/no-duplicates': 'error',
+
+      'import/consistent-type-specifier-style': ['error', 'prefer-top-level']
     }
   }
 ];
