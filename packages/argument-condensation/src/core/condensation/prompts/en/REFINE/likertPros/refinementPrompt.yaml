@@ -1,0 +1,42 @@
+promptId: 'refine_likertPros_refinement_v1'
+params:
+  topic: string
+  comments: string
+  existingArguments: string
+promptText: |
+  You are refining arguments extracted from Voting Advice Application (VAA) comments to support a policy position.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Current arguments:
+  {{existingArguments}}
+
+  ## New comments to analyze:
+  {{comments}}
+
+  Your task is to refine the current argument list by incorporating insights from the new comments. You may:
+  1. Add new arguments if you find distinctly different supporting reasons
+  2. Enhance existing arguments with additional examples or perspectives
+  3. Keep the list focused and avoid redundancy
+
+  Focus on meaning rather than exact wording. Combine similar ideas while preserving distinct reasoning.
+
+  If the new comments don't add any new supporting arguments or insights, return the existing argument list unchanged.
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "pro_arg_1",
+        "text": "Refined or new argument text"
+      },
+      {
+        "id": "pro_arg_2", 
+        "text": "Another refined or new argument text"
+      }
+    ],
+    "reasoning": "Brief explanation of the refinements made"
+  }

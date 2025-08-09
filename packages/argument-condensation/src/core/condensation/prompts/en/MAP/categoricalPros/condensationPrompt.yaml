@@ -1,0 +1,42 @@
+promptId: 'map_categoricalPros_condensation_v1'
+params:
+  topic: string
+  comments: string
+
+promptText: |
+  You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a specific option in a categorical choice ("{{topic}}").
+
+  Extract and cluster the reasons or arguments used to support this particular option. Focus on meaning — group different phrasings of the same idea. 
+  A good argument includes a short description of different variations and examples from the comments. Reference the examples from comments indirectly without names or IDs.
+
+  If you find no arguments supporting this option, return an empty list and empty reasoning field.
+
+  ## Topic/Question: 
+  {{topic}}
+
+  ## Comments to analyze (supporting a specific option):
+  {{comments}}
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example response format:
+
+  {
+    "reasoning": "Brief explanation of the arguments found supporting this option. Many candidates support this choice because they believe it offers the best balance of effectiveness and practicality. The arguments focus on proven benefits, implementation advantages, and positive outcomes.",
+    "arguments": [
+      {
+        "id": "option_arg_1",
+        "text": "This option offers proven effectiveness with measurable benefits that have been demonstrated in similar contexts and implementations."
+      },
+      {
+        "id": "option_arg_2", 
+        "text": "Implementation would be more practical and cost-effective compared to alternatives, making it a realistic and achievable solution."
+      },
+      {
+        "id": "option_arg_3",
+        "text": "This choice provides the best balance of different priorities and stakeholder needs, offering a comprehensive approach to the issue."
+      }
+    ]
+  }
+
+  Focus on distinct, well-reasoned arguments that support this specific option. Combine similar points but keep different reasoning separate. Ensure arguments are clear, compelling, and accurately represent why candidates chose this particular option.

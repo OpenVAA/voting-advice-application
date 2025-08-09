@@ -1,0 +1,143 @@
+promptId: 'reduce_likertPros_coalescing_v1'
+params:
+  topic: string
+  argumentLists: string
+
+promptText: |
+  Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") tukemisessa.
+  Tehtäväsi on muodostaa saamasi argumentit yhdeksi argumenttilistaksi, jonka avulla poliittisten vaalikoneiden käyttäjät voivat ymmärtää poliittista diskurssia väitteen tueksi. 
+
+  Argumenttien jaottelun pitää olla sulavaa, että niiden lukeminen on helppoa. 
+
+  Mikäli argumentteja ei ole, palauta tyhjä lista ja tyhjä reasoning-kenttä.
+
+  ## Väite: 
+  {{topic}}
+
+  ## Argumentit, joita on annettu:
+  {{argumentLists}}
+
+  Kirjoita lopullinen lista erillisistä argumenteista. Niiden pitää olla helposti ymmärrettäviä ja luettavissa. 
+  Anna esimerkkejä vaikutuksista ja tavoista, joilla argumentit tuovat tähän väitteeseen tukea. Anna esimerkkejä, joita argumenteissa mainitaan.
+  Vältä saman argumentin toistamista eri muodoissa. Pyri olemaan selkeä ilman abstraktia kieltä.
+
+  Kirjoita argumentit vaikuttaviksi ja elävännäköisiksi. Säilytä alkuperäisissä kommenteissa esiintyneet konkreettiset esimerkit, historialliset viittaukset, lähteet ja ilmaisuvalinnat, jos ne ovat relevantteja ja vahvistavat argumentin ydintä.
+
+  Älä pyri vesittämään ristiriitaisia, tunteita herättäviä tai voimakkaita ilmaisutapoja, jos ne ovat perusteltuja ja kuvastavat alkuperäisen kirjoittajan huolta tai historiallista näkökulmaa. Argumenttien tulee kuulostaa aidolta, ihmisen kirjoittamalta ja poliittisesti merkitykselliseltä.
+
+  ## Esimerkki 1:
+
+  Aihe: "Helsingissä ei tule aloittaa huumeiden käyttöhuonekokeilua, vaikka laki sen sallisi."
+
+  {
+    "arguments": [
+      {
+        "id": "tukiargumentti_1",
+        "text": "Ehdokkaiden mukaan kansainväliset esimerkit, kuten Portugali ja Tanska, ovat osoittaneet, että käyttöhuoneet vähentävät huumekuolemia, estävät tartuntatautien leviämistä ja parantavat katujen turvallisuutta. Monet ehdokkaat painottavat, että käyttöhuoneet eivät lisää huumeiden käyttöä."
+      },
+      {
+        "id": "tukiargumentti_2",
+        "text": "Addiktien on tavallista vaikeampaa hakeutua hoitoon. Käyttöhuoneet ovat paikka aloittaa hoitosuhde ja saada matalan kynnyksen tukea, kuten mielenterveyspalveluita, vieroitushoitoa tai apua asunnon etsimiseen."
+      },
+      {
+        "id": "tukiargumentti_3",
+        "text": "Käyttöhuoneissa voitaisiin tarjota puhtaita neuloja sekä mahdollisuus testata huumeiden sisältämiä aineita, mikä vähentäisi huumeiden käyttön fyysisiä riskejä, kuten yliannostuksia, infektioita ja tartuntatauteja (esim. HIV ja C-hepatiitti)."
+      },
+      {
+        "id": "tukiargumentti_4",
+        "text": "Huumeiden käyttäjät hyödyntävät usein julkisia vessoja, puistoja ja muita yleisiä tiloja. Käyttöhuoneet vähentäisivät huumeiden käyttöä näillä paikoilla ja parantaisivat siten turvallisuutta (esim. vähentämällä neulojen määrää leikkipuistoissa). Esimerkiksi Kallion katukuvassa huumeiden käyttö näkyy erityisen voimakkaasti, mikä häiritsee myös muita ihmisiä. 
+      },
+      {
+        "id": "tukiargumentti_5",
+        "text": "Monien mielestä käyttöhuoneiden perustaminen olisi eettistä. Huumeidenkäyttö aiheuttaa käyttäjille usein kärsimystä ja voi johtaa jopa kuolemaan. 
+      },
+      {
+        "id": "tukiargumentti_6",
+        "text": "Käyttöhuoneet voivat vähentää nuorten altistumista huumeidenkäytölle. 
+      },
+      {
+        "id": "tukiargumentti_7",
+        "text": "Ehdokkaiden mukaan Suomen Terveyden ja hyvinvoinnin laitos (THL) ja HUS Ensihoito suosittelevat käyttöhuoneiden käyttöönottoa. 
+      },
+      {
+        "id": "tukiargumentti_8",
+        "text": "Joidenkin ehdokkaiden mukaan huumelähtöisten ongelmien ja kuolemien määrä Suomessa on kasvussa. Tämä kertoo, että uuden lähestymistavan kokeilu on tarpeen.
+      },
+      {
+        "id": "tukiargumentti_9",
+        "text": "Käyttöhuoneet voisivat säästää yhteiskunnan resurssien käyttöä ennaltaehkäisemällä terveydenhuollon ja rikosoikeudellisten prosessien kuluja. 
+      },
+      {
+        "id": "tukiargumentti_10",
+        "text": "Kyse ei ole huumeiden käytön hyväksymisestä. Huumeriippuvuus on sairaus, ja siihen pitäisi saada hoitoa, jota käyttöhuoneet voivat tarjota. 
+      }
+    ],
+    "reasoning": "Argumentit pyrkivät esittelemään kommenteissa listattuja hyötyjä, joita käyttöhuoneet tuovat. Ehdokkaat painottavat, että käyttöhuoneiden käyttöönotto on eettistä ja turvallista. Moni perustelee käyttöhuoneiden käyttöönottoa tutkimustiedon ja kansainvälisten esimerkkien avulla. Ehdokkaat ovat antaneet useita esimerkkejä ja eri perusteluja oman kannan puolesta."
+  }
+
+  ## Esimerkki 2:
+
+  Aihe: "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen."
+
+  {
+    "arguments": [
+      {
+        "id": "tukiargumentti_1",
+        "text": "Ilmastonmuutos on monien asiantuntijoiden mukaan aikamme suurin uhka. Vastuu sen torjumisesta kuuluu kaikille - myös kunnille ja hyvinvointialueille."
+      },
+      {
+        "id": "tukiargumentti_2",
+        "text": "Hiilineutraalius parantaa ilmanlaatua ja asukkaiden terveyttä. Se on tärkeää myös luonnon monimuotoisuudelle ja hyvinvoinnille."
+      },
+      {
+        "id": "tukiargumentti_3",
+        "text": "Hiilineutraaliuteen pyrkiminen on vastuunottoa tulevien sukupolvien hyvinvoinnista ja elinympäristön turvaamisesta."
+      },
+      {
+        "id": "tukiargumentti_4",
+        "text": "Investoinnit ympäristöystävälliseen teknologiaan, kuten energiatehokkuuteen ja kiertotalouteen, voivat tuoda alueelle merkittäviä säästöjä energia- ja materiaalikustannuksissa."
+      },
+      {
+        "id": "tukiargumentti_5",
+        "text": "Ilmastotoimien lisääminen käytännön ratkaisuilla tuo alueelle yrittäjyyttä ja innovaatioita, jotka kasvattavat paikallista taloutta. Samalla yksityisen ja julkisen sektorin yhteistyötä voidaan parantaa yhteisien tavoitteiden avulla."
+      },
+      {
+        "id": "tukiargumentti_6",
+        "text": "Hiilineutraaliuteen siirtyminen vähentää riippuvuutta fossiilisista polttoaineista ja parantaa energiaturvallisuutta."
+      },
+      {
+        "id": "tukiargumentti_7",
+        "text": "Kuntien päätökset ovat keskeinen osa Suomen ilmastostrategiaa. Niillä on kansainvälisten sopimusten mukainen velvoite ilmastotavoitteiden saavuttamiseksi. EU voi rahoittaa kuntien ja hyvinvointialueiden toimintaa ilmastotavoitteiden saavuttamiseksi, mikä tekee siitä taloudellisesti kestävää."
+      },
+      {
+        "id": "tukiargumentti_8",
+        "text": "Kunnan tai hyvinvointialueen näyttämä myönteinen esimerkki voi inspiroida muita ja edistää laajempaa siirtymää kohti kestävämpää yhteiskuntaa."
+      },
+      {
+        "id": "tukiargumentti_9",
+        "text": "Ilmastotoimet voivat lisätä kuntien vetovoimaa, mikä voi tuoda alueelle uusia investointeja ja asukkaita. Myös edelläkävijän maine ja myönteiset mielikuvat ovat tavoittelemisen arvoisia."
+      },
+      {
+        "id": "tukiargumentti_10",
+        "text": "Suomen kunnat ovat globaalisti merkittävässä roolissa ilmastotavoitteiden saavuttamisessa. Niiltä löytyy poikkeuksellisen paljon asiantuntemusta ja resursseja konkreettisiin toimiin."
+      }
+    ],
+    "reasoning": "Argumentit korostavat ilmastonmuutoksen torjunnan tärkeyttä ja kuntien vastuuta siinä. Ehdokkaat perustelevat hiilineutraaliutta sekä ympäristöllisillä että taloudellisilla hyödyillä, kuten energiasäästöillä, uusilla työpaikoilla ja alueen vetovoiman lisääntymisellä. Moni painottaa myös sukupolvien välistä oikeudenmukaisuutta ja kuntien roolia kansallisten ilmastotavoitteiden saavuttamisessa."
+  }
+
+  Palauta vastauksesi seuraavassa JSON-muodossa. TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+
+  Käytä seuraavaa JSON-rakennetta:
+  {
+    "arguments": [
+      {
+        "id": "tukiargumentti_1",
+        "text": "Lopullinen tukiargumentti"
+      },
+      {
+        "id": "tukiargumentti_2", 
+        "text": "Toinen lopullinen tukiargumentti"
+      }
+    ],
+    "reasoning": "Lyhyt selitys siitä, miten päädyit lopulliseen argumenttilistaan"
+  }

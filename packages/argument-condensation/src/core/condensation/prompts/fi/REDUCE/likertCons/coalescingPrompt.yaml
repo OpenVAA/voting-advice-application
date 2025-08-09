@@ -1,0 +1,131 @@
+promptId: 'reduce_likertCons_coalescing_v1'
+params:
+  topic: string
+  argumentLists: string
+
+promptText: |
+  Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") vastustamisessa.
+  Tehtäväsi on muodostaa saamasi argumentit yhdeksi argumenttilistaksi, jonka avulla poliittisten vaalikoneiden käyttäjät voivat ymmärtää poliittista diskurssia väitettä vastaan. 
+
+  Argumenttien jaottelun pitää olla sulavaa, että niiden lukeminen on helppoa. 
+
+  Mikäli argumentteja ei ole, palauta tyhjä lista ja tyhjä reasoning-kenttä.
+
+  ## Väite: 
+  {{topic}}
+
+  ## Argumentit, joita on annettu:
+  {{argumentLists}}
+
+  Kirjoita lopullinen lista argumenteista. Niiden pitää olla helposti ymmärrettäviä ja luettavissa. 
+  Anna esimerkkejä vaikutuksista ja tavoista, joilla argumentit tuovat tähän väitteeseen vastustusta. Anna esimerkkejä, joita argumenteissa mainitaan.
+  Vältä saman argumentin toistamista eri muodoissa. Pyri olemaan selkeä ilman abstraktia kieltä.
+
+  Kirjoita argumentit vaikuttaviksi ja elävännäköisiksi. Säilytä alkuperäisissä kommenteissa esiintyneet konkreettiset esimerkit, historialliset viittaukset, lähteet ja ilmaisuvalinnat, jos ne ovat relevantteja ja vahvistavat argumentin ydintä.
+
+  Älä pyri vesittämään ristiriitaisia, tunteita herättäviä tai voimakkaita ilmaisutapoja, jos ne ovat perusteltuja ja kuvastavat alkuperäisen kirjoittajan huolta tai historiallista näkökulmaa. Argumenttien tulee kuulostaa aidolta, ihmisen kirjoittamalta ja poliittisesti merkitykselliseltä.
+
+  ## Esimerkki 1:
+
+  Aihe: "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen."
+
+  {
+    "arguments": [
+      {
+        "id": "vastustava_argumentti_1",
+        "text": "Monien mielestä hiilineutraaliuteen pyrkiminen ei kuulu kunnan tai hyvinvointialueen keskeisimpiin tehtäviin. Kuntien ja hyvinvointialueiden rajalliset resurssit tulisi kohdentaa peruspalveluiden, kuten terveydenhuollon ja koulutuksen, rahoittamiseen. Ilmastonmuutosta ei tulisi torjua kansalaisten hyvinvoinnin kustannuksella."
+      },
+      {
+        "id": "vastustava_argumentti_2",
+        "text": "Liian monimutkaiset tavoitteet voivat aiheuttaa kunnalle ja sen yrityksille taloudellisia haasteita ja vähentää kunnan houkuttelevuutta. Suomen pitäisi sen sijaan keskittyä suoraviivaisiin toimiin, kuten avohakkuiden lopettamiseen, yksilöllisiin valintoihin kannustamiseen (esim. kierrätys) ja ympäristöystävällisen teknologian kehittämiseen."
+      },
+      {
+        "id": "vastustava_argumentti_3",
+        "text": "Suomi on jo nyt ilmastotoimien edelläkävijä. Toimia pitäisi vaatia sen sijaan muilta mailta ja suurilta yrityksiltä. Tällä olisi myös suurempi vaikutus koko maapallon päästöihin. Monien mukaan Suomi on jo hiilineutraali tai jopa hiilinegatiivinen mm. laajojen metsäalueiden vuoksi."
+      },
+      {
+        "id": "vastustava_argumentti_4",
+        "text": "Energian hinnan ja elinkustannusten nousu vaikeuttavat hiilineutraaliuuden saavuttamista käytännössä. Monien ehdokkaiden mukaan esimerkiksi energiatuotannon uudistamisen kustannukset ovat viime aikoina nousseet. Myös Suomen maantiede, kuten kylmä ilmasto ja pitkät etäisyydet, ovat haasteita tavoitteiden saavuttamisessa."
+      },
+      {
+        "id": "vastustava_argumentti_5",
+        "text": "Suomen nykyiset tavoitteet ovat monien mielestä jo riittävät tai jopa liian kunnianhimoiset. Etenkin kuntien ja hyvinvointialueiden toimien vaikutukset ovat globaalissa mittakaavassa marginaaliset."
+      },
+      {
+        "id": "vastustava_argumentti_6",
+        "text": "Hiilineutraaliuden tavoittelu voi heikentää energian saatavuutta ja sitä kautta kuntien huoltovarmuutta."
+      },
+      {
+        "id": "vastustava_argumentti_7",
+        "text": "Hiilineutraalius edistää asukkaiden hyvinvoinnin sijaan yritysten intressejä."
+      },
+      {
+        "id": "vastustava_argumentti_8",
+        "text": "Hiilineutraaliuden mittaus- ja laskentamenetelmiä voi manipuloida ja tulkita monella tavalla. Aitoa ilmastovaikutusta on siis haastavaa mitata luotettavasti. Ilmastonmuutoksen tutkimustieto on monien mielestä ristiriitaista."
+      },
+      {
+        "id": "vastustava_argumentti_9",
+        "text": "Ilmastotavoitteet ovat monien mielestä symbolisia, ja niitä käytetään moraalisena poseerauksena kansainvälisten toimijoiden, kuten EU:n, miellyttämiseksi."
+      }
+    ],
+    "reasoning": "Ehdokkaat perustelevat vastustavaa kantaansa taloudellisilla haasteilla, resurssien kohdentamisen kysymyksillä, Suomen erityispiirteillä ja epäilyillä tavoitteiden tehokkuudesta. Moni korostaa, että peruspalveluiden turvaaminen on tärkeämpää kuin ilmastotavoitteet."
+  }
+
+  ## Esimerkki 2:
+
+  Aihe: "Perusterveydenhuollon järjestämisessä tulee hyödyntää nykyistä enemmän yksityisiä palveluntarjoajia."
+
+  {
+    "arguments": [
+      {
+        "id": "vastustava_argumentti_1",
+        "text": "Julkisen sektorin käyttö voi tehdä palveluiden saatavuudesta vähemmän yhdenvertaista ja lisätä terveyseroja. Esimerkiksi palvelumaksut voivat kasvaa, jolloin hoidonsaannin taloudellinen epätasa-arvo kasvaa. Näin on käynyt esimerkiksi lastensuojelussa."
+      },
+      {
+        "id": "vastustava_argumentti_2",
+        "text": "Ehdokkaiden mukaan yksityisen sektorin tuottamat terveyspalvelut ovat laadultaan julkista heikompia, koska yksityisten yritysten ensisijainen tavoite on liiketoiminnallisen voiton maksimointi - ei niinkään ihmisten hyvinvointi."
+      },
+      {
+        "id": "vastustava_argumentti_3",
+        "text": "Julkisten terveyspalveluiden laatu heikkenee yksityisten palveluntarjoajien yleistyessä, sillä kansantaloudellisia resursseja ohjataan pois julkisen terveydenhuollon piiristä. Esimerkiksi hoitohenkilökunnan jakauma voi painottua aiempaa enemmän yksityiselle sektorille."
+      },
+      {
+        "id": "vastustava_argumentti_4",
+        "text": "Yksityisten palveluiden Kela-korvausten korottaminen on monien ehdokkaiden mukaan huono keino lyhentää hoitojonoja. Orpon hallituksen tekemä korvausten nostaminen ei ole lisännyt käyntejä yksityisillä palveluntarjoajilla juuri yhtään."
+      },
+      {
+        "id": "vastustava_argumentti_5",
+        "text": "Yksityiset palveluntarjoajat eli ostopalvelut ovat valtava kuluerä hyvinvointialueille. Ehdokkaiden mukaan julkisten sosiaali- ja terveyspalveluiden tuottaminen itse on usein edullisempaa kuin yksityisten palveluntarjoajien käyttäminen."
+      },
+      {
+        "id": "vastustava_argumentti_6",
+        "text": "Yksityisten palveluntarjoajien hoidon laadun ja saatavuuden valvonta on hankalaa. Hyvinvointialueen omaa palvelutuotantoa on helpompi itse valvoa."
+      },
+      {
+        "id": "vastustava_argumentti_7",
+        "text": "Osa ehdokkaista ajattelee, että on epäeettistä tehdä voittoa sairastuneiden ja muiden hoitoa tarvitsevien ihmisten kustannuksella. Kansalaisten elintärkeillä peruspalveluilla ei pitäisi tehdä bisnestä."
+      },
+      {
+        "id": "vastustava_argumentti_8",
+        "text": "Pitkän tähtäimen tavoitteena on oltava julkiseen terveydenhuoltoon panostaminen, jotta yksityistä terveydenhuoltoa ei tarvittaisi kuin harvoin esimerkiksi lyhyen aikavälin jonojen purkamisessa."
+      }
+    ],
+    "reasoning": "Ehdokkaat perustelevat vastustavaa kantaansa yhdenvertaisuuden, laadun, kustannusten ja eettisyyden kysymyksillä. Moni korostaa julkisen terveydenhuollon paremmuutta ja sitä, että yksityistäminen voi heikentää palvelujen saatavuutta ja laatua."
+  }
+
+  ## TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+
+  Palauta vastauksesi seuraavassa JSON-muodossa:
+  {
+    "arguments": [
+      {
+        "id": "vastustava_argumentti_1",
+        "text": "Lopullinen vastustava argumentti"
+      },
+      {
+        "id": "vastustava_argumentti_2", 
+        "text": "Toinen lopullinen vastustava argumentti"
+      }
+    ],
+    "reasoning": "Lyhyt selitys siitä, miten päädyit lopulliseen argumenttilistaan"
+  }

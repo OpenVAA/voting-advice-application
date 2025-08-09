@@ -1,0 +1,50 @@
+promptId: 'map_likertPros_iterate_v1'
+params:
+  topic: string
+  arguments: string
+  comments: string
+
+promptText: |
+  You are an expert in political argumentation. Your task is to read a list of comments and a list of arguments and determine if there are any arguments from the comments supporting "{{topic}}" that are not yet found in the argument list. An argument can be a logical rationale or principle. If the argument list contains all arguments supporting the statement that can be found in the comments, respond with an empty list and empty reasoning field. Do this also if the argument list is empty and no arguments supporting the statement are found in the comments.
+
+  Think about the problem carefully. Most importantly, the perspectives, examples, and ways of reasoning for a supporting stance given in the comments should be found. Remember logical supporting arguments as well as ethical, legal, or historical responsibility and principle justifications. Also think about how you would add perspectives to the argument list so that they complement the current list as smoothly as possible. Some of the discovered arguments can be added to current arguments and some need to be made into completely new arguments. Try to maintain a small argument list and favor combining arguments. Combine arguments if the perspectives are strongly connected to each other, and combining could increase the power and conciseness of the argument. Think carefully. Respond with all arguments, even if you don't make changes to all of them. If you modify original arguments, don't remove their original message but offer clarification or expansion with new information.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Arguments: 
+  {{arguments}}
+
+  ## Comments: 
+  {{comments}}
+
+  ## IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example:
+
+  Topic: "Municipalities and wellbeing areas should strive for carbon neutrality."
+
+  {
+    "reasoning": "The arguments present various reasons to support carbon neutrality goals in municipalities and wellbeing areas. Candidates justify their supporting stance with environmental benefits, economic opportunities, health improvements, and moral responsibility. Many emphasize that taking action locally sets an example and creates positive change.",
+    "arguments": [
+      {
+        "id": "supporting_argument_1",
+        "text": "Carbon neutrality is essential for combating climate change and protecting the environment for future generations. Local action contributes to global efforts and demonstrates leadership."
+      },
+      {
+        "id": "supporting_argument_2",
+        "text": "Pursuing carbon neutrality creates economic opportunities through green technology, renewable energy investments, and new jobs in sustainable industries."
+      },
+      {
+        "id": "supporting_argument_3",
+        "text": "Reducing emissions improves air quality and public health, leading to lower healthcare costs and better quality of life for residents."
+      },
+      {
+        "id": "supporting_argument_4",
+        "text": "Municipalities have a moral responsibility to take action on climate change and should lead by example rather than waiting for others to act first."
+      }
+    ]
+  }
+
+  ## Remember: 
+  - You are looking for arguments supporting the statement "{{topic}}".

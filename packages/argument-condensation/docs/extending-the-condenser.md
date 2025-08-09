@@ -1,0 +1,33 @@
+Condenser is currently constrained to political comment processing but the underlying operations
+
+- (refine, map, reduce, ground) can be used to summarize any unstructured data by creating a more modular and
+- reusable condenser. To achieve this, it would be advisable to create a CondensationStrategy class that would
+- contain the logic for different tasks. Then, the Condenser would simply take in a CondensationStrategy and
+- use it to process the data. It would make sense to start anew and not try to modify the existing decoupled
+- architecture and simply implement the current logic with the new strategy pattern after creating a new
+- modular Condenser. Here are some high-level changes that would be required:
+-
+- 1.  Make Data Structures Generic:
+- - Introduce type parameters to `Condenser`, `CondensationRunInput`, and `CondensationRunResult` (e.g., `Condenser<TInput, TOutput>`).
+- - This decouples the engine from `VAAComment` and `Argument`, allowing it to operate on any data type, such as `string[]` for
+-      document summarization.
+- - The `input.comments` field would become `input.data`, and `result.arguments` would become `result.data`.
+- - Do not take in a Question object in CondensationRunInput! Simply take in an array of strings or objects to process.
+-
+- 2.  Externalize Domain-Specific Logic:
+- - Use different handlers for different tasks. Probably best implemented with a CondensationStrategy. Examples of handlers:
+-      - `prepareTemplateVars(operation, item, context)`: A function to prepare variables for the prompt templates.
+-      - `responseContract`: A validation schema that defines the expected structure of the LLM's output (or if you
+-        are not using JSON output, you can skip using a contract and simply generate strings w/o validation).
+-      - `extractOutput(parsedResponse)`: A function to extract the relevant data from the validated LLM response (if you are using JSON output).
+-
+- 3.  Generalize Utility Functions:
+- - `OperationTreeBuilder`: The `setNodeInput` and `setNodeOutput` methods should be modified to accept generic data (e.g., `{ data: T[] }`)
+-      rather than just `comments` or `arguments`
+- - `planValidation`: The final pipeline output validation (`validatePipelineOutputs`) is specific to the argument condensation workflow
+- - Other utility methods to be generalized as well
+-
+- 4.  Adapt Core Execution Methods:
+- - The internal execute methods (`_executeParallelOperation` and `executeRefine`) must be updated to use the provided custom handlers
+-      for preparing LLM inputs and processing outputs. The core orchestration logic (batching, parallelism, retries) is reusable, but behavior
+-      should be configurable.

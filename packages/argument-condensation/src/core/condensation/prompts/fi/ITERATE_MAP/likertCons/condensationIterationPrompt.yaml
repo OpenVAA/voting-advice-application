@@ -1,0 +1,70 @@
+promptId: 'map_likertCons_iterate_v1'
+params:
+  topic: string
+  arguments: string
+  comments: string
+
+promptText: |
+  olet asiantuntija poliittisessa argumentaatiossa. tehtäväsi on lukea lista kommentteja ja lista argumentteja ja selvittää, löytyykö kommenteista joitakin argumentteja, joita kommenteissa on esitetty aihetta "{{topic}}" vastaan mutta joita ei vielä löydy argumenttilistasta. Argumentti voi olla looginen perustelu tai periaate. Jos argumenttilista sisältää kaikki argumentit väitettä vastaan, joita kommenteista löytyy, vastaa tyhjällä listalla ja tyhjällä reasoning-kohdalla. Toimi näin myös, jos argumenttilista on tyhjä ja kommenteista ei löydy argumentteja, jotka perustelevat, miksi väite ei pidä täysin paikkaansa. 
+
+  Mieti ongelmaa rauhassa. Tärkeintä on, että kommenteissa annetut näkökulmat, esimerkit ja tavat perustella omaa vastustavaa näkökantaa löytyvät. Muista loogisten tukiargumenttien lisäksi eettiset, oikeudelliset tai historialliset vastuu- ja periaateperustelut. Mieti myös, miten lisäisit näkökulmat argumenttilistaan niin, että ne täydentävät nykyistä listaa mahdollisimman sulavasti. Jotkin löydetyistä argumenteista voi lisätä nykyisiin argumentteihin ja joistakin täytyy tehdä täysin uusi argumentti. Pyri ylläpitämään pientä argumenttilistaa ja suosi argumenttien yhdistämistä. Yhdistä argumentteja, jos näkökulmat kytkeytyvät toisiinsa vahvasti, ja yhdistäminen voisi lisätä argumentin voimaa ja tiiviyttä. Mieti rauhassa. Vastaa kaikilla argumenteilla, vaikka et tekisikään kaikkiin muutoksia. Jos muokkaat alkuperäisiä argumentteja, älä poista niiden alkuperäistä sanomaa vaan tarjoa tarkennusta tai laajennusta uudella tiedolla.  
+
+  ## Väite: 
+  {{topic}}
+
+  ## argumentit: 
+  {{arguments}}
+
+  ## kommentit: 
+  {{comments}}
+
+  ## TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+
+  ## Esimerkki 1:
+
+  Aihe: "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen."
+
+  {
+    "reasoning": "Argumentit esittelevät erilaisia syitä vastustaa hiilineutraaliustavoitteita kunnissa ja hyvinvointialueilla. Ehdokkaat perustelevat vastustavaa kantaansa taloudellisilla haasteilla, resurssien kohdentamisen kysymyksillä, Suomen erityispiirteillä ja epäilyillä tavoitteiden tehokkuudesta. Moni korostaa, että peruspalveluiden turvaaminen on tärkeämpää kuin ilmastotavoitteet.",
+    "arguments": [
+      {
+        "id": "vastustava_argumentti_1",
+       "text": "Monien mielestä hiilineutraaliuteen pyrkiminen ei kuulu kunnan tai hyvinvointialueen keskeisimpiin tehtäviin. Kuntien ja hyvinvointialueiden rajalliset resurssit tulisi kohdentaa peruspalveluiden, kuten terveydenhuollon ja koulutuksen, rahoittamiseen. Ilmastonmuutosta ei tulisi torjua kansalaisten hyvinvoinnin kustannuksella."
+      },
+      {
+        "id": "vastustava_argumentti_2",
+        "text": "Liian monimutkaiset tavoitteet voivat aiheuttaa kunnalle ja sen yrityksille taloudellisia haasteita ja vähentää kunnan houkuttelevuutta. Suomen pitäisi sen sijaan keskittyä suoraviivaisiin toimiin, kuten avohakkuiden lopettamiseen, yksilöllisiin valintoihin kannustamiseen (esim. kierrätys) ja ympäristöystävällisen teknologian kehittämiseen."
+      },
+      {
+        "id": "vastustava_argumentti_3",
+        "text": "Suomi on jo nyt ilmastotoimien edelläkävijä. Toimia pitäisi vaatia sen sijaan muilta mailta ja suurilta yrityksiltä. Tällä olisi myös suurempi vaikutus koko maapallon päästöihin. Monien mukaan Suomi on jo hiilineutraali tai jopa hiilinegatiivinen mm. laajojen metsäalueiden vuoksi."
+      },
+      {
+        "id": "vastustava_argumentti_4",
+        "text": "Energian hinnan ja elinkustannusten nousu vaikeuttavat hiilineutraaliuuden saavuttamista käytännössä. Monien ehdokkaiden mukaan esimerkiksi energiatuotannon uudistamisen kustannukset ovat viime aikoina nousseet. Myös Suomen maantiede, kuten kylmä ilmasto ja pitkät etäisyydet, ovat haasteita tavoitteiden saavuttamisessa."
+      },
+      {
+        "id": "vastustava_argumentti_5",
+        "text": "Suomen nykyiset tavoitteet ovat monien mielestä jo riittävät tai jopa liian kunnianhimoiset. Etenkin kuntien ja hyvinvointialueiden toimien vaikutukset ovat globaalissa mittakaavassa marginaaliset."
+      },
+      {
+        "id": "vastustava_argumentti_6",
+        "text": "Hiilineutraaliuden tavoittelu voi heikentää energian saatavuutta ja sitä kautta kuntien huoltovarmuutta."
+      },
+      {
+        "id": "vastustava_argumentti_7",
+        "text": "Hiilineutraalius edistää asukkaiden hyvinvoinnin sijaan yritysten intressejä."
+      },
+      {
+        "id": "vastustava_argumentti_8",
+        "text": "Hiilineutraaliuden mittaus- ja laskentamenetelmiä voi manipuloida ja tulkita monella tavalla. Aitoa ilmastovaikutusta on siis haastavaa mitata luotettavasti. Ilmastonmuutoksen tutkimustieto on monien mielestä ristiriitaista."
+      },
+      {
+       "id": "vastustava_argumentti_9",
+       "text": "Ilmastotavoitteet ovat monien mielestä symbolisia, ja niitä käytetään moraalisena poseerauksena kansainvälisten toimijoiden, kuten EU:n, miellyttämiseksi."
+      }
+    ]
+  }
+
+  ## Muista: 
+  - Etsit argumentteja väitettä "{{topic}}" VASTAAN.

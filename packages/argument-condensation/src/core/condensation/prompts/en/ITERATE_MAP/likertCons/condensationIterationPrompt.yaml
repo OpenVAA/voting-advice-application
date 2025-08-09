@@ -1,0 +1,23 @@
+promptId: 'map_likertCons_iterate_v1'
+params:
+  topic: string
+  arguments: string
+  comments: string
+promptText: |
+  You are an expert in political argumentation. Your task is to read a list of comments and a list of arguments and determine if there are any arguments from the comments opposing "{{topic}}" that are not yet found in the argument list. An argument can be a logical rationale or principle. If the argument list contains all arguments opposing the statement that can be found in the comments, respond with an empty list and empty reasoning field. Do this also if the argument list is empty and no arguments opposing the statement are found in the comments.
+
+  Think about the problem carefully. Most importantly, the perspectives, examples, and ways of reasoning for an opposing stance given in the comments should be found. Remember logical opposing arguments as well as ethical, legal, or historical responsibility and principle justifications. Also think about how you would add perspectives to the argument list so that they complement the current list as smoothly as possible. Some of the discovered arguments can be added to current arguments and some need to be made into completely new arguments. Try to maintain a small argument list and favor combining arguments. Combine arguments if the perspectives are strongly connected to each other, and combining could increase the power and conciseness of the argument. Think carefully. Respond with all arguments, even if you don't make changes to all of them. If you modify original arguments, don't remove their original message but offer clarification or expansion with new information.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Arguments: 
+  {{arguments}}
+
+  ## Comments: 
+  {{comments}}
+
+  ## IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Remember: 
+  - You are looking for arguments opposing the statement "{{topic}}".
