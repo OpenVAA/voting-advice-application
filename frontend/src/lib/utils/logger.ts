@@ -6,7 +6,7 @@ import { constants } from '$lib/utils/constants';
  * @param error Potential error message to print out completely
  */
 export function logDebugError(message: unknown, error: unknown = null) {
-  if (import.meta.env.DEV || constants.PUBLIC_DEBUG === 'true') {
+  if (import.meta.env.DEV || constants.PUBLIC_DEBUG) {
     if (error) console.error(message, error);
     else console.info(message);
   }
