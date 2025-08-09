@@ -1,18 +1,10 @@
 import { DefaultLogger, type HasAnswers } from '@openvaa/core';
-import {
-  QUESTION_TYPE
-} from '@openvaa/data';
-import {
-  SUPPORTED_LANGUAGES
-} from './core/types';
+import { QUESTION_TYPE } from '@openvaa/data';
+import { SUPPORTED_LANGUAGES } from './core/types';
 import { getAndSliceComments, getParallelFactor } from './core/utils';
 import { MODEL_DEFAULTS } from './defaultValues';
 import { handleBooleanQuestion, handleCategoricalQuestion, handleOrdinalQuestion } from './question-handlers';
-import type {
-  BooleanQuestion,
-  SingleChoiceCategoricalQuestion,
-  SingleChoiceOrdinalQuestion
-} from '@openvaa/data';
+import type { BooleanQuestion, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
 import type {
   CommentGroupingOptions,
   CondensationAPIOptions,

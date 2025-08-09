@@ -3,9 +3,7 @@ import { createBatches } from './createBatches';
 import { validateInputTokenCount } from './validateInputTokenCount';
 import { BATCH_PROCESSING } from '../../../defaultValues';
 import { PromptRegistry } from '../../condensation/prompts/promptRegistry';
-import {
-  CondensationOperations
-} from '../../types';
+import { CondensationOperations } from '../../types';
 import type { Logger } from '@openvaa/core';
 import type {
   IterateMapOperationParams,

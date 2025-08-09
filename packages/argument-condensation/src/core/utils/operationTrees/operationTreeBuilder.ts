@@ -1,15 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  CondensationOperations
-} from '../../types';
-import type {
-  Argument,
-  CondensationOperation,
-  OperationNode,
-  OperationTree,
-  VAAComment
-} from '../../types';
+import { CondensationOperations } from '../../types';
+import type { Argument, CondensationOperation, OperationNode, OperationTree, VAAComment } from '../../types';
 
 /**
  * Builds and manages the operation tree during condensation execution
