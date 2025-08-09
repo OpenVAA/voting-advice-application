@@ -18,7 +18,7 @@ import type {
 /**
  * The abstract base class that all universal `DataWriter`s should extend.
  *
- * The subclasses must implement the protected `_foo` methods paired with each public `Foo` method. The implementations may freely throw errors.
+ * The subclasses must implement the protected methods. The implementations may freely throw errors.
  */
 export abstract class UniversalDataWriter extends UniversalAdapter implements DataWriter {
   ////////////////////////////////////////////////////////////////////

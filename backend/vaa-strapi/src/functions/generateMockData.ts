@@ -7,6 +7,14 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import {
+  type AnswerValue,
+  dynamicSettings,
+  type LocalizedAnswer,
+  type LocalizedString,
+  type QuestionTypeSettings
+} from '@openvaa/app-shared';
+import { OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
@@ -15,11 +23,16 @@ import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockUsers from './mockData/mockUsers.json';
-import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import {
+  generateAiMockData,
+  generateMockDataOnInitialise,
+  generateMockDataOnRestart,
+  LLM_OPENAI_API_KEY
+} from '../constants';
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
-import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
+import type { LLMResponse } from '@openvaa/llm';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -137,6 +150,12 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting admin user for frontend');
+    await createAdminUser().catch((e) => {
+      throw e;
+    });
+    console.info('Done!');
+    console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
     await createConstituenciesAndGroups({
       numberPerGroup: N_CONSTITUENCIES_PER_ELECTION,
@@ -218,8 +237,13 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
-    console.info('Mock data generation completed successfully!');
+    if (generateAiMockData) {
+      console.info('generating LLM summaries');
+      await generateMockLLMSummaries();
+    }
+    console.info('Done!');
     console.info('#######################################');
+    console.info('Mock data generation completed successfully!');
   } catch (e) {
     console.error('Mock data generation failed because of error ', JSON.stringify(e));
   }
@@ -247,6 +271,29 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
+  }
+}
+
+async function createAdminUser() {
+  if (process.env.NODE_ENV === 'development') {
+    // Create admin user for frontend
+    const admin = await strapi.query('plugin::users-permissions.role').findOne({
+      where: {
+        type: 'admin'
+      }
+    });
+
+    await strapi.documents('plugin::users-permissions.user').create({
+      data: {
+        username: process.env.DEV_USERNAME ?? 'admin',
+        password: 'admin1', // Min length of a password is 6
+        email: process.env.DEV_EMAIL ?? 'admin@example.com',
+        provider: 'local',
+        confirmed: true,
+        blocked: false,
+        role: admin.id
+      }
+    });
   }
 }
 
@@ -678,6 +725,8 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
   const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
   const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
 
+  const elections = await strapi.documents('api::election.election').findMany({});
+
   // Create Opinion questions
   mockQuestions.forEach(async (question, index) => {
     const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
@@ -686,6 +735,11 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
     const category = opinionCategories[index % opinionCategories.length];
     // const category = faker.helpers.arrayElement(opinionCategories);
     const constituency = Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
+
+    const questionElections = faker.helpers
+      .arrayElements(elections, faker.number.int({ min: 1, max: elections.length }))
+      .map((e) => e.documentId);
+
     await strapi.documents('api::question.question').create({
       data: {
         text,
@@ -695,6 +749,7 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
         questionType: questionType.documentId,
         category: category.documentId,
         constituencies: constituency ? [constituency.documentId] : [],
+        elections: questionElections,
         ...addMockId()
       }
     });
@@ -826,6 +881,55 @@ function generateAnswers(
     answers[question.documentId] = { value, info };
   }
   return answers as JSONValue;
+}
+
+/**
+ * Generates a single llm-response that will be used for every answer.
+ */
+async function generateMockLLMSummaries() {
+  if (!LLM_OPENAI_API_KEY) {
+    throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries');
+  }
+
+  try {
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
+      messages: [
+        {
+          role: 'system',
+          content: 'message.content'
+        },
+        {
+          role: 'user',
+          content: dynamicSettings.llm.prompt + dynamicSettings.llm.answerFormat
+        }
+      ]
+    });
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+
+    // Get all questions with their existing customData
+    const questions = await strapi.db.query(API.Question).findMany({});
+
+    // Update each question, merging the new data with existing customData
+    for (const question of questions) {
+      const existingCustomData = question.customData || {};
+      const mergedCustomData = {
+        ...existingCustomData,
+        infoSections: [...(existingCustomData.infoSections || []), ...(generatedCustomData.infoSections || [])],
+        terms: [...(existingCustomData.termsn || []), ...(generatedCustomData.terms || [])]
+      };
+
+      await strapi.db.query(API.Question).update({
+        where: { id: question.id },
+        data: {
+          customData: mergedCustomData
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+  }
 }
 
 /**

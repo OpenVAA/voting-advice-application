@@ -63,6 +63,12 @@
       "relation": "oneToOne",
       "target": "api::alliance.alliance",
       "mappedBy": "election"
+    },
+    "factorLoading": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::factor-loading.factor-loading",
+      "mappedBy": "election"
     }
   }
 }

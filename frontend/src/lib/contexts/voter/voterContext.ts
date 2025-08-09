@@ -7,9 +7,11 @@ import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore';
 import { countAnswers } from './countAnswers';
+import { createFactorLoadingStore } from './factorLoadings/factorLoadingStore';
 import { filterStore } from './filters/filterStore';
 import { matchStore } from './matchStore';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore';
+import { QuestionOrderer } from './questionOrderer';
 import { getAppContext } from '../../contexts/app';
 import { paramStore } from '../utils/paramStore';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
@@ -41,6 +43,7 @@ export function initVoterContext(): VoterContext {
 
   const appContext = getAppContext();
   const { appSettings, dataRoot, getRoute, locale, startEvent, t } = appContext;
+  const { setFactorLoadingData, factorLoadingStore } = createFactorLoadingStore();
 
   ////////////////////////////////////////////////////////////
   // Elections and Constituencies
@@ -107,6 +110,15 @@ export function initVoterContext(): VoterContext {
   );
 
   ////////////////////////////////////////////////////////////
+  // FactorLoadings
+  ////////////////////////////////////////////////////////////
+
+  const factorLoadings = factorLoadingStore({
+    dataRoot,
+    selectedElections
+  });
+
+  ////////////////////////////////////////////////////////////
   // Questions and QuestionCategories
   ////////////////////////////////////////////////////////////
 
@@ -137,12 +149,35 @@ export function initVoterContext(): VoterContext {
 
   const firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
 
+  const questionOrderer = parsimoniusDerived(
+    [factorLoadings, opinionQuestions],
+    ([factorLoadings, opinionQuestions]) => {
+      return new QuestionOrderer(opinionQuestions, factorLoadings);
+    }
+  );
+
   const selectedQuestionBlocks = questionBlockStore({
     firstQuestionId,
     opinionQuestionCategories,
     selectedQuestionCategoryIds,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    questionOrderer
+  });
+
+  ////////////////////////////////////////////////////////////
+  // Confidence score
+  ///////////////////////////////////////////////////////////
+
+  const confidenceScore = parsimoniusDerived([selectedQuestionBlocks, questionOrderer], ([blocks, orderer]) => {
+    const shown = blocks.shownQuestionIds;
+    if (orderer && shown.length > 0) {
+      return orderer.calculateConfidenceScore(shown);
+    }
+    // Fallback to simple percentage-based calculation
+    const totalQuestions = blocks.questions.length;
+    if (totalQuestions === 0) return 0;
+    return Math.round((shown.length / totalQuestions) * 100);
   });
 
   ////////////////////////////////////////////////////////////
@@ -152,9 +187,20 @@ export function initVoterContext(): VoterContext {
   const answers = answerStore({ startEvent });
 
   const resultsAvailable = parsimoniusDerived(
-    [appSettings, opinionQuestions, answers, selectedElections],
-    ([appSettings, questions, answers, selectedElections]) => {
-      // For results to be available, we need at least the specified number of answers for each election
+    [appSettings, opinionQuestions, answers, selectedElections, confidenceScore],
+    ([appSettings, questions, answers, selectedElections, confidence]) => {
+      // If dynamic ordering is enabled, use the confidence score threshold
+      if (appSettings.questions.dynamicOrdering?.enabled) {
+        const orderingConfig = appSettings.questions.dynamicOrdering?.config;
+        const reliabilityThreshold =
+          orderingConfig?.type === 'factor-based' ? (orderingConfig.reliabilityThreshold ?? 75) : 75;
+
+        // Check if confidence score meets the threshold
+        if (confidence >= reliabilityThreshold) {
+          return true;
+        }
+      }
+      // Fall back to the original behavior for counting answers
       if (selectedElections.length === 0) return false;
       return selectedElections.every((e) => {
         const applicableQuestions = questions.filter((q) => q.appliesTo({ elections: e }));
@@ -246,8 +292,12 @@ export function initVoterContext(): VoterContext {
     algorithm,
     answers,
     constituenciesSelectable,
+    confidenceScore,
     electionsSelectable,
     entityFilters,
+    factorLoadings,
+    setFactorLoadingData,
+    questionOrderer,
     firstQuestionId,
     infoQuestionCategories,
     infoQuestions,

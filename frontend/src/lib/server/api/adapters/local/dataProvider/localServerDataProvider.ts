@@ -20,6 +20,7 @@ import type {
   GetDataOptionsBase,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
   GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
@@ -122,6 +123,19 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
         }
       : undefined;
     return this.readAndFilter('questions', { filter, locale });
+  }
+
+  getFactorLoadingData(options: GetFactorLoadingsOptions = {}): Promise<Response> {
+    warnIfUnsupported(options);
+    const { electionId } = options;
+    const filter = electionId
+      ? (data: LocalDataType['factorLoadings']) => {
+          if (!data) return null;
+          // If the election IDs match, return the data, otherwise null
+          return data.election === electionId ? data : null;
+        }
+      : undefined;
+    return this.readAndFilter('factorLoadings', filter);
   }
 
   /**

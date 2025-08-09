@@ -11,6 +11,9 @@
     "voterApp": {
       "type": "boolean"
     },
+    "adminApp": {
+      "type": "boolean"
+    },
     "underMaintenance": {
       "type": "boolean"
     },

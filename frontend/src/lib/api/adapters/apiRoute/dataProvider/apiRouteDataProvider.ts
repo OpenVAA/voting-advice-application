@@ -6,6 +6,7 @@ import type {
   GetConstituenciesOptions,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
   GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
@@ -37,5 +38,9 @@ export class ApiRouteDataProvider extends apiRouteAdapterMixin(UniversalDataProv
 
   protected _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']> {
     return this.apiGet({ endpoint: 'questions', params: options });
+  }
+
+  protected _getFactorLoadingData(options: GetFactorLoadingsOptions): Promise<DPDataType['factorLoadings']> {
+    return this.apiGet({ endpoint: 'factorLoadings', params: options });
   }
 }

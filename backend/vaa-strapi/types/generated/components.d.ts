@@ -233,6 +233,7 @@ export interface SettingsQuestions extends Struct.ComponentSchema {
   };
   attributes: {
     categoryIntros: Schema.Attribute.Component<'settings.questions-category-intros', false>;
+    dynamicOrdering: Schema.Attribute.Component<'settings.questions-ordering', false>;
     questionsIntro: Schema.Attribute.Component<'settings.questions-intro', false> & Schema.Attribute.Required;
     showCategoryTags: Schema.Attribute.Boolean & Schema.Attribute.Required;
     showResultsLink: Schema.Attribute.Boolean;
@@ -260,6 +261,38 @@ export interface SettingsQuestionsIntro extends Struct.ComponentSchema {
   attributes: {
     allowCategorySelection: Schema.Attribute.Boolean;
     show: Schema.Attribute.Boolean & Schema.Attribute.Required;
+  };
+}
+
+export interface SettingsQuestionsOrdering extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering';
+  };
+  attributes: {
+    config: Schema.Attribute.Component<'settings.questions-ordering-config', false> & Schema.Attribute.Required;
+    enabled: Schema.Attribute.Boolean;
+  };
+}
+
+export interface SettingsQuestionsOrderingConfig extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering_config';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering Config';
+  };
+  attributes: {
+    eliminationType: Schema.Attribute.Enumeration<['strict', 'relaxed']>;
+    numSuggestions: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      >;
+    type: Schema.Attribute.Enumeration<['factor-based', 'eliminate-choices']> & Schema.Attribute.Required;
   };
 }
 
@@ -349,6 +382,8 @@ declare module '@strapi/strapi' {
       'settings.questions': SettingsQuestions;
       'settings.questions-category-intros': SettingsQuestionsCategoryIntros;
       'settings.questions-intro': SettingsQuestionsIntro;
+      'settings.questions-ordering': SettingsQuestionsOrdering;
+      'settings.questions-ordering-config': SettingsQuestionsOrderingConfig;
       'settings.results': SettingsResults;
       'settings.results-candidate-card-contents': SettingsResultsCandidateCardContents;
       'settings.results-party-card-contents': SettingsResultsPartyCardContents;

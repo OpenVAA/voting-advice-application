@@ -12,6 +12,7 @@ export const CONTENT_API: {
   Constituency: 'api::constituency.constituency',
   ConstituencyGroup: 'api::constituency-group.constituency-group',
   Election: 'api::election.election',
+  FactorLoading: 'api::factor-loading.factor-loading',
   Language: 'api::language.language',
   Nomination: 'api::nomination.nomination',
   Party: 'api::party.party',

@@ -29,7 +29,7 @@ Displays a warning if the selected constituency does not have nominations in all
 
   export let data;
 
-  const { dataRoot, getRoute, nominationsAvailable, selectedElections, t } = getVoterContext();
+  const { dataRoot, getRoute, nominationsAvailable, selectedElections, t, setFactorLoadingData } = getVoterContext();
 
   let error: Error | undefined;
   let closeModal: () => void;
@@ -40,7 +40,7 @@ Displays a warning if the selected constituency does not have nominations in all
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
-    Promise.all([data.questionData, data.nominationData]).then(async (data) => {
+    Promise.all([data.questionData, data.nominationData, data.factorLoadingData]).then(async (data) => {
       error = await update(data);
     });
   }
@@ -49,23 +49,28 @@ Displays a warning if the selected constituency does not have nominations in all
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  async function update([questionData, nominationData]: [
+  async function update([questionData, nominationData, factorLoadingData]: [
     DPDataType['questions'] | Error,
-    DPDataType['nominations'] | Error
+    DPDataType['nominations'] | Error,
+    DPDataType['factorLoadings'] | Error
   ]): Promise<Error | undefined> {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    if (!isValidResult(factorLoadingData, { allowEmpty: true })) return new Error('Error loading factor loading data');
     $dataRoot.update(() => {
       $dataRoot.provideQuestionData(questionData);
       $dataRoot.provideEntityData(nominationData.entities);
       $dataRoot.provideNominationData(nominationData.nominations);
     });
+    setFactorLoadingData(factorLoadingData || []);
+
     // Allow time for the nominationsAvailable store to be updated, which may be delayed on some browsers
     await tick();
     if (Object.values($nominationsAvailable).every(Boolean)) hasNominations = 'all';
     else if (Object.values($nominationsAvailable).some(Boolean)) hasNominations = 'some';
     else hasNominations = 'none';
     if (hasNominations !== 'all') openModal?.();
+
     ready = true;
   }
 </script>

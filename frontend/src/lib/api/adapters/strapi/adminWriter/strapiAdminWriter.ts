@@ -1,0 +1,52 @@
+import { UniversalAdminWriter } from '$lib/api/base/universalAdminWriter';
+import { strapiAdapterMixin } from '../strapiAdapter';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
+import type { ComputeFactorLoadingsOptions, GenerateQuestionInfoOptionsData } from '$lib/api/base/adminWriter.type';
+import type { DWReturnType } from '$lib/api/base/dataWriter.type';
+
+export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) {
+  protected async _generateQuestionInfo({
+    questionIds,
+    authToken
+  }: GenerateQuestionInfoOptionsData): DWReturnType<DataApiActionResult> {
+    const { type } = await this.apiPost({
+      endpoint: 'generateQuestionInfo',
+      body: {
+        questionIds
+      },
+      authToken
+    });
+    return { type };
+  }
+
+  protected async _computeFactorLoadings(options?: ComputeFactorLoadingsOptions): DWReturnType<DataApiActionResult> {
+    // If election IDs are provided, compute for each election
+    if (options?.electionIds && options.electionIds.length > 0) {
+      // For multiple elections, call each one separately
+      const results = await Promise.all(
+        options.electionIds.map(async (electionId) => {
+          const response = await this.apiPost({
+            endpoint: 'computeFactorLoadingsById',
+            endpointParams: { electionId }
+          });
+          return response;
+        })
+      );
+
+      // If any computation failed, return failure
+      if (results.some((result) => result.type === 'failure')) {
+        return { type: 'failure' };
+      }
+      return { type: 'success' };
+    } else {
+      // Compute for all elections
+      const response = await this.apiPost({
+        endpoint: 'computeFactorLoadings'
+      });
+
+      return {
+        type: response?.type || 'success'
+      };
+    }
+  }
+}

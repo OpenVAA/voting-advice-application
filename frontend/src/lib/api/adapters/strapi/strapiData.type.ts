@@ -111,9 +111,26 @@ export type StrapiQuestionTypeData = StrapiObject<{
   settings: QuestionTypeSettings;
 }>;
 
+export type StrapiQuestionTermDefinitionData = {
+  triggers?: { [locale: string]: Array<string> };
+  title?: LocalizedString;
+  content?: LocalizedString;
+};
+
+export type StrapiQuestionInfoSectionData = {
+  title?: LocalizedString;
+  content?: LocalizedString;
+  visible?: boolean;
+};
+
+export type StrapiQuestionCustomData = {
+  terms?: Array<StrapiQuestionTermDefinitionData>;
+  infoSections?: Array<StrapiQuestionInfoSectionData>;
+};
+
 export type StrapiQuestionData = StrapiObject<{
   allowOpen: boolean | null;
-  customData?: object | null;
+  customData?: StrapiQuestionCustomData | null;
   entityType: 'all' | 'candidate' | 'party' | null;
   fillingInfo: LocalizedString;
   filterable: boolean | null;
@@ -193,6 +210,24 @@ export type StrapiPartyData = StrapiObject<{
   nominations: StrapiRelation<StrapiNominationData>;
 }>;
 
+export type StrapiFactorLoadingData = StrapiObject<{
+  election: StrapiSingleRelation<StrapiElectionData>;
+  results: {
+    questionFactorLoadings: Array<{
+      questionId: string;
+      factors: Array<number>;
+    }>;
+    explainedVariancePerFactor: Array<number>;
+    totalExplainedVariance: number;
+  };
+  metadata?: {
+    timestamp: string;
+    numberOfQuestions: number;
+    numberOfResponses: number;
+    converged: boolean;
+  };
+}>;
+
 export type StrapiAnswers = { [questionId: string]: LocalizedAnswer };
 
 export type StrapiFeedbackData = StrapiObject<{
@@ -212,11 +247,18 @@ export type StrapiFeedbackData = StrapiObject<{
 
 export type StrapiAuthResponse<TData> = TData;
 
+export type StrapiRoleData = StrapiObject<{
+  name: 'authenticated' | 'public' | 'admin';
+  description: string;
+  type: string;
+}>;
+
 export type StrapiUserProperties = {
   username: string;
   email: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: StrapiSingleRelation<StrapiRoleData>;
 };
 
 export type StrapiBasicUserData = StrapiObject<StrapiUserProperties>;

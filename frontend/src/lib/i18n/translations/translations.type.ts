@@ -39,6 +39,7 @@ export type TranslationsPayload = Partial<{
   seconds: number;
   sourceUrl: string;
   timeLeft: number;
+  threshold: number;
   username: string;
   [key: string]: unknown;
 }>;

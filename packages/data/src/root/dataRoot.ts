@@ -494,7 +494,12 @@ export class DataRoot extends Updatable {
     electionRound?: number;
     constituencyId: Id;
   }): Array<NominationVariant[TEntity]> {
-    return this.findNominations({ entityType: type, electionId, electionRound, constituencyId });
+    return this.findNominations({
+      entityType: type,
+      electionId,
+      electionRound,
+      constituencyId
+    });
   }
 
   /**
@@ -502,7 +507,12 @@ export class DataRoot extends Updatable {
    * @param type - The type of the `QuestionCategory`
    * @param filters - Any `FilterTargets`
    */
-  findQuestions({ type, ...filters }: FilterTargets & { type?: QuestionCategoryType }): Array<AnyQuestionVariant> {
+  findQuestions({
+    type,
+    ...filters
+  }: FilterTargets & {
+    type?: QuestionCategoryType;
+  }): Array<AnyQuestionVariant> {
     const hasFilters = Object.values(filters).filter((f) => f != null).length > 0;
     if (!type && !hasFilters) return this.questions;
     if (type && !hasFilters) return this.getQuestionsByType(type);
@@ -599,6 +609,7 @@ export class DataRoot extends Updatable {
    */
   provideFullData(data: FullVaaData): void {
     const { elections, constituencies, questions, entities, nominations } = data;
+
     this.update(() => {
       this.provideElectionData(elections);
       this.provideConstituencyData(constituencies);
@@ -868,13 +879,29 @@ export class DataRoot extends Updatable {
     const { value } = answer;
     switch (type) {
       case QUESTION_TYPE.Boolean:
-        return this.formatters.booleanAnswer({ locale, question, value: value as boolean });
+        return this.formatters.booleanAnswer({
+          locale,
+          question,
+          value: value as boolean
+        });
       case QUESTION_TYPE.Date:
-        return this.formatters.dateAnswer({ locale, question, value: value as Date });
+        return this.formatters.dateAnswer({
+          locale,
+          question,
+          value: value as Date
+        });
       case QUESTION_TYPE.Image:
-        return this.formatters.imageAnswer({ locale, question, value: value as Image });
+        return this.formatters.imageAnswer({
+          locale,
+          question,
+          value: value as Image
+        });
       case QUESTION_TYPE.Number:
-        return this.formatters.numberAnswer({ locale, question, value: value as number });
+        return this.formatters.numberAnswer({
+          locale,
+          question,
+          value: value as number
+        });
       case QUESTION_TYPE.MultipleText:
         return this.formatters.multipleTextAnswer({
           locale,
@@ -883,7 +910,11 @@ export class DataRoot extends Updatable {
           ...multipleAnswerArgs
         });
       case QUESTION_TYPE.Text:
-        return this.formatters.textAnswer({ locale, question, value: value as string });
+        return this.formatters.textAnswer({
+          locale,
+          question,
+          value: value as string
+        });
       default:
         throw new DataTypeError(`Unsupported question type: ${type}`);
     }
