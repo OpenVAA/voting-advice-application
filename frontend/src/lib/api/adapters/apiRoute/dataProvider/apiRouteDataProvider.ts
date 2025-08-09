@@ -12,11 +12,11 @@ import type {
 
 export class ApiRouteDataProvider extends apiRouteAdapterMixin(UniversalDataProvider) {
   protected _getAppSettings(): Promise<DPDataType['appSettings']> {
-    return this.apiGet({ endpoint: 'appSettings' });
+    return this.apiGet({ endpoint: 'appSettings', disableCache: true });
   }
 
   protected _getAppCustomization(options?: GetAppCustomizationOptions): Promise<DPDataType['appCustomization']> {
-    return this.apiGet({ endpoint: 'appCustomization', params: options });
+    return this.apiGet({ endpoint: 'appCustomization', params: options, disableCache: true });
   }
 
   protected _getElectionData(options?: GetElectionsOptions): Promise<DPDataType['elections']> {

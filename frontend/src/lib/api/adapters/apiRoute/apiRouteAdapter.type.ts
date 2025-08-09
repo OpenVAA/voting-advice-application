@@ -11,6 +11,7 @@ export interface ApiRouteAdapter {
    * @param endpoint - The name of the ApiRoute API endpoint.
    * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
    * @param request - Optional `RequestInit` for the request.
+   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
    * @returns The succesful `Response` from the ApiRoute API.
    * @throws An error if the request fails or if `Response.ok` is not `true`.
    */
@@ -20,6 +21,7 @@ export interface ApiRouteAdapter {
    * Perform a `GET` request to the ApiRoute API, using the `fetch` passed to the adapter.
    * @param endpoint - The name of the ApiRoute API endpoint.
    * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
+   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
    * @returns The ApiRoute data associated with the API endpoint.
    */
   apiGet: <TApi extends ApiGetRoute>(opts: GetOptions<TApi>) => Promise<ApiRouteReturnType<TApi>>;
@@ -37,8 +39,9 @@ export type FetchOptions<TApi extends ApiRoute> = {
   endpoint: TApi;
   params?: GetDataOptionsBase;
   request?: RequestInit;
+  disableCache?: boolean;
 };
 export type GetOptions<TApi extends ApiGetRoute> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
+export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params' | 'disableCache'> & {
   body?: Serializable;
 };
