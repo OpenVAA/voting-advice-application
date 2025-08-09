@@ -1,0 +1,34 @@
+promptId: 'refine_likertCons_initial_v1'
+params:
+  topic: string
+  comments: string
+promptText: |
+  You are analyzing comments from a Voting Advice Application (VAA) to extract opposing arguments against a policy position.
+
+  Topic: {{topic}}
+
+  Comments to analyze:
+  {{comments}}
+
+  Please extract clear, distinct opposing arguments from these comments. Each argument should:
+  - Be specific and actionable
+  - Represent a different concern or drawback
+  - Be written in clear, concise language
+  - Focus on the problems or negative aspects of the policy
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  Return your response as a JSON object with the following structure:
+  {
+    "arguments": [
+      {
+        "id": "con_arg_1",
+        "text": "First opposing argument"
+      },
+      {
+        "id": "con_arg_2", 
+        "text": "Second opposing argument"
+      }
+    ],
+    "reasoning": "Brief explanation of how you extracted these arguments"
+  }

@@ -1,0 +1,134 @@
+promptId: 'ground_likertCons_grounding_v1'
+params:
+  topic: string
+  arguments: string
+  comments: string
+
+promptText: |
+  Olet maailmanluokan asiantuntija argumentoinnissa ja poliittisen tiedon jakamisessa. Sinulle annetaan lista poliittisia argumentteja ja lista poliittisia kommentteja.
+
+  Tehtäväsi on käydä läpi argumentit ja kommentit varmistaaksesi, että eri äänet aiheen VASTAAN ovat edustettuina argumenteissa. Lopullinen argumenttilista annetaan vaalikoneiden käyttäjille avuksi ymmärtämään poliittista väitettä vastustavista argumenteista. On tärkeää, että kommenttien argumentaatio on hyvin edustettuna argumenttilistassa.
+
+  Tee muutoksia vain, jos löydät VASTUSTAVIA kommentteja, jotka eivät selvästi ole edustettuina argumenteissa. Olemme kiinnostuneita VAIN vastustavista argumenteista. Voit myös pyrkiä lisäämään argumenttilistan konkretiaa esimerkeillä, jotka käsittelevät argumenttilistan aiheita syvemmällä tai laajemmalla tasolla kuin mitä nykyiset argumentit.
+
+  Voit ratkaista uuden argumentin sisällyttämisen argumenttilistaan seuraavilla tavoilla:
+  (1) Lisää uusi argumentti, joka heijastaa kommentin vastustavaa ääntä ja argumentointia
+  (2) Muokkaa olemassa olevaa argumenttia niin, että se sisältää kommentin vastustavan äänen ja argumentoinnin. Varmista, että tämä ei muuta olemassa olevaa argumenttia merkittävästi - muutoksen pitäisi lisätä vaalikoneen käyttäjän ymmärrystä poliittista kantaa ympäröivistä vastustavasta argumentaatiosta poistamatta argumentista löytyvää vanhaa tietoa.
+
+  Jos löydät kommenteista esimerkkejä tai muunlaisia tietoja, joiden avulla voisit parantaa jotakin nykyistä argumenttia, voit:
+  (1) Muokata argumenttia niin, että se on konkreettisempi ja lähestyttävämpi vaalikoneen käyttäjälle, joka haluaa ymmärtää argumentin taustaa ja järkeilyä paremmin. Pyri välttämään suuria muutoksia.
+
+  Jos kommenteissa ei löydy uusia argumentteja tai esimerkkejä, joiden avulla voisit parantaa argumenttilistaa, palauta saamasi argumenttilista ilman muutoksia.
+
+  Aihe: {{topic}}
+
+  Argumentit:
+  {{arguments}}
+
+  Kommentit:
+  {{comments}}
+
+  ## Esimerkki 1:
+
+  Aihe: "Kunnassani ja hyvinvointialueellani tulee pyrkiä hiilineutraaliuteen."
+
+  {
+    "arguments": [
+      {
+        "id": "vastustavargumentti_1",
+        "text": "Monien mielestä hiilineutraaliuteen pyrkiminen ei kuulu kunnan tai hyvinvointialueen keskeisimpiin tehtäviin. Kuntien ja hyvinvointialueiden rajalliset resurssit tulisi kohdentaa peruspalveluiden, kuten terveydenhuollon ja koulutuksen, rahoittamiseen. Ilmastonmuutosta ei tulisi torjua kansalaisten hyvinvoinnin kustannuksella."
+      },
+      {
+        "id": "vastustavargumentti_2",
+        "text": "Liian monimutkaiset tavoitteet voivat aiheuttaa kunnalle ja sen yrityksille taloudellisia haasteita ja vähentää kunnan houkuttelevuutta. Suomen pitäisi sen sijaan keskittyä suoraviivaisiin toimiin, kuten avohakkuiden lopettamiseen, yksilöllisiin valintoihin kannustamiseen (esim. kierrätys) ja ympäristöystävällisen teknologian kehittämiseen."
+      },
+      {
+        "id": "vastustavargumentti_3",
+        "text": "Suomi on jo nyt ilmastotoimien edelläkävijä. Toimia pitäisi vaatia sen sijaan muilta mailta ja suurilta yrityksiltä. Tällä olisi myös suurempi vaikutus koko maapallon päästöihin. Monien mukaan Suomi on jo hiilineutraali tai jopa hiilinegatiivinen mm. laajojen metsäalueiden vuoksi."
+      },
+      {
+        "id": "vastustavargumentti_4",
+        "text": "Energian hinnan ja elinkustannusten nousu vaikeuttavat hiilineutraaliuuden saavuttamista käytännössä. Monien ehdokkaiden mukaan esimerkiksi energiatuotannon uudistamisen kustannukset ovat viime aikoina nousseet. Myös Suomen maantiede, kuten kylmä ilmasto ja pitkät etäisyydet, ovat haasteita tavoitteiden saavuttamisessa."
+      },
+      {
+        "id": "vastustavargumentti_5",
+        "text": "Suomen nykyiset tavoitteet ovat monien mielestä jo riittävät tai jopa liian kunnianhimoiset. Etenkin kuntien ja hyvinvointialueiden toimien vaikutukset ovat globaalissa mittakaavassa marginaaliset."
+      },
+      {
+        "id": "vastustavargumentti_6",
+        "text": "Hiilineutraaliuden tavoittelu voi heikentää energian saatavuutta ja sitä kautta kuntien huoltovarmuutta."
+      },
+      {
+        "id": "vastustavargumentti_7",
+        "text": "Hiilineutraalius edistää asukkaiden hyvinvoinnin sijaan yritysten intressejä."
+      },
+      {
+        "id": "vastustavargumentti_8",
+        "text": "Hiilineutraaliuden mittaus- ja laskentamenetelmiä voi manipuloida ja tulkita monella tavalla. Aitoa ilmastovaikutusta on siis haastavaa mitata luotettavasti. Ilmastonmuutoksen tutkimustieto on monien mielestä ristiriitaista."
+      },
+      {
+        "id": "vastustavargumentti_9",
+        "text": "Ilmastotavoitteet ovat monien mielestä symbolisia, ja niitä käytetään moraalisena poseerauksena kansainvälisten toimijoiden, kuten EU:n, miellyttämiseksi."
+      }
+    ],
+    "reasoning": "Argumentit esittelevät erilaisia syitä vastustaa hiilineutraaliustavoitteita kunnissa ja hyvinvointialueilla. Ehdokkaat perustelevat vastustavaa kantaansa taloudellisilla haasteilla, resurssien kohdentamisen kysymyksillä, Suomen erityispiirteillä ja epäilyillä tavoitteiden tehokkuudesta. Moni korostaa, että peruspalveluiden turvaaminen on tärkeämpää kuin ilmastotavoitteet."
+  }
+
+  ## Esimerkki 2:
+
+  Aihe: "Perusterveydenhuollon järjestämisessä tulee hyödyntää nykyistä enemmän yksityisiä palveluntarjoajia."
+
+  {
+    "arguments": [
+      {
+        "id": "vastustavargumentti_1",
+        "text": "Julkisen sektorin käyttö voi tehdä palveluiden saatavuudesta vähemmän yhdenvertaista ja lisätä terveyseroja. Esimerkiksi palvelumaksut voivat kasvaa, jolloin hoidonsaannin taloudellinen epätasa-arvo kasvaa. Näin on käynyt esimerkiksi lastensuojelussa."
+      },
+      {
+        "id": "vastustavargumentti_2",
+        "text": "Ehdokkaiden mukaan yksityisen sektorin tuottamat terveyspalvelut ovat laadultaan julkista heikompia, koska yksityisten yritysten ensisijainen tavoite on liiketoiminnallisen voiton maksimointi - ei niinkään ihmisten hyvinvointi."
+      },
+      {
+        "id": "vastustavargumentti_3",
+        "text": "Julkisten terveyspalveluiden laatu heikkenee yksityisten palveluntarjoajien yleistyessä, sillä kansantaloudellisia resursseja ohjataan pois julkisen terveydenhuollon piiristä. Esimerkiksi hoitohenkilökunnan jakauma voi painottua aiempaa enemmän yksityiselle sektorille."
+      },
+      {
+        "id": "vastustavargumentti_4",
+        "text": "Yksityisten palveluiden Kela-korvausten korottaminen on monien ehdokkaiden mukaan huono keino lyhentää hoitojonoja. Orpon hallituksen tekemä korvausten nostaminen ei ole lisännyt käyntejä yksityisillä palveluntarjoajilla juuri yhtään."
+      },
+      {
+        "id": "vastustavargumentti_5",
+        "text": "Yksityiset palveluntarjoajat eli ostopalvelut ovat valtava kuluerä hyvinvointialueille. Ehdokkaiden mukaan julkisten sosiaali- ja terveyspalveluiden tuottaminen itse on usein edullisempaa kuin yksityisten palveluntarjoajien käyttäminen."
+      },
+      {
+        "id": "vastustavargumentti_6",
+        "text": "Yksityisten palveluntarjoajien hoidon laadun ja saatavuuden valvonta on hankalaa. Hyvinvointialueen omaa palvelutuotantoa on helpompi itse valvoa."
+      },
+      {
+        "id": "vastustavargumentti_7",
+        "text": "Osa ehdokkaista ajattelee, että on epäeettistä tehdä voittoa sairastuneiden ja muiden hoitoa tarvitsevien ihmisten kustannuksella. Kansalaisten elintärkeillä peruspalveluilla ei pitäisi tehdä bisnestä."
+      },
+      {
+        "id": "vastustavargumentti_8",
+        "text": "Pitkän tähtäimen tavoitteena on oltava julkiseen terveydenhuoltoon panostaminen, jotta yksityistä terveydenhuoltoa ei tarvittaisi kuin harvoin esimerkiksi lyhyen aikavälin jonojen purkamisessa."
+      }
+    ],
+    "reasoning": "Argumentit esittelevät erilaisia syitä vastustaa yksityisten palveluntarjoajien lisäämistä perusterveydenhuollossa. Ehdokkaat perustelevat vastustavaa kantaansa yhdenvertaisuuden, laadun, kustannusten ja eettisyyden kysymyksillä. Moni korostaa julkisen terveydenhuollon paremmuutta ja sitä, että yksityistäminen voi heikentää palvelujen saatavuutta ja laatua."
+  }
+
+  ### TÄRKEÄÄ: Vastaa VAIN JSON-objektilla. Älä lisää mitään tekstiä JSON:n ulkopuolelle. Älä kirjoita selityksiä tai kommentteja JSON:n jälkeen. Vastauksen tulee alkaa { -merkillä ja päättyä } -merkkiin.
+
+  Palauta vastauksesi seuraavassa JSON-muodossa:
+  {
+    "arguments": [
+      {
+        "id": "vastustavargumentti_1",
+        "text": "Lopullinen vastustava argumentti"
+      },
+      {
+        "id": "vastustavargumentti_2", 
+        "text": "Toinen lopullinen vastustava argumentti"
+      }
+    ],
+    "reasoning": "Lyhyt selitys siitä, miten päädyit lopulliseen argumenttilistaan"
+  }

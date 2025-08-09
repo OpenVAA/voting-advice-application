@@ -1,0 +1,42 @@
+promptId: 'map_likertCons_condensation_v1'
+params:
+  topic: string
+  comments: string
+
+promptText: |
+  You are analyzing comments from a Voting Advice Application (VAA) to extract opposing arguments for a policy position ("{{topic}}").
+
+  Extract and cluster the reasons or arguments used to oppose this policy. Focus on meaning — group different phrasings of the same idea. 
+  A good argument includes a short description of different variations and examples from the comments. Reference the examples from comments indirectly without names or IDs.
+
+  If you find no arguments opposing the statement, return an empty list and empty reasoning field.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Comments to analyze:
+  {{comments}}
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example response format:
+
+  {
+    "reasoning": "Brief explanation of the arguments found opposing the position. Many candidates oppose this policy because they believe it would harm businesses and reduce economic flexibility. The arguments focus on job losses, increased costs, and market interference.",
+    "arguments": [
+      {
+        "id": "con_arg_1",
+        "text": "This policy would hurt small businesses by increasing labor costs beyond what many can afford, potentially leading to business closures and reduced hiring."
+      },
+      {
+        "id": "con_arg_2", 
+        "text": "Higher mandated wages could lead to job losses and increased automation as employers seek to reduce labor costs."
+      },
+      {
+        "id": "con_arg_3",
+        "text": "Market forces should determine wages naturally through supply and demand rather than government intervention and artificial price controls."
+      }
+    ]
+  }
+
+  Focus on distinct, well-reasoned arguments that oppose the position. Combine similar points but keep different reasoning separate. Ensure arguments are clear, compelling, and accurately represent the original comments.

@@ -1,0 +1,48 @@
+promptId: 'reduce_categoricalPros_coalescing_v1'
+params:
+  topic: string
+  argumentLists: string
+
+promptText: |
+  You are an expert in argumentation and political discourse. Below you are given multiple argument lists that are used to support a specific option in a categorical choice ("{{topic}}").
+  Your task is to form the arguments you receive into a single argument list, which will help voting advice application users understand why this particular option is preferred.
+
+  The division of arguments should be smooth, so that reading them is easy.
+
+  If there are no arguments, return an empty list and empty reasoning field.
+
+  ## Topic/Question: 
+  {{topic}}
+
+  ## Argument lists provided:
+  {{argumentLists}}
+
+  Write the final list of distinct arguments. They should be easily understandable and readable.
+  Give examples of impacts and ways in which the arguments support this specific option. Give examples mentioned in the arguments.
+  Avoid repeating the same argument in different forms. Try to be clear without abstract language.
+
+  Write arguments to be impactful and vivid. Preserve concrete examples, historical references, sources and expression choices that appeared in the original comments, if they are relevant and strengthen the core of the argument.
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example response format:
+
+  {
+    "reasoning": "Brief explanation of how you consolidated the argument lists. I merged similar arguments about practical effectiveness and combined overlapping points about implementation advantages while preserving the strongest supporting reasoning for this option from each list.",
+    "arguments": [
+      {
+        "id": "consolidated_option_arg_1",
+        "text": "This option provides proven effectiveness with measurable benefits that have been successfully demonstrated in similar contexts, making it a reliable and evidence-based choice."
+      },
+      {
+        "id": "consolidated_option_arg_2", 
+        "text": "Implementation would be more practical and cost-effective compared to alternatives, offering realistic timelines and achievable outcomes with existing resources and infrastructure."
+      },
+      {
+        "id": "consolidated_option_arg_3",
+        "text": "This choice offers the optimal balance of different priorities and stakeholder needs, providing a comprehensive approach that addresses multiple concerns simultaneously."
+      }
+    ]
+  }
+
+  Focus on creating 3-5 distinct, powerful arguments that capture the strongest supporting points for this specific option from all input lists. Ensure each argument is compelling, clearly written, and represents the most persuasive reasons for choosing this particular option.

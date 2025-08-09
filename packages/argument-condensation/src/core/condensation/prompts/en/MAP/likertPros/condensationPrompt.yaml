@@ -1,0 +1,42 @@
+promptId: 'map_likertPros_condensation_v1'
+params:
+  topic: string
+  comments: string
+
+promptText: |
+  You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position ("{{topic}}").
+
+  Extract and cluster the reasons or arguments used to support this policy. Focus on meaning — group different phrasings of the same idea. 
+  A good argument includes a short description of different variations and examples from the comments. Reference the examples from comments indirectly without names or IDs.
+
+  If you find no arguments supporting the statement, return an empty list and empty reasoning field.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Comments to analyze:
+  {{comments}}
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Example response format:
+
+  {
+    "reasoning": "Brief explanation of the arguments found supporting the position. Many candidates support this policy because they believe it would improve economic conditions and social welfare. The arguments focus on poverty reduction, economic growth, and worker rights.",
+    "arguments": [
+      {
+        "id": "pro_arg_1",
+        "text": "This policy would reduce poverty and inequality by ensuring workers earn enough to support their families and meet basic needs."
+      },
+      {
+        "id": "pro_arg_2", 
+        "text": "Higher wages would boost economic growth by increasing consumer purchasing power and stimulating demand for goods and services."
+      },
+      {
+        "id": "pro_arg_3",
+        "text": "Fair compensation improves workplace conditions by reducing employee turnover, increasing productivity, and improving worker morale."
+      }
+    ]
+  }
+
+  Focus on distinct, well-reasoned arguments that support the position. Combine similar points but keep different reasoning separate. Ensure arguments are clear, compelling, and accurately represent the original comments.

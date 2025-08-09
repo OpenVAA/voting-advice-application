@@ -1,0 +1,28 @@
+promptId: 'reduce_likertCons_coalescing_v1'
+params:
+  topic: string
+  argumentLists: string
+
+promptText: |
+  You are an expert in argumentation and political discourse. Below you are given multiple argument lists that are used to oppose a certain political statement ("{{topic}}").
+  Your task is to form the arguments you receive into a single argument list, which will help voting advice application users understand the political discourse opposing the statement.
+
+  The division of arguments should be smooth, so that reading them is easy.
+
+  If there are no arguments, return an empty list and empty reasoning field.
+
+  ## Statement: 
+  {{topic}}
+
+  ## Argument lists provided:
+  {{argumentLists}}
+
+  Write the final list of distinct arguments. They should be easily understandable and readable.
+  Give examples of impacts and ways in which the arguments bring opposition to this statement. Give examples mentioned in the arguments.
+  Avoid repeating the same argument in different forms. Try to be clear without abstract language.
+
+  Write arguments to be impactful and vivid. Preserve concrete examples, historical references, sources and expression choices that appeared in the original comments, if they are relevant and strengthen the core of the argument.
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  Focus on creating 3-5 distinct, powerful arguments that capture the essence of all input lists. Ensure each argument is compelling, clearly written, and represents the strongest points opposing the position.

@@ -1,0 +1,50 @@
+promptId: 'map_categoricalPros_iterate_v1'
+params:
+  topic: string
+  arguments: string
+  comments: string
+
+promptText: |
+  You are refining arguments that support a specific option in a categorical choice ("{{topic}}") based on additional feedback from comments.
+
+  Below are the current arguments extracted from a batch of comments, followed by the original comments for context.
+  Your task is to improve these arguments by making them more accurate, compelling, and representative of the support expressed in the comments.
+
+  ## Topic/Question:
+  {{topic}}
+
+  ## Current arguments:
+  {{arguments}}
+
+  ## Original comments for context:
+  {{comments}}
+
+  Review the arguments and improve them by:
+  1. Making them more precise and compelling
+  2. Ensuring they accurately reflect the support for this option in the comments
+  3. Adding nuance or important details that were missed
+  4. Combining or separating arguments if needed for better clarity
+
+  IMPORTANT: Respond with ONLY a JSON object. Do not add any text outside the JSON. Do not write explanations or comments after the JSON. Your response must start with { and end with }.
+
+  ## Response format:
+
+  {
+    "reasoning": "Brief explanation of how you refined the arguments. I strengthened the evidence for this option's effectiveness, improved the clarity of practical benefits, and added more specific details about advantages based on the comments.",
+    "arguments": [
+      {
+        "id": "refined_option_arg_1",
+        "text": "Refined version of the first supporting argument with improved clarity and compelling evidence."
+      },
+      {
+        "id": "refined_option_arg_2", 
+        "text": "Refined version of the second supporting argument with better nuance and stronger reasoning."
+      },
+      {
+        "id": "refined_option_arg_3",
+        "text": "Refined version of the third supporting argument with additional important benefits."
+      }
+    ]
+  }
+
+  Focus on creating strong, well-reasoned support arguments that accurately capture why this particular option is preferred based on the comments.
