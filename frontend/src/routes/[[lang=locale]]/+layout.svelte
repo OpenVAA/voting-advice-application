@@ -42,8 +42,17 @@
   initI18nContext();
   initComponentContext();
   initDataContext();
-  const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
-    initAppContext();
+  const {
+    appSettings,
+    dataRoot,
+    modalStack,
+    openFeedbackModal,
+    popupQueue,
+    sendTrackingEvent,
+    startPageview,
+    submitAllEvents,
+    t
+  } = initAppContext();
   initLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -145,6 +154,13 @@
   {#if $popupQueue}
     {#key $popupQueue}
       <svelte:component this={$popupQueue.component} onClose={popupQueue.shift} {...$popupQueue.props} />
+    {/key}
+  {/if}
+
+  <!-- Modal service -->
+  {#if $modalStack}
+    {#key $modalStack}
+      <svelte:component this={$modalStack.component} onClose={modalStack.pop} {...$modalStack.props} />
     {/key}
   {/if}
 

@@ -1,3 +1,10 @@
 {
-  "title": "Information About the Elections"
+  "title": "Information About the Elections",
+  "adminApp": {
+    "notSupported": {
+      "title": "Admin App Not Supported",
+      "content": "The admin app is not supported with the current data adapter.",
+      "heroEmoji": "🔧"
+    }
+  }
 }

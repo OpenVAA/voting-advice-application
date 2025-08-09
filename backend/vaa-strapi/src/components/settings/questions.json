@@ -19,12 +19,22 @@
       "component": "settings.questions-intro",
       "required": true
     },
+    "interactiveInfo": {
+      "displayName": "Questions - Interactive Info",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.questions-interactive-info"
+    },
     "showCategoryTags": {
       "type": "boolean",
       "required": true
     },
     "showResultsLink": {
       "type": "boolean"
+    },
+    "dynamicOrdering": {
+      "type": "component",
+      "component": "settings.questions-ordering"
     }
   }
 }

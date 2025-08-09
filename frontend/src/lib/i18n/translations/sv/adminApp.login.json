@@ -1,0 +1,17 @@
+{
+  "title": "Administratörsinloggning",
+  "appTitle": "Valkompass",
+  "appSubtitle": "Administration",
+  "instructions": "Ange dina inloggningsuppgifter.",
+  "email": "E-post",
+  "password": "Lösenord",
+  "button": "Logga in",
+  "forgotPassword": "Glömt lösenordet?",
+  "errors": {
+    "invalidCredentials": "Ogiltig e-post eller lösenord",
+    "genericError": "Ett fel uppstod vid inloggningsförsöket. Försök igen.",
+    "unauthorized": "Du behöver administratörsbehörighet för att få tillgång till denna sektion",
+    "sessionExpired": "Din session har upphört, vänligen logga in igen",
+    "unknown": "Ett okänt fel uppstod"
+  }
+}

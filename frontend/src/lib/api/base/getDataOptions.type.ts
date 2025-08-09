@@ -47,3 +47,8 @@ export type GetEntitiesOptions = GetDataOptionsBase & FilterById & FilterByEntit
  * The options for the `getQuestionData` method. NB. The possible `electionId` filter is applied to the `QuestionCategory`s in such a way that any categories with the specified `electionId` or none at all are returned. All `Question`s belonging to the categories are returned.
  */
 export type GetQuestionsOptions = GetDataOptionsBase & FilterByElection;
+
+/**
+ * The options for the `getFactorLoadings` method. Uses the `electionId` filter to retrieve factor loadings specific to an election.
+ */
+export type GetFactorLoadingsOptions = GetDataOptionsBase & FilterByElection;

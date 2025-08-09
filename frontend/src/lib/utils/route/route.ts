@@ -2,6 +2,8 @@ const CANDIDATE = '/[[lang=locale]]/candidate';
 const CANDIDATE_PROT = `${CANDIDATE}/(protected)`;
 const VOTER = '/[[lang=locale]]/(voters)';
 const VOTER_LOCATED = `${VOTER}/(located)`;
+const ADMIN = '/[[lang=locale]]/admin';
+const ADMIN_PROT = `${ADMIN}/(protected)`;
 
 /**
  * Available routes and their ids.
@@ -47,7 +49,16 @@ export const ROUTE = {
   CandAppSetPassword: `${CANDIDATE}/register/password`,
   /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
   CandAppResetPassword: `${CANDIDATE}/password-reset`,
-  CandAppSettings: `${CANDIDATE_PROT}/settings`
+  CandAppSettings: `${CANDIDATE_PROT}/settings`,
+
+  // Admin App
+  AdminHome: ADMIN,
+  AdminFactorAnalysis: `${ADMIN_PROT}/factor-analysis`,
+  AdminQuestionInfo: `${ADMIN_PROT}/question-info`,
+  AdminArgumentCondensation: `${ADMIN_PROT}/argument-condensation`,
+  AdminHelp: `${ADMIN}/help`,
+  AdminPrivacy: `${ADMIN}/privacy`,
+  AdminLogin: `${ADMIN}/login`
 } as const;
 
 /**

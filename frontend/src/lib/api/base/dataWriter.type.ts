@@ -214,6 +214,7 @@ export interface BasicUserData extends WithUserSettings {
   username: string;
   confirmed: boolean;
   blocked: boolean;
+  role: string | undefined;
 }
 
 export type CheckRegistrationData = DataApiActionResult & {

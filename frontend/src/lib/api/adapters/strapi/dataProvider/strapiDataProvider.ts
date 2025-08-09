@@ -13,20 +13,24 @@ import {
   makeRule,
   parseBasics,
   parseCandidate,
+  parseFactorLoadings,
   parseImage,
   parseNominations,
   parseOrganization,
+  parseQuestionInfoSections,
   parseQuestionType,
   parseRelationIds,
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
+import { parseQuestionTerms } from '../utils/parseQuestionTerms';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
   GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
@@ -44,7 +48,16 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         headerStyle: { populate: '*' },
         matching: 'true',
         notifications: { populate: '*' },
-        questions: { populate: '*' },
+        questions: {
+          populate: {
+            categoryIntros: 'true',
+            questionsIntro: 'true',
+            interactiveInfo: 'true',
+            dynamicOrdering: {
+              populate: 'config'
+            }
+          }
+        },
         results: { populate: '*' },
         survey: 'true'
       }
@@ -246,7 +259,9 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           allowOpen: !!allowOpen,
           fillingInfo: translate(fillingInfo, locale),
           filterable: !!filterable,
-          required: !!required
+          required: !!required,
+          infoSections: parseQuestionInfoSections(customData, locale),
+          terms: parseQuestionTerms(customData, locale)
         };
         allQuestions.set(documentId, {
           ...parseBasics({ ...question, customData: { ...customData, ...additionalCustomData } }, locale),
@@ -261,5 +276,29 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       categories,
       questions: [...allQuestions.values()]
     };
+  }
+
+  protected async _getFactorLoadingData(options: GetFactorLoadingsOptions): Promise<DPDataType['factorLoadings']> {
+    try {
+      const params = buildFilterParams({ electionId: options.electionId });
+      params.populate = {
+        election: 'true'
+      };
+
+      // Get factor loadings with proper filtering
+      const response = await this.apiGet({
+        endpoint: 'factorLoadings',
+        params
+      });
+
+      if (!response?.length) {
+        return [];
+      }
+
+      return response.map((item) => parseFactorLoadings(item));
+    } catch (error) {
+      console.error('Error fetching factor loadings:', error);
+      return [];
+    }
   }
 }

@@ -148,6 +148,43 @@ export type DynamicSettings = {
      * Whether to the link to results in the header when answering questions if enough answers are provided.
      */
     showResultsLink?: boolean;
+    /**
+     * Settings related to the optional method of ordering questions dynamically based on their uncertainty reduction.
+     */
+    dynamicOrdering?: {
+      /**
+       * Whether dynamic ordering is enabled. Default `false`.
+       */
+      enabled?: boolean;
+      /**
+       * The method used for dynamic ordering and its settings.
+       */
+      config:
+        | {
+            /**
+             * The questions are ordered based on the amount of uncertainty they reduce with regard to the latent factors in the answer data.
+             */
+            type: 'factor-based';
+            /**
+             * The number of suggestions for the next questions to display to the user. If `1`, the next question will be automatically displayed. Default `1`.
+             */
+            numSuggestions?: number;
+            /**
+             * The minimum confidence score (percentage) required before allowing the user to see results. Default: 75
+             */
+            reliabilityThreshold?: number;
+          }
+        | {
+            /**
+             * The questions are ordered based on the amount of uncertainty they reduce in a iteratively reduced subset of targets under consideration.
+             */
+            type: 'eliminate-choices';
+            /**
+             * How close an agreement is required for targets not to be eliminated. Default `relaxed`.
+             */
+            eliminationType?: 'strict' | 'relaxed';
+          };
+    };
   };
   /**
    * Settings related to the results view.
@@ -225,6 +262,10 @@ export type DynamicSettings = {
      */
     voterApp: boolean;
     /**
+     * If `true`, the Admin App can be accessed.
+     */
+    adminApp: boolean;
+    /**
      * If `true`, an under maintenance error page will be shown.
      */
     underMaintenance?: boolean;
@@ -245,6 +286,13 @@ export type DynamicSettings = {
      * The notification shown to users of the Voter App.
      */
     voterApp?: NotificationData | null;
+  };
+  /**
+   * Default prompt and answer format for generating llm-summaries from question descriptions. The llm-generated answers needs to be in a JSON-format and needs to be specified in the answerFormat
+   */
+  llm: {
+    prompt: string;
+    answerFormat: string;
   };
 };
 

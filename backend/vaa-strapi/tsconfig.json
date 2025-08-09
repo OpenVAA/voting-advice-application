@@ -20,5 +20,8 @@
     "src/plugins/**",
     "eslint.config.mjs"
   ],
-  "references": [{ "path": "../../packages/app-shared/tsconfig.cjs.json" }]
+  "references": [
+    { "path": "../../packages/app-shared/tsconfig.cjs.json" },
+    { "path": "../../packages/llm/tsconfig.cjs.json"}
+  ]
 }

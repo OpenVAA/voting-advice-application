@@ -1,9 +1,14 @@
 import { translate } from '$lib/i18n';
 import type { QuestionInfoSection } from '@openvaa/app-shared';
+import type { StrapiQuestionData } from '../strapiData.type';
 
-export function parseQuestionInfoSections(data: Array<object>, locale: string | null): Array<QuestionInfoSection> {
-  if (data && Array.isArray(data)) {
-    return data
+export function parseQuestionInfoSections(
+  data: StrapiQuestionData['customData'],
+  locale: string | null
+): Array<QuestionInfoSection> {
+  const infoSections = data?.infoSections;
+  if (infoSections && Array.isArray(infoSections)) {
+    return infoSections
       .filter((v) => v && typeof v === 'object')
       .map((v) => v as Partial<QuestionInfoSection>)
       .flatMap((section) => {

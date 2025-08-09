@@ -82,6 +82,12 @@ export async function load({ fetch, parent, params: { lang }, untrack, url }) {
         constituencyId,
         locale: lang
       })
+      .catch((e) => e),
+    factorLoadingData: dataProvider
+      .getFactorLoadingData({
+        electionId,
+        locale: lang
+      })
       .catch((e) => e)
   };
 }
