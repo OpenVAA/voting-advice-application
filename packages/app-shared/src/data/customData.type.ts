@@ -20,7 +20,6 @@ export type CustomData = {
      * If `true`, the question will be hidden in the Voter App but still visible in the Candidate App. Default `false`.
      */
     hidden?: boolean;
-    infoSections?: Array<QuestionInfoSection>;
     /**
      * If `true`, Candidates cannot edit the question. A locked question is never considered `required`. Has no effect on opinion questions. Default `false`.
      */
@@ -36,6 +35,8 @@ export type CustomData = {
     required?: boolean;
     vertical?: boolean;
     video?: CustomVideoProps;
+    infoSections?: Array<QuestionInfoSection>;
+    terms?: Array<TermDefinition>;
   };
   QuestionCategory: {
     emoji?: string;
@@ -50,6 +51,20 @@ export type QuestionInfoSection = {
   title: string;
   content: string;
   visible: boolean;
+};
+
+/**
+ * The properties for defining term definitions in customData
+ */
+export type TermDefinition = {
+  /** The strings that trigger the popup. There may in theory be many different forms in the same question. */
+  triggers: Array<string>;
+
+  /** Title of the term explanation (the term) */
+  title?: string;
+
+  /** Term explanation */
+  content: string;
 };
 
 /**

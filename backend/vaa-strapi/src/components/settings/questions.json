@@ -19,6 +19,12 @@
       "component": "settings.questions-intro",
       "required": true
     },
+    "interactiveInfo": {
+      "displayName": "Questions - Interactive Info",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.questions-interactive-info"
+    },
     "showCategoryTags": {
       "type": "boolean",
       "required": true
