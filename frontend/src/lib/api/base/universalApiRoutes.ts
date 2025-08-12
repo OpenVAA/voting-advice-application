@@ -8,8 +8,9 @@ export const API_ROOT = '/api';
  * Api routes that are used by the universal adapters.
  */
 export const UNIVERSAL_API_ROUTES = {
+  cacheProxy: `${API_ROOT}/auth/cache`,
+  login: `${API_ROOT}/auth/login`,
   logout: `${API_ROOT}/candidate/logout`,
   preregister: `${API_ROOT}/candidate/preregister`,
-  token: `${API_ROOT}/oidc/token`,
-  cacheProxy: `${API_ROOT}/cache`
+  token: `${API_ROOT}/oidc/token`
 } as const;

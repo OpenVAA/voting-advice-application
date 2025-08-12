@@ -1,4 +1,5 @@
 {
+  "403": "Tyvärr har du inte behörighet att komma åt detta innehåll.",
   "404": "Sidan hittades inte, tyvärr!",
   "500": "Internt serverfel, tyvärr!",
   "content": "<p>Vi är mycket ledsna för besväret. Du kan försöka gå tillbaka och ladda om sidan och se om problemet kvarstår.</p> <p>Om du fortfarande upplever problemet, vänligen skicka ett e-postmeddelande till {adminEmailLink} och beskriv problemet. Tack så mycket!</p>",

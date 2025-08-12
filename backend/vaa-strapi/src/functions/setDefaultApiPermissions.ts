@@ -1,9 +1,24 @@
 import { PUBLIC_API } from '../util/api';
+import type { StrapiRole } from '../../types/customStrapiTypes';
 
-export async function setDefaultApiPermissions() {
+export async function setDefaultApiPermissions(roleType: StrapiRole['type']) {
   console.info('[setDefaultApiPermissions] Setting default API permissions');
 
-  const roleId = 2; // Role for public user
+  let roleId: number;
+  switch (roleType) {
+    case 'authenticated': {
+      roleId = 1;
+      break;
+    }
+    case 'public': {
+      roleId = 2;
+      break;
+    }
+    case 'admin': {
+      roleId = 3;
+      break;
+    }
+  }
 
   // Voter App
   for (const contentType of Object.values(PUBLIC_API)) {
