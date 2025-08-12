@@ -9,7 +9,7 @@ import type { CandidateUserData, LocalizedCandidateData } from '$lib/api/base/da
  *
  * NB. Before using the store, its `init` method must be called with the initial `CandidateUserData`.
  */
-export type UserDataStore = Readable<CandidateUserData<true> | undefined> & {
+export type CandidateUserDataStore = Readable<CandidateUserData<true> | undefined> & {
   /**
    * Initialize the store with the full `CandidateUserData`.
    */
