@@ -3,6 +3,8 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**
  * An API route for logging out candidates.
+ *
+ * @returns A json `Response` with a `DataApiActionResult`.
  */
 export async function POST({ cookies }) {
   cookies.delete('token', {
