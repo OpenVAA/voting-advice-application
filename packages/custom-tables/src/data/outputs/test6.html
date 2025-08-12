@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Tables Visualization</title>
+    <style>
+      :root {
+        --border: #e5e7eb;
+        --bg: #ffffff;
+        --bg-alt: #f9fafb;
+        --text: #111827;
+        --muted: #6b7280;
+        --sticky-bg: #f3f4f6;
+      }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; padding: 16px; color: var(--text); background: var(--bg); }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 18px; margin: 0; }
+      .controls { display: flex; gap: 8px; }
+      button { border: 1px solid var(--border); background: var(--bg); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      button:hover { background: var(--bg-alt); }
+      details { margin-bottom: 12px; }
+      summary { cursor: pointer; color: var(--muted); }
+      .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+      table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      thead th { position: sticky; top: 0; background: var(--sticky-bg); z-index: 1; text-align: left; font-weight: 600; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; vertical-align: top; white-space: nowrap; }
+      tbody tr:nth-child(odd) { background: var(--bg-alt); }
+      .sticky-col { position: sticky; left: 0; background: var(--sticky-bg); z-index: 2; min-width: 240px; max-width: 480px; }
+      .category .label { font-weight: 600; }
+      .category .description { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
+      footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    </style>
+    <script>
+      function exportTableToCSV() {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        const csv = rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+          // Escape quotes and commas
+          const text = cell.innerText.replace(/"/g, '""');
+          return '"' + text + '"';
+        }).join(',')).join('
+');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'table.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Custom Tables Visualization</h1>
+      <div class="controls">
+        <button onclick="exportTableToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+    <details><summary>Reasoning</summary><div style="margin-top:8px; white-space: pre-wrap;">To effectively differentiate between candidates, categories were selected based on recurring themes and distinctive stances in the candidates&#039; responses. The categories focus on specific, actionable policy areas where clear distinctions can be seen in the candidates&#039; positions. These include voting rights for youth, strategies for balancing municipal finances, forest conservation priorities, approaches to school violence, and attitudes towards public transport and car use. Each category represents a key policy area with potential impact on local governance.</div></details>
+    <div class="table-wrapper">
+      <table>
+        
+    <thead>
+      <tr>
+        <th class="sticky-col">Theme</th>
+        <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+      </tr>
+    </thead>
+        
+    <tbody>
+      
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; positions on whether the voting age should be lowered to 16 in municipal and county elections.">
+                <div class="category">
+                  <div class="label">Youth Voting Rights</div>
+                  <div class="description">Candidates&#039; positions on whether the voting age should be lowered to 16 in municipal and county elections.</div>
+                </div>
+              </td>
+              <td>Support</td><td>Oppose</td><td>Oppose</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Preferred approach for balancing municipal finances, focusing on tax rate adjustments versus budget cuts.">
+                <div class="category">
+                  <div class="label">Municipal Finance Balancing Strategy</div>
+                  <div class="description">Preferred approach for balancing municipal finances, focusing on tax rate adjustments versus budget cuts.</div>
+                </div>
+              </td>
+              <td>Increase Taxes</td><td>Oppose Tax Increases</td><td>Neutral</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Degree of support for increased municipal investment in forest conservation.">
+                <div class="category">
+                  <div class="label">Forest Conservation Priority</div>
+                  <div class="description">Degree of support for increased municipal investment in forest conservation.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Neutral</td><td>Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Whether candidates prefer addressing school violence primarily through police involvement or social services.">
+                <div class="category">
+                  <div class="label">Approach to School Violence</div>
+                  <div class="description">Whether candidates prefer addressing school violence primarily through police involvement or social services.</div>
+                </div>
+              </td>
+              <td>Primarily Police</td><td>Primarily Police</td><td>Balanced Approach</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; prioritization of public transport, cycling, and walking over car use in municipal planning.">
+                <div class="category">
+                  <div class="label">Public Transport vs Car Use</div>
+                  <div class="description">Candidates&#039; prioritization of public transport, cycling, and walking over car use in municipal planning.</div>
+                </div>
+              </td>
+              <td>Strongly Prioritize Public Transport</td><td>Prioritize Car Use</td><td>Balance</td>
+            </tr>
+    </tbody>
+      </table>
+    </div>
+    <footer>
+      Generated at 8/13/2025, 2:00:16 AM
+    </footer>
+  </body>
+  </html>

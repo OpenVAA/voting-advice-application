@@ -63,7 +63,7 @@ systemPrompt: |
       (total: 5)
     ],
     "candidate_positions": {
-      "Candidate A": {
+      "Candidate 1": {
         "Carbon Emissions Tax for Air Travel": "Support with Modifications",
         ...
       },

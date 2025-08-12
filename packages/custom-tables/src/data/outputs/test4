@@ -1,0 +1,83 @@
+{
+  "reasoning": "To differentiate the candidates meaningfully, I selected five specific categories based on their responses and comments. These categories are focused on actionable policy areas where candidates have expressed distinct positions:\n1. 'Youth Employment Priority': This category evaluates how strongly candidates believe in prioritizing youth employment over other groups, with alternatives reflecting levels of agreement or disagreement.\n2. 'Forest Conservation Commitment': This category assesses candidates' commitment to increasing investment in forest conservation, based on their degree of agreement.\n3. 'Participatory Budgeting': This category captures candidates' support for increasing the use of participatory budgeting in their municipalities, indicating their stance on citizen involvement in financial decisions.\n4. 'Public Transport Priority': This category focuses on candidates' preference for prioritizing public transport, walking, and cycling over car use, reflecting their transportation policy priorities.\n5. 'Meat in Public Services': This category addresses candidates' stances on the presence of meat in public food services, indicating their dietary policy preferences regarding public meals.",
+  "categories": [
+    {
+      "label": "Youth Employment Priority",
+      "description": "Candidates' stance on prioritizing youth employment and supporting services over other population groups.",
+      "alternatives": [
+        "Completely Agree",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Forest Conservation Commitment",
+      "description": "Candidates' commitment to increasing investment in forest conservation within their municipality.",
+      "alternatives": [
+        "Completely Agree",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Participatory Budgeting",
+      "description": "Candidates' support for increasing the use of participatory budgeting in municipal financial decisions.",
+      "alternatives": [
+        "Completely Agree",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Public Transport Priority",
+      "description": "Candidates' preference for prioritizing public transport, walking, and cycling over car use in their municipality.",
+      "alternatives": [
+        "Completely Agree",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Meat in Public Services",
+      "description": "Candidates' stance on the presence of meat in public food services, such as school meals and hospitals.",
+      "alternatives": [
+        "Completely Agree",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 1": {
+      "Youth Employment Priority": "Slightly Agree",
+      "Forest Conservation Commitment": "Completely Agree",
+      "Participatory Budgeting": "Completely Agree",
+      "Public Transport Priority": "Completely Disagree",
+      "Meat in Public Services": "Slightly Disagree"
+    },
+    "Candidate 2": {
+      "Youth Employment Priority": "Completely Agree",
+      "Forest Conservation Commitment": "Neither Agree nor Disagree",
+      "Participatory Budgeting": "Slightly Disagree",
+      "Public Transport Priority": "Slightly Agree",
+      "Meat in Public Services": "Completely Agree"
+    },
+    "Candidate 3": {
+      "Youth Employment Priority": "Slightly Agree",
+      "Forest Conservation Commitment": "Slightly Agree",
+      "Participatory Budgeting": "Completely Agree",
+      "Public Transport Priority": "Slightly Disagree",
+      "Meat in Public Services": "Slightly Agree"
+    }
+  }
+}

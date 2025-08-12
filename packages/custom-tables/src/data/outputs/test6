@@ -1,0 +1,76 @@
+{
+  "reasoning": "To effectively differentiate between candidates, categories were selected based on recurring themes and distinctive stances in the candidates' responses. The categories focus on specific, actionable policy areas where clear distinctions can be seen in the candidates' positions. These include voting rights for youth, strategies for balancing municipal finances, forest conservation priorities, approaches to school violence, and attitudes towards public transport and car use. Each category represents a key policy area with potential impact on local governance.",
+  "categories": [
+    {
+      "label": "Youth Voting Rights",
+      "description": "Candidates' positions on whether the voting age should be lowered to 16 in municipal and county elections.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Neutral",
+        "Oppose",
+        "Strongly Oppose"
+      ]
+    },
+    {
+      "label": "Municipal Finance Balancing Strategy",
+      "description": "Preferred approach for balancing municipal finances, focusing on tax rate adjustments versus budget cuts.",
+      "alternatives": [
+        "Increase Taxes",
+        "Neutral",
+        "Oppose Tax Increases"
+      ]
+    },
+    {
+      "label": "Forest Conservation Priority",
+      "description": "Degree of support for increased municipal investment in forest conservation.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Neutral",
+        "Oppose"
+      ]
+    },
+    {
+      "label": "Approach to School Violence",
+      "description": "Whether candidates prefer addressing school violence primarily through police involvement or social services.",
+      "alternatives": [
+        "Primarily Police",
+        "Balanced Approach",
+        "Primarily Social Services"
+      ]
+    },
+    {
+      "label": "Public Transport vs Car Use",
+      "description": "Candidates' prioritization of public transport, cycling, and walking over car use in municipal planning.",
+      "alternatives": [
+        "Strongly Prioritize Public Transport",
+        "Balance",
+        "Prioritize Car Use"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 2253": {
+      "Youth Voting Rights": "Support",
+      "Municipal Finance Balancing Strategy": "Increase Taxes",
+      "Forest Conservation Priority": "Strongly Support",
+      "Approach to School Violence": "Primarily Police",
+      "Public Transport vs Car Use": "Strongly Prioritize Public Transport"
+    },
+    "Candidate 52": {
+      "Youth Voting Rights": "Oppose",
+      "Municipal Finance Balancing Strategy": "Oppose Tax Increases",
+      "Forest Conservation Priority": "Neutral",
+      "Approach to School Violence": "Primarily Police",
+      "Public Transport vs Car Use": "Prioritize Car Use"
+    },
+    "Candidate 5136": {
+      "Youth Voting Rights": "Oppose",
+      "Municipal Finance Balancing Strategy": "Neutral",
+      "Forest Conservation Priority": "Support",
+      "Approach to School Violence": "Balanced Approach",
+      "Public Transport vs Car Use": "Balance"
+    }
+  }
+}

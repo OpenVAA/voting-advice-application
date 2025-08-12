@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Tables Visualization</title>
+    <style>
+      :root {
+        --border: #e5e7eb;
+        --bg: #ffffff;
+        --bg-alt: #f9fafb;
+        --text: #111827;
+        --muted: #6b7280;
+        --sticky-bg: #f3f4f6;
+      }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; padding: 16px; color: var(--text); background: var(--bg); }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 18px; margin: 0; }
+      .controls { display: flex; gap: 8px; }
+      button { border: 1px solid var(--border); background: var(--bg); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      button:hover { background: var(--bg-alt); }
+      details { margin-bottom: 12px; }
+      summary { cursor: pointer; color: var(--muted); }
+      .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+      table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      thead th { position: sticky; top: 0; background: var(--sticky-bg); z-index: 1; text-align: left; font-weight: 600; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; vertical-align: top; white-space: nowrap; }
+      tbody tr:nth-child(odd) { background: var(--bg-alt); }
+      .sticky-col { position: sticky; left: 0; background: var(--sticky-bg); z-index: 2; min-width: 240px; max-width: 480px; }
+      .category .label { font-weight: 600; }
+      .category .description { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
+      footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    </style>
+    <script>
+      function exportTableToCSV() {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        const csv = rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+          // Escape quotes and commas
+          const text = cell.innerText.replace(/"/g, '""');
+          return '"' + text + '"';
+        }).join(',')).join('
+');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'table.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Custom Tables Visualization</h1>
+      <div class="controls">
+        <button onclick="exportTableToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+    <details><summary>Reasoning</summary><div style="margin-top:8px; white-space: pre-wrap;">To create actionable and specific categories that differentiate the candidates&#039; stances, I analyzed their responses and comments to identify areas with distinct positions. These areas include the approach to municipal tax balancing, support for youth employment, investment in forest conservation, the stance on participatory budgeting, and public food services policy regarding meat. These categories are relevant as they reflect significant decision-making areas within municipal governance.</div></details>
+    <div class="table-wrapper">
+      <table>
+        
+    <thead>
+      <tr>
+        <th class="sticky-col">Theme</th>
+        <th>Candidate 1</th><th>Candidate 2</th><th>Candidate 3</th>
+      </tr>
+    </thead>
+        
+    <tbody>
+      
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; preferred methods for balancing municipal budgets, focusing on tax increases versus budget cuts.">
+                <div class="category">
+                  <div class="label">Municipal Tax Balancing Approach</div>
+                  <div class="description">Candidates&#039; preferred methods for balancing municipal budgets, focusing on tax increases versus budget cuts.</div>
+                </div>
+              </td>
+              <td>Favor Tax Increases</td><td>Favor Budget Cuts</td><td>Balanced Approach</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="The extent to which candidates believe supporting youth employment should be prioritized over other groups.">
+                <div class="category">
+                  <div class="label">Prioritization of Youth Employment Support</div>
+                  <div class="description">The extent to which candidates believe supporting youth employment should be prioritized over other groups.</div>
+                </div>
+              </td>
+              <td>Moderately Prioritize Youth</td><td>Strongly Prioritize Youth</td><td>Moderately Prioritize Youth</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; positions on increasing investment in forest conservation within the municipality.">
+                <div class="category">
+                  <div class="label">Investment in Forest Conservation</div>
+                  <div class="description">Candidates&#039; positions on increasing investment in forest conservation within the municipality.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Neutral</td><td>Moderate Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Extent to which candidates support the use of participatory budgeting in municipal decision-making.">
+                <div class="category">
+                  <div class="label">Participatory Budgeting Utilization</div>
+                  <div class="description">Extent to which candidates support the use of participatory budgeting in municipal decision-making.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Oppose</td><td>Strongly Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; positions on whether public food services should eliminate meat from the menu.">
+                <div class="category">
+                  <div class="label">Public Food Services Policy on Meat</div>
+                  <div class="description">Candidates&#039; positions on whether public food services should eliminate meat from the menu.</div>
+                </div>
+              </td>
+              <td>Reduce Meat, Add Veggies</td><td>Oppose Eliminating Meat</td><td>Slightly Agree</td>
+            </tr>
+    </tbody>
+      </table>
+    </div>
+    <footer>
+      Generated at 8/13/2025, 12:44:38 AM
+    </footer>
+  </body>
+  </html>

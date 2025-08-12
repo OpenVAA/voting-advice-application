@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as yaml from 'js-yaml';
 import { join } from 'path';
 import { promisify } from 'util';
-import { TABLE_JSON_FORMAT } from './src/types';
+import { TABLE_JSON_FORMAT_NO_EVICENCE } from './src/types';
 import type { TableJsonData } from './src/types';
 
 config({ path: '../../.env' });
@@ -46,7 +46,7 @@ const systemPrompt = promptData.systemPrompt;
 
 const llm = new OpenAIProvider({
   apiKey,
-  model: 'gpt-4o-mini'
+  model: 'gpt-4o'
 });
 
 const response = await llm.generateAndValidateWithRetry({
@@ -54,7 +54,7 @@ const response = await llm.generateAndValidateWithRetry({
     { role: 'system', content: systemPrompt },
     { role: 'user', content: dataPromptWithCandidates }
   ],
-  responseContract: TABLE_JSON_FORMAT
+  responseContract: TABLE_JSON_FORMAT_NO_EVICENCE
 });
 
 // Ensure the outputs directory exists
@@ -69,13 +69,9 @@ try {
 const outputPath = join(outputDir, `${outputFileName}`);
 writeFileSync(outputPath, JSON.stringify(response.parsed, null, 2), 'utf8');
 
-
-
 // -------------------------------------------------------------------------
 // ---------------- Visualization: Static HTML + auto-open -----------------
 // -------------------------------------------------------------------------
-
-
 
 const execAsync = promisify(exec);
 
