@@ -111,9 +111,26 @@ export type StrapiQuestionTypeData = StrapiObject<{
   settings: QuestionTypeSettings;
 }>;
 
+export type StrapiQuestionTermDefinitionData = {
+  triggers?: { [locale: string]: Array<string> };
+  title?: LocalizedString;
+  content?: LocalizedString;
+};
+
+export type StrapiQuestionInfoSectionData = {
+  title?: LocalizedString;
+  content?: LocalizedString;
+  visible?: boolean;
+};
+
+export type StrapiQuestionCustomData = {
+  terms?: Array<StrapiQuestionTermDefinitionData>;
+  infoSections?: Array<StrapiQuestionInfoSectionData>;
+};
+
 export type StrapiQuestionData = StrapiObject<{
   allowOpen: boolean | null;
-  customData?: object | null;
+  customData?: StrapiQuestionCustomData | null;
   entityType: 'all' | 'candidate' | 'party' | null;
   fillingInfo: LocalizedString;
   filterable: boolean | null;

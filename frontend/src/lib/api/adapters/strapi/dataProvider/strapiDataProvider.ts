@@ -16,11 +16,13 @@ import {
   parseImage,
   parseNominations,
   parseOrganization,
+  parseQuestionInfoSections,
   parseQuestionType,
   parseRelationIds,
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
+import { parseQuestionTerms } from '../utils/parseQuestionTerms';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -44,7 +46,13 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         headerStyle: { populate: '*' },
         matching: 'true',
         notifications: { populate: '*' },
-        questions: { populate: '*' },
+        questions: {
+          populate: {
+            categoryIntros: 'true',
+            questionsIntro: 'true',
+            interactiveInfo: 'true'
+          }
+        },
         results: { populate: '*' },
         survey: 'true'
       }
@@ -246,7 +254,9 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           allowOpen: !!allowOpen,
           fillingInfo: translate(fillingInfo, locale),
           filterable: !!filterable,
-          required: !!required
+          required: !!required,
+          infoSections: parseQuestionInfoSections(customData, locale),
+          terms: parseQuestionTerms(customData, locale)
         };
         allQuestions.set(documentId, {
           ...parseBasics({ ...question, customData: { ...customData, ...additionalCustomData } }, locale),
