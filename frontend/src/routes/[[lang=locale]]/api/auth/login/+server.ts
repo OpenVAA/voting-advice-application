@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { apiFail } from '$lib/utils/api';
+import { apiFail } from '$lib/api/utils/fail';
 import { logDebugError } from '$lib/utils/logger';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { BasicUserData, UserRole } from '$lib/api/base/dataWriter.type.js';
+import type { BasicUserData, UserRole } from '$lib/api/base/dataWriter.type';
 
 /**
  * # Login api route. Call this from page actions.
