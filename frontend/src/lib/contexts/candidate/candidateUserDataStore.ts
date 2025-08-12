@@ -1,13 +1,13 @@
 import { type Id } from '@openvaa/core';
 import { ENTITY_TYPE, type Image } from '@openvaa/data';
 import { derived, get, type Readable, writable } from 'svelte/store';
-import { prepareDataWriter } from './prepareDataWriter';
+import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { localStorageWritable } from '../utils/storageStore';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { UserDataStore } from './userDataStore.type';
+import type { CandidateUserDataStore } from './candidateUserDataStore.type';
 
 /**
  * Create an extended store that holds all data owned by the user. When subscribed to, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence.
@@ -18,7 +18,7 @@ import type { UserDataStore } from './userDataStore.type';
  * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
  * @param locale - A read-only store that indicates the current locale, used for translating some data when it's fetched.
  */
-export function userDataStore({
+export function candidateUserDataStore({
   answersLocked,
   authToken,
   dataWriterPromise,
@@ -28,7 +28,7 @@ export function userDataStore({
   authToken: Readable<string | undefined>;
   dataWriterPromise: Promise<UniversalDataWriter>;
   locale: Readable<string>;
-}): UserDataStore {
+}): CandidateUserDataStore {
   ////////////////////////////////////////////////////////////////////
   // Internals
   ////////////////////////////////////////////////////////////////////
@@ -37,7 +37,10 @@ export function userDataStore({
   const savedData = writable<CandidateUserData<true> | undefined>();
 
   // An internal store for holding edited answers
-  const editedAnswers = localStorageWritable('CandidateContext-userDataStore-editedAnswers', {} as LocalizedAnswers);
+  const editedAnswers = localStorageWritable(
+    'CandidateContext-candidateUserDataStore-editedAnswers',
+    {} as LocalizedAnswers
+  );
 
   // An internal store for holding the edited image
   const editedImage = writable<ImageWithFile | undefined>();

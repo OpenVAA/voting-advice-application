@@ -32,6 +32,7 @@
   import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
+  import { initAuthContext } from '$lib/contexts/auth';
 
   export let data: LayoutData;
 
@@ -45,6 +46,8 @@
   const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
     initAppContext();
   initLayoutContext();
+  // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
+  initAuthContext();
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data
