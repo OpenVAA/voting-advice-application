@@ -381,6 +381,7 @@ export type TranslationKey =
   | 'entityList.controls.searchPlaceholder'
   | 'entityList.controls.showingNumResults'
   | 'entityList.showMore'
+  | 'error.403'
   | 'error.404'
   | 'error.500'
   | 'error.content'

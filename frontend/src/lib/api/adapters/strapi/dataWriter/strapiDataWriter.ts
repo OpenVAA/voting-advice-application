@@ -96,7 +96,16 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   }
 
   protected async _getBasicUserData({ authToken }: WithAuth): DWReturnType<BasicUserData> {
-    const data = await this.apiGet({ endpoint: 'basicUserData', authToken, disableCache: true });
+    const data = await this.apiGet({
+      endpoint: 'basicUserData',
+      authToken,
+      disableCache: true,
+      params: {
+        populate: {
+          role: 'true'
+        }
+      }
+    });
     if (!data) throw new Error('Expected one BasicUserData object, but got none.');
     return parseUser(data);
   }
@@ -156,7 +165,8 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
             nominations: loadNominations ? { populate: '*' } : 'false',
             image: 'true'
           }
-        }
+        },
+        role: 'true'
       }
     };
     const data = await this.apiGet({
