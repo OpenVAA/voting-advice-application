@@ -98,10 +98,16 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   login: (opts: { username: string; password: string }) => DWReturnType<DataApiActionResult & Partial<WithAuth>, TType>;
   /**
-   * Logout a user.
+   * Logout a user from both the frontend and the backend.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   logout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
+  /**
+   * Logout a user from the backend only.
+   * This is mostly used by the login server api route to undo a login attempt.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  backendLogout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
   /**
    * Get the basic data for a user, mostly their username, email, and preferred language.
    * @param authToken - The authorization token.
@@ -212,9 +218,10 @@ export interface BasicUserData extends WithUserSettings {
   id: Id;
   email: string;
   username: string;
-  confirmed: boolean;
-  blocked: boolean;
+  role?: UserRole | null;
 }
+
+export type UserRole = 'candidate' | 'admin';
 
 export type CheckRegistrationData = DataApiActionResult & {
   email: string;
