@@ -133,7 +133,9 @@
           errorMessage =
             result.status === 400
               ? $t('candidateApp.login.wrongEmailOrPassword')
-              : $t('candidateApp.login.unknownError');
+              : result.status === 403
+                ? $t('error.403')
+                : $t('candidateApp.login.unknownError');
           return;
         }
         await applyAction(result);

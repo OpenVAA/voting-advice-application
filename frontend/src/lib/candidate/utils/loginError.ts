@@ -12,7 +12,8 @@ const CANDIDATE_LOGIN_ERROR: Record<string, TranslationKey> = {
   candidateNoNomination: 'candidateApp.error.candidateNoNomination',
   loginFailed: 'candidateApp.error.loginFailed',
   nominationNoElection: 'candidateApp.error.nominationNoElection',
-  userNoCandidate: 'candidateApp.error.userNoCandidate'
+  userNoCandidate: 'candidateApp.error.userNoCandidate',
+  userNotAuthorized: 'error.403'
 } as const;
 
 /**
