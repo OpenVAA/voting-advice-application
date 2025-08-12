@@ -1,0 +1,83 @@
+{
+  "reasoning": "The analysis of the candidates' responses revealed distinct positions on youth engagement, economic strategies, housing and social services, environmental policies, and education access. These categories were chosen to highlight specific actionable differences between the candidates, reflecting their priorities and approaches in municipal governance.",
+  "categories": [
+    {
+      "label": "Youth Engagement in Decision-Making",
+      "description": "Positions on granting youth councils the right to participate in decision-making processes regarding issues affecting young people.",
+      "alternatives": [
+        "Completely Agree",
+        "Support with Modifications",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Municipal Economic Strategies",
+      "description": "Perspectives on how to balance municipal finances, including taxation and budget cuts.",
+      "alternatives": [
+        "Completely Agree with Tax Increases",
+        "Support with Modifications",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Access to Affordable Housing",
+      "description": "Stances on ensuring low-income individuals, including students, have access to affordable housing options.",
+      "alternatives": [
+        "Completely Agree",
+        "Support with Modifications",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Environmental Conservation Efforts",
+      "description": "Commitments to environmental issues, particularly regarding carbon neutrality and forest conservation.",
+      "alternatives": [
+        "Completely Agree",
+        "Support with Modifications",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Education Access and Support",
+      "description": "Views on education accessibility, particularly the right for students to attend upper secondary education without relocating.",
+      "alternatives": [
+        "Completely Agree",
+        "Support with Modifications",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Completely Disagree"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 1": {
+      "Youth Engagement in Decision-Making": "Completely Agree",
+      "Municipal Economic Strategies": "Slightly Agree",
+      "Access to Affordable Housing": "Slightly Agree",
+      "Environmental Conservation Efforts": "Completely Agree",
+      "Education Access and Support": "Slightly Agree"
+    },
+    "Candidate 2": {
+      "Youth Engagement in Decision-Making": "Completely Agree",
+      "Municipal Economic Strategies": "Completely Disagree",
+      "Access to Affordable Housing": "Slightly Agree",
+      "Environmental Conservation Efforts": "Neither Agree nor Disagree",
+      "Education Access and Support": "Completely Agree"
+    },
+    "Candidate 3": {
+      "Youth Engagement in Decision-Making": "Completely Agree",
+      "Municipal Economic Strategies": "Slightly Disagree",
+      "Access to Affordable Housing": "Completely Agree",
+      "Environmental Conservation Efforts": "Slightly Agree",
+      "Education Access and Support": "Completely Agree"
+    }
+  }
+}

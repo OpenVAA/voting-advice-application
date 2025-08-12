@@ -1,0 +1,79 @@
+{
+  "reasoning": "To differentiate the candidates effectively, I focused on categories that reveal nuanced policy positions and priorities based on their responses. The chosen categories are designed to highlight actionable and specific differences in candidate stances, particularly where there is divergence or strong agreement. These categories reflect areas with significant societal impact and policy variance: 1) Youth Involvement in Decision-Making, 2) Municipal Financial Management Strategies, 3) Support for Affordable Housing, 4) Stance on Public Transport vs. Car Use, and 5) Role of Police in School Violence. These categories are chosen because they reflect clear policy choices that voters may prioritize differently. The alternatives are crafted to encompass the spectrum of responses given by the candidates.",
+  "categories": [
+    {
+      "label": "Youth Involvement in Decision-Making",
+      "description": "Candidates' support for youth councils and involvement in decision-making processes, indicating their commitment to youth engagement.",
+      "alternatives": [
+        "Strongly Support with Initiatives",
+        "Strongly Support",
+        "Support",
+        "Neutral",
+        "Oppose"
+      ]
+    },
+    {
+      "label": "Municipal Financial Management Strategies",
+      "description": "Approaches to balancing municipal finances, focusing on tax increases versus budget cuts.",
+      "alternatives": [
+        "Primarily Tax Increases",
+        "Balanced Approach",
+        "Primarily Budget Cuts",
+        "Oppose Tax Increases"
+      ]
+    },
+    {
+      "label": "Support for Affordable Housing",
+      "description": "Stance on ensuring affordable housing for low-income individuals, reflecting commitment to housing accessibility.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Neutral",
+        "Oppose"
+      ]
+    },
+    {
+      "label": "Stance on Public Transport vs. Car Use",
+      "description": "Preference for prioritizing public transport and sustainable transport modes over car use.",
+      "alternatives": [
+        "Strongly Prioritize Public Transport",
+        "Prioritize Public Transport",
+        "Balanced Approach",
+        "Prioritize Car Use"
+      ]
+    },
+    {
+      "label": "Role of Police in School Violence",
+      "description": "Views on whether school violence should be primarily addressed by police or social services.",
+      "alternatives": [
+        "Primarily Police",
+        "Balanced Approach",
+        "Primarily Social Services",
+        "Oppose Police Involvement"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 1": {
+      "Youth Involvement in Decision-Making": "Strongly Support",
+      "Municipal Financial Management Strategies": "Balanced Approach",
+      "Support for Affordable Housing": "Support",
+      "Stance on Public Transport vs. Car Use": "Strongly Prioritize Public Transport",
+      "Role of Police in School Violence": "Balanced Approach"
+    },
+    "Candidate 2": {
+      "Youth Involvement in Decision-Making": "Strongly Support with Initiatives",
+      "Municipal Financial Management Strategies": "Primarily Budget Cuts",
+      "Support for Affordable Housing": "Support",
+      "Stance on Public Transport vs. Car Use": "Prioritize Car Use",
+      "Role of Police in School Violence": "Primarily Police"
+    },
+    "Candidate 3": {
+      "Youth Involvement in Decision-Making": "Strongly Support",
+      "Municipal Financial Management Strategies": "Balanced Approach",
+      "Support for Affordable Housing": "Strongly Support",
+      "Stance on Public Transport vs. Car Use": "Prioritize Public Transport",
+      "Role of Police in School Violence": "Balanced Approach"
+    }
+  }
+}

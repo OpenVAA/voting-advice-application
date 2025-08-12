@@ -1,0 +1,271 @@
+### Candidate 1:
+
+Category: General Questions
+Question: "Youth councils should always be granted the right to speak and be present in decision-making concerning young people, such as in councils or committees."
+Answer: Completely agree
+Comment: "Tämä nyt on vähintä, mitä kunta voi nuorten eteen tehdä. Onneksi meillä Imatralla näin toimitaankin jo."
+Category: General Questions
+Question: "The municipality must prioritize supporting young adults’ employment and services that support their employment over other population groups when necessary."
+Answer: Slightly agree
+Comment: "Nuorten työllistymistä ja sitä tukevia palveluita on tärkeää lisätä, mutta samalla tulee kehittää myös sellaisia toimenpiteitä, jotka auttavat kaikenikäisiä työttömiä saamaan töitä."
+Category: General Questions
+Question: "Municipal finances should be balanced primarily by increasing the municipal tax rate rather than making budget cuts."
+Answer: Slightly agree
+Comment: "Jo nyt Imatralla on tehty paljon menojen leikkauksia, joten uusia on erittäin vaikea löytää. Jos tarve on suuri, on voitava harkita myös maltillisia verojen korotuksia, toki samaan aikaan kulukuria on noudatettava tarkasti."
+Category: General Questions
+Question: "My municipality should guarantee access to affordable housing for low-income individuals (e.g., students)."
+Answer: Slightly agree
+Comment: "Koska valtio on nyt kurittanut etenkin pienituloisia, kuntien pitäisi tulla vastaan ja auttaa mm. tarjoamalla kohtuhintaisia asuntoja. Toki tässäkin on pakko huomioida, että myös kuntien talous on nyt tiukoilla."
+Category: General Questions
+Question: "The voting age should be lowered to 16 in municipal and county elections."
+Answer: Slightly agree
+Comment: "Nuorten vaikutusmahdollisuuksia ja äänen kuulumista tulisi vahvistaa, joten ehkä äänestysikärajan lasku voisi olla ihan kannatettava asia. Joka tapauksessa kuntien tulisi järjestää enemmän oikeita kuulemistilaisuuksia, joissa nuoret saisivat kertoa kantansa etenkin heihin vaikuttaviin päätöksiin ja nämä mielipiteet myös huomioitaisiin, kun asiasta päätetään."
+Category: General Questions
+Question: "What inspires me in societal decision-making?"
+Answer: Mahdollisuus vaikuttaa oman kuntani asioihin ja päätöksiin, joita tehdään.
+Category: General Questions
+Question: "My main goals if elected to the municipal council"
+Answer: Haluan toimia luonnon, eläinten, heikoimmassa asemassa olevien ihmisten ja nuorten puolestapuhujana.
+Category: General Questions
+Question: "Municipalities should provide every person under 29 with access to a meaningful and free hobby."
+Answer: Slightly agree
+Comment: "Tämä olisi ehdottomasti hyvä asia, mutta sen järjestäminen voi olla mahdotonta huonon taloustilanteen vuoksi. Ehkä asiaa voisi kuitenkin lähteä viemään eteenpäin hankkeena, jolloin rahoitusta voitaisiin hakea muualta."
+Category: General Questions
+Question: "My municipality should invest more in forest conservation."
+Answer: Completely agree
+Comment: "Tuoreen kyselytutkimuksen mukaan 96 prosentille suomalaisista lähimetsän säilyminen on tärkeää ja 84 prosenttia on sitä mieltä, että kotikunnan tärkeät virkistysmetsät täytyy säästää hakkuilta ja rakentamiselta. Tässä on jo riittävästi syitä ennemmin suojella metsiä, kuin toteuttaa aktiivista metsätaloutta. Kunnan metsien tulee olla kuntalaisia varten.
+Lähimetsät ovat myös tärkeitä ihmisten terveydelle ja hyvinvoinnille sekä luonnon monimuotoisuudelle. Ne pitää siis ehdottomasti säästää hakkuilta ja rakentamiselta."
+Category: General Questions
+Question: "A reception centre should not be established in my local area."
+Answer: Completely disagree
+Comment: "SPR perusti jo Imatralla vastaanottokeskuksen ja se on hyvä asia kunnankin kannalta, sillä vuokratulot eivät aiemmin kattaneet sen talon kustannuksia, johon vastaanottokeskus perustettiin. Lisäksi vastaanottokeskuksen toiminta luo Imatralle työpaikkoja. "
+Category: General Questions
+Question: "More actions should be taken in my municipality to prevent discrimination against young people belonging to sexual and gender minorities."
+Answer: Completely agree
+Comment: "Tämän asian eteen ei voi tehdä liikaa ja kunta voisi ihan varmasti tehdä nykyistä enemmän toimia, joilla syrjintää ehkäistäisiin. Lähtien vaikka jo siitä, että kunta liputtaisi avoimesti Pride-lipuilla. "
+Category: General Questions
+Question: "It should be possible to attend upper secondary education (general upper secondary education and vocational education and training) without moving away from home."
+Answer: Slightly agree
+Comment: "Kaikkea koulutusta ei ole mahdollista järjestää jokaisessa kunnassa (esim. merenkulkualaa kannattaa opettaa rannikolla) ja joskus voi olla pakko sen takia muuttaa pois kotoa. Kehittämällä etäopiskelua voidaan entistä enemmän mahdollistaa opiskelijoiden asuminen kotona opiskelun aikana. On myös pyrittävä säilyttämään nykyiset lukiot ja ammatilliset oppilaitokset toiminnassa, jotta mahdollisimman moni voisi käydä koulua kotipaikkakunnallaan tai hyvin lähellä sitä."
+Category: General Questions
+Category: General Questions
+Question: "The services of the municipality and the wellbeing services county should be offered in English in addition to the official languages of the municipality and the county."
+Answer: Completely agree
+Comment: "Meillä on paljon ihmisiä, joille asiointi olisi paljon helpompaa englanniksi. Nyt he jäävät helposti paitsi tärkeistä tiedoista, kun asioista kerrotaan vain suomeksi tai korkeintaan sen lisäksi ruotsiksi. "
+Category: General Questions
+Question: "My municipality and wellbeing services county should strive for carbon neutrality."
+Answer: Completely agree
+Comment: "Imatran tavoite on olla hiilineutraali jo vuonna 2030 ja mielestäni sen toteutumisen eteen tulisi tehdä vielä nykyistä enemmän töitä."
+Category: General Questions
+Question: "My municipality should prioritize the use of cars over public transport, cycling, and walking."
+Answer: Completely disagree
+Comment: "Jotta ilmastonmuutos voitaisiin pitää mahdollisimman pienenä tulevaisuudessa, kaikki keinot on otettava käyttöön. Liikenne, joka nojaa vielä paljon fossiilisiin polttoaineisiin, tuottaa merkittävästi kasvihuonekaasupäästöjä. Valtaosa päästöistä tulee tieliikenteestä, joten sitä on pyrittävä vähentämään panostamalla toimivaan ja kattavaan joukkoliikenteeseen sekä rakentamalla kävely- ja pyöräteitä ja pitämällä ne kunnossa. Pyöräily ja kävely ovat päästöttömiä tapoja liikkua ja toisaalta monelle ainoa tapa kulkea. Kaikilla ei ole mahdollista kulkea omalla autolla."
+Category: General Questions
+Question: "Participatory budgeting should be used more often in my municipality."
+Answer: Completely agree
+Comment: "Osallistava budjetointi on todella hyvä tapa lisätä kuntalaisten mahdollisuuksia päästä vaikuttamaan siihen, mihin rahoja käytetään ja sitä pitäisi ehdottomasti lisätä myös Imatralla."
+Category: General Questions
+Question: "School violence should be addressed by the police rather than social services in comprehensive schools."
+Answer: Slightly agree
+Comment: "Väkivalta on väkivaltaa, olipa se tehty koulussa tai muualla ja silloin poliisin puuttuminen asiaan on ihan oikeutettua. Toki parasta olisi, jos mukana olisi aina myös sosiaalipalveluiden edustajia, jotta tekijä ja uhri saisivat tarvittavan avun myös sieltä."
+Category: General Questions
+Question: "Selling municipally owned companies is a good way to balance municipal finances."
+Answer: Slightly disagree
+Comment: "On hyvä, että kunnilla säilyy päätösvalta tietyissä asioissa yhtiöiden kautta. Lisäksi niistä on mahdollista saada myös tasaisesti tuottoja, joka auttaa kunnan taloutta pitemmällä aikavälillä."
+Category: General Questions
+Question: "Public food services, such as school meals and hospitals, should not eliminate meat from the menu."
+Answer: Slightly disagree
+Comment: "Kannatan ehdottomasti liharuokien vähentämistä ja kasviperäisen ruoan määrän lisäämistä julkisissa ruokailuissa. Helsingin yliopiston tutkimuksen mukaan suomalaiset päiväkotilapset syövät viisinkertaisesti liikaa punaista lihaa sekä maitotuotteita kuin mitä olisi hyväksi terveyden kannalta. Liharuoan vähentäminen tukee siis lasten, nuorten ja aikuistenkin terveyttä. 
+Tähän liittyen, tein 10.2.2025 kahden muun valtuutetun kanssa tähän liittyen aloitteen (Valtuustoaloite eläinperäisten tuotteiden kulutuksen puolittamiseksi vuoteen 2030 mennessä). Aloitteen voi käydä lukemassa kotisivujeni blogiosiosta: www.suvinmaailma.fi
+
+### Candidate 2:
+
+Category: General Questions
+Question: "Youth councils should always be granted the right to speak and be present in decision-making concerning young people, such as in councils or committees."
+Answer: Completely agree
+Comment: "Itsekin toisen kauden nuorisovaltuutettuna minun on mahdotonta vastata mitään muuta kuin ehdoton kyllä. Puhe- ja läsnäolo-oikeuden lisäksi suora aloiteoikeus valtuustoon olisi ehdottoman tärkeä."
+Category: General Questions
+Question: "The municipality must prioritize supporting young adults’ employment and services that support their employment over other population groups when necessary."
+Answer: Completely agree
+Comment: "Nuorissa on tulevaisuus ja nykyhetki. Jos nuoret eivät käy töissä, niin eipä eläkkeitäkään ole kukaan maksamassa. On koko yhteiskunnan etu, että nuoret saadaan työelämään mahdollisimman sujuvasti ja kivuttomasti."
+Category: General Questions
+Question: "Municipal finances should be balanced primarily by increasing the municipal tax rate rather than making budget cuts."
+Answer: Completely disagree
+Comment: "Talouden elinvoimaisuus lähtee kuluttamisesta, ja veronkorotuksilla viedään suoraan rahaa pois kuluttajalta. Kun raha pääsee palkansaajan kautta talouden kiertoon, se tuottaa paljon enemmän vaurautta kuin julkisen hallinnon pöytälaatikossa."
+Category: General Questions
+Category: General Questions
+Question: "My municipality should guarantee access to affordable housing for low-income individuals (e.g., students)."
+Answer: Slightly agree
+Comment: "Opiskelija-asuntoja tarjoaa kohtuuhintaan Oulun alueella jo nyt PSOAS, mutta en näe mitään haittoja siinä, että kunta osallistuisi myös asuntojen tarjoamiseen. Kunhan kulut pysyvät kohtuullisina, ajatus on oikea."
+Category: General Questions
+Question: "The voting age should be lowered to 16 in municipal and county elections."
+Answer: Slightly disagree
+Comment: "Vaikka nuorten osallistaminen päätöksentekoon on ehdottomasti tärkeää, en lähtisi laajentamaan sitä aivan näin pitkälle kahdesta syystä. Ensinnäkin täysi-ikäisyyteen on sidottu monia muitakin oikeuksia, ja pidän tärkeänä johdonmukaisuutta ikärajakysymyksissä. Lisäksi valtaosa lukiolaisista on vielä keskeneräisiä henkisen kehityksensä osalta, enkä ottaisi riskiä äänestämisen mukana tulevan vastuun kanssa."
+Category: General Questions
+Question: "What inspires me in societal decision-making?"
+Answer: Minulla on aina ollut voimakkaita mielipiteitä siitä, miten yhteiskunnan tulisi toimia oikeudenmukaisesti, ja ajattelen että parhaiten ne toteutuvat, jos tartun itse toimeen.
+Category: General Questions
+Question: "My main goals if elected to the municipal council"
+Answer: Ratkaisukeskeisyys, elinvoimainen Oulu jossa on kunnolla pöhinää, päätöksenteon ratkaisukeskeisyys
+Category: General Questions
+Category: General Questions
+Question: "Municipalities should provide every person under 29 with access to a meaningful and free hobby."
+Answer: Neither agree nor disagree
+Comment: "Ajatuksena tämä on mitä jalomielisin, ja olen tavoitteen kanssa samaa mieltä. Mielekäs sisältö elämälle on yksi hyvinvoinnin tärkeimpiä pilareita, ja sitä tulee edistää kaikin keinoin. Kuitenkaan en ole varma, onko ilmaisten asioiden jakaminen paras ratkaisu, koska se saattaa vuotaa hyvätuloisille, jotka eivät maksuttomuutta tarvitse. Sen sijaan lähtisin selvittämään esimerkiksi ilmaisten harrastusseteleiden jakamista niille, joiden varallisuus ei muuten riitä harrastamiseen (esim. epassi-tyylinen ratkaisu)"
+Category: General Questions
+Question: "My municipality should invest more in forest conservation."
+Answer: Neither agree nor disagree
+Comment: "Esimerkiksi Hiukkavaaran ja Kivikkokankaan rakentamiset ovat metsien suojelun kannalta ongelmallisia, mutta en näe ongelmaa kovinkaan suurena. Oulusta löytyy (lähes luonnonvaraisia) metsiä edelleen varsin paljon, enkä usko asian muuttuvan lähitulevaisuudessa."
+Category: General Questions
+Question: "A reception centre should not be established in my local area."
+Answer: Slightly disagree
+Comment: "Sattumalta olen asunut koko ikäni parin kilometrin päässä vastaanottokeskuksesta, enkä ole kokenut siitä johtuvan merkittäviä ongelmia. En näe syytä vastustaa vastaanottokeskuksia."
+Category: General Questions
+Question: "More actions should be taken in my municipality to prevent discrimination against young people belonging to sexual and gender minorities."
+Answer: Completely agree
+Comment: "Jokainen ihminen ansaitsee kunnioitusta ja rakkautta ympäriltään, eikä kellään ole oikeutta puuttua tai kritisoida toisen ihmisen identiteettiä. Pidän tätä kysymystä itse asiassa hieman tarpeettomana, koska oikeita vastauksia on vain yksi."
+Category: General Questions
+Question: "It should be possible to attend upper secondary education (general upper secondary education and vocational education and training) without moving away from home."
+Answer: Completely agree
+Comment: "Vierastan henkilökohtaisesti hieman ajatusta omilleen muuttamisesta ennen täysi-ikäisyyttä. Toisen asteen opiskelija on vielä keskellä henkistä kehitystä aikuiseksi ihmiseksi, ja perheen läsnäolo ja tuki on hyvin tärkeää tässä vaiheessa."
+Category: General Questions
+Question: "The services of the municipality and the wellbeing services county should be offered in English in addition to the official languages of the municipality and the county."
+Answer: Slightly agree
+Comment: "Kielimuuri ei saa estää palvelujen saantia, ja englannin osaaminen tulisi olla pakollinen vaatimus julkisen sektorin palveluissa työskenteleville. Myös ilman suomen kielen osaamista ihmisellä on oikeus palveluihin."
+Category: General Questions
+Question: "My municipality and wellbeing services county should strive for carbon neutrality."
+Answer: Slightly agree
+Comment: "Ilmastotavoitteet ovat etenkin nuorten kannalta tärkeitä, koska joudumme elämään tässä maailmassa vielä varsin pitkään. Mielestäni hiilineutraaliuden ei tule tarpeettomasti vaikeuttaa kunnan muuta elämää, mutta siihen tulee pyrkiä kansalaisten omilla ehdoilla."
+Category: General Questions
+Question: "My municipality should prioritize the use of cars over public transport, cycling, and walking."
+Answer: Slightly agree
+Comment: "Oulu on maantieteellisesti laajin suuri kaupunki Suomessa, ja siksi autoilulle on automaattisesti enemmän tarvetta. Kiimingin ja Oulunsalon kaltaisilta alueilta keskustaan kulkeminen olisi melko vaivalloista ilman omaa autoa, ja mielestäni autoilun tulee olla toimiva liikkumismuoto koko Oulussa jatkossakin."
+Category: General Questions
+Question: "Participatory budgeting should be used more often in my municipality."
+Answer: Slightly disagree
+Comment: "Osallistuvan budjetoinnin taso Oulussa on mielestäni varsin sopiva, ja olen nuorisovaltuustossa päässyt seuraamaan sen toteutumista. En usko, että siihen tulee enää lisätä resursseja."
+Category: General Questions
+Question: "School violence should be addressed by the police rather than social services in comprehensive schools."
+Answer: Slightly agree
+Comment: "Väkivalta on aina vakava asia, ja poliisilla on oikeat keinot siihen puuttumiseen. Olisin hieman varovainen, jotta kouluihin ei syntyisi tarpeetonta pelon ilmapiiriä, mutta kynnystä poliisin puuttumiseen tulee ehdottomasti laskea."
+Category: General Questions
+Question: "Selling municipally owned companies is a good way to balance municipal finances."
+Answer: Slightly agree
+Comment: "Julkisomisteiset yhtiöt ovat mielestäni lähtökohtaisesti hieman kyseenalainen asia, sillä kyseessä ei tosiasiassa ole edes yritys, vaan kunnan jatke. Itse asiassa  kunta siis osallistuu sellaisenaan markkinatalouteen, ja yhtiöt ovat olemassa vain suojatyöpaikkojen luomiseksi. Markkinatalouden osapuolten ei tule olla julkisen hallinnon alaisuudessa, eikä kuntien tulisi alkuunkaan omistaa yhtiöitä."
+Category: General Questions
+Question: "Public food services, such as school meals and hospitals, should not eliminate meat from the menu."
+Answer: Completely agree
+Comment: "Lihan kieltäminen ei ole ratkaisu, vaan sen sijaan tulee lisätä kasvisruokavaihtoehtoja joka aterialle. Lihan hallittu syöminen ei ole terveysriski, vaan ongelmat syntyvät liikakäytöstä."
+
+### Candidate 3:
+
+Category: General Questions
+Question: "Youth councils should always be granted the right to speak and be present in decision-making concerning young people, such as in councils or committees."
+Answer: Completely agree
+Comment: " I have served on several committees. (Education, Teaching and Education, Elderly and Disabled, and also as Vice-Chair of the Social and Health Committee). The youth representative, with their right to speak and be present, has been an important part of the decision-making process in all of them, and their opinions have been actively sought and listened to."
+Category: General Questions
+Question: "The therapy guarantee should be expanded to cover all individuals under 29 in my county."
+Answer: Slightly agree
+Category: General Questions
+Question: "Wellbeing services counties should have taxation rights."
+Answer: Slightly disagree
+Comment: " The overall tax rate should not be tightened. Finland is one of the toughest taxers of middle-income earners in all of Europe."
+Category: General Questions
+Question: "The municipality must prioritize supporting young adults’ employment and services that support their employment over other population groups when necessary."
+Answer: Slightly agree
+Category: General Questions
+Question: "Municipal finances should be balanced primarily by increasing the municipal tax rate rather than making budget cuts."
+Answer: Neither agree nor disagree
+Comment: "The overall tax rate in Finland for middle-income earners is among the highest in Europe. As a starting point, it is necessary to first examine which functions could be streamlined, done differently, or abandoned. However, all means of balancing the economy should be kept in the toolkit."
+Category: General Questions
+Question: "Significant increases in client fees are an effective way to balance the finances of wellbeing services counties."
+Answer: Slightly disagree
+Comment: "We all want to live in a society where everyone gets the support they need, where people care about each other, and where everyday life runs smoothly without constant worry about coping. Good and functional services do not directly mean tax or price increases. It is important to invest in what pays off elsewhere."
+Category: General Questions
+Question: "My municipality should guarantee access to affordable housing for low-income individuals (e.g., students)."
+Answer: Completely agree
+Category: General Questions
+Question: "The voting age should be lowered to 16 in municipal and county elections."
+Answer: Slightly disagree
+Comment: "Municipalities should invest in the development of youth councils and the mentoring activities of various political parties. Through these means, young people should be involved in political decision-making as well as in learning and participation."
+Category: General Questions
+Question: "My main goals if elected to the county council"
+Answer: A welfare state means that no one has to try to manage alone.
+Category: General Questions
+Question: "My wellbeing services county should not start a drug consumption room trial, even if the law allowed it."
+Answer: Neither agree nor disagree
+Category: General Questions
+Question: "What inspires me in societal decision-making?"
+Answer: In my work as a business teacher, I meet young people and young adults daily who are building their future and dreams. It is a privilege to be part of their journey and see them grow and develop. Young people's study and employment opportunities must be secured. Improving access to education provides more young people with a pathway to employment and integration into society.
+We all want to live in a society where everyone gets the support they need, where people are cared for, and where everyday life runs smoothly without constant worry about coping. But at the moment, too many elderly people are left alone, students struggle with their endurance, parents worry about their family's livelihood, and teachers are overwhelmed by their workload.
+Every child deserves to receive quality education and support. But how can a teacher pay attention to each student when there are too many children in the class and resources are scarce? Investment in quality education and enabling individual encounters will pay off.
+Young people with immigrant backgrounds face challenges, especially during transitions in education. Education is a significant societal equality issue. The labor market is changing rapidly, and more and more people need new skills to keep up. But what if education is expensive or there are no opportunities for it? Let's collaborate with local businesses to ensure that educational resources are directed to the needs of the labor market.
+Good and functional services do not directly mean tax increases. It is important to invest in what pays off elsewhere. We must also take care of the elderly. Services for the elderly are not an expense but a sign of the functioning of society.
+It is important for me to be aware of what residents expect from their decision-makers. Modern decision-making is participatory dialogue. Matters affecting people's daily lives cannot be agreed upon behind closed doors.
+ (Translation work utilized Copilot AI)
+Category: General Questions
+Question: "My main goals if elected to the municipal council"
+Answer: A student should not live in constant stress - but build their future.
+Category: General Questions
+Question: "The services in my wellbeing services county should be centralized in specific population centres."
+Answer: Slightly agree
+Comment: "Services provided locally are especially important for families with children and the aging population. Access to a doctor should be guaranteed everywhere, and the personal doctor system should be implemented alongside digital doctor services. No one gets better in a queue, and quick access to care or diagnosis reduces costs in the long run."
+Category: General Questions
+Question: "Municipalities should provide every person under 29 with access to a meaningful and free hobby."
+Answer: Slightly agree
+Category: General Questions
+Question: "Private service providers should be utilized more in the provision of primary healthcare."
+Answer: Slightly agree
+Comment: "Private service providers should be seen as an extension of municipal services, as well as parallel service providers, for example, when utilizing the service voucher system or reducing queues."
+Category: General Questions
+Question: "My municipality should invest more in forest conservation."
+Answer: Slightly agree
+Category: General Questions
+Question: "A reception centre should not be established in my local area."
+Answer: Slightly disagree
+Comment: "There is already a reception center in my municipality, which has been functioning quite well."
+Category: General Questions
+Question: "My wellbeing services county should hire more staff from abroad, such as nurses."
+Answer: Slightly disagree
+Comment: "Att locka specialister är säkert motiverat. På grund av den höga arbetslösheten bör vi dock fokusera på hur vi kan utbilda mer eller snabbare personal på ett arbetslivsinriktat sätt. Det är viktigt att identifiera behoven av specialkompetens och aktivt utbilda personal för att möta dessa behov."
+Category: General Questions
+Question: "More actions should be taken in my municipality to prevent discrimination against young people belonging to sexual and gender minorities."
+Answer: Completely agree
+Category: General Questions
+Question: "My wellbeing services county should provide free contraception for individuals under 25."
+Answer: Completely agree
+Category: General Questions
+Question: "It should be possible to attend upper secondary education (general upper secondary education and vocational education and training) without moving away from home."
+Answer: Completely agree
+Category: General Questions
+Category: General Questions
+Question: "The services of the municipality and the wellbeing services county should be offered in English in addition to the official languages of the municipality and the county."
+Answer: Slightly agree
+Category: General Questions
+Question: "My municipality and wellbeing services county should strive for carbon neutrality."
+Answer: Slightly agree
+Category: General Questions
+Question: "Undocumented immigrants residing in Finland should also have the right to non-urgent but necessary healthcare services."
+Answer: Slightly agree
+Category: General Questions
+Question: "My municipality should prioritize the use of cars over public transport, cycling, and walking."
+Answer: Slightly disagree
+Comment: "My municipality should join HSL in the next electoral term. At the same time, it should improve internal transportation and shorten train intervals to 15 minutes."
+Category: General Questions
+Question: "Participatory budgeting should be used more often in my municipality."
+Answer: Completely agree
+Category: General Questions
+Question: "My wellbeing services county should offer more digital services and fewer local services."
+Answer: Neither agree nor disagree
+Comment: "Long waiting times for treatment increase costs when diagnosis is delayed. To reduce queues and in the initial stages of diagnosis, digital doctor services should be utilized to identify patients who need immediate care or various examinations or services before seeing a physical doctor or accessing treatment."
+Category: General Questions
+Question: "School violence should be addressed by the police rather than social services in comprehensive schools."
+Answer: Neither agree nor disagree
+Comment: "Preventing bullying should be everyone's concern. Schools should have diverse and up-to-date methods to immediately stop all forms of bullying and intervene early. Police involvement should be an option, but only when school measures are no longer sufficient. Bullying that occurs during free time should also be addressed immediately, and its possible existence should be considered in school work."
+Category: General Questions
+Question: "Selling municipally owned companies is a good way to balance municipal finances."
+Answer: Slightly disagree
+Comment: " It depends on whether it concerns critical infrastructure."
+Category: General Questions
+Question: "Public food services, such as school meals and hospitals, should not eliminate meat from the menu."
+Answer: Slightly agree

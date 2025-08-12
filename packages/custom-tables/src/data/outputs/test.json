@@ -1,0 +1,83 @@
+{
+  "reasoning": "The categories have been defined based on the candidates' responses and comments, focusing on specific issues that reflect their positions and the nuances of their responses. Each category highlights a particular aspect of municipal policy or social issues, differentiating candidates effectively based on their stated opinions.",
+  "categories": [
+    {
+      "label": "Youth Representation in Decision-Making",
+      "description": "Candidates' positions on the right of youth councils to participate in decision-making processes.",
+      "alternatives": [
+        "Completely Agree",
+        "Agree",
+        "Slightly Agree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Support for Young Adults’ Employment",
+      "description": "Candidates' views on prioritizing employment support for young adults over other populations.",
+      "alternatives": [
+        "Completely Agree",
+        "Agree",
+        "Slightly Agree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Municipal Tax and Financial Strategies",
+      "description": "Candidates' preferences for balancing municipal finances through taxation versus budget cuts.",
+      "alternatives": [
+        "Completely Agree (Increase Taxes)",
+        "Slightly Agree",
+        "Neither Agree nor Disagree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Access to Affordable Housing",
+      "description": "Candidates' positions on ensuring affordable housing for low-income individuals.",
+      "alternatives": [
+        "Completely Agree",
+        "Agree",
+        "Slightly Agree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    },
+    {
+      "label": "Environmental Initiatives and Carbon Neutrality",
+      "description": "Candidates' commitment to achieving carbon neutrality and supporting environmental initiatives.",
+      "alternatives": [
+        "Completely Agree",
+        "Agree",
+        "Slightly Agree",
+        "Slightly Disagree",
+        "Completely Disagree"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 1": {
+      "Youth Representation in Decision-Making": "Completely Agree",
+      "Support for Young Adults’ Employment": "Slightly Agree",
+      "Municipal Tax and Financial Strategies": "Slightly Agree",
+      "Access to Affordable Housing": "Slightly Agree",
+      "Environmental Initiatives and Carbon Neutrality": "Completely Agree"
+    },
+    "Candidate 2": {
+      "Youth Representation in Decision-Making": "Completely Agree",
+      "Support for Young Adults’ Employment": "Completely Agree",
+      "Municipal Tax and Financial Strategies": "Completely Disagree",
+      "Access to Affordable Housing": "Slightly Agree",
+      "Environmental Initiatives and Carbon Neutrality": "Slightly Agree"
+    },
+    "Candidate 3": {
+      "Youth Representation in Decision-Making": "Completely Agree",
+      "Support for Young Adults’ Employment": "Slightly Agree",
+      "Municipal Tax and Financial Strategies": "Slightly Disagree",
+      "Access to Affordable Housing": "Completely Agree",
+      "Environmental Initiatives and Carbon Neutrality": "Slightly Agree"
+    }
+  }
+}

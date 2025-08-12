@@ -1,0 +1,53 @@
+{
+  "reasoning": "Analyzing the candidates' stances, I have identified five specific categories that best differentiate their positions: Youth Influence in Decision-Making, Municipal Taxation Approach, Affordable Housing Initiatives, Public Transport vs. Car Dependency, and Approach to Public Food Services. These categories capture actionable policy differences and reflect nuanced stances rather than broad topics.",
+  "categories": [
+    {
+      "label": "Youth Influence in Decision-Making",
+      "description": "Candidates' support for youth councils having a voice in decision-making related to young people.",
+      "alternatives": ["Strong Support", "Moderate Support"]
+    },
+    {
+      "label": "Municipal Taxation Approach",
+      "description": "Candidates' approach to balancing municipal finances via tax rates or budget cuts.",
+      "alternatives": ["Increase Taxes", "Cut Spending", "Neutral"]
+    },
+    {
+      "label": "Affordable Housing Initiatives",
+      "description": "Commitment to ensuring affordable housing for low-income individuals.",
+      "alternatives": ["Strong Commitment", "Moderate Commitment"]
+    },
+    {
+      "label": "Public Transport vs. Car Dependency",
+      "description": "Preference for cars or public transport, cycling, and walking within municipalities.",
+      "alternatives": ["Promote Public Transport", "Balance Both", "Promote Cars"]
+    },
+    {
+      "label": "Approach to Public Food Services",
+      "description": "Position on the inclusion of meat in public food services.",
+      "alternatives": ["Reduce Meat", "Maintain Meat Options"]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 1": {
+      "Youth Influence in Decision-Making": "Strong Support",
+      "Municipal Taxation Approach": "Increase Taxes",
+      "Affordable Housing Initiatives": "Moderate Commitment",
+      "Public Transport vs. Car Dependency": "Promote Public Transport",
+      "Approach to Public Food Services": "Reduce Meat"
+    },
+    "Candidate 2": {
+      "Youth Influence in Decision-Making": "Strong Support",
+      "Municipal Taxation Approach": "Cut Spending",
+      "Affordable Housing Initiatives": "Moderate Commitment",
+      "Public Transport vs. Car Dependency": "Promote Cars",
+      "Approach to Public Food Services": "Maintain Meat Options"
+    },
+    "Candidate 3": {
+      "Youth Influence in Decision-Making": "Strong Support",
+      "Municipal Taxation Approach": "Neutral",
+      "Affordable Housing Initiatives": "Strong Commitment",
+      "Public Transport vs. Car Dependency": "Balance Both",
+      "Approach to Public Food Services": "Maintain Meat Options"
+    }
+  }
+}
