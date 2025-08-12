@@ -19,7 +19,7 @@ import type {
 /**
  * The abstract base class that all universal `DataWriter`s should extend.
  *
- * The subclasses must implement the protected `_foo` methods paired with each public `Foo` method. The implementations may freely throw errors.
+ * The subclasses must implement the protected methods. The implementations may freely throw errors.
  */
 export abstract class UniversalDataWriter extends UniversalAdapter implements DataWriter {
   ////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       }),
-      this._logout(opts)
+      this.backendLogout(opts)
     ]);
     if (clientResult.ok && backendResult.type === 'success') return backendResult;
     else
@@ -129,6 +129,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         clientResult,
         backendResult
       };
+  }
+
+  async backendLogout(opts: WithAuth): DWReturnType<DataApiActionResult> {
+    return this._logout(opts);
   }
 
   getBasicUserData(opts: WithAuth): DWReturnType<BasicUserData> {

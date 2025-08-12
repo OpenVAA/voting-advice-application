@@ -238,7 +238,16 @@ export type StrapiUserProperties = {
   email: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: StrapiSingleRelation<StrapiRoleData>;
 };
+
+export type StrapiRoleData = StrapiObject<{
+  name: StrapiRoleName;
+  description: string;
+  type: StrapiRoleName;
+}>;
+
+export type StrapiRoleName = 'authenticated' | 'public' | 'admin';
 
 export type StrapiBasicUserData = StrapiObject<StrapiUserProperties>;
 
