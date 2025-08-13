@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Tables Visualization</title>
+    <style>
+      :root {
+        --border: #e5e7eb;
+        --bg: #ffffff;
+        --bg-alt: #f9fafb;
+        --text: #111827;
+        --muted: #6b7280;
+        --sticky-bg: #f3f4f6;
+      }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; padding: 16px; color: var(--text); background: var(--bg); }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 18px; margin: 0; }
+      h2.section-title { font-size: 14px; margin: 14px 0 8px; color: var(--muted); font-weight: 600; }
+      .controls { display: flex; gap: 8px; }
+      button { border: 1px solid var(--border); background: var(--bg); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      button:hover { background: var(--bg-alt); }
+      details { margin-bottom: 12px; }
+      summary { cursor: pointer; color: var(--muted); }
+      .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+      table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      thead th { position: sticky; top: 0; background: var(--sticky-bg); z-index: 1; text-align: left; font-weight: 600; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; vertical-align: top; white-space: nowrap; }
+      tbody tr:nth-child(odd) { background: var(--bg-alt); }
+      .sticky-col { position: sticky; left: 0; background: var(--sticky-bg); z-index: 2; min-width: 240px; max-width: 480px; }
+      .category .label { font-weight: 600; }
+      .category .description { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
+      .cell-wrap { position: relative; padding-right: 18px; }
+      .excerpts { margin: 0; padding-left: 16px; white-space: normal; }
+      .confidence-dot { position: absolute; right: 4px; bottom: 4px; width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      .confidence-dot.low { background-color: #ef4444; }
+      .confidence-dot.medium { background-color: #f59e0b; }
+      .confidence-dot.high { background-color: #10b981; }
+      footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    </style>
+    <script>
+      function exportTableToCSV() {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        const csv = rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+          // Escape quotes and commas
+          const text = cell.innerText.replace(/"/g, '""');
+          return '"' + text + '"';
+        }).join(',')).join('
+');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'table.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Custom Tables Visualization</h1>
+      <div class="controls">
+        <button onclick="exportTableToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+    <details><summary>Reasoning</summary><div style="margin-top:8px; white-space: pre-wrap;">I selected five categories that highlight nuanced policy differences among the candidates. These categories focus on specific municipal policies and societal issues that have clear distinctions in candidate responses, such as the approach to youth engagement, taxation, forest conservation, services in English, and housing affordability. The alternatives for each category were derived from patterns in the candidates&#039; responses to related questions. Excerpts were chosen to directly support the assigned positions, reflecting the candidates&#039; comments and formal responses. The confidence scores indicate how strongly the excerpts align with the assigned positions.</div></details>
+    <div class="table-wrapper">
+      <table>
+        
+    <thead>
+      <tr>
+        <th class="sticky-col">Theme</th>
+        <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+      </tr>
+    </thead>
+        
+    <tbody>
+      
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; support for youth councils having the right to speak and be present in municipal decision-making processes.">
+                <div class="category">
+                  <div class="label">Youth Engagement in Decision-Making</div>
+                  <div class="description">Candidates&#039; support for youth councils having the right to speak and be present in municipal decision-making processes.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Strongly Support</td><td>Strongly Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Preference for methods to balance municipal budgets, focusing on tax increases versus budget cuts.">
+                <div class="category">
+                  <div class="label">Balancing Municipal Finances</div>
+                  <div class="description">Preference for methods to balance municipal budgets, focusing on tax increases versus budget cuts.</div>
+                </div>
+              </td>
+              <td>Favor Tax Increases</td><td>Favor Budget Cuts</td><td>Balanced Approach</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Support for increasing municipal investment in forest conservation.">
+                <div class="category">
+                  <div class="label">Forest Conservation Investment</div>
+                  <div class="description">Support for increasing municipal investment in forest conservation.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Neutral</td><td>Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Support for offering municipal services in English in addition to the official languages.">
+                <div class="category">
+                  <div class="label">Municipal Services Offered in English</div>
+                  <div class="description">Support for offering municipal services in English in addition to the official languages.</div>
+                </div>
+              </td>
+              <td>Strongly Support</td><td>Support</td><td>Support</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Support for guaranteeing access to affordable housing for low-income individuals, such as students.">
+                <div class="category">
+                  <div class="label">Affordable Housing Access</div>
+                  <div class="description">Support for guaranteeing access to affordable housing for low-income individuals, such as students.</div>
+                </div>
+              </td>
+              <td>Support</td><td>Support</td><td>Strongly Support</td>
+            </tr>
+    </tbody>
+      </table>
+    </div>
+    
+      <h2 class="section-title">Supporting excerpts and confidence</h2>
+      <div class="table-wrapper">
+        <table>
+          
+      <thead>
+        <tr>
+          <th class="sticky-col">Evidence</th>
+          <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+        </tr>
+      </thead>
+          
+      <tbody>
+        
+              <tr>
+                <td class="sticky-col" title="Candidates&#039; support for youth councils having the right to speak and be present in municipal decision-making processes.">
+                  <div class="category">
+                    <div class="label">Youth Engagement in Decision-Making</div>
+                    <div class="description">Candidates&#039; support for youth councils having the right to speak and be present in municipal decision-making processes.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Tämä nyt on vähintä, mitä kunta voi nuorten eteen tehdä. Onneksi meillä Imatralla näin toimitaankin jo.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Itsekin toisen kauden nuorisovaltuutettuna minun on mahdotonta vastata mitään muuta kuin ehdoton kyllä.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>The youth representative, with their right to speak and be present, has been an important part of the decision-making process in all of them.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Preference for methods to balance municipal budgets, focusing on tax increases versus budget cuts.">
+                  <div class="category">
+                    <div class="label">Balancing Municipal Finances</div>
+                    <div class="description">Preference for methods to balance municipal budgets, focusing on tax increases versus budget cuts.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Jos tarve on suuri, on voitava harkita myös maltillisia verojen korotuksia.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Talouden elinvoimaisuus lähtee kuluttamisesta, ja veronkorotuksilla viedään suoraan rahaa pois kuluttajalta.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.90 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>The overall tax rate in Finland for middle-income earners is among the highest in Europe. As a starting point, it is necessary to first examine which functions could be streamlined.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.80 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Support for increasing municipal investment in forest conservation.">
+                  <div class="category">
+                    <div class="label">Forest Conservation Investment</div>
+                    <div class="description">Support for increasing municipal investment in forest conservation.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Lähimetsät ovat myös tärkeitä ihmisten terveydelle ja hyvinvoinnille sekä luonnon monimuotoisuudelle. Ne pitää siis ehdottomasti säästää hakkuilta ja rakentamiselta.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>En näe ongelmaa kovinkaan suurena. Oulusta löytyy (lähes luonnonvaraisia) metsiä edelleen varsin paljon.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.75 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      —
+                      <span class="confidence-dot high" title="Confidence: 0.70 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Support for offering municipal services in English in addition to the official languages.">
+                  <div class="category">
+                    <div class="label">Municipal Services Offered in English</div>
+                    <div class="description">Support for offering municipal services in English in addition to the official languages.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Meillä on paljon ihmisiä, joille asiointi olisi paljon helpompaa englanniksi.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.90 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Kielimuuri ei saa estää palvelujen saantia, ja englannin osaaminen tulisi olla pakollinen vaatimus julkisen sektorin palveluissa työskenteleville.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      —
+                      <span class="confidence-dot high" title="Confidence: 0.70 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Support for guaranteeing access to affordable housing for low-income individuals, such as students.">
+                  <div class="category">
+                    <div class="label">Affordable Housing Access</div>
+                    <div class="description">Support for guaranteeing access to affordable housing for low-income individuals, such as students.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Koska valtio on nyt kurittanut etenkin pienituloisia, kuntien pitäisi tulla vastaan ja auttaa mm. tarjoamalla kohtuhintaisia asuntoja.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.80 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>En näe mitään haittoja siinä, että kunta osallistuisi myös asuntojen tarjoamiseen.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.80 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      —
+                      <span class="confidence-dot high" title="Confidence: 0.75 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+      </tbody>
+        </table>
+      </div>
+    <footer>
+      Generated at 8/13/2025, 2:37:56 PM
+    </footer>
+  </body>
+  </html>

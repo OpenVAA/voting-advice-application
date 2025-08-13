@@ -1,0 +1,162 @@
+{
+  "reasoning": "I selected five categories that highlight nuanced policy differences among the candidates. These categories focus on specific municipal policies and societal issues that have clear distinctions in candidate responses, such as the approach to youth engagement, taxation, forest conservation, services in English, and housing affordability. The alternatives for each category were derived from patterns in the candidates' responses to related questions. Excerpts were chosen to directly support the assigned positions, reflecting the candidates' comments and formal responses. The confidence scores indicate how strongly the excerpts align with the assigned positions.",
+  "categories": [
+    {
+      "label": "Youth Engagement in Decision-Making",
+      "description": "Candidates' support for youth councils having the right to speak and be present in municipal decision-making processes.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Oppose",
+        "Neutral"
+      ]
+    },
+    {
+      "label": "Balancing Municipal Finances",
+      "description": "Preference for methods to balance municipal budgets, focusing on tax increases versus budget cuts.",
+      "alternatives": [
+        "Favor Tax Increases",
+        "Favor Budget Cuts",
+        "Balanced Approach",
+        "No Preference"
+      ]
+    },
+    {
+      "label": "Forest Conservation Investment",
+      "description": "Support for increasing municipal investment in forest conservation.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Oppose",
+        "Neutral"
+      ]
+    },
+    {
+      "label": "Municipal Services Offered in English",
+      "description": "Support for offering municipal services in English in addition to the official languages.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Oppose",
+        "Neutral"
+      ]
+    },
+    {
+      "label": "Affordable Housing Access",
+      "description": "Support for guaranteeing access to affordable housing for low-income individuals, such as students.",
+      "alternatives": [
+        "Strongly Support",
+        "Support",
+        "Oppose",
+        "Neutral"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 2253": {
+      "Youth Engagement in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Tämä nyt on vähintä, mitä kunta voi nuorten eteen tehdä. Onneksi meillä Imatralla näin toimitaankin jo."
+        ],
+        "confidence": 0.95
+      },
+      "Balancing Municipal Finances": {
+        "position": "Favor Tax Increases",
+        "supporting_excerpts": [
+          "Jos tarve on suuri, on voitava harkita myös maltillisia verojen korotuksia."
+        ],
+        "confidence": 0.85
+      },
+      "Forest Conservation Investment": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Lähimetsät ovat myös tärkeitä ihmisten terveydelle ja hyvinvoinnille sekä luonnon monimuotoisuudelle. Ne pitää siis ehdottomasti säästää hakkuilta ja rakentamiselta."
+        ],
+        "confidence": 0.95
+      },
+      "Municipal Services Offered in English": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Meillä on paljon ihmisiä, joille asiointi olisi paljon helpompaa englanniksi."
+        ],
+        "confidence": 0.9
+      },
+      "Affordable Housing Access": {
+        "position": "Support",
+        "supporting_excerpts": [
+          "Koska valtio on nyt kurittanut etenkin pienituloisia, kuntien pitäisi tulla vastaan ja auttaa mm. tarjoamalla kohtuhintaisia asuntoja."
+        ],
+        "confidence": 0.8
+      }
+    },
+    "Candidate 52": {
+      "Youth Engagement in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Itsekin toisen kauden nuorisovaltuutettuna minun on mahdotonta vastata mitään muuta kuin ehdoton kyllä."
+        ],
+        "confidence": 0.95
+      },
+      "Balancing Municipal Finances": {
+        "position": "Favor Budget Cuts",
+        "supporting_excerpts": [
+          "Talouden elinvoimaisuus lähtee kuluttamisesta, ja veronkorotuksilla viedään suoraan rahaa pois kuluttajalta."
+        ],
+        "confidence": 0.9
+      },
+      "Forest Conservation Investment": {
+        "position": "Neutral",
+        "supporting_excerpts": [
+          "En näe ongelmaa kovinkaan suurena. Oulusta löytyy (lähes luonnonvaraisia) metsiä edelleen varsin paljon."
+        ],
+        "confidence": 0.75
+      },
+      "Municipal Services Offered in English": {
+        "position": "Support",
+        "supporting_excerpts": [
+          "Kielimuuri ei saa estää palvelujen saantia, ja englannin osaaminen tulisi olla pakollinen vaatimus julkisen sektorin palveluissa työskenteleville."
+        ],
+        "confidence": 0.85
+      },
+      "Affordable Housing Access": {
+        "position": "Support",
+        "supporting_excerpts": [
+          "En näe mitään haittoja siinä, että kunta osallistuisi myös asuntojen tarjoamiseen."
+        ],
+        "confidence": 0.8
+      }
+    },
+    "Candidate 5136": {
+      "Youth Engagement in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "The youth representative, with their right to speak and be present, has been an important part of the decision-making process in all of them."
+        ],
+        "confidence": 0.95
+      },
+      "Balancing Municipal Finances": {
+        "position": "Balanced Approach",
+        "supporting_excerpts": [
+          "The overall tax rate in Finland for middle-income earners is among the highest in Europe. As a starting point, it is necessary to first examine which functions could be streamlined."
+        ],
+        "confidence": 0.8
+      },
+      "Forest Conservation Investment": {
+        "position": "Support",
+        "supporting_excerpts": [],
+        "confidence": 0.7
+      },
+      "Municipal Services Offered in English": {
+        "position": "Support",
+        "supporting_excerpts": [],
+        "confidence": 0.7
+      },
+      "Affordable Housing Access": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [],
+        "confidence": 0.75
+      }
+    }
+  }
+}

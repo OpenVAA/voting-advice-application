@@ -41,8 +41,16 @@ export function generateVisualizationHTML({ data }: { data: TableJsonMinimal | T
           const categoryDescription = escapeHtml({ value: category.description ?? '' });
           const rowCells = candidates
             .map((candidate) => {
-              const value = data.candidate_positions?.[candidate]?.[category.label] ?? '—';
-              return `<td>${escapeHtml({ value: String(value) })}</td>`;
+              const raw = (data.candidate_positions as Record<string, Record<string, unknown>> | undefined)?.[
+                candidate
+              ]?.[category.label];
+              let display = '—';
+              if (raw && typeof raw === 'object' && 'position' in raw) {
+                display = String((raw as { position: string }).position);
+              } else if (typeof raw === 'string') {
+                display = raw;
+              }
+              return `<td>${escapeHtml({ value: display })}</td>`;
             })
             .join('');
           return `
