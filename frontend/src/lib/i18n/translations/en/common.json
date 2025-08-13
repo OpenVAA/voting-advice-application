@@ -29,6 +29,8 @@
     "faction": "Election Symbol",
     "organization": "Election Symbol"
   },
+  "email": "Email",
+  "emailPlaceholder": "Email",
   "expandOrCollapse": "Expand or collapse this section",
   "faction": {
     "plural": "factions",

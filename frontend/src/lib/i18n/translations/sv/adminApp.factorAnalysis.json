@@ -1,0 +1,20 @@
+{
+  "title": "Faktoranalys",
+  "description": "Analysera och hantera faktorer för valfrågorna.",
+  "compute": {
+    "title": "Beräkna faktorer",
+    "description": "Beräkna latenta faktorer från svaren som kandidater och partier gett.",
+    "selectElections": "Välj valomgångar för vilka du vill beräkna faktorer.",
+    "button": "Beräkna faktorer",
+    "buttonLoading": "Beräknar faktorer...",
+    "mayTakeTime": "Detta kan ta en stund.",
+    "noElections": "Inga val tillgängliga",
+    "candidates": "kandidater",
+    "parties": {
+      "some": "och {count} partier",
+      "none": "och inga partier"
+    },
+    "haveAnswered": "har svarat",
+    "error": "Misslyckades med att beräkna faktorer"
+  }
+}

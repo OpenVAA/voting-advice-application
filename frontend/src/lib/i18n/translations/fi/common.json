@@ -29,6 +29,8 @@
     "faction": "Vaalisymboli",
     "organization": "Vaalisymboli"
   },
+  "email": "Sähköposti",
+  "emailPlaceholder": "Sähköposti",
   "expandOrCollapse": "Laajenna tai pienennä tämä sisältö",
   "faction": {
     "plural": "ryhmittymät",

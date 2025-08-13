@@ -69,9 +69,9 @@ Shows a form with which to request a password reset email.
       type="email"
       name="email"
       id="email"
-      aria-label={$t('candidateApp.common.emailPlaceholder')}
+      aria-label={$t('common.emailPlaceholder')}
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.common.emailPlaceholder')}
+      placeholder={$t('common.emailPlaceholder')}
       bind:value={email}
       required />
 
