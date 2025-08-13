@@ -31,11 +31,18 @@ Displays a warning if the selected constituency does not have nominations in all
 
   const { dataRoot, getRoute, nominationsAvailable, selectedElections, t } = getVoterContext();
 
+  /**
+   * The time to wait before a retry if some nominations seem to be missing
+   */
+  const NOMINATIONS_CHECK_RETRY_TIMEOUT = 500;
+
+  type NominationStatus = 'all' | 'none' | 'some';
+
   let error: Error | undefined;
   let closeModal: () => void;
   let openModal: () => void;
   let ready: boolean;
-  let hasNominations: 'all' | 'none' | 'some';
+  let hasNominations: NominationStatus;
   $: {
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
@@ -62,11 +69,22 @@ Displays a warning if the selected constituency does not have nominations in all
     });
     // Allow time for the nominationsAvailable store to be updated, which may be delayed on some browsers
     await tick();
-    if (Object.values($nominationsAvailable).every(Boolean)) hasNominations = 'all';
-    else if (Object.values($nominationsAvailable).some(Boolean)) hasNominations = 'some';
-    else hasNominations = 'none';
+    let hasNominationsResult = checkNominationsAvailable();
+    // If some or all nominations seem to be missing, wait a bit for the stores to update
+    // TODO[Svelte 5]: Check if necessary
+    if (hasNominationsResult !== 'all') {
+      await new Promise((resolve) => setTimeout(resolve, NOMINATIONS_CHECK_RETRY_TIMEOUT));
+      hasNominationsResult = checkNominationsAvailable();
+    }
+    hasNominations = hasNominationsResult;
     if (hasNominations !== 'all') openModal?.();
     ready = true;
+  }
+
+  function checkNominationsAvailable(): NominationStatus {
+    if (Object.values($nominationsAvailable).every(Boolean)) return 'all';
+    else if (Object.values($nominationsAvailable).some(Boolean)) return 'some';
+    return 'none';
   }
 </script>
 
