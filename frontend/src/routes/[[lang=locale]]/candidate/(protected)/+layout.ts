@@ -38,11 +38,13 @@ export async function load({ fetch, parent, params: { lang } }) {
   });
   if (!userData) return await handleError('loginFailed');
 
-  // Check that the data is valid
+  // Check that the data is valid and the user is a candidate
   const {
+    user: { role },
     candidate,
     nominations: { nominations }
   } = userData;
+  if (role !== 'candidate') return await handleError('userNotAuthorized');
   if (!candidate) return await handleError('userNoCandidate');
 
   // Parse the election and constituency ids
