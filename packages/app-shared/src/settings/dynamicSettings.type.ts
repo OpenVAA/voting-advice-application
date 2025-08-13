@@ -225,6 +225,10 @@ export type DynamicSettings = {
      */
     voterApp: boolean;
     /**
+     * If `true`, the Admin App can be accessed.
+     */
+    adminApp: boolean;
+    /**
      * If `true`, an under maintenance error page will be shown.
      */
     underMaintenance?: boolean;

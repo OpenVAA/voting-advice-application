@@ -66,6 +66,9 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;
 
+  /**
+   * Clear the OIDC ID token.
+   */
   clearIdToken: () => DWReturnType<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////

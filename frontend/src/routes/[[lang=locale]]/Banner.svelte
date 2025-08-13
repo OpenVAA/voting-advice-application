@@ -17,7 +17,8 @@ Accesses `AppContext` and optionally `VoterContext`.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { LogoutButton } from '$candidate/components/logoutButton';
+  import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
+  import { LogoutButton as AdminLogoutButton } from '$lib/dynamic-components/logoutButton';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -47,8 +48,12 @@ Accesses `AppContext` and optionally `VoterContext`.
       text={$videoMode === 'video' ? $t('components.video.showTranscript') : $t('components.video.showVideo')} />
   {/if}
 
-  {#if $topBarSettings.actions.logout == 'show' && $appType === 'candidate' && $page.data.token}
-    <LogoutButton variant="icon" />
+  {#if $topBarSettings.actions.logout == 'show' && $page.data.token}
+    {#if $appType === 'candidate'}
+      <CandidateLogoutButton variant="icon" />
+    {:else if $appType === 'admin'}
+      <AdminLogoutButton variant="icon" redirectTo="AdminAppLogin" />
+    {/if}
   {/if}
 
   {#if $topBarSettings.actions.feedback === 'show'}
