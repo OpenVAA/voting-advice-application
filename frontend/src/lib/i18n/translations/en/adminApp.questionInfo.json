@@ -1,0 +1,25 @@
+{
+  "title": "Question Info Generation",
+  "description": "Generate and manage information for election questions.",
+  "pageDescription": "Generate or edit the background information for questions.",
+  "generate": {
+    "title": "Generate info",
+    "description": "Generate the information overwriting any infos generated earlier.",
+    "questionType": "Select questions to generate info for",
+    "allQuestions": "All questions",
+    "selectedQuestions": "Selected questions",
+    "selectButton": "Select...",
+    "button": "Generate infos",
+    "buttonLoading": "Generating infos...",
+    "mayTakeTime": "This may take some time.",
+    "error": "Failed to generate info",
+    "noQuestionSelected": "Please select at least one question"
+  },
+  "edit": {
+    "title": "Edit infos",
+    "description": "Edit the existing information. You can either edit it directly using a JSON editor or download it as CSV and then upload the edited information.",
+    "editButton": "Edit the information",
+    "downloadButton": "Download the information as CSV",
+    "uploadButton": "Upload the information you have edited as CSV"
+  }
+}

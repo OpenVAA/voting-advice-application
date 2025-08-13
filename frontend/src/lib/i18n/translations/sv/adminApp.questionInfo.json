@@ -1,0 +1,25 @@
+{
+  "title": "Frågeinfogenerering",
+  "description": "Generera och hantera information för valfrågor.",
+  "pageDescription": "Generera eller redigera bakgrundsinformation för frågor.",
+  "generate": {
+    "title": "Generera info",
+    "description": "Generera information som skriver över tidigare genererad information.",
+    "questionType": "Välj frågor att generera information för",
+    "allQuestions": "Alla frågor",
+    "selectedQuestions": "Valda frågor",
+    "selectButton": "Välj...",
+    "button": "Generera information",
+    "buttonLoading": "Genererar information...",
+    "mayTakeTime": "Detta kan ta en stund.",
+    "error": "Misslyckades med att generera information",
+    "noQuestionSelected": "Välj minst en fråga"
+  },
+  "edit": {
+    "title": "Redigera information",
+    "description": "Redigera befintlig information. Du kan antingen redigera den direkt med en JSON-editor eller ladda ner den som CSV och sedan ladda upp den redigerade informationen.",
+    "editButton": "Redigera informationen",
+    "downloadButton": "Ladda ner informationen som CSV",
+    "uploadButton": "Ladda upp den redigerade informationen som CSV"
+  }
+}
