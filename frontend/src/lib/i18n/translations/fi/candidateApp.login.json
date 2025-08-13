@@ -3,6 +3,5 @@
   "forgotPassword": "Unohditko salasanan?",
   "title": "Kirjaudu",
   "unknownError": "Käyttäjätietojesi haku ei onnistunut. Ole hyvä ja ota yhteyttä tukeen, jos virhe toistuu.",
-  "wrongEmailOrPassword": "Väärä sähköposti tai salasana",
   "answersLockedInfo": "Rekisteröityminen tai vastausten muokkaaminen ei enää ole mahdollista, mutta voit silti kirjautua sisään nähdäksesi omat tietosi."
 }
