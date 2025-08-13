@@ -25,7 +25,7 @@
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { getErrorTranslationKey } from '$candidate/utils/loginError';
+  import { getErrorTranslationKey, type CandidateLoginError } from '$candidate/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -47,7 +47,7 @@
   // Handle form and error messages
   ////////////////////////////////////////////////////////////////////
 
-  const errorParam = $page.url.searchParams.get('errorMessage');
+  const errorParam = $page.url.searchParams.get('errorMessage') as CandidateLoginError | null;
   const redirectTo = $page.url.searchParams.get('redirectTo');
 
   let canSubmit: boolean;
@@ -132,7 +132,7 @@
           status = 'error';
           errorMessage =
             result.status === 400
-              ? $t('candidateApp.login.wrongEmailOrPassword')
+              ? $t('error.wrongEmailOrPassword')
               : result.status === 403
                 ? $t('error.403')
                 : $t('candidateApp.login.unknownError');
@@ -151,7 +151,7 @@
               : $t('candidateApp.login.enterEmailAndPassword')}
           </p>
         {/if}
-        <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
+        <label for="email" class="hidden">{$t('common.email')}</label>
         <input hidden name="redirectTo" value={redirectTo} />
         <input
           type="email"
@@ -160,7 +160,7 @@
           bind:this={emailInput}
           bind:value={email}
           class="input mb-md w-full max-w-md"
-          placeholder={$t('candidateApp.common.emailPlaceholder')}
+          placeholder={$t('common.emailPlaceholder')}
           autocomplete="email"
           required />
         <div class="mb-md w-full max-w-md">
