@@ -249,7 +249,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     {options[0].label}
   </div>
 {:else if autocomplete === 'on'}
-  <div class="relative w-full max-w-md place-self-center" on:focusout={handleFocusOut}>
+  <div class="w-full max-w-md place-self-center" on:focusout={handleFocusOut}>
     <input
       {...concatClass($$restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
@@ -265,35 +265,37 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
       aria-expanded={isOptionListOpen}
       aria-activedescendant={focusIndex >= 0 ? `option-${focusIndex}-${id}` : ''} />
     {#if isOptionListOpen}
-      <ul
-        id="menu-{id}"
-        role="listbox"
-        class="menu absolute z-10 mb-xl w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
-          ? 'bg-base-100'
-          : 'bg-base-300'}">
-        {#each filteredOptions as option, optionIndex}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- tabindex is necessary for the parents on:focusout to be able to detect focus held by the li element -->
-          <li
-            id="option-{optionIndex}-{id}"
-            class="cursor-pointer rounded-lg"
-            role="option"
-            tabindex="0"
-            aria-selected={option.id === selected}
-            on:click={() => handleSelect(option)}>
-            <span
-              class={optionIndex === focusIndex
-                ? 'bg-neutral/10 !outline !outline-2 !outline-offset-0 !outline-neutral'
-                : ''}>
-              {option.label}
-            </span>
-          </li>
-        {:else}
-          <li class="pointer-events-none rounded-lg text-secondary">
-            <span>{$t('components.select.noMatchingOptions')}</span>
-          </li>
-        {/each}
-      </ul>
+      <div class="relative">
+        <ul
+          id="menu-{id}"
+          role="listbox"
+          class="menu absolute left-0 top-6 z-10 mb-xl w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
+            ? 'bg-base-100'
+            : 'bg-base-300'}">
+          {#each filteredOptions as option, optionIndex}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- tabindex is necessary for the parents on:focusout to be able to detect focus held by the li element -->
+            <li
+              id="option-{optionIndex}-{id}"
+              class="cursor-pointer rounded-lg"
+              role="option"
+              tabindex="0"
+              aria-selected={option.id === selected}
+              on:click={() => handleSelect(option)}>
+              <span
+                class={optionIndex === focusIndex
+                  ? 'bg-neutral/10 !outline !outline-2 !outline-offset-0 !outline-neutral'
+                  : ''}>
+                {option.label}
+              </span>
+            </li>
+          {:else}
+            <li class="pointer-events-none rounded-lg text-secondary">
+              <span>{$t('components.select.noMatchingOptions')}</span>
+            </li>
+          {/each}
+        </ul>
+      </div>
     {/if}
   </div>
 {:else}

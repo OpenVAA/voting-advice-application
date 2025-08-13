@@ -12,7 +12,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `selected`: Bindable value for the `Id`s of the selected `Constituency`s organized by `Election`.
-- `useSingleGroup`: If specified, the only this group is offered for selection and the `Constituency`s for the `Election`s are implied from this one. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
+- `useSingleGroup`: If specified, only this group is offered for selection and the `Constituency`s for the `Election`s are implied from this one. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
 - `selectionComplete`: A utility bindable value which is `true` when a selection has been made for each `Election` or for the single group if `useSingleGroup` is set.
 - `onChange`: Callback triggered when the selection changes.
 - Any valid attributes of a `<div>` element.
@@ -28,12 +28,13 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 -->
 
 <script lang="ts">
-  import { type Constituency, ConstituencyGroup, Election } from '@openvaa/data';
+  import { type Constituency, Election } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { SingleGroupConstituencySelector } from '.';
   import type { Id } from '@openvaa/core';
+  import type { ConstituencyGroup } from '@openvaa/data';
   import type { ConstituencySelectorProps } from './ConstituencySelector.type';
 
   type $$Props = ConstituencySelectorProps;
@@ -95,35 +96,30 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
     } else {
       // Build sections with applicable elections and constituency groups
       // Pre-select the selected constituencies for each section
-      sections = [];
       const root = elections[0].root;
       const allMaybeCombined = root.getCombinedElections(elections);
-      for (let i = 0; i < allMaybeCombined.length; i++) {
-        const maybeCombined = allMaybeCombined[i];
-        // Parse maybeCombined and pre-select combined item
-        if (maybeCombined instanceof Election) {
-          sections.push({
-            applicableElections: [maybeCombined],
-            groups: maybeCombined.constituencyGroups,
-            selectedId: selected?.[maybeCombined.id] ?? ''
-          });
-          continue;
-        }
-        if (maybeCombined?.type === 'combined') {
-          const { elections, constituencyGroup } = maybeCombined;
+
+      sections = allMaybeCombined.flatMap((el) => {
+        if (el instanceof Election) {
+          return {
+            applicableElections: [el],
+            groups: el.constituencyGroups,
+            selectedId: selected?.[el.id] ?? ''
+          };
+        } else {
+          const { elections, constituencyGroup } = el;
           if (elections?.length && constituencyGroup) {
             // If a constituency in this combined item is to be selected, it has to be one in the last, i.e., child election
             const childElection = elections[elections.length - 1];
-            sections.push({
+            return {
               applicableElections: elections,
               groups: [constituencyGroup],
               selectedId: selected?.[childElection.id] ?? ''
-            });
-            continue;
+            };
           }
+          return [];
         }
-        error(500, `Invalid combined item: ${JSON.stringify(maybeCombined)}`);
-      }
+      });
     }
   }
 
