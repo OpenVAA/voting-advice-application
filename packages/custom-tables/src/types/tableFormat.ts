@@ -1,6 +1,6 @@
 import type { LLMResponseContract } from '@openvaa/llm';
 
-export const TABLE_JSON_FORMAT_NO_EVICENCE: LLMResponseContract<{
+export const TABLE_JSON_MINIMAL: LLMResponseContract<{
   reasoning: string;
   categories: Array<{
     label: string;
@@ -50,7 +50,7 @@ export const TABLE_JSON_FORMAT_NO_EVICENCE: LLMResponseContract<{
   }
 };
 
-export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
+export const TABLE_JSON_WITH_CONFIDENCE: LLMResponseContract<{
   reasoning: string;
   categories: Array<{
     label: string;
@@ -62,6 +62,7 @@ export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
       [category: string]: {
         position: string;
         supporting_excerpts: Array<string>;
+        confidence: number;
       };
     };
   };
@@ -80,6 +81,7 @@ export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
         [category: string]: {
           position: string;
           supporting_excerpts: Array<string>;
+          confidence: number;
         };
       };
     };
@@ -96,6 +98,7 @@ export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
           [category: string]: {
             position: string;
             supporting_excerpts: Array<string>;
+            confidence: number;
           };
         };
       };
@@ -104,11 +107,7 @@ export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
     const isCategoriesValid =
       Array.isArray(r?.categories) &&
       r.categories.every(
-        (category: {
-          label: string;
-          description: string;
-          alternatives: Array<string>;
-        }) =>
+        (category: { label: string; description: string; alternatives: Array<string> }) =>
           category &&
           typeof category === 'object' &&
           typeof category.label === 'string' &&
@@ -122,44 +121,49 @@ export const TABLE_JSON_FORMAT_WITH_EVICENCE: LLMResponseContract<{
       typeof r.candidate_positions === 'object' &&
       r.candidate_positions !== null &&
       Object.keys(r.candidate_positions).length > 0 &&
-      Object.values(r.candidate_positions).every((byCategory: {
-        [key: string]: {
-          position: string;
-          supporting_excerpts: Array<string>;
-        };
-      }) => {
-        return (
-          byCategory &&
-          typeof byCategory === 'object' &&
-          Object.values(byCategory).every((entry: {
+      Object.values(r.candidate_positions).every(
+        (byCategory: {
+          [key: string]: {
             position: string;
             supporting_excerpts: Array<string>;
-          }) => {
-            return (
-              entry &&
-              typeof entry === 'object' &&
-              typeof entry.position === 'string' &&
-              Array.isArray(entry.supporting_excerpts) &&
-              entry.supporting_excerpts.every((ex: string) => typeof ex === 'string')
-            );
-          })
-        );
-      });
+            confidence: number;
+          };
+        }) => {
+          return (
+            byCategory &&
+            typeof byCategory === 'object' &&
+            Object.values(byCategory).every(
+              (entry: { position: string; supporting_excerpts: Array<string>; confidence: number }) => {
+                return (
+                  entry &&
+                  typeof entry === 'object' &&
+                  typeof entry.position === 'string' &&
+                  Array.isArray(entry.supporting_excerpts) &&
+                  entry.supporting_excerpts.every((ex: string) => typeof ex === 'string') &&
+                  typeof entry.confidence === 'number' &&
+                  entry.confidence >= 0 &&
+                  entry.confidence <= 1
+                );
+              }
+            )
+          );
+        }
+      );
 
     return (
       r && typeof r === 'object' && typeof r.reasoning === 'string' && isCategoriesValid && isCandidatePositionsValid
     );
   }
 };
+/**
+ * Extracted TypeScript type for the table JSON structure expected/produced by the LLM.
+ * This makes it easy to type functions that consume the parsed response without using `any`.
+ */
+export type TableJsonMinimal = typeof TABLE_JSON_MINIMAL extends LLMResponseContract<infer T> ? T : never;
 
 /**
  * Extracted TypeScript type for the table JSON structure expected/produced by the LLM.
  * This makes it easy to type functions that consume the parsed response without using `any`.
  */
-export type TableJsonData = typeof TABLE_JSON_FORMAT_NO_EVICENCE extends LLMResponseContract<infer T> ? T : never;
-
-/**
- * Extracted TypeScript type for the table JSON structure expected/produced by the LLM.
- * This makes it easy to type functions that consume the parsed response without using `any`.
- */
-export type TableJsonDataWithEvicence = typeof TABLE_JSON_FORMAT_WITH_EVICENCE extends LLMResponseContract<infer T> ? T : never;
+export type TableJsonWithConfidence =
+  typeof TABLE_JSON_WITH_CONFIDENCE extends LLMResponseContract<infer T> ? T : never;
