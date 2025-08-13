@@ -1,0 +1,180 @@
+{
+  "reasoning": "To highlight meaningful distinctions between the candidates, the following categories were selected based on their responses to key questions: (1) Approach to Taxation and Municipal Finances, reflecting differing views on balancing budgets; (2) Youth Employment Priority, highlighting candidate priorities on youth employment support; (3) Affordable Housing Policy, showing varied commitment to housing affordability; (4) Participation of Youth in Decision-Making, illustrating support for youth councils in governance; and (5) Approach to Public Transport and Car Usage, capturing their stance on transport priorities.",
+  "categories": [
+    {
+      "label": "Approach to Taxation and Municipal Finances",
+      "description": "Candidates' preference for balancing municipal finances through taxation versus budget cuts.",
+      "alternatives": [
+        "Prioritize Tax Increases",
+        "Oppose Tax Increases",
+        "Balanced Approach",
+        "No Clear Preference"
+      ]
+    },
+    {
+      "label": "Youth Employment Priority",
+      "description": "The degree to which candidates prioritize supporting young adults' employment.",
+      "alternatives": [
+        "Strong Priority",
+        "Moderate Priority",
+        "Low Priority"
+      ]
+    },
+    {
+      "label": "Affordable Housing Policy",
+      "description": "Candidates' commitment to ensuring affordable housing for low-income individuals.",
+      "alternatives": [
+        "Strongly Committed",
+        "Somewhat Committed",
+        "Not Committed"
+      ]
+    },
+    {
+      "label": "Participation of Youth in Decision-Making",
+      "description": "Support for youth councils having a role in decision-making processes.",
+      "alternatives": [
+        "Strongly Support",
+        "Support with Conditions",
+        "Neutral",
+        "Oppose"
+      ]
+    },
+    {
+      "label": "Approach to Public Transport and Car Usage",
+      "description": "Preference for prioritizing car use versus public transport, cycling, and walking.",
+      "alternatives": [
+        "Prioritize Public Transport",
+        "Balanced Approach",
+        "Prioritize Car Use"
+      ]
+    }
+  ],
+  "candidate_positions": {
+    "Candidate 2253": {
+      "Approach to Taxation and Municipal Finances": {
+        "position": "Prioritize Tax Increases",
+        "supporting_excerpts": [
+          "If the need is great, we must also consider moderate tax increases.",
+          "Jo nyt Imatralla on tehty paljon menojen leikkauksia, joten uusia on erittäin vaikea löytää."
+        ],
+        "confidence": 0.9
+      },
+      "Youth Employment Priority": {
+        "position": "Moderate Priority",
+        "supporting_excerpts": [
+          "Nuorten työllistymistä ja sitä tukevia palveluita on tärkeää lisätä.",
+          "Tärkeää lisätä, mutta kehittää myös toimenpiteitä kaikenikäisille."
+        ],
+        "confidence": 0.8
+      },
+      "Affordable Housing Policy": {
+        "position": "Somewhat Committed",
+        "supporting_excerpts": [
+          "Kuntien pitäisi auttaa tarjoamalla kohtuhintaisia asuntoja.",
+          "Kuntien talous on nyt tiukoilla."
+        ],
+        "confidence": 0.85
+      },
+      "Participation of Youth in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Tämä nyt on vähintä, mitä kunta voi nuorten eteen tehdä.",
+          "Nuorten vaikutusmahdollisuuksia ja äänen kuulumista tulisi vahvistaa."
+        ],
+        "confidence": 0.95
+      },
+      "Approach to Public Transport and Car Usage": {
+        "position": "Prioritize Public Transport",
+        "supporting_excerpts": [
+          "On pyrittävä vähentämään tieliikenteen päästöjä panostamalla joukkoliikenteeseen.",
+          "Joukkoliikenteeseen ja pyöräteihin on panostettava."
+        ],
+        "confidence": 0.9
+      }
+    },
+    "Candidate 52": {
+      "Approach to Taxation and Municipal Finances": {
+        "position": "Oppose Tax Increases",
+        "supporting_excerpts": [
+          "Talouden elinvoimaisuus lähtee kuluttamisesta.",
+          "Veronkorotuksilla viedään suoraan rahaa pois kuluttajalta."
+        ],
+        "confidence": 0.95
+      },
+      "Youth Employment Priority": {
+        "position": "Strong Priority",
+        "supporting_excerpts": [
+          "Nuorissa on tulevaisuus ja nykyhetki.",
+          "On koko yhteiskunnan etu, että nuoret saadaan työelämään."
+        ],
+        "confidence": 0.95
+      },
+      "Affordable Housing Policy": {
+        "position": "Somewhat Committed",
+        "supporting_excerpts": [
+          "En näe mitään haittoja siinä, että kunta osallistuisi asuntojen tarjoamiseen.",
+          "Kunhan kulut pysyvät kohtuullisina, ajatus on oikea."
+        ],
+        "confidence": 0.85
+      },
+      "Participation of Youth in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "Itsekin toisen kauden nuorisovaltuutettuna minun on mahdotonta vastata mitään muuta kuin ehdoton kyllä.",
+          "Puhe- ja läsnäolo-oikeuden lisäksi suora aloiteoikeus valtuustoon olisi tärkeä."
+        ],
+        "confidence": 0.95
+      },
+      "Approach to Public Transport and Car Usage": {
+        "position": "Prioritize Car Use",
+        "supporting_excerpts": [
+          "Oulu on maantieteellisesti laajin suuri kaupunki Suomessa.",
+          "Mielestäni autoilun tulee olla toimiva liikkumismuoto koko Oulussa jatkossakin."
+        ],
+        "confidence": 0.9
+      }
+    },
+    "Candidate 5136": {
+      "Approach to Taxation and Municipal Finances": {
+        "position": "Balanced Approach",
+        "supporting_excerpts": [
+          "The overall tax rate in Finland for middle-income earners is among the highest in Europe.",
+          "All means of balancing the economy should be kept in the toolkit."
+        ],
+        "confidence": 0.85
+      },
+      "Youth Employment Priority": {
+        "position": "Moderate Priority",
+        "supporting_excerpts": [
+          "Young people's study and employment opportunities must be secured.",
+          "Improving access to education provides more young people with a pathway to employment."
+        ],
+        "confidence": 0.85
+      },
+      "Affordable Housing Policy": {
+        "position": "Strongly Committed",
+        "supporting_excerpts": [
+          "My municipality should guarantee access to affordable housing for low-income individuals.",
+          "A student should not live in constant stress - but build their future."
+        ],
+        "confidence": 0.95
+      },
+      "Participation of Youth in Decision-Making": {
+        "position": "Strongly Support",
+        "supporting_excerpts": [
+          "The youth representative has been an important part of the decision-making process in all of them.",
+          "Their opinions have been actively sought and listened to."
+        ],
+        "confidence": 0.95
+      },
+      "Approach to Public Transport and Car Usage": {
+        "position": "Balanced Approach",
+        "supporting_excerpts": [
+          "My municipality should join HSL in the next electoral term.",
+          "Improve internal transportation and shorten train intervals to 15 minutes."
+        ],
+        "confidence": 0.85
+      }
+    }
+  }
+}

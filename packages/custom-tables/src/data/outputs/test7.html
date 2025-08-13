@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Tables Visualization</title>
+    <style>
+      :root {
+        --border: #e5e7eb;
+        --bg: #ffffff;
+        --bg-alt: #f9fafb;
+        --text: #111827;
+        --muted: #6b7280;
+        --sticky-bg: #f3f4f6;
+      }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; padding: 16px; color: var(--text); background: var(--bg); }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 18px; margin: 0; }
+      h2.section-title { font-size: 14px; margin: 14px 0 8px; color: var(--muted); font-weight: 600; }
+      .controls { display: flex; gap: 8px; }
+      button { border: 1px solid var(--border); background: var(--bg); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      button:hover { background: var(--bg-alt); }
+      details { margin-bottom: 12px; }
+      summary { cursor: pointer; color: var(--muted); }
+      .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+      table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      thead th { position: sticky; top: 0; background: var(--sticky-bg); z-index: 1; text-align: left; font-weight: 600; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; vertical-align: top; white-space: nowrap; }
+      tbody tr:nth-child(odd) { background: var(--bg-alt); }
+      .sticky-col { position: sticky; left: 0; background: var(--sticky-bg); z-index: 2; min-width: 240px; max-width: 480px; }
+      .category .label { font-weight: 600; }
+      .category .description { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
+      .cell-wrap { position: relative; padding-right: 18px; }
+      .excerpts { margin: 0; padding-left: 16px; white-space: normal; }
+      .confidence-dot { position: absolute; right: 4px; bottom: 4px; width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      .confidence-dot.low { background-color: #ef4444; }
+      .confidence-dot.medium { background-color: #f59e0b; }
+      .confidence-dot.high { background-color: #10b981; }
+      footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    </style>
+    <script>
+      function exportTableToCSV() {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        const csv = rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+          // Escape quotes and commas
+          const text = cell.innerText.replace(/"/g, '""');
+          return '"' + text + '"';
+        }).join(',')).join('
+');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'table.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Custom Tables Visualization</h1>
+      <div class="controls">
+        <button onclick="exportTableToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+    <details><summary>Reasoning</summary><div style="margin-top:8px; white-space: pre-wrap;">To highlight meaningful distinctions between the candidates, the following categories were selected based on their responses to key questions: (1) Approach to Taxation and Municipal Finances, reflecting differing views on balancing budgets; (2) Youth Employment Priority, highlighting candidate priorities on youth employment support; (3) Affordable Housing Policy, showing varied commitment to housing affordability; (4) Participation of Youth in Decision-Making, illustrating support for youth councils in governance; and (5) Approach to Public Transport and Car Usage, capturing their stance on transport priorities.</div></details>
+    <div class="table-wrapper">
+      <table>
+        
+    <thead>
+      <tr>
+        <th class="sticky-col">Theme</th>
+        <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+      </tr>
+    </thead>
+        
+    <tbody>
+      
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; preference for balancing municipal finances through taxation versus budget cuts.">
+                <div class="category">
+                  <div class="label">Approach to Taxation and Municipal Finances</div>
+                  <div class="description">Candidates&#039; preference for balancing municipal finances through taxation versus budget cuts.</div>
+                </div>
+              </td>
+              <td>[object Object]</td><td>[object Object]</td><td>[object Object]</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="The degree to which candidates prioritize supporting young adults&#039; employment.">
+                <div class="category">
+                  <div class="label">Youth Employment Priority</div>
+                  <div class="description">The degree to which candidates prioritize supporting young adults&#039; employment.</div>
+                </div>
+              </td>
+              <td>[object Object]</td><td>[object Object]</td><td>[object Object]</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; commitment to ensuring affordable housing for low-income individuals.">
+                <div class="category">
+                  <div class="label">Affordable Housing Policy</div>
+                  <div class="description">Candidates&#039; commitment to ensuring affordable housing for low-income individuals.</div>
+                </div>
+              </td>
+              <td>[object Object]</td><td>[object Object]</td><td>[object Object]</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Support for youth councils having a role in decision-making processes.">
+                <div class="category">
+                  <div class="label">Participation of Youth in Decision-Making</div>
+                  <div class="description">Support for youth councils having a role in decision-making processes.</div>
+                </div>
+              </td>
+              <td>[object Object]</td><td>[object Object]</td><td>[object Object]</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Preference for prioritizing car use versus public transport, cycling, and walking.">
+                <div class="category">
+                  <div class="label">Approach to Public Transport and Car Usage</div>
+                  <div class="description">Preference for prioritizing car use versus public transport, cycling, and walking.</div>
+                </div>
+              </td>
+              <td>[object Object]</td><td>[object Object]</td><td>[object Object]</td>
+            </tr>
+    </tbody>
+      </table>
+    </div>
+    
+      <h2 class="section-title">Supporting excerpts and confidence</h2>
+      <div class="table-wrapper">
+        <table>
+          
+      <thead>
+        <tr>
+          <th class="sticky-col">Evidence</th>
+          <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+        </tr>
+      </thead>
+          
+      <tbody>
+        
+              <tr>
+                <td class="sticky-col" title="Candidates&#039; preference for balancing municipal finances through taxation versus budget cuts.">
+                  <div class="category">
+                    <div class="label">Approach to Taxation and Municipal Finances</div>
+                    <div class="description">Candidates&#039; preference for balancing municipal finances through taxation versus budget cuts.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>If the need is great, we must also consider moderate tax increases.</li><li>Jo nyt Imatralla on tehty paljon menojen leikkauksia, joten uusia on erittäin vaikea löytää.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.90 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Talouden elinvoimaisuus lähtee kuluttamisesta.</li><li>Veronkorotuksilla viedään suoraan rahaa pois kuluttajalta.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>The overall tax rate in Finland for middle-income earners is among the highest in Europe.</li><li>All means of balancing the economy should be kept in the toolkit.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="The degree to which candidates prioritize supporting young adults&#039; employment.">
+                  <div class="category">
+                    <div class="label">Youth Employment Priority</div>
+                    <div class="description">The degree to which candidates prioritize supporting young adults&#039; employment.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Nuorten työllistymistä ja sitä tukevia palveluita on tärkeää lisätä.</li><li>Tärkeää lisätä, mutta kehittää myös toimenpiteitä kaikenikäisille.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.80 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Nuorissa on tulevaisuus ja nykyhetki.</li><li>On koko yhteiskunnan etu, että nuoret saadaan työelämään.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Young people&#039;s study and employment opportunities must be secured.</li><li>Improving access to education provides more young people with a pathway to employment.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Candidates&#039; commitment to ensuring affordable housing for low-income individuals.">
+                  <div class="category">
+                    <div class="label">Affordable Housing Policy</div>
+                    <div class="description">Candidates&#039; commitment to ensuring affordable housing for low-income individuals.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Kuntien pitäisi auttaa tarjoamalla kohtuhintaisia asuntoja.</li><li>Kuntien talous on nyt tiukoilla.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>En näe mitään haittoja siinä, että kunta osallistuisi asuntojen tarjoamiseen.</li><li>Kunhan kulut pysyvät kohtuullisina, ajatus on oikea.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>My municipality should guarantee access to affordable housing for low-income individuals.</li><li>A student should not live in constant stress - but build their future.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Support for youth councils having a role in decision-making processes.">
+                  <div class="category">
+                    <div class="label">Participation of Youth in Decision-Making</div>
+                    <div class="description">Support for youth councils having a role in decision-making processes.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Tämä nyt on vähintä, mitä kunta voi nuorten eteen tehdä.</li><li>Nuorten vaikutusmahdollisuuksia ja äänen kuulumista tulisi vahvistaa.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Itsekin toisen kauden nuorisovaltuutettuna minun on mahdotonta vastata mitään muuta kuin ehdoton kyllä.</li><li>Puhe- ja läsnäolo-oikeuden lisäksi suora aloiteoikeus valtuustoon olisi tärkeä.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>The youth representative has been an important part of the decision-making process in all of them.</li><li>Their opinions have been actively sought and listened to.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.95 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+              <tr>
+                <td class="sticky-col" title="Preference for prioritizing car use versus public transport, cycling, and walking.">
+                  <div class="category">
+                    <div class="label">Approach to Public Transport and Car Usage</div>
+                    <div class="description">Preference for prioritizing car use versus public transport, cycling, and walking.</div>
+                  </div>
+                </td>
+                
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>On pyrittävä vähentämään tieliikenteen päästöjä panostamalla joukkoliikenteeseen.</li><li>Joukkoliikenteeseen ja pyöräteihin on panostettava.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.90 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>Oulu on maantieteellisesti laajin suuri kaupunki Suomessa.</li><li>Mielestäni autoilun tulee olla toimiva liikkumismuoto koko Oulussa jatkossakin.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.90 (high)"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-wrap">
+                      <ul class="excerpts"><li>My municipality should join HSL in the next electoral term.</li><li>Improve internal transportation and shorten train intervals to 15 minutes.</li></ul>
+                      <span class="confidence-dot high" title="Confidence: 0.85 (high)"></span>
+                    </div>
+                  </td>
+              </tr>
+      </tbody>
+        </table>
+      </div>
+    <footer>
+      Generated at 8/13/2025, 2:24:50 PM
+    </footer>
+  </body>
+  </html>

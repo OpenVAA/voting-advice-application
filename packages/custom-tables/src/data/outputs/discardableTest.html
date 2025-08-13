@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Tables Visualization</title>
+    <style>
+      :root {
+        --border: #e5e7eb;
+        --bg: #ffffff;
+        --bg-alt: #f9fafb;
+        --text: #111827;
+        --muted: #6b7280;
+        --sticky-bg: #f3f4f6;
+      }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; padding: 16px; color: var(--text); background: var(--bg); }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 18px; margin: 0; }
+      h2.section-title { font-size: 14px; margin: 14px 0 8px; color: var(--muted); font-weight: 600; }
+      .controls { display: flex; gap: 8px; }
+      button { border: 1px solid var(--border); background: var(--bg); padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      button:hover { background: var(--bg-alt); }
+      details { margin-bottom: 12px; }
+      summary { cursor: pointer; color: var(--muted); }
+      .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+      table { border-collapse: separate; border-spacing: 0; width: 100%; }
+      thead th { position: sticky; top: 0; background: var(--sticky-bg); z-index: 1; text-align: left; font-weight: 600; }
+      th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; vertical-align: top; white-space: nowrap; }
+      tbody tr:nth-child(odd) { background: var(--bg-alt); }
+      .sticky-col { position: sticky; left: 0; background: var(--sticky-bg); z-index: 2; min-width: 240px; max-width: 480px; }
+      .category .label { font-weight: 600; }
+      .category .description { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
+      .cell-wrap { position: relative; padding-right: 18px; }
+      .excerpts { margin: 0; padding-left: 16px; white-space: normal; }
+      .confidence-dot { position: absolute; right: 4px; bottom: 4px; width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      .confidence-dot.low { background-color: #ef4444; }
+      .confidence-dot.medium { background-color: #f59e0b; }
+      .confidence-dot.high { background-color: #10b981; }
+      footer { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    </style>
+    <script>
+      function exportTableToCSV() {
+        const rows = Array.from(document.querySelectorAll('table tr'));
+        const csv = rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+          // Escape quotes and commas
+          const text = cell.innerText.replace(/"/g, '""');
+          return '"' + text + '"';
+        }).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'table.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Custom Tables Visualization</h1>
+      <div class="controls">
+        <button onclick="exportTableToCSV()">Export CSV</button>
+        <button onclick="window.print()">Print</button>
+      </div>
+    </header>
+    <details><summary>Reasoning</summary><div style="margin-top:8px; white-space: pre-wrap;">The analysis of candidate responses reveals nuanced positions on key issues affecting youth, municipal finance, and social services. The categories are designed to capture specific, actionable distinctions among the candidates&#039; stances. Each category reflects a unique area of focus, allowing voters to differentiate candidates based on their priorities and proposed actions.</div></details>
+    <div class="table-wrapper">
+      <table>
+        
+    <thead>
+      <tr>
+        <th class="sticky-col">Theme</th>
+        <th>Candidate 2253</th><th>Candidate 52</th><th>Candidate 5136</th>
+      </tr>
+    </thead>
+        
+    <tbody>
+      
+            <tr>
+              <td class="sticky-col" title="The extent to which candidates support youth councils&#039; rights in decision-making processes.">
+                <div class="category">
+                  <div class="label">Youth Council Empowerment</div>
+                  <div class="description">The extent to which candidates support youth councils&#039; rights in decision-making processes.</div>
+                </div>
+              </td>
+              <td>Completely Agree</td><td>Completely Agree</td><td>Completely Agree</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; positions on prioritizing services for young adults&#039; employment over other demographics.">
+                <div class="category">
+                  <div class="label">Support for Young Adult Employment</div>
+                  <div class="description">Candidates&#039; positions on prioritizing services for young adults&#039; employment over other demographics.</div>
+                </div>
+              </td>
+              <td>Slightly Agree</td><td>Completely Agree</td><td>Slightly Agree</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Candidates&#039; strategies for balancing municipal finances, focusing on tax versus budget cuts.">
+                <div class="category">
+                  <div class="label">Approach to Municipal Finances</div>
+                  <div class="description">Candidates&#039; strategies for balancing municipal finances, focusing on tax versus budget cuts.</div>
+                </div>
+              </td>
+              <td>Slightly Agree</td><td>Completely Disagree</td><td>Neither Agree nor Disagree</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Positions on the importance of investing in forest conservation initiatives.">
+                <div class="category">
+                  <div class="label">Forest Conservation Commitment</div>
+                  <div class="description">Positions on the importance of investing in forest conservation initiatives.</div>
+                </div>
+              </td>
+              <td>Completely Agree</td><td>Neither Agree nor Disagree</td><td>Slightly Agree</td>
+            </tr>
+            <tr>
+              <td class="sticky-col" title="Support for initiatives aimed at preventing discrimination against young people, particularly those from sexual and gender minorities.">
+                <div class="category">
+                  <div class="label">Discrimination Prevention Actions</div>
+                  <div class="description">Support for initiatives aimed at preventing discrimination against young people, particularly those from sexual and gender minorities.</div>
+                </div>
+              </td>
+              <td>Completely Agree</td><td>Completely Agree</td><td>Completely Agree</td>
+            </tr>
+    </tbody>
+      </table>
+    </div>
+    
+    <footer>
+      Generated at 8/13/2025, 2:22:14 PM
+    </footer>
+  </body>
+  </html>

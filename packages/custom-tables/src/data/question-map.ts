@@ -3,7 +3,7 @@ import { join } from 'path';
 
 // Use run-time read to avoid type errors with the json file
 const questions = JSON.parse(
-  readFileSync(join(__dirname, 'questions-production.json'), 'utf8')
+  readFileSync(join(__dirname, 'raw', 'questions-production.json'), 'utf8')
 );
 
 type QuestionText = {

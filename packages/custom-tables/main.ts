@@ -5,7 +5,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import * as yaml from 'js-yaml';
 import { join } from 'path';
 import { promisify } from 'util';
-import { TABLE_JSON_MINIMAL, type TableJsonMinimal } from './src/types';
+import {
+  TABLE_JSON_MINIMAL,
+  TABLE_JSON_WITH_CONFIDENCE,
+  type TableJsonMinimal,
+  type TableJsonWithConfidence
+} from './src/types';
 import { generateVisualizationHTML } from './src/utils';
 
 config({ path: '../../.env' });
@@ -49,13 +54,28 @@ const llm = new OpenAIProvider({
   model: 'gpt-4o'
 });
 
-const response = await llm.generateAndValidateWithRetry({
-  messages: [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: dataPromptWithCandidates }
-  ],
-  responseContract: TABLE_JSON_MINIMAL
-});
+const useWithConfidence = /v2_withConfidence/i.test(promptFileName); // For now assume only this is the one with confidence
+
+let parsedData: TableJsonMinimal | TableJsonWithConfidence;
+if (useWithConfidence) {
+  const response = await llm.generateAndValidateWithRetry<TableJsonWithConfidence>({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: dataPromptWithCandidates }
+    ],
+    responseContract: TABLE_JSON_WITH_CONFIDENCE
+  });
+  parsedData = response.parsed;
+} else {
+  const response = await llm.generateAndValidateWithRetry<TableJsonMinimal>({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: dataPromptWithCandidates }
+    ],
+    responseContract: TABLE_JSON_MINIMAL
+  });
+  parsedData = response.parsed;
+}
 
 // Ensure the outputs directory exists
 const outputDir = join(__dirname, 'src', 'data', 'outputs');
@@ -67,7 +87,7 @@ try {
 
 // Save the parsed result to the specified file
 const outputPath = join(outputDir, `${outputFileName}`);
-writeFileSync(outputPath, JSON.stringify(response.parsed, null, 2), 'utf8');
+writeFileSync(outputPath, JSON.stringify(parsedData, null, 2), 'utf8');
 
 // -------------------------------------------------------------------------
 // ---------------- Visualization: Static HTML + auto-open -----------------
@@ -91,7 +111,7 @@ async function openFileInDefaultBrowser({ filePath }: { filePath: string }): Pro
 }
 
 // Generate HTML visualization and open it
-const htmlContent = generateVisualizationHTML({ data: response.parsed as TableJsonMinimal });
+const htmlContent = generateVisualizationHTML({ data: parsedData });
 const htmlPath = join(outputDir, `${outputFileName}.html`);
 writeFileSync(htmlPath, htmlContent, 'utf8');
 await openFileInDefaultBrowser({ filePath: htmlPath });
