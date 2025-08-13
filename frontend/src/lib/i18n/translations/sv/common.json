@@ -29,6 +29,8 @@
     "faction": "Valsymbol",
     "organization": "Valsymbol"
   },
+  "email": "E-post",
+  "emailPlaceholder": "E-post",
   "expandOrCollapse": "Expandera eller kollapsa detta avsnitt",
   "faction": {
     "plural": "fraktioner",

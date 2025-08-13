@@ -5,7 +5,9 @@
   "content": "<p>Olemme todella pahoillamme harmista. Voit koettaa palata takaisin ja ladata sivun uudelleen ja katsoa, toistuuko ongelma.</p><p>Jos tilanne ei korjaannu, pyydämme ystävällisesti lähettämään sähköpostia osoitteeseen {adminEmailLink} ja kuvailemaan mahdollisimman tarkasti, mitä tapahtui. Kiitos etukäteen!</p>",
   "default": "Jotakin meni pieleen, anteeksi!",
   "general": "Jotakin meni pieleen, anteeksi",
+  "loginFailed": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
   "noNominations": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
   "noQuestions": "Vaalikoneessa ei vielä ole vaalipiiriäsi koskevia kysymyksiä",
-  "unsupportedQuestion": "Tätä kysymystä ei voida näyttää, anteeksi!"
+  "unsupportedQuestion": "Tätä kysymystä ei voida näyttää, anteeksi!",
+  "wrongEmailOrPassword": "Väärä sähköposti tai salasana"
 }
