@@ -21,3 +21,6 @@ export { createCondensationSteps } from './condensation/defineCondensationSteps'
 
 // Get parallelization factor
 export { getParallelFactor } from './condensation/getParallelFactor';
+
+// Check if question is supported
+export { isSupportedQuestion } from './condensation/isSupportedQuestion';

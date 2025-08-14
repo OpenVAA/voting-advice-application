@@ -3,7 +3,7 @@
   "name": "@openvaa/argument-condensation",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/core/condensation/prompts && find src/core/condensation/prompts -mindepth 1 -maxdepth 1 -type d -exec cp -R {} build/core/condensation/prompts/ \\;",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "dev:vis": "serve tools/visualization"
