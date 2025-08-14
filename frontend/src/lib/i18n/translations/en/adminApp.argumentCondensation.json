@@ -1,4 +1,19 @@
 {
   "title": "Argument Condensation",
-  "description": "Condense and manage arguments for election questions."
+  "description": "Condense and manage arguments for election questions.",
+  "generate": {
+    "allQuestions": "Generate arguments for all opinion questions",
+    "button": "Generate Arguments",
+    "buttonLoading": "Generating...",
+    "error": "An error occurred while generating arguments",
+    "mayTakeTime": "This process may take several minutes",
+    "noElectionsAvailable": "No elections are currently available. Please check your data configuration.",
+    "noElectionSelected": "Please select an election first",
+    "noQuestionsForElection": "No opinion questions found for the selected election.",
+    "noQuestionSelected": "Please select at least one question",
+    "selectElection": "Select Election",
+    "selectElectionPlaceholder": "Choose an election...",
+    "selectedQuestions": "Generate arguments for selected questions only",
+    "questionType": "Question Selection"
+  }
 }

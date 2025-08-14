@@ -16,6 +16,8 @@ Main landing page for admin section showing available tools
   <p class="text-center">{$t('adminApp.common.description')}</p>
 
   <div class="flex flex-col gap-sm">
+    <Button href={$getRoute('AdminAppJobs')} text="Jobs Monitoring" icon="list" iconPos="left" />
+
     <Button
       href={$getRoute('AdminAppArgumentCondensation')}
       text={$t('adminApp.argumentCondensation.title')}
