@@ -42,7 +42,7 @@
     title={$t('adminApp.notSupported.title')}
     content={$t('adminApp.notSupported.content')}
     emoji={$t('adminApp.notSupported.heroEmoji')} />
-{:else if !$appSettings.access.adminApp}
+{:else if !$appSettings.access.adminApp} <!-- Should this be explicitly set? Now undefined is treated as failed.  -->
   <MaintenancePage
     title={$t('adminApp.common.notAccessible.title')}
     content={$t('adminApp.common.notAccessible.content')} />
