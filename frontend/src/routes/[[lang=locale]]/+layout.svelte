@@ -23,6 +23,7 @@
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
+  import { initAuthContext } from '$lib/contexts/auth';
   import { initComponentContext } from '$lib/contexts/component';
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
@@ -32,7 +33,6 @@
   import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
-  import { initAuthContext } from '$lib/contexts/auth';
 
   export let data: LayoutData;
 
