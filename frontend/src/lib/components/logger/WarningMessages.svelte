@@ -5,18 +5,19 @@ Reusable component for displaying warning and error messages with scrolling
 -->
 
 <script lang="ts">
-  export let warnings: string[] = [];
-  export let errors: string[] = [];
+  export let warnings: Array<string> = [];
+  export let errors: Array<string> = [];
   export let title: string = 'Warnings & Errors';
   export let height: string = 'max-h-32';
   export let showTimestamp: boolean = false;
   export let showClearButton: boolean = false;
+  export let maxMessages: number = 1000; // Default to 1000 for warnings
 
-  // Combine warnings and errors for display
+  // Combine warnings and errors for display, limiting to maxMessages
   $: allMessages = [
     ...warnings.map((msg) => ({ type: 'warning', message: msg })),
     ...errors.map((msg) => ({ type: 'error', message: msg }))
-  ];
+  ].slice(-maxMessages); // Show only the most recent messages
 
   function clearMessages() {
     warnings = [];
