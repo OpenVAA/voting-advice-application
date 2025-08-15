@@ -4,6 +4,7 @@ import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
 import { CondensationOperations } from '../types';
 import {
+  calculateStepWeights,
   createBatches,
   createPromptInstance,
   LatencyTracker,
@@ -140,7 +141,7 @@ export class Condenser {
    * 5. Return final results with metadata
    */
   async run(): Promise<CondensationRunResult> {
-    this.logger.info(`Starting condensation run with ${this.input.comments.length} comments`);
+    this.logger.info(`Starting condensation run for "${this.input.question.name}"`);
     this.latencyTracker.start('total_run'); // Track the total run time in addition to the individual calls
 
     // Get condensation plan from input config
@@ -148,6 +149,25 @@ export class Condenser {
 
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
+
+    // NEW: Granularize progress tracking by defining sub-operations for each processing step
+    if (
+      processingSteps.length > 0 &&
+      this.logger &&
+      typeof this.logger.defineSubOperations === 'function' &&
+      typeof this.logger.getCurrentOperation === 'function'
+    ) {
+      const currentOperationId = this.logger.getCurrentOperation()!.id;
+      const stepWeights = calculateStepWeights(processingSteps, this.input.comments.length);
+      const subOperations = stepWeights.map((step) => ({
+        id: `${step.operation}-step-${step.stepIndex}`,
+        weight: step.weight
+      }));
+
+      this.logger.info(`currentOperationId: ${currentOperationId}, \nsubOperations: ${subOperations}`);
+      this.logger.defineSubOperations(currentOperationId, subOperations);
+      this.logger.info(`Defined ${subOperations.length} sub-operations for progress tracking`);
+    }
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
@@ -411,7 +431,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
-    this.logger.info(`map operation started with batch size: ${params.batchSize}`);
 
     // Create batches using the validated batch size from the processing step
     const batches = createBatches({ array: comments, batchSize: params.batchSize });
@@ -456,9 +475,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as IterateMapOperationParams;
-    this.logger.info(
-      `iterate_map operation started with batch size ${params.batchSize} (& ${argumentData.length} argument lists)`
-    );
     const batchSize = params.batchSize;
     const parallelFactor = this.input.options.parallelBatches;
 
@@ -519,9 +535,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as ReduceOperationParams;
-    this.logger.info(
-      `reduce operation started with denominator ${params.denominator} (& ${argumentLists.length} argument lists)`
-    );
     const denominator = params.denominator;
     const parallelFactor = this.input.options.parallelBatches; // How many batches to process in parallel?
 
@@ -724,25 +737,17 @@ export class Condenser {
     // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
     // The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
-    // TODO: Calculate better time and cost estimations, and add a progress bar that can be updated
-    // by the LLM provider! Needs heuristical evaluations for how long the slowest call per parallel batch takes.
-    // This means testing different inputs and models and getting some data on speed.
-    // Still, implementation will depend on a lot of factors. Do we want to update the progress bar with every call? Every operation?
-    // Is the progress updated by the LLM provider? Condenser? We would need to know about different model
-    // speeds, how tokens per call affect speed, etc. There are many variables. E.g. reduce is almost always faster than
-    // map or iterate_map, becase its inputs are much shorter. Also, 4o-mini is wicked fast, o3 is many times slower, and so on.
-    // Note: Probably should be a more general class or utility in the LLM package, not here, so we can use it in other places.
-    this.logger.info(
-      `Sending out LLM calls for the ${operation} operation. This should take about ${(llmInputs.length * 10) / parallelBatches}-${(llmInputs.length * 15) / parallelBatches} seconds`
-    );
     let validatedResponses: Array<ParsedLLMResponse<{ arguments: Array<Argument> }>>;
     try {
-      validatedResponses = await this.input.options.llmProvider.generateMultipleParallel({
-        inputs: llmInputs,
-        responseContract: RESPONSE_WITH_ARGUMENTS_CONTRACT,
-        parallelBatches,
-        validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
-      });
+      validatedResponses = await this.input.options.llmProvider.generateMultipleParallel(
+        {
+          inputs: llmInputs,
+          responseContract: RESPONSE_WITH_ARGUMENTS_CONTRACT,
+          parallelBatches,
+          validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
+        },
+        this.logger
+      );
     } catch (error) {
       // If the provider fails after all retries, we add context and re-throw to abort the condensation.
       throw new Error(

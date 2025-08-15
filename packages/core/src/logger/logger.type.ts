@@ -48,6 +48,19 @@ export interface Logger {
    * Called for error messages. Used for critical, iteration-stopping issues. Note that a normal `Error` should be thrown by the process in case of unrecoverable errors.
    */
   error: (message: string) => unknown;
+
+  /**
+   * Optional method for hierarchical progress tracking.
+   * Defines sub-operations for a specific operation to enable granular progress tracking.
+   * @param operationId - The ID of the operation to break down
+   * @param subOperations - Array of sub-operations with their weights
+   */
+  defineSubOperations?: (operationId: string, subOperations: Array<{ id: string; weight?: number }>) => void;
+
+  /**
+   * Optional method for getting the current operation.
+   */
+  getCurrentOperation?: () => { id: string; index: number; total: number } | null;
 }
 
 /**
