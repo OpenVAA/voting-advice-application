@@ -10,6 +10,7 @@ Page for controlling the argument condensation feature.
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getAdminContext } from '$lib/contexts/admin';
+  import { JobLogger } from '$lib/jobs/jobLogger';
   import { getUUID } from '$lib/utils/components';
   import MainContent from '../../../MainContent.svelte';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
@@ -23,6 +24,9 @@ Page for controlling the argument condensation feature.
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
+
+  // Job logger
+  let currentJobLogger: JobLogger | null = null;
 
   // Options for the radio group
   const options = [
@@ -56,18 +60,8 @@ Page for controlling the argument condensation feature.
     }
   }
 
-  function handleSubmit({ cancel }: Parameters<SubmitFunction>[0]) {
+  async function handleSubmit({ cancel }: Parameters<SubmitFunction>[0]) {
     status = 'loading';
-
-    // Debug: Log what we're submitting
-    console.log('Submitting form with:', {
-      selectedElectionId,
-      selectedOption,
-      selectedIds
-    });
-
-    // Also log immediately before returning the enhance callback
-    console.log('Submitting... returning enhance callback');
 
     // Check if an election has been selected
     if (!selectedElectionId) {
@@ -81,6 +75,44 @@ Page for controlling the argument condensation feature.
       status = 'no-selections';
       cancel();
       return;
+    }
+
+    try {
+      // Get admin email from context (you may need to adjust this based on your auth setup)
+      const adminEmail = 'admin@example.com'; // TODO: Get from actual admin context
+
+      // Create a new job
+      const response = await fetch('/api/admin/jobs/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          feature: 'argument-condensation',
+          author: adminEmail
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create job');
+      }
+
+      const { jobId } = await response.json();
+      currentJobLogger = new JobLogger(jobId);
+
+      // Log job start
+      currentJobLogger.info('Starting argument condensation process...');
+      currentJobLogger.progress(0.1);
+
+      // Start the argument condensation process
+      console.log('Starting simulation with job logger:', currentJobLogger);
+      simulateArgumentCondensation();
+    } catch (error) {
+      console.error('Error starting argument condensation:', error);
+      status = 'error';
+      if (currentJobLogger) {
+        currentJobLogger.fail(error instanceof Error ? error.message : 'Unknown error');
+      }
     }
 
     return async ({ result }: { result: ActionResult }) => {
@@ -102,6 +134,38 @@ Page for controlling the argument condensation feature.
       // Always cancel the form action to prevent page reload
       return { cancel: true };
     };
+  }
+
+  // Mock function to simulate argument condensation process
+  // This will be replaced with actual condensation logic
+  async function simulateArgumentCondensation() {
+    console.log('simulateArgumentCondensation called, currentJobLogger:', currentJobLogger);
+    if (!currentJobLogger) return;
+
+    const steps = [
+      { message: 'MOCK:Processing batch 1 of 5 questions', progress: 0.2 },
+      { message: 'MOCK: LLM API call completed successfully', progress: 0.4 },
+      { message: 'MOCK: Generated 12 arguments for question 1', progress: 0.6 },
+      { message: 'MOCK: Merging duplicate arguments...', progress: 0.8 },
+      { message: 'MOCK: Saving results to database...', progress: 0.9 },
+      { message: 'MOCK: Process completed successfully!', progress: 1.0 }
+    ];
+
+    let currentStep = 0;
+    const interval = setInterval(async () => {
+      if (currentStep >= steps.length) {
+        clearInterval(interval);
+        await currentJobLogger?.complete();
+        status = 'success';
+        return;
+      }
+
+      const step = steps[currentStep];
+      console.log('Logging step:', step);
+      await currentJobLogger?.info(step.message);
+      await currentJobLogger?.progress(step.progress);
+      currentStep++;
+    }, 2000); // Update every 2 seconds
   }
 </script>
 
@@ -197,6 +261,13 @@ Page for controlling the argument condensation feature.
         <ErrorMessage inline message={$t('adminApp.argumentCondensation.generate.noQuestionSelected')} class="mb-md" />
       {:else if status === 'success'}
         <SuccessMessage inline message={$t('common.success')} class="mb-md" />
+      {/if}
+
+      {#if currentJobLogger && status === 'loading'}
+        <div class="p-3 mb-md rounded-lg bg-info/10 text-info">
+          <p class="text-sm">Job created successfully! Check the Jobs Monitoring page to see real-time progress.</p>
+          <a href="/admin/jobs" class="text-xs underline">Go to Jobs Monitoring</a>
+        </div>
       {/if}
 
       <div class="flex flex-col items-center gap-sm">

@@ -6,85 +6,71 @@ Page for monitoring all active jobs across different admin features
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
+  import InfoMessages from '$lib/components/logger/InfoMessages.svelte';
+  import ProgressBar from '$lib/components/logger/ProgressBar.svelte';
+  import WarningMessages from '$lib/components/logger/WarningMessages.svelte';
   import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../../MainContent.svelte';
-  import ProgressBar from '$lib/components/logger/ProgressBar.svelte';
-  import InfoMessages from '$lib/components/logger/InfoMessages.svelte';
-  import WarningMessages from '$lib/components/logger/WarningMessages.svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import type { JobInfo } from '$lib/jobs/jobStore';
 
   const { t, getRoute } = getAppContext();
 
-  // Mock data for demonstration
-  const mockInfoMessages = [
-    'Starting argument condensation process...',
-    'Processing batch 1 of 5 questions',
-    'LLM API call completed successfully',
-    'Generated 12 arguments for question 1',
-    'Merging duplicate arguments...',
-    'Progress: 60% complete',
-    'Saving results to database...',
-    'Quality check passed',
-    'Finalizing condensation...',
-    'Process completed successfully!'
-  ];
+  // Job data for each feature
+  let argumentCondensationJob: JobInfo | null = null;
+  let factorAnalysisJob: JobInfo | null = null;
+  let questionInfoJob: JobInfo | null = null;
 
-  const mockWarningMessages = [
-    'Warning: Question 3 has fewer than 5 comments, may affect quality',
-    'Warning: LLM response time exceeded 30 seconds',
-    'Warning: Some arguments were too similar and merged',
-    'Warning: Rate limit approaching, slowing down requests'
-  ];
+  // Polling interval
+  let pollInterval: ReturnType<typeof setInterval>;
 
-  const mockErrorMessages = [
-    'Error: Failed to connect to LLM API',
-    'Error: Database connection timeout',
-    'Error: Invalid question format detected'
-  ];
+  // Fetch jobs from API
+  async function fetchJobs() {
+    try {
+      const response = await fetch('/api/admin/jobs');
+      if (response.ok) {
+        const jobs: JobInfo[] = await response.json();
 
-  // State for each feature
-  let argumentCondensationMonitoring = false;
-  let factorAnalysisMonitoring = false;
-  let questionInfoMonitoring = false;
-
-  // Mock progress values
-  let argumentCondensationProgress = 0.65;
-  let factorAnalysisProgress = 0.25;
-  let questionInfoProgress = 0.0;
-
-  function startTestMonitoring(feature: string) {
-    switch (feature) {
-      case 'argument-condensation':
-        argumentCondensationMonitoring = true;
-        break;
-      case 'factor-analysis':
-        factorAnalysisMonitoring = true;
-        break;
-      case 'question-info':
-        questionInfoMonitoring = true;
-        break;
+        // Find the first active job for each feature
+        argumentCondensationJob =
+          jobs.find((job) => job.feature === 'argument-condensation' && job.status === 'running') || null;
+        factorAnalysisJob = jobs.find((job) => job.feature === 'factor-analysis' && job.status === 'running') || null;
+        questionInfoJob = jobs.find((job) => job.feature === 'question-info' && job.status === 'running') || null;
+      }
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
     }
   }
 
-  function stopTestMonitoring(feature: string) {
-    switch (feature) {
-      case 'argument-condensation':
-        argumentCondensationMonitoring = false;
-        argumentCondensationProgress = 0;
-        break;
-      case 'factor-analysis':
-        factorAnalysisMonitoring = false;
-        factorAnalysisProgress = 0;
-        break;
-      case 'question-info':
-        questionInfoMonitoring = false;
-        questionInfoProgress = 0;
-        break;
+  // Start polling
+  function startPolling() {
+    // Fetch immediately
+    fetchJobs();
+
+    // Then poll every 2 seconds
+    pollInterval = setInterval(fetchJobs, 2000);
+  }
+
+  // Stop polling
+  function stopPolling() {
+    if (pollInterval) {
+      clearInterval(pollInterval);
     }
   }
+
+  onMount(() => {
+    startPolling();
+  });
+
+  onDestroy(() => {
+    stopPolling();
+  });
 </script>
 
 <MainContent title="Jobs Monitoring" contentClass="max-w-none">
-  <p class="mb-lg text-center">Monitor all active jobs across admin features</p>
+  <div class="mb-lg flex flex-col items-center gap-4">
+    <p class="text-center">Monitor all active jobs across admin features</p>
+  </div>
 
   <div class="flex w-full flex-col gap-lg px-4">
     <!-- Argument Condensation Box -->
@@ -92,31 +78,48 @@ Page for monitoring all active jobs across different admin features
       <div class="card-body">
         <h2 class="card-title text-primary">Argument Condensation</h2>
 
-        {#if !argumentCondensationMonitoring}
-          <p class="mb-4 text-sm text-neutral">Condense candidate arguments into coherent positions</p>
-          <Button
-            text="Test Monitoring"
-            variant="main"
-            class="w-full"
-            on:click={() => startTestMonitoring('argument-condensation')} />
+        {#if !argumentCondensationJob}
+          <!-- No Active Jobs Section -->
+          <div class="space-y-4">
+            <div class="text-center">
+              <p class="mb-4 text-sm text-neutral">No active jobs</p>
+              <p class="text-xs text-neutral">Start an argument condensation process to see real-time monitoring</p>
+            </div>
+
+            <!-- Info Messages Box -->
+            <InfoMessages messages={[]} maxMessages={8} height="max-h-32" />
+
+            <!-- Warning Messages Box -->
+            <WarningMessages warnings={[]} errors={[]} height="max-h-32" />
+          </div>
         {:else}
-          <!-- Monitoring View -->
+          <!-- Active Job Monitoring Section -->
           <div class="space-y-4">
             <!-- Progress Bar -->
-            <ProgressBar progress={argumentCondensationProgress} color="primary" size="md" />
+            <ProgressBar progress={argumentCondensationJob.progress} color="primary" size="md" />
 
             <!-- Info Messages -->
-            <InfoMessages messages={mockInfoMessages} maxMessages={8} height="max-h-96" />
+            <InfoMessages messages={argumentCondensationJob.infoMessages} maxMessages={5} height="max-h-96" />
 
             <!-- Warning Messages -->
-            <WarningMessages warnings={mockWarningMessages} errors={mockErrorMessages} height="max-h-96" />
-
-            <Button
-              text="Stop Monitoring"
-              variant="secondary"
-              on:click={() => stopTestMonitoring('argument-condensation')} />
+            <WarningMessages
+              warnings={argumentCondensationJob.warningMessages}
+              errors={argumentCondensationJob.errorMessages}
+              maxMessages={1000}
+              height="max-h-96" />
           </div>
         {/if}
+
+        <!-- Navigation Button Section -->
+        <div class="mt-4 border-t border-base-300 pt-4">
+          <Button
+            href={$getRoute('AdminAppArgumentCondensation')}
+            text="Go to Argument Condensation"
+            variant="secondary"
+            class="w-full"
+            icon="create"
+            iconPos="left" />
+        </div>
       </div>
     </div>
 
@@ -125,43 +128,55 @@ Page for monitoring all active jobs across different admin features
       <div class="card-body">
         <h2 class="card-title text-secondary">Factor Analysis</h2>
 
-        {#if !factorAnalysisMonitoring}
-          <p class="mb-4 text-sm text-neutral">Analyze question factors and correlations</p>
-          <Button
-            text="Test Monitoring"
-            variant="main"
-            class="w-full"
-            on:click={() => startTestMonitoring('factor-analysis')} />
+        {#if !factorAnalysisJob}
+          <!-- No Active Jobs Section -->
+          <div class="space-y-4">
+            <div class="text-center">
+              <p class="mb-4 text-sm text-neutral">No active jobs</p>
+              <p class="text-xs text-neutral">Start a factor analysis process to see real-time monitoring</p>
+            </div>
+
+            <!-- Info Messages Box -->
+            <div class="p-3 rounded-lg bg-base-200">
+              <h3 class="font-semibold mb-2 text-sm text-info">Info Messages</h3>
+              <div class="py-4 text-center text-xs text-neutral">No info messages</div>
+            </div>
+
+            <!-- Warning Messages Box -->
+            <div class="p-3 rounded-lg bg-base-200">
+              <h3 class="font-semibold mb-2 text-sm text-warning">Warnings & Errors</h3>
+              <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
+            </div>
+          </div>
         {:else}
-          <!-- Monitoring View -->
+          <!-- Active Job Monitoring Section -->
           <div class="space-y-4">
             <!-- Progress Bar -->
-            <ProgressBar progress={factorAnalysisProgress} color="secondary" size="md" />
+            <ProgressBar progress={factorAnalysisJob.progress} color="secondary" size="md" />
 
             <!-- Info Messages -->
-            <InfoMessages
-              messages={[
-                'Starting factor analysis...',
-                'Loading question data...',
-                'Calculating correlations...',
-                'Processing 45 questions...',
-                'Generating factor matrix...'
-              ]}
-              maxMessages={5}
-              height="max-h-96" />
+            <InfoMessages messages={factorAnalysisJob.infoMessages} maxMessages={5} height="max-h-96" />
 
             <!-- Warning Messages -->
             <WarningMessages
-              warnings={[
-                'Warning: Some questions have low variance',
-                'Warning: Factor loading below threshold for Q12'
-              ]}
-              errors={[]}
+              warnings={factorAnalysisJob.warningMessages}
+              errors={factorAnalysisJob.errorMessages}
+              maxMessages={1000}
               height="max-h-96" />
-
-            <Button text="Stop Monitoring" variant="secondary" on:click={() => stopTestMonitoring('factor-analysis')} />
           </div>
         {/if}
+
+        <!-- Navigation Button Section -->
+        <div class="mt-4 border-t border-base-300 pt-4">
+          <Button
+            href={$getRoute('AdminAppFactorAnalysis')}
+            text="Go to Factor Analysis"
+            variant="secondary"
+            class="w-full"
+            icon="create"
+            iconPos="left"
+            disabled />
+        </div>
       </div>
     </div>
 
@@ -170,31 +185,55 @@ Page for monitoring all active jobs across different admin features
       <div class="card-body">
         <h2 class="card-title text-accent">Question Info</h2>
 
-        {#if !questionInfoMonitoring}
-          <p class="mb-4 text-sm text-neutral">Generate detailed question information</p>
-          <Button
-            text="Test Monitoring"
-            variant="main"
-            class="w-full"
-            on:click={() => startTestMonitoring('question-info')} />
+        {#if !questionInfoJob}
+          <!-- No Active Jobs Section -->
+          <div class="space-y-4">
+            <div class="text-center">
+              <p class="mb-4 text-sm text-neutral">No active jobs</p>
+              <p class="text-xs text-neutral">Start a question info process to see real-time monitoring</p>
+            </div>
+
+            <!-- Info Messages Box -->
+            <div class="p-3 rounded-lg bg-base-200">
+              <h3 class="font-semibold mb-2 text-sm text-info">Info Messages</h3>
+              <div class="py-4 text-center text-xs text-neutral">No info messages</div>
+            </div>
+
+            <!-- Warning Messages Box -->
+            <div class="p-3 rounded-lg bg-base-200">
+              <h3 class="font-semibold mb-2 text-sm text-warning">Warnings & Errors</h3>
+              <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
+            </div>
+          </div>
         {:else}
-          <!-- Monitoring View -->
+          <!-- Active Job Monitoring Section -->
           <div class="space-y-4">
             <!-- Progress Bar -->
-            <ProgressBar progress={questionInfoProgress} color="accent" size="md" />
+            <ProgressBar progress={questionInfoJob.progress} color="accent" size="md" />
 
             <!-- Info Messages -->
-            <InfoMessages
-              messages={['Initializing question analysis...', 'Waiting for input...']}
-              maxMessages={2}
-              height="max-h-96" />
+            <InfoMessages messages={questionInfoJob.infoMessages} maxMessages={5} height="max-h-96" />
 
             <!-- Warning Messages -->
-            <WarningMessages warnings={[]} errors={[]} height="max-h-96" />
-
-            <Button text="Stop Monitoring" variant="secondary" on:click={() => stopTestMonitoring('question-info')} />
+            <WarningMessages
+              warnings={questionInfoJob.warningMessages}
+              errors={questionInfoJob.errorMessages}
+              maxMessages={1000}
+              height="max-h-96" />
           </div>
         {/if}
+
+        <!-- Navigation Button Section -->
+        <div class="mt-4 border-t border-base-300 pt-4">
+          <Button
+            href={$getRoute('AdminAppQuestionInfo')}
+            text="Go to Question Info"
+            variant="secondary"
+            class="w-full"
+            icon="create"
+            iconPos="left"
+            disabled />
+        </div>
       </div>
     </div>
   </div>

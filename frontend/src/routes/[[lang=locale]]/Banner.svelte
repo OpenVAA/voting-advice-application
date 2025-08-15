@@ -18,11 +18,11 @@ Accesses `AppContext` and optionally `VoterContext`.
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
-  import { LogoutButton as AdminLogoutButton } from '$lib/dynamic-components/logoutButton';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { LogoutButton as AdminLogoutButton } from '$lib/dynamic-components/logoutButton';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
