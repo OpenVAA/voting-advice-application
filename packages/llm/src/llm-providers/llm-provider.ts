@@ -1,3 +1,4 @@
+import type { Logger } from '@openvaa/core';
 import type { LLMResponse, ParsedLLMResponse } from '../types';
 import type {
   BaseGenerationOptions,
@@ -112,16 +113,18 @@ export abstract class LLMProvider {
    * @param options.parallelBatches - Optional maximum number of parallel batches to use (default: 3)
    * @param options.responseContract - Optional contract to validate the response against. If provided, the method will return parsed responses.
    * @param options.validationAttempts - Optional number of validation attempts per input (default: 3)
+   * @param logger - Optional logger for progress tracking
    * @returns A promise that resolves to an array of LLM responses (or parsed responses) in the same order as the inputs.
    * @throws Error if any input validation fails or if generation fails for any input
    */
   // Overload for validation
   abstract generateMultipleParallel<TType>(
-    options: ParallelValidationGenerationOptions<TType>
+    options: ParallelValidationGenerationOptions<TType>,
+    logger?: Logger
   ): Promise<Array<ParsedLLMResponse<TType>>>;
 
   // Overload for no validation
-  abstract generateMultipleParallel(options: ParallelGenerationOptions): Promise<Array<LLMResponse>>;
+  abstract generateMultipleParallel(options: ParallelGenerationOptions, logger?: Logger): Promise<Array<LLMResponse>>;
 
   /**
    * Implementation signature that concrete classes must implement.
@@ -131,11 +134,13 @@ export abstract class LLMProvider {
    * this method to handle the logic for both overloads.
    *
    * @param options - Either ParallelGenerationOptions or ParallelValidationGenerationOptions
+   * @param logger - Optional logger for progress tracking
    * @returns Promise resolving to an array of LLM responses or parsed responses
    */
   // Implementation signature that concrete classes must implement
   abstract generateMultipleParallel<TType>(
-    options: ParallelGenerationOptions | ParallelValidationGenerationOptions<TType>
+    options: ParallelGenerationOptions | ParallelValidationGenerationOptions<TType>,
+    logger?: Logger
   ): Promise<Array<LLMResponse | ParsedLLMResponse<TType>>>;
 
   /**

@@ -6,6 +6,7 @@ services:
     depends_on:
       strapi:
         condition: service_healthy
+    # Volume mounts are handled in frontend/docker-compose.dev.yml
     environment:
       PUBLIC_BROWSER_BACKEND_URL: ${PUBLIC_BROWSER_BACKEND_URL}
       PUBLIC_SERVER_BACKEND_URL: ${PUBLIC_SERVER_BACKEND_URL}
