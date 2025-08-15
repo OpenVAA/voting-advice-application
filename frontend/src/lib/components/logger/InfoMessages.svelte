@@ -5,7 +5,7 @@ Reusable component for displaying informational messages with scrolling
 -->
 
 <script lang="ts">
-  export let messages: string[] = [];
+  export let messages: Array<string> = [];
   export let maxMessages: number = 10;
   export let title: string = 'Info Messages';
   export let height: string = 'max-h-32';

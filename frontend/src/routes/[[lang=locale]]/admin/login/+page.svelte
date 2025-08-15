@@ -23,10 +23,10 @@
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup } from '$lib/components/headingGroup';
+  import { getAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import MainContent from '../../MainContent.svelte';
-  import { getAdminContext } from '$lib/contexts/admin';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
