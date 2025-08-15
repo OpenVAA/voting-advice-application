@@ -10,11 +10,10 @@ Page for controlling the argument condensation feature.
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { JobLogger } from '$lib/jobs/jobLogger';
   import { getUUID } from '$lib/utils/components';
   import MainContent from '../../../MainContent.svelte';
-  import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { AnyQuestionVariant } from '@openvaa/data';
+  import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
 
   const { dataRoot, t } = getAdminContext();
 
@@ -25,8 +24,7 @@ Page for controlling the argument condensation feature.
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
 
-  // Job logger
-  let currentJobLogger: JobLogger | null = null;
+  // Remove the job logger since it's now handled in the server action
 
   // Options for the radio group
   const options = [
@@ -77,57 +75,22 @@ Page for controlling the argument condensation feature.
       return;
     }
 
-    try {
-      // Get admin email from context (you may need to adjust this based on your auth setup)
-      const adminEmail = 'admin@example.com'; // TODO: Get from actual admin context
-
-      // Create a new job
-      const response = await fetch('/api/admin/jobs/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          feature: 'argument-condensation',
-          author: adminEmail
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create job');
-      }
-
-      const { jobId } = await response.json();
-      currentJobLogger = new JobLogger(jobId);
-
-      // Log job start
-      currentJobLogger.info('Starting argument condensation process...');
-      currentJobLogger.progress(0.1);
-
-      // Start the argument condensation process
-      console.log('Starting simulation with job logger:', currentJobLogger);
-      simulateArgumentCondensation();
-    } catch (error) {
-      console.error('Error starting argument condensation:', error);
-      status = 'error';
-      if (currentJobLogger) {
-        currentJobLogger.fail(error instanceof Error ? error.message : 'Unknown error');
-      }
-    }
+    // The form will submit to the server action which will:
+    // 1. Create a job for tracking progress
+    // 2. Run the actual argument condensation
+    // 3. Update job progress and messages in real-time
+    // No need to do anything here - just let the form submit naturally
 
     return async ({ result }: { result: ActionResult }) => {
-      console.log('Action result:', result);
       if (result.type === 'error') {
         status = 'error';
       } else if (result.type === 'failure') {
         // SvelteKit returns `failure` for `fail(...)`; treat as error UX-wise
-        console.error('Action failure:', (result as any)?.data);
         status = 'error';
       } else if (result.type === 'success') {
         status = 'success';
       } else if (result.type === 'redirect') {
-        // Shouldn’t happen here, but log if it does
-        console.log('Action redirected to:', (result as any)?.location);
+        // Shouldn't happen here, but log if it does
         status = 'success';
       }
 
@@ -136,37 +99,7 @@ Page for controlling the argument condensation feature.
     };
   }
 
-  // Mock function to simulate argument condensation process
-  // This will be replaced with actual condensation logic
-  async function simulateArgumentCondensation() {
-    console.log('simulateArgumentCondensation called, currentJobLogger:', currentJobLogger);
-    if (!currentJobLogger) return;
-
-    const steps = [
-      { message: 'MOCK:Processing batch 1 of 5 questions', progress: 0.2 },
-      { message: 'MOCK: LLM API call completed successfully', progress: 0.4 },
-      { message: 'MOCK: Generated 12 arguments for question 1', progress: 0.6 },
-      { message: 'MOCK: Merging duplicate arguments...', progress: 0.8 },
-      { message: 'MOCK: Saving results to database...', progress: 0.9 },
-      { message: 'MOCK: Process completed successfully!', progress: 1.0 }
-    ];
-
-    let currentStep = 0;
-    const interval = setInterval(async () => {
-      if (currentStep >= steps.length) {
-        clearInterval(interval);
-        await currentJobLogger?.complete();
-        status = 'success';
-        return;
-      }
-
-      const step = steps[currentStep];
-      console.log('Logging step:', step);
-      await currentJobLogger?.info(step.message);
-      await currentJobLogger?.progress(step.progress);
-      currentStep++;
-    }, 2000); // Update every 2 seconds
-  }
+  // Remove the mock simulation function - no longer needed
 </script>
 
 <MainContent title={$t('adminApp.argumentCondensation.title')}>
@@ -263,9 +196,10 @@ Page for controlling the argument condensation feature.
         <SuccessMessage inline message={$t('common.success')} class="mb-md" />
       {/if}
 
-      {#if currentJobLogger && status === 'loading'}
+      {#if status === 'loading'}
         <div class="p-3 mb-md rounded-lg bg-info/10 text-info">
-          <p class="text-sm">Job created successfully! Check the Jobs Monitoring page to see real-time progress.</p>
+          <p class="text-sm">Argument condensation process started! The server is now processing your request.</p>
+          <p class="mt-2 text-sm">Check the Jobs Monitoring page to see real-time progress and detailed updates.</p>
           <a href="/admin/jobs" class="text-xs underline">Go to Jobs Monitoring</a>
         </div>
       {/if}
