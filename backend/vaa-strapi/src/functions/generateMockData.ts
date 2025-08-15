@@ -9,6 +9,7 @@
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
+import mockAdmins from './mockData/mockAdmins.json';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
@@ -218,6 +219,12 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting backend admin users');
+    await createBackendAdmin().catch((e) => {
+      throw e;
+    });
+    console.info('Done!');
+    console.info('#######################################');
     console.info('Mock data generation completed successfully!');
     console.info('#######################################');
   } catch (e) {
@@ -247,6 +254,55 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
+  }
+}
+
+async function createBackendAdmin() {
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('Skipped - running in production mode.');
+    return;
+  }
+
+  console.info('Creating backend admin users from mock data...');
+
+  // Get the admin role for users-permissions plugin
+  const adminRole = await strapi.query('plugin::users-permissions.role').findOne({
+    where: {
+      type: 'admin'
+    }
+  });
+
+  if (!adminRole) {
+    console.warn('Admin role not found, skipping admin user creation');
+    return;
+  }
+
+  // Create admin users from mockAdmins.json
+  for (const adminData of mockAdmins) {
+    const { email, username, password } = adminData;
+
+    // Check if user already exists
+    const existingUser = await strapi.query('plugin::users-permissions.user').findOne({
+      where: { email }
+    });
+
+    if (existingUser) {
+      console.info(`Admin user ${email} already exists, skipping...`);
+      continue;
+    }
+
+    // Create the admin user
+    await strapi.plugin('users-permissions').service('user').add({
+      username,
+      email,
+      password,
+      provider: 'local',
+      confirmed: true,
+      blocked: false,
+      role: adminRole.id
+    });
+
+    console.info(`Created admin user: ${email}`);
   }
 }
 

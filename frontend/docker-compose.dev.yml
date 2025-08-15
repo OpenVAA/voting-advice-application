@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ../
-      dockerfile: frontend/Dockerfile
+      dockerfile: frontend/Dockerfile.dev
       target: development
     volumes:
       # Creating this volume will make Docker update changes from local automatically
@@ -11,6 +11,13 @@ services:
       - ./data:/var/data/local
       # Cache volume
       - cache:/var/data/cache
+      # Mount packages for live development
+      - ../packages:/opt/packages:ro
+      # Mount root package files
+      - ../package.json:/opt/package.json:ro
+      - ../yarn.lock:/opt/yarn.lock:ro
+      - ../.yarnrc.yml:/opt/.yarnrc.yml:ro
+      - ../.yarn:/opt/.yarn:ro
       # Mark these as volumes so they get ignored
       - /opt/frontend/node_modules
       - /opt/frontend/.svelte-kit
