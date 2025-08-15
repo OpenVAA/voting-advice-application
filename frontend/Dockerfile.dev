@@ -1,0 +1,34 @@
+FROM node:20.18.1-alpine AS base
+
+WORKDIR /opt
+
+# Setup env variable for yarn
+ENV YARN_VERSION=4.6
+
+# install and use yarn 4.x
+RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
+
+# Skip Husky installation in Docker
+ENV HUSKY=0
+
+# Copy workspace manifests and yarn files
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
+
+# Copy all workspaces so Yarn workspaces can resolve with --immutable
+COPY backend backend
+COPY frontend frontend
+COPY packages packages
+
+# Install dependencies (cached in image layers)
+RUN yarn install --immutable
+
+FROM base AS development
+
+WORKDIR /opt
+
+# Expose port
+EXPOSE 5173
+
+# Start development server
+CMD yarn workspace @openvaa/frontend dev --host 
