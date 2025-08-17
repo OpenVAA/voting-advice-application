@@ -138,7 +138,7 @@ function createQuestionPipeline(questions: Array<AnyQuestionVariant>): Array<{ i
  * - Calls handleQuestion for each question sequentially
  * @param args.electionId - Election id to scope questions and nominations
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
- * @param args.fetch - SvelteKit fetch function for server-side requests
+ * @param args.fetch - SvelteKit fetch function for data loading (not used for job updates)
  * @param args.locale - Language for prompts ('en'|'fi' currently supported)
  * @param args.jobId - Job ID for tracking progress
  * @returns DataApiActionResult indicating success/failure
@@ -160,13 +160,11 @@ async function condenseArguments({
   jobId: string;
 }): Promise<DataApiActionResult> {
   // Create logger immediately - it will be initialized with pipeline later
-  const logger = new PipelineLogger(jobId, fetch);
+  const logger = new PipelineLogger(jobId);
 
   try {
-    await logger.info('Starting argument condensation process...');
-
     // 1) Load data
-    await logger.info('Loading election and question data...');
+    await logger.info('Loading election and question data for argument condensation...');
     const dataRoot = new DataRoot();
     const dataProvider = await dataProviderPromise;
     dataProvider.init({ fetch });
@@ -193,7 +191,7 @@ async function condenseArguments({
     if (!isValidResult(questionData, { allowEmpty: true })) throw new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) throw new Error('Error loading nomination data');
 
-    await logger.info('Data loaded successfully');
+    await logger.info('Data loaded successfully!');
 
     dataRoot.update(() => {
       dataRoot.provideElectionData(electionData);
@@ -233,10 +231,6 @@ async function condenseArguments({
     const pipeline = createQuestionPipeline(supportedQuestions);
     logger.initializePipeline(pipeline);
 
-    await logger.info(
-      `Processing ${supportedQuestions.length} supported questions with ${pipeline.length} sub-operations`
-    );
-
     // 3) Collect nominated entities (HasAnswers) for the election
     function byElection(n: { data: { electionId: Id } }): boolean {
       return `${n.data.electionId}` === `${electionId}`;
@@ -254,20 +248,16 @@ async function condenseArguments({
       return { type: 'success' };
     }
 
-    await logger.info(`Found ${hasAnswersEntities.length} entities to process`);
-
     // 4) LLM setup
-    await logger.info('Initializing LLM provider...');
     const llm = getLLMProvider();
 
     // 5) Run condensation sequentially per question
     for (let i = 0; i < supportedQuestions.length; i++) {
       const question = supportedQuestions[i];
       const runId = `admin-${electionId}-${question.id}-${Date.now()}`;
+      await logger.info(`Processing question "${question.name}" (${i + 1}/${supportedQuestions.length})`);
 
-      await logger.info(`Processing question ${i + 1}/${supportedQuestions.length}: ${question.name}`);
-
-      const results = await handleQuestion({
+      await handleQuestion({
         question,
         entities: hasAnswersEntities as Array<HasAnswers>,
         options: {
@@ -275,19 +265,14 @@ async function condenseArguments({
           llmModel: 'gpt-4o-mini',
           language: locale,
           runId,
-          maxCommentsPerGroup: 3,
+          maxCommentsPerGroup: 1000,
           createVisualizationData: false, // disable FS writes in server env for now
           logger
         }
       });
-
-      const totalArgs = results.reduce((sum, r) => sum + r.arguments.length, 0);
-      await logger.info(`Completed question ${i + 1}: ${totalArgs} arguments generated`);
-
-      logger.info(`Done: ${question.id} → ${totalArgs} arguments across ${results.length} runs`);
     }
 
-    await logger.info('Argument condensation completed successfully!');
+    // TODO: Save the results to the database
 
     await logger.complete();
 

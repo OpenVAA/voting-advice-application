@@ -158,12 +158,12 @@ export function getAndSliceComments({
 
       if (group.comments.length < COMMENT_PROCESSING.MIN_COMMENTS_THRESHOLD) {
         actualLogger.warning(
-          `Too few comments for condensation (${group.comments.length} < ${COMMENT_PROCESSING.MIN_COMMENTS_THRESHOLD}) in group ${groupDescription}. The results may not be meaningful.`
+          `Only ${group.comments.length} comments for question "${question.name}" (${groupDescription}). The results may not be meaningful.`
         );
       }
       if (group.comments.length > maxCommentsPerGroup) {
         actualLogger.warning(
-          `Too many comments for condensation (${group.comments.length} > ${maxCommentsPerGroup}) in group ${groupDescription}. The list will be truncated to ${maxCommentsPerGroup} comments.`
+          `Too many comments for question "${question.name}". Truncating from ${group.comments.length} to ${maxCommentsPerGroup} (${groupDescription}).`
         );
         group.comments = group.comments.slice(0, maxCommentsPerGroup);
       }

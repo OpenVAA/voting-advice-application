@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ../
-      dockerfile: frontend/Dockerfile.dev
+      dockerfile: frontend/Dockerfile
       target: development
     volumes:
       # Creating this volume will make Docker update changes from local automatically

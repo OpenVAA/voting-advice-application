@@ -15,7 +15,7 @@ Page for controlling the argument condensation feature.
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
 
-  const { dataRoot, t } = getAdminContext();
+  const { dataRoot, t, getRoute } = getAdminContext();
 
   let selectedOption = 'all';
   let selectedElectionId = '';
@@ -200,7 +200,7 @@ Page for controlling the argument condensation feature.
         <div class="p-3 mb-md rounded-lg bg-info/10 text-info">
           <p class="text-sm">Argument condensation process started! The server is now processing your request.</p>
           <p class="mt-2 text-sm">Check the Jobs Monitoring page to see real-time progress and detailed updates.</p>
-          <a href="/admin/jobs" class="text-xs underline">Go to Jobs Monitoring</a>
+          <a href={$getRoute('AdminAppJobs')} class="text-xs underline">Go to Jobs Monitoring</a>
         </div>
       {/if}
 
