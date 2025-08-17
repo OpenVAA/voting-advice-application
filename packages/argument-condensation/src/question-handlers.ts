@@ -38,6 +38,7 @@ export async function handleBooleanQuestion({
         parallelBatches
       });
       results.push(prosResult);
+      options.logger?.info(`Found ${prosResult.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
@@ -47,6 +48,7 @@ export async function handleBooleanQuestion({
         parallelBatches
       });
       results.push(consResult);
+      options.logger?.info(`Found ${consResult.arguments.length} cons!`);
     }
   }
 
@@ -89,6 +91,7 @@ export async function handleOrdinalQuestion({
         parallelBatches
       });
       results.push(prosResult);
+      options.logger?.info(`Found ${prosResult.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
@@ -98,6 +101,7 @@ export async function handleOrdinalQuestion({
         parallelBatches
       });
       results.push(consResult);
+      options.logger?.info(`Found ${consResult.arguments.length} cons!`);
     }
   }
 
@@ -140,6 +144,7 @@ export async function handleCategoricalQuestion({
         parallelBatches
       });
       results.push(categoryResult);
+      options.logger?.info(`Found ${categoryResult.arguments.length} pros! Category ${group.choiceId}.`);
     }
   }
 

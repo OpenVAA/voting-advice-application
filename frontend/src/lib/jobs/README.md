@@ -95,22 +95,20 @@ const health = getSystemHealth();
 
 ## API Endpoints
 
-### Job Management
+### Core Operations
 
 - `GET /api/admin/jobs` - Get active jobs
 - `GET /api/admin/jobs?includePast=true` - Get all jobs (active + past)
 - `POST /api/admin/jobs/start` - Start a new job
 - `GET /api/admin/jobs/[id]/progress` - Get job progress
-- `POST /api/admin/jobs/[id]/progress` - Update job progress
-- `POST /api/admin/jobs/[id]/message` - Add message to job
-- `POST /api/admin/jobs/[id]/complete` - Mark job as completed
-- `POST /api/admin/jobs/[id]/fail` - Mark job as failed
 
 ### Health & Recovery
 
 - `GET /api/admin/jobs/health` - Get system health
 - `POST /api/admin/jobs/emergency-cleanup` - Emergency cleanup
 - `POST /api/admin/jobs/[id]/force-fail` - Force fail a job
+
+> **Note**: Job updates (progress, messages, completion) are now handled directly by the job store functions when used within the same process. The PipelineLogger automatically calls these functions instead of making HTTP requests.
 
 ## Configuration
 
