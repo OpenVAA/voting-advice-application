@@ -18,6 +18,7 @@ export interface JobInfo {
 }
 
 // Global in-memory job stores
+// TODO: subscribe to component
 const activeJobs = new Map<string, JobInfo>();
 const pastJobs = new Map<string, JobInfo>();
 

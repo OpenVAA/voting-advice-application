@@ -5,16 +5,14 @@ Page for monitoring all active jobs across different admin features
 -->
 
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte';
   import { Button } from '$lib/components/button';
-  import InfoMessages from '$lib/components/logger/InfoMessages.svelte';
-  import ProgressBar from '$lib/components/logger/ProgressBar.svelte';
-  import WarningMessages from '$lib/components/logger/WarningMessages.svelte';
+  import JobMonitor from '$lib/components/jobs/JobMonitor.svelte';
   import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../../MainContent.svelte';
-  import { onMount, onDestroy } from 'svelte';
   import type { JobInfo } from '$lib/jobs/jobStore';
 
-  const { t, getRoute } = getAppContext();
+  const { getRoute } = getAppContext();
 
   // Job data for each feature
   let argumentCondensationJob: JobInfo | null = null;
@@ -22,7 +20,7 @@ Page for monitoring all active jobs across different admin features
   let questionInfoJob: JobInfo | null = null;
 
   // Past jobs data
-  let pastJobs: JobInfo[] = [];
+  let pastJobs: Array<JobInfo> = [];
 
   // System health data
   let systemHealth: {
@@ -40,7 +38,7 @@ Page for monitoring all active jobs across different admin features
     try {
       const response = await fetch('/api/admin/jobs');
       if (response.ok) {
-        const activeJobs: JobInfo[] = await response.json();
+        const activeJobs: Array<JobInfo> = await response.json();
 
         // Find the first active job for each feature
         argumentCondensationJob =
@@ -61,7 +59,7 @@ Page for monitoring all active jobs across different admin features
       if (response.ok) {
         const pastJobsData = await response.json();
         // Parse dates from API response
-        pastJobs = pastJobsData.map((job: any) => ({
+        pastJobs = pastJobsData.map((job: JobInfo) => ({
           ...job,
           startTime: new Date(job.startTime),
           endTime: job.endTime ? new Date(job.endTime) : undefined,
@@ -146,11 +144,6 @@ Page for monitoring all active jobs across different admin features
     }
   }
 
-  // Get past jobs for a specific feature
-  function getPastJobsForFeature(feature: string): JobInfo[] {
-    return pastJobs.filter((job) => job.feature === feature);
-  }
-
   // Format job duration
   function formatJobDuration(job: JobInfo): string {
     if (!job.endTime) return 'N/A';
@@ -232,13 +225,12 @@ Page for monitoring all active jobs across different admin features
           {/if}
 
           <div class="card-actions mt-4 justify-end">
-            <Button text="Refresh Health" variant="secondary" size="sm" onclick={fetchSystemHealth} />
+            <Button text="Refresh Health" variant="secondary" on:click={fetchSystemHealth} />
 
             <Button
               text="Emergency Cleanup"
-              variant="error"
-              size="sm"
-              onclick={performEmergencyCleanup}
+              variant="secondary"
+              on:click={performEmergencyCleanup}
               disabled={systemHealth.staleJobs === 0} />
           </div>
         </div>
@@ -252,194 +244,68 @@ Page for monitoring all active jobs across different admin features
     <div class="flex w-full gap-lg px-4">
       <!-- Main Content - Takes 2/3 of width -->
       <div class="flex w-2/3 flex-col gap-lg">
-        <!-- Argument Condensation Box -->
-        <div class="card w-full bg-base-100 shadow-xl">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-primary">Argument Condensation</h2>
-              {#if argumentCondensationJob}
-                <Button
-                  text="Force Fail"
-                  variant="error"
-                  size="sm"
-                  onclick={() => forceFailJob(argumentCondensationJob.id, 'argument-condensation')} />
-              {/if}
-            </div>
+        <!-- Argument Condensation Monitor -->
+        <div class="relative">
+          <JobMonitor
+            jobType="argument-condensation"
+            activeJob={argumentCondensationJob}
+            onKillJob={(jobId) => forceFailJob(jobId, 'argument-condensation')}
+            maxMessages={8}
+            height="max-h-64" />
 
-            {#if !argumentCondensationJob}
-              <!-- No Active Jobs Section -->
-              <div class="space-y-4">
-                <div class="text-center">
-                  <p class="mb-4 text-sm text-neutral">No active jobs</p>
-                  <p class="text-xs text-neutral">Start an argument condensation process to see real-time monitoring</p>
-                </div>
-
-                <!-- Info Messages Box -->
-                <InfoMessages messages={[]} maxMessages={8} height="max-h-48" />
-
-                <!-- Warning Messages Box -->
-                <WarningMessages warnings={[]} errors={[]} height="max-h-48" />
-              </div>
-            {:else}
-              <!-- Active Job Monitoring Section -->
-              <div class="space-y-4">
-                <!-- Progress Bar -->
-                <ProgressBar progress={argumentCondensationJob.progress} color="primary" size="md" />
-
-                <!-- Info Messages -->
-                <InfoMessages messages={argumentCondensationJob.infoMessages} maxMessages={8} height="max-h-64" />
-
-                <!-- Warning Messages -->
-                <WarningMessages
-                  warnings={argumentCondensationJob.warningMessages}
-                  errors={argumentCondensationJob.errorMessages}
-                  maxMessages={1000}
-                  height="max-h-64" />
-              </div>
-            {/if}
-
-            <!-- Navigation Button Section -->
-            <div class="mt-4 border-t border-base-300 pt-4">
-              <Button
-                href={$getRoute('AdminAppArgumentCondensation')}
-                text="Go to Argument Condensation"
-                variant="secondary"
-                class="w-full"
-                icon="create"
-                iconPos="left" />
-            </div>
+          <!-- Navigation Button Section -->
+          <div class="mt-4 border-t border-base-300 pt-4">
+            <Button
+              href={$getRoute('AdminAppArgumentCondensation')}
+              text="Go to Argument Condensation"
+              variant="secondary"
+              class="w-full"
+              icon="create"
+              iconPos="left" />
           </div>
         </div>
 
-        <!-- Factor Analysis Box -->
-        <div class="card w-full bg-base-100 shadow-xl">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-secondary">Factor Analysis</h2>
-              {#if factorAnalysisJob}
-                <Button
-                  text="Force Fail"
-                  variant="error"
-                  size="sm"
-                  onclick={() => forceFailJob(factorAnalysisJob.id, 'factor-analysis')} />
-              {/if}
-            </div>
+        <!-- Factor Analysis Monitor -->
+        <div class="relative">
+          <JobMonitor
+            jobType="factor-analysis"
+            activeJob={factorAnalysisJob}
+            onKillJob={(jobId) => forceFailJob(jobId, 'factor-analysis')}
+            maxMessages={8}
+            height="max-h-64" />
 
-            {#if !factorAnalysisJob}
-              <!-- No Active Jobs Section -->
-              <div class="space-y-4">
-                <div class="text-center">
-                  <p class="mb-4 text-sm text-neutral">No active jobs</p>
-                  <p class="text-xs text-neutral">Start a factor analysis process to see real-time monitoring</p>
-                </div>
-
-                <!-- Info Messages Box -->
-                <div class="p-3 rounded-lg bg-base-200">
-                  <h3 class="font-semibold mb-2 text-sm text-info">Info Messages</h3>
-                  <div class="py-4 text-center text-xs text-neutral">No info messages</div>
-                </div>
-
-                <!-- Warning Messages Box -->
-                <div class="p-3 rounded-lg bg-base-200">
-                  <h3 class="font-semibold mb-2 text-sm text-warning">Warnings & Errors</h3>
-                  <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
-                </div>
-              </div>
-            {:else}
-              <!-- Active Job Monitoring Section -->
-              <div class="space-y-4">
-                <!-- Progress Bar -->
-                <ProgressBar progress={factorAnalysisJob.progress} color="secondary" size="md" />
-
-                <!-- Info Messages -->
-                <InfoMessages messages={factorAnalysisJob.infoMessages} maxMessages={8} height="max-h-64" />
-
-                <!-- Warning Messages -->
-                <WarningMessages
-                  warnings={factorAnalysisJob.warningMessages}
-                  errors={factorAnalysisJob.errorMessages}
-                  maxMessages={1000}
-                  height="max-h-64" />
-              </div>
-            {/if}
-
-            <!-- Navigation Button Section -->
-            <div class="mt-4 border-t border-base-300 pt-4">
-              <Button
-                href={$getRoute('AdminAppFactorAnalysis')}
-                text="Go to Factor Analysis"
-                variant="secondary"
-                class="w-full"
-                icon="create"
-                iconPos="left"
-                disabled />
-            </div>
+          <!-- Navigation Button Section -->
+          <div class="mt-4 border-t border-base-300 pt-4">
+            <Button
+              href={$getRoute('AdminAppFactorAnalysis')}
+              text="Go to Factor Analysis"
+              variant="secondary"
+              class="w-full"
+              icon="create"
+              iconPos="left"
+              disabled />
           </div>
         </div>
 
-        <!-- Question Info Box -->
-        <div class="card w-full bg-base-100 shadow-xl">
-          <div class="card-body">
-            <div class="flex items-center justify-between">
-              <h2 class="card-title text-accent">Question Info</h2>
-              {#if questionInfoJob}
-                <Button
-                  text="Force Fail"
-                  variant="error"
-                  size="sm"
-                  onclick={() => forceFailJob(questionInfoJob.id, 'question-info')} />
-              {/if}
-            </div>
+        <!-- Question Info Monitor -->
+        <div class="relative">
+          <JobMonitor
+            jobType="question-info"
+            activeJob={questionInfoJob}
+            onKillJob={(jobId) => forceFailJob(jobId, 'question-info')}
+            maxMessages={8}
+            height="max-h-64" />
 
-            {#if !questionInfoJob}
-              <!-- No Active Jobs Section -->
-              <div class="space-y-4">
-                <div class="text-center">
-                  <p class="mb-4 text-sm text-neutral">No active jobs</p>
-                  <p class="text-xs text-neutral">Start a question info process to see real-time monitoring</p>
-                </div>
-
-                <!-- Info Messages Box -->
-                <div class="p-3 rounded-lg bg-base-200">
-                  <h3 class="font-semibold mb-2 text-sm text-info">Info Messages</h3>
-                  <div class="py-4 text-center text-xs text-neutral">No info messages</div>
-                </div>
-
-                <!-- Warning Messages Box -->
-                <div class="p-3 rounded-lg bg-base-200">
-                  <h3 class="font-semibold mb-2 text-sm text-warning">Warnings & Errors</h3>
-                  <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
-                </div>
-              </div>
-            {:else}
-              <!-- Active Job Monitoring Section -->
-              <div class="space-y-4">
-                <!-- Progress Bar -->
-                <ProgressBar progress={questionInfoJob.progress} color="accent" size="md" />
-
-                <!-- Info Messages -->
-                <InfoMessages messages={questionInfoJob.infoMessages} maxMessages={8} height="max-h-64" />
-
-                <!-- Warning Messages -->
-                <WarningMessages
-                  warnings={questionInfoJob.warningMessages}
-                  errors={questionInfoJob.errorMessages}
-                  maxMessages={1000}
-                  height="max-h-64" />
-              </div>
-            {/if}
-
-            <!-- Navigation Button Section -->
-            <div class="mt-4 border-t border-base-300 pt-4">
-              <Button
-                href={$getRoute('AdminAppQuestionInfo')}
-                text="Go to Question Info"
-                variant="secondary"
-                class="w-full"
-                icon="create"
-                iconPos="left"
-                disabled />
-            </div>
+          <!-- Navigation Button Section -->
+          <div class="mt-4 border-t border-base-300 pt-4">
+            <Button
+              href={$getRoute('AdminAppQuestionInfo')}
+              text="Go to Question Info"
+              variant="secondary"
+              class="w-full"
+              icon="create"
+              iconPos="left"
+              disabled />
           </div>
         </div>
       </div>

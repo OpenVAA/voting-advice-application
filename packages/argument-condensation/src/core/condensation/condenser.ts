@@ -141,7 +141,6 @@ export class Condenser {
    * 5. Return final results with metadata
    */
   async run(): Promise<CondensationRunResult> {
-    this.logger.info(`Starting condensation run for "${this.input.question.name}"`);
     this.latencyTracker.start('total_run'); // Track the total run time in addition to the individual calls
 
     // Get condensation plan from input config
@@ -164,9 +163,7 @@ export class Condenser {
         weight: step.weight
       }));
 
-      this.logger.info(`currentOperationId: ${currentOperationId}, \nsubOperations: ${subOperations}`);
       this.logger.defineSubOperations(currentOperationId, subOperations);
-      this.logger.info(`Defined ${subOperations.length} sub-operations for progress tracking`);
     }
 
     // Execute plan steps sequentially - each step transforms the data for the next
