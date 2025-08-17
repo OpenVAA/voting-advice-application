@@ -388,8 +388,16 @@ describe('handleQuestion', () => {
     const fs = await import('fs');
     const path = await import('path');
 
-    const expectedProsPath = path.join(__dirname, '../../data/operationTrees', `${uniqueId}-pros.json`);
-    const expectedConsPath = path.join(__dirname, '../../data/operationTrees', `${uniqueId}-cons.json`);
+    const expectedProsPath = path.join(
+      process.cwd(),
+      'packages/argument-condensation/data/operationTrees',
+      `${uniqueId}-pros.json`
+    );
+    const expectedConsPath = path.join(
+      process.cwd(),
+      'packages/argument-condensation/data/operationTrees',
+      `${uniqueId}-cons.json`
+    );
 
     expect(fs.existsSync(expectedProsPath)).toBe(true);
     expect(fs.existsSync(expectedConsPath)).toBe(true);

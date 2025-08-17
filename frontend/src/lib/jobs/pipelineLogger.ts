@@ -1,5 +1,5 @@
 /**
- * Custom logger that integrates with the job store via API calls
+ * Custom logger that integrates with the job store directly
  * This logger can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly
  *
@@ -8,13 +8,15 @@
  */
 
 import { DefaultLogger } from '@openvaa/core';
+import {
+  addJobErrorMessage,
+  addJobInfoMessage,
+  addJobWarningMessage,
+  completeJob,
+  failJob,
+  updateJobProgress
+} from './jobStore';
 import type { Logger } from '@openvaa/core';
-
-// SvelteKit fetch type
-type SvelteKitFetch = {
-  (input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
-  (input: string | URL | globalThis.Request, init?: RequestInit): Promise<Response>;
-};
 
 /**
  * An operation is a step in a pipeline that can be tracked separately
@@ -35,7 +37,6 @@ interface Operation {
  */
 export class PipelineLogger extends DefaultLogger implements Logger {
   private jobId: string;
-  private fetchFn: SvelteKitFetch | typeof globalThis.fetch;
   private operations: Array<Operation> = [];
   private currentOperationIndex: number = 0;
   private totalProgress: number = 0;
@@ -47,10 +48,9 @@ export class PipelineLogger extends DefaultLogger implements Logger {
   // NEW: Current sub-operation index for the current operation
   private currentSubOperationIndex: number = 0;
 
-  constructor(jobId: string, fetchFn?: SvelteKitFetch) {
+  constructor(jobId: string) {
     super();
     this.jobId = jobId;
-    this.fetchFn = fetchFn || globalThis.fetch;
   }
 
   /**
@@ -138,7 +138,6 @@ export class PipelineLogger extends DefaultLogger implements Logger {
       // Auto-advance to next sub-operation if current reaches 100%
       if (value >= 1.0 && this.currentSubOperationIndex < subOps.length - 1) {
         this.currentSubOperationIndex++;
-        this.info(`Starting sub-operation: ${subOps[this.currentSubOperationIndex].id}`);
       }
     } else {
       // Update the main operation progress directly
@@ -156,7 +155,6 @@ export class PipelineLogger extends DefaultLogger implements Logger {
       this.currentOperationIndex++;
       this.operations[this.currentOperationIndex].progress = 0;
       this.currentSubOperationIndex = 0; // Reset sub-operation index
-      this.info(`Starting: ${this.operations[this.currentOperationIndex].id}`);
     }
   }
 
@@ -204,7 +202,6 @@ export class PipelineLogger extends DefaultLogger implements Logger {
       this.currentOperationIndex = opIndex + 1;
       this.operations[this.currentOperationIndex].progress = 0;
       this.currentSubOperationIndex = 0; // Reset sub-operation index
-      this.info(`Starting: ${this.operations[this.currentOperationIndex].id}`);
     }
   }
 
@@ -247,7 +244,6 @@ export class PipelineLogger extends DefaultLogger implements Logger {
     // Auto-advance to next sub-operation if current reaches 100%
     if (value >= 1.0 && subOpIndex < subOps.length - 1) {
       this.currentSubOperationIndex = subOpIndex + 1;
-      this.info(`Starting sub-operation: ${subOps[this.currentSubOperationIndex].id}`);
     }
   }
 
@@ -264,7 +260,6 @@ export class PipelineLogger extends DefaultLogger implements Logger {
       this.currentOperationIndex++;
       this.operations[this.currentOperationIndex].progress = 0;
       this.currentSubOperationIndex = 0; // Reset sub-operation index
-      this.info(`Starting: ${this.operations[this.currentOperationIndex].id}`);
     }
   }
 
@@ -377,16 +372,9 @@ export class PipelineLogger extends DefaultLogger implements Logger {
     this.updateJobProgress(this.totalProgress);
   }
 
-  private async updateJobProgress(progress: number): Promise<void> {
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/progress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ progress })
-      });
-    } catch (error) {
-      console.error('Failed to update job progress:', error);
-    }
+  private updateJobProgress(progress: number): void {
+    // Update job store directly instead of making HTTP call
+    updateJobProgress(this.jobId, progress);
   }
 
   /**
@@ -396,16 +384,8 @@ export class PipelineLogger extends DefaultLogger implements Logger {
     // Call parent logger first
     super.info(message);
 
-    // Then update job store
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'info', message })
-      });
-    } catch (error) {
-      console.error('Failed to add info message:', error);
-    }
+    // Then update job store directly
+    addJobInfoMessage(this.jobId, message);
   }
 
   /**
@@ -415,16 +395,8 @@ export class PipelineLogger extends DefaultLogger implements Logger {
     // Call parent logger first
     super.warning(message);
 
-    // Then update job store
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'warning', message })
-      });
-    } catch (error) {
-      console.error('Failed to add warning message:', error);
-    }
+    // Then update job store directly
+    addJobWarningMessage(this.jobId, message);
   }
 
   /**
@@ -434,44 +406,24 @@ export class PipelineLogger extends DefaultLogger implements Logger {
     // Call parent logger first
     super.error(message);
 
-    // Then update job store
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'error', message })
-      });
-    } catch (error) {
-      console.error('Failed to add error message:', error);
-    }
+    // Then update job store directly
+    addJobErrorMessage(this.jobId, message);
   }
 
   /**
    * Mark job as completed
    */
   async complete(): Promise<void> {
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (error) {
-      console.error('Failed to complete job:', error);
-    }
+    completeJob(this.jobId);
   }
 
   /**
    * Mark job as failed
    */
   async fail(errorMessage?: string): Promise<void> {
-    try {
-      await this.fetchFn(`/api/admin/jobs/${this.jobId}/fail`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ errorMessage })
-      });
-    } catch (error) {
-      console.error('Failed to fail job:', error);
+    if (errorMessage) {
+      addJobErrorMessage(this.jobId, errorMessage);
     }
+    failJob(this.jobId);
   }
 }
