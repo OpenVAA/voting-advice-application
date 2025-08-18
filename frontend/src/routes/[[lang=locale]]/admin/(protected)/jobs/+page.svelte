@@ -11,82 +11,15 @@ Page for monitoring all active jobs across different admin features
   import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../../MainContent.svelte';
   import type { JobInfo } from '$lib/jobs/jobStore';
+  import { activeJobsStore, pastJobsStore, activeJobCount, jobPollingService } from '$lib/stores/jobStores';
 
   const { getRoute } = getAppContext();
 
-  // Job data for each feature
-  let argumentCondensationJob: JobInfo | null = null;
-  let factorAnalysisJob: JobInfo | null = null;
-  let questionInfoJob: JobInfo | null = null;
-
-  // Past jobs data
-  let pastJobs: Array<JobInfo> = [];
-
-  // System health data
-  let systemHealth: {
-    activeJobs: number;
-    pastJobs: number;
-    staleJobs: number;
-    warnings: Array<string>;
-  } | null = null;
-
-  // Polling interval
-  let pollInterval: ReturnType<typeof setInterval>;
-
-  // Fetch active jobs only (for real-time updates)
-  async function fetchActiveJobs() {
-    try {
-      const response = await fetch('/api/admin/jobs');
-      if (response.ok) {
-        const activeJobs: Array<JobInfo> = await response.json();
-
-        // Find the first active job for each feature
-        argumentCondensationJob =
-          activeJobs.find((job) => job.feature === 'argument-condensation' && job.status === 'running') || null;
-        factorAnalysisJob =
-          activeJobs.find((job) => job.feature === 'factor-analysis' && job.status === 'running') || null;
-        questionInfoJob = activeJobs.find((job) => job.feature === 'question-info' && job.status === 'running') || null;
-      }
-    } catch (error) {
-      console.error('Error fetching active jobs:', error);
-    }
-  }
-
-  // Fetch past jobs (less frequently)
-  async function fetchPastJobs() {
-    try {
-      const response = await fetch('/api/admin/jobs?includePast=true');
-      if (response.ok) {
-        const pastJobsData = await response.json();
-        // Parse dates from API response
-        pastJobs = pastJobsData.map((job: JobInfo) => ({
-          ...job,
-          startTime: new Date(job.startTime),
-          endTime: job.endTime ? new Date(job.endTime) : undefined,
-          lastActivityTime: job.lastActivityTime ? new Date(job.lastActivityTime) : undefined
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching past jobs:', error);
-    }
-  }
-
-  // Fetch system health
-  async function fetchSystemHealth() {
-    try {
-      const response = await fetch('/api/admin/jobs/health?autoCleanup=true');
-      if (response.ok) {
-        systemHealth = await response.json();
-      }
-    } catch (error) {
-      console.error('Error fetching system health:', error);
-    }
-  }
-
-  // Fetch all jobs (for initial load)
-  async function fetchAllJobs() {
-    await Promise.all([fetchActiveJobs(), fetchPastJobs(), fetchSystemHealth()]);
-  }
+  // Subscribe to stores for reactive UI updates
+  $: argumentCondensationJob = $activeJobsStore.get('argument-condensation') || null;
+  $: factorAnalysisJob = $activeJobsStore.get('factor-analysis') || null;
+  $: questionInfoJob = $activeJobsStore.get('question-info') || null;
+  $: pastJobs = Array.from($pastJobsStore.values());
 
   // Emergency cleanup function
   async function performEmergencyCleanup() {
@@ -106,8 +39,8 @@ Page for monitoring all active jobs across different admin features
         console.info('Emergency cleanup completed:', result);
         alert(`Emergency cleanup completed! ${result.cleanedJobs} jobs were cleaned up.`);
 
-        // Refresh all data
-        await fetchAllJobs();
+        // Refresh data from stores
+        await jobPollingService.refresh();
       } else {
         const error = await response.json();
         alert(`Emergency cleanup failed: ${error.error}`);
@@ -133,7 +66,8 @@ Page for monitoring all active jobs across different admin features
 
       if (response.ok) {
         alert('Job force-failed successfully');
-        await fetchAllJobs();
+        // Refresh data from stores
+        await jobPollingService.refresh();
       } else {
         const error = await response.json();
         alert(`Failed to force-fail job: ${error.error}`);
@@ -153,89 +87,54 @@ Page for monitoring all active jobs across different admin features
     return `${minutes}m ${seconds}s`;
   }
 
-  // Start polling
-  function startPolling() {
-    // Fetch all jobs immediately
-    fetchAllJobs();
-
-    // Then poll active jobs every 1 second for real-time updates
-    pollInterval = setInterval(fetchActiveJobs, 1000);
-
-    // Fetch past jobs every 10 seconds (less frequent)
-    setInterval(fetchPastJobs, 10000);
-
-    // Fetch system health every 30 seconds
-    setInterval(fetchSystemHealth, 30000);
-  }
-
-  // Stop polling
-  function stopPolling() {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-    }
-  }
-
   onMount(() => {
-    startPolling();
+    // The stores will automatically start polling if there are active jobs
+    // We can also force a refresh to get initial data
+    jobPollingService.refresh();
   });
 
-  onDestroy(() => {
-    stopPolling();
-  });
+  // No need for onDestroy cleanup - the stores handle their own lifecycle
 </script>
 
 <MainContent title="Jobs Monitoring">
   <div slot="fullWidth">
     <!-- System Health Section -->
-    {#if systemHealth}
-      <div class="card mb-lg bg-base-100 shadow-xl">
-        <div class="card-body">
-          <h2 class="card-title text-base-content">System Health</h2>
+    <div class="card mb-lg bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title text-base-content">System Health</h2>
 
-          <div class="stats stats-horizontal shadow">
-            <div class="stat">
-              <div class="stat-title">Active Jobs</div>
-              <div class="stat-value {systemHealth.activeJobs > 0 ? 'text-primary' : 'text-success'}">
-                {systemHealth.activeJobs}
-              </div>
-            </div>
-
-            <div class="stat">
-              <div class="stat-title">Past Jobs</div>
-              <div class="stat-value text-secondary">{systemHealth.pastJobs}</div>
-            </div>
-
-            <div class="stat">
-              <div class="stat-title">Stale Jobs</div>
-              <div class="stat-value {systemHealth.staleJobs > 0 ? 'text-error' : 'text-success'}">
-                {systemHealth.staleJobs}
-              </div>
+        <div class="stats stats-horizontal shadow">
+          <div class="stat">
+            <div class="stat-title">Active Jobs</div>
+            <div class="stat-value {$activeJobCount > 0 ? 'text-primary' : 'text-success'}">
+              {$activeJobCount}
             </div>
           </div>
 
-          {#if systemHealth.warnings.length > 0}
-            <div class="mt-4 rounded-lg border border-warning/20 bg-warning/10 p-4">
-              <h3 class="font-semibold mb-2 text-warning">System Warnings</h3>
-              <ul class="space-y-1 text-sm">
-                {#each systemHealth.warnings as warning}
-                  <li class="text-warning">• {warning}</li>
-                {/each}
-              </ul>
+          <div class="stat">
+            <div class="stat-title">Successful Jobs</div>
+            <div class="stat-value text-success">
+              {Array.from($pastJobsStore.values()).filter((job) => job.status === 'completed').length}
             </div>
-          {/if}
+          </div>
 
-          <div class="card-actions mt-4 justify-end">
-            <Button text="Refresh Health" variant="secondary" on:click={fetchSystemHealth} />
-
-            <Button
-              text="Emergency Cleanup"
-              variant="secondary"
-              on:click={performEmergencyCleanup}
-              disabled={systemHealth.staleJobs === 0} />
+          <div class="stat">
+            <div class="stat-title">Failed Jobs</div>
+            <div class="stat-value text-error">
+              {Array.from($pastJobsStore.values()).filter((job) => job.status === 'failed').length}
+            </div>
           </div>
         </div>
+
+        <div class="card-actions mt-4 justify-end">
+          <Button
+            text="Fail All Jobs"
+            variant="secondary"
+            on:click={performEmergencyCleanup}
+            disabled={$activeJobCount === 0} />
+        </div>
       </div>
-    {/if}
+    </div>
 
     <div class="mb-lg flex flex-col items-center gap-4">
       <p class="text-center">Monitor all active jobs across admin features</p>
