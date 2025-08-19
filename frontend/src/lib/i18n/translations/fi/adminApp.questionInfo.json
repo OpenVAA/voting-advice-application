@@ -13,7 +13,11 @@
     "buttonLoading": "Luodaan tietoja...",
     "mayTakeTime": "Tämä saattaa kestää hetken.",
     "error": "Tietojen luominen epäonnistui",
-    "noQuestionSelected": "Valitse vähintään yksi kysymys"
+    "noQuestionSelected": "Valitse vähintään yksi kysymys",
+    "selectElection": "Valitse vaali",
+    "selectElectionPlaceholder": "Valitse vaali...",
+    "noQuestionsForElection": "Valitulle vaalille ei löytynyt kysymyksiä.",
+    "noElectionSelected": "Valitse ensin vaali"
   },
   "edit": {
     "title": "Muokkaa tietoja",
