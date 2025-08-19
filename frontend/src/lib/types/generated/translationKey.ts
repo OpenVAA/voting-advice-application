@@ -79,6 +79,8 @@ export type TranslationKey =
   | 'adminApp.questionInfo.generate.selectedQuestions'
   | 'adminApp.questionInfo.generate.title'
   | 'adminApp.questionInfo.pageDescription'
+  | 'adminApp.questionInfo.pageTitle'
+  | 'adminApp.questionInfo.pageDescription'
   | 'adminApp.questionInfo.title'
   | 'candidateApp.basicInfo.editableInfos.description'
   | 'candidateApp.basicInfo.editableInfos.title'
