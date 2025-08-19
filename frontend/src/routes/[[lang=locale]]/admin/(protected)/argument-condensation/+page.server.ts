@@ -1,14 +1,12 @@
 import { handleQuestion } from '@openvaa/argument-condensation';
 import { type HasAnswers, type Id } from '@openvaa/core';
-import { DataRoot, QUESTION_TYPE } from '@openvaa/data';
+import { QUESTION_TYPE } from '@openvaa/data';
 import { type Actions, fail } from '@sveltejs/kit';
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
-import { isValidResult } from '$lib/api/utils/isValidResult';
+import { loadElectionData } from '$lib/api/utils/loadElectionData';
 import { PipelineLogger } from '$lib/jobs/pipelineLogger';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
 import type { AnyQuestionVariant, SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { DPDataType } from '$lib/api/base/dataTypes';
 
 /**
  * Handle form submit from the UI to start condensation.
@@ -165,41 +163,12 @@ async function condenseArguments({
   try {
     // 1) Load data
     await logger.info('Loading election and question data for argument condensation...');
-    const dataRoot = new DataRoot();
-    const dataProvider = await dataProviderPromise;
-    dataProvider.init({ fetch });
-
-    const [electionData, constituencyData, questionData, nominationData] = (await Promise.all([
-      dataProvider.getElectionData({ locale }).catch((e) => e),
-      dataProvider.getConstituencyData({ locale }).catch((e) => e),
-      dataProvider
-        .getQuestionData({
-          electionId,
-          locale
-        })
-        .catch((e) => e),
-      dataProvider
-        .getNominationData({
-          electionId,
-          locale
-        })
-        .catch((e) => e)
-    ])) as [DPDataType['elections'], DPDataType['constituencies'], DPDataType['questions'], DPDataType['nominations']];
-
-    if (!isValidResult(electionData)) throw new Error('Error loading election data');
-    if (!isValidResult(constituencyData, { allowEmpty: true })) throw new Error('Error loading constituency data');
-    if (!isValidResult(questionData, { allowEmpty: true })) throw new Error('Error loading question data');
-    if (!isValidResult(nominationData, { allowEmpty: true })) throw new Error('Error loading nomination data');
-
-    await logger.info('Data loaded successfully!');
-
-    dataRoot.update(() => {
-      dataRoot.provideElectionData(electionData);
-      dataRoot.provideConstituencyData(constituencyData);
-      dataRoot.provideQuestionData(questionData);
-      dataRoot.provideEntityData(nominationData.entities);
-      dataRoot.provideNominationData(nominationData.nominations);
+    const dataRoot = await loadElectionData({
+      electionId,
+      locale,
+      fetch
     });
+    await logger.info('Data loaded successfully!');
 
     // 2) Resolve questions: selected or all applicable opinion questions for the election
     const election = dataRoot.getElection(electionId);

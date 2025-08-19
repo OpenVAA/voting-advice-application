@@ -13,7 +13,11 @@
     "buttonLoading": "Generating infos...",
     "mayTakeTime": "This may take some time.",
     "error": "Failed to generate info",
-    "noQuestionSelected": "Please select at least one question"
+    "noQuestionSelected": "Please select at least one question",
+    "selectElection": "Select Election",
+    "selectElectionPlaceholder": "Choose an election...",
+    "noQuestionsForElection": "No questions found for the selected election.",
+    "noElectionSelected": "Please select an election first"
   },
   "edit": {
     "title": "Edit infos",
