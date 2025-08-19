@@ -11,13 +11,14 @@ import type { EntityData, EntityType } from '../../types/entities';
  * @param entityId - The `documentId` of the entity
  * @param properties.answers - The new answers
  * @param properties.image - The `documentId` of the new image for the entity or `null` to remove it
+ * @param properties.termsOfUseAccepted - The `termsOfUseAccepted` date string or `null` to remove it`
  * @param options.overwriteAnswers - If `true`, overwrite the existing answers with the new ones. If false, `merge` the new answers with the existing ones.
  * @returns The updated entity
  */
 export async function setEntityProperties<TEntity extends EntityType>({
   entityType,
   entityId,
-  properties: { answers, image },
+  properties: { answers, image, termsOfUseAccepted },
   options: { overwriteAnswers } = { overwriteAnswers: false }
 }: {
   entityType: TEntity;
@@ -25,6 +26,7 @@ export async function setEntityProperties<TEntity extends EntityType>({
   properties: {
     answers?: Record<string, LocalizedAnswer>;
     image?: string | null;
+    termsOfUseAccepted?: string | null;
   };
   options?: {
     overwriteAnswers?: boolean;
@@ -59,6 +61,8 @@ export async function setEntityProperties<TEntity extends EntityType>({
       error(`[setEntityProperties] Invalid image provided: ${image}. Expected a string or null.`);
     }
   }
+
+  if (termsOfUseAccepted !== undefined) updatedData['termsOfUseAccepted'] = termsOfUseAccepted;
 
   const args = {
     documentId,

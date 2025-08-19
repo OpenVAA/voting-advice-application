@@ -12,7 +12,14 @@ import type { StrapiCandidateData, StrapiUpdateCandidateReturnData } from '../st
  * @param dontTranslateAnswers - If `true`, answers will not be translated. Used by the Candidate App.
  */
 export function parseCandidate<TLocalized extends boolean | undefined>(
-  { documentId, answers, firstName, lastName, image }: StrapiCandidateData | StrapiUpdateCandidateReturnData,
+  {
+    documentId,
+    answers,
+    firstName,
+    lastName,
+    image,
+    termsOfUseAccepted
+  }: StrapiCandidateData | StrapiUpdateCandidateReturnData,
   locale: string | null,
   {
     dontTranslateAnswers
@@ -27,6 +34,7 @@ export function parseCandidate<TLocalized extends boolean | undefined>(
     firstName,
     lastName,
     image: parseImage(image),
-    answers: dontTranslateAnswers ? (answers as LocalizedAnswers) : parseAnswers(answers, locale)
+    answers: dontTranslateAnswers ? (answers as LocalizedAnswers) : parseAnswers(answers, locale),
+    termsOfUseAccepted
   } as TLocalized extends true ? LocalizedCandidateData : CandidateData;
 }

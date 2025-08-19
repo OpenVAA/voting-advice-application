@@ -166,7 +166,9 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     });
     if (!data?.candidate) throw new Error('Expected a CandidateUserData object with a candidate, but got none.');
     // A localized version of the candidate data with answers untranslated
-    const candidate = parseCandidate(data.candidate, locale ?? null, { dontTranslateAnswers: true });
+    const candidate = parseCandidate(data.candidate, locale ?? null, {
+      dontTranslateAnswers: true
+    });
     const user = parseUser(data);
     // If loadNominations is true, always return nominations data even if empty; if false, return undefined
     const nominations = loadNominations
@@ -214,17 +216,22 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   protected async _updateEntityProperties({
     authToken,
     target,
-    properties: { image }
+    properties: { image, termsOfUseAccepted }
   }: SetPropertiesOptions): DWReturnType<LocalizedCandidateData> {
-    const data = await this.apiUpload({ authToken, target, files: [image.file!] });
-    if (data?.length !== 1 || !data?.[0].documentId)
-      throw new Error('Expected a single image object, but got something else.');
+    let imageId: string | undefined;
+    if (image?.file) {
+      const data = await this.apiUpload({ authToken, target, files: [image.file!] });
+      if (data?.length !== 1 || !data?.[0].documentId)
+        throw new Error('Expected a single image object, but got something else.');
+      imageId = data[0].documentId;
+    }
     const candidate = await this.apiPost({
       endpoint: 'setProperties',
       endpointParams: { id: target.id },
       body: {
         data: {
-          image: data[0].documentId
+          image: imageId,
+          termsOfUseAccepted
         }
       },
       authToken

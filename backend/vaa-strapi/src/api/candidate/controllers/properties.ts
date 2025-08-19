@@ -5,7 +5,9 @@ import type { EntityData } from '../../../../types/entities';
 
 export default {
   /**
-   * Update the `Candidate`s editable properties.
+   * Update the `Candidate`s editable properties:
+   * - image
+   * - termsOfUseAccepted
    */
   async update(ctx: StrapiContext) {
     const data = await setCandidateProperties(ctx);
@@ -15,12 +17,15 @@ export default {
 };
 
 function setCandidateProperties({ params, request }: StrapiContext): Promise<EntityData<'candidate'>> {
-  const image = request.body?.data?.image;
-  if (image === undefined || !(image === null || typeof image === 'string'))
+  const { image, termsOfUseAccepted } = request.body?.data ?? {};
+  if (image === undefined && termsOfUseAccepted === undefined) error('No properties provided.');
+  if (image !== undefined && !(image === null || typeof image === 'string'))
     error(`[setCandidateProperties] Invalid image provided: ${image}.`);
+  if (termsOfUseAccepted !== undefined && isNaN(Date.parse(termsOfUseAccepted)))
+    error(`[setCandidateProperties] Invalid termsOfUseAccepted provided: ${termsOfUseAccepted}.`);
   return setEntityProperties({
     entityType: 'candidate',
     entityId: params.id,
-    properties: { image }
+    properties: { image, termsOfUseAccepted }
   });
 }

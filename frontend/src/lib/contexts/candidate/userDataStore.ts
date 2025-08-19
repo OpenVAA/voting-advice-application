@@ -1,5 +1,5 @@
 import { type Id } from '@openvaa/core';
-import { type CandidateData, ENTITY_TYPE, type Image } from '@openvaa/data';
+import { ENTITY_TYPE, type Image } from '@openvaa/data';
 import { derived, get, type Readable, writable } from 'svelte/store';
 import { prepareDataWriter } from './prepareDataWriter';
 import { localStorageWritable } from '../utils/storageStore';
@@ -42,30 +42,37 @@ export function userDataStore({
   // An internal store for holding the edited image
   const editedImage = writable<ImageWithFile | undefined>();
 
+  // An internal store for holding the edited `termsOfUseAccepted` property
+  const editedTermsOfUseAccepted = writable<string | null | undefined>();
+
   // Subscribe to `answersLocked` to clear edited data
   answersLocked.subscribe((locked) => {
     if (locked) resetUnsaved();
   });
 
   // A derived internal store holding the effective user data, including unsaved data. Only its subsribe method will be exposed
-  const { subscribe } = derived([savedData, editedAnswers, editedImage], ([savedData, editedAnswers, editedImage]) => {
-    if (!savedData) return undefined;
-    const {
-      user,
-      candidate: { answers = {}, image, ...rest },
-      nominations
-    } = savedData;
-    // Return clone to prevent mutation of saved data
-    return structuredClone({
-      candidate: {
-        answers: { ...answers, ...editedAnswers },
-        image: editedImage ?? image,
-        ...rest
-      },
-      user,
-      nominations
-    }) as CandidateUserData<true>;
-  });
+  const { subscribe } = derived(
+    [savedData, editedAnswers, editedImage, editedTermsOfUseAccepted],
+    ([savedData, editedAnswers, editedImage, editedTermsOfUseAccepted]) => {
+      if (!savedData) return undefined;
+      const {
+        user,
+        candidate: { answers = {}, image, termsOfUseAccepted, ...rest },
+        nominations
+      } = savedData;
+      // Return clone to prevent mutation of saved data
+      return structuredClone({
+        candidate: {
+          answers: { ...answers, ...editedAnswers },
+          image: editedImage ?? image,
+          termsOfUseAccepted: editedTermsOfUseAccepted ?? termsOfUseAccepted,
+          ...rest
+        },
+        user,
+        nominations
+      }) as CandidateUserData<true>;
+    }
+  );
 
   /**
    * A utility for only updating the `candidate` part of the user data.
@@ -91,8 +98,11 @@ export function userDataStore({
   );
 
   const unsavedProperties = derived(
-    editedImage,
-    (editedImage) => (editedImage ? ['image'] : []) as Array<keyof CandidateData>
+    [editedImage, editedTermsOfUseAccepted],
+    ([editedImage, editedTermsOfUseAccepted]) =>
+      [editedImage ? 'image' : undefined, editedTermsOfUseAccepted ? 'termsOfUseAccepted' : undefined].filter(
+        (p) => p !== undefined
+      ) as Array<keyof LocalizedCandidateData>
   );
 
   const hasUnsaved = derived(
@@ -116,6 +126,7 @@ export function userDataStore({
   function resetUnsaved(): void {
     resetAnswers();
     resetImage();
+    resetTermsOfUseAccepted();
   }
 
   function setAnswer(questionId: Id, answer: LocalizedAnswer | null): void {
@@ -144,6 +155,14 @@ export function userDataStore({
     editedImage.set(undefined);
   }
 
+  function setTermsOfUseAccepted(value: string | null): void {
+    editedTermsOfUseAccepted.set(value);
+  }
+
+  function resetTermsOfUseAccepted(): void {
+    editedTermsOfUseAccepted.set(undefined);
+  }
+
   async function reloadCandidateData(): Promise<LocalizedCandidateData> {
     const token = get(authToken);
     if (!token) throw new Error('No authentication token provided');
@@ -169,6 +188,7 @@ export function userDataStore({
 
     const answers = get(editedAnswers);
     const image = get(editedImage);
+    const termsOfUseAccepted = get(editedTermsOfUseAccepted);
     const updateArgs = {
       authToken: token,
       target: {
@@ -190,12 +210,12 @@ export function userDataStore({
       if (!updated) throw new Error('Failed to update answers');
     }
 
-    if (image) {
+    if (image || termsOfUseAccepted) {
       updated = await dataWriter.updateEntityProperties({
         ...updateArgs,
-        properties: { image }
+        properties: { image, termsOfUseAccepted }
       });
-      if (!updated) throw new Error('Failed to update image');
+      if (!updated) throw new Error('Failed to update image or termsOfUseAccepted');
     }
 
     // Update the user data
@@ -203,6 +223,7 @@ export function userDataStore({
     // Only reset the answers after successful save
     resetAnswers();
     resetImage();
+    resetTermsOfUseAccepted();
 
     return { type: 'success' };
   }
@@ -215,11 +236,13 @@ export function userDataStore({
     resetAnswer,
     resetAnswers,
     resetImage,
+    resetTermsOfUseAccepted,
     resetUnsaved,
     save,
     savedCandidateData,
     setAnswer,
     setImage,
+    setTermsOfUseAccepted,
     subscribe,
     unsavedProperties,
     unsavedQuestionIds

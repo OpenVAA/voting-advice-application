@@ -150,7 +150,9 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
         email: email.trim().toLocaleLowerCase(),
         firstName,
         lastName,
-        identifier
+        identifier,
+        // The user must’ve accepted the terms of use to be able to register
+        termsOfUseAccepted: new Date()
       }
     });
 
