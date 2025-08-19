@@ -5,14 +5,19 @@
 - Provides data CandidateContext:
   - candidate user data
   - questions
+- Shows the terms of use form if it has not been agreed to yet
 -->
 
 <script lang="ts">
+  import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
+  import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
   import { getCandidateContext } from '$lib/contexts/candidate/candidateContext';
   import { logDebugError } from '$lib/utils/logger';
+  import MainContent from '../../MainContent.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 
@@ -22,10 +27,33 @@
   // Get context
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot, userData } = getCandidateContext();
+  const { dataRoot, logout, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Provide data
+  // Accept terms of use
+  ////////////////////////////////////////////////////////////////////
+
+  let showTermsOfUse = false;
+  let status: ActionStatus = 'idle';
+  let termsAccepted: boolean | undefined;
+
+  async function handleSubmit() {
+    if (!termsAccepted) return;
+    status = 'loading';
+    userData.setTermsOfUseAccepted(new Date().toJSON());
+    await userData.save();
+    showTermsOfUse = false;
+    status = 'success';
+  }
+
+  async function handleCancel() {
+    status = 'loading';
+    await logout();
+    status = 'idle';
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Provide data and possibly show terms of use form
   ////////////////////////////////////////////////////////////////////
 
   let error: Error | undefined;
@@ -56,6 +84,7 @@
     $dataRoot.provideEntityData(entities);
     $dataRoot.provideNominationData(nominations);
     userData.init(candidateUserData);
+    if (!candidateUserData.candidate.termsOfUseAccepted) showTermsOfUse = true;
     ready = true;
   }
 </script>
@@ -64,6 +93,22 @@
   <ErrorMessage class="bg-base-300" />
 {:else if !ready}
   <Loading />
+{:else if showTermsOfUse}
+  <MainContent title={$t('dynamic.candidateAppPrivacy.consent.title')}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('dynamic.candidateAppPrivacy.consent.heroEmoji')} />
+    </figure>
+    <TermsOfUseForm bind:termsAccepted />
+    <svelte:fragment slot="primaryActions">
+      <Button
+        text={$t('common.continue')}
+        variant="main"
+        disabled={!termsAccepted}
+        loading={status === 'loading'}
+        on:click={handleSubmit} />
+      <Button color="warning" text={$t('common.logout')} loading={status === 'loading'} on:click={handleCancel} />
+    </svelte:fragment>
+  </MainContent>
 {:else}
   <slot />
 {/if}

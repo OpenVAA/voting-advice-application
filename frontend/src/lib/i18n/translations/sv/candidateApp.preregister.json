@@ -13,9 +13,8 @@
     "text": "Hej {firstName},\nTack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:\n{registrationUrl}\nEfter det blir du ombedd att välja ett lösenord."
   },
   "emailVerification": {
-    "content": "<p>Din e-postadress kommer i framtiden att fungera som ditt användarnamn. Ange den nedan två gånger för att bekräfta att den är korrekt.</p><p>Du måste också godkänna användarvillkoren för att fortsätta.</p>",
-    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use.",
-    "title": "Ange e-postadress"
+    "content": "<p>Din e-postadress kommer i framtiden att fungera som ditt användarnamn. Ange den nedan två gånger för att bekräfta att den är korrekt.</p>",
+    "title": "Ange e-postadress och godkänna användarvillkoren"
   },
   "identification": {
     "identifyYourselfButton": "Identifiera dig",
