@@ -5,6 +5,7 @@ import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/api/utils/loadElectionData';
 import { PipelineLogger } from '$lib/jobs/pipelineLogger';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
+import { constants as pub } from '$lib/utils/constants';
 import type { AnyQuestionVariant, SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -12,7 +13,7 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
  * Handle form submit from the UI to start condensation.
  */
 export const actions = {
-  default: async ({ fetch, request, params: { lang } }) => {
+  default: async ({ fetch, request, params: { lang }, cookies }) => {
     try {
       console.info('[condense] action start');
       const formData = await request.formData();
@@ -23,6 +24,13 @@ export const actions = {
       if (!electionId) {
         console.warn('[condense] early exit: missing electionId');
         return fail(400, { type: 'error', error: 'Missing electionId' });
+      }
+
+      // Get the authentication token from cookies
+      const authToken = cookies.get('token');
+
+      if (!authToken) {
+        return fail(401, { type: 'error', error: 'Authentication required' });
       }
 
       // Create a job for tracking progress using the SvelteKit fetch function
@@ -67,7 +75,8 @@ export const actions = {
         questionIds,
         fetch,
         locale: lang as string,
-        jobId
+        jobId,
+        authToken // Add this parameter
       });
       console.info('[condense] condenseArguments() returned', result);
 
@@ -139,6 +148,7 @@ function createQuestionPipeline(questions: Array<AnyQuestionVariant>): Array<{ i
  * @param args.fetch - SvelteKit fetch function for data loading (not used for job updates)
  * @param args.locale - Language for prompts ('en'|'fi' currently supported)
  * @param args.jobId - Job ID for tracking progress
+ * @param args.authToken - Authentication token for API calls
  * @returns DataApiActionResult indicating success/failure
  */
 async function condenseArguments({
@@ -146,7 +156,8 @@ async function condenseArguments({
   questionIds,
   fetch,
   locale,
-  jobId
+  jobId,
+  authToken
 }: {
   electionId: Id;
   questionIds: Array<Id>;
@@ -156,6 +167,7 @@ async function condenseArguments({
   };
   locale: string;
   jobId: string;
+  authToken: string; // Add this parameter
 }): Promise<DataApiActionResult> {
   // Create logger immediately - it will be initialized with pipeline later
   const logger = new PipelineLogger(jobId);
@@ -226,7 +238,7 @@ async function condenseArguments({
       const runId = `admin-${electionId}-${question.id}-${Date.now()}`;
       await logger.info(`Processing question "${question.name}" (${i + 1}/${supportedQuestions.length})`);
 
-      await handleQuestion({
+      const condensationResults = await handleQuestion({
         question,
         entities: hasAnswersEntities as Array<HasAnswers>,
         options: {
@@ -239,9 +251,51 @@ async function condenseArguments({
           logger
         }
       });
+
+      // Save the condensation results to the question's customData
+      if (condensationResults && condensationResults.length > 0) {
+        await logger.info(`Saving condensation results for question "${question.name}"`);
+
+        try {
+          // Debug logging for authentication
+          await logger.info(
+            `[DEBUG] Auth token details: tokenLength=${authToken?.length || 0}, tokenPrefix=${authToken?.substring(0, 20) + '...'}, backendUrl=${pub.PUBLIC_SERVER_BACKEND_URL}/openvaa-admin-tools/update-question-custom-data`
+          );
+
+          // Directly call Strapi Admin Tools plugin to update the question customData
+          const updateResponse = await fetch(
+            `${pub.PUBLIC_SERVER_BACKEND_URL}/openvaa-admin-tools/update-question-custom-data-public`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`
+              },
+              body: JSON.stringify({
+                questionId: question.id,
+                locale,
+                condensedArgs: condensationResults
+              })
+            }
+          );
+
+          if (updateResponse.ok) {
+            await logger.info(`Successfully saved condensation results for question "${question.name}"`);
+          } else {
+            const errorText = await updateResponse.text();
+            await logger.info(
+              `[DEBUG] Strapi response details: status=${updateResponse.status}, statusText=${updateResponse.statusText}, body=${errorText}`
+            );
+            await logger.warning(`Failed to save condensation results for question "${question.name}": ${errorText}`);
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          await logger.warning(`Error saving condensation results for question "${question.name}": ${errorMessage}`);
+        }
+      }
     }
 
-    // TODO: Save the results to the database
+    // TODO: Save the results to the database - DONE! Results are now saved per question above
 
     await logger.complete();
 
