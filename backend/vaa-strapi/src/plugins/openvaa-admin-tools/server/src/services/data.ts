@@ -1,5 +1,6 @@
 import { createOrUpdate } from './utils/createOrUpdate';
 import { IMPORTABLE_COLLECTIONS } from './utils/importableCollections';
+import type { CondensationRunResult } from '@openvaa/app-shared';
 import type { Core, Data } from '@strapi/strapi';
 import type {
   DeleteData,
@@ -216,6 +217,113 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
         type: 'success',
         data: candidates,
       };
+    },
+
+    /**
+     * Update a question's customData with argument condensation results and/or question info sections.
+     * This function intelligently merges new data with existing customData, preserving existing
+     * information while adding new content.
+     *
+     * @param data - The update parameters including questionId, locale, and optional updates
+     * @returns Success or failure result.
+     */
+    updateQuestionCustomData: async (data: {
+      questionId: string;
+      locale: string;
+      condensedArgs?: Array<CondensationRunResult>;
+      questionInfoSections?: Array<{
+        title: string;
+        content: string;
+        visible: boolean;
+      }>;
+    }): Promise<{ type: 'success' | 'failure'; cause?: string }> => {
+      try {
+        const { questionId, locale, condensedArgs, questionInfoSections } = data;
+
+        // Get the current question data
+        const question = await strapi.documents('api::question.question').findOne({
+          documentId: questionId,
+        });
+
+        if (!question) {
+          return {
+            type: 'failure',
+            cause: `Question with documentId ${questionId} not found`,
+          };
+        }
+
+        // Get current customData or initialize empty object
+        const currentCustomData = question.customData || {};
+
+        // Update condensedArgs if provided
+        if (condensedArgs && condensedArgs.length > 0) {
+          // Initialize condensedArgs structure if it doesn't exist
+          if (!currentCustomData.condensedArgs) {
+            currentCustomData.condensedArgs = {};
+          }
+
+          // Initialize locale structure if it doesn't exist
+          if (!currentCustomData.condensedArgs[locale]) {
+            currentCustomData.condensedArgs[locale] = {};
+          }
+
+          // Process each condensation result
+          for (const result of condensedArgs) {
+            const { condensationType, arguments: args, metrics, metadata } = result;
+
+            // Store the results by condensation type
+            currentCustomData.condensedArgs[locale][condensationType] = {
+              arguments: args,
+              metrics: metrics
+                ? {
+                    duration: metrics.duration,
+                    nLlmCalls: metrics.nLlmCalls,
+                    cost: metrics.cost,
+                    tokensUsed: metrics.tokensUsed,
+                  }
+                : undefined,
+              metadata: metadata
+                ? {
+                    llmModel: metadata.llmModel,
+                    language: metadata.language,
+                    startTime:
+                      metadata.startTime instanceof Date
+                        ? metadata.startTime.toISOString()
+                        : String(metadata.startTime),
+                    endTime:
+                      metadata.endTime instanceof Date
+                        ? metadata.endTime.toISOString()
+                        : String(metadata.endTime),
+                  }
+                : undefined,
+            };
+          }
+        }
+
+        // Update infoSections if provided (note: using infoSections to match frontend expectations)
+        if (questionInfoSections && questionInfoSections.length > 0) {
+          // For infoSections, we typically want to replace the existing ones
+          // since they represent the current state of generated info
+          currentCustomData.infoSections = questionInfoSections;
+        }
+
+        // Update the question with the new customData
+        // Ensure the data conforms to Strapi's JSONValue type
+        await strapi.documents('api::question.question').update({
+          documentId: questionId,
+          data: {
+            customData: currentCustomData,
+          } as Record<string, unknown>, // Type assertion to bypass strict Strapi types
+        });
+
+        return { type: 'success' };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        return {
+          type: 'failure',
+          cause: `Failed to update question customData: ${errorMessage}`,
+        };
+      }
     },
   };
 }

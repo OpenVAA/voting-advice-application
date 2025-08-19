@@ -10011,6 +10011,9 @@
           },
           "answersLocked": {
             "type": "boolean"
+          },
+          "adminApp": {
+            "type": "boolean"
           }
         }
       },

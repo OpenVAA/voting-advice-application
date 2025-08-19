@@ -3,6 +3,7 @@ import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/api/utils/loadElectionData';
 import { PipelineLogger } from '$lib/jobs/pipelineLogger';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
+import { constants as pub } from '$lib/utils/constants';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -10,7 +11,7 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
  * Handle form submit from the UI to start question info generation.
  */
 export const actions = {
-  default: async ({ fetch, request, params: { lang } }) => {
+  default: async ({ fetch, request, params: { lang }, cookies }) => {
     try {
       console.info('[question-info] action start');
       const formData = await request.formData();
@@ -60,12 +61,18 @@ export const actions = {
       }
 
       console.info('[question-info] calling generateQuestionInfo()…');
+      const authToken = cookies.get('token');
+      if (!authToken) {
+        return fail(401, { type: 'error', error: 'Authentication required' });
+      }
+
       const result = await generateQuestionInfo({
         electionId,
         questionIds,
         fetch,
         locale: lang as string,
-        jobId
+        jobId,
+        authToken
       });
       console.info('[question-info] generateQuestionInfo() returned', result);
 
@@ -113,7 +120,8 @@ async function generateQuestionInfo({
   questionIds,
   fetch,
   locale,
-  jobId
+  jobId,
+  authToken
 }: {
   electionId: Id;
   questionIds: Array<Id>;
@@ -123,6 +131,7 @@ async function generateQuestionInfo({
   };
   locale: string;
   jobId: string;
+  authToken: string;
 }): Promise<DataApiActionResult> {
   // Create logger immediately - it will be initialized with pipeline later
   const logger = new PipelineLogger(jobId);
@@ -174,11 +183,12 @@ async function generateQuestionInfo({
         question,
         llm,
         locale,
-        logger
+        logger,
+        authToken
       });
     }
 
-    // TODO: Save the results to the database
+    // Results are now saved per question above
 
     await logger.complete();
 
@@ -205,7 +215,8 @@ async function generateInfoForQuestion({
   question,
   llm,
   locale,
-  logger
+  logger,
+  authToken
 }: {
   question: AnyQuestionVariant;
   llm: {
@@ -217,9 +228,10 @@ async function generateInfoForQuestion({
   };
   locale: string;
   logger: PipelineLogger;
+  authToken: string;
 }): Promise<void> {
   try {
-    // Create a prompt for generating question info
+    // A placeholder prompt for generating question info
     const prompt = `Generate helpful background information for the following question about an election:
 
 Question: ${question.name}
@@ -270,9 +282,34 @@ Focus on providing factual, balanced information that helps voters make informed
       ];
     }
 
-    // TODO: Save the generated info sections to the database
-    // For now, just log them
-    console.info(`[question-info] Generated info sections for question ${question.id}:`, infoSections);
+    // Save the generated info sections to the question's customData
+    try {
+      const updateResponse = await fetch(
+        `${pub.PUBLIC_SERVER_BACKEND_URL}/openvaa-admin-tools/update-question-custom-data-public`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            questionId: question.id,
+            locale,
+            questionInfoSections: infoSections
+          })
+        }
+      );
+
+      if (updateResponse.ok) {
+        await logger.info(`Successfully saved info sections for question "${question.name}"`);
+      } else {
+        const errorText = await updateResponse.text();
+        await logger.warning(`Failed to save info sections for question "${question.name}": ${errorText}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await logger.warning(`Error saving info sections for question "${question.name}": ${errorMessage}`);
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     await logger.error(`Failed to generate info for question "${question.name}": ${errorMessage}`);
