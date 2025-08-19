@@ -13,9 +13,8 @@
     "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}\nYou will be asked to select a password after that."
   },
   "emailVerification": {
-    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
-    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use.",
-    "title": "Enter email address"
+    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p>",
+    "title": "Enter email address and accept the terms of use"
   },
   "identification": {
     "identifyYourselfButton": "Identify yourself",

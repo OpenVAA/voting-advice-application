@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { TermsOfUse } from '$candidate/components/termsOfUse';
+  import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { Button } from '$lib/components/button';
-  import { Expander } from '$lib/components/expander';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../../../MainContent.svelte';
@@ -23,7 +22,7 @@
   let termsAccepted = false;
 
   async function handleSubmit() {
-    if (!form.reportValidity()) return;
+    if (!form.reportValidity() || !termsAccepted) return;
     status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
@@ -69,15 +68,7 @@
       aria-label={$t('candidateApp.common.emailPlaceholder')}
       bind:value={email2}
       required />
-    <label class="label mb-md cursor-pointer justify-start gap-sm !p-0">
-      <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
-      <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
-    </label>
-    <Expander title={$t('candidateApp.privacy.title')} contentClass="prose bg-base-100 rounded-lg">
-      <div class="m-lg">
-        <TermsOfUse />
-      </div>
-    </Expander>
+    <TermsOfUseForm bind:termsAccepted class="mt-md" />
   </form>
 
   <Button

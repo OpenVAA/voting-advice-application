@@ -13,9 +13,8 @@
     "text": "Hei {firstName},\nKiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:\n{registrationUrl}\nTämän jälkeen sinua pyydetään valitsemaan salasana."
   },
   "emailVerification": {
-    "content": "<p>Jatkossa sähköpostiosoitteesi toimii käyttäjätunnuksenasi. Kirjoita se alle kahdesti varmistaaksesi, että se on oikein.</p><p>Sinun on myös hyväksyttävä käyttöehdot jatkaaksesi.</p>",
-    "termsCheckbox": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
-    "title": "Syötä sähköpostiosoite"
+    "content": "<p>Jatkossa sähköpostiosoitteesi toimii käyttäjätunnuksenasi. Kirjoita se alle kahdesti varmistaaksesi, että se on oikein.</p>",
+    "title": "Syötä sähköpostiosoite ja hyväksy käyttöehdot"
   },
   "identification": {
     "identifyYourselfButton": "Tunnistaudu",
