@@ -13,7 +13,11 @@
     "buttonLoading": "Genererar information...",
     "mayTakeTime": "Detta kan ta en stund.",
     "error": "Misslyckades med att generera information",
-    "noQuestionSelected": "Välj minst en fråga"
+    "noQuestionSelected": "Välj minst en fråga",
+    "selectElection": "Välj val",
+    "selectElectionPlaceholder": "Välj ett val...",
+    "noQuestionsForElection": "Inga frågor hittades för det valda valet.",
+    "noElectionSelected": "Välj först ett val"
   },
   "edit": {
     "title": "Redigera information",
