@@ -8,6 +8,6 @@ import type { LocalizedCandidateData } from '../base/dataWriter.type';
 export function translateLocalizedCandidate(candidate: LocalizedCandidateData, locale: string | null): CandidateData {
   return {
     ...structuredClone(candidate),
-    answers: parseAnswers(candidate.answers, locale)
+    answers: parseAnswers(candidate.answers ?? null, locale)
   };
 }

@@ -437,6 +437,7 @@ async function createCandidates(length: number) {
         email,
         party: party.documentId,
         answers: generateAnswers(questions, 'candidate'),
+        termsOfUseAccepted: new Date(),
         ...addMockId()
       }
     });
@@ -457,6 +458,7 @@ async function createCandidateForTesting() {
       lastName,
       email,
       party: party.documentId,
+      termsOfUseAccepted: new Date(),
       ...addMockId()
     }
   });

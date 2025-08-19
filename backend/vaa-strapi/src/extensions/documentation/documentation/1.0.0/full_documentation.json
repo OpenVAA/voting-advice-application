@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-07-14T07:47:42.297Z"
+    "x-generation-date": "2025-08-18T11:45:31.233Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6669,6 +6669,10 @@
                       "externalId": {
                         "type": "string"
                       },
+                      "termsOfUseAccepted": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -11869,6 +11873,10 @@
                   "externalId": {
                     "type": "string"
                   },
+                  "termsOfUseAccepted": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
                   "createdAt": {
                     "type": "string",
                     "format": "date-time"
@@ -12149,6 +12157,10 @@
           "answers": {},
           "externalId": {
             "type": "string"
+          },
+          "termsOfUseAccepted": {
+            "type": "string",
+            "format": "date-time"
           },
           "createdAt": {
             "type": "string",
@@ -13645,6 +13657,10 @@
                                                 "answers": {},
                                                 "externalId": {
                                                   "type": "string"
+                                                },
+                                                "termsOfUseAccepted": {
+                                                  "type": "string",
+                                                  "format": "date-time"
                                                 },
                                                 "createdAt": {
                                                   "type": "string",
@@ -15732,6 +15748,10 @@
                                           "externalId": {
                                             "type": "string"
                                           },
+                                          "termsOfUseAccepted": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                          },
                                           "createdAt": {
                                             "type": "string",
                                             "format": "date-time"
@@ -17735,6 +17755,10 @@
                                                 "answers": {},
                                                 "externalId": {
                                                   "type": "string"
+                                                },
+                                                "termsOfUseAccepted": {
+                                                  "type": "string",
+                                                  "format": "date-time"
                                                 },
                                                 "createdAt": {
                                                   "type": "string",
@@ -20641,6 +20665,10 @@
                                         "externalId": {
                                           "type": "string"
                                         },
+                                        "termsOfUseAccepted": {
+                                          "type": "string",
+                                          "format": "date-time"
+                                        },
                                         "createdAt": {
                                           "type": "string",
                                           "format": "date-time"
@@ -23299,6 +23327,10 @@
                 "externalId": {
                   "type": "string"
                 },
+                "termsOfUseAccepted": {
+                  "type": "string",
+                  "format": "date-time"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -24956,6 +24988,10 @@
                                               "answers": {},
                                               "externalId": {
                                                 "type": "string"
+                                              },
+                                              "termsOfUseAccepted": {
+                                                "type": "string",
+                                                "format": "date-time"
                                               },
                                               "createdAt": {
                                                 "type": "string",
@@ -27263,6 +27299,10 @@
                                           "answers": {},
                                           "externalId": {
                                             "type": "string"
+                                          },
+                                          "termsOfUseAccepted": {
+                                            "type": "string",
+                                            "format": "date-time"
                                           },
                                           "createdAt": {
                                             "type": "string",

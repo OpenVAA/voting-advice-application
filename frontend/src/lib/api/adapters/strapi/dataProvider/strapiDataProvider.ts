@@ -136,10 +136,11 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
-    if (!options.includeUnconfirmed) {
-      params.filters ??= {};
-      params.filters.unconfirmed = { $ne: 'true' };
-    }
+    params.filters ??= {};
+    params.filters.candidate = {
+      termsOfUseAccepted: { $notNull: 'true' }
+    };
+    if (!options.includeUnconfirmed) params.filters.unconfirmed = { $ne: 'true' };
     params.populate = {
       constituency: 'true',
       election: 'true',
@@ -164,6 +165,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     // Collect Promises so we don't need to await separately
     const promises = new Array<Promise<DPDataType['entities']>>();
     if (!entityType || entityType === ENTITY_TYPE.Candidate) {
+      params.filters ??= {};
+      params.filters.candidate = {
+        termsOfUseAccepted: { $notNull: 'true' }
+      };
       const candParams = { ...params };
       candParams.populate = {
         party: 'true',

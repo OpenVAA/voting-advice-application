@@ -164,7 +164,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData> {
-    if (!opts.properties.image.file) throw new Error('Image file is required for updating entity properties');
+    if (!opts.properties.image?.file && opts.properties.termsOfUseAccepted === undefined)
+      throw new Error(
+        'Either an image file or a value for termsOfUseAccepted is required for updating entity properties'
+      );
     return this._updateEntityProperties(opts);
   }
 

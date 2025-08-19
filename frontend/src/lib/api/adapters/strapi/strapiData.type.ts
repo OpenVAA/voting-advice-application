@@ -179,6 +179,8 @@ export type StrapiCandidateData = StrapiObject<{
   answers: StrapiAnswers | null;
   nominations: StrapiRelation<StrapiNominationData>;
   party: StrapiSingleRelation<StrapiPartyData>;
+  /** A datetime string or null */
+  termsOfUseAccepted: string | null;
 }>;
 
 export type StrapiPartyData = StrapiObject<{

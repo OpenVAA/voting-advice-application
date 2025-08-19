@@ -1,6 +1,5 @@
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { CandidateData } from '@openvaa/data';
 import type { Readable } from 'svelte/store';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
@@ -61,7 +60,7 @@ export type UserDataStore = Readable<CandidateUserData<true> | undefined> & {
   resetAnswers: () => void;
 
   ////////////////////////////////////////////////////////////
-  // Properties (only `image`)
+  // Properties
   ////////////////////////////////////////////////////////////
 
   /**
@@ -73,6 +72,15 @@ export type UserDataStore = Readable<CandidateUserData<true> | undefined> & {
    * NB. This does not intend to delete the image in the backend.
    */
   resetImage: () => void;
+  /**
+   * Set the `Candidate`’s image.
+   */
+  setTermsOfUseAccepted: (value: string | null) => void;
+  /**
+   * Delete the unsaved `Candidate`’s image.
+   * NB. This does not intend to delete the image in the backend.
+   */
+  resetTermsOfUseAccepted: () => void;
 
   ////////////////////////////////////////////////////////////
   // Substores
@@ -83,9 +91,9 @@ export type UserDataStore = Readable<CandidateUserData<true> | undefined> & {
    */
   unsavedQuestionIds: Readable<Array<Id>>;
   /**
-   * A substore resolving to an `Array` of names of unsaved properties, (only `image`).
+   * A substore resolving to an `Array` of names of unsaved properties.
    */
-  unsavedProperties: Readable<Array<keyof CandidateData>>;
+  unsavedProperties: Readable<Array<keyof LocalizedCandidateData>>;
   /**
    * A substore which is `true` if there are any unsaved data.
    */

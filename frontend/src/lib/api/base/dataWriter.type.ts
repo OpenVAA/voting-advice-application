@@ -230,9 +230,14 @@ export type LocalizedAnswers = {
 };
 
 /**
- * `CandidateData` with localized `answers`. Used for editing.
+ * `CandidateData` with localized `answers` and `termsOfUseAccepted`. Used for editing.
+ * @remarks
+ * The naming is a bit misleading and the type could as well be `EditableCandidateData`.
  */
-export type LocalizedCandidateData = CandidateData & { answers?: LocalizedAnswers | null };
+export type LocalizedCandidateData = CandidateData & {
+  answers?: LocalizedAnswers | null;
+  termsOfUseAccepted?: string | null;
+};
 
 /**
  * The data owned by a candidate `User`.
@@ -282,7 +287,8 @@ export type WithAnswerData = {
 };
 
 export type EditableEntityProps = {
-  image: ImageWithFile;
+  image?: ImageWithFile;
+  termsOfUseAccepted?: string | null;
 };
 
 export type WithEditableEntityProps = {

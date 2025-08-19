@@ -81,6 +81,9 @@
     "externalId": {
       "type": "string",
       "private": true
+    },
+    "termsOfUseAccepted": {
+      "type": "datetime"
     }
   }
 }
