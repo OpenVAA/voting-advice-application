@@ -380,7 +380,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
   /**
    * Override info to also update job store
    */
-  async info(message: string): Promise<void> {
+  info(message: string): void {
     // Call parent logger first
     super.info(message);
 
@@ -391,7 +391,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
   /**
    * Override warning to also update job store
    */
-  async warning(message: string): Promise<void> {
+  warning(message: string): void {
     // Call parent logger first
     super.warning(message);
 
@@ -402,7 +402,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
   /**
    * Override error to also update job store
    */
-  async error(message: string): Promise<void> {
+  error(message: string): void {
     // Call parent logger first
     super.error(message);
 
@@ -413,14 +413,14 @@ export class PipelineLogger extends DefaultLogger implements Logger {
   /**
    * Mark job as completed
    */
-  async complete(): Promise<void> {
+  complete(): void {
     completeJob(this.jobId);
   }
 
   /**
    * Mark job as failed
    */
-  async fail(errorMessage?: string): Promise<void> {
+  fail(errorMessage?: string): void {
     if (errorMessage) {
       addJobErrorMessage(this.jobId, errorMessage);
     }
