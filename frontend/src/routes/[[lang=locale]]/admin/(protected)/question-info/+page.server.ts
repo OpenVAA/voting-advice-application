@@ -2,6 +2,7 @@ import { type Id } from '@openvaa/core';
 import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/api/utils/loadElectionData';
 import { PipelineLogger } from '$lib/jobs/pipelineLogger';
+import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
 import { constants as pub } from '$lib/utils/constants';
 import type { AnyQuestionVariant } from '@openvaa/data';
@@ -61,7 +62,7 @@ export const actions = {
       }
 
       console.info('[question-info] calling generateQuestionInfo()…');
-      const authToken = cookies.get('token');
+      const authToken = cookies.get(AUTH_TOKEN_KEY);
       if (!authToken) {
         return fail(401, { type: 'error', error: 'Authentication required' });
       }
