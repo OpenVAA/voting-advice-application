@@ -10,7 +10,7 @@ Page for monitoring all active jobs across different admin features
   import JobMonitor from '$lib/components/jobs/JobMonitor.svelte';
   import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../../MainContent.svelte';
-  import type { JobInfo } from '$lib/jobs/jobStore';
+  import type { JobInfo } from '$lib/server/jobs/jobStore.type';
   import { activeJobsStore, pastJobsStore, activeJobCount, jobPollingService } from '$lib/stores/jobStores';
 
   const { getRoute } = getAppContext();

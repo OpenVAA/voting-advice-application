@@ -11,7 +11,7 @@ Includes embedded kill switch functionality.
   import InfoMessages from '$lib/components/logger/InfoMessages.svelte';
   import ProgressBar from '$lib/components/logger/ProgressBar.svelte';
   import WarningMessages from '$lib/components/logger/WarningMessages.svelte';
-  import type { JobInfo } from '$lib/jobs/jobStore';
+  import type { JobInfo } from '$lib/server/jobs/jobStore.type';
 
   export let jobType: string; // e.g., 'argument-condensation'
   export let activeJob: JobInfo | null; // Current active job or null

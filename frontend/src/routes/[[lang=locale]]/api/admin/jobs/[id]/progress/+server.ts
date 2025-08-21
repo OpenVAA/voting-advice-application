@@ -4,7 +4,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { getJob } from '$lib/jobs/jobStore';
+import { getJob } from '$lib/server/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function GET({ params }: RequestEvent) {
