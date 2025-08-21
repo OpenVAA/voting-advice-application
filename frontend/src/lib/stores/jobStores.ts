@@ -1,5 +1,5 @@
 import { derived, get, writable } from 'svelte/store';
-import type { JobInfo } from '$lib/jobs/jobStore';
+import type { JobInfo } from '$lib/server/jobs/jobStore.type';
 
 // Store for active jobs by feature (one active job per feature)
 export const activeJobsStore = writable<Map<string, JobInfo | null>>(new Map());
