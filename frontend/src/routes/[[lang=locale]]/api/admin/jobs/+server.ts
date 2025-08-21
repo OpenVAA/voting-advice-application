@@ -11,7 +11,7 @@ import {
   getPastJobsByFeature,
   getPastJobsByFeatureAndStatus,
   getPastJobsByStatus
-} from '$lib/jobs/jobStore';
+} from '$lib/server/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 /**

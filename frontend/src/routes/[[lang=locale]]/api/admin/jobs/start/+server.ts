@@ -4,7 +4,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { createJob } from '$lib/jobs/jobStore';
+import { createJob } from '$lib/server/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ request }: RequestEvent) {

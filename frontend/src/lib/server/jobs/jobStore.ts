@@ -3,19 +3,7 @@
  * This is a global in-memory store that will be replaced with a database later
  */
 
-export interface JobInfo {
-  id: string;
-  feature: string; // 'argument-condensation', 'factor-analysis', etc.
-  author: string; // admin email
-  status: 'running' | 'completed' | 'failed';
-  progress: number; // 0-1 range
-  startTime: Date;
-  endTime?: Date; // Set when job completes or fails
-  lastActivityTime: Date; // Last time the job was updated
-  infoMessages: Array<string>;
-  warningMessages: Array<string>;
-  errorMessages: Array<string>;
-}
+import type { JobInfo } from './jobStore.type';
 
 // Global in-memory job stores
 const activeJobs = new Map<string, JobInfo>();
