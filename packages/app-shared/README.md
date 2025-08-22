@@ -3,6 +3,7 @@
 A module shared between `@openvaa/frontend` and `@openvaa/strapi`, which contains:
 
 - The [application settings](./src/settings/)
+- Definitions for data types extending those defined in the `@openvaa/core` and `@openvaa/data` modules, such as [`CustomData`](./src/data/customData.type.ts) and [`Localized`](./src/data/extendedData.type.ts) types
 - Utilities for [password validation](./src/utils/passwordValidation.ts)
 
 ## Development

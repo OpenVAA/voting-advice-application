@@ -1,16 +1,13 @@
 import { translate, translateObject } from '$lib/i18n';
-import type { TermDefinition } from '@openvaa/app-shared';
-import type { StrapiQuestionData, StrapiQuestionTermDefinitionData } from '../strapiData.type';
+import type { LocalizedTermDefinition, TermDefinition } from '@openvaa/app-shared';
 
-export function parseQuestionTerms(
-  data: StrapiQuestionData['customData'],
+export function translateQuestionTerms(
+  data: Array<LocalizedTermDefinition> | null,
   locale: string | null
 ): Array<TermDefinition> {
-  const terms = data?.terms;
-  if (terms && Array.isArray(terms)) {
-    return terms
+  if (Array.isArray(data)) {
+    return data
       .filter((v) => v && typeof v === 'object')
-      .map((v) => v as StrapiQuestionTermDefinitionData)
       .flatMap((term) => {
         const { triggers, title, content } = term;
         const translatedTriggers = translateObject(triggers, locale);

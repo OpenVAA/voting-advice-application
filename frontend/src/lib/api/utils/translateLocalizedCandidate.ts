@@ -1,4 +1,4 @@
-import { parseAnswers } from '../adapters/strapi/utils/parseAnswers';
+import { parseAnswers } from './parseAnswers';
 import type { CandidateData } from '@openvaa/data';
 import type { LocalizedCandidateData } from '../base/dataWriter.type';
 
