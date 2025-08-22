@@ -128,7 +128,7 @@ describe('Condenser Standalone Test', () => {
       comments: mockComments,
       options: {
         runId: 'standalone-test-1',
-        outputType: CONDENSATION_TYPE.LIKERT.PROS,
+        outputType: CONDENSATION_TYPE.LikertPros,
         processingSteps: [
           {
             operation: 'MAP' as const,
@@ -159,7 +159,7 @@ describe('Condenser Standalone Test', () => {
 
     // Verify results
     expect(result).toBeDefined();
-    expect(result.condensationType).toBe(CONDENSATION_TYPE.LIKERT.PROS);
+    expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertPros);
 
     // Check metrics
     expect(result.metrics).toBeDefined();
@@ -178,7 +178,7 @@ describe('Condenser Standalone Test', () => {
       comments: mockComments.filter((c) => c.entityAnswer <= 2), // Only negative comments
       options: {
         runId: 'standalone-test-cons',
-        outputType: CONDENSATION_TYPE.LIKERT.CONS,
+        outputType: CONDENSATION_TYPE.LikertCons,
         processingSteps: [
           {
             operation: 'MAP' as const,
@@ -205,7 +205,7 @@ describe('Condenser Standalone Test', () => {
     const condenser = new Condenser(input as unknown as CondensationRunInput);
     const result = await condenser.run();
 
-    expect(result.condensationType).toBe(CONDENSATION_TYPE.LIKERT.CONS);
+    expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertCons);
     expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
   });
 
@@ -215,7 +215,7 @@ describe('Condenser Standalone Test', () => {
       comments: [], // No comments
       options: {
         runId: 'standalone-test-empty',
-        outputType: CONDENSATION_TYPE.LIKERT.PROS,
+        outputType: CONDENSATION_TYPE.LikertPros,
         processingSteps: [
           {
             operation: 'MAP' as const,

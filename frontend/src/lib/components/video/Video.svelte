@@ -87,14 +87,9 @@ If not provided, the `video` element will be hidden until these properties are p
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { videoPreferences } from './component-stores';
+  import type { VideoContent } from '@openvaa/app-shared';
   import type { TrackingEvent } from '$lib/contexts/app/tracking';
-  import type {
-    OptionalVideoProps,
-    PlayButtonAction,
-    VideoContentProps,
-    VideoProps,
-    VideoTrackingEventData
-  } from './Video.type';
+  import type { OptionalVideoProps, PlayButtonAction, VideoProps, VideoTrackingEventData } from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -520,7 +515,7 @@ If not provided, the `video` element will be hidden until these properties are p
    * TODO: Convert this to an init function which is always called, even on first use of the component
    * @returns A `Promise` that resolves to `true` if the `video` element was present.
    */
-  export function load(props: VideoContentProps & OptionalVideoProps): Promise<boolean> {
+  export function load(props: VideoContent & OptionalVideoProps): Promise<boolean> {
     return new Promise((resolve) => {
       if (!video) return resolve(false);
       // End the current video tracking event if it exists
