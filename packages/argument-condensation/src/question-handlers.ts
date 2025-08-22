@@ -33,7 +33,7 @@ export async function handleBooleanQuestion({
       const prosResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
+        condensationType: CONDENSATION_TYPE.BooleanPros,
         options: { ...options, runId: options.runId + '-pros' },
         parallelBatches
       });
@@ -42,7 +42,7 @@ export async function handleBooleanQuestion({
       const consResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.BOOLEAN.CONS,
+        condensationType: CONDENSATION_TYPE.BooleanCons,
         options: { ...options, runId: options.runId + '-cons' },
         parallelBatches
       });
@@ -84,7 +84,7 @@ export async function handleOrdinalQuestion({
       const prosResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.LIKERT.PROS,
+        condensationType: CONDENSATION_TYPE.LikertPros,
         options: { ...options, runId: options.runId + '-pros' },
         parallelBatches
       });
@@ -93,7 +93,7 @@ export async function handleOrdinalQuestion({
       const consResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.LIKERT.CONS,
+        condensationType: CONDENSATION_TYPE.LikertCons,
         options: { ...options, runId: options.runId + '-cons' },
         parallelBatches
       });
@@ -135,7 +135,7 @@ export async function handleCategoricalQuestion({
       const categoryResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.CATEGORICAL.PROS,
+        condensationType: CONDENSATION_TYPE.CategoricalPros,
         options: { ...options, runId: options.runId + group.choiceId },
         parallelBatches
       });

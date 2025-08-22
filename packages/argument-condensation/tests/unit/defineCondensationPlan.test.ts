@@ -21,7 +21,7 @@ function mockGetPrompt(promptId: string): MapPrompt | ReducePrompt {
       promptId,
       promptText: 'Test reduce prompt',
       operation: CondensationOperations.REDUCE,
-      condensationType: CONDENSATION_TYPE.LIKERT.PROS,
+      condensationType: CONDENSATION_TYPE.LikertPros,
       params: {
         coalescingPrompt: 'Test reduce prompt',
         coalescingPromptId: reducePromptId,
@@ -33,7 +33,7 @@ function mockGetPrompt(promptId: string): MapPrompt | ReducePrompt {
     promptId,
     promptText: 'Test map prompt',
     operation: CondensationOperations.MAP,
-    condensationType: CONDENSATION_TYPE.LIKERT.PROS,
+    condensationType: CONDENSATION_TYPE.LikertPros,
     params: {
       condensationPrompt: 'Test map prompt',
       condensationPromptId: mapPromptId,

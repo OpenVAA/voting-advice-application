@@ -139,8 +139,8 @@ describe('handleQuestion', () => {
 
     // Check that we have one of each type
     const types = results.map((r) => r.condensationType);
-    expect(types).toContain(CONDENSATION_TYPE.LIKERT.PROS);
-    expect(types).toContain(CONDENSATION_TYPE.LIKERT.CONS);
+    expect(types).toContain(CONDENSATION_TYPE.LikertPros);
+    expect(types).toContain(CONDENSATION_TYPE.LikertCons);
   });
 
   test('It should condense arguments for a categorical question', async () => {
@@ -215,7 +215,7 @@ describe('handleQuestion', () => {
     expect(results).toHaveLength(3); // Should have one result for 'cat1', 'cat2', and 'cat3'
 
     // Check that all condensation results are of type PROS
-    expect(results.every((r) => r.condensationType === CONDENSATION_TYPE.CATEGORICAL.PROS)).toBe(true);
+    expect(results.every((r) => r.condensationType === CONDENSATION_TYPE.CategoricalPros)).toBe(true);
   });
 
   test('It should condense arguments for a boolean question', async () => {
@@ -270,8 +270,8 @@ describe('handleQuestion', () => {
 
     // Check that we have one of each type
     const types = results.map((r) => r.condensationType);
-    expect(types).toContain(CONDENSATION_TYPE.BOOLEAN.PROS);
-    expect(types).toContain(CONDENSATION_TYPE.BOOLEAN.CONS);
+    expect(types).toContain(CONDENSATION_TYPE.BooleanPros);
+    expect(types).toContain(CONDENSATION_TYPE.BooleanCons);
   });
 
   test('It should throw an error if invalid prompt IDs are provided', async () => {
@@ -313,12 +313,12 @@ describe('handleQuestion', () => {
           maxCommentsPerGroup: 1000,
           logger: noOpLogger,
           prompts: {
-            [CONDENSATION_TYPE.BOOLEAN.PROS]: {
+            [CONDENSATION_TYPE.BooleanPros]: {
               map: 'map-pros-42-haha',
               reduce: 'reduce-pros-42-haha',
               mapIteration: 'map-iterate-pros-42-haha'
             },
-            [CONDENSATION_TYPE.BOOLEAN.CONS]: {
+            [CONDENSATION_TYPE.BooleanCons]: {
               map: 'map-cons-42-haha',
               reduce: 'reduce-cons-42-haha',
               mapIteration: 'map-iterate-cons-42-haha'
