@@ -1,6 +1,6 @@
 import { type CandidateData, ENTITY_TYPE } from '@openvaa/data';
-import { parseAnswers } from '$lib/api/adapters/strapi/utils/parseAnswers';
 import { formatId } from '$lib/api/utils/formatId';
+import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { parseImage } from './parseImage';
 import type { LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { StrapiCandidateData, StrapiUpdateCandidateReturnData } from '../strapiData.type';
