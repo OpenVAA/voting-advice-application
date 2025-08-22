@@ -5,7 +5,7 @@ export function translateQuestionTerms(
   data: Array<LocalizedTermDefinition> | null,
   locale: string | null
 ): Array<TermDefinition> {
-  if (Array.isArray(data)) {
+  if (data && Array.isArray(data)) {
     return data
       .filter((v) => v && typeof v === 'object')
       .flatMap((term) => {

@@ -12,7 +12,7 @@ export function parseQuestionCategoryCustomData(
   if (!data || typeof data !== 'object') return {};
   const { video, ...rest } = data;
   return {
-    video: video && translateVideoContent(video, locale),
+    video: video ? translateVideoContent(video, locale) : undefined,
     ...rest
   };
 }

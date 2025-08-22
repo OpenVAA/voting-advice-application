@@ -15,10 +15,10 @@ export function parseQuestionCustomData(
   if (!data || typeof data !== 'object') return {};
   const { arguments: args, infoSections, terms, video, ...rest } = data;
   return {
-    arguments: args && translateQuestionArguments(args, locale),
-    infoSections: infoSections && translateQuestionInfoSections(infoSections, locale),
-    terms: terms && translateQuestionTerms(terms, locale),
-    video: video && translateVideoContent(video, locale),
+    arguments: args ? translateQuestionArguments(args, locale) : undefined,
+    infoSections: infoSections ? translateQuestionInfoSections(infoSections, locale) : undefined,
+    terms: terms ? translateQuestionTerms(terms, locale) : undefined,
+    video: video ? translateVideoContent(video, locale) : undefined,
     ...rest
   };
 }

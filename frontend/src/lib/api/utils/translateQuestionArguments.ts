@@ -5,12 +5,12 @@ export function translateQuestionArguments(
   data: Array<LocalizedQuestionArguments> | null,
   locale: string | null
 ): Array<QuestionArguments> {
-  if (Array.isArray(data)) {
+  if (data && Array.isArray(data)) {
     return data
       .filter((v) => v && typeof v === 'object')
       .flatMap((arg) => {
         const { type, arguments: args, ...rest } = arg;
-        return type && Array.isArray(args)
+        return type && args && Array.isArray(args)
           ? {
               arguments: args.map(({ content, ...argRest }) => ({
                 content: translate(content, locale),
