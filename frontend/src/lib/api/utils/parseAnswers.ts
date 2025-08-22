@@ -6,7 +6,7 @@ import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 
 /**
  * Translate answers stored as json.
- * @param answers - Answer json from Strapi
+ * @param answers - Answer json.
  * @param locale - Optional locale to use for translating localized strings
  * @returns An `Answers` object
  */
