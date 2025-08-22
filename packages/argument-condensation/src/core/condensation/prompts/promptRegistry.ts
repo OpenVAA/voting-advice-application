@@ -140,13 +140,7 @@ export class PromptRegistry {
         if (!outputTypeStat || !outputTypeStat.isDirectory()) continue; // Skip if not a directory
 
         // Validate that the condensation type exists
-        const allCondensationTypes = [
-          ...Object.values(CONDENSATION_TYPE.LIKERT),
-          ...Object.values(CONDENSATION_TYPE.BOOLEAN),
-          ...Object.values(CONDENSATION_TYPE.CATEGORICAL)
-        ];
-
-        if (!allCondensationTypes.includes(outputType as CondensationOutputType)) {
+        if (!Object.values(CONDENSATION_TYPE).includes(outputType as CondensationOutputType)) {
           this.logger?.warning(`PROMPT REGISTRY: Skipping invalid output type directory: ${outputType}`);
           continue;
         }

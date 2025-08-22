@@ -1,6 +1,7 @@
+import type { VideoContent } from '@openvaa/app-shared';
 import type { Tweened } from 'svelte/motion';
 import type { Writable } from 'svelte/store';
-import type { OptionalVideoProps, Video, VideoContentProps, VideoMode } from '$lib/components/video';
+import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
 import type { DeepPartial } from '$lib/utils/merge';
 import type { StackedStore } from '../utils/stackedStore';
 
@@ -88,7 +89,7 @@ export interface VideoController {
    * @param options.autoshow - If `true`, the video will be shown automatically. @default true
    * @returns A `Promise` that resolves to `true` if the `video` element was present.
    */
-  load: (props: VideoContentProps & OptionalVideoProps, options?: { autoshow?: boolean }) => Promise<boolean>;
+  load: (props: VideoContent & OptionalVideoProps, options?: { autoshow?: boolean }) => Promise<boolean>;
   /**
    * Whether to show the video player. @default false
    * Will be automatically set to `true` when `load` is called.

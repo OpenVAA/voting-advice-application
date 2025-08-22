@@ -1,16 +1,13 @@
 import { translate } from '$lib/i18n';
-import type { QuestionInfoSection } from '@openvaa/app-shared';
-import type { StrapiQuestionData } from '../strapiData.type';
+import type { LocalizedQuestionInfoSection, QuestionInfoSection } from '@openvaa/app-shared';
 
-export function parseQuestionInfoSections(
-  data: StrapiQuestionData['customData'],
+export function translateQuestionInfoSections(
+  data: Array<LocalizedQuestionInfoSection> | null,
   locale: string | null
 ): Array<QuestionInfoSection> {
-  const infoSections = data?.infoSections;
-  if (infoSections && Array.isArray(infoSections)) {
-    return infoSections
+  if (data && Array.isArray(data)) {
+    return data
       .filter((v) => v && typeof v === 'object')
-      .map((v) => v as Partial<QuestionInfoSection>)
       .flatMap((section) => {
         const { title, content, visible = true } = section;
         return content && title

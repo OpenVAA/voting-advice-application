@@ -3,18 +3,7 @@
  */
 
 import type { Choice, Image, QUESTION_TYPE } from '@openvaa/data';
-
-/**
- * An object translated into different languages.
- */
-export type LocalizedObject = Record<string, unknown>;
-
-/**
- * A string translated into different languages.
- */
-export type LocalizedString = {
-  [locale: string]: string;
-};
+import type { LocalizedChoice, LocalizedString } from './localized.type';
 
 /**
  * Allowed settings for different `QuestionType`s. These are converted into properties of the `@openvaa/data` `Question` objects.
@@ -70,21 +59,9 @@ export type QuestionTypeSettings =
 //     max?: number;
 //   };
 
-export type LocalizedChoice = Omit<Choice, 'label'> & {
-  label: LocalizedString | string;
-};
-
 export type QuestionSettingsDateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
 
 export type QuestionSettingsDisplayType = 'vertical' | 'horizontal';
-
-/**
- * The type in which localized answers are stored. These are translated into proper `@openvaa/data.Answer` objects by the Data API.
- */
-export type LocalizedAnswer = {
-  value: AnswerValue[keyof AnswerValue];
-  info?: LocalizedString | null;
-};
 
 /**
  * The allowed `Answer` choices for different `QuestionType`s based on their `settings.type`.

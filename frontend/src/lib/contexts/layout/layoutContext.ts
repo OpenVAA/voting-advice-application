@@ -7,7 +7,8 @@ import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { type DeepPartial, mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
 import { stackedStore } from '../utils/stackedStore';
-import type { OptionalVideoProps, VideoContentProps } from '$lib/components/video';
+import type { VideoContent } from '@openvaa/app-shared';
+import type { OptionalVideoProps } from '$lib/components/video';
 import type {
   LayoutContext,
   Navigation,
@@ -90,7 +91,7 @@ export function initLayoutContext(): LayoutContext {
   let shouldClearContent = false;
 
   async function load(
-    props: VideoContentProps & OptionalVideoProps,
+    props: VideoContent & OptionalVideoProps,
     { autoshow = true }: { autoshow?: boolean } = {}
   ): Promise<boolean> {
     const player = get(video.player);
