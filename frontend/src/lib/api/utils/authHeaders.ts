@@ -7,5 +7,6 @@ const AUTH_HEADERS = ['authorization', 'proxy-authorization'];
  * Check if the given `HeadersInit` contain any authentication credentials.
  */
 export function hasAuthHeaders(headers: HeadersInit | null | undefined): boolean {
-  return new Headers(headers ?? undefined).keys().some((k) => AUTH_HEADERS.includes(k.toLowerCase()));
+  // TODO[Node 22]: Remove Array.from(...)
+  return Array.from(new Headers(headers ?? undefined).keys()).some((k) => AUTH_HEADERS.includes(k.toLowerCase()));
 }
