@@ -1,17 +1,19 @@
-import { type AnyChoice, MultipleChoiceCategoricalQuestion } from '@openvaa/data';
+import { type AnyChoice, isMultipleChoiceQuestion } from '@openvaa/data';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { type ChoiceQuestion, FILTER_TYPE, type FilterOptions } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import type { ChoiceQuestion, FilterOptions } from '../base';
 
 /**
  * A filter for single or multiple choice questions
  */
-export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends EnumeratedFilter<
+export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity> extends EnumeratedFilter<
   TEntity,
   AnyChoice['id'],
   AnyChoice
 > {
+  readonly filterType = FILTER_TYPE.ChoiceQuestionFilter;
+
   declare readonly options: FilterOptions<TEntity> & {
     question: ChoiceQuestion;
     /** The type is always the type of the AnyChoice id */
@@ -38,7 +40,7 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends En
       name,
       entityGetter,
       type: 'string',
-      multipleValues: question instanceof MultipleChoiceCategoricalQuestion
+      multipleValues: isMultipleChoiceQuestion(question)
     });
   }
 

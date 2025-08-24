@@ -1,4 +1,4 @@
-import { type AllianceData, type DataAccessor, Entity, removeDuplicates } from '../../../internal';
+import { type AllianceData, type DataAccessor, Entity, OBJECT_TYPE, removeDuplicates } from '../../../internal';
 import type { ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
@@ -6,6 +6,8 @@ import type { ENTITY_TYPE, Organization } from '../../../internal';
  * An `Alliance` can be explicitly created if it provides answers to the questions or if has a unique name, logo or other properties that are shared between multiple `AllianceNomination`s belonging to it.
  */
 export class Alliance extends Entity<typeof ENTITY_TYPE.Alliance, AllianceData> implements DataAccessor<AllianceData> {
+  readonly objectType = OBJECT_TYPE.Alliance;
+
   /**
    * The `Organization`s that belong to the `Alliance` are implied by the `Nomination`s belonging to it.
    */

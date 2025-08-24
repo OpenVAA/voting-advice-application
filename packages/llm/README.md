@@ -111,7 +111,7 @@ try {
   const parsed = LlmParser.parse(response.content, responseContract);
   console.log('Validated user profile:', parsed);
 } catch (error) {
-  if (error instanceof ValidationError) {
+  if (isValidationError(error)) {
     console.error('Validation failed:', error.message);
     console.error('Raw response:', error.unparsedText);
   }

@@ -31,7 +31,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 -->
 
 <script lang="ts">
-  import { type AnyQuestionVariant, ENTITY_TYPE, OrganizationNomination } from '@openvaa/data';
+  import { type AnyQuestionVariant, ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { type Tab, Tabs } from '$lib/components/tabs';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -107,7 +107,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     }
 
     // Collect child nominations if applicable
-    if (tabs.includes('candidates') && nomination && nomination instanceof OrganizationNomination)
+    if (tabs.includes('candidates') && isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
       children = findCandidateNominations({ matches: matches ? $matches : undefined, nomination });
   }
 

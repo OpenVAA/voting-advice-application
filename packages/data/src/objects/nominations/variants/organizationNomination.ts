@@ -4,6 +4,7 @@ import {
   DataProvisionError,
   ENTITY_TYPE,
   Nomination,
+  OBJECT_TYPE,
   type OrganizationNominationData
 } from '../../../internal';
 import type {
@@ -22,6 +23,8 @@ export class OrganizationNomination
   extends Nomination<typeof ENTITY_TYPE.Organization, typeof ENTITY_TYPE.Alliance, OrganizationNominationData>
   implements DataAccessor<OrganizationNominationData, 'candidates' | 'factions'>
 {
+  readonly objectType = OBJECT_TYPE.OrganizationNomination;
+
   //////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////

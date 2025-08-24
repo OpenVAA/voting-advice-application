@@ -9,3 +9,4 @@ export * from './match';
 export * from './missingValue';
 export * from './question';
 export * from './space';
+export * from './utils';

@@ -3,10 +3,8 @@ import {
   type AnyNominationVariant,
   type AnyQuestionVariant,
   type FactionNomination,
-  NumberQuestion,
-  OrganizationNomination,
-  SingleChoiceCategoricalQuestion,
-  SingleChoiceOrdinalQuestion
+  isObjectType,
+  OBJECT_TYPE
 } from '@openvaa/data';
 import { Match } from '@openvaa/matching';
 import { logDebugError } from '$lib/utils/logger';
@@ -14,6 +12,7 @@ import { MatchingProxy } from './imputeParentAnswers.type';
 import { median } from './median';
 import { mode } from './mode';
 import type { AnswerDict, Id } from '@openvaa/core';
+import type { OrganizationNomination } from '@openvaa/data';
 
 /**
  * Impute the answers for the provided `Nomination`s from their child `Nomination`s.
@@ -44,7 +43,7 @@ export function imputeParentAnswers<TNomination extends OrganizationNomination |
   for (let i = 0; i < nominations.length; i++) {
     const parent = nominations[i];
     const children =
-      parent instanceof OrganizationNomination && parent.hasFactions
+      isObjectType(parent, OBJECT_TYPE.OrganizationNomination) && parent.hasFactions
         ? parent.factionNominations
         : parent.candidateNominations;
     if (children.length === 0) continue;
@@ -65,7 +64,7 @@ export function imputeParentAnswers<TNomination extends OrganizationNomination |
         // 1. Ordinal questions use median (assuming the choices are in the correct order)
         // NB. We do not consider the possible uneven spacing of the choices’ normalizedValues
         // NB. In case of ties, the first encountered choice is used
-        if (question instanceof SingleChoiceOrdinalQuestion) {
+        if (isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion)) {
           const choiceIds = question.choices.map((c) => c.id);
           const indexAnswers = answers.map((a) => choiceIds.indexOf(a as Id)).filter((i) => i >= 0);
           const imputedIndex =
@@ -73,11 +72,11 @@ export function imputeParentAnswers<TNomination extends OrganizationNomination |
           if (imputedIndex != null) value = question.choices[imputedIndex].id;
           // 2. Categorical questions use mode
           // NB. In case of draws, the first encountered choice is used
-        } else if (question instanceof SingleChoiceCategoricalQuestion) {
+        } else if (isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion)) {
           value = mode(answers as Array<Id>);
           // 3. Number questions use median
           // NB. An option to use mean could be provided
-        } else if (question instanceof NumberQuestion) {
+        } else if (isObjectType(question, OBJECT_TYPE.NumberQuestion)) {
           value = median(answers.filter((v) => typeof v === 'number'));
         }
         // TODO: For preference order questions, use the Borda count (https://en.wikipedia.org/wiki/Borda_count)

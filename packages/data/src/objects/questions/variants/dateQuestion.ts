@@ -9,6 +9,7 @@ import {
   MISSING_VALUE,
   type MissingValue,
   normalizeCoordinate,
+  OBJECT_TYPE,
   Question
 } from '../../../internal';
 import type { DataRoot, QUESTION_TYPE } from '../../../internal';
@@ -21,6 +22,8 @@ export class DateQuestion
   extends Question<typeof QUESTION_TYPE.Date, DateQuestionData>
   implements DataAccessor<DateQuestionData>
 {
+  readonly objectType = OBJECT_TYPE.DateQuestion;
+
   min: Date | null;
   max: Date | null;
 
