@@ -30,7 +30,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
+  import { isSingleChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
   import QuestionChoices from './QuestionChoices.svelte';
@@ -57,7 +57,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   const { t } = getComponentContext();
 </script>
 
-{#if question instanceof SingleChoiceOrdinalQuestion || question instanceof SingleChoiceCategoricalQuestion}
+{#if isSingleChoiceQuestion(question)}
   {@const selectedId = question.ensureValue(answer?.value)}
   {@const otherSelected = question.ensureValue(otherAnswer?.value)}
   <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />

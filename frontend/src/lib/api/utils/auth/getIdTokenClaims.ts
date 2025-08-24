@@ -45,11 +45,11 @@ export async function getIdTokenClaims(
       }
     };
   } catch (e) {
-    if (e instanceof jose.errors.JWTExpired) {
+    if (e instanceof Error && 'code' in e) {
       return {
         success: false,
         error: {
-          code: e.code
+          code: `${e.code}`
         }
       };
     }

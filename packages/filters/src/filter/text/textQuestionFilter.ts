@@ -1,9 +1,12 @@
-import { MultipleTextQuestion } from '@openvaa/data';
+import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
 import { TextFilter } from './textFilter';
+import { FILTER_TYPE } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import type { TextQuestion } from '@openvaa/data';
+import type { MultipleTextQuestion, TextQuestion } from '@openvaa/data';
 
-export class TextQuestionFilter<TEntity extends MaybeWrappedEntity> extends TextFilter<TEntity> {
+export class TextQuestionFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity> extends TextFilter<TEntity> {
+  readonly filterType = FILTER_TYPE.TextQuestionFilter;
+
   /**
    * Create a filter for matching a text question.
    * @param question The text question
@@ -21,7 +24,7 @@ export class TextQuestionFilter<TEntity extends MaybeWrappedEntity> extends Text
     super(
       {
         ...options,
-        multipleValues: options.question instanceof MultipleTextQuestion
+        multipleValues: isObjectType(options.question, OBJECT_TYPE.MultipleTextQuestion)
       },
       locale
     );

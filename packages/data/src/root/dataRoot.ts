@@ -1,28 +1,19 @@
 import {
   Alliance,
   AllianceNomination,
-  type AnyQuestionVariant,
-  type AnyQuestionVariantData,
   Candidate,
   CandidateNomination,
-  type Collection,
   Constituency,
-  type ConstituencyData,
   ConstituencyGroup,
-  type ConstituencyGroupData,
   createDeterministicId,
   createQuestion,
   DataNotFoundError,
   DataProvisionError,
   DataTypeError,
   Election,
-  type ElectionData,
   ENTITY_TYPE,
-  type EntityType,
-  type EntityVariant,
   Faction,
   FactionNomination,
-  type FilterTargets,
   formatAllianceName,
   formatAllianceShortName,
   formatBooleanAnswer,
@@ -34,12 +25,10 @@ import {
   formatName,
   formatNumberAnswer,
   formatTextAnswer,
-  type Id,
-  type Image,
+  isMultipleChoiceQuestion,
+  isNomination,
+  isSingleChoiceQuestion,
   isValidId,
-  type MappedCollection,
-  MultipleChoiceQuestion,
-  Nomination,
   order,
   Organization,
   OrganizationNomination,
@@ -47,8 +36,6 @@ import {
   parseNominationTree,
   QUESTION_TYPE,
   QuestionCategory,
-  type QuestionCategoryData,
-  SingleChoiceQuestion,
   Updatable
 } from '../internal';
 import type {
@@ -57,14 +44,27 @@ import type {
   AnyEntityVariantData,
   AnyNominationVariantData,
   AnyNominationVariantPublicData,
+  AnyQuestionVariant,
+  AnyQuestionVariantData,
   ArrayAnswerFormatterOptions,
+  Collection,
   CombinedElections,
+  ConstituencyData,
+  ConstituencyGroupData,
   DynamicObjectType,
+  ElectionData,
+  EntityType,
+  EntityVariant,
   EntityVariantTree,
+  FilterTargets,
   FullVaaData,
+  Id,
   IdentityProps,
+  Image,
+  MappedCollection,
   NominationVariant,
   NominationVariantTree,
+  QuestionCategoryData,
   QuestionCategoryType,
   QuestionType,
   QuestionVariant,
@@ -748,7 +748,7 @@ export class DataRoot extends Updatable {
    * @returns An error message if the object is invalid.
    */
   checkObject(object: object): void | string {
-    if (object instanceof Nomination) {
+    if (isNomination(object)) {
       try {
         object.entity; // eslint-disable-line @typescript-eslint/no-unused-expressions
       } catch {
@@ -846,15 +846,14 @@ export class DataRoot extends Updatable {
   } & ArrayAnswerFormatterOptions): string {
     const { locale } = this;
     if (answer == null) return this.formatters.missingAnswer({ locale, question });
-    // We use instanceof checks to catch subclasses of choice questions
-    if (question instanceof SingleChoiceQuestion)
+    if (isSingleChoiceQuestion(question))
       // `getAnswer()` ensures that the answer value is not missing and the `Choice` is available
       return this.formatters.textAnswer({
         locale,
         question,
         value: question.getChoice((answer as Answer<Id>).value!)!.label
       });
-    if (question instanceof MultipleChoiceQuestion)
+    if (isMultipleChoiceQuestion(question))
       // The array may be empty, but that is left for the `multipleText` formatter to handle
       return this.formatters.multipleTextAnswer({
         locale,

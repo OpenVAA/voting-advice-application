@@ -1,4 +1,4 @@
-import { MultipleChoiceQuestion } from '../../../internal';
+import { MultipleChoiceQuestion, OBJECT_TYPE } from '../../../internal';
 import type { QUESTION_TYPE } from '../../../internal';
 
 /**
@@ -29,5 +29,7 @@ export class MultipleChoiceCategoricalQuestion extends MultipleChoiceQuestion<
   typeof QUESTION_TYPE.MultipleChoiceCategorical,
   undefined
 > {
+  readonly objectType = OBJECT_TYPE.MultipleChoiceCategoricalQuestion;
+
   // TODO: Implement for matching: _normalizeValue, get isMatchable, get normalizedDimensions
 }
