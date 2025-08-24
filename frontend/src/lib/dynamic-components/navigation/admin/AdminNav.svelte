@@ -22,7 +22,6 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
