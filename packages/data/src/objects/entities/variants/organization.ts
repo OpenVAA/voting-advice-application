@@ -1,4 +1,4 @@
-import { type DataAccessor, Entity, type OrganizationData, removeDuplicates } from '../../../internal';
+import { type DataAccessor, Entity, OBJECT_TYPE, type OrganizationData, removeDuplicates } from '../../../internal';
 import type { Alliance, Candidate, ENTITY_TYPE, Faction } from '../../../internal';
 
 /**
@@ -8,6 +8,8 @@ export class Organization
   extends Entity<typeof ENTITY_TYPE.Organization, OrganizationData>
   implements DataAccessor<OrganizationData>
 {
+  readonly objectType = OBJECT_TYPE.Organization;
+
   /**
    * The `Alliance`s that this `Organization` belongs to via `OrganizationNomination`s.
    */

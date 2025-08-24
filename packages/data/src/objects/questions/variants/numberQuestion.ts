@@ -10,6 +10,7 @@ import {
   type MissingValue,
   normalizeCoordinate,
   type NumberQuestionData,
+  OBJECT_TYPE,
   Question
 } from '../../../internal';
 import type { DataRoot, QUESTION_TYPE } from '../../../internal';
@@ -21,6 +22,8 @@ export class NumberQuestion
   extends Question<typeof QUESTION_TYPE.Number, NumberQuestionData>
   implements DataAccessor<NumberQuestionData>
 {
+  readonly objectType = OBJECT_TYPE.NumberQuestion;
+
   constructor({ data, root }: { data: NumberQuestionData; root: DataRoot }) {
     super({ data, root });
     if (this.range === 0) throw new DataProvisionError('If defined, the min-max range must be greater than zero.');

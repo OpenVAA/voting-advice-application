@@ -6,7 +6,8 @@ import {
   type ElectionData,
   ensureDate,
   ENTITY_TYPE,
-  isMissingValue
+  isMissingValue,
+  OBJECT_TYPE
 } from '../../internal';
 import type {
   AllianceNomination,
@@ -26,6 +27,8 @@ import type {
  * Represents an election of which there may be multiple simultaneous ones. The `Entity`s nominated for an `Election` are divided into `Constituency`s which form `ConstituencyGroup`s. An `Election` must have at least one of these even in the case of elections where there is only one, e.g. a state-wide, constituency (see also the `singleConstituency` getter).
  */
 export class Election extends DataObject<ElectionData> implements DataAccessor<ElectionData> {
+  readonly objectType = OBJECT_TYPE.Election;
+
   //////////////////////////////////////////////////////////////////////////////
   // Property getters
   //////////////////////////////////////////////////////////////////////////////

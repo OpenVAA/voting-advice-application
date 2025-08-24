@@ -21,6 +21,13 @@ export class ValidationError extends Error {
 }
 
 /**
+ * Type guard for `ValidationError`.
+ */
+export function isValidationError(error: unknown): error is ValidationError {
+  return error instanceof Error && error.name === 'ValidationError';
+}
+
+/**
  * Clean JSON string to handle common LLM formatting issues
  */
 export function cleanJson(jsonString: string): string {

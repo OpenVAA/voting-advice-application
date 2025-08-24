@@ -1,13 +1,7 @@
-import {
-  AllianceNomination,
-  type AnyEntityVariant,
-  CandidateNomination,
-  FactionNomination,
-  type NominationVariant,
-  OrganizationNomination
-} from '@openvaa/data';
-import { Match } from '@openvaa/matching';
+import { type AnyEntityVariant, isNomination, type NominationVariant } from '@openvaa/data';
+import { isMatch } from '@openvaa/matching';
 import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { Match } from '@openvaa/matching';
 
 /**
  * Parse a `MaybeWrappedEntity` into `Entity` and possible `Match` and `Nomination`.
@@ -16,16 +10,11 @@ export function unwrapEntity<TEntity extends AnyEntityVariant>(
   maybeWrapped: MaybeWrappedEntity<TEntity>
 ): UnwrappedEntity<TEntity> {
   const out: Partial<UnwrappedEntity<TEntity>> = {};
-  if (maybeWrapped instanceof Match) {
+  if (isMatch<TEntity | NominationVariant[TEntity['type']]>(maybeWrapped)) {
     out.match = maybeWrapped;
-    maybeWrapped = maybeWrapped.target;
+    maybeWrapped = maybeWrapped.target as TEntity;
   }
-  if (
-    maybeWrapped instanceof AllianceNomination ||
-    maybeWrapped instanceof CandidateNomination ||
-    maybeWrapped instanceof FactionNomination ||
-    maybeWrapped instanceof OrganizationNomination
-  ) {
+  if (isNomination(maybeWrapped)) {
     out.nomination = maybeWrapped as NominationVariant[TEntity['type']];
     maybeWrapped = maybeWrapped.entity as TEntity;
   }
