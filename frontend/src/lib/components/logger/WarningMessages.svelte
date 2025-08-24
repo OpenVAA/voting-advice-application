@@ -37,7 +37,7 @@ Reusable component for displaying warning and error messages with scrolling
     <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
   {:else}
     <div class="space-y-1 text-xs">
-      {#each allMessages as { type, message }, index}
+      {#each allMessages as { type, message }}
         <div class="flex items-start gap-2 rounded bg-base-100 p-2">
           {#if showTimestamp}
             <span class="whitespace-nowrap text-xs text-neutral">
