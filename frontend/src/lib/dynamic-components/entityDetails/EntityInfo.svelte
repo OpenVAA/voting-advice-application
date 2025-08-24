@@ -29,9 +29,10 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
     type AnyEntityVariant,
     type AnyNominationVariant,
     type AnyQuestionVariant,
-    Candidate,
     ENTITY_TYPE,
-    type EntityType
+    type EntityType,
+    isObjectType,
+    OBJECT_TYPE
   } from '@openvaa/data';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
@@ -105,7 +106,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
           {:else}
             <EntityTag entity={parentNomination} variant="full" />
           {/if}
-          {#if nakedEntity instanceof Candidate && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
+          {#if isObjectType(nakedEntity, OBJECT_TYPE.Candidate) && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
             ({$t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>

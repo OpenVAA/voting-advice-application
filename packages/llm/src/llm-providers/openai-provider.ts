@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { LLMProvider } from './llm-provider';
-import { mapToMessageParam, parse, ValidationError } from '../utils';
+import { isValidationError, mapToMessageParam, parse } from '../utils';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
 import type {
   BaseGenerationOptions,
@@ -12,6 +12,7 @@ import type {
   TokenUsage,
   ValidationGenerationOptions
 } from '../types/';
+import type { ValidationError } from '../utils';
 
 /**
  * OpenAI implementation of the LLMProvider abstract class.
@@ -259,7 +260,7 @@ export class OpenAIProvider extends LLMProvider {
         };
         return result;
       } catch (error) {
-        if (error instanceof ValidationError) {
+        if (isValidationError(error)) {
           lastValidationError = error;
           // If it's the last attempt, the error will be thrown after the loop
         } else {

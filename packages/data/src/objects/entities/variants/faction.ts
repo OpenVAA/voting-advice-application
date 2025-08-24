@@ -1,4 +1,11 @@
-import { type DataAccessor, DataNotFoundError, Entity, type FactionData, removeDuplicates } from '../../../internal';
+import {
+  type DataAccessor,
+  DataNotFoundError,
+  Entity,
+  type FactionData,
+  OBJECT_TYPE,
+  removeDuplicates
+} from '../../../internal';
 import type { Candidate, ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
@@ -7,6 +14,8 @@ import type { Candidate, ENTITY_TYPE, Organization } from '../../../internal';
  * A `Faction` can be explicitly created if it provides answers to the questions or if has a unique name, logo or other properties that are shared between multiple `FactionNomination`s belonging to it.
  */
 export class Faction extends Entity<typeof ENTITY_TYPE.Faction, FactionData> implements DataAccessor<FactionData> {
+  readonly objectType = OBJECT_TYPE.Faction;
+
   /**
    * The `Candidate`s that belong to the `Faction` are implied by the `Nomination`s belonging to it.
    */

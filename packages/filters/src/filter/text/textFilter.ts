@@ -1,12 +1,20 @@
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
+import {
+  Filter,
+  FILTER_TYPE,
+  type FilterOptionsBase,
+  type PropertyFilterOptions,
+  type QuestionFilterOptions
+} from '../base';
 import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { FilterType } from '../base';
 
 /**
  * A base class for filters that search for text.
  */
+export class TextFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity> extends Filter<TEntity, string> {
+  readonly filterType: FilterType = FILTER_TYPE.TextFilter;
 
-export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEntity, string> {
   protected _rules: {
     exclude?: string;
     include?: string;

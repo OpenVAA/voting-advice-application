@@ -5,6 +5,7 @@ import {
   isMissingValue,
   MISSING_VALUE,
   type MissingValue,
+  OBJECT_TYPE,
   SingleChoiceQuestion
 } from '../../../internal';
 import type { QUESTION_TYPE } from '../../../internal';
@@ -34,6 +35,8 @@ export class SingleChoiceCategoricalQuestion extends SingleChoiceQuestion<
   typeof QUESTION_TYPE.SingleChoiceCategorical,
   undefined
 > {
+  readonly objectType = OBJECT_TYPE.SingleChoiceCategoricalQuestion;
+
   get isMatchable(): boolean {
     return true;
   }

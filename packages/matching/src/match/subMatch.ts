@@ -1,4 +1,5 @@
 import { MatchBase } from './matchBase';
+import { MATCH_TYPE } from './matchTypes';
 import type { NormalizedDistance } from '@openvaa/core';
 import type { MatchableQuestionGroup } from '../question';
 
@@ -6,6 +7,7 @@ import type { MatchableQuestionGroup } from '../question';
  * The class for question-group-specific submatches within a Match.
  */
 export class SubMatch<TGroup extends MatchableQuestionGroup = MatchableQuestionGroup> extends MatchBase {
+  readonly matchType = MATCH_TYPE.SubMatch;
   readonly questionGroup: TGroup;
   /**
    * Create a new `SubMatch`.

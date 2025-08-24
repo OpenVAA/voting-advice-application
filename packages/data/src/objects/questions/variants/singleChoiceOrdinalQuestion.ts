@@ -6,6 +6,7 @@ import {
   MISSING_VALUE,
   type MissingValue,
   normalizeCoordinate,
+  OBJECT_TYPE,
   SingleChoiceQuestion
 } from '../../../internal';
 import type { ChoiceQuestionData, DataRoot, QUESTION_TYPE } from '../../../internal';
@@ -37,6 +38,8 @@ export class SingleChoiceOrdinalQuestion extends SingleChoiceQuestion<
   typeof QUESTION_TYPE.SingleChoiceOrdinal,
   number
 > {
+  readonly objectType = OBJECT_TYPE.SingleChoiceOrdinalQuestion;
+
   // These should not be set manually and reading them is probably not useful either
   protected min: number;
   protected max: number;

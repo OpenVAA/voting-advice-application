@@ -1,16 +1,17 @@
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { FILTER_TYPE, type PropertyFilterOptions } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import type { PropertyFilterOptions } from '../base';
 
 /**
  * A filter for properties which are objects with a string label and key for filtering, e.g. party objects of candidates.
  */
-export class ObjectFilter<TEntity extends MaybeWrappedEntity, TObject extends object = object> extends EnumeratedFilter<
-  TEntity,
-  string,
-  TObject
-> {
+export class ObjectFilter<
+  TEntity extends MaybeWrappedEntity = MaybeWrappedEntity,
+  TObject extends object = object
+> extends EnumeratedFilter<TEntity, string, TObject> {
+  readonly filterType = FILTER_TYPE.ObjectFilter;
+
   /** Options specific to the objects */
   objOptions: ObjOptions<TObject>;
 
