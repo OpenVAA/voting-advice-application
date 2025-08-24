@@ -72,35 +72,5 @@ export default function controller({ strapi }: { strapi: Core.Strapi }) {
         return ctx.internalServerError('An error occurred while finding candidates');
       }
     },
-    updateQuestionCustomData: async (ctx: Context) => {
-      try {
-        const { questionId, locale, condensedArgs, questionInfoSections } = JSON.parse(
-          ctx.request.body ?? '{}'
-        );
-
-        if (!questionId || !locale) {
-          return ctx.badRequest('Invalid request: Missing questionId or locale');
-        }
-
-        const result = await strapi
-          .plugin('openvaa-admin-tools')
-          .service('data')
-          .updateQuestionCustomData({
-            questionId,
-            locale,
-            condensedArgs,
-            questionInfoSections,
-          });
-
-        if (result.type === 'success') {
-          return ctx.send(result);
-        } else {
-          return ctx.badRequest(result.cause || 'Failed to update question custom data');
-        }
-      } catch (error) {
-        strapi.log.error('data.updateQuestionCustomData controller error', error);
-        return ctx.internalServerError('An error occurred while updating question custom data');
-      }
-    },
   };
 }

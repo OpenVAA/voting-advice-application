@@ -55,14 +55,4 @@ export default [
       ],
     },
   },
-  {
-    method: 'POST',
-    path: '/update-question-custom-data-public',
-    handler: 'data.updateQuestionCustomData',
-    config: {
-      policies: [
-        'global::user-is-admin', // Should work with JWT??
-      ],
-    },
-  },
 ];
