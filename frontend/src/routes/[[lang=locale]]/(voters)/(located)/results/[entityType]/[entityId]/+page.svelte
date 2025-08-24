@@ -22,7 +22,7 @@ Used to show an entity's details using the `EntityDetails` component.
 -->
 
 <script lang="ts">
-  import { Match } from '@openvaa/matching';
+  import { isMatch } from '@openvaa/matching';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -98,7 +98,7 @@ Used to show an entity's details using the `EntityDetails` component.
   ////////////////////////////////////////////////////////////////////
 
   function doTrack(): void {
-    if (entity instanceof Match) {
+    if (isMatch(entity)) {
       startEvent(`results_ranked_${$page.params.entityType as EntityType}`, {
         id: $page.params.entityId,
         score: entity.score

@@ -3,11 +3,16 @@ import { castValue } from './castValue';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { copyRules, matchRules, type Rule, ruleIsActive, type Rules } from '../rules';
 import type { FilterOptions } from './filter.type';
+import type { FilterType } from './filterTypes';
 
 /**
  * The abstract base class for all filters.
  */
-export abstract class Filter<TTarget extends MaybeWrappedEntity, TValue> {
+export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEntity, TValue = unknown> {
+  /**
+   * The type of any non-abstract subclass of `Filter`. This is used for typing instead of `instanceof` which is problematic.
+   */
+  abstract readonly filterType: FilterType;
   /**
    * All rules related to this filter should be stored here.
    */

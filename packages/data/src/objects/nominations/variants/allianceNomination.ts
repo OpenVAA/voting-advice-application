@@ -1,4 +1,4 @@
-import { DataNotFoundError, DataProvisionError, ENTITY_TYPE, Nomination } from '../../../internal';
+import { DataNotFoundError, DataProvisionError, ENTITY_TYPE, Nomination, OBJECT_TYPE } from '../../../internal';
 import type {
   AllianceNominationData,
   DataAccessor,
@@ -15,6 +15,8 @@ export class AllianceNomination
   extends Nomination<typeof ENTITY_TYPE.Alliance, never, AllianceNominationData>
   implements DataAccessor<AllianceNominationData, 'organizations'>
 {
+  readonly objectType = OBJECT_TYPE.AllianceNomination;
+
   //////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////
