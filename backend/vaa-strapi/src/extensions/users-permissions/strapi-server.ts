@@ -39,6 +39,7 @@ const defaultPermissions: Array<{
   { action: 'api::question-type.question-type.findOne', roleTypes: ['authenticated'] },
   { action: 'api::question.question.find', roleTypes: ['authenticated'] },
   { action: 'api::question.question.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::question.customdata.update', roleTypes: ['admin'] },
   { action: 'plugin::upload.content-api.destroy', roleTypes: ['authenticated'] },
   { action: 'plugin::upload.content-api.upload', roleTypes: ['authenticated'] },
   { action: 'plugin::users-permissions.candidate.check', roleTypes: ['public'] },
