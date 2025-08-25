@@ -13,6 +13,7 @@ import type {
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
+  SetQuestionOptions,
   WithAuth
 } from '$lib/api/base/dataWriter.type';
 import type { Params } from '../strapiAdapter.type';
@@ -237,6 +238,27 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     });
     if (!candidate) throw new Error('Expected a CandidateData object, but got none.');
     return parseCandidate(candidate, null, { dontTranslateAnswers: true });
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Methods for the Admin App
+  ////////////////////////////////////////////////////////////////////
+
+  protected async _updateQuestion({
+    authToken,
+    id,
+    data: { customData }
+  }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+    if (!customData || typeof customData !== 'object')
+      throw new Error(`Expected a customData object but got type: ${typeof customData}`);
+    const data = await this.apiPost({
+      endpoint: 'updateQuestion',
+      endpointParams: { id },
+      body: { data: customData },
+      authToken
+    });
+    if (!data) throw new Error('Expected a QuestionData object, but got none.');
+    return { type: 'success' };
   }
 
   ////////////////////////////////////////////////////////////////////
