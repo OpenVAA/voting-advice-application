@@ -4,7 +4,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { forceFailJob } from '$lib/server/jobs/jobStore';
+import { forceFailJob } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ params, request }: RequestEvent) {
