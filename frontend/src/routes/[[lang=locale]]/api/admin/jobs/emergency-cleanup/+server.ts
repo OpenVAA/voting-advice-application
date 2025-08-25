@@ -5,7 +5,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { emergencyCleanup } from '$lib/server/jobs/jobStore';
+import { emergencyCleanup } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ request }: RequestEvent) {

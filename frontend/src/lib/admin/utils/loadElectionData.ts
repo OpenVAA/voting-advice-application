@@ -21,10 +21,7 @@ export async function loadElectionData({
 }: {
   electionId: Id;
   locale: string;
-  fetch: {
-    (input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
-    (input: string | URL | globalThis.Request, init?: RequestInit): Promise<Response>;
-  };
+  fetch: Fetch;
 }): Promise<DataRoot> {
   // Initialize data provider
   const dataProvider = await dataProviderPromise;

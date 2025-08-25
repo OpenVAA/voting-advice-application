@@ -4,7 +4,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { createJob } from '$lib/server/jobs/jobStore';
+import { createJob } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ request }: RequestEvent) {
@@ -27,3 +27,13 @@ export async function POST({ request }: RequestEvent) {
     return json({ error: 'Failed to start job' }, { status: 500 });
   }
 }
+
+/**
+ * The result returned by /api/admin/jobs/start
+ */
+export type JobStartParams = { feature: string; author: string };
+
+/**
+ * The result returned by /api/admin/jobs/start
+ */
+export type JobStartResult = { jobId: string; message: string };
