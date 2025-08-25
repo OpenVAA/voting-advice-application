@@ -6,7 +6,7 @@ import { cachifyUrl } from '../utils/cachifyUrl';
  * The abstract base class for all the universal Data API services. It implements initialisation, i.e. `fetch` handling for all of these.
  */
 export abstract class UniversalAdapter {
-  #fetch: typeof fetch | undefined;
+  #fetch: Fetch | undefined;
 
   /**
    * The `init` method must be called before using any of the `DataProvider` methods.
@@ -56,7 +56,7 @@ type AdapterConfig = {
   /**
    * The `fetch` function the `DataProvider` will use to make API calls.
    */
-  fetch: typeof fetch | undefined;
+  fetch: Fetch | undefined;
 };
 
 type FetchOptions = {
