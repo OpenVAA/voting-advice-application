@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { writable } from 'svelte/store';
+import { jobStores } from './jobStores';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
@@ -33,10 +34,13 @@ export function initAdminContext(): AdminContext {
   // Admin functions
   ////////////////////////////////////////////////////////////////////
 
+  const jobs = jobStores();
+
   const adminContext: AdminContext = {
     ...appContext,
     ...authContext,
-    userData
+    userData,
+    jobs
   };
 
   setContext<AdminContext>(CONTEXT_KEY, adminContext);
