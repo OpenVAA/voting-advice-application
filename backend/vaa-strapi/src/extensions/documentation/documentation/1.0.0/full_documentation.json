@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-08-18T11:45:31.233Z"
+    "x-generation-date": "2025-08-25T10:49:49.047Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -9783,6 +9783,17 @@
           }
         }
       },
+      "SettingsQuestionsInteractiveInfoComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
       "SettingsQuestionsComponent": {
         "type": "object",
         "properties": {
@@ -9794,6 +9805,9 @@
           },
           "questionsIntro": {
             "$ref": "#/components/schemas/SettingsQuestionsIntroComponent"
+          },
+          "interactiveInfo": {
+            "$ref": "#/components/schemas/SettingsQuestionsInteractiveInfoComponent"
           },
           "showCategoryTags": {
             "type": "boolean"
@@ -9993,6 +10007,9 @@
             "type": "boolean"
           },
           "answersLocked": {
+            "type": "boolean"
+          },
+          "adminApp": {
             "type": "boolean"
           }
         }
