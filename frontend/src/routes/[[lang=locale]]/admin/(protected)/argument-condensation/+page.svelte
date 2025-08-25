@@ -98,8 +98,6 @@ Page for controlling the argument condensation feature.
       return { cancel: true };
     };
   }
-
-  // Remove the mock simulation function - no longer needed
 </script>
 
 <MainContent title={$t('adminApp.argumentCondensation.title')}>
