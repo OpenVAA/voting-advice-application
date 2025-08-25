@@ -5,21 +5,24 @@ Page for monitoring all active jobs across different admin features
 -->
 
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import JobMonitor from '$lib/admin/components/jobs/JobMonitor.svelte';
   import { Button } from '$lib/components/button';
-  import JobMonitor from '$lib/components/jobs/JobMonitor.svelte';
-  import { getAppContext } from '$lib/contexts/app';
+  import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
-  import type { JobInfo } from '$lib/server/jobs/jobStore.type';
-  import { activeJobsStore, pastJobsStore, activeJobCount, jobPollingService } from '$lib/stores/jobStores';
+  import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
-  const { getRoute } = getAppContext();
+  const {
+    getRoute,
+    jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
+  } = getAdminContext();
 
   // Subscribe to stores for reactive UI updates
   $: argumentCondensationJob = $activeJobsStore.get('argument-condensation') || null;
   $: factorAnalysisJob = $activeJobsStore.get('factor-analysis') || null;
   $: questionInfoJob = $activeJobsStore.get('question-info') || null;
   $: pastJobs = Array.from($pastJobsStore.values());
+
+  pollingService.refresh();
 
   // Emergency cleanup function
   async function performEmergencyCleanup() {
@@ -40,7 +43,7 @@ Page for monitoring all active jobs across different admin features
         alert(`Emergency cleanup completed! ${result.cleanedJobs} jobs were cleaned up.`);
 
         // Refresh data from stores
-        await jobPollingService.refresh();
+        await pollingService.refresh();
       } else {
         const error = await response.json();
         alert(`Emergency cleanup failed: ${error.error}`);
@@ -67,7 +70,7 @@ Page for monitoring all active jobs across different admin features
       if (response.ok) {
         alert('Job force-failed successfully');
         // Refresh data from stores
-        await jobPollingService.refresh();
+        await pollingService.refresh();
       } else {
         const error = await response.json();
         alert(`Failed to force-fail job: ${error.error}`);
@@ -86,14 +89,6 @@ Page for monitoring all active jobs across different admin features
     const seconds = Math.floor((duration % 60000) / 1000);
     return `${minutes}m ${seconds}s`;
   }
-
-  onMount(() => {
-    // The stores will automatically start polling if there are active jobs
-    // We can also force a refresh to get initial data
-    jobPollingService.refresh();
-  });
-
-  // No need for onDestroy cleanup - the stores handle their own lifecycle
 </script>
 
 <MainContent title="Jobs Monitoring">
@@ -226,8 +221,10 @@ Page for monitoring all active jobs across different admin features
                   <div class="p-3 rounded-lg border border-base-300 transition-colors hover:bg-base-200">
                     <div class="mb-2 flex items-start justify-between">
                       <div class="flex-1">
-                        <h3 class="font-semibold text-sm capitalize">{job.feature.replace('-', ' ')}</h3>
-                        <p class="text-xs text-neutral">{job.author}</p>
+                        <a href={$getRoute({ route: 'AdminAppJob', jobId: job.id })}>
+                          <h3 class="font-semibold text-sm capitalize">{job.feature.replace('-', ' ')}</h3>
+                          <p class="text-xs text-neutral">{job.author}</p>
+                        </a>
                       </div>
                       <div class="text-right">
                         <span class="badge badge-sm {job.status === 'completed' ? 'badge-success' : 'badge-error'}">
