@@ -1,4 +1,10 @@
-import type { LocalizedAnswer } from '@openvaa/app-shared';
+import type {
+  LocalizedAnswer,
+  LocalizedQuestionArguments,
+  LocalizedQuestionInfoSection,
+  LocalizedTermDefinition,
+  LocalizedVideoContent
+} from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
 import type { DataApiActionResult } from './actionResult.type';
@@ -23,7 +29,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
     authorizationCode: string;
     codeVerifier: string;
     redirectUri: string;
-  }) => DWReturnType<DataApiActionResult>;
+  }) => DWReturnType<DataApiActionResult, TType>;
 
   /**
    * Create a candidate with a nomination or nominations and send a registration link.
@@ -42,7 +48,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
         html: string;
       };
     };
-  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
+  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }, TType>;
 
   /**
    * Create a candidate with a nomination or nominations and send a registration link.
@@ -69,7 +75,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   /**
    * Clear the OIDC ID token.
    */
-  clearIdToken: () => DWReturnType<DataApiActionResult>;
+  clearIdToken: () => DWReturnType<DataApiActionResult, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Registration
@@ -201,6 +207,20 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   //  * @returns A `Promise` resolving the updated `UserSettings` object or a `Response` containing one.
   //  */
   // updateUserSettings: (opts: WithAuth & WithUserSettings) => DWReturnType<UserSettings, TType>;
+
+  ////////////////////////////////////////////////////////////////////
+  // Methods for the Admin App
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Update the a `Question`.
+   * NB. This is a temporary implementation, which will be updated later to allow for setting other data as well, and which will return the updated, multi-locale data.
+   * @param authToken - The authorization token.
+   * @param id - The id of the question.
+   * @param data - The data to update.
+   * @returns A `Promise` resolving a `DataApiActionResult` or a `Response` containing one.
+   */
+  updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,6 +296,8 @@ export type SetAnswersOptions = WithAuth & WithTargetEntity & WithAnswerData;
 
 export type SetPropertiesOptions = WithAuth & WithTargetEntity & WithEditableEntityProps;
 
+export type SetQuestionOptions = WithAuth & WithTargetId & { data: TemporarySetQuestionData };
+
 export type GetCandidateUserDataOptions<TNominations extends boolean | undefined> = WithAuth & {
   loadNominations?: TNominations;
   locale?: string;
@@ -286,6 +308,10 @@ export type WithAuth = {
    * The JWT token for authentication.
    */
   authToken: string;
+};
+
+export type WithTargetId = {
+  id: Id;
 };
 
 export type WithTargetEntity = {
@@ -320,4 +346,16 @@ export type UserSettings = {
 
 export type WithUserSettings = {
   settings: UserSettings;
+};
+
+/**
+ * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only those `customData` properties that are not stored as their own fields in Strapi.
+ */
+export type TemporarySetQuestionData = {
+  customData: {
+    arguments?: Array<LocalizedQuestionArguments>;
+    infoSections?: Array<LocalizedQuestionInfoSection>;
+    terms?: Array<LocalizedTermDefinition>;
+    video?: LocalizedVideoContent;
+  };
 };
