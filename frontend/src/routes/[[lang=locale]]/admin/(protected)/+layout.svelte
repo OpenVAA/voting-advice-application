@@ -8,12 +8,9 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { getAppContext } from '$lib/contexts/app';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
 
   export let data;

@@ -1,8 +1,8 @@
 import { type Id } from '@openvaa/core';
 import { type Actions, fail } from '@sveltejs/kit';
-import { loadElectionData } from '$lib/api/utils/loadElectionData';
+import { loadElectionData } from '$lib/admin/utils/loadElectionData';
+import { PipelineLogger } from '$lib/server/admin/jobs/pipelineLogger';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
-import { PipelineLogger } from '$lib/server/jobs/pipelineLogger';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
 import { constants as pub } from '$lib/utils/constants';
 import type { AnyQuestionVariant } from '@openvaa/data';

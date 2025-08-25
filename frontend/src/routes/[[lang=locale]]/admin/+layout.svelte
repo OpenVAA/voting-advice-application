@@ -8,8 +8,7 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { getAdminContext, initAdminContext } from '$lib/contexts/admin';
-  import { getAppContext } from '$lib/contexts/app';
+  import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
   import Layout from '../Layout.svelte';
