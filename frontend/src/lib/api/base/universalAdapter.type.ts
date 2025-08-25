@@ -5,7 +5,7 @@ export type AdapterConfig = {
   /**
    * The `fetch` function the `DataProvider` will use to make API calls.
    */
-  fetch: typeof fetch | undefined;
+  fetch: Fetch | undefined;
 };
 
 export type FetchOptions = {
