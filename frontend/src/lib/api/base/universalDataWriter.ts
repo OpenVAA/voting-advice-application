@@ -13,6 +13,7 @@ import type {
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
+  SetQuestionOptions,
   WithAuth
 } from './dataWriter.type';
 
@@ -173,6 +174,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._updateEntityProperties(opts);
   }
 
+  updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+    return this._updateQuestion(opts);
+  }
+
   /////////////////////////////////////////////////////////////////////
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
@@ -208,4 +213,5 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     opts: SetAnswersOptions & { overwrite: boolean }
   ): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
+  protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
 }
