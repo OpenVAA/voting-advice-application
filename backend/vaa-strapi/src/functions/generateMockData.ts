@@ -647,7 +647,6 @@ async function createAlliances(numParties: Array<number>) {
       for (const n of numParties) {
         if (n > parties.length) continue;
         const allies = spliceRandom(parties, n);
-        console.error({ electionId, constituencyId, allies });
         await strapi.documents('api::alliance.alliance').create({
           data: {
             election: electionId,
