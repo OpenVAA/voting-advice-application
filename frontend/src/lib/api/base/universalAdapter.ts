@@ -12,7 +12,7 @@ const DEFAULT_PARSER = 'json' as const;
  * The abstract base class for all the universal Data API services. It implements initialisation, i.e. `fetch` handling for all of these.
  */
 export abstract class UniversalAdapter {
-  #fetch: typeof fetch | undefined;
+  #fetch: Fetch | undefined;
 
   /**
    * The `init` method must be called before using any of the `DataProvider` methods.
