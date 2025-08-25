@@ -53,6 +53,7 @@ export const ROUTE = {
 
   // Admin App
   AdminAppHome: ADMIN,
+  AdminAppJob: `${ADMIN_PROT}/jobs/[jobId]`,
   AdminAppJobs: `${ADMIN_PROT}/jobs`,
   AdminAppFactorAnalysis: `${ADMIN_PROT}/factor-analysis`,
   AdminAppQuestionInfo: `${ADMIN_PROT}/question-info`,

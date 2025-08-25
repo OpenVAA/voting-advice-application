@@ -10,7 +10,7 @@ export type Param = RouteParam | PersistentSearchParam;
 /**
  * The names of the `Params` that are route params.
  */
-export const ROUTE_PARAMS = ['categoryId', 'entityId', 'entityType', 'lang', 'questionId'] as const;
+export const ROUTE_PARAMS = ['categoryId', 'entityId', 'entityType', 'jobId', 'lang', 'questionId'] as const;
 
 export type RouteParam = (typeof ROUTE_PARAMS)[number];
 
