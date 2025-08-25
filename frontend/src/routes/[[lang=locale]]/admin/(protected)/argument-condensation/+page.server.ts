@@ -3,7 +3,6 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import type { JobProgressResult } from '../../../api/admin/jobs/[id]/progress/+server';
-import type { JobStartParams, JobStartResult } from '../../../api/admin/jobs/start/+server';
 
 /**
  * Handle form submit from the UI to start condensation.
@@ -32,25 +31,14 @@ export const actions = {
 
       const { email } = await dataWriter.getBasicUserData({ authToken });
 
-      // Start job
-      const jobResponse = await fetch('/api/admin/jobs/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feature: 'argument-condensation',
-          author: email
-        } as JobStartParams)
+      // Start job using the DataWriter
+      const { jobId } = await dataWriter.jobs.start({
+        feature: 'argument-condensation',
+        author: email
       });
-
-      if (!jobResponse.ok) {
-        console.error('[condense] Job creation failed:', await jobResponse.text());
-        throw new Error('Failed to create job');
-      }
-
-      const { jobId } = (await jobResponse.json()) as JobStartResult;
       console.info('[condense] created job:', jobId);
 
-      // DEBUG: Check if the job was created and is in active state
+      // TODO: Remove this check and let the dataWriter return the status of starting the job
       const jobCheckResponse = await fetch(`/api/admin/jobs/${jobId}/progress`);
 
       if (jobCheckResponse.ok) {

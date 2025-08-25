@@ -235,6 +235,16 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @returns A `Promise` resolving a `DataApiActionResult` or a `Response` containing one.
    */
   updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
+
+  /**
+   * Namespace for admin job-related operations just to show the pattern
+   * Also: maybe use namespace for all admin operations?
+   * E.g. `dataWriter.admin.jobs.start(job)`?
+   * And `dataWriter.admin.updateUsingJobResult(jobResult)`?
+   */
+  jobs: {
+    start: (opts: { feature: string; author: string }) => DWReturnType<{ jobId: string; message: string }, TType>;
+  };
 }
 
 ////////////////////////////////////////////////////////////////////

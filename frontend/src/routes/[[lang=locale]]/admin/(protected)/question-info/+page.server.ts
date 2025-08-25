@@ -29,25 +29,17 @@ export const actions = {
       // Create a job for tracking progress using the SvelteKit fetch function
       const adminEmail = 'admin@example.com'; // TODO: Get from actual admin context
 
-      const jobResponse = await fetch('/api/admin/jobs/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feature: 'question-info-generation',
-          author: adminEmail
-        })
+      // Initialize dataWriter
+      const dataWriter = await dataWriterPromise;
+      dataWriter.init({ fetch });
+
+      const { jobId } = await dataWriter.jobs.start({
+        feature: 'question-info-generation',
+        author: adminEmail
       });
-
-      if (!jobResponse.ok) {
-        const errorText = await jobResponse.text();
-        console.error('[question-info] Job creation failed:', errorText);
-        throw new Error('Failed to create job');
-      }
-
-      const { jobId } = await jobResponse.json();
       console.info('[question-info] created job:', jobId);
 
-      // DEBUG: Check if the job was created and is in active state
+      // TODO: Remove this check and let the dataWriter return the status of starting the job
       const jobCheckResponse = await fetch(`/api/admin/jobs/${jobId}/progress`);
 
       if (jobCheckResponse.ok) {
@@ -74,7 +66,8 @@ export const actions = {
         fetch,
         locale: lang as string,
         jobId,
-        authToken
+        authToken,
+        dataWriter
       });
       console.info('[question-info] generateQuestionInfo() returned', result);
 
@@ -123,7 +116,8 @@ async function generateQuestionInfo({
   fetch,
   locale,
   jobId,
-  authToken
+  authToken,
+  dataWriter
 }: {
   electionId: Id;
   questionIds: Array<Id>;
@@ -134,13 +128,10 @@ async function generateQuestionInfo({
   locale: string;
   jobId: string;
   authToken: string;
+  dataWriter: Awaited<typeof dataWriterPromise>;
 }): Promise<DataApiActionResult> {
   // Create logger immediately - it will be initialized with pipeline later
   const logger = new PipelineLogger(jobId);
-
-  // Initialize dataWriter
-  const dataWriter = await dataWriterPromise;
-  dataWriter.init({ fetch });
 
   try {
     // 1) Load data

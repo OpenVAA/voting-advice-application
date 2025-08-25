@@ -209,6 +209,27 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     }
   }
 
+  public jobs = {
+    start: async (opts: { feature: string; author: string }) => {
+      if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+      console.info('Starting job using new pattern (universalDataWriter.ts)');
+      const response = await this.fetch('/api/admin/jobs/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(opts)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[DataWriter.jobs.start] Job creation failed:', errorText);
+        throw new Error('Failed to create job');
+      }
+
+      return response.json();
+    }
+  };
+
   /////////////////////////////////////////////////////////////////////
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
