@@ -4,7 +4,7 @@ import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
 import { PipelineLogger } from '../jobs/pipelineLogger';
-import type { LocalizedQuestionArguments } from '@openvaa/app-shared';
+import type { ArgumentType, LocalizedQuestionArguments } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -129,6 +129,23 @@ export async function condenseArguments({
 
       if (!condensationResults.length || condensationResults.every((r) => !r.arguments.length)) {
         logger.info(`No condensed arguments found for question: ${question.name}`);
+        logger.info('Adding a mock result for testing');
+        const mockResults = [
+          {
+            type: 'likertPros' as ArgumentType,
+            arguments: [
+              { id: '1',
+                content: {
+                  [locale]: 'This is a test argument' } }
+            ]
+          }
+        ];
+        await dataWriter.updateUsingJobResult({
+          authToken,
+          feature: 'argument-condensation',
+          target: { type: 'question', id: question.id },
+          payload: { arguments: mockResults }
+        });
         continue;
       }
 
@@ -142,18 +159,15 @@ export async function condenseArguments({
         })
       );
 
-      // Save the condensation results to the question's customData
+      // Save the condensation results using the DataWriter
       logger.info(`Saving condensation results for question "${question.name}"`);
 
       try {
-        const result = await dataWriter.updateQuestion({
-          id: question.id,
+        const result = await dataWriter.updateUsingJobResult({
           authToken,
-          data: {
-            customData: {
-              arguments: condensedArguments
-            }
-          }
+          feature: 'argument-condensation',
+          target: { type: 'question', id: question.id },
+          payload: { arguments: condensedArguments }
         });
 
         if (result.type === 'success') {

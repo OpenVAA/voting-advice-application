@@ -1,10 +1,11 @@
 import { type Id } from '@openvaa/core';
 import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
+import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { PipelineLogger } from '$lib/server/admin/jobs/pipelineLogger';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
-import { constants as pub } from '$lib/utils/constants';
+import type { LocalizedQuestionInfoSection } from '@openvaa/app-shared';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -137,6 +138,10 @@ async function generateQuestionInfo({
   // Create logger immediately - it will be initialized with pipeline later
   const logger = new PipelineLogger(jobId);
 
+  // Initialize dataWriter
+  const dataWriter = await dataWriterPromise;
+  dataWriter.init({ fetch });
+
   try {
     // 1) Load data
     await logger.info('Loading election and question data for question info generation...');
@@ -185,7 +190,8 @@ async function generateQuestionInfo({
         llm,
         locale,
         logger,
-        authToken
+        authToken,
+        dataWriter
       });
     }
 
@@ -217,7 +223,8 @@ async function generateInfoForQuestion({
   llm,
   locale,
   logger,
-  authToken
+  authToken,
+  dataWriter
 }: {
   question: AnyQuestionVariant;
   llm: {
@@ -230,6 +237,7 @@ async function generateInfoForQuestion({
   locale: string;
   logger: PipelineLogger;
   authToken: string;
+  dataWriter: Awaited<typeof dataWriterPromise>;
 }): Promise<void> {
   try {
     // A placeholder prompt for generating question info
@@ -267,14 +275,16 @@ Focus on providing factual, balanced information that helps voters make informed
     });
 
     // Parse the response
-    let infoSections;
+    let rawInfoSections: Array<{ title: string; content: string; visible: boolean }>;
     try {
-      infoSections = JSON.parse(llmResponse.content);
-      await logger.info(`Successfully generated ${infoSections.length} info sections for question "${question.name}"`);
+      rawInfoSections = JSON.parse(llmResponse.content) as Array<{ title: string; content: string; visible: boolean }>; // TODO: Use proper type (preferably internally in LLM provider)
+      await logger.info(
+        `Successfully generated ${rawInfoSections.length} info sections for question "${question.name}"`
+      );
     } catch (parseError) {
       await logger.warning(`Failed to parse LLM response for question "${question.name}": ${parseError}`);
       // Create a fallback info section
-      infoSections = [
+      rawInfoSections = [
         {
           title: 'Background Information',
           content: 'Background information could not be generated automatically. Please review and edit manually.',
@@ -283,29 +293,26 @@ Focus on providing factual, balanced information that helps voters make informed
       ];
     }
 
-    // Save the generated info sections to the question's customData
-    try {
-      const updateResponse = await fetch(
-        `${pub.PUBLIC_SERVER_BACKEND_URL}/openvaa-admin-tools/update-question-custom-data-public`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            questionId: question.id,
-            locale,
-            questionInfoSections: infoSections
-          })
-        }
-      );
+    // Convert to localized format
+    const infoSections: Array<LocalizedQuestionInfoSection> = rawInfoSections.map((section) => ({
+      title: { [locale]: section.title },
+      content: { [locale]: section.content },
+      visible: section.visible
+    }));
 
-      if (updateResponse.ok) {
+    // Save the generated info sections using the DataWriter helper
+    try {
+      const result = await dataWriter.updateUsingJobResult({
+        authToken,
+        feature: 'question-info',
+        target: { type: 'question', id: question.id },
+        payload: { infoSections }
+      });
+
+      if (result.type === 'success') {
         await logger.info(`Successfully saved info sections for question "${question.name}"`);
       } else {
-        const errorText = await updateResponse.text();
-        await logger.warning(`Failed to save info sections for question "${question.name}": ${errorText}`);
+        await logger.warning(`Failed to save info sections for question "${question.name}": ${JSON.stringify(result)}`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

@@ -1,6 +1,7 @@
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import { localPathToUrl } from '../utils/localPathToUrl';
+import type { LocalizedQuestionArguments, LocalizedQuestionInfoSection } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
@@ -176,6 +177,36 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult> {
     return this._updateQuestion(opts);
+  }
+
+  updateUsingJobResult(opts: {
+    authToken: string;
+    feature: 'argument-condensation' | 'question-info';
+    target: { type: 'question'; id: Id };
+    payload: { arguments: Array<LocalizedQuestionArguments> } | { infoSections: Array<LocalizedQuestionInfoSection> };
+  }): DWReturnType<DataApiActionResult> {
+    switch (opts.feature) {
+      case 'argument-condensation':
+        if ('arguments' in opts.payload) {
+          return this.updateQuestion({
+            authToken: opts.authToken,
+            id: opts.target.id,
+            data: { customData: { arguments: opts.payload.arguments } }
+          });
+        }
+        throw new Error('Invalid payload for argument-condensation');
+      case 'question-info':
+        if ('infoSections' in opts.payload) {
+          return this.updateQuestion({
+            authToken: opts.authToken,
+            id: opts.target.id,
+            data: { customData: { infoSections: opts.payload.infoSections } }
+          });
+        }
+        throw new Error('Invalid payload for question-info');
+      default:
+        throw new Error(`Unsupported feature: ${opts.feature}`);
+    }
   }
 
   /////////////////////////////////////////////////////////////////////

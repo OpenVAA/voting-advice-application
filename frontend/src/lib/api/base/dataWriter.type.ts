@@ -213,6 +213,20 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
 
   /**
+   * Update data using the result of an admin job.
+   * @param opts.authToken - The authorization token.
+   * @param opts.feature - The feature that generated the result.
+   * @param opts.target - The target of the update.
+   * @param opts.payload - The payload of the update.
+   */
+  updateUsingJobResult: (opts: {
+    authToken: string;
+    feature: 'argument-condensation' | 'question-info';
+    target: { type: 'question'; id: Id };
+    payload: { arguments: Array<LocalizedQuestionArguments> } | { infoSections: Array<LocalizedQuestionInfoSection> };
+  }) => DWReturnType<DataApiActionResult, TType>;
+
+  /**
    * Update the a `Question`.
    * NB. This is a temporary implementation, which will be updated later to allow for setting other data as well, and which will return the updated, multi-locale data.
    * @param authToken - The authorization token.
