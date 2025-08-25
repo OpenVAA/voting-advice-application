@@ -4150,7 +4150,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/argument-condensation@workspace:packages/argument-condensation":
+"@openvaa/argument-condensation@workspace:^, @openvaa/argument-condensation@workspace:packages/argument-condensation":
   version: 0.0.0-use.local
   resolution: "@openvaa/argument-condensation@workspace:packages/argument-condensation"
   dependencies:
@@ -4162,6 +4162,7 @@ __metadata:
     dotenv: "npm:^16.3.1"
     js-yaml: "npm:^4.1.0"
     serve: "npm:^14.2.3"
+    tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
   languageName: unknown
@@ -4215,9 +4216,11 @@ __metadata:
     "@eslint/eslintrc": "npm:^3.2.0"
     "@eslint/js": "npm:^9.17.0"
     "@openvaa/app-shared": "workspace:^"
+    "@openvaa/argument-condensation": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@sveltejs/adapter-auto": "npm:^3.3.1"
@@ -4270,6 +4273,7 @@ __metadata:
     "@openvaa/shared-config": "workspace:^"
     jsonrepair: "npm:^3.13.0"
     openai: "npm:^4.78.1"
+    tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
   languageName: unknown

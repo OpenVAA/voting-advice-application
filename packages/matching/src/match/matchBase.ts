@@ -1,9 +1,15 @@
 import { assertDistance, COORDINATE, type NormalizedDistance } from '@openvaa/core';
+import { MATCH_TYPE } from './matchTypes';
+import type { MatchType } from './matchTypes';
 
 /**
  * The base class for a matching result. In most cases, the subclass `Match` will be used.
  */
 export class MatchBase {
+  /**
+   * The type of any non-abstract subclass of `MatchBase`. This is used for typing instead of `instanceof` which is problematic.
+   */
+  readonly matchType: MatchType = MATCH_TYPE.MatchBase;
   /**
    * Used in converting the distance to a score value, typically between 0 and 100. This is a static value of the class, so change with `MatchBase.multiplier = numberVal`.
    */

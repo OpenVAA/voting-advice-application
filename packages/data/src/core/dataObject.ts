@@ -1,5 +1,5 @@
 import { DataProvisionError, Updatable } from '../internal';
-import type { Colors, DataAccessor, DataObjectData, DataRoot, Id, Image } from '../internal';
+import type { Colors, DataAccessor, DataObjectData, DataRoot, Id, Image, ObjectType } from '../internal';
 
 /**
  * Base class for all data objects. Note that we implement `DataAccessor<DataObjectData>` to make sure that wehave accessors for all of the properties in the object’s data.
@@ -8,6 +8,10 @@ export abstract class DataObject<TData extends DataObjectData = DataObjectData>
   extends Updatable
   implements DataAccessor<DataObjectData>
 {
+  /**
+   * The type of any non-abstract subclass of `DataObject`. This is used for typing instead of `instanceof` which is problematic.
+   */
+  abstract readonly objectType: ObjectType;
   readonly data: TData;
   readonly root: DataRoot;
 

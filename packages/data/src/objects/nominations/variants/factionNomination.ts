@@ -5,6 +5,7 @@ import {
   ENTITY_TYPE,
   type FactionNominationData,
   Nomination,
+  OBJECT_TYPE,
   type OrganizationNomination
 } from '../../../internal';
 import type { CandidateNomination, DataRoot, WithOptional } from '../../../internal';
@@ -18,6 +19,8 @@ export class FactionNomination
   extends Nomination<typeof ENTITY_TYPE.Faction, typeof ENTITY_TYPE.Organization, FactionNominationData>
   implements DataAccessor<FactionNominationData, 'candidates'>
 {
+  readonly objectType = OBJECT_TYPE.FactionNomination;
+
   //////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////

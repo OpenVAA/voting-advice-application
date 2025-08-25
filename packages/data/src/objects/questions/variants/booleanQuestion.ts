@@ -6,6 +6,7 @@ import {
   isMissingValue,
   MISSING_VALUE,
   type MissingValue,
+  OBJECT_TYPE,
   Question
 } from '../../../internal';
 import type { QUESTION_TYPE } from '../../../internal';
@@ -14,6 +15,8 @@ import type { QUESTION_TYPE } from '../../../internal';
  * A matchable simple question whose answer is a boolean.
  */
 export class BooleanQuestion extends Question<typeof QUESTION_TYPE.Boolean> {
+  readonly objectType = OBJECT_TYPE.BooleanQuestion;
+
   get isMatchable(): boolean {
     return true;
   }

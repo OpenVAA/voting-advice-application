@@ -16,15 +16,26 @@ Show filters for entities. This component and the individual filter components o
 -->
 
 <script lang="ts">
-  import { ChoiceQuestionFilter, NumberFilter, NumberQuestionFilter, ObjectFilter, TextFilter } from '@openvaa/filters';
+  import { FILTER_TYPE, isEnumeratedFilter, isFilterType } from '@openvaa/filters';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { Expander } from '$lib/components/expander';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
+  import type { AnyEntityVariant } from '@openvaa/data';
   import type { EntityFiltersProps } from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;
 
   export let filterGroup: $$Props['filterGroup'];
   export let targets: $$Props['targets'];
+
+  const { t } = getComponentContext();
+
+  /** Type params cannot be used in the HTML part */
+  function _isEnumeratedFilter(filter: unknown) {
+    // TODO[Svelte 5]: Check if needed
+    return isEnumeratedFilter<MaybeWrappedEntityVariant, AnyEntityVariant>(filter);
+  }
 </script>
 
 <div {...concatClass($$restProps, 'flex flex-col gap-md')}>
@@ -33,19 +44,21 @@ Show filters for entities. This component and the individual filter components o
       title={filter.name}
       variant="question"
       titleClass="!text-left"
-      defaultExpanded={filter.active || filter instanceof TextFilter}>
-      {#if filter instanceof TextFilter}
+      defaultExpanded={filter.active || isFilterType(filter, FILTER_TYPE.TextFilter)}>
+      {#if isFilterType(filter, FILTER_TYPE.TextFilter)}
         {#await import('./text') then { TextEntityFilter }}
           <svelte:component this={TextEntityFilter} {filter} />
         {/await}
-      {:else if filter instanceof NumberFilter || filter instanceof NumberQuestionFilter}
+      {:else if isFilterType(filter, FILTER_TYPE.NumberQuestionFilter)}
         {#await import('./numeric') then { NumericEntityFilter }}
           <svelte:component this={NumericEntityFilter} {filter} {targets} />
         {/await}
-      {:else if filter instanceof ObjectFilter || filter instanceof ChoiceQuestionFilter}
+      {:else if _isEnumeratedFilter(filter)}
         {#await import('./enumerated') then { EnumeratedEntityFilter }}
           <svelte:component this={EnumeratedEntityFilter} {filter} {targets} />
         {/await}
+      {:else}
+        <ErrorMessage message={$t('entityFilters.error')} />
       {/if}
     </Expander>
   {/each}

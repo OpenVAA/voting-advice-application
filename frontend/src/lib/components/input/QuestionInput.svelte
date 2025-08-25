@@ -25,9 +25,9 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 <script lang="ts">
   import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
   import {
-    ChoiceQuestion,
     DateQuestion,
-    MultipleChoiceQuestion,
+    isChoiceQuestion,
+    isMultipleChoiceQuestion,
     QUESTION_TYPE,
     type QuestionType
   } from '@openvaa/data';
@@ -94,12 +94,12 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
     info: fillingInfo ?? info
   };
 
-  if (question instanceof ChoiceQuestion) {
+  if (isChoiceQuestion(question)) {
     const options = question.choices;
     inputProps = {
       ...baseProps,
       options,
-      ordered: question instanceof MultipleChoiceQuestion ? true : undefined
+      ordered: isMultipleChoiceQuestion(question) ? true : undefined
     } as InputProps;
   } else {
     inputProps = baseProps;

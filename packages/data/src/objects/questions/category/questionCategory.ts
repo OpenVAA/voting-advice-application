@@ -1,4 +1,4 @@
-import { order, QUESTION_CATEGORY_TYPE, QuestionAndCategoryBase } from '../../../internal';
+import { OBJECT_TYPE, order, QUESTION_CATEGORY_TYPE, QuestionAndCategoryBase } from '../../../internal';
 import type {
   AnyQuestionVariant,
   Collection,
@@ -15,6 +15,8 @@ export class QuestionCategory
   extends QuestionAndCategoryBase<QuestionCategoryData>
   implements DataAccessor<QuestionCategoryData>
 {
+  readonly objectType = OBJECT_TYPE.QuestionCategory;
+
   /**
    * An arbitrary type for the question category.
    */

@@ -1,0 +1,17 @@
+{
+  "title": "Ylläpitäjän kirjautuminen",
+  "appTitle": "Vaalikone",
+  "appSubtitle": "Ylläpito",
+  "instructions": "Syötä kirjautumistietosi.",
+  "email": "Sähköposti",
+  "password": "Salasana",
+  "button": "Kirjaudu",
+  "forgotPassword": "Unohditko salasanasi?",
+  "errors": {
+    "invalidCredentials": "Virheellinen sähköposti tai salasana",
+    "genericError": "Kirjautumisessa tapahtui virhe. Yritä uudelleen.",
+    "unauthorized": "Tarvitset ylläpitäjän oikeudet päästäksesi tähän osioon",
+    "sessionExpired": "Istuntosi on vanhentunut, kirjaudu uudelleen",
+    "unknown": "Tuntematon virhe tapahtui"
+  }
+}

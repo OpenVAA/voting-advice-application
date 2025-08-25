@@ -16,13 +16,13 @@ import {
   parseImage,
   parseNominations,
   parseOrganization,
-  parseQuestionInfoSections,
   parseQuestionType,
   parseRelationIds,
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
-import { parseQuestionTerms } from '../utils/parseQuestionTerms';
+import { parseQuestionCategoryCustomData } from '../utils/parseQuestionCategoryCustomData';
+import { parseQuestionCustomData } from '../utils/parseQuestionCustomData';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -233,9 +233,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
-      const { color, colorDark, constituencies, elections, questions, type } = category;
+      const { color, colorDark, constituencies, customData: catCustom, elections, questions, type } = category;
       categories.push({
         ...parseBasics(category, locale),
+        customData: parseQuestionCategoryCustomData(catCustom, locale),
         color: { normal: color, dark: colorDark },
         constituencyIds: parseRelationIds(constituencies),
         electionIds: parseRelationIds(elections),
@@ -259,21 +260,21 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         // Parsing the question type may yield props that belong to the question’s customData
         const { customData: typeCustom, ...typeProps } = parseQuestionType(questionType, locale);
         // We'll add these to the question’s own customData, which will be parsed by parseBasics
-        const additionalCustomData = {
+        const parsedCustomData = {
           ...typeCustom,
+          ...parseQuestionCustomData(customData, locale),
           allowOpen: !!allowOpen,
           fillingInfo: translate(fillingInfo, locale),
           filterable: !!filterable,
-          required: !!required,
-          infoSections: parseQuestionInfoSections(customData, locale),
-          terms: parseQuestionTerms(customData, locale)
+          required: !!required
         };
         allQuestions.set(documentId, {
-          ...parseBasics({ ...question, customData: { ...customData, ...additionalCustomData } }, locale),
+          ...parseBasics(question, locale),
           ...typeProps,
           categoryId: category.documentId,
           constituencyIds: parseRelationIds(constituencies),
-          entityType: parseEntityType(entityType)
+          entityType: parseEntityType(entityType),
+          customData: parsedCustomData
         } as AnyQuestionVariantData);
       }
     }

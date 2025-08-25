@@ -12,7 +12,7 @@ import type {
 /**
  * An abstract base class for both `Question`s and `QuestionCategory`s. Provides the filtering functionality, which allows restricting either types to specific elections, election rounds, constituencies or entity types.
  */
-export class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
+export abstract class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
   extends DataObject<TData>
   implements DataAccessor<QuestionAndCategoryBaseData>
 {

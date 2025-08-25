@@ -44,7 +44,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     type AnyNominationVariant,
     type AnyQuestionVariant,
     ENTITY_TYPE,
-    OrganizationNomination
+    isObjectType,
+    OBJECT_TYPE
   } from '@openvaa/data';
   import { Avatar } from '$lib/components/avatar';
   import { Button } from '$lib/components/button';
@@ -130,7 +131,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     if (
       variant === 'list' &&
       nomination &&
-      nomination instanceof OrganizationNomination &&
+      isObjectType(nomination, OBJECT_TYPE.OrganizationNomination) &&
       $appSettings.results.cardContents.organization.includes('candidates')
     ) {
       subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({

@@ -33,20 +33,22 @@ export async function handleBooleanQuestion({
       const prosResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
+        condensationType: CONDENSATION_TYPE.BooleanPros,
         options: { ...options, runId: options.runId + '-pros' },
         parallelBatches
       });
       results.push(prosResult);
+      options.logger?.info(`Found ${prosResult.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.BOOLEAN.CONS,
+        condensationType: CONDENSATION_TYPE.BooleanCons,
         options: { ...options, runId: options.runId + '-cons' },
         parallelBatches
       });
       results.push(consResult);
+      options.logger?.info(`Found ${consResult.arguments.length} cons!`);
     }
   }
 
@@ -84,20 +86,22 @@ export async function handleOrdinalQuestion({
       const prosResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.LIKERT.PROS,
+        condensationType: CONDENSATION_TYPE.LikertPros,
         options: { ...options, runId: options.runId + '-pros' },
         parallelBatches
       });
       results.push(prosResult);
+      options.logger?.info(`Found ${prosResult.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.LIKERT.CONS,
+        condensationType: CONDENSATION_TYPE.LikertCons,
         options: { ...options, runId: options.runId + '-cons' },
         parallelBatches
       });
       results.push(consResult);
+      options.logger?.info(`Found ${consResult.arguments.length} cons!`);
     }
   }
 
@@ -135,11 +139,12 @@ export async function handleCategoricalQuestion({
       const categoryResult = await runSingleCondensation({
         question,
         comments: group.comments,
-        condensationType: CONDENSATION_TYPE.CATEGORICAL.PROS,
+        condensationType: CONDENSATION_TYPE.CategoricalPros,
         options: { ...options, runId: options.runId + group.choiceId },
         parallelBatches
       });
       results.push(categoryResult);
+      options.logger?.info(`Found ${categoryResult.arguments.length} pros! Category ${group.choiceId}.`);
     }
   }
 

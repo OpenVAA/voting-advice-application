@@ -1,6 +1,7 @@
 import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
+import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
@@ -78,7 +79,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
   //////////////////////////////////////////////////////////////////////////
 
   if (pathname.startsWith(`/${servedLocale}/candidate`)) {
-    const token = event.cookies.get('token');
+    const token = event.cookies.get(AUTH_TOKEN_KEY);
 
     if (token && pathname.endsWith('candidate/login')) {
       debug('Route: REDIRECT to home page');

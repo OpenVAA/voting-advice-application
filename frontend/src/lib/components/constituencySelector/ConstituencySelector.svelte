@@ -28,13 +28,13 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 -->
 
 <script lang="ts">
-  import { type Constituency, Election } from '@openvaa/data';
+  import { type Constituency, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { SingleGroupConstituencySelector } from '.';
   import type { Id } from '@openvaa/core';
-  import type { ConstituencyGroup } from '@openvaa/data';
+  import type { ConstituencyGroup, Election } from '@openvaa/data';
   import type { ConstituencySelectorProps } from './ConstituencySelector.type';
 
   type $$Props = ConstituencySelectorProps;
@@ -100,7 +100,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
       const allMaybeCombined = root.getCombinedElections(elections);
 
       sections = allMaybeCombined.flatMap((el) => {
-        if (el instanceof Election) {
+        if (isObjectType(el, OBJECT_TYPE.Election)) {
           return {
             applicableElections: [el],
             groups: el.constituencyGroups,

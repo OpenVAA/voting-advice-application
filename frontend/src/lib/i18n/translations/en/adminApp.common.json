@@ -1,0 +1,8 @@
+{
+  "home": "Home",
+  "description": "Use the tools below to manage the voting advice application.",
+  "notAccessible": {
+    "content": "The Admin App has currently been configured to be unavailable.",
+    "title": "Sorry, the Admin App is not available"
+  }
+}

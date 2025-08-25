@@ -116,10 +116,10 @@ text="Add to list">
         break;
       case 'main':
       case 'prominent':
-        classes += ' w-full max-w-md justify-center';
+        classes += ' w-full justify-center';
         break;
       default:
-        classes += ` btn-ghost w-full max-w-md ${icon ? 'justify-start' : 'justify-center'}`;
+        classes += ` btn-ghost w-full ${icon ? 'justify-start' : 'justify-center'}`;
     }
 
     // 3. Icon position

@@ -1,4 +1,4 @@
-import { type CandidateData, type DataAccessor, Entity } from '../../../internal';
+import { type CandidateData, type DataAccessor, Entity, OBJECT_TYPE } from '../../../internal';
 import type { ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
@@ -8,6 +8,8 @@ export class Candidate
   extends Entity<typeof ENTITY_TYPE.Candidate, CandidateData>
   implements DataAccessor<CandidateData>
 {
+  readonly objectType = OBJECT_TYPE.Candidate;
+
   /**
    * The given name of the candidate.
    */
