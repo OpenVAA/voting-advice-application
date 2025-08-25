@@ -4,8 +4,9 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { getJob } from '$lib/server/jobs/jobStore';
+import { getJob } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
+import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
 export async function GET({ params }: RequestEvent) {
   try {
@@ -27,3 +28,8 @@ export async function GET({ params }: RequestEvent) {
     return json({ error: 'Failed to get job progress' }, { status: 500 });
   }
 }
+
+/**
+ * The result returned by /api/admin/jobs/[id]/progress
+ */
+export type JobProgressResult = JobInfo;
