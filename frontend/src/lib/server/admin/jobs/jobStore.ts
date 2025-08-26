@@ -51,7 +51,7 @@ function initializeJobStore(): void {
  * @param author - Admin email who started the job
  * @returns The created job ID
  */
-export function createJob(feature: string, author: string): string {
+export function createJob(feature: string, author: string): JobInfo {
   const jobId = crypto.randomUUID();
   const now = new Date();
 
@@ -75,7 +75,7 @@ export function createJob(feature: string, author: string): string {
     initializeJobStore();
   }
 
-  return jobId;
+  return job;
 }
 
 /**

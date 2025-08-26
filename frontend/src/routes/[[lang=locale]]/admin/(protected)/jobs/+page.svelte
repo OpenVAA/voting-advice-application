@@ -16,6 +16,7 @@ Page for monitoring all active jobs across different admin features
     jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
   } = getAdminContext();
 
+  // TODO: $lib/admin/features/ {#each Object.entries(ADMIN_FEATURE) as [feature, route]} ...
   // Subscribe to stores for reactive UI updates
   $: argumentCondensationJob = $activeJobsStore.get('argument-condensation') || null;
   $: factorAnalysisJob = $activeJobsStore.get('factor-analysis') || null;
