@@ -10,16 +10,18 @@ Page for monitoring all active jobs across different admin features
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
+  import { ADMIN_FEATURE } from '$lib/admin/features';
 
   const {
     getRoute,
     jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
   } = getAdminContext();
 
+  // TODO: $lib/admin/features/ {#each Object.entries(ADMIN_FEATURE) as [feature, route]} ...
   // Subscribe to stores for reactive UI updates
-  $: argumentCondensationJob = $activeJobsStore.get('argument-condensation') || null;
+  $: argumentCondensationJob = $activeJobsStore.get(ADMIN_FEATURE.ArgumentCondensation.jobName) || null;
   $: factorAnalysisJob = $activeJobsStore.get('factor-analysis') || null;
-  $: questionInfoJob = $activeJobsStore.get('question-info') || null;
+  $: questionInfoJob = $activeJobsStore.get(ADMIN_FEATURE.QuestionInfoGeneration.jobName) || null;
   $: pastJobs = Array.from($pastJobsStore.values());
 
   pollingService.refresh();
@@ -145,6 +147,7 @@ Page for monitoring all active jobs across different admin features
             activeJob={argumentCondensationJob}
             onKillJob={(jobId) => forceFailJob(jobId, 'argument-condensation')}
             maxMessages={8}
+            showPastJobs={false}
             height="max-h-64" />
 
           <!-- Navigation Button Section -->

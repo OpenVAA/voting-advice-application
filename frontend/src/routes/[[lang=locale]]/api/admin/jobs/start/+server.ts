@@ -15,16 +15,13 @@ export async function POST({ request }: RequestEvent) {
       return json({ error: 'Feature and author are required' }, { status: 400 });
     }
 
-    // Create the new job
-    const jobId = createJob(feature, author);
+    // Create the new job and return it
+    const job = createJob(feature, author);
 
-    return json({
-      jobId,
-      message: `Job started for ${feature}`
-    });
+    // Return Response object, not plain object
+    return json(job);
   } catch (error) {
-    console.error('Error starting job:', error);
-    return json({ error: 'Failed to start job' }, { status: 500 });
+    return json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 

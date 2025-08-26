@@ -12,5 +12,12 @@ export const UNIVERSAL_API_ROUTES = {
   login: `${API_ROOT}/auth/login`,
   logout: `${API_ROOT}/candidate/logout`,
   preregister: `${API_ROOT}/candidate/preregister`,
-  token: `${API_ROOT}/oidc/token`
+  token: `${API_ROOT}/oidc/token`,
+
+  // Job management routes for the Admin App
+  jobs: '/api/admin/jobs',
+  jobStart: '/api/admin/jobs/start',
+  jobProgress: (id: string) => `/api/admin/jobs/${id}/progress`,
+  jobAbort: (id: string) => `/api/admin/jobs/${id}/abort`,
+  jobAbortAll: '/api/admin/jobs/abort-all'
 } as const;
