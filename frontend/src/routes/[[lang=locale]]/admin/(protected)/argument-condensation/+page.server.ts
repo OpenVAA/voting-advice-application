@@ -1,9 +1,8 @@
 import { type Actions, fail } from '@sveltejs/kit';
+import { ADMIN_FEATURE } from '$lib/admin/features';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
-import type { JobProgressResult } from '../../../api/admin/jobs/[id]/progress/+server';
-import type { JobStartParams, JobStartResult } from '../../../api/admin/jobs/start/+server';
 
 /**
  * Handle form submit from the UI to start condensation.
@@ -32,38 +31,30 @@ export const actions = {
 
       const { email } = await dataWriter.getBasicUserData({ authToken });
 
-      // Start job
-      const jobResponse = await fetch('/api/admin/jobs/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feature: 'argument-condensation',
-          author: email
-        } as JobStartParams)
+      // Start the job
+      const jobInfo = await dataWriter.startJob({
+        feature: ADMIN_FEATURE.ArgumentCondensation.jobName,
+        author: email,
+        authToken
       });
 
-      if (!jobResponse.ok) {
-        console.error('[condense] Job creation failed:', await jobResponse.text());
-        throw new Error('Failed to create job');
-      }
-
-      const { jobId } = (await jobResponse.json()) as JobStartResult;
-      console.info('[condense] created job:', jobId);
+      console.info('[condense] startJob returned:', jobInfo);
+      console.info('[condense] jobInfo type:', typeof jobInfo);
+      console.info('[condense] jobInfo keys:', Object.keys(jobInfo || {}));
+      console.info('[condense] created job (or at least tried to):', jobInfo?.id);
 
       // DEBUG: Check if the job was created and is in active state
-      const jobCheckResponse = await fetch(`/api/admin/jobs/${jobId}/progress`);
+      const jobData = await dataWriter.getJobProgress({
+        jobId: jobInfo.id,
+        authToken
+      });
 
-      if (jobCheckResponse.ok) {
-        const jobData = (await jobCheckResponse.json()) as JobProgressResult;
-        console.info('[condense] job initial state:', {
-          id: jobData.id,
-          status: jobData.status,
-          progress: jobData.progress,
-          feature: jobData.feature
-        });
-      } else {
-        console.error('[condense] Failed to check job state:', jobCheckResponse.status);
-      }
+      console.info('[condense] job initial state:', {
+        id: jobData.id,
+        status: jobData.status,
+        progress: jobData.progress,
+        feature: jobData.feature
+      });
 
       console.info('[condense] calling condenseArguments()…');
       const result = await condenseArguments({
@@ -71,8 +62,8 @@ export const actions = {
         questionIds,
         fetch,
         locale: lang as string,
-        jobId,
-        authToken // Add this parameter
+        jobId: jobInfo.id,
+        authToken
       });
       console.info('[condense] condenseArguments() returned', result);
 
