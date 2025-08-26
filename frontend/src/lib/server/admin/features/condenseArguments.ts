@@ -150,12 +150,13 @@ export async function condenseArguments({
       }
 
       const condensedArguments: Array<LocalizedQuestionArguments> = condensationResults.map(
-        ({ condensationType, arguments: args }) => ({
+        ({ condensationType, arguments: args, choiceId }) => ({
           type: condensationType,
           arguments: args.map(({ id, text }) => ({
             id,
             content: { [locale]: text }
-          }))
+          })),
+          ...(choiceId && { choiceId })
         })
       );
 

@@ -68,4 +68,6 @@ export interface CondensationRunResult {
     startTime: Date;
     endTime: Date;
   };
+  /** The choice ID this condensation result represents (for categorical questions) */
+  choiceId?: string;
 }

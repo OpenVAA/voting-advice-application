@@ -143,7 +143,14 @@ export async function handleCategoricalQuestion({
         options: { ...options, runId: options.runId + group.choiceId },
         parallelBatches
       });
-      results.push(categoryResult);
+
+      // Add choiceId to the condensation result
+      const resultWithChoiceId = {
+        ...categoryResult,
+        choiceId: group.choiceId
+      };
+
+      results.push(resultWithChoiceId);
       options.logger?.info(`Found ${categoryResult.arguments.length} pros! Category ${group.choiceId}.`);
     }
   }

@@ -32,7 +32,11 @@ export const RESPONSE_WITH_ARGUMENTS_CONTRACT: LLMResponseContract<ResponseWithA
         return false;
       }
       const argCandidate = arg as Record<string, unknown>;
-      return typeof argCandidate.id === 'string' && typeof argCandidate.text === 'string';
+      return (
+        typeof argCandidate.id === 'string' &&
+        typeof argCandidate.text === 'string' &&
+        (typeof argCandidate.choiceId === 'string' || argCandidate.choiceId === undefined)
+      );
     });
   }
 };
