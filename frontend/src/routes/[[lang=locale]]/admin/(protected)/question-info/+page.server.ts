@@ -12,7 +12,7 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 /**
  * Handle form submit from the UI to start question info generation.
  */
-export const actions = {
+export const actions: Actions = {
   default: async ({ fetch, request, params: { lang }, cookies }) => {
     try {
       console.info('[question-info] action start');

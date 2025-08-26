@@ -2,12 +2,11 @@ import { type Actions, fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
-import type { JobProgressResult } from '../../../api/admin/jobs/[id]/progress/+server';
 
 /**
  * Handle form submit from the UI to start condensation.
  */
-export const actions = {
+export const actions: Actions = {
   default: async ({ fetch, request, params: { lang }, cookies }) => {
     try {
       console.info('[condense] action start');
@@ -42,7 +41,7 @@ export const actions = {
       const jobCheckResponse = await fetch(`/api/admin/jobs/${jobId}/progress`);
 
       if (jobCheckResponse.ok) {
-        const jobData = (await jobCheckResponse.json()) as JobProgressResult;
+        const jobData = await jobCheckResponse.json();
         console.info('[condense] job initial state:', {
           id: jobData.id,
           status: jobData.status,
