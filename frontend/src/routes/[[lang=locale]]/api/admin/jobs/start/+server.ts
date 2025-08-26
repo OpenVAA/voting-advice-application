@@ -9,7 +9,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ request }: RequestEvent) {
   try {
-    const { feature, author } = await request.json();
+    const { feature, author } = (await request.json()) as JobStartParams;
 
     if (!feature || !author) {
       return json({ error: 'Feature and author are required' }, { status: 400 });
@@ -21,7 +21,7 @@ export async function POST({ request }: RequestEvent) {
     return json({
       jobId,
       message: `Job started for ${feature}`
-    });
+    } as JobStartResult);
   } catch (error) {
     console.error('Error starting job:', error);
     return json({ error: 'Failed to start job' }, { status: 500 });

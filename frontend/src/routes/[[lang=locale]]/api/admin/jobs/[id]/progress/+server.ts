@@ -22,7 +22,7 @@ export async function GET({ params }: RequestEvent) {
       return json({ error: 'Job not found' }, { status: 404 });
     }
 
-    return json(job);
+    return json(job as JobProgressResult);
   } catch (error) {
     console.error('Error getting job progress:', error);
     return json({ error: 'Failed to get job progress' }, { status: 500 });

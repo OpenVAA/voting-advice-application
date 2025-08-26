@@ -57,7 +57,7 @@ export function createPollingService({
       const activeJobs: Array<JobInfo> = await activeResponse.json();
 
       activeJobsStore.update(() => {
-        // Initialize all features as null
+        // TODO: Don't use hard-coded feature names, only make a Map out of those running and the rest can be undefined
         // Convert to Map<feature, JobInfo | null> (one active job per feature)
         const activeJobsMap = new Map<string, JobInfo | null>();
         activeJobsMap.set('argument-condensation', null);
