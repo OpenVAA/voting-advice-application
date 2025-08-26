@@ -2,21 +2,26 @@ import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import { localPathToUrl } from '../utils/localPathToUrl';
 import type { Id } from '@openvaa/core';
+import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
+  AbortAllJobsOptions,
+  AbortJobOptions,
   BasicUserData,
   CandidateUserData,
   CheckRegistrationData,
   DataWriter,
   DWReturnType,
   GetCandidateUserDataOptions,
+  GetJobProgressOptions,
+  GetJobsOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
+  StartJobOptions,
   WithAuth
 } from './dataWriter.type';
-
 /**
  * The abstract base class that all universal `DataWriter`s should extend.
  *
@@ -179,6 +184,114 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   /////////////////////////////////////////////////////////////////////
+  // Universal job management methods for the Admin App
+  /////////////////////////////////////////////////////////////////////
+
+  async getJobs(opts: GetJobsOptions): Promise<Array<JobInfo>> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobs);
+    const queryParams = new URLSearchParams();
+
+    if (opts.feature) queryParams.append('feature', opts.feature);
+    if (opts.status) queryParams.append('status', opts.status);
+    if (opts.lastUpdate) queryParams.append('lastUpdate', opts.lastUpdate);
+
+    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${opts.authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get jobs: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async startJob(opts: StartJobOptions): Promise<JobInfo> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobStart);
+    const jobResponse = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${opts.authToken}`
+      },
+      body: JSON.stringify({
+        feature: opts.feature,
+        author: opts.author
+      })
+    });
+
+    if (!jobResponse.ok) {
+      throw new Error(`Failed to start job: ${jobResponse.statusText}`);
+    };
+    return jobResponse.json();
+  }
+
+  async getJobProgress(opts: GetJobProgressOptions): Promise<JobInfo> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobProgress(opts.jobId));
+    const response = await this.fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${opts.authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get job progress: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async abortJob(opts: AbortJobOptions): Promise<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobAbort(opts.jobId));
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${opts.authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to abort job: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async abortAllJobs(opts: AbortAllJobsOptions): Promise<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobAbortAll);
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${opts.authToken}`
+      },
+      body: JSON.stringify({
+        feature: opts.feature
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to abort all jobs: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  /////////////////////////////////////////////////////////////////////
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
 
@@ -214,4 +327,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   ): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
+  // Remove the abstract job methods since we're implementing them directly
+  // protected abstract _getJobs(opts: GetJobsOptions): Promise<Array<JobInfo>>;
+  // protected abstract _startJob(opts: StartJobOptions): Promise<JobInfo>;
+  // protected abstract _getJobProgress(opts: GetJobProgressOptions): Promise<JobInfo>;
+  // protected abstract _abortJob(opts: AbortJobOptions): Promise<DataApiActionResult>;
+  // protected abstract _abortAllJobs(opts: AbortAllJobsOptions): Promise<DataApiActionResult>;
 }

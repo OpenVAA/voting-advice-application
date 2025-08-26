@@ -7,6 +7,7 @@ import type {
 } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
+import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 import type { DPDataType } from './dataTypes';
@@ -221,6 +222,13 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @returns A `Promise` resolving a `DataApiActionResult` or a `Response` containing one.
    */
   updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
+
+  // Job management methods for the Admin App
+  getJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;
+  getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
+  abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
+  abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,3 +358,26 @@ export type TemporarySetQuestionData = {
     video?: LocalizedVideoContent;
   };
 };
+
+export interface GetJobsOptions extends WithAuth {
+  feature?: string;
+  status?: 'running' | 'completed' | 'failed';
+  lastUpdate: string; // ISO timestamp - required for efficient job polling
+}
+
+export interface StartJobOptions extends WithAuth {
+  feature: string;
+  author: string;
+}
+
+export interface GetJobProgressOptions extends WithAuth {
+  jobId: string;
+}
+
+export interface AbortJobOptions extends WithAuth {
+  jobId: string;
+}
+
+export interface AbortAllJobsOptions extends WithAuth {
+  feature?: string; // Optional: abort all jobs for a specific feature
+}
