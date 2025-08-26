@@ -4,6 +4,7 @@
 Reusable component for monitoring a single feature's job status.
 Handles all states: no job, active job, completed job.
 Includes embedded kill switch functionality.
+Can optionally display feature-specific past jobs.
 -->
 
 <script lang="ts">
@@ -18,6 +19,8 @@ Includes embedded kill switch functionality.
   export let onKillJob: (jobId: string) => void; // Required callback when kill switch clicked
   export let maxMessages = 8;
   export let height = 'max-h-64';
+  export let pastJobs: JobInfo[] = []; // Optional: feature-specific past jobs
+  export let showPastJobs = true; // Optional: whether to show past jobs section
 
   // Handle kill switch click
   function handleKillJob() {
@@ -25,6 +28,18 @@ Includes embedded kill switch functionality.
       onKillJob(activeJob.id);
     }
   }
+
+  // Format job duration
+  function formatJobDuration(job: JobInfo): string {
+    if (!job.endTime) return 'N/A';
+    const duration = job.endTime.getTime() - job.startTime.getTime();
+    const minutes = Math.floor(duration / 60000);
+    const seconds = Math.floor((duration % 60000) / 1000);
+    return `${minutes}m ${seconds}s`;
+  }
+
+  // Filter past jobs to show only this feature's jobs
+  $: featurePastJobs = pastJobs.filter((job) => job.feature === jobType);
 </script>
 
 <div class="card w-full bg-base-100 shadow-xl">
@@ -59,6 +74,46 @@ Includes embedded kill switch functionality.
           errors={activeJob.errorMessages}
           maxMessages={1000}
           {height} />
+      </div>
+    {/if}
+
+    <!-- Past Jobs Section (Optional) -->
+    {#if showPastJobs && featurePastJobs.length > 0}
+      <div class="mt-6 border-t border-base-300 pt-4">
+        <h3 class="mb-3 font-semibold text-lg text-base-content">Past Jobs</h3>
+        <div class="max-h-64 space-y-3 overflow-y-auto">
+          {#each featurePastJobs.slice(0, 10).reverse() as job}
+            <div class="p-3 rounded-lg border border-base-300 transition-colors hover:bg-base-200">
+              <div class="mb-2 flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="font-semibold text-sm capitalize">{job.feature.replace('-', ' ')}</div>
+                  <p class="text-xs text-neutral">{job.author}</p>
+                </div>
+                <div class="text-right">
+                  <span class="badge badge-sm {job.status === 'completed' ? 'badge-success' : 'badge-error'}">
+                    {job.status}
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-1 text-xs text-neutral">
+                <div>Started: {job.startTime.toLocaleString()}</div>
+                {#if job.endTime}
+                  <div>Duration: {formatJobDuration(job)}</div>
+                {/if}
+                <div>
+                  Messages: {job.infoMessages.length + job.warningMessages.length + job.errorMessages.length}
+                </div>
+              </div>
+            </div>
+          {/each}
+        </div>
+
+        {#if featurePastJobs.length > 10}
+          <div class="mt-3 text-center">
+            <p class="text-xs text-neutral">Showing 10 most recent jobs</p>
+          </div>
+        {/if}
       </div>
     {/if}
   </div>

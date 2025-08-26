@@ -4,7 +4,7 @@ import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
 import { PipelineLogger } from '../jobs/pipelineLogger';
-import type { LocalizedQuestionArguments } from '@openvaa/app-shared';
+import type { ArgumentType, LocalizedQuestionArguments } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -129,6 +129,34 @@ export async function condenseArguments({
 
       if (!condensationResults.length || condensationResults.every((r) => !r.arguments.length)) {
         logger.info(`No condensed arguments found for question: ${question.name}`);
+        logger.info('Adding a mock result for testing');
+
+        // ------------------------------------------------------------
+        // MOCK SAVING
+        // ------------------------------------------------------------
+        const mockResults = [
+          {
+            type: 'likertPros' as ArgumentType,
+            arguments: [
+              { id: '1',
+                content: {
+                  [locale]: 'This is a test argument' } }
+            ]
+          }
+        ];
+        await dataWriter.updateQuestion({
+          authToken,
+          id: question.id,
+          data: {
+            customData: {
+              arguments: mockResults
+            }
+          }
+        });
+        // ------------------------------------------------------------
+        // MOCK SAVING END
+        // ------------------------------------------------------------
+
         continue;
       }
 

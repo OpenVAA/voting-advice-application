@@ -5,54 +5,72 @@
 
 import { json } from '@sveltejs/kit';
 import {
-  getAllJobs,
-  getAllPastJobs,
-  getJobsByFeature,
+  getActiveJobs as getActiveJobs,
+  getJobsByFeature as getActiveJobsByFeature,
+  getPastJobs,
   getPastJobsByFeature,
   getPastJobsByFeatureAndStatus,
-  getPastJobsByStatus
+  getPastJobsByFeatureAndStatusSince,
+  getPastJobsByFeatureSince,
+  getPastJobsByStatus,
+  getPastJobsByStatusSince,
+  getPastJobsSince
 } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
+import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
 /**
  * GET /api/admin/jobs
- * Get all active jobs or filter by feature
+ * Get jobs with optional filtering:
+ * - No lastUpdate: return all jobs (active + past)
+ * - With lastUpdate: return active jobs + past jobs updated since lastUpdate (delta)
+ *
+ * Response format:
+ * {
+ *   activeJobs: JobInfo[],
+ *   pastJobs: JobInfo[]
+ * }
  */
 export async function GET({ url }: RequestEvent) {
   try {
     const feature = url.searchParams.get('feature');
-    const status = url.searchParams.get('status') as 'running' | 'completed' | 'failed' | undefined;
-    const includePast = url.searchParams.get('includePast') === 'true';
+    const status = url.searchParams.get('status');
+    const lastUpdate = url.searchParams.get('lastUpdate');
 
-    // If requesting past jobs
-    if (includePast) {
+    // Get active jobs (always included)
+    const activeJobs = feature ? getActiveJobsByFeature(feature) : getActiveJobs();
+
+    // Get past jobs based on parameters
+    let pastJobs: Array<JobInfo> = [];
+
+    if (lastUpdate) {
+      // Delta mode: only get past jobs updated since lastUpdate
       if (feature && status && (status === 'completed' || status === 'failed')) {
-        // Get past jobs by feature and status
-        const jobs = getPastJobsByFeatureAndStatus(feature, status);
-        return json(jobs);
+        pastJobs = getPastJobsByFeatureAndStatusSince(feature, status, lastUpdate);
       } else if (feature) {
-        // Get past jobs by feature
-        const jobs = getPastJobsByFeature(feature);
-        return json(jobs);
+        pastJobs = getPastJobsByFeatureSince(feature, lastUpdate);
       } else if (status && (status === 'completed' || status === 'failed')) {
-        // Get past jobs by status
-        const jobs = getPastJobsByStatus(status);
-        return json(jobs);
+        pastJobs = getPastJobsByStatusSince(status, lastUpdate);
       } else {
-        // Get all past jobs
-        const jobs = getAllPastJobs();
-        return json(jobs);
+        pastJobs = getPastJobsSince(lastUpdate);
+      }
+    } else {
+      // Full mode: get all past jobs
+      if (feature && status && (status === 'completed' || status === 'failed')) {
+        pastJobs = getPastJobsByFeatureAndStatus(feature, status);
+      } else if (feature) {
+        pastJobs = getPastJobsByFeature(feature);
+      } else if (status && (status === 'completed' || status === 'failed')) {
+        pastJobs = getPastJobsByStatus(status);
+      } else {
+        pastJobs = getPastJobs();
       }
     }
 
-    // Default: get active jobs only
-    if (feature) {
-      const jobs = getJobsByFeature(feature);
-      return json(jobs);
-    } else {
-      const jobs = getAllJobs();
-      return json(jobs);
-    }
+    return json({
+      activeJobs,
+      pastJobs
+    });
   } catch (error) {
     console.error('Error getting jobs:', error);
     return json({ error: 'Failed to get jobs' }, { status: 500 });
