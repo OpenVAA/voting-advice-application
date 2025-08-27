@@ -1,4 +1,4 @@
-import { parse } from './llmParsing';
+import { parseAndValidate } from './llmParsing';
 import type { LLMProvider } from '../llm-providers/llm-provider';
 import type { LLMResponse, Message } from '../types';
 import type { LLMResponseContract } from './llmParsing';
@@ -37,7 +37,7 @@ export async function retryInvalidResponses<TType>(
       });
 
       // Try to parse the response to make sure it's valid
-      parse(response.content, responseContract);
+      parseAndValidate(response.content, responseContract);
 
       return { index: failedIndex, response };
     }
