@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { OpenAIProvider } from '../src/llm-providers/openai-provider';
 import { Message } from '../src/types';
 import type { ParsedLLMResponse } from '../src/types';
-import type { LLMResponseContract } from '../src/utils/llmParser';
+import type { LLMResponseContract } from '../src/utils/llmParsing';
 
 // Mock the OpenAI API responses - no actual API calls will be made
 const mockCreate = vi.fn().mockImplementation((params) =>
