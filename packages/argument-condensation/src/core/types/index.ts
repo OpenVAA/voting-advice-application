@@ -20,7 +20,7 @@ export type { CondensationStepResult } from './condensation/processStepResult';
 
 // Condensation inputs & outputs
 export type { CondensationRunInput, Comment as VAAComment } from './condensation/condensationInput';
-export type { CondensationRunMetrics, CondensationRunResult } from './condensation/condensationResult';
+export type { CondensationRunResult } from './condensation/condensationResult';
 export { CONDENSATION_TYPE, type CondensationOutputType } from './condensation/condensationType';
 export type { SupportedQuestion } from './condensation/supportedQuestion';
 
