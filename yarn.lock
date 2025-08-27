@@ -4291,6 +4291,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/question-info@workspace:packages/question-info":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/question-info@workspace:packages/question-info"
+  dependencies:
+    "@openvaa/core": "workspace:^"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/llm": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    "@types/js-yaml": "npm:^4.0.9"
+    js-yaml: "npm:^4.1.0"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.7.3"
+    vitest: "npm:^2.1.8"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/shared-config@workspace:^, @openvaa/shared-config@workspace:packages/shared-config":
   version: 0.0.0-use.local
   resolution: "@openvaa/shared-config@workspace:packages/shared-config"
