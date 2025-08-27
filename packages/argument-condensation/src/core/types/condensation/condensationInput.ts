@@ -1,5 +1,4 @@
-import type { Logger } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm';
+import type { CommonLLMParams } from '@openvaa/llm';
 import type { CondensationOutputType } from './condensationType';
 import type { ProcessingStep } from './processDefinition';
 import type { SupportedQuestion } from './supportedQuestion';
@@ -59,13 +58,7 @@ export interface Comment {
  *   invertProsAndCons: false // If likert scale is inverted
  * };
  */
-export interface CondensationOptions {
-  /** Used to identify the run in the visualization UI */
-  runId: string;
-  /** The LLM provider to use, e.g. OpenAIProvider. See LLM package for more details */
-  llmProvider: LLMProvider;
-  /** The LLM model to use. We use a default model if this is not provided */
-  llmModel: string;
+export interface CondensationOptions extends CommonLLMParams {
   /** The language of the comments. This also impacts the language of the prompts used */
   language: string;
   /** The type of output to generate. E.g. categoricalPros, booleanPros, likertPros, etc */
@@ -74,14 +67,8 @@ export interface CondensationOptions {
   processingSteps: Array<ProcessingStep>;
   /** Whether to enable the operation tree data creation */
   createVisualizationData: boolean;
-  /** The fallback LLM model to use for parallelization (alternates between models to avoid rate limiting) */
-  fallbackModel?: string;
   /** The number of parallel batches to use for parallelizable operations */
   parallelBatches?: number;
-  /** The number of tokens per minute the LLM model can handle */
-  modelTPMLimit?: number;
-  /** Optional logger for tracking progress and issues during condensation */
-  logger?: Logger;
 }
 
 /**
