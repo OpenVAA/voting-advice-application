@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { LLMProvider } from './llm-provider';
-import { isValidationError, mapToMessageParam, parse } from '../utils';
+import { isValidationError, mapToMessageParam, parseAndValidate } from '../utils';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
 import type { Logger } from '@openvaa/core';
 import type {
@@ -254,7 +254,7 @@ export class OpenAIProvider extends LLMProvider {
 
       try {
         // Attempt to parse and validate the response
-        const parsed = parse(llmResponse.content, responseContract);
+        const parsed = parseAndValidate(llmResponse.content, responseContract);
         const result: ParsedLLMResponse<TType> = {
           parsed,
           raw: llmResponse
