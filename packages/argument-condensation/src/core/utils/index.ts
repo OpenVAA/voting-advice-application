@@ -8,7 +8,7 @@ export { calculateStepWeights } from './condensation/calculateLLMCallCounts';
 
 // Prompt utilities
 export { createPromptInstance } from './prompting/createPromptInstance';
-export { parse, setPromptVars } from '@openvaa/llm'; // re-export for convenience
+export { parseAndValidate as parse, setPromptVars } from '@openvaa/llm'; // re-export for convenience
 
 // Create batches
 export { createBatches } from './condensation/createBatches';
