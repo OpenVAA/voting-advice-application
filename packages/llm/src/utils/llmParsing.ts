@@ -57,7 +57,7 @@ export function cleanJson(jsonString: string): string {
 /**
  * Generic parse function that validates against a contract
  */
-export function parse<TType>(response: string, contract: LLMResponseContract<TType>): TType {
+export function parseAndValidate<TType>(response: string, contract: LLMResponseContract<TType>): TType {
   const cleanedResponse = cleanJson(response);
   try {
     const parsed = JSON.parse(cleanedResponse);
