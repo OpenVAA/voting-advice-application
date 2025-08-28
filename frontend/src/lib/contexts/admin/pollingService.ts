@@ -54,18 +54,19 @@ export function createPollingService({
 
       if (!activeResponse?.ok) throw new Error('Failed to fetch active jobs');
 
-      const activeJobs: Array<JobInfo> = (await activeResponse.json()).activeJobs;
+      const { activeJobs } = (await activeResponse.json()) as { activeJobs: Array<JobInfo> };
 
       activeJobsStore.update(() => {
-        // TODO: Don't use hard-coded feature names, only make a Map out of those running and the rest can be undefined        
+        // TODO: Don't use hard-coded feature names, only make a Map out of those running and the rest can be undefined
         const activeJobsMap = new Map<string, JobInfo | null>();
         activeJobsMap.set('argument-condensation', null);
         activeJobsMap.set('factor-analysis', null);
         activeJobsMap.set('question-info', null);
         // Set active jobs for features that have them
-        for (const job of activeJobs.filter((job) => job.status === 'running')) {
-          activeJobsMap.set(job.feature, job);
+        for (const job of activeJobs.filter((job: JobInfo) => job.status === 'running')) {
+          activeJobsMap.set(job.feature, job); // No date parsing needed!
         }
+
         return activeJobsMap;
       });
 
@@ -80,17 +81,12 @@ export function createPollingService({
     try {
       const pastResponse = await fetch('/api/admin/jobs?includePast=true');
       if (pastResponse.ok) {
-        const pastJobsData: Array<JobInfo> = (await pastResponse.json()).pastJobs;
+        const { pastJobs } = await pastResponse.json();
 
-        // Parse dates and convert to Map<jobId, JobInfo>
+        // Convert to Map<jobId, JobInfo>
         const pastJobsMap = new Map<string, JobInfo>();
-        for (const job of pastJobsData) {
-          pastJobsMap.set(job.id, {
-            ...job,
-            startTime: new Date(job.startTime),
-            endTime: job.endTime ? new Date(job.endTime) : undefined,
-            lastActivityTime: job.lastActivityTime ? new Date(job.lastActivityTime) : undefined
-          } as JobInfo);
+        for (const job of pastJobs) {
+          pastJobsMap.set(job.id, job);
         }
 
         pastJobsStore.set(pastJobsMap);
