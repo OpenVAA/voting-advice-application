@@ -33,7 +33,7 @@ Can optionally display feature-specific past jobs.
   // Format job duration
   function formatJobDuration(job: JobInfo): string {
     if (!job.endTime) return 'N/A';
-    const duration = job.endTime.getTime() - job.startTime.getTime();
+    const duration = new Date(job.endTime).getTime() - new Date(job.startTime).getTime();
     const minutes = Math.floor(duration / 60000);
     const seconds = Math.floor((duration % 60000) / 1000);
     return `${minutes}m ${seconds}s`;

@@ -5,7 +5,9 @@ Reusable component for displaying informational messages with scrolling
 -->
 
 <script lang="ts">
-  export let messages: Array<string> = [];
+  import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
+
+  export let messages: Array<JobMessage> = [];
   export let maxMessages: number = 10;
   export let title: string = 'Info Messages';
   export let height: string = 'max-h-32';
@@ -26,10 +28,10 @@ Reusable component for displaying informational messages with scrolling
         <div class="flex items-start gap-2 rounded bg-base-100 p-2">
           {#if showTimestamp}
             <span class="whitespace-nowrap text-xs text-neutral">
-              {new Date().toLocaleTimeString()}
+              {new Date(message.timestamp).toLocaleTimeString()}
             </span>
           {/if}
-          <span class="flex-1">{message}</span>
+          <span class="flex-1">{message.message}</span>
         </div>
       {/each}
     </div>
