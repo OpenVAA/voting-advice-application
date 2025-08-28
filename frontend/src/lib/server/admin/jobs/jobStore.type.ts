@@ -8,24 +8,31 @@
  *   author: 'admin@example.com',
  *   status: 'running',
  *   progress: 0.5,
- *   startTime: new Date(),
- *   endTime: new Date(),
- *   lastActivityTime: new Date(),
- *   infoMessages: ['Job started'],
+ *   startTime: '2024-01-01T00:00:00.000Z',
+ *   endTime: '2024-01-01T00:05:00.000Z',
+ *   lastActivityTime: '2024-01-01T00:04:30.000Z',
+ *   infoMessages: [{ type: 'info', message: 'Job started', timestamp: '2024-01-01T00:00:00.000Z' }],
  *   warningMessages: [],
  *   errorMessages: []
  * }
  */
+
+export interface JobMessage {
+  type: 'info' | 'warning' | 'error';
+  message: string;
+  timestamp: string; // ISO
+}
+
 export interface JobInfo {
   id: string;
   feature: string;
   author: string; // admin email
   status: 'running' | 'completed' | 'failed';
   progress: number; // 0-1 range
-  startTime: Date;
-  endTime?: Date; // Set when job completes or fails
-  lastActivityTime: Date; // Last time the job was updated
-  infoMessages: Array<string>;
-  warningMessages: Array<string>;
-  errorMessages: Array<string>;
+  startTime: string; // ISO
+  endTime?: string; // ISO, set when job completes or fails
+  lastActivityTime: string; // ISO, last time the job was updated
+  infoMessages: Array<JobMessage>;
+  warningMessages: Array<JobMessage>;
+  errorMessages: Array<JobMessage>;
 }

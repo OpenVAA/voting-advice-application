@@ -61,8 +61,8 @@ export function createJob(feature: string, author: string): JobInfo {
     author,
     status: 'running',
     progress: 0,
-    startTime: now,
-    lastActivityTime: now,
+    startTime: now.toISOString(),
+    lastActivityTime: now.toISOString(),
     infoMessages: [],
     warningMessages: [],
     errorMessages: []
@@ -87,7 +87,7 @@ export function updateJobProgress(jobId: string, progress: number): void {
   const job = activeJobs.get(jobId);
   if (job) {
     job.progress = Math.max(0, Math.min(1, progress));
-    job.lastActivityTime = new Date();
+    job.lastActivityTime = new Date().toISOString();
   }
 }
 
@@ -99,8 +99,12 @@ export function updateJobProgress(jobId: string, progress: number): void {
 export function addJobInfoMessage(jobId: string, message: string): void {
   const job = activeJobs.get(jobId);
   if (job) {
-    job.infoMessages.push(message);
-    job.lastActivityTime = new Date();
+    job.infoMessages.push({
+      type: 'info',
+      message,
+      timestamp: new Date().toISOString()
+    });
+    job.lastActivityTime = new Date().toISOString();
     // Keep only the last 20 info messages to prevent memory bloat
     if (job.infoMessages.length > 20) {
       job.infoMessages = job.infoMessages.slice(-20);
@@ -116,8 +120,12 @@ export function addJobInfoMessage(jobId: string, message: string): void {
 export function addJobWarningMessage(jobId: string, message: string): void {
   const job = activeJobs.get(jobId);
   if (job) {
-    job.warningMessages.push(message);
-    job.lastActivityTime = new Date();
+    job.warningMessages.push({
+      type: 'warning',
+      message,
+      timestamp: new Date().toISOString()
+    });
+    job.lastActivityTime = new Date().toISOString();
     // Keep only the last 50 warning messages to prevent memory bloat
     if (job.warningMessages.length > 50) {
       job.warningMessages = job.warningMessages.slice(-50);
@@ -133,8 +141,12 @@ export function addJobWarningMessage(jobId: string, message: string): void {
 export function addJobErrorMessage(jobId: string, message: string): void {
   const job = activeJobs.get(jobId);
   if (job) {
-    job.errorMessages.push(message);
-    job.lastActivityTime = new Date();
+    job.errorMessages.push({
+      type: 'error',
+      message,
+      timestamp: new Date().toISOString()
+    });
+    job.lastActivityTime = new Date().toISOString();
     // Keep only the last 50 error messages to prevent memory bloat
     if (job.errorMessages.length > 50) {
       job.errorMessages = job.errorMessages.slice(-50);
@@ -152,8 +164,8 @@ function moveJobToPast(jobId: string, status: 'completed' | 'failed'): void {
   if (job) {
     // Update job with final status and end time
     job.status = status;
-    job.endTime = new Date();
-    job.lastActivityTime = new Date();
+    job.endTime = new Date().toISOString();
+    job.lastActivityTime = new Date().toISOString();
 
     // Move to past jobs
     pastJobs.set(jobId, job);
@@ -206,9 +218,13 @@ export function forceFailJob(jobId: string, reason: string): void {
     const pastJob = pastJobs.get(jobId);
     if (pastJob && pastJob.status === 'running') {
       pastJob.status = 'failed';
-      pastJob.endTime = new Date();
-      pastJob.lastActivityTime = new Date();
-      pastJob.errorMessages.push(`Job force-failed: ${reason}`);
+      pastJob.endTime = new Date().toISOString();
+      pastJob.lastActivityTime = new Date().toISOString();
+      pastJob.errorMessages.push({
+        type: 'error',
+        message: `Job force-failed: ${reason}`,
+        timestamp: new Date().toISOString()
+      });
     }
   }
 }
@@ -222,8 +238,8 @@ export function cleanupStaleJobs(): void {
 
   // Check for jobs that have been running too long
   for (const [jobId, job] of activeJobs.entries()) {
-    const runningTime = now.getTime() - job.startTime.getTime();
-    const inactiveTime = now.getTime() - job.lastActivityTime.getTime();
+    const runningTime = now.getTime() - new Date(job.startTime).getTime();
+    const inactiveTime = now.getTime() - new Date(job.lastActivityTime).getTime();
 
     if (runningTime > JOB_TIMEOUT_MS) {
       staleJobs.push({ jobId, reason: `Job running too long (${Math.round(runningTime / 60000)} minutes)` });
@@ -241,7 +257,7 @@ export function cleanupStaleJobs(): void {
   // If we have too many active jobs, fail the oldest ones
   if (activeJobs.size > MAX_ACTIVE_JOBS) {
     const sortedJobs = Array.from(activeJobs.entries()).sort(
-      (a, b) => a[1].startTime.getTime() - b[1].startTime.getTime()
+      (a, b) => new Date(a[1].startTime).getTime() - new Date(b[1].startTime).getTime()
     );
 
     const jobsToFail = sortedJobs.slice(0, activeJobs.size - MAX_ACTIVE_JOBS);
@@ -268,8 +284,8 @@ export function cleanupOldPastJobs(maxPastJobs: number = MAX_PAST_JOBS): void {
 
   // Sort by end time (newest first) and keep only the most recent ones
   const sortedJobs = Array.from(pastJobs.values()).sort((a, b) => {
-    const aTime = a.endTime?.getTime() || 0;
-    const bTime = b.endTime?.getTime() || 0;
+        const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
+    const bTime = b.endTime ? new Date(b.endTime).getTime() : 0;
     return bTime - aTime;
   });
 
@@ -415,7 +431,7 @@ export function getPastJobsByFeatureAndStatus(feature: string, status: 'complete
  */
 export function getPastJobsSince(lastUpdate: string): Array<JobInfo> {
   const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.endTime && job.endTime > timestamp);
+  return getPastJobs().filter((job) => job.endTime && new Date(job.endTime) > timestamp);
 }
 
 /**
@@ -426,7 +442,7 @@ export function getPastJobsSince(lastUpdate: string): Array<JobInfo> {
  */
 export function getPastJobsByFeatureSince(feature: string, lastUpdate: string): Array<JobInfo> {
   const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.feature === feature && job.endTime && job.endTime > timestamp);
+  return getPastJobs().filter((job) => job.feature === feature && job.endTime && new Date(job.endTime) > timestamp);
 }
 
 /**
@@ -437,7 +453,7 @@ export function getPastJobsByFeatureSince(feature: string, lastUpdate: string): 
  */
 export function getPastJobsByStatusSince(status: 'completed' | 'failed', lastUpdate: string): Array<JobInfo> {
   const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.status === status && job.endTime && job.endTime > timestamp);
+  return getPastJobs().filter((job) => job.status === status && job.endTime && new Date(job.endTime) > timestamp);
 }
 
 /**
@@ -453,5 +469,7 @@ export function getPastJobsByFeatureAndStatusSince(
   lastUpdate: string
 ): Array<JobInfo> {
   const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.feature === feature && job.status === status && job.startTime > timestamp);
+  return getPastJobs().filter(
+    (job) => job.feature === feature && job.status === status && new Date(job.startTime) > timestamp
+  );
 }
