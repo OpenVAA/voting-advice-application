@@ -1,6 +1,7 @@
 import { type Id } from '@openvaa/core';
 import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
+import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { PipelineLogger } from '$lib/server/admin/jobs/pipelineLogger';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
@@ -47,7 +48,7 @@ export const actions = {
       console.info('[question-info] created job:', jobId);
 
       // DEBUG: Check if the job was created and is in active state
-      const jobCheckResponse = await fetch(`/api/admin/jobs/${jobId}/progress`);
+      const jobCheckResponse = await fetch(UNIVERSAL_API_ROUTES.jobProgress(jobId));
 
       if (jobCheckResponse.ok) {
         const jobData = await jobCheckResponse.json();
