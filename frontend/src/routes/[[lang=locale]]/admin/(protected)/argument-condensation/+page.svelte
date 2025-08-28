@@ -9,13 +9,20 @@ Page for controlling the argument condensation feature.
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
+  import JobMonitor from '$lib/admin/components/jobs/JobMonitor.svelte';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
   import MainContent from '../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
+  import { ADMIN_FEATURE } from '$lib/admin/features';
 
-  const { dataRoot, t, getRoute } = getAdminContext();
+  const {
+    dataRoot,
+    t,
+    getRoute,
+    jobs: { activeJobsStore, pastJobsStore, pollingService }
+  } = getAdminContext();
 
   let selectedOption = 'all';
   let selectedElectionId = '';
@@ -23,6 +30,9 @@ Page for controlling the argument condensation feature.
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
+
+  // Start polling for job updates
+  pollingService.refresh();
 
   // Remove the job logger since it's now handled in the server action
 
@@ -42,6 +52,13 @@ Page for controlling the argument condensation feature.
   let availableQuestions: Array<AnyQuestionVariant> = [];
   let questionError: string | null = null;
 
+  // Get active and past jobs for argument condensation
+  $: argumentCondensationJob = $activeJobsStore.get(ADMIN_FEATURE.ArgumentCondensation.jobName) || null;
+  $: allPastJobs = Array.from($pastJobsStore.values());
+  $: argumentCondensationPastJobs = allPastJobs.filter(
+    (job) => job.feature === ADMIN_FEATURE.ArgumentCondensation.jobName
+  );
+
   $: {
     if (selectedElectionId) {
       try {
@@ -55,6 +72,33 @@ Page for controlling the argument condensation feature.
     } else {
       availableQuestions = [];
       questionError = null;
+    }
+  }
+
+  // Handle kill job for argument condensation
+  async function handleKillJob(jobId: string) {
+    if (!confirm('Are you sure you want to force-fail this argument condensation job?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/jobs/${jobId}/force-fail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Admin force-failed argument condensation job' })
+      });
+
+      if (response.ok) {
+        alert('Job force-failed successfully');
+        // Refresh data from stores
+        await pollingService.refresh();
+      } else {
+        const error = await response.json();
+        alert(`Failed to force-fail job: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error force-failing job:', error);
+      alert('Failed to force-fail job. Check console for details.');
     }
   }
 
@@ -217,5 +261,17 @@ Page for controlling the argument condensation feature.
         {/if}
       </div>
     </form>
+
+    <!-- Job Monitor Section -->
+    <div class="mt-8 w-full max-w-4xl">
+      <JobMonitor
+        jobType={ADMIN_FEATURE.ArgumentCondensation.jobName}
+        activeJob={argumentCondensationJob}
+        onKillJob={handleKillJob}
+        pastJobs={argumentCondensationPastJobs}
+        showPastJobs={true}
+        maxMessages={12}
+        height="max-h-96" />
+    </div>
   </div>
 </MainContent>
