@@ -13,7 +13,7 @@ export const UNIVERSAL_API_ROUTES = {
   // Job management routes for the Admin App
   jobs: '/api/admin/jobs',
   jobStart: '/api/admin/jobs/start',
-  jobProgress: (id: string) => `/api/admin/jobs/${id}/progress`,
-  jobAbort: (id: string) => `/api/admin/jobs/${id}/abort`,
+  jobProgress: (id: string) => `/api/admin/jobs/single/${id}/progress`,
+  jobAbort: (id: string) => `/api/admin/jobs/single/${id}/abort`,
   jobAbortAll: '/api/admin/jobs/abort-all'
 } as const;
