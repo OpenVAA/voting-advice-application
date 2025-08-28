@@ -5,8 +5,10 @@ Reusable component for displaying warning and error messages with scrolling
 -->
 
 <script lang="ts">
-  export let warnings: Array<string> = [];
-  export let errors: Array<string> = [];
+  import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
+
+  export let warnings: Array<JobMessage> = [];
+  export let errors: Array<JobMessage> = [];
   export let title: string = 'Warnings & Errors';
   export let height: string = 'max-h-32';
   export let showTimestamp: boolean = false;
@@ -14,12 +16,7 @@ Reusable component for displaying warning and error messages with scrolling
   export let maxMessages: number = 1000; // Default to 1000 for warnings
 
   // Combine warnings and errors for display, limiting to maxMessages, and reverse order (latest first)
-  $: allMessages = [
-    ...warnings.map((msg) => ({ type: 'warning', message: msg })),
-    ...errors.map((msg) => ({ type: 'error', message: msg }))
-  ]
-    .slice(-maxMessages)
-    .reverse(); // Show only the most recent messages, latest first
+  $: allMessages = [...warnings, ...errors].slice(-maxMessages).reverse(); // Show only the most recent messages, latest first
 
   function clearMessages() {
     warnings = [];
@@ -39,15 +36,15 @@ Reusable component for displaying warning and error messages with scrolling
     <div class="py-4 text-center text-xs text-neutral">No warnings or errors</div>
   {:else}
     <div class="space-y-1 text-xs">
-      {#each allMessages as { type, message }}
+      {#each allMessages as message}
         <div class="flex items-start gap-2 rounded bg-base-100 p-2">
           {#if showTimestamp}
             <span class="whitespace-nowrap text-xs text-neutral">
-              {new Date().toLocaleTimeString()}
+              {new Date(message.timestamp).toLocaleTimeString()}
             </span>
           {/if}
-          <span class="flex-1 {type === 'error' ? 'text-error' : 'text-warning'}">
-            {message}
+          <span class="flex-1 {message.type === 'error' ? 'text-error' : 'text-warning'}">
+            {message.message}
           </span>
         </div>
       {/each}
