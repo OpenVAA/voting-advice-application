@@ -16,7 +16,8 @@ Page for controlling the argument condensation feature.
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import { ADMIN_FEATURE } from '$lib/admin/features';
-
+  import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
+  
   const {
     dataRoot,
     t,
@@ -82,7 +83,7 @@ Page for controlling the argument condensation feature.
     }
 
     try {
-      const response = await fetch(`/api/admin/jobs/${jobId}/force-fail`, {
+      const response = await fetch(UNIVERSAL_API_ROUTES.jobAbort(jobId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: 'Admin force-failed argument condensation job' })

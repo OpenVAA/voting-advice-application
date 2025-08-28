@@ -11,7 +11,8 @@ Page for monitoring all active jobs across different admin features
   import MainContent from '../../../MainContent.svelte';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import { ADMIN_FEATURE } from '$lib/admin/features';
-
+  import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
+  
   const {
     getRoute,
     jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
@@ -63,7 +64,7 @@ Page for monitoring all active jobs across different admin features
     }
 
     try {
-      const response = await fetch(`/api/admin/jobs/${jobId}/force-fail`, {
+      const response = await fetch(UNIVERSAL_API_ROUTES.jobAbort(jobId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: `Admin force-failed ${feature} job` })
@@ -86,7 +87,7 @@ Page for monitoring all active jobs across different admin features
   // Format job duration
   function formatJobDuration(job: JobInfo): string {
     if (!job.endTime) return 'N/A';
-    const duration = job.endTime.getTime() - job.startTime.getTime();
+    const duration = new Date(job.endTime).getTime() - new Date(job.startTime).getTime();
     const minutes = Math.floor(duration / 60000);
     const seconds = Math.floor((duration % 60000) / 1000);
     return `${minutes}m ${seconds}s`;
