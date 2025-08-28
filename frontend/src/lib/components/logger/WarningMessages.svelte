@@ -13,11 +13,13 @@ Reusable component for displaying warning and error messages with scrolling
   export let showClearButton: boolean = false;
   export let maxMessages: number = 1000; // Default to 1000 for warnings
 
-  // Combine warnings and errors for display, limiting to maxMessages
+  // Combine warnings and errors for display, limiting to maxMessages, and reverse order (latest first)
   $: allMessages = [
     ...warnings.map((msg) => ({ type: 'warning', message: msg })),
     ...errors.map((msg) => ({ type: 'error', message: msg }))
-  ].slice(-maxMessages); // Show only the most recent messages
+  ]
+    .slice(-maxMessages)
+    .reverse(); // Show only the most recent messages, latest first
 
   function clearMessages() {
     warnings = [];

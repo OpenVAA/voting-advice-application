@@ -143,23 +143,13 @@ Page for monitoring all active jobs across different admin features
         <!-- Argument Condensation Monitor -->
         <div class="relative">
           <JobMonitor
-            jobType="argument-condensation"
+            jobType={ADMIN_FEATURE.ArgumentCondensation.jobName}
             activeJob={argumentCondensationJob}
-            onKillJob={(jobId) => forceFailJob(jobId, 'argument-condensation')}
-            maxMessages={8}
+            onKillJob={(jobId) => forceFailJob(jobId, ADMIN_FEATURE.ArgumentCondensation.jobName)}
+            featureLink={$getRoute('AdminAppArgumentCondensation')}
             showPastJobs={false}
+            maxMessages={8}
             height="max-h-64" />
-
-          <!-- Navigation Button Section -->
-          <div class="mt-4 border-t border-base-300 pt-4">
-            <Button
-              href={$getRoute('AdminAppArgumentCondensation')}
-              text="Go to Argument Condensation"
-              variant="secondary"
-              class="w-full"
-              icon="create"
-              iconPos="left" />
-          </div>
         </div>
 
         <!-- Factor Analysis Monitor -->
@@ -168,42 +158,22 @@ Page for monitoring all active jobs across different admin features
             jobType="factor-analysis"
             activeJob={factorAnalysisJob}
             onKillJob={(jobId) => forceFailJob(jobId, 'factor-analysis')}
+            featureLink={$getRoute('AdminAppFactorAnalysis')}
+            showPastJobs={false}
             maxMessages={8}
             height="max-h-64" />
-
-          <!-- Navigation Button Section -->
-          <div class="mt-4 border-t border-base-300 pt-4">
-            <Button
-              href={$getRoute('AdminAppFactorAnalysis')}
-              text="Go to Factor Analysis"
-              variant="secondary"
-              class="w-full"
-              icon="create"
-              iconPos="left"
-              disabled />
-          </div>
         </div>
 
         <!-- Question Info Monitor -->
         <div class="relative">
           <JobMonitor
-            jobType="question-info"
+            jobType={ADMIN_FEATURE.QuestionInfoGeneration.jobName}
             activeJob={questionInfoJob}
             onKillJob={(jobId) => forceFailJob(jobId, 'question-info')}
+            featureLink={$getRoute('AdminAppQuestionInfo')}
+            showPastJobs={false}
             maxMessages={8}
             height="max-h-64" />
-
-          <!-- Navigation Button Section -->
-          <div class="mt-4 border-t border-base-300 pt-4">
-            <Button
-              href={$getRoute('AdminAppQuestionInfo')}
-              text="Go to Question Info"
-              variant="secondary"
-              class="w-full"
-              icon="create"
-              iconPos="left"
-              disabled />
-          </div>
         </div>
       </div>
 
