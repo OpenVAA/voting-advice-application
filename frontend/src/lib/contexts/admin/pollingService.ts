@@ -54,7 +54,7 @@ export function createPollingService({
 
       if (!activeResponse?.ok) throw new Error('Failed to fetch active jobs');
 
-      const activeJobs: Array<JobInfo> = await activeResponse.json();
+      const activeJobs: Array<JobInfo> = (await activeResponse.json()).activeJobs;
 
       activeJobsStore.update(() => {
         // TODO: Don't use hard-coded feature names, only make a Map out of those running and the rest can be undefined        
@@ -80,7 +80,7 @@ export function createPollingService({
     try {
       const pastResponse = await fetch('/api/admin/jobs?includePast=true');
       if (pastResponse.ok) {
-        const pastJobsData: Array<JobInfo> = await pastResponse.json();
+        const pastJobsData: Array<JobInfo> = (await pastResponse.json()).pastJobs;
 
         // Parse dates and convert to Map<jobId, JobInfo>
         const pastJobsMap = new Map<string, JobInfo>();

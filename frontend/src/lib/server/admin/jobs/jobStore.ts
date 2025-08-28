@@ -175,6 +175,7 @@ export function completeJob(jobId: string): void {
   }
 }
 
+// TODO: combine these two functions into one
 /**
  * Mark a job as failed
  * @param jobId - The job ID to mark as failed
@@ -253,88 +254,6 @@ export function cleanupStaleJobs(): void {
   if (staleJobs.length > 0) {
     console.info(`Cleaned up ${staleJobs.length} stale jobs`);
   }
-}
-
-/**
- * Get job health information
- * @param jobId - The job ID to check
- * @returns Health status information
- */
-export function getJobHealth(jobId: string):
-  | {
-      isHealthy: boolean;
-      runningTime: number;
-      inactiveTime: number;
-      warnings: Array<string>;
-    }
-  | undefined {
-  const job = activeJobs.get(jobId);
-  if (!job) return undefined;
-
-  const now = new Date();
-  const runningTime = now.getTime() - job.startTime.getTime();
-  const inactiveTime = now.getTime() - job.lastActivityTime.getTime();
-
-  const warnings: Array<string> = [];
-
-  if (runningTime > JOB_TIMEOUT_MS * 0.8) {
-    warnings.push(
-      `Job has been running for ${Math.round(runningTime / 60000)} minutes (timeout: ${JOB_TIMEOUT_MS / 60000} minutes)`
-    );
-  }
-
-  if (inactiveTime > JOB_ACTIVITY_TIMEOUT_MS * 0.8) {
-    warnings.push(
-      `Job has been inactive for ${Math.round(inactiveTime / 60000)} minutes (inactivity timeout: ${JOB_ACTIVITY_TIMEOUT_MS / 60000} minutes)`
-    );
-  }
-
-  const isHealthy = runningTime <= JOB_TIMEOUT_MS && inactiveTime <= JOB_ACTIVITY_TIMEOUT_MS;
-
-  return {
-    isHealthy,
-    runningTime,
-    inactiveTime,
-    warnings
-  };
-}
-
-/**
- * Get overall system health
- * @returns System health information
- */
-export function getSystemHealth(): {
-  activeJobs: number;
-  pastJobs: number;
-  staleJobs: number;
-  warnings: Array<string>;
-} {
-  const warnings: Array<string> = [];
-  let staleJobs = 0;
-
-  // Check for stale jobs
-  for (const [jobId] of activeJobs.entries()) {
-    const health = getJobHealth(jobId);
-    if (health && !health.isHealthy) {
-      staleJobs++;
-      warnings.push(...health.warnings.map((w) => `Job ${jobId}: ${w}`));
-    }
-  }
-
-  if (activeJobs.size > MAX_ACTIVE_JOBS * 0.8) {
-    warnings.push(`High number of active jobs: ${activeJobs.size}/${MAX_ACTIVE_JOBS}`);
-  }
-
-  if (pastJobs.size > MAX_PAST_JOBS * 0.8) {
-    warnings.push(`High number of past jobs: ${pastJobs.size}/${MAX_PAST_JOBS}`);
-  }
-
-  return {
-    activeJobs: activeJobs.size,
-    pastJobs: pastJobs.size,
-    staleJobs,
-    warnings
-  };
 }
 
 /**
@@ -440,7 +359,7 @@ export function getJob(jobId: string): JobInfo | undefined {
  * Get all active jobs
  * @returns Array of all active jobs
  */
-export function getAllJobs(): Array<JobInfo> {
+export function getActiveJobs(): Array<JobInfo> {
   return Array.from(activeJobs.values());
 }
 
@@ -448,7 +367,7 @@ export function getAllJobs(): Array<JobInfo> {
  * Get all past jobs
  * @returns Array of all past jobs
  */
-export function getAllPastJobs(): Array<JobInfo> {
+export function getPastJobs(): Array<JobInfo> {
   return Array.from(pastJobs.values());
 }
 
@@ -458,7 +377,7 @@ export function getAllPastJobs(): Array<JobInfo> {
  * @returns Array of active jobs for the specified feature
  */
 export function getJobsByFeature(feature: string): Array<JobInfo> {
-  return getAllJobs().filter((job) => job.feature === feature);
+  return getActiveJobs().filter((job) => job.feature === feature);
 }
 
 /**
@@ -467,7 +386,7 @@ export function getJobsByFeature(feature: string): Array<JobInfo> {
  * @returns Array of past jobs for the specified feature
  */
 export function getPastJobsByFeature(feature: string): Array<JobInfo> {
-  return getAllPastJobs().filter((job) => job.feature === feature);
+  return getPastJobs().filter((job) => job.feature === feature);
 }
 
 /**
@@ -476,7 +395,7 @@ export function getPastJobsByFeature(feature: string): Array<JobInfo> {
  * @returns Array of past jobs with the specified status
  */
 export function getPastJobsByStatus(status: 'completed' | 'failed'): Array<JobInfo> {
-  return getAllPastJobs().filter((job) => job.status === status);
+  return getPastJobs().filter((job) => job.status === status);
 }
 
 /**
@@ -486,5 +405,53 @@ export function getPastJobsByStatus(status: 'completed' | 'failed'): Array<JobIn
  * @returns Array of past jobs matching both criteria
  */
 export function getPastJobsByFeatureAndStatus(feature: string, status: 'completed' | 'failed'): Array<JobInfo> {
-  return getAllPastJobs().filter((job) => job.feature === feature && job.status === status);
+  return getPastJobs().filter((job) => job.feature === feature && job.status === status);
+}
+
+/**
+ * Get past jobs updated since a specific timestamp
+ * @param lastUpdate - ISO timestamp string to filter from
+ * @returns Array of past jobs updated since the timestamp
+ */
+export function getPastJobsSince(lastUpdate: string): Array<JobInfo> {
+  const timestamp = new Date(lastUpdate);
+  return getPastJobs().filter((job) => job.endTime && job.endTime > timestamp);
+}
+
+/**
+ * Get past jobs by feature updated since a specific timestamp
+ * @param feature - The feature name to filter by
+ * @param lastUpdate - ISO timestamp string to filter from
+ * @returns Array of past jobs for the feature updated since the timestamp
+ */
+export function getPastJobsByFeatureSince(feature: string, lastUpdate: string): Array<JobInfo> {
+  const timestamp = new Date(lastUpdate);
+  return getPastJobs().filter((job) => job.feature === feature && job.endTime && job.endTime > timestamp);
+}
+
+/**
+ * Get past jobs by status updated since a specific timestamp
+ * @param status - The job status to filter by ('completed' | 'failed')
+ * @param lastUpdate - ISO timestamp string to filter from
+ * @returns Array of past jobs with the status updated since the timestamp
+ */
+export function getPastJobsByStatusSince(status: 'completed' | 'failed', lastUpdate: string): Array<JobInfo> {
+  const timestamp = new Date(lastUpdate);
+  return getPastJobs().filter((job) => job.status === status && job.endTime && job.endTime > timestamp);
+}
+
+/**
+ * Get past jobs by feature and status updated since a specific timestamp
+ * @param feature - The feature name to filter by
+ * @param status - The job status to filter by ('completed' | 'failed')
+ * @param lastUpdate - ISO timestamp string to filter from
+ * @returns Array of past jobs matching both criteria updated since the timestamp
+ */
+export function getPastJobsByFeatureAndStatusSince(
+  feature: string,
+  status: 'completed' | 'failed',
+  lastUpdate: string
+): Array<JobInfo> {
+  const timestamp = new Date(lastUpdate);
+  return getPastJobs().filter((job) => job.feature === feature && job.status === status && job.startTime > timestamp);
 }
