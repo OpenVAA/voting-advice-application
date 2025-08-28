@@ -21,6 +21,7 @@ Can optionally display feature-specific past jobs.
   export let height = 'max-h-64';
   export let pastJobs: JobInfo[] = []; // Optional: feature-specific past jobs
   export let showPastJobs = true; // Optional: whether to show past jobs section
+  export let featureLink: string | null = null; // Optional: link to the feature page
 
   // Handle kill switch click
   function handleKillJob() {
@@ -46,9 +47,14 @@ Can optionally display feature-specific past jobs.
   <div class="card-body">
     <div class="flex items-center justify-between">
       <h2 class="card-title capitalize text-primary">{jobType.replace('-', ' ')}</h2>
-      {#if activeJob}
-        <Button text="Force Fail" variant="secondary" on:click={handleKillJob} />
-      {/if}
+      <div class="flex items-center gap-2">
+        {#if featureLink}
+          <Button text="Go to Feature" variant="secondary" href={featureLink} icon="create" iconPos="right" />
+        {/if}
+        {#if activeJob}
+          <Button text="Force Fail" variant="secondary" on:click={handleKillJob} />
+        {/if}
+      </div>
     </div>
 
     {#if !activeJob}
@@ -66,14 +72,15 @@ Can optionally display feature-specific past jobs.
         <ProgressBar progress={activeJob.progress} color="primary" size="md" />
 
         <!-- Info Messages -->
-        <InfoMessages messages={activeJob.infoMessages} {maxMessages} {height} />
+        <InfoMessages messages={activeJob.infoMessages} {maxMessages} {height} showTimestamp={true} />
 
         <!-- Warning Messages -->
         <WarningMessages
           warnings={activeJob.warningMessages}
           errors={activeJob.errorMessages}
           maxMessages={1000}
-          {height} />
+          {height}
+          showTimestamp={true} />
       </div>
     {/if}
 

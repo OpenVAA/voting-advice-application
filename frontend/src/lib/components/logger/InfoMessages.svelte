@@ -11,8 +11,8 @@ Reusable component for displaying informational messages with scrolling
   export let height: string = 'max-h-32';
   export let showTimestamp: boolean = false;
 
-  // Get the most recent messages (sliding window)
-  $: displayMessages = messages.slice(-maxMessages);
+  // Get the most recent messages and reverse order (latest first)
+  $: displayMessages = messages.slice(-maxMessages).reverse();
 </script>
 
 <div class="p-3 rounded-lg bg-base-200 {height} overflow-y-auto">
