@@ -89,7 +89,7 @@ Can optionally display feature-specific past jobs.
       <div class="mt-6 border-t border-base-300 pt-4">
         <h3 class="mb-3 font-semibold text-lg text-base-content">Past Jobs</h3>
         <div class="max-h-64 space-y-3 overflow-y-auto">
-          {#each featurePastJobs.slice(0, 10).reverse() as job}
+          {#each featurePastJobs.slice(-2).reverse() as job}
             <div class="p-3 rounded-lg border border-base-300 transition-colors hover:bg-base-200">
               <div class="mb-2 flex items-start justify-between">
                 <div class="flex-1">
