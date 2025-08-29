@@ -12,7 +12,7 @@ Page for monitoring all active jobs across different admin features
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import { ADMIN_FEATURE } from '$lib/admin/features';
   import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
-  
+
   const {
     getRoute,
     jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
