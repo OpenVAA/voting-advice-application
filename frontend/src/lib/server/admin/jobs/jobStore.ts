@@ -284,7 +284,7 @@ export function cleanupOldPastJobs(maxPastJobs: number = MAX_PAST_JOBS): void {
 
   // Sort by end time (newest first) and keep only the most recent ones
   const sortedJobs = Array.from(pastJobs.values()).sort((a, b) => {
-        const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
+    const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
     const bTime = b.endTime ? new Date(b.endTime).getTime() : 0;
     return bTime - aTime;
   });
@@ -329,40 +329,6 @@ export function cleanupAllJobsForFeature(feature: string): void {
 }
 
 /**
- * Emergency cleanup function to recover from stuck jobs
- * This will force-fail all running jobs and clean up the system
- * Use this when the system gets into a bad state
- */
-export function emergencyCleanup(): {
-  cleanedJobs: number;
-  activeJobsRemaining: number;
-  pastJobsRemaining: number;
-} {
-  console.warn('Emergency cleanup initiated - force-failing all running jobs');
-
-  const runningJobs = Array.from(activeJobs.keys());
-  let cleanedJobs = 0;
-
-  // Force fail all running jobs
-  for (const jobId of runningJobs) {
-    forceFailJob(jobId, 'Emergency cleanup - system recovery');
-    cleanedJobs++;
-  }
-
-  // Clean up old past jobs aggressively
-  cleanupOldPastJobs(Math.floor(MAX_PAST_JOBS / 2));
-
-  const result = {
-    cleanedJobs,
-    activeJobsRemaining: activeJobs.size,
-    pastJobsRemaining: pastJobs.size
-  };
-
-  console.info('Emergency cleanup completed:', result);
-  return result;
-}
-
-/**
  * Get a specific job by ID (checks both active and past jobs)
  * @param jobId - The job ID to retrieve
  * @returns The job info or undefined if not found
@@ -385,91 +351,4 @@ export function getActiveJobs(): Array<JobInfo> {
  */
 export function getPastJobs(): Array<JobInfo> {
   return Array.from(pastJobs.values());
-}
-
-/**
- * Get jobs for a specific feature (active only)
- * @param feature - The feature name to filter by
- * @returns Array of active jobs for the specified feature
- */
-export function getJobsByFeature(feature: string): Array<JobInfo> {
-  return getActiveJobs().filter((job) => job.feature === feature);
-}
-
-/**
- * Get past jobs for a specific feature
- * @param feature - The feature name to filter by
- * @returns Array of past jobs for the specified feature
- */
-export function getPastJobsByFeature(feature: string): Array<JobInfo> {
-  return getPastJobs().filter((job) => job.feature === feature);
-}
-
-/**
- * Get past jobs by status
- * @param status - The job status to filter by ('completed' | 'failed')
- * @returns Array of past jobs with the specified status
- */
-export function getPastJobsByStatus(status: 'completed' | 'failed'): Array<JobInfo> {
-  return getPastJobs().filter((job) => job.status === status);
-}
-
-/**
- * Get past jobs by feature and status
- * @param feature - The feature name to filter by
- * @param status - The job status to filter by ('completed' | 'failed')
- * @returns Array of past jobs matching both criteria
- */
-export function getPastJobsByFeatureAndStatus(feature: string, status: 'completed' | 'failed'): Array<JobInfo> {
-  return getPastJobs().filter((job) => job.feature === feature && job.status === status);
-}
-
-/**
- * Get past jobs updated since a specific timestamp
- * @param lastUpdate - ISO timestamp string to filter from
- * @returns Array of past jobs updated since the timestamp
- */
-export function getPastJobsSince(lastUpdate: string): Array<JobInfo> {
-  const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.endTime && new Date(job.endTime) > timestamp);
-}
-
-/**
- * Get past jobs by feature updated since a specific timestamp
- * @param feature - The feature name to filter by
- * @param lastUpdate - ISO timestamp string to filter from
- * @returns Array of past jobs for the feature updated since the timestamp
- */
-export function getPastJobsByFeatureSince(feature: string, lastUpdate: string): Array<JobInfo> {
-  const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.feature === feature && job.endTime && new Date(job.endTime) > timestamp);
-}
-
-/**
- * Get past jobs by status updated since a specific timestamp
- * @param status - The job status to filter by ('completed' | 'failed')
- * @param lastUpdate - ISO timestamp string to filter from
- * @returns Array of past jobs with the status updated since the timestamp
- */
-export function getPastJobsByStatusSince(status: 'completed' | 'failed', lastUpdate: string): Array<JobInfo> {
-  const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter((job) => job.status === status && job.endTime && new Date(job.endTime) > timestamp);
-}
-
-/**
- * Get past jobs by feature and status updated since a specific timestamp
- * @param feature - The feature name to filter by
- * @param status - The job status to filter by ('completed' | 'failed')
- * @param lastUpdate - ISO timestamp string to filter from
- * @returns Array of past jobs matching both criteria updated since the timestamp
- */
-export function getPastJobsByFeatureAndStatusSince(
-  feature: string,
-  status: 'completed' | 'failed',
-  lastUpdate: string
-): Array<JobInfo> {
-  const timestamp = new Date(lastUpdate);
-  return getPastJobs().filter(
-    (job) => job.feature === feature && job.status === status && new Date(job.startTime) > timestamp
-  );
 }
