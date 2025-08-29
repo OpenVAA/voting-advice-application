@@ -197,7 +197,11 @@ export class Condenser {
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
-    await this.treeBuilder.saveTree(path.join(__dirname, '../../../data/operationTrees', `${this.runId}.json`));
+
+    // Use a more reliable path resolution method that works in both test and production environments
+    const packageRoot = path.resolve(process.cwd(), 'packages/argument-condensation');
+    const treeFilePath = path.join(packageRoot, 'data/operationTrees', `${this.runId}.json`);
+    await this.treeBuilder.saveTree(treeFilePath);
 
     // Return the final result with all metadata
     return {
@@ -765,10 +769,17 @@ export class Condenser {
 
       // Store the successfully parsed arguments
       const parsedArgs = response.parsed.arguments;
-      finalArguments[i] = parsedArgs;
+
+      // Generate unique IDs for final arguments
+      const argsWithNewIds = parsedArgs.map((arg) => ({
+        ...arg,
+        id: crypto.randomUUID()
+      }));
+
+      finalArguments[i] = argsWithNewIds;
 
       // Update the operation tree with the successful result
-      this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedArgs });
+      this.treeBuilder.setNodeOutput(nodeId, { arguments: argsWithNewIds });
       this.treeBuilder.completeNode(nodeId, 1, true);
 
       // Collect metrics for cost and performance tracking
