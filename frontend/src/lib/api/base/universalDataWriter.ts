@@ -11,9 +11,11 @@ import type {
   CheckRegistrationData,
   DataWriter,
   DWReturnType,
+  GetActiveJobsOptions,
   GetCandidateUserDataOptions,
   GetJobProgressOptions,
   GetJobsOptions,
+  GetPastJobsOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
@@ -173,7 +175,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
 
-  async getJobs(opts: GetJobsOptions): Promise<Array<JobInfo>> {
+  async getJobs(opts: GetJobsOptions): Promise<{ activeJobs: Array<JobInfo>, pastJobs: Array<JobInfo> }> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
 
     const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobs);
@@ -181,7 +183,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
     if (opts.feature) queryParams.append('feature', opts.feature);
     if (opts.status) queryParams.append('status', opts.status);
-    if (opts.lastUpdate) queryParams.append('lastUpdate', opts.lastUpdate);
+    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
 
     const response = await this.fetch(`${url}?${queryParams.toString()}`, {
       method: 'GET',
@@ -192,6 +194,54 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
     if (!response.ok) {
       throw new Error(`Failed to get jobs: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getActiveJobs(opts: GetActiveJobsOptions): Promise<Array<JobInfo>> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsActive);
+    const queryParams = new URLSearchParams();
+
+    // Ignore opts.status and only look for active jobs
+    if (opts.feature) queryParams.append('feature', opts.feature);
+    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
+
+    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${opts.authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get active jobs: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async getPastJobs(opts: GetPastJobsOptions): Promise<Array<JobInfo>> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+
+    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsPast);
+    const queryParams = new URLSearchParams();
+
+    if (opts.feature) queryParams.append('feature', opts.feature);
+    if (opts.status) queryParams.append('status', opts.status);
+    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
+
+    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${opts.authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get past jobs: ${response.statusText}`);
     }
 
     return response.json();
