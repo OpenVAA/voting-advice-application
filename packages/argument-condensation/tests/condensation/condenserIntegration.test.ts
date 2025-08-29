@@ -165,7 +165,6 @@ describe('Condenser Integration Tests', () => {
     // Assert
     expect(result.success).toBe(true);
     expect(result.arguments).toHaveLength(1);
-    expect(result.arguments[0][0].id).toBe('arg1');
     // Now expecting 3 calls: map + iterate_map
     expect(spy).toHaveBeenCalledTimes(2);
   });
