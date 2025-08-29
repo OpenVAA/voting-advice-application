@@ -224,7 +224,9 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
 
   // Job management methods for the Admin App
-  getJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  getJobs: (opts: GetJobsOptions) => DWReturnType<{ activeJobs: Array<JobInfo>, pastJobs: Array<JobInfo> }, TType>;
+  getActiveJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  getPastJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;
   getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
@@ -359,11 +361,18 @@ export type TemporarySetQuestionData = {
   };
 };
 
-export interface GetJobsOptions extends WithAuth {
+interface GetJobsOptionsBase {
   feature?: string;
-  status?: 'running' | 'completed' | 'failed';
-  lastUpdate: string; // ISO timestamp - required for efficient job polling
+  status?: string;
+  startFrom?: string;
 }
+
+export interface GetJobsOptions extends WithAuth, GetJobsOptionsBase {}
+
+// Base option "status" currently unused but may be used in the future if active jobs have e.g. status "queued" or similar
+export interface GetActiveJobsOptions extends WithAuth, GetJobsOptionsBase {}
+
+export interface GetPastJobsOptions extends WithAuth, GetJobsOptionsBase {}
 
 export interface StartJobOptions extends WithAuth {
   feature: string;
