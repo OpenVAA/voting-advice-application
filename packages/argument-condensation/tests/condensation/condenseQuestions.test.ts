@@ -376,7 +376,6 @@ describe('handleQuestion', () => {
         runId: uniqueId,
         maxCommentsPerGroup: 1000,
         createVisualizationData: true, // We are testing the createVisualizationData flag
-        logger: noOpLogger
       }
     });
 
