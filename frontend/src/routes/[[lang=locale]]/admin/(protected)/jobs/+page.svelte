@@ -191,7 +191,7 @@ Page for monitoring all active jobs across different admin features
                   <p class="text-sm text-neutral">No past jobs yet</p>
                 </div>
               {:else}
-                {#each pastJobs.slice(0, 20).reverse() as job}
+                {#each pastJobs.slice(-20).reverse() as job}
                   <div class="p-3 rounded-lg border border-base-300 transition-colors hover:bg-base-200">
                     <div class="mb-2 flex items-start justify-between">
                       <div class="flex-1">
