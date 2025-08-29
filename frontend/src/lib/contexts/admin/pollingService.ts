@@ -1,3 +1,5 @@
+import { ADMIN_FEATURE } from '$lib/admin/features';
+import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import type { Writable } from 'svelte/store';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { PollingService } from './pollingService.type';
@@ -14,10 +16,16 @@ export function createPollingService({
   activeJobsStore: Writable<Map<string, JobInfo | null>>;
   pastJobsStore: Writable<Map<string, JobInfo>>;
 }): PollingService {
-  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  let pollInterval: ReturnType<typeof setInterval> | null = null; // Polling frequency in milliseconds
   let isPolling = false;
 
-  // Start polling if not already polling
+  // An ISO timestamp to keep track of the last update for past jobs
+  // Works as a delta cursor so we don't fetch the same data again
+  let lastPastJobsUpdate: string | undefined;
+
+  // Create a set of known job names for efficient validation
+  const knownJobNames = new Set(Object.values(ADMIN_FEATURE).map((f) => f.jobName));
+
   function startPolling() {
     if (isPolling) return;
 
@@ -36,8 +44,7 @@ export function createPollingService({
   // Stop polling
   function stopPolling() {
     if (!isPolling) return;
-
-    console.info('[JobPollingService] Stopping polling...');
+    console.info('[JobPollingService] Stopping polling service...');
     isPolling = false;
 
     if (pollInterval) {
@@ -49,60 +56,96 @@ export function createPollingService({
   // Fetch jobs from API and update stores
   async function fetchAndUpdateJobs() {
     try {
-      // Fetch active jobs
-      const activeResponse = await fetch('/api/admin/jobs');
+      console.info('[JobPollingService] Fetching jobs...');
 
-      if (!activeResponse?.ok) throw new Error('Failed to fetch active jobs');
+      // Always fetch active jobs (no delta)
+      const activeUrl = new URL(UNIVERSAL_API_ROUTES.jobsActive, window.location.origin);
 
-      const { activeJobs } = (await activeResponse.json()) as { activeJobs: Array<JobInfo> };
+      // Only use delta for past jobs
+      const pastUrl = new URL(UNIVERSAL_API_ROUTES.jobsPast, window.location.origin);
+      pastUrl.searchParams.set('status', 'completed,failed');
+      if (lastPastJobsUpdate) {
+        pastUrl.searchParams.set('startFrom', lastPastJobsUpdate);
+      }
 
-      activeJobsStore.update(() => {
-        // TODO: Don't use hard-coded feature names, only make a Map out of those running and the rest can be undefined
-        const activeJobsMap = new Map<string, JobInfo | null>();
-        activeJobsMap.set('argument-condensation', null);
-        activeJobsMap.set('factor-analysis', null);
-        activeJobsMap.set('question-info', null);
-        // Set active jobs for features that have them
-        for (const job of activeJobs.filter((job: JobInfo) => job.status === 'running')) {
-          activeJobsMap.set(job.feature, job); // No date parsing needed!
-        }
+      // Fetch both in parallel
+      const [activeRes, pastRes] = await Promise.all([fetch(activeUrl.toString()), fetch(pastUrl.toString())]);
+      // TODO: handle case where a job lands in both active and past jobs (rare but possible)
 
-        return activeJobsMap;
+      if (!activeRes.ok) throw new Error('Failed to fetch active jobs');
+      if (!pastRes.ok) throw new Error('Failed to fetch past jobs');
+
+      const [activeJobs, pastJobs] = (await Promise.all([activeRes.json(), pastRes.json()])) as [
+        Array<JobInfo>,
+        Array<JobInfo>
+      ];
+
+      console.info('[JobPollingService] Got response:', {
+        activeJobsCount: activeJobs.length,
+        pastJobsCount: pastJobs.length
       });
 
-      await fetchPastJobs();
+      // Update the delta cursor for past jobs
+      lastPastJobsUpdate = new Date().toISOString();
+
+      // Always update active jobs (replace completely)
+      activeJobsStore.update(() => {
+        console.info('[JobPollingService] Updating active jobs store');
+        const activeMap = new Map<string, JobInfo | null>();
+
+        // Add active jobs by feature, validating against known features
+        for (const job of activeJobs.filter((j) => j.status === 'running')) {
+          if (knownJobNames.has(job.feature)) {
+            activeMap.set(job.feature, job);
+            console.info('[JobPollingService] Set active job:', job.feature);
+          } else {
+            console.warn(
+              `[JobPollingService] Unknown job feature: ${job.feature}. Deleting it from active jobs store.`
+            );
+            activeMap.delete(job.feature);
+          }
+        }
+
+        return activeMap;
+      });
+
+      // Merge past jobs by id (delta updates)
+      if (pastJobs.length > 0) {
+        pastJobsStore.update((prev) => {
+          console.info('[JobPollingService] Updating past jobs store');
+          const pastMap = new Map(prev);
+          for (const job of pastJobs) {
+            if (knownJobNames.has(job.feature)) {
+              pastMap.set(job.id, job);
+            } else {
+              console.warn(`[JobPollingService] Unknown job feature: ${job.feature}. Deleting from past jobs store.`);
+              pastMap.delete(job.id);
+            }
+          }
+          return pastMap;
+        });
+      } else {
+        console.info('[JobPollingService] No past jobs to update');
+      }
     } catch (error) {
       console.error('[JobPollingService] Error fetching jobs:', error);
     }
   }
 
-  // Separate function to fetch past jobs
-  async function fetchPastJobs() {
-    try {
-      const pastResponse = await fetch('/api/admin/jobs?includePast=true');
-      if (pastResponse.ok) {
-        const { pastJobs } = await pastResponse.json();
-
-        // Convert to Map<jobId, JobInfo>
-        const pastJobsMap = new Map<string, JobInfo>();
-        for (const job of pastJobs) {
-          pastJobsMap.set(job.id, job);
-        }
-
-        pastJobsStore.set(pastJobsMap);
-        console.info(`[JobPollingService] Updated past jobs store with ${pastJobsMap.size} jobs`);
-      }
-    } catch (error) {
-      console.error('[JobPollingService] Error fetching past jobs:', error);
-    }
-  }
-
-  // Handle starting and stopping polling
-  activeJobsStore.subscribe((jobs) => {
+  // Start/stop based on presence of any active job
+  activeJobsStore.subscribe(jobs => {
     const hasActive = Array.from(jobs.values()).some((j) => j != null);
+    console.info('[JobPollingService] Active jobs store changed:', {
+      hasActive,
+      activeFeatures: Array.from(jobs.keys()),
+      activeJobCount: Array.from(jobs.values()).filter((j) => j != null).length
+    });
+
     if (hasActive && !isPolling) {
+      console.info('[JobPollingService] Starting polling due to active jobs');
       startPolling();
     } else if (!hasActive && isPolling) {
+      console.info('[JobPollingService] Stopping polling due to no active jobs.');
       stopPolling();
     }
   });
