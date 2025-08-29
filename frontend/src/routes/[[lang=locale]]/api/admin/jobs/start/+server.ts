@@ -4,7 +4,7 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { createJob } from '$lib/server/admin/jobs/jobStore';
+import { createJob, getActiveJobs } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ request }: RequestEvent) {
@@ -13,6 +13,12 @@ export async function POST({ request }: RequestEvent) {
 
     if (!feature || !author) {
       return json({ error: 'Feature and author are required' }, { status: 400 });
+    }
+
+    // Prevent multiple active jobs for the same feature
+    const existing = getActiveJobs().find((j) => j.feature === feature && j.status === 'running');
+    if (existing) {
+      return json({ error: 'An active job for this feature is already running' }, { status: 409 });
     }
 
     // Create the new job and return it
