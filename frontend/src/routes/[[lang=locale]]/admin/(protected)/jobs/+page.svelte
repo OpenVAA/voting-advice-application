@@ -18,11 +18,10 @@ Page for monitoring all active jobs across different admin features
     jobs: { activeJobCount, activeJobsStore, pollingService, pastJobsStore }
   } = getAdminContext();
 
-  // TODO: $lib/admin/features/ {#each Object.entries(ADMIN_FEATURE) as [feature, route]} ...
   // Subscribe to stores for reactive UI updates
-  $: argumentCondensationJob = $activeJobsStore.get(ADMIN_FEATURE.ArgumentCondensation.jobName) || null;
-  $: factorAnalysisJob = $activeJobsStore.get('factor-analysis') || null;
-  $: questionInfoJob = $activeJobsStore.get(ADMIN_FEATURE.QuestionInfoGeneration.jobName) || null;
+  $: activeJobs = Object.fromEntries(
+    Object.entries(ADMIN_FEATURE).map(([key, feature]) => [key, $activeJobsStore.get(feature.jobName) || null])
+  );
   $: pastJobs = Array.from($pastJobsStore.values());
 
   pollingService.refresh();
@@ -141,41 +140,18 @@ Page for monitoring all active jobs across different admin features
     <div class="flex w-full gap-lg px-4">
       <!-- Main Content - Takes 2/3 of width -->
       <div class="flex w-2/3 flex-col gap-lg">
-        <!-- Argument Condensation Monitor -->
-        <div class="relative">
-          <JobMonitor
-            jobType={ADMIN_FEATURE.ArgumentCondensation.jobName}
-            activeJob={argumentCondensationJob}
-            onKillJob={(jobId) => forceFailJob(jobId, ADMIN_FEATURE.ArgumentCondensation.jobName)}
-            featureLink={$getRoute('AdminAppArgumentCondensation')}
-            showPastJobs={false}
-            maxMessages={8}
-            height="max-h-64" />
-        </div>
-
-        <!-- Factor Analysis Monitor -->
-        <div class="relative">
-          <JobMonitor
-            jobType="factor-analysis"
-            activeJob={factorAnalysisJob}
-            onKillJob={(jobId) => forceFailJob(jobId, 'factor-analysis')}
-            featureLink={$getRoute('AdminAppFactorAnalysis')}
-            showPastJobs={false}
-            maxMessages={8}
-            height="max-h-64" />
-        </div>
-
-        <!-- Question Info Monitor -->
-        <div class="relative">
-          <JobMonitor
-            jobType={ADMIN_FEATURE.QuestionInfoGeneration.jobName}
-            activeJob={questionInfoJob}
-            onKillJob={(jobId) => forceFailJob(jobId, 'question-info')}
-            featureLink={$getRoute('AdminAppQuestionInfo')}
-            showPastJobs={false}
-            maxMessages={8}
-            height="max-h-64" />
-        </div>
+        {#each Object.entries(ADMIN_FEATURE) as [featureKey, feature]}
+          <div class="relative">
+            <JobMonitor
+              jobType={feature.jobName}
+              activeJob={activeJobs[featureKey]}
+              onKillJob={(jobId) => forceFailJob(jobId, feature.jobName)}
+              featureLink={$getRoute(feature.route)}
+              showPastJobs={false}
+              maxMessages={8}
+              height="max-h-64" />
+          </div>
+        {/each}
       </div>
 
       <!-- Past Jobs Sidebar - Takes 1/3 of width -->
