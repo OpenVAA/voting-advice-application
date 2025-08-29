@@ -7,8 +7,6 @@ Page for controlling the argument condensation feature.
 <script lang="ts">
   import { enhance } from '$app/forms';
   import { Button } from '$lib/components/button';
-  import { ErrorMessage } from '$lib/components/errorMessage';
-  import { SuccessMessage } from '$lib/components/successMessage';
   import JobMonitor from '$lib/admin/components/jobs/JobMonitor.svelte';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
@@ -17,7 +15,7 @@ Page for controlling the argument condensation feature.
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import { ADMIN_FEATURE } from '$lib/admin/features';
   import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
-  
+
   const {
     dataRoot,
     t,
@@ -150,100 +148,84 @@ Page for controlling the argument condensation feature.
     <p class="mb-lg max-w-xl text-center">{$t('adminApp.argumentCondensation.description')}</p>
 
     <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-      <!-- Election Selection -->
-      <div class="w-full">
-        <label for="election-select" class="label">
-          <span class="label-text">{$t('adminApp.argumentCondensation.generate.selectElection')}</span>
-        </label>
-        <select
-          id="election-select"
-          name="electionId"
-          class="select select-bordered w-full"
-          bind:value={selectedElectionId}
-          on:change={() => (selectedIds = [])}
-          required>
-          <option value="">{$t('adminApp.argumentCondensation.generate.selectElectionPlaceholder')}</option>
-          {#each $dataRoot.elections as election}
-            <option value={election.id}>{election.name}</option>
-          {/each}
-        </select>
-      </div>
-
-      <div class="flex flex-col items-center gap-md">
-        <fieldset class="w-full">
-          <legend class="sr-only">{$t('adminApp.argumentCondensation.generate.questionType')}</legend>
-          <div class="flex flex-col gap-md">
-            {#each options as option}
-              <label class="label cursor-pointer justify-start gap-sm !p-0">
-                <input
-                  type="radio"
-                  class="radio-primary radio"
-                  name={radioGroupName}
-                  value={option.value}
-                  bind:group={selectedOption}
-                  disabled={!selectedElectionId} />
-                <span class="label-text">{option.label}</span>
-              </label>
+      {#if status !== 'loading' && !argumentCondensationJob}
+        <!-- Election Selection -->
+        <div class="w-full">
+          <label for="election-select" class="label">
+            <span class="label-text">{$t('adminApp.argumentCondensation.generate.selectElection')}</span>
+          </label>
+          <select
+            id="election-select"
+            name="electionId"
+            class="select select-bordered w-full"
+            bind:value={selectedElectionId}
+            on:change={() => (selectedIds = [])}
+            required>
+            <option value="">{$t('adminApp.argumentCondensation.generate.selectElectionPlaceholder')}</option>
+            {#each $dataRoot.elections as election}
+              <option value={election.id}>{election.name}</option>
             {/each}
-          </div>
-        </fieldset>
+          </select>
+        </div>
 
-        {#if selectedOption === 'selectedQuestions' && selectedElectionId}
-          {#if questionError}
-            <div class="my-16 text-center text-error">
-              Error loading questions: {questionError}
-            </div>
-          {:else if availableQuestions.length === 0}
-            <div class="my-16 text-center text-neutral">
-              {$t('adminApp.argumentCondensation.generate.noQuestionsForElection')}
-            </div>
-          {:else}
-            <div class="my-16 flex w-full flex-col space-y-8">
-              <label class="flex items-center space-x-10 border-b border-base-200 pb-8">
-                <input
-                  type="checkbox"
-                  class="checkbox-primary checkbox"
-                  checked={selectedIds.length === availableQuestions.length}
-                  on:change={() => {
-                    if (selectedIds.length === availableQuestions.length) {
-                      selectedIds = [];
-                    } else {
-                      selectedIds = availableQuestions.map((question) => question.id);
-                    }
-                  }} />
-                <span>{selectedIds.length === availableQuestions.length ? 'Unselect all' : 'Select all'}</span>
-              </label>
-              {#each availableQuestions as question, i}
-                <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
+        <div class="flex flex-col items-center gap-md">
+          <fieldset class="w-full">
+            <legend class="sr-only">{$t('adminApp.argumentCondensation.generate.questionType')}</legend>
+            <div class="flex flex-col gap-md">
+              {#each options as option}
+                <label class="label cursor-pointer justify-start gap-sm !p-0">
                   <input
-                    type="checkbox"
-                    name="questionIds"
-                    class="checkbox-primary checkbox"
-                    value={question.id}
-                    bind:group={selectedIds} />
-                  <span class="label-text mt-2">{i + 1}: {question.name}</span>
+                    type="radio"
+                    class="radio-primary radio"
+                    name={radioGroupName}
+                    value={option.value}
+                    bind:group={selectedOption}
+                    disabled={!selectedElectionId} />
+                  <span class="label-text">{option.label}</span>
                 </label>
               {/each}
             </div>
+          </fieldset>
+
+          {#if selectedOption === 'selectedQuestions' && selectedElectionId}
+            {#if questionError}
+              <div class="my-16 text-center text-error">
+                Error loading questions: {questionError}
+              </div>
+            {:else if availableQuestions.length === 0}
+              <div class="my-16 text-center text-neutral">
+                {$t('adminApp.argumentCondensation.generate.noQuestionsForElection')}
+              </div>
+            {:else}
+              <div class="my-16 flex w-full flex-col space-y-8">
+                <label class="flex items-center space-x-10 border-b border-base-200 pb-8">
+                  <input
+                    type="checkbox"
+                    class="checkbox-primary checkbox"
+                    checked={selectedIds.length === availableQuestions.length}
+                    on:change={() => {
+                      if (selectedIds.length === availableQuestions.length) {
+                        selectedIds = [];
+                      } else {
+                        selectedIds = availableQuestions.map((question) => question.id);
+                      }
+                    }} />
+                  <span>{selectedIds.length === availableQuestions.length ? 'Unselect all' : 'Select all'}</span>
+                </label>
+                {#each availableQuestions as question, i}
+                  <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
+                    <input
+                      type="checkbox"
+                      name="questionIds"
+                      class="checkbox-primary checkbox"
+                      value={question.id}
+                      bind:group={selectedIds} />
+                    <span class="label-text mt-2">{i + 1}: {question.name}</span>
+                  </label>
+                {/each}
+              </div>
+            {/if}
           {/if}
-        {/if}
-      </div>
-
-      {#if status === 'error'}
-        <ErrorMessage inline message={$t('adminApp.argumentCondensation.generate.error')} class="mb-md" />
-      {:else if status === 'no-election'}
-        <ErrorMessage inline message={$t('adminApp.argumentCondensation.generate.noElectionSelected')} class="mb-md" />
-      {:else if status === 'no-selections'}
-        <ErrorMessage inline message={$t('adminApp.argumentCondensation.generate.noQuestionSelected')} class="mb-md" />
-      {:else if status === 'success'}
-        <SuccessMessage inline message={$t('common.success')} class="mb-md" />
-      {/if}
-
-      {#if status === 'loading'}
-        <div class="p-3 mb-md rounded-lg bg-info/10 text-info">
-          <p class="text-sm">Argument condensation process started! The server is now processing your request.</p>
-          <p class="mt-2 text-sm">Check the Jobs Monitoring page to see real-time progress and detailed updates.</p>
-          <a href={$getRoute('AdminAppJobs')} class="text-xs underline">Go to Jobs Monitoring</a>
         </div>
       {/if}
 
@@ -255,10 +237,12 @@ Page for controlling the argument condensation feature.
           type="submit"
           variant="main"
           loading={status === 'loading'}
-          disabled={status === 'loading' || !selectedElectionId} />
-
-        {#if status === 'loading'}
-          <p class="text-sm text-neutral">{$t('adminApp.argumentCondensation.generate.mayTakeTime')}</p>
+          disabled={status === 'loading' ||
+            !!argumentCondensationJob ||
+            !selectedElectionId ||
+            (selectedOption === 'selectedQuestions' && selectedIds.length === 0)} />
+        {#if !!argumentCondensationJob}
+          <p class="mt-1 text-xs text-neutral">A job is already running. Please wait for it to finish.</p>
         {/if}
       </div>
     </form>
@@ -274,5 +258,4 @@ Page for controlling the argument condensation feature.
         maxMessages={12}
         height="max-h-96" />
     </div>
-  </div>
-</MainContent>
+  </div></MainContent>
