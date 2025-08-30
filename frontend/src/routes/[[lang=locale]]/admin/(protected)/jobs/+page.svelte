@@ -28,12 +28,12 @@ Page for monitoring all active jobs across different admin features
 
   // Emergency cleanup function
   async function performEmergencyCleanup() {
-    if (!confirm('Are you sure you want to perform emergency cleanup? This will force-fail ALL running jobs.')) {
+    if (!confirm('Are you sure you want to perform emergency cleanup? This will abort ALL running jobs.')) {
       return;
     }
 
     try {
-      const response = await fetch('/api/admin/jobs/emergency-cleanup', {
+      const response = await fetch(UNIVERSAL_API_ROUTES.jobAbortAll, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: 'Admin-initiated emergency cleanup' })
@@ -57,8 +57,8 @@ Page for monitoring all active jobs across different admin features
   }
 
   // Force fail a specific job
-  async function forceFailJob(jobId: string, feature: string) {
-    if (!confirm(`Are you sure you want to force-fail this ${feature} job?`)) {
+  async function abortJob(jobId: string, feature: string) {
+    if (!confirm(`Are you sure you want to abort this ${feature} job?`)) {
       return;
     }
 
@@ -66,20 +66,20 @@ Page for monitoring all active jobs across different admin features
       const response = await fetch(UNIVERSAL_API_ROUTES.jobAbort(jobId), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: `Admin force-failed ${feature} job` })
+        body: JSON.stringify({ reason: `Admin aborted ${feature} job` })
       });
 
       if (response.ok) {
-        alert('Job force-failed successfully');
+        alert('Job aborted successfully');
         // Refresh data from stores
         await pollingService.refresh();
       } else {
         const error = await response.json();
-        alert(`Failed to force-fail job: ${error.error}`);
+        alert(`Failed to abort job: ${error.error}`);
       }
     } catch (error) {
-      console.error('Error force-failing job:', error);
-      alert('Failed to force-fail job. Check console for details.');
+      console.error('Error aborting job:', error);
+      alert('Failed to abort job. Check console for details.');
     }
   }
 
@@ -145,7 +145,7 @@ Page for monitoring all active jobs across different admin features
             <JobMonitor
               jobType={feature.jobName}
               activeJob={activeJobs[featureKey]}
-              onKillJob={(jobId) => forceFailJob(jobId, feature.jobName)}
+              onAbortJob={(jobId) => abortJob(jobId, feature.jobName)}
               featureLink={$getRoute(feature.route)}
               showPastJobs={false}
               maxMessages={8}

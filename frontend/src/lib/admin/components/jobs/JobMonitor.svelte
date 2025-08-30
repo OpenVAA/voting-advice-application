@@ -16,7 +16,7 @@ Can optionally display feature-specific past jobs.
 
   export let jobType: string; // e.g., 'argument-condensation'
   export let activeJob: JobInfo | null; // Current active job or null
-  export let onKillJob: (jobId: string) => void; // Required callback when kill switch clicked
+  export let onAbortJob: (jobId: string) => void; // Required callback when kill switch clicked
   export let maxMessages = 8;
   export let height = 'max-h-64';
   export let pastJobs: JobInfo[] = []; // Optional: feature-specific past jobs
@@ -24,9 +24,9 @@ Can optionally display feature-specific past jobs.
   export let featureLink: string | null = null; // Optional: link to the feature page
 
   // Handle kill switch click
-  function handleKillJob() {
+  function handleAbortJob() {
     if (activeJob) {
-      onKillJob(activeJob.id);
+      onAbortJob(activeJob.id);
     }
   }
 
@@ -52,7 +52,7 @@ Can optionally display feature-specific past jobs.
           <Button text="Go to Feature" variant="secondary" href={featureLink} icon="create" iconPos="right" />
         {/if}
         {#if activeJob}
-          <Button text="Force Fail" variant="secondary" on:click={handleKillJob} />
+          <Button text="Abort Job" variant="secondary" on:click={handleAbortJob} />
         {/if}
       </div>
     </div>

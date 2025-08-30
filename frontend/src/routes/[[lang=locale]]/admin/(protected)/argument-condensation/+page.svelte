@@ -75,8 +75,8 @@ Page for controlling the argument condensation feature.
   }
 
   // Handle kill job for argument condensation
-  async function handleKillJob(jobId: string) {
-    if (!confirm('Are you sure you want to force-fail this argument condensation job?')) {
+  async function handleAbortJob(jobId: string) {
+    if (!confirm('Are you sure you want to abort this argument condensation job?')) {
       return;
     }
 
@@ -93,7 +93,7 @@ Page for controlling the argument condensation feature.
         await pollingService.refresh();
       } else {
         const error = await response.json();
-        alert(`Failed to force-fail job: ${error.error}`);
+        alert(`Failed to abort job: ${error.error}`);
       }
     } catch (error) {
       console.error('Error force-failing job:', error);
@@ -252,7 +252,7 @@ Page for controlling the argument condensation feature.
       <JobMonitor
         jobType={ADMIN_FEATURE.ArgumentCondensation.jobName}
         activeJob={argumentCondensationJob}
-        onKillJob={handleKillJob}
+        onAbortJob={handleAbortJob}
         pastJobs={argumentCondensationPastJobs}
         showPastJobs={true}
         maxMessages={12}
