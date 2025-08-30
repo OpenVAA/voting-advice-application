@@ -199,8 +199,7 @@ export class Condenser {
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
 
     // Use a more reliable path resolution method that works in both test and production environments
-    const packageRoot = path.resolve(process.cwd(), 'packages/argument-condensation');
-    const treeFilePath = path.join(packageRoot, 'data/operationTrees', `${this.runId}.json`);
+    const treeFilePath = path.join(process.cwd(), 'data/operationTrees', `${this.runId}.json`);
     await this.treeBuilder.saveTree(treeFilePath);
 
     // Return the final result with all metadata
