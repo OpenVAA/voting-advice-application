@@ -208,10 +208,10 @@ export function failJob(jobId: string, errorMessage?: string): void {
  * @param jobId - The job ID to force fail
  * @param reason - Reason for force failing
  */
-export function forceFailJob(jobId: string, reason: string): void {
+export function abortJob(jobId: string, reason: string): void {
   const job = activeJobs.get(jobId);
   if (job) {
-    addJobErrorMessage(jobId, `Job force-failed: ${reason}`);
+    addJobErrorMessage(jobId, `Job aborted: ${reason}`);
     moveJobToPast(jobId, 'failed');
   } else {
     // Check if it's already in past jobs
@@ -222,7 +222,7 @@ export function forceFailJob(jobId: string, reason: string): void {
       pastJob.lastActivityTime = new Date().toISOString();
       pastJob.errorMessages.push({
         type: 'error',
-        message: `Job force-failed: ${reason}`,
+        message: `Job aborted: ${reason}`,
         timestamp: new Date().toISOString()
       });
     }
@@ -251,7 +251,7 @@ export function cleanupStaleJobs(): void {
   // Force fail all stale jobs
   for (const { jobId, reason } of staleJobs) {
     console.warn(`Cleaning up stale job ${jobId}: ${reason}`);
-    forceFailJob(jobId, reason);
+    abortJob(jobId, reason);
   }
 
   // If we have too many active jobs, fail the oldest ones
@@ -263,7 +263,7 @@ export function cleanupStaleJobs(): void {
     const jobsToFail = sortedJobs.slice(0, activeJobs.size - MAX_ACTIVE_JOBS);
     for (const [jobId] of jobsToFail) {
       console.warn(`Cleaning up excess active job ${jobId}: Too many active jobs`);
-      forceFailJob(jobId, 'Too many active jobs - auto-cleanup');
+      abortJob(jobId, 'Too many active jobs - auto-cleanup');
     }
   }
 
