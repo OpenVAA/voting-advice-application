@@ -2,6 +2,27 @@ import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { GenerationMetrics } from '@openvaa/llm';
 
+// ------------------------------------------------------------------
+// Types for all possible generation response formats in this package
+// -----------------------------------------------------------------
+
+// Define the possible return types based on operations
+export type InfoSectionsOnly = {
+  infoSections: Array<QuestionInfoSection>;
+};
+
+export type TermsOnly = {
+  terms: Array<TermDefinition>;
+};
+
+export type BothOperations = {
+  infoSections: Array<QuestionInfoSection>;
+  terms: Array<TermDefinition>;
+};
+
+export type ResponseWithInfo = InfoSectionsOnly | TermsOnly | BothOperations;
+
+
 /**
  * Result of question info generation
  */

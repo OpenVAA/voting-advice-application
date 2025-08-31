@@ -1,3 +1,4 @@
+import { type Role, setPromptVars } from '@openvaa/llm';
 import {
   createDynamicResponseContract,
   createErrorResult,
@@ -6,8 +7,17 @@ import {
   transformResponse
 } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
-import type { Role } from '@openvaa/llm';
 import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
+import type { PromptTemplate } from '../types';
+import type { InfoSectionsPromptTemplate } from '../types';
+import type { BothOperationsPromptTemplate } from '../types';
+
+// Type guard
+function hasDefaultSectionTopics(
+  template: PromptTemplate
+): template is InfoSectionsPromptTemplate | BothOperationsPromptTemplate {
+  return 'defaultSectionTopics' in template;
+}
 
 /**
  * Generate question info for any number of questions with parallelization
@@ -21,7 +31,7 @@ import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '
  * ```ts
  * const questions = [{ id: '1', name: 'Question 1', content: 'What is the capital of France?' }];
  * const options: QuestionInfoOptions = { operations: [QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms], language: 'en' };
- * const results = await generateQuestionInfo(questions, options);
+ * const results = await generateInfo({ questions, options });
  * console.log(results); // Array of QuestionInfoResult
  *
  * ```
@@ -38,23 +48,49 @@ export async function generateInfo({
   try {
     // Determine which prompt to use based on operations
     const promptKey = determinePromptKey(options.operations);
+
+    // Load prompt template and extract variables
     const promptTemplate = await loadPrompt(promptKey, options.language);
     const systemPrompt = promptTemplate.systemPrompt;
     const userPrompt = promptTemplate.userPrompt;
-    const examples = options.examples || promptTemplate.defaultExamples;
+    const examples = promptTemplate.examples;
+
+    // Get admin-provided context for the question
+    const context = options.questionContext; // There is no default context...
 
     // Create dynamic schema based on operations
     const responseValContract = createDynamicResponseContract(options.operations);
 
     // Prepare inputs for parallel generation
     const inputs = questions.map((question) => ({
-      // TODO: use setPromptVars from the llm package to set variables in the prompt
       messages: [
-        { role: 'system' as Role, 
-          content: systemPrompt.replace('{{examples}}', String(examples)) }, // String(examples) if options.examples exists (an object)
+        // Prepare system prompt with variables
+        {
+          role: 'system' as Role,
+          content: setPromptVars({
+            promptText: systemPrompt,
+            variables: {
+              examples,
+              context,
+              ...(hasDefaultSectionTopics(promptTemplate) && {
+                sectionTopics: options.sectionTopics || promptTemplate.defaultSectionTopics
+              })
+            },
+            strict: false, // Want to fail on missing variables?
+            logger: options.logger // Sends warning to admin UI, if there is a mismatch between the prompt and the variables
+          })
+        },
+        // Prepare user prompt with variables
         {
           role: 'user' as Role,
-          content: userPrompt.replace('{{question}}', question.name) // TODO: add question context?
+          content: setPromptVars({
+            promptText: userPrompt,
+            variables: {
+              question: question.name
+            },
+            strict: false,
+            logger: options.logger
+          })
         }
       ],
       temperature: 0,

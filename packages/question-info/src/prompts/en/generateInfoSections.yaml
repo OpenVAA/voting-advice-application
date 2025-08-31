@@ -6,10 +6,11 @@ devNote:
   + general prompt engineering improvements
 
 devNote2: 
-  rename to "examples" and only make examples configurable through source code (here)
+  modify to guide the model to use the specified section topics
   
+defaultSectionTopics: ["Background", "Current Status"]
 
-defaultExamples: |
+examples: |
   placeholder
 
 systemPrompt: |
