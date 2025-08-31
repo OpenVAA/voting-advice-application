@@ -7,7 +7,7 @@ devNote:
 devNote2: 
   rename to "examples" and only make examples configurable through source code (here)
   
-defaultExamples: |
+examples: |
   placeholder
 
 systemPrompt: |
