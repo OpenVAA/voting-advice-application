@@ -18,10 +18,9 @@ const mockLLMProvider = {
   generateAndValidateWithRetry: vi.fn(),
   generateMultipleParallel: vi.fn().mockResolvedValue([]),
   generateMultipleSequential: vi.fn()
-  // For some reason the compiler is not recognizing the CommonLLMParams interface as part of the QuestionInfoOptions 
+  // For some reason the compiler is not recognizing the CommonLLMParams interface as part of the QuestionInfoOptions
   // This is a workaround to allow the mock to be used in the tests
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-
 
 // Mock LLM model
 const mockLLMModel = 'gpt-4';
@@ -126,6 +125,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This question assesses support for renewable energy sources.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -157,6 +162,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'Energy from sources that are naturally replenished.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 11, completionTokens: 12, totalTokens: 23 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -192,6 +203,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'Energy from sources that are naturally replenished.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 13, completionTokens: 14, totalTokens: 27 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -222,6 +239,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This Likert scale question measures the perceived importance of climate change.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 15, completionTokens: 16, totalTokens: 31 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -254,6 +277,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'Long-term changes in global weather patterns.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 17, completionTokens: 18, totalTokens: 35 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -282,6 +311,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This question explores preferences for different energy generation methods.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 19, completionTokens: 20, totalTokens: 39 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -314,6 +349,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'Energy generated from wind turbines.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 21, completionTokens: 22, totalTokens: 43 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -342,6 +383,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This question assesses support for renewable energy sources.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 23, completionTokens: 24, totalTokens: 47 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         },
         {
@@ -352,6 +399,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This Likert scale question measures the perceived importance of climate change.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 25, completionTokens: 26, totalTokens: 51 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         },
         {
@@ -362,6 +415,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This question explores preferences for different energy generation methods.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 27, completionTokens: 28, totalTokens: 55 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -395,6 +454,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'Energy from sources that are naturally replenished.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 29, completionTokens: 30, totalTokens: 59 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         },
         {
@@ -411,6 +476,12 @@ describe('generateQuestionInfo API', () => {
                 definition: 'A psychometric scale commonly used in research.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 31, completionTokens: 32, totalTokens: 63 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -443,7 +514,13 @@ describe('generateQuestionInfo API', () => {
       // Mock LLM response with invalid data
       mockLLMProvider.generateMultipleParallel.mockResolvedValue([
         {
-          parsed: null // Invalid response
+          parsed: null, // Invalid response
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 5, completionTokens: 0, totalTokens: 5 },
+            model: mockLLMModel,
+            finishReason: 'stop'
+          }
         }
       ]);
 
@@ -490,6 +567,12 @@ describe('generateQuestionInfo API', () => {
                 content: 'This is a minimal question.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 7, completionTokens: 8, totalTokens: 15 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);

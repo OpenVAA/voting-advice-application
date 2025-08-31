@@ -69,6 +69,12 @@ describe('Question Type Configurations', () => {
                 content: 'This question assesses support for universal healthcare systems.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -117,6 +123,12 @@ describe('Question Type Configurations', () => {
                 definition: 'The rules and policies that govern online platforms.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -169,6 +181,12 @@ describe('Question Type Configurations', () => {
                 content: 'This Likert scale question measures satisfaction with public transportation services.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -226,6 +244,12 @@ describe('Question Type Configurations', () => {
                 definition: "A psychometric scale commonly used in research to represent people's attitudes."
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -278,6 +302,12 @@ describe('Question Type Configurations', () => {
                 content: 'This question explores primary transportation preferences for commuting to work.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -334,6 +364,12 @@ describe('Question Type Configurations', () => {
                 definition: 'Someone who prefers to be active and alert in the evening and night hours.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);
@@ -420,6 +456,12 @@ describe('Question Type Configurations', () => {
                 definition: 'A tax system where higher income earners pay a larger percentage of their income in taxes.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         },
         {
@@ -436,6 +478,12 @@ describe('Question Type Configurations', () => {
                 definition: 'The unequal distribution of income among individuals or groups in a society.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         },
         {
@@ -452,6 +500,12 @@ describe('Question Type Configurations', () => {
                 definition: 'Different strategies and methods used to address social and economic issues.'
               }
             ]
+          },
+          raw: {
+            content: '{}',
+            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
+            model: mockLLMModel,
+            finishReason: 'stop'
           }
         }
       ]);

@@ -119,9 +119,9 @@ export async function generateInfo({
     return questions.map((question, index) => {
       const response = responses[index];
       if (response.parsed) {
-        return transformResponse(response.parsed, question, options, startTime, endTime);
+        return transformResponse(response, question, options, startTime, endTime);
       } else {
-        return createErrorResult(question, options, startTime, endTime);
+        return createErrorResult(question, response.raw, options, startTime, endTime);
       }
     });
   } catch (error) {
