@@ -45,7 +45,9 @@ async function runExample() {
       operations: [QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms],
       language: 'en',
       llmModel: 'gpt-4o-mini',
-      llmProvider
+      llmProvider,
+      questionContext: 'Election in Finland, 2025',
+      sectionTopics: ['Background', 'Current Status', 'Why should I care?']
     };
 
     console.info('🤔 Question:', question.name);
@@ -60,9 +62,9 @@ async function runExample() {
 
     // Display results
     results.forEach((result, index) => {
-      console.info(`\n\nResult ${index + 1}:`);
-      console.info(`   Question: ${result.questionName}`);
-      console.info(`   Duration: ${result.metadata.endTime.getTime() - result.metadata.startTime.getTime()}ms`);
+      console.info(`\n\nResult ${index + 1} (Run ID: ${result.runId}):`);
+      console.info(`   Question: ${result.questionName} (ID: ${result.questionId})`);
+      console.info(`   Duration: ${result.metrics.duration} s`);
 
       if (!result.success) {
         console.info('   ❌ Error');
@@ -72,6 +74,7 @@ async function runExample() {
       console.info('\n\nTerms:\n\n', result.terms);
 
       console.info('\n' + '─'.repeat(50) + '\n');
+      console.info('Usage:', result.metrics);
     });
   } catch (error) {
     console.error('❌ Error running example:', error);
