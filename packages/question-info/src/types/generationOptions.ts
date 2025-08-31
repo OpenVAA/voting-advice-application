@@ -1,4 +1,3 @@
-import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { CommonLLMParams } from '@openvaa/llm';
 
 /**
@@ -21,29 +20,10 @@ export interface QuestionInfoOptions extends CommonLLMParams {
   /** Language of the prompt to use */
   language: string;
 
-  /** Examples to guide generation, preferably with the output examples in JSON format. See example */
-  examples?: {
-    infoSections?: string;
-    terms?: string;
-  };
+  /** Context to help guide generation. Should contain at least basic details: country and basic election context. 
+   * Good context increases quality drastically. */
+  questionContext?: string;
+
+  /** Info sections topics to generate. If not provided, we use a default set. */
+  sectionTopics?: Array<string>;
 }
-
-// ------------------------------------------------------------
-// Types for the response
-// ------------------------------------------------------------
-
-// Define the possible return types based on operations
-export type InfoSectionsOnly = {
-  infoSections: Array<QuestionInfoSection>;
-};
-
-export type TermsOnly = {
-  terms: Array<TermDefinition>;
-};
-
-export type BothOperations = {
-  infoSections: Array<QuestionInfoSection>;
-  terms: Array<TermDefinition>;
-};
-
-export type ResponseWithInfo = InfoSectionsOnly | TermsOnly | BothOperations;

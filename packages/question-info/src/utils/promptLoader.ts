@@ -1,17 +1,18 @@
 import { readFile } from 'fs/promises';
 import { load } from 'js-yaml';
 import { join } from 'path';
+import type { PromptTemplate } from '../types';
 
 /**
  * Load a prompt template from YAML file
  */
-export async function loadPrompt(promptFileName: string, language: string): Promise<{ systemPrompt: string; userPrompt: string; defaultExamples: string }> {
+export async function loadPrompt(promptFileName: string, language: string): Promise<PromptTemplate> {
   try {
     const filePath = join(process.cwd(), 'src', 'prompts', language, `${promptFileName}.yaml`);
     const fileContent = await readFile(filePath, 'utf-8');
-    const prompt = load(fileContent) as { systemPrompt: string; userPrompt: string; defaultExamples: string };
+    const prompt = load(fileContent) as PromptTemplate;
 
-    if (!prompt.systemPrompt || !prompt.userPrompt || !prompt.defaultExamples) {
+    if (!prompt.systemPrompt || !prompt.userPrompt || !prompt.examples) {
       throw new Error(`Invalid prompt template: missing required fields in ${promptFileName}.yaml`);
     }
 
