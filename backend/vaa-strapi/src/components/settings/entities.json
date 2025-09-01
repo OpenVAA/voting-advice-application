@@ -11,6 +11,10 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.hide-if-missing-answers"
+    },
+    "showAllNominations": {
+      "type": "boolean",
+      "default": true
     }
   }
 }
