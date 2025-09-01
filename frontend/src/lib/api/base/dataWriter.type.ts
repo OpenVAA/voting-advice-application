@@ -224,7 +224,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
 
   // Job management methods for the Admin App
-  getJobs: (opts: GetJobsOptions) => DWReturnType<{ activeJobs: Array<JobInfo>, pastJobs: Array<JobInfo> }, TType>;
+  getJobs: (opts: GetJobsOptions) => DWReturnType<{ activeJobs: Array<JobInfo>; pastJobs: Array<JobInfo> }, TType>;
   getActiveJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   getPastJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;

@@ -2,7 +2,7 @@ import { type Id } from '@openvaa/core';
 import { type Actions, fail } from '@sveltejs/kit';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
-import { PipelineLogger } from '$lib/server/admin/jobs/pipelineLogger';
+import { PipelineController } from '$lib/server/admin/jobs/pipelineController';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { getLLMProvider } from '$lib/server/llm/llmProvider';
 import { constants as pub } from '$lib/utils/constants';
@@ -135,18 +135,18 @@ async function generateQuestionInfo({
   jobId: string;
   authToken: string;
 }): Promise<DataApiActionResult> {
-  // Create logger immediately - it will be initialized with pipeline later
-  const logger = new PipelineLogger(jobId);
+  // Create controller immediately - it will be initialized with pipeline later
+  const controller = new PipelineController(jobId);
 
   try {
     // 1) Load data
-    await logger.info('Loading election and question data for question info generation...');
+    await controller.info('Loading election and question data for question info generation...');
     const dataRoot = await loadElectionData({
       electionId,
       locale,
       fetch
     });
-    await logger.info('Data loaded successfully!');
+    await controller.info('Data loaded successfully!');
 
     // 2) Resolve questions: selected or all applicable opinion questions for the election
     const election = dataRoot.getElection(electionId);
@@ -158,19 +158,19 @@ async function generateQuestionInfo({
       : allOpinionForElection;
 
     console.info('[question-info] selectedQuestions', selectedQuestions);
-    await logger.info(`Found ${allOpinionForElection.length} opinion questions for election "${election.name}"`);
+    await controller.info(`Found ${allOpinionForElection.length} opinion questions for election "${election.name}"`);
 
     if (!selectedQuestions.length) {
       // Initialize with minimal pipeline for this case
-      logger.initializePipeline([{ id: 'no-questions', weight: 1 }]);
-      await logger.warning(`No opinion questions to process for election ${electionId}`);
-      await logger.complete();
+      controller.initializePipeline([{ id: 'no-questions', weight: 1 }]);
+      await controller.warning(`No opinion questions to process for election ${electionId}`);
+      await controller.complete();
       return { type: 'success' };
     }
 
     // Create pipeline dynamically based on the questions we'll actually process
     const pipeline = createQuestionPipeline(selectedQuestions);
-    logger.initializePipeline(pipeline);
+    controller.initializePipeline(pipeline);
 
     // 3) LLM setup
     const llm = getLLMProvider();
@@ -178,29 +178,29 @@ async function generateQuestionInfo({
     // 4) Generate info for each question sequentially
     for (let i = 0; i < selectedQuestions.length; i++) {
       const question = selectedQuestions[i];
-      await logger.info(`Processing question "${question.name}" (${i + 1}/${selectedQuestions.length})`);
+      await controller.info(`Processing question "${question.name}" (${i + 1}/${selectedQuestions.length})`);
 
       // Generate info sections for the question
       await generateInfoForQuestion({
         question,
         llm,
         locale,
-        logger,
+        controller,
         authToken
       });
     }
 
     // Results are now saved per question above
 
-    await logger.complete();
+    await controller.complete();
 
     return { type: 'success' };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     // Log the error
-    await logger.error(`Question info generation failed: ${errorMessage}`);
-    await logger.fail(errorMessage);
+    await controller.error(`Question info generation failed: ${errorMessage}`);
+    await controller.fail(errorMessage);
 
     throw error;
   }
@@ -211,13 +211,13 @@ async function generateQuestionInfo({
  * @param question - The question to generate info for
  * @param llm - The LLM provider
  * @param locale - The language locale
- * @param logger - Logger for progress tracking
+ * @param controller - Controller for progress tracking
  */
 async function generateInfoForQuestion({
   question,
   llm,
   locale,
-  logger,
+  controller,
   authToken
 }: {
   question: AnyQuestionVariant;
@@ -229,7 +229,7 @@ async function generateInfoForQuestion({
     }) => Promise<{ content: string }>;
   };
   locale: string;
-  logger: PipelineLogger;
+  controller: PipelineController;
   authToken: string;
 }): Promise<void> {
   try {
@@ -257,7 +257,7 @@ Focus on providing factual, balanced information that helps voters make informed
 
     const messages = [{ role: 'system' as const, content: prompt }];
 
-    await logger.info(`Generating info for question "${question.name}" using LLM...`);
+    await controller.info(`Generating info for question "${question.name}" using LLM...`);
 
     // Make LLM call
     const llmResponse = await llm.generate({
@@ -270,9 +270,11 @@ Focus on providing factual, balanced information that helps voters make informed
     let infoSections;
     try {
       infoSections = JSON.parse(llmResponse.content);
-      await logger.info(`Successfully generated ${infoSections.length} info sections for question "${question.name}"`);
+      await controller.info(
+        `Successfully generated ${infoSections.length} info sections for question "${question.name}"`
+      );
     } catch (parseError) {
-      await logger.warning(`Failed to parse LLM response for question "${question.name}": ${parseError}`);
+      await controller.warning(`Failed to parse LLM response for question "${question.name}": ${parseError}`);
       // Create a fallback info section
       infoSections = [
         {
@@ -301,18 +303,18 @@ Focus on providing factual, balanced information that helps voters make informed
       );
 
       if (updateResponse.ok) {
-        await logger.info(`Successfully saved info sections for question "${question.name}"`);
+        await controller.info(`Successfully saved info sections for question "${question.name}"`);
       } else {
         const errorText = await updateResponse.text();
-        await logger.warning(`Failed to save info sections for question "${question.name}": ${errorText}`);
+        await controller.warning(`Failed to save info sections for question "${question.name}": ${errorText}`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      await logger.warning(`Error saving info sections for question "${question.name}": ${errorMessage}`);
+      await controller.warning(`Error saving info sections for question "${question.name}": ${errorMessage}`);
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    await logger.error(`Failed to generate info for question "${question.name}": ${errorMessage}`);
+    await controller.error(`Failed to generate info for question "${question.name}": ${errorMessage}`);
     throw error;
   }
 }

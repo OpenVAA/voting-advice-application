@@ -5,10 +5,10 @@
  * ```ts
  * // In the backend
  *
- * import { DefaultLogger, type Logger } from '@openvaa/core';
+ * import { BaseController, type Controller } from '@openvaa/core';
  *
- * export function longOperation({ logger }: { logger?: Logger } = {}): Promise<void> {
- *   logger ??= new DefaultLogger();
+ * export function longOperation({ logger }: { logger?: Controller } = {}): Promise<void> {
+ *   logger ??= new BaseController();
  *   for (let i = 0; i < 100; i++) {
  *     try {
  *       // Perform a long-running operation
@@ -21,16 +21,16 @@
  *
  * // In the Admin UI
  *
- * import { DefaultLogger } from '@openvaa/core';
+ * import { BaseController } from '@openvaa/core';
  *
- * const logger = new DefaultLogger({
+ * const logger = new BaseController({
  *   onProgess: (value: number) => console.info(`Custom progress: ${value * 100}%`)
  * });
  *
  * longOperation(); // Progress will be logged to the console.
  * ```
  */
-export interface Logger {
+export interface Controller {
   /**
    * Called when the progress of an operation is updated.
    * @param value - A number between 0 and 1 representing the progress of the operation.
@@ -48,25 +48,27 @@ export interface Logger {
    * Called for error messages. Used for critical, iteration-stopping issues. Note that a normal `Error` should be thrown by the process in case of unrecoverable errors.
    */
   error: (message: string) => unknown;
-
+  /**
+   * Called periodically to check whether the operation should be aborted. If so, the method should throw an `AbortError`.
+   */
+  checkAbort: () => void;
   /**
    * Optional method for hierarchical progress tracking.
    * Defines sub-operations for a specific operation to enable granular progress tracking.
    * @param operationId - The ID of the operation to break down
    * @param subOperations - Array of sub-operations with their weights
    */
-  defineSubOperations?: (operationId: string, subOperations: Array<{ id: string; weight?: number }>) => void;
-
+  defineSubOperations: (operationId: string, subOperations: Array<{ id: string; weight?: number }>) => void;
   /**
-   * Optional method for getting the current operation.
+   * Optional method for getting the current operation. Return `null` if defining sub-operations is not supported.
    */
-  getCurrentOperation?: () => { id: string; index: number; total: number } | null;
+  getCurrentOperation: () => { id: string; index: number; total: number } | null;
 }
 
 /**
- * Constructor parameters for the `DefaultLogger` class, overriding the default log methods. The default methods are used if the corresponding option is nullish. Pass a noop `() => void` function, if the even the default methods should not be used.
+ * Constructor parameters for the `BaseController` class, overriding the default log methods. The default methods are used if the corresponding option is nullish. Pass a noop `() => void` function, if the even the default methods should not be used.
  */
-export type DefaultLoggerOptions = {
+export type BaseControllerOptions = {
   /**
    * Called when the progress of an operation is updated.
    * @param value - A number between 0 and 1 representing the progress of the operation.
@@ -75,12 +77,12 @@ export type DefaultLoggerOptions = {
   /**
    * Called when the status of an operation changes.
    * @param message - A message describing the current status of the operation.
-   * @param type - Optional, a level of severity for the message. Defaults to 'info'. See {@link Logger} for the available levels.
+   * @param type - Optional, a level of severity for the message. Defaults to 'info'. See {@link Controller} for the available levels.
    */
   onMessage?: (message: string, type?: LogLevel) => unknown;
 };
 
 /**
- * The log level for messages. See the associated methods in {@link Logger} for descriptions of the levels.
+ * The log level for messages. See the associated methods in {@link Controller} for descriptions of the levels.
  */
 export type LogLevel = 'warning' | 'error' | 'info';
