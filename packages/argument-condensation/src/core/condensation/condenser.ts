@@ -1,4 +1,4 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import * as path from 'path';
 import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
@@ -14,7 +14,7 @@ import {
   validatePlan
 } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { ParsedLLMResponse } from '@openvaa/llm';
 import type {
   Argument,
@@ -113,12 +113,12 @@ export class Condenser {
   private latencyTracker: LatencyTracker;
   private totalCost: number = 0;
   private startTime: Date;
-  private logger: Logger;
+  private controller: Controller;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.options.runId;
-    this.logger = input.options.logger ?? new DefaultLogger();
-    this.latencyTracker = new LatencyTracker(this.logger);
+    this.controller = input.options.controller ?? new BaseController();
+    this.latencyTracker = new LatencyTracker(this.controller);
     this.startTime = new Date();
 
     if (input.options.createVisualizationData) {
@@ -150,20 +150,16 @@ export class Condenser {
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
     // NEW: Granularize progress tracking by defining sub-operations for each processing step
-    if (
-      processingSteps.length > 0 &&
-      this.logger &&
-      typeof this.logger.defineSubOperations === 'function' &&
-      typeof this.logger.getCurrentOperation === 'function'
-    ) {
-      const currentOperationId = this.logger.getCurrentOperation()!.id;
-      const stepWeights = calculateStepWeights(processingSteps, this.input.comments.length);
-      const subOperations = stepWeights.map((step) => ({
-        id: `${step.operation}-step-${step.stepIndex}`,
-        weight: step.weight
-      }));
-
-      this.logger.defineSubOperations(currentOperationId, subOperations);
+    if (processingSteps.length > 0) {
+      const currentOperationId = this.controller.getCurrentOperation()?.id;
+      if (currentOperationId) {
+        const stepWeights = calculateStepWeights(processingSteps, this.input.comments.length);
+        const subOperations = stepWeights.map((step) => ({
+          id: `${step.operation}-step-${step.stepIndex}`,
+          weight: step.weight
+        }));
+        this.controller.defineSubOperations(currentOperationId, subOperations);
+      }
     }
 
     // Execute plan steps sequentially - each step transforms the data for the next
@@ -353,7 +349,11 @@ export class Condenser {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
 
-      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables, logger: this.logger });
+      const promptText = setPromptVars({
+        promptText: prompt,
+        variables: templateVariables,
+        controller: this.controller
+      });
 
       // Prepare messages for LLM
       const messages = [{ role: 'system' as const, content: promptText }];
@@ -397,7 +397,7 @@ export class Condenser {
         llmResponse,
         latency,
         llmProvider: this.input.options.llmProvider,
-        logger: this.logger
+        controller: this.controller
       });
       this.totalCost += promptCall.metadata.cost;
 
@@ -726,7 +726,11 @@ export class Condenser {
     // Transform each item into an LLM input using operation-specific logic
     const llmInputs = items.map((item, i) => {
       const templateVariables = prepareTemplateVars(item, i);
-      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables, logger: this.logger });
+      const promptText = setPromptVars({
+        promptText: prompt,
+        variables: templateVariables,
+        controller: this.controller
+      });
       return {
         messages: [{ role: 'system' as const, content: promptText }],
         temperature: 0.7,
@@ -746,7 +750,7 @@ export class Condenser {
           parallelBatches,
           validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
         },
-        this.logger
+        this.controller
       );
     } catch (error) {
       // If the provider fails after all retries, we add context and re-throw to abort the condensation.
@@ -790,7 +794,7 @@ export class Condenser {
         llmResponse: response.raw, // Pass the raw response to extract metadata
         latency,
         llmProvider: this.input.options.llmProvider,
-        logger: this.logger
+        controller: this.controller
       });
 
       allPromptCalls.push(promptCall);

@@ -3,7 +3,7 @@ import { type AnyQuestionVariant, ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/da
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
-import { PipelineLogger } from '../jobs/pipelineLogger';
+import { PipelineController } from '../jobs/pipelineController';
 import type { ArgumentType, LocalizedQuestionArguments } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
@@ -38,21 +38,21 @@ export async function condenseArguments({
   jobId: string;
   authToken: string; // Add this parameter
 }): Promise<DataApiActionResult> {
-  // Create logger immediately - it will be initialized with pipeline later
-  const logger = new PipelineLogger(jobId);
+  // Create controller immediately - it will be initialized with pipeline later
+  const controller = new PipelineController(jobId);
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
   try {
     // 1) Load data
-    logger.info('Loading election and question data for argument condensation...');
+    controller.info('Loading election and question data for argument condensation...');
     const dataRoot = await loadElectionData({
       electionId,
       locale,
       fetch
     });
-    logger.info('Data loaded successfully!');
+    controller.info('Data loaded successfully!');
 
     // 2) Resolve questions: selected or all applicable opinion questions for the election
     const election = dataRoot.getElection(electionId);
@@ -76,15 +76,15 @@ export async function condenseArguments({
 
     if (!supportedQuestions.length) {
       // Initialize with minimal pipeline for this case
-      logger.initializePipeline([{ id: 'no-questions', weight: 1 }]);
-      logger.warning(`No supported questions to process for election ${electionId}`);
-      logger.complete();
+      controller.initializePipeline([{ id: 'no-questions', weight: 1 }]);
+      controller.warning(`No supported questions to process for election ${electionId}`);
+      controller.complete();
       return { type: 'success' };
     }
 
     // Create pipeline dynamically based on the questions we'll actually process
     const pipeline = createQuestionPipeline(supportedQuestions);
-    logger.initializePipeline(pipeline);
+    controller.initializePipeline(pipeline);
 
     console.error({ election });
     console.error(dataRoot.candidateNominations.map((n) => n.entity.id));
@@ -99,8 +99,8 @@ export async function condenseArguments({
     );
 
     if (entities.length === 0) {
-      logger.warning(`No nominated entities found to process for election ${electionId}`);
-      logger.complete();
+      controller.warning(`No nominated entities found to process for election ${electionId}`);
+      controller.complete();
       return { type: 'success' };
     }
 
@@ -111,7 +111,7 @@ export async function condenseArguments({
     for (let i = 0; i < supportedQuestions.length; i++) {
       const question = supportedQuestions[i];
       const runId = `admin-${electionId}-${question.id}-${Date.now()}`;
-      logger.info(`Processing question "${question.name}" (${i + 1}/${supportedQuestions.length})`);
+      controller.info(`Processing question "${question.name}" (${i + 1}/${supportedQuestions.length})`);
 
       const condensationResults = await handleQuestion({
         question,
@@ -123,13 +123,13 @@ export async function condenseArguments({
           runId,
           maxCommentsPerGroup: 1000,
           createVisualizationData: false, // disable FS writes in server env for now
-          logger
+          controller
         }
       });
 
       if (!condensationResults.length || condensationResults.every((r) => !r.arguments.length)) {
-        logger.info(`No condensed arguments found for question: ${question.name}`);
-        logger.info('Adding a mock result for testing');
+        controller.info(`No condensed arguments found for question: ${question.name}`);
+        controller.info('Adding a mock result for testing');
 
         // ------------------------------------------------------------
         // MOCK SAVING
@@ -138,9 +138,12 @@ export async function condenseArguments({
           {
             type: 'likertPros' as ArgumentType,
             arguments: [
-              { id: '1',
+              {
+                id: '1',
                 content: {
-                  [locale]: 'This is a test argument' } }
+                  [locale]: 'This is a test argument'
+                }
+              }
             ]
           }
         ];
@@ -171,7 +174,7 @@ export async function condenseArguments({
       );
 
       // Save the condensation results to the question's customData
-      logger.info(`Saving condensation results for question "${question.name}"`);
+      controller.info(`Saving condensation results for question "${question.name}"`);
 
       try {
         const result = await dataWriter.updateQuestion({
@@ -185,27 +188,27 @@ export async function condenseArguments({
         });
 
         if (result.type === 'success') {
-          logger.info(`Successfully saved condensation results for question "${question.name}"`);
+          controller.info(`Successfully saved condensation results for question "${question.name}"`);
         } else {
-          logger.warning(
+          controller.warning(
             `Failed to save condensation results for question "${question.name}": ${JSON.stringify(result)}`
           );
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : JSON.stringify(error);
-        logger.warning(`Error saving condensation results for question "${question.name}": ${message}`);
+        controller.warning(`Error saving condensation results for question "${question.name}": ${message}`);
       }
     }
 
-    logger.complete();
+    controller.complete();
 
     return { type: 'success' };
   } catch (error) {
     const message = error instanceof Error ? error.message : JSON.stringify(error);
 
     // Log the error
-    logger.error(`Argument condensation failed: ${message}`);
-    logger.fail(message);
+    controller.error(`Argument condensation failed: ${message}`);
+    controller.fail(message);
 
     throw error;
   }

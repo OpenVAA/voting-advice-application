@@ -1,10 +1,10 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { createBatches } from './createBatches';
 import { validateInputTokenCount } from './validateInputTokenCount';
 import { BATCH_PROCESSING } from '../../../defaultValues';
 import { PromptRegistry } from '../../condensation/prompts/promptRegistry';
 import { CondensationOperations } from '../../types';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type {
   IterateMapOperationParams,
   IterateMapPrompt,
@@ -32,7 +32,7 @@ import type {
  * @param questionName - The name/topic of the question for validation.
  * @param parallelFactor - The number of batches to process in parallel.
  * @param modelTPMLimit - The model's TPM (tokens per minute) limit.
- * @param logger - Optional logger for warning messages during prompt loading.
+ * @param controller - Optional controller for warning messages during prompt loading.
  * @returns An array of processing steps for the condensation operation.
  */
 export async function createCondensationSteps({
@@ -44,7 +44,7 @@ export async function createCondensationSteps({
   questionName,
   parallelFactor,
   modelTPMLimit,
-  logger = new DefaultLogger()
+  controller = new BaseController()
 }: {
   comments: Array<VAAComment>;
   mapPromptId: string;
@@ -54,14 +54,14 @@ export async function createCondensationSteps({
   questionName: string;
   parallelFactor: number;
   modelTPMLimit: number;
-  logger?: Logger;
+  controller?: Controller;
 }): Promise<Array<ProcessingStep>> {
   const totalComments = comments.length;
   if (totalComments < 1) {
     throw new Error('There must be at least one comment to process.');
   }
 
-  const promptRegistry = await PromptRegistry.create(language, logger);
+  const promptRegistry = await PromptRegistry.create(language, controller);
 
   const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;
   const mapIterationPrompt = promptRegistry.getPrompt(mapIterationPromptId) as IterateMapPrompt;
@@ -86,7 +86,7 @@ export async function createCondensationSteps({
 
   // Automatic fallback mechanism with cumulative reduction: (-1, -2, -3) = (-1, -3, -6, -10, -15, ...)
   if (!validationResult.success) {
-    logger.info(
+    controller.info(
       'Some of the processable comments are very long. Attempting to reduce the amount of comments per LLM call to avoid failures.'
     );
 
@@ -110,7 +110,7 @@ export async function createCondensationSteps({
 
       if (validationResult.success) {
         foundValidBatchSize = true;
-        logger.warning(
+        controller.warning(
           `Reduced batch size from ${originalBatchSize} to ${currentBatchSize} due to long comments. ` +
             'This can significantly increase the time it takes to finish condensation.'
         );

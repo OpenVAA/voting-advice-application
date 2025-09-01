@@ -13,7 +13,7 @@ The main pipeline uses map-reduce, although you can configure your own pipelines
 ## Dependencies
 
 - `@openvaa/data`: Definitions for VAA data types. Especially entities with answers used in getting data for the condensation process. Shared between this and other vaa modules.
-- `@openvaa/core`: Definitions for Logger type and questions. Also includes default implementation for Logger.
+- `@openvaa/core`: Definitions for Controller type and questions. Also includes default implementation for Controller.
 - `@openvaa/llm`: LLM provider class and its implementations. For interacting with language models during argument extraction.
 - `js-yaml`: YAML parsing for reading prompt configuration files.
 
@@ -105,7 +105,7 @@ const results = await handleQuestion({
     maxCommentsPerGroup: 1000,
     invertProsAndCons: false,
     prompts: {}
-    // Optional logger
+    // Optional controller
   }
 });
 ```
@@ -177,7 +177,7 @@ const options = {
   modelTPMLimit: 30000,
   runId: 'run-456',
   createVisualizationData: true
-  // Optional logger from OpenVAA/core/src/logger
+  // Optional controller from OpenVAA/core/src/controller
 };
 
 // 4. Combine into condensation input

@@ -1,13 +1,13 @@
 /**
- * Custom logger that integrates with the job store directly
- * This logger can be used to track progress of a sequential pipeline of operations
+ * Custom controller that integrates with the job store directly
+ * This controller can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly
  *
  * NEW: Supports hierarchical operations where operations can be broken down into
  * sub-operations at execution time for more granular progress tracking.
  */
 
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import {
   addJobErrorMessage,
   addJobInfoMessage,
@@ -16,7 +16,7 @@ import {
   failJob,
   updateJobProgress
 } from './jobStore';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 
 /**
  * An operation is a step in a pipeline that can be tracked separately
@@ -29,13 +29,13 @@ interface Operation {
 }
 
 /**
- * A logger that can be used to track progress of a sequential pipeline of operations
+ * A controller that can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly
  *
  * NEW: Supports hierarchical operations where operations can be broken down into
  * sub-operations at execution time for more granular progress tracking.
  */
-export class PipelineLogger extends DefaultLogger implements Logger {
+export class PipelineController extends BaseController implements Controller {
   private jobId: string;
   private operations: Array<Operation> = [];
   private currentOperationIndex: number = 0;
@@ -107,7 +107,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
    * based on the current state
    */
   progress(value: number): void {
-    // Call parent logger first
+    // Call parent controller first
     super.progress(value);
 
     // If pipeline not initialized, just update job progress directly
@@ -381,7 +381,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
    * Override info to also update job store
    */
   info(message: string): void {
-    // Call parent logger first
+    // Call parent controller first
     super.info(message);
 
     // Then update job store directly
@@ -392,7 +392,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
    * Override warning to also update job store
    */
   warning(message: string): void {
-    // Call parent logger first
+    // Call parent controller first
     super.warning(message);
 
     // Then update job store directly
@@ -403,7 +403,7 @@ export class PipelineLogger extends DefaultLogger implements Logger {
    * Override error to also update job store
    */
   error(message: string): void {
-    // Call parent logger first
+    // Call parent controller first
     super.error(message);
 
     // Then update job store directly

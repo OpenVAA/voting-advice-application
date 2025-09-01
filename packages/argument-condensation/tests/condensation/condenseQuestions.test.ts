@@ -9,12 +9,12 @@ import {
 import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
-import type { HasAnswers, Logger } from '@openvaa/core';
+import type { Controller, HasAnswers } from '@openvaa/core';
 import type { LLMProvider, ParsedLLMResponse } from '@openvaa/llm';
 import type { ResponseWithArguments } from '../../src/core/types/index.ts';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
+// No-op controller for tests to prevent logging output
+const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
@@ -129,7 +129,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpLogger
       }
     });
 
@@ -206,7 +206,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpLogger
       }
     });
 
@@ -260,7 +260,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpLogger
       }
     });
 
@@ -311,7 +311,7 @@ describe('handleQuestion', () => {
           language: 'en',
           runId: 'test-run-invalid-prompts',
           maxCommentsPerGroup: 1000,
-          logger: noOpLogger,
+          controller: noOpLogger,
           prompts: {
             [CONDENSATION_TYPE.BooleanPros]: {
               map: 'map-pros-42-haha',
@@ -375,7 +375,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: uniqueId,
         maxCommentsPerGroup: 1000,
-        createVisualizationData: true, // We are testing the createVisualizationData flag
+        createVisualizationData: true // We are testing the createVisualizationData flag
       }
     });
 
