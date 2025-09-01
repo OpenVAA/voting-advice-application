@@ -3,12 +3,12 @@ import { LLMProvider } from '@openvaa/llm';
 import { describe, expect, test } from 'vitest';
 import { SUPPORTED_LANGUAGES } from '../../src';
 import { handleQuestion } from '../../src/api';
-import type { HasAnswers, Logger } from '@openvaa/core';
+import type { Controller, HasAnswers } from '@openvaa/core';
 import type { DataRoot } from '@openvaa/data';
 import type { LLMResponse, ParsedLLMResponse } from '@openvaa/llm';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
+// No-op controller for tests to prevent logging output
+const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
@@ -80,7 +80,7 @@ describe('handleQuestion', () => {
           llmModel: 'gpt-4o',
           runId: 'test-run',
           maxCommentsPerGroup: 1000,
-          logger: noOpLogger
+          controller: noOpLogger
         }
       })
     ).rejects.toThrow(
