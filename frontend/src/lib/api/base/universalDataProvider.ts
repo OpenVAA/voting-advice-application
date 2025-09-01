@@ -1,6 +1,5 @@
 import { ensureColors } from '$lib/utils/color/ensureColors';
 import { UniversalAdapter } from './universalAdapter';
-import type { CustomData } from '@openvaa/app-shared';
 import type { DataObjectData } from '@openvaa/data';
 import type { DataProvider, DPReturnType } from './dataProvider.type';
 import type { DPDataType } from './dataTypes';
@@ -51,21 +50,9 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   }
 
   getQuestionData(options?: GetQuestionsOptions): DPReturnType<'questions'> {
-    return this._getQuestionData(options).then(({ categories, questions }) => ({
+    return this._getQuestionData(options).then(({ categories, ...rest }) => ({
       categories: this.ensureColors(categories),
-      questions: questions.map((q) => {
-        const infoSections = (q.customData as CustomData['Question'])?.infoSections?.filter(
-          (s) => s.title && s.content && s.visible
-        );
-
-        return {
-          ...q,
-          customData: {
-            ...q.customData,
-            infoSections
-          }
-        };
-      })
+      ...rest
     }));
   }
 

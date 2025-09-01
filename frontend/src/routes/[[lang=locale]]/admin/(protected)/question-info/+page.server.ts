@@ -249,8 +249,7 @@ Format your response as a JSON array with this structure:
 [
   {
     "title": "Section Title",
-    "content": "Section content explaining the background...",
-    "visible": true
+    "content": "Section content explaining the background..."
   }
 ]
 
@@ -278,8 +277,7 @@ Focus on providing factual, balanced information that helps voters make informed
       infoSections = [
         {
           title: 'Background Information',
-          content: 'Background information could not be generated automatically. Please review and edit manually.',
-          visible: true
+          content: 'Background information could not be generated automatically. Please review and edit manually.'
         }
       ];
     }

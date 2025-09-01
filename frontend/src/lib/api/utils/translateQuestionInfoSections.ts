@@ -9,12 +9,11 @@ export function translateQuestionInfoSections(
     return data
       .filter((v) => v && typeof v === 'object')
       .flatMap((section) => {
-        const { title, content, visible = true } = section;
+        const { title, content } = section;
         return content && title
           ? {
               title: translate(title, locale),
-              content: translate(content, locale),
-              visible
+              content: translate(content, locale)
             }
           : [];
       });
