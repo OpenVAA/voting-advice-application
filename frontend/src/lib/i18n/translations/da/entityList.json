@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "Filtrene gav ingen resultater. Prøv at ændre dem.",
+    "noSearchResults": "Søgningen gav ingen resultater. Prøv at ændre søgeordet.",
+    "searchPlaceholder": "Søg efter navn",
+    "showingNumResults": "Viser {numShown, plural, =1 {1 resultat} other {# resultater}}"
+  },
+  "showMore": "Vis mere"
+}

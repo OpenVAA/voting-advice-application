@@ -1,0 +1,27 @@
+{
+  "additionalActions": "Flere handlinger for dette spørgsmål",
+  "answers": {
+    "bothHaventAnswered": "Hverken du eller {entity} har besvaret dette spørgsmål",
+    "entityHasntAnswered": "{entity} har ikke besvaret dette spørgsmål",
+    "youHaventAnswered": "Du har ikke besvaret dette spørgsmål",
+    "yourAnswer": "Du"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 spørgsmål} other {# spørgsmål}}",
+    "skip": "Spring denne kategori over"
+  },
+  "infoDescription": "Baggrundsinformation om spørgsmålet",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. {minQuestions, plural, =0 {} =1 {} other {Vælg dog nok kategorier til at få mindst # spørgsmål i alt.}}",
+      "withoutCategorySelection": "Besvar nu {numQuestions} spørgsmål om politik og værdier. {numCategories, plural, =0 {} =1 {} other {Spørgsmålene er opdelt i # kategorier.}}"
+    },
+    "start": "Besvar {numQuestions} spørgsmål"
+  },
+  "next": "Næste spørgsmål",
+  "previous": "Forrige",
+  "remove": "Slet svar",
+  "skip": "Spring over",
+  "skipToResults": "Gå direkte til resultater",
+  "title": "Holdninger"
+}

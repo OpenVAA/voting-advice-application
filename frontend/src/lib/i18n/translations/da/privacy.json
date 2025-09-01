@@ -1,0 +1,28 @@
+{
+  "analytics": {
+    "content": {
+      "umami": "Vi bruger tjenesten Umami til analyse. Det sker fuldstændig anonymt og kræver ingen cookies. Læs mere: {analyticsLink}."
+    },
+    "title": "Analyse"
+  },
+  "cookies": {
+    "content": "Applikationen bruger ikke cookies til at gemme dine data. Dine svar og præferencer gemmes i din browsers lokale lagring for en bedre brugeroplevelse. Disse data kan kun tilgås af din enhed, ikke af udgiveren af applikationen.",
+    "title": "Cookies"
+  },
+  "dataCollection": {
+    "platform": {
+      "umami": "Vi bruger tjenesten Umami til datainnsamling. Den bruger ikke cookies. Læs mere: {analyticsLink}."
+    }
+  },
+  "dataConsentInfoButton": "Mere information om indsamling af brugsdata",
+  "dataConsentIntro": {
+    "denied": "Du har afvist dataindsamling {consentDate, date, ::yyyyMMd}. Du kan ændre dit valg nedenfor.",
+    "granted": "Du har givet samtykke til dataindsamling {consentDate, date, ::yyyyMMd}. Du kan ændre dit valg nedenfor.",
+    "indetermined": "Du kan give eller afvise samtykke til dataindsamling ved at vælge en af mulighederne nedenfor."
+  },
+  "dataConsentLabel": {
+    "denied": "Jeg vil ikke dele mine data",
+    "granted": "Ja, jeg accepterer at dele mine data"
+  },
+  "title": "Privatliv"
+}

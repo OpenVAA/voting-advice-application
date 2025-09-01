@@ -1,0 +1,8 @@
+{
+  "candidateNoNomination": "Den kandidat, der er tilknyttet den indloggede bruger, har ingen opstilling. Kontakt venligst support.",
+  "loginFailed": "Login mislykkedes. Tjek dit brugernavn og adgangskode.",
+  "nominationNoElection": "Opstillingen for kandidaten er ikke knyttet til et valg. Kontakt venligst support.",
+  "saveFailed": "Beklager, der opstod et problem under gemning af dine svar. Prøv igen, og kontakt support, hvis problemet fortsætter.",
+  "userNoCandidate": "Den indloggede bruger er ikke knyttet til nogen kandidatoplysninger. Kontakt venligst support.",
+  "registrationLocked": "Det er desværre ikke længere muligt at registrere sig."
+}

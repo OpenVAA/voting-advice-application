@@ -1,0 +1,120 @@
+{
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Valgkompas",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Personal Information",
+      "ingress": "Your name and some other information have been prefilled or will be completed when the candidate lists are confirmed. You cannot change this information yourself, but if there are any errors, please contact candidate support.",
+      "emptyPlaceholder": "Based on candidate list"
+    }
+  },
+  "candidateAppName": "Valgkompas for kandidater",
+  "candidateAppNotAccessible": {
+    "content": "The Election Compass for Candidates has not been released yet. Please return to this address when it becomes available.",
+    "title": "Sorry, the Election Compass for Candidates is not yet available"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
+      "heroEmoji": "🖋️",
+      "ingress": "You must accept the terms of use before continuing to fill in your profile. Please read them carefully and check the box below.",
+      "title": "Terms of use"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Data Controller</h3><p>DATA_CONTROLLER</p><h3>2. Contact Person for the Registry</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Name of the Registry</h3><p>{appName} - Candidate Information System.</p><h3>4. Legal Basis and Purpose of Processing Personal Data</h3><p>The legal basis for processing personal data under the EU General Data Protection Regulation is the individual's consent. The purpose of processing personal data is its use in the election compass.</p><h3>5. Content of the Registry</h3><p>The registry stores the following data: name, political background, email address, date of birth, website URLs, social media profile URLs, other voluntary responses to the election compass's questions, and information obtained from public electoral registers.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Cookies necessary for the functionality of the service are processed based on legitimate interest, for example, to ensure security.</p><h3>6. Regular Sources of Information</h3><p>Data stored in the registry is obtained from candidates through an online form, during their bank authentication, and from public electoral registers.</p><h3>7. Regular Disclosures of Data and Transfers Outside the EU or EEA</h3><p>Data is not regularly disclosed to other parties, but after the publication of the election compass ends, the data may be used for research purposes and to develop the election compass.</p><h3>8. Principles of Registry Protection</h3><p>The processing of the registry is carried out with care, and data processed through information systems is adequately protected. When registry data is stored on Internet servers, appropriate measures are taken to ensure both physical and digital security. The data controller ensures that stored data, server access rights, and other critical personal data security information are handled confidentially and only by employees whose job description includes such responsibilities.</p><h3>9. Right of Access and Right to Request Data Correction</h3><p>Every individual in the registry has the right to check their stored data and request correction of any incorrect or incomplete data. If a person wishes to check their stored data or request corrections, they must send a request via email to the data controller. The data controller may request the individual to verify their identity if necessary. The data controller responds within the timeframe set by the EU General Data Protection Regulation.</p><h3>10. Other Rights Related to Personal Data Processing</h3><p>Individuals in the registry have the right to request the deletion of their personal data from the registry (’right to be forgotten’). Similarly, registered individuals have other rights under the EU General Data Protection Regulation, such as the right to restrict the processing of personal data in certain situations. Requests must be sent via email to the data controller. The data controller may request the individual to verify their identity if necessary. The data controller responds within the timeframe set by the EU General Data Protection Regulation.</p>",
+      "title": "Registry and privacy statement"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Other terms of use"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "The candidates and parties are divided into constituencies. Select a constituency for each election.",
+      "singleElection": "The candidates and parties are divided into constituencies. You can only vote for those in your constituency.",
+      "singleGroup": "The candidates and parties are divided into constituencies. Select a constituency below."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Select the elections for which you want to find candidates or parties.",
+      "singleElection": "Only one election is held in your selected constituency."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Med denne applikation kan du sammenligne kandidater og partier baseret på deres holdninger, partier og andre oplysninger.",
+    "startButton": "Find de bedste kandidater og partier!"
+  },
+  "info": {
+    "content": "Read more about the elections below.",
+    "dateInfo": "The election date is {electionDate, date, ::yyyyMMdd}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Fortsæt",
+    "heroEmoji": "🚀",
+    "ingress": "Denne applikation hjælper dig med at finde de {candidatePlural} og {partyPlural}, der matcher dine holdninger bedst i valget.",
+    "list": {
+      "constituencies": "Vælg din valgkreds",
+      "elections": "Vælg et valg",
+      "opinions": "Angiv dine holdninger",
+      "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst",
+      "details": "Undersøg dem nærmere"
+    },
+    "title": "Lad os komme i gang!"
+  },
+  "maintenance": {
+    "content": "<p>Vi beklager, men Valgkompasset er midlertidigt utilgængeligt på grund af vedligeholdelse. Det burde snart være tilbage, så prøv igen senere.</p><p>Hvis du var i gang med at besvare spørgsmål, skal du ikke bekymre dig. Du kan fortsætte, hvor du slap, når du vender tilbage.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Alle registrerede kandidater",
+    "content": "På denne side kan du finde alle de kandidater, der har udfyldt Valgkompasset.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "The privacy and data collection of the application is outlined below.",
+    "dataConsentIntro": {
+      "popup": "Could we collect your data completely anonymously for research purposes and to improve the application? We do not use cookies, and the data cannot be connected to you."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.",
+      "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
+    },
+    "multipleElections": "Select below first which election’s {candidatePlural} and {partyPlural} you want to see and then whether you want to see {candidatePlural} or {partyPlural} ."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Deltag i brugerundersøgelsen",
+    "info": "Vil du hjælpe med at forbedre valgkompasser? Åbn undersøgelsen i et nyt vindue og udfyld den nu eller når det passer dig.",
+    "popupInfo": "Undersøgelsen åbner i et nyt vindue. Du kan udfylde den med det samme eller når det passer dig.",
+    "popupTitle": "Vil du hjælpe med at forbedre valgkompasser?",
+    "thanks": "Tak for din besvarelse!",
+    "title": "Deltag i brugerundersøgelsen"
+  },
+  "voterAppNotAccessible": {
+    "content": "The Election Compass has not been released yet. Please return to this address when it becomes available.",
+    "title": "Sorry, the Election Compass has not been released yet"
+  }
+}
