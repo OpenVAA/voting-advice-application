@@ -16,6 +16,7 @@ export const ROUTE = {
   Home: VOTER,
   Info: `${VOTER}/info`,
   Intro: `${VOTER}/intro`,
+  Nominations: `${VOTER}/nominations`,
   Privacy: `${VOTER}/privacy`,
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
