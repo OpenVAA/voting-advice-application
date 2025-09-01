@@ -9,9 +9,9 @@ Can optionally display feature-specific past jobs.
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import InfoMessages from '$lib/components/logger/InfoMessages.svelte';
-  import ProgressBar from '$lib/components/logger/ProgressBar.svelte';
-  import WarningMessages from '$lib/components/logger/WarningMessages.svelte';
+  import InfoMessages from '$lib/components/controller/InfoMessages.svelte';
+  import ProgressBar from '$lib/components/controller/ProgressBar.svelte';
+  import WarningMessages from '$lib/components/controller/WarningMessages.svelte';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
   export let jobType: string; // e.g., 'argument-condensation'
@@ -19,7 +19,7 @@ Can optionally display feature-specific past jobs.
   export let onAbortJob: (jobId: string) => void; // Required callback when kill switch clicked
   export let maxMessages = 8;
   export let height = 'max-h-64';
-  export let pastJobs: JobInfo[] = []; // Optional: feature-specific past jobs
+  export let pastJobs: Array<JobInfo> = []; // Optional: feature-specific past jobs
   export let showPastJobs = true; // Optional: whether to show past jobs section
   export let featureLink: string | null = null; // Optional: link to the feature page
 
@@ -73,11 +73,11 @@ Can optionally display feature-specific past jobs.
 
         <!-- Warning Messages -->
         <WarningMessages
-        warnings={activeJob.warningMessages}
-        errors={activeJob.errorMessages}
-        maxMessages={1000}
-        {height}
-        showTimestamp={true} />
+          warnings={activeJob.warningMessages}
+          errors={activeJob.errorMessages}
+          maxMessages={1000}
+          {height}
+          showTimestamp={true} />
 
         <!-- Info Messages -->
         <InfoMessages messages={activeJob.infoMessages} {maxMessages} {height} showTimestamp={true} />

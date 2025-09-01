@@ -1,17 +1,17 @@
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { LatencyMeasurement } from '../types';
 
 /**
  * A simple latency tracker that measures execution time for operations
  *
- * @param logger - Optional logger for warning messages about unstarted operations
+ * @param controller - Optional controller for warning messages about unstarted operations
  */
 export class LatencyTracker {
   private measurements: Map<string, LatencyMeasurement> = new Map();
-  private logger?: Logger;
+  private controller?: Controller;
 
-  constructor(logger?: Logger) {
-    this.logger = logger;
+  constructor(controller?: Controller) {
+    this.controller = controller;
   }
 
   /**
@@ -35,7 +35,7 @@ export class LatencyTracker {
   stop(operationId: string): number | null {
     const measurement = this.measurements.get(operationId);
     if (!measurement) {
-      this.logger?.warning(`LatencyTracker: Operation "${operationId}" was not started`);
+      this.controller?.warning(`LatencyTracker: Operation "${operationId}" was not started`);
       return null;
     }
 

@@ -1,7 +1,7 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { setPromptVars } from '@openvaa/llm';
 import { COMMENT_PROCESSING } from '../../../defaultValues';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { VAAComment } from '../../types';
 
 /**
@@ -23,14 +23,14 @@ export function validateInputTokenCount({
   condensationPrompt,
   parallelFactor,
   modelTPMLimit,
-  logger = new DefaultLogger()
+  controller = new BaseController()
 }: {
   batches: Array<Array<VAAComment>>;
   topic: string;
   condensationPrompt: string;
   parallelFactor: number;
   modelTPMLimit: number;
-  logger?: Logger;
+  controller?: Controller;
 }): {
   success: boolean;
   failedBatchIndex?: number;
@@ -42,7 +42,7 @@ export function validateInputTokenCount({
       topic: topic,
       comments: batch.map((c) => c.text).join('\n')
     };
-    const promptText = setPromptVars({ promptText: condensationPrompt, variables: templateVariables, logger });
+    const promptText = setPromptVars({ promptText: condensationPrompt, variables: templateVariables, controller });
     return { messages: [{ role: 'system' as const, content: promptText }] };
   });
 

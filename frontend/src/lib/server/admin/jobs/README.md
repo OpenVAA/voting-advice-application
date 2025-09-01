@@ -7,7 +7,7 @@ The job management system provides a robust way to track long-running admin oper
 The system consists of:
 
 - **Job Store**: In-memory storage for active and completed jobs
-- **Job Logger**: Logger that automatically updates job progress and messages
+- **Job Controller**: Controller that automatically updates job progress and messages
 - **API Endpoints**: REST API for job management
 - **UI Components**: Real-time monitoring interface
 
@@ -50,32 +50,32 @@ const jobId = createJob('argument-condensation', 'admin@example.com');
 ### Using JobLogger
 
 ```typescript
-import { PipelineLogger } from '$lib/jobs/pipelineLogger';
+import { PipelineController } from '$lib/jobs/pipelineLogger';
 
-// Create logger immediately, initialize pipeline later
-const logger = new PipelineLogger(jobId, fetch);
+// Create controller immediately, initialize pipeline later
+const controller = new PipelineController(jobId, fetch);
 
 // ... later, when questions are known ...
 const pipeline = createQuestionPipeline(supportedQuestions);
-logger.initializePipeline(pipeline);
+controller.initializePipeline(pipeline);
 
 // Example pipeline for 2 questions:
 // - question-q1-boolean-pros, question-q1-boolean-cons
 // - question-q2-categorical-choice1-pros, question-q2-categorical-choice2-pros, question-q2-categorical-choice3-pros
 
 // Update progress for specific sub-operations
-logger.updateSubOperation('data-loading', 1.0); // Complete data loading
-logger.updateSubOperation('question-processing', 0.5); // 50% through question processing
+controller.updateSubOperation('data-loading', 1.0); // Complete data loading
+controller.updateSubOperation('question-processing', 0.5); // 50% through question processing
 
 // Add messages
-await logger.info('Processing question 1');
-await logger.warning('Low confidence in answer');
-await logger.error('API rate limit exceeded');
+await controller.info('Processing question 1');
+await controller.warning('Low confidence in answer');
+await controller.error('API rate limit exceeded');
 
 // Complete or fail
-await logger.complete();
+await controller.complete();
 // or
-await logger.fail('Error message');
+await controller.fail('Error message');
 ```
 
 ### Monitoring Jobs
@@ -108,7 +108,7 @@ const health = getSystemHealth();
 - `POST /api/admin/jobs/emergency-cleanup` - Emergency cleanup
 - `POST /api/admin/jobs/[id]/force-fail` - Force fail a job
 
-> **Note**: Job updates (progress, messages, completion) are now handled directly by the job store functions when used within the same process. The PipelineLogger automatically calls these functions instead of making HTTP requests.
+> **Note**: Job updates (progress, messages, completion) are now handled directly by the job store functions when used within the same process. The PipelineController automatically calls these functions instead of making HTTP requests.
 
 ## Configuration
 
@@ -157,8 +157,8 @@ testEmergencyCleanup();
 
 ## Best Practices
 
-1. **Always use JobLogger**: Don't manually update jobs, use the logger
-2. **Handle errors gracefully**: Use try-catch and call `logger.fail()`
+1. **Always use JobLogger**: Don't manually update jobs, use the controller
+2. **Handle errors gracefully**: Use try-catch and call `controller.fail()`
 3. **Monitor system health**: Check for stale jobs regularly
 4. **Use appropriate timeouts**: Jobs should complete within reasonable time
 5. **Clean up resources**: Jobs automatically move to past jobs when done

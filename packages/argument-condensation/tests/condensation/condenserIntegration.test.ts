@@ -2,7 +2,7 @@ import { OpenAIProvider } from '@openvaa/llm';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
 import { CondensationOperations } from '../../src/core/types';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { ParsedLLMResponse } from '@openvaa/llm';
 import type {
   CondensationRunInput,
@@ -14,8 +14,8 @@ import type {
   VAAComment
 } from '../../src/core/types';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
+// No-op controller for tests to prevent logging output
+const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
@@ -154,7 +154,7 @@ describe('Condenser Integration Tests', () => {
         processingSteps: steps,
         runId: 'happy-path-test',
         createVisualizationData: false,
-        logger: noOpLogger
+        controller: noOpLogger
       }
     };
 
@@ -224,7 +224,7 @@ describe('Condenser Integration Tests', () => {
         processingSteps: steps,
         runId: 'retry-test',
         createVisualizationData: false,
-        logger: noOpLogger
+        controller: noOpLogger
       }
     };
 
