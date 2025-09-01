@@ -399,6 +399,7 @@ export type TranslationKey =
   | 'feedback.title'
   | 'help.title'
   | 'info.title'
+  | 'lang.da'
   | 'lang.en'
   | 'lang.fi'
   | 'lang.sv'

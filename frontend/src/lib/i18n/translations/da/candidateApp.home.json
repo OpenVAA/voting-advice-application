@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Rediger dine grundlæggende oplysninger",
+    "enter": "Indtast dine grundlæggende oplysninger",
+    "view": "Vis dine grundlæggende oplysninger"
+  },
+  "ingress": {
+    "notDone": "For at komme med valgtesten skal du indtaste nogle grundlæggende oplysninger om dig selv og svare på politiske holdningsudsagn.",
+    "ready": "Du har indtastet alle de oplysninger, der kræves til Valgtesten. Du kan stadig redigere dine svar og logge ind senere."
+  },
+  "preview": "Forhåndsvis din profil",
+  "previewTip": "Hvis du vil se, hvordan vælgere ser din profil, kan du forhåndsvise den.",
+  "questions": {
+    "edit": "Rediger dine holdninger",
+    "enter": "Angiv dine holdninger",
+    "view": "Vis dine holdninger"
+  },
+  "ready": "Du er klar!"
+}

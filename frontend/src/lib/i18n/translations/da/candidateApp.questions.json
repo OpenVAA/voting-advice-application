@@ -1,0 +1,24 @@
+{
+  "answerQuestion": "Besvar dette spørgsmål",
+  "answerQuestionFirst": "Besvar venligst spørgsmålet først",
+  "answerSaveError": "Det lykkedes ikke at gemme svaret",
+  "editAnswer": "Rediger dit svar",
+  "enterMissingAnswers": "Indtast manglende svar",
+  "error": {
+    "answerNotFound": "Der findes ikke noget svar til spørgsmål {questionId}",
+    "invalidAnswer": "Ugyldigt svar til spørgsmål {questionId}",
+    "questionNotFound": "Spørgsmål {questionId} blev ikke fundet"
+  },
+  "ingress": {
+    "default": "Du kan se alle dine holdninger nedenfor og redigere dem.",
+    "empty": "Nu bliver du bedt om at give dine holdninger til {numQuestions} politiske udsagn. Når vælgerne bruger valgtesten, svarer de på de samme udsagn og ser, hvor meget deres holdninger stemmer overens med dine.",
+    "partial": "Du kan se dine holdninger, redigere dem og besvare de resterende spørgsmål."
+  },
+  "notAnswered": "Du har ikke besvaret dette spørgsmål.",
+  "openAnswerPrompt": "Begrundelser",
+  "start": "Angiv dine holdninger",
+  "tip": "Du kan se alle dine svar på denne side, når du vender tilbage senere.",
+  "title": "Dine holdninger",
+  "unansweredWarning": "Du har stadig {numUnansweredQuestions, plural, =1 {ét ubesvaret spørgsmål} other {# ubesvarede spørgsmål}}.",
+  "viewAnswer": "Se dit svar"
+}

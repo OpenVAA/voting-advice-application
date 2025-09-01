@@ -1,0 +1,89 @@
+{
+  "alliance": {
+    "plural": "alliancer",
+    "singular": "alliance"
+  },
+  "answer": {
+    "no": "Nej",
+    "yes": "Ja"
+  },
+  "back": "Tilbage",
+  "cancel": "Annuller",
+  "candidate": {
+    "plural": "kandidater",
+    "singular": "kandidat"
+  },
+  "candidatePortrait": "Portræt",
+  "clear": "Ryd",
+  "close": "Luk",
+  "closeDialog": "Luk dialog",
+  "closeMenu": "Luk menu",
+  "confirmed": "Bekræftet",
+  "constituency": "Valgkreds",
+  "continue": "Fortsæt",
+  "election": "Valg",
+  "electionList": "Liste",
+  "electionSymbol": {
+    "alliance": "Valgsymbol",
+    "candidate": "Valgnummer",
+    "faction": "Valgsymbol",
+    "organization": "Valgsymbol"
+  },
+  "expandOrCollapse": "Udvid eller skjul denne sektion",
+  "faction": {
+    "plural": "fraktioner",
+    "singular": "fraktion"
+  },
+  "firstName": "Fornavn",
+  "home": "forside",
+  "info": "Info",
+  "language": {
+    "select": "Vælg sprog"
+  },
+  "lastName": "Efternavn",
+  "loading": "Indlæser…",
+  "locked": "Låst",
+  "login": "Log ind",
+  "logout": "Log ud",
+  "madeWithPrefix": "Lavet med",
+  "madeWithSuffix": "",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
+  "nomination": "Opstilling",
+  "openCloseMenu": "Skift menu",
+  "openMenu": "Åbn menu",
+  "openVAA": "Åbn Valgtest",
+  "or": "Eller",
+  "organization": {
+    "plural": "partier",
+    "singular": "parti"
+  },
+  "password": "Adgangskode",
+  "passwordConfirmation": "Bekræft adgangskode",
+  "pending": "Afventer",
+  "primaryActions": "Primære handlinger",
+  "privacy": {
+    "dataCollection": {
+      "content": "Vi vil gerne indsamle brugsdata anonymt til forskningsformål og for at forbedre applikationen. De indsamlede data inkluderer dine svar, den tid du bruger i applikationen, og hvilke resultater du ser. Dataene kan ikke knyttes til dig.",
+      "title": "Indsamling af brugsdata"
+    }
+  },
+  "progress": "Fremgang",
+  "publishedBy": "Udgivet af {publisher}",
+  "question": "Spørgsmål",
+  "readMore": "Læs mere",
+  "required": "Påkrævet",
+  "resetAnswers": "Ryd dine svar",
+  "return": "Tilbage",
+  "returnHome": "Tilbage til forsiden",
+  "saveAndContinue": "Gem og fortsæt",
+  "saveAndReturn": "Gem og vend tilbage",
+  "saving": "Gemmer…",
+  "showFullImage": "Vis fuldt billede",
+  "skipToMain": "Spring til hovedindhold",
+  "state": "Delstat",
+  "success": "Handling gennemført!",
+  "thanksNo": "Nej tak",
+  "unaffiliated": "Uden tilhørsforhold",
+  "website": "Website"
+}

@@ -1,0 +1,16 @@
+{
+  "editableInfos": {
+    "description": "Disse oplysninger vises i din profil.",
+    "title": "Din profil"
+  },
+  "error": {
+    "invalidQuestion": "Spørgsmålstype eller svartype er ugyldig for spørgsmål {questionId}"
+  },
+  "instructions": "Udfyld først dine grundlæggende oplysninger, og upload et billede, hvis du ønsker det. Herefter bliver du bedt om at angive dine politiske holdninger.",
+  "nominations": {
+    "description": "Dette er de valgkredse, hvor du er opstillet. Hvis parti eller valgkreds mangler, vil de blive tilføjet automatisk, når kandidatlisten er bekræftet.",
+    "title": "Opstillinger"
+  },
+  "requiredInfo": "Du skal udfylde felterne markeret med dette ikon, før du kan besvare andre spørgsmål. Du kan dog gemme dine svar og fortsætte senere.",
+  "title": "Grundlæggende oplysninger"
+}

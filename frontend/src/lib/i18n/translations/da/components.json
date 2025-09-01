@@ -1,0 +1,75 @@
+{
+  "accordionSelect": {
+    "collapsedAriaInfo": "Tryk for at vise alle valgmuligheder"
+  },
+  "constituencySelector": {
+    "selectPrompt": "Vælg {constituencyGroup}"
+  },
+  "headingGroup": {
+    "roleDescription": "Overskriftsgruppe"
+  },
+  "input": {
+    "addImage": "Tilføj billede",
+    "allSelected": "Alle valgt",
+    "changeImage": "Skift billede",
+    "deleteOption": "Fravælg {option}",
+    "error": {
+      "fileLoadingError": "Kunne ikke indlæse filen.",
+      "invalidFile": "Filen er ugyldig.",
+      "invalidUrl": "URL'en er ugyldig.",
+      "oversizeFile": "Filen er for stor. Maksimal størrelse er {maxFilesize} MB."
+    },
+    "hideTranslations": "Skjul",
+    "imageInfo": "Den maksimale billedstørrelse er {maxFilesize} MB. Hav tålmodighed, da billedet kan tage lidt tid at indlæse.",
+    "multilingualInfo": "Du kan indtaste dit svar på alle valgtestens sprog, hvis du ønsker det.",
+    "noImage": "Intet billede",
+    "selectAnother": "Vælg en anden",
+    "selectFirst": "Vælg først",
+    "selectOne": "Vælg",
+    "showTranslations": "Oversættelser"
+  },
+  "matchScore": {
+    "label": "match",
+    "score": "{score}%"
+  },
+  "passwordInput": {
+    "hidePassword": "Skjul adgangskode",
+    "password": "Adgangskode",
+    "placeholder": "Adgangskode",
+    "showPassword": "Vis adgangskode"
+  },
+  "preHeading": {
+    "roleDescription": "For-titel"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "Du har ændringer, der ikke er gemt. Er du sikker på, at du vil forlade siden?"
+  },
+  "select": {
+    "noMatchingOptions": "Ingen matchende muligheder fundet"
+  },
+  "video": {
+    "captions": "Undertekster",
+    "error": "Beklager, der opstod et problem med videoen. Prøv at genindlæse siden eller brug knappen nedenfor for at skifte til tekstvisning.",
+    "hideCaptions": "Skjul undertekster",
+    "jumpBack": "Hop tilbage",
+    "jumpForward": "Hop frem",
+    "mute": "Slå lyd fra",
+    "pause": "Pause",
+    "play": "Afspil",
+    "progessbarLabel": "Tid tilbage",
+    "replay": "Afspil igen",
+    "showCaptions": "Vis undertekster",
+    "showTranscript": "Vis video som tekst",
+    "showVideo": "Vis video",
+    "subtitles": "Undertekster",
+    "timeLeft": "{minutes, plural, =0 {} =1 {ét minut} other {# minutter}} {seconds, plural, =0 {} =1 {ét sekund} other {# sekunder}} tilbage",
+    "transcript": "Tekst",
+    "transcriptToggleLabel": "Skift mellem video og tekst",
+    "unmute": "Slå lyd til",
+    "unsupportedWarning": "Din browser understøtter desværre ikke denne type video.",
+    "video": "Video"
+  },
+  "questionExtendedInfo": {
+    "title": "Læs mere"
+  }
+}
