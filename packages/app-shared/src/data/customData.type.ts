@@ -147,10 +147,6 @@ export type QuestionInfoSection = {
    * The (html) content of the section.
    */
   content: string;
-  /**
-   * Whether the section should be visible.
-   */
-  visible: boolean;
 };
 
 /**
