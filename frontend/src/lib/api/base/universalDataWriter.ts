@@ -189,7 +189,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
 
-  async getJobs(opts: GetJobsOptions): Promise<{ activeJobs: Array<JobInfo>, pastJobs: Array<JobInfo> }> {
+  async getJobs(opts: GetJobsOptions): Promise<{ activeJobs: Array<JobInfo>; pastJobs: Array<JobInfo> }> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
 
     const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobs);
@@ -279,7 +279,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
     if (!jobResponse.ok) {
       throw new Error(`Failed to start job: ${jobResponse.statusText}`);
-    };
+    }
     return jobResponse.json();
   }
 

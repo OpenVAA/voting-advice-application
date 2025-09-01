@@ -1,6 +1,6 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { calculateLLMCost } from '@openvaa/llm';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { LLMProvider, LLMResponse } from '@openvaa/llm';
 import type { CondensationOperation, PromptCall } from '../../types';
 
@@ -21,7 +21,7 @@ export function createPromptInstance({
   llmResponse,
   latency,
   llmProvider,
-  logger = new DefaultLogger()
+  controller = new BaseController()
 }: {
   operation: CondensationOperation;
   promptId: string;
@@ -29,7 +29,7 @@ export function createPromptInstance({
   llmResponse: LLMResponse;
   latency: number;
   llmProvider: LLMProvider; // Using any to avoid circular dependency with LLMProvider from @openvaa/llm
-  logger?: Logger;
+  controller?: Controller;
 }): PromptCall {
   // Calculate cost for this LLM call using the actual provider
   const callCost = calculateLLMCost({
@@ -40,7 +40,7 @@ export function createPromptInstance({
       completionTokens: llmResponse.usage.completionTokens,
       totalTokens: llmResponse.usage.totalTokens
     },
-    logger
+    controller
   });
 
   return {

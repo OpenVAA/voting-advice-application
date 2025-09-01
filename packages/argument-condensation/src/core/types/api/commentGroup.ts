@@ -1,4 +1,4 @@
-import type { Id, Logger } from '@openvaa/core';
+import type { Controller, Id } from '@openvaa/core';
 import type { Comment } from '../condensation/condensationInput';
 
 /**
@@ -34,6 +34,6 @@ export interface CommentGroupingOptions {
   invertProsAndCons: boolean;
   /** Maximum number of comments from a single answer option to use for a single condensation run */
   maxCommentsPerGroup: number;
-  /** Optional logger for warning messages during comment grouping */
-  logger?: Logger;
+  /** Optional controller for warning messages during comment grouping */
+  controller?: Controller;
 }

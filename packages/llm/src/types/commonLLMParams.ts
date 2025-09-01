@@ -1,4 +1,4 @@
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { LLMProvider } from '../llm-providers/llm-provider';
 
 /**
@@ -9,16 +9,16 @@ export interface CommonLLMParams {
 
   /** The LLM provider to use, e.g. OpenAIProvider */
   llmProvider: LLMProvider;
-  
+
   /** The LLM model to use */
   llmModel: string;
-  
+
   /** The fallback LLM model in case of errors and for general flexibility */
   fallbackModel?: string;
-  
+
   /** The number of tokens per minute the LLM model can handle */
   modelTPMLimit?: number;
 
-  /** Optional logger for tracking progress */
-  logger?: Logger;
+  /** Optional controller for tracking progress */
+  controller?: Controller;
 }
