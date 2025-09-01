@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Luk filtre",
+  "error": "Filteret kunne ikke indlæses, beklager!",
+  "filterButtonLabel": "Filtrér",
+  "filters": "Filtre",
+  "missingValue": "Intet svar",
+  "numeric": {
+    "maxLabel": "Maksimum",
+    "minLabel": "Minimum"
+  },
+  "reset": "Nulstil filtre",
+  "selectAll": "Vælg alle",
+  "text": {
+    "ariaLabel": "Tekst:",
+    "placeholder": "Tekst der skal søges efter"
+  },
+  "unselectAll": "Fravælg alle"
+}

@@ -1,0 +1,17 @@
+{
+  "content": "<p>Valgtesten fungerer ved at sammenligne dine holdninger med dem, som {candidatePlural} og {partyPlural} har angivet. Resultaterne vises som en matchprocent, der angiver, hvor stor en del af dine holdninger matcher deres.</p><ul><li>En score på 100 betyder, at I er helt enige i alle de spørgsmål, du har besvaret.</li><li>En score på 0 betyder, at I er helt uenige i alle spørgsmål.</li><li>En score mellem disse yderpunkter betyder, at I er enige i nogle spørgsmål og uenige i andre.</li></ul>",
+  "feedback": {
+    "title": "Feedback"
+  },
+  "organizationMatching": {
+    "content": "{partyMatchingMethod, select, answersOnly {<p>Partiernes resultater er beregnet ud fra de svar, de selv har afgivet.</p>} imputed {<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra flertallet eller gennemsnittet af deres kandidaters svar i valgkredsen.</p>} other {<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra deres kandidaters svar i valgkredsen.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Bemærk, at partiets kandidater kan være uenige med deres parti i visse spørgsmål, så det beregnede standpunkt repræsenterer ikke nødvendigvis partiets officielle holdning.</p>}}",
+    "title": "Partimatch"
+  },
+  "returnButton": "Tilbage til forsiden",
+  "source": {
+    "content": "Kildekoden til applikationen er tilgængelig på",
+    "sitename": "GitHub",
+    "title": "Kildekode"
+  },
+  "title": "Hvordan fungerer denne app?"
+}

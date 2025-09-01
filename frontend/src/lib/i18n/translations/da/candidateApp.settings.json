@@ -1,0 +1,23 @@
+{
+  "emailDescription": "Vi bruger denne e-mail til at kontakte dig og til nulstilling af adgangskode. Den vises ikke på din offentlige profil.",
+  "error": {
+    "changeLanguage": "Der opstod en fejl under ændring af sproget.",
+    "changePassword": "Ændring af adgangskode mislykkedes. Tjek at din nuværende adgangskode er korrekt."
+  },
+  "ingress": "Disse indstillinger påvirker kun, hvordan du bruger denne app. Oplysninger du angiver her, vises ikke offentligt.",
+  "language": "Appens sprog",
+  "languageDescription": "Brug denne applikation på det valgte sprog. Det vises ikke på din offentlige profil.",
+  "password": {
+    "areSame": "Den nye adgangskode er den samme som den nuværende",
+    "current": "Nuværende adgangskode",
+    "currentDescription": "Indtast din nuværende adgangskode, som du ønsker at ændre.",
+    "dontMatch": "Adgangskoderne matcher ikke",
+    "new": "Ny adgangskode",
+    "newConfirmation": "Bekræft ny adgangskode",
+    "notValid": "Adgangskoden er ikke gyldig",
+    "title": "Kontoens adgangskode",
+    "update": "Opdater adgangskode",
+    "updated": "Adgangskoden er opdateret!"
+  },
+  "title": "Indstillinger"
+}

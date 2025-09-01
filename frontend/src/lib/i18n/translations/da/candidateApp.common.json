@@ -1,0 +1,13 @@
+{
+  "contactSupport": "Kontakt support",
+  "continueFilling": "Fortsæt med at udfylde",
+  "editingNotAllowed": "Det er ikke længere muligt at redigere dine svar, men du kan stadig se dem. Kontakt support, hvis der er fejl i dine oplysninger.",
+  "email": "E-mail",
+  "emailPlaceholder": "E-mail",
+  "fullyCompleted": "Tillykke! Du har udfyldt alle nødvendige oplysninger til Valgtesten.",
+  "greeting": "Hej, {username}!",
+  "home": "Start",
+  "isHiddenBecauseMissing": "Din profil vises ikke, fordi du ikke har besvaret alle spørgsmålene.",
+  "voterApp": "Valgtest for vælgere",
+  "willBeHiddenIfMissing": "Din profil vil ikke blive vist i applikationen, før du har besvaret alle spørgsmålene."
+}

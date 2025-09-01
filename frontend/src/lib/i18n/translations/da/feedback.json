@@ -1,0 +1,21 @@
+{
+  "description": {
+    "label": "Yderligere kommentarer",
+    "placeholder": "Yderligere kommentarer eller forslag"
+  },
+  "emailIntro": "Hvis du ønsker det, kan du også kontakte os via e-mail på",
+  "error": {
+    "emailIntro": "Vi beder dig sende din feedback via e-mail ved at klikke på knappen nedenfor. Enhver tekst, du allerede har skrevet, medsendes automatisk.",
+    "emailSubject": "Feedback",
+    "message": "Beklager, der opstod en fejl under afsendelse af din feedback."
+  },
+  "popupTitle": "Vil du vurdere Valgtesten?",
+  "rating": {
+    "label": "Samlet vurdering af appen",
+    "valueLabel": "{rating, plural, =0 {Ingen vurdering} other {Vurdering # ud af {ratingMax}}}"
+  },
+  "send": "Send feedback",
+  "sending": "Sender…",
+  "thanks": "Tak for din feedback!",
+  "title": "Feedback"
+}

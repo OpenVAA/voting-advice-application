@@ -1,0 +1,120 @@
+{
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Valgtest",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Personlige oplysninger",
+      "ingress": "Dit navn og nogle andre oplysninger er blevet udfyldt på forhånd eller vil blive tilføjet, når kandidatlisterne er bekræftet. Du kan ikke selv ændre disse oplysninger, men hvis der er fejl, bedes du kontakte kandidatsupport.",
+      "emptyPlaceholder": "Baseret på kandidatliste"
+    }
+  },
+  "candidateAppName": "Valgtest for kandidater",
+  "candidateAppNotAccessible": {
+    "content": "Valgtesten for kandidater er endnu ikke blevet offentliggjort. Gå tilbage til denne adresse, når det bliver tilgængeligt.",
+    "title": "Beklager, Valgtesten for kandidater er endnu ikke tilgængeligt"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "Jeg accepterer, at mine oplysninger gemmes og bruges i overensstemmelse med brugerbetingelserne.",
+      "heroEmoji": "🖋️",
+      "ingress": "Du skal acceptere brugerbetingelserne, før du fortsætter med at udfylde din profil. Læs dem venligst omhyggeligt og sæt kryds i feltet nedenfor.",
+      "title": "Brugerbetingelser"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Dataansvarlig</h3><p>DATA_CONTROLLER</p><h3>2. Kontaktperson for registret</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Navn på registret</h3><p>{appName} – Kandidatinformationssystem.</p><h3>4. Retsgrundlag og formål med behandling af personoplysninger</h3><p>Retsgrundlaget for behandling af personoplysninger i henhold til EU's databeskyttelsesforordning er samtykke fra den registrerede. Formålet med behandlingen er at bruge oplysningerne i valgtesten.</p><h3>5. Indhold af registret</h3><p>Registret indeholder følgende oplysninger: navn, politisk baggrund, e-mailadresse, fødselsdato, hjemmesideadresser, profiler på sociale medier, frivillige svar på valgtestens spørgsmål og oplysninger fra offentlige valgregistre.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Cookies, der er nødvendige for tjenestens funktion, behandles på baggrund af legitim interesse, f.eks. for at sikre sikkerheden.</p><h3>6. Almindelige informationskilder</h3><p>Oplysningerne indsamles fra kandidater via en onlineformular, under bankidentifikation og fra offentlige valgregistre.</p><h3>7. Regelmæssig videregivelse og overførsel uden for EU eller EØS</h3><p>Oplysningerne videregives ikke regelmæssigt, men efter offentliggørelsen af valgtesten kan de anvendes til forskning og til at udvikle valgtesten.</p><h3>8. Principper for registerbeskyttelse</h3><p>Behandlingen af registret udføres med omhu, og data behandlet via informationssystemer er tilstrækkeligt beskyttet. Når registre opbevares på internetservere, træffes passende forholdsregler for at sikre både fysisk og digital sikkerhed. Den dataansvarlige sikrer, at gemte oplysninger, adgangsrettigheder til servere og anden kritisk sikkerhedsinformation behandles fortroligt og kun af medarbejdere, hvis arbejdsbeskrivelse omfatter sådanne opgaver.</p><h3>9. Ret til indsigt og berigtigelse</h3><p>Enhver person i registret har ret til at få indsigt i sine oplysninger og til at anmode om berigtigelse af fejlagtige eller ufuldstændige oplysninger. Ønsker en person indsigt eller berigtigelse, skal vedkommende sende en anmodning pr. e-mail til den dataansvarlige. Den dataansvarlige kan om nødvendigt anmode om at få verificeret identiteten. Der svares inden for fristen i EU's databeskyttelsesforordning.</p><h3>10. Andre rettigheder i forbindelse med behandling af personoplysninger</h3><p>Personer i registret har ret til at anmode om sletning af deres oplysninger (’retten til at blive glemt’). Registrerede har også andre rettigheder ifølge EU’s databeskyttelsesforordning, herunder retten til at begrænse behandlingen af deres oplysninger i visse tilfælde. Anmodninger sendes pr. e-mail til den dataansvarlige. Identiteten kan blive bedt om at blive verificeret. Svar gives inden for den frist, der er fastsat i forordningen.</p>",
+      "title": "Register- og privatlivspolitik"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Andre brugerbetingelser"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "Kandidater og partier er opdelt i valgkredse. Vælg en valgkreds for hvert valg.",
+      "singleElection": "Kandidater og partier er opdelt i valgkredse. Du kan kun stemme på dem i din valgkreds.",
+      "singleGroup": "Kandidater og partier er opdelt i valgkredse. Vælg en valgkreds nedenfor."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Vælg de valg, du vil finde kandidater eller partier til.",
+      "singleElection": "Der afholdes kun ét valg i din valgte valgkreds."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Med denne applikation kan du sammenligne kandidater og partier baseret på deres holdninger, partier og andre oplysninger.",
+    "startButton": "Find de bedste kandidater og partier!"
+  },
+  "info": {
+    "content": "Læs mere om valgene nedenfor.",
+    "dateInfo": "Valgdatoen er {electionDate, date, ::yyyyMMdd}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Fortsæt",
+    "heroEmoji": "🚀",
+    "ingress": "Denne applikation hjælper dig med at finde de {candidatePlural} og {partyPlural}, der matcher dine holdninger bedst i valget.",
+    "list": {
+      "constituencies": "Vælg din valgkreds",
+      "elections": "Vælg et valg",
+      "opinions": "Angiv dine holdninger",
+      "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst",
+      "details": "Undersøg dem nærmere"
+    },
+    "title": "Lad os komme i gang!"
+  },
+  "maintenance": {
+    "content": "<p>Vi beklager, men Valgtesten er midlertidigt utilgængeligt på grund af vedligeholdelse. Det burde snart være tilbage, så prøv igen senere.</p><p>Hvis du var i gang med at besvare spørgsmål, skal du ikke bekymre dig. Du kan fortsætte, hvor du slap, når du vender tilbage.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Alle registrerede kandidater",
+    "content": "På denne side kan du finde alle de kandidater, der har udfyldt Valgtesten.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "Nedenfor beskrives, hvordan applikationen håndterer privatliv og databeskyttelse.",
+    "dataConsentIntro": {
+      "popup": "Må vi indsamle dine data helt anonymt til forskningsformål og for at forbedre applikationen? Vi bruger ikke cookies, og dataene kan ikke forbindes til dig."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "Dette er de {candidatePlural} og {partyPlural}, der stiller op til disse valg, sorteret efter listesymbol eller navn. Du kan bruge filtrene til at indsnævre listen.",
+      "results": "Dette er de {candidatePlural} og {partyPlural}, der stiller op til disse valg. De bedste match vises øverst. Du kan bruge filtrene til at indsnævre resultaterne."
+    },
+    "multipleElections": "Vælg først nedenfor, hvilket valgs {candidatePlural} og {partyPlural} du vil se, og derefter om du vil se {candidatePlural} eller {partyPlural}."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Deltag i brugerundersøgelsen",
+    "info": "Vil du hjælpe med at forbedre valgtesten? Åbn undersøgelsen i et nyt vindue og udfyld den nu eller når det passer dig.",
+    "popupInfo": "Undersøgelsen åbner i et nyt vindue. Du kan udfylde den med det samme eller når det passer dig.",
+    "popupTitle": "Vil du hjælpe med at forbedre valgtesten?",
+    "thanks": "Tak for din besvarelse!",
+    "title": "Deltag i brugerundersøgelsen"
+  },
+  "voterAppNotAccessible": {
+    "content": "Valgtesten er endnu ikke blevet offentliggjort. Gå tilbage til denne adresse, når det bliver tilgængeligt.",
+    "title": "Beklager, Valgtesten er endnu ikke blevet offentliggjort"
+  }
+}
