@@ -133,7 +133,7 @@ export function createPollingService({
   }
 
   // Start/stop based on presence of any active job
-  activeJobsStore.subscribe(jobs => {
+  activeJobsStore.subscribe((jobs) => {
     const hasActive = Array.from(jobs.values()).some((j) => j != null);
     console.info('[JobPollingService] Active jobs store changed:', {
       hasActive,

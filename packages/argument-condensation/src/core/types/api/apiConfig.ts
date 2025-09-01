@@ -1,4 +1,4 @@
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
 import type { CondensationOutputType } from '../condensation/condensationType';
 
@@ -41,5 +41,5 @@ export type CondensationAPIOptions = {
   invertProsAndCons?: boolean;
   modelTPMLimit?: number;
   prompts?: PromptConfig;
-  logger?: Logger;
+  controller?: Controller;
 };

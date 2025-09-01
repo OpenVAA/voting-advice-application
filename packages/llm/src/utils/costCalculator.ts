@@ -1,6 +1,6 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { MODEL_PRICING } from '../consts';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { LLMProvider } from '../llm-providers/llm-provider';
 import type { ModelPricing, TokenUsage } from '../types';
 
@@ -11,7 +11,7 @@ import type { ModelPricing, TokenUsage } from '../types';
  * @param model - The model name (e.g., "gpt-4o-mini")
  * @param usage - Token usage information
  * @param useCachedInput - Whether input tokens should be treated as cached (optional)
- * @param logger - Optional logger for warning messages about unknown models
+ * @param controller - Optional controller for warning messages about unknown models
  * @returns Cost in USD, or 0 if provider is not supported or model not found
  */
 export function calculateLLMCost({
@@ -19,13 +19,13 @@ export function calculateLLMCost({
   model,
   usage,
   useCachedInput = false,
-  logger = new DefaultLogger()
+  controller = new BaseController()
 }: {
   provider: LLMProvider | string;
   model: string;
   usage: TokenUsage;
   useCachedInput?: boolean;
-  logger: Logger;
+  controller: Controller;
 }): number {
   // Extract provider name from provider instance or use string directly
   const name = typeof provider === 'string' ? provider : provider.name;
@@ -33,14 +33,14 @@ export function calculateLLMCost({
   // Look up provider pricing
   const providerPricing = MODEL_PRICING[name as keyof typeof MODEL_PRICING];
   if (!providerPricing) {
-    logger.warning(`Unsupported provider "${name}" - cost calculation returning 0`);
+    controller.warning(`Unsupported provider "${name}" - cost calculation returning 0`);
     return 0;
   }
 
   // Look up model pricing
   const pricing = (providerPricing as Record<string, ModelPricing>)[model];
   if (!pricing) {
-    logger.warning(`Unknown model "${model}" for provider "${name}" - cost calculation returning 0`);
+    controller.warning(`Unknown model "${model}" for provider "${name}" - cost calculation returning 0`);
     return 0;
   }
 

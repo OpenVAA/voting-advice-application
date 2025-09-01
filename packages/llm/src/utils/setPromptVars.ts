@@ -1,24 +1,24 @@
-import { DefaultLogger } from '@openvaa/core';
-import type { Logger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 
 /**
  * Utility function to embed template literals in prompt text with error handling
  * @param promptText - The prompt text with {{variable}} placeholders
  * @param variables - The variables to embed
  * @param strict - Whether to throw an error if variables are missing or leave placeholders
- * @param logger - The logger to use for warnings
+ * @param controller - The controller to use for warnings
  * @returns The prompt text string with variables embedded
  */
 export function setPromptVars({
   promptText,
   variables,
   strict = true,
-  logger = new DefaultLogger()
+  controller = new BaseController()
 }: {
   promptText: string;
   variables: Record<string, unknown>;
   strict?: boolean;
-  logger?: Logger;
+  controller?: Controller;
 }): string {
   let result = promptText;
   const missingVars: Array<string> = [];
@@ -49,7 +49,7 @@ export function setPromptVars({
   if (missingVars.length > 0) {
     const remainingErrorMsg = `Prompt is missing required variables: ${missingVars.join(', ')}`;
     if (strict) throw new Error(remainingErrorMsg);
-    logger.warning(`setPromptVars: ${remainingErrorMsg}`);
+    controller.warning(`setPromptVars: ${remainingErrorMsg}`);
   }
   // If not strict, the output will have the missing variables as {{variable}} placeholders
   return result;
