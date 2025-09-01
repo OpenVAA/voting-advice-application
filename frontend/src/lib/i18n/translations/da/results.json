@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Ingen alliancer} =1 {1 alliance} other {# alliancer}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Ingen {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Ingen fraktioner} =1 {1 fraktion} other {# fraktioner}}"
+  },
+  "inConstituency": "i valgkreds",
+  "ingress": {
+    "answerMinQuestions": "Hvis du vil finde de {candidatePlural} og {partyPlural}, du er mest enig med, så {questionsLink} først.",
+    "questionsLinkText": "besvar mindst {numQuestions, plural, =1 {ét spørgsmål} other {# spørgsmål}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Der er ingen kandidater eller partier i din valgkreds, som har besvaret Valgtesten",
+      "content": "Du kan gennemgå spørgsmålene, hvis du ønsker, men resultater kan ikke vises."
+    },
+    "someNominations": {
+      "title": "Nogle kandidater eller partier har ikke besvaret Valgtesten",
+      "content": "Der findes ikke svar fra kandidater eller partier for alle valg i din valgkreds. Resultater vises kun for de valg, hvor der findes svar."
+    },
+    "noNominationsForElection": "ikke tilgængelig"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Ingen {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
+  },
+  "selectElectionFirst": "Vælg først et valg",
+  "title": {
+    "browse": "Gennemse {candidatePlural} og {partyPlural}",
+    "results": "Resultater"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "constituencySelect": {
+    "content": "<p>Vælg den valgkreds, hvor du stiller op.</p>",
+    "title": "Hvad er din valgkreds?"
+  },
+  "electionSelect": {
+    "content": "<p>Vælg de valg, du stiller op i.</p>",
+    "title": "Hvilke valg stiller du op i?"
+  },
+  "email": {
+    "html": "<p>Hej {firstName},</p><p>Tak for din registrering som kandidat! For at fuldføre din registrering, bekræft venligst din e-mailadresse ved at følge linket nedenfor:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Du vil blive bedt om at vælge en adgangskode derefter.</p>",
+    "subject": "Bekræft venligst din e-mailadresse",
+    "text": "Hej {firstName},\nTak for din registrering som kandidat! For at fuldføre registreringen skal du bekræfte din e-mailadresse ved at følge linket nedenfor:\n{registrationUrl}\nDu vil blive bedt om at vælge en adgangskode derefter."
+  },
+  "emailVerification": {
+    "content": "<p>I fremtiden vil din e-mailadresse fungere som dit brugernavn. Indtast den nedenfor to gange for at bekræfte, at den er korrekt.</p>",
+    "title": "Indtast e-mailadresse og accepter brugerbetingelserne"
+  },
+  "identification": {
+    "identifyYourselfButton": "Identificer dig selv",
+    "identifyYourselHelpText": "Du bliver omdirigeret til BankID-tjenesten. Når identifikationen er gennemført, bliver du sendt tilbage til denne side.",
+    "start": {
+      "content": "<p>For at registrere dig som kandidat skal du først bekræfte din identitet via BankID. Når den officielle kandidatliste er bekræftet, offentliggør vi din profil, hvis vi kan finde dig på listen. Vi bruger dit fulde navn og fødselsdato til at verificere dette.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Vælg din valgkreds",
+        "electionSelect": "Vælg valg",
+        "emailVerification": "Bekræft e-mailadresse",
+        "identification": "Identificer dig med BankID",
+        "passwordSelect": "Vælg adgangskode"
+      },
+      "title": "Registrér dig som kandidat"
+    },
+    "success": {
+      "content": "<p>Identifikation lykkedes. Tryk på knappen nedenfor for at fortsætte registreringen.</p>",
+      "heroEmoji": "👍",
+      "title": "Velkommen til Valgtesten, {firstName} {lastName}!"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Log ind med din e-mail og adgangskode, eller tjek din e-mail for bekræftelseslinket.",
+    "title": "Det ser ud til, at du allerede er registreret"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Det ser ud til, at du allerede er registreret. Tjek din e-mail for at bekræfte registreringen. Når registreringen er bekræftet, kan du logge ind med din e-mail og adgangskode.</p><p>Kontakt support, hvis du mener, at der er sket en fejl.</p>",
+      "title": "Du er allerede registreret som kandidat"
+    },
+    "loggedInError": {
+      "content": "<p>Du er allerede registreret som kandidat. Gå til din konto for at fortsætte.</p>",
+      "title": "Du er allerede logget ind"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Klik på knappen nedenfor for at prøve igen eller kontakt support, hvis problemet fortsætter.</p>",
+      "title": "Der opstod et problem med BankID-verificeringen"
+    },
+    "success": {
+      "content": "<p>Vi har sendt en besked til din e-mail. Klik på linket i beskeden for at bekræfte din e-mailadresse og fuldføre registreringen.</p><p>Bemærk, at det kan tage lidt tid, før e-mailen ankommer. Tjek også din spammappe.</p><p>Du kan nu lukke dette vindue.</p>",
+      "heroEmoji": "✉️",
+      "title": "Bekræft din e-mailadresse"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Identificer dig igen for at fuldføre registreringsprocessen.</p>",
+      "title": "Din session er udløbet"
+    },
+    "unknownError": {
+      "content": "<p>Klik på knappen nedenfor for at prøve igen eller kontakt support, hvis problemet fortsætter.</p>",
+      "title": "Noget gik galt"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "code": "registreringskode",
+  "codePlaceholder": "F.eks. CP23-174a-f4%&-aHAB",
+  "enterCode": "Indtast den registreringskode, du har modtaget pr. e-mail, for at fuldføre din registrering.",
+  "loggedInWarning": "En bruger er i øjeblikket logget ind. Log ud, før du fortsætter.",
+  "passwordValidation": {
+    "commonPatterns": "Indeholder almindelige mønstre eller sekvenser",
+    "length": "Mindst {minPasswordLength} tegn",
+    "lowercase": "Lille bogstav",
+    "number": "Tal",
+    "repetition": "Indeholder gentagne tegn",
+    "symbol": "Symbol (såsom !?%#€)",
+    "uppercase": "Stort bogstav",
+    "username": "Undgå at bruge dit navn i adgangskoden"
+  },
+  "register": "Registrér",
+  "title": "Registrering",
+  "titleWithPreregistration": "Bekræft din e-mailadresse",
+  "wrongRegistrationCode": "Forkert registreringskode"
+}

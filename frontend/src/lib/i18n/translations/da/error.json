@@ -1,0 +1,10 @@
+{
+  "404": "Siden blev ikke fundet, beklager!",
+  "500": "Intern serverfejl, beklager!",
+  "content": "<p>Vi beklager ulejligheden. Du kan prøve at gå tilbage og genindlæse siden for at se, om problemet fortsætter.</p><p>Hvis problemet fortsætter, så send venligst en e-mail til {adminEmailLink} og beskriv problemet. Tak!</p>",
+  "default": "Noget gik galt, beklager!",
+  "general": "Noget gik galt",
+  "noNominations": "Der er ingen kandidater eller partier i din valgkreds, der har besvaret Valgtesten.",
+  "noQuestions": "Der er endnu ingen spørgsmål knyttet til din valgkreds i Valgtesten.",
+  "unsupportedQuestion": "Dette spørgsmål kan ikke vises, beklager!"
+}
