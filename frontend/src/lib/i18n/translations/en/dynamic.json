@@ -76,6 +76,11 @@
     "content": "<p>We're very sorry, the Election Compass is currently unavailable due to maintenance. It should be back in use shortly, so please try again later.</p><p>Don’t worry if you were just in the middle of answering. You can continue from where you left off, when you come back.</p>",
     "heroEmoji": "🛠️"
   },
+  "nominations": {
+    "title": "All registered candidates",
+    "content": "On this page, you can find all the candidates that have filled in the Election Compass.",
+    "heroEmoji": "🔍"
+  },
   "privacy": {
     "content": "The privacy and data collection of the application is outlined below.",
     "dataConsentIntro": {

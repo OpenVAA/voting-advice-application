@@ -19,6 +19,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   - `'details'`: As part of the header of `EntityDetails`.
   - `'subcard'`; In a list of nested nakedEntity cards, e.g., the candidates for a party.
 - `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default `3`
+- `showElection`: Whether to show the possible nomination’s election and constituency. @default `false`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
@@ -69,6 +70,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   export let entity: $$Props['entity'];
   export let variant: $$Props['variant'] = 'list';
   export let maxSubcards: $$Props['maxSubcards'] = undefined;
+  export let showElection: $$Props['showElection'] = undefined;
 
   // We have to set the default value like this, otherwise the value is treated later as possibly undefined
   maxSubcards ??= 3;
@@ -212,6 +214,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
             {/if}
             {#if electionSymbol}
               <ElectionSymbol text={electionSymbol} />
+            {/if}
+            {#if showElection && nomination?.election && nomination?.constituency}
+              <span>
+                {nomination.election.shortName}
+                {$t('common.multipleAnswerSeparator')}
+                {nomination.constituency.name}
+              </span>
             {/if}
           {/if}
         </div>
