@@ -1,5 +1,6 @@
 import { derived, get, writable } from 'svelte/store';
 import { createPollingService } from './pollingService';
+import type { AdminJobName } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { JobStores } from './jobStores.type';
 
@@ -26,14 +27,14 @@ export function jobStores(): JobStores {
     pastJobsStore
   });
 
-  function getActiveJobForFeature(feature: string): JobInfo | null {
+  function getActiveJobForFeature(jobType: AdminJobName): JobInfo | null {
     const activeJobs = get(activeJobsStore);
-    return activeJobs.get(feature) || null;
+    return activeJobs.get(jobType) || null;
   }
 
-  function getPastJobsForFeature(feature: string): Array<JobInfo> {
+  function getPastJobsForFeature(jobType: AdminJobName): Array<JobInfo> {
     const pastJobs = get(pastJobsStore);
-    return Array.from(pastJobs.values()).filter((job) => job.feature === feature);
+    return Array.from(pastJobs.values()).filter((job) => job.jobType === jobType);
   }
 
   return {

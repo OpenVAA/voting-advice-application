@@ -1,11 +1,12 @@
 import { handleQuestion } from '@openvaa/argument-condensation';
+import { AbortError, type Id } from '@openvaa/core';
 import { type AnyQuestionVariant, ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/data';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
+import { markAborted } from '../jobs/jobStore';
 import { PipelineController } from '../jobs/pipelineController';
 import type { ArgumentType, LocalizedQuestionArguments } from '@openvaa/app-shared';
-import type { Id } from '@openvaa/core';
 import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -118,7 +119,7 @@ export async function condenseArguments({
         entities,
         options: {
           llmProvider: llm,
-          llmModel: 'gpt-4o-mini',
+          llmModel: 'gpt-4o',
           language: locale,
           runId,
           maxCommentsPerGroup: 1000,
@@ -195,7 +196,7 @@ export async function condenseArguments({
           );
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : JSON.stringify(error);
+        const message = (error as Error).message ?? JSON.stringify(error);
         controller.warning(`Error saving condensation results for question "${question.name}": ${message}`);
       }
     }
@@ -204,12 +205,14 @@ export async function condenseArguments({
 
     return { type: 'success' };
   } catch (error) {
-    const message = error instanceof Error ? error.message : JSON.stringify(error);
-
-    // Log the error
-    controller.error(`Argument condensation failed: ${message}`);
-    controller.fail(message);
-
+    // Job was aborted if the error is an AbortError. Avoid instanceof, check name instead
+    if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
+      markAborted(jobId);
+    } else {
+      // else it's a real error so we fail the job
+      const message = error && typeof error === 'object' && 'message' in error ? error.message : JSON.stringify(error);
+      controller.fail(`Argument condensation failed: ${message}`);
+    }
     throw error;
   }
 }

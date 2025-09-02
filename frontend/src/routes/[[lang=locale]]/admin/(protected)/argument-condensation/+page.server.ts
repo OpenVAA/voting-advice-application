@@ -53,7 +53,7 @@ export const actions = {
         id: jobData.id,
         status: jobData.status,
         progress: jobData.progress,
-        feature: jobData.feature
+        feature: jobData.jobType
       });
 
       console.info('[condense] calling condenseArguments()…');

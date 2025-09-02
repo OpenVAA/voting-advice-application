@@ -1,4 +1,26 @@
 {
   "title": "Argumentkondensation",
-  "description": "Kondensera och hantera argument för valfrågor."
+  "description": "Kondensera och hantera argument för valfrågor.",
+  "jobs": {
+    "noActiveJobs": "Inga aktiva jobb",
+    "startProcess": "Starta en argumentkondensationsprocess för att se realtidsövervakning"
+  },
+  "generate": {
+    "allQuestions": "Generera argument för alla åsiktsfrågor",
+    "button": "Generera argument",
+    "buttonLoading": "Genererar...",
+    "error": "Ett fel uppstod vid generering av argument",
+    "mayTakeTime": "Denna process kan ta flera minuter",
+    "noElectionsAvailable": "Inga val är för närvarande tillgängliga. Kontrollera din datakonfiguration.",
+    "noElectionSelected": "Välj först ett val",
+    "noQuestionsForElection": "Inga åsiktsfrågor hittades för det valda valet.",
+    "noQuestionSelected": "Välj minst en fråga",
+    "selectElection": "Välj val",
+    "selectElectionPlaceholder": "Välj ett val...",
+    "selectedQuestions": "Generera argument endast för valda frågor",
+    "questionType": "Frågeval",
+    "selectAll": "Välj alla",
+    "unselectAll": "Avmarkera alla",
+    "errorLoadingQuestions": "Fel vid laddning av frågor: {error}"
+  }
 }

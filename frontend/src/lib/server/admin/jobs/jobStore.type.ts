@@ -1,10 +1,12 @@
+import type { AdminJobName } from '$lib/admin/features';
+
 /**
  * Information about an admin job. A job is a long-running process that is used to perform a task.
  * The information is used to track the job's progress and status and display it to the admin.
  * @example
  * {
  *   id: '123',
- *   feature: 'argument-condensation',
+ *   jobType: 'argument-condensation',
  *   author: 'admin@example.com',
  *   status: 'running',
  *   progress: 0.5,
@@ -16,18 +18,11 @@
  *   errorMessages: []
  * }
  */
-
-export interface JobMessage {
-  type: 'info' | 'warning' | 'error';
-  message: string;
-  timestamp: string; // ISO
-}
-
 export interface JobInfo {
   id: string;
-  feature: string;
+  jobType: AdminJobName;
   author: string; // admin email
-  status: 'running' | 'completed' | 'failed';
+  status: JobStatus;
   progress: number; // 0-1 range
   startTime: string; // ISO
   endTime?: string; // ISO, set when job completes or fails
@@ -36,3 +31,27 @@ export interface JobInfo {
   warningMessages: Array<JobMessage>;
   errorMessages: Array<JobMessage>;
 }
+export interface JobMessage {
+  type: 'info' | 'warning' | 'error';
+  message: string;
+  timestamp: string; // ISO
+}
+
+// -------------------------------------------------------------------------------------------------
+// are these types ok here or should we move them to lib/admin/ ?
+export type JobStatus = 'running' | 'completed' | 'failed' | 'aborted' | 'aborting';
+
+export type PastJobStatus = Exclude<JobStatus, 'running' | 'aborting'>;
+export type ActiveJobStatus = Exclude<JobStatus, 'completed' | 'failed' | 'aborted'>;
+
+type JobQueryParamsBase = {
+  jobType?: AdminJobName;
+};
+
+export type ActiveJobQueryParams = JobQueryParamsBase;
+
+export type PastJobQueryParams = JobQueryParamsBase & {
+  statuses?: ReadonlyArray<JobStatus>;
+  startFrom?: Date;
+};
+// -------------------------------------------------------------------------------------------------
