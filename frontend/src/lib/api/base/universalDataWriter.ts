@@ -1,3 +1,4 @@
+import qs from 'qs';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import type { Id } from '@openvaa/core';
@@ -14,7 +15,6 @@ import type {
   GetActiveJobsOptions,
   GetCandidateUserDataOptions,
   GetJobProgressOptions,
-  GetJobsOptions,
   GetPastJobsOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
@@ -175,41 +175,40 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
 
-  async getJobs(opts: GetJobsOptions): Promise<{ activeJobs: Array<JobInfo>; pastJobs: Array<JobInfo> }> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+  /**
+   * Build query string from job options for API requests.
+   *
+   * Handles the different parameter sets between active and past job queries:
+   * - Active jobs: jobType only
+   * - Past jobs: jobType, statuses array, and startFrom date
+   *
+   * @param opts - Job query options with authToken omitted
+   * @returns URL-encoded query string, empty string if no valid params
+   */
+  private buildJobQuery(opts: Omit<GetActiveJobsOptions, 'authToken'> | Omit<GetPastJobsOptions, 'authToken'>): string {
+    const params: Record<string, unknown> = {};
 
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobs);
-    const queryParams = new URLSearchParams();
+    // Both active and past jobs
+    if (opts.jobType) params.jobType = opts.jobType;
 
-    if (opts.feature) queryParams.append('feature', opts.feature);
-    if (opts.status) queryParams.append('status', opts.status);
-    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
-
-    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${opts.authToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get jobs: ${response.statusText}`);
+    // Past jobs only (expect statuses as an array)
+    if ('statuses' in opts && Array.isArray(opts.statuses) && opts.statuses.length) {
+      params.statuses = opts.statuses;
+    }
+    if ('startFrom' in opts && opts.startFrom) {
+      params.startFrom = opts.startFrom.toISOString();
     }
 
-    return response.json();
+    return qs.stringify(params, { encodeValuesOnly: true });
   }
 
   async getActiveJobs(opts: GetActiveJobsOptions): Promise<Array<JobInfo>> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
 
     const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsActive);
-    const queryParams = new URLSearchParams();
+    const query = this.buildJobQuery(opts);
 
-    // Ignore opts.status and only look for active jobs
-    if (opts.feature) queryParams.append('feature', opts.feature);
-    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
-
-    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
+    const response = await this.fetch(query ? `${url}?${query}` : url, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${opts.authToken}`
@@ -227,13 +226,9 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
 
     const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsPast);
-    const queryParams = new URLSearchParams();
+    const query = this.buildJobQuery(opts);
 
-    if (opts.feature) queryParams.append('feature', opts.feature);
-    if (opts.status) queryParams.append('status', opts.status);
-    if (opts.startFrom) queryParams.append('startFrom', opts.startFrom);
-
-    const response = await this.fetch(`${url}?${queryParams.toString()}`, {
+    const response = await this.fetch(`${url}?${query}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${opts.authToken}`
@@ -294,8 +289,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     const response = await this.fetch(url, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${opts.authToken}`
-      }
+      },
+      body: JSON.stringify({ reason: opts.reason ?? 'Admin requested abort' })
     });
 
     if (!response.ok) {
@@ -314,10 +311,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${opts.authToken}`
-      },
-      body: JSON.stringify({
-        feature: opts.feature
-      })
+      }
     });
 
     if (!response.ok) {

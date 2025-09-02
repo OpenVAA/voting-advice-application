@@ -25,35 +25,29 @@ The system consists of:
 - Info, warning, and error messages
 - Automatic timestamp tracking
 
-### 3. Health Monitoring
+### 3. Message Management
 
-- System health checks
-- Stale job detection
-- Automatic cleanup every 5 minutes
-
-### 4. Recovery Mechanisms
-
-- Force-fail individual jobs
-- Emergency cleanup for system recovery
-- Manual job management
+- Info, warning, and error message tracking
+- Automatic message limit enforcement (1000 messages per type)
+- Timestamp tracking for all messages
 
 ## Usage
 
 ### Creating a Job
 
 ```typescript
-import { createJob } from '$lib/jobs/jobStore';
+import { createJob } from '$lib/server/admin/jobs/jobStore';
 
-const jobId = createJob('argument-condensation', 'admin@example.com');
+const job = createJob('ArgumentCondensation', 'admin@example.com');
 ```
 
-### Using JobLogger
+### Using PipelineController
 
 ```typescript
-import { PipelineController } from '$lib/jobs/pipelineLogger';
+import { PipelineController } from '$lib/server/admin/jobs/pipelineController';
 
-// Create controller immediately, initialize pipeline later
-const controller = new PipelineController(jobId, fetch);
+// Create controller with job ID
+const controller = new PipelineController(job.id);
 
 // ... later, when questions are known ...
 const pipeline = createQuestionPipeline(supportedQuestions);
@@ -68,141 +62,75 @@ controller.updateSubOperation('data-loading', 1.0); // Complete data loading
 controller.updateSubOperation('question-processing', 0.5); // 50% through question processing
 
 // Add messages
-await controller.info('Processing question 1');
-await controller.warning('Low confidence in answer');
-await controller.error('API rate limit exceeded');
+controller.info('Processing question 1');
+controller.warning('Low confidence in answer');
+controller.error('API rate limit exceeded');
 
 // Complete or fail
-await controller.complete();
+controller.complete();
 // or
-await controller.fail('Error message');
+controller.fail('Error message');
 ```
 
 ### Monitoring Jobs
 
 ```typescript
-import { getJob, getAllJobs, getSystemHealth } from '$lib/jobs/jobStore';
+import { getJob, getActiveJobs, getPastJobs } from '$lib/server/admin/jobs/jobStore';
 
 // Get specific job
 const job = getJob(jobId);
 
 // Get all active jobs
-const activeJobs = getAllJobs();
+const activeJobs = getActiveJobs();
 
-// Check system health
-const health = getSystemHealth();
+// Get all past jobs
+const pastJobs = getPastJobs();
 ```
 
 ## API Endpoints
 
 ### Core Operations
 
-- `GET /api/admin/jobs` - Get active jobs
-- `GET /api/admin/jobs?includePast=true` - Get all jobs (active + past)
+- `GET /api/admin/jobs/active` - Get active jobs
+- `GET /api/admin/jobs/past` - Get past jobs
 - `POST /api/admin/jobs/start` - Start a new job
-- `GET /api/admin/jobs/[id]/progress` - Get job progress
+- `GET /api/admin/jobs/single/[id]/progress` - Get job progress
 
-### Health & Recovery
+### Job Control
 
-- `GET /api/admin/jobs/health` - Get system health
-- `POST /api/admin/jobs/emergency-cleanup` - Emergency cleanup
-- `POST /api/admin/jobs/[id]/force-fail` - Force fail a job
+- `POST /api/admin/jobs/single/[id]/abort` - Request job abort
+- `POST /api/admin/jobs/abort-all` - Abort all running jobs
 
 > **Note**: Job updates (progress, messages, completion) are now handled directly by the job store functions when used within the same process. The PipelineController automatically calls these functions instead of making HTTP requests.
 
 ## Configuration
 
-The system uses these constants (configurable in `jobStore.ts`):
+The system uses constants from `shared.ts`:
 
 ```typescript
-const JOB_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-const JOB_ACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-const MAX_ACTIVE_JOBS = 50;
-const MAX_PAST_JOBS = 100;
+import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from './shared';
+
+// Message limits per job (info, warning, error)
+DEFAULT_MAX_MESSAGES = 1000;
+
+// UI message container height
+DEFAULT_MESSAGES_HEIGHT = 'max-h-64';
 ```
 
-## Recovery from Stuck Jobs
+## Job Lifecycle
 
-### Automatic Recovery
+Jobs progress through these states:
 
-- Jobs are automatically marked as failed after 30 minutes
-- Jobs with no activity for 10 minutes are considered stale
-- Cleanup runs every 5 minutes
-
-### Manual Recovery
-
-1. **Individual Job**: Use the "Force Fail" button in the UI
-2. **System-wide**: Use the "Emergency Cleanup" button
-3. **API**: Call the emergency cleanup endpoint
-
-### Emergency Cleanup
-
-```typescript
-import { emergencyCleanup } from '$lib/jobs/jobStore';
-
-const result = emergencyCleanup();
-// This will force-fail ALL running jobs and clean up the system
-```
-
-## Testing
-
-Run the test script to verify functionality:
-
-```typescript
-import { testJobStore, testEmergencyCleanup } from './test-jobStore';
-
-testJobStore();
-testEmergencyCleanup();
-```
+- `running` - Job is actively processing
+- `aborting` - Abort requested, job cleaning up
+- `completed` - Job finished successfully
+- `failed` - Job encountered an error
+- `aborted` - Job was cancelled
 
 ## Best Practices
 
-1. **Always use JobLogger**: Don't manually update jobs, use the controller
+1. **Use PipelineController**: Don't manually update jobs, use the controller
 2. **Handle errors gracefully**: Use try-catch and call `controller.fail()`
-3. **Monitor system health**: Check for stale jobs regularly
-4. **Use appropriate timeouts**: Jobs should complete within reasonable time
-5. **Clean up resources**: Jobs automatically move to past jobs when done
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Jobs stuck in "running" state**
-
-   - Check system health for stale jobs
-   - Use emergency cleanup if needed
-   - Verify the job process is actually running
-
-2. **Memory issues**
-
-   - Check past job count
-   - Reduce `MAX_PAST_JOBS` if needed
-   - Run cleanup manually
-
-3. **UI not updating**
-   - Check if jobs are stale
-   - Verify API endpoints are working
-   - Check browser console for errors
-
-### Debug Commands
-
-```typescript
-// Check system health
-console.log(getSystemHealth());
-
-// List all jobs
-console.log('Active:', getAllJobs());
-console.log('Past:', getAllPastJobs());
-
-// Force cleanup
-cleanupStaleJobs();
-```
-
-## Future Improvements
-
-- Database persistence for jobs
-- Job queuing and prioritization
-- Distributed job processing
-- Job retry mechanisms
-- Advanced scheduling
-- Metrics and analytics
+3. **Update progress regularly**: Keep users informed of job status
+4. **Check abort status**: Respect user cancellation requests with `isAbortRequested()`
+5. **Clean messaging**: Jobs automatically move to past jobs when completed

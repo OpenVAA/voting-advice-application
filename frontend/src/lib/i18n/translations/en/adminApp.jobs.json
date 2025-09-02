@@ -1,0 +1,43 @@
+{
+  "title": "Admin Control Panel",
+  "emergencyCleanup": "Emergency cleanup",
+  "argumentCondensation": {
+    "title": "Argument Condensation"
+  },
+  "questionInfoGeneration": {
+    "title": "Question Info Generation"
+  },
+  "confirmAbortAll": "Are you sure you want to abort ALL running jobs?",
+  "authRequired": "Authentication required",
+  "abortAllFailed": "Emergency cleanup failed. Check console for details.",
+  "systemHealth": "System Health",
+  "activeJobs": "Active Jobs",
+  "successfulJobs": "Successful Jobs",
+  "failedJobs": "Failed Jobs",
+  "abortedJobs": "Aborted Jobs",
+  "abortingInfo": "Abort requested. Waiting for the pipeline to stop and clean up safely.",
+  "abortJob": "Abort Job",
+  "pastJobs": "Past Jobs",
+  "hidePastJobs": "Hide past jobs",
+  "showPastJobs": "Show past jobs",
+  "pastJobsDescription": "Past Jobs",
+  "noActiveJobs": "No active jobs",
+  "noPastJobs": "No past jobs",
+  "started": "Started",
+  "messages": "Messages",
+  "notAvailable": "N/A",
+  "confirmAbortJob": "Are you sure you want to abort this {feature} job?",
+  "abortJobFailed": "Failed to abort job. Check console for details.",
+  "alreadyRunning": "A job is already running. Please wait for it to finish.",
+  "progress": "Progress",
+  "warningsAndErrors": "Warnings & Errors",
+  "noWarningsOrErrors": "No warnings or errors",
+  "infoMessages": "Info Messages",
+  "noInfoMessages": "No info messages",
+  "author": "Author",
+  "duration": "Duration",
+  "aborting": "Aborting…",
+  "hideMessages": "Hide messages",
+  "showMessages": "Show messages",
+  "id": "ID"
+}

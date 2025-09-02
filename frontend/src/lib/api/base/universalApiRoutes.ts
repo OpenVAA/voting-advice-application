@@ -15,7 +15,6 @@ export const UNIVERSAL_API_ROUTES = {
   token: `${API_ROOT}/oidc/token`,
 
   // Job management routes for the Admin App
-  jobs: '/api/admin/jobs',
   jobsActive: '/api/admin/jobs/active',
   jobsPast: '/api/admin/jobs/past',
   jobStart: '/api/admin/jobs/start',

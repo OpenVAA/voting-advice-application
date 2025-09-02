@@ -1,9 +1,11 @@
-import { ADMIN_FEATURE } from '$lib/admin/features';
+import { ADMIN_FEATURE, type AdminJobName } from '$lib/admin/features';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import type { Writable } from 'svelte/store';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { PollingService } from './pollingService.type';
 
+// TODO: add error handling, like exp backoff and giving up after a few retries & ofc UI updates
+// 
 /**
  * Create a smart polling service that automatically starts/stops based on active job count
  * @param activeJobsStore - A writable store containing active job counts for each feature
@@ -13,14 +15,14 @@ export function createPollingService({
   activeJobsStore,
   pastJobsStore
 }: {
-  activeJobsStore: Writable<Map<string, JobInfo | null>>;
-  pastJobsStore: Writable<Map<string, JobInfo>>;
+  activeJobsStore: Writable<Map<AdminJobName, JobInfo | null>>;
+  pastJobsStore: Writable<Map<AdminJobName, JobInfo>>;
 }): PollingService {
   let pollInterval: ReturnType<typeof setInterval> | null = null; // Polling frequency in milliseconds
   let isPolling = false;
 
-  // An ISO timestamp to keep track of the last update for past jobs
-  // Works as a delta cursor so we don't fetch the same data again
+  // Keep track of the last update for past jobs with an ISO timestamp
+  // Works as a delta cursor, so we don't fetch the same data again
   let lastPastJobsUpdate: string | undefined;
 
   // Create a set of known job names for efficient validation
@@ -58,12 +60,11 @@ export function createPollingService({
     try {
       console.info('[JobPollingService] Fetching jobs...');
 
-      // Always fetch active jobs (no delta)
+      // Always fetch all active jobs (no delta)
       const activeUrl = new URL(UNIVERSAL_API_ROUTES.jobsActive, window.location.origin);
 
-      // Only use delta for past jobs
+      // Use delta updates for past jobs
       const pastUrl = new URL(UNIVERSAL_API_ROUTES.jobsPast, window.location.origin);
-      pastUrl.searchParams.set('status', 'completed,failed');
       if (lastPastJobsUpdate) {
         pastUrl.searchParams.set('startFrom', lastPastJobsUpdate);
       }
@@ -94,15 +95,15 @@ export function createPollingService({
         const activeMap = new Map<string, JobInfo | null>();
 
         // Add active jobs by feature, validating against known features
-        for (const job of activeJobs.filter((j) => j.status === 'running')) {
-          if (knownJobNames.has(job.feature)) {
-            activeMap.set(job.feature, job);
-            console.info('[JobPollingService] Set active job:', job.feature);
+        for (const job of activeJobs.filter((j) => j.status === 'running' || j.status === 'aborting')) {
+          if (knownJobNames.has(job.jobType)) {
+            activeMap.set(job.jobType, job);
+            console.info('[JobPollingService] Set active job:', job.jobType);
           } else {
             console.warn(
-              `[JobPollingService] Unknown job feature: ${job.feature}. Deleting it from active jobs store.`
+              `[JobPollingService] Unknown job feature: ${job.jobType}. Deleting it from active jobs store.`
             );
-            activeMap.delete(job.feature);
+            activeMap.delete(job.jobType);
           }
         }
 
@@ -115,10 +116,10 @@ export function createPollingService({
           console.info('[JobPollingService] Updating past jobs store');
           const pastMap = new Map(prev);
           for (const job of pastJobs) {
-            if (knownJobNames.has(job.feature)) {
+            if (knownJobNames.has(job.jobType)) {
               pastMap.set(job.id, job);
             } else {
-              console.warn(`[JobPollingService] Unknown job feature: ${job.feature}. Deleting from past jobs store.`);
+              console.warn(`[JobPollingService] Unknown job feature: ${job.jobType}. Deleting from past jobs store.`);
               pastMap.delete(job.id);
             }
           }

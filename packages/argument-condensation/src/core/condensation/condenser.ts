@@ -1,4 +1,4 @@
-import { BaseController } from '@openvaa/core';
+import { AbortError, BaseController } from '@openvaa/core';
 import * as path from 'path';
 import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
@@ -149,7 +149,7 @@ export class Condenser {
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
-    // NEW: Granularize progress tracking by defining sub-operations for each processing step
+    //  Granularize progress tracking by defining sub-operations for each processing step
     if (processingSteps.length > 0) {
       const currentOperationId = this.controller.getCurrentOperation()?.id;
       if (currentOperationId) {
@@ -753,9 +753,12 @@ export class Condenser {
         this.controller
       );
     } catch (error) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
+        throw error;
+      }
       // If the provider fails after all retries, we add context and re-throw to abort the condensation.
       throw new Error(
-        `${operation} operation failed for ${logIdentifier}. The LLM provider could not get a valid response. Error: ${
+        `${operation} operation failed for ${logIdentifier}. The LLM Provider failed to provide a valid response. Reason: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
       );
