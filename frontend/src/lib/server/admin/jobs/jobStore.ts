@@ -3,47 +3,12 @@
  * This is a global in-memory store that will be replaced with a database later
  */
 
-import type { JobInfo } from './jobStore.type';
+import type { AdminFeature } from '$lib/admin/features';
+import type { JobInfo, PastJobStatus } from './jobStore.type';
 
 // Global in-memory job stores
 const activeJobs = new Map<string, JobInfo>();
 const pastJobs = new Map<string, JobInfo>();
-
-// Configuration for job timeouts and cleanup
-const JOB_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
-const JOB_ACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes of inactivity
-const MAX_ACTIVE_JOBS = 50; // Maximum number of active jobs to prevent memory bloat
-const MAX_PAST_JOBS = 100; // Maximum number of past jobs to keep
-
-// Cleanup interval (runs every 5 minutes)
-let cleanupInterval: NodeJS.Timeout | null = null;
-
-/**
- * Initialize the job store with automatic cleanup
- */
-function initializeJobStore(): void {
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-  }
-
-  // Run cleanup every 5 minutes
-  cleanupInterval = setInterval(
-    () => {
-      cleanupStaleJobs();
-      cleanupOldPastJobs(MAX_PAST_JOBS);
-    },
-    5 * 60 * 1000
-  );
-
-  // Also run cleanup on process exit
-  if (typeof process !== 'undefined') {
-    process.on('exit', () => {
-      if (cleanupInterval) {
-        clearInterval(cleanupInterval);
-      }
-    });
-  }
-}
 
 /**
  * Create a new job entry
@@ -51,13 +16,13 @@ function initializeJobStore(): void {
  * @param author - Admin email who started the job
  * @returns The created job ID
  */
-export function createJob(feature: string, author: string): JobInfo {
+export function createJob(feature: AdminFeature, author: string): JobInfo {
   const jobId = crypto.randomUUID();
   const now = new Date();
 
   const job: JobInfo = {
     id: jobId,
-    feature,
+    jobType: feature,
     author,
     status: 'running',
     progress: 0,
@@ -69,11 +34,6 @@ export function createJob(feature: string, author: string): JobInfo {
   };
 
   activeJobs.set(jobId, job);
-
-  // Initialize cleanup if this is the first job
-  if (activeJobs.size === 1 && !cleanupInterval) {
-    initializeJobStore();
-  }
 
   return job;
 }
@@ -159,7 +119,7 @@ export function addJobErrorMessage(jobId: string, message: string): void {
  * @param jobId - The job ID to move
  * @param status - The final status of the job
  */
-function moveJobToPast(jobId: string, status: 'completed' | 'failed'): void {
+function moveJobToPast(jobId: string, status: PastJobStatus): void {
   const job = activeJobs.get(jobId);
   if (job) {
     // Update job with final status and end time
@@ -204,128 +164,49 @@ export function failJob(jobId: string, errorMessage?: string): void {
 }
 
 /**
- * Force fail a job (useful for recovery from stuck jobs)
- * @param jobId - The job ID to force fail
- * @param reason - Reason for force failing
- */
-export function abortJob(jobId: string, reason: string): void {
-  const job = activeJobs.get(jobId);
-  if (job) {
-    addJobErrorMessage(jobId, `Job aborted: ${reason}`);
-    moveJobToPast(jobId, 'failed');
-  } else {
-    // Check if it's already in past jobs
-    const pastJob = pastJobs.get(jobId);
-    if (pastJob && pastJob.status === 'running') {
-      pastJob.status = 'failed';
-      pastJob.endTime = new Date().toISOString();
-      pastJob.lastActivityTime = new Date().toISOString();
-      pastJob.errorMessages.push({
-        type: 'error',
-        message: `Job aborted: ${reason}`,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }
-}
-
-/**
- * Clean up stale jobs that have been running too long or are inactive
- */
-export function cleanupStaleJobs(): void {
-  const now = new Date();
-  const staleJobs: Array<{ jobId: string; reason: string }> = [];
-
-  // Check for jobs that have been running too long
-  for (const [jobId, job] of activeJobs.entries()) {
-    const runningTime = now.getTime() - new Date(job.startTime).getTime();
-    const inactiveTime = now.getTime() - new Date(job.lastActivityTime).getTime();
-
-    if (runningTime > JOB_TIMEOUT_MS) {
-      staleJobs.push({ jobId, reason: `Job running too long (${Math.round(runningTime / 60000)} minutes)` });
-    } else if (inactiveTime > JOB_ACTIVITY_TIMEOUT_MS) {
-      staleJobs.push({ jobId, reason: `Job inactive too long (${Math.round(inactiveTime / 60000)} minutes)` });
-    }
-  }
-
-  // Force fail all stale jobs
-  for (const { jobId, reason } of staleJobs) {
-    console.warn(`Cleaning up stale job ${jobId}: ${reason}`);
-    abortJob(jobId, reason);
-  }
-
-  // If we have too many active jobs, fail the oldest ones
-  if (activeJobs.size > MAX_ACTIVE_JOBS) {
-    const sortedJobs = Array.from(activeJobs.entries()).sort(
-      (a, b) => new Date(a[1].startTime).getTime() - new Date(b[1].startTime).getTime()
-    );
-
-    const jobsToFail = sortedJobs.slice(0, activeJobs.size - MAX_ACTIVE_JOBS);
-    for (const [jobId] of jobsToFail) {
-      console.warn(`Cleaning up excess active job ${jobId}: Too many active jobs`);
-      abortJob(jobId, 'Too many active jobs - auto-cleanup');
-    }
-  }
-
-  if (staleJobs.length > 0) {
-    console.info(`Cleaned up ${staleJobs.length} stale jobs`);
-  }
-}
-
-/**
- * Clean up old past jobs to prevent memory bloat
- * This keeps only the last 100 past jobs across all features
- * @param maxPastJobs - Maximum number of past jobs to keep (default: 100)
- */
-export function cleanupOldPastJobs(maxPastJobs: number = MAX_PAST_JOBS): void {
-  if (pastJobs.size <= maxPastJobs) {
-    return; // No cleanup needed
-  }
-
-  // Sort by end time (newest first) and keep only the most recent ones
-  const sortedJobs = Array.from(pastJobs.values()).sort((a, b) => {
-    const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
-    const bTime = b.endTime ? new Date(b.endTime).getTime() : 0;
-    return bTime - aTime;
-  });
-
-  // Clear all past jobs
-  pastJobs.clear();
-
-  // Keep only the most recent ones
-  for (let i = 0; i < Math.min(maxPastJobs, sortedJobs.length); i++) {
-    pastJobs.set(sortedJobs[i].id, sortedJobs[i]);
-  }
-
-  console.info(`Cleaned up past jobs: kept ${pastJobs.size} most recent jobs`);
-}
-
-/**
  * Clean up all past jobs for a feature (useful for testing/reset)
  * @param feature - The feature name to clean up
  */
 export function cleanupPastJobsForFeature(feature: string): void {
   for (const [jobId, job] of pastJobs.entries()) {
-    if (job.feature === feature) {
+    if (job.jobType === feature) {
       pastJobs.delete(jobId);
     }
   }
 }
 
 /**
- * Clean up all jobs (active and past) for a feature (useful for testing/reset)
- * @param feature - The feature name to clean up
+ * Request cooperative abort for a running job
+ * Sets status to 'aborting' and logs a warning
+ * @param jobId - The job ID
+ * @param reason - Optional reason
  */
-export function cleanupAllJobsForFeature(feature: string): void {
-  // Clean up active jobs
-  for (const [jobId, job] of activeJobs.entries()) {
-    if (job.feature === feature) {
-      activeJobs.delete(jobId);
-    }
+export function requestAbort(jobId: string, reason?: string): void {
+  const job = activeJobs.get(jobId);
+  if (job) {
+    job.status = 'aborting'; // Set status to 'aborting', but keep in active jobs
+    addJobWarningMessage(jobId, `Abort requested: ${reason ?? 'No message provided'}`);
+    job.lastActivityTime = new Date().toISOString();
   }
+}
 
-  // Clean up past jobs
-  cleanupPastJobsForFeature(feature);
+/**
+ * Check if an abort has been requested for a job
+ */
+export function isAbortRequested(jobId: string): boolean {
+  const job = activeJobs.get(jobId);
+  return job?.status === 'aborting';
+}
+
+/**
+ * Mark a job as aborted (move to past with status 'aborted')
+ */
+export function markAborted(jobId: string): void {
+  const job = activeJobs.get(jobId);
+  if (job) {
+    addJobWarningMessage(jobId, 'Job aborted');
+  }
+  moveJobToPast(jobId, 'aborted');
 }
 
 /**

@@ -7,7 +7,7 @@ import type {
 } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
-import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
+import type { ActiveJobQueryParams, JobInfo, PastJobQueryParams } from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 import type { DPDataType } from './dataTypes';
@@ -224,9 +224,8 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
 
   // Job management methods for the Admin App
-  getJobs: (opts: GetJobsOptions) => DWReturnType<{ activeJobs: Array<JobInfo>; pastJobs: Array<JobInfo> }, TType>;
-  getActiveJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
-  getPastJobs: (opts: GetJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  getActiveJobs: (opts: GetActiveJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  getPastJobs: (opts: GetPastJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;
   getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
@@ -361,32 +360,23 @@ export type TemporarySetQuestionData = {
   };
 };
 
-interface GetJobsOptionsBase {
-  feature?: string;
-  status?: string;
-  startFrom?: string;
-}
+export type GetActiveJobsOptions = WithAuth & ActiveJobQueryParams;
 
-export interface GetJobsOptions extends WithAuth, GetJobsOptionsBase {}
+export type GetPastJobsOptions = WithAuth & PastJobQueryParams;
 
-// Base option "status" currently unused but may be used in the future if active jobs have e.g. status "queued" or similar
-export interface GetActiveJobsOptions extends WithAuth, GetJobsOptionsBase {}
-
-export interface GetPastJobsOptions extends WithAuth, GetJobsOptionsBase {}
-
-export interface StartJobOptions extends WithAuth {
+export type StartJobOptions = WithAuth & {
   feature: string;
   author: string;
-}
+};
 
-export interface GetJobProgressOptions extends WithAuth {
+export type GetJobProgressOptions = WithAuth & {
   jobId: string;
-}
+};
 
-export interface AbortJobOptions extends WithAuth {
+export type AbortJobOptions = WithAuth & {
   jobId: string;
-}
+  reason?: string;
+};
 
-export interface AbortAllJobsOptions extends WithAuth {
-  feature?: string; // Optional: abort all jobs for a specific feature
-}
+// Most likely will be extended in the future (e.g. cancel queued jobs also?)
+export type AbortAllJobsOptions = WithAuth & {};

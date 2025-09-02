@@ -1,0 +1,43 @@
+{
+  "title": "Kontrollipaneeli",
+  "argumentCondensation": {
+    "title": "Argumenttien tiivistäminen"
+  },
+  "questionInfoGeneration": {
+    "title": "Kysymystietojen luominen"
+  },
+  "emergencyCleanup": "Lopeta kaikki prosessit",
+  "confirmAbortAll": "Oletko varma, että haluat keskeyttää KAIKKI käynnissä olevat prosessit?",
+  "authRequired": "Todennus vaaditaan",
+  "abortAllFailed": "Prosessien keskeyttäminen epäonnistui. Tarkista logit lisätietoja varten.",
+  "systemHealth": "Järjestelmän tila",
+  "activeJobs": "Aktiiviset prosessit",
+  "successfulJobs": "Onnistuneet prosessit",
+  "failedJobs": "Epäonnistuneet prosessit",
+  "abortedJobs": "Keskeytetyt prosessit",
+  "abortingInfo": "Keskeytystä pyydetty. Voi mennä hetki, kunnes prosessi pysähtyy turvallisesti.",
+  "abortJob": "Keskeytä prosessi",
+  "pastJobs": "Aiemmat prosessit",
+  "hidePastJobs": "Piilota aiemmat prosessit",
+  "showPastJobs": "Näytä aiemmat prosessit",
+  "pastJobsDescription": "Aiemmat prosessit",
+  "noPastJobs": "Ei tallennettuja prosesseja",
+  "noActiveJobs": "Ei aktiivisia prosesseja",
+  "started": "Aloitettu",
+  "messages": "Viestit",
+  "notAvailable": "Ei saatavilla",
+  "confirmAbortJob": "Oletko varma, että haluat keskeyttää tämän {feature} prosessin?",
+  "abortJobFailed": "Prosessin keskeyttäminen epäonnistui. Tarkista logit lisätietoja varten.",
+  "alreadyRunning": "Prosessi on jo käynnissä. Odota sen valmistumista.",
+  "progress": "Edistyminen",
+  "warningsAndErrors": "Varoitukset ja virheet",
+  "noWarningsOrErrors": "Ei varoituksia tai virheitä",
+  "infoMessages": "Info-viestit",
+  "noInfoMessages": "Ei info-viestejä",
+  "author": "Tekijä",
+  "duration": "Kesto",
+  "aborting": "Keskeytetään…",
+  "hideMessages": "Piilota viestit",
+  "showMessages": "Näytä viestit",
+  "id": "ID"
+}

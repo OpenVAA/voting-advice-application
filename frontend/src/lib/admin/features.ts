@@ -14,7 +14,7 @@ export type AdminFeature = 'ArgumentCondensation' | 'QuestionInfoGeneration';
  * const argCondJobName = argCond.jobName; // used to identify the job in the jobs database
  * ```
  */
-export const ADMIN_FEATURE: Record<AdminFeature, { route: Route; jobName: string }> = {
+export const ADMIN_FEATURE: Record<AdminFeature, { route: Route; jobName: string }> = { // maybe add type to this object
   ArgumentCondensation: {
     route: 'AdminAppArgumentCondensation',
     jobName: 'argument-condensation'
@@ -24,3 +24,5 @@ export const ADMIN_FEATURE: Record<AdminFeature, { route: Route; jobName: string
     jobName: 'question-info-generation'
   }
 } as const;
+
+export type AdminJobName = (typeof ADMIN_FEATURE)[AdminFeature]['jobName'];
