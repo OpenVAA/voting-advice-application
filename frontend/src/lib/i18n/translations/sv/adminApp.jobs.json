@@ -1,0 +1,43 @@
+{
+  "title": "Admin Kontrollpanel",
+  "emergencyCleanup": "Nödrinsning",
+  "argumentCondensation": {
+    "title": "Argumentförenkling"
+  },
+  "questionInfoGeneration": {
+    "title": "Frågeinfogenerering"
+  },
+  "confirmAbortAll": "Är du säker på att du vill avbryta ALLA pågående jobb?",
+  "authRequired": "Autentisering krävs",
+  "abortAllFailed": "Nödrinsning misslyckades. Kontrollera konsolen för detaljer.",
+  "systemHealth": "Systemstatus",
+  "activeJobs": "Aktiva jobb",
+  "successfulJobs": "Lyckade jobb",
+  "failedJobs": "Misslyckade jobb",
+  "abortedJobs": "Avbrutna jobb",
+  "abortingInfo": "Avbrytning begärd. Väntar på att pipelinen ska stoppa och rensa säkert.",
+  "abortJob": "Avbryt jobb",
+  "pastJobs": "Tidigare jobb",
+  "hidePastJobs": "Dölj tidigare jobb",
+  "showPastJobs": "Visa tidigare jobb",
+  "pastJobsDescription": "Nyligen slutförda, misslyckade och avbrutna jobb",
+  "noPastJobs": "Inga tidigare jobb än",
+  "noActiveJobs": "Inga aktiva jobb",
+  "started": "Startad",
+  "messages": "Meddelanden",
+  "notAvailable": "Ej tillgänglig",
+  "confirmAbortJob": "Är du säker på att du vill avbryta detta {feature} jobb?",
+  "abortJobFailed": "Avbrytande av jobb misslyckades. Kontrollera konsolen för detaljer.",
+  "alreadyRunning": "Ett jobb körs redan. Vänta tills det är klart.",
+  "progress": "Förlopp",
+  "warningsAndErrors": "Varningar och fel",
+  "noWarningsOrErrors": "Inga varningar eller fel",
+  "infoMessages": "Info-meddelanden",
+  "noInfoMessages": "Inga info-meddelanden",
+  "author": "Författare",
+  "duration": "Varaktighet",
+  "aborting": "Avbryter…",
+  "hideMessages": "Dölj meddelanden",
+  "showMessages": "Visa meddelanden",
+  "id": "ID"
+}

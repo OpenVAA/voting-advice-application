@@ -1,4 +1,26 @@
 {
   "title": "Argumenttien tiivistäminen",
-  "description": "Tiivistä ja hallinnoi vaalikysymysten argumentteja."
+  "description": "Tiivistä ja hallinnoi vaalikysymysten argumentteja.",
+  "jobs": {
+    "noActiveJobs": "Ei aktiivisia prosesseja",
+    "startProcess": "Aloita argumenttien tiivistämisprosessi nähdäksesi reaaliaikaisen seurannan"
+  },
+  "generate": {
+    "allQuestions": "Luo argumentteja kaikille mielipidekysymyksille",
+    "button": "Luo argumentit",
+    "buttonLoading": "Luodaan...",
+    "error": "Virhe argumenttien luomisessa",
+    "mayTakeTime": "Tämä prosessi voi kestää useita minuutteja",
+    "noElectionsAvailable": "Vaalit eivät ole tällä hetkellä saatavilla. Tarkista datakonfiguraatiosi.",
+    "noElectionSelected": "Valitse ensin vaali",
+    "noQuestionsForElection": "Valitulle vaalille ei löytynyt mielipidekysymyksiä.",
+    "noQuestionSelected": "Valitse vähintään yksi kysymys",
+    "selectElection": "Valitse vaalit",
+    "selectElectionPlaceholder": "Valitse vaalit...",
+    "selectedQuestions": "Luo argumentteja vain valituille kysymyksille",
+    "questionType": "Kysymysten valinta",
+    "selectAll": "Valitse kaikki",
+    "unselectAll": "Poista kaikki valinnat",
+    "errorLoadingQuestions": "Virhe kysymysten lataamisessa: {error}"
+  }
 }

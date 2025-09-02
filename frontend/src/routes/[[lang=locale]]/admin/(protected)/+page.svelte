@@ -15,6 +15,7 @@ Main landing page for admin section showing available tools
 <MainContent title={$t('adminApp.common.home')}>
   <p class="text-center">{$t('adminApp.common.description')}</p>
 
+  <!-- Could also be dynamic based on the available features -->
   <div class="flex flex-col gap-sm">
     <Button href={$getRoute('AdminAppJobs')} text="Jobs Monitoring" icon="list" iconPos="left" />
 
@@ -35,6 +36,7 @@ Main landing page for admin section showing available tools
       href={$getRoute('AdminAppQuestionInfo')}
       text={$t('adminApp.questionInfo.title')}
       icon="create"
-      iconPos="left" />
+      iconPos="left"
+      disabled />
   </div>
 </MainContent>

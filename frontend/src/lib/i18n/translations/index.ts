@@ -11,6 +11,7 @@ export const keys = [
   'adminApp.common',
   'adminApp.error',
   'adminApp.factorAnalysis',
+  'adminApp.jobs',
   'adminApp.login',
   'adminApp.notSupported',
   'adminApp.questionInfo',
