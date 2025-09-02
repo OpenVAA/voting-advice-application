@@ -20,6 +20,7 @@ Display a question for answering.
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { Hero } from '$lib/components/hero';
   import { Loading } from '$lib/components/loading';
   import {
     OpinionQuestionInput,
@@ -163,6 +164,12 @@ Display a question for answering.
   {@const questions = $selectedQuestionBlocks.questions}
 
   <MainContent title={text}>
+    <figure role="presentation" slot="hero">
+      {#if customData?.hero}
+        <Hero content={customData?.hero} />
+      {/if}
+    </figure>
+
     <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
 
     {#if !customData.video}
