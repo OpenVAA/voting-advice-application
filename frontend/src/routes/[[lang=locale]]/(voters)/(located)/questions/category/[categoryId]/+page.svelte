@@ -23,7 +23,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Hero } from '$lib/components/hero';
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -89,8 +89,8 @@ Display the intro to a question category and possibly a button with which to ski
 {#if category}
   <MainContent title={category.name}>
     <figure role="presentation" slot="hero">
-      {#if customData?.emoji}
-        <HeroEmoji emoji={customData?.emoji} />
+      {#if customData?.hero}
+        <Hero content={customData?.hero} />
       {/if}
     </figure>
 

@@ -5,6 +5,7 @@
 import type {
   DynamicSettings,
   LocalizedAnswer,
+  LocalizedHeroContent,
   LocalizedQuestionArguments,
   LocalizedQuestionInfoSection,
   LocalizedTermDefinition,
@@ -121,6 +122,7 @@ export type StrapiQuestionTypeData = StrapiObject<{
 
 export type StrapiQuestionCustomData = {
   arguments?: Array<LocalizedQuestionArguments>;
+  hero?: LocalizedHeroContent;
   infoSections?: Array<LocalizedQuestionInfoSection>;
   terms?: Array<LocalizedTermDefinition>;
   video?: LocalizedVideoContent;
@@ -157,6 +159,7 @@ export type StrapiQuestionCategoryData = StrapiObject<{
 }>;
 
 export type StrapiQuestionCategoryCustomData = {
+  hero?: LocalizedHeroContent;
   video?: LocalizedVideoContent;
 };
 

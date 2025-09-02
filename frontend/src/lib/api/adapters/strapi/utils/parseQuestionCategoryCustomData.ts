@@ -1,3 +1,4 @@
+import { translateHeroContent } from '$lib/api/utils/translateHeroContent';
 import { translateVideoContent } from '$lib/api/utils/translateVideoContent';
 import type { CustomData } from '@openvaa/app-shared';
 import type { StrapiQuestionCategoryCustomData } from '../strapiData.type';
@@ -10,8 +11,9 @@ export function parseQuestionCategoryCustomData(
   locale: string | null
 ): CustomData['QuestionCategory'] {
   if (!data || typeof data !== 'object') return {};
-  const { video, ...rest } = data;
+  const { hero, video, ...rest } = data;
   return {
+    hero: hero && translateHeroContent(hero, locale),
     video: video && translateVideoContent(video, locale),
     ...rest
   };
