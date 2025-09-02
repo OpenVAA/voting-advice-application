@@ -16,7 +16,7 @@ export async function POST({ request }: RequestEvent) {
     }
 
     // Prevent multiple active jobs for the same feature
-    const existing = getActiveJobs().find((j) => j.feature === feature && j.status === 'running');
+    const existing = getActiveJobs().find((j) => j.jobType === feature && j.status === 'running');
     if (existing) {
       return json({ error: 'An active job for this feature is already running' }, { status: 409 });
     }

@@ -372,6 +372,10 @@ export class OpenAIProvider extends LLMProvider {
     const totalBatches = Math.ceil(inputs.length / (parallelBatches ?? 3));
     let completedBatches = 0;
 
+    // Check if an abort has been requested
+    controller?.checkAbort();
+
+    // Generate responses in batches
     for (let i = 0; i < inputs.length; i += parallelBatches ?? 3) {
       const batch = inputs.slice(i, i + (parallelBatches ?? 3));
       const batchPromises = batch.map((input) => {
@@ -399,6 +403,9 @@ export class OpenAIProvider extends LLMProvider {
       // Wait for all batches to complete
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
+
+      // Check if an abort has been requested. Throws AbortError if so.
+      controller?.checkAbort();
 
       // Update progress after each batch completes
       completedBatches++;

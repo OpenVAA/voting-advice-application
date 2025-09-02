@@ -7,13 +7,14 @@
  * sub-operations at execution time for more granular progress tracking.
  */
 
-import { BaseController } from '@openvaa/core';
+import { AbortError, BaseController } from '@openvaa/core';
 import {
   addJobErrorMessage,
   addJobInfoMessage,
   addJobWarningMessage,
   completeJob,
   failJob,
+  getJob,
   updateJobProgress
 } from './jobStore';
 import type { Controller } from '@openvaa/core';
@@ -425,5 +426,18 @@ export class PipelineController extends BaseController implements Controller {
       addJobErrorMessage(this.jobId, errorMessage);
     }
     failJob(this.jobId);
+  }
+
+  /**
+   * Check if an abort has been requested and throw AbortError if so.
+   */
+  checkAbort(): void {
+    const job = getJob(this.jobId);
+    if (!job) {
+      throw new Error(`[PipelineController] Job ${this.jobId} not found in the job store. Could not abort.`);
+    }
+    if (job.status === 'aborting') {
+      throw new AbortError(`[PipelineController] Abort requested for job ${this.jobId}`);
+    }
   }
 }

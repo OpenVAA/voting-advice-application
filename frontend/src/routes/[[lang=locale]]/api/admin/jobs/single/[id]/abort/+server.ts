@@ -1,31 +1,37 @@
 /**
  * POST /api/admin/jobs/[id]/abort
- * Abort a specific job (useful for recovery from stuck jobs)
+ * Request a cooperative abort for a specific job
  */
-
 import { json } from '@sveltejs/kit';
-import { abortJob } from '$lib/server/admin/jobs/jobStore';
+import { requestAbort } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ params, request }: RequestEvent) {
   try {
     const { id } = params;
-    const { reason } = await request.json();
-
     if (!id) {
       return json({ error: 'Job ID is required' }, { status: 400 });
     }
 
-    if (!reason) {
-      return json({ error: 'Reason for aborting is required' }, { status: 400 });
+    // Body is optional; DataWriter sends no body. Try to parse, ignore if empty/invalid.
+    let reason: string | undefined = undefined;
+    const text = await request.text();
+    if (text) {
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed.reason === 'string') reason = parsed.reason;
+      } catch {
+        // ignore invalid JSON
+      }
     }
 
-    // Force fail the job
-    abortJob(id, reason);
+    // Request cooperative abort and return immediately
+    requestAbort(id, reason);
 
-    return json({ message: 'Job aborted successfully' });
+    // Fire-and-forget: UI will observe 'aborting' → 'aborted' via polling
+    return json({ message: 'Abort requested', jobId: id }, { status: 202 });
   } catch (error) {
-    console.error('Error aborting job:', error);
-    return json({ error: 'Failed to abort job' }, { status: 500 });
+    console.error('Error requesting abort:', error);
+    return json({ error: 'Failed to request abort' }, { status: 500 });
   }
 }

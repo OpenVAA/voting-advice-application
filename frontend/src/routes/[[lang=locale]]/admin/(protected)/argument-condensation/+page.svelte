@@ -6,9 +6,8 @@ Page for controlling the argument condensation feature.
 
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import JobMonitor from '$lib/admin/components/jobs/JobMonitor.svelte';
+  import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURE } from '$lib/admin/features';
-  import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
@@ -17,10 +16,11 @@ Page for controlling the argument condensation feature.
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
 
   const {
+    authToken,
     dataRoot,
     t,
-    getRoute,
-    jobs: { activeJobsStore, pastJobsStore, pollingService }
+    jobs: { activeJobsStore, pollingService },
+    abortJob
   } = getAdminContext();
 
   let selectedOption = 'all';
@@ -32,8 +32,6 @@ Page for controlling the argument condensation feature.
 
   // Start polling for job updates
   pollingService.refresh();
-
-  // Remove the job logger since it's now handled in the server action
 
   // Options for the radio group
   const options = [
@@ -51,12 +49,8 @@ Page for controlling the argument condensation feature.
   let availableQuestions: Array<AnyQuestionVariant> = [];
   let questionError: string | null = null;
 
-  // Get active and past jobs for argument condensation
+  // Get active job for argument condensation
   $: argumentCondensationJob = $activeJobsStore.get(ADMIN_FEATURE.ArgumentCondensation.jobName) || null;
-  $: allPastJobs = Array.from($pastJobsStore.values());
-  $: argumentCondensationPastJobs = allPastJobs.filter(
-    (job) => job.feature === ADMIN_FEATURE.ArgumentCondensation.jobName
-  );
 
   $: {
     if (selectedElectionId) {
@@ -76,28 +70,32 @@ Page for controlling the argument condensation feature.
 
   // Handle kill job for argument condensation
   async function handleAbortJob(jobId: string) {
-    if (!confirm('Are you sure you want to abort this argument condensation job?')) {
+    if (
+      !confirm(
+        t.get('adminApp.jobs.confirmAbortJob', {
+          feature: t.get('adminApp.argumentCondensation.title')
+        })
+      )
+    ) {
       return;
     }
 
     try {
-      const response = await fetch(UNIVERSAL_API_ROUTES.jobAbort(jobId), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'Admin force-failed argument condensation job' })
-      });
-
-      if (response.ok) {
-        alert('Job force-failed successfully');
-        // Refresh data from stores
-        await pollingService.refresh();
-      } else {
-        const error = await response.json();
-        alert(`Failed to abort job: ${error.error}`);
+      const token = $authToken;
+      if (!token) {
+        alert(t.get('adminApp.jobs.authRequired'));
+        return;
       }
+      await abortJob({
+        authToken: token,
+        jobId,
+        reason: 'Admin aborted this argument condensation process'
+      });
+      // Refresh data from stores
+      await pollingService.refresh();
     } catch (error) {
-      console.error('Error force-failing job:', error);
-      alert('Failed to force-fail job. Check console for details.');
+      console.error('Error aborting job:', error);
+      alert(t.get('adminApp.jobs.abortJobFailed'));
     }
   }
 
@@ -122,8 +120,6 @@ Page for controlling the argument condensation feature.
     // 1. Create a job for tracking progress
     // 2. Run the actual argument condensation
     // 3. Update job progress and messages in real-time
-    // No need to do anything here - just let the form submit naturally
-
     return async ({ result }: { result: ActionResult }) => {
       if (result.type === 'error') {
         status = 'error';
@@ -190,7 +186,7 @@ Page for controlling the argument condensation feature.
           {#if selectedOption === 'selectedQuestions' && selectedElectionId}
             {#if questionError}
               <div class="my-16 text-center text-error">
-                Error loading questions: {questionError}
+                {$t('adminApp.argumentCondensation.generate.errorLoadingQuestions', { error: questionError })}
               </div>
             {:else if availableQuestions.length === 0}
               <div class="my-16 text-center text-neutral">
@@ -210,7 +206,10 @@ Page for controlling the argument condensation feature.
                         selectedIds = availableQuestions.map((question) => question.id);
                       }
                     }} />
-                  <span>{selectedIds.length === availableQuestions.length ? 'Unselect all' : 'Select all'}</span>
+                  <span
+                    >{selectedIds.length === availableQuestions.length
+                      ? $t('adminApp.argumentCondensation.generate.unselectAll')
+                      : $t('adminApp.argumentCondensation.generate.selectAll')}</span>
                 </label>
                 {#each availableQuestions as question, i}
                   <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
@@ -242,20 +241,20 @@ Page for controlling the argument condensation feature.
             !selectedElectionId ||
             (selectedOption === 'selectedQuestions' && selectedIds.length === 0)} />
         {#if !!argumentCondensationJob}
-          <p class="mt-1 text-xs text-neutral">A job is already running. Please wait for it to finish.</p>
+          <p class="mt-1 text-xs text-neutral">{$t('adminApp.jobs.alreadyRunning')}</p>
         {/if}
       </div>
     </form>
+  </div>
 
-    <!-- Job Monitor Section -->
-    <div class="mt-8 w-full max-w-4xl">
-      <JobMonitor
-        jobType={ADMIN_FEATURE.ArgumentCondensation.jobName}
-        activeJob={argumentCondensationJob}
-        onAbortJob={handleAbortJob}
-        pastJobs={argumentCondensationPastJobs}
-        showPastJobs={true}
-        maxMessages={12}
-        height="max-h-96" />
+  <!-- Both active and past jobs -->
+  <div slot="fullWidth" class="mt-8 w-full">
+    <div class="mx-auto max-w-4xl px-4">
+      <FeatureJobs
+        class="w-full"
+        feature={'ArgumentCondensation'}
+        showFeatureLink={false}
+        onAbortJob={handleAbortJob} />
     </div>
-  </div></MainContent>
+  </div>
+</MainContent>
