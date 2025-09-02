@@ -1,5 +1,5 @@
 import type { Id } from '@openvaa/core';
-import type { AnyNominationVariant, AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
+import type { AnyNominationVariant, AnyQuestionVariant, Image, QuestionCategory } from '@openvaa/data';
 import type { ArgumentType } from './argumentType';
 
 /**
@@ -36,6 +36,10 @@ export type CustomData = {
      * Whether the question can be used for filtering in the results section of the Voter App.
      */
     filterable?: boolean;
+    /**
+     * Optional hero content for the category to be displayed as an illustration.
+     */
+    hero?: HeroContent;
     /**
      * If `true`, the question will be hidden in the Voter App but still visible in the Candidate App. Default `false`.
      */
@@ -82,9 +86,9 @@ export type CustomData = {
    */
   QuestionCategory: {
     /**
-     * Optional emoji for the category to be displayed as an illustration.
+     * Optional hero content for the category to be displayed as an illustration.
      */
-    emoji?: string;
+    hero?: HeroContent;
     /**
      * Properties for optional video content for the question category, displayed on the category into page.
      */
@@ -102,6 +106,18 @@ export type CustomDataMap<TData> = TData extends AnyNominationVariant
     : TData extends QuestionCategory
       ? CustomData['QuestionCategory']
       : object;
+
+/**
+ * Content to show as a hero figure for supported objects.
+ */
+export type HeroContent = Emoji | Image;
+
+/**
+ * An emoji to be displayed as a hero figure.
+ */
+export type Emoji = {
+  emoji: string;
+};
 
 /**
  * A set of arguments extracted from comment.

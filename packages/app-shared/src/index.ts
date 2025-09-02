@@ -2,6 +2,7 @@ export * from './data/argumentType.js';
 export * from './data/customData.type.js';
 export * from './data/extendedData.type.js';
 export * from './data/getCustomData.js';
+export * from './data/isEmoji.js';
 export * from './data/isImage.js';
 export * from './data/isLocalized.js';
 export * from './data/localized.type.js';
