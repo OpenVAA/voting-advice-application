@@ -3,17 +3,18 @@
  * This controller can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly
  *
- * NEW: Supports hierarchical operations where operations can be broken down into
+ *  Supports hierarchical operations where operations can be broken down into
  * sub-operations at execution time for more granular progress tracking.
  */
 
-import { BaseController } from '@openvaa/core';
+import { AbortError, BaseController } from '@openvaa/core';
 import {
   addJobErrorMessage,
   addJobInfoMessage,
   addJobWarningMessage,
   completeJob,
   failJob,
+  getJob,
   updateJobProgress
 } from './jobStore';
 import type { Controller } from '@openvaa/core';
@@ -28,11 +29,13 @@ interface Operation {
   progress: number;
 }
 
+// TODO: make more readable :,) - e.g. use a PipelineState
+
 /**
  * A controller that can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly
  *
- * NEW: Supports hierarchical operations where operations can be broken down into
+ * Supports hierarchical operations where operations can be broken down into
  * sub-operations at execution time for more granular progress tracking.
  */
 export class PipelineController extends BaseController implements Controller {
@@ -43,9 +46,9 @@ export class PipelineController extends BaseController implements Controller {
   private totalWeight: number = 0;
   private isInitialized: boolean = false;
 
-  // NEW: Map from operation ID to array of sub-operations (recursive structure)
+  //  Map from operation ID to array of sub-operations (recursive structure)
   private subOperationsMap: Map<string, Array<Operation>> = new Map();
-  // NEW: Current sub-operation index for the current operation
+  //  Current sub-operation index for the current operation
   private currentSubOperationIndex: number = 0;
 
   constructor(jobId: string) {
@@ -206,7 +209,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * NEW: Update progress for a specific sub-operation
+   *  Update progress for a specific sub-operation
    * This allows granular progress tracking within an operation
    * @param operationId - The ID of the parent operation
    * @param subOperationId - The ID of the sub-operation to update
@@ -279,7 +282,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * NEW: Get current sub-operation info for the current operation
+   *  Get current sub-operation info for the current operation
    */
   getCurrentSubOperation(): { id: string; index: number; total: number } | null {
     if (!this.isInitialized) {
@@ -313,7 +316,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * NEW: Get progress for a specific sub-operation
+   *  Get progress for a specific sub-operation
    */
   getSubOperationProgress(operationId: string, subOperationId: string): number | undefined {
     if (!this.isInitialized) {
@@ -330,7 +333,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * NEW: Get all sub-operations for a specific operation
+   *  Get all sub-operations for a specific operation
    */
   getSubOperations(operationId: string): Array<{ id: string; progress: number; weight: number }> | undefined {
     if (!this.isInitialized) {
@@ -350,7 +353,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * NEW: Check if an operation has sub-operations defined
+   *  Check if an operation has sub-operations defined
    */
   hasSubOperations(operationId: string): boolean {
     return this.subOperationsMap.has(operationId) && (this.subOperationsMap.get(operationId)?.length ?? 0) > 0;
@@ -425,5 +428,18 @@ export class PipelineController extends BaseController implements Controller {
       addJobErrorMessage(this.jobId, errorMessage);
     }
     failJob(this.jobId);
+  }
+
+  /**
+   * Check if an abort has been requested and throw AbortError if so.
+   */
+  checkAbort(): void {
+    const job = getJob(this.jobId);
+    if (!job) {
+      throw new Error(`[PipelineController] Job ${this.jobId} not found in the job store. Could not abort.`);
+    }
+    if (job.status === 'aborting') {
+      throw new AbortError(`[PipelineController] Abort requested for job ${this.jobId}`);
+    }
   }
 }
