@@ -1,5 +1,13 @@
-import type { Answer, AnswerValue, Choice } from '@openvaa/data';
-import type { Argument, QuestionArguments, QuestionInfoSection, TermDefinition, VideoContent } from './customData.type';
+import type { Answer, AnswerValue, Choice, Image } from '@openvaa/data';
+import type {
+  Argument,
+  Emoji,
+  HeroContent,
+  QuestionArguments,
+  QuestionInfoSection,
+  TermDefinition,
+  VideoContent
+} from './customData.type';
 
 /**
  * Mapping between localized types and translated versions.
@@ -12,17 +20,19 @@ export type TranslatedMap<TType extends Localized> = TType extends LocalizedStri
       ? Choice
       : TType extends LocalizedAnswer<infer TValue>
         ? Answer<TValue>
-        : TType extends LocalizedQuestionArguments
-          ? QuestionArguments
-          : TType extends LocalizedArgument
-            ? Argument
-            : TType extends LocalizedQuestionInfoSection
-              ? QuestionInfoSection
-              : TType extends LocalizedTermDefinition
-                ? TermDefinition
-                : TType extends LocalizedVideoContent
-                  ? VideoContent
-                  : never;
+        : TType extends LocalizedHeroContent
+          ? HeroContent
+          : TType extends LocalizedQuestionArguments
+            ? QuestionArguments
+            : TType extends LocalizedArgument
+              ? Argument
+              : TType extends LocalizedQuestionInfoSection
+                ? QuestionInfoSection
+                : TType extends LocalizedTermDefinition
+                  ? TermDefinition
+                  : TType extends LocalizedVideoContent
+                    ? VideoContent
+                    : never;
 
 /**
  * Any localized type.
@@ -36,6 +46,7 @@ export type Localized =
   | LocalizedArgument
   | LocalizedQuestionInfoSection
   | LocalizedTermDefinition
+  | LocalizedHeroContent
   | LocalizedVideoContent;
 
 /**
@@ -63,6 +74,11 @@ export type LocalizedChoice = Omit<Choice, 'label'> & {
 export type LocalizedAnswer<TValue extends AnswerValue | unknown = unknown> = Omit<Answer<TValue>, 'info'> & {
   info?: LocalizedString | null;
 };
+
+/**
+ * A localized `HeroContent` object.
+ */
+export type LocalizedHeroContent = Emoji | LocalizedObject<Image>;
 
 /**
  * A localized `QuestionArguments` object.

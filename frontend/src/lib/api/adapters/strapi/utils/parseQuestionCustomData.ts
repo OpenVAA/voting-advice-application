@@ -1,3 +1,4 @@
+import { translateHeroContent } from '$lib/api/utils/translateHeroContent';
 import { translateQuestionArguments } from '$lib/api/utils/translateQuestionArguments';
 import { translateQuestionInfoSections } from '$lib/api/utils/translateQuestionInfoSections';
 import { translateQuestionTerms } from '$lib/api/utils/translateQuestionTerms';
@@ -13,9 +14,10 @@ export function parseQuestionCustomData(
   locale: string | null
 ): CustomData['Question'] {
   if (!data || typeof data !== 'object') return {};
-  const { arguments: args, infoSections, terms, video, ...rest } = data;
+  const { arguments: args, infoSections, terms, video, hero, ...rest } = data;
   return {
     arguments: args && translateQuestionArguments(args, locale),
+    hero: hero && translateHeroContent(hero, locale),
     infoSections: infoSections && translateQuestionInfoSections(infoSections, locale),
     terms: terms && translateQuestionTerms(terms, locale),
     video: video && translateVideoContent(video, locale),
