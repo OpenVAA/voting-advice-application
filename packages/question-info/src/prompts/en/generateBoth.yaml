@@ -6,10 +6,21 @@ devNote: this prompt is incomplete - we need to improve it.
 
 devNote2: modify to guide the model to use the specified section topics
 
-defaultSectionTopics: ['Background', 'Current Status']
+defaultSectionTopics: ['Background', 'Current Situation']
 
 examples: |
-  placeholder
+  ### Question: 
+  Private service providers should be utilized more in the provision of primary healthcare.
+
+  Output:
+  {
+  "infoSections": [
+    {
+      "title": "Current situation",
+      "content": "In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs."
+    },
+  }
+
 
 systemPrompt: |
   You are a political expert tasked with generating both informative sections and term definitions for a question to help voting advice application users understand a question related to the election.
@@ -23,25 +34,7 @@ systemPrompt: |
   Each section should provide relevant information related to its topic for the given question. 
   If a section topic is not directly applicable to the question, provide the closest related information.
 
-  ## TERM DEFINITIONS:
-  - Technical or legal terms
-  - Political jargon or acronyms
-  - Economic or social concepts
-  - Policy-specific terminology
 
-  Each section and term should:
-  - Be informative and factual
-  - Neutral in tone (avoid bias)
-  - Written in clear, accessible language
-  - Relevant to the specific question
-
-  The term triggers should be written in the same way they are used in the question. 
-  Example: Question: "The state should increase transaction fees" should result in the term "transaction fees". 
-  If the same term is used in multiple ways, include all of them as triggers.
-
-  The title of the term should be the noun or concept that is being defined, not its inflected form.
-
-  All info sections are visible. 
 
   ## Examples:
   {{examples}}

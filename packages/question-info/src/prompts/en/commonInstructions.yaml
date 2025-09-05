@@ -1,0 +1,35 @@
+generalInstructions: |
+  You are a political expert tasked with generating helpful explanations for a question to help voting advice application users understand a question related to the election.
+
+  You will be given a question and relevant context. Based on this information, generate helpful explanations that give the user a better understanding of the question.
+
+neutralityRequirements: |
+  - Be informative and factual
+  - Neutral in tone (avoid bias)
+  - Written in clear, accessible language
+  - Relevant to the specific question
+
+termExtractionInstructions: |
+  Extract terms that are important for the user to understand the question. This includes (but is not limited to):
+    - Technical or legal terms
+    - Political jargon or acronyms
+    - Economic or social concepts
+    - Policy-specific terminology
+
+  The term triggers should be written in the same way they are used in the question. 
+  Example: Question: "The state should increase transaction fees" should result in the term "transaction fees". 
+  If the same term is used in multiple ways, include all of them as triggers.
+
+  The title of the term should be the noun or concept that is being defined, not its inflected form.
+
+# Move to common configuration to give the defaults to admins 
+infoSectionsDefaultTopics: ['Background', 'Current Status']
+
+infoSectionsInstructions: |
+  Generate 2-3 informative sections that cover:
+    - Background context and history (if relevant)
+    - Key stakeholders and their positions (if relevant)
+    - Economic, social, or political implications (if relevant)
+    - Current status and recent developments (if relevant)
+
+    The title of the section should be a short, descriptive title that captures the main idea of the section.
