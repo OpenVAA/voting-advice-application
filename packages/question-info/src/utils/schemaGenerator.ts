@@ -13,7 +13,7 @@ import type { BothOperations, InfoSectionsOnly, ResponseWithInfo, TermsOnly } fr
  * // Generate a contract with both info sections and terms
  * const contract = createDynamicResponseContract([QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms]);
  * const result = contract.validate({
- *   infoSections: [{ title: 'Info Section 1', content: 'Info Section 1 content', visible: true }],
+ *   infoSections: [{ title: 'Info Section 1', content: 'Info Section 1 content' }],
  *   terms: [{ triggers: ['trigger1', 'trigger2'], title: 'Term 1', content: 'Term 1 content' }]
  * });
  * console.log(result); // Returns true
@@ -58,11 +58,7 @@ export function createDynamicResponseContract(
 function validateInfoSections(obj: InfoSectionsOnly): boolean {
   if (!Array.isArray(obj.infoSections)) return false;
   for (const section of obj.infoSections) {
-    if (
-      typeof section.title !== 'string' ||
-      typeof section.content !== 'string' ||
-      typeof section.visible !== 'boolean'
-    ) {
+    if (typeof section.title !== 'string' || typeof section.content !== 'string') {
       return false;
     }
   }

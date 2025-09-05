@@ -1,14 +1,12 @@
-devNote: 
-  this prompt is incomplete - we need to improve it. 
+devNote: this prompt is incomplete - we need to improve it.
   most importantly, we need to add examples that guide the model to generate good sections.
   additionally, the prompt should give more freedom to reason about what kind of info sections are good in this context
   or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
   + general prompt engineering improvements
 
-devNote2: 
-  modify to guide the model to use the specified section topics
-  
-defaultSectionTopics: ["Background", "Current Status"]
+devNote2: modify to guide the model to use the specified section topics
+
+defaultSectionTopics: ['Background', 'Current Status']
 
 examples: |
   placeholder
@@ -31,7 +29,6 @@ systemPrompt: |
   - Relevant to the specific question
 
   The title of the section should be a short, descriptive title that captures the main idea of the section.
-  All sections are visible.
 
   ## Context:
   {{context}}
@@ -44,8 +41,7 @@ systemPrompt: |
     "infoSections": [
       {
         "title": "Short title for the section",
-        "content": "explanation of the section in English",
-        "visible": true
+        "content": "explanation of the section in English"
       }
     ]
   }

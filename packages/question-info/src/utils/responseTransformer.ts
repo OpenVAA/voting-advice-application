@@ -1,4 +1,4 @@
-import { DefaultLogger } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { type LLMResponse } from '@openvaa/llm';
 import { calculateLLMCost } from '@openvaa/llm';
 import type { ParsedLLMResponse } from '@openvaa/llm';
@@ -55,7 +55,7 @@ export function transformInfoSectionsResponse(
         provider: 'openai',
         model: options.llmModel,
         usage: raw.usage,
-        logger: options.logger || new DefaultLogger()
+        controller: options.controller || new BaseController()
       }),
       tokensUsed: {
         inputs: raw.usage.promptTokens,
@@ -97,7 +97,7 @@ export function transformTermsResponse(
         provider: 'openai',
         model: options.llmModel,
         usage: raw.usage,
-        logger: options.logger || new DefaultLogger()
+        controller: options.controller || new BaseController()
       }),
       tokensUsed: {
         inputs: raw.usage.promptTokens,
@@ -139,7 +139,7 @@ export function transformBothResponse(
         provider: 'openai',
         model: options.llmModel,
         usage: raw.usage,
-        logger: options.logger || new DefaultLogger()
+        controller: options.controller || new BaseController()
       }),
       tokensUsed: {
         inputs: raw.usage.promptTokens,
@@ -178,7 +178,7 @@ export function createErrorResult(
         provider: 'openai',
         model: options.llmModel,
         usage: raw.usage,
-        logger: options.logger || new DefaultLogger()
+        controller: options.controller || new BaseController()
       }),
       tokensUsed: { inputs: 0, outputs: 0, total: 0 }
     },
