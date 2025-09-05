@@ -2,12 +2,12 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@example.com'
+    email: 'duf@duf.dk'
   },
   appVersion: {
     version: 1,
     requireUserDataVersion: 1,
-    source: 'https://github.com/OpenVAA/voting-advice-application'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-duf-vaa-2025'
   },
   dataAdapter: {
     type: 'strapi',
@@ -15,54 +15,51 @@ export const staticSettings: StaticSettings = {
   },
   colors: {
     light: {
-      primary: '#2546a8',
+      primary: '#D23223',
       secondary: '#666666',
-      accent: '#0a716b',
+      accent: '#377d8e',
       neutral: '#333333',
       'base-100': '#ffffff',
-      'base-200': '#e8f5f6',
-      'base-300': '#d1ebee',
+      'base-200': '#f2f2f2',
+      'base-300': '#e4e4e4',
       warning: '#a82525',
       'line-color': '#d9d9d9'
     },
     dark: {
-      primary: '#6887e3',
+      primary: '#D23223',
       secondary: '#8c8c8c',
-      accent: '#11a8a0',
+      accent: '#377d8e',
       neutral: '#cccccc',
       'base-100': '#000000',
-      'base-200': '#101212',
-      'base-300': '#1f2324',
+      'base-200': '#0e0e0e',
+      'base-300': '#1a1a1a',
       warning: '#e16060',
       'line-color': '#262626'
     }
   },
   font: {
-    name: 'Inter',
-    url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+    name: 'Montserrat',
+    url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap',
     style: 'sans'
   },
   supportedLocales: [
     {
       code: 'en',
-      name: 'English',
-      isDefault: true
-    },
-    {
-      code: 'fi',
-      name: 'Suomi'
-    },
-    {
-      code: 'sv',
-      name: 'Svenska'
+      name: 'English'
     },
     {
       code: 'da',
-      name: 'Dansk'
+      name: 'Dansk',
+      isDefault: true
     }
   ],
   analytics: {
-    trackEvents: false
+    trackEvents: false,
+    platform: {
+      name: 'umami',
+      code: '1e671ef2-09c7-4edf-a79d-9395b57b81ce',
+      infoUrl: 'https://umami.is/'
+    }
   },
   preRegistration: {
     enabled: false
