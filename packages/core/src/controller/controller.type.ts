@@ -7,15 +7,15 @@
  *
  * import { BaseController, type Controller } from '@openvaa/core';
  *
- * export function longOperation({ logger }: { logger?: Controller } = {}): Promise<void> {
- *   logger ??= new BaseController();
+ * export function longOperation({ controller }: { controller?: Controller } = {}): Promise<void> {
+ *   controller ??= new BaseController();
  *   for (let i = 0; i < 100; i++) {
  *     try {
  *       // Perform a long-running operation
  *     } catch (error) {
- *       logger.error(`Error during long operation ${i}: ${error?.message ?? '-'});`);
+ *       controller.error(`Error during long operation ${i}: ${error?.message ?? '-'});`);
  *     }
- *     if (i % 10 === 0) logger.progress(i / 100);
+ *     if (i % 10 === 0) controller.progress(i / 100);
  *   }
  * }
  *
@@ -23,7 +23,7 @@
  *
  * import { BaseController } from '@openvaa/core';
  *
- * const logger = new BaseController({
+ * const controller = new BaseController({
  *   onProgess: (value: number) => console.info(`Custom progress: ${value * 100}%`)
  * });
  *
