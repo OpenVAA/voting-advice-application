@@ -7,10 +7,19 @@ devNote: this prompt is incomplete - we need to improve it.
 devNote2: modify to guide the model to use the specified section topics
 
 defaultSectionTopics: ['Background', 'Current Situation']
-params:
-  generalInstructions: string
-  infoSectionInstructions: string
-  termDefInstructions: string
+
+examples: |
+  ### Question: 
+  Private service providers should be utilized more in the provision of primary healthcare.
+
+  Output:
+  {
+  "infoSections": [
+    {
+      "title": "Current situation",
+      "content": "In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs."
+    },
+  }
 
 
 systemPrompt: |
@@ -22,6 +31,11 @@ systemPrompt: |
 
   IMPORTANT: You MUST generate exactly the following sections (and only these sections):
   {{sectionTopics}}
+
+  Each section should provide relevant information related to its topic for the given question. 
+  If a section topic is not directly applicable to the question, provide the closest related information.
+
+
 
   ## Examples:
   {{examples}}
