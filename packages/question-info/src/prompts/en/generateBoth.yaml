@@ -6,10 +6,21 @@ devNote: this prompt is incomplete - we need to improve it.
 
 devNote2: modify to guide the model to use the specified section topics
 
-defaultSectionTopics: ['Background', 'Current Status']
+defaultSectionTopics: ['Background', 'Current Situation']
 
 examples: |
-  placeholder
+  ### Question: 
+  Private service providers should be utilized more in the provision of primary healthcare.
+
+  Output:
+  {
+  "infoSections": [
+    {
+      "title": "Current situation",
+      "content": "In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs."
+    },
+  }
+
 
 systemPrompt: |
   You are a political expert tasked with generating both informative sections and term definitions for a question to help voting advice application users understand a question related to the election.
