@@ -77,7 +77,7 @@ export async function generateInfo({
               })
             },
             strict: false, // Want to fail on missing variables?
-            logger: options.logger // Sends warning to admin UI, if there is a mismatch between the prompt and the variables
+            controller: options.controller // Sends warning to admin UI, if there is a mismatch between the prompt and the variables
           })
         },
         // Prepare user prompt with variables
@@ -89,7 +89,7 @@ export async function generateInfo({
               question: question.name
             },
             strict: false,
-            logger: options.logger
+            controller: options.controller
           })
         }
       ],

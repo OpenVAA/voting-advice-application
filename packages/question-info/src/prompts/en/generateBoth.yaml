@@ -41,8 +41,6 @@ systemPrompt: |
 
   The title of the term should be the noun or concept that is being defined, not its inflected form.
 
-  All info sections are visible. 
-
   ## Examples:
   {{examples}}
 
@@ -54,8 +52,7 @@ systemPrompt: |
     "infoSections": [
       {
         "title": "Short title for the section",
-        "content": "explanation of the section in English",
-        "visible": true
+        "content": "explanation of the section in English"
       }
     ],
     "terms": [
