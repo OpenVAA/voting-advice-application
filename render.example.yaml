@@ -1,0 +1,166 @@
+# 1. Rename to render.yaml
+#
+# 2. Find and replace placeholders
+#    <INSTANCE_NAME>           e.g. demo-vaa
+#    <INSTANCE_BRANCH>         e.g. deploy-vaa
+#    <INSTANCE_DOMAIN>         e.g. vaa.openvaa.org
+#                              If you don't use a dedicated domain, comment out the "domains" part in the frontend service
+#    <INSTANCE_MAIL_FROM>      e.g. no-reply@openvaa.org
+#    <INSTANCE_MAIL_REPLY_TO>  e.g. info@openvaa.org
+#    <INSTANCE_MAIL_FROM_NAME> e.g. Voting Advice Application
+#
+# 3. Check default values marked with # Check
+#
+# 4. In Render, check whether you want to auto-update the Blueprint service when this file changes. The updates are automated by default.
+#
+# Env variables based on env.example 2025-09-25
+
+version: '1'
+
+services:
+  # Frontend service
+  - type: web
+    name: <INSTANCE_NAME>-frontend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: <INSTANCE_BRANCH>
+    plan: standard # Check
+    envVars:
+      - key: PUBLIC_CACHE_ENABLED # Check
+        value: 'false'
+      - key: CACHE_TTL
+        value: 86400000
+      - key: CACHE_LRU_SIZE
+        value: 1000
+      - key: CACHE_EXPIRATION_INTERVAL
+        value: 3600000
+      - key: CACHE_DIR # Must match disk below
+        value: /var/data/cache
+
+      - key: PUBLIC_DEBUG
+        value: 'false'
+
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://<INSTANCE_NAME>-frontend.onrender.com
+      - key: PUBLIC_SERVER_FRONTEND_URL # Check value after deployment
+        value: https://<INSTANCE_NAME>-frontend.onrender.com
+      - key: PUBLIC_BROWSER_BACKEND_URL # Check value after deployment
+        value: https://<INSTANCE_NAME>-backend.onrender.com
+      - key: PUBLIC_SERVER_BACKEND_URL # Check value after deployment
+        value: https://<INSTANCE_NAME>-backend.onrender.com
+
+      # Set this if using local adapter and disable the backend service and database
+      # - key: LOCAL_DATA_DIR
+      #   value: /var/data
+
+      # Uncomment these if using pre-registration
+      # - key: BACKEND_API_TOKEN
+      #   sync: false
+      # - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./frontend/Dockerfile
+    domains:
+      - <INSTANCE_DOMAIN>
+
+    disk: # Check and comment out if not planning on using the cache
+      name: disk
+      mountPath: /var/data/cache
+      sizeGB: 1
+
+    autoDeployTrigger: 'off' # Check
+
+  # Backend service
+  - type: web
+    name: <INSTANCE_NAME>-backend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: <INSTANCE_BRANCH>
+    plan: standard # Check
+    envVars:
+      - key: APP_KEYS
+        sync: false
+
+      - key: MAIL_FROM
+        value: '<INSTANCE_MAIL_FROM>'
+      - key: MAIL_REPLY_TO
+        value: '<INSTANCE_MAIL_REPLY_TO>'
+      - key: MAIL_FROM_NAME
+        value: '<INSTANCE_MAIL_FROM_NAME>'
+
+      - key: STRAPI_PORT
+        value: 1337
+      - key: STRAPI_HOST
+        value: 0.0.0.0
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://<INSTANCE_NAME>-frontend.onrender.com
+      - key: GENERATE_MOCK_DATA_ON_RESTART
+        value: 'false'
+      - key: GENERATE_MOCK_DATA_ON_INITIALISE
+        value: 'false'
+      - key: LOAD_DATA_ON_INITIALISE_FOLDER
+        value: '' # Deprecated
+
+      - key: API_TOKEN_SALT
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+
+      - key: DATABASE_HOST # Check value after deployment
+        fromDatabase:
+          name: <INSTANCE_NAME>-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: <INSTANCE_NAME>-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: <INSTANCE_NAME>-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: <INSTANCE_NAME>-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: <INSTANCE_NAME>-db
+          property: password
+      - key: DATABASE_SSL_SELF
+        value: 'false'
+      - key: DATABASE_SCHEMA
+        value: public
+      - key: STATIC_MEDIA_CONTENT_PATH
+        value: public/media/<INSTANCE_NAME>
+
+      - fromGroup: AWS SES SMTP
+      - fromGroup: AWS SES HTTP
+      - fromGroup: AWS S3 MEDIA STORAGE
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./backend/vaa-strapi/Dockerfile
+
+    autoDeployTrigger: 'off' # Check
+
+    # domains: # Uncomment and define value if necessary
+    #   - foo-backend.bar.com
+
+databases:
+  - name: <INSTANCE_NAME>-db
+
+    plan: basic-1gb # Check
+    diskSizeGB: 10 # Check
+
+    # If necessary, uncomment and define values
+    # databaseName: <INSTANCE_NAME>-dbname
+    # user: <INSTANCE_NAME>-dbuser
+
+    region: frankfurt
+    postgresMajorVersion: '16'
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
