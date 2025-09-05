@@ -8,7 +8,7 @@ It contains:
 - Typing for [`Id`s](./src/id) and related utilities
 - Typing for JSON [`Serializable`](./src/serializable/serializable.type.ts) objects
 - Typing for distances, answers and missing values related to [matching](./src/matching/)
-- An interface and a default implementation for [progress logging](./src/logger/), which is used as a common method of providing progress, info and warning callback to (server) functions that take a longer time to complete
+- An interface and a default implementation for [progress logging](./src/controller/), which is used as a common method of providing progress, info and warning callback to (server) functions that take a longer time to complete
 
 ## Developing
 
