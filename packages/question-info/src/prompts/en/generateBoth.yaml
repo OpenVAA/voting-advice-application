@@ -34,23 +34,7 @@ systemPrompt: |
   Each section should provide relevant information related to its topic for the given question. 
   If a section topic is not directly applicable to the question, provide the closest related information.
 
-  ## TERM DEFINITIONS:
-  - Technical or legal terms
-  - Political jargon or acronyms
-  - Economic or social concepts
-  - Policy-specific terminology
 
-  Each section and term should:
-  - Be informative and factual
-  - Neutral in tone (avoid bias)
-  - Written in clear, accessible language
-  - Relevant to the specific question
-
-  The term triggers should be written in the same way they are used in the question. 
-  Example: Question: "The state should increase transaction fees" should result in the term "transaction fees". 
-  If the same term is used in multiple ways, include all of them as triggers.
-
-  The title of the term should be the noun or concept that is being defined, not its inflected form.
 
   ## Examples:
   {{examples}}
@@ -63,7 +47,8 @@ systemPrompt: |
     "infoSections": [
       {
         "title": "Short title for the section",
-        "content": "explanation of the section in English"
+        "content": "explanation of the section in English",
+        "visible": true
       }
     ],
     "terms": [
