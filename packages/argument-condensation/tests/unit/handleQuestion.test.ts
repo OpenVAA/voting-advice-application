@@ -12,7 +12,10 @@ const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
-  progress: () => {}
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
 };
 
 // Mock LLMProvider
