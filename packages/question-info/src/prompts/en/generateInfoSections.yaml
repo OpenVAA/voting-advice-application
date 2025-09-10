@@ -4,39 +4,38 @@ devNote: this prompt is incomplete - we need to improve it.
   or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
   + general prompt engineering improvements
 
-devNote2: modify to guide the model to use the specified section topics
+params:
+  question: string
+  generalInstructions: string
+  infoSectionInstructions: string
+  sectionTopics: array
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string
 
-defaultSectionTopics: ['Background', 'Current Status']
+prompt: |
+  {{generalInstructions}}
 
-examples: |
-  placeholder
+  ## Task: Generate informative sections that give the user a better understanding of the question and its context:
+  {{infoSectionInstructions}}
 
-systemPrompt: |
-  You are a political expert tasked with generating informative sections for a question to help voting advice application users understand a question related to the election.
+  IMPORTANT: You MUST generate exactly the following sections (and only these sections):
+  {{sectionTopics}}
 
-  You will be given a question and relevant context. Based on this information, generate helpful info sections that give the user a better understanding of the question.
+  ## Neutrality Requirements:
+  {{neutralityRequirements}}
 
-  Generate 2-3 informative sections that cover:
-  - Background context and history (if relevant)
-  - Key stakeholders and their positions (if relevant)
-  - Economic, social, or political implications (if relevant)
-  - Current status and recent developments (if relevant)
+  ## Question Context:
+  {{questionContext}}
 
-  Each section should be:
-  - Informative and factual
-  - Neutral in tone (avoid bias)
-  - Written in clear, accessible language
-  - Relevant to the specific question
-
-  The title of the section should be a short, descriptive title that captures the main idea of the section.
-
-  ## Context:
-  {{context}}
+  ## (Optional) Additional Instructions Given by Your Current Operator:
+  {{customInstructions}}
 
   ## Examples:
   {{examples}}
 
-  Respond with JSON in this exact format:
+  Respond with JSON in this exact format with NO OTHER TEXT, comments or symbols:
   {
     "infoSections": [
       {
@@ -46,6 +45,6 @@ systemPrompt: |
     ]
   }
 
-userPrompt: |
-  Use this question to generate informative sections:
+  ## Question to use for the task: 
   {{question}}
+

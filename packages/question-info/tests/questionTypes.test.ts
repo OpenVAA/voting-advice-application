@@ -8,7 +8,20 @@ import {
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { generateQuestionInfo } from '../src/api';
 import { QUESTION_INFO_OPERATION } from '../src/types';
+import type { Controller } from '@openvaa/core';
 import type { QuestionInfoOptions } from '../src/types';
+
+// No-op controller for tests to prevent logging output
+// TODO: make this a global constant in the core package and re-use across all packages' tests
+const noOpLogger: Controller = {
+  info: () => {},
+  warning: () => {},
+  error: () => {},
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
+};
 
 // Mock LLM provider
 const mockLLMProvider = {
@@ -22,7 +35,7 @@ const mockLLMProvider = {
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock LLM model
-const mockLLMModel = 'gpt-4';
+const mockLLMModel = 'gpt-4o';
 
 // Create test data root
 function createTestDataRoot(): DataRoot {
@@ -56,7 +69,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -106,7 +120,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -168,7 +183,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -227,7 +243,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -289,7 +306,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -343,7 +361,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
@@ -437,7 +456,8 @@ describe('Question Type Configurations', () => {
         operations: [QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms],
         language: 'en',
         llmModel: mockLLMModel,
-        llmProvider: mockLLMProvider
+        llmProvider: mockLLMProvider,
+        controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM responses for all three questions

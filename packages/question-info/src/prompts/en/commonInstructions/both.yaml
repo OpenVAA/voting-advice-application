@@ -1,9 +1,0 @@
-
-infoSectionsInstructions: |
-  You MUST generate exactly the following sections (and only these sections):
-  {{sectionTopics}}
-
-  Each section should provide relevant information related to its topic for the given question. 
-  If a section topic is not directly applicable to the question, provide the closest related information.
-
-termsInstructions: |

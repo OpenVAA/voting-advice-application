@@ -29,10 +29,13 @@ export function extractPromptVars(promptText: string): Array<string> {
  * @param yamlFile - The YAML file path for error reporting
  * @returns Validation result with details about any mismatches
  */
-export function validatePromptVars(
-  promptText: string,
-  params: Record<string, unknown> | undefined
-): { valid: boolean; missing: Array<string>; extra: Array<string>; undocumented: Array<string> } {
+export function validatePromptVars({
+  promptText,
+  params
+}: {
+  promptText: string;
+  params: Record<string, unknown> | undefined;
+}): { valid: boolean; missing: Array<string>; extra: Array<string>; undocumented: Array<string> } {
   const variablesInText = extractPromptVars(promptText);
   const documentedVars = params ? Object.keys(params) : [];
 
