@@ -19,7 +19,10 @@ const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
-  progress: () => {}
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
 };
 
 // Mock the file system to prevent writing operation trees
