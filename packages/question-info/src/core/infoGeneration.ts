@@ -8,13 +8,11 @@ import {
 } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
-import type { PromptTemplate } from '../types';
-import type { InfoSectionsPromptTemplate } from '../types';
-import type { BothOperationsPromptTemplate } from '../types';
+import type { InfoSectionPrompt, QInfoPromptComponents, TermDefPrompt } from '../types';
 
 // Type guard
 function hasDefaultSectionTopics(
-  template: PromptTemplate
+  template: QInfoPromptComponents
 ): template is InfoSectionsPromptTemplate | BothOperationsPromptTemplate {
   return 'defaultSectionTopics' in template;
 }
@@ -50,10 +48,9 @@ export async function generateInfo({
     const promptKey = determinePromptKey(options.operations);
 
     // Load prompt template and extract variables
-    const promptTemplate = await loadPrompt(promptKey, options.language);
+    const promptTemplate = await loadPrompt({ promptFileName: promptKey, language: options.language });
     const systemPrompt = promptTemplate.systemPrompt;
     const userPrompt = promptTemplate.userPrompt;
-    const examples = promptTemplate.examples;
 
     // Get admin-provided context for the question
     const context = options.questionContext; // There is no default context...
@@ -70,11 +67,8 @@ export async function generateInfo({
           content: setPromptVars({
             promptText: systemPrompt,
             variables: {
-              examples,
               context,
-              ...(hasDefaultSectionTopics(promptTemplate) && {
-                sectionTopics: options.sectionTopics || promptTemplate.defaultSectionTopics
-              })
+              customInstructions: options.customInstructions
             },
             strict: false, // Want to fail on missing variables?
             controller: options.controller // Sends warning to admin UI, if there is a mismatch between the prompt and the variables

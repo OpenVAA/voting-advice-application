@@ -7,34 +7,21 @@ devNote: this prompt is incomplete - we need to improve it.
 devNote2: modify to guide the model to use the specified section topics
 
 defaultSectionTopics: ['Background', 'Current Situation']
-
-examples: |
-  ### Question: 
-  Private service providers should be utilized more in the provision of primary healthcare.
-
-  Output:
-  {
-  "infoSections": [
-    {
-      "title": "Current situation",
-      "content": "In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs."
-    },
-  }
+params:
+  generalInstructions: string
+  infoSectionInstructions: string
+  termDefInstructions: string
 
 
 systemPrompt: |
-  You are a political expert tasked with generating both informative sections and term definitions for a question to help voting advice application users understand a question related to the election.
+  {{generalInstructions}}
 
-  You will be given a question. Based on the question, generate helpful info sections and term definitions that give the user a better understanding of the question.
+  ## Task 1: Info Section Generation:
 
-  ## INFO SECTIONS:
-  You MUST generate exactly the following sections (and only these sections):
+  {{infoSectionInstructions}}
+
+  IMPORTANT: You MUST generate exactly the following sections (and only these sections):
   {{sectionTopics}}
-
-  Each section should provide relevant information related to its topic for the given question. 
-  If a section topic is not directly applicable to the question, provide the closest related information.
-
-
 
   ## Examples:
   {{examples}}

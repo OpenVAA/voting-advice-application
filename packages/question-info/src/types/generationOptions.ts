@@ -24,6 +24,9 @@ export interface QuestionInfoOptions extends CommonLLMParams {
    * Good context increases quality drastically. */
   questionContext?: string;
 
+  /** Optional custom instructions for the generation from the caller */
+  customInstructions?: string;
+
   /** Info sections topics to generate. If not provided, we use a default set. */
   sectionTopics?: Array<string>;
 }
