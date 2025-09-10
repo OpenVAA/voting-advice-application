@@ -8,7 +8,19 @@ import {
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { generateQuestionInfo } from '../src/api';
 import { QUESTION_INFO_OPERATION } from '../src/types';
+import type { Controller } from '@openvaa/core';
 import type { QuestionInfoOptions } from '../src/types';
+
+// No-op controller for tests to prevent logging output
+const noOpLogger: Controller = {
+  info: () => {},
+  warning: () => {},
+  error: () => {},
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
+};
 
 // Mock LLM provider with proper typing
 const mockLLMProvider = {
@@ -90,7 +102,8 @@ function createTestOptions(operations: Array<keyof typeof QUESTION_INFO_OPERATIO
     operations: operations.map((op) => QUESTION_INFO_OPERATION[op]),
     language: 'en',
     llmModel: mockLLMModel,
-    llmProvider: mockLLMProvider
+    llmProvider: mockLLMProvider,
+    controller: noOpLogger
   } as QuestionInfoOptions;
 }
 
@@ -538,9 +551,9 @@ describe('generateQuestionInfo API', () => {
       const questions: Array<BooleanQuestion> = [];
       const options = createTestOptions(['InfoSections']);
 
-      const results = await generateQuestionInfo({ questions, options });
-
-      expect(results).toHaveLength(0);
+      await expect(generateQuestionInfo({ questions, options })).rejects.toThrow(
+        'No questions provided for info generation.'
+      );
     });
 
     test('should handle questions with minimal data', async () => {

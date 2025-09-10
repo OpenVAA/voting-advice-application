@@ -11,37 +11,92 @@ import type {
   TermsOnly
 } from '../types';
 
-export function transformResponse(
-  llmResponse: ParsedLLMResponse<ResponseWithInfo>,
-  question: { id: string; name: string },
-  options: QuestionInfoOptions,
-  startTime: Date,
-  endTime: Date
-): QuestionInfoResult {
+/** A helper function to transform the LLM's response into our result format.
+ *
+ * Basically just a switch statement that calls the appropriate concrete function based on the response type.
+ *
+ * @param params - Parameters object
+ * @param params.llmResponse - The parsed LLM response
+ * @param params.question - Question metadata
+ * @param params.options - Generation options
+ * @param params.startTime - Generation start time
+ * @param params.endTime - Generation end time
+ * @returns Formatted question info result
+ *
+ * @example
+ * ```ts
+ * const llmResponse = await llm.generate({
+ *   prompt: 'What is the capital of France?',
+ *   responseContract: responseValContract
+ * });
+ *
+ * const question = { id: '1', name: 'What is the capital of France?' };
+ * const options = {
+ *   llmModel: 'gpt-4o',
+ *   llmProvider: new OpenAIProvider(),
+ *   language: 'en',
+ *   controller: new BaseController()
+ *   // And so on. See type QuestionInfoOptions for all options
+ * };
+ * const startTime = new Date();
+ * const endTime = new Date();
+ *
+ * const result = transformResponse({ llmResponse, question, options, startTime, endTime });
+ * ```
+ */
+export function transformResponse({
+  llmResponse,
+  question,
+  options,
+  startTime,
+  endTime
+}: {
+  llmResponse: ParsedLLMResponse<ResponseWithInfo>;
+  question: { id: string; name: string };
+  options: QuestionInfoOptions;
+  startTime: Date;
+  endTime: Date;
+}): QuestionInfoResult {
   const parsed = llmResponse.parsed;
   const raw = llmResponse.raw;
   if (isBothOperations(parsed)) {
-    return transformBothResponse(parsed, raw, question, options, startTime, endTime);
+    return transformBothResponse({ response: parsed, raw, question, options, startTime, endTime });
   } else if (isInfoSectionsOnly(parsed)) {
-    return transformInfoSectionsResponse(parsed, raw, question, options, startTime, endTime);
+    return transformInfoSectionsResponse({ response: parsed, raw, question, options, startTime, endTime });
   } else if (isTermsOnly(parsed)) {
-    return transformTermsResponse(parsed, raw, question, options, startTime, endTime);
+    return transformTermsResponse({ response: parsed, raw, question, options, startTime, endTime });
   } else {
     throw new Error('Invalid response for question info generation');
   }
 }
 
 /**
- * Transform info sections only response
+ * Transform info sections only response into standardized result format
+ *
+ * @param params - Parameters object
+ * @param params.response - The parsed info sections response from LLM
+ * @param params.raw - Raw LLM response with usage metrics
+ * @param params.question - Question metadata
+ * @param params.options - Generation options
+ * @param params.startTime - Generation start time
+ * @param params.endTime - Generation end time
+ * @returns Formatted question info result
  */
-export function transformInfoSectionsResponse(
-  response: InfoSectionsOnly,
-  raw: LLMResponse,
-  question: { id: string; name: string },
-  options: QuestionInfoOptions,
-  startTime: Date,
-  endTime: Date
-): QuestionInfoResult {
+export function transformInfoSectionsResponse({
+  response,
+  raw,
+  question,
+  options,
+  startTime,
+  endTime
+}: {
+  response: InfoSectionsOnly;
+  raw: LLMResponse;
+  question: { id: string; name: string };
+  options: QuestionInfoOptions;
+  startTime: Date;
+  endTime: Date;
+}): QuestionInfoResult {
   return {
     runId: generateRunId(),
     questionId: question.id,
@@ -52,7 +107,7 @@ export function transformInfoSectionsResponse(
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
       cost: calculateLLMCost({
-        provider: 'openai',
+        provider: options.llmProvider,
         model: options.llmModel,
         usage: raw.usage,
         controller: options.controller || new BaseController()
@@ -74,16 +129,32 @@ export function transformInfoSectionsResponse(
 }
 
 /**
- * Transform terms only response
+ * Transform terms only response into standardized result format
+ *
+ * @param params - Parameters object
+ * @param params.response - The parsed terms response from LLM
+ * @param params.raw - Raw LLM response with usage metrics
+ * @param params.question - Question metadata
+ * @param params.options - Generation options
+ * @param params.startTime - Generation start time
+ * @param params.endTime - Generation end time
+ * @returns Formatted question info result
  */
-export function transformTermsResponse(
-  response: TermsOnly,
-  raw: LLMResponse,
-  question: { id: string; name: string },
-  options: QuestionInfoOptions,
-  startTime: Date,
-  endTime: Date
-): QuestionInfoResult {
+export function transformTermsResponse({
+  response,
+  raw,
+  question,
+  options,
+  startTime,
+  endTime
+}: {
+  response: TermsOnly;
+  raw: LLMResponse;
+  question: { id: string; name: string };
+  options: QuestionInfoOptions;
+  startTime: Date;
+  endTime: Date;
+}): QuestionInfoResult {
   return {
     runId: generateRunId(),
     questionId: question.id,
@@ -94,7 +165,7 @@ export function transformTermsResponse(
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
       cost: calculateLLMCost({
-        provider: 'openai',
+        provider: options.llmProvider,
         model: options.llmModel,
         usage: raw.usage,
         controller: options.controller || new BaseController()
@@ -116,16 +187,32 @@ export function transformTermsResponse(
 }
 
 /**
- * Transform both info sections and terms response
+ * Transform response containing both info sections and terms into standardized result format
+ *
+ * @param params - Parameters object
+ * @param params.response - The parsed response containing both operations from LLM
+ * @param params.raw - Raw LLM response with usage metrics
+ * @param params.question - Question metadata
+ * @param params.options - Generation options
+ * @param params.startTime - Generation start time
+ * @param params.endTime - Generation end time
+ * @returns Formatted question info result
  */
-export function transformBothResponse(
-  response: BothOperations,
-  raw: LLMResponse,
-  question: { id: string; name: string },
-  options: QuestionInfoOptions,
-  startTime: Date,
-  endTime: Date
-): QuestionInfoResult {
+export function transformBothResponse({
+  response,
+  raw,
+  question,
+  options,
+  startTime,
+  endTime
+}: {
+  response: BothOperations;
+  raw: LLMResponse;
+  question: { id: string; name: string };
+  options: QuestionInfoOptions;
+  startTime: Date;
+  endTime: Date;
+}): QuestionInfoResult {
   return {
     runId: generateRunId(),
     questionId: question.id,
@@ -136,7 +223,7 @@ export function transformBothResponse(
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
       cost: calculateLLMCost({
-        provider: 'openai',
+        provider: options.llmProvider,
         model: options.llmModel,
         usage: raw.usage,
         controller: options.controller || new BaseController()
@@ -159,14 +246,28 @@ export function transformBothResponse(
 
 /**
  * Create error result when generation fails
+ *
+ * @param params - Parameters object
+ * @param params.question - Question metadata
+ * @param params.raw - Raw LLM response
+ * @param params.options - Generation options
+ * @param params.startTime - Generation start time
+ * @param params.endTime - Generation end time
+ * @returns Error result with failure metadata
  */
-export function createErrorResult(
-  question: { id: string; name: string },
-  raw: LLMResponse,
-  options: QuestionInfoOptions,
-  startTime: Date,
-  endTime: Date
-): QuestionInfoResult {
+export function createErrorResult({
+  question,
+  raw,
+  options,
+  startTime,
+  endTime
+}: {
+  question: { id: string; name: string };
+  raw: LLMResponse;
+  options: QuestionInfoOptions;
+  startTime: Date;
+  endTime: Date;
+}): QuestionInfoResult {
   return {
     runId: generateRunId(),
     questionId: question.id,
@@ -175,7 +276,7 @@ export function createErrorResult(
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
       cost: calculateLLMCost({
-        provider: 'openai',
+        provider: options.llmProvider,
         model: options.llmModel,
         usage: raw.usage,
         controller: options.controller || new BaseController()
@@ -193,7 +294,15 @@ export function createErrorResult(
 }
 
 /**
- * Generate a unique run ID
+ * Generate a unique run ID for tracking generation runs
+ *
+ * @returns Unique identifier string with timestamp and random suffix
+ *
+ * @example
+ * ```ts
+ * const runId = generateRunId();
+ * console.log(runId); // 'run_1699123456789_abc123def'
+ * ```
  */
 export function generateRunId(): string {
   return `run_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

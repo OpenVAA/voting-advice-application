@@ -27,8 +27,8 @@ termDefInstructions: |
   - Be neutral and factual
   - Help voters understand the question better
 
-# Move to common configuration to give the defaults to admins 
-infoSectionsDefaultTopics: ['Background', 'Current Status']
+  ## Important note:
+  The TERMS should ONLY be extracted FROM THE QUESTION text itself, not any other text.
 
 infoSectionsInstructions: |
   Generate 2-3 informative sections that cover:

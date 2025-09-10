@@ -1,13 +1,16 @@
 import { type Role, setPromptVars } from '@openvaa/llm';
+import { DEFAULT_SECTION_TOPICS } from '../consts';
 import {
   createDynamicResponseContract,
   createErrorResult,
   determinePromptKey,
+  loadAllExamples,
+  loadInstructions,
   loadPrompt,
   transformResponse
 } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
-import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
+import type { QuestionInfoOptions, QuestionInfoResult } from '../types';
 
 /**
  * Generate question info for any number of questions with parallelization
@@ -36,66 +39,78 @@ export async function generateInfo({
   const startTime = new Date();
 
   try {
-    // Determine which prompt to use based on operations
-    const promptKey = determinePromptKey(options.operations);
+    // Determine which prompt to use based on which operations we want to run
+    const promptKey = determinePromptKey({ operations: options.operations });
 
-    // Load prompt template and extract variables
+    // Load prompt template, instructions and examples
     const promptTemplate = await loadPrompt({ promptFileName: promptKey, language: options.language });
-    const systemPrompt = promptTemplate.systemPrompt;
-    const userPrompt = promptTemplate.userPrompt;
+    const instructions = await loadInstructions({ language: options.language });
+    const examples = (await loadAllExamples({ language: options.language })).slice(0, 3); // over 3 examples is almost never useful
 
-    // Get admin-provided context for the question
-    const context = options.questionContext; // There is no default context...
+    // Format examples with their questions
+    const formattedExamples = examples
+      .map((example) => {
+        let exampleOutput = '';
 
-    // Create dynamic schema based on operations
-    const responseValContract = createDynamicResponseContract(options.operations);
+        if (promptKey === 'generateTerms') {
+          exampleOutput = example.termExample;
+        } else if (promptKey === 'generateInfoSections') {
+          exampleOutput = example.infoSectionExample;
+        } else {
+          // generateBoth
+          exampleOutput = `{${example.termExample}, ${example.infoSectionExample}}`;
+        }
+
+        return `### Question: ${example.question}\nOutput: ${exampleOutput}`;
+      })
+      .join('\n\n');
+
+    // Create response validation schema to make sure the LLM's text response is always
+    // formatted as we expect it to be
+    const responseValContract = createDynamicResponseContract({ operations: options.operations });
 
     // Prepare inputs for parallel generation
-    const inputs = questions.map((question) => ({
-      messages: [
-        // Prepare system prompt with variables
-        {
-          role: 'system' as Role,
-          content: setPromptVars({
-            promptText: systemPrompt,
-            variables: {
-              context,
-              customInstructions: options.customInstructions
-            },
-            strict: false, // Want to fail on missing variables?
-            controller: options.controller // Sends warning to admin UI, if there is a mismatch between the prompt and the variables
-          })
-        },
-        // Prepare user prompt with variables
-        {
-          role: 'user' as Role,
-          content: setPromptVars({
-            promptText: userPrompt,
-            variables: {
-              question: question.name
-            },
-            strict: false,
-            controller: options.controller
-          })
-        }
-      ],
-      temperature: 0,
-      model: options.llmModel
-    }));
+    const inputs = questions.map((question) => {
+      // Build variables object based on the operation type. Start with tasks' shared variables
+      const variables: Record<string, unknown> = {
+        question: question.name,
+        generalInstructions: instructions.generalInstructions,
+        neutralityRequirements: instructions.neutralityRequirements,
+        questionContext: options.questionContext || '',
+        customInstructions: options.customInstructions || '',
+        examples: formattedExamples
+      };
+
+      // Add operation-specific variables
+      if (promptKey === 'generateTerms' || promptKey === 'generateBoth') {
+        variables.termDefInstructions = instructions.termDefInstructions;
+      }
+      if (promptKey === 'generateInfoSections' || promptKey === 'generateBoth') {
+        variables.infoSectionInstructions = instructions.infoSectionsInstructions;
+        variables.sectionTopics = options.sectionTopics || DEFAULT_SECTION_TOPICS;
+      }
+
+      return {
+        messages: [
+          {
+            role: 'user' as Role,
+            content: setPromptVars({
+              promptText: promptTemplate.prompt,
+              variables,
+              strict: false,
+              controller: options.controller // For warnings
+            })
+          }
+        ],
+        temperature: 0, // TODO: we should probably remove these repo-wide. Also changing default temp to 0 is better than current 0.7, because some models don't support temp at all
+        model: options.llmModel
+      };
+    });
 
     // Generate responses in parallel with validation
     const responses = await options.llmProvider.generateMultipleParallel({
       inputs,
-      responseContract: {
-        validate: (obj: unknown): obj is ResponseWithInfo => {
-          try {
-            responseValContract.validate(obj);
-            return true;
-          } catch {
-            return false;
-          }
-        }
-      },
+      responseContract: responseValContract,
       parallelBatches: 5 // TODO: tweak so that we use an appropriate amount of max capacity
     });
 
@@ -105,9 +120,9 @@ export async function generateInfo({
     return questions.map((question, index) => {
       const response = responses[index];
       if (response.parsed) {
-        return transformResponse(response, question, options, startTime, endTime);
+        return transformResponse({ llmResponse: response, question, options, startTime, endTime });
       } else {
-        return createErrorResult(question, response.raw, options, startTime, endTime);
+        return createErrorResult({ question, raw: response.raw, options, startTime, endTime });
       }
     });
   } catch (error) {
