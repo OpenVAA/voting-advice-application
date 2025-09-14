@@ -41,6 +41,15 @@ export function ImportData(): ReactElement {
         </code>
         .
       </p>
+      <p>
+        Answers can be updated using externalIds with the special <code>answersByExternalId</code>{' '}
+        key. The answers object is not overwritten. Instead the answers are merged with existing
+        ones. E.g.,{' '}
+        <code>
+          {'{'} "answersByExternalId": {'{'} "my-question-id-1": {'{'} "value": "foo" {'} } }'}
+        </code>
+        .
+      </p>
       <p>If there are any errors during the import, no changes are made.</p>
       <p>
         Valid collection names are:{' '}
