@@ -76,7 +76,7 @@ Throws if the content does not include the link placeholder.
 
 ### Import and delete data
 
-The `externalId` is a private field that all collection types have which is used to store a stable id which can be referenced instead of the `documentId` in the import and delete functions.
+The `externalId` is a private field that all collection types have which is used to store a stable id which can be referenced instead of the `documentId` in the import and delete functions. A special `answersByExternalId` property can be used to update `answers` using `Question`s’ externalId`s instead of `documentId`s.
 
 #### Import any data in JSON format
 

@@ -2,7 +2,7 @@ import type { UID } from '@strapi/strapi';
 import type { ExternalRelation, ExternalRelationConfig, ImportDatum } from '../data.type';
 
 /**
- * Convert any `ExternalRelation`s in `datum` to actual Strapi document IDs.
+ * Convert any `ExternalRelation`s in `datum` to actual Strapi document IDs, including the `answersByExternalId` property.
  * @param config - A mapping of relation property names and their corresponding Strapi content types.
  * @param datum - The data to parse.
  * @param strapi - The Strapi client instance.
@@ -18,8 +18,17 @@ export async function parseExternalRelations<TData extends ImportDatum>({
   datum: TData;
   strapi;
 }): Promise<ImportDatum> {
-  if (Object.keys(config).length === 0) return datum;
-  const parsed = { ...datum } as ImportDatum;
+  // Convert answersByExternalId to answers
+  const { answersByExternalId, answers, ...rest } = datum;
+  let combinedAnswers: object = answers && typeof answers === 'object' ? answers : {};
+  if (answersByExternalId) {
+    combinedAnswers = {
+      ...combinedAnswers,
+      ...(await parseAnswersByExternalId(answersByExternalId as object)),
+    };
+  }
+  const parsed = { ...rest, answers: combinedAnswers } as ImportDatum;
+  // Convert external relations to document IDs
   for (const [key, api] of Object.entries(config)) {
     const value = parsed[key];
     if (!isExternalRelation(value)) continue;
@@ -34,6 +43,29 @@ export async function parseExternalRelations<TData extends ImportDatum>({
     parsed[key] = ids;
   }
   return parsed;
+}
+
+/**
+ * Convert `externalId` keys to `Question.documentId`s in an answers dictionary.
+ * @param answers - The answers dictionary with `externalId`s as keys.
+ * @returns The same answers with `documentId`s as keys.
+ */
+export async function parseAnswersByExternalId(answers: object): Promise<object> {
+  if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) return {};
+
+  const questionMap = new Map(
+    (await strapi.documents('api::question.question').findMany({ fields: ['externalId'] })).map(
+      (q) => [q.externalId, q.documentId]
+    )
+  );
+
+  return Object.fromEntries(
+    Object.entries(answers).map(([externalId, answer]) => {
+      const documentId = questionMap.get(externalId);
+      if (documentId) return [documentId, answer];
+      throw new Error(`No question found for externalId ${externalId}`);
+    })
+  );
 }
 
 /**

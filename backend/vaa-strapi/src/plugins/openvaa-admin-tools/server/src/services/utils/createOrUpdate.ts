@@ -5,6 +5,7 @@ import type { ImportableCollection, ImportDatum } from '../data.type';
 /**
  * Create or update existing data based on `externalId` or `documentId` if provided.
  * NB. The `answers` property of `Entities` is always merged by first-level keys and not replaced.
+ * NB. An `answersByExternalId` property can be supplied to update answers by `externalId`.
  * @param collection - The importable collection.
  * @param datum - The data item.
  * @returns Either 'created' or 'updated'
@@ -71,24 +72,3 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
   await strapi.documents(api).create({ data: parsed });
   return 'created';
 }
-
-// Stashed code for file upload
-// const files = {} as Record<keyof TData, FileUploadProps>;
-// if (mediaFields?.length) {
-//   for (const key of mediaFields) {
-//     if (itemData[key]) {
-//       try {
-//         const path = `${itemData[key]}`;
-//         const name = Path.parse(path).name;
-//         const fullPath = Path.resolve(folder, path);
-//         const size = fs.statSync(fullPath).size;
-//         const type = mime.lookup(fullPath);
-//         files[key] = { name, path: fullPath, size, type };
-//       } catch (e) {
-//         console.error(`[loadData] [create] Error reading media file '${itemData[key]}'`, e);
-//         throw e;
-//       }
-//     }
-//     delete itemData[key];
-//   }
-// }
