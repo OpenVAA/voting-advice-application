@@ -7,6 +7,6 @@ import { constants } from '$lib/utils/constants';
  * @returns An URL string.
  */
 export function localPathToUrl(path: string): string {
-  const baseUrl = browser ? constants.PUBLIC_BROWSER_FRONTEND_URL : constants.PUBLIC_SERVER_FRONTEND_URL;
+  const baseUrl = '';
   return `${baseUrl}/${path.replace(/^\//, '')}`;
 }
