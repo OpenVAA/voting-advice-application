@@ -111,11 +111,6 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
         category={question.category}
         suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
         {onShadedBg} />
-      {#if blockWithStats}
-        <span class="text-secondary">
-          {blockWithStats.indexInBlock + 1}/{blockWithStats.block.length}
-        </span>
-      {/if}
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}
