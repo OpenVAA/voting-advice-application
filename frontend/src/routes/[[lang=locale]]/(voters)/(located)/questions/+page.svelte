@@ -136,7 +136,11 @@ Display a general intro before starting answering the questions and possibly all
         numQuestions: $selectedQuestionBlocks.questions.length
       })}
     </p>
-    <div class="grid justify-items-center gap-sm">
+    <div
+      class="
+        {$opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '} 
+        justify-center justify-items-center gap-sm
+      ">
       {#each $opinionQuestionCategories as category}
         <CategoryTag {category} />
       {/each}
