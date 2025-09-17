@@ -8,14 +8,6 @@ import {
 } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
-import type { InfoSectionPrompt, QInfoPromptComponents, TermDefPrompt } from '../types';
-
-// Type guard
-function hasDefaultSectionTopics(
-  template: QInfoPromptComponents
-): template is InfoSectionsPromptTemplate | BothOperationsPromptTemplate {
-  return 'defaultSectionTopics' in template;
-}
 
 /**
  * Generate question info for any number of questions with parallelization
