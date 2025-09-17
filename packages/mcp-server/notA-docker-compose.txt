@@ -1,0 +1,27 @@
+# MCP Server service configuration
+# This can be included in the main docker-compose files
+
+services:
+  mcp-server:
+    build:
+      context: ../..
+      dockerfile: packages/mcp-server/Dockerfile
+    container_name: openvaa-mcp-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=3001
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - openvaa-network
+
+networks:
+  openvaa-network:
+    external: true

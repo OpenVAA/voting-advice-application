@@ -1,0 +1,42 @@
+FROM node:20.18.1-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+COPY packages/mcp-server/package.json ./packages/mcp-server/
+COPY packages/shared-config ./packages/shared-config/
+COPY packages/core ./packages/core/
+COPY packages/data ./packages/data/
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Build the MCP server
+COPY packages/mcp-server ./packages/mcp-server/
+RUN yarn workspace @openvaa/mcp-server build
+
+# Production stage
+FROM node:20.18.1-alpine
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/packages/mcp-server/build ./
+COPY --from=builder /app/packages/mcp-server/package.json ./package.json
+
+# Install only production dependencies
+RUN yarn install --production --frozen-lockfile
+
+# Create non-root user
+RUN addgroup -g 1001 -S mcpserver && \
+    adduser -S mcpserver -u 1001
+
+USER mcpserver
+
+# Expose port for HTTP transport (optional)
+EXPOSE 3001
+
+# Default command
+CMD ["node", "index.js"]

@@ -1,0 +1,31 @@
+{
+  "private": true,
+  "name": "@openvaa/mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "bin": {
+    "openvaa-mcp-server": "./build/index.js"
+  },
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "dev": "yarn build && node ./build/index.js",
+    "start": "node ./build/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/data": "workspace:^",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/node": "^20.17.12",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
