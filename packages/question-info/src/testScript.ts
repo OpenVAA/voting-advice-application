@@ -97,9 +97,9 @@ async function runTest() {
   }
 
   // Log generated content
-  if (results[0].terms && results[0].terms.length > 0) {
+  if (results[0].data.terms && results[0].data.terms.length > 0) {
     console.info('🔤 Generated Terms:');
-    results[0].terms.forEach((term, index) => {
+    results[0].data.terms.forEach((term, index) => {
       console.info(`${index + 1}. ${term.title}`);
       console.info(`   Triggers: ${term.triggers.join(', ')}`);
       console.info(`   Content: ${term.content}`);
@@ -107,9 +107,9 @@ async function runTest() {
     });
   }
 
-  if (results[0].infoSections && results[0].infoSections.length > 0) {
+  if (results[0].data.infoSections && results[0].data.infoSections.length > 0) {
     console.info('📄 Generated Info Sections:');
-    results[0].infoSections.forEach((section, index) => {
+    results[0].data.infoSections.forEach((section, index) => {
       console.info(`${index + 1}. ${section.title}`);
       console.info(`   Content: ${section.content}`);
       console.info('');

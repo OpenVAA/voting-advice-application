@@ -151,11 +151,11 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('boolean-question-1');
-      expect(results[0].questionName).toBe('Do you support renewable energy?');
-      expect(results[0].infoSections).toBeDefined();
-      expect(results[0].infoSections).toHaveLength(1);
-      expect(results[0].terms).toBeUndefined();
+      expect(results[0].data.questionId).toBe('boolean-question-1');
+      expect(results[0].data.questionName).toBe('Do you support renewable energy?');
+      expect(results[0].data.infoSections).toBeDefined();
+      expect(results[0].data.infoSections).toHaveLength(1);
+      expect(results[0].data.terms).toBeUndefined();
       expect(results[0].success).toBe(true);
       expect(results[0].metadata.language).toBe('en');
       expect(results[0].metadata.llmModel).toBe(mockLLMModel);
@@ -188,11 +188,11 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('boolean-question-1');
-      expect(results[0].questionName).toBe('Do you support renewable energy?');
-      expect(results[0].infoSections).toBeUndefined();
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(1);
+      expect(results[0].data.questionId).toBe('boolean-question-1');
+      expect(results[0].data.questionName).toBe('Do you support renewable energy?');
+      expect(results[0].data.infoSections).toBeUndefined();
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -229,10 +229,10 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].infoSections).toBeDefined();
-      expect(results[0].infoSections).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(1);
+      expect(results[0].data.infoSections).toBeDefined();
+      expect(results[0].data.infoSections).toHaveLength(1);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
   });
@@ -265,10 +265,10 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('ordinal-question-1');
-      expect(results[0].questionName).toBe('How important is climate change to you?');
-      expect(results[0].infoSections).toBeDefined();
-      expect(results[0].infoSections).toHaveLength(1);
+      expect(results[0].data.questionId).toBe('ordinal-question-1');
+      expect(results[0].data.questionName).toBe('How important is climate change to you?');
+      expect(results[0].data.infoSections).toBeDefined();
+      expect(results[0].data.infoSections).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -303,8 +303,8 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -337,10 +337,10 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('categorical-question-1');
-      expect(results[0].questionName).toBe('What is your preferred energy source?');
-      expect(results[0].infoSections).toBeDefined();
-      expect(results[0].infoSections).toHaveLength(1);
+      expect(results[0].data.questionId).toBe('categorical-question-1');
+      expect(results[0].data.questionName).toBe('What is your preferred energy source?');
+      expect(results[0].data.infoSections).toBeDefined();
+      expect(results[0].data.infoSections).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -375,8 +375,8 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -441,9 +441,9 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(3);
-      expect(results[0].questionId).toBe('boolean-question-1');
-      expect(results[1].questionId).toBe('ordinal-question-1');
-      expect(results[2].questionId).toBe('categorical-question-1');
+      expect(results[0].data.questionId).toBe('boolean-question-1');
+      expect(results[1].data.questionId).toBe('ordinal-question-1');
+      expect(results[2].data.questionId).toBe('categorical-question-1');
       expect(results.every((r) => r.success)).toBe(true);
     });
 
@@ -502,7 +502,7 @@ describe('generateQuestionInfo API', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(2);
-      expect(results.every((r) => r.infoSections && r.terms)).toBe(true);
+      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
       expect(results.every((r) => r.success)).toBe(true);
     });
   });
@@ -541,8 +541,8 @@ describe('generateQuestionInfo API', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].success).toBe(false);
-      expect(results[0].infoSections).toBeUndefined();
-      expect(results[0].terms).toBeUndefined();
+      expect(results[0].data.infoSections).toBeUndefined();
+      expect(results[0].data.terms).toBeUndefined();
     });
   });
 
@@ -594,7 +594,7 @@ describe('generateQuestionInfo API', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].success).toBe(true);
-      expect(results[0].questionName).toBe('Minimal question');
+      expect(results[0].data.questionName).toBe('Minimal question');
     });
   });
 });
