@@ -3,6 +3,7 @@ export * from './generationMetrics';
 export * from './generationOptions';
 export * from './latency';
 export * from './llmResponse';
+export * from './llmResult';
 export * from './message';
 export * from './modelPricing';
 export * from './role';
