@@ -96,9 +96,9 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('boolean-1');
-      expect(results[0].questionName).toBe('Do you support universal healthcare?');
-      expect(results[0].infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('boolean-1');
+      expect(results[0].data.questionName).toBe('Do you support universal healthcare?');
+      expect(results[0].data.infoSections).toBeDefined();
       expect(results[0].success).toBe(true);
     });
 
@@ -151,8 +151,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -210,9 +210,9 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('ordinal-1');
-      expect(results[0].questionName).toBe('How satisfied are you with public transportation?');
-      expect(results[0].infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('ordinal-1');
+      expect(results[0].data.questionName).toBe('How satisfied are you with public transportation?');
+      expect(results[0].data.infoSections).toBeDefined();
       expect(results[0].success).toBe(true);
     });
 
@@ -274,8 +274,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -333,9 +333,9 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].questionId).toBe('categorical-1');
-      expect(results[0].questionName).toBe('What is your primary mode of transportation to work?');
-      expect(results[0].infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('categorical-1');
+      expect(results[0].data.questionName).toBe('What is your primary mode of transportation to work?');
+      expect(results[0].data.infoSections).toBeDefined();
       expect(results[0].success).toBe(true);
     });
 
@@ -396,8 +396,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].terms).toBeDefined();
-      expect(results[0].terms).toHaveLength(3);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(3);
       expect(results[0].success).toBe(true);
     });
   });
@@ -533,18 +533,18 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(3);
-      expect(results[0].questionId).toBe('mixed-1');
-      expect(results[1].questionId).toBe('mixed-2');
-      expect(results[2].questionId).toBe('mixed-3');
+      expect(results[0].data.questionId).toBe('mixed-1');
+      expect(results[1].data.questionId).toBe('mixed-2');
+      expect(results[2].data.questionId).toBe('mixed-3');
 
       // All results should have both infoSections and terms
-      expect(results.every((r) => r.infoSections && r.terms)).toBe(true);
+      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
       expect(results.every((r) => r.success)).toBe(true);
 
       // Verify specific content
-      expect(results[0].infoSections![0].title).toBe('Tax Policy');
-      expect(results[1].infoSections![0].title).toBe('Income Inequality Priority');
-      expect(results[2].infoSections![0].title).toBe('Policy Preference Analysis');
+      expect(results[0].data.infoSections![0].title).toBe('Tax Policy');
+      expect(results[1].data.infoSections![0].title).toBe('Income Inequality Priority');
+      expect(results[2].data.infoSections![0].title).toBe('Policy Preference Analysis');
     });
   });
 });

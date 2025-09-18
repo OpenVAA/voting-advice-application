@@ -70,18 +70,6 @@ export function transformResponse({
   }
 }
 
-/**
- * Transform info sections only response into standardized result format
- *
- * @param params - Parameters object
- * @param params.response - The parsed info sections response from LLM
- * @param params.raw - Raw LLM response with usage metrics
- * @param params.question - Question metadata
- * @param params.options - Generation options
- * @param params.startTime - Generation start time
- * @param params.endTime - Generation end time
- * @returns Formatted question info result
- */
 export function transformInfoSectionsResponse({
   response,
   raw,
@@ -99,10 +87,12 @@ export function transformInfoSectionsResponse({
 }): QuestionInfoResult {
   return {
     runId: generateRunId(),
-    questionId: question.id,
-    questionName: question.name,
-    infoSections: response.infoSections,
-    terms: undefined,
+    data: {
+      questionId: question.id,
+      questionName: question.name,
+      infoSections: response.infoSections,
+      terms: undefined
+    },
     metrics: {
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
@@ -128,18 +118,6 @@ export function transformInfoSectionsResponse({
   };
 }
 
-/**
- * Transform terms only response into standardized result format
- *
- * @param params - Parameters object
- * @param params.response - The parsed terms response from LLM
- * @param params.raw - Raw LLM response with usage metrics
- * @param params.question - Question metadata
- * @param params.options - Generation options
- * @param params.startTime - Generation start time
- * @param params.endTime - Generation end time
- * @returns Formatted question info result
- */
 export function transformTermsResponse({
   response,
   raw,
@@ -157,10 +135,12 @@ export function transformTermsResponse({
 }): QuestionInfoResult {
   return {
     runId: generateRunId(),
-    questionId: question.id,
-    questionName: question.name,
-    infoSections: undefined,
-    terms: response.terms,
+    data: {
+      questionId: question.id,
+      questionName: question.name,
+      infoSections: undefined,
+      terms: response.terms
+    },
     metrics: {
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
@@ -186,18 +166,6 @@ export function transformTermsResponse({
   };
 }
 
-/**
- * Transform response containing both info sections and terms into standardized result format
- *
- * @param params - Parameters object
- * @param params.response - The parsed response containing both operations from LLM
- * @param params.raw - Raw LLM response with usage metrics
- * @param params.question - Question metadata
- * @param params.options - Generation options
- * @param params.startTime - Generation start time
- * @param params.endTime - Generation end time
- * @returns Formatted question info result
- */
 export function transformBothResponse({
   response,
   raw,
@@ -215,10 +183,12 @@ export function transformBothResponse({
 }): QuestionInfoResult {
   return {
     runId: generateRunId(),
-    questionId: question.id,
-    questionName: question.name,
-    infoSections: response.infoSections,
-    terms: response.terms,
+    data: {
+      questionId: question.id,
+      questionName: question.name,
+      infoSections: response.infoSections,
+      terms: response.terms
+    },
     metrics: {
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,
@@ -243,6 +213,8 @@ export function transformBothResponse({
     }
   };
 }
+
+// ... existing code ...
 
 /**
  * Create error result when generation fails
@@ -270,8 +242,12 @@ export function createErrorResult({
 }): QuestionInfoResult {
   return {
     runId: generateRunId(),
-    questionId: question.id,
-    questionName: question.name,
+    data: {
+      questionId: question.id,
+      questionName: question.name,
+      infoSections: undefined,
+      terms: undefined
+    },
     metrics: {
       duration: (endTime.getTime() - startTime.getTime()) / 1000,
       nLlmCalls: 1,

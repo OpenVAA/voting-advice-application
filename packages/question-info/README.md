@@ -10,7 +10,7 @@ VAA questions often contain complex political concepts and terminology that may 
 
 This package uses large language models to generate two types of contextual information:
 
-- **Term definitions**: Clear explanations of key concepts and terminology
+- **Term definitions**: Clear explanations of key concepts and terminology in the question itself
 - **Info sections**: Background information and context about the topic
 
 ## Dependencies
@@ -42,8 +42,8 @@ const results = await generateQuestionInfo({
   }
 });
 
-console.log(results[0].terms); // Generated term definitions
-console.log(results[0].infoSections); // Generated info sections
+console.log(results[0].data.terms); // Generated term definitions
+console.log(results[0].data.infoSections); // Generated info sections
 ```
 
 ### Generate Only Terms
@@ -97,7 +97,7 @@ const results = await generateQuestionInfo({
 
 ### Language Support
 
-Currently supports English (`'en'`). See [`SUPPORTED_QINFO_LANG`](src/consts.ts) for available languages.
+See [`SUPPORTED_QINFO_LANG`](src/consts.ts) for available languages.
 
 ### Custom Section Topics
 
