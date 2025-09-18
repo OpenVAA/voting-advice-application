@@ -20,5 +20,7 @@
   "tip": "Du kan se alla dina svar på denna sida när du kommer tillbaka senare.",
   "title": "Dina åsikter",
   "unansweredWarning": "Du har fortfarande {numUnansweredQuestions, plural, =1 {en obesvarad fråga} other {# obesvarade frågor}}.",
-  "viewAnswer": "Visa ditt svar"
+  "viewAnswer": "Visa ditt svar",
+  "relatedElectionsAll": "Denna och följande frågor handlar om alla val.",
+  "relatedElectionsSome": "Denna och följande frågor handlar om: {electionNames}"
 }

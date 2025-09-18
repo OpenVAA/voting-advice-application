@@ -20,5 +20,7 @@
   "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
   "title": "Mielipiteesi",
   "unansweredWarning": "Sinulla on vielä {numUnansweredQuestions, plural, =1 {yksi vastaamaton kysymys} other {# vastaamatonta kysymystä}}.",
-  "viewAnswer": "Tarkastele vastaustasi"
+  "viewAnswer": "Tarkastele vastaustasi",
+  "relatedElectionsAll": "Tämä ja seuraavat kysymykset koskevat kaikkia vaaleja.",
+  "relatedElectionsSome": "Tämä ja seuraavat kysymykset koskevat seuraavia vaaleja: {electionNames}"
 }

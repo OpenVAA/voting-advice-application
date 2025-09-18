@@ -20,5 +20,7 @@
   "tip": "Du kan se alle dine svar på denne side, når du vender tilbage senere.",
   "title": "Dine holdninger",
   "unansweredWarning": "Du har stadig {numUnansweredQuestions, plural, =1 {ét ubesvaret spørgsmål} other {# ubesvarede spørgsmål}}.",
-  "viewAnswer": "Se dit svar"
+  "viewAnswer": "Se dit svar",
+  "relatedElectionsAll": "De følgende spørgsmål handler om alle valg.",
+  "relatedElectionsSome": "De følgende spørgsmål handler om {electionNames}."
 }

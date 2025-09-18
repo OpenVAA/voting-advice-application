@@ -120,6 +120,8 @@ export type TranslationKey =
   | 'candidateApp.questions.ingress.partial'
   | 'candidateApp.questions.notAnswered'
   | 'candidateApp.questions.openAnswerPrompt'
+  | 'candidateApp.questions.relatedElectionsAll'
+  | 'candidateApp.questions.relatedElectionsSome'
   | 'candidateApp.questions.start'
   | 'candidateApp.questions.tip'
   | 'candidateApp.questions.title'

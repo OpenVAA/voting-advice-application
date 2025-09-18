@@ -20,5 +20,7 @@
   "tip": "You can see all your anwers on this page when you come back to it later.",
   "title": "Your Opinions",
   "unansweredWarning": "You still have {numUnansweredQuestions, plural, =1 {one unanswered question} other {# unanswered questions}}.",
-  "viewAnswer": "View Your Answer"
+  "viewAnswer": "View Your Answer",
+  "relatedElectionsAll": "The following questions are about all elections.",
+  "relatedElectionsSome": "The following questions are about {electionNames}."
 }

@@ -15,7 +15,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
 <script lang="ts">
   import { type CustomData, getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
-  import { type AnyQuestionVariant, isEmptyValue } from '@openvaa/data';
+  import { type AnyQuestionVariant, Election, isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
@@ -35,13 +35,25 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import MainContent from '../../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   import { Hero } from '$lib/components/hero';
+  import { Icon } from '$lib/components/icon';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import ElectionTag from '$lib/components/electionTag/ElectionTag.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
-    getCandidateContext();
+  const {
+    answersLocked,
+    dataRoot,
+    getRoute,
+    questionBlocks,
+    selectedElections,
+    unansweredOpinionQuestions,
+    t,
+    userData
+  } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -55,9 +67,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let canSubmit: boolean;
   let customData: CustomData['Question'];
   let errorMessage: string | undefined;
+  let isElectionNoteRead = false;
   let isLastUnanswered: boolean;
   let nextQuestionId: Id | undefined;
+  let previousElectionIds = '';
   let question: AnyQuestionVariant;
+  let shouldShowElectionNote = false;
   let status: ActionStatus = 'loading';
   let submitLabel: string;
   let submitRoute: string;
@@ -74,6 +89,16 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       question = $dataRoot.getQuestion(questionId);
       customData = getCustomData(question);
       nextQuestionId = getNextQuestionId(question);
+      if ($selectedElections.length > 1) {
+        // Possibly show election note if elections have changed
+        const electionIds = question.category.elections
+          .toSorted()
+          .map((e) => e.id)
+          .join(',');
+        shouldShowElectionNote = previousElectionIds !== electionIds;
+        isElectionNoteRead = false;
+        previousElectionIds = electionIds;
+      }
       status = 'idle';
     } catch {
       error(404, `Question with id ${questionId} not found.`);
@@ -230,78 +255,107 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
       onConfirm={handleNavigationConfirm} />
 
-    <MainContent title={text}>
-      <svelte:fragment slot="note">
-        {#if $answersLocked}
-          <Warning>
-            {$t('candidateApp.common.editingNotAllowed')}
-          </Warning>
-        {/if}
-      </svelte:fragment>
+    {#if shouldShowElectionNote && !isElectionNoteRead}
+      {@const electionNames = question.category.elections.map((e) => e.shortName).join(', ')}
+      <MainContent title={electionNames}>
+        <HeadingGroup slot="heading" class="relative">
+          <h1>
+            {#each question.category.elections as election}
+              <ElectionTag {election} class="text-xl" />
+            {/each}
+          </h1>
+        </HeadingGroup>
 
-      <figure role="presentation" slot="hero">
-        {#if customData?.hero}
-          <Hero content={customData?.hero} />
-        {/if}
-      </figure>
-
-      <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
-
-      {#if info && info !== ''}
-        <QuestionBasicInfo {info} />
-      {/if}
-
-      <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">
-        <!-- Question answer proper -->
-
-        <OpinionQuestionInput
-          {question}
-          {answer}
-          mode={$answersLocked ? 'display' : 'answer'}
-          onShadedBg
-          onChange={handleValueChange} />
-
-        <!-- Open answer -->
-
-        {#if customData.allowOpen}
-          <Input
-            type="textarea-multilingual"
-            label={$t('candidateApp.questions.openAnswerPrompt')}
-            value={answer?.info}
-            disabled={!canSubmit}
-            locked={$answersLocked}
-            placeholder={canSubmit ? '' : $t('candidateApp.questions.answerQuestionFirst')}
-            onShadedBg
-            onChange={handleInfoChange} />
-        {/if}
-
-        <!-- Error message -->
-
-        {#if status === 'error'}
-          <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
-        {/if}
-
-        <!-- Submit or cancel -->
-
-        <div class="grid w-full justify-items-center">
-          {#if !$answersLocked}
-            <Button
-              text={submitLabel}
-              on:click={handleSubmit}
-              disabled={!canSubmit}
-              loading={status === 'loading'}
-              loadingText={$t('common.saving')}
-              type="submit"
-              id="submitButton"
-              variant="main"
-              icon="next" />
-            <Button text={cancelLabel} on:click={handleCancel} color="warning" />
+        <p class="ingress text-center">
+          {#if question.category.elections.length === $selectedElections.length}
+            {$t('candidateApp.questions.relatedElectionsAll')}
           {:else}
-            <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
+            {$t('candidateApp.questions.relatedElectionsSome', {
+              electionNames
+            })}
           {/if}
+        </p>
+
+        <Button
+          slot="primaryActions"
+          text={$t('common.continue')}
+          on:click={() => (isElectionNoteRead = true)}
+          variant="main" />
+      </MainContent>
+    {:else}
+      <MainContent title={text}>
+        <svelte:fragment slot="note">
+          {#if $answersLocked}
+            <Warning>
+              {$t('candidateApp.common.editingNotAllowed')}
+            </Warning>
+          {/if}
+        </svelte:fragment>
+
+        <figure role="presentation" slot="hero">
+          {#if customData?.hero}
+            <Hero content={customData?.hero} />
+          {/if}
+        </figure>
+
+        <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
+
+        {#if info && info !== ''}
+          <QuestionBasicInfo {info} />
+        {/if}
+
+        <div slot="primaryActions" class="gap-lg grid w-full justify-items-center">
+          <!-- Question answer proper -->
+
+          <OpinionQuestionInput
+            {question}
+            {answer}
+            mode={$answersLocked ? 'display' : 'answer'}
+            onShadedBg
+            onChange={handleValueChange} />
+
+          <!-- Open answer -->
+
+          {#if customData.allowOpen}
+            <Input
+              type="textarea-multilingual"
+              label={$t('candidateApp.questions.openAnswerPrompt')}
+              value={answer?.info}
+              disabled={!canSubmit}
+              locked={$answersLocked}
+              placeholder={canSubmit ? '' : $t('candidateApp.questions.answerQuestionFirst')}
+              onShadedBg
+              onChange={handleInfoChange} />
+          {/if}
+
+          <!-- Error message -->
+
+          {#if status === 'error'}
+            <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
+          {/if}
+
+          <!-- Submit or cancel -->
+
+          <div class="grid w-full justify-items-center">
+            {#if !$answersLocked}
+              <Button
+                text={submitLabel}
+                on:click={handleSubmit}
+                disabled={!canSubmit}
+                loading={status === 'loading'}
+                loadingText={$t('common.saving')}
+                type="submit"
+                id="submitButton"
+                variant="main"
+                icon="next" />
+              <Button text={cancelLabel} on:click={handleCancel} color="warning" />
+            {:else}
+              <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
+            {/if}
+          </div>
         </div>
-      </div>
-    </MainContent>
+      </MainContent>
+    {/if}
   {/key}
 {:else}
   <Loading class="mt-lg" />

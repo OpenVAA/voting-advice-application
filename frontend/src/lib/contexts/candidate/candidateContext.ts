@@ -12,11 +12,13 @@ import { getImpliedElectionIds } from '$lib/utils/route';
 import { prepareDataWriter } from './prepareDataWriter';
 import { userDataStore } from './userDataStore';
 import { getAppContext } from '../app';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
 import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
+import type { Election } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
@@ -95,13 +97,20 @@ export function initCandidateContext(): CandidateContext {
     }
   );
 
-  const selectedElections = derived(
+  const selectedElections = parsimoniusDerived(
     [dataRoot, userData],
     ([dataRoot, userData]) => {
       if (!userData) return [];
       return removeDuplicates(userData.nominations.nominations.map((n) => dataRoot.getElection(n.electionId)));
     },
-    []
+    {
+      differenceChecker: (ee: Array<Election>) =>
+        ee
+          .map((e) => e.id)
+          .toSorted()
+          .join(','),
+      initialValue: []
+    }
   );
 
   const selectedConstituencies = derived(
