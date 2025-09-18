@@ -34,6 +34,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
+  import { Hero } from '$lib/components/hero';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -221,7 +222,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
 {#if question}
   {@const { info, text } = question}
+  {@const customData = getCustomData(question)}
   {@const answer = $userData?.candidate.answers?.[question.id]}
+
   {#key question.id}
     <PreventNavigation
       active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
@@ -235,6 +238,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           </Warning>
         {/if}
       </svelte:fragment>
+
+      <figure role="presentation" slot="hero">
+        {#if customData?.hero}
+          <Hero content={customData?.hero} />
+        {/if}
+      </figure>
 
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
