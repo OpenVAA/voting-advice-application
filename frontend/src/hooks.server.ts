@@ -1,4 +1,4 @@
-import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
+import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
 import { logDebugError } from '$lib/utils/logger';

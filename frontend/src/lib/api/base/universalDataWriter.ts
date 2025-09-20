@@ -1,6 +1,5 @@
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
-import { localPathToUrl } from '../utils/localPathToUrl';
 import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
@@ -44,7 +43,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     redirectUri: string;
   }): DWReturnType<DataApiActionResult> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.token);
+    const url = UNIVERSAL_API_ROUTES.token;
     const response = await this.fetch(url, {
       method: 'POST',
       headers: {
@@ -70,7 +69,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       };
     };
   }): DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }> {
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.preregister);
+    const url = UNIVERSAL_API_ROUTES.preregister;
     const response = await this.fetch(url, {
       method: 'POST',
       headers: {
@@ -99,7 +98,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   async clearIdToken(): DWReturnType<DataApiActionResult> {
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.token);
+    const url = UNIVERSAL_API_ROUTES.token;
     const response = await this.fetch(url, {
       method: 'DELETE',
       headers: {
@@ -110,7 +109,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   async logout(opts: WithAuth): DWReturnType<DataApiActionResult> {
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.logout);
+    const url = UNIVERSAL_API_ROUTES.logout;
     const [clientResult, backendResult] = await Promise.all([
       this.fetch(url, {
         method: 'POST',

@@ -1,6 +1,5 @@
 import qs from 'qs';
 import { addHeader } from '$lib/api/utils/addHeader';
-import { localPathToUrl } from '$lib/api/utils/localPathToUrl';
 import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute, type ApiRouteReturnType } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { ApiRouteAdapter, FetchOptions, GetOptions, PostOptions } from './apiRouteAdapter.type';
@@ -22,7 +21,7 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       request,
       disableCache
     }: FetchOptions<TApi>): Promise<Response> {
-      let url = localPathToUrl(API_ROUTES[endpoint]);
+      let url = API_ROUTES[endpoint];
       if (params) url += `?${qs.stringify(params, { encodeValuesOnly: true })}`;
       return this.fetch(url, request, { disableCache });
     }
