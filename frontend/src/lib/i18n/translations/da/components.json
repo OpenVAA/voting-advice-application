@@ -21,7 +21,7 @@
     },
     "hideTranslations": "Skjul",
     "imageInfo": "Den maksimale billedstørrelse er {maxFilesize} MB. Hav tålmodighed, da billedet kan tage lidt tid at indlæse.",
-    "multilingualInfo": "Du kan indtaste dit svar på alle valgtestens sprog, hvis du ønsker det.",
+    "multilingualInfo": "Du kan indtaste dit svar på alle valgtestens sprog (engelsk og dansk), hvis du ønsker det.",
     "noImage": "Intet billede",
     "selectAnother": "Vælg en anden",
     "selectFirst": "Vælg først",
