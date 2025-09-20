@@ -13,5 +13,5 @@ export async function POST({ request, params }: { request: Request; params: any 
   };
 
   const result = await ChatEngine.createStream(input);
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

@@ -1,6 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { convertToModelMessages, streamText, type ToolSet } from 'ai';
-import { toolRegistry } from './tools/registry';
+import { convertToModelMessages, stepCountIs, streamText, type ToolSet } from 'ai';
+import { tools } from './tools/tools';
+import { openAIApiKey } from '../apiKey';
 import type { ChatbotAPIInput } from '../api.type';
 
 // Main chat engine for OpenVAA chatbot
@@ -14,14 +15,21 @@ export class ChatEngine {
 
     // TODO: Replace with environment variable
     const openaiProvider = createOpenAI({
-      apiKey: 'your-api-key'
+      apiKey: openAIApiKey
     });
 
-    return streamText({
+    const result = streamText({
       model: openaiProvider('gpt-4o-mini'),
       system: systemMessage,
       messages,
-      tools: Object.fromEntries(toolRegistry) as ToolSet
+      tools: tools as ToolSet,
+      stopWhen: stepCountIs(4), 
+      onFinish: (finishResult) => {
+        console.info('[chatEngine.createStream]AI Stream finished:', finishResult);
+      }
     });
+
+    console.info('[chatEngine.createStream] Starting AI stream with messages:', messages);
+    return result;
   }
 }
