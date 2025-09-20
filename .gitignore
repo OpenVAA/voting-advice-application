@@ -3,6 +3,8 @@
 .env
 !.env.example
 node_modules
+agents.md
+packages/chatbot/src/apiKey.ts
 
 # Yarn 4 without Zero-installs
 .pnp.*
