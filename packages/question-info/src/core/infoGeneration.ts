@@ -2,7 +2,6 @@ import { type Role, setPromptVars } from '@openvaa/llm';
 import { DEFAULT_SECTION_TOPICS } from '../consts';
 import {
   createDynamicResponseContract,
-  createErrorResult,
   determinePromptKey,
   loadAllExamples,
   loadInstructions,
@@ -122,7 +121,7 @@ export async function generateInfo({
       if (response.parsed) {
         return transformResponse({ llmResponse: response, question, options, startTime, endTime });
       } else {
-        return createErrorResult({ question, raw: response.raw, options, startTime, endTime });
+        return transformResponse({ llmResponse: response, question, options, startTime, endTime, success: false });
       }
     });
   } catch (error) {
