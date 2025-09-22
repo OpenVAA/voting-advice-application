@@ -1,0 +1,169 @@
+# 1. Rename to render.yaml
+#
+# 2. Find and replace placeholders
+#    dev-staging           e.g. demo-vaa
+#    deploy-openvaa-dev         e.g. deploy-vaa
+#    dev-staging         e.g. vaa.openvaa.org
+#    no-reply@openvaa.org      e.g. no-reply@openvaa.org
+#    info@openvaa.org  e.g. info@openvaa.org
+#    Voting Advice Application e.g. Voting Advice Application
+#
+# 3. Check default values marked with # Check
+#
+# 4. In Render, check whether you want to auto-update the Blueprint service when this file changes. The updates are automated by default.
+#
+# Env variables based on env.example 2025-09-02
+
+version: '1'
+
+previews:
+  # See: https://render.com/docs/preview-environments#manual-vs-automatic-preview-environments
+  generation: automatic
+
+services:
+  # Frontend service
+  - type: web
+    name: openvaa-dev-frontend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: deploy-openvaa-dev
+    plan: starter # Check
+    envVars:
+      - key: PUBLIC_CACHE_ENABLED # Check
+        value: 'false'
+      - key: CACHE_TTL
+        value: 86400000
+      - key: CACHE_LRU_SIZE
+        value: 1000
+      - key: CACHE_EXPIRATION_INTERVAL
+        value: 3600000
+      - key: CACHE_DIR # Must match disk below
+        value: /var/data/cache
+
+      - key: PUBLIC_DEBUG
+        value: 'true'
+
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://openvaa-dev-frontend.onrender.com
+      - key: PUBLIC_SERVER_FRONTEND_URL # Check value after deployment
+        value: https://openvaa-dev-frontend.onrender.com
+      - key: PUBLIC_BROWSER_BACKEND_URL # Check value after deployment
+        value: https://openvaa-dev-backend.onrender.com
+      - key: PUBLIC_SERVER_BACKEND_URL # Check value after deployment
+        value: https://openvaa-dev-backend.onrender.com
+
+      # Set this if using local adapter and disable the backend service and database
+      # - key: LOCAL_DATA_DIR
+      #   value: /var/data
+
+      # Uncomment these if using pre-registration
+      # - key: BACKEND_API_TOKEN
+      #   sync: false
+      # - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./frontend/Dockerfile
+    # domains:
+    #   - dev-staging
+
+    disk: # Check and comment out if not planning on using the cache
+      name: disk
+      mountPath: /var/data/cache
+      sizeGB: 1
+
+    autoDeployTrigger: 'checksPass' # Check
+
+  # Backend service
+  - type: web
+    name: openvaa-dev-backend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: deploy-openvaa-dev
+    plan: starter # Check
+    envVars:
+      - key: APP_KEYS
+        sync: false
+        previewValue: 'toBeModified1,toBeModified2'
+
+      - key: MAIL_FROM
+        value: 'no-reply@openvaa.org'
+      - key: MAIL_REPLY_TO
+        value: 'info@openvaa.org'
+      - key: MAIL_FROM_NAME
+        value: 'Voting Advice Application'
+
+      - key: STRAPI_PORT
+        value: 1337
+      - key: STRAPI_HOST
+        value: 0.0.0.0
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://openvaa-dev-frontend.onrender.com
+      - key: GENERATE_MOCK_DATA_ON_RESTART
+        value: 'false'
+      - key: GENERATE_MOCK_DATA_ON_INITIALISE
+        value: 'false'
+        previewValue: 'true'
+      - key: LOAD_DATA_ON_INITIALISE_FOLDER
+        value: '' # Deprecated
+
+      - key: API_TOKEN_SALT
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+
+      - key: DATABASE_HOST # Check value after deployment
+        fromDatabase:
+          name: openvaa-dev-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: openvaa-dev-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: openvaa-dev-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: openvaa-dev-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: openvaa-dev-db
+          property: password
+      - key: DATABASE_SSL_SELF
+        value: 'false'
+      - key: DATABASE_SCHEMA
+        value: public
+
+      - fromGroup: AWS SES SMTP
+      - fromGroup: AWS SES HTTP
+      - fromGroup: AWS S3 MEDIA STORAGE
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./backend/vaa-strapi/Dockerfile
+
+    autoDeployTrigger: 'checksPass' # Check
+
+    # domains: # Uncomment and define value if necessary
+    #   - foo-backend.bar.com
+
+databases:
+  - name: openvaa-dev-db
+
+    plan: basic-256mb # Check
+    diskSizeGB: 1 # Check
+
+    # If necessary, uncomment and define values
+    # databaseName: openvaa-dev-dbname
+    # user: openvaa-dev-dbuser
+
+    region: frankfurt
+    postgresMajorVersion: '16'
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
