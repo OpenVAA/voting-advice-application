@@ -1,8 +1,9 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { convertToModelMessages, stepCountIs, streamText, type ToolSet } from 'ai';
-import { tools } from './tools/tools';
+import { getTools } from './tools/tools';
 import { openAIApiKey } from '../apiKey';
 import type { ChatbotAPIInput } from '../api.type';
+
 
 // Main chat engine for OpenVAA chatbot
 export class ChatEngine {
@@ -22,8 +23,8 @@ export class ChatEngine {
       model: openaiProvider('gpt-4o-mini'),
       system: systemMessage,
       messages,
-      tools: tools as ToolSet,
-      stopWhen: stepCountIs(4), 
+      tools: getTools(input.getToolsOptions?.dataProvider, input.getToolsOptions) as ToolSet,
+      stopWhen: stepCountIs(4),
       onFinish: (finishResult) => {
         console.info('[chatEngine.createStream]AI Stream finished:', finishResult);
       }
