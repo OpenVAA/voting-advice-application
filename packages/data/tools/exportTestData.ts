@@ -8,6 +8,6 @@
 
 import { exportTestData } from '../src/testUtils/exportTestData';
 
-const exportPath = process.argv.pop() ?? './testData/';
+const exportPath = process.argv.length === 3 ? process.argv.pop() : undefined;
 
-exportTestData(exportPath);
+exportTestData(exportPath || 'test-data');
