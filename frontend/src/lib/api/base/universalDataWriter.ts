@@ -42,23 +42,17 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     codeVerifier: string;
     redirectUri: string;
   }): DWReturnType<DataApiActionResult> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-    const url = UNIVERSAL_API_ROUTES.token;
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.token,
+      body: {
         authorizationCode: opts.authorizationCode,
         codeVerifier: opts.codeVerifier,
         redirectUri: opts.redirectUri
-      })
-    });
-    return { type: response.ok ? 'success' : 'failure' };
+      }
+    })) as DataApiActionResult;
   }
 
-  async preregisterWithIdToken(opts: {
+  async preregisterWithIdToken(body: {
     email: string;
     nominations: Array<{ electionId: Id; constituencyId: Id }>;
     extra: {
@@ -69,13 +63,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       };
     };
   }): DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }> {
-    const url = UNIVERSAL_API_ROUTES.preregister;
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(opts)
+    const response = await this.post({
+      url: UNIVERSAL_API_ROUTES.preregister,
+      body,
+      parser: 'none'
     });
     return {
       type: response.ok ? 'success' : 'failure',
@@ -98,29 +89,25 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   async clearIdToken(): DWReturnType<DataApiActionResult> {
-    const url = UNIVERSAL_API_ROUTES.token;
-    const response = await this.fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return { type: response.ok ? 'success' : 'failure' };
+    return (await this.delete({
+      url: UNIVERSAL_API_ROUTES.token
+    })) as DataApiActionResult;
   }
 
   async logout(opts: WithAuth): DWReturnType<DataApiActionResult> {
-    const url = UNIVERSAL_API_ROUTES.logout;
     const [clientResult, backendResult] = await Promise.all([
-      this.fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      (await this.post({
+        url: UNIVERSAL_API_ROUTES.logout,
+        init: {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      }),
+      })) as DataApiActionResult,
       this._logout(opts)
     ]);
-    if (clientResult.ok && backendResult.type === 'success') return backendResult;
+    if (clientResult.type === 'success' && backendResult.type === 'success') return backendResult;
     else
       return {
         type: 'failure',
