@@ -1,5 +1,5 @@
-import type { Serializable } from 'child_process';
 import type { WithAuth, WithTargetEntity } from '$lib/api/base/dataWriter.type';
+import type { GetOptions, PostOptions } from '$lib/api/base/universalAdapter.type';
 import type { StrapiApi, StrapiApiReturnType } from './strapiApi';
 
 /**
@@ -7,45 +7,16 @@ import type { StrapiApi, StrapiApiReturnType } from './strapiApi';
  */
 export interface StrapiAdapter {
   /**
-   * Perform a `fetch` request to the Strapi API, using the `fetch` passed to the adapter.
-   * @param endpoint - The name of the Strapi API endpoint.
-   * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
-   * @param request - Optional `RequestInit` for the request.
-   * @param authToken - Optional `jwt` token for the request.
-   * @param endpointParams - Optional params to match params of type `:foo` in the endpoint path.
-   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
-   * @returns The succesful `Response` from the Strapi API.
-   * @throws An error if the request fails or if `Response.ok` is not `true`.
-   * @throws If any `endpointParams` are missing that are required by the `endpoint`.
-   */
-  apiFetch: <TApi extends StrapiApi>(opts: FetchOptions<TApi>) => Promise<Response>;
-
-  /**
-   * Perform a `GET` request to the Strapi API, using the `fetch` passed to the adapter.
-   * @param endpoint - The name of the Strapi API endpoint.
-   * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
-   * @param authToken - Optional `jwt` token for the request.
-   * @param endpointParams - Optional params to match params of type `:foo` in the endpoint path.
-   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
+   * Perform a `GET` request to the Strapi API.
    * @returns The Strapi data associated with the API endpoint.
    */
-  apiGet: <TApi extends StrapiApi>(opts: GetOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
+  apiGet: <TApi extends StrapiApi>(opts: StrapiApiGetOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
 
   /**
-   * Perform a `POST` or `PUT` `'Content-Type': 'application/json'` request to the Strapi API, using the `fetch` passed to the adapter.
-   * @param endpoint - The name of the Strapi API endpoint.
-   * @param body - Optional body for the `Request`.
-   * @param authToken - Optional `jwt` token for the request.
-   * @param endpointParams - Optional params to match params of type `:foo` in the endpoint path.
-   * @param put - If `true`, perform a `PUT` request.
+   * Perform a `POST` or `PUT` request to the Strapi API.
    * @returns The `Response` from the Strapi API.
    */
-  apiPost: <TApi extends StrapiApi>(opts: PostOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
-
-  /**
-   * A shorthand for `apiPost({ put: true, ... })`.
-   */
-  apiPut: <TApi extends StrapiApi>(opts: PostOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
+  apiPost: <TApi extends StrapiApi>(opts: StrapiApiPostOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
 
   /**
    * Upload files to Strapi.
@@ -55,24 +26,29 @@ export interface StrapiAdapter {
    * @param files - An `Array` of or a single `File` object to upload.
    * @returns The `Response` from the Strapi API.
    */
-  apiUpload: (opts: UploadOptions) => Promise<StrapiApiReturnType['upload']>;
+  apiUpload: (opts: StrapiApiUploadOptions) => Promise<StrapiApiReturnType['upload']>;
 }
 
-export type FetchOptions<TApi extends StrapiApi> = {
+export type StrapiApiOptionsBase<TApi extends StrapiApi> = {
+  /**
+   * The name of the Strapi API endpoint.
+   */
   endpoint: TApi;
-  params?: Params;
-  request?: RequestInit;
-  authToken?: string;
+  /**
+   * The endpoint (path) parameters. Note that query parameters are passed in the `params` property.
+   */
   endpointParams?: Record<string, string>;
-  disableCache?: boolean;
 };
-export type GetOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request' | 'params' | 'disableCache'> & {
-  body?: Serializable;
-  put?: boolean;
-};
-export type UploadOptions = WithTargetEntity &
+
+export type StrapiApiGetOptions<TApi extends StrapiApi> = StrapiApiOptionsBase<TApi> & Omit<GetOptions, 'url'>;
+
+export type StrapiApiPostOptions<TApi extends StrapiApi> = StrapiApiOptionsBase<TApi> & Omit<PostOptions, 'url'>;
+
+export type StrapiApiUploadOptions = WithTargetEntity &
   WithAuth & {
+    /**
+     * The file or files to upload.
+     */
     files: Array<File> | File;
   };
 

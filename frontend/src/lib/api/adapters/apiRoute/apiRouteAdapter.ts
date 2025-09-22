@@ -1,11 +1,9 @@
-import qs from 'qs';
-import { addHeader } from '$lib/api/utils/addHeader';
-import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute, type ApiRouteReturnType } from './apiRoutes';
+import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRouteReturnType } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
-import type { ApiRouteAdapter, FetchOptions, GetOptions, PostOptions } from './apiRouteAdapter.type';
+import type { ApiRouteAdapter, ApiRouteGetOptions, ApiRoutePostOptions } from './apiRouteAdapter.type';
 
 /**
- * A mixin for all ApiRoute Data API services, implementing `apiFetch`, `apiGet` and `apiPost` methods.
+ * A mixin for all ApiRoute Data API services, implementing `apiGet` and `apiPost` methods.
  * @param base - The base class to which to add the mixin.
  * @returns A class that extends both the base class and the mixin class.
  */
@@ -15,32 +13,18 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       super(...args);
     }
 
-    apiFetch<TApi extends ApiRoute>({
-      endpoint,
-      params,
-      request,
-      disableCache
-    }: FetchOptions<TApi>): Promise<Response> {
-      let url = API_ROUTES[endpoint];
-      if (params) url += `?${qs.stringify(params, { encodeValuesOnly: true })}`;
-      return this.fetch(url, request, { disableCache });
-    }
-
     async apiGet<TApi extends ApiGetRoute>({
       endpoint,
-      params,
-      disableCache
-    }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
-      const response = await this.apiFetch({ endpoint, params, disableCache });
-      return response.json();
+      ...rest
+    }: ApiRouteGetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
+      return (await this.get({ url: API_ROUTES[endpoint], ...rest })) as Promise<ApiRouteReturnType<TApi>>;
     }
 
-    async apiPost<TApi extends ApiPostRoute>({ endpoint, body }: PostOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
-      const request = addHeader({}, 'Content-Type', 'application/json');
-      request.method = 'POST';
-      if (body) request.body = JSON.stringify(body);
-      const response = await this.apiFetch({ endpoint, request });
-      return response.json();
+    async apiPost<TApi extends ApiPostRoute>({
+      endpoint,
+      ...rest
+    }: ApiRoutePostOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
+      return (await this.post({ url: API_ROUTES[endpoint], ...rest })) as Promise<ApiRouteReturnType<TApi>>;
     }
   }
 
