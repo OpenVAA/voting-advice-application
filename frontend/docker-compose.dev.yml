@@ -7,6 +7,8 @@ services:
     volumes:
       # Creating this volume will make Docker update changes from local automatically
       - ./:/opt/frontend
+      # Local data
+      - ./data:/var/data/local
       # Cache volume
       - cache:/var/data/cache
       # Mark these as volumes so they get ignored
