@@ -14,6 +14,11 @@ import type {
 } from '@openvaa/app-shared';
 
 /**
+ * A failed or successful response from Strapi.
+ */
+export type StrapiResult<TData = unknown> = StrapiResponse<TData> | StrapiError;
+
+/**
  * The basic format for Strapi responses
  */
 export type StrapiResponse<TData> = {

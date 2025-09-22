@@ -2,9 +2,8 @@
  * Add a header to the request.
  * @returns The updated request.
  */
-export function addHeader(request: RequestInit | undefined, key: string, value: string): RequestInit {
-  request ??= {};
-  request.headers = new Headers(request.headers);
-  request.headers.set(key, value);
-  return request;
+export function addHeader(headers: HeadersInit | undefined, key: string, value: string): Headers {
+  const out = new Headers(headers);
+  out.set(key, value);
+  return out;
 }

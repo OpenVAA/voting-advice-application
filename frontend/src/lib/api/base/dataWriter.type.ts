@@ -272,12 +272,21 @@ export type GetCandidateUserDataOptions<TNominations extends boolean | undefined
 };
 
 export type WithAuth = {
+  /**
+   * The JWT token for authentication.
+   */
   authToken: string;
 };
 
 export type WithTargetEntity = {
   target: {
+    /**
+     * The type of the target entity.
+     */
     type: EntityType;
+    /**
+     * The id of the target entity.
+     */
     id: Id;
   };
 };
