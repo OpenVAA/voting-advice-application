@@ -1,7 +1,9 @@
 {
   "code": "Rekisteröintikoodi",
   "codePlaceholder": "Esimerkiksi CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Oletko jo rekisteröitynyt?",
   "enterCode": "Kirjoita sähköpostitse saamasi rekisteröintikoodi viimeistelläksesi rekisteröitymisen.",
+  "goToLoginLabel": "Siirry kirjautumissivulle",
   "loggedInWarning": "Käyttäjä on tällä hetkellä kirjautunut sisään. Kirjaudu ulos ennen kuin jatkat rekisteröintiin.",
   "passwordValidation": {
     "commonPatterns": "Sisältää yleisiä merkkisarjoja",
