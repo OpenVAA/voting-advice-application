@@ -32,13 +32,19 @@
   ////////////////////////////////////////////////////////////////////
 
   let canSubmit: boolean;
+  let changedAfterCheck = false;
   let status: ActionStatus = 'idle';
 
   // Get key from search params
   let registrationKey = $page.url.searchParams.get('registrationKey');
   if (registrationKey) checkKeyAndContinue(registrationKey);
 
-  $: canSubmit = !!(status !== 'loading' && registrationKey);
+  $: canSubmit = status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck);
+  $: {
+    // Mark the input field as changed so we re-enable the submit button without hiding the error message
+    changedAfterCheck = true;
+    registrationKey;
+  }
 
   /**
    * Check the registration key and continue to password selection if valid. Otherwise, show an error message.
@@ -50,6 +56,7 @@
       return undefined;
     });
     if (result?.type !== 'success') {
+      changedAfterCheck = false;
       status = 'error';
       return;
     }
@@ -75,11 +82,11 @@
     ? $t('candidateApp.register.titleWithPreregistration')
     : $t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
+    <PreHeading class="text-primary text-2xl font-bold">{$t('dynamic.candidateAppName')}</PreHeading>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center">
     {#if $userData}
-      <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
+      <p class="text-warning text-center">{$t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
         <LogoutButton buttonVariant="main" stayOnPage={true} />
       </div>
@@ -98,11 +105,18 @@
         required />
       {#if status === 'error'}
         <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" />
+        <div class="gap-lg bg-base-200 p-lg flex w-full flex-col rounded-lg">
+          <h3 class="text-center">
+            {$t('candidateApp.register.didYouAlreadyRegister')}
+          </h3>
+          <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.goToLoginLabel')} variant="main" />
+        </div>
       {/if}
     {/if}
   </form>
   <svelte:fragment slot="primaryActions">
     <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} />
+    <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.didYouAlreadyRegister')} />
     <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
   </svelte:fragment>
 </MainContent>
