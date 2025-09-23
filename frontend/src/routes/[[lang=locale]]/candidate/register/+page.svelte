@@ -32,13 +32,20 @@
   ////////////////////////////////////////////////////////////////////
 
   let canSubmit: boolean;
+  let changedAfterCheck = false;
   let status: ActionStatus = 'idle';
 
   // Get key from search params
   let registrationKey = $page.url.searchParams.get('registrationKey');
   if (registrationKey) checkKeyAndContinue(registrationKey);
 
-  $: canSubmit = !!(status !== 'loading' && registrationKey);
+  $: canSubmit = status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck);
+  $: {
+    // Mark the input field as changed so we re-enable the submit button without hiding the error message
+    changedAfterCheck = true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    registrationKey;
+  }
 
   /**
    * Check the registration key and continue to password selection if valid. Otherwise, show an error message.
@@ -50,6 +57,7 @@
       return undefined;
     });
     if (result?.type !== 'success') {
+      changedAfterCheck = false;
       status = 'error';
       return;
     }
@@ -98,11 +106,18 @@
         required />
       {#if status === 'error'}
         <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" />
+        <div class="flex w-full flex-col gap-lg rounded-lg bg-base-200 p-lg">
+          <h3 class="text-center">
+            {$t('candidateApp.register.didYouAlreadyRegister')}
+          </h3>
+          <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.goToLoginLabel')} variant="main" />
+        </div>
       {/if}
     {/if}
   </form>
   <svelte:fragment slot="primaryActions">
     <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} />
+    <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.didYouAlreadyRegister')} />
     <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
   </svelte:fragment>
 </MainContent>
