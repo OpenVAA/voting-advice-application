@@ -1,0 +1,9 @@
+prompt: |
+  Translate the following JSON object to the target language. 
+  Keep the fields structure and names as is, but translate the values.
+
+  ## JSON (strict JSON format, NO other text or symbols): 
+  {{json}}
+
+  ## Target Language:
+  {{targetLanguage}}

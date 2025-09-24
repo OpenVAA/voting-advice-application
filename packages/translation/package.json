@@ -20,6 +20,8 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@openvaa/core": "workspace:^"
+    "@openvaa/core": "workspace:^",
+    "@openvaa/llm": "workspace:^",
+    "@openvaa/app-shared": "workspace:^"
   }
 }
