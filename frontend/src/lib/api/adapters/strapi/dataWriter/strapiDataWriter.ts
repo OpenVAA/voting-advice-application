@@ -174,7 +174,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     // If loadNominations is true, always return nominations data even if empty; if false, return undefined
     const nominations = loadNominations
       ? data.candidate.nominations
-        ? parseNominations(data.candidate.nominations, locale ?? null)
+        ? parseNominations({ nominations: data.candidate.nominations, locale: locale ?? null })
         : {}
       : undefined;
     return { user, candidate, nominations } as CandidateUserData<TNominations>;
