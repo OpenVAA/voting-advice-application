@@ -1,6 +1,6 @@
 {
   "links": "Linkit",
-  "memberOfOrganization": "puolueen {organization} jäsen",
+  "memberOfOrganization": "vaaliliiton {organization} jäsen",
   "tabs": {
     "candidates": "{candidatePlural}",
     "info": "Perustiedot",

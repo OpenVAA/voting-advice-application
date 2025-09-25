@@ -4,7 +4,7 @@
   "content": "<p>Olemme todella pahoillamme harmista. Voit koettaa palata takaisin ja ladata sivun uudelleen ja katsoa, toistuuko ongelma.</p><p>Jos tilanne ei korjaannu, pyydämme ystävällisesti lähettämään sähköpostia osoitteeseen {adminEmailLink} ja kuvailemaan mahdollisimman tarkasti, mitä tapahtui. Kiitos etukäteen!</p>",
   "default": "Jotakin meni pieleen, anteeksi!",
   "general": "Jotakin meni pieleen, anteeksi",
-  "noNominations": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+  "noNominations": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai vaaliliittoja",
   "noQuestions": "Vaalikoneessa ei vielä ole vaalipiiriäsi koskevia kysymyksiä",
   "unsupportedQuestion": "Tätä kysymystä ei voida näyttää, anteeksi!"
 }

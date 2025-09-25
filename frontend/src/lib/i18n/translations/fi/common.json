@@ -1,7 +1,7 @@
 {
   "alliance": {
-    "plural": "vaaliliitot",
-    "singular": "vaaliliitto"
+    "plural": "vaalirenkaat",
+    "singular": "vaalirengas"
   },
   "answer": {
     "no": "Ei",
@@ -55,8 +55,8 @@
   "openVAA": "OpenVAA",
   "or": "Tai",
   "organization": {
-    "plural": "puolueet",
-    "singular": "puolue"
+    "plural": "vaaliliitot",
+    "singular": "vaaliliitto"
   },
   "password": "Salasana",
   "passwordConfirmation": "Vahvista salasana",
