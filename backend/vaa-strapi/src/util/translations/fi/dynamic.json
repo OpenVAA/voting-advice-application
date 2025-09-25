@@ -2,7 +2,7 @@
   "about": {
     "heroEmoji": "⚙️"
   },
-  "appName": "Vaalikone",
+  "appName": "JYYn edustajistovaalikone",
   "candidateAppBasicInfo": {
     "immutableData": {
       "title": "Henkilötiedot",
@@ -24,7 +24,8 @@
       "title": "Käyttöehdot"
     },
     "registryStatement": {
-      "content": "<h3>1. Rekisterinpitäjä</h3><p>DATA_CONTROLLER</p><h3>2. Rekisteristä vastaava yhteyshenkilö</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Rekisterin nimi</h3><p>{appName} - ehdokastietojärjestelmä.</p><h3>4. Oikeusperuste ja henkilötietojen käsittelyn tarkoitus</h3><p>EU:n yleisen tietosuoja-asetuksen mukainen oikeusperuste henkilötietojen käsittelylle on henkilön suostumus. Henkilötietojen käsittelyn tarkoitus on käyttö vaalikoneessa.</p><h3>5. Rekisterin tietosisältö</h3><p>Rekisteriin tallennettavia tietoja ovat: henkilön nimi, puoluetausta, sähköpostisoite, syntymäaika, www-sivustojen osoitteet, sosiaalisen median profiilien osoitteet, muut vapaaehtoiset vastaukset vaalikoneen kysymyksiin sekä julkisista vaaliluetteloista saatavat tiedot.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Palvelun toiminnoille välttämättömiä evästeitä käsitellään oikeutetun edun perusteella mm. tietoturvasta huolehtimiseksi.</p><h3>6. Säännönmukaiset tietolähteet</h3><p>Rekisteriin tallennettavat tietoja saadaan ehdokkailta verkkolomakkeen kautta, heidän pankkitunnistautumisensa yhteydessä sekä julkisista vaaliluetteloista.</p><h3>7. Tietojen säännönmukaiset luovutukset ja tietojen siirto EU:n tai ETA:n ulkopuolelle</h3><p>Tietoja ei luovuteta säännönmukaisesti muille tahoille, mutta vaalikoneen julkaisun päätyttyä tietoja saatetaan käyttää tutkimustarkoituksiin ja vaalikoneen kehittämiseen.</p><h3>8. Rekisterin suojauksen periaatteet</h3><p>Rekisterin käsittelyssä noudatetaan huolellisuutta ja tietojärjestelmien avulla käsiteltävät tiedot suojataan asianmukaisesti. Kun rekisteritietoja säilytetään Internet-palvelimilla, niiden laitteiston fyysisestä ja digitaalisesta tietoturvasta huolehditaan asiaankuuluvasti. Rekisterinpitäjä huolehtii siitä, että tallennettuja tietoja sekä palvelimien käyttöoikeuksia ja muita henkilötietojen turvallisuuden kannalta kriittisiä tietoja käsitellään luottamuksellisesti ja vain niiden työntekijöiden toimesta, joiden työnkuvaan se kuuluu.</p><h3>9. Tarkastusoikeus ja oikeus vaatia tiedon korjaamista</h3><p>Jokaisella rekisterissä olevalla henkilöllä on oikeus tarkistaa rekisteriin tallennetut tietonsa ja vaatia mahdollisen virheellisen tiedon korjaamista tai puutteellisen tiedon täydentämistä. Mikäli henkilö haluaa tarkistaa hänestä tallennetut tiedot tai vaatia niihin oikaisua, pyyntö tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p><h3>10. Muut henkilötietojen käsittelyyn liittyvät oikeudet</h3><p>Rekisterissä olevalla henkilöllä on oikeus pyytää häntä koskevien henkilötietojen poistamiseen rekisteristä (”oikeus tulla unohdetuksi”). Niin ikään rekisteröidyillä on muut EU:n yleisen tietosuoja-asetuksen mukaiset oikeudet, kuten henkilötietojen käsittelyn rajoittaminen tietyissä tilanteissa. Pyynnöt tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p>",
+      "content": "<h3>1. Rekisterinpitäjä</h3><p>OpenVAA ry, Tarkk’ampujankatu 1 A 3, 00130 Helsinki, Suomi.</p><h3>2. Rekisteristä vastaava yhteyshenkilö</h3><p>Antti Kivi, {adminEmailLink}.</p><h3>3. Rekisterin nimi</h3><p>{appName} - ehdokastietojärjestelmä.</p><h3>4. Oikeusperuste ja henkilötietojen käsittelyn tarkoitus</h3><p>EU:n yleisen tietosuoja-asetuksen mukainen oikeusperuste henkilötietojen käsittelylle on henkilön suostumus. Henkilötietojen käsittelyn tarkoitus on käyttö vaalikoneessa.</p><h3>5. Rekisterin tietosisältö</h3><p>Rekisteriin tallennettavia tietoja ovat: henkilön nimi, puoluetausta, sähköpostisoite, syntymäaika, www-sivustojen osoitteet, sosiaalisen median profiilien osoitteet, muut vapaaehtoiset vastaukset vaalikoneen kysymyksiin sekä julkisista vaaliluetteloista saatavat tiedot.</p><p>Tietoja säilytetään 5 vuotta.</p><p>Palvelun toiminnoille välttämättömiä evästeitä käsitellään oikeutetun edun perusteella mm. tietoturvasta huolehtimiseksi.</p><h3>6. Säännönmukaiset tietolähteet</h3><p>Rekisteriin tallennettavat tietoja saadaan ehdokkailta verkkolomakkeen kautta, heidän pankkitunnistautumisensa yhteydessä sekä julkisista vaaliluetteloista.</p><h3>7. Tietojen säännönmukaiset luovutukset ja tietojen siirto EU:n tai ETA:n ulkopuolelle</h3><p>Tietoja ei luovuteta säännönmukaisesti muille tahoille, mutta vaalikoneen julkaisun päätyttyä tietoja saatetaan käyttää tutkimustarkoituksiin ja vaalikoneen kehittämiseen.</p><h3>8. Rekisterin suojauksen periaatteet</h3><p>Rekisterin käsittelyssä noudatetaan huolellisuutta ja tietojärjestelmien avulla käsiteltävät tiedot suojataan asianmukaisesti. Kun rekisteritietoja säilytetään Internet-palvelimilla, niiden laitteiston fyysisestä ja digitaalisesta tietoturvasta huolehditaan asiaankuuluvasti. Rekisterinpitäjä huolehtii siitä, että tallennettuja tietoja sekä palvelimien käyttöoikeuksia ja muita henkilötietojen turvallisuuden kannalta kriittisiä tietoja käsitellään luottamuksellisesti ja vain niiden työntekijöiden toimesta, joiden työnkuvaan se kuuluu.</p><h3>9. Tarkastusoikeus ja oikeus vaatia tiedon korjaamista</h3><p>Jokaisella rekisterissä olevalla henkilöllä on oikeus tarkistaa rekisteriin tallennetut tietonsa ja vaatia mahdollisen virheellisen tiedon korjaamista tai puutteellisen tiedon täydentämistä. Mikäli henkilö haluaa tarkistaa hänestä tallennetut tiedot tai vaatia niihin oikaisua, pyyntö tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p><h3>10. Muut henkilötietojen käsittelyyn liittyvät oikeudet</h3><p>Rekisterissä olevalla henkilöllä on oikeus pyytää häntä koskevien henkilötietojen poistamiseen rekisteristä (”oikeus tulla unohdetuksi”). Niin ikään rekisteröidyillä on muut EU:n yleisen tietosuoja-asetuksen mukaiset oikeudet, kuten henkilötietojen käsittelyn rajoittaminen tietyissä tilanteissa. Pyynnöt tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p>",
+
       "title": "Rekisteri- ja tietosuojaseloste"
     },
     "otherTermsOfUse": {
@@ -35,15 +36,15 @@
   "constituencies": {
     "heroEmoji": "📍",
     "ingress": {
-      "multipleElections": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille.",
-      "singleElection": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
-      "singleGroup": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiiri alta."
+      "multipleElections": "Ehdokkaat ja vaaliliitot on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille.",
+      "singleElection": "Ehdokkaat ja vaaliliitot on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
+      "singleGroup": "Ehdokkaat ja vaaliliitot on jaettu vaalipiireihin. Valitse vaalipiiri alta."
     }
   },
   "elections": {
     "heroEmoji": "🗳️",
     "ingress": {
-      "multipleElections": "Valitse ne vaalit, joiden ehdokkaita tai puolueita haluat löytää.",
+      "multipleElections": "Valitse ne vaalit, joiden ehdokkaita tai vaaliliittoja haluat löytää.",
       "singleElection": "Valitsemassasi vaalipiirissä järjestetään vain yhdet vaalit."
     }
   },
@@ -51,8 +52,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
-    "startButton": "Löydä sopivimmat ehdokkaat ja puolueet!"
+    "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja vaaliliittoja sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
+    "startButton": "Löydä sopivimmat ehdokkaat ja vaaliliitot!"
   },
   "info": {
     "content": "Tällä sivulla on tietoa vaaleista.",
@@ -65,7 +66,7 @@
     "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural} näissä vaaleissa.",
     "list": {
       "constituencies": "Valitse oma vaalipiirisi",
-      "details": "Tarkastele ehdokkaita ja puolueita tarkemmin",
+      "details": "Tarkastele ehdokkaita ja vaaliliittoja tarkemmin",
       "elections": "Valitse vaalit",
       "opinions": "Kerro mielipiteesi",
       "results": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}"
@@ -97,7 +98,7 @@
       "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural} järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia näiden karsimiseen.",
       "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
     },
-    "multipleElections": "Valitse alta ensin, minkä vaalin {candidatePlural} ja {partyPlural} haluat nähdä ja sen jälkeen, haluatko katsoa ehdokkaita vai puolueita."
+    "multipleElections": "Valitse alta ensin, minkä vaalin {candidatePlural} ja {partyPlural} haluat nähdä ja sen jälkeen, haluatko katsoa ehdokkaita vai vaaliliittoja."
   },
   "statistics": {
     "heroEmoji": "🧮"
