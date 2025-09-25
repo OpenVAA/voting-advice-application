@@ -12,9 +12,9 @@
 #
 # 4. In Render, check whether you want to auto-update the Blueprint service when this file changes. The updates are automated by default.
 #
-# Env variables based on env.example 2025-09-02
+# Env variables based on env.example 2025-09-25
 
-version: '1'
+version: '2'
 
 services:
   # Frontend service
@@ -132,6 +132,8 @@ services:
         value: 'false'
       - key: DATABASE_SCHEMA
         value: public
+      - key: STATIC_MEDIA_CONTENT_PATH
+        value: public/media/<INSTANCE_NAME>
 
       - fromGroup: AWS SES SMTP
       - fromGroup: AWS SES HTTP
