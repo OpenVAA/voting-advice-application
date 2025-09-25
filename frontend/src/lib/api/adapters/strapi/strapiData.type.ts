@@ -199,6 +199,18 @@ export type StrapiConstituencyData = StrapiObject<{
   constituencies: StrapiRelation<StrapiConstituencyData>;
 }>;
 
+export type StrapiAllianceData = StrapiObject<{
+  color: string;
+  colorDark: string;
+  info: LocalizedString;
+  image: StrapiImage;
+  name: LocalizedString;
+  shortName: LocalizedString;
+  parties: StrapiRelation<StrapiPartyData>;
+  election: StrapiSingleRelation<StrapiElectionData>;
+  constituencies: StrapiRelation<StrapiConstituencyData>;
+}>;
+
 export type StrapiCandidateData = StrapiObject<{
   firstName: string;
   lastName: string;
