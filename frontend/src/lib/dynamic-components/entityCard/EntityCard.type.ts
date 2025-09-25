@@ -17,6 +17,10 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
    * The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default 3
    */
   maxSubcards?: number;
+  /**
+   * Whether to show the possible nomination’s election and constituency. @default false
+   */
+  showElection?: boolean;
 };
 
 /**

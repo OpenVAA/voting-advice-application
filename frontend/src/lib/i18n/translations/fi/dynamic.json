@@ -76,6 +76,11 @@
     "content": "<p>Olemme hyvin pahoillamme, mutta vaalikone ei juuri nyt ole käytettävissä huoltotoimien vuoksi. Sen pitäisi kuitenkin olla pian jälleen käytössä, joten koeta kohta uudelleen.</p><p>Älä huoli, jos olit juuri vastaamassa kysymyksiin. Kun palaat koneeseen, voit jatkaa siitä mihin jäit.</p>",
     "heroEmoji": "🛠️"
   },
+  "nominations": {
+    "title": "Kaikki rekisteröidyt ehdokkaat",
+    "content": "Tältä sivulta löydät kaikki ehdokkaat, jotka ovat täyttäneet vaalikoneen.",
+    "heroEmoji": "🔍"
+  },
   "privacy": {
     "content": "Tälle sivulle on koottu sovelluksen yksityisyyteen ja tiedon keräämiseen liittyviä tietoja.",
     "dataConsentIntro": {

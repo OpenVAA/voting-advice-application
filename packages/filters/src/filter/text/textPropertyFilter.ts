@@ -1,8 +1,10 @@
 import { TextFilter } from './textFilter';
+import { FILTER_TYPE, type PropertyFilterOptions } from '../base';
 import type { Entity, ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
-import type { PropertyFilterOptions } from '../base';
 
-export class TextPropertyFilter<TEntity extends MaybeWrappedEntity> extends TextFilter<TEntity> {
+export class TextPropertyFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity> extends TextFilter<TEntity> {
+  readonly filterType = FILTER_TYPE.TextPropertyFilter;
+
   /**
    * Create a filter for matching text to an entity's property.
    * @param property The property name

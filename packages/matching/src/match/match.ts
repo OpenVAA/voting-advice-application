@@ -1,4 +1,5 @@
 import { MatchBase } from './matchBase';
+import { MATCH_TYPE } from './matchTypes';
 import type { HasAnswers, MatchedEntity, NormalizedDistance } from '@openvaa/core';
 import type { MatchableQuestionGroup } from '../question';
 import type { SubMatch } from './subMatch';
@@ -13,6 +14,7 @@ export class Match<
   extends MatchBase
   implements MatchedEntity
 {
+  readonly matchType = MATCH_TYPE.Match;
   readonly target: TTarget;
   readonly subMatches?: Array<SubMatch<TGroup>>;
 

@@ -4,7 +4,7 @@ import fs from 'fs';
 import * as candidate from './controllers/candidate';
 import type { Core, UID } from '@strapi/strapi';
 import { StrapiContext } from '../../../types/customStrapiTypes';
-import { frontendUrl } from '../../constants';
+import { frontendUrl, mailFrom, mailFromName, mailReplyTo } from '../../constants';
 
 const { ValidationError } = errors;
 
@@ -94,13 +94,14 @@ module.exports = async (plugin: Core.Plugin) => {
     // Setup email template (the default template also does not make the URL clickable)
     const email = (await pluginStore.get({ key: 'email' })) as EmailTemplateOptions;
     email.reset_password.options.message = fs.readFileSync('config/email-templates/reset-password.html').toString();
-    // TODO: Insert AWS_SES env vars here
-    // const emailSender = {
-    //   name: '',
-    //   email: '',
-    // }
-    // email.reset_password.options.from = emailSender;
-    // email.email_confirmation.options.from = emailSender;
+    const emailSender = {
+      name: mailFromName,
+      email: mailFrom
+    };
+    email.reset_password.options.from = emailSender;
+    email.reset_password.options.response_email = mailReplyTo;
+    email.email_confirmation.options.from = emailSender;
+    email.email_confirmation.options.response_email = mailReplyTo;
     await pluginStore.set({ key: 'email', value: email });
 
     return res;
@@ -193,6 +194,22 @@ interface AdvancedOptions {
 interface EmailTemplateOptions {
   reset_password: {
     options: {
+      from: {
+        name: string;
+        email: string;
+      };
+      response_email: string;
+      subject: string;
+      message: string;
+    };
+  };
+  email_confirmation: {
+    options: {
+      from: {
+        name: string;
+        email: string;
+      };
+      response_email: string;
       subject: string;
       message: string;
     };

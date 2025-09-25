@@ -1,0 +1,9 @@
+{
+  "links": "Links",
+  "memberOfOrganization": "medlem af {organization}",
+  "tabs": {
+    "candidates": "{candidatePlural}",
+    "info": "Grundlæggende info",
+    "opinions": "Holdninger"
+  }
+}

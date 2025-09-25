@@ -1,4 +1,4 @@
-import { type CandidateNominationData, type DataAccessor, ENTITY_TYPE } from '../../../internal';
+import { type CandidateNominationData, type DataAccessor, ENTITY_TYPE, OBJECT_TYPE } from '../../../internal';
 import { Nomination } from '../../../internal';
 import type { FactionNomination, OrganizationNomination } from '../../../internal';
 
@@ -14,6 +14,8 @@ export class CandidateNomination
   >
   implements DataAccessor<CandidateNominationData>
 {
+  readonly objectType = OBJECT_TYPE.CandidateNomination;
+
   /**
    * A utility synonym for `parentNomination` in the case when the `Candidate` is nominated on a `Faction`.
    */

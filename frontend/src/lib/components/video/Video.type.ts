@@ -1,40 +1,11 @@
+import type { VideoContent } from '@openvaa/app-shared';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { TrackingEvent } from '$lib/contexts/app/tracking';
 
-export type VideoProps = SvelteHTMLElements['div'] &
-  Partial<VideoContentProps> &
-  OptionalVideoProps &
-  BindableVideoProps;
-
 /**
- * If not provided, the `video` element will be hidden until these properties are provided.
+ * If `VideoContent` are not provided, the `video` element will be hidden until these properties are provided.
  */
-export type VideoContentProps = {
-  /**
-   * The title of the video for labelling.
-   */
-  title: string;
-  /**
-   * The source URLs of the video.
-   */
-  sources: Array<string>;
-  /**
-   * The source URL for the video's captions.
-   */
-  captions: string;
-  /**
-   * The poster image URL for the video.
-   */
-  poster: string;
-  /**
-   * The aspect ratio of the video. This is needed so that the component can be sized correctly even before the data is loaded.
-   */
-  aspectRatio: number;
-  /**
-   * Optional transcript text for the video as a HTML string. If empty, `captions` will be used instead.
-   */
-  transcript?: string;
-};
+export type VideoProps = SvelteHTMLElements['div'] & Partial<VideoContent> & OptionalVideoProps & BindableVideoProps;
 
 /**
  * Optional video properties.

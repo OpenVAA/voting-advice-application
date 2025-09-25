@@ -2,7 +2,16 @@
 // GENERAL TYPES
 /////////////////////////////////////////////////////////////////////
 
-import type { DynamicSettings, LocalizedAnswer, QuestionTypeSettings } from '@openvaa/app-shared';
+import type {
+  DynamicSettings,
+  LocalizedAnswer,
+  LocalizedHeroContent,
+  LocalizedQuestionArguments,
+  LocalizedQuestionInfoSection,
+  LocalizedTermDefinition,
+  LocalizedVideoContent,
+  QuestionTypeSettings
+} from '@openvaa/app-shared';
 
 /**
  * The basic format for Strapi responses
@@ -111,21 +120,12 @@ export type StrapiQuestionTypeData = StrapiObject<{
   settings: QuestionTypeSettings;
 }>;
 
-export type StrapiQuestionTermDefinitionData = {
-  triggers?: { [locale: string]: Array<string> };
-  title?: LocalizedString;
-  content?: LocalizedString;
-};
-
-export type StrapiQuestionInfoSectionData = {
-  title?: LocalizedString;
-  content?: LocalizedString;
-  visible?: boolean;
-};
-
 export type StrapiQuestionCustomData = {
-  terms?: Array<StrapiQuestionTermDefinitionData>;
-  infoSections?: Array<StrapiQuestionInfoSectionData>;
+  arguments?: Array<LocalizedQuestionArguments>;
+  hero?: LocalizedHeroContent;
+  infoSections?: Array<LocalizedQuestionInfoSection>;
+  terms?: Array<LocalizedTermDefinition>;
+  video?: LocalizedVideoContent;
 };
 
 export type StrapiQuestionData = StrapiObject<{
@@ -147,7 +147,7 @@ export type StrapiQuestionData = StrapiObject<{
 export type StrapiQuestionCategoryData = StrapiObject<{
   color: string;
   colorDark: string;
-  customData?: object | null;
+  customData?: StrapiQuestionCategoryCustomData | null;
   info: LocalizedString;
   name: LocalizedString;
   order: number | null;
@@ -157,6 +157,11 @@ export type StrapiQuestionCategoryData = StrapiObject<{
   elections: StrapiRelation<StrapiElectionData>;
   questions: StrapiRelation<StrapiQuestionData>;
 }>;
+
+export type StrapiQuestionCategoryCustomData = {
+  hero?: LocalizedHeroContent;
+  video?: LocalizedVideoContent;
+};
 
 export type StrapiNominationData = StrapiObject<{
   electionRound: number;

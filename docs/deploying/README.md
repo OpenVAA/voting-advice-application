@@ -32,19 +32,22 @@ The backend uses AWS by default for media storage (S3) and email (SES). If you d
 You will need to set the following `env` variables for AWS to work. You can collect the variables in an `.env` file for easier import into Render services, which are set up below.
 
 ```dotenv
+## These settings correspond to LocalStack system defaults
 ## https://docs.localstack.cloud/references/configuration/
 AWS_SES_ACCESS_KEY_ID="test"
 AWS_SES_SECRET_ACCESS_KEY="test"
 AWS_SES_REGION=us-east-1
 
-# `MAIL_FROM` and `MAIL_REPLY_TO` variables will not take effect for emails sent by `user-permissions` Strapi plugin
-# (f.e. reset password emails) as they are configured separately via Strapi UI in `Settings > Email Templates`.
+# Used for emails sent by Strapi. (`MAIL_FROM_NAME` only affects emails sent by the `users-permissions` plugin.)
 MAIL_FROM="no-reply@example.com"
+MAIL_FROM_NAME="Voting Advice Application"
 MAIL_REPLY_TO="contact@example.com"
 
 ## AWS S3 settings
+
 AWS_S3_BUCKET=static.example.com
 
+## These settings correspond to LocalStack system defaults
 ## https://docs.localstack.cloud/references/configuration/
 AWS_S3_ACCESS_KEY_ID="test"
 AWS_S3_ACCESS_SECRET="test"

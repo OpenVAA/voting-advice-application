@@ -1,4 +1,4 @@
-import { DataObject } from '../../internal';
+import { DataObject, OBJECT_TYPE } from '../../internal';
 import type { Constituency, ConstituencyGroupData, DataAccessor, Id } from '../../internal';
 
 /**
@@ -8,6 +8,8 @@ export class ConstituencyGroup
   extends DataObject<ConstituencyGroupData>
   implements DataAccessor<ConstituencyGroupData>
 {
+  readonly objectType = OBJECT_TYPE.ConstituencyGroup;
+
   //////////////////////////////////////////////////////////////////////////////
   // Property getters
   //////////////////////////////////////////////////////////////////////////////

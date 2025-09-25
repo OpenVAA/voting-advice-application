@@ -1,5 +1,5 @@
 import { ENTITY_TYPE, type OrganizationData } from '@openvaa/data';
-import { parseAnswers } from '$lib/api/adapters/strapi/utils/parseAnswers';
+import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { parseBasics } from './parseBasics';
 import { parseImage } from './parseImage';
 import type { StrapiPartyData } from '../strapiData.type';

@@ -1,6 +1,6 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
-import type { LocalizedString } from '../data/extendedData.type';
+import type { LocalizedString } from '../data/localized.type';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -86,6 +86,10 @@ export type DynamicSettings = {
        */
       [ENTITY_TYPE.Candidate]: boolean;
     };
+    /**
+     * Whether to show the `/nominations` route on which all nominations in the app are shown.
+     */
+    showAllNominations?: boolean;
   };
   /**
    * Settings related to the matching algorithm.

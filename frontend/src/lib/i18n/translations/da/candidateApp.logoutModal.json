@@ -1,0 +1,7 @@
+{
+  "continue": "Fortsæt med at indtaste data",
+  "ingress": "Er du sikker på, at du vil logge ud? Du bliver automatisk logget ud om {timeLeft} sekunder.",
+  "itemsLeft": "Der {infoQuestionsLeft, plural, =1 {mangler stadig én oplysning} other {mangler stadig # oplysninger}} og {opinionQuestionsLeft, plural, =1 {én holdning} other {# holdninger}} at besvare.",
+  "questionsLeft": "Der {opinionQuestionsLeft, plural, =1 {mangler stadig én holdning} other {mangler stadig # holdninger}} at besvare.",
+  "title": "Noget data mangler stadig"
+}

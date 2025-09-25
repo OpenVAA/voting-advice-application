@@ -1,0 +1,8 @@
+{
+  "enterEmailAndPassword": "Indtast din e-mailadresse og adgangskode for at logge ind.",
+  "forgotPassword": "Glemt adgangskode?",
+  "title": "Log ind",
+  "unknownError": "Der opstod en fejl med dine brugeroplysninger. Kontakt support, hvis problemet fortsætter.",
+  "wrongEmailOrPassword": "Forkert e-mailadresse eller adgangskode",
+  "answersLockedInfo": "Det er ikke længere muligt at registrere sig eller redigere svar, men du kan stadig logge ind for at se dine oplysninger."
+}

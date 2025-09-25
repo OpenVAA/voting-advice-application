@@ -8,7 +8,7 @@ Usually accessed by direct link only and not meant for the wide public.
 -->
 
 <script lang="ts">
-  import { type Organization, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
+  import { isSingleChoiceQuestion, type Organization } from '@openvaa/data';
   import { Expander } from '$lib/components/expander';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
@@ -17,7 +17,12 @@ Usually accessed by direct link only and not meant for the wide public.
   import { removeDuplicates } from '$lib/utils/removeDuplicates';
   import MainContent from '../../../../MainContent.svelte';
   import type { Id, MaybeWrappedEntity } from '@openvaa/core';
-  import type { Candidate, CandidateNomination } from '@openvaa/data';
+  import type {
+    Candidate,
+    CandidateNomination,
+    SingleChoiceCategoricalQuestion,
+    SingleChoiceOrdinalQuestion
+  } from '@openvaa/data';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
 
   ////////////////////////////////////////////////////////////////////
@@ -94,7 +99,7 @@ Usually accessed by direct link only and not meant for the wide public.
   </figure>
 
   <div class="grid gap-lg">
-    {#each $opinionQuestions.filter((q) => q instanceof SingleChoiceCategoricalQuestion || q instanceof SingleChoiceOrdinalQuestion) as question}
+    {#each $opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
       {@const { id, text, choices } = question}
       {@const voterAnswer = answers ? `${$answers?.[id]?.value}` : undefined}
       {@const distAll = getAnswerDistribution(question)}

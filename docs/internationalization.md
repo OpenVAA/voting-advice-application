@@ -54,9 +54,15 @@ The data loaded by the Data API (settings, app customization and anything contai
 
 This is usually automatically the case, because the contexts hold such data in stores, but when reading store values make sure not to use outdated local copies.
 
+## Storing multi-locale data
+
+The data model expects single-locale data to be displayed by most frontend components and when transferred between modules. The backend as well as Admin and Candidate Apps, however, deal with multi-locale data.
+
+Some common such data types are defined in the [`@openvaa/app-shared`](/packages/app-shared/src/data/localized.type.ts) module. The types prefixed with `Localized` are multi-locale versions of the basic data types.
+
 ## Localization in Strapi
 
-Strapi's built-in i18n plugin is not used because it creates objects with different ids for each locale. Thus, a proprietary `json`-based format is used for translated strings instead of regular text fields. (This format is defined in [`global.d.ts`](../frontend/src/lib/types/global.d.ts) as `LocalizedString`.) The example below also demonstrates the use of [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation.
+Strapi's built-in i18n plugin is not used because it creates objects with different ids for each locale. Thus, a proprietary `json`-based format is used for translated strings instead of regular text fields. (This format is defined in [`@openvaa/app-shared`](/packages/app-shared/src/data/localized.type.ts) as `LocalizedString`.) The example below also demonstrates the use of [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation.
 
 ```json
 {
@@ -137,3 +143,10 @@ The locale selection process works as follows.
 ## Supported locales
 
 Supported locales are defined app-wide in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+
+### Adding new locales
+
+1. Add the locale to [`locales`](../frontend/src/lib/i18n/translations/index.ts)
+2. Create versions of all the translation files in the new locale and place them in `frontend/src/lib/i18n/translations/<LOCALE>`
+3. Copy the `dynamic.json` translation file to `../backend/vaa-strapi/src/util/translations/<LOCALE>/dynamic.json`
+4. Make the locale available in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).

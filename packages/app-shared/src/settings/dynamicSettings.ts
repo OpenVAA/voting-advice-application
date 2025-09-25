@@ -34,7 +34,8 @@ export const dynamicSettings: DynamicSettings = {
   entities: {
     hideIfMissingAnswers: {
       candidate: true
-    }
+    },
+    showAllNominations: true
   },
   matching: {
     minimumAnswers: 5,

@@ -16,7 +16,7 @@ import type {
  * A question usually has multiple groups of comments (e.g. pro and con comment groups for boolean and likert questions),
  * so this function is called multiple times for a single question.
  * Condensation type determines both the input and output type. First level is question type (input), second level is output type.
- * E.g. CONDENSATION_TYPE.BOOLEAN.PROS is a boolean question with pros as output.
+ * E.g. CONDENSATION_TYPE.BooleanPros is a boolean question with pros as output.
  *
  * @param {object} - args - The arguments object.
  * @param {SupportedQuestion} - args.question - The question to condense arguments for.
@@ -30,7 +30,7 @@ import type {
  * const results = await runSingleCondensation({
  *   question: question as BooleanQuestion,
  *   comments: Array<VAAComment>,
- *   condensationType: CONDENSATION_TYPE.BOOLEAN.PROS,
+ *   condensationType: CONDENSATION_TYPE.BooleanPros,
  *   options: {
  *     llmProvider: new OpenAIProvider({ apiKey: '...' }),
  *     language: 'en',
