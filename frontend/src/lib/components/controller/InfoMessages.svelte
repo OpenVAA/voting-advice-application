@@ -5,8 +5,9 @@ Reusable component for displaying informational messages with scrolling
 -->
 
 <script lang="ts">
-  import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
+  import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from '$lib/admin/components/jobs/shared';
   import { getAdminContext } from '$lib/contexts/admin';
+  import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
 
   const { t } = getAdminContext();
 

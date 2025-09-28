@@ -136,15 +136,30 @@ function moveJobToPast(jobId: string, status: PastJobStatus): void {
 }
 
 /**
+ * Finalize a job. Internal function.
+ * @param jobId - The job ID to finalize
+ * @param status - The final status of the job
+ * @param errorMessage - Optional error message to add
+ */
+function finalizeJob(jobId: string, status: PastJobStatus, errorMessage?: string): void {
+  const job = activeJobs.get(jobId);
+  if (!job) return;
+
+  if (status === 'completed') {
+    job.progress = 1;
+  } else if (status === 'failed' && errorMessage) {
+    addJobErrorMessage(jobId, errorMessage);
+  }
+
+  moveJobToPast(jobId, status);
+}
+
+/**
  * Mark a job as completed
  * @param jobId - The job ID to complete
  */
 export function completeJob(jobId: string): void {
-  const job = activeJobs.get(jobId);
-  if (job) {
-    job.progress = 1;
-    moveJobToPast(jobId, 'completed');
-  }
+  finalizeJob(jobId, 'completed');
 }
 
 // TODO: combine these two functions into one
@@ -154,13 +169,7 @@ export function completeJob(jobId: string): void {
  * @param errorMessage - Optional error message to add
  */
 export function failJob(jobId: string, errorMessage?: string): void {
-  const job = activeJobs.get(jobId);
-  if (job) {
-    if (errorMessage) {
-      addJobErrorMessage(jobId, errorMessage);
-    }
-    moveJobToPast(jobId, 'failed');
-  }
+  finalizeJob(jobId, 'failed', errorMessage);
 }
 
 /**
