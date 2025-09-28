@@ -9,11 +9,11 @@ Page for controlling the argument condensation feature.
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
-  import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import { getUUID } from '$lib/utils/components';
   import MainContent from '../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
+  import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -147,7 +147,7 @@ Page for controlling the argument condensation feature.
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">{$t('adminApp.argumentCondensation.description')}</p>
 
-    <form method="POST" class="gap-lg grid w-full max-w-xl" use:enhance={handleSubmit}>
+    <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
       {#if status !== 'loading' && !argumentCondensationJob}
         <!-- Election Selection -->
         <div class="w-full">
@@ -168,12 +168,12 @@ Page for controlling the argument condensation feature.
           </select>
         </div>
 
-        <div class="gap-md flex flex-col items-center">
+        <div class="flex flex-col items-center gap-md">
           <fieldset class="w-full">
             <legend class="sr-only">{$t('adminApp.argumentCondensation.generate.questionType')}</legend>
-            <div class="gap-md flex flex-col">
+            <div class="flex flex-col gap-md">
               {#each options as option}
-                <label class="label gap-sm cursor-pointer justify-start !p-0">
+                <label class="label cursor-pointer justify-start gap-sm !p-0">
                   <input
                     type="radio"
                     class="radio-primary radio"
@@ -189,16 +189,16 @@ Page for controlling the argument condensation feature.
 
           {#if selectedOption === 'selectedQuestions' && selectedElectionId}
             {#if questionError}
-              <div class="text-error my-16 text-center">
+              <div class="my-16 text-center text-error">
                 {$t('adminApp.argumentCondensation.generate.errorLoadingQuestions', { error: questionError })}
               </div>
             {:else if availableQuestions.length === 0}
-              <div class="text-neutral my-16 text-center">
+              <div class="my-16 text-center text-neutral">
                 {$t('adminApp.argumentCondensation.generate.noQuestionsForElection')}
               </div>
             {:else}
               <div class="my-16 flex w-full flex-col space-y-8">
-                <label class="border-base-200 flex items-center space-x-10 border-b pb-8">
+                <label class="flex items-center space-x-10 border-b border-base-200 pb-8">
                   <input
                     type="checkbox"
                     class="checkbox-primary checkbox"
@@ -216,7 +216,7 @@ Page for controlling the argument condensation feature.
                       : $t('adminApp.argumentCondensation.generate.selectAll')}</span>
                 </label>
                 {#each availableQuestions as question, i}
-                  <label class="border-base-200 flex items-start space-x-10 border-b pb-8 last:border-0">
+                  <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
                     <input
                       type="checkbox"
                       name="questionIds"
@@ -232,7 +232,7 @@ Page for controlling the argument condensation feature.
         </div>
       {/if}
 
-      <div class="gap-sm flex flex-col items-center">
+      <div class="flex flex-col items-center gap-sm">
         <Button
           text={status === 'loading'
             ? $t('adminApp.argumentCondensation.generate.buttonLoading')
@@ -245,7 +245,7 @@ Page for controlling the argument condensation feature.
             !selectedElectionId ||
             (selectedOption === 'selectedQuestions' && selectedIds.length === 0)} />
         {#if !!argumentCondensationJob}
-          <p class="text-neutral mt-1 text-xs">{$t('adminApp.jobs.alreadyRunning')}</p>
+          <p class="mt-1 text-xs text-neutral">{$t('adminApp.jobs.alreadyRunning')}</p>
         {/if}
       </div>
     </form>

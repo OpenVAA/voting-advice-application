@@ -8,13 +8,13 @@
 -->
 
 <script lang="ts">
+  import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin/adminContext.js';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
-  import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
 
   export let data;
 
