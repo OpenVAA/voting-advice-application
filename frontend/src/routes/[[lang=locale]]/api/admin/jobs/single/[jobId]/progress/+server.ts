@@ -10,13 +10,13 @@ import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
 export async function GET({ params }: RequestEvent) {
   try {
-    const { id } = params;
+    const { jobId } = params;
 
-    if (!id) {
+    if (!jobId) {
       return json({ error: 'Job ID is required' }, { status: 400 });
     }
 
-    const job = getJob(id);
+    const job = getJob(jobId);
 
     if (!job) {
       return json({ error: 'Job not found' }, { status: 404 });

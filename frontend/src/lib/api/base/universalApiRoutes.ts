@@ -15,10 +15,10 @@ export const UNIVERSAL_API_ROUTES = {
   token: `${API_ROOT}/oidc/token`,
 
   // Job management routes for the Admin App
-  jobsActive: '/api/admin/jobs/active',
-  jobsPast: '/api/admin/jobs/past',
-  jobStart: '/api/admin/jobs/start',
-  jobProgress: (id: string) => `/api/admin/jobs/single/${id}/progress`,
-  jobAbort: (id: string) => `/api/admin/jobs/single/${id}/abort`,
-  jobAbortAll: '/api/admin/jobs/abort-all'
+  jobsActive: `${API_ROOT}/admin/jobs/active`,
+  jobsPast: `${API_ROOT}/admin/jobs/past`,
+  jobStart: `${API_ROOT}/admin/jobs/start`,
+  jobProgress: `${API_ROOT}/admin/jobs/single/[jobId]/progress`,
+  jobAbort: `${API_ROOT}/admin/jobs/single/[jobId]/abort`,
+  jobAbortAll: `${API_ROOT}/admin/jobs/abort-all`
 } as const;

@@ -1,4 +1,4 @@
-import qs from 'qs';
+import { resolveRoute } from '$app/paths';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import type { Id } from '@openvaa/core';
@@ -23,6 +23,7 @@ import type {
   StartJobOptions,
   WithAuth
 } from './dataWriter.type';
+
 /**
  * The abstract base class that all universal `DataWriter`s should extend.
  *
@@ -175,150 +176,52 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
 
-  /**
-   * Build query string from job options for API requests.
-   *
-   * Handles the different parameter sets between active and past job queries:
-   * - Active jobs: jobType only
-   * - Past jobs: jobType, statuses array, and startFrom date
-   *
-   * @param opts - Job query options with authToken omitted
-   * @returns URL-encoded query string, empty string if no valid params
-   */
-  private buildJobQuery(opts: Omit<GetActiveJobsOptions, 'authToken'> | Omit<GetPastJobsOptions, 'authToken'>): string {
-    const params: Record<string, unknown> = {};
-
-    // Both active and past jobs
-    if (opts.jobType) params.jobType = opts.jobType;
-
-    // Past jobs only (expect statuses as an array)
-    if ('statuses' in opts && Array.isArray(opts.statuses) && opts.statuses.length) {
-      params.statuses = opts.statuses;
-    }
-    if ('startFrom' in opts && opts.startFrom) {
-      params.startFrom = opts.startFrom.toISOString();
-    }
-
-    return qs.stringify(params, { encodeValuesOnly: true });
+  async getActiveJobs({ authToken, ...opts }: GetActiveJobsOptions): Promise<Array<JobInfo>> {
+    const params = buildGetJobParams(opts);
+    return (await this.get({
+      url: UNIVERSAL_API_ROUTES.jobsActive,
+      params,
+      authToken
+    })) as Array<JobInfo>;
   }
 
-  async getActiveJobs(opts: GetActiveJobsOptions): Promise<Array<JobInfo>> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsActive);
-    const query = this.buildJobQuery(opts);
-
-    const response = await this.fetch(query ? `${url}?${query}` : url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${opts.authToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get active jobs: ${response.statusText}`);
-    }
-
-    return response.json();
+  async getPastJobs({ authToken, ...opts }: GetPastJobsOptions): Promise<Array<JobInfo>> {
+    const params = buildGetJobParams(opts);
+    return (await this.get({
+      url: UNIVERSAL_API_ROUTES.jobsPast,
+      params,
+      authToken
+    })) as Array<JobInfo>;
   }
 
-  async getPastJobs(opts: GetPastJobsOptions): Promise<Array<JobInfo>> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobsPast);
-    const query = this.buildJobQuery(opts);
-
-    const response = await this.fetch(`${url}?${query}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${opts.authToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get past jobs: ${response.statusText}`);
-    }
-
-    return response.json();
+  async startJob({ authToken, ...body }: StartJobOptions): Promise<JobInfo> {
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.jobStart,
+      authToken,
+      body
+    })) as JobInfo;
   }
 
-  async startJob(opts: StartJobOptions): Promise<JobInfo> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobStart);
-    const jobResponse = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${opts.authToken}`
-      },
-      body: JSON.stringify({
-        feature: opts.feature,
-        author: opts.author
-      })
-    });
-
-    if (!jobResponse.ok) {
-      throw new Error(`Failed to start job: ${jobResponse.statusText}`);
-    }
-    return jobResponse.json();
+  async getJobProgress({ authToken, jobId }: GetJobProgressOptions): Promise<JobInfo> {
+    return (await this.get({
+      url: resolveRoute(UNIVERSAL_API_ROUTES.jobProgress, { jobId }),
+      authToken
+    })) as JobInfo;
   }
 
-  async getJobProgress(opts: GetJobProgressOptions): Promise<JobInfo> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobProgress(opts.jobId));
-    const response = await this.fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${opts.authToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get job progress: ${response.statusText}`);
-    }
-
-    return response.json();
+  async abortJob({ authToken, jobId, reason }: AbortJobOptions): Promise<DataApiActionResult> {
+    return (await this.post({
+      url: resolveRoute(UNIVERSAL_API_ROUTES.jobAbort, { jobId }),
+      authToken,
+      body: { reason: reason || 'Admin requested abort' }
+    })) as DataApiActionResult;
   }
 
-  async abortJob(opts: AbortJobOptions): Promise<DataApiActionResult> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobAbort(opts.jobId));
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${opts.authToken}`
-      },
-      body: JSON.stringify({ reason: opts.reason ?? 'Admin requested abort' })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to abort job: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async abortAllJobs(opts: AbortAllJobsOptions): Promise<DataApiActionResult> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
-    const url = localPathToUrl(UNIVERSAL_API_ROUTES.jobAbortAll);
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${opts.authToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to abort all jobs: ${response.statusText}`);
-    }
-
-    return response.json();
+  async abortAllJobs({ authToken }: AbortAllJobsOptions): Promise<DataApiActionResult> {
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.jobAbortAll,
+      authToken
+    })) as DataApiActionResult;
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -363,4 +266,26 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // protected abstract _getJobProgress(opts: GetJobProgressOptions): Promise<JobInfo>;
   // protected abstract _abortJob(opts: AbortJobOptions): Promise<DataApiActionResult>;
   // protected abstract _abortAllJobs(opts: AbortAllJobsOptions): Promise<DataApiActionResult>;
+}
+
+/**
+ * Build query string from job options for API requests.
+ *
+ * Handles the different parameter sets between active and past job queries:
+ * - Active jobs: jobType only
+ * - Past jobs: jobType, statuses array, and startFrom date
+ *
+ * @param opts - Job query options with authToken omitted
+ * @returns URL-encoded query string, empty string if no valid params
+ */
+function buildGetJobParams(
+  opts: Omit<GetActiveJobsOptions, 'authToken'> | Omit<GetPastJobsOptions, 'authToken'>
+): Record<string, unknown> {
+  const params: Record<string, unknown> = {};
+  // Both active and past jobs
+  if (opts.jobType) params.jobType = opts.jobType;
+  // Past jobs only (expect statuses as an array)
+  if ('statuses' in opts && Array.isArray(opts.statuses) && opts.statuses.length) params.statuses = opts.statuses;
+  if ('startFrom' in opts && opts.startFrom) params.startFrom = opts.startFrom.toISOString();
+  return params;
 }
