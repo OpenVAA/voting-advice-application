@@ -20,7 +20,6 @@ Page for controlling the argument condensation feature.
   ////////////////////////////////////////////////////////////////////////
 
   const {
-    authToken,
     dataRoot,
     t,
     abortJob,
@@ -133,13 +132,7 @@ Page for controlling the argument condensation feature.
     }
 
     try {
-      const token = $authToken;
-      if (!token) {
-        alert(t.get('adminApp.jobs.authRequired'));
-        return;
-      }
       await abortJob({
-        authToken: token,
         jobId,
         reason: 'Admin aborted this argument condensation process'
       });
