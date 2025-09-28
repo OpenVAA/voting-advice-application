@@ -4,8 +4,6 @@
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
-  import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
-  import { DEFAULT_MAX_MESSAGES } from '$lib/admin/components/jobs/shared';
 
   // TODO: add error handling & info updates if polling service refresh, abortAllJobs or abortJob fails
 
@@ -28,15 +26,6 @@
   let activeJobsCount: number;
   $: activeJobsCount = [...$activeJobsByFeature.values().filter((j) => !!j)].length;
 
-  // Duration formatter (same as jobs page)
-  function formatJobDuration(job: JobInfo): string {
-    if (!job.endTime) return t.get('adminApp.jobs.notAvailable');
-    const duration = new Date(job.endTime).getTime() - new Date(job.startTime).getTime();
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    return `${minutes}m ${seconds}s`;
-  }
-
   ////////////////////////////////////////////////////////////////////////
   // Handle aborting jobs
   ////////////////////////////////////////////////////////////////////////
@@ -58,6 +47,7 @@
       alert(t.get('adminApp.jobs.abortAllFailed'));
     }
   }
+
   // TODO: centralize this, used in all feature pages
   async function handleAbortJob(jobId: string, feature: AdminFeature) {
     console.log('handleAbortJob called with jobId:', jobId, 'and feature:', feature);
@@ -70,7 +60,6 @@
         alert(t.get('adminApp.jobs.authRequired'));
         return;
       }
-      console.log('Calling abortJob with:', { authToken: token, jobId, reason: 'Admin aborted this process' });
       await abortJob({
         authToken: token,
         jobId,
@@ -133,56 +122,6 @@
             <FeatureJobs {feature} onAbortJob={(jobId) => handleAbortJob(jobId, feature)} />
           </div>
         {/each}
-      </div>
-
-      <!-- Past Jobs Sidebar. Can be removed or made into a more robust component -->
-      <div class="w-1/4">
-        <div class="card bg-base-100 sticky top-4 h-fit shadow-xl">
-          <div class="card-body">
-            <h2 class="card-title text-base-content">{$t('adminApp.jobs.pastJobs')}</h2>
-            <p class="text-neutral mb-4 text-sm">{$t('adminApp.jobs.pastJobsDescription')}</p>
-
-            <div class="max-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
-              {#each $pastJobs.slice(0, DEFAULT_MAX_MESSAGES).reverse() as job}
-                <div class="border-base-300 hover:bg-base-200 rounded-lg border p-3 transition-colors">
-                  <div class="mb-2 flex items-start justify-between">
-                    <!-- Do we want a link to a job-specific page? -->
-                    <div class="flex-1">
-                      {$t(`adminApp.jobs.features.${job.jobType}.title`)}
-                      <p class="text-neutral text-xs">{job.author}</p>
-                    </div>
-                    <div class="text-right">
-                      <span
-                        class="badge badge-sm {job.status === 'completed'
-                          ? 'badge-success'
-                          : job.status === 'failed'
-                            ? 'badge-error'
-                            : 'badge-warning'}">
-                        {job.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="text-neutral space-y-1 text-xs">
-                    <div>{$t('adminApp.jobs.started')}: {new Date(job.startTime).toLocaleString()}</div>
-                    {#if job.endTime}
-                      <div>{$t('adminApp.jobs.duration')}: {formatJobDuration(job)}</div>
-                    {/if}
-                    <div>
-                      {$t('adminApp.jobs.messages')}: {job.infoMessages.length +
-                        job.warningMessages.length +
-                        job.errorMessages.length}
-                    </div>
-                  </div>
-                </div>
-              {:else}
-                <div class="py-8 text-center">
-                  <p class="text-neutral text-sm">{$t('adminApp.jobs.noPastJobs')}</p>
-                </div>
-              {/each}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
