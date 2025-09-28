@@ -1,0 +1,20 @@
+{
+  "title": "Faktoranalyse",
+  "description": "Analysér og håndtér faktorer for valgets spørgsmål.",
+  "compute": {
+    "title": "Beregn faktorer",
+    "description": "Beregn de latente faktorer ud fra svar afgivet af kandidater og partier.",
+    "selectElections": "Vælg valg, som der skal beregnes faktorer for.",
+    "button": "Beregn faktorer",
+    "buttonLoading": "Beregner faktorer...",
+    "mayTakeTime": "Dette kan tage noget tid.",
+    "noElections": "Ingen valg tilgængelige",
+    "candidates": "kandidater",
+    "parties": {
+      "some": "og {count} partier",
+      "none": "og ingen partier"
+    },
+    "haveAnswered": "har svaret",
+    "error": "Kunne ikke beregne faktorer"
+  }
+}

@@ -4,6 +4,7 @@
 
 - Provides data AdminContext:
   - questions
+- Adds polling
 -->
 
 <script lang="ts">
@@ -13,6 +14,7 @@
   import { getAdminContext } from '$lib/contexts/admin/adminContext.js';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
+  import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
 
   export let data;
 
@@ -54,5 +56,7 @@
 {:else if !ready}
   <Loading />
 {:else}
-  <slot />
+  <WithPolling>
+    <slot />
+  </WithPolling>
 {/if}

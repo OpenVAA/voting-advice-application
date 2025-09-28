@@ -1,10 +1,12 @@
 {
   "title": "Kontrollipaneeli",
-  "argumentCondensation": {
-    "title": "Argumenttien tiivistäminen"
-  },
-  "questionInfoGeneration": {
-    "title": "Kysymystietojen luominen"
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Argumenttien tiivistäminen"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Kysymystietojen luominen"
+    }
   },
   "emergencyCleanup": "Lopeta kaikki prosessit",
   "confirmAbortAll": "Oletko varma, että haluat keskeyttää KAIKKI käynnissä olevat prosessit?",
