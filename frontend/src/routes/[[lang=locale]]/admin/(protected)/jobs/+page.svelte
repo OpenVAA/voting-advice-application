@@ -12,7 +12,6 @@
   ////////////////////////////////////////////////////////////////////////
 
   const {
-    authToken,
     t,
     jobs: { activeJobsByFeature, pastJobs },
     abortAllJobs,
@@ -36,12 +35,7 @@
       return;
     }
     try {
-      const token = $authToken;
-      if (!token) {
-        alert(t.get('adminApp.jobs.authRequired'));
-        return;
-      }
-      await abortAllJobs({ authToken: token });
+      await abortAllJobs({});
     } catch (error) {
       console.error('Error during emergency cleanup:', error);
       alert(t.get('adminApp.jobs.abortAllFailed'));
@@ -55,13 +49,7 @@
       return;
     }
     try {
-      const token = $authToken;
-      if (!token) {
-        alert(t.get('adminApp.jobs.authRequired'));
-        return;
-      }
       await abortJob({
-        authToken: token,
         jobId,
         reason: 'Admin aborted this process'
       });

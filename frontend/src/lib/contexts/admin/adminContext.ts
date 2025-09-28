@@ -1,13 +1,13 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { jobStores } from './jobStores';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
-import type { AdminContext } from './adminContext.type';
+import type { BasicUserData, DataWriter, WithAuth } from '$lib/api/base/dataWriter.type';
+import type { AdminContext, WithOptionalAuth } from './adminContext.type';
 
 const CONTEXT_KEY = Symbol('admin');
 
@@ -25,6 +25,7 @@ export function initAdminContext(): AdminContext {
 
   const appContext = getAppContext();
   const authContext = getAuthContext();
+  const { authToken } = authContext;
 
   ////////////////////////////////////////////////////////////////////
   // Common contents
@@ -43,38 +44,56 @@ export function initAdminContext(): AdminContext {
   // NB. These automatically handle authentication
   ////////////////////////////////////////////////////////////////////
 
-  function updateQuestion(...args: Parameters<DataWriter['updateQuestion']>): ReturnType<DataWriter['updateQuestion']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.updateQuestion(...args));
+  /**
+   * Inject the JWT token into requests.
+   * TODO: Refactor `DataWriter` so that we can cache the `authToken` in the instance.
+   */
+  function injectAuthToken<TParams extends { authToken?: string }>(opts: TParams): TParams & WithAuth {
+    return { authToken: get(authToken)!, ...opts };
   }
 
-  function getActiveJobs(...args: Parameters<DataWriter['getActiveJobs']>): ReturnType<DataWriter['getActiveJobs']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getActiveJobs(...args));
+  function updateQuestion(
+    opts: WithOptionalAuth<Parameters<DataWriter['updateQuestion']>[0]>
+  ): ReturnType<DataWriter['updateQuestion']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.updateQuestion(injectAuthToken(opts)));
   }
 
-  function getPastJobs(...args: Parameters<DataWriter['getPastJobs']>): ReturnType<DataWriter['getPastJobs']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getPastJobs(...args));
+  function getActiveJobs(
+    opts: WithOptionalAuth<Parameters<DataWriter['getActiveJobs']>[0]>
+  ): ReturnType<DataWriter['getActiveJobs']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getActiveJobs(injectAuthToken(opts)));
   }
 
-  function startJob(...args: Parameters<DataWriter['startJob']>): ReturnType<DataWriter['startJob']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.startJob(...args));
+  function getPastJobs(
+    opts: WithOptionalAuth<Parameters<DataWriter['getPastJobs']>[0]>
+  ): ReturnType<DataWriter['getPastJobs']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getPastJobs(injectAuthToken(opts)));
   }
 
-  function getJobProgress(...args: Parameters<DataWriter['getJobProgress']>): ReturnType<DataWriter['getJobProgress']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getJobProgress(...args));
+  function startJob(opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>): ReturnType<DataWriter['startJob']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.startJob(injectAuthToken(opts)));
   }
 
-  function abortJob(...args: Parameters<DataWriter['abortJob']>): ReturnType<DataWriter['abortJob']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortJob(...args));
+  function getJobProgress(
+    opts: WithOptionalAuth<Parameters<DataWriter['getJobProgress']>[0]>
+  ): ReturnType<DataWriter['getJobProgress']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getJobProgress(injectAuthToken(opts)));
   }
 
-  function abortAllJobs(...args: Parameters<DataWriter['abortAllJobs']>): ReturnType<DataWriter['abortAllJobs']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortAllJobs(...args));
+  function abortJob(opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>): ReturnType<DataWriter['abortJob']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortJob(injectAuthToken(opts)));
+  }
+
+  function abortAllJobs(
+    opts: WithOptionalAuth<Parameters<DataWriter['abortAllJobs']>[0]>
+  ): ReturnType<DataWriter['abortAllJobs']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortAllJobs(injectAuthToken(opts)));
   }
 
   function insertJobResult(
-    ...args: Parameters<DataWriter['insertJobResult']>
+    opts: WithOptionalAuth<Parameters<DataWriter['insertJobResult']>[0]>
   ): ReturnType<DataWriter['insertJobResult']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.insertJobResult(...args));
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.insertJobResult(injectAuthToken(opts)));
   }
 
   const adminContext: AdminContext = {

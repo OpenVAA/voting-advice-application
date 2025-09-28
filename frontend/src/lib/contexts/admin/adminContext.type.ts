@@ -19,36 +19,33 @@ export type AdminContext = AppContext &
     // Wrappers for DataWriter methods
     ////////////////////////////////////////////////////////////////////
 
-    /**
-     * Update a Question's custom data.
-     */
-    updateQuestion: DataWriter['updateQuestion'];
-    /**
-     * Get currently active jobs.
-     */
-    getActiveJobs: DataWriter['getActiveJobs'];
-    /**
-     * Get past jobs with optional filtering.
-     */
-    getPastJobs: DataWriter['getPastJobs'];
-    /**
-     * Start a new job.
-     */
-    startJob: DataWriter['startJob'];
-    /**
-     * Get progress of a specific job.
-     */
-    getJobProgress: DataWriter['getJobProgress'];
-    /**
-     * Abort a specific job.
-     */
-    abortJob: DataWriter['abortJob'];
-    /**
-     * Abort all running jobs.
-     */
-    abortAllJobs: DataWriter['abortAllJobs'];
-    /**
-     * Insert a new job result.
-     */
-    insertJobResult: DataWriter['insertJobResult'];
+    updateQuestion(
+      opts: WithOptionalAuth<Parameters<DataWriter['updateQuestion']>[0]>
+    ): ReturnType<DataWriter['updateQuestion']>;
+
+    getActiveJobs(
+      opts: WithOptionalAuth<Parameters<DataWriter['getActiveJobs']>[0]>
+    ): ReturnType<DataWriter['getActiveJobs']>;
+
+    getPastJobs(
+      opts: WithOptionalAuth<Parameters<DataWriter['getPastJobs']>[0]>
+    ): ReturnType<DataWriter['getPastJobs']>;
+
+    startJob(opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>): ReturnType<DataWriter['startJob']>;
+
+    getJobProgress(
+      opts: WithOptionalAuth<Parameters<DataWriter['getJobProgress']>[0]>
+    ): ReturnType<DataWriter['getJobProgress']>;
+
+    abortJob(opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>): ReturnType<DataWriter['abortJob']>;
+
+    abortAllJobs(
+      opts: WithOptionalAuth<Parameters<DataWriter['abortAllJobs']>[0]>
+    ): ReturnType<DataWriter['abortAllJobs']>;
+
+    insertJobResult(
+      opts: WithOptionalAuth<Parameters<DataWriter['insertJobResult']>[0]>
+    ): ReturnType<DataWriter['insertJobResult']>;
   };
+
+export type WithOptionalAuth<TParams> = Omit<TParams, 'authToken'> & { authToken?: string };
