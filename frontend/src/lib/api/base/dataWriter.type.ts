@@ -388,4 +388,4 @@ export type AbortJobOptions = WithAuth & {
 };
 
 // Most likely will be extended in the future (e.g. cancel queued jobs also?)
-export type AbortAllJobsOptions = WithAuth & {};
+export type AbortAllJobsOptions = WithAuth;
