@@ -328,6 +328,42 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAdminJobAdminJob extends Struct.CollectionTypeSchema {
+  collectionName: 'admin_jobs';
+  info: {
+    description: '';
+    displayName: 'Admin Job';
+    pluralName: 'admin-jobs';
+    singularName: 'admin-job';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    author: Schema.Attribute.Email & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    endStatus: Schema.Attribute.Enumeration<['completed', 'failed']>;
+    endTime: Schema.Attribute.DateTime;
+    input: Schema.Attribute.JSON;
+    jobId: Schema.Attribute.UID & Schema.Attribute.Required;
+    jobType: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 1;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::admin-job.admin-job'> & Schema.Attribute.Private;
+    messages: Schema.Attribute.JSON;
+    metadata: Schema.Attribute.JSON;
+    output: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    startTime: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+  };
+}
+
 export interface ApiAllianceAlliance extends Struct.CollectionTypeSchema {
   collectionName: 'alliances';
   info: {
@@ -352,7 +388,7 @@ export interface ApiAllianceAlliance extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::alliance.alliance'> & Schema.Attribute.Private;
     name: Schema.Attribute.JSON;
-    parties: Schema.Attribute.Relation<'oneToMany', 'api::party.party'>;
+    parties: Schema.Attribute.Relation<'manyToMany', 'api::party.party'>;
     publishedAt: Schema.Attribute.DateTime;
     shortName: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
@@ -454,6 +490,7 @@ export interface ApiCandidateCandidate extends Struct.CollectionTypeSchema {
     party: Schema.Attribute.Relation<'manyToOne', 'api::party.party'>;
     publishedAt: Schema.Attribute.DateTime;
     registrationKey: Schema.Attribute.String & Schema.Attribute.Private;
+    termsOfUseAccepted: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     user: Schema.Attribute.Relation<'oneToOne', 'plugin::users-permissions.user'> & Schema.Attribute.Private;
@@ -634,7 +671,7 @@ export interface ApiNominationNomination extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'> & Schema.Attribute.Private;
     party: Schema.Attribute.Relation<'manyToOne', 'api::party.party'>;
     publishedAt: Schema.Attribute.DateTime;
-    unconfirmed: Schema.Attribute.Boolean;
+    unconfirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -652,7 +689,7 @@ export interface ApiPartyParty extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    alliance: Schema.Attribute.Relation<'manyToOne', 'api::alliance.alliance'>;
+    alliances: Schema.Attribute.Relation<'manyToMany', 'api::alliance.alliance'>;
     answers: Schema.Attribute.JSON;
     candidates: Schema.Attribute.Relation<'oneToMany', 'api::candidate.candidate'>;
     color: Schema.Attribute.String;
@@ -1182,6 +1219,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::admin-job.admin-job': ApiAdminJobAdminJob;
       'api::alliance.alliance': ApiAllianceAlliance;
       'api::app-customization.app-customization': ApiAppCustomizationAppCustomization;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;

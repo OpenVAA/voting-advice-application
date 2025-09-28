@@ -38,11 +38,10 @@ export interface JobMessage {
   timestamp: string; // ISO
 }
 
-// -------------------------------------------------------------------------------------------------
-// are these types ok here or should we move them to lib/admin/ ?
 export type JobStatus = 'running' | 'completed' | 'failed' | 'aborted' | 'aborting';
 
 export type PastJobStatus = Exclude<JobStatus, 'running' | 'aborting'>;
+
 export type ActiveJobStatus = Exclude<JobStatus, 'completed' | 'failed' | 'aborted'>;
 
 type JobQueryParamsBase = {
@@ -55,4 +54,3 @@ export type PastJobQueryParams = JobQueryParamsBase & {
   statuses?: ReadonlyArray<JobStatus>;
   startFrom?: Date;
 };
-// -------------------------------------------------------------------------------------------------

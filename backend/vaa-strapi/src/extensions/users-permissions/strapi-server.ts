@@ -15,6 +15,10 @@ const defaultPermissions: Array<{
   action: UID.Controller;
   roleTypes: RoleType[];
 }> = [
+  { action: 'api::admin-job.admin-job.create', roleTypes: ['admin'] },
+  { action: 'api::admin-job.admin-job.find', roleTypes: ['admin'] },
+  { action: 'api::admin-job.admin-job.findOne', roleTypes: ['admin'] },
+  { action: 'api::admin-job.admin-job.update', roleTypes: ['admin'] },
   { action: 'api::alliance.alliance.find', roleTypes: ['authenticated'] },
   { action: 'api::alliance.alliance.findOne', roleTypes: ['authenticated'] },
   { action: 'api::candidate.answers.overwrite', roleTypes: ['authenticated'] },

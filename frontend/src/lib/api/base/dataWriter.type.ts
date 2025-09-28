@@ -5,9 +5,16 @@ import type {
   LocalizedTermDefinition,
   LocalizedVideoContent
 } from '@openvaa/app-shared';
-import type { Id } from '@openvaa/core';
+import type { Id, Serializable } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
-import type { ActiveJobQueryParams, JobInfo, PastJobQueryParams } from '$lib/server/admin/jobs/jobStore.type';
+import type { GenerationMetrics } from '@openvaa/llm';
+import type { AdminFeature } from '$lib/admin/features';
+import type {
+  ActiveJobQueryParams,
+  JobInfo,
+  JobMessage,
+  PastJobQueryParams
+} from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 import type { DPDataType } from './dataTypes';
@@ -230,6 +237,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
   abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
+  insertJobResult: (opts: InsertJobResultOptions) => DWReturnType<DataApiActionResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,6 +303,26 @@ export type CandidateUserData<TNominations extends boolean | undefined = undefin
    * The partial nominations the `Candidate` has and their linked `Entity`s, e.g. organizations.
    */
   nominations: TNominations extends true ? DPDataType['nominations'] : undefined;
+};
+
+/**
+ * Results for an admin job.
+ * TODO: Define in a more logical place when saved job listing is implemented.
+ */
+export type AdminJobData = {
+  jobId: JobInfo['id'];
+  jobType: AdminFeature;
+  /**
+   * Author email
+   */
+  author: string;
+  status: 'completed' | 'failed';
+  startTime?: string;
+  endTime?: string;
+  input?: Serializable;
+  output?: Serializable;
+  messages?: Array<JobMessage>;
+  metadata?: GenerationMetrics;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -389,3 +417,5 @@ export type AbortJobOptions = WithAuth & {
 
 // Most likely will be extended in the future (e.g. cancel queued jobs also?)
 export type AbortAllJobsOptions = WithAuth;
+
+export type InsertJobResultOptions = WithAuth & { data: AdminJobData };
