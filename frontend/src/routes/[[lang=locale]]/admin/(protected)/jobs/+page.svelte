@@ -44,7 +44,6 @@
 
   // TODO: centralize this, used in all feature pages
   async function handleAbortJob(jobId: string, feature: AdminFeature) {
-    console.log('handleAbortJob called with jobId:', jobId, 'and feature:', feature);
     if (!confirm(t.get('adminApp.jobs.confirmAbortJob', { feature }))) {
       return;
     }
@@ -65,7 +64,7 @@
     <Button variant="secondary" text={$t('adminApp.jobs.emergencyCleanup')} on:click={performEmergencyCleanup} />
   </div>
 
-  <div slot="fullWidth" class="gap-lg flex flex-col">
+  <div slot="fullWidth" class="flex flex-col gap-lg">
     <div class="px-1">
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
@@ -102,9 +101,9 @@
       </div>
     </div>
 
-    <div class="gap-lg flex w-full px-1">
+    <div class="px-1 flex w-full gap-lg">
       <!-- Main Content - Features list -->
-      <div class="gap-lg flex w-3/4 flex-col">
+      <div class="flex w-3/4 flex-col gap-lg">
         {#each ADMIN_FEATURES as feature}
           <div class="relative">
             <FeatureJobs {feature} onAbortJob={(jobId) => handleAbortJob(jobId, feature)} />
