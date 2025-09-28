@@ -143,45 +143,43 @@
             <p class="text-neutral mb-4 text-sm">{$t('adminApp.jobs.pastJobsDescription')}</p>
 
             <div class="max-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
-              {#if $pastJobs.length === 0}
+              {#each $pastJobs.slice(0, DEFAULT_MAX_MESSAGES).reverse() as job}
+                <div class="border-base-300 hover:bg-base-200 rounded-lg border p-3 transition-colors">
+                  <div class="mb-2 flex items-start justify-between">
+                    <!-- Do we want a link to a job-specific page? -->
+                    <div class="flex-1">
+                      {$t(`adminApp.jobs.features.${job.jobType}.title`)}
+                      <p class="text-neutral text-xs">{job.author}</p>
+                    </div>
+                    <div class="text-right">
+                      <span
+                        class="badge badge-sm {job.status === 'completed'
+                          ? 'badge-success'
+                          : job.status === 'failed'
+                            ? 'badge-error'
+                            : 'badge-warning'}">
+                        {job.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="text-neutral space-y-1 text-xs">
+                    <div>{$t('adminApp.jobs.started')}: {new Date(job.startTime).toLocaleString()}</div>
+                    {#if job.endTime}
+                      <div>{$t('adminApp.jobs.duration')}: {formatJobDuration(job)}</div>
+                    {/if}
+                    <div>
+                      {$t('adminApp.jobs.messages')}: {job.infoMessages.length +
+                        job.warningMessages.length +
+                        job.errorMessages.length}
+                    </div>
+                  </div>
+                </div>
+              {:else}
                 <div class="py-8 text-center">
                   <p class="text-neutral text-sm">{$t('adminApp.jobs.noPastJobs')}</p>
                 </div>
-              {:else}
-                {#each $pastJobs.slice(DEFAULT_MAX_MESSAGES).reverse() as job}
-                  <div class="border-base-300 hover:bg-base-200 rounded-lg border p-3 transition-colors">
-                    <div class="mb-2 flex items-start justify-between">
-                      <!-- Do we want a link to a job-specific page? -->
-                      <div class="flex-1">
-                        {$t(`adminApp.jobs.features.${job.jobType}.title`)}
-                        <p class="text-neutral text-xs">{job.author}</p>
-                      </div>
-                      <div class="text-right">
-                        <span
-                          class="badge badge-sm {job.status === 'completed'
-                            ? 'badge-success'
-                            : job.status === 'failed'
-                              ? 'badge-error'
-                              : 'badge-warning'}">
-                          {job.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="text-neutral space-y-1 text-xs">
-                      <div>{$t('adminApp.jobs.started')}: {new Date(job.startTime).toLocaleString()}</div>
-                      {#if job.endTime}
-                        <div>{$t('adminApp.jobs.duration')}: {formatJobDuration(job)}</div>
-                      {/if}
-                      <div>
-                        {$t('adminApp.jobs.messages')}: {job.infoMessages.length +
-                          job.warningMessages.length +
-                          job.errorMessages.length}
-                      </div>
-                    </div>
-                  </div>
-                {/each}
-              {/if}
+              {/each}
             </div>
           </div>
         </div>
