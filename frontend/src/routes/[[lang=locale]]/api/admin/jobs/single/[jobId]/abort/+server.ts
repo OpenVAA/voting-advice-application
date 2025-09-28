@@ -8,8 +8,8 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ params, request }: RequestEvent) {
   try {
-    const { id } = params;
-    if (!id) {
+    const { jobId } = params;
+    if (!jobId) {
       return json({ error: 'Job ID is required' }, { status: 400 });
     }
 
@@ -26,10 +26,10 @@ export async function POST({ params, request }: RequestEvent) {
     }
 
     // Request cooperative abort and return immediately
-    requestAbort(id, reason);
+    requestAbort(jobId, reason);
 
     // Fire-and-forget: UI will observe 'aborting' → 'aborted' via polling
-    return json({ message: 'Abort requested', jobId: id }, { status: 202 });
+    return json({ message: 'Abort requested', jobId }, { status: 202 });
   } catch (error) {
     console.error('Error requesting abort:', error);
     return json({ error: 'Failed to request abort' }, { status: 500 });
