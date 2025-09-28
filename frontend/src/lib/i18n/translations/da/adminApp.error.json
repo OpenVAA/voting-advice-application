@@ -1,0 +1,5 @@
+{
+  "unauthorized": "Du har ikke tilladelse til at tilgå dette område",
+  "unauthorizedDescription": "Din konto er blevet godkendt, men du har ikke de nødvendige administratorrettigheder.",
+  "unauthorizedContact": "Dette område er kun for systemadministratorer. Hvis du mener, du burde have adgang, så kontakt systemadministratoren."
+}

@@ -1,0 +1,26 @@
+{
+  "title": "Argumentkondensering",
+  "description": "Kondenser og håndtér argumenter til valgets spørgsmål.",
+  "jobs": {
+    "noActiveJobs": "Ingen aktive job",
+    "startProcess": "Start en argumentkondenseringsproces for at se realtidsmonitorering"
+  },
+  "generate": {
+    "allQuestions": "Generér argumenter til alle holdningsspørgsmål",
+    "button": "Generér argumenter",
+    "buttonLoading": "Genererer...",
+    "error": "Der opstod en fejl under generering af argumenter",
+    "mayTakeTime": "Denne proces kan tage flere minutter",
+    "noElectionsAvailable": "Ingen valg er tilgængelige. Tjek venligst din datakonfiguration.",
+    "noElectionSelected": "Vælg venligst et valg først",
+    "noQuestionsForElection": "Ingen holdningsspørgsmål fundet for det valgte valg.",
+    "noQuestionSelected": "Vælg venligst mindst ét spørgsmål",
+    "selectElection": "Vælg valg",
+    "selectElectionPlaceholder": "Vælg et valg...",
+    "selectedQuestions": "Generér kun argumenter til valgte spørgsmål",
+    "questionType": "Spørgsmålsvalg",
+    "selectAll": "Vælg alle",
+    "unselectAll": "Fravælg alle",
+    "errorLoadingQuestions": "Fejl ved indlæsning af spørgsmål: {error}"
+  }
+}

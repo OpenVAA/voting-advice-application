@@ -1,6 +1,8 @@
-import { type Route } from '$lib/utils/route';
+import type { Route } from '$lib/utils/route';
 
-/** A type that lists all features that are available in the Admin App */
+/**
+ * A type that lists all features that are available in the Admin App
+ */
 export type AdminFeature = 'ArgumentCondensation' | 'QuestionInfoGeneration';
 
 /** Central registry for all feature-related info. Used as a source of truth for feature routes, admin job names, etc.
@@ -14,15 +16,16 @@ export type AdminFeature = 'ArgumentCondensation' | 'QuestionInfoGeneration';
  * const argCondJobName = argCond.jobName; // used to identify the job in the jobs database
  * ```
  */
-export const ADMIN_FEATURE: Record<AdminFeature, { route: Route; jobName: string }> = { // maybe add type to this object
+export const ADMIN_FEATURE: Record<AdminFeature, { route: Route }> = {
   ArgumentCondensation: {
-    route: 'AdminAppArgumentCondensation',
-    jobName: 'argument-condensation'
+    route: 'AdminAppArgumentCondensation'
   },
   QuestionInfoGeneration: {
-    route: 'AdminAppQuestionInfo',
-    jobName: 'question-info-generation'
+    route: 'AdminAppQuestionInfo'
   }
 } as const;
 
-export type AdminJobName = (typeof ADMIN_FEATURE)[AdminFeature]['jobName'];
+/**
+ * A utility const of just the names of all available features.
+ */
+export const ADMIN_FEATURES = Object.keys(ADMIN_FEATURE) as ReadonlyArray<AdminFeature>;

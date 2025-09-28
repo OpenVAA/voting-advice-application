@@ -1,30 +1,29 @@
-import type { Readable, Writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
+import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
-import type { PollingService } from './pollingService.type';
 
 export type JobStores = {
   /**
    * Store for active jobs by feature (one active job per feature)
    */
-  activeJobsStore: Writable<Map<string, JobInfo | null>>;
+  activeJobsByFeature: Readable<Map<AdminFeature, JobInfo | undefined>>;
   /**
-   * Derived store for active job count
+   * Store for past jobs as an array, sorted by creation date (oldest first)
    */
-  activeJobCount: Readable<number>;
+  pastJobs: Readable<Array<JobInfo>>;
   /**
-   * Store for past jobs by jobId (multiple jobs per feature possible)
+   * Store for past jobs by feature (multiple jobs per feature possible)
    */
-  pastJobsStore: Writable<Map<string, JobInfo>>;
+  pastJobsByFeature: Readable<Map<AdminFeature, Array<JobInfo>>>;
+
   /**
-   * Smart polling service that automatically starts/stops based on active job count
+   * Temporary method to start polling for new jobs
+   * TODO[Svelte 5]: Count subscriptions to stores (or $states) and automatically start and stop polling.
    */
-  pollingService: PollingService;
+  startPolling: () => void;
   /**
-   * Helper function to get active job for a specific feature.
+   * Temporary method to stop polling for new jobs
+   * TODO[Svelte 5]: Count subscriptions to stores (or $states) and automatically start and stop polling.
    */
-  getActiveJobForFeature(feature: string): JobInfo | null;
-  /**
-   * Helper function to get past jobs for a specific feature.
-   */
-  getPastJobsForFeature(feature: string): Array<JobInfo>;
+  stopPolling: () => void;
 };

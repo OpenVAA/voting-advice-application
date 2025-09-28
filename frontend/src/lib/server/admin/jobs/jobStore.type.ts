@@ -1,4 +1,4 @@
-import type { AdminJobName } from '$lib/admin/features';
+import type { AdminFeature } from '$lib/admin/features';
 
 /**
  * Information about an admin job. A job is a long-running process that is used to perform a task.
@@ -20,7 +20,7 @@ import type { AdminJobName } from '$lib/admin/features';
  */
 export interface JobInfo {
   id: string;
-  jobType: AdminJobName;
+  jobType: AdminFeature;
   author: string; // admin email
   status: JobStatus;
   progress: number; // 0-1 range
@@ -31,6 +31,7 @@ export interface JobInfo {
   warningMessages: Array<JobMessage>;
   errorMessages: Array<JobMessage>;
 }
+
 export interface JobMessage {
   type: 'info' | 'warning' | 'error';
   message: string;
@@ -45,7 +46,7 @@ export type PastJobStatus = Exclude<JobStatus, 'running' | 'aborting'>;
 export type ActiveJobStatus = Exclude<JobStatus, 'completed' | 'failed' | 'aborted'>;
 
 type JobQueryParamsBase = {
-  jobType?: AdminJobName;
+  jobType?: JobInfo['jobType'];
 };
 
 export type ActiveJobQueryParams = JobQueryParamsBase;

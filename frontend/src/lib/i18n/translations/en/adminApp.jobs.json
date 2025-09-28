@@ -1,11 +1,13 @@
 {
   "title": "Admin Control Panel",
   "emergencyCleanup": "Emergency cleanup",
-  "argumentCondensation": {
-    "title": "Argument Condensation"
-  },
-  "questionInfoGeneration": {
-    "title": "Question Info Generation"
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Argument Condensation"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Question Info Generation"
+    }
   },
   "confirmAbortAll": "Are you sure you want to abort ALL running jobs?",
   "authRequired": "Authentication required",
