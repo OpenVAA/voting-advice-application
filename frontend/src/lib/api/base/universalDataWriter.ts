@@ -17,6 +17,7 @@ import type {
   GetCandidateUserDataOptions,
   GetJobProgressOptions,
   GetPastJobsOptions,
+  InsertJobResultOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
@@ -186,6 +187,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._updateQuestion(opts);
   }
 
+  insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
+    return this._insertJobResult(opts);
+  }
+
   /////////////////////////////////////////////////////////////////////
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
@@ -274,12 +279,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   ): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
-  // Remove the abstract job methods since we're implementing them directly
-  // protected abstract _getJobs(opts: GetJobsOptions): Promise<Array<JobInfo>>;
-  // protected abstract _startJob(opts: StartJobOptions): Promise<JobInfo>;
-  // protected abstract _getJobProgress(opts: GetJobProgressOptions): Promise<JobInfo>;
-  // protected abstract _abortJob(opts: AbortJobOptions): Promise<DataApiActionResult>;
-  // protected abstract _abortAllJobs(opts: AbortAllJobsOptions): Promise<DataApiActionResult>;
+  protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;
 }
 
 /**

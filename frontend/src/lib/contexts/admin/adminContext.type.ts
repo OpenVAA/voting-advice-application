@@ -47,4 +47,8 @@ export type AdminContext = AppContext &
      * Abort all running jobs.
      */
     abortAllJobs: DataWriter['abortAllJobs'];
+    /**
+     * Insert a new job result.
+     */
+    insertJobResult: DataWriter['insertJobResult'];
   };

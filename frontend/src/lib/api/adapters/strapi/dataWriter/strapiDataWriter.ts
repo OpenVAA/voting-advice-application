@@ -10,6 +10,7 @@ import type {
   CheckRegistrationData,
   DWReturnType,
   GetCandidateUserDataOptions,
+  InsertJobResultOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
@@ -258,6 +259,15 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       authToken
     });
     if (!data) throw new Error('Expected a QuestionData object, but got none.');
+    return { type: 'success' };
+  }
+
+  protected async _insertJobResult({ authToken, data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
+    await this.apiPost({
+      endpoint: 'adminJobs',
+      body: { data },
+      authToken
+    }).catch((err) => err);
     return { type: 'success' };
   }
 
