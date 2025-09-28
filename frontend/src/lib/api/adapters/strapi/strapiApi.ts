@@ -1,4 +1,5 @@
 import type {
+  StrapiAdminJobData,
   StrapiAllianceData,
   StrapiAppCustomizationData,
   StrapiAppSettingsData,
@@ -38,6 +39,7 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   // FeedbackWriter
   setFeedback: 'api/feedbacks',
   // DataWriter
+  adminJobs: 'api/admin-jobs',
   basicUserData: 'api/users/me',
   candidateUserData: 'api/users/me',
   checkRegistrationKey: 'api/auth/candidate/check',
@@ -76,6 +78,7 @@ export type StrapiApiReturnType = {
   // FeedbackWriter
   setFeedback: StrapiFeedbackData;
   // DataWriter
+  adminJobs: StrapiAdminJobData;
   basicUserData: StrapiBasicUserData;
   candidateUserData: StrapiCandidateUserData;
   checkRegistrationKey: StrapiCheckRegistrationData;

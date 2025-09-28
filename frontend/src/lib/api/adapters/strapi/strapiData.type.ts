@@ -12,6 +12,10 @@ import type {
   LocalizedVideoContent,
   QuestionTypeSettings
 } from '@openvaa/app-shared';
+import type { Serializable } from '@openvaa/core';
+import type { GenerationMetrics } from '@openvaa/llm';
+import type { AdminFeature } from '$lib/admin/features';
+import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
 
 /**
  * A failed or successful response from Strapi.
@@ -295,3 +299,19 @@ export type StrapiRegisterData = {
  * The custom candidate update API routes explicitly populate only some relations of the candidate object.
  */
 export type StrapiUpdateCandidateReturnData = Omit<StrapiCandidateData, 'nominations' | 'party'>;
+
+export type StrapiAdminJobData = StrapiObject<{
+  jobId: string;
+  jobType: AdminFeature;
+  /**
+   * Author email
+   */
+  author: string;
+  endStatus: 'completed' | 'failed';
+  startTime: string | null;
+  endTime: string | null;
+  input: Serializable;
+  output: Serializable;
+  messages: Array<JobMessage> | null;
+  metadata: GenerationMetrics | null;
+}>;
