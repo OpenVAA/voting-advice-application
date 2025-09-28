@@ -1,5 +1,4 @@
 import { type Actions, fail } from '@sveltejs/kit';
-import { ADMIN_FEATURE } from '$lib/admin/features';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import { AUTH_TOKEN_KEY } from '$lib/server/auth';
@@ -33,7 +32,7 @@ export const actions = {
 
       // Start the job
       const jobInfo = await dataWriter.startJob({
-        feature: ADMIN_FEATURE.ArgumentCondensation.jobName,
+        feature: 'ArgumentCondensation',
         author: email,
         authToken
       });

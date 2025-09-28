@@ -1,0 +1,17 @@
+{
+  "title": "Administrator-login",
+  "appTitle": "Valgkompas",
+  "appSubtitle": "Administration",
+  "instructions": "Indtast dine loginoplysninger.",
+  "email": "E-mail",
+  "password": "Adgangskode",
+  "button": "Log ind",
+  "forgotPassword": "Glemt adgangskode?",
+  "errors": {
+    "invalidCredentials": "Ugyldig e-mail eller adgangskode",
+    "genericError": "Der opstod en fejl under loginforsøget. Prøv igen.",
+    "unauthorized": "Du skal have administratorrettigheder for at tilgå dette område",
+    "sessionExpired": "Din session er udløbet, log ind igen",
+    "unknown": "Der opstod en ukendt fejl"
+  }
+}

@@ -1,11 +1,13 @@
 {
   "title": "Admin Kontrollpanel",
   "emergencyCleanup": "Nödrinsning",
-  "argumentCondensation": {
-    "title": "Argumentförenkling"
-  },
-  "questionInfoGeneration": {
-    "title": "Frågeinfogenerering"
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Argumentförenkling"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Frågeinfogenerering"
+    }
   },
   "confirmAbortAll": "Är du säker på att du vill avbryta ALLA pågående jobb?",
   "authRequired": "Autentisering krävs",
