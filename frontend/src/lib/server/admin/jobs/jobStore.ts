@@ -149,13 +149,13 @@ function moveJobToPast(jobId: string, status: PastJobStatus): void {
 function finalizeJob(jobId: string, status: PastJobStatus, errorMessage?: string): void {
   const job = activeJobs.get(jobId);
   if (!job) return;
-  
+
   if (status === 'completed') {
     job.progress = 1;
   } else if (status === 'failed' && errorMessage) {
     addJobErrorMessage(jobId, errorMessage);
   }
-  
+
   moveJobToPast(jobId, status);
 }
 
@@ -163,14 +163,18 @@ function finalizeJob(jobId: string, status: PastJobStatus, errorMessage?: string
  * Mark a job as completed
  * @param jobId - The job ID to complete
  */
-export function completeJob(jobId: string): void { finalizeJob(jobId, 'completed'); } 
+export function completeJob(jobId: string): void {
+  finalizeJob(jobId, 'completed');
+}
 
 /**
  * Mark a job as failed
  * @param jobId - The job ID to fail
  * @param errorMessage - Optional error message to add
  */
-export function failJob(jobId: string, errorMessage?: string): void { finalizeJob(jobId, 'failed', errorMessage); } 
+export function failJob(jobId: string, errorMessage?: string): void {
+  finalizeJob(jobId, 'failed', errorMessage);
+}
 
 /**
  * Clean up all past jobs for a feature (useful for testing/reset)
