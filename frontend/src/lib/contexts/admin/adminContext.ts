@@ -71,6 +71,12 @@ export function initAdminContext(): AdminContext {
     return prepareDataWriter(dataWriterPromise).then((dw) => dw.abortAllJobs(...args));
   }
 
+  function insertJobResult(
+    ...args: Parameters<DataWriter['insertJobResult']>
+  ): ReturnType<DataWriter['insertJobResult']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.insertJobResult(...args));
+  }
+
   const adminContext: AdminContext = {
     ...appContext,
     ...authContext,
@@ -82,7 +88,8 @@ export function initAdminContext(): AdminContext {
     startJob,
     getJobProgress,
     abortJob,
-    abortAllJobs
+    abortAllJobs,
+    insertJobResult
   };
 
   setContext<AdminContext>(CONTEXT_KEY, adminContext);
