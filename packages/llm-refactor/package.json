@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "name": "@openvaa/llm-refactor",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    "import": "./build/index.js"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@openvaa/core": "workspace:^",
+    "jsonrepair": "^3.13.0",
+    "openai": "^4.78.1",
+    "ai": "^4.0.0",
+    "zod": "^4.0.0",
+    "@ai-sdk/openai": "^2.0.31"
+  }
+}
