@@ -20,11 +20,11 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.31",
     "@openvaa/core": "workspace:^",
+    "ai": "^5.0.0",
     "jsonrepair": "^3.13.0",
     "openai": "^4.78.1",
-    "ai": "^4.0.0",
-    "zod": "^4.0.0",
-    "@ai-sdk/openai": "^2.0.31"
+    "zod": "^4.0.0"
   }
 }
