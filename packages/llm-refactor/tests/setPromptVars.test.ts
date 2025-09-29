@@ -7,8 +7,11 @@ const mockLogger: Controller = {
   warning: vi.fn(),
   info: vi.fn(),
   error: vi.fn(),
-  progress: vi.fn()
-};
+  progress: vi.fn(),
+  checkAbort: vi.fn(),
+  defineSubOperations: vi.fn(),
+  getCurrentOperation: vi.fn()
+} as Controller;
 
 describe('setPromptVars', () => {
   test('should replace variables correctly', () => {

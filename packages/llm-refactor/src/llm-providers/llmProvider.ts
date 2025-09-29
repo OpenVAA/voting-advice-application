@@ -1,5 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { generateObject, streamText } from 'ai';
+import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
 import type { LanguageModelUsage as TokenUsage, Provider, ToolSet } from 'ai';
 import type {
@@ -10,6 +10,7 @@ import type {
   ProviderConfig
 } from './provider.types';
 
+/** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
   private provider: Provider;
   private config: ProviderConfig;
@@ -29,26 +30,104 @@ export class LLMProvider {
     }
   }
 
+  /**
+   * Generate an object from the LLM
+   * @param options - The options for the generate object
+   * @returns The generate object result
+   *
+   * @example
+   * ```typescript
+   * const result = llmProvider.generateObject({
+   *   modelConfig: { primary: 'gpt-4o-mini' },
+   *   schema: z.object({ name: z.string() }),
+   *   messages: [{ role: 'user', content: 'What is the capital of France?' }]
+   * });
+   * ```
+   */
   async generateObject<TType>(options: LLMObjectGenerationOptions<TType>): Promise<LLMObjectGenerationResult<TType>> {
     const startTime = performance.now();
+    const validationRetries = options.validationRetries ?? 1;
+    let lastError: unknown; // Throw this if all validation retries fail
 
-    const result = await generateObject({
-      model: this.provider.languageModel(options.modelConfig.primary),
-      schema: options.schema,
-      messages: options.messages ?? [],
-      temperature: options.temperature,
-      maxRetries: options.maxRetries ?? 3
-    });
+    // Loop through validation retries
+    for (let attempt = 1; attempt <= validationRetries; attempt++) {
+      try {
+        // Generation call which throws on validation failures
+        const result = await generateObject({
+          model: this.provider.languageModel(options.modelConfig.primary),
+          schema: options.schema,
+          messages: options.messages ?? [],
+          temperature: options.temperature,
+          maxRetries: options.maxRetries ?? 3 // Retries for network errors
+        });
 
-    const costs = this.calculateCosts(options.modelConfig.primary, result.usage);
+        const costs = this.calculateCosts(options.modelConfig.primary, result.usage);
 
-    return {
-      ...result,
-      latencyMs: performance.now() - startTime,
-      attempts: 1,
-      costs,
-      fallbackUsed: false
-    };
+        return {
+          ...result,
+          latencyMs: performance.now() - startTime,
+          attempts: attempt,
+          costs,
+          fallbackUsed: false
+        };
+      } catch (error) {
+        lastError = error;
+
+        // Retry on validation failure
+        if (NoObjectGeneratedError.isInstance(error)) {
+          if (attempt < validationRetries) {
+            continue; // Try again
+          }
+        } else {
+          // For other errors (e.g. network, auth), throw immediately. TODO: Handle these errors better.
+          throw error;
+        }
+      }
+    }
+
+    // If all validation retries fail, throw an error
+    throw new Error(
+      `Failed to generate object after ${validationRetries} validation attempts. Last error: ${
+        lastError instanceof Error ? lastError.message : String(lastError)
+      }`
+    );
+  }
+  /** Generate multiple objects in parallel with validation retries. 
+   *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially,
+   *  so each batch is as slow as the slowest request in the batch.
+   * @param requests - The requests to make
+   * @param maxConcurrent - The maximum number of concurrent requests to make
+   * @returns The generated objects
+   *
+   * @example
+   * ```typescript
+   * const results = await llmProvider.generateObjectParallel({ requests: [{ modelConfig: { primary: 'gpt-4o-mini' }, schema: z.object({ name: z.string() }), messages: [{ role: 'user', content: 'What is the capital of France?' }] }], maxConcurrent: 5 });
+   * ```
+   */
+  async generateObjectParallel<TType>({
+    requests,
+    maxConcurrent = 5
+  }: {
+    requests: Array<LLMObjectGenerationOptions<TType>>;
+    maxConcurrent?: number;
+  }): Promise<Array<LLMObjectGenerationResult<TType>>> {
+    // Handle empty input
+    if (requests.length === 0) {
+      return [];
+    }
+
+    const results: Array<LLMObjectGenerationResult<TType>> = [];
+
+    for (let i = 0; i < requests.length; i += maxConcurrent) {
+      // Take a batch of requests (up to maxConcurrent)
+      const batch = requests.slice(i, i + maxConcurrent);
+
+      // Process the batch in parallel
+      const batchResults = await Promise.all(batch.map((request) => this.generateObject(request)));
+      results.push(...batchResults);
+    }
+
+    return results;
   }
 
   /**
