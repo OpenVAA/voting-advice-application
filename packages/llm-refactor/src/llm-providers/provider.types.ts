@@ -15,10 +15,7 @@ export interface LLMModelConfig {
   useCachedInput?: boolean;
 }
 
-/** An LLM provider orchestrates LLM calls. This configures how the LLM provider will be used.
- *
- *
- */
+/** An LLM provider orchestrates LLM calls. This configures how the LLM provider will be used. */
 export interface ProviderConfig {
   provider: 'openai'; // add others as needed
   apiKey: string; // Make optional if .env var is modified to OPENAI_API_KEY & Vercel AI SDK can automatically find it. Otherwise, keep it as required.
@@ -40,6 +37,8 @@ export type LLMObjectGenerationOptions<TType> = Prompt &
   Omit<CallSettings, 'stopSequences'> & {
     modelConfig: LLMModelConfig;
     schema: z.ZodSchema<TType>; // Support only Zod schemas for now
+    /** Validation retries are not internally handled by the AI SDK, so we need to handle it here. Defaults to 1. */
+    validationRetries?: number;
   };
 
 export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMMetadata;
@@ -59,6 +58,6 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
   extends StreamTextResult<NonNullable<TOOLS>, never>,
     Omit<LLMMetadata, 'costs'> {
-  // Override costs to be a Promise since stream results are async
+  // Override costs to be a Promise since stream results are immediately available
   costs: Promise<LLMCosts>;
 }
