@@ -73,7 +73,8 @@ export class LLMProvider {
       model: this.provider.languageModel(options.modelConfig?.primary ?? ''),
       messages: options.messages ?? [],
       temperature: options.temperature,
-      tools: options.tools
+      tools: options.tools,
+      stopWhen: options.stopWhen
     });
 
     // Calculate costs asynchronously without blocking the return.

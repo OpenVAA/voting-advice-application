@@ -1,5 +1,5 @@
 import type { Controller } from '@openvaa/core';
-import type { CallSettings, GenerateObjectResult, Prompt, StreamTextResult, ToolSet } from 'ai';
+import type { CallSettings, GenerateObjectResult, Prompt, StopCondition, StreamTextResult, ToolSet } from 'ai';
 import type { z } from 'zod';
 import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 
@@ -52,6 +52,8 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
     tools?: TOOLS;
     modelConfig?: LLMModelConfig;
     controller?: Controller;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stopWhen?: StopCondition<any>;
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
