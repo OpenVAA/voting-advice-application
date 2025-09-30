@@ -1,5 +1,5 @@
 import type { Controller } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 import type { CondensationOutputType } from '../condensation/condensationType';
 
 /**

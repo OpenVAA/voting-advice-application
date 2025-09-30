@@ -1,4 +1,4 @@
-import { extractPromptVars, validatePromptVars } from '@openvaa/llm';
+import { extractPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { SUPPORTED_LANGUAGES } from '../../src/core/types';

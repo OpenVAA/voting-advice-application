@@ -38,7 +38,7 @@ import type {
  * @example
  * import { handleQuestion } from '@openvaa/argument-condensation';
  * import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { OpenAIProvider } from '@openvaa/llm';
+ * import { LLMProvider } from '@openvaa/llm-refactor';
  * import type { HasAnswers } from '@openvaa/core';
  *
  * // 1. Set up your question, entities, and LLM provider
@@ -71,7 +71,7 @@ import type {
  *   }
  * ];
  *
- * const llmProvider = new OpenAIProvider({ apiKey: '...' });
+ * const llmProvider = new LLMProvider({ provider: 'openai', apiKey: '...', modelConfig: { primary: 'gpt-4o' } });
  *
  * // 2. Call handleQuestion with the setup
  * const results = await handleQuestion({
