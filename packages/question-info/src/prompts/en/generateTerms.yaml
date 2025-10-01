@@ -1,26 +1,32 @@
-devNote: 
-  this prompt is incomplete - we need to improve it. 
+devNote: this prompt is incomplete - we need to improve it.
   most importantly, we need to add examples that guide the model to generate good terms.
   + general prompt engineering improvements
 
+devNote2: rename to "examples" and only make examples configurable through source code (here)
 
-devNote2: 
-  rename to "examples" and only make examples configurable through source code (here)
-  
-examples: |
-  placeholder
+params:
+  question: string
+  generalInstructions: string
+  termDefInstructions: string
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string
 
-systemPrompt: |
+prompt: |
   {{generalInstructions}}
 
   ## Task: Identify terms that voters might need explained, such as:
-  {{termIdentificationCriteria}}
+  {{termDefInstructions}}
 
   ## Neutrality Requirements:
   {{neutralityRequirements}}
 
+  ## Question Context:
+  {{questionContext}}
+
   ## (Optional) Additional Instructions Given by Your Current Operator:
-  {{adminInstructions}}
+  {{customInstructions}}
 
   ## Examples:
   {{examples}}
@@ -36,6 +42,5 @@ systemPrompt: |
     ]
   }
 
-userPrompt: |
-  Use this question to generate term definitions:
+  ## Question to use for the task: 
   {{question}}

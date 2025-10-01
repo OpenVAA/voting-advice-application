@@ -4,38 +4,47 @@ devNote: this prompt is incomplete - we need to improve it.
   or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
   + general prompt engineering improvements
 
-devNote2: modify to guide the model to use the specified section topics
-
-defaultSectionTopics: ['Background', 'Current Situation']
 params:
+  question: string
   generalInstructions: string
   infoSectionInstructions: string
+  sectionTopics: array
   termDefInstructions: string
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string 
 
-
-systemPrompt: |
+prompt: |
   {{generalInstructions}}
 
   ## Task 1: Info Section Generation:
-
   {{infoSectionInstructions}}
 
   IMPORTANT: You MUST generate exactly the following sections (and only these sections):
   {{sectionTopics}}
 
+  ## Task 2: Term Definition Generation:
+  {{termDefInstructions}}
+
+  ## Neutrality Requirements:
+  {{neutralityRequirements}}
+
+  ## Question Context:
+  {{questionContext}}
+
+  ## (Optional) Additional Instructions by your current operator:
+  {{customInstructions}}
+
   ## Examples:
   {{examples}}
-
-  ## Important note:
-  The TERMS should ONLY be extracted FROM THE QUESTION text itself.
 
   Respond with JSON in this exact format, WITHOUT ANY OTHER TEXT:
   {
     "infoSections": [
       {
         "title": "Short title for the section",
-        "content": "explanation of the section in English",
-        "visible": true
+        "content": "explanation of the section in English"
       }
     ],
     "terms": [
@@ -47,6 +56,5 @@ systemPrompt: |
     ]
   }
 
-userPrompt: |
-  Here is the question:
+  ## Question to use for the task: 
   {{question}}

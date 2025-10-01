@@ -4,27 +4,33 @@ devNote: this prompt is incomplete - we need to improve it.
   or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
   + general prompt engineering improvements
 
-devNote2: modify to guide the model to use the specified section topics
+params:
+  question: string
+  generalInstructions: string
+  infoSectionInstructions: string
+  sectionTopics: array
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string
 
-defaultSectionTopics: ['Background', 'Current Status']
-
-examples: |
-  placeholder
-
-systemPrompt: |
+prompt: |
   {{generalInstructions}}
 
   ## Task: Generate informative sections that give the user a better understanding of the question and its context:
-  {{infoSectionsInstructions}}
+  {{infoSectionInstructions}}
+
+  IMPORTANT: You MUST generate exactly the following sections (and only these sections):
+  {{sectionTopics}}
 
   ## Neutrality Requirements:
   {{neutralityRequirements}}
 
-  ## Context of the Election:
-  {{context}}
+  ## Question Context:
+  {{questionContext}}
 
   ## (Optional) Additional Instructions Given by Your Current Operator:
-  {{adminInstructions}}
+  {{customInstructions}}
 
   ## Examples:
   {{examples}}
@@ -39,6 +45,6 @@ systemPrompt: |
     ]
   }
 
-userPrompt: |
-  Use this question to generate informative sections:
+  ## Question to use for the task: 
   {{question}}
+

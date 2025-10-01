@@ -5,13 +5,14 @@ import type { BothOperations, InfoSectionsOnly, ResponseWithInfo, TermsOnly } fr
 /**
  * Create a dynamic response contract based on the requested operations
  *
- * @param operations - The operations to include in the schema
+ * @param params - Parameters object
+ * @param params.operations - The operations to include in the schema
  * @returns A LLMResponseContract object with the requested operations
  *
  * @example
  * ```ts
  * // Generate a contract with both info sections and terms
- * const contract = createDynamicResponseContract([QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms]);
+ * const contract = createDynamicResponseContract({ operations: [QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms] });
  * const result = contract.validate({
  *   infoSections: [{ title: 'Info Section 1', content: 'Info Section 1 content' }],
  *   terms: [{ triggers: ['trigger1', 'trigger2'], title: 'Term 1', content: 'Term 1 content' }]
@@ -19,9 +20,11 @@ import type { BothOperations, InfoSectionsOnly, ResponseWithInfo, TermsOnly } fr
  * console.log(result); // Returns true
  * ```
  */
-export function createDynamicResponseContract(
-  operations: Array<(typeof QUESTION_INFO_OPERATION)[keyof typeof QUESTION_INFO_OPERATION]>
-): LLMResponseContract<ResponseWithInfo> {
+export function createDynamicResponseContract({
+  operations
+}: {
+  operations: Array<(typeof QUESTION_INFO_OPERATION)[keyof typeof QUESTION_INFO_OPERATION]>;
+}): LLMResponseContract<ResponseWithInfo> {
   if (operations.length === 0) {
     throw new Error('At least one operation must be specified');
   }

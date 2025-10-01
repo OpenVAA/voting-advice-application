@@ -1,93 +1,35 @@
-import { BaseController } from '@openvaa/core';
-import { setPromptVars } from '@openvaa/llm';
+import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/llm';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
+import { FILENAMES_FOR_EXAMPLES } from '../consts';
 import type { Controller } from '@openvaa/core';
+import type { LoadedExampleYaml, LoadedPrompt, LoadedPromptYaml } from '../types';
 
 /**
- * Minimal shape of a generate-*.yaml prompt
- * Validation is done against the prompt variables declared in the prompt file, so they should be up-to-date.
- */
-export interface LoadedPromptYaml {
-  systemPrompt: string;
-  userPrompt: string;
-  params?: Record<string, unknown>;
-  // allow dev notes and any other fields
-  [key: string]: unknown;
-}
-
-/**
- * Result of loading a prompt with extracted variable metadata
- */
-export interface LoadedPrompt {
-  systemPrompt: string;
-  userPrompt: string;
-  params?: Record<string, unknown>;
-  usedVars: {
-    inSystem: Array<string>;
-    inUser: Array<string>;
-    union: Array<string>;
-  };
-}
-
-/**
- * Extract {{variable}} placeholders from prompt text.
- */
-export function extractVariablesFromPromptText(promptText: string): Array<string> {
-  const placeholderRegex = /\{\{([^}]+)\}\}/g;
-  const vars = new Set<string>();
-  let m: RegExpExecArray | null;
-  while ((m = placeholderRegex.exec(promptText)) !== null) {
-    vars.add(m[1]);
-  }
-  return Array.from(vars);
-}
-
-/**
- * Validate variables used in prompt text against the documented params in YAML.
- * Warns via controller on mismatch; does not throw.
- */
-export function validatePromptVariableDocs({
-  systemPrompt,
-  userPrompt,
-  params,
-  controller = new BaseController()
-}: {
-  systemPrompt: string;
-  userPrompt: string;
-  params?: Record<string, unknown>;
-  controller?: Controller;
-}): void {
-  const inSystem = extractVariablesFromPromptText(systemPrompt);
-  const inUser = extractVariablesFromPromptText(userPrompt);
-  const used = Array.from(new Set([...inSystem, ...inUser]));
-  const documented = params ? Object.keys(params) : [];
-
-  const undocumented = used.filter((v) => !documented.includes(v));
-  const extra = documented.filter((v) => !used.includes(v));
-
-  if (undocumented.length > 0) {
-    controller.warning(`[promptLoader] Undocumented variables used in prompt: ${undocumented.join(', ')}`);
-  }
-  if (extra.length > 0) {
-    controller.warning(
-      `[promptLoader] Variables documented in params but not used in prompt text: ${extra.join(', ')}`
-    );
-  }
-}
-
-/**
- * Load a generate-*.yaml prompt file for a given language.
- * Validates variable usage vs the prompt's declared "params" and returns the prompt with metadata.
+ * Load a generate-*.yaml prompt file for a given language
+ *
+ * @param promptFileName - Name of the prompt file (without .yaml extension)
+ * @param language - Language code (e.g., 'en')
+ * @param controller - Optional controller for validation warnings
+ * @returns Loaded prompt with template and metadata
+ *
+ * @example
+ * ```ts
+ * const prompt = await loadPrompt({
+ *   promptFileName: 'generateTerms',
+ *   language: 'en'
+ * });
+ * console.log(prompt.prompt); // The prompt template string
+ * console.log(prompt.usedVars); // Variables used in the template
+ * ```
  */
 export async function loadPrompt({
   promptFileName,
-  language,
-  controller = new BaseController()
+  language
 }: {
-  promptFileName: string; // e.g. "generateTerms", "generateInfoSections", "generateBoth"
-  language: string; // e.g. "en"
+  promptFileName: string;
+  language: string;
   controller?: Controller;
 }): Promise<LoadedPrompt> {
   const filePath = join(process.cwd(), 'src', 'prompts', language, `${promptFileName}.yaml`);
@@ -97,29 +39,88 @@ export async function loadPrompt({
   if (!parsed || typeof parsed !== 'object') {
     throw new Error(`Invalid YAML for prompt ${promptFileName} (${language})`);
   }
-  if (!parsed.systemPrompt || !parsed.userPrompt) {
-    throw new Error(`Prompt ${promptFileName} (${language}) must contain 'systemPrompt' and 'userPrompt'`);
+  if (!parsed.prompt) {
+    throw new Error(`Prompt ${promptFileName} (${language}) must contain 'prompt' field`);
   }
 
-  // Extract variables
-  const inSystem = extractVariablesFromPromptText(parsed.systemPrompt);
-  const inUser = extractVariablesFromPromptText(parsed.userPrompt);
-  const union = Array.from(new Set([...inSystem, ...inUser]));
+  // Extract variables from the single prompt field
+  const usedVars = extractPromptVars(parsed.prompt);
 
   // Validate against documented params (if present)
-  validatePromptVariableDocs({
-    systemPrompt: parsed.systemPrompt,
-    userPrompt: parsed.userPrompt,
-    params: parsed.params,
-    controller
+  validatePromptVars({
+    promptText: parsed.prompt,
+    params: parsed.params
   });
 
   return {
-    systemPrompt: parsed.systemPrompt,
-    userPrompt: parsed.userPrompt,
+    prompt: parsed.prompt,
     params: parsed.params,
-    usedVars: { inSystem, inUser, union }
+    usedVars
   };
+}
+
+/**
+ * Load instructions from instructions.yaml
+ *
+ * @param language - Language code (e.g., 'en')
+ * @returns Object containing instruction strings for different generation aspects
+ *
+ * @example
+ * ```ts
+ * const instructions = await loadInstructions({ language: 'en' });
+ * console.log(instructions.generalInstructions);
+ * console.log(instructions.neutralityRequirements);
+ * ```
+ */
+export async function loadInstructions({ language }: { language: string }): Promise<Record<string, string>> {
+  const filePath = join(process.cwd(), 'src', 'prompts', language, 'instructions.yaml');
+  const raw = await readFile(filePath, 'utf-8');
+  return loadYaml(raw) as Record<string, string>;
+}
+
+/**
+ * Load all examples from the FILENAMES_FOR_EXAMPLES array
+ *
+ * @param params - Parameters object
+ * @param params.language - Language code (e.g., 'en')
+ * @returns Array of example objects with question and expected outputs
+ *
+ * @example
+ * ```ts
+ * const examples = await loadAllExamples({ language: 'en' });
+ * examples.forEach(example => {
+ *   console.log(example.question);
+ *   console.log(example.termExample);
+ *   console.log(example.infoSectionExample);
+ * });
+ * ```
+ */
+export async function loadAllExamples({ language }: { language: string }): Promise<
+  Array<{
+    question: string;
+    termExample: string;
+    infoSectionExample: string;
+  }>
+> {
+  const examples: Array<{
+    question: string;
+    termExample: string;
+    infoSectionExample: string;
+  }> = [];
+
+  for (const filename of FILENAMES_FOR_EXAMPLES) {
+    const filePath = join(process.cwd(), 'src', 'prompts', language, 'examples', `${filename}.yaml`);
+    const raw = await readFile(filePath, 'utf-8');
+    const exampleData = loadYaml(raw) as LoadedExampleYaml;
+
+    examples.push({
+      question: exampleData.question || '',
+      termExample: exampleData.termExample || '',
+      infoSectionExample: exampleData.infoSectionExample || ''
+    });
+  }
+
+  return examples;
 }
 
 /**
@@ -129,7 +130,7 @@ export async function loadPrompt({
 export function embedPromptVars({
   promptText,
   variables,
-  controller = new BaseController()
+  controller
 }: {
   promptText: string;
   variables: Record<string, unknown>;
@@ -141,22 +142,4 @@ export function embedPromptVars({
     strict: false,
     controller
   });
-}
-
-/**
- * Convenience: embed variables into system and user prompts in one go.
- * Returns rendered strings while leaving unprovided vars as {{placeholders}} with warnings.
- */
-export function renderPromptWithVars({
-  prompt,
-  variables,
-  controller = new BaseController()
-}: {
-  prompt: LoadedPrompt;
-  variables: Record<string, unknown>;
-  controller?: Controller;
-}): { system: string; user: string } {
-  const system = embedPromptVars({ promptText: prompt.systemPrompt, variables, controller });
-  const user = embedPromptVars({ promptText: prompt.userPrompt, variables, controller });
-  return { system, user };
 }
