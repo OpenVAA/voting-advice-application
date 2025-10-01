@@ -183,10 +183,12 @@ export function initVoterContext(): VoterContext {
 
   const nominationsAvailable = parsimoniusDerived(nominationsAndQuestions, (nominationsAndQuestions) =>
     Object.fromEntries(
-      Object.entries(nominationsAndQuestions).map(([id, contents]) => [
-        id,
-        Object.values(contents).some(({ nominations }) => nominations.length > 0)
-      ])
+      Object.entries(nominationsAndQuestions).map(([id, contents]) => {
+        const haveSome = Object.values(contents).some(({ nominations }) => nominations.length > 0);
+        const fewCandidates =
+          haveSome && (!contents.candidate?.nominations || contents.candidate.nominations.length < 6);
+        return [id, fewCandidates ? ('fewCandidates' as const) : haveSome];
+      })
     )
   );
 

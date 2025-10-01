@@ -1,10 +1,3 @@
-<!--@component
-
-# Info (about the elections) page
-
-Displays information about the elections in the VAA.
--->
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
@@ -14,7 +7,7 @@ Displays information about the elections in the VAA.
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  const { dataRoot, getRoute, t } = getAppContext();
+  const { getRoute, t } = getAppContext();
 
   const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
@@ -25,28 +18,12 @@ Displays information about the elections in the VAA.
   });
 </script>
 
-<MainContent title={$t('info.title')}>
+<MainContent title={$t('dynamic.howToVote.title')}>
   <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.elections.heroEmoji')} />
   </figure>
 
-  <div>
-    {@html sanitizeHtml($t('dynamic.info.content'))}
-  </div>
-
-  {#if $dataRoot.elections}
-    <div class="items-stretch">
-      {#each $dataRoot.elections ?? [] as { name, date, info }}
-        {#if $dataRoot.elections.length > 1}
-          <h2 class="mb-md mt-lg">{name}</h2>
-        {/if}
-        <p>{@html sanitizeHtml(info)}</p>
-        {#if date}
-          <p>{$t('dynamic.info.dateInfo', { electionDate: date })}</p>
-        {/if}
-      {/each}
-    </div>
-  {/if}
+  {@html sanitizeHtml($t('dynamic.howToVote.content'))}
 
   <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
 </MainContent>

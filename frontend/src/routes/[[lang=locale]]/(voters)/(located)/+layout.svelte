@@ -36,7 +36,7 @@ Displays a warning if the selected constituency does not have nominations in all
    */
   const NOMINATIONS_CHECK_RETRY_TIMEOUT = 500;
 
-  type NominationStatus = 'all' | 'none' | 'some';
+  type NominationStatus = 'all' | 'none' | 'some' | 'fewCandidates';
 
   let error: Error | undefined;
   let closeModal: () => void;
@@ -82,8 +82,9 @@ Displays a warning if the selected constituency does not have nominations in all
   }
 
   function checkNominationsAvailable(): NominationStatus {
-    if (Object.values($nominationsAvailable).every(Boolean)) return 'all';
-    else if (Object.values($nominationsAvailable).some(Boolean)) return 'some';
+    if (Object.values($nominationsAvailable).every((v) => v === true)) return 'all';
+    else if (Object.values($nominationsAvailable).some((v) => v === 'fewCandidates')) return 'fewCandidates';
+    else if (Object.values($nominationsAvailable).some((v) => v === true)) return 'some';
     return 'none';
   }
 </script>
@@ -111,11 +112,11 @@ Displays a warning if the selected constituency does not have nominations in all
           : $t('results.missingNominations.someNominations.content')
       )}
     </p>
-    {#if hasNominations === 'some'}
+    {#if hasNominations === 'some' || hasNominations === 'fewCandidates'}
       <div class="mx-auto flex w-max flex-col items-start gap-md">
         {#each $selectedElections as election}
           {@const available = $nominationsAvailable[election.id]}
-          <div class="flex flex-row items-center gap-sm font-bold {available ? 'text-success' : 'text-warning'}">
+          <div class="flex flex-row items-center gap-sm font-bold {available ? 'text-success' : 'text-secondary'}">
             <Icon name={available ? 'check' : 'close'} />
             <span>{election.name}</span>
             {#if !available}

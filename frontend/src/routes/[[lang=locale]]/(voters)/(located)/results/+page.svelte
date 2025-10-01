@@ -30,7 +30,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { beforeNavigate, pushState } from '$app/navigation';
   import { page } from '$app/stores';
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
   import { Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -47,6 +46,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import type { Election, EntityType } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
   import type { EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
+  import { Hero } from '$lib/components/hero';
+  import { Icon } from '$lib/components/icon';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -60,6 +61,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     entityFilters,
     getRoute,
     matches,
+    nominationsAvailable,
     resultsAvailable,
     selectedConstituencies: constituencies,
     selectedElections: elections,
@@ -106,7 +108,10 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let initialEntityTabIndex = 0;
 
   // Pre-select election if there’s only one
-  if ($elections.length === 1) activeElectionId = $elections[0].id;
+  const availableElections = Object.entries($nominationsAvailable)
+    .filter(([, v]) => v)
+    .map(([id]) => id);
+  if (availableElections.length === 1) activeElectionId = availableElections[0];
 
   // React to changes in activeElectionId to updadate entityTabs
   $: if (activeElectionId) {
@@ -123,6 +128,13 @@ The nominations applicable to these elections and constituencies are shown. Thes
   $: if (activeElectionId) {
     activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
     setInitialEntityTab();
+  }
+
+  // Update limited nominations warning
+  let hasLimitedNominations = false;
+  $: if (activeElectionId) {
+    const n = ($matches[activeElectionId].candidate ?? []).length;
+    hasLimitedNominations = n !== 0 && n < 6;
   }
 
   /** Set initial tab based on activeEntityType */
@@ -210,12 +222,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
 <MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
+    <Hero content={{ url: 'https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/Results.png', alt: '' }} />
   </figure>
 
   <div class="mb-xl text-center">
     {#if $resultsAvailable}
-      <p>{$t('dynamic.results.ingress.results')}</p>
+      <p>{@html sanitizeHtml($t('dynamic.results.ingress.results'))}</p>
     {:else}
       <p>
         {@html sanitizeHtml(
@@ -227,7 +239,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
         )}
       </p>
     {/if}
-    {#if $elections.length > 1}
+    {#if availableElections.length > 1}
       <p>{$t('dynamic.results.multipleElections')}</p>
     {/if}
   </div>
@@ -242,11 +254,18 @@ The nominations applicable to these elections and constituencies are shown. Thes
       onChange={handleElectionChange}
       class="-mt-md mb-lg" />
 
-    {#if activeElection?.info}
-      <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
+    <!-- {#if activeElection?.info}
+      <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
         {activeElection.info}
       </p>
-    {/if}
+    {/if} -->
+  {/if}
+
+  {#if hasLimitedNominations}
+    <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-warning">
+      <Icon name="warning" />
+      {$t('results.fewCandidatesWarning')}
+    </p>
   {/if}
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
