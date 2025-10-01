@@ -2,7 +2,7 @@ import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
 import { CONDENSATION_TYPE, CondensationOperations } from '../../types';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { CondensationOperation, CondensationOutputType, CondensationPrompt } from '../../types';
 
 // TODO: (low priority): load only the specific yamls we need (currently we load all yamls for a all operations and output types)
@@ -15,26 +15,26 @@ import type { CondensationOperation, CondensationOutputType, CondensationPrompt 
  * Loads the prompt from the 'promptText' variable of the yaml.
  * Directory structure: core/condensation/prompts/'language'/'operation'/'condensationType'/'promptType'.yaml
  *
- * @param logger - Optional logger for warning messages during prompt loading
+ * @param controller - Optional controller for warning messages during prompt loading
  */
 export class PromptRegistry {
   private promptsDir = path.join(__dirname);
   private registry: Map<string, CondensationPrompt> = new Map(); // The key is promptId!
-  private logger?: Logger;
+  private controller?: Controller;
 
-  constructor(logger?: Logger) {
-    this.logger = logger;
+  constructor(controller?: Controller) {
+    this.controller = controller;
   }
 
   /**
    * Static factory method to create and initialize a PromptRegistry
    *
    * @param language - The language to load prompts for
-   * @param logger - Optional logger for warning messages during prompt loading
+   * @param controller - Optional controller for warning messages during prompt loading
    * @returns A promise that resolves to a fully initialized PromptRegistry
    */
-  static async create(language: string, logger?: Logger): Promise<PromptRegistry> {
-    const registry = new PromptRegistry(logger);
+  static async create(language: string, controller?: Controller): Promise<PromptRegistry> {
+    const registry = new PromptRegistry(controller);
     await registry.loadPrompts(language);
     return registry;
   }
@@ -129,7 +129,7 @@ export class PromptRegistry {
 
       // Make sure that the operation directory name is a valid operation (e.g. map, refine, etc.)
       if (!Object.values(CondensationOperations).includes(operation as CondensationOperation)) {
-        this.logger?.warning(`PROMPT REGISTRY: Skipping invalid operation directory: ${operation}`);
+        this.controller?.warning(`PROMPT REGISTRY: Skipping invalid operation directory: ${operation}`);
         continue;
       }
 
@@ -141,7 +141,7 @@ export class PromptRegistry {
 
         // Validate that the condensation type exists
         if (!Object.values(CONDENSATION_TYPE).includes(outputType as CondensationOutputType)) {
-          this.logger?.warning(`PROMPT REGISTRY: Skipping invalid output type directory: ${outputType}`);
+          this.controller?.warning(`PROMPT REGISTRY: Skipping invalid output type directory: ${outputType}`);
           continue;
         }
 
@@ -172,7 +172,7 @@ export class PromptRegistry {
                 );
               }
 
-              this.logger?.warning(
+              this.controller?.warning(
                 `PROMPT REGISTRY: Variable validation failed for prompt '${promptData.promptId}' in ${yamlFile}: ${errorDetails.join('; ')}. Skipping this prompt.`
               );
 
@@ -190,13 +190,13 @@ export class PromptRegistry {
             };
 
             if (this.registry.has(prompt.promptId)) {
-              this.logger?.warning(
+              this.controller?.warning(
                 `PROMPT REGISTRY: Duplicate promptId '${prompt.promptId}' found in ${yamlFile}. Overwriting.`
               );
             }
             this.registry.set(prompt.promptId, prompt);
           } catch (error) {
-            this.logger?.warning(
+            this.controller?.warning(
               `PROMPT REGISTRY: Failed to load prompt from ${yamlFile}: ${error instanceof Error ? error.message : error}`
             );
           }

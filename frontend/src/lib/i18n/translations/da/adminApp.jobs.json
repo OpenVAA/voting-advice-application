@@ -1,0 +1,45 @@
+{
+  "title": "Admin-kontrolpanel",
+  "emergencyCleanup": "Nødoprydning",
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Argumentkondensering"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Spørgsmålsinformation"
+    }
+  },
+  "confirmAbortAll": "Er du sikker på, at du vil afbryde ALLE igangværende job?",
+  "authRequired": "Autentificering påkrævet",
+  "abortAllFailed": "Nødoprydning mislykkedes. Tjek konsollen for detaljer.",
+  "systemHealth": "Systemstatus",
+  "activeJobs": "Aktive job",
+  "successfulJobs": "Gennemførte job",
+  "failedJobs": "Fejlede job",
+  "abortedJobs": "Afbrydede job",
+  "abortingInfo": "Afbrydelse anmodet. Afventer at pipelinen stopper og rydder op sikkert.",
+  "abortJob": "Afbryd job",
+  "pastJobs": "Tidligere job",
+  "hidePastJobs": "Skjul tidligere job",
+  "showPastJobs": "Vis tidligere job",
+  "pastJobsDescription": "Tidligere job",
+  "noActiveJobs": "Ingen aktive job",
+  "noPastJobs": "Ingen tidligere job",
+  "started": "Startet",
+  "messages": "Beskeder",
+  "notAvailable": "Ikke tilgængelig",
+  "confirmAbortJob": "Er du sikker på, at du vil afbryde dette {feature}-job?",
+  "abortJobFailed": "Kunne ikke afbryde jobbet. Tjek konsollen for detaljer.",
+  "alreadyRunning": "Et job kører allerede. Vent venligst, til det er færdigt.",
+  "progress": "Fremgang",
+  "warningsAndErrors": "Advarsler og fejl",
+  "noWarningsOrErrors": "Ingen advarsler eller fejl",
+  "infoMessages": "Information",
+  "noInfoMessages": "Ingen information",
+  "author": "Forfatter",
+  "duration": "Varighed",
+  "aborting": "Afbryder…",
+  "hideMessages": "Skjul beskeder",
+  "showMessages": "Vis beskeder",
+  "id": "ID"
+}

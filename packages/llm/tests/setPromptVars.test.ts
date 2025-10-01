@@ -1,9 +1,9 @@
 import { describe, expect, test, vi } from 'vitest';
 import { setPromptVars } from '../src/utils/setPromptVars';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 
-// No-op logger for testing
-const mockLogger: Logger = {
+// No-op controller for testing
+const mockLogger: Controller = {
   warning: vi.fn(),
   info: vi.fn(),
   error: vi.fn(),
@@ -15,7 +15,7 @@ describe('setPromptVars', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old.';
     const variables = { name: 'John', age: 25 };
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger });
     expect(result).toBe('Hello John, you are 25 years old.');
   });
 
@@ -23,7 +23,7 @@ describe('setPromptVars', () => {
     const promptText = 'User data: {{userData}}';
     const variables = { userData: { name: 'John', age: 25 } };
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger });
     expect(result).toBe('User data: {\n  "name": "John",\n  "age": 25\n}');
   });
 
@@ -32,7 +32,7 @@ describe('setPromptVars', () => {
     const variables = { name: 'John' }; // Missing 'age'
 
     expect(() => {
-      setPromptVars({ promptText, variables, logger: mockLogger });
+      setPromptVars({ promptText, variables, controller: mockLogger });
     }).toThrow('Prompt is missing required variables: age');
   });
 
@@ -40,7 +40,7 @@ describe('setPromptVars', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old.';
     const variables = { name: 'John' }; // Missing 'age'
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger, strict: false });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger, strict: false });
     expect(result).toBe('Hello John, you are {{age}} years old.');
   });
 
@@ -52,7 +52,7 @@ describe('setPromptVars', () => {
       promptText,
       variables,
       strict: false,
-      logger: mockLogger
+      controller: mockLogger
     });
 
     expect(result).toBe('Hello John, you are {{age}} years old.');
@@ -63,7 +63,7 @@ describe('setPromptVars', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old and live in {{city}}.';
     const variables = {}; // All variables missing
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger, strict: false });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger, strict: false });
     expect(result).toBe('Hello {{name}}, you are {{age}} years old and live in {{city}}.');
   });
 
@@ -75,7 +75,7 @@ describe('setPromptVars', () => {
       promptText,
       variables,
       strict: false,
-      logger: mockLogger
+      controller: mockLogger
     });
 
     expect(result).toBe('Hello {{name}}, you are {{age}} years old and live in {{city}}.');
@@ -88,16 +88,16 @@ describe('setPromptVars', () => {
     const promptText = 'Hello {{user.name}}, you are {{user.age}} years old.';
     const variables = { 'user.name': 'John', 'user.age': 25 };
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger });
     expect(result).toBe('Hello John, you are 25 years old.');
   });
 
-  test('should use default logger when none provided', () => {
+  test('should use default controller when none provided', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old.';
     const variables = { name: 'John' }; // Missing 'age'
 
-    // This should not throw and should use the default logger
-    const result = setPromptVars({ promptText, variables, logger: mockLogger, strict: false });
+    // This should not throw and should use the default controller
+    const result = setPromptVars({ promptText, variables, controller: mockLogger, strict: false });
     expect(result).toBe('Hello John, you are {{age}} years old.');
   });
 
@@ -106,7 +106,7 @@ describe('setPromptVars', () => {
     const variables = {};
 
     expect(() => {
-      setPromptVars({ promptText, variables, logger: mockLogger });
+      setPromptVars({ promptText, variables, controller: mockLogger });
     }).toThrow('Prompt is missing required variables: name, age');
   });
 
@@ -114,7 +114,7 @@ describe('setPromptVars', () => {
     const promptText = 'Hello {{name}}, you are {{age}} years old.';
     const variables = {};
 
-    const result = setPromptVars({ promptText, variables, logger: mockLogger, strict: false });
+    const result = setPromptVars({ promptText, variables, controller: mockLogger, strict: false });
     expect(result).toBe('Hello {{name}}, you are {{age}} years old.');
   });
 });

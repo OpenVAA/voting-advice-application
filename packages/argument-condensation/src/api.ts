@@ -1,4 +1,4 @@
-import { DefaultLogger, type HasAnswers } from '@openvaa/core';
+import { BaseController, type HasAnswers } from '@openvaa/core';
 import { QUESTION_TYPE } from '@openvaa/data';
 import { SUPPORTED_LANGUAGES } from './core/types';
 import { getAndSliceComments, getParallelFactor } from './core/utils';
@@ -32,7 +32,7 @@ import type {
  * @param options.invertProsAndCons - Whether to invert the pros and cons for ordinal questions (rarely needed)
  * @param options.createVisualizationData - Whether to create visualization data for the condensation process
  * @param options.prompts - Optional promptsIds if your language is inherently supported.
- * @param options.logger - Optional logger for tracking progress and issues during condensation
+ * @param options.controller - Optional controller for tracking progress and issues during condensation
  * @returns The condensation results as an array of CondensationRunResult
  *
  * @example
@@ -86,7 +86,7 @@ import type {
  *     maxCommentsPerGroup: 1000,
  *     invertProsAndCons: false,
  *     prompts: {}
- *     // Optional logger
+ *     // Optional controller
  *   }
  * });
  */
@@ -105,7 +105,7 @@ export async function handleQuestion({
     ...userOptions,
     modelTPMLimit: userOptions.modelTPMLimit ?? MODEL_DEFAULTS.TPM_LIMIT, // A conservative limit for low-TPM models of OpenAI (8/25)
     invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed
-    logger: userOptions.logger ?? new DefaultLogger() // Default logger for progress and issue tracking
+    controller: userOptions.controller ?? new BaseController() // Default controller for progress and issue tracking
   };
 
   // Destructure for easier use
@@ -122,7 +122,7 @@ export async function handleQuestion({
   const commentGroups = getAndSliceComments({
     question,
     entities,
-    options: { invertProsAndCons, maxCommentsPerGroup, logger: options.logger } as CommentGroupingOptions
+    options: { invertProsAndCons, maxCommentsPerGroup, controller: options.controller } as CommentGroupingOptions
   });
 
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit

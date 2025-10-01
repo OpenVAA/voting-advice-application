@@ -1,9 +1,10 @@
-import { DefaultLogger } from '@openvaa/core';
+import { AbortError, BaseController } from '@openvaa/core';
 import * as path from 'path';
 import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
 import { CondensationOperations } from '../types';
 import {
+  calculateStepWeights,
   createBatches,
   createPromptInstance,
   LatencyTracker,
@@ -13,7 +14,7 @@ import {
   validatePlan
 } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { ParsedLLMResponse } from '@openvaa/llm';
 import type {
   Argument,
@@ -112,12 +113,12 @@ export class Condenser {
   private latencyTracker: LatencyTracker;
   private totalCost: number = 0;
   private startTime: Date;
-  private logger: Logger;
+  private controller: Controller;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.options.runId;
-    this.logger = input.options.logger ?? new DefaultLogger();
-    this.latencyTracker = new LatencyTracker(this.logger);
+    this.controller = input.options.controller ?? new BaseController();
+    this.latencyTracker = new LatencyTracker(this.controller);
     this.startTime = new Date();
 
     if (input.options.createVisualizationData) {
@@ -140,7 +141,6 @@ export class Condenser {
    * 5. Return final results with metadata
    */
   async run(): Promise<CondensationRunResult> {
-    this.logger.info(`Starting condensation run with ${this.input.comments.length} comments`);
     this.latencyTracker.start('total_run'); // Track the total run time in addition to the individual calls
 
     // Get condensation plan from input config
@@ -148,6 +148,19 @@ export class Condenser {
 
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
+
+    //  Granularize progress tracking by defining sub-operations for each processing step
+    if (processingSteps.length > 0) {
+      const currentOperationId = this.controller.getCurrentOperation()?.id;
+      if (currentOperationId) {
+        const stepWeights = calculateStepWeights(processingSteps, this.input.comments.length);
+        const subOperations = stepWeights.map((step) => ({
+          id: `${step.operation}-step-${step.stepIndex}`,
+          weight: step.weight
+        }));
+        this.controller.defineSubOperations(currentOperationId, subOperations);
+      }
+    }
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
@@ -180,7 +193,10 @@ export class Condenser {
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
-    await this.treeBuilder.saveTree(path.join(__dirname, '../../../data/operationTrees', `${this.runId}.json`));
+
+    // Use a more reliable path resolution method that works in both test and production environments
+    const treeFilePath = path.join(process.cwd(), 'data/operationTrees', `${this.runId}.json`);
+    await this.treeBuilder.saveTree(treeFilePath);
 
     // Return the final result with all metadata
     return {
@@ -333,7 +349,11 @@ export class Condenser {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
 
-      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables, logger: this.logger });
+      const promptText = setPromptVars({
+        promptText: prompt,
+        variables: templateVariables,
+        controller: this.controller
+      });
 
       // Prepare messages for LLM
       const messages = [{ role: 'system' as const, content: promptText }];
@@ -377,7 +397,7 @@ export class Condenser {
         llmResponse,
         latency,
         llmProvider: this.input.options.llmProvider,
-        logger: this.logger
+        controller: this.controller
       });
       this.totalCost += promptCall.metadata.cost;
 
@@ -411,7 +431,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as MapOperationParams;
-    this.logger.info(`map operation started with batch size: ${params.batchSize}`);
 
     // Create batches using the validated batch size from the processing step
     const batches = createBatches({ array: comments, batchSize: params.batchSize });
@@ -456,9 +475,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as IterateMapOperationParams;
-    this.logger.info(
-      `iterate_map operation started with batch size ${params.batchSize} (& ${argumentData.length} argument lists)`
-    );
     const batchSize = params.batchSize;
     const parallelFactor = this.input.options.parallelBatches;
 
@@ -519,9 +535,6 @@ export class Condenser {
     previousNodeMapping: Array<Array<string>>;
   }): Promise<CondensationStepResult> {
     const params = step.params as ReduceOperationParams;
-    this.logger.info(
-      `reduce operation started with denominator ${params.denominator} (& ${argumentLists.length} argument lists)`
-    );
     const denominator = params.denominator;
     const parallelFactor = this.input.options.parallelBatches; // How many batches to process in parallel?
 
@@ -713,7 +726,11 @@ export class Condenser {
     // Transform each item into an LLM input using operation-specific logic
     const llmInputs = items.map((item, i) => {
       const templateVariables = prepareTemplateVars(item, i);
-      const promptText = setPromptVars({ promptText: prompt, variables: templateVariables, logger: this.logger });
+      const promptText = setPromptVars({
+        promptText: prompt,
+        variables: templateVariables,
+        controller: this.controller
+      });
       return {
         messages: [{ role: 'system' as const, content: promptText }],
         temperature: 0.7,
@@ -724,29 +741,24 @@ export class Condenser {
     // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
     // The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
-    // TODO: Calculate better time and cost estimations, and add a progress bar that can be updated
-    // by the LLM provider! Needs heuristical evaluations for how long the slowest call per parallel batch takes.
-    // This means testing different inputs and models and getting some data on speed.
-    // Still, implementation will depend on a lot of factors. Do we want to update the progress bar with every call? Every operation?
-    // Is the progress updated by the LLM provider? Condenser? We would need to know about different model
-    // speeds, how tokens per call affect speed, etc. There are many variables. E.g. reduce is almost always faster than
-    // map or iterate_map, becase its inputs are much shorter. Also, 4o-mini is wicked fast, o3 is many times slower, and so on.
-    // Note: Probably should be a more general class or utility in the LLM package, not here, so we can use it in other places.
-    this.logger.info(
-      `Sending out LLM calls for the ${operation} operation. This should take about ${(llmInputs.length * 10) / parallelBatches}-${(llmInputs.length * 15) / parallelBatches} seconds`
-    );
     let validatedResponses: Array<ParsedLLMResponse<{ arguments: Array<Argument> }>>;
     try {
-      validatedResponses = await this.input.options.llmProvider.generateMultipleParallel({
-        inputs: llmInputs,
-        responseContract: RESPONSE_WITH_ARGUMENTS_CONTRACT,
-        parallelBatches,
-        validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
-      });
+      validatedResponses = await this.input.options.llmProvider.generateMultipleParallel(
+        {
+          inputs: llmInputs,
+          responseContract: RESPONSE_WITH_ARGUMENTS_CONTRACT,
+          parallelBatches,
+          validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
+        },
+        this.controller
+      );
     } catch (error) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
+        throw error;
+      }
       // If the provider fails after all retries, we add context and re-throw to abort the condensation.
       throw new Error(
-        `${operation} operation failed for ${logIdentifier}. The LLM provider could not get a valid response. Error: ${
+        `${operation} operation failed for ${logIdentifier}. The LLM Provider failed to provide a valid response. Reason: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
       );
@@ -763,10 +775,17 @@ export class Condenser {
 
       // Store the successfully parsed arguments
       const parsedArgs = response.parsed.arguments;
-      finalArguments[i] = parsedArgs;
+
+      // Generate unique IDs for final arguments
+      const argsWithNewIds = parsedArgs.map((arg) => ({
+        ...arg,
+        id: crypto.randomUUID()
+      }));
+
+      finalArguments[i] = argsWithNewIds;
 
       // Update the operation tree with the successful result
-      this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedArgs });
+      this.treeBuilder.setNodeOutput(nodeId, { arguments: argsWithNewIds });
       this.treeBuilder.completeNode(nodeId, 1, true);
 
       // Collect metrics for cost and performance tracking
@@ -778,7 +797,7 @@ export class Condenser {
         llmResponse: response.raw, // Pass the raw response to extract metadata
         latency,
         llmProvider: this.input.options.llmProvider,
-        logger: this.logger
+        controller: this.controller
       });
 
       allPromptCalls.push(promptCall);

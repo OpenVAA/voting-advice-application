@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
 import { LLMProvider } from './llm-provider';
-import { isValidationError, mapToMessageParam, parse } from '../utils';
+import { isValidationError, mapToMessageParam, parseAndValidate } from '../utils';
 import { parseWaitTimeFromError } from '../utils/parseRateLimitError';
+import type { Controller } from '@openvaa/core';
 import type {
   BaseGenerationOptions,
   LLMResponse,
@@ -253,7 +254,7 @@ export class OpenAIProvider extends LLMProvider {
 
       try {
         // Attempt to parse and validate the response
-        const parsed = parse(llmResponse.content, responseContract);
+        const parsed = parseAndValidate(llmResponse.content, responseContract);
         const result: ParsedLLMResponse<TType> = {
           parsed,
           raw: llmResponse
@@ -317,11 +318,15 @@ export class OpenAIProvider extends LLMProvider {
 
   // Overload for validation
   async generateMultipleParallel<TType>(
-    options: ParallelValidationGenerationOptions<TType>
+    options: ParallelValidationGenerationOptions<TType>,
+    controller?: Controller
   ): Promise<Array<ParsedLLMResponse<TType>>>;
 
   // Overload for no validation
-  async generateMultipleParallel(options: ParallelGenerationOptions): Promise<Array<LLMResponse>>;
+  async generateMultipleParallel(
+    options: ParallelGenerationOptions,
+    controller?: Controller
+  ): Promise<Array<LLMResponse>>;
 
   /**
    * Generates multiple responses from the OpenAI LLM in parallel batches.
@@ -335,12 +340,14 @@ export class OpenAIProvider extends LLMProvider {
    * @param options.parallelBatches - Optional maximum number of parallel batches (default: 3)
    * @param options.responseContract - Optional contract for validation (if provided, returns parsed responses)
    * @param options.validationAttempts - Optional validation attempts per input (default: 3)
+   * @param controller - Optional controller for progress tracking
    * @returns Promise resolving to an array of LLM responses or parsed responses in the same order as inputs
    * @throws Error if any input validation fails (temperature range, empty messages)
    */
   // Actual function implementation that can either be used with or without validation
   async generateMultipleParallel<TType>(
-    options: ParallelGenerationOptions | ParallelValidationGenerationOptions<TType>
+    options: ParallelGenerationOptions | ParallelValidationGenerationOptions<TType>,
+    controller?: Controller
   ): Promise<Array<LLMResponse | ParsedLLMResponse<TType>>> {
     const { inputs, parallelBatches } = options;
     const responseContract = 'responseContract' in options ? options.responseContract : undefined;
@@ -362,7 +369,13 @@ export class OpenAIProvider extends LLMProvider {
     }
 
     const results: Array<LLMResponse | ParsedLLMResponse<TType>> = [];
+    const totalBatches = Math.ceil(inputs.length / (parallelBatches ?? 3));
+    let completedBatches = 0;
 
+    // Check if an abort has been requested
+    controller?.checkAbort();
+
+    // Generate responses in batches
     for (let i = 0; i < inputs.length; i += parallelBatches ?? 3) {
       const batch = inputs.slice(i, i + (parallelBatches ?? 3));
       const batchPromises = batch.map((input) => {
@@ -390,6 +403,18 @@ export class OpenAIProvider extends LLMProvider {
       // Wait for all batches to complete
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
+
+      // Check if an abort has been requested. Throws AbortError if so.
+      controller?.checkAbort();
+
+      // Update progress after each batch completes
+      completedBatches++;
+      if (controller) {
+        if (typeof controller.getCurrentOperation === 'function') {
+          console.info('progress', controller.getCurrentOperation()!.id, completedBatches / totalBatches);
+        }
+        controller.progress(completedBatches / totalBatches);
+      }
     }
 
     return results;

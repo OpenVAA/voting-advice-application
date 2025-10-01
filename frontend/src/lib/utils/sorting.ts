@@ -66,3 +66,12 @@ export function compareMaybeWrappedEntities<TEntity extends MaybeWrappedEntityVa
   if (order === 0) order = entityA.name.localeCompare(entityB.name);
   return order;
 }
+
+/**
+ * Compare two `Date` objects or date strings.
+ */
+export function compareDates(a: Date | string, b: Date | string): number {
+  const aTime = new Date(a).getTime();
+  const bTime = new Date(b).getTime();
+  return (isNaN(aTime) ? -Infinity : aTime) - (isNaN(bTime) ? -Infinity : bTime);
+}

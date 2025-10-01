@@ -2,12 +2,12 @@ import { describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
 import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { CONDENSATION_TYPE } from '../../src/core/types';
-import type { Logger } from '@openvaa/core';
+import type { Controller } from '@openvaa/core';
 import type { ParsedLLMResponse } from '@openvaa/llm';
 import type { CondensationRunInput, ResponseWithArguments } from '../../src/core/types';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
+// No-op controller for tests to prevent logging output
+const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
@@ -149,7 +149,7 @@ describe('Condenser Standalone Test', () => {
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpLogger
       }
     };
 
@@ -198,7 +198,7 @@ describe('Condenser Standalone Test', () => {
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpLogger
       }
     };
 
@@ -227,7 +227,7 @@ describe('Condenser Standalone Test', () => {
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpLogger
       }
     };
 

@@ -1,6 +1,20 @@
-import type { LocalizedAnswer } from '@openvaa/app-shared';
-import type { Id } from '@openvaa/core';
+import type {
+  LocalizedAnswer,
+  LocalizedQuestionArguments,
+  LocalizedQuestionInfoSection,
+  LocalizedTermDefinition,
+  LocalizedVideoContent
+} from '@openvaa/app-shared';
+import type { Id, Serializable } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
+import type { GenerationMetrics } from '@openvaa/llm';
+import type { AdminFeature } from '$lib/admin/features';
+import type {
+  ActiveJobQueryParams,
+  JobInfo,
+  JobMessage,
+  PastJobQueryParams
+} from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 import type { DPDataType } from './dataTypes';
@@ -23,7 +37,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
     authorizationCode: string;
     codeVerifier: string;
     redirectUri: string;
-  }) => DWReturnType<DataApiActionResult>;
+  }) => DWReturnType<DataApiActionResult, TType>;
 
   /**
    * Create a candidate with a nomination or nominations and send a registration link.
@@ -42,7 +56,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
         html: string;
       };
     };
-  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
+  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }, TType>;
 
   /**
    * Create a candidate with a nomination or nominations and send a registration link.
@@ -66,7 +80,10 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;
 
-  clearIdToken: () => DWReturnType<DataApiActionResult>;
+  /**
+   * Clear the OIDC ID token.
+   */
+  clearIdToken: () => DWReturnType<DataApiActionResult, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Registration
@@ -98,10 +115,16 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   login: (opts: { username: string; password: string }) => DWReturnType<DataApiActionResult & Partial<WithAuth>, TType>;
   /**
-   * Logout a user.
+   * Logout a user from both the frontend and the backend.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   logout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
+  /**
+   * Logout a user from the backend only.
+   * This is mostly used by the login server api route to undo a login attempt.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  backendLogout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
   /**
    * Get the basic data for a user, mostly their username, email, and preferred language.
    * @param authToken - The authorization token.
@@ -192,6 +215,29 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   //  * @returns A `Promise` resolving the updated `UserSettings` object or a `Response` containing one.
   //  */
   // updateUserSettings: (opts: WithAuth & WithUserSettings) => DWReturnType<UserSettings, TType>;
+
+  ////////////////////////////////////////////////////////////////////
+  // Methods for the Admin App
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Update the a `Question`.
+   * NB. This is a temporary implementation, which will be updated later to allow for setting other data as well, and which will return the updated, multi-locale data.
+   * @param authToken - The authorization token.
+   * @param id - The id of the question.
+   * @param data - The data to update.
+   * @returns A `Promise` resolving a `DataApiActionResult` or a `Response` containing one.
+   */
+  updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
+
+  // Job management methods for the Admin App
+  getActiveJobs: (opts: GetActiveJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  getPastJobs: (opts: GetPastJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
+  startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;
+  getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
+  abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
+  abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
+  insertJobResult: (opts: InsertJobResultOptions) => DWReturnType<DataApiActionResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,9 +258,10 @@ export interface BasicUserData extends WithUserSettings {
   id: Id;
   email: string;
   username: string;
-  confirmed: boolean;
-  blocked: boolean;
+  role?: UserRole | null;
 }
+
+export type UserRole = 'candidate' | 'admin';
 
 export type CheckRegistrationData = DataApiActionResult & {
   email: string;
@@ -258,6 +305,26 @@ export type CandidateUserData<TNominations extends boolean | undefined = undefin
   nominations: TNominations extends true ? DPDataType['nominations'] : undefined;
 };
 
+/**
+ * Results for an admin job.
+ * TODO: Define in a more logical place when saved job listing is implemented.
+ */
+export type AdminJobData = {
+  jobId: JobInfo['id'];
+  jobType: AdminFeature;
+  /**
+   * Author email
+   */
+  author: string;
+  status: 'completed' | 'failed';
+  startTime?: string;
+  endTime?: string;
+  input?: Serializable;
+  output?: Serializable;
+  messages?: Array<JobMessage>;
+  metadata?: GenerationMetrics;
+};
+
 ////////////////////////////////////////////////////////////////////
 // Types for building the params to DataWriter methods
 ////////////////////////////////////////////////////////////////////
@@ -266,18 +333,33 @@ export type SetAnswersOptions = WithAuth & WithTargetEntity & WithAnswerData;
 
 export type SetPropertiesOptions = WithAuth & WithTargetEntity & WithEditableEntityProps;
 
+export type SetQuestionOptions = WithAuth & WithTargetId & { data: TemporarySetQuestionData };
+
 export type GetCandidateUserDataOptions<TNominations extends boolean | undefined> = WithAuth & {
   loadNominations?: TNominations;
   locale?: string;
 };
 
 export type WithAuth = {
+  /**
+   * The JWT token for authentication.
+   */
   authToken: string;
+};
+
+export type WithTargetId = {
+  id: Id;
 };
 
 export type WithTargetEntity = {
   target: {
+    /**
+     * The type of the target entity.
+     */
     type: EntityType;
+    /**
+     * The id of the target entity.
+     */
     id: Id;
   };
 };
@@ -302,3 +384,38 @@ export type UserSettings = {
 export type WithUserSettings = {
   settings: UserSettings;
 };
+
+/**
+ * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only those `customData` properties that are not stored as their own fields in Strapi.
+ */
+export type TemporarySetQuestionData = {
+  customData: {
+    arguments?: Array<LocalizedQuestionArguments>;
+    infoSections?: Array<LocalizedQuestionInfoSection>;
+    terms?: Array<LocalizedTermDefinition>;
+    video?: LocalizedVideoContent;
+  };
+};
+
+export type GetActiveJobsOptions = WithAuth & ActiveJobQueryParams;
+
+export type GetPastJobsOptions = WithAuth & PastJobQueryParams;
+
+export type StartJobOptions = WithAuth & {
+  feature: string;
+  author: string;
+};
+
+export type GetJobProgressOptions = WithAuth & {
+  jobId: string;
+};
+
+export type AbortJobOptions = WithAuth & {
+  jobId: string;
+  reason?: string;
+};
+
+// Most likely will be extended in the future (e.g. cancel queued jobs also?)
+export type AbortAllJobsOptions = WithAuth;
+
+export type InsertJobResultOptions = WithAuth & { data: AdminJobData };

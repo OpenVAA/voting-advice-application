@@ -1,4 +1,6 @@
 import type {
+  StrapiAdminJobData,
+  StrapiAllianceData,
   StrapiAppCustomizationData,
   StrapiAppSettingsData,
   StrapiBasicUserData,
@@ -22,6 +24,7 @@ import type {
 
 export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   // DataProvider
+  alliances: 'api/alliances',
   appSettings: 'api/app-setting',
   appCustomization: 'api/app-customization',
   candidates: 'api/candidates',
@@ -36,6 +39,7 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   // FeedbackWriter
   setFeedback: 'api/feedbacks',
   // DataWriter
+  adminJobs: 'api/admin-jobs',
   basicUserData: 'api/users/me',
   candidateUserData: 'api/users/me',
   checkRegistrationKey: 'api/auth/candidate/check',
@@ -48,7 +52,8 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   setProperties: 'api/candidate/:id/update-properties',
   setPassword: 'api/auth/change-password',
   upload: 'api/upload',
-  updateAnswers: 'api/candidate/:id/update-answers'
+  updateAnswers: 'api/candidate/:id/update-answers',
+  updateQuestion: 'api/question/:id/update-custom-data'
 } as const;
 
 export type StrapiApi = keyof StrapiApiReturnType;
@@ -58,6 +63,7 @@ export type StrapiApi = keyof StrapiApiReturnType;
  */
 export type StrapiApiReturnType = {
   // DataProvider
+  alliances: Array<StrapiAllianceData>;
   appSettings: StrapiAppSettingsData; // Single type
   appCustomization: StrapiAppCustomizationData; // Single type
   candidates: Array<StrapiCandidateData>;
@@ -72,6 +78,7 @@ export type StrapiApiReturnType = {
   // FeedbackWriter
   setFeedback: StrapiFeedbackData;
   // DataWriter
+  adminJobs: StrapiAdminJobData;
   basicUserData: StrapiBasicUserData;
   candidateUserData: StrapiCandidateUserData;
   checkRegistrationKey: StrapiCheckRegistrationData;
@@ -85,6 +92,7 @@ export type StrapiApiReturnType = {
   setPassword: unknown;
   upload: Array<StrapiImageData>;
   updateAnswers: StrapiUpdateCandidateReturnData;
+  updateQuestion: StrapiQuestionData;
 };
 
 /**

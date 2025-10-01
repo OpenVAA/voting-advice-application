@@ -10,9 +10,11 @@ import type {
   CheckRegistrationData,
   DWReturnType,
   GetCandidateUserDataOptions,
+  InsertJobResultOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
+  SetQuestionOptions,
   WithAuth
 } from '$lib/api/base/dataWriter.type';
 import type { Params } from '../strapiAdapter.type';
@@ -96,7 +98,16 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   }
 
   protected async _getBasicUserData({ authToken }: WithAuth): DWReturnType<BasicUserData> {
-    const data = await this.apiGet({ endpoint: 'basicUserData', authToken, disableCache: true });
+    const data = await this.apiGet({
+      endpoint: 'basicUserData',
+      authToken,
+      disableCache: true,
+      params: {
+        populate: {
+          role: 'true'
+        }
+      }
+    });
     if (!data) throw new Error('Expected one BasicUserData object, but got none.');
     return parseUser(data);
   }
@@ -156,7 +167,8 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
             nominations: loadNominations ? { populate: '*' } : 'false',
             image: 'true'
           }
-        }
+        },
+        role: 'true'
       }
     };
     const data = await this.apiGet({
@@ -174,7 +186,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     // If loadNominations is true, always return nominations data even if empty; if false, return undefined
     const nominations = loadNominations
       ? data.candidate.nominations
-        ? parseNominations(data.candidate.nominations, locale ?? null)
+        ? parseNominations({ nominations: data.candidate.nominations, locale: locale ?? null })
         : {}
       : undefined;
     return { user, candidate, nominations } as CandidateUserData<TNominations>;
@@ -227,6 +239,36 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     });
     if (!candidate) throw new Error('Expected a CandidateData object, but got none.');
     return parseCandidate(candidate, null, { dontTranslateAnswers: true });
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Methods for the Admin App
+  ////////////////////////////////////////////////////////////////////
+
+  protected async _updateQuestion({
+    authToken,
+    id,
+    data: { customData }
+  }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+    if (!customData || typeof customData !== 'object')
+      throw new Error(`Expected a customData object but got type: ${typeof customData}`);
+    const data = await this.apiPost({
+      endpoint: 'updateQuestion',
+      endpointParams: { id },
+      body: { data: customData },
+      authToken
+    });
+    if (!data) throw new Error('Expected a QuestionData object, but got none.');
+    return { type: 'success' };
+  }
+
+  protected async _insertJobResult({ authToken, data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
+    await this.apiPost({
+      endpoint: 'adminJobs',
+      body: { data },
+      authToken
+    }).catch((err) => err);
+    return { type: 'success' };
   }
 
   ////////////////////////////////////////////////////////////////////

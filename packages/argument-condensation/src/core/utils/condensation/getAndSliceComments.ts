@@ -1,4 +1,4 @@
-import { DefaultLogger, type HasAnswers, type Id, isMissingValue } from '@openvaa/core';
+import { BaseController, type HasAnswers, type Id, isMissingValue } from '@openvaa/core';
 import {
   type Answer,
   type BooleanQuestion,
@@ -29,7 +29,7 @@ import type { SupportedQuestion } from '../../types/condensation/supportedQuesti
  * @param options - The options for grouping comments
  * @param options.invertProsAndCons - Whether to invert the pro/con classification for ordinal questions
  * @param options.maxCommentsPerGroup - Maximum number of comments from a single answer option to use
- * @param options.logger - Optional logger for warning messages during comment grouping
+ * @param options.controller - Optional controller for warning messages during comment grouping
  * @returns An array of comment groups (type commentGroup)
  */
 export function getAndSliceComments({
@@ -41,8 +41,8 @@ export function getAndSliceComments({
   entities: Array<HasAnswers>;
   options: CommentGroupingOptions;
 }): Array<CommentGroup> {
-  const { invertProsAndCons, maxCommentsPerGroup, logger } = options;
-  const actualLogger = logger ?? new DefaultLogger();
+  const { invertProsAndCons, maxCommentsPerGroup, controller } = options;
+  const actualLogger = controller ?? new BaseController();
 
   const prosComments: Array<Comment> = [];
   const consComments: Array<Comment> = [];
@@ -158,12 +158,12 @@ export function getAndSliceComments({
 
       if (group.comments.length < COMMENT_PROCESSING.MIN_COMMENTS_THRESHOLD) {
         actualLogger.warning(
-          `Too few comments for condensation (${group.comments.length} < ${COMMENT_PROCESSING.MIN_COMMENTS_THRESHOLD}) in group ${groupDescription}. The results may not be meaningful.`
+          `Only ${group.comments.length} comments for question "${question.name}" (${groupDescription}). The results may not be meaningful.`
         );
       }
       if (group.comments.length > maxCommentsPerGroup) {
         actualLogger.warning(
-          `Too many comments for condensation (${group.comments.length} > ${maxCommentsPerGroup}) in group ${groupDescription}. The list will be truncated to ${maxCommentsPerGroup} comments.`
+          `Too many comments for question "${question.name}". Truncating from ${group.comments.length} to ${maxCommentsPerGroup} (${groupDescription}).`
         );
         group.comments = group.comments.slice(0, maxCommentsPerGroup);
       }

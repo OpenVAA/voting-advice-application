@@ -18,7 +18,7 @@
   "candidateAppPrivacy": {
     "heroEmoji": "🛡️",
     "consent": {
-      "acceptLabel": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
+      "acceptLabel": "I accept the storage and use of my data in accordance with the terms of use.",
       "heroEmoji": "🖋️",
       "ingress": "You must accept the terms of use before continuing to fill in your profile. Please read them carefully and check the box below.",
       "title": "Terms of use"

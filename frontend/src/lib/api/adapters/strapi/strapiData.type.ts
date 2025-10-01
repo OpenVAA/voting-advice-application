@@ -5,12 +5,22 @@
 import type {
   DynamicSettings,
   LocalizedAnswer,
+  LocalizedHeroContent,
   LocalizedQuestionArguments,
   LocalizedQuestionInfoSection,
   LocalizedTermDefinition,
   LocalizedVideoContent,
   QuestionTypeSettings
 } from '@openvaa/app-shared';
+import type { Serializable } from '@openvaa/core';
+import type { GenerationMetrics } from '@openvaa/llm';
+import type { AdminFeature } from '$lib/admin/features';
+import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
+
+/**
+ * A failed or successful response from Strapi.
+ */
+export type StrapiResult<TData = unknown> = StrapiResponse<TData> | StrapiError;
 
 /**
  * The basic format for Strapi responses
@@ -121,6 +131,7 @@ export type StrapiQuestionTypeData = StrapiObject<{
 
 export type StrapiQuestionCustomData = {
   arguments?: Array<LocalizedQuestionArguments>;
+  hero?: LocalizedHeroContent;
   infoSections?: Array<LocalizedQuestionInfoSection>;
   terms?: Array<LocalizedTermDefinition>;
   video?: LocalizedVideoContent;
@@ -157,6 +168,7 @@ export type StrapiQuestionCategoryData = StrapiObject<{
 }>;
 
 export type StrapiQuestionCategoryCustomData = {
+  hero?: LocalizedHeroContent;
   video?: LocalizedVideoContent;
 };
 
@@ -188,6 +200,18 @@ export type StrapiConstituencyData = StrapiObject<{
   /**
    * This is the reverse of `parent` and not normally used.
    */
+  constituencies: StrapiRelation<StrapiConstituencyData>;
+}>;
+
+export type StrapiAllianceData = StrapiObject<{
+  color: string;
+  colorDark: string;
+  info: LocalizedString;
+  image: StrapiImage;
+  name: LocalizedString;
+  shortName: LocalizedString;
+  parties: StrapiRelation<StrapiPartyData>;
+  election: StrapiSingleRelation<StrapiElectionData>;
   constituencies: StrapiRelation<StrapiConstituencyData>;
 }>;
 
@@ -238,7 +262,16 @@ export type StrapiUserProperties = {
   email: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: StrapiSingleRelation<StrapiRoleData>;
 };
+
+export type StrapiRoleData = StrapiObject<{
+  name: StrapiRoleName;
+  description: string;
+  type: StrapiRoleName;
+}>;
+
+export type StrapiRoleName = 'authenticated' | 'public' | 'admin';
 
 export type StrapiBasicUserData = StrapiObject<StrapiUserProperties>;
 
@@ -266,3 +299,19 @@ export type StrapiRegisterData = {
  * The custom candidate update API routes explicitly populate only some relations of the candidate object.
  */
 export type StrapiUpdateCandidateReturnData = Omit<StrapiCandidateData, 'nominations' | 'party'>;
+
+export type StrapiAdminJobData = StrapiObject<{
+  jobId: string;
+  jobType: AdminFeature;
+  /**
+   * Author email
+   */
+  author: string;
+  endStatus: 'completed' | 'failed';
+  startTime: string | null;
+  endTime: string | null;
+  input: Serializable;
+  output: Serializable;
+  messages: Array<JobMessage> | null;
+  metadata: GenerationMetrics | null;
+}>;

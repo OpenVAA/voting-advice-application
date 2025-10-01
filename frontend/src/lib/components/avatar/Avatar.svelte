@@ -17,11 +17,12 @@ Display either an image or a initials-based avatar for an entity. The color of t
 -->
 
 <script lang="ts">
+  import { Image } from '$lib/components/image/';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatProps } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { abbreviate } from '$lib/utils/text/abbreviate';
-  import type { Colors, Image } from '@openvaa/data';
+  import type { Colors, Image as ImageType } from '@openvaa/data';
   import type { AvatarProps } from './Avatar.type';
 
   type $$Props = AvatarProps;
@@ -34,14 +35,14 @@ Display either an image or a initials-based avatar for an entity. The color of t
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { darkMode, t } = getComponentContext();
+  const { t } = getComponentContext();
 
   ////////////////////////////////////////////////////////////////////
   // Parse properties and create styles
   ////////////////////////////////////////////////////////////////////
 
   let classes: string;
-  let image: Image | null;
+  let image: ImageType | null;
   let imageStatus: 'error' | 'loading' | 'loaded' = 'loading';
   let initials: string | null;
   let initialsClasses: string;
@@ -102,21 +103,6 @@ Display either an image or a initials-based avatar for an entity. The color of t
   // Functions
   ////////////////////////////////////////////////////////////////////
 
-  /**
-   * Get a thumbnail url from the `Image` object if available, or the full-size url.
-   * @param image - The image object
-   * @param dark - Whether to use the dark thumbnail (if available), defaulting to the normal image.
-   */
-  function getThumbnail(image: Image, dark = false): string {
-    const normal = image.formats?.thumbnail ? image.formats.thumbnail.url : image.url;
-    if (!dark) return normal;
-    return image.formats?.thumbnail?.urlDark
-      ? image.formats?.thumbnail?.urlDark
-      : image.urlDark
-        ? image.urlDark
-        : normal;
-  }
-
   function handleImgError(): void {
     imageStatus = 'error';
   }
@@ -135,18 +121,20 @@ Display either an image or a initials-based avatar for an entity. The color of t
         title={$t('common.showFullImage')}
         aria-label={$t('common.showFullImage')}
         class="h-full w-full">
-        <img
+        <Image
+          {image}
+          format="thumbnail"
           class="border-bg-300 h-full w-full border-md object-cover"
           alt={name}
-          src={getThumbnail(image, $darkMode)}
           on:load={handleImgLoad}
           on:error={handleImgError} />
       </a>
     {:else}
-      <img
+      <Image
+        {image}
+        format="thumbnail"
         class="border-bg-300 h-full w-full border-md object-cover"
         alt={name}
-        src={getThumbnail(image, $darkMode)}
         on:load={handleImgLoad}
         on:error={handleImgError} />
     {/if}

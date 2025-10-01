@@ -1,31 +1,6 @@
+import type { GenerationMetrics } from '@openvaa/llm';
 import type { Argument } from './argument';
 import type { CondensationOutputType } from './condensationType';
-
-/**
- * Performance metrics for evaluating condensation quality and efficiency.
- * This interface can contain either metrics for a single run or for multiple runs.
- *
- * @example
- *
- * const metrics: CondensationRunMetrics = {
- *   duration: 420,
- *   nLlmCalls: 66,
- *   cost: 1.01,
- *   tokensUsed: { inputs: 6700, outputs: 6800, total: 13500 }
- * };
- */
-export interface CondensationRunMetrics {
-  /** Duration in seconds */
-  duration: number;
-  nLlmCalls: number;
-  /** Cost in dollars */
-  cost: number;
-  tokensUsed: {
-    inputs: number;
-    outputs: number;
-    total: number;
-  };
-}
 
 /**
  * Complete result of a condensation run.
@@ -59,7 +34,7 @@ export interface CondensationRunResult {
   condensationType: CondensationOutputType;
   arguments: Array<Argument>;
   /** Performance metrics containing duration, number of LLM calls, cost, and token usage */
-  metrics: CondensationRunMetrics;
+  metrics: GenerationMetrics;
   success: boolean;
   /** Metadata containing the LLM model, language, start and end times */
   metadata: {

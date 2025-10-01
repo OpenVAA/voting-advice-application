@@ -54,8 +54,8 @@
       id="email1"
       autocomplete="email"
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.common.emailPlaceholder')}
-      aria-label={$t('candidateApp.common.emailPlaceholder')}
+      placeholder={$t('common.emailPlaceholder')}
+      aria-label={$t('common.emailPlaceholder')}
       bind:value={email1}
       required />
     <input
@@ -64,8 +64,8 @@
       id="email2"
       autocomplete="email"
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.common.emailPlaceholder')}
-      aria-label={$t('candidateApp.common.emailPlaceholder')}
+      placeholder={$t('common.emailPlaceholder')}
+      aria-label={$t('common.emailPlaceholder')}
       bind:value={email2}
       required />
     <TermsOfUseForm bind:termsAccepted class="mt-md" />

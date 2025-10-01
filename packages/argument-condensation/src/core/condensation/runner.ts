@@ -81,7 +81,7 @@ export async function runSingleCondensation({
     questionName: question.name,
     parallelFactor: parallelBatches,
     modelTPMLimit,
-    logger: options.logger
+    controller: options.controller
   });
 
   // Create condensation input that defines all inputs and the configuration for the condenser,
@@ -99,7 +99,7 @@ export async function runSingleCondensation({
       parallelBatches,
       modelTPMLimit,
       createVisualizationData: createVisualizationData ?? false, // For the linter... set already in handleQuestion
-      logger: options.logger
+      controller: options.controller
     }
   };
 
