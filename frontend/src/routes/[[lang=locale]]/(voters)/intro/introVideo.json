@@ -1,0 +1,24 @@
+{
+  "da": {
+    "aspectRatio": 0.8,
+    "poster": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.jpg",
+    "sources": [
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.webm",
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.mp4"
+    ],
+    "title": "Hvilken ung kandidat er du mest enig med?",
+    "transcript": "<p>Hvilken ung kandidat er du mest enig med? D. 18. november i år skal vi stemme til kommunal- og regionsrådsvalget, og der er masser af unge kandidater at vælge imellem.</p><p>For at have et stærkt, repræsentativt demokrati, er det vigtigt, at der er mange forskellige perspektiver med, og derfor er det afgørende, at unge sidder med ved beslutningsbordet i byrådet.</p><p>Derfor synes jeg, at du skal overveje at stemme på en ung kandidat. Tag DUFs unge valgtest og se, om der ikke er en kandidat, du er helt vildt enig med.</p>",
+    "captions": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.da.srt"
+  },
+  "en": {
+    "aspectRatio": 0.8,
+    "poster": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.jpg",
+    "sources": [
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.webm",
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.mp4"
+    ],
+    "title": "Which young candidate do you agree with the most?",
+    "transcript": "<p>Which young candidate do you agree with the most? On November 18th this year, we will vote in the municipal and regional elections, and there are plenty of young candidates to choose from.</p><p>To have a strong, representative democracy, it&#x27;s important that many different perspectives are included, and that&#x27;s why it’s crucial that young people have a seat at the decision-making table in the city council.</p><p>That’s why I think you should consider voting for a young candidate. Take DUF’s Youth Election Compass and see if there’s a candidate you strongly agree with.</p>",
+    "captions": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/duf-vaa-2025-intro.en.srt"
+  }
+}

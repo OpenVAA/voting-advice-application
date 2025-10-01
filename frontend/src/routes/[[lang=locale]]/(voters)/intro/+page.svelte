@@ -11,12 +11,24 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
 -->
 
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import introVideo from './introVideo.json';
   import MainContent from '../../MainContent.svelte';
+  import type { LocalizedVideoContent } from '@openvaa/app-shared';
+  import { getLayoutContext } from '$lib/contexts/layout';
 
-  const { appSettings, constituenciesSelectable, electionsSelectable, getRoute, t } = getVoterContext();
+  const { appSettings, getRoute, locale, t } = getVoterContext();
+  const { video } = getLayoutContext(onDestroy);
+
+  ////////////////////////////////////////////////////////////////////
+  // Video
+  ////////////////////////////////////////////////////////////////////
+
+  const videoProps = (introVideo as LocalizedVideoContent)[$locale];
+  if (videoProps) video.load(videoProps);
 </script>
 
 <MainContent title={$t('dynamic.intro.title')}>
@@ -27,8 +39,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   <p class="text-center">
     {$t('dynamic.intro.ingress')}
   </p>
-  <ol class="list-circled w-fit">
-    <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
+  <!-- <ol class="list-circled w-fit">
     {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <li>{$t('dynamic.intro.list.elections')}</li>
     {/if}
@@ -41,7 +52,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
     <li>{$t('dynamic.intro.list.opinions')}</li>
     <li>{$t('dynamic.intro.list.results')}</li>
     <li>{$t('dynamic.intro.list.details')}</li>
-  </ol>
+  </ol> -->
 
   <Button
     slot="primaryActions"

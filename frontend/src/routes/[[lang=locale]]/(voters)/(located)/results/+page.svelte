@@ -46,6 +46,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   import type { Election } from '@openvaa/data';
+  import Hero from '$lib/components/hero/Hero.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -209,7 +210,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
 <MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
+    <Hero content={{ url: 'https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/Results.png', alt: '' }} />
   </figure>
 
   <div class="mb-xl text-center">
@@ -242,7 +243,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
       class="-mt-md mb-lg" />
 
     {#if activeElection?.info}
-      <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
+      <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
         {activeElection.info}
       </p>
     {/if}
@@ -250,9 +251,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
+  <div slot="fullWidth" class="bg-base-300 flex min-h-[120vh] flex-col items-center">
     {#if activeElectionId}
-      <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+      <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
         <!-- EntityType selector if there are multiple -->
         {#if Object.keys($matches[activeElectionId]).length > 1}
           <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
@@ -263,7 +264,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
         {#if activeEntityType}
           {#if activeMatches}
             {#key activeMatches}
-              <h3 class="mx-10 my-lg text-xl">
+              <h3 class="my-lg mx-10 text-xl">
                 {$t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
                 {#if $constituenciesSelectable}
                   <span class="font-normal">
@@ -276,20 +277,20 @@ The nominations applicable to these elections and constituencies are shown. Thes
                 entities={activeMatches}
                 onUpdate={(results) => (filteredEntities = results)}
                 filterGroup={$entityFilters[activeElectionId][activeEntityType]}
-                class="mx-10 mb-md" />
+                class="mb-md mx-10" />
               <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
             {/key}
           {:else}
             <Loading />
           {/if}
         {:else}
-          <div class="py-lg text-center text-lg text-error">
+          <div class="py-lg text-error text-center text-lg">
             {$t('error.noNominations')}
           </div>
         {/if}
       </div>
     {:else}
-      <p class="mt-[2rem] text-center text-sm text-secondary" transition:slide>{$t('results.selectElectionFirst')}</p>
+      <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{$t('results.selectElectionFirst')}</p>
     {/if}
   </div>
 </MainContent>
