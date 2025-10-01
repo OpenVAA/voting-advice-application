@@ -1,4 +1,4 @@
-import type { CommonLLMParams } from '@openvaa/llm';
+import type { CommonLLMParams } from '@openvaa/llm-refactor';
 
 /**
  * Available operations for question info generation
@@ -29,11 +29,17 @@ export type QuestionInfoOperation = (typeof QUESTION_INFO_OPERATION)[keyof typeo
  *
  * @example
  * ```ts
+ * const llmProvider = new LLMProvider({
+ *   provider: 'openai',
+ *   apiKey: process.env.OPENAI_API_KEY!,
+ *   modelConfig: { primary: 'gpt-4o', fallback: 'gpt-4o-mini' }
+ * });
+ *
  * const options: QuestionInfoOptions = {
  *   operations: [QUESTION_INFO_OPERATION.Terms, QUESTION_INFO_OPERATION.InfoSections],
  *   language: 'en',
- *   llmProvider: new OpenAIProvider({ apiKey: 'sk-...' }),
- *   llmModel: 'gpt-4o',
+ *   llmProvider,
+ *   modelConfig: { primary: 'gpt-4o' },
  *   questionContext: 'Finnish municipal elections 2025',
  *   customInstructions: 'Focus on local governance aspects',
  *   sectionTopics: ['Background', 'Current situation', 'Key stakeholders']

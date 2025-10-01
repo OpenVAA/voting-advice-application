@@ -1,6 +1,6 @@
 import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { LLMResult } from '@openvaa/llm';
+import type { LLMObjectGenerationResult } from '@openvaa/llm-refactor';
 
 // ------------------------------------------------------------------
 // Types for all possible generation response formats in this package
@@ -61,7 +61,7 @@ export interface QuestionInfoData {
  * ```ts
  * const result: QuestionInfoResult = {
  *   runId: 'run_1699123456789_abc123def',
- *   data: {
+ *   object: {
  *     questionId: 'q1',
  *     questionName: 'Should the capital gains tax be increased?',
  *     infoSections: [
@@ -78,20 +78,11 @@ export interface QuestionInfoData {
  *       }
  *     ]
  *   },
- *   metrics: {
- *     duration: 2.5,
- *     nLlmCalls: 1,
- *     cost: 0.05,
- *     tokensUsed: { inputs: 1000, outputs: 500, total: 1500 }
- *   },
+ *   finishReason: 'stop',
+ *   usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
  *   success: true,
- *   metadata: {
- *     llmModel: 'gpt-4o',
- *     language: 'en',
- *     startTime: new Date('2024-01-01T10:00:00Z'),
- *     endTime: new Date('2024-01-01T10:00:02Z')
- *   }
+ *   // ... other properties from GenerateObjectResult and LLMMetadata
  * };
  * ```
  */
-export type QuestionInfoResult = LLMResult<QuestionInfoData>;
+export type QuestionInfoResult = LLMObjectGenerationResult<QuestionInfoData> & { success: boolean };

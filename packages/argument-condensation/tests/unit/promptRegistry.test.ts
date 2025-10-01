@@ -282,7 +282,7 @@ describe('variable validation edge cases', () => {
 
       if (prompt) {
         // Test that the prompt's variables are properly documented
-        const validation = validatePromptVars(prompt.promptText, prompt.params as unknown as Record<string, unknown>);
+        const validation = validatePromptVars({ promptText: prompt.promptText, params: prompt.params as unknown as Record<string, unknown> });
         expect(validation.valid).toBe(true);
       }
     }

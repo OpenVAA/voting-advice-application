@@ -17,8 +17,8 @@ This package uses large language models to generate two types of contextual info
 
 - `@openvaa/data`: VAA data types and question definitions
 - `@openvaa/core`: Controller and base types
-- `@openvaa/llm`: LLM provider interface and implementations
-- `@openvaa/app-shared`: Shared types for term definitions and info sections
+- `@openvaa/llm-refactor`: LLM provider interface built on Vercel AI SDK
+- `zod`: Schema validation for structured LLM outputs
 - `js-yaml`: YAML parsing for prompt configuration
 
 ## Usage
@@ -27,7 +27,17 @@ This package uses large language models to generate two types of contextual info
 
 ```typescript
 import { generateQuestionInfo, QUESTION_INFO_OPERATION } from '@openvaa/question-info';
-import { OpenAIProvider } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm-refactor';
+
+// Create an LLM provider instance
+const llmProvider = new LLMProvider({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY!, // Or pass directly: 'sk-...'
+  modelConfig: {
+    primary: 'gpt-4o',
+    fallback: 'gpt-4o-mini' // Optional fallback model
+  }
+});
 
 const questions = [{ id: 'q1', name: 'Should the capital gains tax be increased?' }];
 
@@ -36,14 +46,16 @@ const results = await generateQuestionInfo({
   options: {
     operations: [QUESTION_INFO_OPERATION.Terms, QUESTION_INFO_OPERATION.InfoSections],
     language: 'en',
-    llmProvider: new OpenAIProvider({ apiKey: 'sk-...' }),
-    llmModel: 'gpt-4o',
+    llmProvider,
+    modelConfig: { primary: 'gpt-4o' },
     questionContext: 'Finnish municipal elections 2025'
   }
 });
 
 console.log(results[0].data.terms); // Generated term definitions
 console.log(results[0].data.infoSections); // Generated info sections
+console.log(results[0].metrics.cost); // Automatic cost tracking
+console.log(results[0].metrics.tokensUsed); // Token usage statistics
 ```
 
 ### Generate Only Terms
@@ -54,8 +66,8 @@ const results = await generateQuestionInfo({
   options: {
     operations: [QUESTION_INFO_OPERATION.Terms],
     language: 'en',
-    llmProvider: new OpenAIProvider({ apiKey: 'sk-...' }),
-    llmModel: 'gpt-4o'
+    llmProvider,
+    modelConfig: { primary: 'gpt-4o' }
   }
 });
 ```
@@ -68,8 +80,8 @@ const results = await generateQuestionInfo({
   options: {
     operations: [QUESTION_INFO_OPERATION.InfoSections],
     language: 'en',
-    llmProvider: new OpenAIProvider({ apiKey: 'sk-...' }),
-    llmModel: 'gpt-4o',
+    llmProvider,
+    modelConfig: { primary: 'gpt-4o' },
     sectionTopics: ['Background', 'Current situation', 'Key stakeholders']
   }
 });
@@ -106,6 +118,9 @@ Override default section topics:
 ```typescript
 const options = {
   operations: [QUESTION_INFO_OPERATION.InfoSections],
+  language: 'en',
+  llmProvider,
+  modelConfig: { primary: 'gpt-4o' },
   sectionTopics: ['Historical context', 'Economic implications', 'International comparison']
 };
 ```
@@ -117,6 +132,9 @@ Add domain-specific guidance:
 ```typescript
 const options = {
   operations: [QUESTION_INFO_OPERATION.Terms],
+  language: 'en',
+  llmProvider,
+  modelConfig: { primary: 'gpt-4o' },
   customInstructions: 'Focus on local governance and municipal policy aspects',
   questionContext: 'Finnish municipal elections 2025'
 };

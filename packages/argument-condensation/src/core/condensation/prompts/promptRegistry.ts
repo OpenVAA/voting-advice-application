@@ -107,7 +107,7 @@ export class PromptRegistry {
             };
 
             // Validate variables before creating the prompt
-            const validation = validatePromptVars(promptData.promptText, promptData.params);
+            const validation = validatePromptVars({ promptText: promptData.promptText, params: promptData.params });
 
             if (!validation.valid) {
               const errorDetails = [];

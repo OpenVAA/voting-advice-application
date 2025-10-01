@@ -22,16 +22,9 @@ const noOpLogger: Controller = {
   getCurrentOperation: () => null
 };
 
-// Mock LLM provider with proper typing
+// Mock LLM provider with new API
 const mockLLMProvider = {
-  name: 'mock',
-  generate: vi.fn(),
-  generateWithRetry: vi.fn(),
-  generateAndValidateWithRetry: vi.fn(),
-  generateMultipleParallel: vi.fn().mockResolvedValue([]),
-  generateMultipleSequential: vi.fn()
-  // For some reason the compiler is not recognizing the CommonLLMParams interface as part of the QuestionInfoOptions
-  // This is a workaround to allow the mock to be used in the tests
+  generateObjectParallel: vi.fn().mockResolvedValue([])
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock LLM model
@@ -101,9 +94,10 @@ function createTestOptions(operations: Array<keyof typeof QUESTION_INFO_OPERATIO
     runId: 'test-run-id',
     operations: operations.map((op) => QUESTION_INFO_OPERATION[op]),
     language: 'en',
-    llmModel: mockLLMModel,
+    modelConfig: { primary: mockLLMModel },
     llmProvider: mockLLMProvider,
-    controller: noOpLogger
+    controller: noOpLogger,
+    llmModel: mockLLMModel
   } as QuestionInfoOptions;
 }
 
@@ -129,9 +123,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Environmental Impact',
@@ -139,26 +133,24 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('boolean-question-1');
-      expect(results[0].data.questionName).toBe('Do you support renewable energy?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].data.infoSections).toHaveLength(1);
-      expect(results[0].data.terms).toBeUndefined();
+      expect(results[0].object.questionId).toBe('boolean-question-1');
+      expect(results[0].object.questionName).toBe('Do you support renewable energy?');
+      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].object.infoSections).toHaveLength(1);
+      expect(results[0].object.terms).toBeUndefined();
       expect(results[0].success).toBe(true);
-      expect(results[0].metadata.language).toBe('en');
-      expect(results[0].metadata.llmModel).toBe(mockLLMModel);
     });
 
     test('should handle single boolean question with terms operation', async () => {
@@ -166,33 +158,34 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['Terms']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Renewable Energy',
-                definition: 'Energy from sources that are naturally replenished.'
+                triggers: [],
+                title: 'Renewable Energy',
+                content: 'Energy from sources that are naturally replenished.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 11, completionTokens: 12, totalTokens: 23 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 11, outputTokens: 12, totalTokens: 23 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('boolean-question-1');
-      expect(results[0].data.questionName).toBe('Do you support renewable energy?');
-      expect(results[0].data.infoSections).toBeUndefined();
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(1);
+      expect(results[0].object.questionId).toBe('boolean-question-1');
+      expect(results[0].object.questionName).toBe('Do you support renewable energy?');
+      expect(results[0].object.infoSections).toBeUndefined();
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -201,9 +194,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections', 'Terms']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Environmental Impact',
@@ -212,27 +205,28 @@ describe('generateQuestionInfo API', () => {
             ],
             terms: [
               {
-                term: 'Renewable Energy',
-                definition: 'Energy from sources that are naturally replenished.'
+                triggers: [],
+                title: 'Renewable Energy',
+                content: 'Energy from sources that are naturally replenished.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 13, completionTokens: 14, totalTokens: 27 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 13, outputTokens: 14, totalTokens: 27 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].data.infoSections).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(1);
+      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].object.infoSections).toHaveLength(1);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
   });
@@ -243,9 +237,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Climate Change Priority',
@@ -253,22 +247,22 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 15, completionTokens: 16, totalTokens: 31 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 15, outputTokens: 16, totalTokens: 31 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('ordinal-question-1');
-      expect(results[0].data.questionName).toBe('How important is climate change to you?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].data.infoSections).toHaveLength(1);
+      expect(results[0].object.questionId).toBe('ordinal-question-1');
+      expect(results[0].object.questionName).toBe('How important is climate change to you?');
+      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].object.infoSections).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -277,34 +271,36 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['Terms']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Likert Scale',
-                definition: 'A psychometric scale commonly used in research.'
+                triggers: [],
+                title: 'Likert Scale',
+                content: 'A psychometric scale commonly used in research.'
               },
               {
-                term: 'Climate Change',
-                definition: 'Long-term changes in global weather patterns.'
+                triggers: [],
+                title: 'Climate Change',
+                content: 'Long-term changes in global weather patterns.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 17, completionTokens: 18, totalTokens: 35 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 17, outputTokens: 18, totalTokens: 35 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(2);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -315,9 +311,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Energy Source Preferences',
@@ -325,22 +321,22 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 19, completionTokens: 20, totalTokens: 39 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 19, outputTokens: 20, totalTokens: 39 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('categorical-question-1');
-      expect(results[0].data.questionName).toBe('What is your preferred energy source?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].data.infoSections).toHaveLength(1);
+      expect(results[0].object.questionId).toBe('categorical-question-1');
+      expect(results[0].object.questionName).toBe('What is your preferred energy source?');
+      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].object.infoSections).toHaveLength(1);
       expect(results[0].success).toBe(true);
     });
 
@@ -349,34 +345,36 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['Terms']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Solar Energy',
-                definition: 'Energy harnessed from the sun using photovoltaic cells.'
+                triggers: [],
+                title: 'Solar Energy',
+                content: 'Energy harnessed from the sun using photovoltaic cells.'
               },
               {
-                term: 'Wind Energy',
-                definition: 'Energy generated from wind turbines.'
+                triggers: [],
+                title: 'Wind Energy',
+                content: 'Energy generated from wind turbines.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 21, completionTokens: 22, totalTokens: 43 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 21, outputTokens: 22, totalTokens: 43 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(2);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(2);
       expect(results[0].success).toBe(true);
     });
   });
@@ -387,9 +385,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock successful LLM responses for all three questions
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Environmental Impact',
@@ -397,15 +395,15 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 23, completionTokens: 24, totalTokens: 47 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 23, outputTokens: 24, totalTokens: 47 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         },
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Climate Change Priority',
@@ -413,15 +411,15 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 25, completionTokens: 26, totalTokens: 51 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 25, outputTokens: 26, totalTokens: 51 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         },
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Energy Source Preferences',
@@ -429,21 +427,21 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 27, completionTokens: 28, totalTokens: 55 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 27, outputTokens: 28, totalTokens: 55 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(3);
-      expect(results[0].data.questionId).toBe('boolean-question-1');
-      expect(results[1].data.questionId).toBe('ordinal-question-1');
-      expect(results[2].data.questionId).toBe('categorical-question-1');
+      expect(results[0].object.questionId).toBe('boolean-question-1');
+      expect(results[1].object.questionId).toBe('ordinal-question-1');
+      expect(results[2].object.questionId).toBe('categorical-question-1');
       expect(results.every((r) => r.success)).toBe(true);
     });
 
@@ -452,9 +450,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections', 'Terms']);
 
       // Mock successful LLM responses
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Environmental Impact',
@@ -463,20 +461,21 @@ describe('generateQuestionInfo API', () => {
             ],
             terms: [
               {
-                term: 'Renewable Energy',
-                definition: 'Energy from sources that are naturally replenished.'
+                triggers: [],
+                title: 'Renewable Energy',
+                content: 'Energy from sources that are naturally replenished.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 29, completionTokens: 30, totalTokens: 59 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 29, outputTokens: 30, totalTokens: 59 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         },
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Climate Change Priority',
@@ -485,24 +484,25 @@ describe('generateQuestionInfo API', () => {
             ],
             terms: [
               {
-                term: 'Likert Scale',
-                definition: 'A psychometric scale commonly used in research.'
+                triggers: [],
+                title: 'Likert Scale',
+                content: 'A psychometric scale commonly used in research.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 31, completionTokens: 32, totalTokens: 63 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 31, outputTokens: 32, totalTokens: 63 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(2);
-      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
+      expect(results.every((r) => r.object.infoSections && r.object.terms)).toBe(true);
       expect(results.every((r) => r.success)).toBe(true);
     });
   });
@@ -513,7 +513,7 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock LLM failure
-      mockLLMProvider.generateMultipleParallel.mockRejectedValue(new Error('LLM service unavailable'));
+      mockLLMProvider.generateObjectParallel.mockRejectedValue(new Error('LLM service unavailable'));
 
       await expect(generateQuestionInfo({ questions, options })).rejects.toThrow(
         'Error generating question info: Error: LLM service unavailable'
@@ -525,15 +525,15 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock LLM response with invalid data
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: null, // Invalid response
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 5, completionTokens: 0, totalTokens: 5 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          object: undefined as unknown as Record<string, unknown>,
+          usage: { inputTokens: 5, outputTokens: 0, totalTokens: 5 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
@@ -541,8 +541,8 @@ describe('generateQuestionInfo API', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].success).toBe(false);
-      expect(results[0].data.infoSections).toBeUndefined();
-      expect(results[0].data.terms).toBeUndefined();
+      expect(results[0].object.infoSections).toBeUndefined();
+      expect(results[0].object.terms).toBeUndefined();
     });
   });
 
@@ -571,9 +571,9 @@ describe('generateQuestionInfo API', () => {
       const options = createTestOptions(['InfoSections']);
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Basic Information',
@@ -581,11 +581,17 @@ describe('generateQuestionInfo API', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 7, completionTokens: 8, totalTokens: 15 },
-            model: mockLLMModel,
-            finishReason: 'stop'
+          usage: { inputTokens: 7, outputTokens: 8, totalTokens: 15 },
+          finishReason: 'stop',
+          latencyMs: 100,
+          attempts: 1,
+          costs: { total: 0.01 },
+          fallbackUsed: false,
+          response: {
+            id: 'test-response-id',
+            modelId: mockLLMModel,
+            timestamp: new Date(),
+            headers: {}
           }
         }
       ]);
@@ -594,7 +600,7 @@ describe('generateQuestionInfo API', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].success).toBe(true);
-      expect(results[0].data.questionName).toBe('Minimal question');
+      expect(results[0].object.questionName).toBe('Minimal question');
     });
   });
 });
