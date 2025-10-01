@@ -42,9 +42,10 @@ export function DeleteData(): ReactElement {
       <p>
         To delete all mock data, use:{' '}
         <code>
-          {'{'} "candidates": "mock-", "constituencies": "mock-", "constituencyGroups": "mock-",
-          "elections": "mock-", "nominations": "mock-", "parties": "mock-", "questionTypes":
-          "mock-", "questionCategories": "mock-", "questions": "mock-" {'}'}
+          {'{'} "alliances": "mock-", "candidates": "mock-", "constituencies": "mock-",
+          "constituencyGroups": "mock-", "elections": "mock-", "nominations": "mock-", "parties":
+          "mock-", "questionTypes": "mock-", "questionCategories": "mock-", "questions": "mock-"{' '}
+          {'}'}
         </code>
       </p>
     </Flex>

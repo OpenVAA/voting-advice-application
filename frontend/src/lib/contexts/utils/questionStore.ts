@@ -2,6 +2,7 @@ import {
   type AnyQuestionVariant,
   type Constituency,
   type Election,
+  ENTITY_TYPE,
   QUESTION_CATEGORY_TYPE,
   type QuestionCategory
 } from '@openvaa/data';
@@ -12,7 +13,7 @@ import type { Readable } from 'svelte/store';
 import type { AppType } from '../app';
 
 /**
- * Create a derived store containing all `AnyQuestionVariant`s that apply to the selected elections and constituencies. For opinion questions, the store will ensure that they are matchable. It will also filter out hidden questions based on `appType`.
+ * Create a derived store containing all `AnyQuestionVariant`s that apply to the selected elections and constituencies. For opinion questions, the store will ensure that they are matchable. It will also filter out hidden questions and those of the correct entity type based on `appType`.
  */
 export function questionStore({
   categories,
@@ -30,7 +31,11 @@ export function questionStore({
     ([categories, elections, constituencies]) =>
       categories.flatMap((c) => {
         const questions = c
-          .getApplicableQuestions({ elections, constituencies })
+          .getApplicableQuestions({
+            elections,
+            constituencies,
+            entityType: appType === 'candidate' ? ENTITY_TYPE.Candidate : undefined
+          })
           // Filter out hidden questions in the Voter App. Note that we need to also do this in `EntityDetails`
           .filter((q) => appType !== 'voter' || !(q.customData as CustomData['Question'])?.hidden);
         if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))

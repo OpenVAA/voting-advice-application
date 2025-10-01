@@ -144,6 +144,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
+    const allianceParams = structuredClone(params);
     params.filters ??= {};
     params.filters.candidate = {
       termsOfUseAccepted: { $notNull: 'true' }
@@ -164,13 +165,30 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       params.filters ??= {};
       params.filters.unconfirmed = { $ne: 'true' };
     }
-    const data = await this.apiGet({ endpoint: 'nominations', params });
-    return parseNominations(data, locale);
+    // We need to fetch alliances separately because they're not included in the nominations API
+    // Constiuencies are defined in plural for Alliances, so we need to edit that part of the params
+    if (allianceParams.filters?.constituency) {
+      allianceParams.filters.constituencies = allianceParams.filters.constituency;
+      delete allianceParams.filters.constituency;
+    }
+    allianceParams.populate = {
+      constituencies: 'true',
+      election: 'true',
+      parties: 'true'
+    };
+    const [nominations, alliances] = await Promise.all([
+      this.apiGet({ endpoint: 'nominations', params }),
+      this.apiGet({ endpoint: 'alliances', params: allianceParams })
+    ]);
+    return parseNominations({ nominations, alliances, locale });
   }
 
   protected async _getEntityData(options: GetEntitiesOptions = {}): Promise<DPDataType['entities']> {
     const locale = options.locale ?? null;
     const { id, entityType } = options;
+    if (entityType && entityType !== ENTITY_TYPE.Candidate && entityType !== ENTITY_TYPE.Organization)
+      throw new Error(`Unsupported entityType: ${entityType}`);
+    // If id is defined, entityType must also be defined. Otherwise, we can't fetch any specific entity.
     if (id && !entityType) throw new Error('If id is defined entityType must also be defined.');
     // Common params for both APIs
     const params = buildFilterParams({ id });
