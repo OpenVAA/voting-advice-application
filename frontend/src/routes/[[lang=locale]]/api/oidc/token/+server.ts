@@ -3,6 +3,7 @@ import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import type { RequestEvent } from '@sveltejs/kit';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
   const { authorizationCode, codeVerifier, redirectUri } = await request.json();
@@ -41,7 +42,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
     path: '/'
   });
 
-  return json({});
+  return json({ type: 'success' } as DataApiActionResult);
 }
 
 export async function DELETE({ cookies }: RequestEvent): Promise<Response> {
@@ -51,5 +52,5 @@ export async function DELETE({ cookies }: RequestEvent): Promise<Response> {
     sameSite: 'strict',
     path: '/'
   });
-  return json({});
+  return json({ type: 'success' } as DataApiActionResult);
 }
