@@ -57,6 +57,9 @@ export function initAppContext(): AppContext {
     const data = await promise;
     // Errors are handled by +layout.svelte
     if (!data || data instanceof Error) return;
+    // Override access for staging
+    data.access ??= { candidateApp: true, voterApp: true };
+    data.access.voterApp = true;
     appSettings.update((current) => mergeAppSettings(current, data));
   });
 
