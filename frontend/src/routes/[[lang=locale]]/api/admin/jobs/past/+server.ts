@@ -1,18 +1,10 @@
 import { json } from '@sveltejs/kit';
 import qs from 'qs';
+import { getUserData } from '$lib/auth';
 import { getPastJobs } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { AdminJobName } from '$lib/admin/features';
+import type { AdminFeature } from '$lib/admin/features';
 import type { PastJobStatus } from '$lib/server/admin/jobs/jobStore.type';
-
-/**
- * Parse `startFrom` value into a Date.
- */
-function parseStartFromParam(raw?: string | null): Date | undefined {
-  if (!raw) return undefined;
-  const ts = new Date(raw);
-  return Number.isNaN(ts.getTime()) ? undefined : ts;
-}
 
 /**
  * GET /api/admin/jobs/past
@@ -23,7 +15,9 @@ function parseStartFromParam(raw?: string | null): Date | undefined {
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url }: RequestEvent) {
+export async function GET({ url, fetch, cookies }: RequestEvent) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+
   try {
     const params = qs.parse(url.search.replace(/^\?/g, '')) as {
       jobType?: string | Array<string>;
@@ -31,7 +25,7 @@ export async function GET({ url }: RequestEvent) {
       startFrom?: string | Array<string>;
     };
 
-    const jobType = (Array.isArray(params.jobType) ? params.jobType[0] : params.jobType) as AdminJobName | undefined;
+    const jobType = (Array.isArray(params.jobType) ? params.jobType[0] : params.jobType) as AdminFeature | undefined;
     const statuses = Array.isArray(params.statuses) ? (params.statuses as Array<PastJobStatus>) : undefined;
     const startFromRaw = Array.isArray(params.startFrom) ? params.startFrom[0] : params.startFrom;
     const startFrom = parseStartFromParam(startFromRaw);
@@ -46,4 +40,13 @@ export async function GET({ url }: RequestEvent) {
     console.error('Error getting past jobs:', error);
     return json({ error: 'Failed to get past jobs' }, { status: 500 });
   }
+}
+
+/**
+ * Parse `startFrom` value into a Date.
+ */
+function parseStartFromParam(raw?: string | null): Date | undefined {
+  if (!raw) return undefined;
+  const ts = new Date(raw);
+  return Number.isNaN(ts.getTime()) ? undefined : ts;
 }

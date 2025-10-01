@@ -3,10 +3,13 @@
  * Request a cooperative abort for a specific job
  */
 import { json } from '@sveltejs/kit';
+import { getUserData } from '$lib/auth';
 import { requestAbort } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
-export async function POST({ params, request }: RequestEvent) {
+export async function POST({ params, request, fetch, cookies }: RequestEvent) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+
   try {
     const { jobId } = params;
     if (!jobId) {

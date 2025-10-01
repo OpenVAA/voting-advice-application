@@ -4,11 +4,14 @@
  */
 
 import { json } from '@sveltejs/kit';
+import { getUserData } from '$lib/auth';
 import { getJob } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
-export async function GET({ params }: RequestEvent) {
+export async function GET({ fetch, cookies, params }: RequestEvent) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+
   try {
     const { jobId } = params;
 
