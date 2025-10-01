@@ -127,8 +127,7 @@
     action="login"
     use:enhance={() => {
       status = 'loading';
-      return async ({ update, result }) => {
-        await update();
+      return async ({ result }) => {
         if (result.type === 'failure') {
           status = 'error';
           errorMessage =
