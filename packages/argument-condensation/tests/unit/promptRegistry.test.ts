@@ -260,12 +260,9 @@ describe('PromptRegistry integration with real prompts', () => {
 // Additional tests for edge cases and specific scenarios
 // TODO: Move to llm package
 describe('variable validation edge cases', () => {
-// TODO: Move to llm package
-describe('variable validation edge cases', () => {
   test('It should handle prompts with no variables', () => {
     // Test extraction with no variables
     const noVariablesText = 'This is a prompt with no variables at all.';
-    const extracted = extractPromptVars(noVariablesText);
     const extracted = extractPromptVars(noVariablesText);
     expect(extracted).toEqual([]);
   });
@@ -285,8 +282,7 @@ describe('variable validation edge cases', () => {
 
       if (prompt) {
         // Test that the prompt's variables are properly documented
-        const validation = validatePromptVars(prompt.promptText, prompt.params as unknown as Record<string, unknown>);
-        const validation = validatePromptVars(prompt.promptText, prompt.params as unknown as Record<string, unknown>);
+        const validation = validatePromptVars({ promptText: prompt.promptText, params: prompt.params as unknown as Record<string, unknown> });
         expect(validation.valid).toBe(true);
       }
     }
@@ -322,7 +318,6 @@ describe('variable validation edge cases', () => {
     ];
 
     for (const testCase of testCases) {
-      const extracted = extractPromptVars(testCase.text);
       const extracted = extractPromptVars(testCase.text);
       expect(extracted).toEqual(testCase.expected);
     }

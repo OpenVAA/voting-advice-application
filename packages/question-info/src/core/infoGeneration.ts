@@ -1,7 +1,6 @@
-import { type Role, setPromptVars } from '@openvaa/llm';
 import { DEFAULT_SECTION_TOPICS } from '../consts';
 import {
-  createDynamicResponseContract,
+  chooseQInfoSchema,
   determinePromptKey,
   loadAllExamples,
   loadInstructions,
@@ -9,7 +8,8 @@ import {
   transformResponse
 } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
-import type { QuestionInfoOptions, QuestionInfoResult } from '../types';
+import type { z } from 'zod';
+import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
 
 /**
  * Generate question info for any number of questions with parallelization
@@ -35,8 +35,6 @@ export async function generateInfo({
   questions: Array<AnyQuestionVariant>;
   options: QuestionInfoOptions;
 }): Promise<Array<QuestionInfoResult>> {
-  const startTime = new Date();
-
   try {
     // Determine which prompt to use based on which operations we want to run
     const promptKey = determinePromptKey({ operations: options.operations });
@@ -64,12 +62,13 @@ export async function generateInfo({
       })
       .join('\n\n');
 
-    // Create response validation schema to make sure the LLM's text response is always
-    // formatted as we expect it to be
-    const responseValContract = createDynamicResponseContract({ operations: options.operations });
+    // Create Zod schema for response validation
+    const responseSchema = chooseQInfoSchema({
+      operations: options.operations
+    }) as z.ZodSchema<ResponseWithInfo>;
 
-    // Prepare inputs for parallel generation
-    const inputs = questions.map((question) => {
+    // Prepare prompt inputs for parallel generation
+    const requests = questions.map((question) => {
       // Build variables object based on the operation type. Start with tasks' shared variables
       const variables: Record<string, unknown> = {
         question: question.name,
@@ -90,39 +89,30 @@ export async function generateInfo({
       }
 
       return {
+        modelConfig: { primary: options.llmModel },
+        schema: responseSchema,
         messages: [
           {
-            role: 'user' as Role,
-            content: setPromptVars({
-              promptText: promptTemplate.prompt,
-              variables,
-              strict: false,
-              controller: options.controller // For warnings
-            })
+            role: 'system' as const,
+            content: promptTemplate.prompt
           }
         ],
-        temperature: 0, // TODO: we should probably remove these repo-wide. Also changing default temp to 0 is better than current 0.7, because some models don't support temp at all
-        model: options.llmModel
+        temperature: 0,
+        validationRetries: 3
       };
     });
 
     // Generate responses in parallel with validation
-    const responses = await options.llmProvider.generateMultipleParallel({
-      inputs,
-      responseContract: responseValContract,
-      parallelBatches: 5 // TODO: tweak so that we use an appropriate amount of max capacity
+    const responses = await options.llmProvider.generateObjectParallel<ResponseWithInfo>({
+      requests,
+      maxConcurrent: 5 // TODO: tweak so that we use an appropriate amount of max capacity
     });
-
-    const endTime = new Date();
 
     // Transform responses to our result format
     return questions.map((question, index) => {
       const response = responses[index];
-      if (response.parsed) {
-        return transformResponse({ llmResponse: response, question, options, startTime, endTime });
-      } else {
-        return transformResponse({ llmResponse: response, question, options, startTime, endTime, success: false });
-      }
+      const success = response?.object != null;
+      return transformResponse({ llmResponse: response, question, success });
     });
   } catch (error) {
     throw new Error(`Error generating question info: ${error}`);

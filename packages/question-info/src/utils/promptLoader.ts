@@ -1,4 +1,4 @@
-import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/llm';
+import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
@@ -32,7 +32,7 @@ export async function loadPrompt({
   language: string;
   controller?: Controller;
 }): Promise<LoadedPrompt> {
-  const filePath = join(process.cwd(), 'src', 'prompts', language, `${promptFileName}.yaml`);
+  const filePath = join(__dirname, '..', 'prompts', language, `${promptFileName}.yaml`);
   const raw = await readFile(filePath, 'utf-8');
   const parsed = loadYaml(raw) as LoadedPromptYaml;
 
@@ -73,7 +73,7 @@ export async function loadPrompt({
  * ```
  */
 export async function loadInstructions({ language }: { language: string }): Promise<Record<string, string>> {
-  const filePath = join(process.cwd(), 'src', 'prompts', language, 'instructions.yaml');
+  const filePath = join(__dirname, '..', 'prompts', language, 'instructions.yaml');
   const raw = await readFile(filePath, 'utf-8');
   return loadYaml(raw) as Record<string, string>;
 }
@@ -109,7 +109,7 @@ export async function loadAllExamples({ language }: { language: string }): Promi
   }> = [];
 
   for (const filename of FILENAMES_FOR_EXAMPLES) {
-    const filePath = join(process.cwd(), 'src', 'prompts', language, 'examples', `${filename}.yaml`);
+    const filePath = join(__dirname, '..', 'prompts', language, 'examples', `${filename}.yaml`);
     const raw = await readFile(filePath, 'utf-8');
     const exampleData = loadYaml(raw) as LoadedExampleYaml;
 

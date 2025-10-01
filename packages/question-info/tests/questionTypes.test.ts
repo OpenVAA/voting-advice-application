@@ -23,15 +23,9 @@ const noOpLogger: Controller = {
   getCurrentOperation: () => null
 };
 
-// Mock LLM provider
+// Mock LLM provider (new API)
 const mockLLMProvider = {
-  name: 'mock',
-  generateMultipleParallel: vi.fn(),
-  generateMultipleSequential: vi.fn(),
-  generateAndValidateWithRetry: vi.fn(),
-  generate: vi.fn(),
-  generateWithRetry: vi.fn()
-  // There is an issue with typing with the abstract LLM Provider. This is a workaround to allow the mock to be used in the tests
+  generateObjectParallel: vi.fn()
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock LLM model
@@ -68,15 +62,17 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
-        controller: noOpLogger
+        llmModel: mockLLMModel,
+        controller: noOpLogger,
+        fallbackModel: mockLLMModel
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Healthcare Policy',
@@ -84,22 +80,21 @@ describe('Question Type Configurations', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('boolean-1');
-      expect(results[0].data.questionName).toBe('Do you support universal healthcare?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.questionId).toBe('boolean-1');
+      expect(results[0].object.questionName).toBe('Do you support universal healthcare?');
+      expect(results[0].object.infoSections).toBeDefined();
     });
 
     test('should handle boolean question with terms generation', async () => {
@@ -119,41 +114,43 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Social Media Regulation',
-                definition: 'Government oversight of social media platforms and content.'
+                triggers: [],
+                title: 'Social Media Regulation',
+                content: 'Government oversight of social media platforms and content.'
               },
               {
-                term: 'Platform Governance',
-                definition: 'The rules and policies that govern online platforms.'
+                triggers: [],
+                title: 'Platform Governance',
+                content: 'The rules and policies that govern online platforms.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(2);
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(2);
     });
   });
 
@@ -182,15 +179,16 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Public Transportation Satisfaction',
@@ -198,22 +196,21 @@ describe('Question Type Configurations', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('ordinal-1');
-      expect(results[0].data.questionName).toBe('How satisfied are you with public transportation?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.questionId).toBe('ordinal-1');
+      expect(results[0].object.questionName).toBe('How satisfied are you with public transportation?');
+      expect(results[0].object.infoSections).toBeDefined();
     });
 
     test('should handle 7-point Likert scale question', async () => {
@@ -242,41 +239,43 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Climate Change',
-                definition: 'Long-term changes in global weather patterns and average temperatures.'
+                triggers: [],
+                title: 'Climate Change',
+                content: 'Long-term changes in global weather patterns and average temperatures.'
               },
               {
-                term: 'Likert Scale',
-                definition: "A psychometric scale commonly used in research to represent people's attitudes."
+                triggers: [],
+                title: 'Likert Scale',
+                content: "A psychometric scale commonly used in research to represent people's attitudes."
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(2);
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(2);
     });
   });
 
@@ -305,15 +304,16 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.InfoSections],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Transportation Mode Analysis',
@@ -321,22 +321,21 @@ describe('Question Type Configurations', () => {
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.questionId).toBe('categorical-1');
-      expect(results[0].data.questionName).toBe('What is your primary mode of transportation to work?');
-      expect(results[0].data.infoSections).toBeDefined();
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.questionId).toBe('categorical-1');
+      expect(results[0].object.questionName).toBe('What is your primary mode of transportation to work?');
+      expect(results[0].object.infoSections).toBeDefined();
     });
 
     test('should handle binary categorical question', async () => {
@@ -360,45 +359,48 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.Terms],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM response
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             terms: [
               {
-                term: 'Chronotype',
-                definition: "A person's natural inclination toward the timing of daily activities."
+                triggers: [],
+                title: 'Chronotype',
+                content: "A person's natural inclination toward the timing of daily activities."
               },
               {
-                term: 'Morning Person',
-                definition: 'Someone who prefers to be active and alert in the early hours of the day.'
+                triggers: [],
+                title: 'Morning Person',
+                content: 'Someone who prefers to be active and alert in the early hours of the day.'
               },
               {
-                term: 'Night Person',
-                definition: 'Someone who prefers to be active and alert in the evening and night hours.'
+                triggers: [],
+                title: 'Night Person',
+                content: 'Someone who prefers to be active and alert in the evening and night hours.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].data.terms).toBeDefined();
-      expect(results[0].data.terms).toHaveLength(3);
-      expect(results[0].success).toBe(true);
+      expect(results[0].object.terms).toBeDefined();
+      expect(results[0].object.terms).toHaveLength(3);
     });
   });
 
@@ -455,15 +457,16 @@ describe('Question Type Configurations', () => {
         runId: 'test-run-id',
         operations: [QUESTION_INFO_OPERATION.InfoSections, QUESTION_INFO_OPERATION.Terms],
         language: 'en',
-        llmModel: mockLLMModel,
+        modelConfig: { primary: mockLLMModel },
         llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
         controller: noOpLogger
       } as QuestionInfoOptions;
 
       // Mock successful LLM responses for all three questions
-      mockLLMProvider.generateMultipleParallel.mockResolvedValue([
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Tax Policy',
@@ -472,20 +475,21 @@ describe('Question Type Configurations', () => {
             ],
             terms: [
               {
-                term: 'Progressive Taxation',
-                definition: 'A tax system where higher income earners pay a larger percentage of their income in taxes.'
+                triggers: [],
+                title: 'Progressive Taxation',
+                content: 'A tax system where higher income earners pay a larger percentage of their income in taxes.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         },
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Income Inequality Priority',
@@ -494,20 +498,21 @@ describe('Question Type Configurations', () => {
             ],
             terms: [
               {
-                term: 'Income Inequality',
-                definition: 'The unequal distribution of income among individuals or groups in a society.'
+                triggers: [],
+                title: 'Income Inequality',
+                content: 'The unequal distribution of income among individuals or groups in a society.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         },
         {
-          parsed: {
+          object: {
             infoSections: [
               {
                 title: 'Policy Preference Analysis',
@@ -516,35 +521,35 @@ describe('Question Type Configurations', () => {
             ],
             terms: [
               {
-                term: 'Policy Approaches',
-                definition: 'Different strategies and methods used to address social and economic issues.'
+                triggers: [],
+                title: 'Policy Approaches',
+                content: 'Different strategies and methods used to address social and economic issues.'
               }
             ]
           },
-          raw: {
-            content: '{}',
-            usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
-            model: mockLLMModel,
-            finishReason: 'stop'
-          }
+          usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          response: { modelId: mockLLMModel },
+          finishReason: 'stop',
+          latencyMs: 10,
+          attempts: 1,
+          costs: { total: 0 }
         }
       ]);
 
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(3);
-      expect(results[0].data.questionId).toBe('mixed-1');
-      expect(results[1].data.questionId).toBe('mixed-2');
-      expect(results[2].data.questionId).toBe('mixed-3');
+      expect(results[0].object.questionId).toBe('mixed-1');
+      expect(results[1].object.questionId).toBe('mixed-2');
+      expect(results[2].object.questionId).toBe('mixed-3');
 
       // All results should have both infoSections and terms
-      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
-      expect(results.every((r) => r.success)).toBe(true);
+      expect(results.every((r) => r.object.infoSections && r.object.terms)).toBe(true);
 
       // Verify specific content
-      expect(results[0].data.infoSections![0].title).toBe('Tax Policy');
-      expect(results[1].data.infoSections![0].title).toBe('Income Inequality Priority');
-      expect(results[2].data.infoSections![0].title).toBe('Policy Preference Analysis');
+      expect(results[0].object.infoSections![0].title).toBe('Tax Policy');
+      expect(results[1].object.infoSections![0].title).toBe('Income Inequality Priority');
+      expect(results[2].object.infoSections![0].title).toBe('Policy Preference Analysis');
     });
   });
 });

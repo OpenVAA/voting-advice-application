@@ -1,5 +1,5 @@
 // packages/question-info/scripts/test-generation.ts
-import { OpenAIProvider } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm-refactor';
 import dotenv from 'dotenv';
 import path from 'path';
 import { generateQuestionInfo } from '../src/api.js';
@@ -49,8 +49,12 @@ async function runTest() {
   }
 
   // Set up LLM provider
-  const llmProvider = new OpenAIProvider({
-    apiKey: process.env.LLM_OPENAI_API_KEY || 'your-api-key-here'
+  const llmProvider = new LLMProvider({
+    provider: 'openai',
+    apiKey: process.env.LLM_OPENAI_API_KEY || 'your-api-key-here',
+    modelConfig: {
+      primary: 'gpt-4o-mini'
+    }
   });
 
   // Generate question info
@@ -62,7 +66,7 @@ async function runTest() {
       operations,
       language: 'en',
       llmProvider,
-      llmModel: 'gpt-4o-mini',
+      modelConfig: { primary: 'gpt-4o-mini' },
       questionContext: 'This election is held in Finland in 2025.',
       sectionTopics: ['Background', 'Current situation', 'Huplaah!']
     }

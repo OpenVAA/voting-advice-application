@@ -1,8 +1,10 @@
-import { extractPromptVars } from '@openvaa/llm';
+import { extractPromptVars } from '@openvaa/llm-refactor';
 import { readdir, readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
+
+const packageRoot = join(__dirname, '..');
 
 /**
  * Test suite to validate prompt files for each supported language
@@ -58,7 +60,7 @@ describe('Prompt File Validation', () => {
 
   // Get list of supported languages dynamically
   async function getSupportedLanguages(): Promise<Array<string>> {
-    const promptsDir = join(process.cwd(), 'src', 'prompts');
+    const promptsDir = join(packageRoot, 'src', 'prompts');
     const dirs = await readdir(promptsDir, { withFileTypes: true });
     return dirs.filter((dir) => dir.isDirectory()).map((dir) => dir.name);
   }
@@ -74,7 +76,7 @@ describe('Prompt File Validation', () => {
   // (a) Check if expected prompt files exist for each language
   it('should have all expected prompt files for each language', async () => {
     for (const language of supportedLanguages) {
-      const promptsDir = join(process.cwd(), 'src', 'prompts', language);
+      const promptsDir = join(packageRoot, 'src', 'prompts', language);
       const files = await readdir(promptsDir);
       for (const expectedPrompt of expectedPrompts) {
         expect(files).toContain(expectedPrompt);
@@ -86,7 +88,7 @@ describe('Prompt File Validation', () => {
   for (const promptFile of expectedPrompts) {
     it(`should have expected fields in ${promptFile}`, async () => {
       for (const language of supportedLanguages) {
-        const filePath = join(process.cwd(), 'src', 'prompts', language, promptFile);
+        const filePath = join(packageRoot, 'src', 'prompts', language, promptFile);
         const raw = await readFile(filePath, 'utf-8');
         const parsed = loadYaml(raw) as Record<string, unknown>;
 
@@ -103,7 +105,7 @@ describe('Prompt File Validation', () => {
   for (const promptFile of generatePrompts) {
     it(`should have matching params in ${promptFile}`, async () => {
       for (const language of supportedLanguages) {
-        const filePath = join(process.cwd(), 'src', 'prompts', language, promptFile);
+        const filePath = join(packageRoot, 'src', 'prompts', language, promptFile);
         const raw = await readFile(filePath, 'utf-8');
         const parsed = loadYaml(raw) as Record<string, unknown>;
 
@@ -127,7 +129,7 @@ describe('Prompt File Validation', () => {
   // (d) Check if example files have the correct fields
   it('should have correct fields in all example files', async () => {
     for (const language of supportedLanguages) {
-      const examplesDir = join(process.cwd(), 'src', 'prompts', language, 'examples');
+      const examplesDir = join(packageRoot, 'src', 'prompts', language, 'examples');
 
       // Check if examples directory exists
       try {

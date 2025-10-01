@@ -107,8 +107,7 @@ export class PromptRegistry {
             };
 
             // Validate variables before creating the prompt
-            const validation = validatePromptVars(promptData.promptText, promptData.params);
-            const validation = validatePromptVars(promptData.promptText, promptData.params);
+            const validation = validatePromptVars({ promptText: promptData.promptText, params: promptData.params });
 
             if (!validation.valid) {
               const errorDetails = [];
@@ -199,7 +198,6 @@ export class PromptRegistry {
       throw new Error(`Prompt with ID '${promptId}' not found`);
     }
 
-    const variablesInText = extractPromptVars(prompt.promptText);
     const variablesInText = extractPromptVars(prompt.promptText);
     const providedVars = Object.keys(variables);
 
