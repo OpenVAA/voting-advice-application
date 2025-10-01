@@ -70,7 +70,7 @@
       "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst",
       "details": "Undersøg dem nærmere"
     },
-    "title": "Lad os komme i gang!"
+    "title": "Hvilken ung kandidat er du mest enig med?"
   },
   "maintenance": {
     "content": "<p>Vi beklager, men Valgtesten er midlertidigt utilgængeligt på grund af vedligeholdelse. Det burde snart være tilbage, så prøv igen senere.</p><p>Hvis du var i gang med at besvare spørgsmål, skal du ikke bekymre dig. Du kan fortsætte, hvor du slap, når du vender tilbage.</p>",

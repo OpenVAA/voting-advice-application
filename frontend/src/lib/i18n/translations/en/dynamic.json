@@ -70,7 +70,7 @@
       "opinions": "Enter your opinions",
       "results": "See the {candidatePlural} and {partyPlural} that best agree with you"
     },
-    "title": "Let’s start!"
+    "title": "Which young candidate do you agree with the most?"
   },
   "maintenance": {
     "content": "<p>We're very sorry, the Election Compass is currently unavailable due to maintenance. It should be back in use shortly, so please try again later.</p><p>Don’t worry if you were just in the middle of answering. You can continue from where you left off, when you come back.</p>",
