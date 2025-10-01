@@ -1,8 +1,12 @@
 import { json } from '@sveltejs/kit';
+import { getUserData } from '$lib/auth';
 import { getActiveJobs, requestAbort } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
 
-export async function POST({ request }: RequestEvent) {
+export async function POST({ fetch, cookies, request }: RequestEvent) {
+  // TODO: Consider checking the user role with claims in the server hook when the route matches /api/admin
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+
   try {
     // Body is optional
     let reason: string | undefined;

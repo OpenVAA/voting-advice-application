@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { apiFail } from '$lib/api/utils/fail';
-import { AUTH_TOKEN_KEY } from '$lib/server/auth';
+import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { logDebugError } from '$lib/utils/logger';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { BasicUserData, UserRole } from '$lib/api/base/dataWriter.type';
