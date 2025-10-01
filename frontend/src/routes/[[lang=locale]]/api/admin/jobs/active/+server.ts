@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import qs from 'qs';
+import { getUserData } from '$lib/auth';
 import { getActiveJobs } from '$lib/server/admin/jobs/jobStore';
 import type { RequestEvent } from '@sveltejs/kit';
-import type { AdminJobName } from '$lib/admin/features';
+import type { AdminFeature } from '$lib/admin/features';
 
 /**
  * GET /api/admin/jobs/active
@@ -11,11 +12,13 @@ import type { AdminJobName } from '$lib/admin/features';
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url }: RequestEvent) {
+export async function GET({ url, cookies, fetch }: RequestEvent) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+
   try {
     // Parse params
     const params = qs.parse(url.search.replace(/^\?/g, '')) as { jobType?: string };
-    const jobType = params.jobType as AdminJobName | undefined;
+    const jobType = params.jobType as AdminFeature | undefined;
 
     // Get and filter jobs
     let jobs = getActiveJobs();
