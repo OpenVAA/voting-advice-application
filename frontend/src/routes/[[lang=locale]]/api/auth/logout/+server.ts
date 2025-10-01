@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { AUTH_TOKEN_KEY } from '$lib/server/auth';
+import { AUTH_TOKEN_KEY } from '$lib/auth';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**

@@ -1,7 +1,7 @@
-import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
+import { API_ROOT } from '$lib/api/base/universalApiRoutes';
+import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
-import { AUTH_TOKEN_KEY } from '$lib/server/auth';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
