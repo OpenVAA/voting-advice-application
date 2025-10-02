@@ -1,7 +1,6 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { convertToModelMessages, stepCountIs, streamText, type ToolSet } from 'ai';
 import { getTools } from './tools/tools';
-import { openAIApiKey } from '../apiKey';
 import type { ChatbotAPIInput } from '../api.type';
 
 
@@ -16,7 +15,7 @@ export class ChatEngine {
 
     // TODO: Replace with environment variable
     const openaiProvider = createOpenAI({
-      apiKey: openAIApiKey
+      apiKey: 'your-api-key'
     });
 
     const result = streamText({

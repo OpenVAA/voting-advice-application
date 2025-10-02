@@ -41,8 +41,7 @@ export type { CondensationPromptCall as PromptCall } from './llm/promptInstance'
 export type { ResponseWithArguments } from './llm/responseWithArguments';
 
 // LLM latency, token & pricing types (re-exported from @openvaa/llm-refactor for convenience)
-export type { ModelPricing } from '@openvaa/llm-refactor';
-export type { LatencyMeasurement } from '@openvaa/llm-refactor';
+export type { MODEL_PRICING } from '@openvaa/llm-refactor';
 export type { LanguageModelUsage as TokenUsage } from 'ai';
 
 // Supported languages (update as needed)

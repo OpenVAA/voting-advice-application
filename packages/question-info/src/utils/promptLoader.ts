@@ -1,7 +1,6 @@
 import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
-import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
 import { FILENAMES_FOR_EXAMPLES } from '../consts';
 import type { Controller } from '@openvaa/core';
