@@ -1,0 +1,60 @@
+devNote: this prompt is incomplete - we need to improve it.
+  most importantly, we need to add examples that guide the model to generate good sections and terms.
+  additionally, the prompt should give more freedom to reason about what kind of info sections are good in this context
+  or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
+  + general prompt engineering improvements
+
+params:
+  question: string
+  generalInstructions: string
+  infoSectionInstructions: string
+  sectionTopics: array
+  termDefInstructions: string
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string 
+
+prompt: |
+  {{generalInstructions}}
+
+  ## Task 1: Info Section Generation:
+  {{infoSectionInstructions}}
+
+  IMPORTANT: You MUST generate exactly the following sections (and only these sections):
+  {{sectionTopics}}
+
+  ## Task 2: Term Definition Generation:
+  {{termDefInstructions}}
+
+  ## Neutrality Requirements:
+  {{neutralityRequirements}}
+
+  ## Question Context:
+  {{questionContext}}
+
+  ## (Optional) Additional Instructions by your current operator:
+  {{customInstructions}}
+
+  ## Examples:
+  {{examples}}
+
+  Respond with JSON in this exact format, WITHOUT ANY OTHER TEXT:
+  {
+    "infoSections": [
+      {
+        "title": "Short title for the section",
+        "content": "explanation of the section in English"
+      }
+    ],
+    "terms": [
+      {
+        "triggers": ["termInflection1", "termInflection2"],
+        "title": "Term Name",
+        "content": "Clear explanation of what this term means"
+      }
+    ]
+  }
+
+  ## Question to use for the task: 
+  {{question}}
