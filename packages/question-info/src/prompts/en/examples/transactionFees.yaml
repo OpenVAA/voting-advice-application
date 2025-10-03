@@ -1,0 +1,36 @@
+# For the prompt that generates both info sections and terms, we create the example JSON by simply combining the
+# examples on the same level, which is the same as the output format for the prompt that generates both.
+# Namely, {infoSectionExample, termExample}
+
+question: |
+  The state should increase transaction fees on financial market operations.
+
+infoSectionExample: |
+  {
+    "infoSections": [
+      {
+        "title": "Background",
+        "content": "Financial transaction fees (or taxes) are small charges on trades of assets such as stocks, bonds, or derivatives. They are often proposed to raise public revenue and discourage speculative trading. In the EU, common rules have been debated for years, but only a few countries have implemented broad-based transaction taxes."
+      },
+      {
+        "title": "Current situation",
+        "content": "In Finland, a transfer tax of 1.6% applies to share purchases in Finnish companies, but trades on regulated markets like the Helsinki Stock Exchange are exempt. Finland also has a bank levy, but no wide-ranging financial transaction tax. Proposals to raise fees spark debate between boosting public funds and financial stability versus risking lower liquidity and competitiveness."
+      }
+    ]
+  }
+
+termExample: |
+  {
+    "terms": [
+      {
+        "triggers": ["transaction fees"],
+        "title": "Transaction fees",
+        "content": "Charges applied to financial transactions, such as buying or selling stocks, bonds, or other securities. These fees are typically collected by governments to generate revenue and can also be used to regulate market activity by making certain transactions more expensive."
+      },
+      {
+        "triggers": ["financial market operations"],
+        "title": "Financial market operations",
+        "content": "Activities involving the buying and selling of financial instruments like stocks, bonds, currencies, and derivatives. These operations facilitate the flow of capital between investors and companies, helping businesses raise funds and allowing individuals to invest their money."
+      }
+    ]
+  }

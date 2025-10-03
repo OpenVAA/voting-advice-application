@@ -1,0 +1,46 @@
+devNote: this prompt is incomplete - we need to improve it.
+  most importantly, we need to add examples that guide the model to generate good terms.
+  + general prompt engineering improvements
+
+devNote2: rename to "examples" and only make examples configurable through source code (here)
+
+params:
+  question: string
+  generalInstructions: string
+  termDefInstructions: string
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string
+
+prompt: |
+  {{generalInstructions}}
+
+  ## Task: Identify terms that voters might need explained, such as:
+  {{termDefInstructions}}
+
+  ## Neutrality Requirements:
+  {{neutralityRequirements}}
+
+  ## Question Context:
+  {{questionContext}}
+
+  ## (Optional) Additional Instructions Given by Your Current Operator:
+  {{customInstructions}}
+
+  ## Examples:
+  {{examples}}
+
+  Respond with JSON in this exact format with NO OTHER TEXT, comments or symbols:
+  {
+    "terms": [
+      {
+        "triggers": ["term1", "term1 alternative", "term1 abbreviation"],
+        "title": "Term Name",
+        "content": "Clear explanation of what this term means"
+      }
+    ]
+  }
+
+  ## Question to use for the task: 
+  {{question}}

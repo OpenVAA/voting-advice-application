@@ -1,0 +1,50 @@
+devNote: this prompt is incomplete - we need to improve it.
+  most importantly, we need to add examples that guide the model to generate good sections.
+  additionally, the prompt should give more freedom to reason about what kind of info sections are good in this context
+  or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
+  + general prompt engineering improvements
+
+params:
+  question: string
+  generalInstructions: string
+  infoSectionInstructions: string
+  sectionTopics: array
+  questionContext: string
+  customInstructions: string
+  neutralityRequirements: string
+  examples: string
+
+prompt: |
+  {{generalInstructions}}
+
+  ## Task: Generate informative sections that give the user a better understanding of the question and its context:
+  {{infoSectionInstructions}}
+
+  IMPORTANT: You MUST generate exactly the following sections (and only these sections):
+  {{sectionTopics}}
+
+  ## Neutrality Requirements:
+  {{neutralityRequirements}}
+
+  ## Question Context:
+  {{questionContext}}
+
+  ## (Optional) Additional Instructions Given by Your Current Operator:
+  {{customInstructions}}
+
+  ## Examples:
+  {{examples}}
+
+  Respond with JSON in this exact format with NO OTHER TEXT, comments or symbols:
+  {
+    "infoSections": [
+      {
+        "title": "Short title for the section",
+        "content": "explanation of the section in English"
+      }
+    ]
+  }
+
+  ## Question to use for the task: 
+  {{question}}
+
