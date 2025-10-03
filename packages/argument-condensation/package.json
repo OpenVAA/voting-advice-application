@@ -26,7 +26,7 @@
   "dependencies": {
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
-    "@openvaa/llm": "workspace:^",
+    "@openvaa/llm-refactor": "workspace:^",
     "js-yaml": "^4.1.0"
   }
 }

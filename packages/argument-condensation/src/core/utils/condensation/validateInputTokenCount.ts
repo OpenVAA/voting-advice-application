@@ -1,5 +1,5 @@
 import { BaseController } from '@openvaa/core';
-import { setPromptVars } from '@openvaa/llm';
+import { setPromptVars } from '@openvaa/llm-refactor';
 import { COMMENT_PROCESSING } from '../../../defaultValues';
 import type { Controller } from '@openvaa/core';
 import type { VAAComment } from '../../types';

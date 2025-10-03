@@ -32,7 +32,7 @@ import type {
  *   comments: Array<VAAComment>,
  *   condensationType: CONDENSATION_TYPE.BooleanPros,
  *   options: {
- *     llmProvider: new OpenAIProvider({ apiKey: '...' }),
+ *     llmProvider: new LLMProvider({ provider: 'openai', apiKey: '...', modelConfig: { primary: 'gpt-4o' } }),
  *     language: 'en',
  *     llmModel: 'gpt-4o',
  *     runId: 'example-run-id',

@@ -7,14 +7,14 @@ export * from './condensation/validateInputTokenCount';
 export { calculateStepWeights } from './condensation/calculateLLMCallCounts';
 
 // Prompt utilities
-export { createPromptInstance } from './prompting/createPromptInstance';
-export { parseAndValidate as parse, setPromptVars } from '@openvaa/llm'; // re-export for convenience
+// createPromptInstance was removed; PromptCall creation is now inline at call sites.
+export { setPromptVars } from '@openvaa/llm-refactor';
 
 // Create batches
 export { createBatches } from './condensation/createBatches';
 
 // Cost calculation and latency tracking
-export { calculateLLMCost, LatencyTracker } from '@openvaa/llm'; // for convinience
+export { LatencyTracker } from '@openvaa/llm-refactor';
 
 // Get and group comments
 export { getAndSliceComments } from './condensation/getAndSliceComments';
