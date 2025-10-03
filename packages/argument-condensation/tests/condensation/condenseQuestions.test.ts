@@ -10,50 +10,55 @@ import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
 import type { Controller, HasAnswers } from '@openvaa/core';
-import type { LLMProvider, ParsedLLMResponse } from '@openvaa/llm';
-import type { ResponseWithArguments } from '../../src/core/types/index.ts';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 
 // No-op controller for tests to prevent logging output
 const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
-  progress: () => {}
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
 };
 
-// Mock LLM Provider
-const mockLLMProvider: LLMProvider = {
-  name: 'mock',
-  generate: vi.fn().mockResolvedValue({
-    content:
-      '{"arguments": [{"id": "arg1", "text": "Test argument 1"}, {"id": "arg2", "text": "Test argument 2"}], "reasoning": "Test reasoning for arguments"}',
-    model: 'gpt-4o-mini',
-    usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-  }),
-  generateWithRetry: vi.fn().mockImplementation(({ messages, temperature, maxTokens, model }) => {
-    return mockLLMProvider.generate({ messages, temperature, maxTokens, model });
-  }),
-  generateMultipleParallel: vi.fn().mockImplementation(({ inputs }) => {
-    const parsedContent: ResponseWithArguments = {
+// Mock LLM Provider for new API
+const mockLLMProvider = {
+  generateObject: vi.fn().mockResolvedValue({
+    object: {
       arguments: [
         { id: 'arg1', text: 'Test argument 1' },
         { id: 'arg2', text: 'Test argument 2' }
       ],
       reasoning: 'Test reasoning for arguments'
-    };
-    const mockResponse: ParsedLLMResponse<ResponseWithArguments> = {
-      parsed: parsedContent,
-      raw: {
-        content: JSON.stringify(parsedContent),
-        model: 'gpt-4o-mini',
-        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-      }
-    };
-    return Promise.resolve(Array(inputs.length).fill(mockResponse));
+    },
+    usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+    costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+    finishReason: 'stop' as const,
+    latencyMs: 100,
+    attempts: 1,
+    fallbackUsed: false
   }),
-  generateMultipleSequential: vi.fn().mockResolvedValue([]),
-  generateAndValidateWithRetry: vi.fn()
-};
+  generateObjectParallel: vi.fn().mockImplementation(({ requests }) => {
+    const mockResponse = {
+      object: {
+        arguments: [
+          { id: 'arg1', text: 'Test argument 1' },
+          { id: 'arg2', text: 'Test argument 2' }
+        ],
+        reasoning: 'Test reasoning for arguments'
+      },
+      usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+      costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+      finishReason: 'stop' as const,
+      latencyMs: 100,
+      attempts: 1,
+      fallbackUsed: false
+    };
+    return Promise.resolve(Array(requests.length).fill(mockResponse));
+  })
+} as unknown as LLMProvider;
 
 describe('handleQuestion', () => {
   test('It should condense arguments for both pros and cons of a likert question', async () => {

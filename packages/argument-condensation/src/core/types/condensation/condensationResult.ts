@@ -1,4 +1,10 @@
-import type { GenerationMetrics } from '@openvaa/llm';
+// Minimal local version of metrics to avoid old llm dependency
+export interface GenerationMetrics {
+  duration: number;
+  nLlmCalls: number;
+  cost: number;
+  tokensUsed: { inputs: number; outputs: number; total: number };
+}
 import type { Argument } from './argument';
 import type { CondensationOutputType } from './condensationType';
 

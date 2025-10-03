@@ -1,3 +1,4 @@
+import { extractPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { SUPPORTED_LANGUAGES } from '../../src/core/types';
@@ -257,14 +258,12 @@ describe('PromptRegistry integration with real prompts', () => {
 });
 
 // Additional tests for edge cases and specific scenarios
-describe('PromptRegistry variable validation edge cases', () => {
+// TODO: Move to llm package
+describe('variable validation edge cases', () => {
   test('It should handle prompts with no variables', () => {
-    // This test would require a mock prompt, but we can test the extraction logic
-    const registry = new PromptRegistry();
-
     // Test extraction with no variables
     const noVariablesText = 'This is a prompt with no variables at all.';
-    const extracted = registry.extractVariablesFromPromptText(noVariablesText);
+    const extracted = extractPromptVars(noVariablesText);
     expect(extracted).toEqual([]);
   });
 
@@ -283,18 +282,13 @@ describe('PromptRegistry variable validation edge cases', () => {
 
       if (prompt) {
         // Test that the prompt's variables are properly documented
-        const validation = registry.validatePromptVariables(
-          prompt.promptText,
-          prompt.params as unknown as Record<string, unknown>
-        );
+        const validation = validatePromptVars({ promptText: prompt.promptText, params: prompt.params as unknown as Record<string, unknown> });
         expect(validation.valid).toBe(true);
       }
     }
   });
 
   test('It should validate variable extraction correctly', () => {
-    const registry = new PromptRegistry();
-
     // Test various variable patterns
     const testCases = [
       {
@@ -324,7 +318,7 @@ describe('PromptRegistry variable validation edge cases', () => {
     ];
 
     for (const testCase of testCases) {
-      const extracted = registry.extractVariablesFromPromptText(testCase.text);
+      const extracted = extractPromptVars(testCase.text);
       expect(extracted).toEqual(testCase.expected);
     }
   });
