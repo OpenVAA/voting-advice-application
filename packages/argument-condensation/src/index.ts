@@ -8,10 +8,4 @@ export * from './core/utils';
 export * from './defaultValues';
 
 // Re-export useful LLM utilities for convenience
-export {
-  calculateLLMCost,
-  getModelPricing,
-  getSupportedModels,
-  getSupportedProviders,
-  MODEL_PRICING
-} from '@openvaa/llm';
+export { getModelPricing, MODEL_PRICING } from '@openvaa/llm-refactor';

@@ -1,15 +1,13 @@
-import { OpenAIProvider } from '@openvaa/llm';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
 import { CondensationOperations } from '../../src/core/types';
 import type { Controller } from '@openvaa/core';
-import type { ParsedLLMResponse } from '@openvaa/llm';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 import type {
   CondensationRunInput,
   IterateMapOperationParams,
   MapOperationParams,
   ProcessingStep,
-  ResponseWithArguments,
   SupportedQuestion,
   VAAComment
 } from '../../src/core/types';
@@ -19,7 +17,10 @@ const noOpLogger: Controller = {
   info: () => {},
   warning: () => {},
   error: () => {},
-  progress: () => {}
+  progress: () => {},
+  checkAbort: () => {},
+  defineSubOperations: () => {},
+  getCurrentOperation: () => null
 };
 
 // Mock the file system to prevent writing operation trees
@@ -28,8 +29,38 @@ vi.mock('fs/promises', () => ({
   mkdir: vi.fn().mockResolvedValue(undefined)
 }));
 
+// Helper function to create a complete mock LLM response with all required properties
+function createMockLLMResponse(args: Array<{ id: string; text: string }>, reasoning: string) {
+  return {
+    object: {
+      arguments: args,
+      reasoning: reasoning
+    },
+    usage: { inputTokens: 10, outputTokens: 10, totalTokens: 20 },
+    costs: { input: 0.001, output: 0.001, reasoning: 0, total: 0.002 },
+    finishReason: 'stop' as const,
+    latencyMs: 100,
+    attempts: 1,
+    fallbackUsed: false,
+    reasoning: undefined,
+    warnings: undefined,
+    request: {
+      body: '{"messages": [{"role": "system", "content": "test"}]}'
+    },
+    response: {
+      id: 'test-response-id',
+      modelId: 'gpt-4o',
+      timestamp: new Date(),
+      headers: undefined,
+      messages: []
+    },
+    providerMetadata: undefined,
+    toJsonResponse: () => new Response()
+  };
+}
+
 describe('Condenser Integration Tests', () => {
-  let llmProvider: OpenAIProvider;
+  let llmProvider: LLMProvider;
 
   const mockQuestion: SupportedQuestion = {
     id: 'q1',
@@ -46,7 +77,11 @@ describe('Condenser Integration Tests', () => {
   }));
 
   beforeEach(() => {
-    llmProvider = new OpenAIProvider({ apiKey: 'test-api-key' });
+    llmProvider = {
+      generateObject: vi.fn(),
+      generateObjectParallel: vi.fn(),
+      streamText: vi.fn()
+    } as unknown as LLMProvider;
   });
 
   afterEach(() => {
@@ -56,72 +91,18 @@ describe('Condenser Integration Tests', () => {
   test('It should run a map -> iterate_map -> reduce pipeline successfully', async () => {
     // Arrange: Mock the LLM provider to return the expected
     const mapResponses = [
-      {
-        parsed: {
-          arguments: [{ id: 'arg1', text: 'Argument 1' }],
-          reasoning: 'Mapped from batch 1'
-        },
-        raw: {
-          content: JSON.stringify({
-            arguments: [{ id: 'arg1', text: 'Argument 1' }],
-            reasoning: 'Mapped from batch 1'
-          }),
-          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
-          model: 'test-model'
-        }
-      },
-      {
-        parsed: {
-          arguments: [{ id: 'arg2', text: 'Argument 2' }],
-          reasoning: 'Mapped from batch 2'
-        },
-        raw: {
-          content: JSON.stringify({
-            arguments: [{ id: 'arg2', text: 'Argument 2' }],
-            reasoning: 'Mapped from batch 2'
-          }),
-          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
-          model: 'test-model'
-        }
-      }
+      createMockLLMResponse([{ id: 'arg1', text: 'Argument 1' }], 'Mapped from batch 1'),
+      createMockLLMResponse([{ id: 'arg2', text: 'Argument 2' }], 'Mapped from batch 2')
     ];
 
-    const iterateMapResponses: Array<ParsedLLMResponse<ResponseWithArguments>> = [
-      {
-        parsed: {
-          arguments: [{ id: 'arg1', text: 'Improved Argument 1' }],
-          reasoning: 'Iterated from batch 1'
-        },
-        raw: {
-          content: JSON.stringify({
-            arguments: [{ id: 'arg1', text: 'Improved Argument 1' }],
-            reasoning: 'Iterated from batch 1'
-          }),
-          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
-          model: 'test-model'
-        }
-      },
-      {
-        parsed: {
-          arguments: [{ id: 'arg2', text: 'Improved Argument 2' }],
-          reasoning: 'Iterated from batch 2'
-        },
-        raw: {
-          content: JSON.stringify({
-            arguments: [{ id: 'arg2', text: 'Improved Argument 2' }],
-            reasoning: 'Iterated from batch 2'
-          }),
-          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
-          model: 'test-model'
-        }
-      }
-    ] as Array<ParsedLLMResponse<ResponseWithArguments>>;
+    const iterateMapResponses = [
+      createMockLLMResponse([{ id: 'arg1', text: 'Improved Argument 1' }], 'Iterated from batch 1'),
+      createMockLLMResponse([{ id: 'arg2', text: 'Improved Argument 2' }], 'Iterated from batch 2')
+    ];
 
-    const spy = vi.spyOn(llmProvider, 'generateMultipleParallel');
+    const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      // @ts-expect-error - Mock returns ParsedLLMResponse when contract is provided
       .mockResolvedValueOnce([...mapResponses]) // For the map phase
-      // @ts-expect-error - Mock returns ParsedLLMResponse when contract is provided
       .mockResolvedValueOnce([...iterateMapResponses]); // For the iterate_map phase
 
     const steps: Array<ProcessingStep> = [
@@ -171,28 +152,13 @@ describe('Condenser Integration Tests', () => {
 
   test('It should handle LLM failures and successfully retry', async () => {
     // Arrange
-    const validParsedResponse: ParsedLLMResponse<ResponseWithArguments> = {
-      parsed: {
-        arguments: [{ id: 'arg1', text: 'A valid argument' }],
-        reasoning: 'A valid reason'
-      },
-      raw: {
-        content: JSON.stringify({
-          arguments: [{ id: 'arg1', text: 'A valid argument' }],
-          reasoning: 'A valid reason'
-        }),
-        usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
-        model: 'test-model'
-      }
-    };
+    const validResponse = createMockLLMResponse([{ id: 'arg1', text: 'A valid argument' }], 'A valid reason');
 
-    // Simulate success for all calls since generateMultipleParallel handles retries internally
-    const spy = vi.spyOn(llmProvider, 'generateMultipleParallel');
+    // Simulate success for all calls since generateObjectParallel handles retries internally
+    const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      // @ts-expect-error - idk why but compiler thinks validParsedResponse.raw ≠ LLMResponse but it is
-      .mockResolvedValueOnce([validParsedResponse]) // map phase
-      // @ts-expect-error - same problem as above
-      .mockResolvedValueOnce([validParsedResponse]); // iterate_map phase
+      .mockResolvedValueOnce([validResponse]) // map phase
+      .mockResolvedValueOnce([validResponse]); // iterate_map phase
 
     const steps: Array<ProcessingStep> = [
       {

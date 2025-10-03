@@ -37,13 +37,9 @@ export type {
   RefinePrompt
 } from './llm/prompt';
 export type { CondensationPromptCall as PromptCall } from './llm/promptInstance';
+
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
-
-// LLM latency, token & pricing types (re-exported from @openvaa/llm for convenience)
-export type { ModelPricing } from '@openvaa/llm';
-export type { TokenUsage } from '@openvaa/llm';
-export type { LatencyMeasurement } from '@openvaa/llm';
 
 // Supported languages (update as needed)
 export { SUPPORTED_LANGUAGES, type SupportedLanguage } from './base/supportedLanguages';

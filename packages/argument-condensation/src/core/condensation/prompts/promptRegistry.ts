@@ -1,3 +1,4 @@
+import { extractPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
@@ -37,57 +38,6 @@ export class PromptRegistry {
     const registry = new PromptRegistry(controller);
     await registry.loadPrompts(language);
     return registry;
-  }
-
-  /**
-   * Extract all variable placeholders from prompt text
-   *
-   * @param promptText - The prompt text to analyze
-   * @returns Array of variable names found in {{variable}} placeholders
-   */
-  public extractVariablesFromPromptText(promptText: string): Array<string> {
-    const variables: Array<string> = [];
-    const placeholderRegex = /\{\{([^}]+)\}\}/g;
-    let match;
-
-    while ((match = placeholderRegex.exec(promptText)) !== null) {
-      const variableName = match[1].trim();
-      if (!variables.includes(variableName)) {
-        variables.push(variableName);
-      }
-    }
-
-    return variables;
-  }
-
-  /**
-   * Validate that variables in prompt text match exactly with params section
-   *
-   * @param promptText - The prompt text to validate
-   * @param params - The params section from the YAML file
-   * @param promptId - The prompt ID for error reporting
-   * @param yamlFile - The YAML file path for error reporting
-   * @returns Validation result with details about any mismatches
-   */
-  public validatePromptVariables(
-    promptText: string,
-    params: Record<string, unknown> | undefined
-  ): { valid: boolean; missing: Array<string>; extra: Array<string>; undocumented: Array<string> } {
-    const variablesInText = this.extractVariablesFromPromptText(promptText);
-    const documentedVars = params ? Object.keys(params) : [];
-
-    // Variables that are in the prompt text but not documented in params
-    const undocumented = variablesInText.filter((v) => !documentedVars.includes(v));
-
-    // Variables that are documented in params but not used in prompt text
-    const extra = documentedVars.filter((v) => !variablesInText.includes(v));
-
-    // Variables that are in the prompt text but not provided (this would be caught at runtime)
-    const missing = variablesInText.filter((v) => !documentedVars.includes(v));
-
-    const valid = undocumented.length === 0 && extra.length === 0;
-
-    return { valid, missing, extra, undocumented };
   }
 
   /**
@@ -157,7 +107,7 @@ export class PromptRegistry {
             };
 
             // Validate variables before creating the prompt
-            const validation = this.validatePromptVariables(promptData.promptText, promptData.params);
+            const validation = validatePromptVars({ promptText: promptData.promptText, params: promptData.params });
 
             if (!validation.valid) {
               const errorDetails = [];
@@ -248,7 +198,7 @@ export class PromptRegistry {
       throw new Error(`Prompt with ID '${promptId}' not found`);
     }
 
-    const variablesInText = this.extractVariablesFromPromptText(prompt.promptText);
+    const variablesInText = extractPromptVars(prompt.promptText);
     const providedVars = Object.keys(variables);
 
     const missing = variablesInText.filter((v) => !providedVars.includes(v));
