@@ -123,6 +123,8 @@ export class LLMProvider {
     }
 
     const results: Array<LLMObjectGenerationResult<TType>> = [];
+    const totalBatches = Math.ceil(requests.length / maxConcurrent);
+    let completedBatches = 0;
 
     for (let i = 0; i < requests.length; i += maxConcurrent) {
       // Take a batch of requests (up to maxConcurrent)
@@ -130,6 +132,12 @@ export class LLMProvider {
 
       // Check if an abort has been requested. Throws AbortError if so.
       controller?.checkAbort();
+
+      // Update progress after each batch completes
+      completedBatches++;
+      if (controller) {
+        controller.progress(completedBatches / totalBatches);
+      }
 
       // Process the batch in parallel
       const batchResults = await Promise.all(batch.map((request) => this.generateObject(request)));
