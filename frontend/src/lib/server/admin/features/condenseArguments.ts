@@ -119,7 +119,7 @@ export async function condenseArguments({
         entities,
         options: {
           llmProvider: llm,
-          llmModel: 'gpt-4o',
+          llmModel: 'gpt-4o-mini', // TODO: to make configurable - preferably use stronger model for actual generation
           language: locale,
           runId,
           maxCommentsPerGroup: 1000,

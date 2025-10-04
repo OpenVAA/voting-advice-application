@@ -762,9 +762,11 @@ export class Condenser {
           schema: ResponseWithArgumentsSchema,
           messages: input.messages,
           temperature: input.temperature,
-          maxRetries: 3
+          maxRetries: 3,
+          validationRetries: 2
         })),
-        maxConcurrent: parallelBatches
+        maxConcurrent: parallelBatches,
+        controller: this.controller
       });
     } catch (error) {
       if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
