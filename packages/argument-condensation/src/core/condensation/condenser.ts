@@ -147,7 +147,7 @@ export class Condenser {
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
-    // NEW: Granularize progress tracking by defining sub-operations for each processing step
+    // Granularize progress tracking by defining sub-operations for each processing step
     if (processingSteps.length > 0) {
       const currentOperationId = this.controller.getCurrentOperation()?.id;
       if (currentOperationId) {
@@ -192,7 +192,7 @@ export class Condenser {
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
 
-    // Use a more reliable path resolution method that works in both test and production environments
+    // Works in both test and production environments
     const treeFilePath = path.join(process.cwd(), 'data/operationTrees', `${this.runId}.json`);
     await this.treeBuilder.saveTree(treeFilePath);
 
