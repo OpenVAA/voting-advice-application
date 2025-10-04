@@ -37,7 +37,7 @@ export async function condenseArguments({
   fetch: Fetch;
   locale: string;
   jobId: string;
-  authToken: string; // Add this parameter
+  authToken: string;
 }): Promise<DataApiActionResult> {
   // Create controller immediately - it will be initialized with pipeline later
   const controller = new PipelineController(jobId);
