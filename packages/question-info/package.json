@@ -3,7 +3,7 @@
   "name": "@openvaa/question-info",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -1,29 +1,39 @@
 {
-  "title": "Frågeinfogenerering",
-  "description": "Generera och hantera information för valfrågor.",
-  "pageDescription": "Generera eller redigera bakgrundsinformation för frågor.",
+  "title": "Frågeinformation",
+  "description": "Generera kontextuell information för valfrågor, inklusive termdefinitioner och informativa sektioner för att hjälpa väljare att bättre förstå frågorna.",
+  "selectElection": "Välj val",
+  "selectQuestions": "Välj frågor",
+  "noQuestions": "Inga åsiktsfrågor hittades för detta val",
   "generate": {
-    "title": "Generera info",
-    "description": "Generera information som skriver över tidigare genererad information.",
-    "questionType": "Välj frågor att generera information för",
-    "allQuestions": "Alla frågor",
-    "selectedQuestions": "Valda frågor",
-    "selectButton": "Välj...",
-    "button": "Generera information",
-    "buttonLoading": "Genererar information...",
-    "mayTakeTime": "Detta kan ta en stund.",
-    "error": "Misslyckades med att generera information",
-    "noQuestionSelected": "Välj minst en fråga",
-    "selectElection": "Välj val",
-    "selectElectionPlaceholder": "Välj ett val...",
-    "noQuestionsForElection": "Inga frågor hittades för det valda valet.",
-    "noElectionSelected": "Välj först ett val"
+    "button": "Generera frågeinformation",
+    "buttonLoading": "Genererar...",
+    "allQuestions": "Alla åsiktsfrågor",
+    "selectedQuestions": "Valda frågor"
   },
-  "edit": {
-    "title": "Redigera information",
-    "description": "Redigera befintlig information. Du kan antingen redigera den direkt med en JSON-editor eller ladda ner den som CSV och sedan ladda upp den redigerade informationen.",
-    "editButton": "Redigera informationen",
-    "downloadButton": "Ladda ner informationen som CSV",
-    "uploadButton": "Ladda upp den redigerade informationen som CSV"
+  "options": {
+    "heading": "Genereringsalternativ",
+    "whatToGenerate": "Vad ska genereras:",
+    "terms": "Termdefinitioner",
+    "infoSections": "Informationssektioner"
+  },
+  "sectionTopics": {
+    "label": "Sektionsämnen (valfritt)",
+    "help": "Kommaseparerad lista över ämnen för informationssektioner. Lämna tomt för att använda standardinställningar.",
+    "placeholder": "Bakgrund, Nuvarande situation, Nyckelaktörer"
+  },
+  "customInstructions": {
+    "label": "Anpassade instruktioner (valfritt)",
+    "help": "Ytterligare vägledning för LLM om hur innehållet ska genereras.",
+    "placeholder": "Fokusera på lokal förvaltning och kommunala politiska aspekter"
+  },
+  "questionContext": {
+    "label": "Frågekontext (valfritt)",
+    "help": "Kontext om valet eller ämnesområdet för att hjälpa LLM att generera mer relevant innehåll.",
+    "placeholder": "Svenska kommunalval 2026"
+  },
+  "validation": {
+    "noElection": "Välj ett val",
+    "noQuestions": "Välj minst en fråga",
+    "noOperations": "Välj minst ett genereringsalternativ"
   }
 }

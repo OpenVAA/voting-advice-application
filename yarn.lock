@@ -4277,6 +4277,7 @@ __metadata:
     "@openvaa/llm": "workspace:^"
     "@openvaa/llm-refactor": "workspace:^"
     "@openvaa/matching": "workspace:^"
+    "@openvaa/question-info": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@sveltejs/adapter-auto": "npm:^3.3.1"
     "@sveltejs/adapter-node": "npm:^5.2.11"
@@ -4364,7 +4365,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/question-info@workspace:packages/question-info":
+"@openvaa/question-info@workspace:^, @openvaa/question-info@workspace:packages/question-info":
   version: 0.0.0-use.local
   resolution: "@openvaa/question-info@workspace:packages/question-info"
   dependencies:

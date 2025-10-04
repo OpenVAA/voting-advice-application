@@ -70,6 +70,7 @@
     "@openvaa/llm": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
     "@openvaa/matching": "workspace:^",
+    "@openvaa/question-info": "workspace:^",
     "@sveltekit-i18n/parser-icu": "^1.0.8",
     "ai": "^5.0.0",
     "flat-cache": "^6.1.7",
