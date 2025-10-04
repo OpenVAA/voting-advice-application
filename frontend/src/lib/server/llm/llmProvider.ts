@@ -1,4 +1,4 @@
-import { type LLMProvider, OpenAIProvider } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm-refactor';
 import { constants } from '$lib/server/constants';
 
 /**
@@ -9,9 +9,12 @@ export function getLLMProvider(): LLMProvider {
   if (!apiKey) {
     throw new Error('Missing LLM_OPENAI_API_KEY in environment');
   }
-  return new OpenAIProvider({
-    model: 'gpt-4o',
+  return new LLMProvider({
+    provider: 'openai',
     apiKey,
-    maxContextTokens: 4096
-  });
-}
+    modelConfig: {
+      primary: 'gpt-4o',
+      useCachedInput: false
+    }
+  })
+};
