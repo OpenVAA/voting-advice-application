@@ -118,11 +118,6 @@ export function jobStores(): JobStores {
       const pastIds = new Set(pastJobs.map((j) => j.id));
       activeJobs = activeJobs.filter((j) => !pastIds.has(j.id));
 
-      logDebugError('[JobPollingService] Got response (deduped):', {
-        activeJobsCount: activeJobs.length,
-        pastJobsCount: pastJobs.length
-      });
-
       // Update the jobs store
       jobs.update((jobs) => {
         pastJobs.forEach((job) => jobs.set(job.id, job));
