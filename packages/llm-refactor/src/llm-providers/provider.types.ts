@@ -39,6 +39,7 @@ export type LLMObjectGenerationOptions<TType> = Prompt &
     schema: z.ZodSchema<TType>; // Support only Zod schemas for now
     /** Validation retries are not internally handled by the AI SDK, so we need to handle it here. Defaults to 1. */
     validationRetries?: number;
+    controller?: Controller;
   };
 
 export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMMetadata;
