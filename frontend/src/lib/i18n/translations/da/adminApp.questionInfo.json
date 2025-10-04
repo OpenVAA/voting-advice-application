@@ -1,29 +1,39 @@
 {
   "title": "Spørgsmålsinformation",
-  "description": "Generér og håndtér information til valgets spørgsmål.",
-  "pageDescription": "Generér eller redigér baggrundsinformation for spørgsmål.",
+  "description": "Generér kontekstuel information til valgspørgsmål, herunder termdefinitioner og informative sektioner for at hjælpe vælgere med bedre at forstå spørgsmålene.",
+  "selectElection": "Vælg valg",
+  "selectQuestions": "Vælg spørgsmål",
+  "noQuestions": "Ingen meningsspørgsmål fundet for dette valg",
   "generate": {
-    "title": "Generér information",
-    "description": "Generér informationen og overskriv tidligere genereret data.",
-    "questionType": "Vælg spørgsmål til generering",
-    "allQuestions": "Alle spørgsmål",
-    "selectedQuestions": "Valgte spørgsmål",
-    "selectButton": "Vælg...",
-    "button": "Generér information",
+    "button": "Generér spørgsmålsinformation",
     "buttonLoading": "Genererer...",
-    "mayTakeTime": "Dette kan tage noget tid.",
-    "error": "Kunne ikke generere information",
-    "noQuestionSelected": "Vælg venligst mindst ét spørgsmål",
-    "selectElection": "Vælg valg",
-    "selectElectionPlaceholder": "Vælg et valg...",
-    "noQuestionsForElection": "Ingen spørgsmål fundet for det valgte valg.",
-    "noElectionSelected": "Vælg venligst et valg først"
+    "allQuestions": "Alle meningsspørgsmål",
+    "selectedQuestions": "Valgte spørgsmål"
   },
-  "edit": {
-    "title": "Redigér information",
-    "description": "Redigér eksisterende information direkte i JSON eller download og upload som CSV.",
-    "editButton": "Redigér informationen",
-    "downloadButton": "Download som CSV",
-    "uploadButton": "Upload redigeret CSV"
+  "options": {
+    "heading": "Genereringsindstillinger",
+    "whatToGenerate": "Hvad skal genereres:",
+    "terms": "Termdefinitioner",
+    "infoSections": "Informationssektioner"
+  },
+  "sectionTopics": {
+    "label": "Sektionsemner (valgfrit)",
+    "help": "Kommasepareret liste over emner for informationssektioner. Lad stå tomt for at bruge standardindstillinger.",
+    "placeholder": "Baggrund, Nuværende situation, Nøgleaktører"
+  },
+  "customInstructions": {
+    "label": "Tilpassede instruktioner (valgfrit)",
+    "help": "Yderligere vejledning til LLM om, hvordan indholdet skal genereres.",
+    "placeholder": "Fokuser på lokal forvaltning og kommunale politiske aspekter"
+  },
+  "questionContext": {
+    "label": "Spørgsmålskontekst (valgfrit)",
+    "help": "Kontekst om valget eller emneområdet for at hjælpe LLM med at generere mere relevant indhold.",
+    "placeholder": "Danske kommunalvalg 2025"
+  },
+  "validation": {
+    "noElection": "Vælg venligst et valg",
+    "noQuestions": "Vælg mindst ét spørgsmål",
+    "noOperations": "Vælg mindst én genereringsmulighed"
   }
 }

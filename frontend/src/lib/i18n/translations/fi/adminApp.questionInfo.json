@@ -1,29 +1,39 @@
 {
-  "title": "Kysymystietojen luominen",
-  "description": "Luo ja hallinnoi vaalikysymysten tietoja.",
-  "pageDescription": "Luo tai muokkaa kysymysten taustatietoja.",
+  "title": "Kysymystiedot",
+  "description": "Luo kontekstuaalista tietoa VAA-kysymyksille, mukaan lukien termien määritelmät ja informatiiviset osiot, jotka auttavat äänestäjiä ymmärtämään kysymykset paremmin.",
+  "selectElection": "Valitse vaali",
+  "selectQuestions": "Valitse kysymykset",
+  "noQuestions": "Tälle vaalille ei löytynyt mielipidekysymyksiä",
   "generate": {
-    "title": "Luo tiedot",
-    "description": "Luo tiedot, jotka korvaavat aiemmin luodut tiedot.",
-    "questionType": "Valitse kysymykset, joille tiedot luodaan",
-    "allQuestions": "Kaikki kysymykset",
-    "selectedQuestions": "Valitut kysymykset",
-    "selectButton": "Valitse...",
-    "button": "Luo tiedot",
-    "buttonLoading": "Luodaan tietoja...",
-    "mayTakeTime": "Tämä saattaa kestää hetken.",
-    "error": "Tietojen luominen epäonnistui",
-    "noQuestionSelected": "Valitse vähintään yksi kysymys",
-    "selectElection": "Valitse vaali",
-    "selectElectionPlaceholder": "Valitse vaali...",
-    "noQuestionsForElection": "Valitulle vaalille ei löytynyt kysymyksiä.",
-    "noElectionSelected": "Valitse ensin vaali"
+    "button": "Luo kysymystiedot",
+    "buttonLoading": "Luodaan...",
+    "allQuestions": "Kaikki mielipidekysymykset",
+    "selectedQuestions": "Valitut kysymykset"
   },
-  "edit": {
-    "title": "Muokkaa tietoja",
-    "description": "Muokkaa olemassa olevia tietoja. Voit joko muokata niitä suoraan JSON-editorilla tai ladata ne CSV-tiedostona ja ladata sitten muokatut tiedot.",
-    "editButton": "Muokkaa tietoja",
-    "downloadButton": "Lataa tiedot CSV-muodossa",
-    "uploadButton": "Lataa muokatut tiedot CSV-muodossa"
+  "options": {
+    "heading": "Luomisasetukset",
+    "whatToGenerate": "Mitä luodaan:",
+    "terms": "Termien määritelmät",
+    "infoSections": "Tietosektiot"
+  },
+  "sectionTopics": {
+    "label": "Sektioiden aiheet (valinnainen)",
+    "help": "Pilkulla erotettu lista aiheita tietosektioille. Jätä tyhjäksi käyttääksesi oletuksia.",
+    "placeholder": "Tausta, Nykytilanne, Keskeiset toimijat"
+  },
+  "customInstructions": {
+    "label": "Mukautetut ohjeet (valinnainen)",
+    "help": "Lisäohjeita LLM:lle sisällön luomista varten.",
+    "placeholder": "Keskity paikallishallintoon ja kuntapolitiikan näkökulmiin"
+  },
+  "questionContext": {
+    "label": "Kysymysten konteksti (valinnainen)",
+    "help": "Konteksti vaalista tai aihealueesta, joka auttaa LLM:ää luomaan relevanttimpaa sisältöä.",
+    "placeholder": "Suomen kuntavaalit 2025"
+  },
+  "validation": {
+    "noElection": "Valitse vaali",
+    "noQuestions": "Valitse vähintään yksi kysymys",
+    "noOperations": "Valitse vähintään yksi luomisvaihtoehto"
   }
 }

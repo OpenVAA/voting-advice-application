@@ -105,7 +105,8 @@ export async function generateInfo({
     // Generate responses in parallel with validation
     const responses = await options.llmProvider.generateObjectParallel<ResponseWithInfo>({
       requests,
-      maxConcurrent: 5 // TODO: tweak so that we use an appropriate amount of max capacity
+      maxConcurrent: 1, // TODO: tweak so that we use an appropriate amount of max capacity
+      controller: options.controller
     });
 
     // Transform responses to our result format

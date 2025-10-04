@@ -13,7 +13,7 @@ export function getLLMProvider(): LLMProvider {
     provider: 'openai',
     apiKey,
     modelConfig: {
-      primary: 'gpt-4o',
+      primary: 'gpt-4o-mini',
       useCachedInput: false
     }
   })

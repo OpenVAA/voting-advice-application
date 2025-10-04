@@ -14,7 +14,9 @@
     { "path": "../packages/core/tsconfig.json" },
     { "path": "../packages/data/tsconfig.json" },
     { "path": "../packages/llm/tsconfig.json" },
+    { "path": "../packages/llm-refactor/tsconfig.json" },
     { "path": "../packages/matching/tsconfig.json" },
-    { "path": "../packages/filters/tsconfig.json" }
+    { "path": "../packages/filters/tsconfig.json" },
+    { "path": "../packages/question-info/tsconfig.json" }
   ]
 }
