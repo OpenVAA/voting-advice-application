@@ -36,7 +36,6 @@ Main landing page for admin section showing available tools
       href={$getRoute('AdminAppQuestionInfo')}
       text={$t('adminApp.questionInfo.title')}
       icon="create"
-      iconPos="left"
-      disabled />
+      iconPos="left" />
   </div>
 </MainContent>
