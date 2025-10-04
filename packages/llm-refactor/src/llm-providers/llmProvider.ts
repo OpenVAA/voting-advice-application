@@ -1,6 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
+import type { Controller } from '@openvaa/core';
 import type { LanguageModelUsage as TokenUsage, Provider, ToolSet } from 'ai';
 import type {
   LLMObjectGenerationOptions,
@@ -52,6 +53,9 @@ export class LLMProvider {
     // Loop through validation retries
     for (let attempt = 1; attempt <= validationRetries; attempt++) {
       try {
+        // Check if an abort has been requested. Throws AbortError if so.
+        options.controller?.checkAbort();
+
         // Generation call which throws on validation failures
         const result = await generateObject({
           model: this.provider.languageModel(options.modelConfig.primary),
@@ -106,10 +110,12 @@ export class LLMProvider {
    */
   async generateObjectParallel<TType>({
     requests,
-    maxConcurrent = 5
+    maxConcurrent = 5,
+    controller
   }: {
     requests: Array<LLMObjectGenerationOptions<TType>>;
     maxConcurrent?: number;
+    controller?: Controller;
   }): Promise<Array<LLMObjectGenerationResult<TType>>> {
     // Handle empty input
     if (requests.length === 0) {
@@ -122,10 +128,16 @@ export class LLMProvider {
       // Take a batch of requests (up to maxConcurrent)
       const batch = requests.slice(i, i + maxConcurrent);
 
+      // Check if an abort has been requested. Throws AbortError if so.
+      controller?.checkAbort();
+
       // Process the batch in parallel
       const batchResults = await Promise.all(batch.map((request) => this.generateObject(request)));
       results.push(...batchResults);
     }
+
+    // Check if an abort has been requested. Throws AbortError if so.
+    controller?.checkAbort();
 
     return results;
   }
