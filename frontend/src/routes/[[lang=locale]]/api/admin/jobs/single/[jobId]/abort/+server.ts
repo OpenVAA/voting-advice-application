@@ -5,15 +5,17 @@
 import { json } from '@sveltejs/kit';
 import { getUserData } from '$lib/auth';
 import { requestAbort } from '$lib/server/admin/jobs/jobStore';
-import type { RequestEvent } from '@sveltejs/kit';
 
-export async function POST({ params, request, fetch, cookies }: RequestEvent) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+type AbortSingleResponse = { message: string; jobId: string } | { error: string };
+
+export async function POST({ params, request, fetch, cookies }) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+    return json({ error: 'Forbidden' } as AbortSingleResponse, { status: 403 });
 
   try {
     const { jobId } = params;
     if (!jobId) {
-      return json({ error: 'Job ID is required' }, { status: 400 });
+      return json({ error: 'Job ID is required' } as AbortSingleResponse, { status: 400 });
     }
 
     // Body is optional; DataWriter sends no body. Try to parse, ignore if empty/invalid.
@@ -32,9 +34,9 @@ export async function POST({ params, request, fetch, cookies }: RequestEvent) {
     requestAbort(jobId, reason);
 
     // Fire-and-forget: UI will observe 'aborting' → 'aborted' via polling
-    return json({ message: 'Abort requested', jobId }, { status: 202 });
+    return json({ message: 'Abort requested', jobId } as AbortSingleResponse, { status: 202 });
   } catch (error) {
     console.error('Error requesting abort:', error);
-    return json({ error: 'Failed to request abort' }, { status: 500 });
+    return json({ error: 'Failed to request abort' } as AbortSingleResponse, { status: 500 });
   }
 }
