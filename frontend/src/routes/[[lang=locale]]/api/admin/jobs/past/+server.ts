@@ -2,9 +2,10 @@ import { json } from '@sveltejs/kit';
 import qs from 'qs';
 import { getUserData } from '$lib/auth';
 import { getPastJobs } from '$lib/server/admin/jobs/jobStore';
-import type { RequestEvent } from '@sveltejs/kit';
 import type { AdminFeature } from '$lib/admin/features';
-import type { PastJobStatus } from '$lib/server/admin/jobs/jobStore.type';
+import type { JobInfo, PastJobStatus } from '$lib/server/admin/jobs/jobStore.type';
+
+type PastJobsResponse = Array<JobInfo> | { error: string };
 
 /**
  * GET /api/admin/jobs/past
@@ -15,8 +16,9 @@ import type { PastJobStatus } from '$lib/server/admin/jobs/jobStore.type';
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url, fetch, cookies }: RequestEvent) {
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+export async function GET({ url, fetch, cookies }) {
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+    return json({ error: 'Forbidden' } as PastJobsResponse, { status: 403 });
 
   try {
     const params = qs.parse(url.search.replace(/^\?/g, '')) as {
@@ -35,10 +37,10 @@ export async function GET({ url, fetch, cookies }: RequestEvent) {
     if (jobType) jobs = jobs.filter((j) => j.jobType === jobType);
     if (startFrom) jobs = jobs.filter((j) => j.endTime && new Date(j.endTime) > startFrom);
     if (statuses) jobs = jobs.filter((j) => statuses.includes(j.status as PastJobStatus));
-    return json(jobs);
+    return json(jobs as PastJobsResponse);
   } catch (error) {
     console.error('Error getting past jobs:', error);
-    return json({ error: 'Failed to get past jobs' }, { status: 500 });
+    return json({ error: 'Failed to get past jobs' } as PastJobsResponse, { status: 500 });
   }
 }
 

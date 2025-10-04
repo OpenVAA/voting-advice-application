@@ -1,17 +1,25 @@
 import { json } from '@sveltejs/kit';
 import { getUserData } from '$lib/auth';
 import { getActiveJobs, requestAbort } from '$lib/server/admin/jobs/jobStore';
-import type { RequestEvent } from '@sveltejs/kit';
 
-export async function POST({ fetch, cookies, request }: RequestEvent) {
+type AbortAllResponse =
+  | {
+      message: string;
+      targetedJobs: number;
+      abortRequestedFor: number;
+    }
+  | { error: string };
+
+export async function POST({ fetch, cookies, request }) {
   // TODO: Consider checking the user role with claims in the server hook when the route matches /api/admin
-  if ((await getUserData({ fetch, cookies }))?.role !== 'admin') return json({ error: 'Forbidden' }, { status: 403 });
+  if ((await getUserData({ fetch, cookies }))?.role !== 'admin')
+    return json({ error: 'Forbidden' } as AbortAllResponse, { status: 403 });
 
   try {
     // Body is optional
     let reason: string | undefined;
     try {
-      const body = await request.json();
+      const body = (await request.json()) as { reason?: string };
       if (body && typeof body.reason === 'string') reason = body.reason;
     } catch {
       // ignore invalid/empty body
@@ -37,11 +45,11 @@ export async function POST({ fetch, cookies, request }: RequestEvent) {
         message: 'Abort requested for all running jobs',
         targetedJobs: targetIds.length,
         abortRequestedFor: requested
-      },
+      } as AbortAllResponse,
       { status: 202 }
     );
   } catch (error) {
     console.error('Error aborting all jobs:', error);
-    return json({ error: 'Failed to abort all jobs' }, { status: 500 });
+    return json({ error: 'Failed to abort all jobs' } as AbortAllResponse, { status: 500 });
   }
 }
