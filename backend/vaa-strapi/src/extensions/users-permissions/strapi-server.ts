@@ -4,7 +4,7 @@ import fs from 'fs';
 import * as candidate from './controllers/candidate';
 import type { Core, UID } from '@strapi/strapi';
 import { StrapiContext, StrapiRole } from '../../../types/customStrapiTypes';
-import { frontendUrl } from '../../constants';
+import { frontendUrl, mailFrom, mailFromName, mailReplyTo } from '../../constants';
 
 const { ValidationError } = errors;
 
