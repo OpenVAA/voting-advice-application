@@ -11,7 +11,7 @@
     "strapi": "strapi",
     "test:e2e": "jest --forceExit --detectOpenHandles",
     "test:unit": "vitest run ./src",
-    "generate:types": "strapi ts:generate-types"
+    "generate:types": "strapi ts:generate-types || echo 'Maybe you need to copy the .env file from the project root to backend/vaa-strapi?'"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.741.0",
