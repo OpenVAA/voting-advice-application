@@ -35,9 +35,11 @@ export interface CondensationPromptCall {
   metadata: {
     /** The number of tokens used for the prompt */
     tokens: {
-      input: number;
-      output: number;
-      total: number;
+      inputTokens: number;
+      outputTokens: number;
+      totalTokens: number;
+      reasoningTokens?: number;
+      cachedInputTokens?: number;
     };
     /** The latency of the prompt (ms) */
     latency: number;

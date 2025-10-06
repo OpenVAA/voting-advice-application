@@ -145,8 +145,8 @@ describe('Condenser Standalone Test', () => {
     expect(result.metrics).toBeDefined();
     expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
     expect(result.metrics.duration).toBeGreaterThan(0);
-    expect(result.metrics.tokensUsed).toBeDefined();
-    expect(result.metrics.tokensUsed.total).toBeGreaterThan(0);
+    expect(result.metrics.tokens).toBeDefined();
+    expect(result.metrics.tokens.totalTokens).toBeGreaterThan(0);
 
     // Verify LLM provider was called
     expect(input.options.llmProvider.generateObjectParallel).toHaveBeenCalled();
