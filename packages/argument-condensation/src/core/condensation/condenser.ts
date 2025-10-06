@@ -182,11 +182,11 @@ export class Condenser {
     // Calculate total token usage from all prompt calls
     const totalTokens = this.allPromptCalls.reduce(
       (acc, call) => ({
-        inputs: acc.inputs + call.metadata.tokens.input,
-        outputs: acc.outputs + call.metadata.tokens.output,
-        total: acc.total + call.metadata.tokens.total
+        inputTokens: acc.inputTokens + call.metadata.tokens.inputTokens,
+        outputTokens: acc.outputTokens + call.metadata.tokens.outputTokens,
+        totalTokens: acc.totalTokens + call.metadata.tokens.totalTokens
       }),
-      { inputs: 0, outputs: 0, total: 0 }
+      { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
     );
 
     // Set final arguments in tree and save operation tree to JSON file
@@ -205,7 +205,7 @@ export class Condenser {
         duration: totalDuration / 1000, // Convert to seconds
         nLlmCalls: this.allPromptCalls.length,
         cost: this.totalCost,
-        tokensUsed: totalTokens
+        tokens: totalTokens
       },
       success: true,
       metadata: {
@@ -401,9 +401,9 @@ export class Condenser {
         timestamp: new Date().toISOString(),
         metadata: {
           tokens: {
-            input: usage.inputTokens ?? 0,
-            output: usage.outputTokens ?? 0,
-            total: usage.totalTokens ?? 0
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0
           },
           latency,
           cost: costTotal
@@ -817,9 +817,9 @@ export class Condenser {
         timestamp: new Date().toISOString(),
         metadata: {
           tokens: {
-            input: usage.inputTokens ?? 0,
-            output: usage.outputTokens ?? 0,
-            total: usage.totalTokens ?? 0
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0
           },
           latency,
           cost: costTotal

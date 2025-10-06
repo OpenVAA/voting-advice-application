@@ -192,6 +192,7 @@ describe('LLMProvider', () => {
           reasoning: 0,
           total: 0.003
         },
+        model: 'gpt-4o-mini',
         fallbackUsed: false
       });
 

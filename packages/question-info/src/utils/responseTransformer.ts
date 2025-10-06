@@ -28,6 +28,7 @@ export function transformResponse({
   return {
     ...llmResponse,
     object: questionData,
-    success
+    success,
+    model: llmResponse.model
   };
 }
