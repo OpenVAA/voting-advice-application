@@ -55,10 +55,11 @@ export class LLMProvider {
       try {
         // Check if an abort has been requested. Throws AbortError if so.
         options.controller?.checkAbort();
+        const model = options.modelConfig.primary; // TODO: add fallback selection
 
         // Generation call which throws on validation failures
         const result = await generateObject({
-          model: this.provider.languageModel(options.modelConfig.primary),
+          model: this.provider.languageModel(model),
           schema: options.schema,
           messages: options.messages ?? [],
           temperature: options.temperature,
@@ -72,6 +73,7 @@ export class LLMProvider {
           latencyMs: performance.now() - startTime,
           attempts: attempt,
           costs,
+          model,
           fallbackUsed: false
         };
       } catch (error) {

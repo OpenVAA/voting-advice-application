@@ -3,6 +3,14 @@ import type { CallSettings, GenerateObjectResult, Prompt, StopCondition, StreamT
 import type { z } from 'zod';
 import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 
+// Vercel AI SDK defines their types similarly with Prompt and CallSettings as base types.
+// For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other 
+// params that are defined explicitly, not inside any type. We do the same here by cherry-picking
+// the explicit params from Vercel's StreamText. In addition to copying their existing params to
+// our own LLMStreamOptions type, we also add our own params that are not in Vercel's type.
+// These types are here to facilitate LLM-related functionality that is not supported by Vercel's
+// AI SDK. Namely, cost calculation, latency tracking and validation failure retries.
+
 // ------------------------------------------------------------
 // COMMON
 // ------------------------------------------------------------
@@ -22,11 +30,13 @@ export interface ProviderConfig {
   modelConfig: LLMModelConfig;
 }
 
-export interface LLMMetadata {
+export interface LLMCallMetadata {
   latencyMs: number;
   attempts: number;
-  fallbackUsed?: boolean;
   costs: LLMCosts;
+  model: string;
+  fallbackUsed?: boolean;
+  // nånting annat som behövs?
 }
 
 // ------------------------------------------------------------
@@ -37,12 +47,12 @@ export type LLMObjectGenerationOptions<TType> = Prompt &
   Omit<CallSettings, 'stopSequences'> & {
     modelConfig: LLMModelConfig;
     schema: z.ZodSchema<TType>; // Support only Zod schemas for now
-    /** Validation retries are not internally handled by the AI SDK, so we need to handle it here. Defaults to 1. */
+    /** Validation retries are not internally handled by the Vercel AI SDK, so we need to handle it here. Defaults to 1. */
     validationRetries?: number;
     controller?: Controller;
   };
 
-export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMMetadata;
+export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMCallMetadata;
 // ------------------------------------------------------------
 // STREAM
 // ------------------------------------------------------------
@@ -53,12 +63,12 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
     modelConfig?: LLMModelConfig;
     controller?: Controller;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stopWhen?: StopCondition<any>;
+    stopWhen?: StopCondition<any>; // Vercel doesn't support typing this, so we won't either
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
   extends StreamTextResult<NonNullable<TOOLS>, never>,
-    Omit<LLMMetadata, 'costs'> {
+    Omit<LLMCallMetadata, 'costs'> {
   // Override costs to be a Promise since stream results are immediately available
   costs: Promise<LLMCosts>;
 }
