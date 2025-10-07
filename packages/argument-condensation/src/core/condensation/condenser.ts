@@ -200,7 +200,7 @@ export class Condenser {
     return {
       runId: this.runId,
       condensationType: this.input.options.outputType,
-      arguments: currentData as Array<Argument>,
+      data: { arguments: currentData as Array<Argument> },
       metrics: {
         duration: totalDuration / 1000, // Convert to seconds
         nLlmCalls: this.allPromptCalls.length,

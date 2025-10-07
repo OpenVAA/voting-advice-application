@@ -1,4 +1,4 @@
-import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
+import type { LLMPipelineResult } from '@openvaa/llm-refactor';
 import type { Argument } from './argument';
 import type { CondensationOutputType } from './condensationType';
 
@@ -13,7 +13,7 @@ import type { CondensationOutputType } from './condensationType';
  * const result: CondensationRunResult = {
  *   runId: 'i-am-a-unique-run-id',
  *   condensationType: 'likertCons',
- *   arguments: [],
+ *   data: { arguments: [] },
  *   metrics: {
  *     duration: 420,
  *     nLlmCalls: 66,
@@ -28,19 +28,9 @@ import type { CondensationOutputType } from './condensationType';
  *     endTime: new Date()
  *   }
  */
-export interface CondensationRunResult {
-  runId: string;
+export interface CondensationRunResult extends LLMPipelineResult<{
+  arguments: Array<Argument>;
+}> {
   /** The type of condensation run. Common types are likertCons, likertPros, categoricalPros, booleanCons and booleanPros */
   condensationType: CondensationOutputType;
-  arguments: Array<Argument>;
-  /** Performance metrics containing duration, number of LLM calls, cost, and token usage */
-  metrics: LLMPipelineMetrics;
-  success: boolean;
-  /** Metadata containing the LLM model, language, start and end times */
-  metadata: {
-    llmModel: string;
-    language: string;
-    startTime: Date;
-    endTime: Date;
-  };
 }
