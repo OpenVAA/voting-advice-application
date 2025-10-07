@@ -1,6 +1,6 @@
 import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { LLMObjectGenerationResult } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationResult, LLMPipelineResult } from '@openvaa/llm-refactor';
 
 // ------------------------------------------------------------------
 // Types for all possible generation response formats in this package
@@ -44,9 +44,6 @@ export interface QuestionInfoData {
   /** ID of the question that was processed */
   questionId: Id;
 
-  /** Name of the question */
-  questionName: string;
-
   /** Generated info sections (if requested) */
   infoSections?: Array<QuestionInfoSection>;
 
@@ -54,16 +51,21 @@ export interface QuestionInfoData {
   terms?: Array<TermDefinition>;
 }
 
+// We don't really care about adding fields to this type because the typing parametrization
+// clearly differentiates the result from supertype...
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface QuestionInfoResult extends LLMPipelineResult<QuestionInfoData> {}
+
 /**
- * Result of question info generation
+ * Raw information from question info generation. This is not the same as the package's 
+ * output type QuestionInfoResult. This type is concerned with LLM interaction, whereas
+ * QuestionInfoResult is concerned with the package's output type.
  *
  * @example
  * ```ts
- * const result: QuestionInfoResult = {
- *   runId: 'run_1699123456789_abc123def',
+ * const result: QuestionInfoRaw = {
  *   object: {
  *     questionId: 'q1',
- *     questionName: 'Should the capital gains tax be increased?',
  *     infoSections: [
  *       {
  *         title: 'Background',
@@ -78,6 +80,9 @@ export interface QuestionInfoData {
  *       }
  *     ]
  *   },
+ *   latencyMs: 1000,
+ *   attempts: 1,
+ *   costs: { input: 0.0001, output: 0.0002, total: 0.0003 }, // in dollars
  *   finishReason: 'stop',
  *   usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
  *   success: true,
@@ -85,4 +90,4 @@ export interface QuestionInfoData {
  * };
  * ```
  */
-export type QuestionInfoResult = LLMObjectGenerationResult<QuestionInfoData> & { success: boolean };
+export type QuestionInfoRawResponse = LLMObjectGenerationResult<ResponseWithInfo> & { success: boolean };

@@ -92,9 +92,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.questionId).toBe('boolean-1');
-      expect(results[0].object.questionName).toBe('Do you support universal healthcare?');
-      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('boolean-1');
+      expect(results[0].data.infoSections).toBeDefined();
     });
 
     test('should handle boolean question with terms generation', async () => {
@@ -149,8 +148,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.terms).toBeDefined();
-      expect(results[0].object.terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
     });
   });
 
@@ -208,9 +207,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.questionId).toBe('ordinal-1');
-      expect(results[0].object.questionName).toBe('How satisfied are you with public transportation?');
-      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('ordinal-1');
+      expect(results[0].data.infoSections).toBeDefined();
     });
 
     test('should handle 7-point Likert scale question', async () => {
@@ -274,8 +272,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.terms).toBeDefined();
-      expect(results[0].object.terms).toHaveLength(2);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(2);
     });
   });
 
@@ -333,9 +331,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.questionId).toBe('categorical-1');
-      expect(results[0].object.questionName).toBe('What is your primary mode of transportation to work?');
-      expect(results[0].object.infoSections).toBeDefined();
+      expect(results[0].data.questionId).toBe('categorical-1');
+      expect(results[0].data.infoSections).toBeDefined();
     });
 
     test('should handle binary categorical question', async () => {
@@ -399,8 +396,8 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(1);
-      expect(results[0].object.terms).toBeDefined();
-      expect(results[0].object.terms).toHaveLength(3);
+      expect(results[0].data.terms).toBeDefined();
+      expect(results[0].data.terms).toHaveLength(3);
     });
   });
 
@@ -539,17 +536,17 @@ describe('Question Type Configurations', () => {
       const results = await generateQuestionInfo({ questions, options });
 
       expect(results).toHaveLength(3);
-      expect(results[0].object.questionId).toBe('mixed-1');
-      expect(results[1].object.questionId).toBe('mixed-2');
-      expect(results[2].object.questionId).toBe('mixed-3');
+      expect(results[0].data.questionId).toBe('mixed-1');
+      expect(results[1].data.questionId).toBe('mixed-2');
+      expect(results[2].data.questionId).toBe('mixed-3');
 
       // All results should have both infoSections and terms
-      expect(results.every((r) => r.object.infoSections && r.object.terms)).toBe(true);
+      expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
 
       // Verify specific content
-      expect(results[0].object.infoSections![0].title).toBe('Tax Policy');
-      expect(results[1].object.infoSections![0].title).toBe('Income Inequality Priority');
-      expect(results[2].object.infoSections![0].title).toBe('Policy Preference Analysis');
+      expect(results[0].data.infoSections![0].title).toBe('Tax Policy');
+      expect(results[1].data.infoSections![0].title).toBe('Income Inequality Priority');
+      expect(results[2].data.infoSections![0].title).toBe('Policy Preference Analysis');
     });
   });
 });

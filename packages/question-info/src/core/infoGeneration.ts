@@ -36,6 +36,10 @@ export async function generateInfo({
   options: QuestionInfoOptions;
 }): Promise<Array<QuestionInfoResult>> {
   try {
+    // Generate a unique run ID for this generation batch
+    const runId = `run_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const startTime = new Date();
+
     // Determine which prompt to use based on which operations we want to run
     const promptKey = determinePromptKey({ operations: options.operations });
 
@@ -109,11 +113,21 @@ export async function generateInfo({
       controller: options.controller
     });
 
+    const endTime = new Date();
+
     // Transform responses to our result format
     return questions.map((question, index) => {
       const response = responses[index];
       const success = response?.object != null;
-      return transformResponse({ llmResponse: response, question, success });
+      return transformResponse({
+        llmResponse: response,
+        question,
+        success,
+        runId,
+        language: options.language,
+        startTime,
+        endTime
+      });
     });
   } catch (error) {
     throw new Error(`Error generating question info: ${error}`);
