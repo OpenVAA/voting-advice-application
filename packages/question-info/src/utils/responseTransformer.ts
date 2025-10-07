@@ -7,11 +7,19 @@ import type { QuestionInfoData, QuestionInfoResult, ResponseWithInfo } from '../
 export function transformResponse({
   llmResponse,
   question,
-  success
+  success,
+  runId,
+  language,
+  startTime,
+  endTime
 }: {
   llmResponse: LLMObjectGenerationResult<ResponseWithInfo>;
   question: { id: string; name: string };
   success: boolean;
+  runId: string;
+  language: string;
+  startTime: Date;
+  endTime: Date;
 }): QuestionInfoResult {
   const responseData = llmResponse.object;
 
@@ -20,15 +28,25 @@ export function transformResponse({
 
   const questionData: QuestionInfoData = {
     questionId: question.id,
-    questionName: question.name,
     infoSections,
     terms
   };
 
   return {
-    ...llmResponse,
-    object: questionData,
+    runId,
+    data: questionData,
+    metrics: {
+      duration: llmResponse.latencyMs / 1000, // Convert ms to seconds
+      nLlmCalls: llmResponse.attempts,
+      cost: llmResponse.costs.total,
+      tokens: llmResponse.usage
+    },
     success,
-    model: llmResponse.model
+    metadata: {
+      llmModel: llmResponse.model,
+      language,
+      startTime,
+      endTime
+    }
   };
 }
