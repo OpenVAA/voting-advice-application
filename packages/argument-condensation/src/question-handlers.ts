@@ -38,7 +38,7 @@ export async function handleBooleanQuestion({
         parallelBatches
       });
       results.push(prosResult);
-      options.controller?.info(`Found ${prosResult.arguments.length} pros!`);
+      options.controller?.info(`Found ${prosResult.data.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
@@ -48,7 +48,7 @@ export async function handleBooleanQuestion({
         parallelBatches
       });
       results.push(consResult);
-      options.controller?.info(`Found ${consResult.arguments.length} cons!`);
+      options.controller?.info(`Found ${consResult.data.arguments.length} cons!`);
     }
   }
 
@@ -91,7 +91,7 @@ export async function handleOrdinalQuestion({
         parallelBatches
       });
       results.push(prosResult);
-      options.controller?.info(`Found ${prosResult.arguments.length} pros!`);
+      options.controller?.info(`Found ${prosResult.data.arguments.length} pros!`);
     } else if (group.type === 'con') {
       const consResult = await runSingleCondensation({
         question,
@@ -101,7 +101,7 @@ export async function handleOrdinalQuestion({
         parallelBatches
       });
       results.push(consResult);
-      options.controller?.info(`Found ${consResult.arguments.length} cons!`);
+      options.controller?.info(`Found ${consResult.data.arguments.length} cons!`);
     }
   }
 
@@ -144,7 +144,7 @@ export async function handleCategoricalQuestion({
         parallelBatches
       });
       results.push(categoryResult);
-      options.controller?.info(`Found ${categoryResult.arguments.length} pros! Category ${group.choiceId}.`);
+      options.controller?.info(`Found ${categoryResult.data.arguments.length} pros! Category ${group.choiceId}.`);
     }
   }
 
