@@ -135,15 +135,15 @@ export class LLMProvider {
       // Check if an abort has been requested. Throws AbortError if so.
       controller?.checkAbort();
 
+      // Process the batch in parallel
+      const batchResults = await Promise.all(batch.map((request) => this.generateObject(request)));
+      results.push(...batchResults);
+
       // Update progress after each batch completes
       completedBatches++;
       if (controller) {
         controller.progress(completedBatches / totalBatches);
       }
-
-      // Process the batch in parallel
-      const batchResults = await Promise.all(batch.map((request) => this.generateObject(request)));
-      results.push(...batchResults);
     }
 
     // Check if an abort has been requested. Throws AbortError if so.
