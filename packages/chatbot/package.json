@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "name": "@openvaa/chatbot",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    "import": "./build/index.js"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/js-yaml": "^4.0.9",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.31",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/data": "workspace:^",
+    "@openvaa/llm-refactor": "workspace:^",
+    "ai": "^5.0.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.0.0"
+  }
+}
