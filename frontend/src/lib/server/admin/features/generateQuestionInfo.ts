@@ -121,7 +121,7 @@ export async function generateQuestionInfo({
       const result = results[i];
 
       // Check if result is successful and has data
-      if (!result.success || !result.object) {
+      if (!result.success || !result.data) {
         controller.warning(`No question info generated for question: ${question.name}`);
         controller.updateOperation(`question-${question.id}`, 1.0);
         continue;
@@ -132,16 +132,16 @@ export async function generateQuestionInfo({
         customData: {}
       };
 
-      if (result.object.terms && result.object.terms.length > 0) {
-        updateData.customData.terms = result.object.terms.map((term) => ({
+      if (result.data.terms && result.data.terms.length > 0) {
+        updateData.customData.terms = result.data.terms.map((term) => ({
           triggers: { [locale]: term.triggers },
           title: term.title ? { [locale]: term.title } : undefined,
           content: { [locale]: term.content }
         }));
       }
 
-      if (result.object.infoSections && result.object.infoSections.length > 0) {
-        updateData.customData.infoSections = result.object.infoSections.map((section) => ({
+      if (result.data.infoSections && result.data.infoSections.length > 0) {
+        updateData.customData.infoSections = result.data.infoSections.map((section) => ({
           title: { [locale]: section.title },
           content: { [locale]: section.content }
         }));
