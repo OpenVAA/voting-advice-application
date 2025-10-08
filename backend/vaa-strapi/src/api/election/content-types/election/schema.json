@@ -58,9 +58,9 @@
       "type": "string",
       "private": true
     },
-    "alliance": {
+    "alliances": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::alliance.alliance",
       "mappedBy": "election"
     }
