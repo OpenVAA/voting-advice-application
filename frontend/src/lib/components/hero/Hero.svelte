@@ -33,7 +33,7 @@ Display a hero illustration.
   {#if isEmoji(content)}
     <HeroEmoji emoji={content.emoji} />
   {:else if isImage(content)}
-    <Image image={content} class="max-h-[40vh] max-w-full object-contain" />
+    <Image image={content} class="max-h-[25vh] max-w-full object-contain" />
   {:else}
     <ErrorMessage logMessage="Unsupported content for Hero: {JSON.stringify(content)}" />
   {/if}

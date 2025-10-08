@@ -1,7 +1,9 @@
 {
   "code": "registreringskode",
   "codePlaceholder": "F.eks. CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Har du allerede registreret dig?",
   "enterCode": "Indtast den registreringskode, du har modtaget pr. e-mail, for at fuldføre din registrering.",
+  "goToLoginLabel": "Gå til login-siden",
   "loggedInWarning": "En bruger er i øjeblikket logget ind. Log ud, før du fortsætter.",
   "passwordValidation": {
     "commonPatterns": "Indeholder almindelige mønstre eller sekvenser",
