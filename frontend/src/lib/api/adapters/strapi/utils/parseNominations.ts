@@ -118,8 +118,11 @@ export function parseNominations({
       if (!electionId || !constituencyIds.length)
         throw new Error(`Error parsing Alliance ${alliance.documentId}. No election or constituencies found.`);
       const election = tree[electionId];
-      if (!election)
-        throw new Error(`Error parsing Alliance ${alliance.documentId}. Election ${electionId} not found.`);
+      if (!election) {
+        // This may result from there being no candidate or party nominations for this election, in which case the Alliance is moot anyway
+        // throw new Error(`Error parsing Alliance ${alliance.documentId}. Election ${electionId} not found.`);
+        continue;
+      }
       // We assume the alliance is valid for all election rounds
       for (const electionRound of Object.values(election)) {
         for (const constituencyId of constituencyIds) {
