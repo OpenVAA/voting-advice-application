@@ -31,8 +31,8 @@ export const staticSettings: StaticSettings = {
       accent: '#f6d1e3',
       neutral: '#cccccc',
       'base-100': '#000000',
-      'base-200': '#080808',
-      'base-300': '#101010',
+      'base-200': '#1c1c1c',
+      'base-300': '#2f2f2f',
       warning: '#e16060',
       'line-color': '#262626'
     }
