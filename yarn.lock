@@ -4222,6 +4222,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/chatbot@workspace:^, @openvaa/chatbot@workspace:packages/chatbot":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/chatbot@workspace:packages/chatbot"
+  dependencies:
+    "@ai-sdk/openai": "npm:^2.0.31"
+    "@openvaa/core": "workspace:^"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/llm-refactor": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    "@openvaa/vector-store": "workspace:^"
+    "@types/js-yaml": "npm:^4.0.9"
+    ai: "npm:^5.0.0"
+    js-yaml: "npm:^4.1.0"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.7.3"
+    vitest: "npm:^2.1.8"
+    zod: "npm:^4.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/core@workspace:^, @openvaa/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@openvaa/core@workspace:packages/core"
@@ -4271,6 +4291,7 @@ __metadata:
     "@eslint/js": "npm:^9.17.0"
     "@openvaa/app-shared": "workspace:^"
     "@openvaa/argument-condensation": "workspace:^"
+    "@openvaa/chatbot": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
@@ -4319,6 +4340,7 @@ __metadata:
     vite: "npm:^5.4.11"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^2.1.8"
+    zod: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4465,6 +4487,21 @@ __metadata:
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
     yalc: "npm:^1.0.0-pre.53"
+  languageName: unknown
+  linkType: soft
+
+"@openvaa/vector-store@workspace:^, @openvaa/vector-store@workspace:packages/vector-store":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/vector-store@workspace:packages/vector-store"
+  dependencies:
+    "@openvaa/core": "workspace:^"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    chromadb: "npm:^1.10.5"
+    openai: "npm:^4.78.1"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.7.3"
+    vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
@@ -11156,6 +11193,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chromadb@npm:^1.10.5":
+  version: 1.10.5
+  resolution: "chromadb@npm:1.10.5"
+  dependencies:
+    cliui: "npm:^8.0.1"
+    isomorphic-fetch: "npm:^3.0.0"
+  peerDependencies:
+    "@google/generative-ai": ^0.1.1
+    cohere-ai: ^5.0.0 || ^6.0.0 || ^7.0.0
+    ollama: ^0.5.0
+    openai: ^3.0.0 || ^4.0.0
+    voyageai: ^0.0.3-1
+  peerDependenciesMeta:
+    "@google/generative-ai":
+      optional: true
+    cohere-ai:
+      optional: true
+    ollama:
+      optional: true
+    openai:
+      optional: true
+    voyageai:
+      optional: true
+  checksum: 10c0/b40eef959454069539a02205561f18ad0c7ed3f67712c3ca61c6a5a54efc6957b6ec011ea3ab7981fc367166cba3e0d7346735cc8bb27046803166fb960a4cfd
+  languageName: node
+  linkType: hard
+
 "chrome-trace-event@npm:^1.0.2":
   version: 1.0.4
   resolution: "chrome-trace-event@npm:1.0.4"
@@ -16154,6 +16218,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isomorphic-fetch@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "isomorphic-fetch@npm:3.0.0"
+  dependencies:
+    node-fetch: "npm:^2.6.1"
+    whatwg-fetch: "npm:^3.4.1"
+  checksum: 10c0/511b1135c6d18125a07de661091f5e7403b7640060355d2d704ce081e019bc1862da849482d079ce5e2559b8976d3de7709566063aec1b908369c0b98a2b075b
+  languageName: node
+  linkType: hard
+
 "isstream@npm:^0.1.2, isstream@npm:~0.1.2":
   version: 0.1.2
   resolution: "isstream@npm:0.1.2"
@@ -18703,7 +18777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.7":
+"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -24766,6 +24840,13 @@ __metadata:
   dependencies:
     iconv-lite: "npm:0.6.3"
   checksum: 10c0/273b5f441c2f7fda3368a496c3009edbaa5e43b71b09728f90425e7f487e5cef9eb2b846a31bd760dd8077739c26faf6b5ca43a5f24033172b003b72cf61a93e
+  languageName: node
+  linkType: hard
+
+"whatwg-fetch@npm:^3.4.1":
+  version: 3.6.20
+  resolution: "whatwg-fetch@npm:3.6.20"
+  checksum: 10c0/fa972dd14091321d38f36a4d062298df58c2248393ef9e8b154493c347c62e2756e25be29c16277396046d6eaa4b11bd174f34e6403fff6aaca9fb30fa1ff46d
   languageName: node
   linkType: hard
 

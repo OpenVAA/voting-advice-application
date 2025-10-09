@@ -3,7 +3,7 @@
   "name": "@openvaa/chatbot",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/core/prompts/* build/prompts/",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -22,10 +22,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.31",
-    "@modelcontextprotocol/sdk": "^1.18.0",
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
+    "@openvaa/vector-store": "workspace:^",
     "ai": "^5.0.0",
     "js-yaml": "^4.1.0",
     "zod": "^4.0.0"
