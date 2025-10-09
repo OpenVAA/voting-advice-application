@@ -1,0 +1,28 @@
+{
+  "private": true,
+  "name": "@openvaa/vector-store",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    "import": "./build/index.js"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "chromadb": "^1.10.5",
+    "openai": "^4.78.1",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@openvaa/core": "workspace:^",
+    "@openvaa/data": "workspace:^"
+  }
+}
