@@ -29,7 +29,7 @@
     timestamp: number;
   }
 
-  // Cost tracking interface
+  // Metadata tracking interfaces
   interface CostInfo {
     input: number;
     output: number;
@@ -38,18 +38,52 @@
     timestamp: number;
   }
 
+  interface LatencyInfo {
+    timeToFirstToken: number; // ms from request start to first token
+    totalTime: number; // ms from request start to completion
+    tokensPerSecond?: number; // output tokens / second
+    timestamp: number;
+  }
+
   let messages: UIMessage[] = [];
   let ragContexts: RAGContext[] = [];
-  let costs: CostInfo[] = []; // NEW: Store all costs
+  let costs: CostInfo[] = [];
+  let latencies: LatencyInfo[] = [];
   let input = '';
   let loading = false;
 
-  // NEW: Cost calculation helpers
+  // Request timing tracking
+  let requestStartTime = 0;
+  let firstTokenTime = 0;
+
+  // Cost calculation helpers
   $: lastCost = costs.length > 0 ? costs[costs.length - 1].total : 0;
   $: averageCost = costs.length > 0 ? costs.reduce((sum, c) => sum + c.total, 0) / costs.length : 0;
-  $: last3Average =
+  $: last3CostAverage =
     costs.length > 0 ? costs.slice(-3).reduce((sum, c) => sum + c.total, 0) / Math.min(3, costs.length) : 0;
   $: totalSessionCost = costs.reduce((sum, c) => sum + c.total, 0);
+  $: minCost = costs.length > 0 ? Math.min(...costs.map(c => c.total)) : 0;
+  $: maxCost = costs.length > 0 ? Math.max(...costs.map(c => c.total)) : 0;
+
+  // Latency calculation helpers
+  $: lastTTFT = latencies.length > 0 ? latencies[latencies.length - 1].timeToFirstToken : 0;
+  $: averageTTFT = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.timeToFirstToken, 0) / latencies.length : 0;
+  $: last3TTFTAverage =
+    latencies.length > 0 ? latencies.slice(-3).reduce((sum, l) => sum + l.timeToFirstToken, 0) / Math.min(3, latencies.length) : 0;
+  
+  $: lastTotalTime = latencies.length > 0 ? latencies[latencies.length - 1].totalTime : 0;
+  $: averageTotalTime = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.totalTime, 0) / latencies.length : 0;
+  $: last3TotalTimeAverage =
+    latencies.length > 0 ? latencies.slice(-3).reduce((sum, l) => sum + l.totalTime, 0) / Math.min(3, latencies.length) : 0;
+  
+  $: minTTFT = latencies.length > 0 ? Math.min(...latencies.map(l => l.timeToFirstToken)) : 0;
+  $: maxTTFT = latencies.length > 0 ? Math.max(...latencies.map(l => l.timeToFirstToken)) : 0;
+  $: minTotalTime = latencies.length > 0 ? Math.min(...latencies.map(l => l.totalTime)) : 0;
+  $: maxTotalTime = latencies.length > 0 ? Math.max(...latencies.map(l => l.totalTime)) : 0;
+  
+  $: averageTokensPerSecond = latencies.length > 0 && latencies.filter(l => l.tokensPerSecond).length > 0
+    ? latencies.filter(l => l.tokensPerSecond).reduce((sum, l) => sum + (l.tokensPerSecond || 0), 0) / latencies.filter(l => l.tokensPerSecond).length
+    : 0;
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -62,6 +96,10 @@
     messages = [...messages, userMessage];
     input = '';
     loading = true;
+
+    // Track request start time
+    requestStartTime = performance.now();
+    firstTokenTime = 0;
 
     try {
       console.log('[Chatbot] Starting API request for assistant response');
@@ -177,19 +215,36 @@
       return;
     }
 
-    // NEW: Handle cost information
-    if (data.type === 'cost-info') {
-      console.log('[Chatbot] Received cost info:', data);
-      costs = [
-        ...costs,
-        {
-          input: data.input,
-          output: data.output,
-          reasoning: data.reasoning,
-          total: data.total,
-          timestamp: data.timestamp
-        }
-      ];
+    // Handle metadata information (cost + latency)
+    if (data.type === 'metadata-info') {
+      console.log('[Chatbot] Received metadata info:', data);
+      
+      // Store cost info
+      if (data.cost) {
+        costs = [
+          ...costs,
+          {
+            input: data.cost.input,
+            output: data.cost.output,
+            reasoning: data.cost.reasoning,
+            total: data.cost.total,
+            timestamp: data.timestamp
+          }
+        ];
+      }
+
+      // Store latency info
+      if (data.latency) {
+        latencies = [
+          ...latencies,
+          {
+            timeToFirstToken: data.latency.timeToFirstToken,
+            totalTime: data.latency.totalTime,
+            tokensPerSecond: data.latency.tokensPerSecond,
+            timestamp: data.timestamp
+          }
+        ];
+      }
       return;
     }
 
@@ -197,6 +252,11 @@
     if (!lastMessage || lastMessage.role !== 'assistant') return;
 
     if (data.type === 'text-delta') {
+      // Track time to first token
+      if (firstTokenTime === 0) {
+        firstTokenTime = performance.now();
+      }
+
       // Handle text streaming
       const textPart = lastMessage.parts.find((p) => p.type === 'text') as any;
       if (textPart) {
@@ -357,64 +417,169 @@
     </div>
   </div>
 
-  <!-- NEW: Right side: Cost Tracking -->
+  <!-- Right side: Metadata (Cost + Latency) -->
   <div class="flex w-1/3 flex-col">
-    <h2 class="mb-4 text-2xl font-bold">Cost Tracking</h2>
+    <h2 class="mb-4 text-2xl font-bold">Response Metadata</h2>
 
     <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
-      <!-- Summary Cards -->
-      <div class="gap-3 mb-6 grid grid-cols-2">
-        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="mb-1 text-xs text-gray-500">Last Response</div>
-          <div class="text-2xl font-bold text-blue-600">
-            ${lastCost.toFixed(4)}
+      <!-- Cost Metrics Section -->
+      <div class="mb-6">
+        <h3 class="font-bold mb-3 text-lg text-gray-800 border-b border-gray-300 pb-2">💰 Cost Metrics</h3>
+        <div class="gap-2 grid grid-cols-2 mb-4">
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Last Response</div>
+            <div class="text-xl font-bold text-blue-600">
+              ${lastCost.toFixed(4)}
+            </div>
           </div>
-        </div>
 
-        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="mb-1 text-xs text-gray-500">Average Cost</div>
-          <div class="text-2xl font-bold text-green-600">
-            ${averageCost.toFixed(4)}
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Average Cost</div>
+            <div class="text-xl font-bold text-green-600">
+              ${averageCost.toFixed(4)}
+            </div>
           </div>
-        </div>
 
-        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
-          <div class="text-2xl font-bold text-purple-600">
-            ${last3Average.toFixed(4)}
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
+            <div class="text-xl font-bold text-purple-600">
+              ${last3CostAverage.toFixed(4)}
+            </div>
           </div>
-        </div>
 
-        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="mb-1 text-xs text-gray-500">Total Session</div>
-          <div class="text-2xl font-bold text-orange-600">
-            ${totalSessionCost.toFixed(4)}
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Total Session</div>
+            <div class="text-xl font-bold text-orange-600">
+              ${totalSessionCost.toFixed(4)}
+            </div>
+          </div>
+
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Min Cost</div>
+            <div class="text-lg font-semibold text-teal-600">
+              ${minCost.toFixed(4)}
+            </div>
+          </div>
+
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Max Cost</div>
+            <div class="text-lg font-semibold text-red-600">
+              ${maxCost.toFixed(4)}
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Detailed Cost History -->
+      <!-- Latency Metrics Section -->
+      <div class="mb-6">
+        <h3 class="font-bold mb-3 text-lg text-gray-800 border-b border-gray-300 pb-2">⚡ Latency Metrics</h3>
+        
+        <!-- Time to First Token -->
+        <div class="mb-4">
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Time to First Token (TTFT)</h4>
+          <div class="gap-2 grid grid-cols-2">
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Last Response</div>
+              <div class="text-xl font-bold text-blue-600">
+                {lastTTFT.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Average</div>
+              <div class="text-xl font-bold text-green-600">
+                {averageTTFT.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
+              <div class="text-xl font-bold text-purple-600">
+                {last3TTFTAverage.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Min / Max</div>
+              <div class="text-sm font-semibold text-gray-700">
+                {minTTFT.toFixed(0)} / {maxTTFT.toFixed(0)}ms
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Time -->
+        <div class="mb-4">
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Total Response Time</h4>
+          <div class="gap-2 grid grid-cols-2">
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Last Response</div>
+              <div class="text-xl font-bold text-blue-600">
+                {(lastTotalTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Average</div>
+              <div class="text-xl font-bold text-green-600">
+                {(averageTotalTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
+              <div class="text-xl font-bold text-purple-600">
+                {(last3TotalTimeAverage / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Min / Max</div>
+              <div class="text-sm font-semibold text-gray-700">
+                {(minTotalTime / 1000).toFixed(2)} / {(maxTotalTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tokens per Second -->
+        <div>
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Generation Speed</h4>
+          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+            <div class="mb-1 text-xs text-gray-500">Avg Tokens/Second</div>
+            <div class="text-xl font-bold text-indigo-600">
+              {averageTokensPerSecond.toFixed(1)} tok/s
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed History -->
       <div class="border-t border-gray-300 pt-4">
-        <h3 class="font-semibold mb-3 text-sm text-gray-700">Cost History</h3>
+        <h3 class="font-semibold mb-3 text-sm text-gray-700">Response History</h3>
         {#if costs.length === 0}
-          <div class="text-center text-sm text-gray-500">No costs tracked yet</div>
+          <div class="text-center text-sm text-gray-500">No responses yet</div>
         {:else}
           <div class="space-y-2">
             {#each costs.slice().reverse() as cost, idx}
+              {@const latency = latencies[latencies.length - 1 - idx]}
               <div class="p-3 rounded border border-gray-200 bg-white text-sm">
                 <div class="mb-2 flex items-center justify-between">
                   <span class="font-semibold text-gray-700">
-                    Response #{costs.length - idx}
+                    #{costs.length - idx}
                   </span>
                   <span class="font-bold text-blue-600">
                     ${cost.total.toFixed(4)}
                   </span>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                  <div>Input: ${cost.input.toFixed(5)}</div>
-                  <div>Output: ${cost.output.toFixed(5)}</div>
-                  {#if cost.reasoning}
-                    <div class="col-span-2">Reasoning: ${cost.reasoning.toFixed(5)}</div>
+                  <div>Cost: ${cost.total.toFixed(5)}</div>
+                  {#if latency}
+                    <div>TTFT: {latency.timeToFirstToken.toFixed(0)}ms</div>
+                    <div>Total: {(latency.totalTime / 1000).toFixed(2)}s</div>
+                    {#if latency.tokensPerSecond}
+                      <div>{latency.tokensPerSecond.toFixed(1)} tok/s</div>
+                    {/if}
                   {/if}
                 </div>
               </div>

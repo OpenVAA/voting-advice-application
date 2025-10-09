@@ -42,10 +42,14 @@ export async function POST({ request, params }: { request: Request; params: any 
 
   const result = await ChatEngine.createStream(input);
 
-  // Create custom stream that sends RAG context first, then AI response
+  // Create custom stream that sends RAG context first, then AI response, then metadata
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
+
+      // Track timing
+      const streamStartTime = performance.now();
+      let firstTokenTime = 0;
 
       try {
         // First, send RAG context as a custom SSE event
@@ -61,8 +65,7 @@ export async function POST({ request, params }: { request: Request; params: any 
           );
         }
 
-        // Then pipe the AI SDK stream through
-        // We use toUIMessageStreamResponse() and read its body
+        // Then pipe the AI SDK stream through while tracking timing
         const aiResponse = result.toUIMessageStreamResponse();
         const reader = aiResponse.body?.getReader();
 
@@ -70,20 +73,47 @@ export async function POST({ request, params }: { request: Request; params: any 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
+
+            // Track first token time
+            if (firstTokenTime === 0) {
+              firstTokenTime = performance.now();
+            }
+
             controller.enqueue(value);
           }
         }
 
-        // NEW: After stream completes, send cost information
+        const streamEndTime = performance.now();
+
+        // Calculate timing metrics
+        const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;
+        const totalTime = streamEndTime - streamStartTime;
+
+        // Get cost information
         const costs = await result.costs;
-        controller.enqueue(encoder.encode('event: cost-info\n'));
+
+        // Calculate tokens per second (if we have output tokens from usage)
+        const usage = await result.usage;
+        const tokensPerSecond = usage.outputTokens && totalTime > 0
+          ? (usage.outputTokens / (totalTime / 1000))
+          : undefined;  
+
+        // Send combined metadata as a single event
+        controller.enqueue(encoder.encode('event: metadata-info\n'));
         controller.enqueue(
           encoder.encode(
             `data: ${JSON.stringify({
-              input: costs.input,
-              output: costs.output,
-              reasoning: costs.reasoning,
-              total: costs.total,
+              cost: {
+                input: costs.input,
+                output: costs.output,
+                reasoning: costs.reasoning,
+                total: costs.total
+              },
+              latency: {
+                timeToFirstToken,
+                totalTime,
+                tokensPerSecond
+              },
               timestamp: Date.now()
             })}\n\n`
           )
