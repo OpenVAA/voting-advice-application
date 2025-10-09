@@ -19,7 +19,18 @@
     >;
   }
 
+  interface RAGContext {
+    query: string;
+    results: Array<{
+      source: string;
+      content: string;
+      distance?: number;
+    }>;
+    timestamp: number;
+  }
+
   let messages: UIMessage[] = [];
+  let ragContexts: RAGContext[] = [];
   let input = '';
   let loading = false;
 
@@ -135,6 +146,20 @@
   }
 
   function handleStreamChunk(data: any) {
+    // Handle RAG context events (not tied to specific messages)
+    if (data.type === 'rag-context') {
+      console.log('[Chatbot] Received RAG context:', data);
+      ragContexts = [
+        ...ragContexts,
+        {
+          query: data.query,
+          results: data.results,
+          timestamp: Date.now()
+        }
+      ];
+      return;
+    }
+
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.role !== 'assistant') return;
 
@@ -208,39 +233,94 @@
   }
 </script>
 
-<div class="mx-auto flex h-screen max-w-2xl flex-col p-4">
-  <div class="mb-4 flex-1 space-y-6 overflow-y-auto">
-    {#each messages as message}
-      <div class="p-3 rounded {message.role === 'user' ? 'ml-8 bg-blue-100' : 'mr-8 bg-gray-100'}">
-        <div class="font-semibold mb-1">{message.role === 'user' ? 'You' : 'Assistant'}</div>
-        <div class="whitespace-pre-wrap">
-          {#each message.parts as part}
-            <div>{renderMessagePart(part)}</div>
-          {/each}
+<div class="flex h-screen gap-4 p-4">
+  <!-- Left side: Chat conversation -->
+  <div class="flex w-1/2 flex-col">
+    <h2 class="mb-4 text-2xl font-bold">Chat</h2>
+    <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
+      {#each messages as message}
+        <div class="p-3 rounded {message.role === 'user' ? 'ml-8 bg-blue-100' : 'mr-8 bg-gray-100'}">
+          <div class="font-semibold mb-1">{message.role === 'user' ? 'You' : 'Assistant'}</div>
+          <div class="whitespace-pre-wrap">
+            {#each message.parts as part}
+              <div>{renderMessagePart(part)}</div>
+            {/each}
+          </div>
         </div>
-      </div>
-    {/each}
+      {/each}
 
-    {#if loading}
-      <div class="p-3 mr-8 rounded bg-gray-100">
-        <div class="font-semibold mb-1">Assistant</div>
-        <div>Thinking...</div>
-      </div>
-    {/if}
+      {#if loading}
+        <div class="p-3 mr-8 rounded bg-gray-100">
+          <div class="font-semibold mb-1">Assistant</div>
+          <div>Thinking...</div>
+        </div>
+      {/if}
+    </div>
+
+    <div class="gap-3 flex">
+      <input
+        bind:value={input}
+        on:keydown={handleKeydown}
+        placeholder="Ask a question..."
+        class="py-3 flex-1 rounded border px-4 text-lg"
+        disabled={loading} />
+      <button
+        on:click={sendMessage}
+        disabled={loading || !input.trim()}
+        class="py-3 rounded bg-blue-600 px-6 text-white disabled:bg-gray-300">
+        Send
+      </button>
+    </div>
   </div>
 
-  <div class="gap-3 flex">
-    <input
-      bind:value={input}
-      on:keydown={handleKeydown}
-      placeholder="Ask a question..."
-      class="py-3 flex-1 rounded border px-4 text-lg"
-      disabled={loading} />
-    <button
-      on:click={sendMessage}
-      disabled={loading || !input.trim()}
-      class="py-3 rounded bg-blue-600 px-6 text-white disabled:bg-gray-300">
-      Send
-    </button>
+  <!-- Right side: RAG Context -->
+  <div class="flex w-1/2 flex-col">
+    <h2 class="mb-4 text-2xl font-bold">Retrieved Context (RAG)</h2>
+    <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
+      {#if ragContexts.length === 0}
+        <div class="mt-8 text-center text-gray-500">
+          <p>No RAG context yet.</p>
+          <p class="mt-2 text-sm">Ask a question to see retrieved information.</p>
+        </div>
+      {:else}
+        <div class="space-y-6">
+          {#each ragContexts as context, idx}
+            <div class="rounded border border-gray-300 bg-white p-4 shadow-sm">
+              <div class="mb-3 border-b border-gray-200 pb-2">
+                <div class="text-xs text-gray-500">
+                  Query #{ragContexts.length - idx}
+                </div>
+                <div class="font-semibold mt-1 text-blue-700">{context.query}</div>
+              </div>
+
+              {#if context.results.length === 0}
+                <div class="text-sm italic text-gray-500">No relevant context found.</div>
+              {:else}
+                <div class="space-y-3">
+                  {#each context.results as result, resultIdx}
+                    <div class="p-3 rounded border border-gray-200 bg-gray-50">
+                      <div class="mb-2 flex items-center justify-between">
+                        <div class="font-semibold text-xs text-gray-700">
+                          Result {resultIdx + 1}
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          Source: {result.source}
+                          {#if result.distance !== undefined}
+                            <span class="ml-2">Distance: {result.distance.toFixed(3)}</span>
+                          {/if}
+                        </div>
+                      </div>
+                      <div class="whitespace-pre-wrap text-sm text-gray-700">
+                        {result.content}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
 </div>

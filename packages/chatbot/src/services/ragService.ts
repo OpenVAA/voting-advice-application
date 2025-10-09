@@ -74,12 +74,21 @@ export class RAGService {
   }
 
   /**
-   * Search the vector store for relevant context
+   * Search the vector store for relevant context (returns structured data)
    * @param query - The search query
    * @param topK - Number of results to return (default: 3)
-   * @returns Formatted context string from search results
+   * @returns Structured array of search results
    */
-  static async searchContext(query: string, topK: number = 3): Promise<string> {
+  static async searchContextStructured(
+    query: string,
+    topK: number = 3
+  ): Promise<
+    Array<{
+      source: string;
+      content: string;
+      distance?: number;
+    }>
+  > {
     if (!this.chromaCollection || !this.embedder) {
       throw new Error('RAGService not initialized. Call RAGService.initialize() first.');
     }
@@ -95,16 +104,34 @@ export class RAGService {
 
     // Format the context from search results
     if (!results.documents || !results.documents[0] || results.documents[0].length === 0) {
+      return [];
+    }
+
+    // Return structured results
+    return results.documents[0]
+      .filter((doc): doc is string => doc !== null && doc !== undefined)
+      .map((doc, idx) => ({
+        source: (results.metadatas?.[0]?.[idx]?.sourceId as string) || 'Unknown',
+        content: doc,
+        distance: results.distances?.[0]?.[idx]
+      }));
+  }
+
+  /**
+   * Search the vector store for relevant context
+   * @param query - The search query
+   * @param topK - Number of results to return (default: 3)
+   * @returns Formatted context string from search results
+   */
+  static async searchContext(query: string, topK: number = 3): Promise<string> {
+    const structuredResults = await this.searchContextStructured(query, topK);
+
+    if (structuredResults.length === 0) {
       return 'No relevant context found.';
     }
 
-    // Combine the top results into a context string
-    const contextParts = results.documents[0]
-      .filter((doc): doc is string => doc !== null && doc !== undefined)
-      .map((doc, idx) => {
-        const sourceId = results.metadatas?.[0]?.[idx]?.sourceId || 'Unknown';
-        return `### Source: ${sourceId}\n${doc}`;
-      });
+    // Format structured results into a context string
+    const contextParts = structuredResults.map((result) => `### Source: ${result.source}\n${result.content}`);
 
     return contextParts.join('\n\n---\n\n');
   }
