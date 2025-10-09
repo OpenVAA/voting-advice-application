@@ -29,11 +29,11 @@ export class ChatEngine {
     const llmProvider = new LLMProvider({
       provider: 'openai',
       apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-4o-mini' }
+      modelConfig: { primary: 'gpt-4.1-mini' }
     });
 
     const result = llmProvider.streamText({
-      modelConfig: { primary: 'gpt-4o-mini' },
+      modelConfig: { primary: 'gpt-4.1-mini' },
       system: systemMessage,
       messages: input.messages,
       tools: getTools(input.getToolsOptions?.dataProvider, input.getToolsOptions),

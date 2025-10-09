@@ -5,14 +5,13 @@ params:
   context: string
 
 prompt: |
-  You have access to the following relevant information from authoritative sources:
+  Given the following retrieved document passages, answer the user's question using only the information in those passages. 
+  If the passages don't contain enough information, you may supplement with general knowledge while clearly indicating what comes from the provided context versus general information.
 
   ## Context:
   {{context}}
 
-  ## User Question:
+  ## User Message:
   {{query}}
 
-  Please provide a helpful, accurate answer based on the context provided above. If the context contains relevant information, use it to inform your response. If the context doesn't fully address the question, you may supplement with general knowledge while clearly indicating what comes from the provided context versus general information.
-
-  Maintain your core principles of neutrality, clarity, and accuracy in your response.
+  Answer in natural language, citing sources. 

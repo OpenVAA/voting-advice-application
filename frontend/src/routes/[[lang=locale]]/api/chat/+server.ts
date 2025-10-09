@@ -1,6 +1,7 @@
 import { type ChatbotAPIInput, ChatEngine, RAGService } from '@openvaa/chatbot';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { stubDataProvider } from './stubDataProvider';
+import type { ModelMessage } from 'ai';
 
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,27 +13,24 @@ export async function POST({ request, params }: { request: Request; params: any 
   // Initialize RAG service (only happens once, subsequent calls are no-ops)
   await RAGService.initialize();
 
-  // Get the last user query to retrieve RAG context
-  let lastUserQuery = '';
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'user' && typeof messages[i].content === 'string') {
-      lastUserQuery = messages[i].content as string;
-      break;
-    }
+  // Get the last message safely
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage) {
+    throw new Error('No messages provided');
   }
 
   // Get structured RAG context for the UI
-  const ragContextData = lastUserQuery ? await RAGService.searchContextStructured(lastUserQuery, 3) : [];
+  const ragContextData = await RAGService.searchContextStructured(lastMessage.content, 3);
 
-  // Enhance messages with RAG context from vector store
-  const enhancedMessages = await RAGService.enhanceMessagesWithContext(
-    messages,
+  // Enhance message with RAG context from vector store
+  const enhancedMessage: ModelMessage = await RAGService.enhanceMessageWithContext(
+    lastMessage,
     true, // enableRAG
     3 // topK results
   );
 
   const input: ChatbotAPIInput = {
-    messages: enhancedMessages,
+    messages: [...messages, enhancedMessage],
     context: {
       locale: params.lang || 'en'
     },
@@ -56,7 +54,7 @@ export async function POST({ request, params }: { request: Request; params: any 
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
-                query: lastUserQuery,
+                query: lastMessage.content,
                 results: ragContextData
               })}\n\n`
             )
@@ -75,6 +73,21 @@ export async function POST({ request, params }: { request: Request; params: any 
             controller.enqueue(value);
           }
         }
+
+        // NEW: After stream completes, send cost information
+        const costs = await result.costs;
+        controller.enqueue(encoder.encode('event: cost-info\n'));
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              input: costs.input,
+              output: costs.output,
+              reasoning: costs.reasoning,
+              total: costs.total,
+              timestamp: Date.now()
+            })}\n\n`
+          )
+        );
 
         controller.close();
       } catch (error) {

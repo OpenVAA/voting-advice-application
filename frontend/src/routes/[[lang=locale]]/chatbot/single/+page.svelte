@@ -29,10 +29,27 @@
     timestamp: number;
   }
 
+  // Cost tracking interface
+  interface CostInfo {
+    input: number;
+    output: number;
+    reasoning?: number;
+    total: number;
+    timestamp: number;
+  }
+
   let messages: UIMessage[] = [];
   let ragContexts: RAGContext[] = [];
+  let costs: CostInfo[] = []; // NEW: Store all costs
   let input = '';
   let loading = false;
+
+  // NEW: Cost calculation helpers
+  $: lastCost = costs.length > 0 ? costs[costs.length - 1].total : 0;
+  $: averageCost = costs.length > 0 ? costs.reduce((sum, c) => sum + c.total, 0) / costs.length : 0;
+  $: last3Average =
+    costs.length > 0 ? costs.slice(-3).reduce((sum, c) => sum + c.total, 0) / Math.min(3, costs.length) : 0;
+  $: totalSessionCost = costs.reduce((sum, c) => sum + c.total, 0);
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -160,6 +177,22 @@
       return;
     }
 
+    // NEW: Handle cost information
+    if (data.type === 'cost-info') {
+      console.log('[Chatbot] Received cost info:', data);
+      costs = [
+        ...costs,
+        {
+          input: data.input,
+          output: data.output,
+          reasoning: data.reasoning,
+          total: data.total,
+          timestamp: data.timestamp
+        }
+      ];
+      return;
+    }
+
     const lastMessage = messages[messages.length - 1];
     if (!lastMessage || lastMessage.role !== 'assistant') return;
 
@@ -235,7 +268,7 @@
 
 <div class="flex h-screen gap-4 p-4">
   <!-- Left side: Chat conversation -->
-  <div class="flex w-1/2 flex-col">
+  <div class="flex w-1/3 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Chat</h2>
     <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
       {#each messages as message}
@@ -273,8 +306,8 @@
     </div>
   </div>
 
-  <!-- Right side: RAG Context -->
-  <div class="flex w-1/2 flex-col">
+  <!-- Middle: RAG Context -->
+  <div class="flex w-1/3 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Retrieved Context (RAG)</h2>
     <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
       {#if ragContexts.length === 0}
@@ -321,6 +354,74 @@
           {/each}
         </div>
       {/if}
+    </div>
+  </div>
+
+  <!-- NEW: Right side: Cost Tracking -->
+  <div class="flex w-1/3 flex-col">
+    <h2 class="mb-4 text-2xl font-bold">Cost Tracking</h2>
+
+    <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
+      <!-- Summary Cards -->
+      <div class="gap-3 mb-6 grid grid-cols-2">
+        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="mb-1 text-xs text-gray-500">Last Response</div>
+          <div class="text-2xl font-bold text-blue-600">
+            ${lastCost.toFixed(4)}
+          </div>
+        </div>
+
+        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="mb-1 text-xs text-gray-500">Average Cost</div>
+          <div class="text-2xl font-bold text-green-600">
+            ${averageCost.toFixed(4)}
+          </div>
+        </div>
+
+        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
+          <div class="text-2xl font-bold text-purple-600">
+            ${last3Average.toFixed(4)}
+          </div>
+        </div>
+
+        <div class="rounded border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="mb-1 text-xs text-gray-500">Total Session</div>
+          <div class="text-2xl font-bold text-orange-600">
+            ${totalSessionCost.toFixed(4)}
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Cost History -->
+      <div class="border-t border-gray-300 pt-4">
+        <h3 class="font-semibold mb-3 text-sm text-gray-700">Cost History</h3>
+        {#if costs.length === 0}
+          <div class="text-center text-sm text-gray-500">No costs tracked yet</div>
+        {:else}
+          <div class="space-y-2">
+            {#each costs.slice().reverse() as cost, idx}
+              <div class="p-3 rounded border border-gray-200 bg-white text-sm">
+                <div class="mb-2 flex items-center justify-between">
+                  <span class="font-semibold text-gray-700">
+                    Response #{costs.length - idx}
+                  </span>
+                  <span class="font-bold text-blue-600">
+                    ${cost.total.toFixed(4)}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                  <div>Input: ${cost.input.toFixed(5)}</div>
+                  <div>Output: ${cost.output.toFixed(5)}</div>
+                  {#if cost.reasoning}
+                    <div class="col-span-2">Reasoning: ${cost.reasoning.toFixed(5)}</div>
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 </div>

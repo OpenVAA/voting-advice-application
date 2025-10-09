@@ -137,66 +137,38 @@ export class RAGService {
   }
 
   /**
-   * Enhance messages with RAG context
-   * Takes the last user message, searches for relevant context, and wraps it with the context
+   * Enhance message with RAG context
+   * Takes the user message, searches for relevant context, and wraps it with the context
    *
-   * @param messages - Array of conversation messages
+   * @param message - Message to enhance
    * @param enableRAG - Whether to enable RAG enrichment (default: true)
    * @param topK - Number of context results to retrieve (default: 3)
    * @returns Enhanced messages array with context added to the last user message
    */
-  static async enhanceMessagesWithContext(
-    messages: Array<ModelMessage>,
+  static async enhanceMessageWithContext(
+    message: ModelMessage,
     enableRAG: boolean = true,
     topK: number = 3
-  ): Promise<Array<ModelMessage>> {
-    if (!enableRAG || !this.userQueryPrompt) {
-      return messages;
-    }
-
-    // Get the last user message to search for context
-    // Using reverse iteration instead of findLast for compatibility
-    let lastUserMessage: ModelMessage | undefined;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user') {
-        lastUserMessage = messages[i];
-        break;
-      }
-    }
-
-    if (!lastUserMessage || typeof lastUserMessage.content !== 'string') {
-      return messages;
+  ): Promise<ModelMessage> {
+    if (!enableRAG || !this.userQueryPrompt || !message || typeof message.content !== 'string') {
+      return message;
     }
 
     // Search for relevant context
-    const context = await this.searchContext(lastUserMessage.content, topK);
+    const context = await this.searchContext(message.content, topK);
 
     // Wrap the user query with context using the userQueryWithContext prompt
     const enhancedContent = embedPromptVars({
       promptText: this.userQueryPrompt.prompt,
       variables: {
-        query: lastUserMessage.content,
+        query: message.content,
         context
       }
     });
 
-    // Replace the last user message with the enhanced version
-    const enhancedMessages = [...messages];
-    let lastUserMessageIndex = -1;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user') {
-        lastUserMessageIndex = i;
-        break;
-      }
-    }
-
-    if (lastUserMessageIndex !== -1) {
-      enhancedMessages[lastUserMessageIndex] = {
-        role: 'user',
-        content: enhancedContent
-      };
-    }
-
-    return enhancedMessages;
+    return {
+      role: 'user',
+      content: enhancedContent
+    };
   }
 }

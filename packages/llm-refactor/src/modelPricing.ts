@@ -3,7 +3,10 @@ import type { ModelPricing } from './utils/costCalculation.type';
 export const MODEL_PRICING: Record<string, Record<string, ModelPricing>> = {
   openai: {
     'gpt-4o-mini': { input: 0.15, cachedInput: 0.075, output: 0.6 },
-    'gpt-4o': { input: 0.5, cachedInput: 0.25, output: 2.0 }
+    'gpt-4.1-mini': { input: 0.4, cachedInput: 0.1, output: 1.6 },
+    'gpt-4.1': { input: 2.0, cachedInput: 0.5, output: 8.0 },
+    'gpt-5-mini': { input: 0.25, cachedInput: 0.025, output: 2.0 },
+    'gpt-4o': { input: 2.5, cachedInput: 1.25, output: 10.0 }
   }
 };
 
