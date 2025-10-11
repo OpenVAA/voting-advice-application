@@ -15,6 +15,7 @@ let segmentsGlobal: Array<string> = [];
  * 3. Saves segmented text to docs/segmented/ with segments separated by empty lines
  */
 export async function segmentDocuments(): Promise<void> {
+  const startTime = performance.now();
   const baseDir = path.join(__dirname, '..');
   const partiallyProcessedDir = path.join(baseDir, 'docs', 'partiallyProcessed');
   const segmentedDir = path.join(baseDir, 'docs', 'segmented');
@@ -75,8 +76,9 @@ export async function segmentDocuments(): Promise<void> {
       console.info(`  - Created ${segments.length} segment(s)`);
       console.info('  - Segment lengths: ', segments.map((segment) => segment.length));
 
-      // Join segments with empty lines (double newline)
-      const outputText = segments.join('\n\n\n\n');
+      // Join segments with separators and empty lines for readability
+      // We don't use an array of objects because no one's gonna read it
+      const outputText = segments.join('\n\n<SEGMENT_SEPARATOR>\n\n'); 
 
       // Write the segmented text to the output file
       fs.writeFileSync(outputFilePath, outputText, 'utf-8');
@@ -95,6 +97,8 @@ export async function segmentDocuments(): Promise<void> {
   console.info('Biggest segment length: ', Math.max(...segmentsGlobal.map((segment) => segment.length)));
   console.info('Smallest segment length: ', Math.min(...segmentsGlobal.map((segment) => segment.length)));
   console.info(`Total segments created: ${totalSegments}`);
+  console.info('Total time: ', performance.now() - startTime, 'ms');
+  console.info('Average time per document: ', (performance.now() - startTime) / textFiles.length, 'ms');
   console.info('═══════════════════════════════════════\n');
 }
 

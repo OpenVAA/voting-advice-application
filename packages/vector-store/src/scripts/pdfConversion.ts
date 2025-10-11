@@ -6,6 +6,8 @@ import * as path from 'path';
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
+const startTime = performance.now();
+
 const ai = new GoogleGenAI({ apiKey: process.env.LLM_GEMINI_API_KEY || '' });
 
 // Directories
@@ -190,6 +192,8 @@ async function main() {
   console.info(`Successful: ${successCount}`);
   console.info(`Failed: ${failureCount}`);
   console.info(`\nMarkdown documents saved to: ${PARTIALLY_PROCESSED_DIR}`);
+  console.info('Total time: ', performance.now() - startTime, 'ms');
+  console.info('Average time per PDF: ', (performance.now() - startTime) / pdfFiles.length, 'ms');
 }
 
 // Run the script

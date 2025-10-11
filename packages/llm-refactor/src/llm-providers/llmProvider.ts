@@ -16,6 +16,7 @@ import type {
 export class LLMProvider {
   private provider: Provider;
   private config: ProviderConfig;
+  public cumulativeCosts: number = 0;
 
   constructor(config: ProviderConfig) {
     this.config = config;
@@ -70,6 +71,7 @@ export class LLMProvider {
         });
 
         const costs = this.calculateCosts(options.modelConfig.primary, result.usage);
+        this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
         return {
           ...result,
@@ -183,6 +185,7 @@ export class LLMProvider {
 
     // Calculate costs asynchronously without blocking the return.
     const costs = result.usage.then((usage) => this.calculateCosts(options.modelConfig?.primary ?? '', usage));
+    costs.then((costs) => this.cumulativeCosts += costs.total);
 
     const enhancedResult = Object.assign(result, {
       latencyMs: performance.now() - startTime,

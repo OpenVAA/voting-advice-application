@@ -47,9 +47,17 @@ const segmentationSchema = z.object({
   segments: z.array(z.string())
 });
 
-const summarizationSchema = z.object({
-  summaries: z.array(z.string())
+const segmentAnalysisSchema = z.object({
+  summary: z.string(), // summary of the segment
+  standaloneFacts: z.array(z.string()).optional() // standalone facts to be embedded IF there are any
 });
+
+export interface SegmentAnalysisResult {
+  segmentIndex: number;
+  segment: string;
+  summary: string;
+  standaloneFacts: Array<string>;
+}
 
 // --------------------------------------------------------------
 // MAIN FUNCTION
@@ -122,35 +130,6 @@ export async function segmentInputText(options: DocProcessingOptions) {
 }
 
 /**
- * Summarize the input text
- * @param options - The options for the document processing
- * @returns The summarized text
- */
-export async function summarizeInputText(options: DocProcessingOptions) {
-  const { inputText, provider } = options;
-
-  const prompt = (await loadPrompt({ promptFileName: 'summarization' })).prompt;
-
-  const messages = [
-    {
-      role: 'user',
-      content: setPromptVars({ promptText: prompt, variables: { segmentWithContext: inputText } })
-    }
-  ] as Array<ModelMessage>;
-
-  const response = await provider.generateObject({
-    modelConfig: options.modelConfig,
-    schema: summarizationSchema,
-    messages,
-    temperature: 0.7,
-    maxRetries: 3,
-    validationRetries: 3
-  });
-
-  return response.object.summaries as Array<string>;
-}
-
-/**
  * Extract the metadata from the input text
  * @param options - The options for the document processing
  * @returns The metadata extracted from the input text
@@ -184,6 +163,60 @@ export async function extractMetadata(options: DocProcessingOptions) {
   return response.object as SourceMetadata;
 }
 
+/**
+ * Analyze segments with LLM to generate summaries and standalone facts
+ * @param options - The options including segments array, provider, and model config
+ * @returns Array of segment analysis results
+ */
+export async function analyzeSegments(
+  options: DocProcessingOptions & { segments: Array<string> }
+): Promise<Array<SegmentAnalysisResult>> {
+  const { segments, provider, modelConfig } = options;
+
+  const prompt = (await loadPrompt({ promptFileName: 'segmentAnalysis' })).prompt;
+
+  // Create requests for all segments with context
+  const requests = segments.map((segment, index) => {
+    const segmentWithContext = createSegmentWithContext(segments, index);
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: setPromptVars({ promptText: prompt, variables: { segmentWithContext } })
+        }
+      ] as Array<ModelMessage>,
+      modelConfig,
+      schema: segmentAnalysisSchema,
+      temperature: 0.7,
+      maxRetries: 3,
+      validationRetries: 3
+    };
+  }) as Array<LLMObjectGenerationOptions<{ summary: string; standaloneFacts?: Array<string> }>>;
+
+  // Process segments in parallel
+  const responses = await provider.generateObjectParallel({
+    requests,
+    maxConcurrent: 4
+  });
+
+  console.info(
+    'Total costs: $',
+    responses
+      .map((response) => response.costs.total)
+      .reduce((sum, cost) => sum + cost, 0)
+      .toFixed(4)
+  );
+
+  // Map responses to results
+  return responses.map((response, index) => ({
+    segmentIndex: index,
+    segment: segments[index],
+    summary: response.object.summary,
+    standaloneFacts: response.object.standaloneFacts || []
+  }));
+}
+
 // --------------------------------------------------------------
 // HELPERS
 // --------------------------------------------------------------
@@ -196,4 +229,75 @@ export async function extractMetadata(options: DocProcessingOptions) {
  */
 function validateTextPreservation(inputText: string, segments: Array<string>) {
   return true; // TODO: Implement this depending on how the LLM modifies the text or preserves the text.
+}
+
+/**
+ * Helper: Get context from segments until minimum character count is reached
+ */
+function getContextFromSegments(
+  segments: Array<string>,
+  startIndex: number,
+  minChars: number,
+  direction: 'forward' | 'backward'
+): string {
+  const contextSegments: Array<string> = [];
+  let totalChars = 0;
+
+  if (direction === 'forward') {
+    for (let i = startIndex; i < segments.length && totalChars < minChars; i++) {
+      contextSegments.push(segments[i]);
+      totalChars += segments[i].length;
+    }
+  } else {
+    // backward
+    for (let i = startIndex; i >= 0 && totalChars < minChars; i--) {
+      contextSegments.unshift(segments[i]);
+      totalChars += segments[i].length;
+    }
+  }
+
+  return contextSegments.join('\n\n');
+}
+
+/**
+ * Helper: Create segment with sliding window context and markers
+ */
+function createSegmentWithContext(segments: Array<string>, index: number): string {
+  const segment = segments[index];
+  let segmentWithContext = '';
+
+  if (index === 0) {
+    // First segment: no preceding context, at least 1500 chars following
+    const followingContext = getContextFromSegments(segments, index + 1, 1500, 'forward');
+
+    segmentWithContext =
+      followingContext.length > 0
+        ? `<PORTION TO ANALYZE>\n${segment}\n\n<FOLLOWING CONTEXT>\n${followingContext}`
+        : `<PORTION TO ANALYZE>\n${segment}`;
+  } else if (index === segments.length - 1) {
+    // Last segment: at least 1500 chars preceding, no following context
+    const precedingContext = getContextFromSegments(segments, index - 1, 1500, 'backward');
+
+    segmentWithContext =
+      precedingContext.length > 0
+        ? `<PRECEDING CONTEXT>\n${precedingContext}\n\n<PORTION TO ANALYZE>\n${segment}`
+        : `<PORTION TO ANALYZE>\n${segment}`;
+  } else {
+    // Middle segments: at least 1000 chars before, at least 500 chars after
+    const precedingContext = getContextFromSegments(segments, index - 1, 1000, 'backward');
+    const followingContext = getContextFromSegments(segments, index + 1, 500, 'forward');
+
+    const parts: Array<string> = [];
+    if (precedingContext.length > 0) {
+      parts.push(`<PRECEDING CONTEXT>\n${precedingContext}`);
+    }
+    parts.push(`<PORTION TO ANALYZE>\n${segment}`);
+    if (followingContext.length > 0) {
+      parts.push(`<FOLLOWING CONTEXT>\n${followingContext}`);
+    }
+
+    segmentWithContext = parts.join('\n\n');
+  }
+
+  return segmentWithContext;
 }
