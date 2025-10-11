@@ -1,5 +1,4 @@
-import type { SourceDocument } from '../types/sourceDocument';
-import type { TextSegment } from './vectorStore.type';
+import type { SourceExcerpt } from '../types';
 
 /**
  * Interface for segmenting SourceDocuments into TextSegments
@@ -26,12 +25,12 @@ export interface Segmenter {
    * @param document The source document to segment
    * @returns Array of text segments with unique IDs and empty embeddings
    */
-  segment(document: SourceDocument): Array<TextSegment>;
+  segment(document: string): Array<SourceExcerpt>;
 
   /**
    * Segments multiple SourceDocuments
    * @param documents Array of source documents to segment
    * @returns Flattened array of all text segments
    */
-  segmentBatch(documents: Array<SourceDocument>): Array<TextSegment>;
+  segmentBatch(documents: Array<string>): Array<SourceExcerpt>;
 }

@@ -25,7 +25,7 @@ export interface LLMModelConfig {
 
 /** An LLM provider orchestrates LLM calls. This configures how the LLM provider will be used. */
 export interface ProviderConfig {
-  provider: 'openai'; // add others as needed
+  provider: 'openai' | 'google'; // add others as needed
   apiKey: string; // Make optional if .env var is modified to OPENAI_API_KEY & Vercel AI SDK can automatically find it. Otherwise, keep it as required.
   modelConfig: LLMModelConfig;
 }

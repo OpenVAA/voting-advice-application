@@ -20,7 +20,7 @@ export async function POST({ request, params }: { request: Request; params: any 
   }
 
   // Get structured RAG context for the UI
-  const ragContextData = await RAGService.searchContextStructured(lastMessage.content, 3);
+  const ragContextData = await RAGService.searchContextStructured(lastMessage.content as string, 3);
 
   // Enhance message with RAG context from vector store
   const enhancedMessage: ModelMessage = await RAGService.enhanceMessageWithContext(

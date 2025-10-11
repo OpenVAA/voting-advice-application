@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ChromaVectorStore } from '../core/chromaVectorStore';
 import { devEmbedder } from '../core/openAIEmbedder';
-import { CharacterSegmenter } from '../core/segmenters';
+import { CharacterSegmenter } from '../core/processing/characterSegmenter';
+import type { SourceDocument } from '../core/types/sourceDocument';
 import type { VectorStoreConfig } from '../core/vectorStore.type';
-import type { SourceDocument } from '../types/sourceDocument';
 
 // Configure the vector store
 const vectorStoreConfig: VectorStoreConfig = {

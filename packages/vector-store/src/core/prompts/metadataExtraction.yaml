@@ -1,0 +1,26 @@
+id: xD
+params: 
+  documentEnd: string
+  documentStart: string
+
+prompt: |
+  You are a metadata extraction expert. You are given two snippets of a document, one from the beginning and one from the end.
+  
+  You need to extract the document metadata using these snippets.
+
+  ### Metadata Extraction:
+  The metadata you need to extract is:
+  - Title
+  - Source
+  - Authors
+  - Published Date
+  - Locale (en, fi, etc.)
+
+  ### Document Start:
+  {{documentStart}}
+
+  ### Document End:
+  {{documentEnd}}
+
+  
+

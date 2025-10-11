@@ -1,7 +1,8 @@
 import { ChromaClient } from 'chromadb';
 import { VectorStore } from '../core/vectorStore.type';
 import type { Collection } from 'chromadb';
-import type { SearchResult, TextSegment, VectorStoreConfig } from '../core/vectorStore.type';
+import type { SearchResult, VectorStoreConfig } from '../core/vectorStore.type';
+import type { SourceExcerpt } from './types';
 import type { Embedder } from './embedder.type';
 
 export class ChromaVectorStore extends VectorStore {
@@ -24,12 +25,12 @@ export class ChromaVectorStore extends VectorStore {
     });
   }
 
-  async addTexts(texts: Array<TextSegment>): Promise<void> {
+  async addTexts(texts: Array<SourceExcerpt>): Promise<void> {
     if (!this.collection) throw new Error('Not initialized');
 
     // Embed texts ONLY if they don't have embeddings
     const textsWithEmbeddings = await Promise.all(
-      texts.map(async (text) => {
+      texts.map(async (text: SourceExcerpt) => {
         if (!text.embedding || text.embedding.length === 0) {
           const result = await this.embedder.embed(text.content);
           return { ...text, embedding: result.embedding };
@@ -39,10 +40,10 @@ export class ChromaVectorStore extends VectorStore {
     );
     // Add to ChromaDB collection
     await this.collection.add({
-      ids: textsWithEmbeddings.map((t) => t.id),
-      documents: textsWithEmbeddings.map((t) => t.content),
-      embeddings: textsWithEmbeddings.map((t) => t.embedding),
-      metadatas: textsWithEmbeddings.map((t) => ({ sourceId: t.sourceId }))
+      ids: textsWithEmbeddings.map((t: SourceExcerpt) => t.id),
+      documents: textsWithEmbeddings.map((t: SourceExcerpt) => t.content),
+      embeddings: textsWithEmbeddings.map((t: SourceExcerpt) => t.embedding || []),
+      metadatas: textsWithEmbeddings.map((t: SourceExcerpt) => ({ parentId: t.parentId }))
     });
   }
 
@@ -58,12 +59,13 @@ export class ChromaVectorStore extends VectorStore {
     });
 
     // Map results to SearchResult
-    return results.ids[0].map((id, idx) => ({
-      document: {
-        id: id as string,
-        sourceId: results.metadatas[0][idx]?.sourceId as string,
+    return results.ids[0].map((id: string, idx: number) => ({
+      excerpt: {
+      id: id as string,
+      parentId: results.metadatas[0][idx]?.parentId as string,
         content: results.documents[0][idx] as string,
-        embedding: results.embeddings?.[0][idx] || []
+        embedding: results.embeddings?.[0][idx] || [],
+        metadata: results.metadatas[0][idx] as unknown as SourceExcerpt['metadata']
       },
       score: 1 - (results.distances?.[0][idx] || 0), // Convert distance to score
       distance: results.distances?.[0][idx] || 0

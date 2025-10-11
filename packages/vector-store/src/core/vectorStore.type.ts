@@ -1,3 +1,4 @@
+import type { SourceExcerpt } from './types';
 import type { Embedder } from './embedder.type';
 
 /** @example
@@ -18,21 +19,6 @@ export interface VectorStoreConfig {
 /** @example
  * ```typescript
  * {
- *   id: '1',
- *   content: 'Hello, world!',
- *   embedding: [0.1, 0.2, 0.3]
- * }
- * ```
- */
-export interface TextSegment {
-  id: string; 
-  sourceId: string;
-  content: string;
-  embedding: Array<number>;
-}
-/** @example
- * ```typescript
- * {
  *   document: { id: '1', content: 'Hello, world!', embedding: [0.1, 0.2, 0.3] },
  *   score: 0.95,
  *   distance: 0.1
@@ -40,7 +26,7 @@ export interface TextSegment {
  * ```
  */
 export interface SearchResult {
-  document: TextSegment;
+  excerpt: SourceExcerpt;
   score: number;
   distance: number;
 }
@@ -57,7 +43,7 @@ export interface SearchResult {
  */
 export abstract class VectorStore {
   abstract initialize(): Promise<void>;
-  abstract addTexts(texts: Array<TextSegment>): Promise<void>;
+  abstract addTexts(texts: Array<SourceExcerpt>): Promise<void>;
   abstract search(query: string): Promise<Array<SearchResult>>;
   abstract delete(ids: Array<string>): Promise<void>;
 }

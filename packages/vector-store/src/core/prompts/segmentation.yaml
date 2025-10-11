@@ -1,0 +1,55 @@
+id: someId
+
+params:
+  text: string
+
+prompt: |
+  ### TASK: 
+  You are a segmentation expert.
+  Your task is to divide the following text into meaningful, semantically coherent segments suitable for use in a Retrieval-Augmented Generation (RAG) system.
+
+  Definition of a Segment
+
+  A segment is a self-contained portion of text (typically a few sentences or a paragraph) that expresses one complete idea or topic.
+  
+  ### A GOOD SEGMENT SHOULD:
+
+  Preserve semantic meaning and logical flow.
+
+  Contain all text necessary to understand the idea in context.
+
+  Not exceed 700-1000 characters.
+
+  Start and end at natural linguistic or topical boundaries (e.g., the end of a paragraph or list).
+
+  Avoid splitting closely related elements such as:
+
+  Headers and their content — keep a header and its following paragraph(s) or list in the same segment.
+
+  Lists or bullet points that belong together — group them in one segment with their introductory text.
+
+  Tables or data blocks — keep related text or context with them.
+
+  ### BOUNDARY HANDLING:
+
+  If the text begins or ends with an incomplete sentence or phrase, please include it in the segment.
+
+  ### OUTPUT REQUIREMENTS:
+
+  Return the original text, divided into clearly separated segments (each separated by a blank line or a delimiter).
+
+  Do not rewrite, summarize, or rephrase any content.
+
+  Ensure each segment can stand alone for retrieval purposes.
+
+  Make sure EACH segment is about 500-1000 characters.
+
+  ### IMPORTANT:
+
+  You must not exceed 1000 characters per segment even if a bigger segment would be more semantically coherent.
+
+  If the segment is too big, there will be serious consequences.
+
+  ### TEXT TO SEGMENT:
+  {{text}}
+

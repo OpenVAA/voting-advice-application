@@ -1,6 +1,5 @@
-import type { SourceDocument } from '../types/sourceDocument';
+import type { SourceExcerpt } from '../types';
 import type { Segmenter } from './segmenter.type';
-import type { TextSegment } from './vectorStore.type';
 
 /**
  * Options for character-based segmentation
@@ -22,19 +21,19 @@ export class CharacterSegmenter implements Segmenter {
     this.options = options;
   }
 
-  segment(document: SourceDocument): Array<TextSegment> {
+  segment(document: string): Array<SourceExcerpt> {
     const { maxLength, overlap = 0 } = this.options;
-    const segments: Array<TextSegment> = [];
-    const content = document.content;
+    const segments: Array<SourceExcerpt> = [];
+    const content = document;
 
     if (content.length <= maxLength) {
       // Document is small enough, return as single segment
       return [
         {
-          id: `${document.id}_seg_0`,
-          sourceId: document.id,
+          id: `${document}_seg_0`,
+          parentId: document,
           content: content,
-          embedding: []
+          metadata: {}
         }
       ];
     }
@@ -47,10 +46,10 @@ export class CharacterSegmenter implements Segmenter {
       const segmentContent = content.slice(start, end);
 
       segments.push({
-        id: `${document.id}_seg_${segmentIndex}`,
-        sourceId: document.id,
+        id: `${document}_seg_${segmentIndex}`,
+        parentId: document,
         content: segmentContent,
-        embedding: []
+        metadata: {}
       });
 
       // If we've reached the end of the document, we're done.
@@ -75,7 +74,7 @@ export class CharacterSegmenter implements Segmenter {
     return segments;
   }
 
-  segmentBatch(documents: Array<SourceDocument>): Array<TextSegment> {
+  segmentBatch(documents: Array<string>): Array<SourceExcerpt> {
     return documents.flatMap((doc) => this.segment(doc));
   }
 }

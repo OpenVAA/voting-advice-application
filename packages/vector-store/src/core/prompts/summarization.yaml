@@ -1,0 +1,20 @@
+id: summarizationPrompt_v0
+
+params:
+  segmentWithContext: string
+
+
+prompt: |
+  You are a summarization expert tasked with summarizing a segment of text with context for a RAG system.
+
+  The context is provided to help you understand the segment and the main idea of the segment.
+
+  The summary should be a single sentence that captures the main idea of the segment. 
+
+  Try to reuse the significant words and phrases from the segment so that the RAG system can more easily retrieve the segment when needed.
+
+  ### Segment with Context:
+  {{segmentWithContext}}
+
+  ### Summary:
+  {{summary}}

@@ -1,3 +1,4 @@
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
@@ -25,6 +26,8 @@ export class LLMProvider {
     switch (config.provider) {
       case 'openai':
         return createOpenAI({ apiKey: config.apiKey });
+      case 'google':
+        return createGoogleGenerativeAI({ apiKey: config.apiKey });
       // Add other providers as needed and update the provider config to support them
       default:
         throw new Error(`Unsupported provider: ${config.provider}`);
@@ -98,7 +101,7 @@ export class LLMProvider {
       }`
     );
   }
-  /** Generate multiple objects in parallel with validation retries. 
+  /** Generate multiple objects in parallel with validation retries.
    *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially,
    *  so each batch is as slow as the slowest request in the batch.
    * @param requests - The requests to make

@@ -22,7 +22,10 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
+    "@google/genai": "^1.24.0",
     "@openvaa/core": "workspace:^",
-    "@openvaa/data": "workspace:^"
+    "@openvaa/data": "workspace:^",
+    "@openvaa/llm-refactor": "workspace:^",
+    "ai": "^5.0.0"
   }
 }
