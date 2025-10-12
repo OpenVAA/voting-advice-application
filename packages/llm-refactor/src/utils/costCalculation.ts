@@ -3,26 +3,14 @@ import type { LanguageModelUsage as TokenUsage } from 'ai';
 import type { LLMCosts, ModelPricing } from './costCalculation.type';
 
 /**
- * Error thrown when model pricing is not found
- */
-export class ModelPricingNotFoundError extends Error {
-  constructor(provider: string, model: string) {
-    super(`Pricing not found for provider "${provider}" and model "${model}"`);
-    this.name = 'ModelPricingNotFoundError';
-  }
-}
-
-/**
  * Get pricing information for a specific model
  * @param provider - The LLM provider (e.g., 'openai', 'anthropic')
  * @param model - The model name
- * @returns ModelPricing object
- * @throws ModelPricingNotFoundError if pricing is not found
+ * @returns ModelPricing object or null if pricing is not found
  */
-export function getModelPricing(provider: string, model: string): ModelPricing {
-  // TODO: don't throw, return null instead of sumthing
+export function getModelPricing(provider: string, model: string): ModelPricing | null {
   if (!isModelSupported(provider, model)) {
-    throw new ModelPricingNotFoundError(provider, model);
+    return null;
   }
 
   return MODEL_PRICING[provider][model];
