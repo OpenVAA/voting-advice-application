@@ -21,7 +21,7 @@ export class ChromaVectorStore extends VectorStore {
     super();
     this.config = config;
     this.embedder = config.embedder;
-    this.client = new ChromaClient(); 
+    this.client = new ChromaClient();
   }
 
   async initialize(): Promise<void> {
@@ -240,13 +240,14 @@ export class ChromaVectorStore extends VectorStore {
         modelConfig: options.llmModelConfig
       });
     } else {
-      console.info('Intelligent filtering is disabled. Returning all segments. ' +
-        'Expected intelligentSearch flag to be true, given: ' +
-        intelligentSearch +
-        'Expected LLM provider, given: ' +
-        options.llmProvider +
-        'Expected LLM model config, given: ' +
-        options.llmModelConfig
+      console.info(
+        'Intelligent filtering is disabled. Returning all segments. ' +
+          'Expected intelligentSearch flag to be true, given: ' +
+          intelligentSearch +
+          'Expected LLM provider, given: ' +
+          options.llmProvider +
+          'Expected LLM model config, given: ' +
+          options.llmModelConfig
       );
     }
 

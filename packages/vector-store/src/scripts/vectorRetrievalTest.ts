@@ -56,6 +56,7 @@ export async function testMultiVectorRetrieval(
 
   if (!needsRAG) {
     console.info('Skipping RAG search - query does not require retrieval.');
+    console.info('Total cost:' + binaryProvider.cumulativeCosts.toFixed(4));
     console.info('═══════════════════════════════════════\n');
     return;
   }
@@ -104,7 +105,7 @@ export async function testMultiVectorRetrieval(
   console.info(`  - From segments collection: ${results.retrievalSources.fromSegments}`);
   console.info(`  - From summaries collection: ${results.retrievalSources.fromSummaries}`);
   console.info(`  - From facts collection: ${results.retrievalSources.fromFacts}`);
-  console.info(`  - Total costs: $${llmProvider?.cumulativeCosts.toFixed(4)}`);
+  console.info(`  - Total costs: $${(llmProvider?.cumulativeCosts ?? 0) + binaryProvider.cumulativeCosts}`);
   console.info(`Search duration: ${duration}s\n\n`);
 
   results.segments.forEach((segment, idx) => {
