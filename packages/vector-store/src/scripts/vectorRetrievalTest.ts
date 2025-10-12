@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import * as path from 'path';
 import { ChromaVectorStore } from '../core/chromaVectorStore';
 import { OpenAIEmbedder } from '../core/openAIEmbedder';
-import { getQueryVariations } from '../core/utils';
+import { getQueryVariations, isRAGRequired } from '../core/utils';
 import type { VectorStoreConfig } from '../core/vectorStore.type';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
@@ -36,6 +36,29 @@ export async function testMultiVectorRetrieval(
     dimensions: 1536,
     apiKey: process.env.OPENAI_API_KEY
   });
+
+  // Initialize binary decision provider (always OpenAI for fast, cheap decisions)
+  const binaryProvider = new LLMProvider({
+    provider: 'openai',
+    apiKey: process.env.OPENAI_API_KEY || '',
+    modelConfig: { primary: 'IRRELEVANT' }
+  });
+
+  // Check if RAG is required for this query
+  console.info('Checking if RAG retrieval is needed...');
+  const needsRAG = await isRAGRequired({
+    messages: [query], // In a real conversation, this would be the full message history
+    provider: binaryProvider,
+    modelConfig: { primary: 'gpt-5-nano' }
+  });
+
+  console.info(`RAG required: ${needsRAG ? 'YES' : 'NO'}\n`);
+
+  if (!needsRAG) {
+    console.info('Skipping RAG search - query does not require retrieval.');
+    console.info('═══════════════════════════════════════\n');
+    return;
+  }
 
   // Initialize LLM provider (only if intelligent search is enabled)
   const llmProvider = intelligentSearch
