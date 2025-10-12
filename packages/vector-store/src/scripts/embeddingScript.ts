@@ -1,15 +1,21 @@
+import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ChromaVectorStore } from '../core/chromaVectorStore';
-import { devEmbedder } from '../core/openAIEmbedder';
-import { CharacterSegmenter } from '../core/processing/characterSegmenter';
-import type { SourceDocument } from '../core/types/sourceDocument';
+import { OpenAIEmbedder } from '../core/openAIEmbedder';
+import type { SourceDocument } from '../core/types';
 import type { VectorStoreConfig } from '../core/vectorStore.type';
+
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
 // Configure the vector store
 const vectorStoreConfig: VectorStoreConfig = {
   collectionName: 'hello_vector_store',
-  embedder: devEmbedder
+  embedder: new OpenAIEmbedder({
+    model: 'text-embedding-3-small',
+    dimensions: 1536,
+    apiKey: process.env.OPENAI_API_KEY
+  })
 };
 
 /**
@@ -29,7 +35,7 @@ export async function embedDocuments(): Promise<void> {
     throw new Error(`Pure docs directory not found: ${pureDir}\nPlease run the file transformation script first.`);
   }
 
-  // Get all JSON files from the pure directory
+  // Get all JSON files from the directory
   const pureFiles = fs.readdirSync(pureDir).filter((file) => file.endsWith('.json'));
 
   if (pureFiles.length === 0) {
@@ -39,6 +45,7 @@ export async function embedDocuments(): Promise<void> {
   console.info(`Found ${pureFiles.length} document(s) to embed`);
 
   // Initialize the segmenter with character-based chunking
+  // TODO: use already-segmented and analyzed data from step3_segmentsAnalyzed
   const segmenter = new CharacterSegmenter({
     maxLength: 1000, // Characters per segment
     overlap: 200 // Character overlap for context preservation
@@ -62,18 +69,18 @@ export async function embedDocuments(): Promise<void> {
       const sourceDocument: SourceDocument = JSON.parse(fileContent);
 
       // Validate document structure
-      if (!sourceDocument.id || !sourceDocument.source || !sourceDocument.content) {
+      if (!sourceDocument.id || !sourceDocument.metadata.source || !sourceDocument.content) {
         console.error(`✗ Invalid SourceDocument structure in ${pureFile}`);
         continue;
       }
 
       console.info(`Processing: ${pureFile}`);
       console.info(`  - ID: ${sourceDocument.id}`);
-      console.info(`  - Source: ${sourceDocument.source}`);
+      console.info(`  - Source: ${sourceDocument.metadata.source}`);
       console.info(`  - Content length: ${sourceDocument.content.length} characters`);
 
       // Segment the document
-      const segments = segmenter.segment(sourceDocument);
+      const segments = segmenter.segment(sourceDocument.content);
       console.info(`  - Created ${segments.length} segment(s)`);
 
       // Add segments to vector store (embeddings will be generated automatically)
@@ -109,8 +116,8 @@ export async function searchExample(query: string, topK: number = 5): Promise<vo
 
   results.forEach((result, idx) => {
     console.info(`${idx + 1}. Score: ${result.score.toFixed(4)} (Distance: ${result.distance.toFixed(4)})`);
-    console.info(`   Source ID: ${result.document.sourceId}`);
-    console.info(`   Content preview: ${result.document.content.substring(0, 150)}...`);
+    console.info(`   Source ID: ${result.segment.parentDocId}`);
+    console.info(`   Content preview: ${result.segment.content.substring(0, 150)}...`);
     console.info('');
   });
 }

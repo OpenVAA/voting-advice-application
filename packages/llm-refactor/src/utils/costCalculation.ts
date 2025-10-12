@@ -20,6 +20,7 @@ export class ModelPricingNotFoundError extends Error {
  * @throws ModelPricingNotFoundError if pricing is not found
  */
 export function getModelPricing(provider: string, model: string): ModelPricing {
+  // TODO: don't throw, return null instead of sumthing
   if (!isModelSupported(provider, model)) {
     throw new ModelPricingNotFoundError(provider, model);
   }

@@ -2,8 +2,8 @@ import { ChromaClient } from 'chromadb';
 import { VectorStore } from '../core/vectorStore.type';
 import type { Collection } from 'chromadb';
 import type { SearchResult, VectorStoreConfig } from '../core/vectorStore.type';
-import type { SourceExcerpt } from './types';
 import type { Embedder } from './embedder.type';
+import type { SourceSegment } from './types';
 
 export class ChromaVectorStore extends VectorStore {
   private client: ChromaClient;
@@ -25,12 +25,12 @@ export class ChromaVectorStore extends VectorStore {
     });
   }
 
-  async addTexts(texts: Array<SourceExcerpt>): Promise<void> {
+  async addTexts(texts: Array<SourceSegment>): Promise<void> {
     if (!this.collection) throw new Error('Not initialized');
 
     // Embed texts ONLY if they don't have embeddings
     const textsWithEmbeddings = await Promise.all(
-      texts.map(async (text: SourceExcerpt) => {
+      texts.map(async (text: SourceSegment) => {
         if (!text.embedding || text.embedding.length === 0) {
           const result = await this.embedder.embed(text.content);
           return { ...text, embedding: result.embedding };
@@ -40,10 +40,10 @@ export class ChromaVectorStore extends VectorStore {
     );
     // Add to ChromaDB collection
     await this.collection.add({
-      ids: textsWithEmbeddings.map((t: SourceExcerpt) => t.id),
-      documents: textsWithEmbeddings.map((t: SourceExcerpt) => t.content),
-      embeddings: textsWithEmbeddings.map((t: SourceExcerpt) => t.embedding || []),
-      metadatas: textsWithEmbeddings.map((t: SourceExcerpt) => ({ parentId: t.parentId }))
+      ids: textsWithEmbeddings.map((t: SourceSegment) => t.id),
+      documents: textsWithEmbeddings.map((t: SourceSegment) => t.content),
+      embeddings: textsWithEmbeddings.map((t: SourceSegment) => t.embedding || []),
+      metadatas: textsWithEmbeddings.map((t: SourceSegment) => ({ parentId: t.parentDocId }))
     });
   }
 
@@ -60,12 +60,13 @@ export class ChromaVectorStore extends VectorStore {
 
     // Map results to SearchResult
     return results.ids[0].map((id: string, idx: number) => ({
-      excerpt: {
-      id: id as string,
-      parentId: results.metadatas[0][idx]?.parentId as string,
+      segment: {
+        id: id as string,
+        parentDocId: results.metadatas[0][idx]?.parentDocId as string,
+        segmentIndex: results.metadatas[0][idx]?.segmentIndex as number,
         content: results.documents[0][idx] as string,
         embedding: results.embeddings?.[0][idx] || [],
-        metadata: results.metadatas[0][idx] as unknown as SourceExcerpt['metadata']
+        metadata: results.metadatas[0][idx] as unknown as SourceSegment['metadata']
       },
       score: 1 - (results.distances?.[0][idx] || 0), // Convert distance to score
       distance: results.distances?.[0][idx] || 0

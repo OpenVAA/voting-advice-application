@@ -1,29 +1,13 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
-import { loadPrompt } from '../utils/promptLoader';
+import { loadPrompt } from './utils/promptLoader';
 import type { LLMModelConfig, LLMObjectGenerationOptions, LLMProvider } from '@openvaa/llm-refactor';
 import type { ModelMessage } from 'ai';
-import type { ExcerptSummary, SourceDocument, SourceExcerpt } from '../types';
-import type { SourceMetadata } from '../types/source.types';
+import type { SegmentWithAnalysis, SourceMetadata } from './types';
 
 // --------------------------------------------------------------
 // TYPES
 // --------------------------------------------------------------
-
-/** @example
- * ```typescript
- * {
- *   excerpts: [excerpt1, excerpt2],
- *   excerptSummaries: [excerptSummary1, excerptSummary2],
- *   fullDocument: sourceDocument
- * }
- * ```
- */
-export interface DocProcessingResult {
-  excerpts: Array<SourceExcerpt>;
-  excerptSummaries: Array<ExcerptSummary>;
-  fullDocument: SourceDocument;
-}
 
 export interface DocProcessingOptions {
   inputText: string;
@@ -51,13 +35,6 @@ const segmentAnalysisSchema = z.object({
   summary: z.string(), // summary of the segment
   standaloneFacts: z.array(z.string()).optional() // standalone facts to be embedded IF there are any
 });
-
-export interface SegmentAnalysisResult {
-  segmentIndex: number;
-  segment: string;
-  summary: string;
-  standaloneFacts: Array<string>;
-}
 
 // --------------------------------------------------------------
 // MAIN FUNCTION
@@ -116,7 +93,7 @@ export async function segmentInputText(options: DocProcessingOptions) {
     maxConcurrent: 4
   });
 
-  // TODO: actually implement validation. This is just a placeholder.
+  // TODO: actually implement validation. This is just a placeholder. Seems like a hassle!
   if (!validateTextPreservation(inputText, responses.map((response) => response.object.segments).flat())) {
     throw new Error('Text preservation is not correct');
   }
@@ -169,8 +146,8 @@ export async function extractMetadata(options: DocProcessingOptions) {
  * @returns Array of segment analysis results
  */
 export async function analyzeSegments(
-  options: DocProcessingOptions & { segments: Array<string> }
-): Promise<Array<SegmentAnalysisResult>> {
+  options: DocProcessingOptions & { segments: Array<string>, parentDocId: string }
+): Promise<Array<SegmentWithAnalysis>> {
   const { segments, provider, modelConfig } = options;
 
   const prompt = (await loadPrompt({ promptFileName: 'segmentAnalysis' })).prompt;
@@ -210,8 +187,10 @@ export async function analyzeSegments(
 
   // Map responses to results
   return responses.map((response, index) => ({
-    segmentIndex: index,
+    parentDocId: options.parentDocId,
+    id: crypto.randomUUID(),
     segment: segments[index],
+    segmentIndex: index,
     summary: response.object.summary,
     standaloneFacts: response.object.standaloneFacts || []
   }));

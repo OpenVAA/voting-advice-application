@@ -1,5 +1,4 @@
 import OpenAI from 'openai';
-import { OPENAI_API_KEY } from './apiKey';
 import { Embedder, type EmbedderOptions, type EmbedderResponse } from './embedder.type';
 
 export class OpenAIEmbedder extends Embedder {
@@ -48,9 +47,3 @@ export class OpenAIEmbedder extends Embedder {
     return this.dimensions;
   }
 }
-
-export const devEmbedder = new OpenAIEmbedder({
-  model: 'text-embedding-3-small',
-  dimensions: 1536,
-  apiKey: OPENAI_API_KEY
-});

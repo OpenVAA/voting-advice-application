@@ -30,29 +30,30 @@ prompt: |
   AVOID vague statements like “it was successful”, "it was a crucial victory", or "the results were negative / mixed / ...", etc. 
   
   These are non-specific and unverifiable statements that are not helpful for the RAG system and should not be included in the summary or standalone facts.
-  
 
   ### IMPORTANT:
 
-  If the standalone facts are not present in the segment, return an empty array.
+  If the standalone facts are not present in the segment, OMIT THIS FIELD. It is OPTIONAL.
 
-  If the standalone facts are not direct quotes, from the text, OMIT THEM. We want to avoid hallucinations, which means we can't use facts that are not directly quoted from the text.
-  This means you might have to omit some standalone facts, simply because they are not stringed together in one unified piece of text. 
+  If the standalone facts are not DIRECTLY QUOTED from the text, OMIT THEM.
+  We want to AVOID HALLUCINATIONS, which means we can't use facts that are not directly AFFIRMED BY THE RELEVANT SEGMENT.
 
   ### LIMITATIONS:
 
-  A standalone fact is UNDER 250 characters of undisturbered, non-abbreviated, non-paraphrased text.
+  A standalone fact is UNDER 250 characters of undisturbed, non-abbreviated, non-paraphrased text.
 
   A summary is UNDER 200 characters.
 
-  YOU SHOULD ONLY GATHER FACTS FROM THE SEGMENT ITSELF. DO NOT INFER ANY FACTS FROM THE CONTEXT.
+  YOU SHOULD ONLY GATHER FACTS FROM THE SEGMENT ITSELF. THE CONTEXT IS ONLY FOR CONTEXTUALIZATION.
 
-  This is important because you're answering a question about the segment, not the context.
-  For example, if the segment is about a game, you should not infer any facts about the game from the context.
-  You should only infer facts about the game from the segment itself.
+  This is important because the RAG system is designed to answer questions ABOUT THE SPECIFIED SEGMENT.
+  For example, if the segment is about a game, you should NOT infer any facts about the game from the context.
+  You should ONLY infer facts about the game from the segment itself. This is CRUCIAL!
+
+  Similarly, the summary should be written about ONLY THE SPECIFIED SEGMENT ITSELF.
 
   ### REMEMBER:
-  We are extracting facts and a writing a RAG search-optimized summary about ONLY THE SEGMENT ITSELF! 
+  We are extracting facts and writing a RAG search-optimized summary about ONLY THE SPECIFIED SEGMENT ITSELF! 
 
   ### Segment with Context:
   {{segmentWithContext}}

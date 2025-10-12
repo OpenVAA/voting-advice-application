@@ -11,12 +11,12 @@ const startTime = performance.now();
 const ai = new GoogleGenAI({ apiKey: process.env.LLM_GEMINI_API_KEY || '' });
 
 // Directories
-const UNPROCESSED_DIR = path.join(__dirname, '../docs/unprocessed');
-const PARTIALLY_PROCESSED_DIR = path.join(__dirname, '../docs/partiallyProcessed');
+const UNPROCESSED_DIR = path.join(__dirname, '../docs/step0_unprocessed');
+const PROCESSED_DIR = path.join(__dirname, '../docs/step1_markdown');
 
 // Ensure processed directory exists
-if (!fs.existsSync(PARTIALLY_PROCESSED_DIR)) {
-  fs.mkdirSync(PARTIALLY_PROCESSED_DIR, { recursive: true });
+if (!fs.existsSync(PROCESSED_DIR)) {
+  fs.mkdirSync(PROCESSED_DIR, { recursive: true });
 }
 
 /**
@@ -172,7 +172,7 @@ async function main() {
 
       // Save as text file
       const outputFileName = `${path.basename(pdfPath, '.pdf')}.txt`;
-      const outputPath = path.join(PARTIALLY_PROCESSED_DIR, outputFileName);
+      const outputPath = path.join(PROCESSED_DIR, outputFileName);
       fs.writeFileSync(outputPath, markdownContent, 'utf-8');
       console.info(`  Saved to: ${outputFileName}\n`);
     } else {
@@ -191,7 +191,7 @@ async function main() {
   console.info(`Total PDFs: ${pdfFiles.length}`);
   console.info(`Successful: ${successCount}`);
   console.info(`Failed: ${failureCount}`);
-  console.info(`\nMarkdown documents saved to: ${PARTIALLY_PROCESSED_DIR}`);
+  console.info(`\nMarkdown documents saved to: ${PROCESSED_DIR}`);
   console.info('Total time: ', performance.now() - startTime, 'ms');
   console.info('Average time per PDF: ', (performance.now() - startTime) / pdfFiles.length, 'ms');
 }

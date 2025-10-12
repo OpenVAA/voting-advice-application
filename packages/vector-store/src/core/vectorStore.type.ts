@@ -1,5 +1,5 @@
-import type { SourceExcerpt } from './types';
 import type { Embedder } from './embedder.type';
+import type { SourceSegment } from './types';
 
 /** @example
  * ```typescript
@@ -26,7 +26,7 @@ export interface VectorStoreConfig {
  * ```
  */
 export interface SearchResult {
-  excerpt: SourceExcerpt;
+  segment: SourceSegment;
   score: number;
   distance: number;
 }
@@ -43,7 +43,7 @@ export interface SearchResult {
  */
 export abstract class VectorStore {
   abstract initialize(): Promise<void>;
-  abstract addTexts(texts: Array<SourceExcerpt>): Promise<void>;
+  abstract addTexts(texts: Array<SourceSegment>): Promise<void>;
   abstract search(query: string): Promise<Array<SearchResult>>;
   abstract delete(ids: Array<string>): Promise<void>;
 }
