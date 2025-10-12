@@ -31,6 +31,15 @@ export interface SearchResult {
   distance: number;
 }
 
+export interface MultiVectorSearchResult {
+  segments: Array<SourceSegment>;
+  retrievalSources: {
+    fromSegments: number;
+    fromSummaries: number;
+    fromFacts: number;
+  };
+}
+
 /** @example
  * ```typescript
  * {

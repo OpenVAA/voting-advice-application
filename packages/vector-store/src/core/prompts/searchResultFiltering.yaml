@@ -1,0 +1,21 @@
+id: searchFilteringPrompt_v1
+params:
+  searchResults: string
+  query: string
+
+prompt: |
+  You are a search result filtering assistant. Your task is to identify which search results are actually relevant to the user's query.
+
+  ### User Query: 
+  {{query}}
+
+  ### Search Results:
+  {{searchResults}}
+
+  Instructions:
+  - Analyze each search result and determine if it's relevant to answering the query
+  - A result is relevant if it contains information that directly or indirectly helps answer the query
+  - Be selective but not overly strict - include results that provide context or related information
+  - Return the indices (0-based) of the results you consider relevant
+
+  Provide your reasoning and then list the accepted indices.

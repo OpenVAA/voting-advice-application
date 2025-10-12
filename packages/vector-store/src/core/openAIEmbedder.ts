@@ -21,7 +21,7 @@ export class OpenAIEmbedder extends Embedder {
       input: text,
       dimensions
     });
-    console.info('Got response from OpenAI.');
+    console.info('Got response from OpenAI embedder.');
 
     return {
       embedding: response.data[0].embedding
