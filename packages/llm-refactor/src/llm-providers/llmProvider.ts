@@ -12,8 +12,9 @@ import type {
   ProviderConfig
 } from './provider.types';
 
-// TODO: add internal rate limit throttling
+// TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
 // Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
+
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
