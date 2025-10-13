@@ -21,11 +21,9 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@google/genai": "^0.21.0",
     "@openvaa/core": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
     "ai": "^5.0.0",
-    "dotenv": "^16.4.7",
     "js-yaml": "^4.1.0",
     "zod": "^4.0.0"
   }

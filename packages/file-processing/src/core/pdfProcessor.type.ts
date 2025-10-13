@@ -17,5 +17,10 @@ export interface PdfProcessorResult {
     originalFileName?: string;
     processingTimestamp: string;
     modelUsed: string;
+    costs: {
+      input: number;
+      output: number;
+      total: number;
+    };
   };
 }

@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { LLMProvider } from '@openvaa/llm-refactor';
 import { loadPrompt } from '../utils/promptLoader';
 import type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.type';
 
@@ -19,50 +19,63 @@ import type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.typ
  * ```
  */
 export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promise<PdfProcessorResult> {
-  const { pdfBuffer, apiKey, model = 'gemini-2.5-pro', originalFileName } = options;
+  const { pdfBuffer, apiKey, model = 'gemini-2.0-flash-exp', originalFileName } = options;
 
   // Load the prompt from YAML
   const promptData = await loadPrompt({ promptFileName: 'pdfToMarkdown' });
 
-  // Initialize Gemini AI
-  const ai = new GoogleGenAI({ apiKey: apiKey || process.env.LLM_GEMINI_API_KEY || '' });
-
-  if (!ai) {
-    throw new Error('Gemini API key is required. Provide it via options.apiKey or LLM_GEMINI_API_KEY env variable.');
-  }
+  // Initialize LLM provider with Google
+  const llm = new LLMProvider({
+    provider: 'google',
+    apiKey: apiKey || '',
+    modelConfig: {
+      primary: model
+    }
+  });
 
   // Convert buffer to base64
   const base64Data = pdfBuffer.toString('base64');
 
-  // Prepare content for Gemini
-  const contents = [
-    { text: promptData.prompt },
-    {
-      inlineData: {
-        mimeType: 'application/pdf',
-        data: base64Data
+  // TODO: use generateText instead of streaming (llmRefactor should support it)
+  // Out of personal interest, find out how streaming vs. waiting for generatedText is different.
+  const result = llm.streamText({ // = streamText<undefined> because no tools are used
+    modelConfig: { primary: model },
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: promptData.prompt },
+          {
+            type: 'file',
+            data: base64Data,
+            mediaType: 'application/pdf'
+          }
+        ]
       }
-    }
-  ];
-
-  // Call Gemini API
-  const response = await ai.models.generateContent({
-    model,
-    contents
+    ]
   });
 
-  const markdownContent = response.text?.trim() || '';
+  // Get the complete text from the stream
+  const markdownContent = await result.text;
 
-  if (!markdownContent) {
+  if (!markdownContent?.trim()) {
     throw new Error('Failed to extract markdown content from PDF');
   }
 
+  // Get costs after stream completes
+  const costs = await result.costs;
+
   return {
-    markdown: markdownContent,
+    markdown: markdownContent.trim(),
     metadata: {
       originalFileName,
       processingTimestamp: new Date().toISOString(),
-      modelUsed: model
+      modelUsed: model,
+      costs: {
+        input: costs.input,
+        output: costs.output,
+        total: costs.total
+      }
     }
   };
 }
