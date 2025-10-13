@@ -4,8 +4,8 @@
     "title": "Feedback"
   },
   "organizationMatching": {
-    "content": "{partyMatchingMethod, select, answersOnly {<p>The party results have been calculated based on the answers provided by the parties.</p>} imputed {<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, from the mode or median of its candidates' responses in the constituency.</p>} other {<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, based on the responses of its candidates in the constituency.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Note that a party's candidates may disagree with their party on certain issues, so this calculated stance may not fully represent the party's official position.</p>}}",
-    "title": "Party Matching"
+    "content": "{partyMatchingMethod, select, answersOnly {<p>The electoral alliance results have been calculated based on the answers provided by the electoral alliances.</p>} imputed {<p>The electoral alliance results have been calculated based on their provided answers or, if a electoral alliance has not answered the questions, from the mode or median of its candidates' responses in the constituency.</p>} other {<p>The electoral alliance results have been calculated based on their provided answers or, if a electoral alliance has not answered the questions, based on the responses of its candidates in the constituency.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Note that a electoral alliance's candidates may disagree with their electoral alliance on certain issues, so this calculated stance may not fully represent the electoral alliance's official position.</p>}}",
+    "title": "Electoral alliance Matching"
   },
   "returnButton": "Return Home",
   "source": {

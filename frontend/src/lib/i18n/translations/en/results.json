@@ -1,6 +1,6 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {No alliances} =1 {1 alliance} other {# alliances}}"
+    "numShown": "{numShown, plural, =0 {No electoral rings} =1 {1 electoral ring} other {# electoral rings}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {No {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
@@ -15,12 +15,12 @@
   },
   "missingNominations": {
     "noNominations": {
-      "title": "There are no candidates or parties in your constituency who have responded to the Election Compass",
+      "title": "There are no candidates or electoral alliances in your constituency who have responded to the Election Compass",
       "content": "You can review the questions if you wish, but results cannot be displayed."
     },
     "someNominations": {
-      "title": "Some election candidates or parties have not responded to the Election Compass",
-      "content": "There are no candidate or party responses available for all elections in your constituency. The results will only display elections for which responses are available."
+      "title": "Some election candidates or electoral alliances have not responded to the Election Compass",
+      "content": "There are no candidate or electoral alliance responses available for all elections in your constituency. The results will only display elections for which responses are available."
     },
     "noNominationsForElection": "not available"
   },

@@ -1,6 +1,6 @@
 {
   "alliance": {
-    "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}"
+    "numShown": "{numShown, plural, =0 {Ei vaalirenkaita} =1 {1 vaalirengas} other {# vaalirengasta}}"
   },
   "candidate": {
     "numShown": "{numShown, plural, =0 {Ei ehdokkaita}=1 {1 ehdokas} other {# ehdokasta}}"
@@ -15,21 +15,21 @@
   },
   "missingNominations": {
     "noNominations": {
-      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai vaaliliittoja",
       "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
     },
     "someNominations": {
-      "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
-      "content": "Vaalipiirissäsi ei ole ehdokkaiden tai puolueiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
+      "title": "Joidenkin vaalien ehdokkaat tai vaaliliitot eivät ole vastanneet vaalikoneeseen",
+      "content": "Vaalipiirissäsi ei ole ehdokkaiden tai vaaliliittojen vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
     },
     "noNominationsForElection": "ei saatavilla"
   },
   "organization": {
-    "numShown": "{numShown, plural, =0 {Ei puolueita} =1 {1 puolue} other {# puoluetta}}"
+    "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}"
   },
   "selectElectionFirst": "Valitse vaali ensin",
   "title": {
-    "browse": "Selaa ehdokkaita ja puolueita",
+    "browse": "Selaa ehdokkaita ja vaaliliittoja",
     "results": "Tuloksesi"
   }
 }
