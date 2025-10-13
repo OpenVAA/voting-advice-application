@@ -9,8 +9,8 @@ export type { SegmentationOptions, SegmentationResult } from './textSegmentation
 // Document Analysis
 export { analyzeDocument } from './documentAnalysis';
 export type {
-  DocumentAnalysisOptions,
-  DocumentAnalysisResult,
+  TextAnalysisOptions as DocumentAnalysisOptions,
+  TextAnalysisResult as DocumentAnalysisResult,
   SegmentWithAnalysis,
   SourceMetadata
 } from './documentAnalysis.type';

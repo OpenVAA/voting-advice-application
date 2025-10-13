@@ -1,22 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
+import { loadPrompt } from '../utils/promptLoader';
 import type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.type';
-
-/**
- * Prompt for converting PDFs to Markdown
- */
-const EXTRACTION_PROMPT = `
-Convert this PDF document to clean, well-formatted Markdown.
-
-Requirements:
-- Preserve all text content from the document
-- Maintain the document structure with appropriate heading levels (# ## ###)
-- Keep tables, lists, and other formatting in Markdown syntax
-- Preserve paragraphs and line breaks appropriately
-- Do not add any commentary or explanations
-- Return ONLY the markdown content, no additional text or formatting
-
-Return the markdown content directly without any code blocks or preamble.
-`;
 
 /**
  * Convert a PDF buffer to Markdown using Gemini 2.5 Pro
@@ -37,6 +21,9 @@ Return the markdown content directly without any code blocks or preamble.
 export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promise<PdfProcessorResult> {
   const { pdfBuffer, apiKey, model = 'gemini-2.5-pro', originalFileName } = options;
 
+  // Load the prompt from YAML
+  const promptData = await loadPrompt({ promptFileName: 'pdfToMarkdown' });
+
   // Initialize Gemini AI
   const ai = new GoogleGenAI({ apiKey: apiKey || process.env.LLM_GEMINI_API_KEY || '' });
 
@@ -49,7 +36,7 @@ export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promis
 
   // Prepare content for Gemini
   const contents = [
-    { text: EXTRACTION_PROMPT },
+    { text: promptData.prompt },
     {
       inlineData: {
         mimeType: 'application/pdf',

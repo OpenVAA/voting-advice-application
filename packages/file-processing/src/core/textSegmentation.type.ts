@@ -7,10 +7,38 @@ export interface SegmentationOptions {
   llmProvider: LLMProvider;
   /** Model configuration */
   modelConfig: LLMModelConfig;
+  /** To prevent context window issues, we need to split the text. */
+  charsPerLLMCall?: number;
+  /** Guidance length min */
+  minSegmentLength?: number;
+  /** Guidance length max */
+  maxSegmentLength?: number;
   /** Optional: Validate text preservation (default: true) */
-  validatePreservation?: boolean;
+  validateTextPreservation?: boolean;
 }
 
+/** @example
+ * ```typescript
+ * {
+ *   segments: [
+ *     'Segment 1',
+ *     'Segment 2',
+ *     'Segment 3',
+ *   ],
+ * }
+ * metadata: {
+ *   segmentCount: 3,
+ *   totalCharacters: 1000,
+ *   averageSegmentLength: 333.33,
+ *   minSegmentLength: 300,
+ *   maxSegmentLength: 2500,
+ *   costs: {
+ *     total: 100,
+ *     currency: 'USD'
+ *   }
+ * }
+ * ```
+ */
 export interface SegmentationResult {
   /** Array of text segments */
   segments: Array<string>;
@@ -19,6 +47,8 @@ export interface SegmentationResult {
     segmentCount: number;
     totalCharacters: number;
     averageSegmentLength: number;
+    minSegmentLength: number;
+    maxSegmentLength: number;
     costs: {
       total: number;
       currency: 'USD';

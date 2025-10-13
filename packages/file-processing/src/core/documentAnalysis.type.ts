@@ -67,7 +67,7 @@ export interface SegmentWithAnalysis {
  * }
  * ```
  */
-export interface DocumentAnalysisOptions {
+export interface TextAnalysisOptions {
   /** The full document text (for metadata extraction using LLM) */
   fullText: string;
   /** Pre-segmented text chunks */
@@ -80,7 +80,7 @@ export interface DocumentAnalysisOptions {
   documentId?: string;
 }
 
-export interface DocumentAnalysisResult {
+export interface TextAnalysisResult {
   /** Generated or provided document ID */
   documentId: string;
   /** Extracted document metadata */
@@ -99,4 +99,14 @@ export interface DocumentAnalysisResult {
     };
     processingTimeMs: number;
   };
+}
+
+/** Options for metadata extraction */
+export interface ExtractMetadataOptions {
+  /** The full document text to extract metadata from */
+  fullText: string;
+  /** LLM provider instance */
+  llmProvider: LLMProvider;
+  /** Model configuration */
+  modelConfig: LLMModelConfig;
 }

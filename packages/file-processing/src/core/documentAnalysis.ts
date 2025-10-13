@@ -3,7 +3,12 @@ import { z } from 'zod';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
 import type { ModelMessage } from 'ai';
-import type { DocumentAnalysisOptions, DocumentAnalysisResult, SourceMetadata } from './documentAnalysis.type';
+import type {
+  ExtractMetadataOptions,
+  SourceMetadata,
+  TextAnalysisOptions,
+  TextAnalysisResult
+} from './documentAnalysis.type';
 
 const metadataExtractionSchema = z.object({
   title: z.string().optional(),
@@ -20,12 +25,22 @@ const segmentAnalysisSchema = z.object({
 
 /**
  * Extract metadata from document text
+ *
+ * @param options - Extract metadata options
+ * @returns Extracted metadata
+ *
+ * @example
+ * ```typescript
+ * const metadata = await extractMetadata({
+ *   fullText: markdownContent,
+ *   llmProvider: provider, // Gemini Provider
+ *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
+ * });
+ * ```
  */
-async function extractMetadata(
-  fullText: string,
-  llmProvider: DocumentAnalysisOptions['llmProvider'],
-  modelConfig: DocumentAnalysisOptions['modelConfig']
-): Promise<SourceMetadata> {
+async function extractMetadata(options: ExtractMetadataOptions): Promise<SourceMetadata> {
+  const { fullText, llmProvider, modelConfig } = options;
+
   // Get the first and last 500 characters of the input text
   const first500 = fullText.slice(0, 500);
   const last500 = fullText.slice(-500);
@@ -40,9 +55,9 @@ async function extractMetadata(
   ] as Array<ModelMessage>;
 
   const response = await llmProvider.generateObject({
+    messages,
     modelConfig,
     schema: metadataExtractionSchema,
-    messages,
     temperature: 0.7,
     maxRetries: 3,
     validationRetries: 3
@@ -69,21 +84,28 @@ async function extractMetadata(
  * console.log(result.segmentAnalyses);
  * ```
  */
-export async function analyzeDocument(options: DocumentAnalysisOptions): Promise<DocumentAnalysisResult> {
+export async function analyzeDocument(options: TextAnalysisOptions): Promise<TextAnalysisResult> {
   const startTime = performance.now();
   const { fullText, segments, llmProvider, modelConfig, documentId } = options;
 
   // Generate document ID if not provided
-  const finalDocumentId = documentId || `doc_${crypto.randomUUID()}`;
+  const finalDocumentId = documentId || `${crypto.randomUUID()}`;
 
   // Extract metadata from the full text
-  const metadata = await extractMetadata(fullText, llmProvider, modelConfig);
+  const metadata = await extractMetadata({
+    fullText,
+    llmProvider,
+    modelConfig
+  });
 
   // Analyze segments with LLM
   const prompt = (await loadPrompt({ promptFileName: 'segmentAnalysis' })).prompt;
 
   const requests = segments.map((segment, index) => {
-    const segmentWithContext = createSegmentWithContext(segments, index);
+    const segmentWithContext = createSegmentWithContext({
+      segments,
+      index
+    });
 
     return {
       messages: [
@@ -144,15 +166,28 @@ export async function analyzeDocument(options: DocumentAnalysisOptions): Promise
 // --------------------------------------------------------------
 // HELPER FUNCTIONS
 // --------------------------------------------------------------
+
+/** Internal. Used only in the helper below.
+ * Gets characters from surrounding segments so we have context for the segment we are analyzing.
+ */
+interface GetSurroundingSegmentsOptions {
+  /** Array of all segments */
+  segments: Array<string>;
+  /** Starting index for context extraction */
+  startIndex: number;
+  /** Minimum number of characters to extract */
+  minChars: number;
+  /** Direction to extract context */
+  direction: 'forward' | 'backward';
+}
+
+
 /**
  * Helper: Get context from segments until minimum character count is reached
  */
-function getContextFromSegments(
-  segments: Array<string>,
-  startIndex: number,
-  minChars: number,
-  direction: 'forward' | 'backward'
-): string {
+function getContextFromSegments(options: GetSurroundingSegmentsOptions): string {
+  const { segments, startIndex, minChars, direction } = options;
+
   const contextSegments: Array<string> = [];
   let totalChars = 0;
 
@@ -171,28 +206,60 @@ function getContextFromSegments(
   return contextSegments.join('\n\n');
 }
 
+
+/** Internal. Used only in the helper below. 
+ * Formats a segment with its context for the LLM.
+*/
+interface CreateSegmentWithContextOptions {
+  /** Array of all segments */
+  segments: Array<string>;
+  /** Index of the segment to create context for */
+  index: number;
+}
+
 /**
  * Helper: Create segment with sliding window context and markers
  */
-function createSegmentWithContext(segments: Array<string>, index: number): string {
+function createSegmentWithContext(options: CreateSegmentWithContextOptions): string {
+  const { segments, index } = options;
   const segment = segments[index];
   let segmentWithContext = '';
 
   if (index === 0) {
-    const followingContext = getContextFromSegments(segments, index + 1, 1500, 'forward');
+    const followingContext = getContextFromSegments({
+      segments,
+      startIndex: index + 1,
+      minChars: 1500,
+      direction: 'forward'
+    });
     segmentWithContext =
       followingContext.length > 0
         ? `<PORTION TO ANALYZE>\n${segment}\n\n<FOLLOWING CONTEXT>\n${followingContext}`
         : `<PORTION TO ANALYZE>\n${segment}`;
   } else if (index === segments.length - 1) {
-    const precedingContext = getContextFromSegments(segments, index - 1, 1500, 'backward');
+    const precedingContext = getContextFromSegments({
+      segments,
+      startIndex: index - 1,
+      minChars: 1500,
+      direction: 'backward'
+    });
     segmentWithContext =
       precedingContext.length > 0
         ? `<PRECEDING CONTEXT>\n${precedingContext}\n\n<PORTION TO ANALYZE>\n${segment}`
         : `<PORTION TO ANALYZE>\n${segment}`;
   } else {
-    const precedingContext = getContextFromSegments(segments, index - 1, 1000, 'backward');
-    const followingContext = getContextFromSegments(segments, index + 1, 500, 'forward');
+    const precedingContext = getContextFromSegments({
+      segments,
+      startIndex: index - 1,
+      minChars: 1000,
+      direction: 'backward'
+    });
+    const followingContext = getContextFromSegments({
+      segments,
+      startIndex: index + 1,
+      minChars: 500,
+      direction: 'forward'
+    });
 
     const parts: Array<string> = [];
     if (precedingContext.length > 0) {
