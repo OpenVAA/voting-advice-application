@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { segmentText } from '../../src/core/textSegmentation';
+import { LONG_TEXT, MEDIUM_TEXT } from '../fixtures/sampleTexts';
 import { createFakeLLMProvider, createFakeModelConfig } from '../helpers/fakeLLMProvider';
-import { MEDIUM_TEXT, LONG_TEXT } from '../fixtures/sampleTexts';
 
 describe('segmentText', () => {
   let fakeLLMProvider: ReturnType<typeof createFakeLLMProvider>;
@@ -71,7 +71,7 @@ describe('segmentText', () => {
 
   describe('chunking for large texts', () => {
     it('should split large text into chunks based on charsPerLLMCall', async () => {
-      let callCount = 0;
+      const callCount = 0;
       fakeLLMProvider.setDefaultResponse({
         object: {
           segments: ['Segment from chunk']

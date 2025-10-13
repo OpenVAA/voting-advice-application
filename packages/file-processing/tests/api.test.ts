@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { processDocument } from '../src/api';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { LONG_TEXT, MEDIUM_TEXT } from './fixtures/sampleTexts';
 import { createFakeLLMProvider, createFakeModelConfig } from './helpers/fakeLLMProvider';
-import { MEDIUM_TEXT, LONG_TEXT } from './fixtures/sampleTexts';
+import { processDocument } from '../src/api';
 
 describe('processDocument', () => {
   let fakeLLMProvider: ReturnType<typeof createFakeLLMProvider>;

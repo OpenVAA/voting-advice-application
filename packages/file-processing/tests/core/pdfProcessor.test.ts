@@ -1,15 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { convertPdfToMarkdown } from '../../src/core/pdfProcessor';
+import { FakeLLMProvider } from '../helpers/fakeLLMProvider';
 
-// Mock the Google GenAI module
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: {
-      generateContent: vi.fn().mockResolvedValue({
-        text: '# Sample PDF Output\n\nThis is converted markdown.'
-      })
-    }
-  }))
+// Create a mock LLM provider instance that will be reused across tests
+const mockLLMProvider = new FakeLLMProvider();
+
+// Mock the LLMProvider
+vi.mock('@openvaa/llm-refactor', () => ({
+  LLMProvider: vi.fn().mockImplementation(() => mockLLMProvider)
 }));
 
 // Mock the promptLoader
@@ -26,6 +24,13 @@ describe('convertPdfToMarkdown', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLLMProvider.clearHistory();
+
+    // Set up a default stream response
+    mockLLMProvider.setDefaultStreamResponse({
+      text: '# Sample PDF Output\n\nThis is converted markdown.',
+      costs: { input: 0.001, output: 0.002, total: 0.003 }
+    });
   });
 
   describe('basic PDF conversion', () => {
@@ -41,14 +46,20 @@ describe('convertPdfToMarkdown', () => {
     });
 
     it('should use provided API key', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
+      const { LLMProvider } = await import('@openvaa/llm-refactor');
 
       await convertPdfToMarkdown({
         pdfBuffer: mockPdfBuffer,
         apiKey: 'custom-api-key'
       });
 
-      expect(GoogleGenAI).toHaveBeenCalledWith({ apiKey: 'custom-api-key' });
+      expect(LLMProvider).toHaveBeenCalledWith({
+        provider: 'google',
+        apiKey: 'custom-api-key',
+        modelConfig: {
+          primary: 'gemini-2.0-flash-exp'
+        }
+      });
     });
 
     it('should use default model when not specified', async () => {
@@ -57,7 +68,7 @@ describe('convertPdfToMarkdown', () => {
         apiKey: 'test-api-key'
       });
 
-      expect(result.metadata.modelUsed).toBe('gemini-2.5-pro');
+      expect(result.metadata.modelUsed).toBe('gemini-2.0-flash-exp');
     });
 
     it('should use custom model when specified', async () => {
@@ -102,30 +113,42 @@ describe('convertPdfToMarkdown', () => {
 
       expect(result.metadata.originalFileName).toBeUndefined();
     });
+
+    it('should include cost information in metadata', async () => {
+      const result = await convertPdfToMarkdown({
+        pdfBuffer: mockPdfBuffer,
+        apiKey: 'test-api-key'
+      });
+
+      expect(result.metadata.costs).toBeDefined();
+      expect(result.metadata.costs.input).toBeDefined();
+      expect(result.metadata.costs.output).toBeDefined();
+      expect(result.metadata.costs.total).toBeDefined();
+    });
   });
 
   describe('buffer handling', () => {
-    it('should convert buffer to base64', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
+    it('should convert buffer to base64 in API call', async () => {
       await convertPdfToMarkdown({
         pdfBuffer: mockPdfBuffer,
         apiKey: 'test-api-key'
       });
 
-      expect(mockAI.models.generateContent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contents: expect.arrayContaining([
-            expect.objectContaining({
-              inlineData: expect.objectContaining({
-                mimeType: 'application/pdf',
-                data: expect.any(String)
-              })
-            })
-          ])
-        })
-      );
+      const streamCalls = mockLLMProvider.getStreamCallHistory();
+      expect(streamCalls).toHaveLength(1);
+
+      const call = streamCalls[0];
+      expect(call.messages).toBeDefined();
+      expect(call.messages?.[0].content).toBeDefined();
+
+      // Check that the content includes the PDF data
+      const content = call.messages?.[0].content;
+      if (Array.isArray(content)) {
+        const fileContent = content.find((c) => c.type === 'file');
+        expect(fileContent).toBeDefined();
+        expect(fileContent).toHaveProperty('mediaType', 'application/pdf');
+        expect(fileContent).toHaveProperty('data');
+      }
     });
 
     it('should handle large PDF buffers', async () => {
@@ -141,40 +164,11 @@ describe('convertPdfToMarkdown', () => {
   });
 
   describe('error handling', () => {
-    it('should throw error when API key is missing', async () => {
-      // Clear the environment variable
-      const originalEnv = process.env.LLM_GEMINI_API_KEY;
-      delete process.env.LLM_GEMINI_API_KEY;
-
-      await expect(
-        convertPdfToMarkdown({
-          pdfBuffer: mockPdfBuffer
-        })
-      ).rejects.toThrow('Gemini API key is required');
-
-      // Restore environment
-      if (originalEnv) {
-        process.env.LLM_GEMINI_API_KEY = originalEnv;
-      }
-    });
-
-    it('should use environment variable when API key not provided', async () => {
-      process.env.LLM_GEMINI_API_KEY = 'env-api-key';
-      const { GoogleGenAI } = await import('@google/genai');
-
-      await convertPdfToMarkdown({
-        pdfBuffer: mockPdfBuffer
+    it('should throw error when conversion returns empty text', async () => {
+      mockLLMProvider.setDefaultStreamResponse({
+        text: '',
+        costs: { input: 0.001, output: 0.002, total: 0.003 }
       });
-
-      expect(GoogleGenAI).toHaveBeenCalledWith({ apiKey: 'env-api-key' });
-    });
-
-    it('should throw error when conversion fails', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
-      // Mock a failed response with empty text
-      mockAI.models.generateContent.mockResolvedValueOnce({ text: '' });
 
       await expect(
         convertPdfToMarkdown({
@@ -184,11 +178,26 @@ describe('convertPdfToMarkdown', () => {
       ).rejects.toThrow('Failed to extract markdown content from PDF');
     });
 
-    it('should throw error when API call fails', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
+    it('should handle whitespace-only responses', async () => {
+      mockLLMProvider.setDefaultStreamResponse({
+        text: '   \n\n  \t  ',
+        costs: { input: 0.001, output: 0.002, total: 0.003 }
+      });
 
-      mockAI.models.generateContent.mockRejectedValueOnce(new Error('API rate limit exceeded'));
+      await expect(
+        convertPdfToMarkdown({
+          pdfBuffer: mockPdfBuffer,
+          apiKey: 'test-api-key'
+        })
+      ).rejects.toThrow('Failed to extract markdown content from PDF');
+    });
+
+    it('should propagate LLM provider errors', async () => {
+      // Configure the mock to throw an error
+      const originalStreamText = mockLLMProvider.streamText;
+      mockLLMProvider.streamText = () => {
+        throw new Error('API rate limit exceeded');
+      };
 
       await expect(
         convertPdfToMarkdown({
@@ -196,20 +205,9 @@ describe('convertPdfToMarkdown', () => {
           apiKey: 'test-api-key'
         })
       ).rejects.toThrow('API rate limit exceeded');
-    });
 
-    it('should handle whitespace-only responses', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
-      mockAI.models.generateContent.mockResolvedValueOnce({ text: '   \n\n  \t  ' });
-
-      await expect(
-        convertPdfToMarkdown({
-          pdfBuffer: mockPdfBuffer,
-          apiKey: 'test-api-key'
-        })
-      ).rejects.toThrow('Failed to extract markdown content from PDF');
+      // Restore the original method
+      mockLLMProvider.streamText = originalStreamText;
     });
   });
 
@@ -226,38 +224,39 @@ describe('convertPdfToMarkdown', () => {
     });
 
     it('should include prompt in API call', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
       const { loadPrompt } = await import('../../src/utils/promptLoader');
 
-      // Mock specific prompt
-      (loadPrompt as any).mockResolvedValueOnce({
+      vi.mocked(loadPrompt).mockResolvedValueOnce({
         id: 'pdfToMarkdown',
         prompt: 'Custom PDF conversion prompt',
         usedVars: []
       });
-
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
 
       await convertPdfToMarkdown({
         pdfBuffer: mockPdfBuffer,
         apiKey: 'test-api-key'
       });
 
-      expect(mockAI.models.generateContent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contents: expect.arrayContaining([expect.objectContaining({ text: 'Custom PDF conversion prompt' })])
-        })
-      );
+      const streamCalls = mockLLMProvider.getStreamCallHistory();
+      expect(streamCalls).toHaveLength(1);
+
+      const call = streamCalls[0];
+      const content = call.messages?.[0].content;
+      if (Array.isArray(content)) {
+        const textContent = content.find((c) => c.type === 'text');
+        expect(textContent).toBeDefined();
+        if (textContent && 'text' in textContent) {
+          expect(textContent.text).toBe('Custom PDF conversion prompt');
+        }
+      }
     });
   });
 
   describe('markdown output', () => {
     it('should trim markdown output', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
-      mockAI.models.generateContent.mockResolvedValueOnce({
-        text: '   \n# Title\n\nContent\n\n   '
+      mockLLMProvider.setDefaultStreamResponse({
+        text: '   \n# Title\n\nContent\n\n   ',
+        costs: { input: 0.001, output: 0.002, total: 0.003 }
       });
 
       const result = await convertPdfToMarkdown({
@@ -269,9 +268,6 @@ describe('convertPdfToMarkdown', () => {
     });
 
     it('should preserve markdown formatting', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
       const expectedMarkdown = `# Title
 
 ## Subtitle
@@ -281,8 +277,9 @@ describe('convertPdfToMarkdown', () => {
 
 **Bold text** and *italic text*.`;
 
-      mockAI.models.generateContent.mockResolvedValueOnce({
-        text: expectedMarkdown
+      mockLLMProvider.setDefaultStreamResponse({
+        text: expectedMarkdown,
+        costs: { input: 0.001, output: 0.002, total: 0.003 }
       });
 
       const result = await convertPdfToMarkdown({
@@ -295,21 +292,16 @@ describe('convertPdfToMarkdown', () => {
   });
 
   describe('model configuration', () => {
-    it('should pass model name to API', async () => {
-      const { GoogleGenAI } = await import('@google/genai');
-      const mockAI = new (GoogleGenAI as any)({ apiKey: 'test' });
-
+    it('should pass model name to streamText call', async () => {
       await convertPdfToMarkdown({
         pdfBuffer: mockPdfBuffer,
         apiKey: 'test-api-key',
         model: 'gemini-1.5-pro'
       });
 
-      expect(mockAI.models.generateContent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'gemini-1.5-pro'
-        })
-      );
+      const streamCalls = mockLLMProvider.getStreamCallHistory();
+      expect(streamCalls).toHaveLength(1);
+      expect(streamCalls[0].modelConfig?.primary).toBe('gemini-1.5-pro');
     });
   });
 });

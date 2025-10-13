@@ -1,11 +1,35 @@
-import type { LLMModelConfig, LLMObjectGenerationOptions, LLMObjectGenerationResult } from '@openvaa/llm-refactor';
 import type { Controller } from '@openvaa/core';
+import type {
+  LLMModelConfig,
+  LLMObjectGenerationOptions,
+  LLMObjectGenerationResult,
+  LLMStreamOptions,
+  LLMStreamResult
+} from '@openvaa/llm-refactor';
 
 /**
  * Configuration for a fake LLM response
  */
-export interface FakeLLMResponse<T = unknown> {
-  object: T;
+export interface FakeLLMResponse<TType = unknown> {
+  object: TType;
+  latencyMs?: number;
+  costs?: {
+    input: number;
+    output: number;
+    total: number;
+  };
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+/**
+ * Configuration for a fake stream text response
+ */
+export interface FakeStreamResponse {
+  text: string;
   latencyMs?: number;
   costs?: {
     input: number;
@@ -26,7 +50,10 @@ export interface FakeLLMResponse<T = unknown> {
 export class FakeLLMProvider {
   private responses: Map<string, FakeLLMResponse> = new Map();
   private defaultResponse: FakeLLMResponse | null = null;
+  private streamResponses: Map<string, FakeStreamResponse> = new Map();
+  private defaultStreamResponse: FakeStreamResponse | null = null;
   private callHistory: Array<LLMObjectGenerationOptions<unknown>> = [];
+  private streamCallHistory: Array<LLMStreamOptions<unknown>> = [];
   public cumulativeCosts: number = 0;
 
   /**
@@ -34,15 +61,31 @@ export class FakeLLMProvider {
    * @param promptPattern - A substring to match in the prompt
    * @param response - The response to return when the pattern matches
    */
-  addResponse<T>(promptPattern: string, response: FakeLLMResponse<T>): void {
+  addResponse<TType>(promptPattern: string, response: FakeLLMResponse<TType>): void {
     this.responses.set(promptPattern, response as FakeLLMResponse);
   }
 
   /**
    * Set a default response for any prompt that doesn't match a pattern
    */
-  setDefaultResponse<T>(response: FakeLLMResponse<T>): void {
+  setDefaultResponse<TType>(response: FakeLLMResponse<TType>): void {
     this.defaultResponse = response as FakeLLMResponse;
+  }
+
+  /**
+   * Configure a stream response for a specific prompt pattern
+   * @param promptPattern - A substring to match in the prompt
+   * @param response - The response to return when the pattern matches
+   */
+  addStreamResponse(promptPattern: string, response: FakeStreamResponse): void {
+    this.streamResponses.set(promptPattern, response);
+  }
+
+  /**
+   * Set a default stream response for any prompt that doesn't match a pattern
+   */
+  setDefaultStreamResponse(response: FakeStreamResponse): void {
+    this.defaultStreamResponse = response;
   }
 
   /**
@@ -53,10 +96,18 @@ export class FakeLLMProvider {
   }
 
   /**
+   * Get the stream call history
+   */
+  getStreamCallHistory(): Array<LLMStreamOptions<unknown>> {
+    return this.streamCallHistory;
+  }
+
+  /**
    * Clear call history
    */
   clearHistory(): void {
     this.callHistory = [];
+    this.streamCallHistory = [];
     this.cumulativeCosts = 0;
   }
 
@@ -90,7 +141,8 @@ export class FakeLLMProvider {
 
     return {
       object: response.object as TType,
-      finishReason: 'stop',
+      reasoning: undefined,
+      finishReason: 'stop' as const,
       usage: response.usage || {
         promptTokens: 100,
         completionTokens: 50,
@@ -105,6 +157,12 @@ export class FakeLLMProvider {
         timestamp: new Date(),
         modelId: options.modelConfig.primary
       },
+      providerMetadata: undefined,
+      toJsonResponse: () =>
+        new Response(JSON.stringify(response.object), {
+          status: 200,
+          headers: { 'content-type': 'application/json; charset=utf-8' }
+        }),
       rawResponse: {
         headers: {}
       },
@@ -113,7 +171,7 @@ export class FakeLLMProvider {
       costs,
       model: options.modelConfig.primary,
       fallbackUsed: false
-    } as LLMObjectGenerationResult<TType>;
+    } as unknown as LLMObjectGenerationResult<TType>;
   }
 
   /**
@@ -121,7 +179,6 @@ export class FakeLLMProvider {
    */
   async generateObjectParallel<TType>({
     requests,
-    maxConcurrent = 5,
     controller
   }: {
     requests: Array<LLMObjectGenerationOptions<TType>>;
@@ -137,6 +194,86 @@ export class FakeLLMProvider {
     }
 
     return results;
+  }
+
+  /**
+   * Stream text from the fake LLM
+   */
+  streamText<TOOLS extends unknown | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
+    this.streamCallHistory.push(options);
+
+    // Extract the prompt content from messages
+    let promptContent = '';
+    if (options.messages && options.messages.length > 0) {
+      const firstMessage = options.messages[0];
+      if (typeof firstMessage.content === 'string') {
+        promptContent = firstMessage.content;
+      } else if (Array.isArray(firstMessage.content)) {
+        // Find text content in array
+        const textContent = firstMessage.content.find((c) => c.type === 'text');
+        if (textContent && 'text' in textContent) {
+          promptContent = textContent.text;
+        }
+      }
+    }
+
+    // Find matching response
+    let matchedResponse: FakeStreamResponse | null = null;
+    for (const [pattern, response] of this.streamResponses.entries()) {
+      if (promptContent.includes(pattern)) {
+        matchedResponse = response;
+        break;
+      }
+    }
+
+    // Use default if no match found
+    const response = matchedResponse || this.defaultStreamResponse;
+
+    if (!response) {
+      throw new Error('No stream response configured for this prompt pattern and no default stream response set');
+    }
+
+    const costs = response.costs || { input: 0.001, output: 0.002, total: 0.003 };
+    this.cumulativeCosts += costs.total;
+
+    // Create a mock stream result that matches the LLMStreamResult interface
+    const result = {
+      text: Promise.resolve(response.text),
+      usage: Promise.resolve(
+        response.usage || {
+          promptTokens: 100,
+          completionTokens: 50,
+          totalTokens: 150
+        }
+      ),
+      finishReason: Promise.resolve('stop' as const),
+      latencyMs: response.latencyMs || 100,
+      attempts: 1,
+      costs: Promise.resolve(costs),
+      fallbackUsed: false,
+      // Additional properties from StreamTextResult
+      textStream: (async function* () {
+        yield response.text;
+      })(),
+      fullStream: (async function* () {
+        yield { type: 'text-delta' as const, textDelta: response.text };
+        yield {
+          type: 'finish' as const,
+          finishReason: 'stop' as const,
+          usage: response.usage || { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
+        };
+      })(),
+      warnings: undefined,
+      rawResponse: { headers: {} },
+      request: { body: JSON.stringify(options) },
+      response: {
+        id: 'fake-stream-response-id',
+        timestamp: new Date(),
+        modelId: options.modelConfig?.primary || 'fake-model'
+      }
+    };
+
+    return result as unknown as LLMStreamResult<TOOLS>;
   }
 }
 
