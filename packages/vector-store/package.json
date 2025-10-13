@@ -25,6 +25,7 @@
     "@google/genai": "^1.24.0",
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
+    "@openvaa/file-processing": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
     "ai": "^5.0.0"
   }

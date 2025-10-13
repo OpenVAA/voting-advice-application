@@ -27,18 +27,18 @@ const segmentAnalysisSchema = z.object({
  * Extract metadata from document text
  *
  * @param options - Extract metadata options
- * @returns Extracted metadata
+ * @returns Object containing extracted metadata and the response with cost information
  *
  * @example
  * ```typescript
- * const metadata = await extractMetadata({
+ * const { metadata, response } = await extractMetadata({
  *   fullText: markdownContent,
  *   llmProvider: provider, // Gemini Provider
  *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
  * });
  * ```
  */
-async function extractMetadata(options: ExtractMetadataOptions): Promise<SourceMetadata> {
+async function extractMetadata(options: ExtractMetadataOptions) {
   const { fullText, llmProvider, modelConfig } = options;
 
   // Get the first and last 500 characters of the input text
@@ -63,7 +63,10 @@ async function extractMetadata(options: ExtractMetadataOptions): Promise<SourceM
     validationRetries: 3
   });
 
-  return response.object as SourceMetadata;
+  return {
+    metadata: response.object as SourceMetadata,
+    response
+  };
 }
 
 /**
@@ -92,7 +95,7 @@ export async function analyzeDocument(options: TextAnalysisOptions): Promise<Tex
   const finalDocumentId = documentId || `${crypto.randomUUID()}`;
 
   // Extract metadata from the full text
-  const metadata = await extractMetadata({
+  const { metadata, response: metadataResponse } = await extractMetadata({
     fullText,
     llmProvider,
     modelConfig
@@ -128,8 +131,10 @@ export async function analyzeDocument(options: TextAnalysisOptions): Promise<Tex
     maxConcurrent: 4
   });
 
-  // Calculate costs
-  const totalCost = responses.map((response) => response.costs.total).reduce((sum, cost) => sum + cost, 0);
+  // Calculate costs including metadata extraction
+  const metadataCost = metadataResponse.costs.total;
+  const segmentCosts = responses.map((response) => response.costs.total).reduce((sum, cost) => sum + cost, 0);
+  const totalCost = metadataCost + segmentCosts;
 
   // Map responses to segment analyses
   const segmentAnalyses = responses.map((response, index) => ({
@@ -181,7 +186,6 @@ interface GetSurroundingSegmentsOptions {
   direction: 'forward' | 'backward';
 }
 
-
 /**
  * Helper: Get context from segments until minimum character count is reached
  */
@@ -206,10 +210,9 @@ function getContextFromSegments(options: GetSurroundingSegmentsOptions): string 
   return contextSegments.join('\n\n');
 }
 
-
-/** Internal. Used only in the helper below. 
+/** Internal. Used only in the helper below.
  * Formats a segment with its context for the LLM.
-*/
+ */
 interface CreateSegmentWithContextOptions {
   /** Array of all segments */
   segments: Array<string>;

@@ -198,13 +198,13 @@ export class LLMProvider {
       fallbackUsed: false
     });
 
-    return enhancedResult as unknown as LLMStreamResult<TOOLS>;
+    return enhancedResult as unknown as LLMStreamResult<TOOLS>; // it is this type, even if TS doesn't believe
   }
 
   private calculateCosts(model: string, usage: TokenUsage) {
     const pricing = getModelPricing(this.config.provider, model);
     return calculateLLMCost({
-      pricing,
+      pricing: pricing ?? { input: 0, output: 0 }, // fallback to zero (TODO: should we do this inside the util?)
       usage: usage,
       useCachedInput: this.config.modelConfig.useCachedInput
     });

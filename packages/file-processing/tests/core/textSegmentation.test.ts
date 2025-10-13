@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { segmentText } from '../../src/core/textSegmentation';
 import { LONG_TEXT, MEDIUM_TEXT } from '../fixtures/sampleTexts';
 import { createFakeLLMProvider, createFakeModelConfig } from '../helpers/fakeLLMProvider';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 
 describe('segmentText', () => {
   let fakeLLMProvider: ReturnType<typeof createFakeLLMProvider>;
@@ -24,7 +25,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         minSegmentLength: 300,
         maxSegmentLength: 1000
@@ -44,7 +45,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: 'Short text',
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -60,7 +61,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: segments.join(''),
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -71,16 +72,15 @@ describe('segmentText', () => {
 
   describe('chunking for large texts', () => {
     it('should split large text into chunks based on charsPerLLMCall', async () => {
-      const callCount = 0;
       fakeLLMProvider.setDefaultResponse({
         object: {
           segments: ['Segment from chunk']
         }
       });
 
-      const result = await segmentText({
+      await segmentText({
         text: LONG_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         charsPerLLMCall: 1000 // Force multiple calls
       });
@@ -97,9 +97,9 @@ describe('segmentText', () => {
       });
 
       const charsPerCall = 500;
-      const result = await segmentText({
+      await segmentText({
         text: 'x'.repeat(1500), // 1500 chars should make 3 calls
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         charsPerLLMCall: charsPerCall
       });
@@ -117,7 +117,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         minSegmentLength: 300,
         maxSegmentLength: 1000
@@ -137,7 +137,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -159,7 +159,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: 'x'.repeat(3000),
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         charsPerLLMCall: 1000 // This will make 3 calls
       });
@@ -177,7 +177,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -194,7 +194,7 @@ describe('segmentText', () => {
       // This should not throw, just log
       const result = await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         validateTextPreservation: true
       });
@@ -209,7 +209,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         validateTextPreservation: false
       });
@@ -226,7 +226,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: 'x'.repeat(5000),
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         charsPerLLMCall: 1000
       });
@@ -242,7 +242,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: 'x'.repeat(2000),
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
         charsPerLLMCall: 1000 // 2 calls, each returning 2 segments
       });
@@ -263,7 +263,7 @@ describe('segmentText', () => {
       await expect(
         segmentText({
           text: MEDIUM_TEXT,
-          llmProvider: errorProvider as any,
+          llmProvider: errorProvider as unknown as LLMProvider,
           modelConfig
         })
       ).rejects.toThrow('LLM API error');
@@ -276,7 +276,7 @@ describe('segmentText', () => {
 
       const result = await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -293,7 +293,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -315,7 +315,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
@@ -330,7 +330,7 @@ describe('segmentText', () => {
 
       await segmentText({
         text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as any,
+        llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 

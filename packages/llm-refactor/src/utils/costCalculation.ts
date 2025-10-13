@@ -10,6 +10,7 @@ import type { LLMCosts, ModelPricing } from './costCalculation.type';
  */
 export function getModelPricing(provider: string, model: string): ModelPricing | null {
   if (!isModelSupported(provider, model)) {
+    console.info('Pricing not found for provider "' + provider + '" and model "' + model + '"');
     return null;
   }
 

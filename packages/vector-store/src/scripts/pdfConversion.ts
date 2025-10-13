@@ -60,7 +60,7 @@ async function processPDF(filePath: string): Promise<string | null> {
 
     // Call Gemini 2.5 Pro
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro',
+      model: 'gemini-2.5-pro', // this is a good model for this task
       contents: contents
     });
 

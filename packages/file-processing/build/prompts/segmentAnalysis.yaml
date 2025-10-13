@@ -1,0 +1,19 @@
+id: segmentAnalysis
+params:
+  segmentWithContext: string
+prompt: |
+  Analyze the following text segment and provide:
+  1. A concise summary (2-3 sentences)
+  2. A list of standalone facts that could be useful for retrieval (if any)
+
+  Context is provided to help you understand the segment, but only analyze the portion marked as "PORTION TO ANALYZE".
+
+  {{segmentWithContext}}
+
+  Instructions:
+  - Summary should capture the main point of the segment
+  - Standalone facts should be self-contained statements that make sense without context
+  - Only extract facts that are informative and specific
+  - Omit standaloneFacts if there are no clear extractable facts
+
+  Return a JSON object with "summary" (string) and optionally "standaloneFacts" (array of strings).

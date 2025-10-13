@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Document processing utilities for file-to-markdown conversion, text segmentation, and LLM-based analysis",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/scripts && cp -R src/scripts/* build/scripts/",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/",
     "test": "vitest run",
     "test:watch": "vitest"
   },

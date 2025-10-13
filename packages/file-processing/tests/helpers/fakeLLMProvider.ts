@@ -1,4 +1,5 @@
 import type { Controller } from '@openvaa/core';
+import type { ToolSet } from 'ai';
 import type {
   LLMModelConfig,
   LLMObjectGenerationOptions,
@@ -44,16 +45,30 @@ export interface FakeStreamResponse {
 }
 
 /**
+ * Interface matching LLMProvider for type-safe testing
+ */
+export interface TestLLMProvider {
+  generateObject<TType>(options: LLMObjectGenerationOptions<TType>): Promise<LLMObjectGenerationResult<TType>>;
+  generateObjectParallel<TType>(params: {
+    requests: Array<LLMObjectGenerationOptions<TType>>;
+    maxConcurrent?: number;
+    controller?: Controller;
+  }): Promise<Array<LLMObjectGenerationResult<TType>>>;
+  streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS>;
+  cumulativeCosts: number;
+}
+
+/**
  * Mock LLM Provider for testing
  * Allows you to configure responses for specific prompts or use a default response
  */
-export class FakeLLMProvider {
+export class FakeLLMProvider implements TestLLMProvider {
   private responses: Map<string, FakeLLMResponse> = new Map();
   private defaultResponse: FakeLLMResponse | null = null;
   private streamResponses: Map<string, FakeStreamResponse> = new Map();
   private defaultStreamResponse: FakeStreamResponse | null = null;
   private callHistory: Array<LLMObjectGenerationOptions<unknown>> = [];
-  private streamCallHistory: Array<LLMStreamOptions<unknown>> = [];
+  private streamCallHistory: Array<LLMStreamOptions<ToolSet | undefined>> = [];
   public cumulativeCosts: number = 0;
 
   /**
@@ -98,7 +113,7 @@ export class FakeLLMProvider {
   /**
    * Get the stream call history
    */
-  getStreamCallHistory(): Array<LLMStreamOptions<unknown>> {
+  getStreamCallHistory(): Array<LLMStreamOptions<ToolSet | undefined>> {
     return this.streamCallHistory;
   }
 
@@ -199,7 +214,7 @@ export class FakeLLMProvider {
   /**
    * Stream text from the fake LLM
    */
-  streamText<TOOLS extends unknown | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
+  streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     this.streamCallHistory.push(options);
 
     // Extract the prompt content from messages
