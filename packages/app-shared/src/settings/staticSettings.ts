@@ -2,12 +2,12 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@example.com'
+    email: 'antti.kivi@syl.fi'
   },
   appVersion: {
     version: 1,
     requireUserDataVersion: 1,
-    source: 'https://github.com/OpenVAA/voting-advice-application'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-jyy-vaa-2025'
   },
   dataAdapter: {
     type: 'strapi',
@@ -15,24 +15,24 @@ export const staticSettings: StaticSettings = {
   },
   colors: {
     light: {
-      primary: '#2546a8',
+      primary: '#C4272E',
       secondary: '#666666',
-      accent: '#0a716b',
+      accent: '#C4272E',
       neutral: '#333333',
       'base-100': '#ffffff',
-      'base-200': '#e8f5f6',
-      'base-300': '#d1ebee',
+      'base-200': '#f2f0f0',
+      'base-300': '#e6e3e3',
       warning: '#a82525',
       'line-color': '#d9d9d9'
     },
     dark: {
-      primary: '#6887e3',
+      primary: '#C4272E',
       secondary: '#8c8c8c',
-      accent: '#11a8a0',
+      accent: '#C4272E',
       neutral: '#cccccc',
       'base-100': '#000000',
-      'base-200': '#101212',
-      'base-300': '#1f2324',
+      'base-200': '#1c1c1c',
+      'base-300': '#2f2f2f',
       warning: '#e16060',
       'line-color': '#262626'
     }
@@ -44,25 +44,22 @@ export const staticSettings: StaticSettings = {
   },
   supportedLocales: [
     {
-      code: 'en',
-      name: 'English',
+      code: 'fi',
+      name: 'Suomi',
       isDefault: true
     },
     {
-      code: 'fi',
-      name: 'Suomi'
-    },
-    {
-      code: 'sv',
-      name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
+      code: 'en',
+      name: 'English'
     }
   ],
   analytics: {
-    trackEvents: false
+    trackEvents: false,
+    platform: {
+      name: 'umami',
+      code: '513fe021-7301-4af0-9e8e-7ae4eb3bbe70',
+      infoUrl: 'https://umami.is/'
+    }
   },
   preRegistration: {
     enabled: false

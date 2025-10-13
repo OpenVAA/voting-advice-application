@@ -4,8 +4,8 @@
     "title": "Palaute"
   },
   "organizationMatching": {
-    "content": "{partyMatchingMethod, select, answersOnly {<p>Puolueiden tulokset on laskettu puolueiden antamien vastausten perusteella.</p>} imputed {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten mediaanista tai moodista.</p>} other {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten perusteella.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Huomaa, että puolueen ehdokkaat saattavat olla puolueensa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa puolueen kantaa.</p>}}",
-    "title": "Puolueiden tulokset"
+    "content": "{partyMatchingMethod, select, answersOnly {<p>Vaaliliittojen tulokset on laskettu vaaliliittojen antamien vastausten perusteella.</p>} imputed {<p>Vaaliliittojen tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin vaaliliitto ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten mediaanista tai moodista.</p>} other {<p>Vaaliliittojen tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin vaaliliitto ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten perusteella.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Huomaa, että vaaliliiton ehdokkaat saattavat olla vaaliliitonsa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa vaaliliiton kantaa.</p>}}",
+    "title": "Vaaliliittojen tulokset"
   },
   "returnButton": "Palaa etusivulle",
   "source": {

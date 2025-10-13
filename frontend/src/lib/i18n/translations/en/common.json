@@ -1,7 +1,7 @@
 {
   "alliance": {
-    "plural": "alliances",
-    "singular": "alliance"
+    "plural": "electoral rings",
+    "singular": "electoral ring"
   },
   "answer": {
     "no": "No",
@@ -55,8 +55,8 @@
   "openVAA": "OpenVAA",
   "or": "Or",
   "organization": {
-    "plural": "parties",
-    "singular": "party"
+    "plural": "electoral alliances",
+    "singular": "electoral alliance"
   },
   "password": "Password",
   "passwordConfirmation": "Confirm password",
