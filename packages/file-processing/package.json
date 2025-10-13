@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "name": "@openvaa/file-processing",
+  "version": "0.1.0",
+  "description": "Document processing utilities for file-to-markdown conversion, text segmentation, and LLM-based analysis",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/scripts && cp -R src/scripts/* build/scripts/",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    "import": "./build/index.js"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@google/genai": "^0.21.0",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/llm-refactor": "workspace:^",
+    "ai": "^5.0.0",
+    "dotenv": "^16.4.7",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.0.0"
+  }
+}

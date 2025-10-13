@@ -1,0 +1,18 @@
+id: segmentation
+params:
+  text: string
+prompt: |
+  You are a document segmentation expert. Your task is to divide the following text into logical, coherent segments.
+
+  Guidelines:
+  - Each segment should represent a complete thought or topic
+  - Segments should be roughly 500-2000 characters long
+  - Preserve all original text without modification
+  - Break at natural boundaries (paragraphs, section breaks, topic changes)
+  - Do not add, remove, or modify any content
+  - Return segments in their original order
+
+  Text to segment:
+  {{text}}
+
+  Return a JSON array of text segments.
