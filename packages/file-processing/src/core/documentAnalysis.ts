@@ -52,71 +52,6 @@ async function extractMetadata(
 }
 
 /**
- * Helper: Get context from segments until minimum character count is reached
- */
-function getContextFromSegments(
-  segments: Array<string>,
-  startIndex: number,
-  minChars: number,
-  direction: 'forward' | 'backward'
-): string {
-  const contextSegments: Array<string> = [];
-  let totalChars = 0;
-
-  if (direction === 'forward') {
-    for (let i = startIndex; i < segments.length && totalChars < minChars; i++) {
-      contextSegments.push(segments[i]);
-      totalChars += segments[i].length;
-    }
-  } else {
-    for (let i = startIndex; i >= 0 && totalChars < minChars; i--) {
-      contextSegments.unshift(segments[i]);
-      totalChars += segments[i].length;
-    }
-  }
-
-  return contextSegments.join('\n\n');
-}
-
-/**
- * Helper: Create segment with sliding window context and markers
- */
-function createSegmentWithContext(segments: Array<string>, index: number): string {
-  const segment = segments[index];
-  let segmentWithContext = '';
-
-  if (index === 0) {
-    const followingContext = getContextFromSegments(segments, index + 1, 1500, 'forward');
-    segmentWithContext =
-      followingContext.length > 0
-        ? `<PORTION TO ANALYZE>\n${segment}\n\n<FOLLOWING CONTEXT>\n${followingContext}`
-        : `<PORTION TO ANALYZE>\n${segment}`;
-  } else if (index === segments.length - 1) {
-    const precedingContext = getContextFromSegments(segments, index - 1, 1500, 'backward');
-    segmentWithContext =
-      precedingContext.length > 0
-        ? `<PRECEDING CONTEXT>\n${precedingContext}\n\n<PORTION TO ANALYZE>\n${segment}`
-        : `<PORTION TO ANALYZE>\n${segment}`;
-  } else {
-    const precedingContext = getContextFromSegments(segments, index - 1, 1000, 'backward');
-    const followingContext = getContextFromSegments(segments, index + 1, 500, 'forward');
-
-    const parts: Array<string> = [];
-    if (precedingContext.length > 0) {
-      parts.push(`<PRECEDING CONTEXT>\n${precedingContext}`);
-    }
-    parts.push(`<PORTION TO ANALYZE>\n${segment}`);
-    if (followingContext.length > 0) {
-      parts.push(`<FOLLOWING CONTEXT>\n${followingContext}`);
-    }
-
-    segmentWithContext = parts.join('\n\n');
-  }
-
-  return segmentWithContext;
-}
-
-/**
  * Analyze a document by extracting metadata and analyzing each segment
  *
  * @param options - Document analysis options
@@ -204,4 +139,72 @@ export async function analyzeDocument(options: DocumentAnalysisOptions): Promise
       processingTimeMs
     }
   };
+}
+
+// --------------------------------------------------------------
+// HELPER FUNCTIONS
+// --------------------------------------------------------------
+/**
+ * Helper: Get context from segments until minimum character count is reached
+ */
+function getContextFromSegments(
+  segments: Array<string>,
+  startIndex: number,
+  minChars: number,
+  direction: 'forward' | 'backward'
+): string {
+  const contextSegments: Array<string> = [];
+  let totalChars = 0;
+
+  if (direction === 'forward') {
+    for (let i = startIndex; i < segments.length && totalChars < minChars; i++) {
+      contextSegments.push(segments[i]);
+      totalChars += segments[i].length;
+    }
+  } else {
+    for (let i = startIndex; i >= 0 && totalChars < minChars; i--) {
+      contextSegments.unshift(segments[i]);
+      totalChars += segments[i].length;
+    }
+  }
+
+  return contextSegments.join('\n\n');
+}
+
+/**
+ * Helper: Create segment with sliding window context and markers
+ */
+function createSegmentWithContext(segments: Array<string>, index: number): string {
+  const segment = segments[index];
+  let segmentWithContext = '';
+
+  if (index === 0) {
+    const followingContext = getContextFromSegments(segments, index + 1, 1500, 'forward');
+    segmentWithContext =
+      followingContext.length > 0
+        ? `<PORTION TO ANALYZE>\n${segment}\n\n<FOLLOWING CONTEXT>\n${followingContext}`
+        : `<PORTION TO ANALYZE>\n${segment}`;
+  } else if (index === segments.length - 1) {
+    const precedingContext = getContextFromSegments(segments, index - 1, 1500, 'backward');
+    segmentWithContext =
+      precedingContext.length > 0
+        ? `<PRECEDING CONTEXT>\n${precedingContext}\n\n<PORTION TO ANALYZE>\n${segment}`
+        : `<PORTION TO ANALYZE>\n${segment}`;
+  } else {
+    const precedingContext = getContextFromSegments(segments, index - 1, 1000, 'backward');
+    const followingContext = getContextFromSegments(segments, index + 1, 500, 'forward');
+
+    const parts: Array<string> = [];
+    if (precedingContext.length > 0) {
+      parts.push(`<PRECEDING CONTEXT>\n${precedingContext}`);
+    }
+    parts.push(`<PORTION TO ANALYZE>\n${segment}`);
+    if (followingContext.length > 0) {
+      parts.push(`<FOLLOWING CONTEXT>\n${followingContext}`);
+    }
+
+    segmentWithContext = parts.join('\n\n');
+  }
+
+  return segmentWithContext;
 }
