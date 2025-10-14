@@ -89,9 +89,8 @@ export interface TextAnalysisResult {
   segmentAnalyses: Array<SegmentWithAnalysis>;
   /** Processing metadata */
   processingMetadata: {
-    segmentsAnalyzed: number;
-    summariesGenerated: number;
-    factsExtracted: number;
+    nSegments: number;
+    nFactsExtracted: number;
     costs: {
       total: number;
       perSegmentAverage: number;

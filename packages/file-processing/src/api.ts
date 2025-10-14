@@ -1,7 +1,15 @@
 import { analyzeDocument } from './core/documentAnalysis';
+import { convertPdfToMarkdown } from './core/pdfProcessor';
 import { segmentText } from './core/textSegmentation';
-import type { DocumentProcessingOptions, DocumentProcessingResult } from './api.type';
+import type {
+  PdfPreProcessingOptions,
+  PdfPreProcessingResult,
+  TextPreProcessingOptions,
+  TextPreProcessingResult
+} from './api.type';
 
+
+// TODO: create an utility that stores this API boilerplate
 /**
  * Process a document end-to-end: segment and analyze
  * This is a convenience function that chains segmentText and analyzeDocument
@@ -11,7 +19,7 @@ import type { DocumentProcessingOptions, DocumentProcessingResult } from './api.
  *
  * @example
  * ```typescript
- * const result = await processDocument({
+ * const result = await processText({
  *   text: markdownContent,
  *   llmProvider: provider,
  *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
@@ -20,8 +28,17 @@ import type { DocumentProcessingOptions, DocumentProcessingResult } from './api.
  * console.log(`Total cost: $${result.processingMetadata.costs.total}`);
  * ```
  */
-export async function processDocument(options: DocumentProcessingOptions): Promise<DocumentProcessingResult> {
-  const { text, llmProvider, modelConfig, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation } = options;
+export async function processText(options: TextPreProcessingOptions): Promise<TextPreProcessingResult> {
+  const {
+    text,
+    llmProvider,
+    modelConfig,
+    documentId,
+    minSegmentLength,
+    maxSegmentLength,
+    charsPerLLMCall,
+    validateTextPreservation
+  } = options;
 
   // Step 1: Segment the text
   const segmentationResult = await segmentText({
@@ -57,4 +74,33 @@ export async function processDocument(options: DocumentProcessingOptions): Promi
       costs: combinedCosts
     }
   };
+}
+
+export async function processPdf(options: PdfPreProcessingOptions): Promise<PdfPreProcessingResult> {
+  const {
+    pdfBuffer,
+    apiKey,
+    model,
+    originalFileName,
+    llmProvider,
+    modelConfig,
+    documentId,
+    minSegmentLength,
+    maxSegmentLength,
+    charsPerLLMCall,
+    validateTextPreservation
+  } = options;
+
+  const markdown = await convertPdfToMarkdown({ pdfBuffer, apiKey, model, originalFileName });
+
+  return processText({
+    text: markdown.markdown,
+    llmProvider,
+    modelConfig,
+    documentId,
+    minSegmentLength,
+    maxSegmentLength,
+    charsPerLLMCall,
+    validateTextPreservation
+  });
 }

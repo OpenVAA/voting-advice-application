@@ -153,18 +153,17 @@ export async function analyzeDocument(options: TextAnalysisOptions): Promise<Tex
   return {
     documentId: finalDocumentId,
     metadata,
-    segmentAnalyses,
     processingMetadata: {
-      segmentsAnalyzed: segments.length,
-      summariesGenerated: segmentAnalyses.length,
-      factsExtracted,
+      nSegments: segments.length,
+      nFactsExtracted: factsExtracted,
       costs: {
         total: totalCost,
         perSegmentAverage: totalCost / segments.length,
         currency: 'USD'
       },
       processingTimeMs
-    }
+    },
+    segmentAnalyses
   };
 }
 

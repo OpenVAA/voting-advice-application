@@ -9,7 +9,7 @@ import { segmentText } from './core/textSegmentation.js';
  *
  * @example
  * ```typescript
- * const result = await processDocument({
+ * const result = await processText({
  *   text: markdownContent,
  *   llmProvider: provider,
  *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
@@ -18,7 +18,7 @@ import { segmentText } from './core/textSegmentation.js';
  * console.log(`Total cost: $${result.processingMetadata.costs.total}`);
  * ```
  */
-export async function processDocument(options) {
+export async function processText(options) {
     const { text, llmProvider, modelConfig, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation } = options;
     // Step 1: Segment the text
     const segmentationResult = await segmentText({

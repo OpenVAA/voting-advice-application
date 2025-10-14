@@ -8,7 +8,7 @@ import type { DocumentProcessingOptions, DocumentProcessingResult } from './api.
  *
  * @example
  * ```typescript
- * const result = await processDocument({
+ * const result = await processText({
  *   text: markdownContent,
  *   llmProvider: provider,
  *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
@@ -17,5 +17,5 @@ import type { DocumentProcessingOptions, DocumentProcessingResult } from './api.
  * console.log(`Total cost: $${result.processingMetadata.costs.total}`);
  * ```
  */
-export declare function processDocument(options: DocumentProcessingOptions): Promise<DocumentProcessingResult>;
+export declare function processText(options: DocumentProcessingOptions): Promise<DocumentProcessingResult>;
 //# sourceMappingURL=api.d.ts.map

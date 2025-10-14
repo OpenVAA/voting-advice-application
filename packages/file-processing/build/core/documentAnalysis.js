@@ -126,18 +126,18 @@ export async function analyzeDocument(options) {
     return {
         documentId: finalDocumentId,
         metadata,
-        segmentAnalyses,
         processingMetadata: {
-            segmentsAnalyzed: segments.length,
-            summariesGenerated: segmentAnalyses.length,
-            factsExtracted,
+            nSegments: segments.length,
+            nSummaries: segmentAnalyses.length,
+            nFactsExtracted: factsExtracted,
             costs: {
                 total: totalCost,
                 perSegmentAverage: totalCost / segments.length,
                 currency: 'USD'
             },
             processingTimeMs
-        }
+        },
+        segmentAnalyses
     };
 }
 /**

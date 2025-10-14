@@ -124,8 +124,7 @@ describe('analyzeDocument', () => {
       });
 
       expect(result.segmentAnalyses).toHaveLength(3);
-      expect(result.processingMetadata.segmentsAnalyzed).toBe(3);
-      expect(result.processingMetadata.summariesGenerated).toBe(3);
+      expect(result.processingMetadata.nSegments).toBe(3);
     });
 
     it('should include segment context in prompts', async () => {
@@ -454,7 +453,7 @@ describe('analyzeDocument', () => {
       });
 
       // 2 segments * 3 facts each = 6 facts
-      expect(result.processingMetadata.factsExtracted).toBe(6);
+      expect(result.processingMetadata.nFactsExtracted).toBe(6);
     });
   });
 

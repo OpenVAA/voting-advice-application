@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { LLMProvider } from '@openvaa/llm-refactor';
 import { LONG_TEXT, MEDIUM_TEXT } from './fixtures/sampleTexts';
 import { createFakeLLMProvider, createFakeModelConfig } from './helpers/fakeLLMProvider';
-import { processDocument } from '../src/api';
+import { processText } from '../src/api';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 
 describe('processDocument', () => {
   let fakeLLMProvider: ReturnType<typeof createFakeLLMProvider>;
@@ -41,7 +41,7 @@ describe('processDocument', () => {
         costs: { input: 0.002, output: 0.002, total: 0.004 }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -72,7 +72,7 @@ describe('processDocument', () => {
         costs: { input: 0.003, output: 0.003, total: 0.006 }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -98,7 +98,7 @@ describe('processDocument', () => {
         }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -116,7 +116,7 @@ describe('processDocument', () => {
         object: { segments: ['Segment'] }
       });
 
-      await processDocument({
+      await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
@@ -138,7 +138,7 @@ describe('processDocument', () => {
         object: { segments: ['Segment'] }
       });
 
-      await processDocument({
+      await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
@@ -161,7 +161,7 @@ describe('processDocument', () => {
       });
 
       const text = 'x'.repeat(3000);
-      await processDocument({
+      await processText({
         text,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
@@ -184,7 +184,7 @@ describe('processDocument', () => {
       });
 
       // This should not throw, just test that it's passed through
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
@@ -208,7 +208,7 @@ describe('processDocument', () => {
       });
 
       const customDocId = 'custom-doc-456';
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig,
@@ -236,7 +236,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -259,7 +259,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -286,7 +286,7 @@ describe('processDocument', () => {
         costs: { input: 0.002, output: 0.002, total: 0.004 }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -312,15 +312,14 @@ describe('processDocument', () => {
         }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
       });
 
-      expect(result.processingMetadata.segmentsAnalyzed).toBe(3);
-      expect(result.processingMetadata.summariesGenerated).toBe(3);
-      expect(result.processingMetadata.factsExtracted).toBe(6); // 3 segments * 2 facts
+      expect(result.processingMetadata.nSegments).toBe(3);
+      expect(result.processingMetadata.nFactsExtracted).toBe(6); // 3 segments * 2 facts
       expect(result.processingMetadata.processingTimeMs).toBeGreaterThan(0);
     });
   });
@@ -334,7 +333,7 @@ describe('processDocument', () => {
       };
 
       await expect(
-        processDocument({
+        processText({
           text: MEDIUM_TEXT,
           llmProvider: errorProvider as unknown as LLMProvider,
           modelConfig
@@ -374,7 +373,7 @@ describe('processDocument', () => {
       };
 
       await expect(
-        processDocument({
+        processText({
           text: MEDIUM_TEXT,
           llmProvider: errorProvider as unknown as LLMProvider,
           modelConfig
@@ -397,7 +396,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: LONG_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -422,7 +421,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: LONG_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -443,7 +442,7 @@ describe('processDocument', () => {
         fallback: 'fallback-model-v1'
       });
 
-      await processDocument({
+      await processText({
         text: MEDIUM_TEXT,
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig: customModelConfig
@@ -468,7 +467,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: 'Short text',
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig
@@ -490,7 +489,7 @@ describe('processDocument', () => {
         object: { summary: 'Summary' }
       });
 
-      const result = await processDocument({
+      const result = await processText({
         text: 'Very short',
         llmProvider: fakeLLMProvider as unknown as LLMProvider,
         modelConfig

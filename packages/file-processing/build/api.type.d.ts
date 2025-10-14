@@ -9,7 +9,7 @@ export interface DocumentProcessingOptions {
     modelConfig: LLMModelConfig;
     /** Optional: Document ID */
     documentId?: string;
-    /** Optional: Validate text preservation during segmentation (default: true) */
+    /** Optional: Validate text preservation during segmentation (TODO: implement) */
     validateTextPreservation?: boolean;
     /** Optional: Minimum segment length */
     minSegmentLength?: number;
