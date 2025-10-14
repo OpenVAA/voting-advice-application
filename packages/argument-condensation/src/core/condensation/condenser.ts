@@ -13,7 +13,7 @@ import {
 } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
 import type { Controller } from '@openvaa/core';
-import type { LLMProvider, TokenUsage } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationResult, LLMProvider } from '@openvaa/llm-refactor';
 import type {
   Argument,
   CondensationOperation,
@@ -110,6 +110,9 @@ export class Condenser {
   private treeBuilder: OperationTreeBuilder | DummyTreeBuilder;
   private latencyTracker: LatencyTracker;
   private totalCost: number = 0;
+  private totalInputCost: number = 0;
+  private totalOutputCost: number = 0;
+  private modelsUsed: Set<string> = new Set();
   private startTime: Date;
   private controller: Controller;
 
@@ -201,15 +204,23 @@ export class Condenser {
       runId: this.runId,
       condensationType: this.input.options.outputType,
       data: { arguments: currentData as Array<Argument> },
-      metrics: {
-        duration: totalDuration / 1000, // Convert to seconds
+      llmMetrics: {
+        processingTimeMs: totalDuration,
         nLlmCalls: this.allPromptCalls.length,
-        cost: this.totalCost,
-        tokens: totalTokens
+        costs: {
+          total: this.totalCost,
+          input: this.totalInputCost,
+          output: this.totalOutputCost
+        },
+        tokens: {
+          totalTokens: totalTokens.totalTokens,
+          inputTokens: totalTokens.inputTokens,
+          outputTokens: totalTokens.outputTokens
+        }
       },
       success: true,
       metadata: {
-        llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].modelUsed : 'unknown',
+        modelsUsed: Array.from(this.modelsUsed),
         language: this.input.options.language,
         startTime: this.startTime,
         endTime: endTime
@@ -362,7 +373,6 @@ export class Condenser {
 
       // Make LLM call and process response using the new provider (object generation with schema)
       const llmResult = await this.input.options.llmProvider.generateObject({
-        modelConfig: { primary: this.input.options.llmModel },
         schema: ResponseWithArgumentsSchema,
         messages,
         temperature: 0.7,
@@ -391,13 +401,15 @@ export class Condenser {
       // Track the LLM call for metrics
       const latency = this.latencyTracker.getDuration(callOperationId) ?? 0;
       const usage = llmResult.usage;
-      const costTotal = (await llmResult.costs).total;
+      const costs = await llmResult.costs;
+      const modelUsed = llmResult.model
+      this.modelsUsed.add(modelUsed);
       const promptCall = {
         promptTemplateId: isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId,
         operation: CondensationOperations.REFINE,
         rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
         rawOutputText: JSON.stringify(parsedResponse, null, 2),
-        modelUsed: this.input.options.llmModel,
+        modelUsed,
         timestamp: new Date().toISOString(),
         metadata: {
           tokens: {
@@ -406,10 +418,12 @@ export class Condenser {
             totalTokens: usage.totalTokens ?? 0
           },
           latency,
-          cost: costTotal
+          cost: costs.total
         }
       };
-      this.totalCost += costTotal;
+      this.totalCost += costs.total;
+      this.totalInputCost += costs.input;
+      this.totalOutputCost += costs.output;
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
@@ -750,15 +764,11 @@ export class Condenser {
     // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
     // The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
-    let results: Array<{
-      object: ResponseWithArguments;
-      usage: TokenUsage;
-      costs: Promise<{ total: number }> | { total: number };
-    }>;
+    let results: Array<LLMObjectGenerationResult<ResponseWithArguments>>;
+
     try {
       results = await (this.input.options.llmProvider as LLMProvider).generateObjectParallel({
         requests: llmInputs.map((input) => ({
-          modelConfig: { primary: this.input.options.llmModel },
           schema: ResponseWithArgumentsSchema,
           messages: input.messages,
           temperature: input.temperature,
@@ -807,13 +817,15 @@ export class Condenser {
       // Collect metrics for cost and performance tracking
       const latency = this.latencyTracker.getDuration(nodeId) ?? 0;
       const usage = result.usage;
-      const costTotal = (await result.costs).total;
+      const costs = await result.costs;
+      const modelUsed = result.model
+      this.modelsUsed.add(modelUsed);
       const promptCall: PromptCall = {
         promptTemplateId: promptId,
         operation,
         rawInputText: `${operation} for ${logIdentifier} ${i + 1}/${items.length}`,
         rawOutputText: JSON.stringify(result.object, null, 2),
-        modelUsed: this.input.options.llmModel,
+        modelUsed,
         timestamp: new Date().toISOString(),
         metadata: {
           tokens: {
@@ -822,13 +834,15 @@ export class Condenser {
             totalTokens: usage.totalTokens ?? 0
           },
           latency,
-          cost: costTotal
+          cost: costs.total
         }
       };
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
-      this.totalCost += costTotal;
+      this.totalCost += costs.total;
+      this.totalInputCost += costs.input;
+      this.totalOutputCost += costs.output;
     }
 
     return { arguments: finalArguments, promptCalls: allPromptCalls, nodeIds };

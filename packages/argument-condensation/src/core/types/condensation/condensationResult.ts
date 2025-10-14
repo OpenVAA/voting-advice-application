@@ -14,23 +14,25 @@ import type { CondensationOutputType } from './condensationType';
  *   runId: 'i-am-a-unique-run-id',
  *   condensationType: 'likertCons',
  *   data: { arguments: [] },
- *   metrics: {
- *     duration: 420,
+ *   llmMetrics: {
+ *     processingTimeMs: 420,
  *     nLlmCalls: 66,
- *     cost: 1.01,
+ *     costs: { input: 0.5, output: 0.51, total: 1.01 },
  *     tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 } // Optional: reasoningTokens, cachedInputTokens
  *   },
  *   success: true,
  *   metadata: {
- *     llmModel: 'gpt-4o',
+ *     modelsUsed: ['gpt-4o'],
  *     language: 'en',
  *     startTime: new Date(),
  *     endTime: new Date()
  *   }
+ * };
  */
-export interface CondensationRunResult extends LLMPipelineResult<{
-  arguments: Array<Argument>;
-}> {
+export interface CondensationRunResult
+  extends LLMPipelineResult<{
+    arguments: Array<Argument>;
+  }> {
   /** The type of condensation run. Common types are likertCons, likertPros, categoricalPros, booleanCons and booleanPros */
   condensationType: CondensationOutputType;
 }

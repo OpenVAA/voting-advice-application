@@ -55,8 +55,8 @@ export async function runSingleCondensation({
   options: CondensationAPIOptions;
   parallelBatches: number;
 }): Promise<CondensationRunResult> {
-  const { llmProvider, llmModel, language, runId, createVisualizationData, prompts } = options;
-  const modelTPMLimit = options.modelTPMLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
+  const { llmProvider, language, runId, createVisualizationData, prompts } = options;
+  const modelTPMLimit = llmProvider.config.modelConfig.tpmLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
   // Get prompts from registry
   // If you are interested in testing different prompts, you can:
   //  - Set your own prompts in src/core/prompts/.../yourPrompt.yaml files with a promptText variable holding your prompts.
@@ -90,14 +90,12 @@ export async function runSingleCondensation({
     question,
     comments,
     options: {
-      llmModel,
       language,
       runId,
       llmProvider,
       processingSteps: steps,
       outputType: condensationType as CondensationOutputType,
       parallelBatches,
-      modelTPMLimit,
       createVisualizationData: createVisualizationData ?? false, // For the linter... set already in handleQuestion
       controller: options.controller
     }

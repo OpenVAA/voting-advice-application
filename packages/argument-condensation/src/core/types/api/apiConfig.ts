@@ -1,5 +1,4 @@
-import type { Controller } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { CommonLLMParams } from '@openvaa/llm-refactor';
 import type { CondensationOutputType } from '../condensation/condensationType';
 
 /**
@@ -31,15 +30,10 @@ export type PromptConfig = {
  * };
  * .
  */
-export type CondensationAPIOptions = {
-  runId: string;
-  llmProvider: LLMProvider;
-  llmModel: string;
+export type CondensationAPIOptions = CommonLLMParams & {
   language: string;
   maxCommentsPerGroup: number;
   createVisualizationData?: boolean;
   invertProsAndCons?: boolean;
-  modelTPMLimit?: number;
   prompts?: PromptConfig;
-  controller?: Controller;
 };
