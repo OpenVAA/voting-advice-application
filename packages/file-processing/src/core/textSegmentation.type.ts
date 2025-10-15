@@ -1,4 +1,4 @@
-import type { CommonLLMParams, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { CommonLLMParams, LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
 
 /**
  * Options for segmenting text into logical chunks using LLM
@@ -20,9 +20,9 @@ export interface SegmentTextOptions extends CommonLLMParams {
 
 /**
  * Metrics specific to text segmentation operations
- * Extends base pipeline metrics with segmentation-specific fields
+ * Extends base llm metrics with segmentation-specific fields
  */
-export interface TextSegmentationMetrics {
+export interface TextSegmentationMetrics extends LLMPipelineMetrics {
   /** Number of segments created */
   segmentCount: number;
   /** Total characters in the input text */

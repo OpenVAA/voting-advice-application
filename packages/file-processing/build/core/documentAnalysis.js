@@ -72,14 +72,16 @@ async function extractMetadata(options) {
  */
 export async function analyzeDocument(options) {
     const startTime = new Date();
-    const { text, segments, llmProvider, runId, sourceId } = options;
+    const { text, segments, llmProvider, runId, documentId, controller } = options;
     // Generate document ID if not provided
-    const finalDocumentId = sourceId || `${crypto.randomUUID()}`;
+    const finalDocumentId = documentId || `${crypto.randomUUID()}`;
     // Extract metadata from the full text
+    controller?.info(`Extracting document metadata using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
     const { metadata, response: metadataResponse } = await extractMetadata({
         text,
         llmProvider,
-        runId
+        runId,
+        controller
     });
     // Analyze segments with LLM
     const prompt = (await loadPrompt({ promptFileName: 'segmentAnalysis' })).prompt;
@@ -102,9 +104,11 @@ export async function analyzeDocument(options) {
         };
     });
     // Process segments in parallel
+    controller?.info(`Analyzing segments using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
     const responses = await llmProvider.generateObjectParallel({
         requests,
-        maxConcurrent: 4
+        maxConcurrent: 4,
+        controller
     });
     const allResponses = [metadataResponse, ...responses];
     // Calculate costs including metadata extraction
@@ -129,12 +133,24 @@ export async function analyzeDocument(options) {
     return {
         runId,
         data: {
-            sourceId: finalDocumentId,
+            documentId: finalDocumentId,
             sourceMetadata: metadata,
             segmentAnalyses,
             metrics: {
                 nSegments: segments.length,
-                nFactsExtracted: factsExtracted
+                nFactsExtracted: factsExtracted,
+                nLlmCalls: allResponses.length,
+                costs: {
+                    total: totalCost,
+                    input: totalInputCost,
+                    output: totalOutputCost
+                },
+                tokens: {
+                    totalTokens,
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens
+                },
+                processingTimeMs
             }
         },
         llmMetrics: {
@@ -154,7 +170,7 @@ export async function analyzeDocument(options) {
         success: true,
         metadata: {
             modelsUsed: Array.from(new Set(allResponses.map((response) => response.model))),
-            language: 'en', // TODO: infer and route the 
+            language: 'en', // TODO: infer and route the
             startTime,
             endTime: new Date()
         }

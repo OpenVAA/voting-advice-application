@@ -21,7 +21,7 @@ import type { ConvertPdfOptions, ConvertPdfResult } from './pdfConversion.type';
  */
 export async function convertPdfToMarkdown(options: ConvertPdfOptions): Promise<ConvertPdfResult> {
   const startTime = new Date();
-  const { pdfBuffer, model = 'gemini-2.5-pro', runId, llmProvider } = options;
+  const { pdfBuffer, model = 'gemini-2.5-pro', runId, llmProvider, controller } = options;
 
   if (!llmProvider) {
     throw new Error('LLMProvider must be provided');
@@ -35,6 +35,8 @@ export async function convertPdfToMarkdown(options: ConvertPdfOptions): Promise<
 
   // TODO: use generateText instead of streaming (llmRefactor should support it)
   // Out of personal interest, find out how streaming vs. waiting for generatedText is different.
+  controller?.info(`Converting PDF to Markdown using ${llmProvider.config.provider}'s ${model}`);
+
   const result = llmProvider.streamText({
     // = streamText<undefined> because no tools are used
     modelConfig: { primary: model },

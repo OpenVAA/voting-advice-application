@@ -54,6 +54,7 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
   const {
     text,
     llmProvider,
+    controller,
     runId,
     minSegmentLength = 500,
     maxSegmentLength = 1000,
@@ -89,9 +90,11 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
     validationRetries: 3
   })) as Array<LLMObjectGenerationOptions<{ segments: Array<string> }>>;
 
+  controller?.info(`Segmenting text using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
   const responses = await llmProvider.generateObjectParallel({
     requests,
-    maxConcurrent: 4
+    maxConcurrent: 4,
+    controller
   });
 
   const segments = responses.map((response) => response.object.segments).flat();
@@ -126,6 +129,18 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
         minSegmentLength: actualMinLength,
         maxSegmentLength: actualMaxLength,
         segmentLengths,
+        nLlmCalls: responses.length,
+        costs: {
+          total: totalCost,
+          input: totalInputCost,
+          output: totalOutputCost
+        },
+        tokens: {
+          totalTokens,
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens
+        },
+        processingTimeMs: new Date().getTime() - startTime.getTime(),
       }
     },
     llmMetrics: {

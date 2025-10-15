@@ -46,7 +46,7 @@ const segmentationSchema = z.object({
  */
 export async function segmentText(options) {
     const startTime = new Date();
-    const { text, llmProvider, runId, minSegmentLength = 500, maxSegmentLength = 1000, charsPerLLMCall = 10000, validateTextPreservation = false // TODO: implement validation and set default to true. It's just such a nested if-else hell.
+    const { text, llmProvider, controller, runId, minSegmentLength = 500, maxSegmentLength = 1000, charsPerLLMCall = 10000, validateTextPreservation = false // TODO: implement validation and set default to true. It's just such a nested if-else hell.
      } = options;
     // Create charsPerLLMCall character parts of the input text to avoid context window issues
     const inputTextParts = [];
@@ -73,9 +73,11 @@ export async function segmentText(options) {
         maxRetries: 3,
         validationRetries: 3
     }));
+    controller?.info(`Segmenting text using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
     const responses = await llmProvider.generateObjectParallel({
         requests,
-        maxConcurrent: 4
+        maxConcurrent: 4,
+        controller
     });
     const segments = responses.map((response) => response.object.segments).flat();
     // Validate text preservation if enabled
@@ -105,6 +107,18 @@ export async function segmentText(options) {
                 minSegmentLength: actualMinLength,
                 maxSegmentLength: actualMaxLength,
                 segmentLengths,
+                nLlmCalls: responses.length,
+                costs: {
+                    total: totalCost,
+                    input: totalInputCost,
+                    output: totalOutputCost
+                },
+                tokens: {
+                    totalTokens,
+                    inputTokens: totalInputTokens,
+                    outputTokens: totalOutputTokens
+                },
+                processingTimeMs: new Date().getTime() - startTime.getTime(),
             }
         },
         llmMetrics: {

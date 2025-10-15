@@ -31,7 +31,8 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation
+    validateTextPreservation,
+    controller
   } = options;
 
   // Step 1: Segment the text
@@ -42,7 +43,8 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation
+    validateTextPreservation,
+    controller
   });
 
   // Step 2: Analyze the document and segments
@@ -51,7 +53,8 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     segments: segmentationResult.data.segments,
     llmProvider,
     runId,
-    sourceId: documentId
+    documentId,
+    controller
   });
 
   // Combine metrics from both stages
@@ -88,7 +91,7 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     runId,
     success: segmentationResult.success && analysisResult.success,
     data: {
-      documentId: analysisResult.data.sourceId,
+      documentId: analysisResult.data.documentId,
       metadata: analysisResult.data.sourceMetadata,
       segmentAnalyses: analysisResult.data.segmentAnalyses,
       processingMetadata
@@ -110,7 +113,8 @@ export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdf
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation
+    validateTextPreservation,
+    controller
   } = options;
 
   const markdown = await convertPdfToMarkdown({
@@ -119,7 +123,8 @@ export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdf
     model,
     originalFileName,
     runId,
-    llmProvider
+    llmProvider,
+    controller
   });
 
   const textResult = await processText({
@@ -130,7 +135,8 @@ export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdf
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation
+    validateTextPreservation,
+    controller
   });
 
   // Combine metrics from all stages

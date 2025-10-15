@@ -21,7 +21,7 @@ import { segmentText } from './core/textSegmentation.js';
  * ```
  */
 export async function processText(options) {
-    const { text, llmProvider, runId, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation } = options;
+    const { text, llmProvider, runId, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation, controller } = options;
     // Step 1: Segment the text
     const segmentationResult = await segmentText({
         text,
@@ -30,7 +30,8 @@ export async function processText(options) {
         minSegmentLength,
         maxSegmentLength,
         charsPerLLMCall,
-        validateTextPreservation
+        validateTextPreservation,
+        controller
     });
     // Step 2: Analyze the document and segments
     const analysisResult = await analyzeDocument({
@@ -38,7 +39,8 @@ export async function processText(options) {
         segments: segmentationResult.data.segments,
         llmProvider,
         runId,
-        sourceId: documentId
+        documentId,
+        controller
     });
     // Combine metrics from both stages
     const processingMetadata = {
@@ -68,7 +70,7 @@ export async function processText(options) {
         runId,
         success: segmentationResult.success && analysisResult.success,
         data: {
-            documentId: analysisResult.data.sourceId,
+            documentId: analysisResult.data.documentId,
             metadata: analysisResult.data.sourceMetadata,
             segmentAnalyses: analysisResult.data.segmentAnalyses,
             processingMetadata
@@ -78,14 +80,15 @@ export async function processText(options) {
     };
 }
 export async function processPdf(options) {
-    const { pdfBuffer, apiKey, model, originalFileName, llmProvider, runId, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation } = options;
+    const { pdfBuffer, apiKey, model, originalFileName, llmProvider, runId, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, validateTextPreservation, controller } = options;
     const markdown = await convertPdfToMarkdown({
         pdfBuffer,
         apiKey,
         model,
         originalFileName,
         runId,
-        llmProvider
+        llmProvider,
+        controller
     });
     const textResult = await processText({
         text: markdown.data.markdown,
@@ -95,7 +98,8 @@ export async function processPdf(options) {
         minSegmentLength,
         maxSegmentLength,
         charsPerLLMCall,
-        validateTextPreservation
+        validateTextPreservation,
+        controller
     });
     // Combine metrics from all stages
     const combinedLlmMetrics = {

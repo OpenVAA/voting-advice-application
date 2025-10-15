@@ -19,6 +19,9 @@ interface BaseFileProcessingResultData {
 }
 export type ProcessTextOptions = SegmentTextOptions;
 export type ProcessTextResult = LLMPipelineResult<BaseFileProcessingResultData>;
+/**
+ * Options for processing a PDF through the complete pipeline to from a fully segmentized and analyzed document.
+ */
 export type ProcessPdfOptions = Omit<ProcessTextOptions, 'text'> & ConvertPdfOptions;
 /**
  * Data payload for the result of processing a PDF through the complete pipeline
