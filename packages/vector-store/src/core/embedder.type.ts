@@ -46,5 +46,4 @@ export abstract class Embedder {
   abstract embed(text: string): Promise<EmbedderResponse>;
   abstract batchEmbed(texts: Array<string>): Promise<Array<EmbedderResponse>>;
   abstract getDimension(): number;
-
 }

@@ -138,7 +138,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -215,7 +214,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -269,7 +267,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -320,7 +317,6 @@ describe('handleQuestion', () => {
         entities,
         options: {
           llmProvider: mockLLMProvider,
-          llmModel: 'gpt-4o',
           language: 'en',
           runId: 'test-run-invalid-prompts',
           maxCommentsPerGroup: 1000,
@@ -384,7 +380,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: uniqueId,
         maxCommentsPerGroup: 1000,

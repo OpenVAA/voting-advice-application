@@ -39,7 +39,7 @@ export async function isRAGRequired({
   provider,
   modelConfig
 }: {
-  messages: Array<string>;
+  messages: parentSourceId<string>;
   provider: LLMProvider;
   modelConfig: LLMModelConfig;
 }): Promise<boolean> {

@@ -1,10 +1,8 @@
-import { convertPdfToMarkdown, processDocument } from '@openvaa/file-processing';
+import { processPdf } from '@openvaa/file-processing';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { DocumentProcessingResult } from '@openvaa/file-processing';
-import type { SegmentWithAnalysis } from '../core/types';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
@@ -12,105 +10,11 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 // Directories
 const UNPROCESSED_DIR = path.join(__dirname, '../docs/step0_unprocessed');
 const OUTPUT_DIR = path.join(__dirname, '../docs/step3_ready');
+const SEGMENTED_TEXT_JOINED = path.join(__dirname, '../docs/NEW_segmentedTexts');
 
-/** Old format expected by vector store */
-interface VectorStoreDocument {
-  fullDocument: {
-    id: string;
-    content: string;
-    metadata: {
-      title?: string;
-      source?: string;
-      authors?: Array<string>;
-      publishedDate?: string;
-      locale?: string;
-    };
-  };
-  segments: Array<{
-    id: string;
-    parentDocId: string;
-    segmentIndex: number;
-    content: string;
-    metadata: {
-      title?: string;
-      source?: string;
-      authors?: Array<string>;
-      publishedDate?: string;
-      locale?: string;
-    };
-  }>;
-  summaries: Array<{
-    id: string;
-    parentDocId: string;
-    segmentIndex: number;
-    content: string;
-  }>;
-  facts: Array<{
-    id: string;
-    parentDocId: string;
-    segmentIndex: number;
-    content: string;
-  }>;
-}
-
-/**
- * Transform the file-processing API result to the vector store format
- */
-function transformToVectorStoreFormat(result: DocumentProcessingResult, markdownContent: string): VectorStoreDocument {
-  const { documentId, metadata, segmentAnalyses } = result;
-
-  // Build the full document
-  const fullDocument = {
-    id: documentId,
-    content: markdownContent,
-    metadata
-  };
-
-  // Build segments array
-  const segments = segmentAnalyses.map((analysis: SegmentWithAnalysis) => ({
-    id: analysis.id,
-    parentDocId: analysis.parentDocId,
-    segmentIndex: analysis.segmentIndex,
-    content: analysis.segment,
-    metadata
-  }));
-
-  // Build summaries array
-  const summaries = segmentAnalyses.map((analysis: SegmentWithAnalysis) => ({
-    id: `${analysis.id}_summary`,
-    parentDocId: analysis.parentDocId,
-    segmentIndex: analysis.segmentIndex,
-    content: analysis.summary
-  }));
-
-  // Build facts array from standaloneFacts
-  const facts: Array<{
-    id: string;
-    parentDocId: string;
-    segmentIndex: number;
-    content: string;
-  }> = [];
-
-  segmentAnalyses.forEach((analysis: SegmentWithAnalysis) => {
-    if (analysis.standaloneFacts && analysis.standaloneFacts.length > 0) {
-      analysis.standaloneFacts.forEach((fact, factIndex) => {
-        facts.push({
-          id: `${analysis.id}_fact_${factIndex}`,
-          parentDocId: analysis.parentDocId,
-          segmentIndex: analysis.segmentIndex,
-          content: fact
-        });
-      });
-    }
-  });
-
-  return {
-    fullDocument,
-    segments,
-    summaries,
-    facts
-  };
-}
+// --------------------------------------------------------------
+// HELPERS
+// --------------------------------------------------------------
 
 /**
  * Find all PDF files in subdirectories
@@ -155,176 +59,114 @@ function findPDFs(dir: string): Array<{ path: string; subdirectory: string; file
 }
 
 /**
- * Process a single PDF: convert to markdown, segment, and analyze
+ * Save segments to a readable text file with double line separations
  */
-async function processPDF(
-  pdfPath: string,
-  filename: string,
-  llmProvider: LLMProvider,
-  modelConfig: { primary: string }
-): Promise<VectorStoreDocument | null> {
-  try {
-    console.info(`\n[1/3] Converting PDF to Markdown: ${filename}`);
+function saveSegmentsToFile(
+  segments: Array<{ segment: string; segmentIndex: number; summary?: string }>,
+  outputPath: string
+): void {
+  const content = segments
+    .map((seg) => {
+      const header = `=== SEGMENT ${seg.segmentIndex + 1} ===`;
+      const summarySection = seg.summary ? `\n[Summary: ${seg.summary}]\n` : '';
+      return `${header}${summarySection}\n${seg.segment}`;
+    })
+    .join('\n\n\n'); // Two line separations between segments
 
-    // Step 1: Convert PDF to Markdown
-    const pdfBuffer = fs.readFileSync(pdfPath);
-    const pdfResult = await convertPdfToMarkdown({
-      pdfBuffer,
-      apiKey: process.env.LLM_GEMINI_API_KEY || '',
-      model: 'gemini-2.0-flash-exp',
-      originalFileName: filename
-    });
-
-    const markdownContent = pdfResult.markdown;
-    console.info(`  ✓ Converted to markdown (${markdownContent.length} chars)`);
-    console.info(`  ✓ Cost: $${pdfResult.metadata.costs.total.toFixed(4)}`);
-
-    // Step 2: Process document (segment and analyze)
-    console.info('[2/3] Segmenting and analyzing document...');
-    const baseName = path.basename(filename, '.pdf');
-    const documentId = `${baseName}_${crypto.randomUUID()}`;
-
-    const analysisResult = await processDocument({
-      text: markdownContent,
-      llmProvider,
-      modelConfig,
-      documentId,
-      validateTextPreservation: true
-    });
-
-    console.info(`  ✓ Created ${analysisResult.processingMetadata.segmentsAnalyzed} segments`);
-    console.info(`  ✓ Generated ${analysisResult.processingMetadata.summariesGenerated} summaries`);
-    console.info(`  ✓ Extracted ${analysisResult.processingMetadata.factsExtracted} facts`);
-    console.info(`  ✓ Cost: $${analysisResult.processingMetadata.costs.total.toFixed(4)}`);
-    console.info(`  ✓ Processing time: ${(analysisResult.processingMetadata.processingTimeMs / 1000).toFixed(2)}s`);
-
-    // Step 3: Transform to vector store format
-    console.info('[3/3] Transforming to vector store format...');
-    const vectorStoreDocument = transformToVectorStoreFormat(analysisResult, markdownContent);
-    console.info('  ✓ Transformation complete');
-
-    const totalCost = pdfResult.metadata.costs.total + analysisResult.processingMetadata.costs.total;
-    console.info(`\n✓ Successfully processed: ${filename}`);
-    console.info(`  Total cost: $${totalCost.toFixed(4)}`);
-
-    return vectorStoreDocument;
-  } catch (error) {
-    console.error(`✗ Error processing ${filename}:`, error);
-    return null;
-  }
+  fs.writeFileSync(outputPath, content, 'utf-8');
+  console.info(`  ✓ Saved readable segments to: ${outputPath}`);
 }
 
-/**
- * Main function
- */
+// --------------------------------------------------------------
+// MAIN PROCESSING
+// --------------------------------------------------------------
+
 async function main() {
-  const startTime = performance.now();
+  console.info('🚀 Starting PDF Processing Pipeline\n');
 
-  console.info('═══════════════════════════════════════');
-  console.info('PDF Processing Pipeline');
-  console.info('Using @openvaa/file-processing API');
-  console.info('═══════════════════════════════════════\n');
-
-  // Check for API key
-  if (!process.env.LLM_GEMINI_API_KEY) {
-    console.error('Error: LLM_GEMINI_API_KEY environment variable not set!');
-    console.error('Please add LLM_GEMINI_API_KEY to your .env file');
-    process.exit(1);
-  }
-
-  // Ensure output directory exists
+  // Ensure output directories exist
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    console.info(`✓ Created output directory: ${OUTPUT_DIR}\n`);
+  }
+  if (!fs.existsSync(SEGMENTED_TEXT_JOINED)) {
+    fs.mkdirSync(SEGMENTED_TEXT_JOINED, { recursive: true });
   }
 
   // Initialize LLM Provider
   const llmProvider = new LLMProvider({
     provider: 'google',
-    apiKey: process.env.LLM_GEMINI_API_KEY || '',
-    modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' }
+    apiKey: process.env.LLM_GEMINI_API_KEY!,
+    modelConfig: {
+      primary: 'gemini-2.5-flash-preview-09-2025'
+    }
   });
 
-  const modelConfig = { primary: 'gemini-2.5-flash-preview-09-2025' };
+  // Find all PDFs
+  const pdfs = findPDFs(UNPROCESSED_DIR);
+  console.info(`📄 Found ${pdfs.length} PDF(s) to process\n`);
 
-  // Find all PDF files
-  console.info(`Searching for PDFs in: ${UNPROCESSED_DIR}\n`);
-  const pdfFiles = findPDFs(UNPROCESSED_DIR);
-
-  if (pdfFiles.length === 0) {
-    console.info('No PDF files found.');
+  if (pdfs.length === 0) {
+    console.info('No PDFs found. Exiting.');
     return;
   }
 
-  console.info(`Found ${pdfFiles.length} PDF file(s):`);
-  pdfFiles.forEach(({ filename, subdirectory }) => {
-    console.info(`  - ${subdirectory}/${filename}`);
-  });
-  console.info('');
-
   // Process each PDF
-  let successCount = 0;
-  let failureCount = 0;
-  let totalCost = 0;
-  let totalSegments = 0;
-  let totalFacts = 0;
+  for (let i = 0; i < pdfs.length; i++) {
+    const pdf = pdfs[i];
+    console.info(`\n[${i + 1}/${pdfs.length}] Processing: ${pdf.filename}`);
+    console.info(`  Subdirectory: ${pdf.subdirectory}`);
 
-  for (let i = 0; i < pdfFiles.length; i++) {
-    const { path: pdfPath, filename } = pdfFiles[i];
-    console.info(`\n${'='.repeat(60)}`);
-    console.info(`Processing [${i + 1}/${pdfFiles.length}]: ${filename}`);
-    console.info('='.repeat(60));
+    try {
+      // Read PDF file
+      const pdfBuffer = fs.readFileSync(pdf.path);
 
-    const result = await processPDF(pdfPath, filename, llmProvider, modelConfig);
+      // Process the PDF through the complete pipeline
+      const result = await processPdf({
+        pdfBuffer,
+        apiKey: process.env.GEMINI_API_KEY,
+        model: 'gemini-2.5-pro',
+        originalFileName: pdf.filename,
+        llmProvider,
+        documentId: `${pdf.subdirectory}_${path.parse(pdf.filename).name}`,
+        runId: `pipeline_${Date.now()}`
+      });
 
-    if (result) {
-      successCount++;
+      if (!result.success) {
+        console.error(`  ✗ Failed to process ${pdf.filename}`);
+        continue;
+      }
 
-      // Save to output directory
-      const outputFileName = `${path.basename(filename, '.pdf')}.json`;
-      const outputPath = path.join(OUTPUT_DIR, outputFileName);
-      fs.writeFileSync(outputPath, JSON.stringify(result, null, 2), 'utf-8');
-      console.info(`  Saved to: ${outputFileName}`);
+      // Generate output filenames
+      const baseFilename = path.parse(pdf.filename).name;
+      const subdir = pdf.subdirectory === 'root' ? '' : `${pdf.subdirectory}_`;
 
-      // Update statistics
-      totalSegments += result.segments.length;
-      totalFacts += result.facts.length;
-    } else {
-      failureCount++;
-    }
+      // Save readable segments
+      const segmentsPath = path.join(SEGMENTED_TEXT_JOINED, `${subdir}${baseFilename}_segments.txt`);
+      saveSegmentsToFile(result.data.segmentAnalyses, segmentsPath);
 
-    // Small delay to avoid rate limiting
-    if (i < pdfFiles.length - 1) {
-      console.info('\nWaiting 2s before next file...');
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Save complete JSON result
+      const jsonPath = path.join(OUTPUT_DIR, `${subdir}${baseFilename}_processed.json`);
+      fs.writeFileSync(jsonPath, JSON.stringify(result, null, 2), 'utf-8');
+      console.info(`  ✓ Saved full result to: ${jsonPath}`);
+
+      // Print processing stats
+      console.info('\n  📊 Processing Stats:');
+      console.info(`    - Segments: ${result.data.segmentAnalyses.length}`);
+      console.info(`    - Total cost: $${result.llmMetrics.costs.total.toFixed(4)}`);
+      console.info(`    - Processing time: ${(result.llmMetrics.processingTimeMs / 1000).toFixed(2)}s`);
+      console.info(`    - LLM calls: ${result.llmMetrics.nLlmCalls}`);
+      console.info(`    - Total tokens: ${result.llmMetrics.tokens.totalTokens}`);
+    } catch (error) {
+      console.error(`  ✗ Error processing ${pdf.filename}:`, error);
+      continue;
     }
   }
 
-  // Get total cost from LLM provider
-  totalCost = llmProvider.cumulativeCosts;
-
-  // Summary
-  const totalTime = performance.now() - startTime;
-  console.info('\n' + '═'.repeat(60));
-  console.info('Processing Complete');
-  console.info('═'.repeat(60));
-  console.info(`Total PDFs: ${pdfFiles.length}`);
-  console.info(`Successful: ${successCount}`);
-  console.info(`Failed: ${failureCount}`);
-  console.info(`Total segments: ${totalSegments}`);
-  console.info(`Total facts extracted: ${totalFacts}`);
-  console.info(`Total cost: $${totalCost.toFixed(4)}`);
-  if (successCount > 0) {
-    console.info(`Average cost per PDF: $${(totalCost / successCount).toFixed(4)}`);
-    console.info(`Average time per PDF: ${(totalTime / successCount / 1000).toFixed(2)}s`);
-  }
-  console.info(`Total time: ${(totalTime / 1000 / 60).toFixed(2)} minutes`);
-  console.info(`\nResults saved to: ${OUTPUT_DIR}`);
-  console.info('═'.repeat(60));
+  console.info('\n✅ Pipeline complete!');
 }
 
-// Run the script
+// Run the pipeline
 main().catch((error) => {
-  console.error('\n✗ Fatal error:', error);
+  console.error('Fatal error:', error);
   process.exit(1);
 });

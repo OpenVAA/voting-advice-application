@@ -1,4 +1,4 @@
-import type { TextAnalysisOptions, TextAnalysisResult } from './documentAnalysis.type.js';
+import type { AnalyzeSourceOptions, AnalyzeSourceResult } from './documentAnalysis.type.js';
 /**
  * Analyze a document by extracting metadata and analyzing each segment
  *
@@ -17,5 +17,5 @@ import type { TextAnalysisOptions, TextAnalysisResult } from './documentAnalysis
  * console.log(result.segmentAnalyses);
  * ```
  */
-export declare function analyzeDocument(options: TextAnalysisOptions): Promise<TextAnalysisResult>;
+export declare function analyzeDocument(options: AnalyzeSourceOptions): Promise<AnalyzeSourceResult>;
 //# sourceMappingURL=documentAnalysis.d.ts.map

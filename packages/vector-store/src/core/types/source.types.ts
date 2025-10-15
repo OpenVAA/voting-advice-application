@@ -1,7 +1,7 @@
 import type { Id } from '@openvaa/core';
 
-/** INTERNAL TYPE FOR PROCESSING. Data is separated into segments, summaries, and facts objects for embedding 
- * 
+/** INTERNAL TYPE FOR PROCESSING. Data is separated into segments, summaries, and facts objects for embedding
+ *
  * @example
  * ```typescript
  * const segmentWithAnalysis: SegmentWithAnalysis = {
@@ -19,7 +19,7 @@ import type { Id } from '@openvaa/core';
  *   metadata: {'there': 'actually is metadata for these objects but i am just a placeholder!'}
  * }
  * ```
-*/
+ */
 export interface SegmentWithAnalysis {
   id: Id;
   parentDocId: string; // FK

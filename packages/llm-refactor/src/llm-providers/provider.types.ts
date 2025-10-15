@@ -45,11 +45,11 @@ export interface LLMCallMetadata {
 
 export type LLMObjectGenerationOptions<TType> = Prompt &
   Omit<CallSettings, 'stopSequences'> & {
-    modelConfig: LLMModelConfig;
     schema: z.ZodSchema<TType>; // Support only Zod schemas for now
     /** Validation retries are not internally handled by the Vercel AI SDK, so we need to handle it here. Defaults to 1. */
     validationRetries?: number;
     controller?: Controller;
+    modelConfig?: LLMModelConfig;
   };
 
 export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMCallMetadata;

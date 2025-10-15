@@ -1,7 +1,8 @@
-import { LLMProvider } from '@openvaa/llm-refactor';
 import { loadPrompt } from '../utils/promptLoader';
-import type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.type';
+import type { ModelMessage } from 'ai';
+import type { ConvertPdfOptions, ConvertPdfResult } from './pdfConversion.type';
 
+// TODO: use controller to track progress
 /**
  * Convert a PDF buffer to Markdown using Gemini 2.5 Pro
  *
@@ -18,27 +19,24 @@ import type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.typ
  * console.log(result.markdown);
  * ```
  */
-export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promise<PdfProcessorResult> {
-  const { pdfBuffer, apiKey, model = 'gemini-2.0-flash-exp', originalFileName } = options;
+export async function convertPdfToMarkdown(options: ConvertPdfOptions): Promise<ConvertPdfResult> {
+  const startTime = new Date();
+  const { pdfBuffer, model = 'gemini-2.5-pro', runId, llmProvider } = options;
+
+  if (!llmProvider) {
+    throw new Error('LLMProvider must be provided');
+  }
 
   // Load the prompt from YAML
   const promptData = await loadPrompt({ promptFileName: 'pdfToMarkdown' });
-
-  // Initialize LLM provider with Google
-  const llm = new LLMProvider({
-    provider: 'google',
-    apiKey: apiKey || '',
-    modelConfig: {
-      primary: model
-    }
-  });
 
   // Convert buffer to base64
   const base64Data = pdfBuffer.toString('base64');
 
   // TODO: use generateText instead of streaming (llmRefactor should support it)
   // Out of personal interest, find out how streaming vs. waiting for generatedText is different.
-  const result = llm.streamText({ // = streamText<undefined> because no tools are used
+  const result = llmProvider.streamText({
+    // = streamText<undefined> because no tools are used
     modelConfig: { primary: model },
     messages: [
       {
@@ -52,7 +50,7 @@ export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promis
           }
         ]
       }
-    ]
+    ] as Array<ModelMessage>
   });
 
   // Get the complete text from the stream
@@ -64,18 +62,33 @@ export async function convertPdfToMarkdown(options: PdfProcessorOptions): Promis
 
   // Get costs after stream completes
   const costs = await result.costs;
+  const tokens = await result.usage;
 
   return {
-    markdown: markdownContent.trim(),
-    metadata: {
-      originalFileName,
-      processingTimestamp: new Date().toISOString(),
-      modelUsed: model,
+    runId,
+    data: {
+      markdown: markdownContent.trim()
+    },
+    llmMetrics: {
+      processingTimeMs: new Date().getTime() - startTime.getTime(),
+      nLlmCalls: 1,
       costs: {
         input: costs.input,
         output: costs.output,
         total: costs.total
+      },
+      tokens: {
+        inputTokens: tokens.inputTokens,
+        outputTokens: tokens.outputTokens,
+        totalTokens: tokens.totalTokens
       }
+    },
+    success: true,
+    metadata: {
+      modelsUsed: [model],
+      language: 'en',
+      startTime,
+      endTime: new Date()
     }
   };
 }

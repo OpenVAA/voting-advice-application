@@ -1,23 +1,37 @@
-import type { LLMModelConfig, LLMProvider } from '@openvaa/llm-refactor';
-import type { TextAnalysisResult } from './core/documentAnalysis.type.js';
-export interface DocumentProcessingOptions {
-    /** The document content (markdown/text) */
-    text: string;
-    /** LLM provider instance */
-    llmProvider: LLMProvider;
-    /** Model configuration */
-    modelConfig: LLMModelConfig;
-    /** Optional: Document ID */
-    documentId?: string;
-    /** Optional: Validate text preservation during segmentation (TODO: implement) */
-    validateTextPreservation?: boolean;
-    /** Optional: Minimum segment length */
-    minSegmentLength?: number;
-    /** Optional: Maximum segment length */
-    maxSegmentLength?: number;
-    /** Optional: Chars per LLM call */
-    charsPerLLMCall?: number;
+import type { LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { SegmentWithAnalysis, SourceAnalysisMetrics, SourceMetadata } from './core/documentAnalysis.type.js';
+import type { ConvertPdfOptions } from './core/pdfConversion.type.js';
+import type { SegmentTextOptions, TextSegmentationMetrics } from './core/textSegmentation.type.js';
+interface BaseFileProcessingResultData {
+    /** Generated or provided document ID */
+    documentId: string;
+    /** Extracted document metadata */
+    metadata: SourceMetadata;
+    /** Analysis results for each segment */
+    segmentAnalyses: Array<SegmentWithAnalysis>;
+    /** Processing metadata extending multi-stage pipeline metrics */
+    processingMetadata: {
+        /** Segmentation stage metadata */
+        segmentation: TextSegmentationMetrics;
+        /** Analysis stage metadata */
+        analysis: SourceAnalysisMetrics;
+    };
 }
-/** Result type is the same as DocumentAnalysisResult */
-export type DocumentProcessingResult = TextAnalysisResult;
+export type ProcessTextOptions = SegmentTextOptions;
+export type ProcessTextResult = LLMPipelineResult<BaseFileProcessingResultData>;
+export type ProcessPdfOptions = Omit<ProcessTextOptions, 'text'> & ConvertPdfOptions;
+/**
+ * Data payload for the result of processing a PDF through the complete pipeline
+ */
+export interface ProcessPdfResultData extends BaseFileProcessingResultData {
+    /** The extracted markdown text from the PDF */
+    extractedText: string;
+    /** Processing metadata with PDF conversion stage */
+    processingMetadata: BaseFileProcessingResultData['processingMetadata'] & {
+        /** PDF conversion stage metadata */
+        pdfConversion: LLMPipelineMetrics;
+    };
+}
+export type ProcessPdfResult = LLMPipelineResult<ProcessPdfResultData>;
+export {};
 //# sourceMappingURL=api.type.d.ts.map

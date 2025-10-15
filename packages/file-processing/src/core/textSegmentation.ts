@@ -2,7 +2,9 @@ import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
 import { isTextPreserved, loadPrompt } from '../utils';
 import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
-import type { SegmentationOptions, SegmentationResult } from './textSegmentation.type';
+import type { SegmentTextOptions, SegmentTextResult } from './textSegmentation.type';
+
+// TODO: use controller to track progress
 
 const segmentationSchema = z.object({
   segments: z.array(z.string())
@@ -25,7 +27,7 @@ const segmentationSchema = z.object({
  *   charsPerLLMCall: 10000,
  *   validateTextPreservation: false
  * });
- * 
+ *
  * const printResult = {
  *   segments: [
  *     'Segment 1',
@@ -47,11 +49,12 @@ const segmentationSchema = z.object({
  * }
  * ```
  */
-export async function segmentText(options: SegmentationOptions): Promise<SegmentationResult> {
+export async function segmentText(options: SegmentTextOptions): Promise<SegmentTextResult> {
+  const startTime = new Date();
   const {
     text,
     llmProvider,
-    modelConfig,
+    runId,
     minSegmentLength = 500,
     maxSegmentLength = 1000,
     charsPerLLMCall = 10000,
@@ -80,7 +83,6 @@ export async function segmentText(options: SegmentationOptions): Promise<Segment
         })
       }
     ],
-    modelConfig,
     schema: segmentationSchema,
     temperature: 0.7,
     maxRetries: 3,
@@ -95,30 +97,57 @@ export async function segmentText(options: SegmentationOptions): Promise<Segment
   const segments = responses.map((response) => response.object.segments).flat();
 
   // Validate text preservation if enabled
-  if (validateTextPreservation && !isTextPreserved()) { // add params to isTextPreserved, if you actually implement the text preservation validation
+  if (validateTextPreservation && !isTextPreserved()) {
+    // add params to isTextPreserved, if you actually implement the text preservation validation
     console.info('Text preservation validation failed');
   }
 
   // Calculate costs
-  const totalCost = responses.map((response) => response.costs.total).reduce((sum, cost) => sum + cost, 0);
+  const totalCost = responses.reduce((sum, response) => sum + response.costs.total, 0);
+  const totalInputCost = responses.reduce((sum, response) => sum + response.costs.input, 0);
+  const totalOutputCost = responses.reduce((sum, response) => sum + response.costs.output, 0);
 
   // Calculate actual segment lengths
   const segmentLengths = segments.map((s) => s.length);
   const actualMinLength = Math.min(...segmentLengths);
   const actualMaxLength = Math.max(...segmentLengths);
+  const totalTokens = responses.reduce((sum, response) => sum + (response?.usage?.totalTokens || 0), 0);
+  const totalInputTokens = responses.reduce((sum, response) => sum + (response?.usage?.inputTokens || 0), 0);
+  const totalOutputTokens = responses.reduce((sum, response) => sum + (response?.usage?.outputTokens || 0), 0);
 
   return {
-    segments,
-    metadata: {
-      segmentCount: segments.length,
-      totalCharacters: text.length,
-      averageSegmentLength: segments.reduce((sum, s) => sum + s.length, 0) / segments.length,
-      minSegmentLength: actualMinLength,
-      maxSegmentLength: actualMaxLength,
+    runId,
+    data: {
+      segments,
+      metrics: {
+        segmentCount: segments.length,
+        totalCharacters: text.length,
+        averageSegmentLength: segments.reduce((sum, s) => sum + s.length, 0) / segments.length,
+        minSegmentLength: actualMinLength,
+        maxSegmentLength: actualMaxLength,
+        segmentLengths,
+      }
+    },
+    llmMetrics: {
+      processingTimeMs: new Date().getTime() - startTime.getTime(),
+      nLlmCalls: responses.length,
       costs: {
         total: totalCost,
-        currency: 'USD'
+        input: totalInputCost,
+        output: totalOutputCost
+      },
+      tokens: {
+        totalTokens,
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens
       }
+    },
+    success: true,
+    metadata: {
+      modelsUsed: Array.from(new Set(responses.map((response) => response.model))),
+      language: 'en', // TODO: infer and route the 
+      startTime,
+      endTime: new Date()
     }
   };
 }

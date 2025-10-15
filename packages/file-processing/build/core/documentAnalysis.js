@@ -1,6 +1,7 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
 import { loadPrompt } from '../utils/promptLoader.js';
+// TODO: use controller to track progress
 const metadataExtractionSchema = z.object({
     title: z.string().optional(),
     source: z.string().optional(),
@@ -28,10 +29,10 @@ const segmentAnalysisSchema = z.object({
  * ```
  */
 async function extractMetadata(options) {
-    const { fullText, llmProvider, modelConfig } = options;
+    const { text, llmProvider } = options;
     // Get the first and last 500 characters of the input text
-    const first500 = fullText.slice(0, 500);
-    const last500 = fullText.slice(-500);
+    const first500 = text.slice(0, 500);
+    const last500 = text.slice(-500);
     const prompt = (await loadPrompt({ promptFileName: 'metadataExtraction' })).prompt;
     const messages = [
         {
@@ -41,7 +42,6 @@ async function extractMetadata(options) {
     ];
     const response = await llmProvider.generateObject({
         messages,
-        modelConfig,
         schema: metadataExtractionSchema,
         temperature: 0.7,
         maxRetries: 3,
@@ -71,19 +71,19 @@ async function extractMetadata(options) {
  * ```
  */
 export async function analyzeDocument(options) {
-    const startTime = performance.now();
-    const { fullText, segments, llmProvider, modelConfig, documentId } = options;
+    const startTime = new Date();
+    const { text, segments, llmProvider, runId, sourceId } = options;
     // Generate document ID if not provided
-    const finalDocumentId = documentId || `${crypto.randomUUID()}`;
+    const finalDocumentId = sourceId || `${crypto.randomUUID()}`;
     // Extract metadata from the full text
     const { metadata, response: metadataResponse } = await extractMetadata({
-        fullText,
+        text,
         llmProvider,
-        modelConfig
+        runId
     });
     // Analyze segments with LLM
     const prompt = (await loadPrompt({ promptFileName: 'segmentAnalysis' })).prompt;
-    const requests = segments.map((segment, index) => {
+    const requests = segments.map((_, index) => {
         const segmentWithContext = createSegmentWithContext({
             segments,
             index
@@ -95,7 +95,6 @@ export async function analyzeDocument(options) {
                     content: setPromptVars({ promptText: prompt, variables: { segmentWithContext } })
                 }
             ],
-            modelConfig,
             schema: segmentAnalysisSchema,
             temperature: 0.7,
             maxRetries: 3,
@@ -107,10 +106,11 @@ export async function analyzeDocument(options) {
         requests,
         maxConcurrent: 4
     });
+    const allResponses = [metadataResponse, ...responses];
     // Calculate costs including metadata extraction
-    const metadataCost = metadataResponse.costs.total;
-    const segmentCosts = responses.map((response) => response.costs.total).reduce((sum, cost) => sum + cost, 0);
-    const totalCost = metadataCost + segmentCosts;
+    const totalCost = allResponses.reduce((sum, response) => sum + response.costs.total, 0);
+    const totalInputCost = allResponses.reduce((sum, response) => sum + response.costs.input, 0);
+    const totalOutputCost = allResponses.reduce((sum, response) => sum + response.costs.output, 0);
     // Map responses to segment analyses
     const segmentAnalyses = responses.map((response, index) => ({
         parentDocId: finalDocumentId,
@@ -122,22 +122,42 @@ export async function analyzeDocument(options) {
     }));
     // Calculate stats
     const factsExtracted = segmentAnalyses.reduce((sum, seg) => sum + (seg.standaloneFacts?.length || 0), 0);
-    const processingTimeMs = performance.now() - startTime;
+    const processingTimeMs = new Date().getTime() - startTime.getTime();
+    const totalTokens = allResponses.reduce((sum, response) => sum + (response.usage.totalTokens || 0), 0);
+    const totalInputTokens = allResponses.reduce((sum, response) => sum + (response.usage.inputTokens || 0), 0);
+    const totalOutputTokens = allResponses.reduce((sum, response) => sum + (response.usage.outputTokens || 0), 0);
     return {
-        documentId: finalDocumentId,
-        metadata,
-        processingMetadata: {
-            nSegments: segments.length,
-            nSummaries: segmentAnalyses.length,
-            nFactsExtracted: factsExtracted,
+        runId,
+        data: {
+            sourceId: finalDocumentId,
+            sourceMetadata: metadata,
+            segmentAnalyses,
+            metrics: {
+                nSegments: segments.length,
+                nFactsExtracted: factsExtracted
+            }
+        },
+        llmMetrics: {
+            processingTimeMs,
+            nLlmCalls: allResponses.length,
             costs: {
                 total: totalCost,
-                perSegmentAverage: totalCost / segments.length,
-                currency: 'USD'
+                input: totalInputCost,
+                output: totalOutputCost
             },
-            processingTimeMs
+            tokens: {
+                totalTokens,
+                inputTokens: totalInputTokens,
+                outputTokens: totalOutputTokens
+            }
         },
-        segmentAnalyses
+        success: true,
+        metadata: {
+            modelsUsed: Array.from(new Set(allResponses.map((response) => response.model))),
+            language: 'en', // TODO: infer and route the 
+            startTime,
+            endTime: new Date()
+        }
     };
 }
 /**

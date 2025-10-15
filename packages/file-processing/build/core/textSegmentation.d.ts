@@ -1,4 +1,4 @@
-import type { SegmentationOptions, SegmentationResult } from './textSegmentation.type.js';
+import type { SegmentTextOptions, SegmentTextResult } from './textSegmentation.type.js';
 /**
  * Segment text into logical chunks using LLM
  *
@@ -38,5 +38,5 @@ import type { SegmentationOptions, SegmentationResult } from './textSegmentation
  * }
  * ```
  */
-export declare function segmentText(options: SegmentationOptions): Promise<SegmentationResult>;
+export declare function segmentText(options: SegmentTextOptions): Promise<SegmentTextResult>;
 //# sourceMappingURL=textSegmentation.d.ts.map

@@ -15,11 +15,10 @@ import type {
 // TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
 // Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
 
-
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
   private provider: Provider;
-  private config: ProviderConfig;
+  public config: ProviderConfig;
   public cumulativeCosts: number = 0;
 
   constructor(config: ProviderConfig) {
@@ -63,7 +62,7 @@ export class LLMProvider {
       try {
         // Check if an abort has been requested. Throws AbortError if so.
         options.controller?.checkAbort();
-        const model = options.modelConfig.primary; // TODO: add fallback selection
+        const model = options.modelConfig?.primary ?? this.config.modelConfig.primary; // TODO: add fallback selection & osv.
 
         // Generation call which throws on validation failures
         const result = await generateObject({
@@ -74,7 +73,7 @@ export class LLMProvider {
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
 
-        const costs = this.calculateCosts(options.modelConfig.primary, result.usage);
+        const costs = this.calculateCosts(model, result.usage);
         this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
         return {
@@ -189,7 +188,7 @@ export class LLMProvider {
 
     // Calculate costs asynchronously without blocking the return.
     const costs = result.usage.then((usage) => this.calculateCosts(options.modelConfig?.primary ?? '', usage));
-    costs.then((costs) => this.cumulativeCosts += costs.total);
+    costs.then((costs) => (this.cumulativeCosts += costs.total));
 
     const enhancedResult = Object.assign(result, {
       latencyMs: performance.now() - startTime,

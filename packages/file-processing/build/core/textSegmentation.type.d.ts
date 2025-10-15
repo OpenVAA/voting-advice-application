@@ -1,56 +1,50 @@
-import type { LLMModelConfig, LLMProvider } from '@openvaa/llm-refactor';
-export interface SegmentationOptions {
+import type { CommonLLMParams, LLMPipelineResult } from '@openvaa/llm-refactor';
+/**
+ * Options for segmenting text into logical chunks using LLM
+ */
+export interface SegmentTextOptions extends CommonLLMParams {
     /** The text to segment */
     text: string;
-    /** LLM provider instance for making API calls */
-    llmProvider: LLMProvider;
-    /** Model configuration */
-    modelConfig: LLMModelConfig;
-    /** To prevent context window issues, we need to split the text. */
+    /** Optional: Document ID */
+    documentId?: string;
+    /** To prevent context window issues, we split text into chunks of this size */
     charsPerLLMCall?: number;
-    /** Guidance length min */
+    /** Guidance for minimum segment length */
     minSegmentLength?: number;
-    /** Guidance length max */
+    /** Guidance for maximum segment length */
     maxSegmentLength?: number;
     /** Optional: Validate text preservation (default: true) */
     validateTextPreservation?: boolean;
 }
-/** @example
- * ```typescript
- * {
- *   segments: [
- *     'Segment 1',
- *     'Segment 2',
- *     'Segment 3',
- *   ],
- * }
- * metadata: {
- *   segmentCount: 3,
- *   totalCharacters: 1000,
- *   averageSegmentLength: 333.33,
- *   minSegmentLength: 300,
- *   maxSegmentLength: 2500,
- *   costs: {
- *     total: 100,
- *     currency: 'USD'
- *   }
- * }
- * ```
+/**
+ * Metrics specific to text segmentation operations
+ * Extends base pipeline metrics with segmentation-specific fields
  */
-export interface SegmentationResult {
+export interface TextSegmentationMetrics {
+    /** Number of segments created */
+    segmentCount: number;
+    /** Total characters in the input text */
+    totalCharacters: number;
+    /** Minimum segment length achieved */
+    minSegmentLength: number;
+    /** Maximum segment length achieved */
+    maxSegmentLength: number;
+    /** Average segment length */
+    averageSegmentLength: number;
+    /** Array of individual segment lengths for detailed analysis */
+    segmentLengths: Array<number>;
+}
+/**
+ * Data payload for text segmentation result
+ */
+export interface SegmentTextData {
     /** Array of text segments */
     segments: Array<string>;
-    /** Segmentation metadata */
-    metadata: {
-        segmentCount: number;
-        totalCharacters: number;
-        averageSegmentLength: number;
-        minSegmentLength: number;
-        maxSegmentLength: number;
-        costs: {
-            total: number;
-            currency: 'USD';
-        };
-    };
+    /** Segmentation metadata and metrics */
+    metrics: TextSegmentationMetrics;
 }
+/**
+ * Result from text segmentation
+ */
+export type SegmentTextResult = LLMPipelineResult<SegmentTextData>;
 //# sourceMappingURL=textSegmentation.type.d.ts.map

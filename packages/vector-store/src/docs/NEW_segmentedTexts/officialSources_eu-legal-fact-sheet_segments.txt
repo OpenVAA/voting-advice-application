@@ -1,0 +1,595 @@
+=== SEGMENT 1 ===
+[Summary: This document, published by the European Parliament and completed in June 2018, is a compilation of Fact Sheets focusing on "The EU legal system and decision-making procedures." It covers major topics including the sources and scope of EU law, the principle of subsidiarity, and various decision-making processes (supranational, intergovernmental, and budgetary procedures).]
+
+FACT SHEETS ON THE EUROPEAN UNION
+
+European Parliament
+
+# The EU legal system and decision-making procedures
+
+PE 618.970
+
+1. Sources and scope of European Union law...................................................................3
+2. The principle of subsidiarity...........................................................................................8
+3. Supranational decision-making procedures................................................................13
+4. Intergovernmental decision-making procedures.........................................................19
+5. The budgetary procedure.............................................................................................24
+
+EN - 18/06/2018
+
+***
+
+## ABOUT THE PUBLICATION
+
+This leaflet contains a compilation of Fact Sheets provided by Parliament's Policy Departments and Economic Governance Support Unit on the relevant policy area.
+
+The Fact Sheets are updated regularly and published on the website of the European Parliament: http://www.europarl.europa.eu/factsheets
+
+## ABOUT THE PUBLISHER
+
+Author of the publication: European Parliament
+
+Department responsible: Unit for Coordination of Editorial and Communication Activities
+E-mail: editorial-secretariat@europarl.europa.eu
+
+Manuscript completed in June, 2018
+© European Union, 2018
+
+## DISCLAIMER
+
+The opinions expressed in this document are the sole responsibility of the author and do not necessarily represent the official position of the European Parliament.
+
+Reproduction and translation for non-commercial purposes are authorised, provided the source is acknowledged and the publisher is given prior notice and sent a copy.
+
+***
+
+
+=== SEGMENT 2 ===
+[Summary: The European Union possesses legal personality and maintains its own distinct legal order, which is separate from international law. EU law exerts direct or indirect effect on Member State laws, integrating into their national legal systems. The EU legal order is generally structured into primary legislation (Treaties and general legal principles), secondary legislation (based on the Treaties), and supplementary law, with key founding documents including the TEU, TFEU, and the Charter of Fundamental Rights.]
+
+# 1 - SOURCES AND SCOPE OF EUROPEAN UNION LAW - [1.2.1.]
+
+> The European Union has legal personality and as such its own legal order which is separate from international law. Furthermore, EU law has direct or indirect effect on the laws of its Member States and becomes part of the legal system of each Member State. The European Union is in itself a source of law. The legal order is usually divided into primary legislation (the Treaties and general legal principles), secondary legislation (based on the Treaties) and supplementary law.
+
+## SOURCES AND HIERARCHY OF UNION LAW
+
+- Treaty on European Union (TEU); Treaty on the Functioning of the European Union (TFEU); and their protocols (there are 37 protocols, 2 annexes and 65 declarations, which are attached to the treaties to fill in details, without being incorporated into the full legal text) 1.1.5;
+- Charter of Fundamental Rights of the European Union 4.1.2
+- The Treaty Establishing the European Atomic Energy Community (Euratom) is still in force as a separate treaty.
+- International agreements 5.2.1;
+- General principles of Union law;
+- Secondary legislation.
+
+
+=== SEGMENT 3 ===
+[Summary: The hierarchy of European Union law places the Treaties and general principles at the top, collectively known as primary legislation. Following the entry into force of the Lisbon Treaty on 1 December 2009, the Charter of Fundamental Rights was also accorded this highest value. Subordinate to primary legislation are international agreements concluded by the EU, followed by secondary legislation, which must be consistent with all acts and agreements that precede it in the hierarchy.]
+
+The Treaties and the general principles are at the top of the hierarchy, and are known as primary legislation. Following the entry into force of the Lisbon Treaty on 1 December 2009, the same value was also given to the Charter of Fundamental Rights. International agreements concluded by the European Union are subordinate to primary legislation. Secondary legislation is the next level down in the hierarchy and is valid only if it is consistent with the acts and agreements which have precedence over it.
+
+## OBJECTIVES
+
+Creation of a legal order for the Union to achieve the objectives stipulated in the Treaties.
+
+## EU SOURCES OF LAW
+
+**A. Primary legislation of the European Union 1.1.1, 1.1.2, 1.1.3, 1.1.4, 1.1.5, 4.1.2**
+
+**B. Secondary legislation of the European Union**
+
+**1. General points**
+
+
+=== SEGMENT 4 ===
+[Summary: The legal acts available to EU institutions are regulations, directives, decisions, recommendations, and opinions, as listed in Article 288 TFEU. The power to adopt these acts is strictly limited by the principle of conferral (Article 5(1) TEU), which mandates that institutions must be empowered by the Treaties. The TFEU further categorizes Union competences into exclusive (Article 3), shared (Article 4), and supporting (Article 6), while Article 352 TFEU provides a mechanism for adopting appropriate measures if specific powers are lacking.]
+
+The legal acts of the Union are listed in Article 288 TFEU. They are regulations, directives, decisions, recommendations and opinions. EU institutions may adopt legal acts of these kinds only if they are empowered to do so by the Treaties. The limits of Union competences are governed by the principle of conferral, which is enshrined in Article 5(1) TEU. The TFEU defines the scope of Union competences, dividing them into three categories: exclusive competences (Article 3), shared competences (Article 4) and supporting competences (Article 6), whereby the EU adopts measures to support or complement Member States' policies. Articles 3, 4 and 6 TFEU list the areas that come under each category of Union competence. In the absence of the necessary powers to attain one of the objectives set out in the Treaties, the institutions may apply the provisions of Article 352 TFEU, and thus adopt the 'appropriate measures'.
+
+
+=== SEGMENT 5 ===
+[Summary: The EU institutions primarily use legal instruments listed in Article 288 TFEU, except for the Common Foreign, Security and Defence Policies (CFSDP), which follow an intergovernmental method using specific instruments defined in Article 25 TEU. A hierarchy of secondary legislation is established by Articles 289, 290, and 291 TFEU, distinguishing between legislative acts, delegated acts, and implementing acts. Delegated acts are non-legislative acts adopted by the Commission to supplement legislative acts, with the scope and conditions of delegation strictly controlled by the legislator (Parliament and Council).]
+
+The institutions adopt only those legal instruments listed in Article 288 TFEU. The only exceptions are the common foreign, security and defence policies, to which the intergovernmental method still applies. In this area, common strategies, common actions and common positions have been replaced by 'general guidelines' and 'decisions defining' actions to be undertaken and positions to be adopted by the Union, and the arrangements for the implementation of those decisions (Article 25 TEU).
+
+There are, in addition, various forms of action, such as recommendations, communications and acts on the organisation and running of the institutions (including inter-institutional agreements), the designation, structure and legal effects of which stem from various provisions in the Treaties or the rules adopted pursuant to the Treaties.
+
+**2. Hierarchy of EU secondary legislation**
+
+A hierarchy of secondary legislation is established by Articles 289, 290 and 291 TFEU between legislative acts, delegated acts and implementing acts. Legislative acts are legal acts which are adopted through the ordinary or a special legislative procedure. Delegated acts for their part are non-legislative acts of general application which supplement or amend certain non-essential elements of a legislative act. The power to adopt these acts may be delegated to the Commission by the legislator (Parliament and the Council). The objectives, content, scope and duration of the delegation of power are defined in the legislative act, as are any urgent procedures, where applicable. In addition, the legislator lays down the conditions to which the delegation is subject, which may be the authority to revoke the delegation or the right to express an objection.
+
+
+=== SEGMENT 6 ===
+[Summary: Implementing acts are generally adopted by the Commission to ensure uniform application of legally binding acts, though the Council adopts them in specific, justified cases, notably in the common foreign and security policy. The segment then introduces Regulations, defining them as legally binding acts of general application that are binding in their entirety and directly applicable across all Member States upon entry into force, thus requiring no national transposition and superseding conflicting national laws.]
+
+Implementing acts are generally adopted by the Commission, which is competent to do so in cases where uniform conditions for implementing legally binding acts are needed. Implementing acts are a matter for the Council only in specific cases which are duly justified and in areas of common foreign and security policy. Where a basic act is adopted under the ordinary legislative procedure, the European Parliament or the Council may at any time indicate to the Commission that, in its view, a draft implementing act goes beyond the implementing powers provided for in the basic act. In this case, the Commission must revise the draft act in question.
+
+**3. The various types of EU secondary legislation**
+
+**a. Regulations**
+
+Regulations are of general application, binding in their entirety and directly applicable. They must be complied with fully by those to whom they apply (private persons, Member States, Union institutions). Regulations are directly applicable in all the Member States as soon as they enter into force (on the date stipulated or, failing this, on the twentieth day following their publication in the Official Journal of the European Union) and do not need to be transposed into national law.
+
+They are designed to ensure the uniform application of Union law in all the Member States. Regulations supersede national laws incompatible with their substantive provisions.
+
+
+=== SEGMENT 7 ===
+[Summary: Directives are binding upon Member States only as to the result to be achieved, leaving the choice of form and methods of implementation to national authorities. They require national legislators to adopt a transposing act to align national law with their objectives, and generally, individual rights derive only from this national measure. While directives are typically not directly applicable, the Court of Justice of the European Union has ruled that certain provisions may exceptionally have direct effect if the directive was not properly transposed, and the provisions are imperative, clear, precise, and confer rights on individuals.]
+
+**b. Directives**
+
+Directives are binding, as to the result to be achieved, upon any or all of the Member States to whom they are addressed, but leave to the national authorities the choice of form and methods. National legislators must adopt a transposing act or 'national implementing measure' to transpose directives and bring national law into line with their objectives. Individual citizens are given rights and bound by the legal act only once the transposing act has been adopted. Member States are given some discretion, in transposing directives, to take account of specific national circumstances. Transposition must be effected within the period laid down in the directive. In transposing directives, Member States guarantee the effectiveness of EU law, in accordance with the principle of sincere cooperation established in Article 4(3) TEU.
+
+In principle, directives are not directly applicable. The Court of Justice of the European Union, however, has ruled that certain provisions of a directive may, exceptionally, have direct effects in a Member State even if the latter has not yet adopted a transposing act in cases where: (a) the directive has not been transposed into national law or has been transposed incorrectly; (b) the provisions of the directive are imperative and sufficiently clear and precise; and (c) the provisions of the directive confer rights on individuals.
+
+
+=== SEGMENT 8 ===
+[Summary: Individuals may invoke the direct effect of untransposed directives in their dealings with public authorities (vertical effect), provided specific clarity and rights conditions are met; however, they cannot rely on these directives in disputes with other private individuals (horizontal effect), as confirmed by the Faccini Dori case. Furthermore, the Francovich case established that citizens are entitled to seek compensation from a Member State for damages resulting from the state's failure to comply with Union law, such as the inadequate transposition of a directive.]
+
+If these conditions have been met, individuals may invoke the provision in question in their dealings with the public authorities. Even when the provision does not confer any rights on the individual, and only the first and second conditions have been met, Member State authorities are required to take account of the untransposed directive. This ruling is based chiefly on the principles of effectiveness, the prevention of Treaty violations and legal protection. On the other hand, an individual may not rely on the direct effect of an untransposed directive in dealings with other individuals (the 'horizontal effect'; Faccini Dori Case C-91/92, ECR, p. I-3325 et seq., point 25).
+
+According to the case law of the Court (Francovich case, joined cases C-6/90 and C-9/90), an individual citizen is entitled to seek compensation from a Member State which is not complying with Union law. This is possible, in the case of a directive which has
+
+
+=== SEGMENT 9 ===
+[Summary: This segment first concludes the requirements for an individual to seek compensation from a Member State due to inadequate directive transposition, specifying that the directive must confer identifiable rights and that a causal link exists, while confirming that Member State fault is not required to establish liability. It then defines Decisions as legal acts that are binding in their entirety, addressed to specific parties, and potentially directly applicable, though sometimes requiring a transposing act for individuals. Finally, it classifies Recommendations and Opinions as non-binding instruments that offer guidance on Union law.]
+
+not been transposed or which has been transposed inadequately, where: (a) the directive is intended to confer rights on individuals; (b) the content of the rights can be identified on the basis of the provisions of the directive; and (c) there is a causal link between the breach of the obligation to transpose the directive and the loss and damage suffered by the injured parties. Fault on the part of the Member State does not then have to be demonstrated in order to establish liability.
+
+**c. Decisions, recommendations and opinions**
+
+Decisions are binding in their entirety. Where those to whom they are addressed are stipulated (Member States, natural or legal persons), they are binding only on them, and address situations specific to those Member States or persons. An individual may invoke the rights conferred by a decision addressed to a Member State only if that Member State has adopted a transposing act. Decisions may be directly applicable on the same basis as directives.
+
+Recommendations and opinions do not confer any rights or obligations on those to whom they are addressed, but may provide guidance as to the interpretation and content of Union law.
+
+
+=== SEGMENT 10 ===
+[Summary: This section addresses the legislative competence, implementation, and choice of legal acts within the EU framework. Legislative adoption involves the Parliament, Council, and Commission, with Parliament able to request legislative proposals from the Commission. Implementation is primarily carried out by Member States, who must adopt national measures to enforce binding Union acts (Article 291(1) TFEU), though the Commission exercises implementing powers when uniform conditions are required (Article 291(2) TFEU).]
+
+**4. Provisions on competences, procedures, implementation and enforcement of legal acts**
+
+**a. Legislative competence, right of initiative and legislative procedures: 1.3.2, 1.3.6, 1.3.8 and 1.2.3**
+
+Parliament, the Council and the Commission take part in the adoption of the Union's legislation to varying degrees, depending on the individual legal basis. Parliament can ask the Commission to present legislative proposals to itself and to the Council.
+
+**b. Implementation of Union legislation**
+
+Under primary law, the EU has only limited powers of enforcement, as EU law is usually enforced by the Member States. Furthermore, Article 291(1) TFEU adds that Member States shall adopt all measures of national law necessary to implement legally binding Union acts. Where uniform conditions for implementing legally binding Union acts are needed, the Commission exercises its implementing powers (Article 291(2) TFEU).
+
+**c. Choice of type of legal act**
+
+In many cases, the Treaties lay down the type of legal act to be adopted. In many other cases, however, no type of legal act is specified. In these cases, Article 296(1) TFEU states that the institutions must select it on a case-by-case basis, ‘in compliance with the applicable procedures and with the principle of proportionality'.
+
+
+=== SEGMENT 11 ===
+[Summary: This segment outlines the origin and status of general principles of Union law and the role of international agreements. General principles and fundamental rights were primarily developed through the case-law of the Court of Justice of the European Union, but are now enshrined in Article 6(3) TEU, referencing the ECHR, common constitutional traditions, and the Charter of Fundamental Rights. Additionally, the Union may conclude international agreements (Article 216(1) TFEU), which are binding on the Union and Member States and form an integral part of Union law.]
+
+**C. General principles of Union law and fundamental rights**
+
+The Treaties make very few references to the general principles of Union law. These principles have mainly been developed in the case-law of the Court of Justice of the European Union (legal certainty, institutional balance, legitimate expectation, etc.), which is also the basis for the recognition of fundamental rights as general principles of Union law. These principles are now enshrined in Article 6(3) TEU, which refers to the fundamental rights as guaranteed by the Convention for the Protection of Human Rights and Fundamental Freedoms and as they result from the constitutional traditions common to the Member States and the Charter of Fundamental Rights of the European Union (4.1.2).
+
+**D. International agreements concluded by the European Union**
+
+The Union may, within its sphere of competence, conclude international agreements with third countries or international organisations (Article 216(1) TFEU). These agreements are binding on the Union and the Member States, and are an integral part of Union law.
+
+
+=== SEGMENT 12 ===
+[Summary: The European Parliament (EP), as stipulated in Article 14(1) TEU, jointly exercises legislative and budgetary functions with the Council, using the ordinary legislative procedure and a special budgetary procedure (Article 314 TFEU) respectively. The EP plays a vital role in creating new laws by reviewing the Commission's Annual Programme and suggesting desired legislation, while also working to improve legal drafting and enforce penalties for non-compliant Member States. Additionally, the EP's consent is required for the Union to conclude international agreements concerning the common commercial policy and fields governed by the ordinary legislative procedure.]
+
+## ROLE OF THE EUROPEAN PARLIAMENT
+
+Under Article 14(1) TEU: ‘The European Parliament shall, jointly with the Council, exercise legislative (via the ‘ordinary legislative procedure') and budgetary (via a special legislative procedure under Article 314 TFEU) functions'. Parliament is seeking to simplify the legislative process, improve the drafting quality of legal texts and ensure that more effective penalties are imposed on Member States that fail to comply with Union law. The Commission's Annual Working and Legislative Programme presents the major political priorities of the Commission and identifies concrete actions, either legislative or non-legislative, that translate these priorities into operational terms. Parliament plays a genuine role in creating new laws, since it examines the Commission's Annual Programme of Work and says which laws it would like to see introduced.
+
+Having gained legal personality, the Union can now conclude international agreements (Article 218 TFEU). Any agreements concluded in the field of the common commercial policy and all fields whose policies fall under the ordinary legislative procedure require the consent of the European Parliament.
+
+Udo Bux
+05/2018
+
+***
+
+
+=== SEGMENT 13 ===
+[Summary: The principle of subsidiarity, established in Article 5(3) TEU and Protocol No 2, governs the exercise of EU competences in areas where the Union does not have exclusive competence. It defines when action is preferable by the Union rather than the Member States, authorizing EU intervention only if the proposed action's objectives cannot be sufficiently achieved by Member States but can be better achieved at the Union level. A key objective is to ensure that powers are exercised as close to the citizen as possible, aligning with the proximity principle mentioned in Article 10(3) TEU.]
+
+# 2 - THE PRINCIPLE OF SUBSIDIARITY - [1.2.2.]
+
+> In areas in which the European Union does not have exclusive competence, the principle of subsidiarity, laid down in the Treaty on European Union, defines the circumstances in which it is preferable for action to be taken by the Union, rather than the Member States.
+
+## LEGAL BASIS
+
+Article 5(3) of the Treaty on European Union (TEU) and Protocol (No 2) on the application of the principles of subsidiarity and proportionality.
+
+## OBJECTIVES
+
+The principle of subsidiarity and the principle of proportionality govern the exercise of the EU's competences. In areas in which the European Union does not have exclusive competence, the principle of subsidiarity seeks to safeguard the ability of the Member States to take decisions and action and authorises intervention by the Union when the objectives of an action cannot be sufficiently achieved by the Member States, but can be better achieved at Union level, ‘by reason of the scale and effects of the proposed action'. The purpose of including a reference to the principle in the EU Treaties is also to ensure that powers are exercised as close to the citizen as possible, in accordance with the proximity principle referred to in Article 10(3) of the TEU.
+
+
+=== SEGMENT 14 ===
+[Summary: The principle of subsidiarity was formally enshrined by the Maastricht Treaty, although the Single European Act (1987) had previously introduced a subsidiarity criterion for environmental policy. Historically, the Court of First Instance ruled in 1995 that subsidiarity was not a general principle of law prior to the TEU's entry into force. Later, the Treaty of Amsterdam annexed a specific Protocol to the EC Treaty, making the 1992 Edinburgh European Council approach to subsidiarity legally binding and subject to judicial review.]
+
+## ACHIEVEMENTS
+
+### A. Origin and history
+
+The principle of subsidiarity was formally enshrined by the Maastricht Treaty, which included a reference to it in the Treaty establishing the European Community (TEC). The Single European Act (1987) had already incorporated a subsidiarity criterion into environmental policy, however, albeit without referring to it explicitly as such. In its judgment of 21 February 1995 (T-29/92), the Court of First Instance of the European Communities ruled that the principle of subsidiarity was not a general principle of law, against which the legality of Community action should have been tested, prior to the entry into force of the TEU.
+
+Without changing the wording of the reference to the principle of subsidiarity in the renumbered Article 5, second paragraph, of the EC Treaty, the Treaty of Amsterdam annexed to the EC Treaty a ‘Protocol on the application of the principles of subsidiarity and proportionality'. The overall approach to the application of the principle of subsidiarity agreed at the 1992 European Council in Edinburgh thus became legally binding and subject to judicial review via the protocol on subsidiarity.
+
+
+=== SEGMENT 15 ===
+[Summary: The Lisbon Treaty formalized the principle of subsidiarity by incorporating it into Article 5(3) TEU, while also adding an explicit reference to its regional and local dimension. Additionally, the Treaty replaced the previous protocol on subsidiarity and proportionality with Protocol No 2, which grants national parliaments a new role in ensuring compliance with the principle.]
+
+The Lisbon Treaty incorporated the principle of subsidiarity into Article 5(3) TEU and repealed the corresponding provision of the TEC while retaining its wording. It also added an explicit reference to the regional and local dimension of the principle of subsidiarity. What is more, the Lisbon Treaty replaced the 1997 protocol on the application of the principles of subsidiarity and proportionality with a new protocol of the same name (Protocol No 2), the main difference being the new role of the national parliaments in ensuring compliance with the principle of subsidiarity (1.3.5).
+
+### B. Definition
+
+The general aim of the principle of subsidiarity is to guarantee a degree of independence for a lower authority in relation to a higher body or for a local authority in relation to central government. It therefore involves the sharing of powers between several levels of authority, a principle which forms the institutional basis for federal states.
+
+
+=== SEGMENT 16 ===
+[Summary: When applied in the European Union, the principle of subsidiarity regulates the exercise of the Union's non-exclusive powers, preventing intervention if Member States can effectively handle an issue at central, regional, or local levels. The Union is justified in acting only if Member States cannot satisfactorily achieve the objectives and the action provides added value at the Union level, following three preconditions formalized in Article 5(3) TEU: non-exclusive competence, necessity, and added value.]
+
+When applied in the context of the European Union, the principle of subsidiarity serves to regulate the exercise of the Union's non-exclusive powers. It rules out Union intervention when an issue can be dealt with effectively by Member States at central, regional or local level and means that the Union is justified in exercising its powers when Member States are unable to achieve the objectives of a proposed action satisfactorily and added value can be provided if the action is carried out at Union level.
+
+Under Article 5(3) TEU there are three preconditions for intervention by Union institutions in accordance with the principle of subsidiarity: (a) the area concerned does not fall within the Union's exclusive competence (i.e. non-exclusive competence); (b) the objectives of the proposed action cannot be sufficiently achieved by the Member States (i.e. necessity); (c) the action can therefore, by reason of its scale or effects, be implemented more successfully by the Union (i.e. added value).
+
+
+=== SEGMENT 17 ===
+[Summary: The scope of the principle of subsidiarity is confined to areas of shared competence between the EU and Member States. The Lisbon Treaty provided a clearer demarcation of EU competences, categorizing them as exclusive, shared, or supporting under Part One, Title I, of the TFEU. This principle applies to all EU institutions, particularly in legislative procedures, and the Lisbon Treaty specifically strengthened the monitoring roles of national parliaments and the Court of Justice regarding compliance.]
+
+### C. Scope
+
+**1. The demarcation of Union competences**
+
+The principle of subsidiarity applies only to areas in which competence is shared between the Union and the Member States. Following the entry into force of the Lisbon Treaty, the competences conferred on the Union have been more precisely demarcated: Part One, Title I, of the Treaty on the Functioning of the European Union (TFEU) divides the competences of the Union into three categories (exclusive, shared and supporting) and lists the areas covered by the three categories.
+
+**2. Where it applies**
+
+The principle of subsidiarity applies to all the EU institutions and has practical significance for legislative procedures in particular. The Lisbon Treaty has strengthened the role of both the national parliaments and the Court of Justice in monitoring complian
+
+
+=== SEGMENT 18 ===
+[Summary: The Lisbon Treaty significantly enhanced the monitoring of the subsidiarity principle by strengthening the roles of national parliaments, the Court of Justice, and the Committee of the Regions, while also allowing regional parliaments to participate in the ex-ante 'early warning' mechanism. Under this mechanism, national parliaments monitor compliance according to Protocol No 2 and have eight weeks to submit reasoned opinions regarding a draft legislative act. If these opinions collectively reach a threshold of one-third of the total allocated votes (or one-quarter for acts concerning freedom, security, and justice), a 'yellow card' is issued, obligating the proposing institution to review and justify its decision to maintain, amend, or withdraw the draft.]
+
+ce with the principle of subsidiarity. It not only introduced an explicit reference to the subnational dimension of the subsidiarity principle, but also strengthened the role of the Committee of the Regions and made it possible, at the discretion of national parliaments, for regional parliaments with legislative powers to be involved in the ex-ante 'early warning' mechanism.
+
+### D. National parliamentary scrutiny
+
+In keeping with the second subparagraph of Article 5(3) and Article 12(b) TEU, national parliaments monitor compliance with the principle of subsidiarity in accordance with the procedure set out in Protocol No 2. Under the ex-ante ‘early warning' procedure referred to above, any national parliament or any chamber of a national parliament has eight weeks from the date of forwarding of a draft legislative act to send to the Presidents of the European Parliament, the Council and the Commission a reasoned opinion stating why it considers that the draft in question does not comply with the principle of subsidiarity. If reasoned opinions represent at least one-third (one vote per chamber for a bicameral parliamentary system and two votes for a unicameral system) of the votes allocated to the national parliaments, the draft must be reviewed (‘yellow card'). The institution which produced the draft legislative act may decide to maintain, amend or withdraw it, giving reasons for that decision. For draft acts relating to the area of freedom, security and justice, the threshold is lower (one-quarter of the votes).
+
+
+=== SEGMENT 19 ===
+[Summary: The text details the 'orange card' procedure, a mechanism used in the ordinary legislative procedure where a simple majority of national parliamentary votes challenging a proposal's subsidiarity compliance sends the matter to the European Parliament and Council for a potential rejection (requiring specific majorities). Additionally, the text highlights the first application of the 'yellow card' mechanism in May 2012 concerning the 'Monti II' proposal, which was challenged by 12 national parliaments and subsequently withdrawn by the Commission, despite the institution asserting that no subsidiarity infringement had occurred.]
+
+If, in the context of the ordinary legislative procedure, at least a simple majority of the votes allocated to national parliaments challenge the compliance of a proposal for a legislative act with the principle of subsidiarity and the Commission decides to maintain its proposal, the matter is referred to the legislator (European Parliament and Council), which takes a decision at first reading. If the legislator considers that the legislative proposal is not compatible with the principle of subsidiarity, it may reject it subject to a majority of 55% of the members of the Council or a majority of the votes cast in the European Parliament ('orange card').
+
+In May 2012, the first ‘yellow card' was issued with regard to a Commission proposal for a regulation concerning the exercise of the right to take collective action within the context of the freedom of establishment and the freedom to provide services ('Monti II'). Twelve out of 40 national parliaments or chambers thereof (19 out of 54 votes allocated) considered that the content of the proposal was not consistent with the principle of subsidiarity. The Commission ultimately withdrew its proposal, though it took the view that the subsidiarity principle had not been infringed.
+
+
+=== SEGMENT 20 ===
+[Summary: Following the first instance, two further 'yellow cards' were issued by national parliaments: one in October 2013 regarding the European Public Prosecutor's Office, and another in May 2016 concerning the revision of the directive on the posting of workers. In both instances, the Commission decided to maintain its proposals, arguing they complied with the subsidiarity principle. Additionally, the text outlines that compliance with subsidiarity is subject to retrospective judicial review by the Court of Justice of the European Union (CJEU), which verifies if the Union legislator provided sufficient justification for acting at the Union level, linking this requirement to Article 296 TFEU.]
+
+In October 2013, another 'yellow card' was issued by 14 chambers of national parliaments in 11 Member States (18 votes) following the submission of the proposal for a regulation on the establishment of the European Public Prosecutor's Office. After examining the reasoned opinions received from the national parliaments, the Commission decided to maintain the proposal, arguing that it was in line with the subsidiarity principle. In May 2016, a third 'yellow card' was issued by 14 chambers in 11 Member States against the proposal for a revision of the directive on the posting of workers. The Commission again decided to maintain its proposal, given that it did not infringe the principle of subsidiarity, the posting of workers being, by definition, a transnational issue.
+
+### Ε. Judicial review
+
+Compliance with the principle of subsidiarity may be reviewed retrospectively (following the adoption of the legislative act) by means of a legal action brought before the Court of Justice of the European Union. That is also stated in the protocol. The Union institutions enjoy wide discretion in applying this principle, however. In its judgments in Cases C-84/94 and C-233/94, the Court found that compliance with the principle of subsidiarity was one of the conditions covered by the requirement to state the reasons for Union acts, under Article 296 TFEU. This requirement is met if it is clear from reading the recitals that the principle has been complied with. In a more recent judgment (Case C-547/14, Philipp Morris, paragraph 218), the Court reaffirmed that it must verify ‘whether the Union legislator was entitled to consider, on the basis of a detailed statement, that the objective of the proposed action could be better achieved at Union level'.
+
+
+=== SEGMENT 21 ===
+[Summary: Legal actions concerning compliance with the principle of subsidiarity can be brought by Member States (or on behalf of their national parliaments) and, under specific consultation requirements, by the Committee of the Regions. Historically, the European Parliament played a critical role as the instigator of the subsidiarity concept, proposing key provisions in the 1984 draft TEU and consistently reaffirming its support through subsequent resolutions.]
+
+Legal actions of this kind may be brought by Member States or notified by them on behalf of their national parliament or a chamber thereof, in accordance with their legal system. The Committee of the Regions may also bring actions of this kind against legislative acts if the TFEU provides that it must be consulted on the adoption of such acts.
+
+## ROLE OF THE EUROPEAN PARLIAMENT
+
+The European Parliament was the instigator of the concept of subsidiarity and, on 14 February 1984, in adopting the draft TEU, proposed a provision stipulating that in cases where the Treaty conferred on the Union a competence which was concurrent with that of the Member States, the Member States could act as long as the Union had not legislated. Moreover, it stressed that the Community should only act to carry out those tasks which could be undertaken more effectively in common than by individual states acting separately.
+
+Parliament was to reiterate these proposals in many resolutions (for example those of 23 November and 14 December 1989, 12 July and 21 November 1990 and 18 May 1995), in which it reaffirmed its support for the principle of subsidiarity.
+
+### A. Interinstitutional agreements
+
+
+=== SEGMENT 22 ===
+[Summary: On October 25, 1993, the Council, Parliament, and the Commission signed an interinstitutional agreement formalizing their commitment to comply with the principle of subsidiarity. This agreement established procedures governing the exercise of powers conferred on the Union institutions and required all three bodies to regularly check compliance, both regarding the instruments chosen and the substance of proposals. Furthermore, the Commission is required to produce an annual report on subsidiarity compliance, on which Parliament usually gives its opinion via an own-initiative report.]
+
+On 25 October 1993, the Council, Parliament and the Commission signed an interinstitutional agreement which demonstrated clearly the three institutions' eagerness to take decisive steps in this area. They thus undertook to comply with the principle of subsidiarity. The agreement lays down, by means of procedures governing the application of the principle of subsidiarity, arrangements for the exercise of the powers conferred on the Union institutions by the Treaties, so that the objectives laid down in the Treaties can be attained. The Commission undertook to take into account the principle of subsidiarity and show that it has been observed. The same applies to Parliament and the Council, in the context of the powers conferred on them.
+
+The three institutions agreed to regularly use their internal procedures to check whether the proposed action complies with the principle of subsidiarity as regards both the choice of instruments and the substance of the proposal. Rule 42 of Parliament's Rules of Procedure thus states that 'during the examination of a proposal for a legislative act, Parliament shall pay particular attention to whether that proposal respects the principles of subsidiarity and proportionality'. In addition, the Commission produces an annual report on compliance with the subsidiarity principle, on which Parliament usually gives its opinion in the form of an own-initiative report drawn up by its Committee on Legal Affairs.
+
+
+=== SEGMENT 23 ===
+[Summary: The 2016 Interinstitutional Agreement on 'Better Lawmaking' mandates the Commission to justify proposed measures against the principle of subsidiarity in both explanatory memoranda and impact assessments. Furthermore, the European Parliament has historically affirmed the principle's importance, declaring it a binding legal principle in 1997, provided it does not obstruct EU exclusive competence or challenge the acquis communautaire. Parliament also supported the creation of an 'early warning' mechanism for subsidiarity scrutiny by national parliaments, which was later incorporated into the Lisbon Treaty.]
+
+Under the terms of the Interinstitutional Agreement on ‘Better Lawmaking' of April 2016 (replacing the Agreement of December 2003 and the Interinstitutional Common Approach to Impact Assessment of November 2005), the Commission must explain in its explanatory memoranda how the proposed measures are justified in the light of the principle of subsidiarity and must take this into account in its impact assessments. Moreover, in concluding the framework agreement of 20 November 2010 Parliament and the Commission undertook to cooperate with the national parliaments in order to facilitate the exercise by those parliaments of their power to scrutinise compliance with the principle of subsidiarity.
+
+### B. European Parliament resolutions
+
+In its resolution of 13 May 1997, Parliament already made clear its view that the principle of subsidiarity was a binding legal principle but pointed out that its implementation should not obstruct the exercise by the EU of its exclusive competence, nor be used as a pretext to call into question the acquis communautaire. In its resolution of 8 April 2003, Parliament added that disputes should preferably be settled at political level, while taking into account the proposals made by the Convention on the Future of Europe concerning the establishment by the national parliaments of an ‘early warning' mechanism in the area of subsidiarity. This mechanism was indeed incorporated into the Lisbon Treaty (see above and 1.3.5).
+
+
+=== SEGMENT 24 ===
+[Summary: In its resolution of 13 September 2012, the European Parliament welcomed the closer involvement of national parliaments in scrutinizing legislative proposals concerning the principles of subsidiarity and proportionality. The Parliament suggested investigating methods to alleviate impediments to national parliaments' participation in the subsidiarity control mechanism. Additionally, the resolution proposed assessing the necessity of laying down appropriate EU-level criteria for evaluating compliance with the principles of subsidiarity and proportionality.]
+
+In its resolution of 13 September 2012, Parliament welcomed the closer involvement of the national parliaments in scrutinising legislative proposals in the light of the principles of subsidiarity and proportionality and suggested that any ways to alleviate impediments to national parliaments' participation in the subsidiarity control mechanism should be investigated. It also suggested that an assessment be made to determine whether appropriate criteria should be laid down at EU level for evaluating compliance with the principles of subsidiarity and proportionality.
+
+Roberta Panizza
+05/2018
+
+***
+
+# 3 - SUPRANATIONAL DECISION-MAKING PROCEDURES - [1.2.3.]
+
+> The Member States of the European Union have agreed, as a result of their membership of the EU, to transfer some of their powers to the EU institutions in specified policy areas. Thus, EU institutions make supranational binding decisions in their legislative and executive procedures, budgetary procedures, appointment procedures and quasi-constitutional procedures.
+
+## HISTORY (1.1.1, 1.1.2, 1.1.3, 1.1.4 AND 1.1.5)
+
+The Treaty of Rome gave the Commission powers of proposal and negotiation, mainly in the fields of legislation and external economic relations, and allocated powers for decision-making to the Council or, in the case of appointments, representatives o
+
+
+=== SEGMENT 25 ===
+[Summary: The European Parliament's role has gradually expanded from an initial consultative power to near equality with the Council through a series of treaties. Major milestones included the budgetary reforms of 1970 and 1975, the introduction of codecision by the Treaty of Maastricht, and subsequent extensions and simplifications of the codecision procedure under the Treaties of Amsterdam and Nice. The Treaty of Lisbon marked the final qualitative step towards full equality with the Council in EU legislation and finance.]
+
+f the Member States' governments. It gave Parliament a consultative power. Parliament's role has gradually grown, in the budgetary domain with the reforms of 1970 and 1975, in the legislative domain with the Single European Act and all the following Treaties, in the first place the Treaty of Maastricht introducing codecision with the Council, which also increased Parliament's role in appointments. Furthermore, the Single European Act gave Parliament the power to authorise ratification of accession and association treaties; Maastricht extended that power to other international treaties of certain kinds. The Treaty of Amsterdam made substantial progress down the road to democratising the Community, by simplifying the codecision procedure, extending it to new areas and strengthening Parliament's role in appointing the Commission. Following this approach, the Treaty of Nice considerably increased Parliament's powers. On the one hand, the codecision procedure (in which Parliament has the same powers as the Council) was applied to almost all new areas where the Council was entitled to decide by qualified majority. On the other hand, Parliament acquired the same powers as the Member States in terms of referring matters to the Court of Justice. The Treaty of Lisbon is a further qualitative step towards full equality with the Council in EU legislation and finance.
+
+
+=== SEGMENT 26 ===
+[Summary: The Ordinary Legislative Procedure (OLP), codified in Articles 289 and 294 TFEU and formerly known as codecision, is the primary method for adopting EU legislative acts. The Lisbon Treaty significantly expanded its scope, adding 40 legal bases and increasing the total to 85, emphasizing the equal decision-making power of the European Parliament and the Council, which votes by Qualified Majority (QMV). The initial procedural steps involve a Commission proposal followed by first readings in Parliament (simple majority) and the Council (QMV), though the procedure can be suspended in areas like social security or police cooperation if requested by a Member State.]
+
+## LEGISLATIVE PROCEDURES[1]### A. Ordinary legislative procedure (Article 289 and 294 TFEU)**1. Scope**The Lisbon Treaty added 40 further legal bases, in particular in the area of justice, freedom and security and in agriculture, under which the Parliament now decides on legislative acts on equal footing with the Council. Hence, the ordinary legislative procedure, formerly called the codecision procedure, applies to 85 legal bases. The ordinary legislative procedure includes qualified majority voting (QMV) in the Council (Article 294 TFEU). However, it does not apply to several important areas, for example fiscal policy concerning direct taxation or transnational aspects of family law, which require unanimity in the Council.**2. Procedure**The ordinary legislative procedure follows the same steps as the former codecision procedure. However, the wording of the TFEU has changed considerably, notably to underline the equal role of Council and Parliament in this procedure.**a. Commission proposal****b. First reading in Parliament**Parliament adopts its position by a simple majority.**c. First reading in the Council**The Council adopts its position by QMV.In the fields of social security and police and judicial cooperation in criminal matters, the proposal can be submitted to the European Council at the request of one Member State (Articles 48 and 82 TFEU), and this suspends the ordinary legislative procedure until the European Council reassigns the matter to the Council (at the latest after four months). In the case of Article 82, at least nine Member States may decide to continue deliberations under enhanced cooperation (Article 20 TEU and Article 326-334 TFEU).If the Council approves Parliament's position, the act is adopted in the wording which corresponds to Parliament's position.
+
+
+=== SEGMENT 27 ===
+[Summary: The second reading phase of the Ordinary Legislative Procedure grants the European Parliament three months to either approve, reject (by absolute majority), or amend the Council's position. If Parliament adopts amendments, the Council has three months to approve them, typically by qualified majority, or unanimously if the Commission delivers a negative opinion. If the Council fails to approve the amendments, a Conciliation Committee is convened within six weeks, tasked with agreeing on a joint text within six weeks supported by qualified majority on the Council side and a majority on the Parliament side.]
+
+**d. Second reading in Parliament**Parliament receives the Council's position and has three months to take a decision. It may thus:- Approve the proposal as amended by the Council or take no decision; in both cases, the act as amended by the Council is adopted;- Reject the Council's position by an absolute majority of its Members; the act is not adopted and the procedure ends;- Adopt, by an absolute majority of its Members, amendments to the Council's position, which are then put to the Commission and the Council for their opinion.**e. Second reading in the Council**If the Council, voting by a qualified majority on Parliament's amendments, and unanimously on those on which the Commission has delivered a negative opinion, approves all of Parliament's amendments no later than three months after receiving them, the act is adopted.Otherwise, the Conciliation Committee is convened within six weeks.**f. Conciliation**- The Conciliation Committee consists of an equal number of Council and Parliament representatives, assisted by the Commission. It considers the positions of Parliament and the Council and has six weeks to agree on a joint text supported by a QMV of Council representatives and a majority of Parliament's representatives.- The procedure stops and the act is not adopted if the Committee does not reach agreement on a joint text by the deadline.- If it does so, the joint text is sent to the Council and Parliament for approval.
+
+
+=== SEGMENT 28 ===
+[Summary: The conclusion of the ordinary legislative procedure (third reading) requires both the Council (acting by qualified majority) and Parliament (acting by a majority of votes cast) to approve the joint text within six weeks; failure by either institution results in the act not being adopted. The text also notes the rising frequency of informal first-reading agreements and introduces the Consultation procedure. Under the Consultation procedure, the Council must seek opinions from Parliament and other bodies, as the absence of such consultation renders the resulting act illegal and subject to annulment by the Court of Justice.]
+
+**g. Conclusion of the procedure (third reading)**- The Council and Parliament have six weeks to approve the joint text. The Council acts by a qualified majority and Parliament by a majority of the votes cast.- The act is adopted if the Council and Parliament approve the joint text.- If either of the institutions has not approved it by the deadline, the procedure stops and the act is not adopted.Over the past few years, the number of first reading agreements based on informal negotiations between the Council and Parliament has significantly increased.Some bridge clauses allow the European Council to extend the application of the ordinary procedure to areas exempted from it (for example social policy: Article 153(2)).### B. Consultation procedureBefore taking a decision, the Council must take note of the opinion of Parliament and, if necessary, of the European Economic and Social Committee and the Committee of the Regions. It is required to do so, as the absence of such consultation makes the act illegal and capable of annulment by the Court of Justice (see judgment in Cases 138 and 139/79). When the Council intends to substantially amend the proposal, it is required to consult Parliament again (judgment in Case 65/90).
+
+
+=== SEGMENT 29 ===
+[Summary: The Consent procedure, significantly expanded by the Lisbon Treaty, applies to critical areas including the horizontal budgetary flexibility clause, anti-discrimination measures, and international agreements like association agreements and the EU's accession to the ECHR. During the procedure, the Parliament considers a draft act from the Council, which it must approve by an absolute majority of votes cast, although it lacks the power to amend the draft.]
+
+### C. Consent procedure**1. Scope**As a result of the entry into force of the Lisbon Treaty, the consent procedure applies in particular to the horizontal budgetary flexibility clause, as specified in Article 352 TFEU (former Article 308 TEC). Other examples are action to combat discrimination (Article 19(1) TFEU) and membership of the Union (Articles 49 and 50 TEU). In addition, Parliament's consent is required for association agreements (Article 217 TFEU), accession of the Union to the ECHR (Article 6(2) TEU), and agreements establishing a specific institutional framework entailing major budgetary implications or concerning areas where the ordinary legislative procedure applies (Article 218(6) TFEU).**2. Procedure**Parliament considers a draft act forwarded by the Council; it decides whether to approve the draft (it cannot amend it) by an absolute majority of the votes cast. The Treaty does not give Parliament any formal role in the preceding stages of the procedure to consider the Commission proposal, but as a result of interinstitutional arrangements it has become the practice to involve Parliament informally (see Parliament's Rules of Procedure).
+
+
+=== SEGMENT 30 ===
+[Summary: This segment details several critical EU appointment and election procedures, specifying that the European Parliament elects the President of the Commission and the European Ombudsman, while the Council often uses qualified majority voting to appoint the High Representative and adopt lists for other Commissioners and various committee members. It also outlines the Union's ability to conclude international agreements under Article 218 TFEU, noting that the Lisbon Treaty mandates European Parliament consent for agreements in the Common Commercial Policy and areas falling under the ordinary legislative procedure.]
+
+## BUDGETARY PROCEDURE (1.2.5)## APPOINTMENT PROCEDURESA. Parliament elects the President of the Commission (Article 14(1) TEU) (1.3.8).B. The European Council, acting by qualified majority, appoints the High Representative for Foreign Affairs and Security Policy (Article 18(1) TEU).C. The Council, acting by qualified majority, adopts:- The list of the other persons whom it proposes for appointment as Members of the Commission, by common accord with the President-elect (Article 17(7) TEU).D. The Council adopts the list of:- The members of the Court of Auditors (Article 286 TFEU), after consulting Parliament and in accordance with the proposals put forward by the Member States;- Members and alternate members of the Committee of the Regions and the European Economic and Social Committee, drawn up in accordance with the proposals made by each Member State (Articles 301, 302 and 305 TFEU).E. Parliament elects the European Ombudsman (Article 228 TFEU).## CONCLUSION OF INTERNATIONAL AGREEMENTSHaving gained legal personality, the Union can now conclude international agreements (Article 218 TFEU). The Lisbon Treaty requires the consent of the European Parliament in any agreements concluded in the field of the Common Commercial Policy as well as in all fields whose policies would fall under the ordinary legislative procedure within the EU. The Council decides by QMV, with the exception of association and accession agreements, agreements risking to prejudice the Union's cultural and linguistic diversity, and agreements in fields where unanimity would be required for the adoption of internal acts.
+
+
+=== SEGMENT 31 ===
+[Summary: The analyzed text details the procedural steps for concluding international agreements, including the roles of the Commission, the High Representative, and the Council in defining mandates and negotiations, emphasizing Parliament's right to be fully informed and its requirement for consent on most agreements. Furthermore, it outlines two quasi-constitutional procedures: the system of own resources (Article 311 TFEU), which requires Commission proposal, EP consultation, and unanimous Council decision subject to ratification; and provisions for EP elections (Article 223 TFEU), which require EP proposal and consent, unanimous Council decision, and subsequent Member State adoption.]
+
+- **Procedure:** The Commission or the High Representative of the Union for Foreign Affairs and Security Policy (HR) presents recommendations to the Council, the Council defines the mandate for the negotiations and nominates the Union negotiator (from the Commission or the HR) to conduct negotiations. The European Parliament must be immediately and fully informed at all stages of the procedure (Article 218(10).- **Decision:** Council, by QMV, except in the fields mentioned above.- **Parliament's role:** consent for most agreements (see above), consultation for agreements falling exclusively in the field of foreign and security policy.## QUASI-CONSTITUTIONAL PROCEDURES**A. System of own resources (Article 311 TFEU)**- **Proposal:** Commission;- **Parliament's role:** consultation;- **Decision:** Council, unanimously, subject to adoption by the Member States in accordance with their respective constitutional requirements.**B. Provisions for election of Parliament by direct universal suffrage (Article 223 TFEU)**- **Proposal:** Parliament;- **Decision:** Council, unanimously after obtaining Parliament's consent and recommending the proposal to the Member States for adoption according to their constitutional r
+
+
+=== SEGMENT 32 ===
+[Summary: The segment details quasi-constitutional procedures, specifically for adopting the Statutes of MEPs and the Ombudsman, where Parliament makes the final decision, and for amending the Statute of the Court of Justice, which uses the ordinary legislative procedure. Historically, the European Parliament consistently advocated for extending the ordinary legislative procedure (codecision) and simplifying decision-making, arguing that codecision should automatically apply when unanimity shifts to qualified majority voting. These procedural reforms were largely implemented by the Lisbon Treaty.]
+
+equirements.
+
+**C. Adoption of the Statute for Members of the European Parliament (Article 223(2) TFEU) and the Statute for the Ombudsman (Article 228(4) TFEU)**
+- **Proposal:** Parliament;
+- **Commission's role:** opinion;
+- **Council's role:** consent (by qualified majority except in relation to rules or conditions governing the tax arrangements for Members or former Members, in which case unanimity applies);
+- **Decision:** Parliament.
+
+**D. Amendment of the protocol on the Statute of the Court of Justice (Article 281 TFEU)**
+- **Proposal:** Court of Justice (with consultation of the Commission) or Commission (with consultation of the Court of Justice);
+- **Decision:** Council and Parliament (ordinary legislative procedure).
+
+## ROLE OF THE EUROPEAN PARLIAMENT
+
+At the 2000 Intergovernmental Conference (IGC), Parliament made several proposals to extend the areas to which the ordinary legislative (formerly ‘codecision') procedure would apply. Parliament also repeatedly voiced its opinion that, if there was a change from unanimity to qualified majority, co-decision should apply automatically. The Treaty of Nice endorsed this position but did not fully align qualified majority and codecision. As a result, the issue of simplifying procedures was one of the key elements addressed at the Convention on the Future of Europe. It was proposed that the cooperation and consultation procedures be abolished, that the codecision procedure be simplified and extended to cover the entire legislative field, and that the assent procedure be limited to the ratification of international agreements. Many of these improvements were implemented by the Lisbon Treaty (1.1.5).
+
+
+=== SEGMENT 33 ===
+[Summary: The Treaty of Lisbon partially streamlined EU appointment procedures, notably enhancing the political legitimacy of the European Commission by requiring the President to be elected by Parliament, taking European election results into account (a process first applied in 2014). Separately, the text introduces intergovernmental decision-making procedures, which differ from the ordinary legislative procedure, are characterized by strong cooperation among governments, and are applied in fields like Common Foreign and Security Policy and treaty revision, increasing in prominence due to the public debt crisis.]
+
+With regard to appointments, the Treaty of Lisbon failed to put an end to the wide range of different procedures, although some streamlining was achieved. Unanimity is still applied in some cases, and tends to cause political disputes and reduces the influence of Parliament. Progress was achieved in particular after the entry into force of the Treaty of Nice, with the move from unanimity to qualified majority for the appointment of the Commission President. The Lisbon Treaty provides, in addition, for the election of the Commission President by Parliament. The appointment of the President-elect, after appropriate consultations of Parliament, must take due account of the results of the European elections. This highlights the political legitimacy and accountability of the European Commission. After the elections to the European Parliament in 2014, these provisions were implemented for the first time. The European Council agreed to designate Jean-Claude Juncker as President of the European Commission because the European People's Party (EPP) was the largest group in the European Parliament following the elections.
+
+Martina Schonard
+05/2018
+
+***
+
+# 4 - INTERGOVERNMENTAL DECISION-MAKING PROCEDURES - [1.2.4.]
+
+> In the Common Foreign and Security Policy, as well as in several other fields such as enhanced cooperation, certain appointments and treaty revision, the decision-making procedure is different from that prevailing in the ordinary legislative procedure. The dominant feature in these fields is a stronger component of intergovernmental cooperation. The challenge of the public debt crisis has provoked an increased use of such decision-making mechanisms, notably in the framework of European economic governance.
+
+## LEGAL BASIS
+
+Articles 20, 21-46, 48 and 49 of the Treaty on European Union (TEU); Articles 2(4), 31, 64(3), 81, 89, 103(1), 113, 115, 118, 127, 153, 191(3), 192, 194 (2), 215, 218, 220, 221, 312, 329 and 333 of the Treaty on the Functioning of the European Union (TFEU).
+
+
+=== SEGMENT 34 ===
+[Summary: This segment describes the intergovernmental procedures for amending EU Treaties (Article 48 TEU) and activating passerelle clauses. Treaty amendments are proposed by Member States, Parliament, or the Commission, require consultation with various bodies (including the ECB for monetary changes), and ultimately necessitate the common accord of governments and ratification by all Member States. The activation of the general passerelle clause and the specific passerelle for the Multiannual Financial Framework requires a unanimous decision by the European Council, with national parliaments holding a veto over the general clause.]
+
+## DESCRIPTION
+
+### A. Procedure for amendment of the Treaties (Article 48 TEU)
+
+- **Proposal:** any Member State, Parliament or the Commission;
+- **Commission's role:** consultation and participation in the intergovernmental conference;
+- **Parliament's role:** consultation before the intergovernmental conference is convened (the conferences themselves involve Parliament on an ad hoc basis but with increasing influence: for some time it was represented by either its President or two of its Members; at the most recent intergovernmental conference it provided three representatives);
+- **Role of the Governing Council of the European Central Bank:** consultation in the event of institutional changes in the monetary field;
+- **Decision:** common accord of the governments on amendments to the Treaties, which are then put to the Member States for ratification in accordance with their constitutional requirements; before that, a decision by the European Council is required, by a simple majority, on whether or not to convene a Convention, following the consent of Parliament.
+
+### B. Procedure for the activation of passerelle clauses
+
+- **European Council:** activates and decides, unanimously, on the use of the general passerelle clause (Article 48 TEU) and the specific passerelle for the Multiannual Financial Framework (Article 312 TFEU). Any national parliament has a right of veto for the general clause;
+- **Council:** other bridge clauses can be decided by the Council, acting unanimously or by qualified majority, depending on the relevant treaty provision (Article 31 TEU, Articles 81, 153, 192 and 333 TFEU).
+
+
+=== SEGMENT 35 ===
+[Summary: This section details the procedures for both EU accession (Article 49 TEU) and withdrawal (Article 50 TEU). Accession requires applications from European states complying with Union principles, consultation with the Commission, consent by an absolute majority of the European Parliament, and a unanimous decision by the Council, followed by Member State ratification. Withdrawal begins with the Member State notifying the European Council, culminating in a withdrawal agreement concluded by the Council using a special qualified majority and requiring the consent of the European Parliament.]
+
+### C. Accession procedure (Article 49 TEU)
+
+- **Applications:** from any European state which complies with the Union's principles (Article 2 TEU); notification of national parliaments and European Parliament; the European Council agrees on conditions of eligibility;
+- **Commission's role:** consultation; it plays an active part in preparing and conducting negotiations;
+- **Parliament's role:** consent, by an absolute majority of its component Members;
+- **Decision:** by the Council, unanimously; the agreement between the EU Member States and the applicant state, setting out the terms of accession and the adjustments required, is put to all the Member States for ratification in accordance with their constitutional requirements.
+
+### D. Withdrawal procedure (Article 50 TEU)
+
+- **Request:** the Member State concerned notifies the European Council of its intention, in accordance with its own constitutional requirements;
+- **Conclusion:** takes the form of a withdrawal agreement concluded by the Council after obtaining the consent of the European Parliament, and acting by a special qualified majority (Article 238(3)(b) TFEU); this is defined as 72% of the members of the Council representing the participating Member States (i.e. excluding the state concerned), comprising at least 65% of the population of these Member States.
+
+
+=== SEGMENT 36 ===
+[Summary: The sanctions procedure under Article 7 TEU addresses both serious and persistent breaches of Union principles and the clear risk thereof. The main procedure requires a proposal from the Commission or one third of Member States, consent from the European Parliament, and a unanimous decision by the European Council (excluding the state concerned) to determine the breach, followed by a qualified majority Council decision to suspend rights. Additionally, the Treaty of Nice introduced a precautionary system allowing the Council, acting by a four-fifths majority, to determine a clear risk of a breach and issue recommendations.]
+
+### Ε. Sanctions procedure for a serious and persistent breach of Union principles by a Member State (Article 7 TEU)
+
+**1. Main procedure**
+- **Proposal for a decision determining the existence of a serious and persistent breach:** one third of the Member States, or the Commission;
+- **Parliament's consent:** adopted by a two-thirds majority of the votes cast, representing a majority of its Members (Rule 83(3) of Parliament's Rules of Procedure);
+- **Decision determining the existence of a breach:** adopted by the European Council, unanimously, without the participation of the Member State concerned, after inviting the State in question to submit its observations on the matter;
+- **Decision to suspend certain rights of the Member State concerned:** adopted by the Council by a qualified majority (without the participation of the Member State concerned).
+
+**2. The Treaty of Nice supplemented this procedure with a precautionary system**
+- **Reasoned proposal for a decision determining a clear risk of a serious breach of Union principles by a Member State:** on the initiative of the Commission, Parliament or one third of the Member States;
+- **Parliament's consent:** adopted by a two-thirds majority of the votes cast, representing a majority of its component Members;
+- **Decision:** adopted by the Council by a four-fifths majority of its members, after hearing the Member State in question. The Council can address recommendations to the Member State before taking such a decision.
+
+
+=== SEGMENT 37 ===
+[Summary: The text details the procedural rules for Enhanced Cooperation and decisions in Foreign Affairs, specifically the Common Foreign and Security Policy (CFSP). General Enhanced Cooperation is decided by the Council using a qualified majority, requiring the Commission's proposal and Parliament's consent. CFSP decision-making, which was restructured by the Treaty of Lisbon to include the High Representative (HR) and the European External Action Service (EEAS), requires unanimity when decided by the Council or European Council, with proposals coming from Member States, the HR, or the Commission.]
+
+### F. Enhanced cooperation procedure
+
+**1. General rules (Article 20 TEU, Article 329(1) TFEU)**
+- **Proposal:** exclusive right of the Commission; Member States which intend to establish enhanced cooperation can address a request to the Commission to that effect;
+- **Parliament's role:** consent;
+- **Decision:** by the Council, acting by a qualified majority.
+
+**2. Cooperation in the field of the CFSP (Article 329(2) TFEU)**
+- Application to the Council by the Member States concerned;
+- Proposal forwarded to the High Representative of the Union for Foreign Affairs and Security Policy (HR), who gives an opinion;
+- Information of Parliament;
+- The Council acts on the basis of unanimity.
+
+A similar procedure exists for initiating a structured cooperation in defence policy introduced by the Treaty of Lisbon (5.1.2).
+
+### G. Procedure for decisions in foreign affairs
+
+The Treaty of Lisbon abolished the three-pillar structure of the previous treaties but kept foreign policy separate from the other EU policies. The objectives and provisions of the CFSP are included in the Treaty on European Union. They are now better drafted and more coherent than in the previous treaties.
+
+A major institutional change is the creation of the office of the HR, who is assisted by a new European External Action Service and can propose initiatives under the CFSP. The CFSP has been integrated into the Union framework but follows specific rules and procedures (Article 24(2) TEU).
+
+- **Proposal:** any Member State, the HR or the Commission (Article 22 TEU);
+- **Parliament's role:** regularly informed by the Presidency and consulted on the main aspects and basic choices. Under the interinstitutional agreement on financing the CFSP, this consultation process is an annual event on the basis of a Council document;
+- **Decision:** E
+
+
+=== SEGMENT 38 ===
+[Summary: Decisions in foreign affairs require unanimous action by the European Council or the Council; the European Council sets strategic interests, while the Council executes specific actions, which are implemented by the HR and Member States. Furthermore, intergovernmental decision-making remains the procedure in several specific and politically sensitive EU policy areas, including Justice and Home Affairs, aspects of the Internal Market (like tax harmonization and competition), Monetary Policy, and certain measures related to social, energy, and environmental policies.]
+
+uropean Council or Council, acting unanimously. The European Council defines the priorities and strategic interests of the EU; the Council takes decisions or actions. The HR and the Member States put these decisions into effect, making use of national or Union resources. The President of the European Council can convene an extraordinary meeting of the European Council if international developments so require.### H. Other legislative measures (2.6.8)Intergovernmental decision-making is also maintained in a number of specific, politically sensitive areas of EU policy, in particular:- Justice and home affairs: measures regarding judicial cooperation in criminal matters, judicial cooperation (Article 89 TFEU);- The internal market: restrictions on movement of capital (Article 64(3) TFEU), competition policy (Article 103(1) TFEU), tax harmonisation measures (Article 113 TFEU), approximation of laws affecting the establishment of the internal market (Article 115 TFEU), intellectual property rights (Article 118 TFEU);- Monetary policy: conferral of specific prudential supervision tasks on the ECB (Article 127 TFEU);- Other policy fields such as social policies and employment (Article 153 TFEU), energy (Article 194(2) TFEU) or environment (Article 191(3) TFEU).
+
+
+=== SEGMENT 39 ===
+[Summary: The grave financial difficulties faced by some Member States beginning in 2010 necessitated rescue packages managed through a hybrid structure. While mechanisms like the European Financial Stabilisation Mechanism (EFSM) were managed by the Union, the major part of the aid, such as contributions to the European Financial Stability Facility (EFSF), relied on intergovernmental agreements among euro area Member States. This reliance on intergovernmental decision-making, requiring ratification at national levels, was primarily due to the limitations imposed by the no-bail-out clause (Article 125 TFEU) and resistance from national constitutional courts against transferring further financial and budgetary powers to the EU.]
+
+### I. Financial crisis management (2.6.8)The advent of grave financial difficulties in some Member States in 2010 has made it necessary to come to their rescue in different guises. Some components of the aid package are managed by the Union, for instance the European Financial Stabilisation Mechanism. The major part, notably the contributions to the European Financial Stability Facility (EFSF), is paid directly by the Member States. The EFSF is a 'special-purpose vehicle' created by an intergovernmental agreement among the euro area Member States. The decisions required for such intergovernmental measures have therefore had to be taken at the level of the European Council, or of the Heads of State or Government of the Eurogroup, including ratification in the Member States according to their national constitutional requirements. Two important reasons for this development are the no-bail-out clause (Article 125 TFEU) and the resistance of some national constitutional courts to a further transfer of financial and budgetary powers to the European Union.
+
+
+=== SEGMENT 40 ===
+[Summary: To establish permanent financial crisis prevention mechanisms, the European Council adopted an amendment to Article 136 TFEU on 25 March 2011, which entered into force in April 2013. This enabled the creation of the European Stability Mechanism (ESM) via an intergovernmental treaty, which features an emergency voting procedure requiring an 85% qualified majority for urgent financial decisions. Furthermore, Member State governments drew up the international Treaty on Stability, Coordination and Governance in the Economic and Monetary Union, which became effective on 1 January 2013.]
+
+An amendment to Article 136 TFEU (economic policy coordination) was adopted by the European Council on 25 March 2011, under the simplified treaty revision procedure, without convening a Convention (European Council Decision 2011/199/EU). It entered into force in April 2013, thus enabling permanent crisis prevention mechanisms such as the European Stability Mechanism (ESM) to come into operation. The latter was created by an intergovernmental treaty between the members of the euro area, which entered into force on 27 September 2012. Voting procedures on its executive board include a so-called 'emergency procedure' which provides for a qualified majority of 85% if the Commission and the ECB conclude that an urgent decision related to financial assistance is needed. Finally, an international Treaty on Stability, Coordination and Governance in the Economic and Monetary Union has been drawn up by Member State governments, and entered into force on 1 January 2013, after 12 contracting parties whose currency is the euro deposited their instrument of ratification.
+
+
+=== SEGMENT 41 ===
+[Summary: This section outlines the specific appointment procedures for key EU positions, detailing which body holds the appointing power and what majority is required. Appointments for the ECB Executive Board, the High Representative, and the Court of Auditors are generally made by the European Council or the Council acting by qualified majority, while judges and advocates-general of the EU Courts are appointed by common accord of the Member State governments.]
+
+### J. Appointments- The European Council, acting by a qualified majority, appoints the President, the Vice-President and the other four members of the Executive Board of the European Central Bank, on a recommendation by the Council and after consulting Parliament (Article 283(2) TFEU);- The European Council, acting by a qualified majority and with the agreement of the President of the Commission, appoints the High Representative of the Union for Foreign Affairs and Security Policy (Article 18(1) TEU); in his/her capacity as a Vice-President of the Commission, the HR is nevertheless subject to consent by Parliament on the Commission as a whole;- The Governments of the Member States appoint by common accord the judges and advocates-general of the Court of Justice and the General Court (formerly the Court of First Instance) (Article 19(2) TEU);- The Council appoints the Members of the Court of Auditors by qualified majority, on the recommendation of each Member State and after consulting Parliament (Article 286(2) TFEU).
+
+
+=== SEGMENT 42 ===
+[Summary: The European Parliament actively sought the 'communitisation' of the second and third pillars, aiming to apply standard European Community decision-making procedures to these policy areas. These efforts contributed to the Treaty of Lisbon, which extended supranational decision-making to the former third pillar (justice and home affairs) and established a coherent institutional framework for foreign and security policy, including the creation of the High Representative position. Furthermore, Parliament played a role in ensuring appropriate EU institutional participation in negotiations concerning economic and fiscal governance.]
+
+## ROLE OF THE EUROPEAN PARLIAMENTIn the run-up to the 1996 Intergovernmental Conference, Parliament had already called for 'communitisation' of the second and third pillars, so that the decision-making procedures applicable under the Treaty establishing the European Community would also apply to them.Following Parliament's continued efforts during the European Convention to make the former second and third pillars part of the Union's structure (1.1.4), the Treaty of Lisbon extended supranational decision-making to the former third pillar (justice and home affairs) and introduced a coherent institutional framework for foreign and security policy, with important innovations such as the long-term President of the European Council and the position of High Representative of the Union for Foreign Affairs and Security Policy.In a context of increasing inter-governmentalisation of economic and fiscal governance, Parliament played its part in ensuring appropriate participation of the EU institutions in the negotiations on the international treaty mentioned above in section I.Petr Novak05/2018***
+
+
+=== SEGMENT 43 ===
+[Summary: The European Parliament's role in the EU budgetary process has been significantly enhanced since the 1970 and 1975 Treaties, culminating in the Lisbon Treaty granting it an equal say with the Council over the entire EU budget. Budgetary powers encompass establishing the total amount and distribution of annual EU expenditure and revenue, as well as controlling the budget's implementation. The procedure is legally based on Article 314 TFEU, Article 106a of the Euratom Treaty, and the Financial Rules (Regulation No 966/2012).]
+
+# 5 - THE BUDGETARY PROCEDURE - [1.2.5.]> Since the 1970 and 1975 Treaties, Parliament's role in the budgetary process has gradually been enhanced. The Lisbon Treaty gave Parliament an equal say with the Council in the entire EU budget.## LEGAL BASIS- Article 314 of the Treaty on the Functioning of the European Union (TFEU) and Article 106a of the Treaty establishing the European Atomic Energy Community;- Articles 36 to 52 of the Financial Rules (Regulation (EU, Euratom) No 966/2012 of the European Parliament and of the Council of 25 October 2012 on the financial rules applicable to the general budget of the Union and repealing Council Regulation (EC, Euratom) No 1605/2002[^1]);- Interinstitutional Agreement (IIA) between the European Parliament, the Council and the Commission on budgetary discipline, on cooperation in budgetary matters and on sound financial management approved by Parliament on 19 November 2013 and by the Council on 2 December 2013[^2], following the political agreement reached between the Presidents of Parliament, the Council and the Commission on 27 June 2013.## OBJECTIVESThe exercise of budgetary powers consists in establishing both the overall amount and distribution of annual EU expenditure and the revenue necessary to cover it, and in exercising control over the implementation of the budget. The budgetary procedure itself involves the preparation and adoption of the budget. (1.4.1 for details on EU revenue, 1.4.2 for details on expenditure, 1.4.3 for details on the MFF, 1.4.4 for details on implementation and 1.4.5 for details on budgetary control).
+
+
+=== SEGMENT 44 ===
+[Summary: The European Parliament and the Council together form the budgetary authority, succeeding a period before 1970 where the Council held sole power and Parliament was consultative. Parliament's influence grew through the 1970 and 1975 Treaties, gaining control over non-compulsory expenditure and the right to reject the budget as a whole. The Lisbon Treaty fundamentally changed the procedure, introducing budgetary codecision, removing the distinction between compulsory and non-compulsory expenditure, and simplifying the process to a single reading in each institution.]
+
+## DESCRIPTION### A. BackgroundThe European Parliament and the Council together form the budgetary authority. Prior to 1970, budgetary powers were vested in the Council alone; Parliament had only a consultative role. The Treaties of 22 April 1970 and 22 July 1975 increased Parliament's budgetary powers:- The 1970 Treaty, while maintaining the Council's right to have the last word on 'compulsory expenditure' resulting from Treaty obligations or from acts adopted in accordance with the Treaty, gave Parliament the final say on ‘non-compulsory expenditure', which initially amounted to 8% of the budget;- The 1975 Treaty gave Parliament the right to reject the budget as a whole.Until the Lisbon Treaty came into force, the Council and Parliament each engaged in two readings in the course of the budgetary procedure, at the end of which Parliament could either adopt the budget or reject it as a whole.No substantial modifications were introduced by subsequent Treaties until the major changes brought by the Treaty of Lisbon. The Treaty of Lisbon introduced a simpler and more transparent budgetary procedure (budgetary codecision). The modifications derive mainly from the removal of the distinction between compulsory expenditure and non-compulsory expenditure, allowing for equal treatment of all expenditure under the same procedure. The procedure has been further simplified, with only one reading in each institution, based on the draft budget presented by the Commission.
+
+
+=== SEGMENT 45 ===
+[Summary: The EU budgetary procedure follows stages and time limits set out in Article 314 TFEU, although institutions typically adhere to a pragmatic calendar. Stage one involves the Commission drawing up the draft budget, based on guidelines from Parliament and the Council, forwarding it by September 1 (TFEU deadline). Stage two requires the Council to adopt its position on the draft budget and forward it to Parliament, fully informing Parliament of the reasons for its position, generally by October 1 (TFEU deadline).]
+
+### B. The stages in the procedureArticle 314 of the TFEU sets out the stages and time limits that must be respected during the budgetary procedure. However, the institutions agree on a 'pragmatic' calendar each year in due time before the start of the budgetary procedure based on the present practice.1. **Stage one: establishment of the draft budget by the Commission**Parliament and the Council lay down guidelines on the priorities for the budget. The Commission draws up the draft budget and forwards it to the Council and Parliament by 1 September at the latest (under Article 314(2) TFEU, but by the end of April or beginning of May according to the pragmatic timetable). The Commission may modify the draft budget at a later stage to take account of new developments, but no later than the point at which the Conciliation Committee (see below) is convened.2. **Stage two: establishment of the Council's position on the draft budget**The Council adopts its position on the draft budget and forwards it to Parliament by 1 October at the latest (under Article 314(3) TFEU, but by the end of July according to the pragmatic timetable). The Council must inform Parliament in full of the reasons which have led it to adopt its position.3. **Stage three: Parliament's reading**Parliament has 42
+
+
+=== SEGMENT 46 ===
+[Summary: During Parliament's reading stage, it has 42 days to react to the Council's position, which can result in approval, adoption by inaction, or the adoption of amendments by a majority of its component members. If amendments are adopted, the Conciliation Committee is immediately convened. This Committee, composed of equal representatives from the Council and Parliament, then has 21 days to agree on a joint text, requiring a qualified majority from the Council's side and a simple majority from Parliament's representatives, with the Commission participating to reconcile positions.]
+
+days in which to react. Within that period, it may either approve the Council's position or decline to take a decision, in which case the budget is deemed finally adopted, or else Parliament can adopt amendments by a majority of its component members, in which case the amended draft is referred back to the Council and to the Commission. The President of Parliament, in agreement with the President of the Council, must then immediately convene a meeting of the Conciliation Committee.4. **Stage four: meeting of the Conciliation Committee and adoption of the budget**From the day on which it is convened, the Conciliation Committee (composed of the representatives of the members of the Council and an equal number of representatives of Parliament) has 21 days to agree on a joint text. To do so, it must take its decision by a qualified majority of the members of the Council or their representatives and by a majority of the representatives of Parliament. The Commission takes part in the Conciliation Committee's proceedings and takes all the necessary initiatives to seek to reconcile the positions of Parliament and the Council.
+
+
+=== SEGMENT 47 ===
+[Summary: If the Conciliation Committee fails to agree on a joint text within 21 days, the Commission must submit a new draft budget. If an agreement is reached, Parliament and the Council have 14 days to approve the joint text. The outcome during this 14-day period varies based on their respective decisions (approval, rejection, or inaction), resulting either in the adoption of the joint text or the requirement for a new draft budget from the Commission.]
+
+Should the Conciliation Committee fail to find an agreement on a joint text within the 21 days referred to above, a new draft budget must be submitted by the Commission. If the Conciliation Committee does agree on a joint text within the deadline, then Parliament and the Council have 14 days from the date of that agreement in which to approve the joint text. The following table summarises the possible outcomes at the end of that 14-day period.Process of approval of the conciliation joint textKey for positions on the joint text:- `+` = adopted- `-` = rejected- `None` = no decision taken| Parliament | Council | Outcome || :--- | :--- | :--- || + | + | Joint text adopted || + | - | Back Parliament position, possibly[^3] || + | None | Joint text adopted || - | + | Joint text adopted || - | - | New draft budget from Commission || - | None | Joint text adopted || None | + | New draft budget from Commission || None | - | New draft budget from Commission || None | None | New draft budget from Commission |
+
+
+=== SEGMENT 48 ===
+[Summary: If the budgetary procedure is successfully completed, the President of Parliament formally declares the budget adopted. Should no agreement be reached by the start of the financial year, a system of provisional twelfths is implemented, limiting monthly spending based on the previous or draft budget appropriations, though the Council can authorize greater spending under specific conditions (Article 315 TFEU). Additionally, the Commission can propose amending budgets for unavoidable circumstances, which must follow the same rules as the general budget.]
+
+If the procedure is successfully completed, the President of Parliament declares that the budget has been definitively adopted. In the event that no agreement has been reached by the beginning of a financial year, a system of provisional twelfths is put in place until an agreement can be reached. In this case, a sum equivalent to no more than one twelfth of the budget appropriations for the preceding financial year may be spent each month in respect of any chapter of the budget. That sum must not, however, exceed one twelfth of the appropriations provided for in the same chapter of the draft budget. However, under Article 315 of the TFEU, the Council may, on a proposal from the Commission, authorise expenditure in excess of one twelfth (in accordance with Article 16 of the Financial Rules) unless Parliament decides within 30 days to reduce the expenditure authorised by the Council.5. Supplementary and amending budgetsIn the event of unavoidable, exceptional or unforeseen circumstances (in accordance with Article 41 of the Financial Rules), the Commission may propose draft amending budgets amending the adopted budget for the current year. These amending budgets are subject to the same rules as the general budget.
+
+
+=== SEGMENT 49 ===
+[Summary: The European Parliament's budgetary powers evolved significantly, starting in 1970 when it gained the right to determine non-compulsory expenditure, which grew from 8% to over 60% of the budget by 2010. Following the abolition of the compulsory/non-compulsory distinction under the TFEU, Parliament now shares joint powers with the Council over all Union expenditure. While Parliament holds a theoretically stronger position as the Council cannot impose a budget against its will, the current budgetary procedure operates primarily as genuine codecision between the two institutions on an equal footing.]
+
+## ROLE OF THE EUROPEAN PARLIAMENT### A. Powers conferred by Article 314 of the TFEUIn 1970, Parliament gained the right to have the last word on non-compulsory expenditure. The proportion of non-compulsory expenditure rose from 8% of the budget in 1970 to more than 60% in the 2010 budget, the last year in which the distinction was made. With the abolition of the distinction between compulsory and non-compulsory expenditure (TFEU), Parliament now has joint powers with the Council over all budget expenditure. Parliament's position can even be considered stronger than that of the Council since the latter may never impose a budget against the will of Parliament, while Parliament may in some circumstances have the last word and impose a budget against the will of the Council (see B.4 above). However, this is rather unlikely, and it would be more appropriate to say that the new budgetary procedure is based, for the most part, on genuine (albeit specific) codecision between Parliament and the Council, on an equal footing, covering all Union expenditure.
+
+
+=== SEGMENT 50 ===
+[Summary: The European Parliament has historically rejected the budget twice (1979 and 1984) since gaining the power in 1975. More recently, under the Lisbon Treaty, the Conciliation Committee failed thrice (2011, 2013, 2015), though compromise budgets were eventually adopted. Conversely, the 2018 budget process concluded successfully in conciliation on November 18, 2017, setting commitments at EUR 160.1 billion and payments at EUR 144.7 billion, with a focus on growth, jobs, and security.]
+
+Parliament has rejected the budget as a whole on two occasions (in December 1979 and December 1984) since acquiring the power to do so in 1975. Under the new rules agreed in the Lisbon Treaty, the Conciliation Committee has thrice failed to reach agreement (on the 2011, 2013 and 2015 budgets). In all three cases, the new draft budget presented by the Commission, reflecting the near-compromise in conciliation, was finally adopted.In the case of the 2018 budget, the three institutions reached an agreement at the conciliation committee held on 18 November 2017, followed by the adoption of the Council position on the new draft budget on 30 November and the plenary vote in Parliament on the same day. The negotiators agreed to a compromise package of EUR 160.1 billion in commitments and EUR 144.7 billion in payments. The 2018 budget focuses on boosting growth, investments and job creation, supporting youth employment, and tackling migration and security challenges.
+
+
+=== SEGMENT 51 ===
+[Summary: Interinstitutional Agreements (IIA) on budgetary discipline were introduced following a 1982 joint declaration aimed at resolving disputes and smoothing the budgetary procedure. A series of successive IIAs provided an essential reference framework for annual budgets, considerably improving the process. The current IIA, which entered into force on 23 December 2013, facilitates the annual procedure and complements the binding Multiannual Financial Framework (MFF) regulation, specifically detailing provisions for special instruments that operate outside the MFF.]
+
+### B. The Interinstitutional Agreements on budgetary discipline (IIA) and the multiannual financial frameworks (MFFs) (1.4.3)Following repeated disputes concerning the legal base for implementation of the budget, the institutions adopted a joint declaration in 1982, which also laid down measures designed to ensure smoother completion of the budgetary procedure. This was followed by a series of Interinstitutional Agreements covering the following periods: 1988-1992, 1993-1999, 2000-2006 and 2007-2013. These successive agreements have provided an interinstitutional reference framework for the annual budgetary procedures and have considerably improved the way the budgetary procedure works.The current IIA entered into force on 23 December 2013[^4]. It aims to facilitate the annual budgetary procedure and to complement the provisions of the MFF regulation (which has become a binding regulation, with binding ceilings), notably on the special instruments outside the MFF. These provisions concern the following special instruments: the Emergency Aid Reserve, the European Union Solidarity Fund, the Flexibility Instrument, the European Globalisation Adjustment Fund and the Contingency Margin.
+
+
+=== SEGMENT 52 ===
+[Summary: The Interinstitutional Agreements introduced a form of budgetary codecision procedure, allowing Parliament to assert its role and direct the budget towards its political priorities, though the annual budget must comply with the ceilings set in the Multiannual Financial Framework (MFF). Separately, the Economic and Financial Affairs Council approved the introduction of the European Semester on September 7, 2010, establishing a six-month annual cycle for EU-level economic policy coordination aimed at reviewing Member States' budgetary and structural policies to detect inconsistencies and provide policy guidance.]
+
+Although MFFs do not replace the annual budgetary procedure, the Interinstitutional Agreements have introduced a form of budgetary codecision procedure, which allows Parliament to assert its role as a fully-fledged arm of the budgetary authority, to consolidate its credibility as an institution and to direct the budget towards its political priorities. The Lisbon Treaty and the Financial Rules also stipulate that the annual budget must comply with the ceilings set in the MFF, which must itself comply with the ceilings established in the decision on own resources.### C. The European SemesterOn 7 September 2010, the Economic and Financial Affairs Council approved the introduction of the ‘European Semester', a cycle of economic policy coordination at EU level with the aim of achieving the Europe 2020 targets. This is a six-month period every year, during which the Member States' budgetary and structural policies are to be reviewed in order to detect any inconsistencies and emerging imbalances. On the basis of the analytical economic assessment, the Commission provides policy guidance/recommendations to the Member States covering fiscal, macroeconomic and structural reforms.
+
+
+=== SEGMENT 53 ===
+[Summary: The European Semester is designed to strengthen coordination among Member States regarding major budgetary decisions while they are still under preparation at the national level. Additionally, the European Parliament is actively seeking synergies to strengthen coordination between national budgets and the overall EU budget. The text segment also introduces the Fact Sheets series, which aims to provide an overview of European integration and the European Parliament's role in that process.]
+
+The aim of the European Semester is to strengthen coordination while major budgetary decisions are still under preparation at national level. In addition to coordination between national budgets, the European Parliament is also seeking to exploit synergies and strengthen coordination between national budgets and the EU budget.Rita Calatozzolo05/2018***[^1]: OJ L 298, 26.10.2012, p. 1.[^2]: OJ C 373, 20.12.2013, p. 1.[^3]: This occurs if Parliament confirms some or all of its previous amendments, acting by a majority of its component Members and three-fifths of the votes cast. If Parliament does not reach the required majority, the position agreed in the joint text is adopted.[^4]: OJ C 373, 20.12.2013, p. 1.***## THE EUROPEAN UNION AT A GLANCEThe aim of the Fact Sheets is to provide an overview of European integration and of the European Parliament's contribution to that process.
+
+
+=== SEGMENT 54 ===
+[Summary: The EU Fact Sheets were established in 1979, coinciding with the Parliament's first direct elections, to provide non-specialists with a straightforward and accurate overview of EU institutions, policies, and the European Parliament's specific role. These documents are organized into five distinct chapters that detail subjects ranging from the EU's historical development and financing to economic policies, cohesion strategies, and fundamental rights.]
+
+Created in 1979 for Parliament's first direct elections, the Fact Sheets are designed to provide non-specialists with a straightforward, concise and accurate overview of the European Union's institutions and policies, and the role that the European Parliament plays in their development.The Fact Sheets are grouped into five chapters.- **How the European Union works** addresses the EU's historical development and the successive treaties, its legal system, decision-making procedures, institutions and bodies, and financing.- **Economy, science and quality of life** explains the principles of the internal market and consumer protection and public health, describes a number of EU policies such as social, employment, industrial, research, energy and environment policies, outlines the context of the economic and monetary union (EMU) and explains how competition, taxation and economic policies are coordinated and scrutinised.- **Cohesion, growth and jobs** explains how the EU addresses its various internal policies: regional and cohesion policy, agriculture and fisheries, transport and tourism, and culture, education and sport.- **Citizens: fundamental rights, security and justice** describes individual and
+
+
+=== SEGMENT 55 ===
+[Summary: The fifth chapter of the Fact Sheets, "The EU's external relations," covers topics including foreign policy, security, defense, external trade, development policy, human rights promotion, and enlargement. The Fact Sheets are drafted by policy departments and the Economic Governance Support Unit and are made available in 23 languages. The online version is updated frequently throughout the year whenever the European Parliament adopts important positions or policies.]
+
+collective rights, including the Charter of Fundamental Rights, and freedom, security and justice, including immigration and asylum, and judicial cooperation. - **The EU's external relations** covers foreign policy, security and defence policies, external trade relations, and development policy; the promotion of human rights and democracy; the enlargement and relations beyond the EU's neighbourhood. Drafted by the policy departments and the Economic Governance Support Unit, the Fact Sheets are available in 23 languages. The online version is reviewed and updated at regular intervals throughout the year, as soon as Parliament adopts any important positions or policies. Fact Sheets on the European Union www.europarl.europa.eu/factsheets

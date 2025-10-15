@@ -1,9 +1,9 @@
 /**
  * Generates query variations for multi-vector retrieval
- * 
+ *
  * @param query - The original query string
  * @returns Array of query variations
- * 
+ *
  * @example
  * ```typescript
  * const variations = getQueryVariations("What is the voting age?");

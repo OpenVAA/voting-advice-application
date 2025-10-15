@@ -402,7 +402,7 @@ export class Condenser {
       const latency = this.latencyTracker.getDuration(callOperationId) ?? 0;
       const usage = llmResult.usage;
       const costs = await llmResult.costs;
-      const modelUsed = llmResult.model
+      const modelUsed = llmResult.model;
       this.modelsUsed.add(modelUsed);
       const promptCall = {
         promptTemplateId: isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId,
@@ -818,7 +818,7 @@ export class Condenser {
       const latency = this.latencyTracker.getDuration(nodeId) ?? 0;
       const usage = result.usage;
       const costs = await result.costs;
-      const modelUsed = result.model
+      const modelUsed = result.model;
       this.modelsUsed.add(modelUsed);
       const promptCall: PromptCall = {
         promptTemplateId: promptId,

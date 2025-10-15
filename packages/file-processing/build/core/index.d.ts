@@ -1,5 +1,5 @@
-export { convertPdfToMarkdown } from './pdfProcessor.js';
-export type { PdfProcessorOptions, PdfProcessorResult } from './pdfProcessor.type.js';
+export { convertPdfToMarkdown } from './pdfConverter.js';
+export type { PdfProcessorOptions, PdfProcessorResult } from './pdfConversion.type.js';
 export { segmentText } from './textSegmentation.js';
 export type { SegmentationOptions, SegmentationResult } from './textSegmentation.type.js';
 export { analyzeDocument } from './documentAnalysis.js';

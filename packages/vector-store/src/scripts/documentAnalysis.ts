@@ -125,11 +125,11 @@ export async function analyzeSegmentedDocuments(): Promise<void> {
       });
 
       // Transform to vector store format
-      const { segments: sourceSegments, summaries, facts } = transformToVectorStoreFormat(
-        analysisResults,
-        documentId,
-        metadata
-      );
+      const {
+        segments: sourceSegments,
+        summaries,
+        facts
+      } = transformToVectorStoreFormat(analysisResults, documentId, metadata);
 
       // Create the full document
       const fullDocument: SourceDocument = {

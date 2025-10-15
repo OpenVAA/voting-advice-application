@@ -1,13 +1,7 @@
 import { analyzeDocument } from './core/documentAnalysis';
-import { convertPdfToMarkdown } from './core/pdfProcessor';
+import { convertPdfToMarkdown } from './core/pdfConversion';
 import { segmentText } from './core/textSegmentation';
-import type {
-  PdfPreProcessingOptions,
-  PdfPreProcessingResult,
-  TextPreProcessingOptions,
-  TextPreProcessingResult
-} from './api.type';
-
+import type { ProcessPdfOptions, ProcessPdfResult, ProcessTextOptions, ProcessTextResult } from './api.type';
 
 // TODO: create an utility that stores this API boilerplate
 /**
@@ -28,11 +22,11 @@ import type {
  * console.log(`Total cost: $${result.processingMetadata.costs.total}`);
  * ```
  */
-export async function processText(options: TextPreProcessingOptions): Promise<TextPreProcessingResult> {
+export async function processText(options: ProcessTextOptions): Promise<ProcessTextResult> {
   const {
     text,
     llmProvider,
-    modelConfig,
+    runId,
     documentId,
     minSegmentLength,
     maxSegmentLength,
@@ -44,7 +38,7 @@ export async function processText(options: TextPreProcessingOptions): Promise<Te
   const segmentationResult = await segmentText({
     text,
     llmProvider,
-    modelConfig,
+    runId,
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
@@ -53,37 +47,65 @@ export async function processText(options: TextPreProcessingOptions): Promise<Te
 
   // Step 2: Analyze the document and segments
   const analysisResult = await analyzeDocument({
-    fullText: text,
-    segments: segmentationResult.segments,
+    text: text,
+    segments: segmentationResult.data.segments,
     llmProvider,
-    modelConfig,
-    documentId
+    runId,
+    sourceId: documentId
   });
 
-  // Merge costs from both operations
-  const combinedCosts = {
-    total: segmentationResult.metadata.costs.total + analysisResult.processingMetadata.costs.total,
-    perSegmentAverage: analysisResult.processingMetadata.costs.perSegmentAverage,
-    currency: 'USD' as const
+  // Combine metrics from both stages
+  const processingMetadata = {
+    segmentation: segmentationResult.data.metrics,
+    analysis: analysisResult.data.metrics
+  };
+
+  const combinedLlmMetrics = {
+    processingTimeMs: segmentationResult.llmMetrics.processingTimeMs + analysisResult.llmMetrics.processingTimeMs,
+    nLlmCalls: segmentationResult.llmMetrics.nLlmCalls + analysisResult.llmMetrics.nLlmCalls,
+    costs: {
+      total: segmentationResult.llmMetrics.costs.total + analysisResult.llmMetrics.costs.total,
+      input: (segmentationResult.llmMetrics.costs.input ?? 0) + (analysisResult.llmMetrics.costs.input ?? 0),
+      output: (segmentationResult.llmMetrics.costs.output ?? 0) + (analysisResult.llmMetrics.costs.output ?? 0)
+    },
+    tokens: {
+      totalTokens:
+        (segmentationResult.llmMetrics.tokens.totalTokens || 0) + (analysisResult.llmMetrics.tokens.totalTokens || 0),
+      inputTokens:
+        (segmentationResult.llmMetrics.tokens.inputTokens || 0) + (analysisResult.llmMetrics.tokens.inputTokens || 0),
+      outputTokens:
+        (segmentationResult.llmMetrics.tokens.outputTokens || 0) + (analysisResult.llmMetrics.tokens.outputTokens || 0)
+    }
+  };
+
+  const combinedMetadata = {
+    ...segmentationResult.metadata,
+    ...analysisResult.metadata,
+    modelsUsed: [...(segmentationResult.metadata?.modelsUsed || []), ...(analysisResult.metadata?.modelsUsed || [])]
   };
 
   return {
-    ...analysisResult,
-    processingMetadata: {
-      ...analysisResult.processingMetadata,
-      costs: combinedCosts
-    }
+    runId,
+    success: segmentationResult.success && analysisResult.success,
+    data: {
+      documentId: analysisResult.data.sourceId,
+      metadata: analysisResult.data.sourceMetadata,
+      segmentAnalyses: analysisResult.data.segmentAnalyses,
+      processingMetadata
+    },
+    llmMetrics: combinedLlmMetrics,
+    metadata: combinedMetadata
   };
 }
 
-export async function processPdf(options: PdfPreProcessingOptions): Promise<PdfPreProcessingResult> {
+export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdfResult> {
   const {
     pdfBuffer,
     apiKey,
     model,
     originalFileName,
     llmProvider,
-    modelConfig,
+    runId,
     documentId,
     minSegmentLength,
     maxSegmentLength,
@@ -91,16 +113,61 @@ export async function processPdf(options: PdfPreProcessingOptions): Promise<PdfP
     validateTextPreservation
   } = options;
 
-  const markdown = await convertPdfToMarkdown({ pdfBuffer, apiKey, model, originalFileName });
+  const markdown = await convertPdfToMarkdown({
+    pdfBuffer,
+    apiKey,
+    model,
+    originalFileName,
+    runId,
+    llmProvider
+  });
 
-  return processText({
-    text: markdown.markdown,
+  const textResult = await processText({
+    text: markdown.data.markdown,
     llmProvider,
-    modelConfig,
+    runId,
     documentId,
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
     validateTextPreservation
   });
+
+  // Combine metrics from all stages
+  const combinedLlmMetrics = {
+    ...textResult.llmMetrics,
+    processingTimeMs: textResult.llmMetrics.processingTimeMs + markdown.llmMetrics.processingTimeMs,
+    nLlmCalls: textResult.llmMetrics.nLlmCalls + markdown.llmMetrics.nLlmCalls,
+    costs: {
+      total: textResult.llmMetrics.costs.total + markdown.llmMetrics.costs.total,
+      input: (textResult.llmMetrics.costs.input ?? 0) + (markdown.llmMetrics.costs.input ?? 0),
+      output: (textResult.llmMetrics.costs.output ?? 0) + (markdown.llmMetrics.costs.output ?? 0),
+      currency: 'USD' as const
+    },
+    tokens: {
+      totalTokens: (textResult.llmMetrics.tokens.totalTokens || 0) + (markdown.llmMetrics.tokens.totalTokens || 0),
+      inputTokens: (textResult.llmMetrics.tokens.inputTokens || 0) + (markdown.llmMetrics.tokens.inputTokens || 0),
+      outputTokens: (textResult.llmMetrics.tokens.outputTokens || 0) + (markdown.llmMetrics.tokens.outputTokens || 0)
+    }
+  };
+
+  const combinedMetadata = {
+    ...textResult.metadata,
+    ...markdown.metadata,
+    modelsUsed: [...(textResult.metadata?.modelsUsed || []), ...(markdown.metadata?.modelsUsed || [])]
+  };
+
+  return {
+    ...textResult,
+    data: {
+      ...textResult.data,
+      extractedText: markdown.data.markdown,
+      processingMetadata: {
+        ...textResult.data.processingMetadata,
+        pdfConversion: markdown.llmMetrics
+      }
+    },
+    llmMetrics: combinedLlmMetrics,
+    metadata: combinedMetadata
+  };
 }

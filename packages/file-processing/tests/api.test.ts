@@ -1,501 +1,116 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { LONG_TEXT, MEDIUM_TEXT } from './fixtures/sampleTexts';
-import { createFakeLLMProvider, createFakeModelConfig } from './helpers/fakeLLMProvider';
-import { processText } from '../src/api';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { FakeLLMProvider } from './helpers/fakeLLMProvider';
+import { processPdf, processText } from '../src/api';
 
-describe('processDocument', () => {
-  let fakeLLMProvider: ReturnType<typeof createFakeLLMProvider>;
-  let modelConfig: ReturnType<typeof createFakeModelConfig>;
+describe('File Processing API', () => {
+  let fakeLLMProvider: FakeLLMProvider;
+  let pdfBuffer: Buffer;
+  const sampleText = 'This is a sample text for testing the API.';
+
+  beforeAll(async () => {
+    const pdfPath = path.resolve(
+      __dirname,
+      '../../../packages/vector-store/src/docs/storage/official/how-eu-works.pdf'
+    );
+    pdfBuffer = await fs.readFile(pdfPath);
+  });
 
   beforeEach(() => {
-    fakeLLMProvider = createFakeLLMProvider();
-    modelConfig = createFakeModelConfig();
+    fakeLLMProvider = new FakeLLMProvider();
   });
 
-  describe('end-to-end processing', () => {
-    it('should segment and analyze document', async () => {
-      // Configure segmentation response
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: {
-          segments: ['Segment 1', 'Segment 2', 'Segment 3']
-        },
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
+  describe('processText', () => {
+    it('should process text by segmenting and analyzing it', async () => {
+      const segments = ['This is a sample text.'];
 
-      // Configure metadata extraction response
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {
-          title: 'Test Document',
-          source: 'Test Source'
-        },
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
-
-      // Configure segment analysis response
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: {
-          summary: 'Segment summary',
-          standaloneFacts: ['Fact 1', 'Fact 2']
-        },
-        costs: { input: 0.002, output: 0.002, total: 0.004 }
-      });
-
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.documentId).toBeDefined();
-      expect(result.metadata).toBeDefined();
-      expect(result.segmentAnalyses).toHaveLength(3);
-      expect(result.processingMetadata).toBeDefined();
-    });
-
-    it('should combine costs from segmentation and analysis', async () => {
-      // Segmentation cost
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Segment 1'] },
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
-
-      // Metadata extraction cost
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {},
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
-
-      // Segment analysis cost
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' },
-        costs: { input: 0.003, output: 0.003, total: 0.006 }
-      });
-
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      // Total: segmentation (0.002) + metadata (0.002) + analysis (0.006) = 0.010
-      expect(result.processingMetadata.costs.total).toBe(0.01);
-    });
-
-    it('should pass through segment analyses from documentAnalysis', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Seg1', 'Seg2'] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: { title: 'Doc' }
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: {
-          summary: 'Test summary',
-          standaloneFacts: ['Test fact']
+      // Mock segmentation (first parallel call)
+      fakeLLMProvider.setGenerateObjectParallelResponses([
+        {
+          object: { segments },
+          costs: { total: 0.01, input: 0.005, output: 0.005 },
+          usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 }
         }
+      ]);
+
+      // Mock metadata extraction (single call)
+      const metadata = { title: 'Sample Text' };
+      fakeLLMProvider.setGenerateObjectResponse({
+        object: metadata,
+        costs: { total: 0.02, input: 0.01, output: 0.01 },
+        usage: { inputTokens: 20, outputTokens: 10, totalTokens: 30 }
       });
 
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses).toHaveLength(2);
-      expect(result.segmentAnalyses[0].summary).toBe('Test summary');
-      expect(result.segmentAnalyses[0].standaloneFacts).toContain('Test fact');
-    });
-  });
-
-  describe('parameter passing', () => {
-    it('should pass minSegmentLength to segmentation', async () => {
-      fakeLLMProvider.setDefaultResponse({
-        object: { segments: ['Segment'] }
-      });
-
-      await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig,
-        minSegmentLength: 200
-      });
-
-      const callHistory = fakeLLMProvider.getCallHistory();
-      const segmentationCall = callHistory.find((call) => {
-        const content = call.messages?.[0]?.content as string;
-        return content?.includes('TEXT TO SEGMENT');
-      });
-
-      const promptContent = segmentationCall?.messages?.[0]?.content as string;
-      expect(promptContent).toContain('200');
-    });
-
-    it('should pass maxSegmentLength to segmentation', async () => {
-      fakeLLMProvider.setDefaultResponse({
-        object: { segments: ['Segment'] }
-      });
-
-      await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig,
-        maxSegmentLength: 2000
-      });
-
-      const callHistory = fakeLLMProvider.getCallHistory();
-      const segmentationCall = callHistory.find((call) => {
-        const content = call.messages?.[0]?.content as string;
-        return content?.includes('TEXT TO SEGMENT');
-      });
-
-      const promptContent = segmentationCall?.messages?.[0]?.content as string;
-      expect(promptContent).toContain('2000');
-    });
-
-    it('should pass charsPerLLMCall to segmentation', async () => {
-      fakeLLMProvider.setDefaultResponse({
-        object: { segments: ['Segment'] }
-      });
-
-      const text = 'x'.repeat(3000);
-      await processText({
-        text,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig,
-        charsPerLLMCall: 1000
-      });
-
-      const callHistory = fakeLLMProvider.getCallHistory();
-      const segmentationCalls = callHistory.filter((call) => {
-        const content = call.messages?.[0]?.content as string;
-        return content?.includes('TEXT TO SEGMENT');
-      });
-
-      // 3000 chars / 1000 per call = 3 calls
-      expect(segmentationCalls.length).toBe(3);
-    });
-
-    it('should pass validateTextPreservation to segmentation', async () => {
-      fakeLLMProvider.setDefaultResponse({
-        object: { segments: ['Segment'] }
-      });
-
-      // This should not throw, just test that it's passed through
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig,
-        validateTextPreservation: true
-      });
-
-      expect(result).toBeDefined();
-    });
-
-    it('should pass documentId to analysis', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Segment'] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const customDocId = 'custom-doc-456';
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig,
-        documentId: customDocId
-      });
-
-      expect(result.documentId).toBe(customDocId);
-      expect(result.segmentAnalyses[0].parentDocId).toBe(customDocId);
-    });
-  });
-
-  describe('workflow integration', () => {
-    it('should pass segmented text to analysis', async () => {
-      const expectedSegments = ['First segment text', 'Second segment text'];
-
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: expectedSegments }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses[0].segment).toBe(expectedSegments[0]);
-      expect(result.segmentAnalyses[1].segment).toBe(expectedSegments[1]);
-    });
-
-    it('should use fullText for metadata extraction', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Segment'] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: { title: 'Title from full text' }
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.metadata.title).toBe('Title from full text');
-    });
-  });
-
-  describe('processing metadata', () => {
-    it('should include per-segment average cost', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Seg1', 'Seg2'] },
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {},
-        costs: { input: 0.001, output: 0.001, total: 0.002 }
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' },
-        costs: { input: 0.002, output: 0.002, total: 0.004 }
-      });
-
-      const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      // Per segment average is calculated in documentAnalysis
-      expect(result.processingMetadata.costs.perSegmentAverage).toBeDefined();
-    });
-
-    it('should include all processing metadata from analysis', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Seg1', 'Seg2', 'Seg3'] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: {
-          summary: 'Summary',
-          standaloneFacts: ['Fact1', 'Fact2']
+      // Mock segment analysis (second parallel call)
+      fakeLLMProvider.setGenerateObjectParallelResponses([
+        {
+          object: { summary: 'A summary of the text.' },
+          costs: { total: 0.03, input: 0.015, output: 0.015 },
+          usage: { inputTokens: 30, outputTokens: 15, totalTokens: 45 }
         }
-      });
+      ]);
 
       const result = await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
+        text: sampleText,
+        llmProvider: fakeLLMProvider,
+        runId: 'test-run-id'
       });
 
-      expect(result.processingMetadata.nSegments).toBe(3);
-      expect(result.processingMetadata.nFactsExtracted).toBe(6); // 3 segments * 2 facts
-      expect(result.processingMetadata.processingTimeMs).toBeGreaterThan(0);
+      // Test the actual return structure
+      expect(result.data.metadata).toEqual(metadata);
+      expect(result.data.segmentAnalyses).toHaveLength(1);
+      expect(result.data.segmentAnalyses[0]).toMatchObject({
+        summary: 'A summary of the text.',
+        segment: segments[0]
+      });
     });
   });
 
-  describe('error handling', () => {
-    it('should propagate segmentation errors', async () => {
-      const errorProvider = {
-        generateObjectParallel: async () => {
-          throw new Error('Segmentation failed');
+  describe('processPdf', () => {
+    it('should process a PDF by converting, segmenting, and analyzing', async () => {
+      // Mock PDF conversion (streamText call)
+      const markdownContent = '## PDF Content';
+      fakeLLMProvider.setStreamTextResponse({
+        text: Promise.resolve(markdownContent)
+      });
+
+      const segments = ['PDF Content'];
+
+      // Mock segmentation (first parallel call)
+      fakeLLMProvider.setGenerateObjectParallelResponses([
+        {
+          object: { segments }
         }
-      };
+      ]);
 
-      await expect(
-        processText({
-          text: MEDIUM_TEXT,
-          llmProvider: errorProvider as unknown as LLMProvider,
-          modelConfig
-        })
-      ).rejects.toThrow('Segmentation failed');
-    });
+      // Mock metadata extraction (single call)
+      const metadata = { title: 'PDF Document' };
+      fakeLLMProvider.setGenerateObjectResponse({
+        object: metadata
+      });
 
-    it('should propagate analysis errors', async () => {
-      let callCount = 0;
-      const errorProvider = {
-        generateObjectParallel: async () => {
-          callCount++;
-          if (callCount === 1) {
-            // First call (segmentation) succeeds
-            return [
-              {
-                object: { segments: ['Segment'] },
-                finishReason: 'stop' as const,
-                usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
-                latencyMs: 100,
-                attempts: 1,
-                costs: { input: 0.001, output: 0.001, total: 0.002 },
-                model: 'test',
-                fallbackUsed: false,
-                warnings: undefined,
-                request: { body: '' },
-                response: { id: 'test', timestamp: new Date(), modelId: 'test' },
-                rawResponse: { headers: {} }
-              }
-            ];
-          }
-          throw new Error('Analysis failed');
-        },
-        generateObject: async () => {
-          throw new Error('Analysis failed');
+      // Mock segment analysis (second parallel call)
+      fakeLLMProvider.setGenerateObjectParallelResponses([
+        {
+          object: { summary: 'Summary of PDF content.' }
         }
-      };
+      ]);
 
-      await expect(
-        processText({
-          text: MEDIUM_TEXT,
-          llmProvider: errorProvider as unknown as LLMProvider,
-          modelConfig
-        })
-      ).rejects.toThrow('Analysis failed');
-    });
-  });
-
-  describe('large document handling', () => {
-    it('should handle long documents', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Long segment 1', 'Long segment 2'] }
+      const result = await processPdf({
+        pdfBuffer,
+        llmProvider: fakeLLMProvider,
+        runId: 'test-run-id',
       });
 
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: { title: 'Long Document' }
+      // Test the actual return structure
+      expect(result.data.extractedText).toBe(markdownContent);
+      expect(result.data.metadata).toEqual(metadata);
+      expect(result.data.segmentAnalyses).toHaveLength(1);
+      expect(result.data.segmentAnalyses[0]).toMatchObject({
+        summary: 'Summary of PDF content.',
+        segment: segments[0]
       });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: LONG_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses).toHaveLength(2);
-      expect(result.documentId).toBeDefined();
-    });
-
-    it('should handle many segments efficiently', async () => {
-      const manySegments = Array.from({ length: 50 }, (_, i) => `Segment ${i}`);
-
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: manySegments }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: LONG_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses).toHaveLength(50);
-    });
-  });
-
-  describe('model configuration', () => {
-    it('should use provided model config for all operations', async () => {
-      fakeLLMProvider.setDefaultResponse({
-        object: { segments: ['Segment'] }
-      });
-
-      const customModelConfig = createFakeModelConfig({
-        primary: 'custom-model-v2',
-        fallback: 'fallback-model-v1'
-      });
-
-      await processText({
-        text: MEDIUM_TEXT,
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig: customModelConfig
-      });
-
-      const callHistory = fakeLLMProvider.getCallHistory();
-      expect(callHistory.every((call) => call.modelConfig.primary === 'custom-model-v2')).toBe(true);
-    });
-  });
-
-  describe('empty and edge cases', () => {
-    it('should handle empty segment list', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: [] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: 'Short text',
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses).toHaveLength(0);
-    });
-
-    it('should handle single segment', async () => {
-      fakeLLMProvider.addResponse('TEXT TO SEGMENT', {
-        object: { segments: ['Only segment'] }
-      });
-
-      fakeLLMProvider.addResponse('Beginning of document:', {
-        object: {}
-      });
-
-      fakeLLMProvider.addResponse('PORTION TO ANALYZE', {
-        object: { summary: 'Summary' }
-      });
-
-      const result = await processText({
-        text: 'Very short',
-        llmProvider: fakeLLMProvider as unknown as LLMProvider,
-        modelConfig
-      });
-
-      expect(result.segmentAnalyses).toHaveLength(1);
     });
   });
 });

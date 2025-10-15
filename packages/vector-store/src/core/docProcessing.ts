@@ -146,7 +146,7 @@ export async function extractMetadata(options: DocProcessingOptions) {
  * @returns Array of segment analysis results
  */
 export async function analyzeSegments(
-  options: DocProcessingOptions & { segments: Array<string>, parentDocId: string }
+  options: DocProcessingOptions & { segments: Array<string>; parentDocId: string }
 ): Promise<Array<SegmentWithAnalysis>> {
   const { segments, provider, modelConfig } = options;
 
