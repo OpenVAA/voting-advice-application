@@ -15,6 +15,9 @@ import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 // COMMON
 // ------------------------------------------------------------
 
+// TODO: check that model pricing is internally handled and that it is required only if 
+// we don't have up-to-date info on the specific model. Also we need separate config for 
+// fallback model. 
 export interface LLMModelConfig {
   primary: string;
   fallback?: string;

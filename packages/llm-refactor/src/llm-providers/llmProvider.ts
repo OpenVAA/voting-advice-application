@@ -14,6 +14,8 @@ import type {
 
 // TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
 // Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
+// TODO: implement fallback model usage
+// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
@@ -160,6 +162,7 @@ export class LLMProvider {
     return results;
   }
 
+  // TODO: aborting logic for streaming
   /**
    * Stream text from the LLM
    * @param options - The options for the stream text
@@ -171,10 +174,10 @@ export class LLMProvider {
    *   modelConfig: {
    *     primary: 'gpt-4o-mini'
    *   },
-   *   messages: [{ role: 'user', content: 'What's yar favorite meal?' }]
+   *   messages: [{ role: 'user', content: 'Whats yar favorite meal?' }]
    * });
    * ```
-   */
+   */ 
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
 
