@@ -1,7 +1,11 @@
+import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
+import type { LLMProvider } from '@openvaa/llm-refactor';
 import type { Embedder } from './embedder.type';
-import type { SourceSegment } from './types';
+import type { EnrichedSegment } from './types';
 
-/** @example
+/**
+ * Configuration for vector store initialization
+ * @example
  * ```typescript
  * {
  *   collectionName: 'my_collection',
@@ -12,27 +16,59 @@ import type { SourceSegment } from './types';
  */
 export interface VectorStoreConfig {
   collectionName: string;
+  collectionType: 'segment' | 'summary' | 'fact';
   embedder: Embedder;
   persistDirectory?: string;
 }
 
-/** @example
- * ```typescript
- * {
- *   document: { id: '1', content: 'Hello, world!', embedding: [0.1, 0.2, 0.3] },
- *   score: 0.95,
- *   distance: 0.1
- * }
- * ```
+/**
+ * Generic search result
  */
-export interface SearchResult {
-  segment: SourceSegment;
+export interface SearchResult<TItem = unknown> {
+  /** The retrieved item */
+  item: TItem;
+  /** Similarity score (higher is better, 0-1 range) */
   score: number;
+  /** Distance metric (lower is better) */
   distance: number;
 }
 
+/**
+ * Result from multi-vector search with enriched segments
+ * @example
+ * ```typescript
+ * {
+ *   segment: {
+ *     id: 'doc1_seg0',
+ *     segment: 'The European Parliament...',
+ *     summary: 'Overview of EU Parliament',
+ *     standaloneFacts: ['705 members'],
+ *     metadata: { source: 'EU Parliament' }
+ *   },
+ *   score: 0.95,
+ *   distance: 0.1,
+ *   foundWith: 'summary'
+ * }
+ * ```
+ */
+export interface EnrichedSearchResult {
+  /** Enriched segment with full analysis context */
+  segment: EnrichedSegment;
+  /** Similarity score (higher is better, 0-1 range) */
+  score: number;
+  /** Distance metric (lower is better) */
+  distance: number;
+  /** Which collection found this result */
+  foundWith: 'segment' | 'summary' | 'fact';
+}
+
+/**
+ * Result from multi-vector search across segments, summaries, and facts
+ */
 export interface MultiVectorSearchResult {
-  segments: Array<SourceSegment>;
+  /** Deduplicated and enriched results */
+  results: Array<EnrichedSearchResult>;
+  /** Statistics about where results came from */
   retrievalSources: {
     fromSegments: number;
     fromSummaries: number;
@@ -40,19 +76,77 @@ export interface MultiVectorSearchResult {
   };
 }
 
-/** @example
- * ```typescript
- * {
- *   initialize: async () => {},
- *   addTexts: async (texts: Array<TextSegment>) => {},
- *   search: async (query: string) => {},
- *   delete: async (ids: Array<string>) => {}
- * }
- * ```
+/**
+ * Options for multi-vector search
+ */
+export interface MultiVectorSearchOptions {
+  /** The query string to search for */
+  query: string;
+  /** Which collections to search (default: all) */
+  searchCollections?: Array<'segment' | 'summary' | 'fact'>;
+  /** Number of results to fetch from each collection */ 
+  topKPerCollection?: number; // TODO: make this more configurable, allow for different strategies
+  /** Function to generate query variations */
+  getQueryVariations?: (query: string) => Array<string>; // TODO: implement a default utility for this
+  /** Enable intelligent filtering using LLM */
+  intelligentSearch?: boolean;
+  /** LLM provider for intelligent filtering */
+  llmProvider?: LLMProvider;
+}
+
+/**
+ * Configuration for MultiVectorStore
+ */
+export interface MultiVectorStoreConfig {
+  /** Collection names for each type */
+  collectionNames: {
+    segments: string;
+    summaries: string;
+    facts: string;
+  };
+  /** Embedder for all collections (if same) */
+  embedder?: Embedder;
+  /** Individual embedders per collection (overrides embedder) */
+  embedders?: {
+    segments?: Embedder;
+    summaries?: Embedder;
+    facts?: Embedder;
+  };
+  /** Optional persist directory */
+  persistDirectory?: string;
+}
+
+/**
+ * Abstract base class for vector stores
+ * Low-level interface for single-collection operations
  */
 export abstract class VectorStore {
+  /** Initialize the vector store (connect to database, create collections, etc.) */
   abstract initialize(): Promise<void>;
-  abstract addTexts(texts: Array<SourceSegment>): Promise<void>;
-  abstract search(query: string): Promise<Array<SearchResult>>;
+
+  /**
+   * Add analyzed segments to the vector store
+   * @param segments - Array of segments with analysis
+   * @param documentId - ID of the parent document
+   * @param metadata - Metadata for the source document
+   */
+  abstract addAnalyzedSegments(
+    segments: Array<SegmentWithAnalysis>,
+    documentId: string,
+    metadata: SourceMetadata
+  ): Promise<void>;
+
+  /**
+   * Delete segments by ID
+   * @param ids - Array of segment IDs to delete
+   */
   abstract delete(ids: Array<string>): Promise<void>;
+
+  /**
+   * Search for similar items in the vector store
+   * @param query - Search query string or embedding vector
+   * @param topK - Number of results to return
+   * @returns Array of search results with similarity scores
+   */
+  abstract search(query: string, topK?: number): Promise<Array<SearchResult<unknown>>>;
 }

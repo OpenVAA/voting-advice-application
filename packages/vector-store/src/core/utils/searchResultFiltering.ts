@@ -1,8 +1,9 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
 import { loadPrompt } from './promptLoader';
-import type { LLMModelConfig, LLMProvider } from '@openvaa/llm-refactor';
-import type { SourceSegment } from '../types';
+import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { ModelMessage } from 'ai';
+import type { SourceSegment } from '../types/source.types';
 
 // ----------------------------------------
 // RESPONSE SCHEMA
@@ -12,13 +13,13 @@ const searchResultFilteringSchema = z.object({
   acceptedIndices: z.array(z.number())
 });
 
+// TODO: split the segments into multiple prompts and parallel them, if there are too many, e.g. >10
 /**
  * Filters search results using LLM to determine relevance to query
  *
  * @param query - The user's search query
  * @param segments - Array of segments to filter
  * @param provider - LLM provider for intelligent filtering
- * @param modelConfig - Model configuration for the LLM
  * @returns Filtered array of segments that are relevant to the query
  *
  * @example
@@ -34,13 +35,11 @@ const searchResultFilteringSchema = z.object({
 export async function filterSearchResults({
   query,
   segments,
-  provider,
-  modelConfig
+  provider
 }: {
   query: string;
   segments: Array<SourceSegment>;
   provider: LLMProvider;
-  modelConfig: LLMModelConfig;
 }): Promise<Array<SourceSegment>> {
   if (segments.length === 0) return [];
 
@@ -61,8 +60,7 @@ export async function filterSearchResults({
 
   // Call LLM
   const response = await provider.generateObject({
-    messages: [{ role: 'user', content: filledPrompt }],
-    modelConfig,
+    messages: [{ role: 'user', content: filledPrompt } as ModelMessage],
     schema: searchResultFilteringSchema,
     temperature: 0,
     maxRetries: 3,

@@ -1,87 +1,97 @@
-import type { Id } from '@openvaa/core';
+import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
 
-/** INTERNAL TYPE FOR PROCESSING. Data is separated into segments, summaries, and facts objects for embedding
- *
+/**
+ * Base interface for embeddable content in vector store
+ * All three types (segments, summaries, facts) share this structure
+ */
+interface EmbeddableBase {
+  /** Unique identifier */
+  id: string;
+  /** Foreign key to parent document */
+  parentDocId: string;
+  /** Position of segment in the parent document */
+  segmentIndex: number;
+  /** The actual text content to embed - unified field for all types */
+  content: string;
+  /** Optional embedding vector (populated after embedding) */
+  embedding?: Array<number>;
+  /** Metadata about the source document */
+  metadata: SourceMetadata;
+}
+
+/**
+ * Original segment text for embedding and retrieval
+ * Note: This is a semantic type alias. While it doesn't add new fields,
+ * it provides type-level distinction between segments, summaries, and facts.
  * @example
  * ```typescript
- * const segmentWithAnalysis: SegmentWithAnalysis = {
- *   id: '1',
- *   segment: 'This is a segment',
+ * const segment: SourceSegment = {
+ *   id: 'doc1_seg0',
+ *   parentDocId: 'doc1',
  *   segmentIndex: 0,
- *   summary: 'This is a summary',
- *   standaloneFacts: ['This is a fact']
- * }
- * const factObject: SegmentFact = {
- *   id: '1',
- *   parentSegmentId: '1',
- *   segmentIndex: 0,
- *   content: 'This is a fact extracted from the segment with id parentSegmentId',
- *   metadata: {'there': 'actually is metadata for these objects but i am just a placeholder!'}
+ *   content: 'The European Parliament is the legislative branch...',
+ *   metadata: { source: 'EU Parliament', title: 'EU Guide' }
  * }
  * ```
  */
-export interface SegmentWithAnalysis {
-  id: Id;
-  parentDocId: string; // FK
-  segment: string; // the segment itself
-  segmentIndex: number;
-  summary: string;
-  standaloneFacts?: Array<string>;
-}
+export type SourceSegment = EmbeddableBase;
 
-/**  */
-export interface SourceMetadata {
-  source?: string;
-  title?: string;
-  link?: string;
-  authors?: Array<string>;
-  publishedDate?: string;
-  createdAt?: string;
-  locale?: string;
-}
-
-/** @example
+/**
+ * Summary of a segment for multi-vector retrieval
+ * Linked back to parent segment via parentSegmentId
+ * @example
  * ```typescript
- * {
- *   id: '1',
- *   content: 'Hello, world!',
- *   metadata: {
- *     source: 'European Parliament',
- *     title: 'European Parliament Report X',
- *     link: 'https://www.google.com'
- *   }
+ * const summary: SegmentSummary = {
+ *   id: 'doc1_seg0_summary',
+ *   parentDocId: 'doc1',
+ *   parentSegmentId: 'doc1_seg0',
+ *   segmentIndex: 0,
+ *   content: 'Overview of EU Parliament structure and function',
+ *   metadata: { source: 'EU Parliament', title: 'EU Guide' }
  * }
  * ```
  */
-export interface SourceDocument {
-  id: string;
-  content: string;
-  metadata: SourceMetadata;
+export interface SegmentSummary extends EmbeddableBase {
+  /** Foreign key to parent segment - critical for multi-vector retrieval */
+  parentSegmentId: string;
 }
 
-export interface SourceSegment {
-  id: string;
-  parentDocId: string; // FK
-  segmentIndex: number; // In the parent document
-  content: string;
-  embedding?: Array<number>;
-  metadata: SourceMetadata;
+/**
+ * Standalone fact extracted from a segment for multi-vector retrieval
+ * Linked back to parent segment via parentSegmentId
+ * @example
+ * ```typescript
+ * const fact: SegmentFact = {
+ *   id: 'doc1_seg0_fact_0',
+ *   parentDocId: 'doc1',
+ *   parentSegmentId: 'doc1_seg0',
+ *   segmentIndex: 0,
+ *   content: 'The European Parliament has 705 members',
+ *   metadata: { source: 'EU Parliament', title: 'EU Guide' }
+ * }
+ * ```
+ */
+export interface SegmentFact extends EmbeddableBase {
+  /** Foreign key to parent segment - critical for multi-vector retrieval */
+  parentSegmentId: string;
 }
 
-export interface SegmentSummary {
-  id: string;
-  parentSegmentId: string; // FK
-  segmentIndex: number; // In the parent document
-  content: string;
-  embedding?: Array<number>;
+/**
+ * Enriched segment returned from vector store search
+ * Includes original segment, summary, and facts for full context
+ * @example
+ * ```typescript
+ * const enriched: EnrichedSegment = {
+ *   id: 'doc1_seg0',
+ *   parentDocId: 'doc1',
+ *   segment: 'The European Parliament is the legislative branch...',
+ *   segmentIndex: 0,
+ *   summary: 'Overview of EU Parliament structure',
+ *   standaloneFacts: ['The European Parliament has 705 members'],
+ *   metadata: { source: 'EU Parliament', title: 'EU Guide' }
+ * }
+ * ```
+ */
+export type EnrichedSegment = SegmentWithAnalysis & {
   metadata: SourceMetadata;
-}
-
-export interface SegmentFact {
-  id: string;
-  parentSegmentId: string; // FK
-  segmentIndex: number; // In the parent document
-  content: string;
-  embedding?: Array<number>;
-  metadata: SourceMetadata;
-}
+};

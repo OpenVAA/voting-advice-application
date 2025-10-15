@@ -1,3 +1,4 @@
+import { BaseController } from '@openvaa/core';
 import { processPdf } from '@openvaa/file-processing';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import dotenv from 'dotenv';
@@ -97,7 +98,8 @@ async function main() {
     provider: 'google',
     apiKey: process.env.LLM_GEMINI_API_KEY!,
     modelConfig: {
-      primary: 'gemini-2.5-flash-preview-09-2025'
+      primary: 'gemini-2.5-flash-preview-09-2025',
+      fallback: 'gemini-2.5-pro' // not used but doesn't hurt for future
     }
   });
 
@@ -123,12 +125,13 @@ async function main() {
       // Process the PDF through the complete pipeline
       const result = await processPdf({
         pdfBuffer,
-        apiKey: process.env.GEMINI_API_KEY,
+        apiKey: process.env.LLM_GEMINI_API_KEY,
         model: 'gemini-2.5-pro',
         originalFileName: pdf.filename,
         llmProvider,
         documentId: `${pdf.subdirectory}_${path.parse(pdf.filename).name}`,
-        runId: `pipeline_${Date.now()}`
+        runId: `pipeline_${Date.now()}`,
+        controller: new BaseController()
       });
 
       if (!result.success) {

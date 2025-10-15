@@ -1,14 +1,13 @@
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ChromaVectorStore } from '../core/chromaVectorStore';
+import { MultiVectorStore } from '../core/multiVectorStore';
 import { OpenAIEmbedder } from '../core/openAIEmbedder';
-import type { VectorStoreConfig } from '../core/vectorStore.type';
-import type { DocProcessingResult } from './documentAnalysis';
+import type { ProcessPdfResult } from '@openvaa/file-processing';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
-/** Vector stores' names. Albeit they use identical embedding model, we use different collections for modularity and easy usage */
+/** Collection names for multi-vector retrieval */
 const COLLECTION_NAMES = {
   segments: 'eu-2024-segments',
   summaries: 'eu-2024-summaries',
@@ -17,7 +16,7 @@ const COLLECTION_NAMES = {
 
 /**
  * Multi-vector embedding script that:
- * 1. Reads DocProcessingResult JSON files from docs/step3_ready/
+ * 1. Reads ProcessPdfResult JSON files from docs/step3_ready/
  * 2. Creates 3 separate ChromaDB collections (segments, summaries, facts)
  * 3. Embeds and stores each data type in its respective collection
  * 4. Maintains references for multi-vector retrieval
@@ -50,26 +49,16 @@ export async function embedDocumentsMultiVector(): Promise<void> {
     apiKey: process.env.OPENAI_API_KEY
   });
 
-  // Initialize three separate vector stores
-  const segmentsStore = new ChromaVectorStore({
-    collectionName: COLLECTION_NAMES.segments,
+  // Initialize multi-vector store (manages all three collections)
+  const vectorStore = new MultiVectorStore({
+    collectionNames: COLLECTION_NAMES,
     embedder
-  } as VectorStoreConfig);
-
-  const summariesStore = new ChromaVectorStore({
-    collectionName: COLLECTION_NAMES.summaries,
-    embedder
-  } as VectorStoreConfig);
-
-  const factsStore = new ChromaVectorStore({
-    collectionName: COLLECTION_NAMES.facts,
-    embedder
-  } as VectorStoreConfig);
+  });
 
   // Initialize all collections
-  console.info('Initializing vector stores...');
-  await Promise.all([segmentsStore.initialize(), summariesStore.initialize(), factsStore.initialize()]);
-  console.info('✓ All vector stores initialized\n');
+  console.info('Initializing multi-vector store...');
+  await vectorStore.initialize();
+  console.info('✓ Multi-vector store initialized\n');
 
   // Process each document
   let totalSegments = 0;
@@ -82,32 +71,35 @@ export async function embedDocumentsMultiVector(): Promise<void> {
     try {
       console.info(`Processing: ${readyFile}`);
 
-      // Read and parse the DocProcessingResult
+      // Read and parse the ProcessPdfResult
       const fileContent = fs.readFileSync(readyFilePath, 'utf-8');
-      const docResult: DocProcessingResult = JSON.parse(fileContent);
+      const docResult: ProcessPdfResult = JSON.parse(fileContent);
 
       // Validate document structure
-      if (!docResult.fullDocument || !docResult.segments || !docResult.summaries || !docResult.facts) {
-        console.error(`✗ Invalid DocProcessingResult structure in ${readyFile}`);
+      if (!docResult.data?.segmentAnalyses) {
+        console.error(`✗ Invalid ProcessPdfResult structure in ${readyFile}`);
         continue;
       }
 
-      console.info(`  - Document ID: ${docResult.fullDocument.id}`);
-      console.info(`  - Segments: ${docResult.segments.length}`);
-      console.info(`  - Summaries: ${docResult.summaries.length}`);
-      console.info(`  - Facts: ${docResult.facts.length}`);
+      const { segmentAnalyses, documentId, metadata } = docResult.data;
 
-      // Embed and store in parallel
+      // Calculate totals for logging
+      const numSegments = segmentAnalyses.length;
+      const numSummaries = segmentAnalyses.length; // Each segment has a summary
+      const numFacts = segmentAnalyses.reduce((sum, analysis) => sum + (analysis.standaloneFacts?.length || 0), 0);
+
+      console.info(`  - Document ID: ${documentId}`);
+      console.info(`  - Segments: ${numSegments}`);
+      console.info(`  - Summaries: ${numSummaries}`);
+      console.info(`  - Facts: ${numFacts}`);
+
+      // Embed and store using simplified API
       console.info('  - Embedding and storing...');
-      await Promise.all([
-        segmentsStore.addTexts(docResult.segments),
-        summariesStore.addSummaries(docResult.summaries),
-        factsStore.addFacts(docResult.facts)
-      ]);
+      await vectorStore.addAnalyzedSegments(segmentAnalyses, documentId, metadata);
 
-      totalSegments += docResult.segments.length;
-      totalSummaries += docResult.summaries.length;
-      totalFacts += docResult.facts.length;
+      totalSegments += numSegments;
+      totalSummaries += numSummaries;
+      totalFacts += numFacts;
 
       console.info('✓ Successfully embedded and stored all data types\n');
     } catch (error) {
