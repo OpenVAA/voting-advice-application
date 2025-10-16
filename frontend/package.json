@@ -68,7 +68,6 @@
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/filters": "workspace:^",
-    "@openvaa/llm": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
     "@openvaa/matching": "workspace:^",
     "@openvaa/question-info": "workspace:^",

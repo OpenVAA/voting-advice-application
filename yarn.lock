@@ -4351,7 +4351,6 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
-    "@openvaa/llm": "workspace:^"
     "@openvaa/llm-refactor": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/question-info": "workspace:^"
@@ -4415,20 +4414,6 @@ __metadata:
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
     zod: "npm:^4.0.0"
-  languageName: unknown
-  linkType: soft
-
-"@openvaa/llm@workspace:^, @openvaa/llm@workspace:packages/llm":
-  version: 0.0.0-use.local
-  resolution: "@openvaa/llm@workspace:packages/llm"
-  dependencies:
-    "@openvaa/core": "workspace:^"
-    "@openvaa/shared-config": "workspace:^"
-    jsonrepair: "npm:^3.13.0"
-    openai: "npm:^4.78.1"
-    tsc-esm-fix: "npm:^3.1.2"
-    typescript: "npm:^5.7.3"
-    vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 

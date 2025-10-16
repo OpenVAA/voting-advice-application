@@ -39,7 +39,7 @@ export async function isRAGRequired({
   provider,
   modelConfig
 }: {
-  messages: parentSourceId<string>;
+  messages: Array<string>;
   provider: LLMProvider;
   modelConfig: LLMModelConfig;
 }): Promise<boolean> {
@@ -71,7 +71,7 @@ export async function isRAGRequired({
 
   // Call LLM
   const response = await provider.generateObject({
-    messages: [{ role: 'user', content: filledPrompt }],
+    messages: [{ role: 'user' as const, content: filledPrompt }],
     modelConfig,
     schema: isRAGRequiredSchema,
     temperature: 0,
