@@ -1,10 +1,9 @@
 import { LLMProvider } from '@openvaa/llm-refactor';
 import dotenv from 'dotenv';
 import * as path from 'path';
-import { ChromaVectorStore } from '../core/chromaVectorStore';
+import { MultiVectorStore } from '../core/multiVectorStore';
 import { OpenAIEmbedder } from '../core/openAIEmbedder';
 import { getQueryVariations, isRAGRequired } from '../core/utils';
-import type { VectorStoreConfig } from '../core/vectorStore.type';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
@@ -23,12 +22,13 @@ export async function testMultiVectorRetrieval(
   topKPerCollection: number = 3,
   intelligentSearch: boolean = false
 ): Promise<void> {
-  console.info('═══════════════════════════════════════');
+  console.info('\n\n═══════════════════════════════════════');
   console.info('Multi-Vector Retrieval Test');
-  console.info('═══════════════════════════════════════\n');
-  console.info(`Query: "${query}"`);
-  console.info(`Top K per collection: ${topKPerCollection}`);
-  console.info(`Intelligent Search: ${intelligentSearch ? 'ENABLED' : 'DISABLED'}\n`);
+  console.info('═══════════════════════════════════════\n\n');
+  console.info('          STEP 1: Basic Information\n\n');
+  console.info(`  - Query: "${query}"\n`);
+  console.info(`  - Top K per collection: ${topKPerCollection}\n`);
+  console.info(`  - Intelligent Search: ${intelligentSearch ? 'ENABLED' : 'DISABLED'}`);
 
   // Initialize embedder
   const embedder = new OpenAIEmbedder({
@@ -41,22 +41,23 @@ export async function testMultiVectorRetrieval(
   const binaryProvider = new LLMProvider({
     provider: 'openai',
     apiKey: process.env.OPENAI_API_KEY || '',
-    modelConfig: { primary: 'IRRELEVANT' }
+    modelConfig: { primary: 'gpt-4o-mini' }
   });
 
   // Check if RAG is required for this query
-  console.info('Checking if RAG retrieval is needed...');
+  console.info('\n\n\n          STEP 2: Checking if RAG retrieval is needed...\n\n');
+  console.info('  - Checking if RAG retrieval is needed...');
   const needsRAG = await isRAGRequired({
     messages: [query], // In a real conversation, this would be the full message history
     provider: binaryProvider,
     modelConfig: { primary: 'gpt-5-nano' }
   });
 
-  console.info(`RAG required: ${needsRAG ? 'YES' : 'NO'}\n`);
+  console.info(`  - RAG required: ${needsRAG ? 'YES' : 'NO'}\n`);
 
   if (!needsRAG) {
-    console.info('Skipping RAG search - query does not require retrieval.');
-    console.info('Total cost:' + binaryProvider.cumulativeCosts.toFixed(4));
+    console.info('  - Skipping RAG search - query does not require retrieval.');
+    console.info('  - Total cost: $' + binaryProvider.cumulativeCosts.toFixed(4));
     console.info('═══════════════════════════════════════\n');
     return;
   }
@@ -66,55 +67,54 @@ export async function testMultiVectorRetrieval(
     ? new LLMProvider({
         provider: 'google',
         apiKey: process.env.LLM_GEMINI_API_KEY || '',
-        modelConfig: { primary: 'i probably shouldnt be here' }
+        modelConfig: { primary: 'gemini-2.0-flash-exp' }
       })
     : undefined;
-  const actualModelConfig = intelligentSearch ? { primary: 'gemini-2.5-flash-preview-09-2025' } : undefined;
 
-  // Create a vector store instance
-  const vectorStore = new ChromaVectorStore({
-    collectionName: COLLECTION_NAMES.segments,
+  // Create a MultiVectorStore instance
+  const multiVectorStore = new MultiVectorStore({
+    collectionNames: COLLECTION_NAMES,
     embedder
-  } as VectorStoreConfig);
+  });
 
-  await vectorStore.initialize();
-
-  console.info('Searching across all collections...\n');
+  await multiVectorStore.initialize();
 
   const startTime = performance.now();
 
   // Perform multi-vector search
-  const results = await vectorStore.multiVectorSearch(query, {
-    segmentsCollectionName: COLLECTION_NAMES.segments,
-    summariesCollectionName: COLLECTION_NAMES.summaries,
-    factsCollectionName: COLLECTION_NAMES.facts,
+  const searchResults = await multiVectorStore.search({
+    query,
+    searchCollections: ['segment', 'summary', 'fact'],
     topKPerCollection,
     getQueryVariations,
     llmProvider,
-    llmModelConfig: actualModelConfig,
     intelligentSearch
   });
 
   const endTime = performance.now();
   const duration = ((endTime - startTime) / 1000).toFixed(3);
 
-  console.info('═══════════════════════════════════════');
-  console.info('Results:');
-  console.info('═══════════════════════════════════════\n');
-  console.info(`Total unique segments retrieved: ${results.segments.length}`);
-  console.info(`  - From segments collection: ${results.retrievalSources.fromSegments}`);
-  console.info(`  - From summaries collection: ${results.retrievalSources.fromSummaries}`);
-  console.info(`  - From facts collection: ${results.retrievalSources.fromFacts}`);
-  console.info(`  - Total costs: $${(llmProvider?.cumulativeCosts ?? 0) + binaryProvider.cumulativeCosts}`);
-  console.info(`Search duration: ${duration}s\n\n`);
-
-  results.segments.forEach((segment, idx) => {
-    console.info(`Segment ${idx + 1}:`);
-    console.info(`   \n\n${segment.content}\n`);
-    console.info('');
+  console.info('\n\n\n          STEP 3: Segments \n\n');
+  searchResults.results.forEach((result, idx) => {
+    console.info('\n\n═══════════════════════════════════════\n\n');
+    console.info(`Segment ${idx + 1} (score: ${result.score.toFixed(3)}, found via: ${result.foundWith}):`);
+    console.info(`   \n\n${result.segment.segment}\n`);
+    if (result.segment.summary) {
+      console.info(`  - SUMMARY: ${result.segment.summary}\n`);
+    }
+    if (result.segment.standaloneFacts && result.segment.standaloneFacts.length > 0) {
+      console.info(`  - FACTS: ${result.segment.standaloneFacts.join('\n')}\n`);
+    }
+    console.info('\n\n═══════════════════════════════════════\n\n');
   });
 
-  console.info('═══════════════════════════════════════\n');
+  console.info('\n\n\n          STEP 4: Statistics\n\n');
+  console.info(`  - Total unique segments retrieved: ${searchResults.results.length}`);
+  console.info(`  - From segments collection: ${searchResults.retrievalSources.fromSegments}`);
+  console.info(`  - From summaries collection: ${searchResults.retrievalSources.fromSummaries}`);
+  console.info(`  - From facts collection: ${searchResults.retrievalSources.fromFacts}`);
+  console.info(`  - Total costs: $${((llmProvider?.cumulativeCosts ?? 0) + binaryProvider.cumulativeCosts).toFixed(4)}`);
+  console.info(`  - Search duration: ${duration}s\n\n`);
 }
 
 // Run the test if this script is executed directly

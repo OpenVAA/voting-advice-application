@@ -15,13 +15,11 @@ export class OpenAIEmbedder extends Embedder {
     const model = this.model;
     const dimensions = this.dimensions;
 
-    console.info(`Embedding text: ${text}`);
     const response = await this.client.embeddings.create({
       model,
       input: text,
       dimensions
     });
-    console.info('Got response from OpenAI embedder.');
 
     return {
       embedding: response.data[0].embedding
