@@ -414,7 +414,7 @@
                               <div class="font-semibold text-green-700">Facts:</div>
                               <ul class="list-disc list-inside text-gray-700">
                                 {#each result.segment.standaloneFacts as fact}
-                                  <li>{fact}</li>
+                                  <li class="{fact === result.factFound ? 'font-bold bg-yellow-200 px-1 rounded' : ''}">{fact}</li>
                                 {/each}
                               </ul>
                             </div>

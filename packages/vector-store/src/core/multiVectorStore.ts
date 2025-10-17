@@ -158,6 +158,9 @@ export class MultiVectorStore {
       { score: number; distance: number; foundWith: 'segment' | 'summary' | 'fact' }
     >();
 
+    // Map to store which fact was found for each segment (when foundWith === 'fact')
+    const segmentFactsFound = new Map<string, string>();
+
     searchResults.forEach((result, idx) => {
       const collectionType = collectionsToSearch[idx].type;
 
@@ -187,6 +190,11 @@ export class MultiVectorStore {
             segmentIdsFromFacts.add(parentSegmentId);
             if (!segmentScores.has(parentSegmentId) || segmentScores.get(parentSegmentId)!.score < score) {
               segmentScores.set(parentSegmentId, { score, distance, foundWith: 'fact' });
+              // Store the fact text that was found
+              const factText = result.documents[0]?.[resultIdx] as string;
+              if (factText) {
+                segmentFactsFound.set(parentSegmentId, factText);
+              }
             }
           }
         }
@@ -293,7 +301,11 @@ export class MultiVectorStore {
         segment,
         score: scoreData.score,
         distance: scoreData.distance,
-        foundWith: scoreData.foundWith
+        foundWith: scoreData.foundWith,
+        // Include the fact that was found, if this segment was found via fact search
+        ...(scoreData.foundWith === 'fact' && segmentFactsFound.has(segment.id) && {
+          factFound: segmentFactsFound.get(segment.id)
+        })
       };
     });
 

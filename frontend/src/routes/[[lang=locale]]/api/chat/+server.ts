@@ -1,6 +1,7 @@
 import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
 import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
+import { OPENAI_API_KEY } from './apiKey';
 import type { ModelMessage } from 'ai';
 
 // Collection names for multi-vector retrieval
@@ -18,7 +19,7 @@ async function getVectorStore(): Promise<MultiVectorStore> {
     const embedder = new OpenAIEmbedder({
       model: 'text-embedding-3-small',
       dimensions: 1536,
-      apiKey: 'your-api-key'
+      apiKey: OPENAI_API_KEY
     });
 
     multiVectorStore = new MultiVectorStore({

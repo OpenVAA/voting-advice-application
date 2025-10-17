@@ -62,6 +62,8 @@ export interface EnrichedSearchResult {
   distance: number;
   /** Which collection found this result */
   foundWith: 'segment' | 'summary' | 'fact';
+  /** Optional fact that was found */
+  factFound?: string;
 }
 
 /**
