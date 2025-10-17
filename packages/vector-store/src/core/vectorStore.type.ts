@@ -19,6 +19,8 @@ export interface VectorStoreConfig {
   collectionType: 'segment' | 'summary' | 'fact';
   embedder: Embedder;
   persistDirectory?: string;
+  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
+  chromaPath?: string;
 }
 
 /**
@@ -66,6 +68,8 @@ export interface EnrichedSearchResult {
  * Result from multi-vector search across segments, summaries, and facts
  */
 export interface MultiVectorSearchResult {
+  /** The search query that produced these results */
+  query: string;
   /** Deduplicated and enriched results */
   results: Array<EnrichedSearchResult>;
   /** Statistics about where results came from */
@@ -74,6 +78,8 @@ export interface MultiVectorSearchResult {
     fromSummaries: number;
     fromFacts: number;
   };
+  /** Timestamp when search was performed */
+  timestamp: number;
 }
 
 /**
@@ -114,6 +120,8 @@ export interface MultiVectorStoreConfig {
   };
   /** Optional persist directory */
   persistDirectory?: string;
+  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
+  chromaPath?: string;
 }
 
 /**

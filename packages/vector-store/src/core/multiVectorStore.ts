@@ -26,7 +26,7 @@ export class MultiVectorStore {
 
   constructor(config: MultiVectorStoreConfig) {
     this.config = config;
-    this.client = new ChromaClient();
+    this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : undefined);
 
     // Determine embedders
     const segmentEmbedder = config.embedders?.segments || config.embedder;
@@ -44,21 +44,24 @@ export class MultiVectorStore {
       collectionName: config.collectionNames.segments,
       collectionType: 'segment',
       embedder: segmentEmbedder,
-      persistDirectory: config.persistDirectory
+      persistDirectory: config.persistDirectory,
+      chromaPath: config.chromaPath
     });
 
     this.summariesStore = new ChromaVectorStore({
       collectionName: config.collectionNames.summaries,
       collectionType: 'summary',
       embedder: summaryEmbedder,
-      persistDirectory: config.persistDirectory
+      persistDirectory: config.persistDirectory,
+      chromaPath: config.chromaPath
     });
 
     this.factsStore = new ChromaVectorStore({
       collectionName: config.collectionNames.facts,
       collectionType: 'fact',
       embedder: factEmbedder,
-      persistDirectory: config.persistDirectory
+      persistDirectory: config.persistDirectory,
+      chromaPath: config.chromaPath
     });
   }
 
@@ -195,12 +198,14 @@ export class MultiVectorStore {
 
     if (allSegmentIds.size === 0) {
       return {
+        query,
         results: [],
         retrievalSources: {
           fromSegments: 0,
           fromSummaries: 0,
           fromFacts: 0
-        }
+        },
+        timestamp: Date.now()
       };
     }
 
@@ -296,12 +301,14 @@ export class MultiVectorStore {
     results.sort((a, b) => b.score - a.score);
 
     return {
+      query,
       results,
       retrievalSources: {
         fromSegments: directSegmentIds.length,
         fromSummaries: segmentIdsFromSummaries.length,
         fromFacts: segmentIdsFromFacts.size
-      }
+      },
+      timestamp: Date.now()
     };
   }
 

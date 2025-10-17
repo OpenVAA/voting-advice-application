@@ -1,6 +1,5 @@
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
-import { getTools } from './tools/tools';
 import { OPENAI_API_KEY } from '../apiKey';
 import { loadPrompt } from '../utils/promptLoader';
 import type { ChatbotAPIInput } from '../api.type';
@@ -36,7 +35,6 @@ export class ChatEngine {
       modelConfig: { primary: 'gpt-4.1-mini' },
       system: systemMessage,
       messages: input.messages,
-      tools: getTools(input.getToolsOptions?.dataProvider, input.getToolsOptions),
       stopWhen: stepCountIs(input.nSteps ?? 5)
     });
 

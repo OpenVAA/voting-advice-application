@@ -1,13 +1,11 @@
 import { z } from 'zod';
 import type { AnyQuestionVariantData } from '@openvaa/data';
-import type { ChatDataProvider } from '../chatDataProvider.type';
-import type { CandidateInfo } from '../chatDataProvider.type';
-import type { Tool, ToolOptions } from './tool.type';
+import type { ChatDataProvider } from './chatDataProvider.type';
+import type { CandidateInfo } from './chatDataProvider.type';
+import type { Tool } from './tool.type';
 
 export function getTools(
-  dataProvider?: ChatDataProvider,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getToolsOptions?: ToolOptions
+  dataProvider?: ChatDataProvider
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, Tool<any, any>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { MultiVectorSearchResult } from '@openvaa/vector-store';
+
   interface UIMessage {
     id: string;
     role: 'user' | 'assistant';
@@ -19,16 +21,6 @@
     >;
   }
 
-  interface RAGContext {
-    query: string;
-    results: Array<{
-      source: string;
-      content: string;
-      distance?: number;
-    }>;
-    timestamp: number;
-  }
-
   interface CostInfo {
     input: number;
     output: number;
@@ -40,7 +32,7 @@
   interface ChatSession {
     id: number;
     messages: UIMessage[];
-    ragContexts: RAGContext[];
+    ragContexts: MultiVectorSearchResult[];
     costs: CostInfo[];
     input: string;
     loading: boolean;
@@ -160,10 +152,8 @@
     const session = sessions[sessionIndex];
 
     if (data.type === 'rag-context') {
-      session.ragContexts = [
-        ...session.ragContexts,
-        { query: data.query, results: data.results, timestamp: Date.now() }
-      ];
+      // data is a MultiVectorSearchResult
+      session.ragContexts = [...session.ragContexts, data];
       sessions = [...sessions];
       return;
     }
@@ -333,15 +323,15 @@
                   Query: {session.ragContexts[session.ragContexts.length - 1].query.slice(0, 50)}...
                 </div>
                 <div class="text-[10px] text-gray-600">
-                  {session.ragContexts[session.ragContexts.length - 1].results.length} result(s) retrieved
+                  {session.ragContexts[session.ragContexts.length - 1].results.length} segment(s) retrieved
                 </div>
                 {#each session.ragContexts[session.ragContexts.length - 1].results.slice(0, 2) as result}
                   <div class="mt-1 pt-1 border-t border-gray-200">
                     <div class="text-[10px] text-gray-500">
-                      {result.source}
+                      {result.segment.metadata.source || 'Unknown'} (via {result.foundWith})
                     </div>
                     <div class="text-[10px] text-gray-700">
-                      {result.content.slice(0, 80)}...
+                      {result.segment.segment.slice(0, 80)}...
                     </div>
                   </div>
                 {/each}

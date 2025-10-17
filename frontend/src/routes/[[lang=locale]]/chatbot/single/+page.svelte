@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { MultiVectorSearchResult } from '@openvaa/vector-store';
+
   interface UIMessage {
     id: string;
     role: 'user' | 'assistant';
@@ -19,16 +21,6 @@
     >;
   }
 
-  interface RAGContext {
-    query: string;
-    results: Array<{
-      source: string;
-      content: string;
-      distance?: number;
-    }>;
-    timestamp: number;
-  }
-
   // Metadata tracking interfaces
   interface CostInfo {
     input: number;
@@ -46,7 +38,7 @@
   }
 
   let messages: UIMessage[] = [];
-  let ragContexts: RAGContext[] = [];
+  let ragContexts: MultiVectorSearchResult[] = [];
   let costs: CostInfo[] = [];
   let latencies: LatencyInfo[] = [];
   let input = '';
@@ -204,14 +196,8 @@
     // Handle RAG context events (not tied to specific messages)
     if (data.type === 'rag-context') {
       console.log('[Chatbot] Received RAG context:', data);
-      ragContexts = [
-        ...ragContexts,
-        {
-          query: data.query,
-          results: data.results,
-          timestamp: Date.now()
-        }
-      ];
+      // data is a MultiVectorSearchResult with query, results, retrievalSources, timestamp
+      ragContexts = [...ragContexts, data];
       return;
     }
 
@@ -384,6 +370,11 @@
                   Query #{ragContexts.length - idx}
                 </div>
                 <div class="font-semibold mt-1 text-blue-700">{context.query}</div>
+                <div class="mt-1 text-xs text-gray-600">
+                  Found via: {context.retrievalSources.fromSegments} segments,
+                  {context.retrievalSources.fromSummaries} summaries,
+                  {context.retrievalSources.fromFacts} facts
+                </div>
               </div>
 
               {#if context.results.length === 0}
@@ -397,15 +388,39 @@
                           Result {resultIdx + 1}
                         </div>
                         <div class="text-xs text-gray-500">
-                          Source: {result.source}
-                          {#if result.distance !== undefined}
-                            <span class="ml-2">Distance: {result.distance.toFixed(3)}</span>
-                          {/if}
+                          Source: {result.segment.metadata.source || 'Unknown'}
+                          <span class="ml-2">Score: {result.score.toFixed(3)}</span>
+                          <span class="ml-2 text-purple-600">via {result.foundWith}</span>
                         </div>
                       </div>
-                      <div class="whitespace-pre-wrap text-sm text-gray-700">
-                        {result.content}
+                      <div class="whitespace-pre-wrap text-sm text-gray-700 mb-2">
+                        {result.segment.segment}
                       </div>
+
+                      <!-- Dev debugging: show AI-generated content -->
+                      <details class="mt-2">
+                        <summary class="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                          Debug: AI-generated content (not shown to LLM)
+                        </summary>
+                        <div class="mt-2 space-y-2 text-xs">
+                          {#if result.segment.summary}
+                            <div class="p-2 bg-blue-50 rounded">
+                              <div class="font-semibold text-blue-700">Summary:</div>
+                              <div class="text-gray-700">{result.segment.summary}</div>
+                            </div>
+                          {/if}
+                          {#if result.segment.standaloneFacts && result.segment.standaloneFacts.length > 0}
+                            <div class="p-2 bg-green-50 rounded">
+                              <div class="font-semibold text-green-700">Facts:</div>
+                              <ul class="list-disc list-inside text-gray-700">
+                                {#each result.segment.standaloneFacts as fact}
+                                  <li>{fact}</li>
+                                {/each}
+                              </ul>
+                            </div>
+                          {/if}
+                        </div>
+                      </details>
                     </div>
                   {/each}
                 </div>

@@ -24,7 +24,7 @@ export class ChromaVectorStore extends VectorStore {
     this.config = config;
     this.embedder = config.embedder;
     this.collectionType = config.collectionType;
-    this.client = new ChromaClient();
+    this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : undefined);
   }
 
   async initialize(): Promise<void> {

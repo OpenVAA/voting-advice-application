@@ -1,7 +1,50 @@
-import { type ChatbotAPIInput, ChatEngine, RAGService } from '@openvaa/chatbot';
+import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
+import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
-import { stubDataProvider } from './stubDataProvider';
 import type { ModelMessage } from 'ai';
+
+// Collection names for multi-vector retrieval
+const COLLECTION_NAMES = {
+  segments: 'eu-2024-segments',
+  summaries: 'eu-2024-summaries',
+  facts: 'eu-2024-facts'
+} as const;
+
+// Initialize embedder and vector store (singleton pattern)
+let multiVectorStore: MultiVectorStore | null = null;
+
+async function getVectorStore(): Promise<MultiVectorStore> {
+  if (!multiVectorStore) {
+    const embedder = new OpenAIEmbedder({
+      model: 'text-embedding-3-small',
+      dimensions: 1536,
+      apiKey: 'your-api-key'
+    });
+
+    multiVectorStore = new MultiVectorStore({
+      collectionNames: COLLECTION_NAMES,
+      embedder,
+      chromaPath: 'http://host.docker.internal:8000'
+    });
+
+    await multiVectorStore.initialize();
+  }
+  return multiVectorStore;
+}
+
+// Format search results for LLM prompt (only actual segments, not AI-generated content)
+function formatSegmentsForPrompt(ragResult: MultiVectorSearchResult): string {
+  if (ragResult.results.length === 0) {
+    return 'No relevant context found.';
+  }
+
+  return ragResult.results
+    .map((result) => {
+      const source = result.segment.metadata.source || 'Unknown';
+      return `### Source: ${source}\n${result.segment.segment}`;
+    })
+    .join('\n\n---\n\n');
+}
 
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10,32 +53,33 @@ export async function POST({ request, params }: { request: Request; params: any 
 
   const messages = convertUIMessagesToModelMessages(uiMessages);
 
-  // Initialize RAG service (only happens once, subsequent calls are no-ops)
-  await RAGService.initialize();
-
   // Get the last message safely
   const lastMessage = messages[messages.length - 1];
   if (!lastMessage) {
     throw new Error('No messages provided');
   }
 
-  // Get structured RAG context for the UI
-  const ragContextData = await RAGService.searchContextStructured(lastMessage.content as string, 3);
+  // Get vector store and perform RAG search
+  const vectorStore = await getVectorStore();
+  const ragResult = await vectorStore.search({
+    query: lastMessage.content as string,
+    searchCollections: ['segment', 'summary', 'fact'],
+    topKPerCollection: 3
+  });
 
-  // Enhance message with RAG context from vector store
-  const enhancedMessage: ModelMessage = await RAGService.enhanceMessageWithContext(
-    lastMessage,
-    true, // enableRAG
-    3 // topK results
-  );
+  // Format segments for LLM context (only actual text, not summaries/facts)
+  const contextText = formatSegmentsForPrompt(ragResult);
+
+  // Enhance message with RAG context
+  const enhancedMessage: ModelMessage = {
+    role: 'user',
+    content: `Context:\n${contextText}\n\nUser question: ${lastMessage.content}`
+  };
 
   const input: ChatbotAPIInput = {
-    messages: [...messages, enhancedMessage],
+    messages: [...messages.slice(0, -1), enhancedMessage],
     context: {
       locale: params.lang || 'en'
-    },
-    getToolsOptions: {
-      dataProvider: stubDataProvider
     },
     nSteps: 5
   };
@@ -53,16 +97,9 @@ export async function POST({ request, params }: { request: Request; params: any 
 
       try {
         // First, send RAG context as a custom SSE event
-        if (ragContextData.length > 0) {
+        if (ragResult.results.length > 0) {
           controller.enqueue(encoder.encode('event: rag-context\n'));
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({
-                query: lastMessage.content,
-                results: ragContextData
-              })}\n\n`
-            )
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(ragResult)}\n\n`));
         }
 
         // Then pipe the AI SDK stream through while tracking timing
@@ -94,9 +131,8 @@ export async function POST({ request, params }: { request: Request; params: any 
 
         // Calculate tokens per second (if we have output tokens from usage)
         const usage = await result.usage;
-        const tokensPerSecond = usage.outputTokens && totalTime > 0
-          ? (usage.outputTokens / (totalTime / 1000))
-          : undefined;  
+        const tokensPerSecond =
+          usage.outputTokens && totalTime > 0 ? usage.outputTokens / (totalTime / 1000) : undefined;
 
         // Send combined metadata as a single event
         controller.enqueue(encoder.encode('event: metadata-info\n'));

@@ -13,12 +13,3 @@ export interface Tool<TInput, TOutput> {
   /** Function that executes the tool logic */
   execute: (input: TInput) => Promise<TOutput> | TOutput;
 }
-
-/**
- * Options for tool inclusion.
- */
-export interface ToolOptions {
-  includeVectorSearch?: boolean;
-  includeWebSearch?: boolean;
-  includeCustomTools?: boolean;
-}
