@@ -220,7 +220,7 @@ async function runGaterTest(): Promise<void> {
   const resultsByContextLength = groupBy(results, (r) => r.contextLength);
   const contextLengthMetrics: ContextLengthMetrics = {};
   for (const [contextLength, contextResults] of resultsByContextLength) {
-    contextLengthMetrics[contextLength] = calculateMetrics(contextResults);
+    contextLengthMetrics[contextLength as number] = calculateMetrics(contextResults);
   }
 
   // Collect misclassifications

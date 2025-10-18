@@ -1,0 +1,600 @@
+{
+  "runId": "pipeline_1760821938822",
+  "success": true,
+  "data": {
+    "documentId": "unofficial_citized-information-board",
+    "metadata": {
+      "title": "Relate",
+      "source": "Citizens Information Board",
+      "publishedDate": "May/June 2019",
+      "locale": "en"
+    },
+    "segmentAnalyses": [
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "2593a58f-8b1d-4140-adde-03f6e99f6642",
+        "segment": "May/June 2019\n\n**Citizens Information Board**\ninformation · advice · advocacy\n\nVolume 47: Issues 5-6\nISSN 0790-4290\n\n# Relate\nThe journal of developments in social services, policy and legislation in Ireland\n\n## Contents\nPage No.\n\n2. The EU institutions\n6. European legislation\n8. Recent EU legislative developments\n\n## The European Union and its institutions\n\nThe European Union (EU) is an economic and political union of 28 member states, including Ireland. At present, the 27 other member states are: Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech Republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Italy, Latvia, Lithuania, Luxembourg, Malta, the Netherlands, Poland, Portugal, Romania, Spain, Slovakia, Slovenia, Sweden and the UK.\n\nThe UK voted to leave the EU in 2016 and was originally scheduled to leave on 29 March 2019. However, its departure has now been postponed until either a withdrawal agreement is approved or until 31 October 2019.\n\nThe EU includes a number of institutions, most notably the Council of the European Union, the Commission and the Parliament. The EU also has its own budget, which comes from contributions from the member states and is spent in many different areas.",
+        "segmentIndex": 0,
+        "summary": "The text identifies the European Union (EU) as an economic and political union of 28 member states, including Ireland, highlighting its core institutions such as the Council of the European Union, the Commission, and the Parliament. It notes that the EU maintains its own budget funded by member state contributions. Furthermore, it details the status of the UK's departure (Brexit), stating that following the 2016 vote, the original departure date of March 29, 2019, was postponed until 31 October 2019, or until a withdrawal agreement is approved.",
+        "standaloneFacts": [
+          "The European Union (EU) is an economic and political union of 28 member states.",
+          "The main institutions of the EU include the Council of the European Union, the Commission, and the Parliament.",
+          "The EU budget comes from contributions from the member states.",
+          "The UK voted to leave the EU in 2016.",
+          "The UK's departure from the EU was postponed until either a withdrawal agreement is approved or until 31 October 2019."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "f05b5598-addf-4a9f-93ad-31d55e6dc0e0",
+        "segment": "As a result of treaties between the member states, the EU has the power to make laws on a wide range of subjects. The member states must implement these laws, which take various forms, including Regulations and Directives.\n\n### History of the EU\n\nWhat is now known as the European Union evolved from the European Coal and Steel Community (ECSC), the European Atomic Energy Community (Euratom) and the European Economic Community (EEC). These communities were formed in the aftermath of the Second World War, partly in an attempt to foster economic co-operation and ensure long-term peace in mainland Europe.\n\nThe three communities had six founding members:\n\n*   West Germany\n*   France\n*   Italy\n*   Netherlands\n*   Belgium\n*   Luxembourg\n\nThe EEC was the most important of these three communities. It was created by the signature of the Treaty of Rome in 1957 and came into existence in 1958. One of the main results of the Treaty was the creation of a customs union between these six countries.\n\nOver time, the institutions for the three communities merged together and ultimately became what we now know as the Council of the European Union, the European Commission and the European Parliament.",
+        "segmentIndex": 1,
+        "summary": "The EU derives its law-making authority, resulting in mandatory laws like Regulations and Directives, from treaties signed by member states. Its historical roots lie in the post-WWII formation of the European Coal and Steel Community (ECSC), Euratom, and the European Economic Community (EEC). The EEC was the most important of these three, established by the Treaty of Rome in 1957 among six founding members, creating a customs union.",
+        "standaloneFacts": [
+          "The EU has the power to make laws, such as Regulations and Directives, which member states must implement.",
+          "The European Union evolved from the European Coal and Steel Community (ECSC), the European Atomic Energy Community (Euratom), and the European Economic Community (EEC).",
+          "The three communities were formed after the Second World War partly to foster economic co-operation and ensure long-term peace.",
+          "The six founding members of the ECSC, Euratom, and EEC were West Germany, France, Italy, Netherlands, Belgium, and Luxembourg.",
+          "The European Economic Community (EEC) was created by the signature of the Treaty of Rome in 1957 and came into existence in 1958.",
+          "One of the main results of the Treaty of Rome was the creation of a customs union between the six founding countries.",
+          "The institutions for the three founding communities merged to become the Council of the European Union, the European Commission, and the European Parliament."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "7d74ede0-71fb-4ddb-9e4b-dc2809e48335",
+        "segment": "After a referendum in 1972, Ireland became a member state of the EEC on 1 January 1973. The UK and Denmark also joined on this date.\n\nThe member states signed further treaties to improve the functioning of the EEC and its institutions and to increase its authority in different areas. For instance, the Single European Act was signed in 1986 with the goal of creating a single market.\n\nThe Maastricht Treaty (also known as the Treaty of the European Union) was signed in 1992 and led to the re-naming of the EEC as the European Community (the EC) within a wider body known as the European Union. In addition to its economic objectives, the EU now had responsibility in the areas of foreign and security policy, and law enforcement co-operation. The Maastricht Treaty also provided for the creation of the euro.\n\nFurther amendments to the underlying constitutional structure of the EU were made by the Amsterdam Treaty (signed in 1997), the Nice Treaty (signed in 2001) and the Lisbon Treaty (signed in 2007).",
+        "segmentIndex": 2,
+        "summary": "The EEC expanded significantly on January 1, 1973, with the accession of Ireland, the UK, and Denmark. Subsequent treaties, notably the 1986 Single European Act, aimed to improve functioning and create a single market. The 1992 Maastricht Treaty transformed the organization, renaming the EEC as the European Community within the wider European Union, expanding its authority into foreign policy and law enforcement, and providing for the creation of the euro, followed by further constitutional changes via the Amsterdam (1997), Nice (2001), and Lisbon (2007) Treaties.",
+        "standaloneFacts": [
+          "Ireland, the UK, and Denmark became member states of the EEC on 1 January 1973.",
+          "The Single European Act was signed in 1986 with the goal of creating a single market.",
+          "The Maastricht Treaty, signed in 1992, is also known as the Treaty of the European Union.",
+          "The Maastricht Treaty led to the re-naming of the EEC as the European Community (EC) within the wider European Union (EU).",
+          "The Maastricht Treaty expanded the EU's responsibility into foreign and security policy, and law enforcement co-operation.",
+          "The Maastricht Treaty provided for the creation of the euro.",
+          "The Amsterdam Treaty was signed in 1997.",
+          "The Nice Treaty was signed in 2001.",
+          "The Lisbon Treaty was signed in 2007."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "a4c50a58-b478-4db8-b47e-d08e8a09402d",
+        "segment": "### Goals of the EU\n\nThe current goals of the EU are to:\n\n*   Promote peace, the values of the EU and the wellbeing of its citizens\n*   Offer freedom, security and justice without internal borders\n*   Promote sustainable development based on balanced economic growth and price stability, a highly competitive market economy with full employment and social progress, and environmental protection\n*   Combat social exclusion and discrimination\n*   Promote scientific and technological progress\n*   Enhance economic, social and territorial cohesion and solidarity among EU countries\n*   Respect the rich cultural and linguistic diversity of the EU\n*   Establish an economic and monetary union whose currency is the Euro\n\n## The EU institutions\n\nThe most important institutions of the EU are:\n\n*   The European Parliament\n*   The European Commission\n*   The Council of the European Union\n*   The European Council\n*   The Court of Justice of the European Union\n*   The Court of Auditors",
+        "segmentIndex": 3,
+        "summary": "The EU's current goals center on promoting peace, freedom, security, and justice, alongside fostering sustainable development, balanced economic growth, and social progress while respecting cultural diversity and maintaining the economic and monetary union based on the Euro. The most important institutions governing the EU are identified as the European Parliament, the European Commission, the Council of the European Union, the European Council, the Court of Justice of the European Union, and the Court of Auditors.",
+        "standaloneFacts": [
+          "The goals of the EU include promoting peace, the values of the EU, and the wellbeing of its citizens.",
+          "A key goal of the EU is to offer freedom, security, and justice without internal borders.",
+          "The EU promotes sustainable development based on balanced economic growth, price stability, and environmental protection.",
+          "The EU aims to combat social exclusion and discrimination, and promote scientific and technological progress.",
+          "The EU seeks to enhance economic, social, and territorial cohesion and solidarity among EU countries.",
+          "A goal of the EU is to establish an economic and monetary union whose currency is the Euro.",
+          "The most important institutions of the EU are the European Parliament, the European Commission, the Council of the European Union, the European Council, the Court of Justice of the European Union, and the Court of Auditors."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "109d5dc5-f4c7-4e70-b545-4c5cfa8846e4",
+        "segment": "### The European Parliament\n\nThe European Parliament is the only directly elected body within the EU. Elections take place once every five years to elect members of the European Parliament (MEPs).\n\nThere are 751 seats in the European Parliament, although if the UK leaves the EU, the number of seats will drop to 705. MEPs generally join the parliamentary group which aligns best with their interests, to ensure that their views are given greater weight. For a group to be recognised, it must have 25 MEPs representing at least one-quarter of the member states.\n\nThe Parliament elects its own president, along with 14 vice-presidents, for a term of 2½ years. Collectively, this group is known as the Bureau of Parliament.\n\nThe leaders of the various parliamentary groups decide with the president on the Parliament's agenda and set the timetable of work for the Parliament and its committees.\n\nThe Parliament sits in Strasbourg, but there is a Secretariat based in Luxembourg and certain sessions and committee meetings take place in Brussels to facilitate contact with the Commission and Council.\n\n#### Powers of the Parliament\n\nWith each new treaty, the powers of the European Parliament have increased. In general, most European laws must now be approved by both the European Parliament and the Council of the European Union. However, there are certain important areas, for example tax legislation, where the Parliament may only give an opinion as to whether a proposed piece of legislation can become law. The EU legislative procedures are explained in more detail on page 6.",
+        "segmentIndex": 4,
+        "summary": "The European Parliament is the only directly elected body within the EU, with elections held every five years to choose its Members (MEPs). It currently holds 751 seats, and MEPs organize into parliamentary groups that require 25 members representing at least one-quarter of the member states to be recognized. While its powers have increased with successive treaties, it is primarily responsible for approving most European laws alongside the Council of the European Union, though it holds only an advisory role in certain areas like tax legislation.",
+        "standaloneFacts": [
+          "The European Parliament is the only directly elected body within the European Union (EU).",
+          "Elections for the European Parliament take place once every five years.",
+          "The European Parliament currently has 751 seats.",
+          "If the UK leaves the EU, the number of seats in the European Parliament will drop to 705.",
+          "For a parliamentary group in the European Parliament to be recognized, it must have 25 MEPs representing at least one-quarter of the member states.",
+          "The Parliament elects its president and 14 vice-presidents for a term of 2\r\n\r\n\r\n\r\n\r\n½ years.",
+          "The Bureau of Parliament is the collective term for the Parliament's president and 14 vice-presidents.",
+          "The European Parliament sits in Strasbourg, but its Secretariat is based in Luxembourg.",
+          "Most European laws must be approved by both the European Parliament and the Council of the European Union."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "978e88ef-f540-4825-a0c3-ef28909ef80b",
+        "segment": "Unlike most national parliaments, the European Parliament does not have the ability to initiate legislation. The Parliament can only vote on and amend legislation proposed by the Commission, which has exclusive power to initiate legislation. However, the Parliament can request that the Commission draw up legislation in an area.\n\nThe European Parliament also has a critical role in the approval of the annual EU budget. If the Parliament rejects the budget after negotiations with the Council of the European Union, a new budget must be drafted.\n\nThe European Parliament is responsible for supervising the other institutions of the EU, most notably the Commission. After each European election, the European Council proposes a president of the Commission. This nominee must be approved by a majority of the Parliament. The commissioners are then nominated and they too must be approved by the Parliament. The Commission must submit reports to the Parliament on its activities and must answer written or oral questions during Question Time. If two-thirds of the Parliament vote in favour of a motion of censure against the Commission, the entire Commission is forced to resign.\n\nIf a quarter of the MEPs so vote, a committee of inquiry can be set up to look into alleged contraventions or maladministration of EU law. The consent of the Parliament is also necessary to allow a new member state to join the EU.",
+        "segmentIndex": 5,
+        "summary": "The European Parliament (EP) is constrained in its legislative role, as it cannot initiate legislation but rather votes on and amends proposals exclusively put forward by the Commission. However, the EP holds critical approval powers over the annual EU budget and exercises significant supervision over the Commission. This supervisory power includes approving the Commission's President and Commissioners, and crucially, the ability to force the entire Commission to resign through a two-thirds vote of censure.",
+        "standaloneFacts": [
+          "The European Parliament does not have the ability to initiate legislation.",
+          "The Commission has exclusive power to initiate EU legislation.",
+          "The European Parliament can request that the Commission draw up legislation in an area.",
+          "The European Parliament has a critical role in the approval of the annual EU budget.",
+          "If the European Parliament rejects the annual EU budget after negotiations with the Council of the European Union, a new budget must be drafted.",
+          "The European Parliament is responsible for supervising the other institutions of the EU, most notably the Commission.",
+          "The European Council's nominee for President of the Commission must be approved by a majority of the European Parliament.",
+          "Nominated Commissioners must be approved by the European Parliament.",
+          "The Commission must submit reports to the European Parliament on its activities.",
+          "The Commission must answer written or oral questions during Question Time in the European Parliament.",
+          "If two-thirds of the European Parliament vote in favour of a motion of censure against the Commission, the entire Commission is forced to resign.",
+          "A committee of inquiry can be set up if a quarter of the MEPs vote for it to look into alleged contraventions or maladministration of EU law.",
+          "The consent of the European Parliament is necessary to allow a new member state to join the EU."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "fb3b996b-fba6-43c8-80ec-8317484b47ed",
+        "segment": "### The European Commission\n\nThe Commission is the executive body of the European Union and its staff are part of the EU civil service. The Commission is based in Brussels.\n\nThe Commission is composed of 28 commissioners, one of whom is the president. There is one commissioner for each member state; each member state nominates a person to act as a commissioner. However, that person is not officially there to represent the interests of their own member state.\n\nAs noted above, the European Parliament must approve the president of the Commission and then each of the commissioners. Each individual commissioner is subjected to scrutiny by the relevant committee of the European Parliament before the vote takes place. Together, the commissioners are known as the College of Commissioners.\n\nThe president of the Commission gives each commissioner responsibility for a particular area. However, the allocation of portfolios is often the subject of much negotiation between the member states and the president. These policy areas are often closely related to the departments within the EU civil service (Directorates-General). Each commissioner has a five-year term.\n\nThe Commission meets once a week to adopt proposals, finalise policy papers and make decisions. Decisions are taken by a simple majority vote. Once a decision is taken, it becomes Commission policy and has the full support of all commissioners.",
+        "segmentIndex": 6,
+        "summary": "The European Commission functions as the executive body of the European Union, headquartered in Brussels, and is composed of 28 commissioners, including the president, nominated by member states. All commissioners serve five-year terms and must be approved by the European Parliament, forming the College of Commissioners. The Commission meets weekly to adopt proposals and decisions, which are taken by a simple majority vote.",
+        "standaloneFacts": [
+          "The European Commission is the executive body of the European Union.",
+          "The European Commission is based in Brussels.",
+          "The European Commission is composed of 28 commissioners, one of whom is the president.",
+          "Each member state nominates one person to act as a commissioner.",
+          "The European Parliament must approve the president of the Commission and each individual commissioner.",
+          "The commissioners together are known as the College of Commissioners.",
+          "Each commissioner has a five-year term.",
+          "The Commission meets once a week to adopt proposals, finalize policy papers, and make decisions.",
+          "Decisions taken by the Commission are made by a simple majority vote."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "14c084e9-faea-4728-a765-68ba73f5e47d",
+        "segment": "To assist the commissioners in the performance of their duties, the Commission employs a staff of about 32,000 people. Staff members come from all the member states and include language experts, lawyers, administrative staff, and experts in particular fields such as agriculture or industry.\n\n#### Powers of the European Commission\n\nThe Commission has a number of important functions:\n\n*   The Commission initiates legislation. It makes draft proposals for European laws, which are sent to the Council and European Parliament for amendment and approval. It also develops the overall legislative plan for any single year.\n*   Other bodies, such as the Council of the European Union and the European Parliament, can send requests to the Commission to draft legislation.\n*   A piece of EU legislation can also confer power on the Commission to enact Regulations which implement the goals in that piece of legislation.\n*   The Commission acts as a guardian of the EU treaties. It ensures that EU legislation is applied by all member states. It can institute proceedings against member states or businesses that fail to comply with EU law.\n*   The Commission acts as an executive b",
+        "segmentIndex": 7,
+        "summary": "The European Commission employs a staff of approximately 32,000 people, consisting of experts like lawyers and administrative staff drawn from all member states, to assist the commissioners in their duties. The Commission's primary powers include initiating legislation by making draft proposals and developing the annual legislative plan. Crucially, the Commission acts as the guardian of the EU treaties, ensuring EU legislation is applied across all member states and having the authority to institute proceedings against non-compliant parties.",
+        "standaloneFacts": [
+          "The European Commission employs a staff of about 32,000 people.",
+          "European Commission staff members include language experts, lawyers, administrative staff, and experts in fields such as agriculture or industry.",
+          "The European Commission initiates legislation by making draft proposals for European laws.",
+          "The European Commission develops the overall legislative plan for any single year.",
+          "Draft proposals for European laws are sent to the Council and European Parliament for amendment and approval.",
+          "The Council of the European Union and the European Parliament can send requests to the European Commission to draft legislation.",
+          "The European Commission acts as a guardian of the EU treaties.",
+          "The European Commission ensures that EU legislation is applied by all member states.",
+          "The European Commission can institute proceedings against member states or businesses that fail to comply with EU law.",
+          "EU legislation can confer power on the European Commission to enact Regulations to implement the goals of that legislation."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "6c8f50dd-9eb7-4573-8ed6-977c819aeb7b",
+        "segment": "ody: it manages policies and drafts and implements the annual budget.*   The Commission represents the EU on the international stage. It negotiates trade and co-operation agreements with non-EU countries. However, most agreements negotiated by the Commission must be approved by both the Parliament and the Council of the European Union.### The Council of the European UnionThe Council of the European Union shares decision-making power with the European Parliament, particularly in the areas of law-making and budget approval. It is not to be confused with the European Council, which is discussed later. The Council of the European Union has a rotating presidency, meaning that a representative from a different member state chairs most of the Council meetings for a six-month period.The Council of the European Union consists of one government minister from every member state. Different groups of ministers meet depending on what topic is being discussed at the weekly meeting. For example, if the issue to be discussed at the Council is agriculture, the minister for agriculture from each member state will attend and sit on the Council.",
+        "segmentIndex": 8,
+        "summary": "The European Commission functions as the executive body, responsible for managing policies, drafting and implementing the annual budget, and representing the EU internationally by negotiating trade and co-operation agreements. Following this, the text introduces the Council of the European Union, which shares decision-making power with the European Parliament in areas like law-making and budget approval. The Council operates under a rotating six-month presidency and is composed of one government minister from each member state, with the specific minister attending depending on the topic being discussed.",
+        "standaloneFacts": [
+          "The European Commission acts as the EU's executive body, managing policies and drafting and implementing the annual budget.",
+          "The European Commission represents the EU on the international stage, negotiating trade and co-operation agreements with non-EU countries.",
+          "Most agreements negotiated by the European Commission must be approved by both the European Parliament and the Council of the European Union.",
+          "The Council of the European Union shares decision-making power with the European Parliament in the areas of law-making and budget approval.",
+          "The Council of the European Union has a rotating presidency, meaning a representative from a different member state chairs most meetings for a six-month period.",
+          "The Council of the European Union consists of one government minister from every member state.",
+          "Different groups of ministers meet in the Council of the European Union depending on the topic being discussed."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "39880350-b031-4be1-97c7-5834b9539ab1",
+        "segment": "The Council generally meets in Brussels. However, meetings during April, June and October are held in Luxembourg.The Council of the European Union has the following essential functions:*   The power to legislate. The Council shares this power with the European Parliament. Generally, the Council and the Parliament jointly adopt proposals for legislation that have come from the European Commission. As noted, all initial versions of legislation must be drafted by the Commission.*   The Council and the Parliament can make amendments to the legislation before either approving or rejecting it. The Council can also ask the Commission to undertake studies, which can lead to draft legislation.*   Co-ordination of the economic policies of member states. Every year, the Council drafts guidelines for the economic policies of member states. These are then made into recommendations and the Council supervises their implementation by member states.*   Development and co-ordination of the EU's common foreign and security policy. The Council defines and implements EU foreign and security policy on the basis of guidelines set by the European Council. This policy area includes the EU's development and humanitarian aid, defence and trade.*   The power to approve the budget of the EU. This power is shared with the Parliament.",
+        "segmentIndex": 9,
+        "summary": "The Council of the European Union generally meets in Brussels, with exceptions for meetings held in Luxembourg during April, June, and October. Its core functions include sharing legislative power and budget approval with the European Parliament, coordinating member state economic policies through guidelines and supervision, and defining and implementing the EU's common foreign and security policy.",
+        "standaloneFacts": [
+          "The Council of the European Union generally meets in Brussels, but holds meetings in Luxembourg during April, June, and October.",
+          "The Council of the European Union shares the power to legislate and the power to approve the EU budget with the European Parliament.",
+          "The Council and the Parliament jointly adopt proposals for legislation that have originated from the European Commission.",
+          "The Council of the European Union is responsible for the coordination of the economic policies of member states.",
+          "The Council defines and implements the EU's common foreign and security policy (CFSP) based on guidelines set by the European Council.",
+          "The EU's common foreign and security policy includes development and humanitarian aid, defence, and trade."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "9fcb6516-2224-49bd-971b-46a4a46a9f50",
+        "segment": "#### How the Council of the European Union makes decisionsIf the Council is considering a proposal that has been made by the Commission (which is the usual way that decisions arise), then it makes the decision using qualified majority voting (QMV). A qualified majority means that the following two conditions must be met:*   55% of the member states must agree, which is at least 16 member states currently.*   Those supporting the proposal must represent at least 65% of the EU population.To prevent a decision being made, at least four member states must form a blocking minority. This means that if fewer than four member states oppose a decision, then the Council will judge that a qualified majority has been reached.Certain sensitive topics, such as foreign policy and taxation, currently require a unanimous vote within the Council.",
+        "segmentIndex": 10,
+        "summary": "The Council of the European Union typically makes decisions on proposals from the European Commission using Qualified Majority Voting (QMV). QMV requires 55% of member states (currently at least 16) to agree, provided they represent at least 65% of the total EU population. To prevent a decision, at least four member states must form a blocking minority, though sensitive topics like foreign policy and taxation require unanimous consent.",
+        "standaloneFacts": [
+          "The Council of the European Union uses Qualified Majority Voting (QMV) to decide on proposals made by the European Commission.",
+          "Qualified Majority Voting (QMV) in the Council of the European Union requires 55% of the member states to agree.",
+          "States supporting a proposal under Qualified Majority Voting (QMV) must represent at least 65% of the EU population.",
+          "To form a blocking minority in the Council of the European Union, at least four member states must oppose a decision.",
+          "Certain sensitive topics considered by the Council of the European Union, such as foreign policy and taxation, require a unanimous vote."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "0564ff95-99d2-48a3-b69f-292b365d952d",
+        "segment": "### The European CouncilThe members of the European Council are the heads of state or heads of government of the EU member states, the president of the European Council and the president of the European Commission. The Taoiseach therefore represents Ireland at these meetings. The EU's high representative for foreign affairs and security policy also takes part when foreign affairs are discussed.The European Council defines the EU's overall political direction and priorities. It is not one of the EU's legislating institutions, so it does not negotiate or adopt EU laws. The European Council is responsible for defining strategic guidelines on freedom, security and justice.The European Council has a number of important powers of appointment. It elects its own president for a term of 2½ years, which can be renewed once. It nominates a candidate to become the president of the European Commission. This nominee must be approved by the European Parliament. The European Council also exclusively decides on the president, vice-president and executive members of the European Central Bank.",
+        "segmentIndex": 11,
+        "summary": "The European Council, composed primarily of EU heads of state/government and its own president, defines the EU's overall political direction and priorities, though it is not a legislating institution. It is responsible for strategic guidelines on freedom, security, and justice. The Council also holds key appointment powers, electing its own president for a renewable 2\bdyear term, nominating the European Commission President, and exclusively deciding on the leadership of the European Central Bank.",
+        "standaloneFacts": [
+          "The European Council's members include the heads of state or heads of government of the EU member states, the president of the European Council, and the president of the European Commission.",
+          "The Taoiseach represents Ireland at European Council meetings.",
+          "The European Council defines the EU's overall political direction and priorities.",
+          "The European Council is not one of the EU's legislating institutions and does not negotiate or adopt EU laws.",
+          "The European Council is responsible for defining strategic guidelines on freedom, security and justice.",
+          "The European Council elects its own president for a term of 2\bdyears, which can be renewed once.",
+          "The European Council nominates a candidate to become the president of the European Commission.",
+          "The European Council's nominee for President of the European Commission must be approved by the European Parliament.",
+          "The European Council exclusively decides on the president, vice-president, and executive members of the European Central Bank."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "b851c23a-ce71-49b5-ad72-b6686b182398",
+        "segment": "#### European Council meetingsEuropean Council meetings are essentially summits where EU leaders meet to decide on broad political priorities and major initiatives. The Council meets at least twice every six months, normally in Brussels. When pressing issues arise, meetings can be scheduled on an ad hoc basis. This has been seen recently in the Brexit negotiations.Meetings are chaired by the European Council president. The president of the European Parliament attends the start of each meeting to outline the European Parliament's views. Other people, such as the president of the European Central Bank, may be invited to attend meetings, depending on the issues being discussed.The European Council mostly takes its decisions by consensus. However, in certain specific cases outlined in the EU treaties, it decides by unanimity or by qualified majority. If a vote is taken, neither the European Council president nor the Commission president takes part.### The Court of Justice of the European UnionThe Court of Justice of the European Union (CJEU) is the judicial wing of the European Union. It is composed of the European Court of Justice (ECJ), the General Court and some specialised courts.These various courts deal with disputes between parties which involve EU law. They interpret EU law to make sure it is applied in the same way in all EU countries, and settle legal disputes between national governments and EU institutions. In certain circumstances, individuals, companies or organisations can take action against an EU institution in these courts, if they feel the institution has somehow infringed their rights. The CJEU sits in Luxembourg.",
+        "segmentIndex": 12,
+        "summary": "The segment first outlines the operational details of European Council meetings, which are summits held at least twice every six months in Brussels, chaired by the Council president, and primarily decide issues by consensus. It notes that neither the European Council president nor the Commission president votes when decisions are taken. Secondly, the text introduces the Court of Justice of the European Union (CJEU), the EU's judicial wing located in Luxembourg, which ensures EU law is applied consistently and settles legal disputes between governments, institutions, and sometimes individuals.",
+        "standaloneFacts": [
+          "European Council meetings, which are summits of EU leaders, occur at least twice every six months, usually in Brussels.",
+          "European Council meetings are chaired by the European Council president.",
+          "The President of the European Parliament attends the start of each European Council meeting to outline the Parliament's views.",
+          "The European Council mostly takes its decisions by consensus.",
+          "If the European Council takes a vote, neither the European Council president nor the Commission president takes part.",
+          "The Court of Justice of the European Union (CJEU) is the judicial wing of the European Union.",
+          "The CJEU is composed of the European Court of Justice (ECJ), the General Court, and specialized courts.",
+          "The CJEU interprets EU law to make sure it is applied in the same way in all EU countries.",
+          "The CJEU sits in Luxembourg."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "f1a8fcae-37d4-4913-bd94-d709b4f90d92",
+        "segment": "#### The European Court of JusticeThe European Court of Justice (ECJ) is the highest court of the EU. It consists of 28 judges, with one judge coming from each member state. It normally hears cases in panels of three, five or 15 judges (which is known as the Grand Chamber), depending on the importance of the issue in the case or the particular issue of European law in dispute. The ECJ acts as a collegiate body, meaning that there is only one ruling in each case. No dissents or separately concurring judgments are allowed.In addition to the 28 judges at the ECJ, there are 11 advocate generals who deliver reasoned opinions on cases to assist the ECJ in making its decisions. Each case is assigned one advocate general, although an opinion from the advocate general is not necessary in every case.Judges and advocate generals of the ECJ must have the qualifications to be appointed to the highest national courts in their member states or they may be jurisconsults (academic lawyers). Their independence must be beyond doubt. This means that once they are appointed, they may not hold any other office of an administrative or political nature and they may not engage in any occupation, paid or unpaid. They are appointed by joint agreement of the governments of the member states. They have a renewable term of six years.",
+        "segmentIndex": 13,
+        "summary": "The European Court of Justice (ECJ) is the highest court of the EU, composed of 28 judges (one from each member state) and supported by 11 advocate generals. Cases are heard in panels, including the 15-judge Grand Chamber, and the ECJ operates collegiately, issuing a single ruling without dissents. Judges and advocate generals are appointed by member state governments for a renewable six-year term and must possess high qualifications while maintaining strict independence from other political or administrative roles.",
+        "standaloneFacts": [
+          "The European Court of Justice (ECJ) is the highest court of the EU.",
+          "The ECJ consists of 28 judges, with one judge coming from each member state.",
+          "The ECJ normally hears cases in panels of three, five, or 15 judges (known as the Grand Chamber).",
+          "The ECJ acts as a collegiate body, meaning there is only one ruling in each case and no dissents are allowed.",
+          "There are 11 advocate generals who deliver reasoned opinions to assist the ECJ in making its decisions.",
+          "Judges and advocate generals of the ECJ are appointed by joint agreement of the governments of the member states.",
+          "Judges and advocate generals of the ECJ have a renewable term of six years.",
+          "Judges and advocate generals must have the qualifications to be appointed to the highest national courts in their member states or be jurisconsults (academic lawyers)."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "a5e1ccab-b47b-4bc2-b773-a38c4a5994bf",
+        "segment": "#### The General CourtThe General Court was set up as the Court of First Instance in 1989. It includes at least one judge per member state. Currently, there are 46 judges. Later this year, its number will increase and there will be two judges per member state.Unlike the ECJ, the General Court does not have permanent advocates general. However, that task may, in exceptional circumstances, be carried out by a judge.Cases before the General Court are heard by panels of five or three judges or, in some cases, by a single judge. The General Court may also sit as a Grand Chamber (of 15 judges) when this is justified by the legal complexity or importance of the case.Matters which are initially reserved to the General Court include cases relating to breach of competition law, breach of commercial policy or social policy, and disputes concerning EU staff regulations. Decisions made by the General Court can be appealed to the ECJ on a point of law.#### Types of action before the CJEUThe CJEU upholds EU treaties and ensures that European law is interpreted and applied in the same way across the EU. It can take various forms of legal action. These include:",
+        "segmentIndex": 14,
+        "summary": "The General Court, originally established as the Court of First Instance in 1989, currently comprises 46 judges, with plans to increase this number to two judges per member state. Unlike the ECJ, it lacks permanent advocates general and hears cases in panels of five, three, or single judges, or a 15-judge Grand Chamber, focusing on specific areas like competition law and staff disputes. Decisions from the General Court can be appealed to the ECJ on points of law, reflecting the broader mission of the CJEU to uphold EU treaties and ensure consistent application of European law.",
+        "standaloneFacts": [
+          "The General Court was set up as the Court of First Instance in 1989.",
+          "The General Court currently has 46 judges.",
+          "The General Court does not have permanent advocates general.",
+          "The Grand Chamber of the General Court consists of 15 judges.",
+          "Matters initially reserved to the General Court include cases relating to breach of competition law, breach of commercial policy or social policy, and disputes concerning EU staff regulations.",
+          "Decisions made by the General Court can be appealed to the ECJ on a point of law.",
+          "The CJEU upholds EU treaties and ensures that European law is interpreted and applied consistently across the EU."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "373a5cc0-d43f-4287-a279-bd44dd063944",
+        "segment": "*   **Preliminary rulings.** To avoid differences in the interpretation of EU law by national courts, the preliminary ruling procedure allows co-operation between national courts and the ECJ. If a case comes before a national court that involves an interpretation of an EU law and there is a doubt as to how it should be interpreted, the national court will refer the question to the ECJ. The ECJ will decide how the law should be interpreted or applied. The national court must then apply that decision to the case before it.*   **Proceedings for failure to fulfil an obligation.** The Commission or a member state may commence proceedings at the ECJ to force a member state to comply with EU law. If the CJEU decides that the member state in question is at fault, the member state must rectify the situation without delay.*   **Proceedings for annulment.** This is where an applicant seeks the annulment of a measure (in particular a Regulation, Directive or Decision) adopted by an institution, body, office or agency of the EU. This type of action enables the court to review the legality of acts adopted by European institutions, bodies, offices or organisations. The ECJ can annul the act concerned if it is judged to be contrary to EU law.The ECJ has exclusive jurisdiction over actions brought by a member state against the European Parliament or against the Council of th",
+        "segmentIndex": 15,
+        "summary": "The CJEU handles several types of legal action, including preliminary rulings, which facilitate cooperation between national courts and the ECJ to ensure uniform interpretation and application of EU law. The court also handles proceedings for failure to fulfil an obligation, initiated by the Commission or a member state to enforce compliance by a member state. A third key action is proceedings for annulment, which allows applicants to seek the cancellation of EU institutional acts (like Regulations or Directives) if they are judged to be contrary to EU law; the ECJ holds exclusive jurisdiction over certain disputes between institutions or member states against the Parliament or Council.",
+        "standaloneFacts": [
+          "Preliminary rulings allow cooperation between national courts and the ECJ to avoid differences in the interpretation of EU law.",
+          "If a national court has a doubt about the interpretation of an EU law, it refers the question to the ECJ.",
+          "Proceedings for failure to fulfil an obligation can be commenced by the Commission or a member state at the ECJ.",
+          "If the CJEU decides that a member state is at fault for failing to fulfil an obligation, the member state must rectify the situation without delay.",
+          "Proceedings for annulment seek the annulment of a measure (such as a Regulation, Directive, or Decision) adopted by an institution, body, office, or agency of the EU.",
+          "The ECJ can annul an act adopted by a European institution if it is judged to be contrary to EU law.",
+          "The ECJ has exclusive jurisdiction over actions for annulment brought by a member state against the European Parliament or against the Council of the European Union.",
+          "The ECJ has exclusive jurisdiction over actions for annulment brought by one EU institution against another."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "fb3cbcae-fdc5-46d6-96da-7298a10a3616",
+        "segment": "e European Union (apart from Council measures in respect of State aid, dumping and implementing powers) or brought by one EU institution against another. The General Court has initial jurisdiction in all other actions of this type and particularly in actions brought by individuals.Private individuals may only bring proceedings for annulment of an EU law if they can demonstrate that the disputed law affects them directly and individually. To bring proceedings for annulment, you should obtain legal advice and representation. You do not need to go through the national courts first in order to bring proceedings for annulment in the ECJ. If you lose the case at the ECJ, you may be liable to pay the costs of both sides. If you succeed, your costs will be paid by the EU and the law will be declared null and void throughout the EU.",
+        "segmentIndex": 16,
+        "summary": "The ECJ holds exclusive jurisdiction over annulment actions brought by a member state against the European Parliament or Council (with exceptions for state aid, dumping, and implementing powers), or by one EU institution against another. The General Court handles all other such actions, particularly those brought by individuals, who must demonstrate that the disputed law affects them both directly and individually. Parties do not need to go through national courts first; however, losing the case may result in liability for both sides' costs, while succeeding means the EU pays costs and the law is declared null and void throughout the EU.",
+        "standaloneFacts": [
+          "The ECJ has exclusive jurisdiction over annulment actions brought by a member state against the European Parliament or the Council of the European Union, except for Council measures on State aid, dumping, and implementing powers.",
+          "The ECJ has exclusive jurisdiction over annulment actions brought by one EU institution against another.",
+          "The General Court has initial jurisdiction in annulment actions brought by individuals.",
+          "Private individuals must demonstrate that a disputed EU law affects them directly and individually to bring proceedings for annulment.",
+          "Proceedings for annulment in the ECJ do not require prior recourse to national courts.",
+          "If a party loses an annulment case at the ECJ, they may be liable to pay the costs of both sides.",
+          "If a party succeeds in an annulment case at the ECJ, the EU pays their costs, and the law is declared null and void throughout the EU."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "461d78a0-71de-417d-b628-063ccc7e964c",
+        "segment": "### The Court of AuditorsThe Court of Auditors audits the accounts and oversees the implementation of the budgets of EU institutions. It aims to improve the financial management of EU money and to report to EU citizens on how EU money is used. It draws up an annual report at the end of each financial year. This is forwarded to the other institutions and must be published in the Official Journal of the European Union so that anyone can study the budget and spending of any particular EU institution. Members of the Court of Auditors are independent and have experience in auditing public finances.The Court of Auditors has its headquarters in Luxembourg and is composed of 28 members, one from each member state. Each member state suggests a candidate who is then appointed by the Council of the European Union in consultation with the European Parliament for a renewable term of six years.",
+        "segmentIndex": 17,
+        "summary": "The Court of Auditors is responsible for auditing the accounts and overseeing the implementation of the budgets of EU institutions, aiming to improve financial management and provide transparency on EU spending to citizens. It produces an annual report that is published in the Official Journal of the European Union. The Court is headquartered in Luxembourg and consists of 28 independent members, one from each member state, appointed by the Council for a renewable six-year term.",
+        "standaloneFacts": [
+          "The Court of Auditors audits the accounts and oversees the implementation of the budgets of EU institutions.",
+          "The Court of Auditors aims to improve the financial management of EU money.",
+          "The Court of Auditors draws up an annual report at the end of each financial year.",
+          "The annual report of the Court of Auditors must be published in the Official Journal of the European Union.",
+          "The Court of Auditors has its headquarters in Luxembourg.",
+          "The Court of Auditors is composed of 28 members, with one member from each member state.",
+          "Members of the Court of Auditors are appointed by the Council of the European Union in consultation with the European Parliament.",
+          "Members of the Court of Auditors serve a renewable term of six years."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "4ce55518-b77e-4cc9-b641-b3f76e6ca5de",
+        "segment": "## The EU budgetEvery year, the European Commission prepares a draft budget. The European Council and the European Parliament must agree on the budget and approve it in advance of the next financial year.If the Council and the Parliament do not agree on the budget, the Commission must prepare a new draft.The EU's main sources of income are:*   Contributions from all member states, including a percentage of VAT collected*   Import duties on products entering the EU*   Fines imposed on businesses and member states for failure to comply with EU rulesIn addition to the expenses of running the EU, the EU budget is spent on a wide range of policy areas, including:*   Agricultural grants to farmers under the Common Agricultural Policy (CAP) – over 80% of the EU monies received by Ireland in 2017 were agriculture related*   Regional development funds to the less well-off member states and regions in the form of cohesion and structural funds*   Monies for the creation of growth and jobs within member states*   Environmental measures*   Cultural expenditure*   Border controlA broader multi-annual financial framework spanning seven years is also agreed to allow for greater certainty in planning for income expenditure.",
+        "segmentIndex": 18,
+        "summary": "The annual EU budget process starts with a draft prepared by the European Commission, which must then be agreed upon and approved by both the European Council and the European Parliament before the next financial year. The main sources of EU income are contributions from member states (including a percentage of VAT), import duties, and fines imposed for non-compliance with EU rules. Expenditure covers running costs and major policy areas, including agricultural grants (CAP), regional development funds, job creation initiatives, environmental measures, and border control, often planned within a seven-year multi-annual financial framework.",
+        "standaloneFacts": [
+          "The European Commission prepares a draft of the annual EU budget.",
+          "The European Council and the European Parliament must agree on and approve the EU budget before the next financial year.",
+          "If the European Council and the European Parliament do not agree on the budget, the European Commission must prepare a new draft.",
+          "The EU's main sources of income include contributions from all member states, import duties on products entering the EU, and fines imposed for failure to comply with EU rules.",
+          "Member state contributions to the EU budget include a percentage of VAT collected.",
+          "The EU budget funds agricultural grants to farmers under the Common Agricultural Policy (CAP).",
+          "Over 80% of the EU monies received by Ireland in 2017 were agriculture related.",
+          "The EU budget funds regional development funds in the form of cohesion and structural funds for less well-off member states and regions.",
+          "A broader multi-annual financial framework spanning seven years is agreed upon to allow for greater certainty in planning for EU income expenditure."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "d85b6e2e-0fc4-407b-a2e9-040ab05fd0cd",
+        "segment": "## European legislationThe fundamental laws or rules of the EU are set out in the treaties. All treaties must be agreed and ratified by the member states. A treaty is ratified when it becomes part of the law of the member states. Ratification procedures differ in member states. Ireland has ratified all treaties by referendum.The two core treaties of the EU are the Treaty of the European Union (TEU) and the Treaty on the Functioning of the European Union (TFEU). These treaties distribute authority to make legislation to a number of bodies. As noted above, most laws are initially drafted by the Commission before being agreed by the Council of the European Union and the European Parliament. This legislation takes various forms.",
+        "segmentIndex": 19,
+        "summary": "The fundamental laws of the EU are established in treaties, which must be agreed upon and ratified by all member states, thereby becoming part of national law (e.g., Ireland ratifies treaties by referendum). The two core treaties are the Treaty of the European Union (TEU) and the Treaty on the Functioning of the European Union (TFEU), which distribute legislative authority. Most EU laws are initially drafted by the European Commission before being agreed upon by the Council of the European Union and the European Parliament.",
+        "standaloneFacts": [
+          "The fundamental laws or rules of the EU are set out in treaties.",
+          "All EU treaties must be agreed and ratified by the member states to become part of national law.",
+          "Ireland has ratified all EU treaties by referendum.",
+          "The two core treaties of the EU are the Treaty of the European Union (TEU) and the Treaty on the Functioning of the European Union (TFEU).",
+          "Most EU laws are initially drafted by the European Commission.",
+          "Most EU laws are agreed upon by the Council of the European Union and the European Parliament."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "b95f8444-f71e-4c19-b895-60a60f4c9d9f",
+        "segment": "### Forms of legislation**Regulations.** These are laws that apply directly to everyone, including all member states. Regulations are binding in their entirety. Regulations become part of national law and are enforceable in national courts as soon as they come into force. They do not need to be transposed into national law.**Directives.** A Directive is a form of order to member states to implement national legislation to achieve a specific result. It is up to the national governments to decide on the form and method of the legislation necessary to achieve that result. This allows member states some flexibility in implementing Directives and makes it easier to do so in a way which is satisfactory to each member state. Usually, a Directive will specify a deadline for the implementation of legislation.**Decisions.** A Decision is addressed to a limited and defined group of people, for example one member state or a corporation. Decisions are binding upon the group that they address.**Recommendations and opinions.** These are not binding; they are simply recommendations. However, they may be persuasive.",
+        "segmentIndex": 20,
+        "summary": "EU legislation takes several forms, including Regulations, Directives, Decisions, and non-binding Recommendations and opinions. Regulations are directly applicable laws that are entirely binding across all member states and require no transposition into national law. Directives, conversely, mandate member states to implement national legislation to achieve a specific goal, granting flexibility regarding the method used, typically with an implementation deadline. Decisions are binding only upon the limited, defined group they address, such as a single member state or a corporation.",
+        "standaloneFacts": [
+          "Regulations are laws that apply directly to everyone, including all EU member states.",
+          "Regulations are binding in their entirety and do not need to be transposed into national law.",
+          "Regulations become part of national law and are enforceable in national courts as soon as they come into force.",
+          "A Directive is an order to member states to implement national legislation to achieve a specific result.",
+          "National governments decide on the form and method of legislation necessary to achieve the result specified by a Directive.",
+          "Directives usually specify a deadline for the implementation of legislation.",
+          "A Decision is addressed to a limited and defined group of people, such as one member state or a corporation.",
+          "Decisions are binding upon the group that they address.",
+          "Recommendations and opinions are forms of EU legislation that are not binding."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "bd409a5b-b34e-4b1e-ac17-db0392b53de7",
+        "segment": "### Legislative procedure#### Ordinary legislative procedureThe majority of EU legislation is adopted using the ordinary legislative procedure (previously known as the co-decision procedure). It operates as follows:1.  The European Commission submits a draft legislative proposal to the Council of the European Union and the European Parliament.2.  The Council of the European Union and the Parliament independently discuss and debate the legislation. Normally, the Parliament decides its position first and submits any proposed amendments to the Council.3.  If the Council agrees with the Parliament's position and/or amendments, the legislation is adopted.4.  If the Council disagrees with the Parliament's position, it sends its own amendments back to the Parliament for a second reading.5.  The Parliament may then accept the Council's amendments, in which case the legislation is adopted, or send its own further amendments back to the Council.",
+        "segmentIndex": 21,
+        "summary": "The Ordinary Legislative Procedure, previously known as the co-decision procedure, is the primary method for adopting the majority of EU legislation. This process begins when the European Commission submits a draft legislative proposal to both the Council of the European Union and the European Parliament. If the Council disagrees with the Parliament's initial position, the legislation moves to a second reading, where the Parliament may accept the Council's amendments or propose further changes.",
+        "standaloneFacts": [
+          "The majority of EU legislation is adopted using the ordinary legislative procedure.",
+          "The ordinary legislative procedure was previously known as the co-decision procedure.",
+          "The ordinary legislative procedure begins when the European Commission submits a draft legislative proposal to the Council of the European Union and the European Parliament.",
+          "During the ordinary legislative procedure, the Parliament normally decides its position first and submits any proposed amendments to the Council.",
+          "If the Council of the European Union agrees with the Parliament's position during the first reading, the legislation is adopted.",
+          "If the Council disagrees with the Parliament's position, it sends its own amendments back to the Parliament for a second reading."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "5fa32884-ea53-436b-a3cc-9172159226eb",
+        "segment": "6.  If the Council accepts the Parliament's amendments, it will adopt the legislation.7.  If the two institutions do not reach an agreement after this second reading, a Conciliation Committee is convened. This has an equal number of representatives from the Parliament and the Council. It attempts to agree a joint text.8.  This joint text is voted on by both the Council and the Parliament. If the text agreed by the Conciliation Committee is acceptable to both institutions at the third reading, the legislative act is adopted. Otherwise, it is rejected.9.  If a legislative proposal is rejected at any stage of the procedure, or the Parliament and Council cannot reach a compromise, the proposal is not adopted and the procedure ends.To facilitate agreement between the Council and the Parliament at the various stages, informal negotiations known as 'trilogues' often occur, involving representatives of both institutions. The Commission acts as a mediator for this trilogue process. The meeting of the Conciliation Committee between the second and third reading is often referred to as a 'formal trilogue'.",
+        "segmentIndex": 22,
+        "summary": "If the Council and Parliament fail to agree after the second reading of a legislative proposal, a Conciliation Committee with equal representation is convened to draft a joint text, which must then be approved by both institutions in a third reading. Failure to agree at any stage results in the rejection of the proposal. To facilitate compromise, informal negotiations known as 'trilogues' occur, mediated by the Commission, with the Conciliation Committee meeting often referred to as a 'formal trilogue'.",
+        "standaloneFacts": [
+          "If the European Parliament and the Council do not reach an agreement after the second reading of a legislative proposal, a Conciliation Committee is convened.",
+          "The Conciliation Committee consists of an equal number of representatives from the Parliament and the Council.",
+          "The Conciliation Committee attempts to agree on a joint legislative text.",
+          "The joint text agreed by the Conciliation Committee is voted on by both the Council and the Parliament in a third reading.",
+          "Informal negotiations known as 'trilogues' often occur to facilitate agreement between the Council and the Parliament during the legislative procedure.",
+          "The European Commission acts as a mediator for the trilogue process.",
+          "The meeting of the Conciliation Committee between the second and third reading is often referred to as a 'formal trilogue'."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "fe5147bb-61eb-4038-b765-a33540b516d1",
+        "segment": "#### Consent procedureThe consent procedure is similar to the ordinary legislative procedure, except that the European Parliament cannot propose any changes to the legislation. It simply has the option of accepting or rejecting the version approved by the Council of the European Union.Areas where the consent procedure can be used include:*   Discrimination law*   Approval of withdrawal agreements#### ConsultationIn certain policy areas, the Council of the European Union can adopt legislation based on a proposal by the Commission after consulting the European Parliament. It is not bound by any advice or amendments proposed by the Parliament. Depending on the area, the proposal will need to be either unanimously approved or approved in accordance with the qualified majority procedure.Areas where consultation can be used include:*   Family law*   Emergency asylum situations*   State aid*   Tax harmonisation",
+        "segmentIndex": 23,
+        "summary": "The text outlines two alternative legislative methods: the Consent procedure and the Consultation procedure. The Consent procedure requires the European Parliament (EP) to simply accept or reject legislation approved by the Council, without the ability to propose changes, and is used for areas like discrimination law. Conversely, the Consultation procedure allows the Council to adopt legislation after consulting the EP, but the Council is not bound by the Parliament's advice or amendments and must approve the proposal either unanimously or via qualified majority, often applying to areas such as family law and tax harmonisation.",
+        "standaloneFacts": [
+          "The Consent procedure does not allow the European Parliament to propose changes to the legislation, only to accept or reject the version approved by the Council of the European Union.",
+          "Areas where the Consent procedure is used include discrimination law and the approval of withdrawal agreements.",
+          "Under the Consultation procedure, the Council of the European Union can adopt legislation after consulting the European Parliament.",
+          "When using the Consultation procedure, the Council is not bound by any advice or amendments proposed by the European Parliament.",
+          "Depending on the policy area, proposals adopted under the Consultation procedure need to be either unanimously approved or approved in accordance with the qualified majority procedure.",
+          "Areas where the Consultation procedure can be used include family law, emergency asylum situations, state aid, and tax harmonisation."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "196a23d3-234d-49c8-acf2-62f5f1ac7e0d",
+        "segment": "#### PublicationEU legislation is published in the Official Journal of the European Union, along with the date that it will come into effect. The Official Journal is published every working day and its sections include legislation, information and notices, and public tenders. You can search for EU legal texts on the EUR-Lex website, eur-lex.europa.eu.One of the most important aspects of the EU is that its legislation is superior to all national legislation. This means that European law is supreme. Nothing in the national laws of a member state can override or take precedence over an EU law.",
+        "segmentIndex": 24,
+        "summary": "EU legislation is published in the Official Journal of the European Union, which is issued every working day and includes the date the law comes into effect. A fundamental aspect of the EU legal system is the supremacy of its legislation, meaning European law takes precedence over and cannot be overridden by any national laws of member states.",
+        "standaloneFacts": [
+          "EU legislation is published in the Official Journal of the European Union.",
+          "The Official Journal of the European Union is published every working day.",
+          "The Official Journal of the European Union includes sections for legislation, information and notices, and public tenders.",
+          "EU legal texts can be searched on the EUR-Lex website (eur-lex.europa.eu).",
+          "EU legislation is superior (supreme) to all national legislation.",
+          "Nothing in the national laws of a member state can override or take precedence over an EU law."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "4d6ceb8d-ac65-4530-9770-7154711ad0b0",
+        "segment": "---The Citizens Information Board provides independent information, advice and advocacy on public and social services through citizensinformation.ie, the Citizens Information Phone Service and the network of Citizens Information Services. It is responsible for the Money Advice and Budgeting Service and provides advocacy services for people with disabilities.Head OfficeGround FloorGeorge's Quay House43 Townsend StreetDublin 2D02 VK65t 0761 07 9000f 01 605 9099e info@ciboard.iew citizensinformationboard.ie## Recent EU legislative developments### General Data Protection RegulationA new EU-wide framework known as the General Data Protection Regulation (GDPR) came into force across the EU on 25 May 2018.An accompanying Directive establishes data protection standards in the area of criminal offences and penalties. This is known as the Law Enforcement Directive.",
+        "segmentIndex": 25,
+        "summary": "The segment first details the role of the Citizens Information Board (CIB), which provides independent information, advice, and advocacy on public and social services, manages the Money Advice and Budgeting Service (MABS), and offers advocacy for people with disabilities. It then introduces recent EU legislative developments, specifically noting that the General Data Protection Regulation (GDPR) came into force across the EU on 25 May 2018, accompanied by the Law Enforcement Directive.",
+        "standaloneFacts": [
+          "The Citizens Information Board provides independent information, advice and advocacy on public and social services.",
+          "The Citizens Information Board is responsible for the Money Advice and Budgeting Service (MABS).",
+          "The General Data Protection Regulation (GDPR) is a new EU-wide framework.",
+          "The General Data Protection Regulation (GDPR) came into force across the EU on 25 May 2018.",
+          "The Law Enforcement Directive establishes data protection standards in the area of criminal offences and penalties."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "32cd8b13-8d59-46e6-bba3-2d0e2cdfb044",
+        "segment": "The GDPR and the Law Enforcement Directive provide for significant reforms to current data protection rules. They provide for higher standards of data protection for individuals and increase obligations on organisations that process personal data. They also increase the range of possible sanctions for infringements of these rules.### Geo-blocking RegulationThe Geo-blocking Regulation (EU Regulation 2018/302) has applied across the EU since 3 December 2018. Its main aim is to ensure equal access to the digital market for consumers throughout the EU, regardless of country. Therefore, it aims to stop the practices of geo-blocking",
+        "segmentIndex": 26,
+        "summary": "The GDPR and the Law Enforcement Directive implemented significant reforms to data protection rules, raising standards for individuals, increasing obligations on organizations processing personal data, and expanding the range of possible sanctions for infringements. Separately, the Geo-blocking Regulation (EU Regulation 2018/302), effective since December 3, 2018, aims to ensure equal access to the EU digital market for consumers, regardless of their location, by stopping geo-blocking practices.",
+        "standaloneFacts": [
+          "The GDPR and the Law Enforcement Directive provide for significant reforms to current data protection rules.",
+          "The GDPR and the Law Enforcement Directive provide for higher standards of data protection for individuals.",
+          "The GDPR and the Law Enforcement Directive increase obligations on organisations that process personal data.",
+          "The GDPR and the Law Enforcement Directive increase the range of possible sanctions for infringements of data protection rules.",
+          "The Geo-blocking Regulation is designated as EU Regulation 2018/302.",
+          "The Geo-blocking Regulation (EU Regulation 2018/302) has applied across the EU since 3 December 2018.",
+          "The main aim of the Geo-blocking Regulation is to ensure equal access to the digital market for consumers throughout the EU, regardless of country.",
+          "The Geo-blocking Regulation aims to stop the practices of geo-blocking."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "763dbe09-916e-40d8-a52a-8961aa6dda14",
+        "segment": " and geo-discrimination.When producing JSON you must follow the schema provided in the context. As a result of the Geo-blocking Regulation businesses within the EU can no longer do the following: *   Restrict access to a website that was intended for consumers within a particular geographic area *   Force a person to buy from a particular website intended for that country or group of countries alone *   Limit consumers to a particular website, even if they initially consent to being redirected to that website *   Automatically redirect consumers to another website set up for that location *   Treat payment methods differently based on the consumer's location",
+        "segmentIndex": 27,
+        "summary": "The Geo-blocking Regulation aims to prevent geo-discrimination by imposing several restrictions on EU businesses. These restrictions prohibit businesses from limiting website access based on geography, forcing consumers to buy from country-specific sites, or automatically redirecting them. Furthermore, businesses cannot treat payment methods differently based solely on the consumer's location.",
+        "standaloneFacts": [
+          "As a result of the Geo-blocking Regulation, businesses within the EU can no longer restrict access to a website intended for consumers within a particular geographic area.",
+          "The Geo-blocking Regulation prohibits businesses within the EU from forcing a person to buy from a particular website intended for that country or group of countries alone.",
+          "Businesses within the EU cannot automatically redirect consumers to another website set up for that location under the Geo-blocking Regulation.",
+          "The Geo-blocking Regulation prevents EU businesses from treating payment methods differently based on the consumer's location."
+        ]
+      },
+      {
+        "parentDocId": "unofficial_citized-information-board",
+        "id": "b29703a2-181d-4614-bd89-45a81e018f4b",
+        "segment": "### Consumer Rights DirectiveThe European Directive on Consumer Rights (Directive 2011/83/EU, known as the Consumer Rights Directive) aims to ensure that consumers can expect the same minimum level of protection no matter where a trader is based in the EU. The Directive was incorporated into Irish law with effect from 13 June 2014.As a result of the Directive, consumers now: *   Are entitled to extensive information in advance of purchase *   Have a 14-day cooling-off period after making online purchases, during which they can change their mind *   Are entitled to refunds within 14 days of cancellation *   Cannot be charged surcharges for particular payment types, for example credit cards### Single-Use Plastics DirectiveThe Single-Use Plastics Directive will ban the use of single-use plastics in the EU by 2021 where alternative materials are available.### Roaming charges on mobile phonesRegulation (EU) 2017/920 eventually led to the abolition of all charges for temporary roaming within the EU (from 15 June 2017).---**Citizens Information**LOG ONcitizensinformation.ieCALL0761 07 4000 Mon to Fri, 9am to 8pmDROP IN215 locations nationwideThe information in Relate is intended as a general guide only and is not a legal interpretation",
+        "segmentIndex": 28,
+        "summary": "The analyzed segment outlines several key recent EU legislative developments affecting consumers and the environment. The Consumer Rights Directive (Directive 2011/83/EU) established minimum consumer protections, including a 14-day cooling-off period for online purchases and a ban on specific payment surcharges. Furthermore, the Single-Use Plastics Directive aims to ban single-use plastics across the EU by 2021 where alternatives exist, and Regulation (EU) 2017/920 abolished temporary mobile roaming charges within the EU effective June 15, 2017.",
+        "standaloneFacts": [
+          "The European Directive on Consumer Rights is Directive 2011/83/EU.",
+          "The Consumer Rights Directive was incorporated into Irish law on June 13, 2014.",
+          "The Consumer Rights Directive grants consumers a 14-day cooling-off period after making online purchases.",
+          "The Consumer Rights Directive prohibits charging consumers surcharges for specific payment types, such as credit cards.",
+          "The Single-Use Plastics Directive will ban the use of single-use plastics in the EU by 2021 where alternative materials are available.",
+          "Regulation (EU) 2017/920 led to the abolition of all charges for temporary mobile phone roaming within the EU.",
+          "Charges for temporary roaming within the EU were abolished starting on June 15, 2017."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 29,
+        "totalCharacters": 31875,
+        "averageSegmentLength": 1093.1379310344828,
+        "minSegmentLength": 597,
+        "maxSegmentLength": 1657,
+        "segmentLengths": [
+          1224,
+          1197,
+          1008,
+          981,
+          1579,
+          1409,
+          1412,
+          1176,
+          1142,
+          1325,
+          840,
+          1091,
+          1657,
+          1325,
+          1162,
+          1380,
+          835,
+          893,
+          1226,
+          734,
+          1116,
+          949,
+          1111,
+          917,
+          597,
+          867,
+          634,
+          666,
+          1248
+        ],
+        "nLlmCalls": 4,
+        "costs": {
+          "total": 0.018268700000000002,
+          "input": 0.0020712,
+          "output": 0.0161975
+        },
+        "tokens": {
+          "totalTokens": 34269,
+          "inputTokens": 6904,
+          "outputTokens": 6479
+        },
+        "processingTimeMs": 35901
+      },
+      "analysis": {
+        "nSegments": 29,
+        "nFactsExtracted": 216,
+        "nLlmCalls": 30,
+        "costs": {
+          "total": 0.028885600000000004,
+          "input": 0.0078006,
+          "output": 0.021085000000000003
+        },
+        "tokens": {
+          "totalTokens": 58988,
+          "inputTokens": 26002,
+          "outputTokens": 8434
+        },
+        "processingTimeMs": 540722
+      },
+      "pdfConversion": {
+        "processingTimeMs": 67077,
+        "nLlmCalls": 1,
+        "costs": {
+          "input": 0.0027,
+          "output": 0.06379,
+          "total": 0.06649
+        },
+        "tokens": {
+          "inputTokens": 2160,
+          "outputTokens": 6379,
+          "totalTokens": 10846
+        }
+      }
+    },
+    "extractedText": "May/June 2019\n\n**Citizens Information Board**\ninformation · advice · advocacy\n\nVolume 47: Issues 5-6\nISSN 0790-4290\n\n# Relate\nThe journal of developments in social services, policy and legislation in Ireland\n\n## Contents\nPage No.\n\n2. The EU institutions\n6. European legislation\n8. Recent EU legislative developments\n\n## The European Union and its institutions\n\nThe European Union (EU) is an economic and political union of 28 member states, including Ireland. At present, the 27 other member states are: Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech Republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Italy, Latvia, Lithuania, Luxembourg, Malta, the Netherlands, Poland, Portugal, Romania, Spain, Slovakia, Slovenia, Sweden and the UK.\n\nThe UK voted to leave the EU in 2016 and was originally scheduled to leave on 29 March 2019. However, its departure has now been postponed until either a withdrawal agreement is approved or until 31 October 2019.\n\nThe EU includes a number of institutions, most notably the Council of the European Union, the Commission and the Parliament. The EU also has its own budget, which comes from contributions from the member states and is spent in many different areas.\n\nAs a result of treaties between the member states, the EU has the power to make laws on a wide range of subjects. The member states must implement these laws, which take various forms, including Regulations and Directives.\n\n### History of the EU\n\nWhat is now known as the European Union evolved from the European Coal and Steel Community (ECSC), the European Atomic Energy Community (Euratom) and the European Economic Community (EEC). These communities were formed in the aftermath of the Second World War, partly in an attempt to foster economic co-operation and ensure long-term peace in mainland Europe.\n\nThe three communities had six founding members:\n\n*   West Germany\n*   France\n*   Italy\n*   Netherlands\n*   Belgium\n*   Luxembourg\n\nThe EEC was the most important of these three communities. It was created by the signature of the Treaty of Rome in 1957 and came into existence in 1958. One of the main results of the Treaty was the creation of a customs union between these six countries.\n\nOver time, the institutions for the three communities merged together and ultimately became what we now know as the Council of the European Union, the European Commission and the European Parliament.\n\nAfter a referendum in 1972, Ireland became a member state of the EEC on 1 January 1973. The UK and Denmark also joined on this date.\n\nThe member states signed further treaties to improve the functioning of the EEC and its institutions and to increase its authority in different areas. For instance, the Single European Act was signed in 1986 with the goal of creating a single market.\n\nThe Maastricht Treaty (also known as the Treaty of the European Union) was signed in 1992 and led to the re-naming of the EEC as the European Community (the EC) within a wider body known as the European Union. In addition to its economic objectives, the EU now had responsibility in the areas of foreign and security policy, and law enforcement co-operation. The Maastricht Treaty also provided for the creation of the euro.\n\nFurther amendments to the underlying constitutional structure of the EU were made by the Amsterdam Treaty (signed in 1997), the Nice Treaty (signed in 2001) and the Lisbon Treaty (signed in 2007).\n\n### Goals of the EU\n\nThe current goals of the EU are to:\n\n*   Promote peace, the values of the EU and the wellbeing of its citizens\n*   Offer freedom, security and justice without internal borders\n*   Promote sustainable development based on balanced economic growth and price stability, a highly competitive market economy with full employment and social progress, and environmental protection\n*   Combat social exclusion and discrimination\n*   Promote scientific and technological progress\n*   Enhance economic, social and territorial cohesion and solidarity among EU countries\n*   Respect the rich cultural and linguistic diversity of the EU\n*   Establish an economic and monetary union whose currency is the Euro\n\n## The EU institutions\n\nThe most important institutions of the EU are:\n\n*   The European Parliament\n*   The European Commission\n*   The Council of the European Union\n*   The European Council\n*   The Court of Justice of the European Union\n*   The Court of Auditors\n\n### The European Parliament\n\nThe European Parliament is the only directly elected body within the EU. Elections take place once every five years to elect members of the European Parliament (MEPs).\n\nThere are 751 seats in the European Parliament, although if the UK leaves the EU, the number of seats will drop to 705. MEPs generally join the parliamentary group which aligns best with their interests, to ensure that their views are given greater weight. For a group to be recognised, it must have 25 MEPs representing at least one-quarter of the member states.\n\nThe Parliament elects its own president, along with 14 vice-presidents, for a term of 2½ years. Collectively, this group is known as the Bureau of Parliament.\n\nThe leaders of the various parliamentary groups decide with the president on the Parliament's agenda and set the timetable of work for the Parliament and its committees.\n\nThe Parliament sits in Strasbourg, but there is a Secretariat based in Luxembourg and certain sessions and committee meetings take place in Brussels to facilitate contact with the Commission and Council.\n\n#### Powers of the Parliament\n\nWith each new treaty, the powers of the European Parliament have increased. In general, most European laws must now be approved by both the European Parliament and the Council of the European Union. However, there are certain important areas, for example tax legislation, where the Parliament may only give an opinion as to whether a proposed piece of legislation can become law. The EU legislative procedures are explained in more detail on page 6.\n\nUnlike most national parliaments, the European Parliament does not have the ability to initiate legislation. The Parliament can only vote on and amend legislation proposed by the Commission, which has exclusive power to initiate legislation. However, the Parliament can request that the Commission draw up legislation in an area.\n\nThe European Parliament also has a critical role in the approval of the annual EU budget. If the Parliament rejects the budget after negotiations with the Council of the European Union, a new budget must be drafted.\n\nThe European Parliament is responsible for supervising the other institutions of the EU, most notably the Commission. After each European election, the European Council proposes a president of the Commission. This nominee must be approved by a majority of the Parliament. The commissioners are then nominated and they too must be approved by the Parliament. The Commission must submit reports to the Parliament on its activities and must answer written or oral questions during Question Time. If two-thirds of the Parliament vote in favour of a motion of censure against the Commission, the entire Commission is forced to resign.\n\nIf a quarter of the MEPs so vote, a committee of inquiry can be set up to look into alleged contraventions or maladministration of EU law. The consent of the Parliament is also necessary to allow a new member state to join the EU.\n\n### The European Commission\n\nThe Commission is the executive body of the European Union and its staff are part of the EU civil service. The Commission is based in Brussels.\n\nThe Commission is composed of 28 commissioners, one of whom is the president. There is one commissioner for each member state; each member state nominates a person to act as a commissioner. However, that person is not officially there to represent the interests of their own member state.\n\nAs noted above, the European Parliament must approve the president of the Commission and then each of the commissioners. Each individual commissioner is subjected to scrutiny by the relevant committee of the European Parliament before the vote takes place. Together, the commissioners are known as the College of Commissioners.\n\nThe president of the Commission gives each commissioner responsibility for a particular area. However, the allocation of portfolios is often the subject of much negotiation between the member states and the president. These policy areas are often closely related to the departments within the EU civil service (Directorates-General). Each commissioner has a five-year term.\n\nThe Commission meets once a week to adopt proposals, finalise policy papers and make decisions. Decisions are taken by a simple majority vote. Once a decision is taken, it becomes Commission policy and has the full support of all commissioners.\n\nTo assist the commissioners in the performance of their duties, the Commission employs a staff of about 32,000 people. Staff members come from all the member states and include language experts, lawyers, administrative staff, and experts in particular fields such as agriculture or industry.\n\n#### Powers of the European Commission\n\nThe Commission has a number of important functions:\n\n*   The Commission initiates legislation. It makes draft proposals for European laws, which are sent to the Council and European Parliament for amendment and approval. It also develops the overall legislative plan for any single year.\n*   Other bodies, such as the Council of the European Union and the European Parliament, can send requests to the Commission to draft legislation.\n*   A piece of EU legislation can also confer power on the Commission to enact Regulations which implement the goals in that piece of legislation.\n*   The Commission acts as a guardian of the EU treaties. It ensures that EU legislation is applied by all member states. It can institute proceedings against member states or businesses that fail to comply with EU law.\n*   The Commission acts as an executive body: it manages policies and drafts and implements the annual budget.\n*   The Commission represents the EU on the international stage. It negotiates trade and co-operation agreements with non-EU countries. However, most agreements negotiated by the Commission must be approved by both the Parliament and the Council of the European Union.\n\n### The Council of the European Union\n\nThe Council of the European Union shares decision-making power with the European Parliament, particularly in the areas of law-making and budget approval. It is not to be confused with the European Council, which is discussed later. The Council of the European Union has a rotating presidency, meaning that a representative from a different member state chairs most of the Council meetings for a six-month period.\n\nThe Council of the European Union consists of one government minister from every member state. Different groups of ministers meet depending on what topic is being discussed at the weekly meeting. For example, if the issue to be discussed at the Council is agriculture, the minister for agriculture from each member state will attend and sit on the Council.\n\nThe Council generally meets in Brussels. However, meetings during April, June and October are held in Luxembourg.\n\nThe Council of the European Union has the following essential functions:\n\n*   The power to legislate. The Council shares this power with the European Parliament. Generally, the Council and the Parliament jointly adopt proposals for legislation that have come from the European Commission. As noted, all initial versions of legislation must be drafted by the Commission.\n*   The Council and the Parliament can make amendments to the legislation before either approving or rejecting it. The Council can also ask the Commission to undertake studies, which can lead to draft legislation.\n*   Co-ordination of the economic policies of member states. Every year, the Council drafts guidelines for the economic policies of member states. These are then made into recommendations and the Council supervises their implementation by member states.\n*   Development and co-ordination of the EU's common foreign and security policy. The Council defines and implements EU foreign and security policy on the basis of guidelines set by the European Council. This policy area includes the EU's development and humanitarian aid, defence and trade.\n*   The power to approve the budget of the EU. This power is shared with the Parliament.\n\n#### How the Council of the European Union makes decisions\n\nIf the Council is considering a proposal that has been made by the Commission (which is the usual way that decisions arise), then it makes the decision using qualified majority voting (QMV). A qualified majority means that the following two conditions must be met:\n\n*   55% of the member states must agree, which is at least 16 member states currently.\n*   Those supporting the proposal must represent at least 65% of the EU population.\n\nTo prevent a decision being made, at least four member states must form a blocking minority. This means that if fewer than four member states oppose a decision, then the Council will judge that a qualified majority has been reached.\n\nCertain sensitive topics, such as foreign policy and taxation, currently require a unanimous vote within the Council.\n\n### The European Council\n\nThe members of the European Council are the heads of state or heads of government of the EU member states, the president of the European Council and the president of the European Commission. The Taoiseach therefore represents Ireland at these meetings. The EU's high representative for foreign affairs and security policy also takes part when foreign affairs are discussed.\n\nThe European Council defines the EU's overall political direction and priorities. It is not one of the EU's legislating institutions, so it does not negotiate or adopt EU laws. The European Council is responsible for defining strategic guidelines on freedom, security and justice.\n\nThe European Council has a number of important powers of appointment. It elects its own president for a term of 2½ years, which can be renewed once. It nominates a candidate to become the president of the European Commission. This nominee must be approved by the European Parliament. The European Council also exclusively decides on the president, vice-president and executive members of the European Central Bank.\n\n#### European Council meetings\n\nEuropean Council meetings are essentially summits where EU leaders meet to decide on broad political priorities and major initiatives. The Council meets at least twice every six months, normally in Brussels. When pressing issues arise, meetings can be scheduled on an ad hoc basis. This has been seen recently in the Brexit negotiations.\n\nMeetings are chaired by the European Council president. The president of the European Parliament attends the start of each meeting to outline the European Parliament's views. Other people, such as the president of the European Central Bank, may be invited to attend meetings, depending on the issues being discussed.\n\nThe European Council mostly takes its decisions by consensus. However, in certain specific cases outlined in the EU treaties, it decides by unanimity or by qualified majority. If a vote is taken, neither the European Council president nor the Commission president takes part.\n\n### The Court of Justice of the European Union\n\nThe Court of Justice of the European Union (CJEU) is the judicial wing of the European Union. It is composed of the European Court of Justice (ECJ), the General Court and some specialised courts.\n\nThese various courts deal with disputes between parties which involve EU law. They interpret EU law to make sure it is applied in the same way in all EU countries, and settle legal disputes between national governments and EU institutions. In certain circumstances, individuals, companies or organisations can take action against an EU institution in these courts, if they feel the institution has somehow infringed their rights. The CJEU sits in Luxembourg.\n\n#### The European Court of Justice\n\nThe European Court of Justice (ECJ) is the highest court of the EU. It consists of 28 judges, with one judge coming from each member state. It normally hears cases in panels of three, five or 15 judges (which is known as the Grand Chamber), depending on the importance of the issue in the case or the particular issue of European law in dispute. The ECJ acts as a collegiate body, meaning that there is only one ruling in each case. No dissents or separately concurring judgments are allowed.\n\nIn addition to the 28 judges at the ECJ, there are 11 advocate generals who deliver reasoned opinions on cases to assist the ECJ in making its decisions. Each case is assigned one advocate general, although an opinion from the advocate general is not necessary in every case.\n\nJudges and advocate generals of the ECJ must have the qualifications to be appointed to the highest national courts in their member states or they may be jurisconsults (academic lawyers). Their independence must be beyond doubt. This means that once they are appointed, they may not hold any other office of an administrative or political nature and they may not engage in any occupation, paid or unpaid. They are appointed by joint agreement of the governments of the member states. They have a renewable term of six years.\n\n#### The General Court\n\nThe General Court was set up as the Court of First Instance in 1989. It includes at least one judge per member state. Currently, there are 46 judges. Later this year, its number will increase and there will be two judges per member state.\n\nUnlike the ECJ, the General Court does not have permanent advocates general. However, that task may, in exceptional circumstances, be carried out by a judge.\n\nCases before the General Court are heard by panels of five or three judges or, in some cases, by a single judge. The General Court may also sit as a Grand Chamber (of 15 judges) when this is justified by the legal complexity or importance of the case.\n\nMatters which are initially reserved to the General Court include cases relating to breach of competition law, breach of commercial policy or social policy, and disputes concerning EU staff regulations. Decisions made by the General Court can be appealed to the ECJ on a point of law.\n\n#### Types of action before the CJEU\n\nThe CJEU upholds EU treaties and ensures that European law is interpreted and applied in the same way across the EU. It can take various forms of legal action. These include:\n\n*   **Preliminary rulings.** To avoid differences in the interpretation of EU law by national courts, the preliminary ruling procedure allows co-operation between national courts and the ECJ. If a case comes before a national court that involves an interpretation of an EU law and there is a doubt as to how it should be interpreted, the national court will refer the question to the ECJ. The ECJ will decide how the law should be interpreted or applied. The national court must then apply that decision to the case before it.\n*   **Proceedings for failure to fulfil an obligation.** The Commission or a member state may commence proceedings at the ECJ to force a member state to comply with EU law. If the CJEU decides that the member state in question is at fault, the member state must rectify the situation without delay.\n*   **Proceedings for annulment.** This is where an applicant seeks the annulment of a measure (in particular a Regulation, Directive or Decision) adopted by an institution, body, office or agency of the EU. This type of action enables the court to review the legality of acts adopted by European institutions, bodies, offices or organisations. The ECJ can annul the act concerned if it is judged to be contrary to EU law.\n\nThe ECJ has exclusive jurisdiction over actions brought by a member state against the European Parliament or against the Council of the European Union (apart from Council measures in respect of State aid, dumping and implementing powers) or brought by one EU institution against another. The General Court has initial jurisdiction in all other actions of this type and particularly in actions brought by individuals.\n\nPrivate individuals may only bring proceedings for annulment of an EU law if they can demonstrate that the disputed law affects them directly and individually. To bring proceedings for annulment, you should obtain legal advice and representation. You do not need to go through the national courts first in order to bring proceedings for annulment in the ECJ. If you lose the case at the ECJ, you may be liable to pay the costs of both sides. If you succeed, your costs will be paid by the EU and the law will be declared null and void throughout the EU.\n\n### The Court of Auditors\n\nThe Court of Auditors audits the accounts and oversees the implementation of the budgets of EU institutions. It aims to improve the financial management of EU money and to report to EU citizens on how EU money is used. It draws up an annual report at the end of each financial year. This is forwarded to the other institutions and must be published in the Official Journal of the European Union so that anyone can study the budget and spending of any particular EU institution. Members of the Court of Auditors are independent and have experience in auditing public finances.\n\nThe Court of Auditors has its headquarters in Luxembourg and is composed of 28 members, one from each member state. Each member state suggests a candidate who is then appointed by the Council of the European Union in consultation with the European Parliament for a renewable term of six years.\n\n## The EU budget\n\nEvery year, the European Commission prepares a draft budget. The European Council and the European Parliament must agree on the budget and approve it in advance of the next financial year.\n\nIf the Council and the Parliament do not agree on the budget, the Commission must prepare a new draft.\n\nThe EU's main sources of income are:\n\n*   Contributions from all member states, including a percentage of VAT collected\n*   Import duties on products entering the EU\n*   Fines imposed on businesses and member states for failure to comply with EU rules\n\nIn addition to the expenses of running the EU, the EU budget is spent on a wide range of policy areas, including:\n\n*   Agricultural grants to farmers under the Common Agricultural Policy (CAP) – over 80% of the EU monies received by Ireland in 2017 were agriculture related\n*   Regional development funds to the less well-off member states and regions in the form of cohesion and structural funds\n*   Monies for the creation of growth and jobs within member states\n*   Environmental measures\n*   Cultural expenditure\n*   Border control\n\nA broader multi-annual financial framework spanning seven years is also agreed to allow for greater certainty in planning for income expenditure.\n\n## European legislation\n\nThe fundamental laws or rules of the EU are set out in the treaties. All treaties must be agreed and ratified by the member states. A treaty is ratified when it becomes part of the law of the member states. Ratification procedures differ in member states. Ireland has ratified all treaties by referendum.\n\nThe two core treaties of the EU are the Treaty of the European Union (TEU) and the Treaty on the Functioning of the European Union (TFEU). These treaties distribute authority to make legislation to a number of bodies. As noted above, most laws are initially drafted by the Commission before being agreed by the Council of the European Union and the European Parliament. This legislation takes various forms.\n\n### Forms of legislation\n\n**Regulations.** These are laws that apply directly to everyone, including all member states. Regulations are binding in their entirety. Regulations become part of national law and are enforceable in national courts as soon as they come into force. They do not need to be transposed into national law.\n\n**Directives.** A Directive is a form of order to member states to implement national legislation to achieve a specific result. It is up to the national governments to decide on the form and method of the legislation necessary to achieve that result. This allows member states some flexibility in implementing Directives and makes it easier to do so in a way which is satisfactory to each member state. Usually, a Directive will specify a deadline for the implementation of legislation.\n\n**Decisions.** A Decision is addressed to a limited and defined group of people, for example one member state or a corporation. Decisions are binding upon the group that they address.\n\n**Recommendations and opinions.** These are not binding; they are simply recommendations. However, they may be persuasive.\n\n### Legislative procedure\n\n#### Ordinary legislative procedure\n\nThe majority of EU legislation is adopted using the ordinary legislative procedure (previously known as the co-decision procedure). It operates as follows:\n\n1.  The European Commission submits a draft legislative proposal to the Council of the European Union and the European Parliament.\n2.  The Council of the European Union and the Parliament independently discuss and debate the legislation. Normally, the Parliament decides its position first and submits any proposed amendments to the Council.\n3.  If the Council agrees with the Parliament's position and/or amendments, the legislation is adopted.\n4.  If the Council disagrees with the Parliament's position, it sends its own amendments back to the Parliament for a second reading.\n5.  The Parliament may then accept the Council's amendments, in which case the legislation is adopted, or send its own further amendments back to the Council.\n6.  If the Council accepts the Parliament's amendments, it will adopt the legislation.\n7.  If the two institutions do not reach an agreement after this second reading, a Conciliation Committee is convened. This has an equal number of representatives from the Parliament and the Council. It attempts to agree a joint text.\n8.  This joint text is voted on by both the Council and the Parliament. If the text agreed by the Conciliation Committee is acceptable to both institutions at the third reading, the legislative act is adopted. Otherwise, it is rejected.\n9.  If a legislative proposal is rejected at any stage of the procedure, or the Parliament and Council cannot reach a compromise, the proposal is not adopted and the procedure ends.\n\nTo facilitate agreement between the Council and the Parliament at the various stages, informal negotiations known as 'trilogues' often occur, involving representatives of both institutions. The Commission acts as a mediator for this trilogue process. The meeting of the Conciliation Committee between the second and third reading is often referred to as a 'formal trilogue'.\n\n#### Consent procedure\n\nThe consent procedure is similar to the ordinary legislative procedure, except that the European Parliament cannot propose any changes to the legislation. It simply has the option of accepting or rejecting the version approved by the Council of the European Union.\n\nAreas where the consent procedure can be used include:\n\n*   Discrimination law\n*   Approval of withdrawal agreements\n\n#### Consultation\n\nIn certain policy areas, the Council of the European Union can adopt legislation based on a proposal by the Commission after consulting the European Parliament. It is not bound by any advice or amendments proposed by the Parliament. Depending on the area, the proposal will need to be either unanimously approved or approved in accordance with the qualified majority procedure.\n\nAreas where consultation can be used include:\n\n*   Family law\n*   Emergency asylum situations\n*   State aid\n*   Tax harmonisation\n\n#### Publication\n\nEU legislation is published in the Official Journal of the European Union, along with the date that it will come into effect. The Official Journal is published every working day and its sections include legislation, information and notices, and public tenders. You can search for EU legal texts on the EUR-Lex website, eur-lex.europa.eu.\n\nOne of the most important aspects of the EU is that its legislation is superior to all national legislation. This means that European law is supreme. Nothing in the national laws of a member state can override or take precedence over an EU law.\n\n---\n\nThe Citizens Information Board provides independent information, advice and advocacy on public and social services through citizensinformation.ie, the Citizens Information Phone Service and the network of Citizens Information Services. It is responsible for the Money Advice and Budgeting Service and provides advocacy services for people with disabilities.\n\nHead Office\nGround Floor\nGeorge's Quay House\n43 Townsend Street\nDublin 2\nD02 VK65\n\nt 0761 07 9000\nf 01 605 9099\ne info@ciboard.ie\nw citizensinformationboard.ie\n\n## Recent EU legislative developments\n\n### General Data Protection Regulation\n\nA new EU-wide framework known as the General Data Protection Regulation (GDPR) came into force across the EU on 25 May 2018.\n\nAn accompanying Directive establishes data protection standards in the area of criminal offences and penalties. This is known as the Law Enforcement Directive.\n\nThe GDPR and the Law Enforcement Directive provide for significant reforms to current data protection rules. They provide for higher standards of data protection for individuals and increase obligations on organisations that process personal data. They also increase the range of possible sanctions for infringements of these rules.\n\n### Geo-blocking Regulation\n\nThe Geo-blocking Regulation (EU Regulation 2018/302) has applied across the EU since 3 December 2018. Its main aim is to ensure equal access to the digital market for consumers throughout the EU, regardless of country. Therefore, it aims to stop the practices of geo-blocking and geo-discrimination.\n\nAs a result of the Geo-blocking Regulation businesses within the EU can no longer do the following:\n\n*   Restrict access to a website that was intended for consumers within a particular geographic area\n*   Force a person to buy from a particular website intended for that country or group of countries alone\n*   Limit consumers to a particular website, even if they initially consent to being redirected to that website\n*   Automatically redirect consumers to another website set up for that location\n*   Treat payment methods differently based on the consumer's location\n\n### Consumer Rights Directive\n\nThe European Directive on Consumer Rights (Directive 2011/83/EU, known as the Consumer Rights Directive) aims to ensure that consumers can expect the same minimum level of protection no matter where a trader is based in the EU. The Directive was incorporated into Irish law with effect from 13 June 2014.\n\nAs a result of the Directive, consumers now:\n\n*   Are entitled to extensive information in advance of purchase\n*   Have a 14-day cooling-off period after making online purchases, during which they can change their mind\n*   Are entitled to refunds within 14 days of cancellation\n*   Cannot be charged surcharges for particular payment types, for example credit cards\n\n### Single-Use Plastics Directive\n\nThe Single-Use Plastics Directive will ban the use of single-use plastics in the EU by 2021 where alternative materials are available.\n\n### Roaming charges on mobile phones\n\nRegulation (EU) 2017/920 eventually led to the abolition of all charges for temporary roaming within the EU (from 15 June 2017).\n\n---\n\n**Citizens Information**\n\nLOG ON\ncitizensinformation.ie\n\nCALL\n0761 07 4000 Mon to Fri, 9am to 8pm\n\nDROP IN\n215 locations nationwide\n\nThe information in Relate is intended as a general guide only and is not a legal interpretation"
+  },
+  "llmMetrics": {
+    "processingTimeMs": 643700,
+    "nLlmCalls": 35,
+    "costs": {
+      "total": 0.1136443,
+      "input": 0.012571800000000001,
+      "output": 0.10107250000000001,
+      "currency": "USD"
+    },
+    "tokens": {
+      "totalTokens": 104103,
+      "inputTokens": 35066,
+      "outputTokens": 21292
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-pro"
+    ],
+    "language": "en",
+    "startTime": "2025-10-18T21:12:18.822Z",
+    "endTime": "2025-10-18T21:13:25.899Z"
+  }
+}

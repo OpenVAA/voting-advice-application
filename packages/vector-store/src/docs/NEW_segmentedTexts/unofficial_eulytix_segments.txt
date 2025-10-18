@@ -1,0 +1,258 @@
+=== SEGMENT 1 ===
+[Summary: A discussion paper published on April 15, 2024, titled "The European Parliament elections 2024: Getting more jitters from the mainstream than the far-right," analyzes the potential impact of the far-right in the upcoming EP elections. Authored by Corina Stratulat and Levente Kocsis, the paper acknowledges the gloomy prospects of a radical surge but suggests, based on a simulation experiment, that the far-right's direct policy influence might be limited, concluding they may have "much bark but little bite."]
+
+EUROPEAN POLICY CENTRE eulytix.eu DATA DRIVEN POLITICS EP ELECTIONS Task Force
+
+DISCUSSION PAPER
+THE EUROPEAN POLITICS AND INSTITUTIONS PROGRAMME
+15 APRIL 2024
+
+# The European Parliament elections 2024: Getting more jitters from the mainstream than the far-right
+
+Corina Stratulat
+Levente Kocsis
+
+Credit: TOBIAS SCHWARZ / AFP
+
+***
+
+# Table of contents
+
+List of abbreviations
+Figures and tables
+Executive summary
+Introduction - Forecasting the far-right surge
+1. Gloomy prospects
+    1.1. Radicals march on in the member states
+    1.2. EP elections bode well for radicals
+    1.3. The representative democracy crisis sustains the populist far-right
+2. But the devil is in the details
+    2.1. Much bark but little bite
+        2.1.1. Weak direct policy influence
+        2.1.2. Strong pull for the mainstream
+    2.2. Simulation experiment for the far-right's policy impact
+3. A brave new world
+Annexes
+Endnotes
+
+***
+
+### ABOUT THE AUTHORS
+
+**Corina Stratulat** is Associate Director and Head of the European Politics and Institutions Programme.
+
+**Levente Kocsis** serves as Chief Data Scientist at Eulytix, a cutting-edge political tech venture with a keen eye on EU affairs.
+
+
+=== SEGMENT 2 ===
+[Summary: This section contains the standard publication disclaimer, emphasizing that the views are solely those of the authors and are not endorsed by supporters or partners. It also provides a detailed list of abbreviations defining key terms related to EU political groups (e.g., EPP, S&D, ID, ECR) and legislative procedures (e.g., COD, INI, RSP) used in the paper.]
+
+### ACKNOWLEDGEMENTS / DISCLAIMER
+
+The support the EPC receives for its ongoing operations, or specifically for its publications, does not constitute an endorsement of their contents, which reflect the views of the authors only. Supporters and partners cannot be held responsible for any use that may be made of the information contained therein.
+
+***
+
+# List of abbreviations
+
+**COD**
+Ordinary Legislative Procedure
+
+**ECR**
+European Conservatives and Reformists Group
+
+**EP**
+European Parliament
+
+**EPP**
+European People's Party
+
+**EU**
+European Union
+
+**GUE/NGL**
+The European Union Left/Nordic Green Left
+
+**IA**
+Index of Agreement
+
+**ID**
+Identity and Democracy Group
+
+**INI**
+Own initiative procedure
+
+**MEP**
+Member of the European Parliament
+
+**NI**
+Independents
+
+**RE**
+Renew Europe
+
+**RSP**
+Resolutions on topical subjects
+
+**S&D**
+Progressive Alliance of Socialists and Democrats
+
+**PVV**
+Party for Freedom
+
+**VVD**
+People's Party for Freedom and Democracy
+
+
+=== SEGMENT 3 ===
+[Summary: This segment lists the titles of nine figures and three tables used in the document's analysis of the European Parliament. The figures primarily focus on measuring the influence, internal cohesion, and legislative activity of political groups, including specific metrics like average success rate, sponsored amendments, and written questions to the Commission. The tables detail the frequency of voting sessions by policy area and identify specific procedures that would have failed under certain conditions.]
+
+# Figures and tables
+
+**Figure 1:** The influence of political groups as measured by average success rate
+**Figure 2:** The internal cohesion of political groups
+**Figure 3:** The cohesion of hypothetical coalitions
+**Figure 4:** The cohesion of radical-right wing MEPs in the most relevant policy areas
+**Figure 5:** The number of written questions to the Commission by political group
+**Figure 6:** The number of amendments sponsored by political groups
+**Figure 7:** The seat projection used in simulations
+**Figure 8:** The distribution of voting sessions by procedure type
+**Figure 9:** The empirical distribution of the number of sessions with a different than original outcome
+
+**Table 1:** The number of voting sessions related to each policy area
+**Table 2:** The average number and percentage of affected voting sessions by policy area
+**Table 3:** Procedures that would have failed with greater than 50% probability
+
+***
+
+
+=== SEGMENT 4 ===
+[Summary: The executive summary warns that the June 2024 European elections could result in up to a quarter of seats going to nationalistic, radical right-wing lawmakers, raising concerns that this shift could hinder EU integration and policymaking. This forecast is supported by the radical right's national successes, the accessibility of the EU electoral arena, and widespread voter dissatisfaction. By moving away from an anti-EU mantra and engaging with divisive subjects, radical parties are projected to appear more appealing to electorates.]
+
+# Executive summary
+
+A steady drumbeat of warnings suggests that the upcoming European elections in June 2024 will see as much as a quarter of the seats go to nationalistic, radical right-wing lawmakers. Such a prospect elicits great concern that the 10th European legislature could stymie EU integration and policymaking at a time when geopolitics and permacrisis call for more – rather than less - unity and ambition in the Union's action.
+
+Three main reasons lend credibility to these unsettling forecasts:
+
+1. Radical-right parties continue to make inroads into power at the national level in the member states.
+2. The European electoral arena has generally proven more accessible to them than many national parliaments.
+3. Voters' undiluted and sustained dissatisfaction with mainstream political representatives in today's complex reality can easily translate into a protest vote.
+
+In addition, poor turnout could also benefit the hardliners. However, even if the participation rate goes up again, like in 2019, and as recent polls suggest, the substance of the election campaigns could still prove auspicious for the far-right. By moving away from the anti-EU mantra and showing readiness to have difficult conversations on divisive subjects, the radicals can appear more attuned, and thus more appealing, to electorates than the mainstream parties. So, Europe might well be heading down a nationalist, protectionist, anti-Islam, and illiberal path in the upcoming EP vote.
+
+> Europe might well be heading down a nationalist, protectionist, anti-Islam, and illiberal path in the upcoming EP vote.
+
+
+=== SEGMENT 5 ===
+[Summary: The segment argues that the anticipated policy impact of radical right populists in the new European Parliament is likely exaggerated, attributing this to their tendency to prioritize moralistic gesturing over programmatic policy. Data from the outgoing 2019-2024 mandate supports this view, showing that radical right-wing groups (NI, ID, and ECR) were consistently less likely to align with successful votes, confirming their status as the least influential groups during that period.]
+
+Where today's apostles of doom and gloom are likely wrong about is the expected impact of the new 'wave' of radical right populists in the new Parliament. Focused on the pursuit of a more honest relationship with citizens, radical populists tend to only gesture towards policy when they win elections at the national or EU level. This makes them more eclectic and moralistic than programmatic, and so less dangerous in terms of direct policy influence. While this could change if they score big in the upcoming European elections, for now, data backs received wisdom about their performance.
+
+Using roll-call voting records collected by Eulytix, this Discussion Paper calculated the average proportion of MEPs who aligned themselves with the winning side in voting sessions across the outgoing Parliament. The results reveal that the members of radical right- wing groups - i.e. the Independents (NI), Identity and Democracy (ID), and European Conservatives and Reformists (ECR) – have been much less likely to agree with the outcome of a voting session compared to their centrist or left-wing counterparts. Consequently, they emerged as the least influential groups during the present mandate (2019-2024).
+
+> The members of radical right-wing groups emerged as the least influential groups during the present mandate.
+
+
+=== SEGMENT 6 ===
+[Summary: The limited direct policy impact of far-right parties in the European Parliament is primarily attributed to severe inter- and intra-group cohesion problems, with the ID, ECR, and NI groups being notably incohesive compared to mainstream parties and the highly cohesive Greens/EFA. Due to these divisions, the radical right-wing coalition (ID and ECR) struggles significantly to determine policy outcomes, needing an improbable 72% of EP seats to control votes independently. The radical right exhibits significant divisions on budgetary issues and relations with third countries, but shows greater unity on policy linked to EU institutions, public health, and the environment.]
+
+In part, the reason why the rise of far-right parties in the European Parliament has so far not translated into direct policy impact is linked to their inter- and intra- group cohesion problems. Indeed, the analysis in this Paper shows that, apart from the NI, the most incohesive families in the European Parliament are the ID and ECR groups. The NI seems to be the least cohesive, while the Greens/EFA group emerges as the most cohesive group of all.
+
+Similar results transpire when factions are clustered into coalitions. The coalition consisting of the radical right-wing groups (i.e. ID and ECR) transpires as the least able to determine policy outcomes, while mainstream parties appear best placed to call the shots on decisions. The study also indicates that radical right-wingers would need to win, on average, 72% of the seats in the EP to be able to completely control vote outcomes on their own – a reassuringly unlikely scenario.
+
+Further exploring the cohesion of the far-right by policy domain reveals significant divisions between radical-right groups on budgetary issues, relations with third countries (for instance, Russia and Ukraine), and employment policy. Conversely, in areas linked to EU institutions, public health, and, most notably, the environment and energy, the radical populist right exhibits greater unity.
+
+
+=== SEGMENT 7 ===
+[Summary: Far-right parties, notably the ID and ECR groups, displayed engagement patterns suggesting limited legislative influence in the outgoing Parliament, characterized by a disproportionately large number of questions to the European Commission but a strikingly low number of sponsored amendments. The analysis suggests that increased representation after the June European elections could encourage these groups to shift from seeking publicity to actively shaping policy. This potential shift prompted the authors to conduct a simulation study evaluating how voting outcomes might change if the far-right secured a higher share of seats in the assembly.]
+
+Judging by their preferred type of engagement with EP activities, far-right parties seem aware of their lack of real influence on legislation. Data shows that in the outgoing Parliament, the members of the ID and ECR groups wrote a disproportionately large number of questions to the European Commission by reference to their size. In contrast, the number of amendments sponsored by members of the ID group in the EP committees is strikingly low in the latest legislature. But if their ranks swelled after the June European elections, far-right parties could gain confidence to shift from simply seeking publicity to trying to shape policy.
+
+> ID and ECR groups wrote a disproportionately large number of questions to the European Commission. The number of amendments sponsored by members of the ID group in the EP committees is strikingly low.
+
+To assess the potential effects of more radical right-wing MEPs in the next EP on individual policy files, the authors conducted a simulation study, evaluating how different the outcome of votes would have been if the far-right had a higher share of seats in the assembly, as recent forecasts predict for the upcoming EP elections.
+
+
+=== SEGMENT 8 ===
+[Summary: Simulation results indicate that increased hardliner presence in the next EP would only directly change the outcome of 4.8% of voting sessions (827 out of 17,000), primarily impacting environmental policy and potentially failing the Nature Restoration Law. Despite minimal direct legislative effects, the analysis suggests that center-right groups like the EPP might feel compelled to move further right in vulnerable policy areas. Consequently, the potential realignment towards the far-right depends entirely on the political and tactical direction that the EPP group decides to pursue.]
+
+The results reveal that, on average, merely 827 out of approximately 17,000 investigated voting sessions – i.e. 4.8% of all cases – would turn out differently. The most affected policy area would be environmental policy (328 impacted voting sessions) and the only ordinary legislative procedure that would fail is the Nature Restoration Law. Thus, the direct, negative knock-on effects of more hardliners in the next EP should be minimal.
+
+> The direct, negative knock-on effects of more hardliners in the next EP should be minimal.
+
+This conclusion can help to steady one's nerves that the situation is not as bleak as it looks. But on the policy areas that emerge as more vulnerable to far-right pressure (including, beyond the environment, EU institutions, social affairs, agriculture, and external relations) – and which, incidentally, coincide with citizens' own list of policy priorities – the centre-right groups, especially the European People's Party (EPP), might feel compelled to move further right. They could do so by adopting the inflammatory vocabulary and restrictive positions of the radicals to recapture electorates. The analysis clearly shows that a potential realignment towards the far-right in a more right-leaning Parliament depends entirely on the political position and tactical direction that the EPP group decides to pursue.
+
+> The mainstream's/EPP's choice is thus stark: turn against democracy through radicalisation or update democracy via refor
+
+
+=== SEGMENT 9 ===
+[Summary: The political mainstream, especially the EPP, faces a stark choice between radicalization (adopting far-right positions) and democratic reform. Radicalization, while potentially appealing, is predicted to harm the EU and eventually backfire on copycat parties, whereas reform requires changing policy-making to repair the broken democratic relationship with voters. The mainstream must responsibly use its power to forge unity and leadership in the new European Parliament.]
+
+m.The mainstream's/EPP's choice is thus stark: turn against democracy through radicalisation or update democracy via reform. The former strategy, which takes the far-right as standard-bearer, would eventually backfire for the copycat parties but would spell particularly bad news for the future of the EU and European democracy. The latter tactic requires a change in how policies and decisions are made to fix the broken democratic relationship between mainstream politicians and voters. This dilemma makes for a dire but not hopeless situation. What is needed is for the political mainstream (above all, the EPP) to live up to the responsibility that comes with its great power in order to forge unity and leadership in the new European Parliament.***# Introduction - Forecasting the far-right surge
+
+
+=== SEGMENT 10 ===
+[Summary: Preparations for the European Parliament (EP) elections scheduled for June 2024 are currently underway. Despite the routine nature of election debuts, warnings concerning a radical-right surge suggest this vote is far from ordinary. Nationalistic, radical right-wing lawmakers are predicted to secure up to a quarter of the seats in the next European assembly, potentially shaking the political establishment.]
+
+With only two months before the June 2024 elections to the European Parliament (EP), political campaigning, lead-candidate nominations, and vote predictions are underway. On the face of it, it is another run-of-the-mill debut for a new round of EP elections. But a steady drumbeat of warnings¹ about a radical-right spectre hunting the very soul of EU democracy suggests that the upcoming European vote is anything but ordinary: nationalistic, radical right-wing lawmakers seem fated to shake the establishment at the ballot box and take over as much as a quarter of the seats in the next European assembly.> Nationalistic, radical right-wing lawmakers seem fated to shake the establishment at the ballot box and take over as much as a quarter of the seats in the next European assembly.
+
+
+=== SEGMENT 11 ===
+[Summary: Pro-EU democratic forces in the European Parliament (EP) are facing significant pressure from the far-right Identity and Democracy (ID) and European Conservatives and Reformists (ECR) groups. While the largest mainstream parties (EPP and S&D) are predicted to maintain stable support, the Greens-EFA and Renew Europe (RE) groups are forecasted to lose up to a third of their seats, raising concerns that the 10th legislature could stymie EU integration and policymaking. The paper argues that a surge in radical MEPs is plausible, but notes that the outcome hinges on the mainstream's response and the specific policy areas affected.]
+
+All traditional, pro-EU democratic forces in the EP are said to face unprecedentedly gusty winds from the far-right Identity and Democracy group (ID) and the nationalist European Conservatives and Reformists (ECR). While electoral support for the two largest mainstream Euro parties - the European People's Party (EPP) and the Party of European Socialists (S&D) – is predicted to remain overall stable, the Greens-EFA group and the liberals Renew Europe (RE) are forecasted to lose up to a third of their current share. Such a prospect elicits great concern that the 10th European legislature could stymie EU integration and policymaking at a time when geopolitics and permacrisis³ call for more – rather than less - unity and ambition in the Union's action.Will a consolidated block of in-house far-right Eurosceptics wreak havoc in the new Parliament? Will the upcoming European elections prove a "make or break moment"4 for the EU and its democracy? This Paper argues that it is quite plausible that the upcoming EP vote will swell the ranks of radical Members of the European Parliament (MEPs) and deliver to traditional, centrist parties results that feel too close for comfort. In this scenario, the EP and EU could well go haywire. But before throwing in the towel and succumbing to panic, two critical risk factors warrant scrutiny: the mainstream's, especially EPP's, response and the relevance of specific policy areas.
+
+
+=== SEGMENT 12 ===
+[Summary: This paper assessed the potential legislative impact of a record number of radical right-wing MEPs using seat projections and roll-call vote data. The analysis concluded that the direct negative effects would be minimal, estimating that only 4.8% of investigated voting sessions (827 out of 17,000) would turn out differently. While environmental policy would be the most affected area, the only ordinary legislative procedure predicted to fail is the Nature Restoration Law, though the conclusion relies on the political center maintaining its stance.]
+
+To assess the potential impact of a record number of radical right-wing MEPs, this paper uses seat projections by Politico⁵ and roll-call votes data collected by Eulytix⁶ during the current legislature to estimate the number and percentage of voting sessions in the outgoing Parliament, as well as policy areas, in which the outcome would be distinct in a more right-leaning EP.The results reveal that, on average, merely 827 out of approximately 17,000 investigated voting sessions – i.e. 4.8% of all cases – would turn out differently. The most affected policy area would be environmental policy (328 impacted voting sessions) and the only ordinary legislative procedure (COD) that would fail is the Nature Restoration Law. Thus, the direct, negative knock-on effects of more hardliners in the next EP should be minimal. This conclusion can help to steady one's nerves that the situation is not as bleak as it looks. But to pass the reality test, it is imperative that the political centre stands its ground on liberal democratic policy, rhetoric, and values.
+
+
+=== SEGMENT 13 ===
+[Summary: Current unsettling forecasts for the next European Parliament (EP) elections are deemed credible due to three main factors: the increasing success of radical-right parties at the national level, the relative accessibility of the European electoral arena, and pervasive voter dissatisfaction with mainstream political representatives. These radical parties, once marginalized, have steadily increased their presence since the 1990s, frequently achieving electoral success, gaining significant media coverage, and normalizing their participation in coalition governments across member states.]
+
+# 1. Gloomy prospectsThe current forecasts are unsettling but hardly far-fetched. Three reasons lend credibility to the nagging suspicion that the next EP elections are out of joint.⁷ Radical-right parties continue to make inroads into power at the national level in the member states; the European electoral arena has generally proven more accessible to them than many national parliaments; and voters' undiluted and sustained dissatisfaction with mainstream political representatives in today's complex reality can easily translate into a protest vote.## 1.1. RADICALS MARCH ON IN THE MEMBER STATESSince at least the 1990s, parties that were once confined to the ideological right and left margins of the political system have steadily increased their presence in the traditional space of politics through electoral success and media coverage in many, including key, member states. Radical right parties taking on ministerial roles in coalition governments is no longer taboo,⁸ as they win on a par with the biggest players in their countries or outright dominate the national electoral arena. Public opinion polls also frequently document their robust popular appeal.¹⁰
+
+
+=== SEGMENT 14 ===
+[Summary: Recent European elections demonstrate significant successes for far-right political groups, highlighted by the far-right, anti-Islam Party for Freedom (PVV) winning the Dutch general elections in November 2023 and the populist Chega securing third place in Portugal in March 2024. This trend is reinforced by national-conservative parties soaring in the polls in countries like Austria, Belgium, and France, suggesting that radical populism is a clear and consistent force in current European politics.]
+
+In November 2023, the far-right, anti-Islam Party for Freedom (PVV) came first in the Dutch general elections and in March 2024, the far-right, populist Chega stunned with a solid third place in the snap vote held in Portugal. Moreover, national-conservative, right-wing parties are currently soaring in the polls in countries like Austria (Freedom Party), Belgium (Flemish Interest and New Flemish Alliance) and France (Rassemblement National), promising to shift politics (further) to the right at the next ballot. Thus, past and recent experience suggests that radical populists are not a passing, accidental mood; they manifest a clear and consistent trend to field/ feed elections at all levels. ¹¹> Radical populists are not a passing, accidental mood; they manifest a clear and consistent trend to field/feed elections at all levels.
+
+
+=== SEGMENT 15 ===
+[Summary: The success of radical right parties poses a dual threat: domestically, they often attack core democratic institutions like the judiciary and media independence (e.g., Hungary, Poland); and internationally, their participation in national governments grants them seats on the European Council, allowing them to project destabilizing nativist platforms. Although populist right forces that were in government lost 3% in the 2019 EP vote compared to their previous national elections, anti-European populists are still projected to rank highly in the upcoming election, especially in member states where they are currently out of office.]
+
+The popularity of such parties is, first and foremost, problematic for the countries in which they thrive, especially if they come in office and start attacking core democratic institutions like the judiciary and the independence of the media (think Hungary under Fidesz, Poland under the Law and Justice, or Italy under Forza Italia). ¹² But their success can also prove a liability for the EU. As part of the government in countries like Hungary, Italy, Finland, and Slovakia, members of far- right parties now sit around the (European) Council table and enjoy direct opportunities to project their nativist and populist platforms with the intention of destabilising patterns of political interaction also on the European tier.To be sure, incumbency can prove detrimental for parties in power when they compete in European elections. In the latest, 2019 EP vote, across all member states, populist right forces that were in government (e.g. in Greece, Slovakia, Estonia, and the Czech Republic) lost 3% compared to previous national elections. ¹³ Yet, anti-European populists are likely to be top-ranking this year in a dozen of other member states, where they are currently not in office. ¹⁴ Together with the fact that citizens increasingly perceive radical right parties as convincing political options at any election, they might score big in the upcoming EP vote.
+
+
+=== SEGMENT 16 ===
+[Summary: A rightward shift in the next European Parliament (EP) would have significant institutional consequences, reinforcing similar tendencies in the European Council and impacting EU-wide policymaking and agenda-setting. This development could also spill back to the national level, pressuring mainstream parties to curb their EU integration ambitions, and potentially complicating the approval of the inbound College of Commissioners.]
+
+And if they do end up tilting the balance of power in the next EP towards the right, the results can reverberate and reinforce similar, existing tendencies in the (European) Council. This development would be consequential for agenda-sending and policymaking across EU institutions. The effect could also spill back to the national level, where mainstream parties in the member states could come under ever more political pressure to refrain (even more) from their EU integration/reform ambitions. Heartened by potentially solid gains, the far-right forces in the next EP could also complicate the approval of the inbound College of Commissioners. ¹⁵> The effect could also spill back to the national level, where mainstream parties in the member states could come under ever more political pressure to refrain (even more) from their EU integration/ reform ambitions.
+
+
+=== SEGMENT 17 ===
+[Summary: Far-right parties tend to perform well in European Parliament (EP) elections, largely because these contests are viewed as 'second-order national elections' (Nebenwahlen) where citizens can vote for radical opposition at low risk. This perception contributes to consistently lower turnout compared to national elections, a factor that benefits hardline parties who excel at voter mobilization. Despite successive treaty reforms increasing the EP's powers since the mid-1980s, turnout dropped significantly, falling from 62% in 1972 to 42.6% in 2014.]
+
+## 1.2. EP ELECTIONS BODE WELL FOR RADICALSOngoing political dynamics in the member states might favour the odds of far-right parties at the EU level. Yet, these parties have tended to fare well in European elections. This is largely explained by the widespread perception that there is ‘little at stake' in the EP vote in terms of policy influence and the allocation of executive power compared to national electoral contests. Hence, the label of Nebenwahlen or "second-order national elections"¹⁶ is often used to describe the European elections, where national parties simply rehearse national politics and citizens can switch votes at low risk: i.e. punish the incumbent government or “vote with the heart"¹⁷ by choosing opposition/small(er) parties, often new and more radical. On average, the number of populist radical right parties in the EP rose by 12.5% in the 2014 elections and consolidated again in 2019, when they won 161 seats - compared to 118 five years earlier.If citizens believe that EP elections are lacklustre affairs, ¹⁸ they feel less motivated to vote. This is why turnout is said to have remained consistently lower in the European elections compared to the national ones. ¹⁹ Poor turnout tends to benefit hardliners, who are better than the mainstream at getting voters to go to the ballot box. Successive treaty reforms since the mid-1980s²⁰ might have gradually increased the Parliament's powers and relevance in the EU's institutional architecture. But, judged by participation rates, voters do not seem to have picked up on these upgrades. Turnout has dropped from 62% in 1972 to 42.6% in 2014. Exc
+
+
+=== SEGMENT 18 ===
+[Summary: European Parliament (EP) election turnout increased significantly in 2019, reaching 50.7% and reversing a two-decade decline, a factor which arguably contributed to the far-right performing worse than anticipated. This rise is attributed not to the progressive expansion of EP competences, but rather to major ongoing crises like the migration crisis and Brexit, which heightened the relevance of European issues for citizens. While the 2014 elections also occurred during a crisis (the lingering sovereign debt crisis), the mobilization in 2019 suggests the need for a cumulative effect of a decade of 'poly-crisis' to encourage greater participation.]
+
+ept at the latest elections in 2019, when turnout went up for the first time in over two decades, reaching 50.7%. The higher level of participation in the previous EP vote was arguably a key factor why far-right parties had a poorer electoral showing than expected in 2018/early 2019.Where the progressive expansion of EP competences seems to have 'failed', the previous chapters of the ongoing permacrisis (e.g. migration/refugee crisis, Brexit) might have 'succeeded', raising the salience and relevance of 'Europe' in people's lives, and encouraging citizens to vote in greater numbers in the 2019 European elections. Of course, the 2014 EP vote also took place in a crisis-ridden context given the strong lingering effects of the 2009 sovereign debt crisis; and turnout continued to dive at that time. But perhaps the cumulative effect of a decade of poly-crisis²¹ had to first kick in, before people would mobilise to participate in EP elections.
+
+
+=== SEGMENT 19 ===
+[Summary: The continuous stream of crises since 2019, including the COVID-19 pandemic and the war in Ukraine, along with transformative forces like climate change, are expected to finally reverse the long-standing trajectory of low turnout in European Parliament (EP) elections. This prospect is supported by December 2023 polling data: a Eurobarometer poll showed 57% interest and 68% intent to vote (up significantly from 2019), while a Bertelsmann Stiftung Eupinions survey similarly reported 60% vote intention across the EU.]
+
+If so, then all the crises that have seamlessly followed each other since 2019 (including the COVID-19 pandemic and Russia's war of aggression against Ukraine), in a world ever more challenged by transformative forces (such as climate change, digitalisation, or ageing and shrinking society), should also help in June to decisively arrest the long-standing trajectory of low turnouts in European elections.Data appear to support this prospect. A Eurobarometer poll from December 2023 reveals that 57% of respondents are interested in the upcoming EP elections (up six points from 2019) and 68% of them intend to vote (nine points more than last time).²² In addition, a Bertelsmann Stiftung Eupinions survey from the same period reports equally high levels of vote intention (i.e. 60%) among respondents polled across the Union.²³
+
+
+=== SEGMENT 20 ===
+[Summary: Even if turnout rises in the 2024 European elections, the electoral success of radical populist forces depends heavily on the substance of the current EU debates. Far-right parties, particularly in France and Italy, have shifted away from advocating for an EU exit, instead focusing on the need to change the Union, a strategy designed to resonate with the mainstream electorate. This appeal is bolstered by public dissatisfaction, as an ECFR survey revealed that many citizens negatively view the EU's handling of recent crises, such as the COVID-19 pandemic and the wars in Ukraine and Gaza.]
+
+But even if turnout increases again in 2024, the substance of the EU debates that are now at the heart of national election campaigns matters a great deal for whether higher participation will thwart the electoral success of radical populist forces. Far-right parties (e.g. in France and Italy) no longer run on an EU exit ticket but rather speak about the need to change the Union. This rhetorical adjustment could resonate with public sentiment that stretches beyond radical constituencies into the mainstream electorate.> By moving away from the anti-EU mantra and by showing readiness to have difficult conversations on divisive subjects, the radicals can appear to cater to popular demand.An ECFR survey²⁴ carried out in January this year in 12 member states shows that many citizens – not just far- right voters – have a rather negative appreciation of the EU's handling of recent crises, i.e. the COVID-19 pandemic, financial crisis, and the wars in Ukraine and Gaza. The
