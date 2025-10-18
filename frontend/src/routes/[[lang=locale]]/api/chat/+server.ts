@@ -1,5 +1,6 @@
 import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
-import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
+import { LLMProvider } from '@openvaa/llm-refactor';
+import { isRAGRequired, type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { OPENAI_API_KEY } from './apiKey';
 import type { ModelMessage } from 'ai';
@@ -13,6 +14,7 @@ const COLLECTION_NAMES = {
 
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
+let gaterProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
   if (!multiVectorStore) {
@@ -31,6 +33,17 @@ async function getVectorStore(): Promise<MultiVectorStore> {
     await multiVectorStore.initialize();
   }
   return multiVectorStore;
+}
+
+function getGaterProvider(): LLMProvider {
+  if (!gaterProvider) {
+    gaterProvider = new LLMProvider({
+      provider: 'openai',
+      apiKey: OPENAI_API_KEY,
+      modelConfig: { primary: 'gpt-5-nano' }
+    });
+  }
+  return gaterProvider;
 }
 
 // Format search results for LLM prompt (only actual segments, not AI-generated content)
@@ -60,22 +73,38 @@ export async function POST({ request, params }: { request: Request; params: any 
     throw new Error('No messages provided');
   }
 
-  // Get vector store and perform RAG search
-  const vectorStore = await getVectorStore();
-  const ragResult = await vectorStore.search({
-    query: lastMessage.content as string,
-    searchCollections: ['segment', 'summary', 'fact'],
-    topKPerCollection: 3
+  // Extract user messages for RAG gater
+  const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
+
+  // Use gater to determine if RAG is needed
+  const gater = getGaterProvider();
+  const needsRAG = await isRAGRequired({
+    messages: userMessages,
+    provider: gater,
+    modelConfig: { primary: 'gpt-5-nano' }
   });
 
-  // Format segments for LLM context (only actual text, not summaries/facts)
-  const contextText = formatSegmentsForPrompt(ragResult);
+  // Conditionally perform RAG search
+  let ragResult: MultiVectorSearchResult | null = null;
+  let contextText = '';
 
-  // Enhance message with RAG context
-  const enhancedMessage: ModelMessage = {
-    role: 'user',
-    content: `Context:\n${contextText}\n\nUser question: ${lastMessage.content}`
-  };
+  if (needsRAG) {
+    const vectorStore = await getVectorStore();
+    ragResult = await vectorStore.search({
+      query: lastMessage.content as string,
+      searchCollections: ['segment', 'summary', 'fact'],
+      topKPerCollection: 3
+    });
+    contextText = formatSegmentsForPrompt(ragResult);
+  }
+
+  // Enhance message with RAG context if available
+  const enhancedMessage: ModelMessage = needsRAG
+    ? {
+        role: 'user',
+        content: `Context:\n${contextText}\n\nUser question: ${lastMessage.content}`
+      }
+    : lastMessage;
 
   const input: ChatbotAPIInput = {
     messages: [...messages.slice(0, -1), enhancedMessage],
@@ -97,8 +126,8 @@ export async function POST({ request, params }: { request: Request; params: any 
       let firstTokenTime = 0;
 
       try {
-        // First, send RAG context as a custom SSE event
-        if (ragResult.results.length > 0) {
+        // First, send RAG context as a custom SSE event (only if RAG was performed)
+        if (ragResult && ragResult.results.length > 0) {
           controller.enqueue(encoder.encode('event: rag-context\n'));
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(ragResult)}\n\n`));
         }
@@ -150,6 +179,10 @@ export async function POST({ request, params }: { request: Request; params: any 
                 timeToFirstToken,
                 totalTime,
                 tokensPerSecond
+              },
+              rag: {
+                gaterDecision: needsRAG,
+                segmentsRetrieved: ragResult?.results.length ?? 0
               },
               timestamp: Date.now()
             })}\n\n`
