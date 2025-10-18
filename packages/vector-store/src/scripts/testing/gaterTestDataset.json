@@ -1,0 +1,1534 @@
+{
+  "testCases": [
+    {
+      "id": "rag_true_0ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What is the EPP's stance on migration?",
+      "description": "Specific policy position question"
+    },
+    {
+      "id": "rag_true_0ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Who are the lead candidates for the Greens?",
+      "description": "Candidate information request"
+    },
+    {
+      "id": "rag_true_0ctx_direct_factual_003",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "How many MEPs does Germany elect?",
+      "description": "Electoral mechanics question"
+    },
+    {
+      "id": "rag_true_0ctx_direct_factual_004",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What are the main differences between Renew and ALDE?",
+      "description": "Party comparison question"
+    },
+    {
+      "id": "rag_true_0ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Compare the economic policies of S&D and ECR",
+      "description": "Multi-party policy comparison"
+    },
+    {
+      "id": "rag_true_0ctx_complex_multitopic_002",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What are the main parties' positions on EU defense?",
+      "description": "Cross-party topic analysis"
+    },
+    {
+      "id": "rag_true_0ctx_complex_multitopic_003",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "How do The Left and Greens differ on climate policy?",
+      "description": "Multi-party specific topic comparison"
+    },
+    {
+      "id": "rag_true_0ctx_complex_multitopic_004",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What is the ID group's position on EU sovereignty?",
+      "description": "Specific group policy question"
+    },
+    {
+      "id": "rag_true_0ctx_direct_factual_005",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "When is the European Parliament election in 2024?",
+      "description": "Electoral date information"
+    },
+    {
+      "id": "rag_true_0ctx_direct_factual_006",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What is the European Green Deal?",
+      "description": "Policy definition question"
+    },
+    {
+      "id": "rag_true_1ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 1,
+      "contextMessages": [
+        "What is the EPP's stance on migration?"
+      ],
+      "query": "What about their economic policy?",
+      "description": "New topic question after previous query"
+    },
+    {
+      "id": "rag_true_1ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 1,
+      "contextMessages": [
+        "What is the S&D's position on climate?"
+      ],
+      "query": "How does that compare to the EPP?",
+      "description": "Comparative follow-up requiring new facts"
+    },
+    {
+      "id": "rag_true_1ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 1,
+      "contextMessages": [
+        "Who are the lead candidates for the Greens?"
+      ],
+      "query": "What about for the Left?",
+      "description": "Parallel information request"
+    },
+    {
+      "id": "rag_true_1ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 1,
+      "contextMessages": [
+        "Thanks for the information"
+      ],
+      "query": "What is Renew Europe's stance on digital policy?",
+      "description": "New factual question after social response"
+    },
+    {
+      "id": "rag_true_1ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 1,
+      "contextMessages": [
+        "What is the voting age in France?"
+      ],
+      "query": "Compare that to voting ages across all EU member states",
+      "description": "Expansion to multi-country comparison"
+    },
+    {
+      "id": "rag_true_2ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 2,
+      "contextMessages": [
+        "What is the EPP's stance on migration?",
+        "They support controlled migration with strong border security"
+      ],
+      "query": "What is the S&D's position on the same issue?",
+      "description": "Comparative question requiring new retrieval"
+    },
+    {
+      "id": "rag_true_2ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 2,
+      "contextMessages": [
+        "Thanks",
+        "You're welcome!"
+      ],
+      "query": "Who is leading the polls in Germany?",
+      "description": "New factual question after pleasantries"
+    },
+    {
+      "id": "rag_true_2ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 2,
+      "contextMessages": [
+        "What is the Green Deal?",
+        "It's the EU's climate policy framework"
+      ],
+      "query": "Which parties support it and which oppose it?",
+      "description": "Multi-party position mapping"
+    },
+    {
+      "id": "rag_true_2ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 2,
+      "contextMessages": [
+        "What are the main EU political groups?",
+        "The main groups are EPP, S&D, Renew, Greens, ECR, ID, and The Left"
+      ],
+      "query": "What are their positions on Ukraine?",
+      "description": "New topic about mentioned entities"
+    },
+    {
+      "id": "rag_true_2ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 2,
+      "contextMessages": [
+        "I'm interested in climate policy",
+        "I can help you with that"
+      ],
+      "query": "What is the Greens' climate platform for 2024?",
+      "description": "Specific factual query after topic indication"
+    },
+    {
+      "id": "rag_true_3ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 3,
+      "contextMessages": [
+        "What is the EPP's economic policy?",
+        "They support free market economics with fiscal responsibility",
+        "I see"
+      ],
+      "query": "How does the Left's economic policy differ?",
+      "description": "Comparative question after acknowledgment"
+    },
+    {
+      "id": "rag_true_3ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 3,
+      "contextMessages": [
+        "Tell me about the ID group",
+        "They're a right-wing nationalist group",
+        "What about their policies?"
+      ],
+      "query": "Compare their immigration stance with Renew Europe",
+      "description": "Multi-party comparison after context buildup"
+    },
+    {
+      "id": "rag_true_3ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 3,
+      "contextMessages": [
+        "Hello",
+        "Hi! How can I help?",
+        "I want to learn about the election"
+      ],
+      "query": "What are the key dates for the 2024 election?",
+      "description": "Factual question after conversation opening"
+    },
+    {
+      "id": "rag_true_3ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 3,
+      "contextMessages": [
+        "Who can vote in the EU election?",
+        "EU citizens over 18 in most countries",
+        "Interesting"
+      ],
+      "query": "Which countries have different age requirements?",
+      "description": "Drill-down factual question"
+    },
+    {
+      "id": "rag_true_3ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 3,
+      "contextMessages": [
+        "What's the weather like?",
+        "I can only help with EU election information",
+        "Oh okay"
+      ],
+      "query": "Then tell me about the ECR group's platform",
+      "description": "On-topic factual after off-topic redirect"
+    },
+    {
+      "id": "rag_true_4ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 4,
+      "contextMessages": [
+        "What is the S&D?",
+        "The Progressive Alliance of Socialists and Democrats",
+        "What do they stand for?",
+        "They support social democracy and workers' rights"
+      ],
+      "query": "Which national parties are members?",
+      "description": "Membership question after policy discussion"
+    },
+    {
+      "id": "rag_true_4ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 4,
+      "contextMessages": [
+        "I care about climate and economics",
+        "I can help you compare parties on those issues",
+        "Great",
+        "Which parties interest you?"
+      ],
+      "query": "Compare EPP, S&D, and Greens on both topics",
+      "description": "Multi-party multi-topic comparison"
+    },
+    {
+      "id": "rag_true_4ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 4,
+      "contextMessages": [
+        "Hi",
+        "Hello!",
+        "Can you help me?",
+        "Of course"
+      ],
+      "query": "What is the European Parliament's role?",
+      "description": "Institutional question after pleasantries"
+    },
+    {
+      "id": "rag_true_4ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 4,
+      "contextMessages": [
+        "Tell me about Renew Europe",
+        "They're a centrist liberal group",
+        "What about their leader?",
+        "The group is led by various national party leaders"
+      ],
+      "query": "Who are the specific people leading it?",
+      "description": "Specific names after general answer"
+    },
+    {
+      "id": "rag_true_4ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 4,
+      "contextMessages": [
+        "I'm a student",
+        "Great!",
+        "I need to understand the EU better",
+        "I can help with that"
+      ],
+      "query": "How does the Spitzenkandidat system work?",
+      "description": "Technical question after context"
+    },
+    {
+      "id": "rag_true_5ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 5,
+      "contextMessages": [
+        "What is the EPP's position on climate?",
+        "They support market-based climate solutions",
+        "Okay",
+        "Do you want to know more?",
+        "Yes"
+      ],
+      "query": "What specific policies do they propose?",
+      "description": "Policy details after general answer"
+    },
+    {
+      "id": "rag_true_5ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 5,
+      "contextMessages": [
+        "I want to compare left and right parties",
+        "Sure, which topics?",
+        "Immigration and economy",
+        "Okay",
+        "Let's start"
+      ],
+      "query": "Compare ID, ECR, EPP, S&D, and Left on immigration",
+      "description": "Multi-party single-topic comparison"
+    },
+    {
+      "id": "rag_true_5ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 5,
+      "contextMessages": [
+        "Good morning",
+        "Good morning!",
+        "How are you?",
+        "I'm well, thank you",
+        "That's nice"
+      ],
+      "query": "What is the European Commission's role in elections?",
+      "description": "Factual after extended greeting"
+    },
+    {
+      "id": "rag_true_5ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 5,
+      "contextMessages": [
+        "Who are the Greens' top candidates?",
+        "Terry Reintke and Bas Eickhout",
+        "What are their backgrounds?",
+        "Reintke is German, Eickhout is Dutch",
+        "I see"
+      ],
+      "query": "What are their main policy priorities?",
+      "description": "Policy question about mentioned candidates"
+    },
+    {
+      "id": "rag_true_5ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 5,
+      "contextMessages": [
+        "This is confusing",
+        "I understand, what would help?",
+        "Just basic info",
+        "Sure",
+        "Thanks"
+      ],
+      "query": "How many seats are in the European Parliament?",
+      "description": "Basic fact after expressing confusion"
+    },
+    {
+      "id": "rag_true_6ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 6,
+      "contextMessages": [
+        "What is Renew's stance on digital policy?",
+        "They strongly support digital transformation",
+        "That's good",
+        "Yes, they emphasize tech innovation",
+        "Interesting",
+        "Would you like details?"
+      ],
+      "query": "What about their position on AI regulation?",
+      "description": "Specific sub-topic after general discussion"
+    },
+    {
+      "id": "rag_true_6ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 6,
+      "contextMessages": [
+        "I want to understand the party spectrum",
+        "Sure",
+        "From left to right",
+        "Okay",
+        "With their main differences",
+        "I can help with that"
+      ],
+      "query": "Map all major groups on economy, immigration, and climate",
+      "description": "Comprehensive multi-party multi-topic mapping"
+    },
+    {
+      "id": "rag_true_6ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 6,
+      "contextMessages": [
+        "Hey",
+        "Hi there!",
+        "Quick question",
+        "Go ahead",
+        "Actually, let me think",
+        "Take your time"
+      ],
+      "query": "What is the threshold for seats in different countries?",
+      "description": "Specific factual after hesitation"
+    },
+    {
+      "id": "rag_true_6ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 6,
+      "contextMessages": [
+        "Tell me about the Left",
+        "They're a left-wing group",
+        "Who's in it?",
+        "Various communist and socialist parties",
+        "From which countries?",
+        "Mainly Germany, France, Spain"
+      ],
+      "query": "What are their specific member parties in Germany?",
+      "description": "Drill-down to specific country"
+    },
+    {
+      "id": "rag_true_6ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 6,
+      "contextMessages": [
+        "I'm researching for a paper",
+        "How can I help?",
+        "About EU politics",
+        "What aspect?",
+        "Party systems",
+        "Okay"
+      ],
+      "query": "How do national party systems relate to EU groups?",
+      "description": "Academic question after context"
+    },
+    {
+      "id": "rag_true_7ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 7,
+      "contextMessages": [
+        "What's the EPP's history?",
+        "They were founded in the 1970s",
+        "Who founded them?",
+        "Christian democratic parties",
+        "From where?",
+        "Mainly Germany and Italy initially",
+        "I see"
+      ],
+      "query": "How has their ideology evolved since then?",
+      "description": "Historical evolution question"
+    },
+    {
+      "id": "rag_true_7ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 7,
+      "contextMessages": [
+        "I need to decide who to vote for",
+        "I can help you explore the options",
+        "I care about environment and jobs",
+        "Those are important issues",
+        "Yes",
+        "Let me help you compare",
+        "Please do"
+      ],
+      "query": "Which parties balance environmental protection with employment?",
+      "description": "Multi-party multi-criteria analysis"
+    },
+    {
+      "id": "rag_true_7ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 7,
+      "contextMessages": [
+        "Hi",
+        "Hello!",
+        "Can I ask something?",
+        "Of course",
+        "It might be complicated",
+        "That's fine",
+        "Okay good"
+      ],
+      "query": "How does the D'Hondt method work in EU elections?",
+      "description": "Technical question after lengthy preamble"
+    },
+    {
+      "id": "rag_true_7ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 7,
+      "contextMessages": [
+        "What is S&D's climate policy?",
+        "They support the Green Deal",
+        "With what modifications?",
+        "They emphasize social justice aspects",
+        "Like what?",
+        "Job transitions, regional support",
+        "Interesting"
+      ],
+      "query": "What specific programs do they propose for coal regions?",
+      "description": "Specific policy details after discussion"
+    },
+    {
+      "id": "rag_true_7ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 7,
+      "contextMessages": [
+        "I'm confused",
+        "What about?",
+        "Everything",
+        "Let's start simple",
+        "Okay",
+        "What would help most?",
+        "Basic facts"
+      ],
+      "query": "What are the biggest policy debates in this election?",
+      "description": "Overview question after expressing confusion"
+    },
+    {
+      "id": "rag_true_8ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 8,
+      "contextMessages": [
+        "Tell me about Greens",
+        "They focus on environmental policy",
+        "What else?",
+        "Human rights, social justice",
+        "Anything on economy?",
+        "Yes, green economy transformation",
+        "How so?",
+        "Sustainable jobs, renewable energy"
+      ],
+      "query": "What are their specific proposals for green job creation?",
+      "description": "Detailed policy after extended discussion"
+    },
+    {
+      "id": "rag_true_8ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 8,
+      "contextMessages": [
+        "I want to understand coalitions",
+        "In the European Parliament?",
+        "Yes",
+        "What specifically?",
+        "How they form",
+        "Okay",
+        "And what they agree on",
+        "I can explain that"
+      ],
+      "query": "What are the main coalition patterns and their policy overlaps?",
+      "description": "Complex political analysis after setup"
+    },
+    {
+      "id": "rag_true_8ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 8,
+      "contextMessages": [
+        "Good evening",
+        "Good evening!",
+        "How does this work?",
+        "Ask me anything about the EU election",
+        "Okay",
+        "What would you like to know?",
+        "Let me think",
+        "No problem"
+      ],
+      "query": "Which countries elect the most MEPs?",
+      "description": "Factual after extended opening"
+    },
+    {
+      "id": "rag_true_8ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 8,
+      "contextMessages": [
+        "What's ECR's position?",
+        "On what issue?",
+        "EU integration",
+        "They're Eurosceptic",
+        "How much?",
+        "They oppose federalism",
+        "I see",
+        "But not EU exit"
+      ],
+      "query": "What reforms do they actually propose then?",
+      "description": "Specific proposals after position clarification"
+    },
+    {
+      "id": "rag_true_8ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 8,
+      "contextMessages": [
+        "I'm a first-time voter",
+        "That's great!",
+        "I don't know much",
+        "That's okay",
+        "Can you help?",
+        "Absolutely",
+        "Where do I start?",
+        "What interests you most?"
+      ],
+      "query": "What are the European Parliament's main powers?",
+      "description": "Civic education question after context"
+    },
+    {
+      "id": "rag_true_9ctx_followup_factual_001",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 9,
+      "contextMessages": [
+        "What is ID's immigration policy?",
+        "They want strict border controls",
+        "And what else?",
+        "Reduced asylum acceptance",
+        "How strict?",
+        "Very restrictive",
+        "I see",
+        "They emphasize national sovereignty",
+        "Okay"
+      ],
+      "query": "What specific border measures do they propose?",
+      "description": "Detailed policy after extended back-and-forth"
+    },
+    {
+      "id": "rag_true_9ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "category": "complex_multitopic",
+      "contextLength": 9,
+      "contextMessages": [
+        "I need help comparing parties",
+        "Sure",
+        "On multiple issues",
+        "Which ones?",
+        "Climate, economy, security",
+        "Okay",
+        "And maybe migration too",
+        "That's fine",
+        "Which parties?"
+      ],
+      "query": "Compare EPP, S&D, Greens, and ID on all four topics",
+      "description": "Comprehensive comparison after specification"
+    },
+    {
+      "id": "rag_true_9ctx_direct_factual_001",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 9,
+      "contextMessages": [
+        "Hey there",
+        "Hi!",
+        "I have a question",
+        "Go ahead",
+        "Actually, a few questions",
+        "That's fine",
+        "Can I ask them separately?",
+        "Of course",
+        "Thanks"
+      ],
+      "query": "What is the Conference on the Future of Europe?",
+      "description": "Specific factual after procedural discussion"
+    },
+    {
+      "id": "rag_true_9ctx_followup_factual_002",
+      "expectedRAG": true,
+      "category": "followup_factual",
+      "contextLength": 9,
+      "contextMessages": [
+        "Tell me about Renew",
+        "They're centrist liberals",
+        "Who leads them?",
+        "Valérie Hayer",
+        "Who is she?",
+        "A French MEP",
+        "What's her background?",
+        "She's from Renaissance party",
+        "I see"
+      ],
+      "query": "What are her main policy priorities?",
+      "description": "Policy details after biographical discussion"
+    },
+    {
+      "id": "rag_true_9ctx_direct_factual_002",
+      "expectedRAG": true,
+      "category": "direct_factual",
+      "contextLength": 9,
+      "contextMessages": [
+        "I'm doing research",
+        "What kind?",
+        "Academic",
+        "What's your focus?",
+        "EU politics",
+        "Interesting",
+        "Specifically elections",
+        "I can help",
+        "Great"
+      ],
+      "query": "What is the historical voter turnout trend for EP elections?",
+      "description": "Research question after context establishment"
+    },
+    {
+      "id": "rag_false_0ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Hello",
+      "description": "Simple greeting"
+    },
+    {
+      "id": "rag_false_0ctx_conversational_social_002",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Hi there",
+      "description": "Informal greeting"
+    },
+    {
+      "id": "rag_false_0ctx_conversational_social_003",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Good morning",
+      "description": "Time-specific greeting"
+    },
+    {
+      "id": "rag_false_0ctx_conversational_social_004",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Thank you",
+      "description": "Gratitude expression"
+    },
+    {
+      "id": "rag_false_0ctx_conversational_social_005",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Thanks for your help",
+      "description": "Extended thanks"
+    },
+    {
+      "id": "rag_false_0ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Which party should I vote for?",
+      "description": "Direct recommendation request"
+    },
+    {
+      "id": "rag_false_0ctx_meta_opinion_002",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "What do you think about the EPP?",
+      "description": "Opinion request"
+    },
+    {
+      "id": "rag_false_0ctx_meta_opinion_003",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Who is the best candidate?",
+      "description": "Subjective evaluation request"
+    },
+    {
+      "id": "rag_false_0ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Let's talk about something else",
+      "description": "Topic change request"
+    },
+    {
+      "id": "rag_false_0ctx_conversation_management_002",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 0,
+      "contextMessages": [],
+      "query": "Can we start over?",
+      "description": "Conversation reset request"
+    },
+    {
+      "id": "rag_false_1ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 1,
+      "contextMessages": [
+        "The EPP supports market-based climate solutions with innovation"
+      ],
+      "query": "Can you explain that more simply?",
+      "description": "Simplification request"
+    },
+    {
+      "id": "rag_false_1ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 1,
+      "contextMessages": [
+        "The Greens want to transition to renewable energy"
+      ],
+      "query": "What does that mean exactly?",
+      "description": "Clarification of provided info"
+    },
+    {
+      "id": "rag_false_1ctx_clarification_elaboration_003",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 1,
+      "contextMessages": [
+        "S&D emphasizes social justice in climate policy"
+      ],
+      "query": "Can you give me an example?",
+      "description": "Example request for provided concept"
+    },
+    {
+      "id": "rag_false_1ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 1,
+      "contextMessages": [
+        "How can I help you today?"
+      ],
+      "query": "Thanks, I'm just browsing",
+      "description": "Casual response to offer"
+    },
+    {
+      "id": "rag_false_1ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 1,
+      "contextMessages": [
+        "The EPP and S&D have different economic approaches"
+      ],
+      "query": "Which one is better?",
+      "description": "Subjective comparison request"
+    },
+    {
+      "id": "rag_false_2ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 2,
+      "contextMessages": [
+        "What is the EPP's stance on migration?",
+        "They support controlled migration with strong border security"
+      ],
+      "query": "I don't understand, can you rephrase?",
+      "description": "Rephrasing request"
+    },
+    {
+      "id": "rag_false_2ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 2,
+      "contextMessages": [
+        "What is the Green Deal?",
+        "It's the EU's comprehensive climate policy framework"
+      ],
+      "query": "Thank you, that's helpful",
+      "description": "Gratitude after answer"
+    },
+    {
+      "id": "rag_false_2ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 2,
+      "contextMessages": [
+        "Who are the Greens' lead candidates?",
+        "Terry Reintke and Bas Eickhout"
+      ],
+      "query": "Tell me more about them",
+      "description": "Elaboration on provided names"
+    },
+    {
+      "id": "rag_false_2ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 2,
+      "contextMessages": [
+        "The Left supports wealth redistribution",
+        "The EPP supports free markets"
+      ],
+      "query": "Which approach is more effective?",
+      "description": "Effectiveness judgment request"
+    },
+    {
+      "id": "rag_false_2ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 2,
+      "contextMessages": [
+        "What is Renew's position?",
+        "They support centrist liberal policies"
+      ],
+      "query": "Actually, let's talk about something different",
+      "description": "Topic shift request"
+    },
+    {
+      "id": "rag_false_3ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 3,
+      "contextMessages": [
+        "What are the main EU political groups?",
+        "The main groups are EPP, S&D, Renew, Greens, ECR, ID, and The Left",
+        "That's a lot"
+      ],
+      "query": "Can you break that down for me?",
+      "description": "Breakdown request for provided list"
+    },
+    {
+      "id": "rag_false_3ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 3,
+      "contextMessages": [
+        "When is the election?",
+        "June 6-9, 2024",
+        "Perfect"
+      ],
+      "query": "Thanks so much",
+      "description": "Gratitude after satisfactory answer"
+    },
+    {
+      "id": "rag_false_3ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 3,
+      "contextMessages": [
+        "What is the S&D's economic policy?",
+        "They support social market economy with strong worker protections",
+        "Hmm"
+      ],
+      "query": "What does social market economy mean?",
+      "description": "Term clarification from answer"
+    },
+    {
+      "id": "rag_false_3ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 3,
+      "contextMessages": [
+        "Tell me about ID",
+        "They're a right-wing nationalist group",
+        "And ECR?"
+      ],
+      "query": "Which one should I support?",
+      "description": "Support recommendation request"
+    },
+    {
+      "id": "rag_false_3ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 3,
+      "contextMessages": [
+        "What about climate policy?",
+        "Many parties have climate platforms",
+        "I see"
+      ],
+      "query": "Can we go back to what we were discussing before?",
+      "description": "Navigation to previous topic"
+    },
+    {
+      "id": "rag_false_4ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 4,
+      "contextMessages": [
+        "Compare EPP and S&D on economics",
+        "EPP favors free markets, S&D favors social markets",
+        "What's the difference?",
+        "Free markets emphasize competition, social markets emphasize welfare"
+      ],
+      "query": "Can you give concrete examples?",
+      "description": "Example request for abstract concepts"
+    },
+    {
+      "id": "rag_false_4ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 4,
+      "contextMessages": [
+        "How many MEPs are there?",
+        "705 MEPs total",
+        "Got it",
+        "Any other questions?"
+      ],
+      "query": "No, that's all I needed",
+      "description": "Conversation closing"
+    },
+    {
+      "id": "rag_false_4ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 4,
+      "contextMessages": [
+        "What is the Greens' platform?",
+        "Climate action, social justice, human rights",
+        "Okay",
+        "They emphasize environmental protection"
+      ],
+      "query": "How do those all connect?",
+      "description": "Relationship clarification"
+    },
+    {
+      "id": "rag_false_4ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 4,
+      "contextMessages": [
+        "I care about climate",
+        "Several parties focus on that",
+        "Like who?",
+        "The Greens, S&D, and Left especially"
+      ],
+      "query": "Which of those is best?",
+      "description": "Best option request"
+    },
+    {
+      "id": "rag_false_4ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 4,
+      "contextMessages": [
+        "Tell me about migration policy",
+        "Different parties have different views",
+        "I see",
+        "Would you like specifics?"
+      ],
+      "query": "Actually, never mind",
+      "description": "Abandoning topic"
+    },
+    {
+      "id": "rag_false_5ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 5,
+      "contextMessages": [
+        "What is Renew's digital policy?",
+        "They support digital transformation and innovation",
+        "Like what?",
+        "AI development, digital markets, cybersecurity",
+        "Okay"
+      ],
+      "query": "Explain the digital markets part",
+      "description": "Drill-down on provided point"
+    },
+    {
+      "id": "rag_false_5ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 5,
+      "contextMessages": [
+        "Hello",
+        "Hi! How can I help?",
+        "I have a question",
+        "Go ahead",
+        "Actually it's complicated"
+      ],
+      "query": "You know what, never mind",
+      "description": "Abandoning question"
+    },
+    {
+      "id": "rag_false_5ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 5,
+      "contextMessages": [
+        "What is the ID group?",
+        "Identity and Democracy, a right-wing group",
+        "What do they want?",
+        "National sovereignty, immigration control",
+        "I see"
+      ],
+      "query": "What does national sovereignty mean in practice?",
+      "description": "Practical meaning of provided concept"
+    },
+    {
+      "id": "rag_false_5ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 5,
+      "contextMessages": [
+        "I'm torn between two parties",
+        "Which ones?",
+        "EPP and Renew",
+        "They have some similarities",
+        "Yeah"
+      ],
+      "query": "How should I decide?",
+      "description": "Decision-making advice request"
+    },
+    {
+      "id": "rag_false_5ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 5,
+      "contextMessages": [
+        "What about the Left?",
+        "They're a left-wing group",
+        "Tell me more",
+        "They support socialism",
+        "Okay"
+      ],
+      "query": "Let's change topics",
+      "description": "Topic change"
+    },
+    {
+      "id": "rag_false_6ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 6,
+      "contextMessages": [
+        "How does voting work?",
+        "It varies by country",
+        "What do you mean?",
+        "Each country has its own system",
+        "Like what?",
+        "Some use proportional representation, some have constituencies"
+      ],
+      "query": "Explain proportional representation",
+      "description": "Term explanation from answer"
+    },
+    {
+      "id": "rag_false_6ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 6,
+      "contextMessages": [
+        "Hi",
+        "Hello!",
+        "Can you help?",
+        "Of course",
+        "Great",
+        "What do you need?"
+      ],
+      "query": "Actually I figured it out, thanks",
+      "description": "Self-resolution acknowledgment"
+    },
+    {
+      "id": "rag_false_6ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 6,
+      "contextMessages": [
+        "What is ECR's position?",
+        "They're conservative Eurosceptics",
+        "Meaning?",
+        "They oppose EU federalism",
+        "I see",
+        "They want to return powers to nations"
+      ],
+      "query": "What would that look like?",
+      "description": "Concrete implications request"
+    },
+    {
+      "id": "rag_false_6ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 6,
+      "contextMessages": [
+        "Compare Greens and S&D",
+        "Both are on the left",
+        "What's the difference?",
+        "Greens emphasize environment, S&D workers",
+        "Hmm",
+        "Both support social policies though"
+      ],
+      "query": "Which is more important, environment or workers?",
+      "description": "Value judgment request"
+    },
+    {
+      "id": "rag_false_6ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 6,
+      "contextMessages": [
+        "Tell me about parties",
+        "Which aspect?",
+        "Their policies",
+        "On what issues?",
+        "Everything",
+        "That's a lot"
+      ],
+      "query": "Maybe we should focus on just one thing",
+      "description": "Scope narrowing"
+    },
+    {
+      "id": "rag_false_7ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 7,
+      "contextMessages": [
+        "What is the European Commission?",
+        "The EU's executive body",
+        "What does it do?",
+        "Proposes laws, implements decisions",
+        "And the Parliament?",
+        "They vote on laws with the Council",
+        "I'm confused"
+      ],
+      "query": "Can you explain how they work together?",
+      "description": "Relationship clarification"
+    },
+    {
+      "id": "rag_false_7ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 7,
+      "contextMessages": [
+        "Good evening",
+        "Good evening!",
+        "How are you?",
+        "I'm well, thanks",
+        "That's good",
+        "How can I help?",
+        "I was just curious"
+      ],
+      "query": "Thanks anyway",
+      "description": "Polite dismissal"
+    },
+    {
+      "id": "rag_false_7ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 7,
+      "contextMessages": [
+        "What do the parties disagree on?",
+        "Many things",
+        "Like what?",
+        "Economy, immigration, climate",
+        "Okay",
+        "And EU integration level",
+        "Right"
+      ],
+      "query": "Give me a specific example of a disagreement",
+      "description": "Concrete example request"
+    },
+    {
+      "id": "rag_false_7ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 7,
+      "contextMessages": [
+        "I don't know who to vote for",
+        "What issues matter to you?",
+        "Climate and jobs",
+        "Several parties address both",
+        "Like who?",
+        "Greens, S&D especially",
+        "Hmm"
+      ],
+      "query": "What would you do?",
+      "description": "Personal recommendation request"
+    },
+    {
+      "id": "rag_false_7ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 7,
+      "contextMessages": [
+        "Tell me everything",
+        "That's quite broad",
+        "I know",
+        "Where should we start?",
+        "I don't know",
+        "What interests you?",
+        "Maybe we should narrow it down"
+      ],
+      "query": "Can we start fresh?",
+      "description": "Conversation restart"
+    },
+    {
+      "id": "rag_false_8ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 8,
+      "contextMessages": [
+        "What is a Spitzenkandidat?",
+        "A lead candidate for Commission President",
+        "How does that work?",
+        "The largest group nominates them",
+        "Always?",
+        "Usually, though it's not binding",
+        "I see",
+        "It's a relatively new practice"
+      ],
+      "query": "Walk me through the process step by step",
+      "description": "Process explanation request"
+    },
+    {
+      "id": "rag_false_8ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 8,
+      "contextMessages": [
+        "Hey",
+        "Hi there!",
+        "Quick question",
+        "Sure",
+        "Actually maybe not so quick",
+        "That's fine",
+        "Okay good",
+        "What is it?"
+      ],
+      "query": "You know what, I'll figure it out myself",
+      "description": "Self-resolution decision"
+    },
+    {
+      "id": "rag_false_8ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 8,
+      "contextMessages": [
+        "What's the difference between left and right?",
+        "In EU politics?",
+        "Yes",
+        "Left emphasizes equality, right emphasizes tradition",
+        "That's vague",
+        "True, it's more complex",
+        "How so?",
+        "There are economic and social dimensions"
+      ],
+      "query": "Explain those dimensions",
+      "description": "Dimension explanation from answer"
+    },
+    {
+      "id": "rag_false_8ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 8,
+      "contextMessages": [
+        "I care about immigration control",
+        "Several parties focus on that",
+        "Which ones?",
+        "ID and ECR especially",
+        "What's the difference?",
+        "ID is more hardline",
+        "I see",
+        "ECR is more moderate"
+      ],
+      "query": "Which approach is more reasonable?",
+      "description": "Reasonableness judgment"
+    },
+    {
+      "id": "rag_false_8ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 8,
+      "contextMessages": [
+        "This is overwhelming",
+        "I understand",
+        "Too much information",
+        "We can slow down",
+        "Okay",
+        "What would help?",
+        "I don't know",
+        "That's okay"
+      ],
+      "query": "Maybe let's just stop for now",
+      "description": "Conversation pause"
+    },
+    {
+      "id": "rag_false_9ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 9,
+      "contextMessages": [
+        "How do coalitions form?",
+        "After the election",
+        "Who decides?",
+        "The groups negotiate",
+        "Based on what?",
+        "Policy agreements",
+        "Like what?",
+        "Shared priorities on key issues",
+        "Okay"
+      ],
+      "query": "Give me a concrete example from the past",
+      "description": "Historical example request"
+    },
+    {
+      "id": "rag_false_9ctx_conversational_social_001",
+      "expectedRAG": false,
+      "category": "conversational_social",
+      "contextLength": 9,
+      "contextMessages": [
+        "Hi",
+        "Hello!",
+        "Can I ask something?",
+        "Of course",
+        "It's complicated",
+        "That's fine",
+        "Are you sure?",
+        "Yes",
+        "Okay then"
+      ],
+      "query": "Actually I changed my mind, thanks",
+      "description": "Question withdrawal"
+    },
+    {
+      "id": "rag_false_9ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "category": "clarification_elaboration",
+      "contextLength": 9,
+      "contextMessages": [
+        "What is qualified majority voting?",
+        "A voting system in the Council",
+        "How does it work?",
+        "Requires 55% of countries and 65% of population",
+        "Why those numbers?",
+        "To balance large and small countries",
+        "I see",
+        "It prevents any one country from blocking",
+        "Hmm"
+      ],
+      "query": "Explain with a simple example",
+      "description": "Simplification with example"
+    },
+    {
+      "id": "rag_false_9ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "category": "meta_opinion",
+      "contextLength": 9,
+      "contextMessages": [
+        "I like some ideas from different parties",
+        "That's common",
+        "EPP on economy",
+        "Okay",
+        "Greens on climate",
+        "I see",
+        "And S&D on welfare",
+        "Interesting mix",
+        "Yeah"
+      ],
+      "query": "How do I choose when I agree with different parties?",
+      "description": "Multi-party agreement dilemma"
+    },
+    {
+      "id": "rag_false_9ctx_conversation_management_001",
+      "expectedRAG": false,
+      "category": "conversation_management",
+      "contextLength": 9,
+      "contextMessages": [
+        "I want to learn everything",
+        "That's ambitious",
+        "I know",
+        "Where to start?",
+        "You tell me",
+        "What's most important to you?",
+        "I'm not sure",
+        "Think about it",
+        "Okay"
+      ],
+      "query": "Can we just go back to basics?",
+      "description": "Reset to fundamentals"
+    }
+  ]
+}

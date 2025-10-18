@@ -3,7 +3,7 @@
   "name": "@openvaa/vector-store",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/core/prompts && cp -R src/core/prompts/* build/core/prompts/",
     "test": "vitest run",
     "test:watch": "vitest watch"
   },

@@ -1,0 +1,277 @@
+{
+  "overall": {
+    "truePositive": 53,
+    "trueNegative": 50,
+    "falsePositive": 5,
+    "falseNegative": 2,
+    "accuracy": 0.9363636363636364,
+    "precision": 0.9137931034482759,
+    "recall": 0.9636363636363636,
+    "f1Score": 0.9380530973451328,
+    "total": 110
+  },
+  "byCategory": {
+    "direct_factual": {
+      "truePositive": 23,
+      "trueNegative": 0,
+      "falsePositive": 0,
+      "falseNegative": 1,
+      "accuracy": 0.9583333333333334,
+      "precision": 1,
+      "recall": 0.9583333333333334,
+      "f1Score": 0.9787234042553191,
+      "total": 24
+    },
+    "complex_multitopic": {
+      "truePositive": 12,
+      "trueNegative": 0,
+      "falsePositive": 0,
+      "falseNegative": 1,
+      "accuracy": 0.9230769230769231,
+      "precision": 1,
+      "recall": 0.9230769230769231,
+      "f1Score": 0.9600000000000001,
+      "total": 13
+    },
+    "followup_factual": {
+      "truePositive": 18,
+      "trueNegative": 0,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 18
+    },
+    "conversational_social": {
+      "truePositive": 0,
+      "trueNegative": 14,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 0,
+      "recall": 0,
+      "f1Score": 0,
+      "total": 14
+    },
+    "meta_opinion": {
+      "truePositive": 0,
+      "trueNegative": 10,
+      "falsePositive": 2,
+      "falseNegative": 0,
+      "accuracy": 0.8333333333333334,
+      "precision": 0,
+      "recall": 0,
+      "f1Score": 0,
+      "total": 12
+    },
+    "conversation_management": {
+      "truePositive": 0,
+      "trueNegative": 10,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 0,
+      "recall": 0,
+      "f1Score": 0,
+      "total": 10
+    },
+    "clarification_elaboration": {
+      "truePositive": 0,
+      "trueNegative": 16,
+      "falsePositive": 3,
+      "falseNegative": 0,
+      "accuracy": 0.8421052631578947,
+      "precision": 0,
+      "recall": 0,
+      "f1Score": 0,
+      "total": 19
+    }
+  },
+  "byContextLength": {
+    "0": {
+      "truePositive": 10,
+      "trueNegative": 9,
+      "falsePositive": 1,
+      "falseNegative": 0,
+      "accuracy": 0.95,
+      "precision": 0.9090909090909091,
+      "recall": 1,
+      "f1Score": 0.9523809523809523,
+      "total": 20
+    },
+    "1": {
+      "truePositive": 5,
+      "trueNegative": 4,
+      "falsePositive": 1,
+      "falseNegative": 0,
+      "accuracy": 0.9,
+      "precision": 0.8333333333333334,
+      "recall": 1,
+      "f1Score": 0.9090909090909091,
+      "total": 10
+    },
+    "2": {
+      "truePositive": 5,
+      "trueNegative": 3,
+      "falsePositive": 2,
+      "falseNegative": 0,
+      "accuracy": 0.8,
+      "precision": 0.7142857142857143,
+      "recall": 1,
+      "f1Score": 0.8333333333333333,
+      "total": 10
+    },
+    "3": {
+      "truePositive": 5,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 10
+    },
+    "4": {
+      "truePositive": 5,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 10
+    },
+    "5": {
+      "truePositive": 5,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 10
+    },
+    "6": {
+      "truePositive": 4,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 1,
+      "accuracy": 0.9,
+      "precision": 1,
+      "recall": 0.8,
+      "f1Score": 0.888888888888889,
+      "total": 10
+    },
+    "7": {
+      "truePositive": 5,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 10
+    },
+    "8": {
+      "truePositive": 5,
+      "trueNegative": 5,
+      "falsePositive": 0,
+      "falseNegative": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "f1Score": 1,
+      "total": 10
+    },
+    "9": {
+      "truePositive": 4,
+      "trueNegative": 4,
+      "falsePositive": 1,
+      "falseNegative": 1,
+      "accuracy": 0.8,
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1Score": 0.8000000000000002,
+      "total": 10
+    }
+  },
+  "misclassifications": [
+    {
+      "testCaseId": "rag_true_6ctx_direct_factual_002",
+      "expectedRAG": true,
+      "predictedRAG": false,
+      "category": "direct_factual",
+      "contextLength": 6,
+      "correct": false,
+      "query": "How do national party systems relate to EU groups?",
+      "description": "Academic question after context"
+    },
+    {
+      "testCaseId": "rag_true_9ctx_complex_multitopic_001",
+      "expectedRAG": true,
+      "predictedRAG": false,
+      "category": "complex_multitopic",
+      "contextLength": 9,
+      "correct": false,
+      "query": "Compare EPP, S&D, Greens, and ID on all four topics",
+      "description": "Comprehensive comparison after specification"
+    },
+    {
+      "testCaseId": "rag_false_0ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "predictedRAG": true,
+      "category": "meta_opinion",
+      "contextLength": 0,
+      "correct": false,
+      "query": "Which party should I vote for?",
+      "description": "Direct recommendation request"
+    },
+    {
+      "testCaseId": "rag_false_1ctx_clarification_elaboration_003",
+      "expectedRAG": false,
+      "predictedRAG": true,
+      "category": "clarification_elaboration",
+      "contextLength": 1,
+      "correct": false,
+      "query": "Can you give me an example?",
+      "description": "Example request for provided concept"
+    },
+    {
+      "testCaseId": "rag_false_2ctx_clarification_elaboration_002",
+      "expectedRAG": false,
+      "predictedRAG": true,
+      "category": "clarification_elaboration",
+      "contextLength": 2,
+      "correct": false,
+      "query": "Tell me more about them",
+      "description": "Elaboration on provided names"
+    },
+    {
+      "testCaseId": "rag_false_2ctx_meta_opinion_001",
+      "expectedRAG": false,
+      "predictedRAG": true,
+      "category": "meta_opinion",
+      "contextLength": 2,
+      "correct": false,
+      "query": "Which approach is more effective?",
+      "description": "Effectiveness judgment request"
+    },
+    {
+      "testCaseId": "rag_false_9ctx_clarification_elaboration_001",
+      "expectedRAG": false,
+      "predictedRAG": true,
+      "category": "clarification_elaboration",
+      "contextLength": 9,
+      "correct": false,
+      "query": "Give me a concrete example from the past",
+      "description": "Historical example request"
+    }
+  ],
+  "timestamp": "2025-10-18T15:31:38.814Z"
+}
