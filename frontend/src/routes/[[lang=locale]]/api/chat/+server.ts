@@ -15,6 +15,7 @@ const COLLECTION_NAMES = {
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
 let gaterProvider: LLMProvider | null = null;
+let resultFilteringProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
   if (!multiVectorStore) {
@@ -46,6 +47,17 @@ function getGaterProvider(): LLMProvider {
   return gaterProvider;
 }
 
+function getResultFilteringProvider(): LLMProvider {
+  if (!resultFilteringProvider) {
+    resultFilteringProvider = new LLMProvider({
+      provider: 'openai',
+      apiKey: OPENAI_API_KEY,
+      modelConfig: { primary: 'gpt-5-nano' }
+    });
+  }
+  return resultFilteringProvider;
+}
+
 // Format search results for LLM prompt (only actual segments, not AI-generated content)
 function formatSegmentsForPrompt(ragResult: MultiVectorSearchResult): string {
   if (ragResult.results.length === 0) {
@@ -63,6 +75,9 @@ function formatSegmentsForPrompt(ragResult: MultiVectorSearchResult): string {
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function POST({ request, params }: { request: Request; params: any }) {
+  // Start timing the entire request
+  const requestStartTime = Date.now();
+
   const { messages: uiMessages } = await request.json();
 
   const messages = convertUIMessagesToModelMessages(uiMessages);
@@ -76,25 +91,32 @@ export async function POST({ request, params }: { request: Request; params: any 
   // Extract user messages for RAG gater
   const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
 
-  // Use gater to determine if RAG is needed
+  // Track RAG gating time - determines if retrieval is needed
+  const gaterStartTime = Date.now();
   const gater = getGaterProvider();
   const needsRAG = await isRAGRequired({
     messages: userMessages,
     provider: gater,
     modelConfig: { primary: 'gpt-5-nano' }
   });
+  const gaterDuration = Date.now() - gaterStartTime;
 
-  // Conditionally perform RAG search
+  // Track RAG retrieval time - fetches relevant context from vector store
   let ragResult: MultiVectorSearchResult | null = null;
   let contextText = '';
+  let retrievalDuration = 0;
 
   if (needsRAG) {
+    const retrievalStartTime = Date.now();
     const vectorStore = await getVectorStore();
     ragResult = await vectorStore.search({
       query: lastMessage.content as string,
       searchCollections: ['segment', 'summary', 'fact'],
-      topKPerCollection: 3
+      topKPerCollection: 3,
+      intelligentSearch: true,
+      llmProvider: getResultFilteringProvider()
     });
+    retrievalDuration = Date.now() - retrievalStartTime;
     contextText = formatSegmentsForPrompt(ragResult);
   }
 
@@ -121,7 +143,7 @@ export async function POST({ request, params }: { request: Request; params: any 
     async start(controller) {
       const encoder = new TextEncoder();
 
-      // Track timing
+      // Track message generation timing (from stream start to stream end)
       const streamStartTime = performance.now();
       let firstTokenTime = 0;
 
@@ -141,7 +163,7 @@ export async function POST({ request, params }: { request: Request; params: any 
             const { done, value } = await reader.read();
             if (done) break;
 
-            // Track first token time
+            // Track first token time (LLM latency - from stream start to first token)
             if (firstTokenTime === 0) {
               firstTokenTime = performance.now();
             }
@@ -153,8 +175,12 @@ export async function POST({ request, params }: { request: Request; params: any 
         const streamEndTime = performance.now();
 
         // Calculate timing metrics
+        // timeToFirstToken: LLM responsiveness (stream start → first token)
         const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;
-        const totalTime = streamEndTime - streamStartTime;
+        // messageTime: LLM generation time (stream start → stream end)
+        const messageTime = streamEndTime - streamStartTime;
+        // totalTime: end-to-end request time (gating + retrieval + generation)
+        const totalTime = Date.now() - requestStartTime;
 
         // Get cost information
         const costs = await result.costs;
@@ -162,7 +188,7 @@ export async function POST({ request, params }: { request: Request; params: any 
         // Calculate tokens per second (if we have output tokens from usage)
         const usage = await result.usage;
         const tokensPerSecond =
-          usage.outputTokens && totalTime > 0 ? usage.outputTokens / (totalTime / 1000) : undefined;
+          usage.outputTokens && messageTime > 0 ? usage.outputTokens / (messageTime / 1000) : undefined;
 
         // Send combined metadata as a single event
         controller.enqueue(encoder.encode('event: metadata-info\n'));
@@ -176,7 +202,10 @@ export async function POST({ request, params }: { request: Request; params: any 
                 total: costs.total
               },
               latency: {
+                gaterDuration,
+                retrievalDuration,
                 timeToFirstToken,
+                messageTime,
                 totalTime,
                 tokensPerSecond
               },

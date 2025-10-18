@@ -31,8 +31,11 @@
   }
 
   interface LatencyInfo {
-    timeToFirstToken: number; // ms from request start to first token
-    totalTime: number; // ms from request start to completion
+    gaterDuration: number; // ms to determine if RAG is needed
+    retrievalDuration: number; // ms to fetch from vector store (0 if RAG not used)
+    timeToFirstToken: number; // ms from LLM stream start to first token (LLM latency only)
+    messageTime: number; // ms from LLM stream start to completion (LLM generation time)
+    totalTime: number; // ms end-to-end (gating + retrieval + message generation)
     tokensPerSecond?: number; // output tokens / second
     timestamp: number;
   }
@@ -58,21 +61,41 @@
   $: maxCost = costs.length > 0 ? Math.max(...costs.map(c => c.total)) : 0;
 
   // Latency calculation helpers
+  // RAG Gating metrics
+  $: lastGaterDuration = latencies.length > 0 ? latencies[latencies.length - 1].gaterDuration : 0;
+  $: averageGaterDuration = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.gaterDuration, 0) / latencies.length : 0;
+  $: minGaterDuration = latencies.length > 0 ? Math.min(...latencies.map(l => l.gaterDuration)) : 0;
+  $: maxGaterDuration = latencies.length > 0 ? Math.max(...latencies.map(l => l.gaterDuration)) : 0;
+
+  // RAG Retrieval metrics
+  $: lastRetrievalDuration = latencies.length > 0 ? latencies[latencies.length - 1].retrievalDuration : 0;
+  $: averageRetrievalDuration = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.retrievalDuration, 0) / latencies.length : 0;
+  $: minRetrievalDuration = latencies.length > 0 ? Math.min(...latencies.map(l => l.retrievalDuration)) : 0;
+  $: maxRetrievalDuration = latencies.length > 0 ? Math.max(...latencies.map(l => l.retrievalDuration)) : 0;
+
+  // Time to First Token metrics
   $: lastTTFT = latencies.length > 0 ? latencies[latencies.length - 1].timeToFirstToken : 0;
   $: averageTTFT = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.timeToFirstToken, 0) / latencies.length : 0;
   $: last3TTFTAverage =
     latencies.length > 0 ? latencies.slice(-3).reduce((sum, l) => sum + l.timeToFirstToken, 0) / Math.min(3, latencies.length) : 0;
-  
+  $: minTTFT = latencies.length > 0 ? Math.min(...latencies.map(l => l.timeToFirstToken)) : 0;
+  $: maxTTFT = latencies.length > 0 ? Math.max(...latencies.map(l => l.timeToFirstToken)) : 0;
+
+  // Message Generation Time metrics
+  $: lastMessageTime = latencies.length > 0 ? latencies[latencies.length - 1].messageTime : 0;
+  $: averageMessageTime = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.messageTime, 0) / latencies.length : 0;
+  $: minMessageTime = latencies.length > 0 ? Math.min(...latencies.map(l => l.messageTime)) : 0;
+  $: maxMessageTime = latencies.length > 0 ? Math.max(...latencies.map(l => l.messageTime)) : 0;
+
+  // Total Time metrics
   $: lastTotalTime = latencies.length > 0 ? latencies[latencies.length - 1].totalTime : 0;
   $: averageTotalTime = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.totalTime, 0) / latencies.length : 0;
   $: last3TotalTimeAverage =
     latencies.length > 0 ? latencies.slice(-3).reduce((sum, l) => sum + l.totalTime, 0) / Math.min(3, latencies.length) : 0;
-  
-  $: minTTFT = latencies.length > 0 ? Math.min(...latencies.map(l => l.timeToFirstToken)) : 0;
-  $: maxTTFT = latencies.length > 0 ? Math.max(...latencies.map(l => l.timeToFirstToken)) : 0;
   $: minTotalTime = latencies.length > 0 ? Math.min(...latencies.map(l => l.totalTime)) : 0;
   $: maxTotalTime = latencies.length > 0 ? Math.max(...latencies.map(l => l.totalTime)) : 0;
-  
+
+  // Tokens per second
   $: averageTokensPerSecond = latencies.length > 0 && latencies.filter(l => l.tokensPerSecond).length > 0
     ? latencies.filter(l => l.tokensPerSecond).reduce((sum, l) => sum + (l.tokensPerSecond || 0), 0) / latencies.filter(l => l.tokensPerSecond).length
     : 0;
@@ -204,7 +227,7 @@
     // Handle metadata information (cost + latency)
     if (data.type === 'metadata-info') {
       console.log('[Chatbot] Received metadata info:', data);
-      
+
       // Store cost info
       if (data.cost) {
         costs = [
@@ -224,7 +247,10 @@
         latencies = [
           ...latencies,
           {
+            gaterDuration: data.latency.gaterDuration,
+            retrievalDuration: data.latency.retrievalDuration,
             timeToFirstToken: data.latency.timeToFirstToken,
+            messageTime: data.latency.messageTime,
             totalTime: data.latency.totalTime,
             tokensPerSecond: data.latency.tokensPerSecond,
             timestamp: data.timestamp
@@ -488,10 +514,47 @@
       <!-- Latency Metrics Section -->
       <div class="mb-6">
         <h3 class="font-bold mb-3 text-lg text-gray-800 border-b border-gray-300 pb-2">⚡ Latency Metrics</h3>
-        
+
+        <!-- RAG Timing -->
+        <div class="mb-4">
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">RAG Timing</h4>
+          <div class="gap-2 grid grid-cols-2 mb-2">
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Gating (Last)</div>
+              <div class="text-lg font-bold text-blue-600">
+                {lastGaterDuration.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Gating (Avg)</div>
+              <div class="text-lg font-bold text-green-600">
+                {averageGaterDuration.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Retrieval (Last)</div>
+              <div class="text-lg font-bold text-blue-600">
+                {lastRetrievalDuration.toFixed(0)}ms
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Retrieval (Avg)</div>
+              <div class="text-lg font-bold text-green-600">
+                {averageRetrievalDuration.toFixed(0)}ms
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-gray-600 bg-gray-100 p-2 rounded">
+            Gating: deciding if RAG is needed | Retrieval: fetching from vector store
+          </div>
+        </div>
+
         <!-- Time to First Token -->
         <div class="mb-4">
-          <h4 class="font-semibold text-sm text-gray-700 mb-2">Time to First Token (TTFT)</h4>
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Time to First Token (LLM Latency)</h4>
           <div class="gap-2 grid grid-cols-2">
             <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
               <div class="mb-1 text-xs text-gray-500">Last Response</div>
@@ -523,9 +586,43 @@
           </div>
         </div>
 
+        <!-- Message Generation Time -->
+        <div class="mb-4">
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Message Generation Time</h4>
+          <div class="gap-2 grid grid-cols-2">
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Last Response</div>
+              <div class="text-lg font-bold text-blue-600">
+                {(lastMessageTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Average</div>
+              <div class="text-lg font-bold text-green-600">
+                {(averageMessageTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Min / Max</div>
+              <div class="text-sm font-semibold text-gray-700">
+                {(minMessageTime / 1000).toFixed(2)} / {(maxMessageTime / 1000).toFixed(2)}s
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
+              <div class="mb-1 text-xs text-gray-500">Tokens/Second</div>
+              <div class="text-lg font-bold text-indigo-600">
+                {averageTokensPerSecond.toFixed(1)} tok/s
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Total Time -->
         <div class="mb-4">
-          <h4 class="font-semibold text-sm text-gray-700 mb-2">Total Response Time</h4>
+          <h4 class="font-semibold text-sm text-gray-700 mb-2">Total Response Time (End-to-End)</h4>
           <div class="gap-2 grid grid-cols-2">
             <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
               <div class="mb-1 text-xs text-gray-500">Last Response</div>
@@ -555,16 +652,8 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Tokens per Second -->
-        <div>
-          <h4 class="font-semibold text-sm text-gray-700 mb-2">Generation Speed</h4>
-          <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
-            <div class="mb-1 text-xs text-gray-500">Avg Tokens/Second</div>
-            <div class="text-xl font-bold text-indigo-600">
-              {averageTokensPerSecond.toFixed(1)} tok/s
-            </div>
+          <div class="text-xs text-gray-600 bg-gray-100 p-2 rounded mt-2">
+            Total = Gating + Retrieval + Message Generation
           </div>
         </div>
       </div>
@@ -587,16 +676,21 @@
                     ${cost.total.toFixed(4)}
                   </span>
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                  <div>Cost: ${cost.total.toFixed(5)}</div>
-                  {#if latency}
-                    <div>TTFT: {latency.timeToFirstToken.toFixed(0)}ms</div>
-                    <div>Total: {(latency.totalTime / 1000).toFixed(2)}s</div>
-                    {#if latency.tokensPerSecond}
-                      <div>{latency.tokensPerSecond.toFixed(1)} tok/s</div>
-                    {/if}
-                  {/if}
-                </div>
+                {#if latency}
+                  <div class="space-y-1 text-xs text-gray-600">
+                    <div class="font-semibold text-gray-700">Timing Breakdown:</div>
+                    <div class="grid grid-cols-2 gap-1">
+                      <div>Gating: {latency.gaterDuration.toFixed(0)}ms</div>
+                      <div>Retrieval: {latency.retrievalDuration.toFixed(0)}ms</div>
+                      <div>TTFT: {latency.timeToFirstToken.toFixed(0)}ms</div>
+                      <div>Message: {(latency.messageTime / 1000).toFixed(2)}s</div>
+                      <div class="col-span-2 font-semibold text-gray-700">Total: {(latency.totalTime / 1000).toFixed(2)}s</div>
+                      {#if latency.tokensPerSecond}
+                        <div class="col-span-2">{latency.tokensPerSecond.toFixed(1)} tok/s</div>
+                      {/if}
+                    </div>
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>
