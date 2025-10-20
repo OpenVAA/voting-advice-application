@@ -1,6 +1,6 @@
 import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
 import { LLMProvider } from '@openvaa/llm-refactor';
-import { isRAGRequired, type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
+import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { OPENAI_API_KEY } from './apiKey';
 import type { ModelMessage } from 'ai';
@@ -14,7 +14,7 @@ const COLLECTION_NAMES = {
 
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
-let gaterProvider: LLMProvider | null = null;
+// let gaterProvider: LLMProvider | null = null;
 let resultFilteringProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
@@ -36,16 +36,16 @@ async function getVectorStore(): Promise<MultiVectorStore> {
   return multiVectorStore;
 }
 
-function getGaterProvider(): LLMProvider {
-  if (!gaterProvider) {
-    gaterProvider = new LLMProvider({
-      provider: 'openai',
-      apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-5-nano' }
-    });
-  }
-  return gaterProvider;
-}
+// function getGaterProvider(): LLMProvider {
+//   if (!gaterProvider) {
+//     gaterProvider = new LLMProvider({
+//       provider: 'openai',
+//       apiKey: OPENAI_API_KEY,
+//       modelConfig: { primary: 'gpt-5-nano' }
+//     });
+//   }
+//   return gaterProvider;
+// }
 
 function getResultFilteringProvider(): LLMProvider {
   if (!resultFilteringProvider) {
@@ -89,17 +89,20 @@ export async function POST({ request, params }: { request: Request; params: any 
   }
 
   // Extract user messages for RAG gater
-  const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
-
+  // const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
   // Track RAG gating time - determines if retrieval is needed
-  const gaterStartTime = Date.now();
-  const gater = getGaterProvider();
-  const needsRAG = await isRAGRequired({
-    messages: userMessages,
-    provider: gater,
-    modelConfig: { primary: 'gpt-5-nano' }
-  });
-  const gaterDuration = Date.now() - gaterStartTime;
+  // const gaterStartTime = Date.now();
+  // const gater = getGaterProvider();
+  // const needsRAG = await isRAGRequired({
+  //   messages: userMessages,
+  //   provider: gater,
+  //   modelConfig: { primary: 'gpt-5-nano' }
+  // });
+
+  // For now, we always perform RAG retrieval
+  // Filtering can be used to manage context
+  const needsRAG = true;
+  const gaterDuration = 0;
 
   // Track RAG retrieval time - fetches relevant context from vector store
   let ragResult: MultiVectorSearchResult | null = null;
