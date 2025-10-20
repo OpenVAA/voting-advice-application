@@ -25,6 +25,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/google@npm:^2.0.20":
+  version: 2.0.23
+  resolution: "@ai-sdk/google@npm:2.0.23"
+  dependencies:
+    "@ai-sdk/provider": "npm:2.0.0"
+    "@ai-sdk/provider-utils": "npm:3.0.12"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/402b78f392196c3e23c75cc35fc1d701f9521b57aace2fb1bbae6a0d57bbb3894a778b0485305bd6674998403e44c3883dca2416f2d48377722351debead9f11
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/openai@npm:^2.0.31":
   version: 2.0.42
   resolution: "@ai-sdk/openai@npm:2.0.42"
@@ -47,6 +59,19 @@ __metadata:
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
   checksum: 10c0/d2c16abdb84ba4ef48c9f56190b5ffde224b9e6ae5147c5c713d2623627732d34b96aa9aef2a2ea4b0c49e1b863cc963c7d7ff964a1dc95f0f036097aaaaaa98
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider-utils@npm:3.0.12":
+  version: 3.0.12
+  resolution: "@ai-sdk/provider-utils@npm:3.0.12"
+  dependencies:
+    "@ai-sdk/provider": "npm:2.0.0"
+    "@standard-schema/spec": "npm:^1.0.0"
+    eventsource-parser: "npm:^3.0.5"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/83886bf188cad0cc655b680b710a10413989eaba9ec59dd24a58b985c02a8a1d50ad0f96dd5259385c07592ec3c37a7769fdf4a1ef569a73c9edbdb2cd585915
   languageName: node
   linkType: hard
 
@@ -4274,7 +4299,6 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
-    "@openvaa/llm": "workspace:^"
     "@openvaa/llm-refactor": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/question-info": "workspace:^"
@@ -4319,6 +4343,7 @@ __metadata:
     vite: "npm:^5.4.11"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^2.1.8"
+    zod: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4326,6 +4351,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@openvaa/llm-refactor@workspace:packages/llm-refactor"
   dependencies:
+    "@ai-sdk/google": "npm:^2.0.20"
     "@ai-sdk/openai": "npm:^2.0.31"
     "@openvaa/core": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
@@ -4336,20 +4362,6 @@ __metadata:
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
     zod: "npm:^4.0.0"
-  languageName: unknown
-  linkType: soft
-
-"@openvaa/llm@workspace:^, @openvaa/llm@workspace:packages/llm":
-  version: 0.0.0-use.local
-  resolution: "@openvaa/llm@workspace:packages/llm"
-  dependencies:
-    "@openvaa/core": "workspace:^"
-    "@openvaa/shared-config": "workspace:^"
-    jsonrepair: "npm:^3.13.0"
-    openai: "npm:^4.78.1"
-    tsc-esm-fix: "npm:^3.1.2"
-    typescript: "npm:^5.7.3"
-    vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
