@@ -2,6 +2,7 @@ import { DEFAULT_SECTION_TOPICS } from '../consts';
 import {
   chooseQInfoSchema,
   determinePromptKey,
+  embedPromptVars,
   loadAllExamples,
   loadInstructions,
   loadPrompt,
@@ -93,12 +94,15 @@ export async function generateInfo({
       }
 
       return {
-        modelConfig: { primary: options.llmModel },
         schema: responseSchema,
         messages: [
           {
             role: 'system' as const,
-            content: promptTemplate.prompt
+            content: embedPromptVars({
+              promptText: promptTemplate.prompt,
+              variables,
+              controller: options.controller
+            })
           }
         ],
         temperature: 0,

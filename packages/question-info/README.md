@@ -47,7 +47,7 @@ const results = await generateQuestionInfo({
     operations: [QUESTION_INFO_OPERATION.Terms, QUESTION_INFO_OPERATION.InfoSections],
     language: 'en',
     llmProvider,
-    modelConfig: { primary: 'gpt-4o' },
+    runId: 'generation-run-1',
     questionContext: 'Finnish municipal elections 2025'
   }
 });
@@ -67,7 +67,7 @@ const results = await generateQuestionInfo({
     operations: [QUESTION_INFO_OPERATION.Terms],
     language: 'en',
     llmProvider,
-    modelConfig: { primary: 'gpt-4o' }
+    runId: 'generation-run-1'
   }
 });
 ```
