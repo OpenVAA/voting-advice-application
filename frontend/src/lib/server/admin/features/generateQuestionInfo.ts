@@ -98,8 +98,7 @@ export async function generateQuestionInfo({
       runId: jobId,
       operations,
       language: locale,
-      llmProvider: llm,
-      llmModel: 'gpt-4o-mini',
+      llmProvider: llm, // Model configured in llmProvider (currently gpt-4o-mini)
       controller,
       ...(sectionTopics && sectionTopics.length > 0 && { sectionTopics }),
       ...(customInstructions && { customInstructions }),
