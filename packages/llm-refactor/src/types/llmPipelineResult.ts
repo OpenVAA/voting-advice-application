@@ -1,3 +1,4 @@
+import type { PipelineMetrics } from '@openvaa/core';
 import type { LanguageModelUsage as TokenUsage } from 'ai';
 
 /**
@@ -7,19 +8,14 @@ import type { LanguageModelUsage as TokenUsage } from 'ai';
  * @example
  *
  * const metrics: LLMPipelineMetrics = {
- *   duration: 420,
+ *   processingTimeMs: 420,
  *   nLlmCalls: 66,
- *   cost: 1.01,
- *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500,
- *   reasoningTokens: 0, cachedInputTokens: 0 } // optional, commonly not available if they are 0 :)
+ *   costs: { input: 0.5, output: 0.5, total: 1 },
+ *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 }
  * };
  */
-export interface LLMPipelineMetrics {
-  /** Duration in seconds */
-  duration: number;
+export interface LLMPipelineMetrics extends PipelineMetrics {
   nLlmCalls: number;
-  /** Cost in dollars */
-  cost: number;
   tokens: TokenUsage;
 }
 
@@ -36,18 +32,18 @@ export interface LLMPipelineResult<TData extends object> {
   /** Unique identifier for this generation run */
   runId: string;
 
-  /** The specific data payload for this result */
+  /** The specific data payload for this result. Contains the specific metrics, metadata etc. */
   data: TData;
 
   /** Generation metrics */
-  metrics: LLMPipelineMetrics;
+  llmMetrics: LLMPipelineMetrics;
 
   /** Whether generation was successful */
   success: boolean;
 
   /** Metadata about the generation run */
   metadata: {
-    llmModel: string;
+    modelsUsed: Array<string>;
     language: string;
     startTime: Date;
     endTime: Date;
