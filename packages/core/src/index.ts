@@ -13,4 +13,5 @@ export * from './matching/hasAnswers.type';
 export * from './matching/matchableQuestion.type';
 export * from './matching/missingValue';
 export * from './matching/missingValue.type';
+export * from './pipelines/metrics.type';
 export * from './serializable/serializable.type';
