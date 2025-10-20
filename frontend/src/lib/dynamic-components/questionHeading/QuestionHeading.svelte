@@ -100,21 +100,18 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 </script>
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
-  <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
+  <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
+    {#if blockWithStats}
+      <!-- Index of question within all questions -->
+      <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
+    {/if}
     {#if $appSettings.elections.showElectionTags}
       {#each getElectionsToShow({ question, elections: $elections }) as election}
         <ElectionTag {election} {onShadedBg} />
       {/each}
     {/if}
     {#if $appSettings.questions.showCategoryTags}
-      <CategoryTag
-        category={question.category}
-        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
-        {onShadedBg} />
-    {:else if blockWithStats}
-      <!-- Index of question within all questions -->
-      {$t('common.question')}
-      <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
+      <CategoryTag category={question.category} {onShadedBg} />
     {/if}
   </PreHeading>
   <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
