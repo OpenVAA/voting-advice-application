@@ -15,6 +15,35 @@ const COLLECTION_NAMES = {
 } as const;
 
 /**
+ * Recursively find all JSON files in a directory and its subdirectories
+ */
+function findJsonFiles(dir: string): Array<{ fullPath: string; relativePath: string }> {
+  const results: Array<{ fullPath: string; relativePath: string }> = [];
+
+  if (!fs.existsSync(dir)) {
+    return results;
+  }
+
+  function searchDirectory(currentDir: string, relPath = '') {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      const newRelPath = relPath ? path.join(relPath, entry.name) : entry.name;
+
+      if (entry.isDirectory()) {
+        searchDirectory(fullPath, newRelPath);
+      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) {
+        results.push({ fullPath, relativePath: newRelPath });
+      }
+    }
+  }
+
+  searchDirectory(dir);
+  return results;
+}
+
+/**
  * Multi-vector embedding script that:
  * 1. Reads ProcessPdfResult JSON files from docs/step3_ready/
  * 2. Creates 3 separate ChromaDB collections (segments, summaries, facts)
@@ -33,8 +62,8 @@ export async function embedDocumentsMultiVector(): Promise<void> {
     throw new Error(`Ready docs directory not found: ${readyDir}\nPlease run the document analysis script first.`);
   }
 
-  // Get all JSON files from the directory
-  const readyFiles = fs.readdirSync(readyDir).filter((file) => file.endsWith('.json'));
+  // Get all JSON files from the directory and subdirectories
+  const readyFiles = findJsonFiles(readyDir);
 
   if (readyFiles.length === 0) {
     throw new Error(`No JSON files found in ${readyDir}\nPlease run the document analysis script first.`);
@@ -66,18 +95,16 @@ export async function embedDocumentsMultiVector(): Promise<void> {
   let totalFacts = 0;
 
   for (const readyFile of readyFiles) {
-    const readyFilePath = path.join(readyDir, readyFile);
-
     try {
-      console.info(`Processing: ${readyFile}`);
+      console.info(`Processing: ${readyFile.relativePath}`);
 
       // Read and parse the ProcessPdfResult
-      const fileContent = fs.readFileSync(readyFilePath, 'utf-8');
+      const fileContent = fs.readFileSync(readyFile.fullPath, 'utf-8');
       const docResult: ProcessPdfResult = JSON.parse(fileContent);
 
       // Validate document structure
       if (!docResult.data?.segmentAnalyses) {
-        console.error(`✗ Invalid ProcessPdfResult structure in ${readyFile}`);
+        console.error(`✗ Invalid ProcessPdfResult structure in ${readyFile.relativePath}`);
         continue;
       }
 
@@ -103,7 +130,7 @@ export async function embedDocumentsMultiVector(): Promise<void> {
 
       console.info('✓ Successfully embedded and stored all data types\n');
     } catch (error) {
-      console.error(`✗ Error processing ${readyFile}:`, error);
+      console.error(`✗ Error processing ${readyFile.relativePath}:`, error);
       continue;
     }
   }

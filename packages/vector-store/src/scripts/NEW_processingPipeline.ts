@@ -1,5 +1,5 @@
 import { BaseController } from '@openvaa/core';
-import { processPdf } from '@openvaa/file-processing';
+import { processPdf, processText } from '@openvaa/file-processing';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
@@ -18,10 +18,13 @@ const SEGMENTED_TEXT_JOINED = path.join(__dirname, '../docs/NEW_segmentedTexts')
 // --------------------------------------------------------------
 
 /**
- * Find all PDF files in subdirectories
+ * Find all document files (.pdf and .txt) recursively in subdirectories
  */
-function findPDFs(dir: string): Array<{ path: string; subdirectory: string; filename: string }> {
-  const results: Array<{ path: string; subdirectory: string; filename: string }> = [];
+function findDocuments(
+  dir: string,
+  relativePath = ''
+): Array<{ path: string; subdirectory: string; filename: string; fileType: 'pdf' | 'txt' }> {
+  const results: Array<{ path: string; subdirectory: string; filename: string; fileType: 'pdf' | 'txt' }> = [];
 
   if (!fs.existsSync(dir)) {
     console.warn(`Directory not found: ${dir}`);
@@ -32,27 +35,29 @@ function findPDFs(dir: string): Array<{ path: string; subdirectory: string; file
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    const newRelativePath = relativePath ? path.join(relativePath, entry.name) : entry.name;
 
     if (entry.isDirectory()) {
-      // Search subdirectory
-      const subdirectoryName = entry.name;
-      const subEntries = fs.readdirSync(fullPath, { withFileTypes: true });
+      // Recursively search subdirectories
+      results.push(...findDocuments(fullPath, newRelativePath));
+    } else if (entry.isFile()) {
+      const lowerName = entry.name.toLowerCase();
+      let fileType: 'pdf' | 'txt' | null = null;
 
-      for (const subEntry of subEntries) {
-        if (subEntry.isFile() && subEntry.name.toLowerCase().endsWith('.pdf')) {
-          results.push({
-            path: path.join(fullPath, subEntry.name),
-            subdirectory: subdirectoryName,
-            filename: subEntry.name
-          });
-        }
+      if (lowerName.endsWith('.pdf')) {
+        fileType = 'pdf';
+      } else if (lowerName.endsWith('.txt')) {
+        fileType = 'txt';
       }
-    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
-      results.push({
-        path: fullPath,
-        subdirectory: 'root',
-        filename: entry.name
-      });
+
+      if (fileType) {
+        results.push({
+          path: fullPath,
+          subdirectory: relativePath || 'root',
+          filename: entry.name,
+          fileType
+        });
+      }
     }
   }
 
@@ -83,7 +88,7 @@ function saveSegmentsToFile(
 // --------------------------------------------------------------
 
 async function main() {
-  console.info('🚀 Starting PDF Processing Pipeline\n');
+  console.info('🚀 Starting Document Processing Pipeline\n');
 
   // Ensure output directories exist
   if (!fs.existsSync(OUTPUT_DIR)) {
@@ -103,52 +108,90 @@ async function main() {
     }
   });
 
-  // Find all PDFs
-  const pdfs = findPDFs(UNPROCESSED_DIR);
-  console.info(`📄 Found ${pdfs.length} PDF(s) to process\n`);
+  // Find all documents
+  const documents = findDocuments(UNPROCESSED_DIR);
+  console.info(`📄 Found ${documents.length} document(s) to process\n`);
 
-  if (pdfs.length === 0) {
-    console.info('No PDFs found. Exiting.');
+  if (documents.length === 0) {
+    console.info('No documents found. Exiting.');
     return;
   }
 
-  // Process each PDF
-  for (let i = 0; i < pdfs.length; i++) {
-    const pdf = pdfs[i];
-    console.info(`\n[${i + 1}/${pdfs.length}] Processing: ${pdf.filename}`);
-    console.info(`  Subdirectory: ${pdf.subdirectory}`);
+  // Process each document
+  for (let i = 0; i < documents.length; i++) {
+    const doc = documents[i];
+    console.info(`\n[${i + 1}/${documents.length}] Processing: ${doc.filename} (${doc.fileType.toUpperCase()})`);
+    console.info(`  Subdirectory: ${doc.subdirectory}`);
 
     try {
-      // Read PDF file
-      const pdfBuffer = fs.readFileSync(pdf.path);
+      let result;
 
-      // Process the PDF through the complete pipeline
-      const result = await processPdf({
-        pdfBuffer,
-        apiKey: process.env.LLM_GEMINI_API_KEY,
-        model: 'gemini-2.5-pro',
-        originalFileName: pdf.filename,
-        llmProvider,
-        documentId: `${pdf.subdirectory}_${path.parse(pdf.filename).name}`,
-        runId: `pipeline_${Date.now()}`,
-        controller: new BaseController()
-      });
+      if (doc.fileType === 'pdf') {
+        // Read PDF file as buffer
+        const pdfBuffer = fs.readFileSync(doc.path);
+
+        // Process the PDF through the complete pipeline
+        const docIdPrefix = doc.subdirectory === 'root' ? '' : `${doc.subdirectory.replace(/\//g, '_')}_`;
+        result = await processPdf({
+          pdfBuffer,
+          apiKey: process.env.LLM_GEMINI_API_KEY,
+          model: 'gemini-2.5-pro',
+          originalFileName: doc.filename,
+          llmProvider,
+          documentId: `${docIdPrefix}${path.parse(doc.filename).name}`,
+          runId: `pipeline_${Date.now()}`,
+          controller: new BaseController()
+        });
+      } else {
+        // Read TXT file as text
+        const text = fs.readFileSync(doc.path, 'utf-8');
+
+        // Process the text directly (treating as markdown)
+        const docIdPrefix = doc.subdirectory === 'root' ? '' : `${doc.subdirectory.replace(/\//g, '_')}_`;
+        result = await processText({
+          text,
+          llmProvider,
+          documentId: `${docIdPrefix}${path.parse(doc.filename).name}`,
+          runId: `pipeline_${Date.now()}`,
+          controller: new BaseController()
+        });
+      }
 
       if (!result.success) {
-        console.error(`  ✗ Failed to process ${pdf.filename}`);
+        console.error(`  ✗ Failed to process ${doc.filename}`);
         continue;
       }
 
-      // Generate output filenames
-      const baseFilename = path.parse(pdf.filename).name;
-      const subdir = pdf.subdirectory === 'root' ? '' : `${pdf.subdirectory}_`;
+      // Extract top-level category (official/unofficial) from subdirectory path
+      const topLevelCategory = doc.subdirectory === 'root' ? null : doc.subdirectory.split(path.sep)[0];
+      const baseFilename = path.parse(doc.filename).name;
+
+      // Create category subdirectories in output folders if needed
+      if (topLevelCategory) {
+        const segmentsSubdirPath = path.join(SEGMENTED_TEXT_JOINED, topLevelCategory);
+        const jsonSubdirPath = path.join(OUTPUT_DIR, topLevelCategory);
+
+        if (!fs.existsSync(segmentsSubdirPath)) {
+          fs.mkdirSync(segmentsSubdirPath, { recursive: true });
+        }
+        if (!fs.existsSync(jsonSubdirPath)) {
+          fs.mkdirSync(jsonSubdirPath, { recursive: true });
+        }
+      }
+
+      // Build output paths (with or without category subdirectory)
+      const segmentsPath = topLevelCategory
+        ? path.join(SEGMENTED_TEXT_JOINED, topLevelCategory, `${baseFilename}_segments.txt`)
+        : path.join(SEGMENTED_TEXT_JOINED, `${baseFilename}_segments.txt`);
+
+      const jsonPath = topLevelCategory
+        ? path.join(OUTPUT_DIR, topLevelCategory, `${baseFilename}_processed.json`)
+        : path.join(OUTPUT_DIR, `${baseFilename}_processed.json`);
 
       // Save readable segments
-      const segmentsPath = path.join(SEGMENTED_TEXT_JOINED, `${subdir}${baseFilename}_segments.txt`);
       saveSegmentsToFile(result.data.segmentAnalyses, segmentsPath);
 
       // Save complete JSON result
-      const jsonPath = path.join(OUTPUT_DIR, `${subdir}${baseFilename}_processed.json`);
       fs.writeFileSync(jsonPath, JSON.stringify(result, null, 2), 'utf-8');
       console.info(`  ✓ Saved full result to: ${jsonPath}`);
 
@@ -160,7 +203,7 @@ async function main() {
       console.info(`    - LLM calls: ${result.llmMetrics.nLlmCalls}`);
       console.info(`    - Total tokens: ${result.llmMetrics.tokens.totalTokens}`);
     } catch (error) {
-      console.error(`  ✗ Error processing ${pdf.filename}:`, error);
+      console.error(`  ✗ Error processing ${doc.filename}:`, error);
       continue;
     }
   }

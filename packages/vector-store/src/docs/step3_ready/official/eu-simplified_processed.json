@@ -1,0 +1,278 @@
+{
+  "runId": "pipeline_1760970510998",
+  "success": true,
+  "data": {
+    "documentId": "official_txt_eu-simplified",
+    "metadata": {
+      "title": "Easy to read - The European Union",
+      "source": "The European Union",
+      "locale": "en"
+    },
+    "segmentAnalyses": [
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "3719a8c5-f7b9-48aa-8846-26a96028ad3b",
+        "segment": "Easy to read - The European UnionEasy to read versionEasy to read is a wayto make information easy for everyoneto read and understand.Easy to read - Symbol © European Easy-to-Read Logo: Inclusion Europe. More information at https://www.inclusion-europe.eu/easy-to-read/The European UnionThe European Union is a group of 27 countries in Europe.These countries came togetherto make things better, easier and safer for people.They agreed to work together and help each other.Map with all countries of the European Union How the European Union startedPeople working togetherThe idea to make the European Union cameafter two big wars happened in Europe.Countries in Europe saw thatit is better to work togetherthan fighting against each other.In the beginning, only 6 countries in Europe started working together:BelgiumFranceGermanyItalyLuxembourgNetherlandsSoon, more and more countries in Europe joined themand the European Union was made.",
+        "segmentIndex": 0,
+        "summary": "The European Union (EU) is introduced in an Easy-to-Read format as a group of 27 European countries that cooperate to make things better, easier, and safer for their people. The idea for the EU emerged after two major wars, reflecting the realization that working together was preferable to fighting. The collaboration initially began with only six countries: Belgium, France, Germany, Italy, Luxembourg, and the Netherlands.",
+        "standaloneFacts": [
+          "The European Union (EU) is a group of 27 countries in Europe.",
+          "The European Easy-to-Read Logo is copyrighted by Inclusion Europe.",
+          "The idea to make the European Union came after two big wars happened in Europe.",
+          "The European Union initially started with 6 countries: Belgium, France, Germany, Italy, Luxembourg, and the Netherlands."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "822e98d0-c15a-4275-8a21-57a8afbdbf28",
+        "segment": "Map with all countries of the European UnionToday, 27 countries are part of the European Union.These countries are:AustriaBelgiumBulgariaCroatiaCyprusCzechiaDenmarkEstoniaFinlandFranceGermanyGreeceHungaryIrelandItalyLatviaLithuaniaLuxembourgMaltaNetherlandsPolandPortugalRomaniaSlovakiaSloveniaSpainSwedenIn June 2016 the United Kingdom decidedto stop being part of the European Union.So from 31 January 2020, the United Kingdomis no longer part of the European Union.",
+        "segmentIndex": 1,
+        "summary": "The European Union currently consists of 27 member countries, including Austria, France, Germany, and others listed in the text. This section also notes the departure of the United Kingdom, which decided to stop being a member in June 2016 and officially left the EU on January 31, 2020.",
+        "standaloneFacts": [
+          "Today, 27 countries are part of the European Union.",
+          "The United Kingdom decided to stop being part of the European Union in June 2016.",
+          "The United Kingdom is no longer part of the European Union since January 31, 2020."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "133da3d4-b47e-4142-9776-c20a4e337053",
+        "segment": "The goals and values of the European UnionAll countries that are part of the European Union work togetherto make sure that:A listthere is peace in Europepeople have good livesthings are fair for all people and nobody is left outthe languages and cultures of all peopleare respectedthere is a strong European economyand countries use the same cointo do business together.The countries of the European Unionshare some important values.For example, they work to make sure that all people are equaland their rights are respected.Peace in EuropePeople holding hands in circleAfter the European Union was created,there were no more wars between the countriessuch as that are part of the European Union.Thanks to the European Union,all countries in Europe work together in peace.The symbol of the Peace PriceIn 2012, the European Union won a big awardwhich is called ‘the Nobel Peace Prize’.This award was given to the European Unionfor its good work keeping peace in Europe.",
+        "segmentIndex": 2,
+        "summary": "The European Union is guided by core goals and values, including ensuring peace, promoting equality and respect for rights, fostering inclusion, respecting diverse cultures, and maintaining a strong European economy utilizing a shared currency for business. A major achievement is maintaining peace among member states since its creation, a contribution recognized when the EU was awarded the Nobel Peace Prize in 2012.",
+        "standaloneFacts": [
+          "The goals of the European Union include ensuring peace in Europe, promoting fairness, respecting languages and cultures, and maintaining a strong European economy where countries use the same coin to do business.",
+          "The European Union works to ensure that all people are equal and their rights are respected.",
+          "Since the European Union was created, there have been no more wars between the countries that are part of the EU.",
+          "The European Union won the Nobel Peace Prize in 2012 for its work keeping peace in Europe."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "0403e33e-0e84-4d84-86ec-807ca313e97a",
+        "segment": "Free moveThe European Union made it easier for peopleto move freely from one country to another.They can live, study or workin any country of the European Union they want.For example, a person from France can chooseto move to Italy and work there.Or a student from Belgium can go study in a university in Greece.Happy travelersThings, services and money can also move freelyfrom one country of the European Union to another.The European Union in the worldThe European Union plays an important role in the world in many ways.For example:It sells many things and services to other countries.Also, it buys things from other countries.This way it helps the world economy keep going.It helps millions of peoplewho live in poorer countries outside the European Union.It tries to make the world a safer placewhere people are treated fairly and laws are respected.",
+        "segmentIndex": 3,
+        "summary": "The European Union facilitates free movement, allowing people to live, study, or work in any member country, alongside the free movement of goods, services, and money. Internationally, the EU plays a significant role by engaging in global trade, supporting the world economy, providing aid to millions in poorer countries outside the union, and promoting safety and respect for laws worldwide.",
+        "standaloneFacts": [
+          "The European Union made it easier for people to move freely from one country to another.",
+          "People can live, study, or work in any country of the European Union they want.",
+          "Things, services, and money can move freely from one country of the European Union to another.",
+          "The European Union sells many things and services to other countries and buys things from other countries.",
+          "The European Union helps millions of people who live in poorer countries outside the European Union.",
+          "The European Union tries to make the world a safer place where people are treated fairly and laws are respected."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "5d0c6f02-6fd5-4652-b6b6-258d6f3f2a45",
+        "segment": "Becoming part of the European UnionTo become part of the European Union,a country must:Agreementagree with all the laws and valuesof the European Union.work to make sure these laws and valuesare respected.This may take a very long time to happen.Some countries are now working to become part of the European Union.These countries are:AlbaniaBosnia and HerzegovinaGeorgiaMoldovaMontenegroNorth MacedoniaSerbiaTürkiyeUkraineTo become part of the European Union,these countries must workto make all laws and values of the European Unionhappen in them.",
+        "segmentIndex": 4,
+        "summary": "To join the European Union (EU), a country must agree with and work to respect all EU laws and values, a process which often takes a long time. Currently, several countries, including Albania, Bosnia and Herzegovina, Georgia, Moldova, Montenegro, North Macedonia, Serbia, Türkiye, and Ukraine, are working towards meeting these requirements for EU membership.",
+        "standaloneFacts": [
+          "To become part of the European Union, a country must agree with all the laws and values of the European Union.",
+          "The process for a country to become part of the European Union can take a very long time.",
+          "Albania is a country currently working to become part of the European Union.",
+          "Bosnia and Herzegovina is a country currently working to become part of the European Union.",
+          "Georgia is a country currently working to become part of the European Union.",
+          "Moldova is a country currently working to become part of the European Union.",
+          "Montenegro is a country currently working to become part of the European Union.",
+          "North Macedonia is a country currently working to become part of the European Union.",
+          "Serbia is a country currently working to become part of the European Union.",
+          "Türkiye is a country currently working to become part of the European Union.",
+          "Ukraine is a country currently working to become part of the European Union."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "9cd5b465-d7ce-42a8-b85e-14ebaf4510d5",
+        "segment": "The Schengen AreaThe European Union made the ‘Schengen Area’.The Schengen Area is an area without borders.In this area, people can travel from country to country freely and easily.They do not have to go through checks and controlswhen they pass from one country to another.Thanks to the Schengen Area, it is now easier for peopleto travel for work or tourism.The Schengen Area was made in 1985.Today 25 out of the 27 countries of the European Unionare part of the Schengen Area.These countries are:AustriaBelgiumBulgariaCroatiaCzechiaDenmarkEstoniaFinlandFranceGermanyGreeceHungaryItalyLatviaLithuaniaLuxembourgMaltaNetherlandsPolandPortugalRomaniaSlovakiaSloveniaSpainSweden",
+        "segmentIndex": 5,
+        "summary": "The European Union created the Schengen Area in 1985 as a borderless zone designed to allow people to travel freely and easily between member countries without going through checks and controls. This arrangement makes travel for work or tourism simpler. Currently, 25 of the 27 European Union countries are members of the Schengen Area.",
+        "standaloneFacts": [
+          "The European Union created the Schengen Area.",
+          "The Schengen Area is an area without borders.",
+          "The Schengen Area was established in 1985.",
+          "Today, 25 out of the 27 countries of the European Union are part of the Schengen Area.",
+          "The EU countries that are part of the Schengen Area are Austria, Belgium, Bulgaria, Croatia, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, and Sweden."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "97d023fe-0f77-437e-bca7-431751795b82",
+        "segment": "Also, 4 countries outside the European Unionare part of the Schengen Area:IcelandLiechtensteinNorwaySwitzerlandThat means that people can travel freely and easilyfrom one of these countries to another.This way it is easier for people to visit any of these countriesfor tourism or for work.Happy travelers Languages of the European UnionIn every country of the European Unionpeople speak their own language.The European Union protects the right of peopleto communicate in their own language.",
+        "segmentIndex": 6,
+        "summary": "Four countries outside the European Union (Iceland, Liechtenstein, Norway, and Switzerland) are members of the Schengen Area, which allows people to travel freely between these nations for work or tourism. Furthermore, the European Union protects the right of people in its member states to communicate in their own language.",
+        "standaloneFacts": [
+          "Four countries outside the European Union are part of the Schengen Area.",
+          "The countries outside the European Union that are part of the Schengen Area are Iceland, Liechtenstein, Norway, and Switzerland.",
+          "The European Union protects the right of people to communicate in their own language.",
+          "People in every country of the European Union speak their own language."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "b608d0c2-f17d-4b50-b604-49bed6b94a27",
+        "segment": "The word 'hello' in different languagesThat is why the European Unionmakes all important information and documentsin all the languages that people speak in its countries:BulgarianCroatianCzechDanishDutchEnglishEstonianFinnishFrenchGermanGreekHungarianIrishItalianLatvianLithuanianMaltesePolishPortugueseRomanianSlovakSlovenianSpanishSwedishThis way all people in the European Unioncan get important information in their own languageand understand it.",
+        "segmentIndex": 7,
+        "summary": "To protect the right of people to communicate in their own language, the European Union translates all important information and documents into the numerous languages spoken across its member countries. This practice ensures that all EU citizens can easily access and understand vital information in their native tongue.",
+        "standaloneFacts": [
+          "The European Union makes all important information and documents available in the languages spoken in its countries.",
+          "The languages used by the European Union for official information and documents include Bulgarian, Croatian, Czech, Danish, Dutch, English, Estonian, Finnish, French, German, Greek, Hungarian, Irish, Italian, Latvian, Lithuanian, Maltese, Polish, Portuguese, Romanian, Slovak, Slovenian, Spanish, and Swedish."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "2d213de2-9780-4d0b-a0b4-5de2f1ad4ab5",
+        "segment": "The coin of the European UnionMost countries that are part of the European Union use the same coin.European moneyThis coin is called ‘Euro’.Using the same coin helps countriesin the European Union to do business together.For example, people from Spaincan buy things they want from Belguimeasily and without extra costs.Using the same coinmakes it easier for people to travel,buy things online from other countriesand have more options.Today, 20 out of 27 European Union countries use the euro.These countries are:AustriaBelgiumCroatiaCyprusEstoniaFinlandFranceGermanyGreeceIrelandItalyLatviaLithuaniaLuxembourgMaltaNetherlandsPortugalSlovakiaSloveniaSpain",
+        "segmentIndex": 8,
+        "summary": "Most countries in the European Union use a common currency called the Euro. This coin facilitates business transactions between member states, making travel and online purchases easier and eliminating extra costs. Currently, 20 out of the 27 European Union countries have adopted the Euro.",
+        "standaloneFacts": [
+          "The common coin of the European Union is called the Euro.",
+          "Today, 20 out of 27 European Union countries use the euro.",
+          "The countries using the Euro are Austria, Belgium, Croatia, Cyprus, Estonia, Finland, France, Germany, Greece, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Portugal, Slovakia, Slovenia, and Spain."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "e66d09ea-67a7-4850-8414-835b574b4635",
+        "segment": "The European flagThis is the flag of the European Union:The flag of the European UnionThe flag of the European Union is blueand has a circle of gold stars on it.It is a symbol that shows that the countries of the European Unionare united and stand by each other.The European anthemEvery country has a melodythat better shows its values and culture as a country.This melody is called ‘anthem’.The European Union has its own anthem too.In 1985, people who make decisionsin the European Unionchose a melody of a very important composerto be the anthem of the European Union.This composer is called Ludwig van Beethoven.Symbol for listening to a melodyThe melody shows how important it isthat all people are free, live in peaceand stand by each other.The European Union believes in these valuesand that is why it has chosen this melodyto be its anthem.If you want to listen to the anthem of the European Union, click here.",
+        "segmentIndex": 9,
+        "summary": "The European Union utilizes specific symbols to represent its values and unity, including its flag and anthem. The EU flag is blue and features a circle of gold stars, symbolizing the unity and mutual support among its member countries. The EU anthem, chosen in 1985, is a melody composed by Ludwig van Beethoven that emphasizes the importance of freedom, peace, and solidarity.",
+        "standaloneFacts": [
+          "The flag of the European Union is blue and has a circle of gold stars on it.",
+          "The European Union flag is a symbol of unity among its countries.",
+          "The European Union chose its anthem in 1985.",
+          "The composer of the melody chosen as the European Union's anthem is Ludwig van Beethoven.",
+          "The European Union anthem shows the importance of all people being free, living in peace, and standing by each other."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "94d024af-1759-451e-afa2-bcdf5546ce91",
+        "segment": "United in diversityThe European Union uses the phrase ‘united in diversity’to show what its values are.Being united in diversity means that:People holding hands in circlepeople in the European Unionmay have different cultures or languagesbut they stand by each otherand work together in peace.there is nothing wrongabout having different languages or cultures.On the contrary.People with different culturescan learn more things from each other and work well together.",
+        "segmentIndex": 10,
+        "summary": "The European Union uses the phrase 'united in diversity' to represent its core values. This concept highlights that while EU citizens may have diverse cultures and languages, they stand by each other, work together peacefully, and benefit from mutual learning and cooperation.",
+        "standaloneFacts": [
+          "The European Union uses the phrase ‘united in diversity’ to show what its values are.",
+          "The phrase ‘united in diversity’ means that people in the European Union, despite having different cultures or languages, stand by each other and work together in peace."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "d9fb13fc-4afd-4271-85b4-37348c2e4061",
+        "segment": "How the European Union worksThe European Union has 3 main bodies:the European CommissionThe people of the European Commissionsuggest laws for the European Union.Symbol of the European Parliamentthe European ParliamentThe people of the European Parliamentare elected by all people in Europeto stand for their rights.Symbol of the Council of the European Unionthe Council of the European UnionPeople who make decisionsin every country of the European Unioncome together and makethe Council of the European Union.",
+        "segmentIndex": 11,
+        "summary": "The European Union (EU) operates using three main bodies: the European Commission, the European Parliament, and the Council of the European Union. The Commission suggests laws, the Parliament's members are elected by EU citizens to stand for their rights, and the Council consists of decision-makers from every EU member country.",
+        "standaloneFacts": [
+          "The European Union has three main bodies.",
+          "The European Commission suggests laws for the European Union.",
+          "Members of the European Parliament are elected by all people in Europe to stand for their rights.",
+          "The Council of the European Union is formed by decision-makers from every country of the European Union."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "8b5edc42-182f-417a-9458-72e18738395c",
+        "segment": "These 3 bodies are very important for the European Union.They work closely together to make things better in Europe:The European Commission suggests laws.The European Parliamentand the Council of the European Uniondiscuss these laws and decide if they want these lawsto happen in Europe.If they decide that a law must happen in Europe,all countries of the European Unionmust work to make this law happen in them.Other bodies that are important for the European Union are:The Court of Justice of the European Unionthat makes sure that all laws happen correctlyin the European Union.the Court of Auditorsthat checks if the money of the European Unionis spent in the right way.",
+        "segmentIndex": 12,
+        "summary": "The three main bodies of the EU (Commission, Parliament, and Council) work together to create legislation. The European Commission suggests laws, which the European Parliament and the Council of the European Union discuss and decide upon. Additionally, the EU has the Court of Justice to ensure laws are correctly implemented and the Court of Auditors to check that EU money is spent properly.",
+        "standaloneFacts": [
+          "The European Commission suggests laws for the European Union.",
+          "The European Parliament and the Council of the European Union discuss and decide on suggested laws.",
+          "If a law is decided upon, all countries of the European Union must work to make this law happen in them.",
+          "The Court of Justice of the European Union makes sure that all laws happen correctly in the European Union.",
+          "The Court of Auditors checks if the money of the European Union is spent in the right way."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_eu-simplified",
+        "id": "7b4f092f-f838-4ad1-bbde-04a30082e721",
+        "segment": "There are also other bodies of the European Unionthat are doing important work.For example, there are bodies that:A listcheck if the European Union works in the rightway and respects the rights of all people.publish useful informationabout the European Union.choose the people who have the skillsto work for the European Union.stand for the rights of all people in Europelike people with disabilities, workers and others.All these bodies work together to make sure that the European Union worksin the right way for the good of its people.",
+        "segmentIndex": 13,
+        "summary": "The European Union utilizes various specialized bodies beyond its core institutions to perform essential functions. These roles include ensuring the EU operates correctly and respects human rights, publishing necessary information, managing staff selection, and advocating for the rights of specific populations, such as workers and people with disabilities. All these bodies collaborate to guarantee the European Union works effectively for the benefit of its citizens.",
+        "standaloneFacts": [
+          "Some bodies of the European Union check if the organization works correctly and respects the rights of all people.",
+          "Some bodies of the European Union publish useful information about the EU.",
+          "Some bodies of the European Union choose the people who have the skills to work for the organization.",
+          "Some bodies of the European Union stand for the rights of specific groups, including people with disabilities and workers."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 14,
+        "totalCharacters": 9588,
+        "averageSegmentLength": 653.8571428571429,
+        "minSegmentLength": 450,
+        "maxSegmentLength": 968,
+        "segmentLengths": [
+          937,
+          468,
+          968,
+          856,
+          548,
+          675,
+          490,
+          450,
+          655,
+          918,
+          467,
+          510,
+          674,
+          538
+        ],
+        "nLlmCalls": 1,
+        "costs": {
+          "total": 0.0055507,
+          "input": 0.0007032000000000001,
+          "output": 0.0048475
+        },
+        "tokens": {
+          "totalTokens": 10091,
+          "inputTokens": 2344,
+          "outputTokens": 1939
+        },
+        "processingTimeMs": 36286
+      },
+      "analysis": {
+        "nSegments": 14,
+        "nFactsExtracted": 62,
+        "nLlmCalls": 15,
+        "costs": {
+          "total": 0.009775299999999997,
+          "input": 0.0032553,
+          "output": 0.006520000000000001
+        },
+        "tokens": {
+          "totalTokens": 23188,
+          "inputTokens": 10851,
+          "outputTokens": 2608
+        },
+        "processingTimeMs": 52163
+      }
+    }
+  },
+  "llmMetrics": {
+    "processingTimeMs": 88449,
+    "nLlmCalls": 16,
+    "costs": {
+      "total": 0.015325999999999998,
+      "input": 0.0039585,
+      "output": 0.011367500000000001
+    },
+    "tokens": {
+      "totalTokens": 33279,
+      "inputTokens": 13195,
+      "outputTokens": 4547
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025"
+    ],
+    "language": "en",
+    "startTime": "2025-10-20T14:29:07.284Z",
+    "endTime": "2025-10-20T14:29:59.447Z"
+  }
+}
