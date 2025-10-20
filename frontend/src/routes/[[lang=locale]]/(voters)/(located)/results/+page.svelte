@@ -129,7 +129,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // Update limited nominations warning
   let hasLimitedNominations = false;
   $: if (activeElectionId) {
-    hasLimitedNominations = ($matches[activeElectionId].candidate ?? []).length < 5;
+    const n = ($matches[activeElectionId].candidate ?? []).length;
+    hasLimitedNominations = n !== 0 && n < 5;
   }
 
   /** Set initial tab based on activeEntityType */
