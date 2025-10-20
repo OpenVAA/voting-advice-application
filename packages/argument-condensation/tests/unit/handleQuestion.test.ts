@@ -19,6 +19,14 @@ const noOpLogger: Controller = {
 
 // Mock LLMProvider for new API
 const mockLLMProvider = {
+  config: {
+    provider: 'openai' as const,
+    apiKey: 'test-api-key',
+    modelConfig: {
+      primary: 'gpt-4o',
+      tpmLimit: 30000
+    }
+  },
   generateObject: () => {
     throw new Error('Method not implemented.');
   },
@@ -63,7 +71,6 @@ describe('handleQuestion', () => {
         options: {
           language: unsupportedLanguage,
           llmProvider: mockLLMProvider,
-          llmModel: 'gpt-4o',
           runId: 'test-run',
           maxCommentsPerGroup: 1000,
           controller: noOpLogger

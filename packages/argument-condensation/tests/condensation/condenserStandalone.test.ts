@@ -142,11 +142,11 @@ describe('Condenser Standalone Test', () => {
     expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertPros);
 
     // Check metrics
-    expect(result.metrics).toBeDefined();
-    expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
-    expect(result.metrics.duration).toBeGreaterThan(0);
-    expect(result.metrics.tokens).toBeDefined();
-    expect(result.metrics.tokens.totalTokens).toBeGreaterThan(0);
+    expect(result.llmMetrics).toBeDefined();
+    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
+    expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);
+    expect(result.llmMetrics.tokens).toBeDefined();
+    expect(result.llmMetrics.tokens.totalTokens).toBeGreaterThan(0);
 
     // Verify LLM provider was called
     expect(input.options.llmProvider.generateObjectParallel).toHaveBeenCalled();
@@ -186,7 +186,7 @@ describe('Condenser Standalone Test', () => {
     const result = await condenser.run();
 
     expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertCons);
-    expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
+    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
   });
 
   test('It should handle empty comments gracefully', async () => {
