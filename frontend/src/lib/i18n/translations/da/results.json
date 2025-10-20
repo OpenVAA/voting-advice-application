@@ -32,5 +32,5 @@
     "browse": "Gennemse {candidatePlural} og {partyPlural}",
     "results": "Resultater"
   },
-  "fewCandidatesWarning": "OBS: Antallet af kandidater, der har besvaret valgtesten i denne kommune, er begrænset. Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet."
+  "fewCandidatesWarning": "OBS: Antallet af kandidater, der har besvaret valgtesten i denne kommune eller region, er begrænset. Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet."
 }
