@@ -47,6 +47,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import type { Id } from '@openvaa/core';
   import type { Election } from '@openvaa/data';
   import Hero from '$lib/components/hero/Hero.svelte';
+  import { Icon } from '$lib/components/icon';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -123,6 +124,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
   $: if (activeElectionId) {
     activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
     setInitialEntityTab();
+  }
+
+  // Update limited nominations warning
+  let hasLimitedNominations = false;
+  $: if (activeElectionId) {
+    hasLimitedNominations = ($matches[activeElectionId].candidate ?? []).length < 5;
   }
 
   /** Set initial tab based on activeEntityType */
@@ -215,7 +222,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <div class="mb-xl text-center">
     {#if $resultsAvailable}
-      <p>{$t('dynamic.results.ingress.results')}</p>
+      <p>{@html sanitizeHtml($t('dynamic.results.ingress.results'))}</p>
     {:else}
       <p>
         {@html sanitizeHtml(
@@ -247,6 +254,13 @@ The nominations applicable to these elections and constituencies are shown. Thes
         {activeElection.info}
       </p>
     {/if}
+  {/if}
+
+  {#if hasLimitedNominations}
+    <p transition:slide={{ duration: DELAY.sm }} class="text-warning text-center text-sm">
+      <Icon name="warning" />
+      {$t('results.fewCandidatesWarning')}
+    </p>
   {/if}
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
