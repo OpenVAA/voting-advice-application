@@ -67,7 +67,6 @@
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/filters": "workspace:^",
-    "@openvaa/llm": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
     "@openvaa/matching": "workspace:^",
     "@openvaa/question-info": "workspace:^",
@@ -78,7 +77,8 @@
     "isomorphic-dompurify": "^2.19.0",
     "jose": "^5.9.6",
     "qs": "^6.13.1",
-    "sveltekit-i18n": "^2.4.2"
+    "sveltekit-i18n": "^2.4.2",
+    "zod": "^4.0.0"
   },
   "packageManager": "yarn@4.6.0"
 }
