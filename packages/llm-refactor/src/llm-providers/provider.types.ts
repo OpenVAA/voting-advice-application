@@ -15,6 +15,9 @@ import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 // COMMON
 // ------------------------------------------------------------
 
+// TODO: check that model pricing is internally handled and that it is required only if 
+// we don't have up-to-date info on the specific model. Also we need separate config for 
+// fallback model. 
 export interface LLMModelConfig {
   primary: string;
   fallback?: string;
@@ -25,7 +28,7 @@ export interface LLMModelConfig {
 
 /** An LLM provider orchestrates LLM calls. This configures how the LLM provider will be used. */
 export interface ProviderConfig {
-  provider: 'openai'; // add others as needed
+  provider: 'openai' | 'google'; // add others as needed
   apiKey: string; // Make optional if .env var is modified to OPENAI_API_KEY & Vercel AI SDK can automatically find it. Otherwise, keep it as required.
   modelConfig: LLMModelConfig;
 }
@@ -45,11 +48,11 @@ export interface LLMCallMetadata {
 
 export type LLMObjectGenerationOptions<TType> = Prompt &
   Omit<CallSettings, 'stopSequences'> & {
-    modelConfig: LLMModelConfig;
     schema: z.ZodSchema<TType>; // Support only Zod schemas for now
     /** Validation retries are not internally handled by the Vercel AI SDK, so we need to handle it here. Defaults to 1. */
     validationRetries?: number;
     controller?: Controller;
+    modelConfig?: LLMModelConfig;
   };
 
 export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMCallMetadata;

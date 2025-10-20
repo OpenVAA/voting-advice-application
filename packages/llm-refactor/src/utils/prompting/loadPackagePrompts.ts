@@ -1,4 +1,3 @@
-
 /**
  * Extract all variable placeholders from prompt text
  *

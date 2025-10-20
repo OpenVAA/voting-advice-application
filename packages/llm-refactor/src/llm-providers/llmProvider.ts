@@ -1,3 +1,4 @@
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
@@ -11,10 +12,16 @@ import type {
   ProviderConfig
 } from './provider.types';
 
+// TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
+// Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
+// TODO: implement fallback model usage
+// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
+
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
   private provider: Provider;
-  private config: ProviderConfig;
+  public config: ProviderConfig;
+  public cumulativeCosts: number = 0;
 
   constructor(config: ProviderConfig) {
     this.config = config;
@@ -25,6 +32,8 @@ export class LLMProvider {
     switch (config.provider) {
       case 'openai':
         return createOpenAI({ apiKey: config.apiKey });
+      case 'google':
+        return createGoogleGenerativeAI({ apiKey: config.apiKey });
       // Add other providers as needed and update the provider config to support them
       default:
         throw new Error(`Unsupported provider: ${config.provider}`);
@@ -55,7 +64,7 @@ export class LLMProvider {
       try {
         // Check if an abort has been requested. Throws AbortError if so.
         options.controller?.checkAbort();
-        const model = options.modelConfig.primary; // TODO: add fallback selection
+        const model = options.modelConfig?.primary ?? this.config.modelConfig.primary; // TODO: add fallback selection & osv.
 
         // Generation call which throws on validation failures
         const result = await generateObject({
@@ -66,7 +75,8 @@ export class LLMProvider {
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
 
-        const costs = this.calculateCosts(options.modelConfig.primary, result.usage);
+        const costs = this.calculateCosts(model, result.usage);
+        this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
         return {
           ...result,
@@ -98,7 +108,7 @@ export class LLMProvider {
       }`
     );
   }
-  /** Generate multiple objects in parallel with validation retries. 
+  /** Generate multiple objects in parallel with validation retries.
    *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially,
    *  so each batch is as slow as the slowest request in the batch.
    * @param requests - The requests to make
@@ -152,6 +162,7 @@ export class LLMProvider {
     return results;
   }
 
+  // TODO: aborting logic for streaming
   /**
    * Stream text from the LLM
    * @param options - The options for the stream text
@@ -163,10 +174,10 @@ export class LLMProvider {
    *   modelConfig: {
    *     primary: 'gpt-4o-mini'
    *   },
-   *   messages: [{ role: 'user', content: 'What's yar favorite meal?' }]
+   *   messages: [{ role: 'user', content: 'Whats yar favorite meal?' }]
    * });
    * ```
-   */
+   */ 
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
 
@@ -180,6 +191,7 @@ export class LLMProvider {
 
     // Calculate costs asynchronously without blocking the return.
     const costs = result.usage.then((usage) => this.calculateCosts(options.modelConfig?.primary ?? '', usage));
+    costs.then((costs) => (this.cumulativeCosts += costs.total));
 
     const enhancedResult = Object.assign(result, {
       latencyMs: performance.now() - startTime,
@@ -188,13 +200,13 @@ export class LLMProvider {
       fallbackUsed: false
     });
 
-    return enhancedResult as unknown as LLMStreamResult<TOOLS>;
+    return enhancedResult as unknown as LLMStreamResult<TOOLS>; // it is this type, even if TS doesn't believe
   }
 
   private calculateCosts(model: string, usage: TokenUsage) {
     const pricing = getModelPricing(this.config.provider, model);
     return calculateLLMCost({
-      pricing,
+      pricing: pricing ?? { input: 0, output: 0 }, // fallback to zero (TODO: should we do this inside the util?)
       usage: usage,
       useCachedInput: this.config.modelConfig.useCachedInput
     });

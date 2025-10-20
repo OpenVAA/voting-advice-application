@@ -6,19 +6,7 @@ import type { LLMProvider } from '../llm-providers/llmProvider';
  */
 export interface CommonLLMParams {
   runId: string;
-
-  /** The LLM provider to use, e.g. OpenAIProvider */
   llmProvider: LLMProvider;
-
-  /** The LLM model to use */
-  llmModel: string;
-
-  /** The fallback LLM model in case of errors and for general flexibility */
-  fallbackModel?: string;
-
-  /** The number of tokens per minute the LLM model can handle */
-  modelTPMLimit?: number;
-
   /** Optional controller for tracking progress */
   controller?: Controller;
 }
