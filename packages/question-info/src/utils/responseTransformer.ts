@@ -35,15 +35,15 @@ export function transformResponse({
   return {
     runId,
     data: questionData,
-    metrics: {
-      duration: llmResponse.latencyMs / 1000, // Convert ms to seconds
+    llmMetrics: {
+      processingTimeMs: llmResponse.latencyMs,
       nLlmCalls: llmResponse.attempts,
-      cost: llmResponse.costs.total,
+      costs: llmResponse.costs,
       tokens: llmResponse.usage
     },
     success,
     metadata: {
-      llmModel: llmResponse.model,
+      modelsUsed: [llmResponse.response.modelId],
       language,
       startTime,
       endTime
