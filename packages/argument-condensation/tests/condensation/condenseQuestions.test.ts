@@ -25,6 +25,14 @@ const noOpLogger: Controller = {
 
 // Mock LLM Provider for new API
 const mockLLMProvider = {
+  config: {
+    provider: 'openai' as const,
+    apiKey: 'test-api-key',
+    modelConfig: {
+      primary: 'gpt-4o',
+      tpmLimit: 30000
+    }
+  },
   generateObject: vi.fn().mockResolvedValue({
     object: {
       arguments: [
@@ -130,7 +138,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -207,7 +214,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -261,7 +267,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
@@ -312,7 +317,6 @@ describe('handleQuestion', () => {
         entities,
         options: {
           llmProvider: mockLLMProvider,
-          llmModel: 'gpt-4o',
           language: 'en',
           runId: 'test-run-invalid-prompts',
           maxCommentsPerGroup: 1000,
@@ -376,7 +380,6 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: uniqueId,
         maxCommentsPerGroup: 1000,

@@ -1,4 +1,3 @@
-import type { Controller } from '@openvaa/core';
 import type { CommonLLMParams } from '@openvaa/llm-refactor';
 import type { CondensationOutputType } from './condensationType';
 import type { ProcessingStep } from './processDefinition';
@@ -70,8 +69,6 @@ export interface CondensationOptions extends CommonLLMParams {
   createVisualizationData: boolean;
   /** The number of parallel batches to use for parallelizable operations */
   parallelBatches?: number;
-  /** Optional controller for progress and warning reporting */
-  controller?: Controller;
 }
 
 /**
