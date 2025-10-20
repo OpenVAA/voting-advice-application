@@ -2,7 +2,7 @@
   "about": {
     "heroEmoji": "⚙️"
   },
-  "appName": "Valgtest",
+  "appName": "Danmarks Unge Valgtest",
   "candidateAppBasicInfo": {
     "immutableData": {
       "title": "Personlige oplysninger",
@@ -35,9 +35,9 @@
   "constituencies": {
     "heroEmoji": "📍",
     "ingress": {
-      "multipleElections": "Kandidater og partier er opdelt i valgkredse. Vælg en valgkreds for hvert valg.",
+      "multipleElections": "Vælg den kommune du bor i. Din region bliver udfyldt automatisk",
       "singleElection": "Kandidater og partier er opdelt i valgkredse. Du kan kun stemme på dem i din valgkreds.",
-      "singleGroup": "Kandidater og partier er opdelt i valgkredse. Vælg en valgkreds nedenfor."
+      "singleGroup": "Vælg den kommune du bor i. Din region bliver udfyldt automatisk"
     }
   },
   "elections": {
@@ -51,8 +51,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Med denne applikation kan du sammenligne kandidater og partier baseret på deres holdninger, partier og andre oplysninger.",
-    "startButton": "Find de bedste kandidater og partier!"
+    "ingress": "I denne valgtest, kan du finde ud af, hvilken ung kandidat, du er mest enig med til kommunal- og regionalvalget 18. november 2025.",
+    "startButton": "Find ud af hvilken ung kandidat du er mest enig med"
   },
   "info": {
     "content": "Læs mere om valgene nedenfor.",
@@ -62,7 +62,7 @@
   "intro": {
     "continue": "Fortsæt",
     "heroEmoji": "🚀",
-    "ingress": "Denne applikation hjælper dig med at finde de {candidatePlural} og {partyPlural}, der matcher dine holdninger bedst i valget.",
+    "ingress": "Denne valgtest hjælper dig med at finde de kandidater, der matcher dine holdninger bedst til kommunal- og regionalvalget. Alle kandidater i valgtesten er 30 år eller derunder.",
     "list": {
       "constituencies": "Vælg din valgkreds",
       "elections": "Vælg et valg",
@@ -94,10 +94,10 @@
   "results": {
     "heroEmoji": "🎊",
     "ingress": {
-      "browse": "Dette er de {candidatePlural} og {partyPlural}, der stiller op til disse valg, sorteret efter listesymbol eller navn. Du kan bruge filtrene til at indsnævre listen.",
-      "results": "Dette er de {candidatePlural} og {partyPlural}, der stiller op til disse valg. De bedste match vises øverst. Du kan bruge filtrene til at indsnævre resultaterne."
+      "browse": "<p>Dette er de kandidater, der stiller op til valget i din kommune og din region. Du kan bruge filtrene til at indsnævre resultaterne.</p><p>Vær opmærksom på, at antallet af kandidater, der har besvaret valgtesten i nogle kommuner og regioner, er begrænset. Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet.</p>",
+      "results": "<p>Dette er de kandidater, der stiller op til valget i din kommune og din region. De kandidater du er mest enig med vises øverst. Du kan bruge filtrene til at indsnævre resultaterne.</p><p>Vær opmærksom på, at antallet af kandidater, der har besvaret valgtesten i nogle kommuner og regioner, er begrænset. Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet.</p>"
     },
-    "multipleElections": "Vælg først nedenfor, hvilket valgs {candidatePlural} og {partyPlural} du vil se, og derefter om du vil se {candidatePlural} eller {partyPlural}."
+    "multipleElections": "Vælg nedenfor om du vil se kandidater til kommunalvalget eller regionalvalget."
   },
   "statistics": {
     "heroEmoji": "🧮"

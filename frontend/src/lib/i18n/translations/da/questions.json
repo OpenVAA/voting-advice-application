@@ -14,7 +14,7 @@
   "intro": {
     "ingress": {
       "withCategorySelection": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. {minQuestions, plural, =0 {} =1 {} other {Vælg dog nok kategorier til at få mindst # spørgsmål i alt.}}",
-      "withoutCategorySelection": "Besvar nu {numQuestions} spørgsmål om politik og værdier. {numCategories, plural, =0 {} =1 {} other {Spørgsmålene er opdelt i # kategorier.}}"
+      "withoutCategorySelection": "Valgtesten indeholder {numQuestions} spørgsmål om dine holdninger. Der er først 20 spørgsmål om kommunalpolitik og derefter 12 spørgsmål om regionalpolitik. {numCategories, plural, =0 {} =1 {} other {Spørgsmålene er opdelt i # kategorier.}}"
     },
     "start": "Besvar {numQuestions} spørgsmål"
   },
@@ -23,5 +23,6 @@
   "remove": "Slet svar",
   "skip": "Spring over",
   "skipToResults": "Gå direkte til resultater",
-  "title": "Holdninger"
+  "title": "Holdninger",
+  "electionSeparatorIngress": "Du har går nu videre til at svare på 12 spørgsmål om regionalvalget"
 }

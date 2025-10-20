@@ -8,7 +8,7 @@
   "faction": {
     "numShown": "{numShown, plural, =0 {Ingen fraktioner} =1 {1 fraktion} other {# fraktioner}}"
   },
-  "inConstituency": "i valgkreds",
+  "inConstituency": "i",
   "ingress": {
     "answerMinQuestions": "Hvis du vil finde de {candidatePlural} og {partyPlural}, du er mest enig med, så {questionsLink} først.",
     "questionsLinkText": "besvar mindst {numQuestions, plural, =1 {ét spørgsmål} other {# spørgsmål}}"
@@ -31,5 +31,6 @@
   "title": {
     "browse": "Gennemse {candidatePlural} og {partyPlural}",
     "results": "Resultater"
-  }
+  },
+  "fewCandidatesWarning": "OBS: Antallet af kandidater, der har besvaret valgtesten i denne kommune, er begrænset. Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet."
 }

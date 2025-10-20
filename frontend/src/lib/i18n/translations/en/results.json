@@ -31,5 +31,6 @@
   "title": {
     "browse": "Browse {candidatePlural} and {partyPlural}",
     "results": "Results"
-  }
+  },
+  "fewCandidatesWarning": "Note: The number of candidates who have completed the election compass in this municipality is limited. The results should therefore be interpreted with caution, as they do not necessarily provide a comprehensive picture of the entire field of candidates."
 }
