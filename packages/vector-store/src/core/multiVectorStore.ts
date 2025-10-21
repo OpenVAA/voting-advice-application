@@ -280,13 +280,26 @@ export class MultiVectorStore {
     // Reconstruct enriched segments
     let enrichedSegments = reconstructSegmentWithAnalysis(segments, summaries, facts);
 
-    // Apply intelligent filtering if enabled
+    // Apply intelligent filtering if enabled and track costs
+    let filteringCosts: { total: number; input?: number; output?: number } | undefined;
     if (intelligentSearch && llmProvider) {
+      const costsBefore = llmProvider.cumulativeCosts;
+
       const filteredSegments = await filterSearchResults({
         query,
         segments,
         provider: llmProvider
       });
+
+      const costsAfter = llmProvider.cumulativeCosts;
+      const filteringCostTotal = costsAfter - costsBefore;
+
+      // Create cost object (we only know total from cumulative delta)
+      filteringCosts = {
+        total: filteringCostTotal,
+        input: 0, // Cannot separate without detailed tracking
+        output: 0 // Cannot separate without detailed tracking
+      };
 
       // Filter enriched segments to only include filtered segment IDs
       const filteredIds = new Set(filteredSegments.map((s) => s.id));
@@ -320,7 +333,8 @@ export class MultiVectorStore {
         fromSummaries: segmentIdsFromSummaries.length,
         fromFacts: segmentIdsFromFacts.size
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      filteringCosts
     };
   }
 

@@ -1,5 +1,6 @@
 import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
 import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { CostBreakdown } from '@openvaa/core';
 import type { Embedder } from './embedder.type';
 import type { EnrichedSegment } from './types';
 
@@ -82,6 +83,8 @@ export interface MultiVectorSearchResult {
   };
   /** Timestamp when search was performed */
   timestamp: number;
+  /** Costs incurred from intelligent filtering (if enabled) */
+  filteringCosts?: CostBreakdown;
 }
 
 /**

@@ -23,9 +23,17 @@
 
   // Metadata tracking interfaces
   interface CostInfo {
-    input: number;
-    output: number;
-    reasoning?: number;
+    llm: {
+      input: number;
+      output: number;
+      reasoning?: number;
+      total: number;
+    };
+    filtering: {
+      input: number;
+      output: number;
+      total: number;
+    };
     total: number;
     timestamp: number;
   }
@@ -233,9 +241,8 @@
         costs = [
           ...costs,
           {
-            input: data.cost.input,
-            output: data.cost.output,
-            reasoning: data.cost.reasoning,
+            llm: data.cost.llm,
+            filtering: data.cost.filtering,
             total: data.cost.total,
             timestamp: data.timestamp
           }
@@ -472,6 +479,12 @@
             <div class="text-xl font-bold text-blue-600">
               ${lastCost.toFixed(4)}
             </div>
+            {#if costs.length > 0}
+              <div class="text-xs text-gray-500 mt-1">
+                LLM: ${costs[costs.length - 1].llm.total.toFixed(4)}<br/>
+                Filter: ${costs[costs.length - 1].filtering.total.toFixed(4)}
+              </div>
+            {/if}
           </div>
 
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
@@ -675,6 +688,13 @@
                   <span class="font-bold text-blue-600">
                     ${cost.total.toFixed(4)}
                   </span>
+                </div>
+                <div class="space-y-1 text-xs text-gray-600 mb-2">
+                  <div class="font-semibold text-gray-700">Cost Breakdown:</div>
+                  <div class="grid grid-cols-2 gap-1">
+                    <div>LLM: ${cost.llm.total.toFixed(4)}</div>
+                    <div>Filter: ${cost.filtering.total.toFixed(4)}</div>
+                  </div>
                 </div>
                 {#if latency}
                   <div class="space-y-1 text-xs text-gray-600">

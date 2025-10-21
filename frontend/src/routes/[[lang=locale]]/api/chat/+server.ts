@@ -199,10 +199,14 @@ export async function POST({ request, params }: { request: Request; params: any 
           encoder.encode(
             `data: ${JSON.stringify({
               cost: {
-                input: costs.input,
-                output: costs.output,
-                reasoning: costs.reasoning,
-                total: costs.total
+                llm: {
+                  input: costs.input,
+                  output: costs.output,
+                  reasoning: costs.reasoning,
+                  total: costs.total
+                },
+                filtering: ragResult?.filteringCosts || { input: 0, output: 0, total: 0 },
+                total: costs.total + (ragResult?.filteringCosts?.total || 0)
               },
               latency: {
                 gaterDuration,
