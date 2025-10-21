@@ -26,7 +26,7 @@ export class MultiVectorStore {
 
   constructor(config: MultiVectorStoreConfig) {
     this.config = config;
-    this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : undefined);
+    this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : {});
 
     // Determine embedders
     const segmentEmbedder = config.embedders?.segments || config.embedder;

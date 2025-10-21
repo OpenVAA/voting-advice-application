@@ -9,13 +9,17 @@ import type { SourceSegment } from '../types/source.types';
 // RESPONSE SCHEMA
 // ----------------------------------------
 const searchResultFilteringSchema = z.object({
-  reasoning: z.string(),
   acceptedIndices: z.array(z.number())
 });
 
-// TODO: split the segments into multiple prompts and parallel them, if there are too many, e.g. >10
+// ----------------------------------------
+// CONSTANTS
+// ----------------------------------------
+const BATCH_SIZE = 3;
+
 /**
  * Filters search results using LLM to determine relevance to query
+ * Batches segments into groups of 3 and processes them in parallel for improved performance
  *
  * @param query - The user's search query
  * @param segments - Array of segments to filter
@@ -43,31 +47,52 @@ export async function filterSearchResults({
 }): Promise<Array<SourceSegment>> {
   if (segments.length === 0) return [];
 
-  // Load prompt
+  // Load prompt template once
   const promptTemplate = (await loadPrompt({ promptFileName: 'searchResultFiltering' })).prompt;
 
-  // Format segments with indices (no metadata)
-  const formattedResults = segments.map((segment, idx) => `[${idx}] ${segment.content}`).join('\n\n');
+  // Split segments into batches of BATCH_SIZE
+  const batches: Array<{ segments: Array<SourceSegment>; startIndex: number }> = [];
+  for (let i = 0; i < segments.length; i += BATCH_SIZE) {
+    batches.push({
+      segments: segments.slice(i, i + BATCH_SIZE),
+      startIndex: i
+    });
+  }
 
-  // Fill prompt variables
-  const filledPrompt = setPromptVars({
-    promptText: promptTemplate,
-    variables: {
-      query,
-      searchResults: formattedResults
-    }
-  });
+  // Process batches in parallel
+  const batchResults = await Promise.all(
+    batches.map(async ({ segments: batchSegments, startIndex }) => {
+      // Format segments with 0-based indices for this batch
+      const formattedResults = batchSegments
+        .map((segment, idx) => `[${idx}] ${segment.content}`)
+        .join('\n\n');
 
-  // Call LLM
-  const response = await provider.generateObject({
-    messages: [{ role: 'user', content: filledPrompt } as ModelMessage],
-    schema: searchResultFilteringSchema,
-    temperature: 0,
-    maxRetries: 3,
-    validationRetries: 3
-  });
+      // Fill prompt variables
+      const filledPrompt = setPromptVars({
+        promptText: promptTemplate,
+        variables: {
+          query,
+          searchResults: formattedResults
+        }
+      });
+
+      // Call LLM
+      const response = await provider.generateObject({
+        messages: [{ role: 'user', content: filledPrompt } as ModelMessage],
+        schema: searchResultFilteringSchema,
+        temperature: 0,
+        maxRetries: 3,
+        validationRetries: 3
+      });
+
+      // Map batch indices back to original indices
+      return response.object.acceptedIndices.map((batchIdx) => startIndex + batchIdx);
+    })
+  );
+
+  // Flatten all accepted indices
+  const acceptedIndices = new Set(batchResults.flat());
 
   // Filter segments based on accepted indices
-  const acceptedIndices = new Set(response.object.acceptedIndices);
   return segments.filter((_, idx) => acceptedIndices.has(idx));
 }
