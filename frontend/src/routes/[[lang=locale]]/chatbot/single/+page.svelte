@@ -29,6 +29,11 @@
       reasoning?: number;
       total: number;
     };
+    reformulation: {
+      input: number;
+      output: number;
+      total: number;
+    };
     filtering: {
       input: number;
       output: number;
@@ -39,11 +44,11 @@
   }
 
   interface LatencyInfo {
-    gaterDuration: number; // ms to determine if RAG is needed
+    reformulationDuration: number; // ms to reformulate query into standalone version
     retrievalDuration: number; // ms to fetch from vector store (0 if RAG not used)
     timeToFirstToken: number; // ms from LLM stream start to first token (LLM latency only)
     messageTime: number; // ms from LLM stream start to completion (LLM generation time)
-    totalTime: number; // ms end-to-end (gating + retrieval + message generation)
+    totalTime: number; // ms end-to-end (reformulation + retrieval + message generation)
     tokensPerSecond?: number; // output tokens / second
     timestamp: number;
   }
@@ -69,11 +74,11 @@
   $: maxCost = costs.length > 0 ? Math.max(...costs.map(c => c.total)) : 0;
 
   // Latency calculation helpers
-  // RAG Gating metrics
-  $: lastGaterDuration = latencies.length > 0 ? latencies[latencies.length - 1].gaterDuration : 0;
-  $: averageGaterDuration = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.gaterDuration, 0) / latencies.length : 0;
-  $: minGaterDuration = latencies.length > 0 ? Math.min(...latencies.map(l => l.gaterDuration)) : 0;
-  $: maxGaterDuration = latencies.length > 0 ? Math.max(...latencies.map(l => l.gaterDuration)) : 0;
+  // Query Reformulation metrics
+  $: lastReformulationDuration = latencies.length > 0 ? latencies[latencies.length - 1].reformulationDuration : 0;
+  $: averageReformulationDuration = latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.reformulationDuration, 0) / latencies.length : 0;
+  $: minReformulationDuration = latencies.length > 0 ? Math.min(...latencies.map(l => l.reformulationDuration)) : 0;
+  $: maxReformulationDuration = latencies.length > 0 ? Math.max(...latencies.map(l => l.reformulationDuration)) : 0;
 
   // RAG Retrieval metrics
   $: lastRetrievalDuration = latencies.length > 0 ? latencies[latencies.length - 1].retrievalDuration : 0;
@@ -242,6 +247,7 @@
           ...costs,
           {
             llm: data.cost.llm,
+            reformulation: data.cost.reformulation,
             filtering: data.cost.filtering,
             total: data.cost.total,
             timestamp: data.timestamp
@@ -254,7 +260,7 @@
         latencies = [
           ...latencies,
           {
-            gaterDuration: data.latency.gaterDuration,
+            reformulationDuration: data.latency.reformulationDuration,
             retrievalDuration: data.latency.retrievalDuration,
             timeToFirstToken: data.latency.timeToFirstToken,
             messageTime: data.latency.messageTime,
@@ -482,6 +488,7 @@
             {#if costs.length > 0}
               <div class="text-xs text-gray-500 mt-1">
                 LLM: ${costs[costs.length - 1].llm.total.toFixed(4)}<br/>
+                Reformulate: ${costs[costs.length - 1].reformulation.total.toFixed(4)}<br/>
                 Filter: ${costs[costs.length - 1].filtering.total.toFixed(4)}
               </div>
             {/if}
@@ -533,16 +540,16 @@
           <h4 class="font-semibold text-sm text-gray-700 mb-2">RAG Timing</h4>
           <div class="gap-2 grid grid-cols-2 mb-2">
             <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
-              <div class="mb-1 text-xs text-gray-500">Gating (Last)</div>
+              <div class="mb-1 text-xs text-gray-500">Reformulation (Last)</div>
               <div class="text-lg font-bold text-blue-600">
-                {lastGaterDuration.toFixed(0)}ms
+                {lastReformulationDuration.toFixed(0)}ms
               </div>
             </div>
 
             <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
-              <div class="mb-1 text-xs text-gray-500">Gating (Avg)</div>
+              <div class="mb-1 text-xs text-gray-500">Reformulation (Avg)</div>
               <div class="text-lg font-bold text-green-600">
-                {averageGaterDuration.toFixed(0)}ms
+                {averageReformulationDuration.toFixed(0)}ms
               </div>
             </div>
 
@@ -561,7 +568,7 @@
             </div>
           </div>
           <div class="text-xs text-gray-600 bg-gray-100 p-2 rounded">
-            Gating: deciding if RAG is needed | Retrieval: fetching from vector store
+            Reformulation: converts follow-ups to standalone queries | Retrieval: fetching from vector store
           </div>
         </div>
 
@@ -666,7 +673,7 @@
             </div>
           </div>
           <div class="text-xs text-gray-600 bg-gray-100 p-2 rounded mt-2">
-            Total = Gating + Retrieval + Message Generation
+            Total = Reformulation + Retrieval + Message Generation
           </div>
         </div>
       </div>
@@ -693,6 +700,7 @@
                   <div class="font-semibold text-gray-700">Cost Breakdown:</div>
                   <div class="grid grid-cols-2 gap-1">
                     <div>LLM: ${cost.llm.total.toFixed(4)}</div>
+                    <div>Reformulate: ${cost.reformulation.total.toFixed(4)}</div>
                     <div>Filter: ${cost.filtering.total.toFixed(4)}</div>
                   </div>
                 </div>
@@ -700,7 +708,7 @@
                   <div class="space-y-1 text-xs text-gray-600">
                     <div class="font-semibold text-gray-700">Timing Breakdown:</div>
                     <div class="grid grid-cols-2 gap-1">
-                      <div>Gating: {latency.gaterDuration.toFixed(0)}ms</div>
+                      <div>Reformulation: {latency.reformulationDuration.toFixed(0)}ms</div>
                       <div>Retrieval: {latency.retrievalDuration.toFixed(0)}ms</div>
                       <div>TTFT: {latency.timeToFirstToken.toFixed(0)}ms</div>
                       <div>Message: {(latency.messageTime / 1000).toFixed(2)}s</div>

@@ -1,6 +1,6 @@
+import type { CostBreakdown } from '@openvaa/core';
 import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
 import type { LLMProvider } from '@openvaa/llm-refactor';
-import type { CostBreakdown } from '@openvaa/core';
 import type { Embedder } from './embedder.type';
 import type { EnrichedSegment } from './types';
 
@@ -88,6 +88,18 @@ export interface MultiVectorSearchResult {
 }
 
 /**
+ * Per-collection search configuration
+ */
+export interface CollectionSearchConfig {
+  /** Number of results to fetch from ChromaDB initially */
+  topK?: number;
+  /** Maximum results to return from this collection after filtering */
+  maxResults?: number;
+  /** Minimum similarity score threshold (0-1, higher is more similar) */
+  minSimilarity?: number;
+}
+
+/**
  * Options for multi-vector search
  */
 export interface MultiVectorSearchOptions {
@@ -95,8 +107,12 @@ export interface MultiVectorSearchOptions {
   query: string;
   /** Which collections to search (default: all) */
   searchCollections?: Array<'segment' | 'summary' | 'fact'>;
-  /** Number of results to fetch from each collection */ 
-  topKPerCollection?: number; // TODO: make this more configurable, allow for different strategies
+  /** Per-collection search configuration */
+  searchConfig?: {
+    segment?: CollectionSearchConfig;
+    summary?: CollectionSearchConfig;
+    fact?: CollectionSearchConfig;
+  };
   /** Function to generate query variations */
   getQueryVariations?: (query: string) => Array<string>; // TODO: implement a default utility for this
   /** Enable intelligent filtering using LLM */

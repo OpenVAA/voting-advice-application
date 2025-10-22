@@ -85,7 +85,11 @@ export async function testMultiVectorRetrieval(
   const searchResults = await multiVectorStore.search({
     query,
     searchCollections: ['segment', 'summary', 'fact'],
-    topKPerCollection,
+    searchConfig: {
+      segment: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.3 },
+      summary: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.3 },
+      fact: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.5 }
+    },
     getQueryVariations,
     llmProvider,
     intelligentSearch

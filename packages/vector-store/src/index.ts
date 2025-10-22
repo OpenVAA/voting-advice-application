@@ -16,8 +16,5 @@ export type {
   VectorStoreConfig
 } from './core/vectorStore.type';
 
-// Utilities (if you want them public)
-export { reconstructSegmentWithAnalysis, transformToVectorStoreFormat } from './core/utils/dataTransform';
-export { isRAGRequired } from './core/utils/isRAGRequired';
-export { getQueryVariations } from './core/utils/queryVariations';
-export { filterSearchResults } from './core/utils/searchResultFiltering';
+// Utilities
+export * from './core/utils';

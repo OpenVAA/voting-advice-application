@@ -1,6 +1,6 @@
 import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
 import { LLMProvider } from '@openvaa/llm-refactor';
-import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
+import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder, reformulateQuery } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { OPENAI_API_KEY } from './apiKey';
 import type { ModelMessage } from 'ai';
@@ -14,7 +14,7 @@ const COLLECTION_NAMES = {
 
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
-// let gaterProvider: LLMProvider | null = null;
+let queryReformulationProvider: LLMProvider | null = null;
 let resultFilteringProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
@@ -36,16 +36,16 @@ async function getVectorStore(): Promise<MultiVectorStore> {
   return multiVectorStore;
 }
 
-// function getGaterProvider(): LLMProvider {
-//   if (!gaterProvider) {
-//     gaterProvider = new LLMProvider({
-//       provider: 'openai',
-//       apiKey: OPENAI_API_KEY,
-//       modelConfig: { primary: 'gpt-5-nano' }
-//     });
-//   }
-//   return gaterProvider;
-// }
+function getQueryReformulationProvider(): LLMProvider {
+  if (!queryReformulationProvider) {
+    queryReformulationProvider = new LLMProvider({
+      provider: 'openai',
+      apiKey: OPENAI_API_KEY,
+      modelConfig: { primary: 'gpt-5-nano' }
+    });
+  }
+  return queryReformulationProvider;
+}
 
 function getResultFilteringProvider(): LLMProvider {
   if (!resultFilteringProvider) {
@@ -88,21 +88,29 @@ export async function POST({ request, params }: { request: Request; params: any 
     throw new Error('No messages provided');
   }
 
-  // Extract user messages for RAG gater
-  // const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
-  // Track RAG gating time - determines if retrieval is needed
-  // const gaterStartTime = Date.now();
-  // const gater = getGaterProvider();
-  // const needsRAG = await isRAGRequired({
-  //   messages: userMessages,
-  //   provider: gater,
-  //   modelConfig: { primary: 'gpt-5-nano' }
-  // });
+  // Extract user messages for query reformulation
+  const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
 
-  // For now, we always perform RAG retrieval
-  // Filtering can be used to manage context
-  const needsRAG = true;
-  const gaterDuration = 0;
+  // Track query reformulation time - converts conversational follow-ups to standalone queries
+  const reformulationStartTime = Date.now();
+  const reformulationProvider = getQueryReformulationProvider();
+  const reformulationCostsBefore = reformulationProvider.cumulativeCosts;
+
+  const standaloneQuery = await reformulateQuery({
+    messages: userMessages,
+    provider: reformulationProvider
+  });
+
+  const reformulationDuration = Date.now() - reformulationStartTime;
+  const reformulationCostsAfter = reformulationProvider.cumulativeCosts;
+  const reformulationCosts = {
+    total: reformulationCostsAfter - reformulationCostsBefore,
+    input: 0, // Cannot separate without detailed tracking
+    output: 0 // Cannot separate without detailed tracking
+  };
+
+  // Determine if RAG is needed based on reformulation result
+  const needsRAG = standaloneQuery !== null;
 
   // Track RAG retrieval time - fetches relevant context from vector store
   let ragResult: MultiVectorSearchResult | null = null;
@@ -113,9 +121,9 @@ export async function POST({ request, params }: { request: Request; params: any 
     const retrievalStartTime = Date.now();
     const vectorStore = await getVectorStore();
     ragResult = await vectorStore.search({
-      query: lastMessage.content as string,
+      query: standaloneQuery, // Use reformulated standalone query
       searchCollections: ['segment', 'summary', 'fact'],
-      topKPerCollection: 3,
+      searchConfig: {}, // Use defaults: facts (topK:10, max:5, min:0.5), others (topK:8, max:3, min:0.3)
       intelligentSearch: true,
       llmProvider: getResultFilteringProvider()
     });
@@ -205,11 +213,12 @@ export async function POST({ request, params }: { request: Request; params: any 
                   reasoning: costs.reasoning,
                   total: costs.total
                 },
+                reformulation: reformulationCosts,
                 filtering: ragResult?.filteringCosts || { input: 0, output: 0, total: 0 },
-                total: costs.total + (ragResult?.filteringCosts?.total || 0)
+                total: costs.total + reformulationCosts.total + (ragResult?.filteringCosts?.total || 0)
               },
               latency: {
-                gaterDuration,
+                reformulationDuration,
                 retrievalDuration,
                 timeToFirstToken,
                 messageTime,
@@ -217,7 +226,8 @@ export async function POST({ request, params }: { request: Request; params: any 
                 tokensPerSecond
               },
               rag: {
-                gaterDecision: needsRAG,
+                reformulatedQuery: standaloneQuery,
+                needsRAG,
                 segmentsRetrieved: ragResult?.results.length ?? 0
               },
               timestamp: Date.now()

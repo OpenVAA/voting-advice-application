@@ -6,11 +6,19 @@ import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processi
 import type { Metadata } from 'chromadb';
 import type { SegmentFact, SegmentSummary, SourceSegment } from './types';
 import type {
+  CollectionSearchConfig,
   EnrichedSearchResult,
   MultiVectorSearchOptions,
   MultiVectorSearchResult,
   MultiVectorStoreConfig
 } from './vectorStore.type';
+
+// Default search configuration per collection type
+const DEFAULT_SEARCH_CONFIG: Record<'segment' | 'summary' | 'fact', Required<CollectionSearchConfig>> = {
+  segment: { topK: 8, maxResults: 3, minSimilarity: 0.3 },
+  summary: { topK: 8, maxResults: 3, minSimilarity: 0.3 },
+  fact: { topK: 10, maxResults: 5, minSimilarity: 0.5 }
+};
 
 /**
  * High-level multi-vector store for document analysis
@@ -103,12 +111,24 @@ export class MultiVectorStore {
   async search(options: MultiVectorSearchOptions): Promise<MultiVectorSearchResult> {
     const {
       searchCollections = ['segment', 'summary', 'fact'],
-      topKPerCollection = 3,
+      searchConfig = {},
       getQueryVariations,
       intelligentSearch = false,
       llmProvider,
       query
     } = options;
+
+    // Merge user config with defaults for each collection type
+    function getConfig(type: 'segment' | 'summary' | 'fact'): Required<CollectionSearchConfig> {
+      if (!searchConfig[type]) {
+        return DEFAULT_SEARCH_CONFIG[type];
+      }
+      return {
+        topK: searchConfig[type]?.topK ?? DEFAULT_SEARCH_CONFIG[type].topK,
+        maxResults: searchConfig[type]?.maxResults ?? DEFAULT_SEARCH_CONFIG[type].maxResults,
+        minSimilarity: searchConfig[type]?.minSimilarity ?? DEFAULT_SEARCH_CONFIG[type].minSimilarity
+      };
+    }
 
     // Get query variations (placeholder for future query transformation) TODO: implement
     const queryVariationsFn = getQueryVariations || ((q: string) => [q]);
@@ -131,26 +151,31 @@ export class MultiVectorStore {
     // For each collection we want to search, get its embedder and embed the query
     const queryEmbeddings = await Promise.all(
       collectionsToSearch.map(({ type }) => {
-        const embedder = type === 'segment' ? this.segmentsStore['embedder'] : type === 'summary' ? this.summariesStore['embedder'] : this.factsStore['embedder'];
+        const embedder =
+          type === 'segment'
+            ? this.segmentsStore['embedder']
+            : type === 'summary'
+              ? this.summariesStore['embedder']
+              : this.factsStore['embedder'];
         return embedder.embed(searchQuery);
       })
     );
 
-    // Search selected collections in parallel
+    // Search selected collections in parallel with per-collection topK
     const searchResults = await Promise.all(
-      collectionsToSearch.map(({ coll }, idx) =>
-        coll.query({
+      collectionsToSearch.map(({ type, coll }, idx) => {
+        const config = getConfig(type);
+        return coll.query({
           queryEmbeddings: [queryEmbeddings[idx].embedding],
-          nResults: topKPerCollection
-        })
-      )
+          nResults: config.topK
+        });
+      })
     );
 
     // Extract parent segment IDs and store their scores/distances
     const segmentIdsFromSummaries: Array<string> = [];
     const directSegmentIds: Array<string> = [];
     const segmentIdsFromFacts = new Set<string>(); // we can have multiple facts per segment
-
 
     // Map to store best score/distance for each segment ID
     const segmentScores = new Map<
@@ -163,10 +188,17 @@ export class MultiVectorStore {
 
     searchResults.forEach((result, idx) => {
       const collectionType = collectionsToSearch[idx].type;
+      const config = getConfig(collectionType);
 
       result.ids[0]?.forEach((id, resultIdx) => {
         const distance = result.distances?.[0]?.[resultIdx] || 0;
         const score = 1 - distance; // Convert cosine distance to similarity score
+
+        // Apply minSimilarity filter
+        if (score < config.minSimilarity) {
+          return; // Skip this result
+        }
+
         const segmentId = id as string;
         const metadata = result.metadatas[0]?.[resultIdx];
 
@@ -307,7 +339,7 @@ export class MultiVectorStore {
     }
 
     // Convert to search results with actual scores
-    const results: Array<EnrichedSearchResult> = enrichedSegments.map((segment) => {
+    let results: Array<EnrichedSearchResult> = enrichedSegments.map((segment) => {
       const scoreData = segmentScores.get(segment.id) || { score: 0, distance: 1, foundWith: 'segment' as const };
 
       return {
@@ -316,14 +348,32 @@ export class MultiVectorStore {
         distance: scoreData.distance,
         foundWith: scoreData.foundWith,
         // Include the fact that was found, if this segment was found via fact search
-        ...(scoreData.foundWith === 'fact' && segmentFactsFound.has(segment.id) && {
-          factFound: segmentFactsFound.get(segment.id)
-        })
+        ...(scoreData.foundWith === 'fact' &&
+          segmentFactsFound.has(segment.id) && {
+            factFound: segmentFactsFound.get(segment.id)
+          })
       };
     });
 
     // Sort by score (highest first)
     results.sort((a, b) => b.score - a.score);
+
+    // Apply maxResults per collection type
+    const resultsByType = {
+      segment: results.filter((r) => r.foundWith === 'segment'),
+      summary: results.filter((r) => r.foundWith === 'summary'),
+      fact: results.filter((r) => r.foundWith === 'fact')
+    };
+
+    const limitedResults: Array<EnrichedSearchResult> = [];
+    for (const type of ['segment', 'summary', 'fact'] as const) {
+      const config = getConfig(type);
+      const typeResults = resultsByType[type];
+      limitedResults.push(...typeResults.slice(0, config.maxResults));
+    }
+
+    // Re-sort combined results by score
+    results = limitedResults.sort((a, b) => b.score - a.score);
 
     return {
       query,
