@@ -51,8 +51,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "With this application you can compare candidates and parties based on their opinions, parties and other data.",
-    "startButton": "Find the Best Candidates and Parties!"
+    "ingress": "<p>In this election compass, you can find out which young candidate you agree with the most for the municipal and regional elections on November 18, 2025. The compass includes candidates who are 30 years old or younger on election day.</p><p>An election compass can’t decide who you should vote for, but it can give you an overview of which candidates you share the most views with on selected topics.</p>",
+    "startButton": "Find out which young candidate you agree with the most"
   },
   "info": {
     "content": "Read more about the elections below.",

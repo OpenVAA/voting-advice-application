@@ -51,7 +51,7 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "<p>Valgtesten indeholder kandidater, der er 30 år eller derunder på valgdagen.</p><p>En valgtest kan ikke afgøre, hvem du bør stemme på, men den kan give dig et overblik over, hvilke kandidater du deler flest holdninger med på udvalgte temaer.</p><p>I denne valgtest, kan du finde ud af, hvilken ung kandidat, du er mest enig med til kommunal- og regionalvalget 18. november 2025.</p>",
+    "ingress": "<p>I denne valgtest, kan du finde ud af, hvilken ung kandidat du er mest enig med til kommunal- og regionalvalget 18. november 2025. Valgtesten indeholder kandidater, der er 30 år eller derunder på valgdagen.</p><p>En valgtest kan ikke afgøre, hvem du bør stemme på, men den kan give dig et overblik over, hvilke kandidater du deler flest holdninger med på udvalgte temaer.</p>",
     "startButton": "Find ud af hvilken ung kandidat du er mest enig med"
   },
   "info": {
@@ -62,7 +62,7 @@
   "intro": {
     "continue": "Fortsæt",
     "heroEmoji": "🚀",
-    "ingress": "Christine Ravn Lund, forkvinde for Dansk Ungdoms Fællesråd, fortæller i videoen om, hvorfor du kan overveje at stemme på en ung kandidat, og hvorfor det er vigtigt at unge også er repræsenteret i kommunalbestyrelser og regionsråd.",
+    "ingress": "Forkvinde for Dansk Ungdoms Fællesråd, Christine Ravn Lund, fortæller i videoen om, hvorfor du skal overveje at stemme på en ung kandidat, og hvorfor det er vigtigt, at unge også er repræsenteret i byråd og regionsråd.",
     "list": {
       "constituencies": "Vælg din valgkreds",
       "elections": "Vælg et valg",
