@@ -17,6 +17,7 @@ The frontpage of the app for voters.
   import { Footer } from '$lib/dynamic-components/footer';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import MainContent from '../MainContent.svelte';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -41,9 +42,11 @@ The frontpage of the app for voters.
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">
-    {$t('dynamic.frontPage.ingress', {
-      electionDate: new Date()
-    })}
+    {@html sanitizeHtml(
+      $t('dynamic.frontPage.ingress', {
+        electionDate: new Date()
+      })
+    )}
   </p>
 
   <a href={$getRoute('Info')} class="btn btn-ghost w-full max-w-md">{$t('info.title')}</a>
