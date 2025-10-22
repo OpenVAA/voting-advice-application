@@ -62,7 +62,7 @@
   "intro": {
     "continue": "Continue",
     "heroEmoji": "🚀",
-    "ingress": "This application will help you find the {candidatePlural} and {partyPlural} that best match your opinions in the elections.",
+    "ingress": "Christine Ravn Lund, Chair of the Danish Youth Council (DUF), explains in the video why you might consider voting for a young candidate and why it is important that young people are also represented in municipal councils and regional councils.",
     "list": {
       "constituencies": "Select your constituency",
       "details": "Study them in detail",
@@ -116,5 +116,10 @@
   "voterAppNotAccessible": {
     "content": "The Election Compass has not been released yet. Please return to this address when it becomes available.",
     "title": "Sorry, the Election Compass has not been released yet"
+  },
+  "howToVote": {
+    "title": "How to vote in the municipal and regional elections",
+    "shortTitle": "How to vote",
+    "content": "<ul><li>You will receive your voting card by mail no later than five days before election day.</li><li>Bring your voting card and ID (passport, driver’s license, or health insurance card).</li><li>Go to your designated polling station on election day. The location is shown on your voting card.</li><li>Hand your voting card to the election official. If you have forgotten or lost your voting card, the official will print a new one once you show valid ID, such as a health insurance card, driver’s license, or passport. You provide your date of birth and will be checked off the voter list.</li><li>You will receive two ballots – one for the municipal election and one for the regional election.</li><li>Go behind the curtain.</li><li>On each ballot, you must mark one cross. You can vote either for a political party or for a specific candidate. If you do not mark any box, your vote will be counted as blank.</li><li>Place your ballots in the ballot box.</li><li>You have voted.</li></ul>"
   }
 }

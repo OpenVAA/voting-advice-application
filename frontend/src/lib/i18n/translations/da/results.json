@@ -19,8 +19,8 @@
       "content": "Du kan gennemgå spørgsmålene, hvis du ønsker, men resultater kan ikke vises."
     },
     "someNominations": {
-      "title": "Nogle kandidater eller partier har ikke besvaret Valgtesten",
-      "content": "Der findes ikke svar fra kandidater eller partier for alle valg i din valgkreds. Resultater vises kun for de valg, hvor der findes svar."
+      "title": "Antallet af kandidater, der har besvaret valgtesten i denne kommune, er fem eller færre",
+      "content": "Resultaterne skal derfor tolkes med forbehold for, at de ikke nødvendigvis giver et dækkende billede af hele kandidatfeltet. Tag testen alligevel for at se, hvor enig du er med unge kandidater i din kommune."
     },
     "noNominationsForElection": "ikke tilgængelig"
   },
