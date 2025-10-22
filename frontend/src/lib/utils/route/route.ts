@@ -26,6 +26,7 @@ export const ROUTE = {
   ResultParty: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
   Results: `${VOTER_LOCATED}/results`,
   Statistics: `${VOTER_LOCATED}/results/statistics`,
+  Voting: `${VOTER}/voting`,
 
   // Candidate App
   CandAppForgotPassword: `${CANDIDATE}/forgot-password`,

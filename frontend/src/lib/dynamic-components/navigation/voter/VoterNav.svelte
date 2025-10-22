@@ -92,6 +92,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
+    <NavItem href={$getRoute('Voting')} icon="election" text={$t('dynamic.howToVote.shortTitle')} />
     <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
     {#if $appSettings.entities.showAllNominations}
       <NavItem href={$getRoute('Nominations')} icon="search" text={$t('dynamic.nominations.title')} />

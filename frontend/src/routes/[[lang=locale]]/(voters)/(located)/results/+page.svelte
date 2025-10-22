@@ -61,6 +61,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     entityFilters,
     getRoute,
     matches,
+    nominationsAvailable,
     resultsAvailable,
     selectedConstituencies: constituencies,
     selectedElections: elections,
@@ -107,7 +108,10 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let initialEntityTabIndex = 0;
 
   // Pre-select election if there’s only one
-  if ($elections.length === 1) activeElectionId = $elections[0].id;
+  const availableElections = Object.entries($nominationsAvailable)
+    .filter(([, v]) => v)
+    .map(([id]) => id);
+  if (availableElections.length === 1) activeElectionId = availableElections[0];
 
   // React to changes in activeElectionId to updadate entityTabs
   $: if (activeElectionId) {
@@ -130,7 +134,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let hasLimitedNominations = false;
   $: if (activeElectionId) {
     const n = ($matches[activeElectionId].candidate ?? []).length;
-    hasLimitedNominations = n !== 0 && n < 5;
+    hasLimitedNominations = n !== 0 && n < 6;
   }
 
   /** Set initial tab based on activeEntityType */
@@ -235,7 +239,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
         )}
       </p>
     {/if}
-    {#if $elections.length > 1}
+    {#if availableElections.length > 1}
       <p>{$t('dynamic.results.multipleElections')}</p>
     {/if}
   </div>
@@ -250,11 +254,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
       onChange={handleElectionChange}
       class="-mt-md mb-lg" />
 
-    {#if activeElection?.info}
+    <!-- {#if activeElection?.info}
       <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
         {activeElection.info}
       </p>
-    {/if}
+    {/if} -->
   {/if}
 
   {#if hasLimitedNominations}

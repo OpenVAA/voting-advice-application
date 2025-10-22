@@ -40,7 +40,7 @@ export type VoterContext = AppContext & {
   /**
    * A utility store detailing whether any nominations are available for the selected `Election`s.
    */
-  nominationsAvailable: Readable<{ [selectedElectionId: Id]: boolean }>;
+  nominationsAvailable: Readable<{ [selectedElectionId: Id]: boolean | 'fewCandidates' }>;
   /**
    * The matched `Nomination`s for each `Election` and `EntityType`.
    */
