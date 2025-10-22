@@ -40,7 +40,7 @@ Displays information about the elections in the VAA.
         {#if $dataRoot.elections.length > 1}
           <h2 class="mb-md mt-lg">{name}</h2>
         {/if}
-        <p>{info}</p>
+        <p>{@html sanitizeHtml(info)}</p>
         {#if date}
           <p>{$t('dynamic.info.dateInfo', { electionDate: date })}</p>
         {/if}
