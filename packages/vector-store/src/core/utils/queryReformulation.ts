@@ -78,8 +78,8 @@ export async function reformulateQuery({
     messages: [{ role: 'user', content: filledPrompt } as ModelMessage],
     schema: queryReformulationSchema,
     temperature: 0,
-    maxRetries: 3,
-    validationRetries: 3
+    maxRetries: 1,
+    validationRetries: 1
   });
 
   return response.object.standaloneQuery;
