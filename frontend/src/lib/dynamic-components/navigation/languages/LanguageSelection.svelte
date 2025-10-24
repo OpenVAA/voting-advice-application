@@ -30,6 +30,7 @@ A template part that language selection options for the navigation menu if these
   <NavGroup title={$t('common.language.select')}>
     {#each $locales as locale}
       <NavItem
+        data-sveltekit-reload
         href={$getRoute({ locale })}
         icon="language"
         text={$t(assertTranslationKey(`lang.${locale}`))}
