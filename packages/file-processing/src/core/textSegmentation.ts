@@ -1,6 +1,6 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
-import { isTextPreserved, loadPrompt } from '../utils';
+import { loadPrompt } from '../utils';
 import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
 import type { SegmentTextOptions, SegmentTextResult } from './textSegmentation.type';
 
@@ -61,7 +61,6 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
     charsPerLLMCall = 10000,
     validateTextPreservation = false // TODO: implement validation and set default to true. It's just such a nested if-else hell.
   } = options;
-
   // Create charsPerLLMCall character parts of the input text to avoid context window issues
   const inputTextParts: Array<string> = [];
   for (let i = 0; i < text.length; i += charsPerLLMCall) {
@@ -99,11 +98,15 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
 
   const segments = responses.map((response) => response.object.segments).flat();
 
-  // Validate text preservation if enabled
-  if (validateTextPreservation && !isTextPreserved()) {
-    // add params to isTextPreserved, if you actually implement the text preservation validation
-    console.info('Text preservation validation failed');
-  }
+  // // Validate text preservation if enabled
+  // if (validateTextPreservation) {
+  //   try {
+  //     isTextPreserved(text, segments);
+  //   } catch (error) {
+  //     console.error('Text preservation validation failed:', error);
+  //     throw error;
+  //   }
+  // }
 
   // Calculate costs
   const totalCost = responses.reduce((sum, response) => sum + response.costs.total, 0);
