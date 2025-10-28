@@ -96,8 +96,12 @@ export class ChatEngine {
         const encoder = new TextEncoder();
         const stream = new ReadableStream({
           start(controller) {
-            // Send text chunk in AI SDK format: "0:{json}"
-            controller.enqueue(encoder.encode(`0:${JSON.stringify(message)}\n`));
+            // Send text-delta event in SSE format (matches frontend expectations)
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: 'text-delta', delta: message })}\n\n`)
+            );
+            // Send finish event to signal completion
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'finish' })}\n\n`));
             controller.close();
           }
         });
