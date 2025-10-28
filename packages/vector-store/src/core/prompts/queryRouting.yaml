@@ -1,0 +1,40 @@
+id: query_routing_v1
+
+params:
+  conversationHistory: string
+
+prompt: |
+  # Task: Query Categorization (and Reformulation if appropriate)
+
+  1. **Categorize** a user query into one of the provided categories
+  2. **Reformulate** conversational queries into standalone questions (when appropriate)
+
+  ## Categories
+
+  **Queryable categories** (need knowledge retrieval):
+  - eu2024_policy
+  - eu2024_process
+  - eu_institution
+  - clarification_request
+  - election_theory
+
+  **Non-queryable categories**:
+  - conversational
+  - meta (about the chatbot)
+  - ambiguous
+  - inappropriate
+  - eu2024_candidate
+  - other_election
+  - offtopic
+  - other (fallback if no other category is suitable)
+
+  ## Reformulation Rules
+
+  - For **queryable categories**: ALWAYS reformulate into a standalone question
+  - For **non-queryable categories**: ALWAYS return null
+
+  ## Context: the user is talking to a voting advice chatbot focused on the 2024 EU elections.
+
+  ## Conversation History:
+
+  {{conversationHistory}}

@@ -109,6 +109,10 @@ export class MultiVectorStore {
    * @returns Deduplicated enriched segments with retrieval statistics
    */
   async search(options: MultiVectorSearchOptions): Promise<MultiVectorSearchResult> {
+    if (!options.intelligentSearch && !options.llmProvider) {
+      throw new Error('[MultiVectorStore.search] Please provide a LLM provider or disable intelligent search. Intelligent search requires an LLM.');
+    }
+
     const {
       searchCollections = ['segment', 'summary', 'fact'],
       searchConfig = {},

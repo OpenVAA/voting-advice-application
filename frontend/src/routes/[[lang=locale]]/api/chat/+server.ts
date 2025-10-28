@@ -1,9 +1,8 @@
-import { type ChatbotAPIInput, ChatEngine } from '@openvaa/chatbot';
+import { ChatbotController } from '@openvaa/chatbot';
 import { LLMProvider } from '@openvaa/llm-refactor';
-import { type MultiVectorSearchResult, MultiVectorStore, OpenAIEmbedder, reformulateQuery } from '@openvaa/vector-store';
+import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { OPENAI_API_KEY } from './apiKey';
-import type { ModelMessage } from 'ai';
 
 // Collection names for multi-vector retrieval
 const COLLECTION_NAMES = {
@@ -41,7 +40,7 @@ function getQueryReformulationProvider(): LLMProvider {
     queryReformulationProvider = new LLMProvider({
       provider: 'openai',
       apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-5-nano' }
+      modelConfig: { primary: 'gpt-4.1-nano-2025-04-14' }
     });
   }
   return queryReformulationProvider;
@@ -58,115 +57,65 @@ function getResultFilteringProvider(): LLMProvider {
   return resultFilteringProvider;
 }
 
-// Format search results for LLM prompt (only actual segments, not AI-generated content)
-function formatSegmentsForPrompt(ragResult: MultiVectorSearchResult): string {
-  if (ragResult.results.length === 0) {
-    return 'No relevant context found.';
-  }
-
-  return ragResult.results
-    .map((result) => {
-      const source = result.segment.metadata.source || 'Unknown';
-      return `### Source: ${source}\n${result.segment.segment}`;
-    })
-    .join('\n\n---\n\n');
-}
 
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function POST({ request, params }: { request: Request; params: any }) {
-  // Start timing the entire request
   const requestStartTime = Date.now();
 
+  // Parse request
   const { messages: uiMessages } = await request.json();
-
   const messages = convertUIMessagesToModelMessages(uiMessages);
 
-  // Get the last message safely
-  const lastMessage = messages[messages.length - 1];
-  if (!lastMessage) {
-    throw new Error('No messages provided');
-  }
-
-  // Extract user messages for query reformulation
-  const userMessages = messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
-
-  // Track query reformulation time - converts conversational follow-ups to standalone queries
-  const reformulationStartTime = Date.now();
-  const reformulationProvider = getQueryReformulationProvider();
-  const reformulationCostsBefore = reformulationProvider.cumulativeCosts;
-
-  const standaloneQuery = await reformulateQuery({
-    messages: userMessages,
-    provider: reformulationProvider
+  // Call controller (all business logic orchestrated here)
+  const response = await ChatbotController.handleQuery({
+    messages,
+    locale: params.lang || 'en',
+    vectorStore: await getVectorStore(),
+    queryReformulationProvider: getQueryReformulationProvider(),
+    intelligentSearch: false,
+    resultFilteringProvider: getResultFilteringProvider()
+    // chatProvider omitted - ChatEngine will use its default
   });
 
-  const reformulationDuration = Date.now() - reformulationStartTime;
-  const reformulationCostsAfter = reformulationProvider.cumulativeCosts;
-  const reformulationCosts = {
-    total: reformulationCostsAfter - reformulationCostsBefore,
-    input: 0, // Cannot separate without detailed tracking
-    output: 0 // Cannot separate without detailed tracking
-  };
+  // Wrap in SSE stream with metadata
+  return wrapInSSE({
+    stream: response.stream,
+    metadata: response.metadata,
+    requestStartTime
+  });
+}
 
-  // Determine if RAG is needed based on reformulation result
-  const needsRAG = standaloneQuery !== null;
-
-  // Track RAG retrieval time - fetches relevant context from vector store
-  let ragResult: MultiVectorSearchResult | null = null;
-  let contextText = '';
-  let retrievalDuration = 0;
-
-  if (needsRAG) {
-    const retrievalStartTime = Date.now();
-    const vectorStore = await getVectorStore();
-    ragResult = await vectorStore.search({
-      query: standaloneQuery, // Use reformulated standalone query
-      searchCollections: ['segment', 'summary', 'fact'],
-      searchConfig: {}, // Use defaults: facts (topK:10, max:5, min:0.5), others (topK:8, max:3, min:0.3)
-      intelligentSearch: true,
-      llmProvider: getResultFilteringProvider()
-    });
-    retrievalDuration = Date.now() - retrievalStartTime;
-    contextText = formatSegmentsForPrompt(ragResult);
-  }
-
-  // Enhance message with RAG context if available
-  const enhancedMessage: ModelMessage = needsRAG
-    ? {
-        role: 'user',
-        content: `Context:\n${contextText}\n\nUser question: ${lastMessage.content}`
-      }
-    : lastMessage;
-
-  const input: ChatbotAPIInput = {
-    messages: [...messages.slice(0, -1), enhancedMessage],
-    context: {
-      locale: params.lang || 'en'
-    },
-    nSteps: 5
-  };
-
-  const result = await ChatEngine.createStream(input);
-
-  // Create custom stream that sends RAG context first, then AI response, then metadata
-  const stream = new ReadableStream({
+/**
+ * Wrap ChatbotResponse in Server-Sent Events format
+ * Pure HTTP/SSE protocol handling
+ */
+async function wrapInSSE({
+  stream,
+  metadata,
+  requestStartTime
+}: {
+  stream: any;
+  metadata: any;
+  requestStartTime: number;
+}) {
+  const sseStream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
-
-      // Track message generation timing (from stream start to stream end)
       const streamStartTime = performance.now();
       let firstTokenTime = 0;
 
       try {
-        // First, send RAG context as a custom SSE event (only if RAG was performed)
-        if (ragResult && ragResult.results.length > 0) {
+        // Send RAG context if available (before streaming starts)
+        if (metadata.ragContext) {
           controller.enqueue(encoder.encode('event: rag-context\n'));
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(ragResult)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`)
+          );
         }
 
-        // Then pipe the AI SDK stream through while tracking timing
-        const aiResponse = result.toUIMessageStreamResponse();
+        // Pipe AI SDK stream
+        const aiResponse = stream.toUIMessageStreamResponse();
         const reader = aiResponse.body?.getReader();
 
         if (reader) {
@@ -174,7 +123,6 @@ export async function POST({ request, params }: { request: Request; params: any 
             const { done, value } = await reader.read();
             if (done) break;
 
-            // Track first token time (LLM latency - from stream start to first token)
             if (firstTokenTime === 0) {
               firstTokenTime = performance.now();
             }
@@ -185,50 +133,44 @@ export async function POST({ request, params }: { request: Request; params: any 
 
         const streamEndTime = performance.now();
 
-        // Calculate timing metrics
-        // timeToFirstToken: LLM responsiveness (stream start → first token)
+        // Compute timing metrics (API route's responsibility)
         const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;
-        // messageTime: LLM generation time (stream start → stream end)
         const messageTime = streamEndTime - streamStartTime;
-        // totalTime: end-to-end request time (gating + retrieval + generation)
         const totalTime = Date.now() - requestStartTime;
 
-        // Get cost information
-        const costs = await result.costs;
-
-        // Calculate tokens per second (if we have output tokens from usage)
-        const usage = await result.usage;
+        // Get LLM costs and usage from stream
+        const costs = await stream.costs;
+        const usage = await stream.usage;
         const tokensPerSecond =
           usage.outputTokens && messageTime > 0 ? usage.outputTokens / (messageTime / 1000) : undefined;
 
-        // Send combined metadata as a single event
+        // Send combined metadata (after streaming completes)
         controller.enqueue(encoder.encode('event: metadata-info\n'));
         controller.enqueue(
           encoder.encode(
             `data: ${JSON.stringify({
               cost: {
-                llm: {
-                  input: costs.input,
-                  output: costs.output,
-                  reasoning: costs.reasoning,
-                  total: costs.total
-                },
-                reformulation: reformulationCosts,
-                filtering: ragResult?.filteringCosts || { input: 0, output: 0, total: 0 },
-                total: costs.total + reformulationCosts.total + (ragResult?.filteringCosts?.total || 0)
+                llm: costs,
+                reformulation: metadata.costs.reformulation,
+                filtering: metadata.costs.filtering || { input: 0, output: 0, total: 0 },
+                total:
+                  costs.total +
+                  metadata.costs.reformulation.total +
+                  (metadata.costs.filtering?.total || 0)
               },
               latency: {
-                reformulationDuration,
-                retrievalDuration,
+                reformulationDuration: metadata.latency.reformulationMs,
+                retrievalDuration: metadata.latency.retrievalMs,
                 timeToFirstToken,
                 messageTime,
                 totalTime,
                 tokensPerSecond
               },
               rag: {
-                reformulatedQuery: standaloneQuery,
-                needsRAG,
-                segmentsRetrieved: ragResult?.results.length ?? 0
+                category: metadata.category,
+                reformulatedQuery: metadata.reformulatedQuery,
+                needsRAG: metadata.usedRAG,
+                segmentsRetrieved: metadata.ragContext?.segmentsUsed ?? 0
               },
               timestamp: Date.now()
             })}\n\n`
@@ -237,13 +179,13 @@ export async function POST({ request, params }: { request: Request; params: any 
 
         controller.close();
       } catch (error) {
-        console.error('Error in chat stream:', error);
+        console.error('Error in SSE stream:', error);
         controller.error(error);
       }
     }
   });
 
-  return new Response(stream, {
+  return new Response(sseStream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',

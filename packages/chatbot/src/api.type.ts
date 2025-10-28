@@ -1,3 +1,4 @@
+import type { LLMProvider } from '@openvaa/llm-refactor';
 import type { ModelMessage } from 'ai';
 
 // Input type for chatbot API requests
@@ -9,4 +10,5 @@ export type ChatbotAPIInput = {
     // userRole: 'voter'; maybe we can expect that we are talking to a voter?
   };
   nSteps?: number; // number of different message types (tool-call, text, etc.) before halting
+  llmProvider?: LLMProvider; // Optional LLM provider for dependency injection
 };
