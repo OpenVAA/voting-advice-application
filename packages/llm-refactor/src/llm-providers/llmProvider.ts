@@ -191,19 +191,17 @@ export class LLMProvider {
    */
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
+    const model = options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
     console.info('\n\n\n\n\n\n');
     console.info('--------------------------------');
     console.info('LLM STREAM STARTS');
     console.info('--------------------------------');
-  console.info('\n[LLMProvider] Streaming text with model:', this.provider.languageModel(options.modelConfig?.primary ?? (getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown'))));
-    console.info('\n[LLMProvider] Message: ', options.messages?.[-1]);
+    console.info('\n[LLMProvider] Streaming text with model:', model);
+    console.info('\n[LLMProvider] Messages: ', options.messages?.filter((message) => message.role !== 'system'));
 
     const result = streamText({
-      model: this.provider.languageModel(
-        options.modelConfig?.primary ??
-          getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown')
-      ),
+      model: this.provider.languageModel(model),
       messages: options.messages ?? [],
       temperature: options.temperature,
       tools: options.tools,
@@ -220,14 +218,14 @@ export class LLMProvider {
     });
 
     // Calculate costs asynchronously without blocking the return.
-    const costs = result.usage.then((usage) => this.calculateCosts(options.modelConfig?.primary ?? '', usage));
+    const costs = result.usage.then((usage) => this.calculateCosts(model, usage));
     costs.then((costs) => (this.cumulativeCosts += costs.total));
 
     const enhancedResult = Object.assign(result, {
       latencyMs: performance.now() - startTime,
       attempts: 1,
       costs,
-      fallbackUsed: false
+      fallbackUsed: false // TODO: add fallback used logic
     });
 
     return enhancedResult as unknown as LLMStreamResult<TOOLS>; // it is this type, even if TS doesn't believe

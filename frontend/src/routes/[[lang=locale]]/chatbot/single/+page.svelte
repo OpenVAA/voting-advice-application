@@ -483,13 +483,13 @@
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Last Response</div>
             <div class="text-xl font-bold text-blue-600">
-              ${lastCost.toFixed(4)}
+              ${lastCost.toFixed(6)}
             </div>
             {#if costs.length > 0}
               <div class="text-xs text-gray-500 mt-1">
-                LLM: ${costs[costs.length - 1].llm.total.toFixed(4)}<br/>
-                Reformulate: ${costs[costs.length - 1].reformulation.total.toFixed(4)}<br/>
-                Filter: ${costs[costs.length - 1].filtering.total.toFixed(4)}
+                LLM: ${costs[costs.length - 1].llm.total.toFixed(7)}<br/>
+                Reformulate: ${costs[costs.length - 1].reformulation.total.toFixed(7)}<br/>
+                Filter: ${costs[costs.length - 1].filtering.total.toFixed(7)}
               </div>
             {/if}
           </div>
@@ -497,35 +497,35 @@
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Average Cost</div>
             <div class="text-xl font-bold text-green-600">
-              ${averageCost.toFixed(4)}
+              ${averageCost.toFixed(6)}
             </div>
           </div>
 
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Last 3 Avg</div>
             <div class="text-xl font-bold text-purple-600">
-              ${last3CostAverage.toFixed(4)}
+              ${last3CostAverage.toFixed(6)}
             </div>
           </div>
 
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Total Session</div>
             <div class="text-xl font-bold text-orange-600">
-              ${totalSessionCost.toFixed(4)}
+              ${totalSessionCost.toFixed(6)}
             </div>
           </div>
 
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Min Cost</div>
             <div class="text-lg font-semibold text-teal-600">
-              ${minCost.toFixed(4)}
+              ${minCost.toFixed(6)}
             </div>
           </div>
 
           <div class="rounded border border-gray-200 bg-white p-3 shadow-sm">
             <div class="mb-1 text-xs text-gray-500">Max Cost</div>
             <div class="text-lg font-semibold text-red-600">
-              ${maxCost.toFixed(4)}
+              ${maxCost.toFixed(6)}
             </div>
           </div>
         </div>
@@ -693,15 +693,15 @@
                     #{costs.length - idx}
                   </span>
                   <span class="font-bold text-blue-600">
-                    ${cost.total.toFixed(4)}
+                    ${cost.total.toFixed(6)}
                   </span>
                 </div>
                 <div class="space-y-1 text-xs text-gray-600 mb-2">
                   <div class="font-semibold text-gray-700">Cost Breakdown:</div>
                   <div class="grid grid-cols-2 gap-1">
-                    <div>LLM: ${cost.llm.total.toFixed(4)}</div>
-                    <div>Reformulate: ${cost.reformulation.total.toFixed(4)}</div>
-                    <div>Filter: ${cost.filtering.total.toFixed(4)}</div>
+                    <div>LLM: ${cost.llm.total.toFixed(6)}</div>
+                    <div>Reformulate: ${cost.reformulation.total.toFixed(6)}</div>
+                    <div>Filter: ${cost.filtering.total.toFixed(6)}</div>
                   </div>
                 </div>
                 {#if latency}
