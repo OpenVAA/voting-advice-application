@@ -27,6 +27,7 @@
     "@openvaa/data": "workspace:^",
     "@openvaa/file-processing": "workspace:^",
     "@openvaa/llm-refactor": "workspace:^",
-    "ai": "^5.0.0"
+    "ai": "^5.0.0",
+    "cohere-ai": "^7.19.0"
   }
 }
