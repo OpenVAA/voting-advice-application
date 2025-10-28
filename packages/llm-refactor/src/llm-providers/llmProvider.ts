@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
+import { getFallbackModel } from '../fallbackModels';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
 import type { Controller } from '@openvaa/core';
 import type { LanguageModelUsage as TokenUsage, Provider, ToolSet } from 'ai';
@@ -66,6 +67,12 @@ export class LLMProvider {
         options.controller?.checkAbort();
         const model = options.modelConfig?.primary ?? this.config.modelConfig.primary; // TODO: add fallback selection & osv.
 
+        console.info('\n\n\n\n\n\n');
+        console.info('--------------------------------');
+        console.info('LLM CALL STARTS');
+        console.info('--------------------------------');
+        console.info('\n[LLMProvider] Generating object with model:', model);
+        console.info('\n[LLMProvider] Messages: ', options.messages?.filter((message) => message.role !== 'system'));
         // Generation call which throws on validation failures
         const result = await generateObject({
           model: this.provider.languageModel(model),
@@ -74,7 +81,11 @@ export class LLMProvider {
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
-
+        console.info(`\n[LLMProvider] Response [${model}]: ${JSON.stringify(result)}`);
+        console.info('--------------------------------');
+        console.info('LLM CALL ENDS');
+        console.info('--------------------------------');
+        console.info('\n\n\n\n\n\n');
         const costs = this.calculateCosts(model, result.usage);
         this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
@@ -177,16 +188,35 @@ export class LLMProvider {
    *   messages: [{ role: 'user', content: 'Whats yar favorite meal?' }]
    * });
    * ```
-   */ 
+   */
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
 
+    console.info('\n\n\n\n\n\n');
+    console.info('--------------------------------');
+    console.info('LLM STREAM STARTS');
+    console.info('--------------------------------');
+  console.info('\n[LLMProvider] Streaming text with model:', this.provider.languageModel(options.modelConfig?.primary ?? (getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown'))));
+    console.info('\n[LLMProvider] Message: ', options.messages?.[-1]);
+
     const result = streamText({
-      model: this.provider.languageModel(options.modelConfig?.primary ?? ''),
+      model: this.provider.languageModel(
+        options.modelConfig?.primary ??
+          getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown')
+      ),
       messages: options.messages ?? [],
       temperature: options.temperature,
       tools: options.tools,
       stopWhen: options.stopWhen
+    });
+
+    // Log the response when it arrives
+    result.text.then((text) => {
+      console.info(`\n[LLMProvider] Response: ${text}`);
+      console.info('--------------------------------');
+      console.info('LLM STREAM ENDS');
+      console.info('--------------------------------');
+      console.info('\n\n\n\n\n\n');
     });
 
     // Calculate costs asynchronously without blocking the return.

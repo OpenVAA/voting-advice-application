@@ -15,7 +15,8 @@ export const MODEL_PRICING: Record<string, Record<string, ModelPricing>> = {
     'gpt-4.1': { input: 2.0, cachedInput: 0.5, output: 8.0 },
     'gpt-5-mini': { input: 0.25, cachedInput: 0.025, output: 2.0 },
     'gpt-4o': { input: 2.5, cachedInput: 1.25, output: 10.0 },
-    'gpt-5-nano': { input: 0.05, cachedInput: 0.005, output: 0.40 }
+    'gpt-5-nano': { input: 0.05, cachedInput: 0.005, output: 0.40 },
+    'gpt-4.1-nano-2025-04-14': { input: 0.1, cachedInput: 0.025, output: 0.40 }
   },
   google: {
     'gemini-2.5-flash-preview-09-2025': { input: 0.3, output: 2.5, cachedInput: 0.0 }, // NaN cached input
