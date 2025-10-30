@@ -1,7 +1,7 @@
 import { ChromaClient } from 'chromadb';
 import { ChromaVectorStore } from './chromaVectorStore';
 import { reconstructSegmentWithAnalysis } from './utils/dataTransform';
-import { filterSearchResults } from './utils/searchResultFiltering';
+import { rerank } from './utils/rerank';
 import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
 import type { Metadata } from 'chromadb';
 import type { SegmentFact, SegmentSummary, SourceSegment } from './types';
@@ -15,9 +15,9 @@ import type {
 
 // Default search configuration per collection type
 const DEFAULT_SEARCH_CONFIG: Record<'segment' | 'summary' | 'fact', Required<CollectionSearchConfig>> = {
-  segment: { topK: 8, maxResults: 3, minSimilarity: 0.3 },
-  summary: { topK: 8, maxResults: 3, minSimilarity: 0.3 },
-  fact: { topK: 10, maxResults: 5, minSimilarity: 0.5 }
+  segment: { topK: 8, minSimilarity: 0.3 },
+  summary: { topK: 8, minSimilarity: 0.3 },
+  fact: { topK: 10, minSimilarity: 0.5 }
 };
 
 /**
@@ -109,18 +109,18 @@ export class MultiVectorStore {
    * @returns Deduplicated enriched segments with retrieval statistics
    */
   async search(options: MultiVectorSearchOptions): Promise<MultiVectorSearchResult> {
-    if (options.intelligentSearch && !options.llmProvider) {
-      throw new Error('[MultiVectorStore.search] Please provide a LLM provider or disable intelligent search. Intelligent search requires an LLM.');
-    }
-
     const {
       searchCollections = ['segment', 'summary', 'fact'],
       searchConfig = {},
-      getQueryVariations,
-      intelligentSearch = false,
-      llmProvider,
+      rerankConfig,
+      nResultsTarget,
       query
     } = options;
+
+    // Validation
+    if (rerankConfig?.enabled && !rerankConfig.apiKey) {
+      throw new Error('[MultiVectorStore.search] Reranking requires apiKey in rerankConfig');
+    }
 
     // Merge user config with defaults for each collection type
     function getConfig(type: 'segment' | 'summary' | 'fact'): Required<CollectionSearchConfig> {
@@ -129,15 +129,20 @@ export class MultiVectorStore {
       }
       return {
         topK: searchConfig[type]?.topK ?? DEFAULT_SEARCH_CONFIG[type].topK,
-        maxResults: searchConfig[type]?.maxResults ?? DEFAULT_SEARCH_CONFIG[type].maxResults,
         minSimilarity: searchConfig[type]?.minSimilarity ?? DEFAULT_SEARCH_CONFIG[type].minSimilarity
       };
     }
 
-    // Get query variations (placeholder for future query transformation) TODO: implement
-    const queryVariationsFn = getQueryVariations || ((q: string) => [q]);
-    const queryVariations = queryVariationsFn(query);
-    const searchQuery = queryVariations[0]; // TODO: use all query variations
+    // Calculate total topK for all collections
+    const totalTopK = searchCollections.reduce((sum, type) => sum + getConfig(type).topK, 0);
+
+    // Fallback: if sum(topKs) <= nResultsTarget, adjust nResultsTarget
+    let adjustedNResultsTarget = nResultsTarget;
+    if (totalTopK <= nResultsTarget) {
+      adjustedNResultsTarget = totalTopK;
+    }
+
+    const searchQuery = query;
 
     // Get collections based on searchCollections option
     const collectionsToSearch = await Promise.all(
@@ -314,41 +319,15 @@ export class MultiVectorStore {
     });
 
     // Reconstruct enriched segments
-    let enrichedSegments = reconstructSegmentWithAnalysis(segments, summaries, facts);
+    const enrichedSegments = reconstructSegmentWithAnalysis(segments, summaries, facts);
 
-    // Apply intelligent filtering if enabled and track costs
-    let filteringCosts: { total: number; input?: number; output?: number } | undefined;
-    if (intelligentSearch && llmProvider) {
-      const costsBefore = llmProvider.cumulativeCosts;
-
-      const filteredSegments = await filterSearchResults({
-        query,
-        segments,
-        provider: llmProvider
-      });
-
-      const costsAfter = llmProvider.cumulativeCosts;
-      const filteringCostTotal = costsAfter - costsBefore;
-
-      // Create cost object (we only know total from cumulative delta)
-      filteringCosts = {
-        total: filteringCostTotal,
-        input: 0, // Cannot separate without detailed tracking
-        output: 0 // Cannot separate without detailed tracking
-      };
-
-      // Filter enriched segments to only include filtered segment IDs
-      const filteredIds = new Set(filteredSegments.map((s) => s.id));
-      enrichedSegments = enrichedSegments.filter((seg) => filteredIds.has(seg.id));
-    }
-
-    // Convert to search results with actual scores
+    // Convert to search results with vector search scores
     let results: Array<EnrichedSearchResult> = enrichedSegments.map((segment) => {
       const scoreData = segmentScores.get(segment.id) || { score: 0, distance: 1, foundWith: 'segment' as const };
 
       return {
         segment,
-        score: scoreData.score,
+        vectorSearchScore: scoreData.score,
         distance: scoreData.distance,
         foundWith: scoreData.foundWith,
         // Include the fact that was found, if this segment was found via fact search
@@ -359,25 +338,41 @@ export class MultiVectorStore {
       };
     });
 
-    // Sort by score (highest first)
-    results.sort((a, b) => b.score - a.score);
+    // Sort by vector search score (highest first)
+    results.sort((a, b) => b.vectorSearchScore - a.vectorSearchScore);
 
-    // Apply maxResults per collection type
-    const resultsByType = {
-      segment: results.filter((r) => r.foundWith === 'segment'),
-      summary: results.filter((r) => r.foundWith === 'summary'),
-      fact: results.filter((r) => r.foundWith === 'fact')
-    };
+    // RERANKING STEP
+    let rerankingCosts: { cost: number } | undefined;
+    if (rerankConfig?.enabled && totalTopK > adjustedNResultsTarget) {
+      const rerankResult = await rerank({
+        query: searchQuery,
+        retrievedSegments: enrichedSegments,
+        nBest: adjustedNResultsTarget,
+        apiKey: rerankConfig.apiKey,
+        model: rerankConfig.model || 'rerank-v3.5'
+      });
 
-    const limitedResults: Array<EnrichedSearchResult> = [];
-    for (const type of ['segment', 'summary', 'fact'] as const) {
-      const config = getConfig(type);
-      const typeResults = resultsByType[type];
-      limitedResults.push(...typeResults.slice(0, config.maxResults));
+      // Add rerank scores to results
+      const rerankScoreMap = rerankResult.scores;
+      results = results.map((r) => ({
+        ...r,
+        rerankScore: rerankScoreMap.get(r.segment.id)
+      }));
+
+      // Filter to only reranked segments
+      const rerankedIds = new Set(rerankResult.segments.map((s) => s.id));
+      results = results.filter((r) => rerankedIds.has(r.segment.id));
+
+      // Sort by rerank score (descending)
+      results.sort((a, b) => (b.rerankScore ?? 0) - (a.rerankScore ?? 0));
+
+      // Calculate cost (search units to USD)
+      const searchUnits = rerankResult.metadata.searchUnits ?? 0;
+      rerankingCosts = { cost: (searchUnits / 1000) * 1.0 }; // $1 per 1000 units
     }
 
-    // Re-sort combined results by score
-    results = limitedResults.sort((a, b) => b.score - a.score);
+    // Final limiting to nResultsTarget
+    results = results.slice(0, adjustedNResultsTarget);
 
     return {
       query,
@@ -388,7 +383,7 @@ export class MultiVectorStore {
         fromFacts: segmentIdsFromFacts.size
       },
       timestamp: Date.now(),
-      filteringCosts
+      ...(rerankingCosts && { rerankingCosts })
     };
   }
 

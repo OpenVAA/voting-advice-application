@@ -13,7 +13,7 @@ params:
   questionContext: string
   customInstructions: string
   neutralityRequirements: string
-  examples: string 
+  examples: string
 
 prompt: |
   {{generalInstructions}}

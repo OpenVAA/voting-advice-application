@@ -11,7 +11,7 @@ prompt: |
   Definition of a Segment
 
   A segment is a self-contained portion of text (typically a few sentences or a paragraph) that expresses one complete idea or topic.
-  
+
   ### A GOOD SEGMENT SHOULD:
 
   Preserve semantic meaning and logical flow.
@@ -52,4 +52,3 @@ prompt: |
 
   ### TEXT TO SEGMENT:
   {{text}}
-

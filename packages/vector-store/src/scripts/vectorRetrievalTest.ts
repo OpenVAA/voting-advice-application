@@ -84,15 +84,13 @@ export async function testMultiVectorRetrieval(
   // Perform multi-vector search
   const searchResults = await multiVectorStore.search({
     query,
+    nResultsTarget: topKPerCollection * 3, // Total results target
     searchCollections: ['segment', 'summary', 'fact'],
     searchConfig: {
-      segment: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.3 },
-      summary: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.3 },
-      fact: { topK: topKPerCollection, maxResults: topKPerCollection, minSimilarity: 0.5 }
-    },
-    getQueryVariations,
-    llmProvider,
-    intelligentSearch
+      segment: { topK: topKPerCollection, minSimilarity: 0.3 },
+      summary: { topK: topKPerCollection, minSimilarity: 0.3 },
+      fact: { topK: topKPerCollection, minSimilarity: 0.5 }
+    }
   });
 
   const endTime = performance.now();
@@ -101,7 +99,9 @@ export async function testMultiVectorRetrieval(
   console.info('\n\n\n          STEP 3: Segments \n\n');
   searchResults.results.forEach((result, idx) => {
     console.info('\n\n═══════════════════════════════════════\n\n');
-    console.info(`Segment ${idx + 1} (score: ${result.score.toFixed(3)}, found via: ${result.foundWith}):`);
+    const score = result.rerankScore ?? result.vectorSearchScore;
+    const scoreType = result.rerankScore ? 'rerank' : 'vector';
+    console.info(`Segment ${idx + 1} (${scoreType} score: ${score.toFixed(3)}, found via: ${result.foundWith}):`);
     console.info(`   \n\n${result.segment.segment}\n`);
     if (result.segment.summary) {
       console.info(`  - SUMMARY: ${result.segment.summary}\n`);
@@ -117,7 +117,9 @@ export async function testMultiVectorRetrieval(
   console.info(`  - From segments collection: ${searchResults.retrievalSources.fromSegments}`);
   console.info(`  - From summaries collection: ${searchResults.retrievalSources.fromSummaries}`);
   console.info(`  - From facts collection: ${searchResults.retrievalSources.fromFacts}`);
-  console.info(`  - Total costs: $${((llmProvider?.cumulativeCosts ?? 0) + binaryProvider.cumulativeCosts).toFixed(4)}`);
+  console.info(
+    `  - Total costs: $${((llmProvider?.cumulativeCosts ?? 0) + binaryProvider.cumulativeCosts).toFixed(4)}`
+  );
   console.info(`  - Search duration: ${duration}s\n\n`);
 }
 

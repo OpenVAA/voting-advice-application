@@ -1,11 +1,11 @@
 id: xD
-params: 
+params:
   documentEnd: string
   documentStart: string
 
 prompt: |
   You are a metadata extraction expert. You are given two snippets of a document, one from the beginning and one from the end.
-  
+
   You need to extract the document metadata using these snippets.
 
   ### Metadata Extraction:
@@ -21,6 +21,3 @@ prompt: |
 
   ### Document End:
   {{documentEnd}}
-
-  
-

@@ -6,10 +6,7 @@
     "metadata": {
       "title": "The European Parliament elections 2024: Getting more jitters from the mainstream than the far-right",
       "source": "EUROPEAN POLICY CENTRE",
-      "authors": [
-        "Corina Stratulat",
-        "Levente Kocsis"
-      ],
+      "authors": ["Corina Stratulat", "Levente Kocsis"],
       "publishedDate": "2024-04-15",
       "locale": "en"
     },
@@ -287,26 +284,7 @@
         "minSegmentLength": 787,
         "maxSegmentLength": 1629,
         "segmentLengths": [
-          1177,
-          967,
-          931,
-          1603,
-          1318,
-          1338,
-          1177,
-          1476,
-          801,
-          787,
-          1429,
-          1061,
-          1172,
-          840,
-          1370,
-          867,
-          1629,
-          951,
-          829,
-          978
+          1177, 967, 931, 1603, 1318, 1338, 1177, 1476, 801, 787, 1429, 1061, 1172, 840, 1370, 867, 1629, 951, 829, 978
         ],
         "nLlmCalls": 3,
         "costs": {
@@ -370,11 +348,7 @@
     }
   },
   "metadata": {
-    "modelsUsed": [
-      "gemini-2.5-flash-preview-09-2025",
-      "gemini-2.5-flash-preview-09-2025",
-      "gemini-2.5-pro"
-    ],
+    "modelsUsed": ["gemini-2.5-flash-preview-09-2025", "gemini-2.5-flash-preview-09-2025", "gemini-2.5-pro"],
     "language": "en",
     "startTime": "2025-10-18T16:55:48.138Z",
     "endTime": "2025-10-18T16:57:34.342Z"

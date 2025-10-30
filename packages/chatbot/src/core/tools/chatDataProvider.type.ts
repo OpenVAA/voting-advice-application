@@ -1,6 +1,4 @@
-import type {
-  AnyQuestionVariantData,
-} from '@openvaa/data';
+import type { AnyQuestionVariantData } from '@openvaa/data';
 
 export type CandidateInfo = {
   name: string;
@@ -9,7 +7,7 @@ export type CandidateInfo = {
 
 export interface ChatDataProvider {
   // ---
-  // (1) Candidate-related methods 
+  // (1) Candidate-related methods
   // ---
   /**
    * Get information about a candidate.
@@ -32,26 +30,28 @@ export interface ChatDataProvider {
    */
   listCandidatesFor: (opts: { electionId: string; constituencyId?: string }) => Promise<Array<CandidateInfo>>;
 
-
   /**
    * Get the answer to a question for a candidate.
    * @param candidateId - The ID of the candidate.
    * @param questionId - The ID of the question.
    * @returns A `Promise` resolving to the answer to the question.
    */
-  getCandidateAnswer: (candidateId: string, questionId: string) =>
-    Promise<{ questionId: string; answer?: { value: unknown; info?: string | null } }>;
+  getCandidateAnswer: (
+    candidateId: string,
+    questionId: string
+  ) => Promise<{ questionId: string; answer?: { value: unknown; info?: string | null } }>;
 
   /**
    * Get the answers to all questions for a candidate.
    * @param candidateId - The ID of the candidate.
    * @returns A `Promise` resolving to the answers to all questions for the candidate.
    */
-  getCandidateAnswers: (candidateId: string) => Promise<Array<{ questionId: string; answer?: { value: unknown; info?: string | null } }>>;
-
+  getCandidateAnswers: (
+    candidateId: string
+  ) => Promise<Array<{ questionId: string; answer?: { value: unknown; info?: string | null } }>>;
 
   // ---
-  // (2) Question-related methods 
+  // (2) Question-related methods
   // ---
 
   /**
@@ -61,6 +61,4 @@ export interface ChatDataProvider {
    * @returns A `Promise` resolving to the questions.
    */
   findQuestions: (query: string, opts?: { electionId?: string }) => Promise<Array<AnyQuestionVariantData>>;
-
-  
 }

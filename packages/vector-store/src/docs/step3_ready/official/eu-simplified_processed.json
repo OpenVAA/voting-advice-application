@@ -206,22 +206,7 @@
         "averageSegmentLength": 653.8571428571429,
         "minSegmentLength": 450,
         "maxSegmentLength": 968,
-        "segmentLengths": [
-          937,
-          468,
-          968,
-          856,
-          548,
-          675,
-          490,
-          450,
-          655,
-          918,
-          467,
-          510,
-          674,
-          538
-        ],
+        "segmentLengths": [937, 468, 968, 856, 548, 675, 490, 450, 655, 918, 467, 510, 674, 538],
         "nLlmCalls": 1,
         "costs": {
           "total": 0.0055507,
@@ -268,10 +253,7 @@
     }
   },
   "metadata": {
-    "modelsUsed": [
-      "gemini-2.5-flash-preview-09-2025",
-      "gemini-2.5-flash-preview-09-2025"
-    ],
+    "modelsUsed": ["gemini-2.5-flash-preview-09-2025", "gemini-2.5-flash-preview-09-2025"],
     "language": "en",
     "startTime": "2025-10-20T14:29:07.284Z",
     "endTime": "2025-10-20T14:29:59.447Z"

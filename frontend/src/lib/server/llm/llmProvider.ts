@@ -16,5 +16,5 @@ export function getLLMProvider(): LLMProvider {
       primary: 'gpt-4o-mini',
       useCachedInput: false
     }
-  })
-};
+  });
+}

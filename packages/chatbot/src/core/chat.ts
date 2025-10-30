@@ -16,7 +16,7 @@ export class ChatEngine {
    * Note: Messages should already be enhanced with RAG context by ChatbotController if needed
    */
   static async createStream(input: ChatbotAPIInput) {
-    // Load system prompt if not already loaded  
+    // Load system prompt if not already loaded
     if (!this.systemPrompt) {
       console.info('Loading ChatEngine system prompt...');
       this.systemPrompt = await loadPrompt({ promptFileName: 'systemPrompt_v0' });
@@ -97,9 +97,7 @@ export class ChatEngine {
         const stream = new ReadableStream({
           start(controller) {
             // Send text-delta event in SSE format (matches frontend expectations)
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ type: 'text-delta', delta: message })}\n\n`)
-            );
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text-delta', delta: message })}\n\n`));
             // Send finish event to signal completion
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'finish' })}\n\n`));
             controller.close();

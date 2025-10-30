@@ -6,9 +6,7 @@
     "metadata": {
       "title": "Multi-level governance in a 'Europe with the regions'",
       "source": "The British Journal of Politics and International Relations",
-      "authors": [
-        "Arjan H Schakel"
-      ],
+      "authors": ["Arjan H Schakel"],
       "publishedDate": "2020",
       "locale": "en"
     },
@@ -564,47 +562,8 @@
         "minSegmentLength": 281,
         "maxSegmentLength": 2106,
         "segmentLengths": [
-          1428,
-          1312,
-          2106,
-          1318,
-          1820,
-          736,
-          1323,
-          750,
-          1002,
-          414,
-          1311,
-          928,
-          844,
-          1059,
-          1316,
-          608,
-          876,
-          873,
-          1255,
-          1448,
-          767,
-          584,
-          937,
-          843,
-          491,
-          824,
-          678,
-          678,
-          671,
-          517,
-          281,
-          662,
-          517,
-          513,
-          474,
-          389,
-          512,
-          525,
-          625,
-          398,
-          862
+          1428, 1312, 2106, 1318, 1820, 736, 1323, 750, 1002, 414, 1311, 928, 844, 1059, 1316, 608, 876, 873, 1255,
+          1448, 767, 584, 937, 843, 491, 824, 678, 678, 671, 517, 281, 662, 517, 513, 474, 389, 512, 525, 625, 398, 862
         ],
         "nLlmCalls": 4,
         "costs": {
@@ -668,11 +627,7 @@
     }
   },
   "metadata": {
-    "modelsUsed": [
-      "gemini-2.5-flash-preview-09-2025",
-      "gemini-2.5-flash-preview-09-2025",
-      "gemini-2.5-pro"
-    ],
+    "modelsUsed": ["gemini-2.5-flash-preview-09-2025", "gemini-2.5-flash-preview-09-2025", "gemini-2.5-pro"],
     "language": "en",
     "startTime": "2025-10-18T21:23:02.532Z",
     "endTime": "2025-10-18T21:24:20.119Z"

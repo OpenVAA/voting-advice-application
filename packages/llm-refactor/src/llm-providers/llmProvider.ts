@@ -72,7 +72,10 @@ export class LLMProvider {
         console.info('LLM CALL STARTS');
         console.info('--------------------------------');
         console.info('\n[LLMProvider] Generating object with model:', model);
-        console.info('\n[LLMProvider] Messages: ', options.messages?.filter((message) => message.role !== 'system'));
+        console.info(
+          '\n[LLMProvider] Messages: ',
+          options.messages?.filter((message) => message.role !== 'system')
+        );
         // Generation call which throws on validation failures
         const result = await generateObject({
           model: this.provider.languageModel(model),
@@ -191,14 +194,18 @@ export class LLMProvider {
    */
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
-    const model = options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
+    const model =
+      options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
     console.info('\n\n\n\n\n\n');
     console.info('--------------------------------');
     console.info('LLM STREAM STARTS');
     console.info('--------------------------------');
     console.info('\n[LLMProvider] Streaming text with model:', model);
-    console.info('\n[LLMProvider] Messages: ', options.messages?.filter((message) => message.role !== 'system'));
+    console.info(
+      '\n[LLMProvider] Messages: ',
+      options.messages?.filter((message) => message.role !== 'system')
+    );
 
     const result = streamText({
       model: this.provider.languageModel(model),

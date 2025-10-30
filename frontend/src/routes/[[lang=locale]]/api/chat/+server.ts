@@ -2,7 +2,7 @@ import { ChatbotController } from '@openvaa/chatbot';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
-import { OPENAI_API_KEY } from './apiKey';
+import { COHERE_API_KEY, OPENAI_API_KEY } from './apiKey';
 
 // Collection names for multi-vector retrieval
 const COLLECTION_NAMES = {
@@ -14,7 +14,6 @@ const COLLECTION_NAMES = {
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
 let queryReformulationProvider: LLMProvider | null = null;
-let resultFilteringProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
   if (!multiVectorStore) {
@@ -46,18 +45,6 @@ function getQueryReformulationProvider(): LLMProvider {
   return queryReformulationProvider;
 }
 
-function getResultFilteringProvider(): LLMProvider {
-  if (!resultFilteringProvider) {
-    resultFilteringProvider = new LLMProvider({
-      provider: 'openai',
-      apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-5-nano' }
-    });
-  }
-  return resultFilteringProvider;
-}
-
-
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function POST({ request, params }: { request: Request; params: any }) {
@@ -73,8 +60,12 @@ export async function POST({ request, params }: { request: Request; params: any 
     locale: params.lang || 'en',
     vectorStore: await getVectorStore(),
     queryReformulationProvider: getQueryReformulationProvider(),
-    intelligentSearch: false,
-    resultFilteringProvider: getResultFilteringProvider()
+    rerankConfig: {
+      enabled: true,
+      apiKey: COHERE_API_KEY,
+      model: 'rerank-v3.5'
+    },
+    nResultsTarget: 5
     // chatProvider omitted - ChatEngine will use its default
   });
 
@@ -109,9 +100,7 @@ async function wrapInSSE({
         // Send RAG context if available (before streaming starts)
         if (metadata.ragContext) {
           controller.enqueue(encoder.encode('event: rag-context\n'));
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`)
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`));
         }
 
         // Pipe AI SDK stream
@@ -152,11 +141,8 @@ async function wrapInSSE({
               cost: {
                 llm: costs,
                 reformulation: metadata.costs.reformulation,
-                filtering: metadata.costs.filtering || { input: 0, output: 0, total: 0 },
-                total:
-                  costs.total +
-                  metadata.costs.reformulation.total +
-                  (metadata.costs.filtering?.total || 0)
+                reranking: metadata.costs.reranking || { cost: 0 },
+                total: costs.total + metadata.costs.reformulation.total + (metadata.costs.reranking?.cost || 0)
               },
               latency: {
                 reformulationDuration: metadata.latency.reformulationMs,

@@ -20,11 +20,7 @@ import type { LoadedPrompt, LoadedPromptYaml } from '../types/prompt.type';
  * console.log(systemPrompt.usedVars); // Variables used in the template
  * ```
  */
-export async function loadPrompt({
-  promptFileName,
-}: {
-  promptFileName: string;
-}): Promise<LoadedPrompt> {
+export async function loadPrompt({ promptFileName }: { promptFileName: string }): Promise<LoadedPrompt> {
   const filePath = join(__dirname, '..', 'prompts', `${promptFileName}.yaml`);
   const raw = await readFile(filePath, 'utf-8');
   const parsed = loadYaml(raw) as LoadedPromptYaml;

@@ -1,6 +1,6 @@
 import type { CostBreakdown } from '@openvaa/core';
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
-import type { MultiVectorSearchResult, MultiVectorStore } from '@openvaa/vector-store';
+import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@openvaa/vector-store';
 import type { ModelMessage } from 'ai';
 import type { QueryCategory } from '../core/queryCategories';
 
@@ -23,11 +23,11 @@ export interface HandleQueryInput {
   /** LLM provider for query reformulation */
   queryReformulationProvider: LLMProvider;
 
-  /** Intelligent search flag */
-  intelligentSearch: boolean;
+  /** Optional reranking configuration */
+  rerankConfig?: RerankConfig;
 
-  /** LLM provider for result filtering */
-  resultFilteringProvider?: LLMProvider;
+  /** Target number of results to retrieve */
+  nResultsTarget?: number;
 
   /** LLM provider for chat responses (optional - ChatEngine has a default) */
   chatProvider?: LLMProvider;
@@ -79,8 +79,8 @@ export interface ChatbotResponse {
     costs: {
       /** Costs from query reformulation */
       reformulation: CostBreakdown;
-      /** Costs from intelligent result filtering (if used) */
-      filtering?: CostBreakdown;
+      /** Costs from reranking (if used) */
+      reranking?: { cost: number };
       // Note: LLM generation costs come from stream.usage and stream.costs
     };
 
@@ -112,6 +112,6 @@ export interface RAGContextResult {
   searchResult: MultiVectorSearchResult;
   segmentsUsed: number;
   formattedContext: string;
-  filteringCosts: CostBreakdown;
+  rerankingCosts?: { cost: number };
   durationMs: number;
 }

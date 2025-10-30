@@ -4,7 +4,7 @@ import type { z } from 'zod';
 import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 
 // Vercel AI SDK defines their types similarly with Prompt and CallSettings as base types.
-// For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other 
+// For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other
 // params that are defined explicitly, not inside any type. We do the same here by cherry-picking
 // the explicit params from Vercel's StreamText. In addition to copying their existing params to
 // our own LLMStreamOptions type, we also add our own params that are not in Vercel's type.
@@ -15,9 +15,9 @@ import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 // COMMON
 // ------------------------------------------------------------
 
-// TODO: check that model pricing is internally handled and that it is required only if 
-// we don't have up-to-date info on the specific model. Also we need separate config for 
-// fallback model. 
+// TODO: check that model pricing is internally handled and that it is required only if
+// we don't have up-to-date info on the specific model. Also we need separate config for
+// fallback model.
 export interface LLMModelConfig {
   primary: string;
   fallback?: string;

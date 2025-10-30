@@ -21,6 +21,7 @@ API Route (SvelteKit)
 ```
 
 **Problems:**
+
 1. **Business logic in HTTP layer** - categorization handling should be in domain layer
 2. **Not reusable** - cannot use this logic from CLI, tests, background jobs
 3. **Hard to test** - need to mock HTTP to test query handling logic
@@ -45,6 +46,7 @@ API Route (SvelteKit) - Pure HTTP/SSE adapter
 ```
 
 **Benefits:**
+
 1. ✅ **Business logic encapsulated** - all decisions in chatbot package
 2. ✅ **Reusable** - can use controller from any context
 3. ✅ **Testable** - unit test controller without HTTP mocking
@@ -60,8 +62,8 @@ API Route (SvelteKit) - Pure HTTP/SSE adapter
 
 export interface HandleQueryInput {
   // Core inputs
-  messages: Array<ModelMessage>;  // Conversation history
-  locale: string;                 // User locale for prompts
+  messages: Array<ModelMessage>; // Conversation history
+  locale: string; // User locale for prompts
 
   // Infrastructure dependencies (provided by caller)
   vectorStore: MultiVectorStore;
@@ -192,7 +194,7 @@ static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
 
   // PHASE 4: Enhance Messages with RAG (if available)
   // const messages = setPromptVars({ ... }} // see patterns below
-  // 
+  //
 // /**
 //  * Utility function to embed template literals in prompt text with error handling
 //  * @param promptText - The prompt text with {{variable}} placeholders
@@ -444,9 +446,7 @@ async function wrapInSSE({
         // Send RAG context if available
         if (metadata.ragContext) {
           controller.enqueue(encoder.encode('event: rag-context\n'));
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`)
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`));
         }
 
         // Pipe AI SDK stream
@@ -488,10 +488,7 @@ async function wrapInSSE({
                 llm: costs,
                 reformulation: metadata.costs.reformulation,
                 filtering: metadata.costs.filtering || { input: 0, output: 0, total: 0 },
-                total:
-                  costs.total +
-                  metadata.costs.reformulation.total +
-                  (metadata.costs.filtering?.total || 0)
+                total: costs.total + metadata.costs.reformulation.total + (metadata.costs.filtering?.total || 0)
               },
               latency: {
                 reformulationDuration: metadata.latency.reformulationMs,
@@ -600,6 +597,7 @@ describe('ChatbotController', () => {
 ## Migration Plan
 
 ### Phase 1: Create Controller (Non-Breaking)
+
 1. Create `packages/chatbot/src/controller/` directory
 2. Implement `ChatbotController` class
 3. Add `ChatEngine.createCannedStream()` method
@@ -607,51 +605,62 @@ describe('ChatbotController', () => {
 5. Build and verify chatbot package compiles
 
 ### Phase 2: Refactor API Route
+
 1. Update imports in API route
 2. Replace business logic with `ChatbotController.handleQuery()`
 3. Move SSE handling to `wrapInSSE()` utility
 4. Remove hardcoded constants and duplicate logic
 
 ### Phase 3: Cleanup
+
 1. Run `yarn dev:update` to rebuild packages
 2. Test end-to-end in UI (let this be human-in-the-loop)
 
 ## Design Decisions
 
 ### 1. Why Controller Returns StreamTextResult?
+
 **Decision:** Return `{ stream, metadata }` instead of embedding metadata in stream
 
 **Reasoning:**
+
 - Keeps controller agnostic to transport layer (HTTP/SSE/WebSocket)
 - Metadata separate from streaming content
 - Can migrate to AI SDK's `streamData()` when upgrading to Svelte 5
 - Easier to test
 
 ### 2. Why Canned Responses Use Streams?
+
 **Decision:** Create streaming wrapper for canned messages
 
 **Reasoning:**
+
 - Unified interface - caller doesn't care if response is canned or LLM
 - Simplifies API route logic (always handle stream)
 - Future-proof for progressive rendering
 - Consistent metadata structure
 
 **Alternative Considered:** Return different types for canned vs LLM
+
 - Rejected: Would complicate API route with type checking
 
 ### 3. Why Controller Doesn't Manage Singletons?
+
 **Decision:** Caller provides LLMProvider and MultiVectorStore instances
 
 **Reasoning:**
+
 - Controller is pure business logic, not infrastructure
 - Singleton management is framework-specific (e.g., SvelteKit module scope)
 - Easier to test with dependency injection
 - Reusable in different contexts (worker threads, serverless)
 
 ### 4. Why Not Use ChatEngine Directly?
+
 **Decision:** Controller orchestrates ChatEngine + RAG + categorization
 
 **Reasoning:**
+
 - ChatEngine focused on LLM streaming only
 - Controller handles higher-level flow (when to RAG, when to use canned)
 - Separation: ChatEngine = LLM wrapper, Controller = business orchestrator
@@ -659,26 +668,32 @@ describe('ChatbotController', () => {
 ## TODO:
 
 ### 1. Canned Stream Implementation
+
 **Question:** Should we use a real LLM call for canned responses or create a mock stream?
 
 **Answer:**
 Create custom StreamTextResult-compatible object
-  - Pros: Zero cost, instant response
-  - Cons: Need to implement StreamTextResult interface
+
+- Pros: Zero cost, instant response
+- Cons: Need to implement StreamTextResult interface
 
 ### 2. Error Handling Strategy
+
 **Question:** How should controller handle errors?
 
 **Answer::**
 Throw errors, let caller handle
-  - Simple, clear responsibility
+
+- Simple, clear responsibility
 
 ### 3. Streaming Metadata
+
 **Question:** When to send metadata - before stream, during, or after?
 
 **Answer:** Keep current split - RAG before, costs after
 
 ## Success Criteria
+
 ✅ Zero business logic in API route
 ✅ All tests pass
 ✅ Can call `ChatbotController.handleQuery()` from unit tests without HTTP

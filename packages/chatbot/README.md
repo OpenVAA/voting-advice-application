@@ -26,7 +26,6 @@ This package is designed to work with:
 - **Data**: Existing OpenVAA data providers and vector stores
 - **UI**: Vercel AI SDK's `useChat` hook for frontend integration
 
-
 // SOMETHING:
 
 As covered under Foundations, tools are objects that can be called by the model to perform a specific task. AI SDK Core tools contain three elements:

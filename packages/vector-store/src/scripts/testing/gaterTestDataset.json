@@ -95,9 +95,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 1,
-      "contextMessages": [
-        "What is the EPP's stance on migration?"
-      ],
+      "contextMessages": ["What is the EPP's stance on migration?"],
       "query": "What about their economic policy?",
       "description": "New topic question after previous query"
     },
@@ -106,9 +104,7 @@
       "expectedRAG": true,
       "category": "followup_factual",
       "contextLength": 1,
-      "contextMessages": [
-        "What is the S&D's position on climate?"
-      ],
+      "contextMessages": ["What is the S&D's position on climate?"],
       "query": "How does that compare to the EPP?",
       "description": "Comparative follow-up requiring new facts"
     },
@@ -117,9 +113,7 @@
       "expectedRAG": true,
       "category": "followup_factual",
       "contextLength": 1,
-      "contextMessages": [
-        "Who are the lead candidates for the Greens?"
-      ],
+      "contextMessages": ["Who are the lead candidates for the Greens?"],
       "query": "What about for the Left?",
       "description": "Parallel information request"
     },
@@ -128,9 +122,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 1,
-      "contextMessages": [
-        "Thanks for the information"
-      ],
+      "contextMessages": ["Thanks for the information"],
       "query": "What is Renew Europe's stance on digital policy?",
       "description": "New factual question after social response"
     },
@@ -139,9 +131,7 @@
       "expectedRAG": true,
       "category": "complex_multitopic",
       "contextLength": 1,
-      "contextMessages": [
-        "What is the voting age in France?"
-      ],
+      "contextMessages": ["What is the voting age in France?"],
       "query": "Compare that to voting ages across all EU member states",
       "description": "Expansion to multi-country comparison"
     },
@@ -162,10 +152,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 2,
-      "contextMessages": [
-        "Thanks",
-        "You're welcome!"
-      ],
+      "contextMessages": ["Thanks", "You're welcome!"],
       "query": "Who is leading the polls in Germany?",
       "description": "New factual question after pleasantries"
     },
@@ -174,10 +161,7 @@
       "expectedRAG": true,
       "category": "complex_multitopic",
       "contextLength": 2,
-      "contextMessages": [
-        "What is the Green Deal?",
-        "It's the EU's climate policy framework"
-      ],
+      "contextMessages": ["What is the Green Deal?", "It's the EU's climate policy framework"],
       "query": "Which parties support it and which oppose it?",
       "description": "Multi-party position mapping"
     },
@@ -198,10 +182,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 2,
-      "contextMessages": [
-        "I'm interested in climate policy",
-        "I can help you with that"
-      ],
+      "contextMessages": ["I'm interested in climate policy", "I can help you with that"],
       "query": "What is the Greens' climate platform for 2024?",
       "description": "Specific factual query after topic indication"
     },
@@ -236,11 +217,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 3,
-      "contextMessages": [
-        "Hello",
-        "Hi! How can I help?",
-        "I want to learn about the election"
-      ],
+      "contextMessages": ["Hello", "Hi! How can I help?", "I want to learn about the election"],
       "query": "What are the key dates for the 2024 election?",
       "description": "Factual question after conversation opening"
     },
@@ -249,11 +226,7 @@
       "expectedRAG": true,
       "category": "followup_factual",
       "contextLength": 3,
-      "contextMessages": [
-        "Who can vote in the EU election?",
-        "EU citizens over 18 in most countries",
-        "Interesting"
-      ],
+      "contextMessages": ["Who can vote in the EU election?", "EU citizens over 18 in most countries", "Interesting"],
       "query": "Which countries have different age requirements?",
       "description": "Drill-down factual question"
     },
@@ -262,11 +235,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 3,
-      "contextMessages": [
-        "What's the weather like?",
-        "I can only help with EU election information",
-        "Oh okay"
-      ],
+      "contextMessages": ["What's the weather like?", "I can only help with EU election information", "Oh okay"],
       "query": "Then tell me about the ECR group's platform",
       "description": "On-topic factual after off-topic redirect"
     },
@@ -303,12 +272,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 4,
-      "contextMessages": [
-        "Hi",
-        "Hello!",
-        "Can you help me?",
-        "Of course"
-      ],
+      "contextMessages": ["Hi", "Hello!", "Can you help me?", "Of course"],
       "query": "What is the European Parliament's role?",
       "description": "Institutional question after pleasantries"
     },
@@ -331,12 +295,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 4,
-      "contextMessages": [
-        "I'm a student",
-        "Great!",
-        "I need to understand the EU better",
-        "I can help with that"
-      ],
+      "contextMessages": ["I'm a student", "Great!", "I need to understand the EU better", "I can help with that"],
       "query": "How does the Spitzenkandidat system work?",
       "description": "Technical question after context"
     },
@@ -375,13 +334,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 5,
-      "contextMessages": [
-        "Good morning",
-        "Good morning!",
-        "How are you?",
-        "I'm well, thank you",
-        "That's nice"
-      ],
+      "contextMessages": ["Good morning", "Good morning!", "How are you?", "I'm well, thank you", "That's nice"],
       "query": "What is the European Commission's role in elections?",
       "description": "Factual after extended greeting"
     },
@@ -405,13 +358,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 5,
-      "contextMessages": [
-        "This is confusing",
-        "I understand, what would help?",
-        "Just basic info",
-        "Sure",
-        "Thanks"
-      ],
+      "contextMessages": ["This is confusing", "I understand, what would help?", "Just basic info", "Sure", "Thanks"],
       "query": "How many seats are in the European Parliament?",
       "description": "Basic fact after expressing confusion"
     },
@@ -452,14 +399,7 @@
       "expectedRAG": true,
       "category": "direct_factual",
       "contextLength": 6,
-      "contextMessages": [
-        "Hey",
-        "Hi there!",
-        "Quick question",
-        "Go ahead",
-        "Actually, let me think",
-        "Take your time"
-      ],
+      "contextMessages": ["Hey", "Hi there!", "Quick question", "Go ahead", "Actually, let me think", "Take your time"],
       "query": "What is the threshold for seats in different countries?",
       "description": "Specific factual after hesitation"
     },
@@ -860,9 +800,7 @@
       "expectedRAG": false,
       "category": "clarification_elaboration",
       "contextLength": 1,
-      "contextMessages": [
-        "The EPP supports market-based climate solutions with innovation"
-      ],
+      "contextMessages": ["The EPP supports market-based climate solutions with innovation"],
       "query": "Can you explain that more simply?",
       "description": "Simplification request"
     },
@@ -871,9 +809,7 @@
       "expectedRAG": false,
       "category": "clarification_elaboration",
       "contextLength": 1,
-      "contextMessages": [
-        "The Greens want to transition to renewable energy"
-      ],
+      "contextMessages": ["The Greens want to transition to renewable energy"],
       "query": "What does that mean exactly?",
       "description": "Clarification of provided info"
     },
@@ -882,9 +818,7 @@
       "expectedRAG": false,
       "category": "clarification_elaboration",
       "contextLength": 1,
-      "contextMessages": [
-        "S&D emphasizes social justice in climate policy"
-      ],
+      "contextMessages": ["S&D emphasizes social justice in climate policy"],
       "query": "Can you give me an example?",
       "description": "Example request for provided concept"
     },
@@ -893,9 +827,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 1,
-      "contextMessages": [
-        "How can I help you today?"
-      ],
+      "contextMessages": ["How can I help you today?"],
       "query": "Thanks, I'm just browsing",
       "description": "Casual response to offer"
     },
@@ -904,9 +836,7 @@
       "expectedRAG": false,
       "category": "meta_opinion",
       "contextLength": 1,
-      "contextMessages": [
-        "The EPP and S&D have different economic approaches"
-      ],
+      "contextMessages": ["The EPP and S&D have different economic approaches"],
       "query": "Which one is better?",
       "description": "Subjective comparison request"
     },
@@ -927,10 +857,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 2,
-      "contextMessages": [
-        "What is the Green Deal?",
-        "It's the EU's comprehensive climate policy framework"
-      ],
+      "contextMessages": ["What is the Green Deal?", "It's the EU's comprehensive climate policy framework"],
       "query": "Thank you, that's helpful",
       "description": "Gratitude after answer"
     },
@@ -939,10 +866,7 @@
       "expectedRAG": false,
       "category": "clarification_elaboration",
       "contextLength": 2,
-      "contextMessages": [
-        "Who are the Greens' lead candidates?",
-        "Terry Reintke and Bas Eickhout"
-      ],
+      "contextMessages": ["Who are the Greens' lead candidates?", "Terry Reintke and Bas Eickhout"],
       "query": "Tell me more about them",
       "description": "Elaboration on provided names"
     },
@@ -951,10 +875,7 @@
       "expectedRAG": false,
       "category": "meta_opinion",
       "contextLength": 2,
-      "contextMessages": [
-        "The Left supports wealth redistribution",
-        "The EPP supports free markets"
-      ],
+      "contextMessages": ["The Left supports wealth redistribution", "The EPP supports free markets"],
       "query": "Which approach is more effective?",
       "description": "Effectiveness judgment request"
     },
@@ -963,10 +884,7 @@
       "expectedRAG": false,
       "category": "conversation_management",
       "contextLength": 2,
-      "contextMessages": [
-        "What is Renew's position?",
-        "They support centrist liberal policies"
-      ],
+      "contextMessages": ["What is Renew's position?", "They support centrist liberal policies"],
       "query": "Actually, let's talk about something different",
       "description": "Topic shift request"
     },
@@ -988,11 +906,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 3,
-      "contextMessages": [
-        "When is the election?",
-        "June 6-9, 2024",
-        "Perfect"
-      ],
+      "contextMessages": ["When is the election?", "June 6-9, 2024", "Perfect"],
       "query": "Thanks so much",
       "description": "Gratitude after satisfactory answer"
     },
@@ -1014,11 +928,7 @@
       "expectedRAG": false,
       "category": "meta_opinion",
       "contextLength": 3,
-      "contextMessages": [
-        "Tell me about ID",
-        "They're a right-wing nationalist group",
-        "And ECR?"
-      ],
+      "contextMessages": ["Tell me about ID", "They're a right-wing nationalist group", "And ECR?"],
       "query": "Which one should I support?",
       "description": "Support recommendation request"
     },
@@ -1027,11 +937,7 @@
       "expectedRAG": false,
       "category": "conversation_management",
       "contextLength": 3,
-      "contextMessages": [
-        "What about climate policy?",
-        "Many parties have climate platforms",
-        "I see"
-      ],
+      "contextMessages": ["What about climate policy?", "Many parties have climate platforms", "I see"],
       "query": "Can we go back to what we were discussing before?",
       "description": "Navigation to previous topic"
     },
@@ -1054,12 +960,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 4,
-      "contextMessages": [
-        "How many MEPs are there?",
-        "705 MEPs total",
-        "Got it",
-        "Any other questions?"
-      ],
+      "contextMessages": ["How many MEPs are there?", "705 MEPs total", "Got it", "Any other questions?"],
       "query": "No, that's all I needed",
       "description": "Conversation closing"
     },
@@ -1125,13 +1026,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 5,
-      "contextMessages": [
-        "Hello",
-        "Hi! How can I help?",
-        "I have a question",
-        "Go ahead",
-        "Actually it's complicated"
-      ],
+      "contextMessages": ["Hello", "Hi! How can I help?", "I have a question", "Go ahead", "Actually it's complicated"],
       "query": "You know what, never mind",
       "description": "Abandoning question"
     },
@@ -1201,14 +1096,7 @@
       "expectedRAG": false,
       "category": "conversational_social",
       "contextLength": 6,
-      "contextMessages": [
-        "Hi",
-        "Hello!",
-        "Can you help?",
-        "Of course",
-        "Great",
-        "What do you need?"
-      ],
+      "contextMessages": ["Hi", "Hello!", "Can you help?", "Of course", "Great", "What do you need?"],
       "query": "Actually I figured it out, thanks",
       "description": "Self-resolution acknowledgment"
     },

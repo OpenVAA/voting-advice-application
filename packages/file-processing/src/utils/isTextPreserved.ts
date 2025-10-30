@@ -61,9 +61,7 @@ function checkCoreContent(original: string, concatenated: string): TextPreservat
     name: 'Core Content Preservation',
     passed,
     severity: 'error',
-    message: passed
-      ? 'All non-whitespace characters preserved exactly'
-      : 'Content differs after removing whitespace',
+    message: passed ? 'All non-whitespace characters preserved exactly' : 'Content differs after removing whitespace',
     details: passed
       ? undefined
       : {
@@ -80,10 +78,7 @@ function checkCoreContent(original: string, concatenated: string): TextPreservat
  * Check 2: Core content with common substitutions allowed
  * Same as Check 1 but also normalizes common character substitutions
  */
-function checkCoreContentWithSubstitutions(
-  original: string,
-  concatenated: string
-): TextPreservationCheck {
+function checkCoreContentWithSubstitutions(original: string, concatenated: string): TextPreservationCheck {
   const origProcessed = normalizeSubstitutions(removeWhitespace(original.normalize('NFC')));
   const concatProcessed = normalizeSubstitutions(removeWhitespace(concatenated.normalize('NFC')));
 
@@ -120,8 +115,7 @@ function checkCharacterDistribution(original: string, concatenated: string): Tex
   const origCounts = countChars(original);
   const concatCounts = countChars(concatenated);
 
-  const calcDiff = (orig: number, concat: number) =>
-    orig === 0 ? 0 : Math.abs(orig - concat) / orig;
+  const calcDiff = (orig: number, concat: number) => (orig === 0 ? 0 : Math.abs(orig - concat) / orig);
 
   const letterDiff = calcDiff(origCounts.letters, concatCounts.letters);
   const digitDiff = calcDiff(origCounts.digits, concatCounts.digits);
@@ -134,9 +128,7 @@ function checkCharacterDistribution(original: string, concatenated: string): Tex
     name: 'Character Distribution',
     passed,
     severity: 'warning',
-    message: passed
-      ? 'Character type distribution is similar'
-      : 'Character type distribution differs significantly',
+    message: passed ? 'Character type distribution is similar' : 'Character type distribution differs significantly',
     details: {
       original: origCounts,
       concatenated: concatCounts,
@@ -166,9 +158,7 @@ function checkLengthSanity(original: string, concatenated: string): TextPreserva
     name: 'Length Sanity',
     passed,
     severity: 'warning',
-    message: passed
-      ? 'Lengths are within acceptable range'
-      : 'Length difference exceeds 10% threshold',
+    message: passed ? 'Lengths are within acceptable range' : 'Length difference exceeds 10% threshold',
     details: {
       originalLength: origNoSpace.length,
       concatenatedLength: concatNoSpace.length,
@@ -246,9 +236,7 @@ function checkInvisibleCharacters(original: string, concatenated: string): TextP
     name: 'Invisible Characters',
     passed,
     severity: 'info',
-    message: passed
-      ? 'Invisible character counts match'
-      : 'Invisible character counts differ',
+    message: passed ? 'Invisible character counts match' : 'Invisible character counts differ',
     details: {
       original: origInvisible,
       concatenated: concatInvisible,

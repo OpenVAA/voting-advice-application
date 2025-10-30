@@ -57,7 +57,7 @@ export interface QuestionInfoData {
 export interface QuestionInfoResult extends LLMPipelineResult<QuestionInfoData> {}
 
 /**
- * Raw information from question info generation. This is not the same as the package's 
+ * Raw information from question info generation. This is not the same as the package's
  * output type QuestionInfoResult. This type is concerned with LLM interaction, whereas
  * QuestionInfoResult is concerned with the package's output type.
  *

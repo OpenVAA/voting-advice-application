@@ -48,7 +48,8 @@ export interface SearchResult<TItem = unknown> {
  *     standaloneFacts: ['705 members'],
  *     metadata: { source: 'EU Parliament' }
  *   },
- *   score: 0.95,
+ *   vectorSearchScore: 0.95,
+ *   rerankScore: 0.98,
  *   distance: 0.1,
  *   foundWith: 'summary'
  * }
@@ -57,8 +58,10 @@ export interface SearchResult<TItem = unknown> {
 export interface EnrichedSearchResult {
   /** Enriched segment with full analysis context */
   segment: EnrichedSegment;
-  /** Similarity score (higher is better, 0-1 range) */
-  score: number;
+  /** Original vector similarity score (higher is better, 0-1 range) */
+  vectorSearchScore: number;
+  /** Reranking score (only present when reranking is enabled) */
+  rerankScore?: number;
   /** Distance metric (lower is better) */
   distance: number;
   /** Which collection found this result */
@@ -83,8 +86,8 @@ export interface MultiVectorSearchResult {
   };
   /** Timestamp when search was performed */
   timestamp: number;
-  /** Costs incurred from intelligent filtering (if enabled) */
-  filteringCosts?: CostBreakdown;
+  /** Costs incurred from reranking (if enabled) */
+  rerankingCosts?: { cost: number };
 }
 
 /**
@@ -93,10 +96,20 @@ export interface MultiVectorSearchResult {
 export interface CollectionSearchConfig {
   /** Number of results to fetch from ChromaDB initially */
   topK?: number;
-  /** Maximum results to return from this collection after filtering */
-  maxResults?: number;
   /** Minimum similarity score threshold (0-1, higher is more similar) */
   minSimilarity?: number;
+}
+
+/**
+ * Configuration for Cohere reranking
+ */
+export interface RerankConfig {
+  /** Enable reranking with Cohere */
+  enabled: boolean;
+  /** Cohere API key */
+  apiKey: string;
+  /** Reranking model to use (default: 'rerank-v3.5') */
+  model?: string;
 }
 
 /**
@@ -105,6 +118,8 @@ export interface CollectionSearchConfig {
 export interface MultiVectorSearchOptions {
   /** The query string to search for */
   query: string;
+  /** Target number of results to return */
+  nResultsTarget: number;
   /** Which collections to search (default: all) */
   searchCollections?: Array<'segment' | 'summary' | 'fact'>;
   /** Per-collection search configuration */
@@ -113,12 +128,8 @@ export interface MultiVectorSearchOptions {
     summary?: CollectionSearchConfig;
     fact?: CollectionSearchConfig;
   };
-  /** Function to generate query variations */
-  getQueryVariations?: (query: string) => Array<string>; // TODO: implement a default utility for this
-  /** Enable intelligent filtering using LLM */
-  intelligentSearch?: boolean;
-  /** LLM provider for intelligent filtering */
-  llmProvider?: LLMProvider;
+  /** Optional reranking configuration */
+  rerankConfig?: RerankConfig;
 }
 
 /**

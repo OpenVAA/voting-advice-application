@@ -5,7 +5,7 @@ params:
 
 prompt: |
   You are a summarization and information extraction expert.
-  
+
   Your task is to produce a summary and a list of standalone facts from a given text segment.
 
   ### SUMMARY INSTRUCTIONS:
@@ -13,7 +13,7 @@ prompt: |
   The summary should capture the main idea of the segment in one or two sentences.
 
   Use key terms and phrases from the text so that the 
-  
+
   ### STANDALONE FACTS INSTRUCTIONS:
   The standalone facts should be specific, self-contained statements that can be embedded separately for structured retrieval.
 
@@ -28,7 +28,7 @@ prompt: |
   "X people live in Los Angeles."
 
   AVOID vague statements like “it was successful”, "it was a crucial victory", or "the results were negative / mixed / ...", etc. 
-  
+
   These are non-specific and unverifiable statements that are not helpful for the RAG system and should not be included in the summary or standalone facts.
 
   ### IMPORTANT:
@@ -57,5 +57,3 @@ prompt: |
 
   ### Segment with Context:
   {{segmentWithContext}}
-
-  

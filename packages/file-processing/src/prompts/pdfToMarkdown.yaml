@@ -1,5 +1,5 @@
 id: pdfConversion
-params: 
+params:
   pdf: string
 
 prompt: |

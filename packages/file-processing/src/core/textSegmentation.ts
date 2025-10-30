@@ -143,7 +143,7 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
           inputTokens: totalInputTokens,
           outputTokens: totalOutputTokens
         },
-        processingTimeMs: new Date().getTime() - startTime.getTime(),
+        processingTimeMs: new Date().getTime() - startTime.getTime()
       }
     },
     llmMetrics: {
@@ -163,7 +163,7 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
     success: true,
     metadata: {
       modelsUsed: Array.from(new Set(responses.map((response) => response.model))),
-      language: 'en', // TODO: infer and route the 
+      language: 'en', // TODO: infer and route the
       startTime,
       endTime: new Date()
     }

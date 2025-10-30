@@ -96,7 +96,9 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
   const finalDocumentId = documentId || `${crypto.randomUUID()}`;
 
   // Extract metadata from the full text
-  controller?.info(`Extracting document metadata using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
+  controller?.info(
+    `Extracting document metadata using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`
+  );
   const { metadata, response: metadataResponse } = await extractMetadata({
     text,
     llmProvider,
@@ -128,7 +130,9 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
   }) as Array<LLMObjectGenerationOptions<{ summary: string; standaloneFacts?: Array<string> }>>;
 
   // Process segments in parallel
-  controller?.info(`Analyzing segments using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`);
+  controller?.info(
+    `Analyzing segments using ${llmProvider.config.provider}'s ${llmProvider.config.modelConfig.primary}`
+  );
   const responses = await llmProvider.generateObjectParallel({
     requests,
     maxConcurrent: 4,

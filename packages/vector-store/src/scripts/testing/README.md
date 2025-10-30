@@ -13,6 +13,7 @@ The RAG gater is a critical component that:
 3. **Enhances UX**: Faster responses for simple interactions
 
 However, incorrect gating decisions have consequences:
+
 - **False Negatives**: Missing RAG when needed → incorrect/hallucinated answers
 - **False Positives**: Using RAG unnecessarily → slower responses, wasted resources
 
@@ -54,11 +55,13 @@ This is a **diagnostic test** using a **contingency table** (confusion matrix) a
   - 2-9 context: 5 cases each per RAG group
 
 **Categories (RAG=true)**:
+
 - `direct_factual`: Factual questions requiring knowledge base (policies, candidates, dates)
 - `followup_factual`: Follow-up questions requiring NEW factual information
 - `complex_multitopic`: Multi-party or multi-topic comparisons
 
 **Categories (RAG=false)**:
+
 - `conversational_social`: Greetings, thanks, acknowledgments
 - `clarification_elaboration`: Requests to clarify/simplify already-provided information
 - `meta_opinion`: Subjective questions (recommendations, "which is better?")
@@ -123,6 +126,7 @@ yarn tsx src/scripts/testing/gaterTest.ts
 ```
 
 **Requirements**:
+
 - `OPENAI_API_KEY` environment variable must be set
 - Internet connection for API calls
 - ~2-3 minutes runtime (110 LLM calls with gpt-5-nano)
@@ -132,33 +136,40 @@ yarn tsx src/scripts/testing/gaterTest.ts
 #### Overall Metrics
 
 **Accuracy**: Overall correctness rate
+
 - Target: >90% for production use
 
 **Precision**: Of queries marked "needs RAG", how many actually need it?
+
 - Low precision = wasted resources (too many false positives)
 
 **Recall**: Of queries that need RAG, how many were caught?
+
 - Low recall = incorrect answers (missed factual queries)
 - **Most critical metric** - false negatives cause hallucinations
 
 **F1 Score**: Harmonic mean of precision and recall
+
 - Balances both concerns
 
 #### By Category Analysis
 
 Identifies systematic weaknesses:
+
 - Low recall in `followup_factual`? → Gater struggles with context-dependent factual follow-ups
 - Low precision in `clarification_elaboration`? → Over-triggering RAG for simple clarifications
 
 #### By Context Length Analysis
 
 Shows how conversation depth affects performance:
+
 - Poor performance at 0 context? → Baseline classification issues
 - Degrading performance at 5+ context? → Context tracking problems
 
 #### Misclassifications
 
 Each misclassification shows:
+
 - Test case ID and category
 - Expected vs predicted decision
 - Actual query and description
@@ -178,16 +189,14 @@ Edit `gaterTestDataset.json`:
   "expectedRAG": true,
   "category": "your_category",
   "contextLength": 2,
-  "contextMessages": [
-    "Previous user message 1",
-    "Previous user message 2"
-  ],
+  "contextMessages": ["Previous user message 1", "Previous user message 2"],
   "query": "Your test query here",
   "description": "What this tests"
 }
 ```
 
 **Guidelines**:
+
 - Keep balanced distribution (50/50 RAG=true/false)
 - Use realistic EU 2024 election domain queries
 - Include edge cases and ambiguous queries
@@ -216,28 +225,32 @@ const predictedRAG = await isRAGRequired({
 
 Based on chatbot requirements:
 
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| Accuracy | >90% | Overall reliability threshold |
-| Recall | >95% | False negatives cause hallucinations (critical) |
-| Precision | >85% | Some false positives acceptable (just slower) |
-| F1 Score | >90% | Balanced performance |
+| Metric    | Target | Rationale                                       |
+| --------- | ------ | ----------------------------------------------- |
+| Accuracy  | >90%   | Overall reliability threshold                   |
+| Recall    | >95%   | False negatives cause hallucinations (critical) |
+| Precision | >85%   | Some false positives acceptable (just slower)   |
+| F1 Score  | >90%   | Balanced performance                            |
 
 **Priority**: Recall > Precision (better to over-retrieve than miss factual queries)
 
 ## Troubleshooting
 
 **"OPENAI_API_KEY environment variable is required"**
+
 - Set the API key: `export OPENAI_API_KEY=your_key_here`
 
 **"Temperature setting not supported"**
+
 - Warning only, safe to ignore (gpt-5-nano doesn't support temperature parameter)
 
 **Test runs slowly**
+
 - Expected: ~110 API calls take 2-3 minutes
 - Use `gpt-5-nano` for faster/cheaper testing
 
 **High false negative rate**
+
 - Check prompt in `/packages/vector-store/src/core/prompts/isRAGRequired.yaml`
 - Review misclassified cases for patterns
 - Consider adding examples to prompt

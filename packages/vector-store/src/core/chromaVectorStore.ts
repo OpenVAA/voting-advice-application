@@ -60,8 +60,11 @@ export class ChromaVectorStore extends VectorStore {
    * Internal method to add embeddable items to the current collection
    */
   private async addToCollection(items: Array<SourceSegment | SegmentSummary | SegmentFact>): Promise<void> {
-    if (!this.collection) throw new Error('ChromaVectorStore cannot add items to a non-existent collection. Vector store not properly initialized. Call initialize() first.');
-    if (items.length === 0) return; 
+    if (!this.collection)
+      throw new Error(
+        'ChromaVectorStore cannot add items to a non-existent collection. Vector store not properly initialized. Call initialize() first.'
+      );
+    if (items.length === 0) return;
 
     // Embed items only if they don't have embeddings OR the embedding dimension is different from the embedder
     const itemsWithEmbeddings = await Promise.all(
@@ -98,7 +101,10 @@ export class ChromaVectorStore extends VectorStore {
    * @param ids - Array of item IDs to delete
    */
   async delete(ids: Array<string>): Promise<void> {
-    if (!this.collection) throw new Error('ChromaVectorStore cannot delete items from a non-existent collection. Vector store not properly initialized. Call initialize() first.');
+    if (!this.collection)
+      throw new Error(
+        'ChromaVectorStore cannot delete items from a non-existent collection. Vector store not properly initialized. Call initialize() first.'
+      );
     await this.collection.delete({ ids });
   }
 
@@ -113,7 +119,10 @@ export class ChromaVectorStore extends VectorStore {
     query: string,
     topK: number = 10
   ): Promise<Array<SearchResult<SourceSegment | SegmentSummary | SegmentFact>>> {
-    if (!this.collection) throw new Error('ChromaVectorStore cannot search in a non-existent collection. Vector store not properly initialized. Call initialize() first.');
+    if (!this.collection)
+      throw new Error(
+        'ChromaVectorStore cannot search in a non-existent collection. Vector store not properly initialized. Call initialize() first.'
+      );
 
     // Embed the query
     const queryEmbedding = await this.embedder.embed(query);

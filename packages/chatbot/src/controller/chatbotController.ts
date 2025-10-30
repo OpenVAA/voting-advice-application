@@ -118,10 +118,10 @@ export class ChatbotController {
     // Perform vector search
     const searchResult = await input.vectorStore.search({
       query: categorization.rephrased,
+      nResultsTarget: input.nResultsTarget || 10,
       searchCollections: ['segment', 'summary', 'fact'],
-      searchConfig: {}, // Use defaults: facts (topK:10, max:5, min:0.5), others (topK:8, max:3, min:0.3)
-      intelligentSearch: input.intelligentSearch,
-      llmProvider: input.intelligentSearch ? input.resultFilteringProvider : undefined
+      searchConfig: {}, // Use defaults: facts (topK:10, min:0.5), others (topK:8, min:0.3)
+      rerankConfig: input.rerankConfig
     });
 
     const durationMs = Date.now() - startTime;
@@ -130,11 +130,7 @@ export class ChatbotController {
       searchResult,
       segmentsUsed: searchResult.results.length,
       formattedContext: this.formatRAGContext(searchResult),
-      filteringCosts: {
-        total: searchResult.filteringCosts?.total || 0,
-        input: searchResult.filteringCosts?.input || 0,
-        output: searchResult.filteringCosts?.output || 0
-      },
+      rerankingCosts: searchResult.rerankingCosts,
       durationMs
     };
   }
@@ -272,7 +268,7 @@ export class ChatbotController {
           : undefined,
         costs: {
           reformulation: categorization.costs,
-          filtering: ragContext?.filteringCosts
+          reranking: ragContext?.rerankingCosts
         },
         latency: {
           reformulationMs: categorization.durationMs,

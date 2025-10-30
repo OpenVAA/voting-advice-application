@@ -63,9 +63,7 @@ export async function filterSearchResults({
   const batchResults = await Promise.all(
     batches.map(async ({ segments: batchSegments, startIndex }) => {
       // Format segments with 0-based indices for this batch
-      const formattedResults = batchSegments
-        .map((segment, idx) => `[${idx}] ${segment.content}`)
-        .join('\n\n');
+      const formattedResults = batchSegments.map((segment, idx) => `[${idx}] ${segment.content}`).join('\n\n');
 
       // Fill prompt variables
       const filledPrompt = setPromptVars({

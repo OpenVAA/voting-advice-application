@@ -11,6 +11,7 @@ export type {
   MultiVectorSearchOptions,
   MultiVectorSearchResult,
   MultiVectorStoreConfig,
+  RerankConfig,
   SearchResult,
   VectorStore,
   VectorStoreConfig

@@ -5,7 +5,7 @@ import { join } from 'path';
 import path from 'path';
 import { isRAGRequired } from '../../core/utils/isRAGRequired';
 
-dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '..','.env') });
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '..', '.env') });
 const apiKey = process.env.OPENAI_API_KEY;
 
 // ----------------------------------------

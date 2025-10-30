@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 OpenVAA is a software framework for creating Voting Advice Applications (VAAs). It consists of a monorepo with:
+
 - **Frontend**: SvelteKit application (voters' UI + candidate app)
 - **Backend**: Strapi CMS with custom plugins
 - **Packages**: Modular libraries for matching algorithms, filters, data handling, and LLM features
@@ -14,6 +15,7 @@ OpenVAA is a software framework for creating Voting Advice Applications (VAAs). 
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js version: **20.18.1** (specified in root package.json - use nvm)
 - Yarn **4.6** (required, npm not supported)
 - Docker (for full stack development)
@@ -38,6 +40,7 @@ yarn dev:down
 **Important**: When using Docker, only modify the `.env` file in the project root, not individual workspace `.env` files.
 
 ### Backend Setup
+
 1. After `yarn dev`, navigate to `http://localhost:1337` (may take time to build)
 2. Register an admin account in Strapi admin panel
 3. With mock data enabled: default admin is `admin@example.com` / `admin`
@@ -45,6 +48,7 @@ yarn dev:down
 ### Running Components Separately
 
 **Frontend only:**
+
 ```bash
 # Build dependencies first
 yarn workspace @openvaa/app-shared build
@@ -56,6 +60,7 @@ yarn dev
 ```
 
 **Backend only:**
+
 ```bash
 # Build dependencies first
 yarn workspace @openvaa/app-shared build
@@ -75,6 +80,7 @@ yarn dev
 The project uses Yarn workspaces with shared dependencies:
 
 **Abstract Logic Packages:**
+
 - `@openvaa/core` - Core type definitions for matching
 - `@openvaa/data` - Data models and types
 - `@openvaa/filters` - Entity filtering logic
@@ -87,12 +93,14 @@ The project uses Yarn workspaces with shared dependencies:
 - `@openvaa/question-info` - Question metadata
 
 **Application Packages:**
+
 - `@openvaa/app-shared` - Shared code between frontend and backend (must be built first)
 - `@openvaa/frontend` - SvelteKit application
 - `@openvaa/strapi` - Strapi backend
 - `@openvaa/strapi-admin-tools` - Custom Strapi plugin
 
 **Development:**
+
 - `@openvaa/shared-config` - Shared ESLint/TypeScript configs
 
 ### Working with Workspaces
@@ -114,6 +122,7 @@ yarn build:app-shared
 ### Module Dependencies
 
 When adding interdependencies between modules:
+
 1. Add to `package.json` using `workspace:` syntax:
    ```json
    "dependencies": {
@@ -135,6 +144,7 @@ When adding interdependencies between modules:
 ## Common Commands
 
 ### Development
+
 ```bash
 yarn dev                    # Start full Docker stack
 yarn dev:down               # Stop and clean up Docker stack
@@ -143,9 +153,10 @@ yarn dev:attach             # Start with logs attached
 yarn dev:update             # Rebuild shared packages and restart frontend container
 ```
 
-**IMPORTANT**: After modifying any package in `/packages` (e.g., `@openvaa/app-shared`, `@openvaa/matching`, `@openvaa/chatbot`), you MUST run `yarn dev:update` to rebuild the packages and update them in the Docker development environment. Simply restarting containers will NOT pick up package changes. Please do this everytime you have finished a feature addition in the packages directory. 
+**IMPORTANT**: After modifying any package in `/packages` (e.g., `@openvaa/app-shared`, `@openvaa/matching`, `@openvaa/chatbot`), you MUST run `yarn dev:update` to rebuild the packages and update them in the Docker development environment. Simply restarting containers will NOT pick up package changes. Please do this everytime you have finished a feature addition in the packages directory.
 
 ### Building
+
 ```bash
 yarn build:shared           # Build all packages in /packages
 yarn build:app-shared       # Build app-shared and dependencies
@@ -153,6 +164,7 @@ yarn prod                   # Production Docker build
 ```
 
 ### Testing
+
 ```bash
 yarn test:unit              # Run all unit tests (Vitest)
 yarn test:unit:watch        # Watch mode (packages only)
@@ -160,6 +172,7 @@ yarn test:e2e               # Run E2E tests (Playwright)
 ```
 
 ### Code Quality
+
 ```bash
 yarn format                 # Format with Prettier
 yarn format:check           # Check formatting
@@ -168,6 +181,7 @@ yarn lint:check             # Check for ESLint issues
 ```
 
 ### Frontend Specific
+
 ```bash
 yarn workspace @openvaa/frontend dev          # Start dev server
 yarn workspace @openvaa/frontend build        # Build for production
@@ -175,6 +189,7 @@ yarn workspace @openvaa/frontend test:unit    # Run frontend unit tests
 ```
 
 ### Backend Specific
+
 ```bash
 yarn workspace @openvaa/strapi dev            # Start Strapi dev server
 yarn workspace @openvaa/strapi build          # Build Strapi
@@ -187,12 +202,14 @@ yarn workspace @openvaa/strapi test:unit      # Run backend unit tests
 ### Frontend (SvelteKit)
 
 **Technology Stack:**
+
 - Svelte 4 + SvelteKit 2
 - Tailwind CSS + DaisyUI
 - TypeScript (strict mode)
 - Capacitor (for iOS/Android)
 
 **Key Features:**
+
 - **Two Applications**: Voter app and Candidate app (different routes, shared codebase)
 - **i18n**: Uses `sveltekit-i18n` with ICU message format
 - **Data Adapters**: Abstraction layer supporting multiple backends (Strapi, API routes, static JSON)
@@ -200,6 +217,7 @@ yarn workspace @openvaa/strapi test:unit      # Run backend unit tests
 - **Component Library**: Reusable Svelte components in `src/lib/components/`
 
 **Important Patterns:**
+
 - Components use `$$restProps` for attribute forwarding
 - Type definitions in separate `.type.ts` files
 - Each component folder has `index.ts` for clean imports
@@ -208,12 +226,14 @@ yarn workspace @openvaa/strapi test:unit      # Run backend unit tests
 ### Backend (Strapi)
 
 **Technology Stack:**
+
 - Strapi 5.9
 - PostgreSQL database
 - AWS S3 for uploads (or LocalStack for dev)
 - AWS SES for emails
 
 **Key Features:**
+
 - **Content Types**: Candidates, Parties, Elections, Questions, Nominations, etc.
 - **Custom Plugin**: `openvaa-admin-tools` for admin functionality
 - **Authentication**: JWT-based for candidates, API tokens for pre-registration
@@ -221,6 +241,7 @@ yarn workspace @openvaa/strapi test:unit      # Run backend unit tests
 - **API Permissions**: Custom policies restrict population and enforce security
 
 **Important Patterns:**
+
 - Default data loaded on initialization (question types, app settings, translations)
 - Mock data can be seeded for testing (see `GENERATE_MOCK_DATA_ON_INITIALISE` in `.env`)
 - All API routes restricted to `find` and `findOne` operations
@@ -232,6 +253,7 @@ yarn workspace @openvaa/strapi test:unit      # Run backend unit tests
 The core VAA functionality - matches voters with candidates based on question answers.
 
 **Key Concepts:**
+
 - Questions positioned in multidimensional space
 - Distance metrics: Manhattan, Euclidean, Directional
 - Handles missing values through imputation/bias methods
@@ -239,6 +261,7 @@ The core VAA functionality - matches voters with candidates based on question an
 - Question types: Ordinal (Likert), Categorical
 
 **Usage Pattern:**
+
 1. Create `MatchableQuestion` objects
 2. Create entities implementing `HasAnswers` (voter, candidates)
 3. Instantiate `MatchingAlgorithm` with options
@@ -249,15 +272,18 @@ The core VAA functionality - matches voters with candidates based on question an
 Follow [TypeScript Style Guide](https://mkosir.github.io/typescript-style-guide/) with these specifics:
 
 **Enforced Rules:**
+
 - Use `Array<Foo>` not `Foo[]`
 - Type parameters cannot be single letters: `<TBar>` not `<T>`
 - Boolean naming conventions optional but preferred
 
 **Function Parameters:**
+
 - Use named/destructured parameters when >1 parameter
 - Maintain consistent parameter naming for easy destructuring
 
 **File Organization:**
+
 - `foo.ts` - Implementation
 - `foo.type.ts` - Type definitions only
 - `foo.test.ts` - Unit tests
@@ -265,6 +291,7 @@ Follow [TypeScript Style Guide](https://mkosir.github.io/typescript-style-guide/
 ## Svelte Component Guidelines
 
 **File Structure:**
+
 ```
 src/lib/components/myComponent/
 ├── MyComponent.svelte        # Component implementation
@@ -273,12 +300,14 @@ src/lib/components/myComponent/
 ```
 
 **Component Patterns:**
+
 - Use `$$restProps` for attribute forwarding
 - Document with Svelte docstrings before `<script>` block
 - Properties with dashes (e.g., `class`, `aria-*`) accessed via `$$props`
 - Default classes: use `concatClass` helper from `$lib/utils/components`
 
 **Documentation Requirements:**
+
 - Main purpose of component
 - List of slots
 - For pages/layouts: Settings and route params affecting behavior
@@ -286,11 +315,13 @@ src/lib/components/myComponent/
 ## Testing
 
 **Unit Tests (Vitest):**
+
 - Configuration: `vitest.workspace.ts` (loads all workspace configs)
 - Run from root after building shared packages
 - Located next to source files: `*.test.ts`
 
 **E2E Tests (Playwright):**
+
 - Located in `/tests` folder
 - Requires full Docker stack running with mock data
 - Tests rely on seeded database state
@@ -299,23 +330,29 @@ src/lib/components/myComponent/
 ## Backend Customizations
 
 ### Default Data Loading
+
 On Strapi initialization:
+
 - Question Types (from `src/functions/loadDefaultData.ts`)
 - App Settings (from `src/functions/loadDefaultAppSettings.ts`)
 - Translation overrides (from `src/functions/loadDynamicTranslations.ts`)
 - API permissions (from `src/functions/setDefaultApiPermissions.ts`)
 
 ### Mock Data Generation
+
 **Dev only** - controlled by `.env` variables:
+
 ```bash
 GENERATE_MOCK_DATA_ON_INITIALISE=true   # Seed once when DB empty
 GENERATE_MOCK_DATA_ON_RESTART=false     # Regenerate on every restart (destructive!)
 ```
 
 ### Adding New Content Types
+
 1. Add to `CONTENT_API` list in `src/util/api.ts` for public read access
 2. Update `src/extensions/users-permissions/strapi-server.ts` for authenticated access
 3. Configure route with restrictions:
+
 ```typescript
 export default factories.createCoreRouter('api::foo.foo', {
   only: ['find', 'findOne'],
@@ -329,16 +366,19 @@ export default factories.createCoreRouter('api::foo.foo', {
 ## Common Issues
 
 ### Module Resolution
+
 - **IDE**: Uses TypeScript references (no build needed for cross-imports)
 - **Runtime**: Uses NPM resolution (requires building dependee modules)
 - **Key Point**: Always build `@openvaa/app-shared` before running frontend/backend
 
 ### Docker Issues
+
 - If containers fail, try `yarn dev:down` to clean state
 - Hot reloading doesn't work for `@openvaa/app-shared` changes
 - Default admin with mock data: `admin@example.com` / `admin`
 
 ### Testing Issues
+
 - E2E tests failing: Reset DB with `yarn dev:down` then `yarn dev`
 - Unit tests: Must run `yarn build:shared` first
 
@@ -353,11 +393,13 @@ export default factories.createCoreRouter('api::foo.foo', {
 ```
 
 **Format Rules:**
+
 - **All lines must start with lowercase letters** (description and all body lines)
 - Description should be concise and explain the change
 - Use imperative mood ("add" not "adds" or "added")
 
 **Types:**
+
 - `feat` - New feature or functionality
 - `fix` - Bug fix
 - `clean` - Code cleanup, refactoring without changing functionality
@@ -368,10 +410,12 @@ export default factories.createCoreRouter('api::foo.foo', {
 
 **Scope:**
 Use the package name or feature area affected by the change. Common scopes:
+
 - Package scopes: `arg-cond`, `question-info`, `chatbot`, `matching`, `vector-store`, `file-processing`, `llm-refactor`, `app-shared`, `frontend`, `strapi`, `admin-tools`
 - Feature scopes: `admin-ui`, `voter-ui`, `candidate-ui`, `api`, `auth`, `i18n`, `tests`
 
 **Examples:**
+
 ```
 feat[arg-cond]: add test suite for condensation API
 feat[admin-ui]: add page for question info generation
@@ -386,6 +430,7 @@ docs[README]: update Docker setup instructions
 **Claude Code will prepare commits for user to finalize** after completing each feature or fix, following these rules:
 
 1. **When to Prepare Commits:**
+
    - After successfully implementing a feature
    - After fixing a bug
    - After completing a refactoring task
@@ -393,12 +438,14 @@ docs[README]: update Docker setup instructions
    - When a logical unit of work is complete
 
 2. **When NOT to Commit:**
+
    - Work in progress (WIP) that isn't functional
    - Code with failing tests
    - Incomplete implementations
    - Breaking changes without resolution
 
 3. **Commit Preparation Process:**
+
    - Run `git status` to see all changes
    - Stage relevant files with `git add` (never stage secrets, temporary files, or unrelated changes)
    - Run `git diff --staged` to show what will be committed

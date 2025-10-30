@@ -100,7 +100,7 @@ describe('File Processing API', () => {
       const result = await processPdf({
         pdfBuffer,
         llmProvider: fakeLLMProvider,
-        runId: 'test-run-id',
+        runId: 'test-run-id'
       });
 
       // Test the actual return structure
