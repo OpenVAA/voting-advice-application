@@ -327,6 +327,24 @@ src/lib/components/myComponent/
 - Tests rely on seeded database state
 - Reset state with `yarn dev:down` before running
 
+## Script Execution
+
+**USER CONTROL REQUIRED**: Claude MUST get explicit user approval before running ANY scripts. This includes:
+- Test scripts in `packages/*/src/scripts/`
+- Evaluation scripts (e.g., chatbot evaluation, RAG testing)
+- Build scripts that execute custom code
+- Any TypeScript/JavaScript file execution
+
+**Script Running Command:**
+- Use `bun run script.ts` for running TypeScript scripts directly (not `tsx` or `ts-node`)
+- Example: `bun run src/scripts/chatbotEvaluation.ts`
+
+**Workflow:**
+1. Claude proposes running a script
+2. User explicitly approves
+3. Claude executes with `bun run`
+4. Results are reviewed together
+
 ## Backend Customizations
 
 ### Default Data Loading

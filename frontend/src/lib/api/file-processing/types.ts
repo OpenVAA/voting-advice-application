@@ -2,8 +2,8 @@
  * Types for the human-in-the-loop document pre-processing pipeline
  */
 
-import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
 import type { TextSegmentationMetrics } from '@openvaa/file-processing';
+import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
 
 export type DocumentState =
   | 'UPLOADED'

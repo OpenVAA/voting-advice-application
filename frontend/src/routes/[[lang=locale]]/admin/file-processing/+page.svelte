@@ -127,6 +127,16 @@ Shows current document being processed and queue sidebar.
     }
   }
 
+  async function handleDocumentDeleted() {
+    await refreshQueue();
+    // Move to next document in queue after deletion
+    if (documents.length > 0) {
+      currentDocument = documents[0];
+    } else {
+      currentDocument = null;
+    }
+  }
+
   $: currentStage = currentDocument?.state ?? null;
 </script>
 
@@ -158,8 +168,10 @@ Shows current document being processed and queue sidebar.
           {#if currentStage === 'UPLOADED' || currentStage === 'METADATA_ENTERED'}
             <MetadataForm
               document={currentDocument}
+              documentsCount={documents.length}
               on:submitted={handleMetadataSubmitted}
-              on:skip={handleSkipDocument} />
+              on:skip={handleSkipDocument}
+              on:delete={handleDocumentDeleted} />
           {:else if currentStage === 'EXTRACTED'}
             <ExtractionReview
               document={currentDocument}

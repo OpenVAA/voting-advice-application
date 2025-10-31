@@ -3,6 +3,7 @@
 Extraction review component
 
 Shows extracted text (from PDF or TXT) with ability to edit before approval.
+Split-screen layout: original file on left, editable text on right.
 Emits 'approved' event when extraction is approved.
 Emits 'failed' event when document is marked as failed.
 -->
@@ -10,6 +11,7 @@ Emits 'failed' event when document is marked as failed.
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { ProcessingDocument } from '$lib/api/file-processing/types';
+  import FileViewer from './FileViewer.svelte';
 
   export let document: ProcessingDocument;
 
@@ -142,16 +144,25 @@ Emits 'failed' event when document is marked as failed.
     </div>
   {/if}
 
-  <!-- Extracted text editor -->
-  <div class="form-control">
-    <label class="label" for="extractedText">
-      <span class="label-text">Extracted Text (editable - review and modify if needed before accepting)</span>
-    </label>
-    <textarea
-      id="extractedText"
-      bind:value={editedText}
-      class="font-mono h-[600px] textarea textarea-bordered text-sm"
-      placeholder="Extracted text will appear here..."></textarea>
+  <!-- Two-column layout: Original file + Extracted text -->
+  <div class="h-[600px] grid grid-cols-2 gap-4">
+    <!-- Left: Original file viewer -->
+    <FileViewer documentId={document.id} fileType={document.fileType} filename={document.filename} />
+
+    <!-- Right: Extracted text editor -->
+    <div class="overflow-auto rounded-lg border bg-white p-4">
+      <h4 class="font-semibold mb-2 sticky top-0 bg-white">
+        Extracted Text (editable)
+        {#if hasChanges}
+          <span class="badge badge-warning ml-2">Modified</span>
+        {/if}
+      </h4>
+      <textarea
+        id="extractedText"
+        bind:value={editedText}
+        class="font-mono h-[calc(100%-2.5rem)] w-full textarea textarea-bordered text-sm"
+        placeholder="Extracted text will appear here..."></textarea>
+    </div>
   </div>
 
   {#if error}
