@@ -3,14 +3,13 @@ params:
   pdf: string
 
 prompt: |
-  Convert this PDF document to clean, well-formatted Markdown.
+  Convert this PDF document to clean, well-formatted text with markdown syntax.
 
   Requirements:
   - Preserve all text content from the document
-  - Maintain the document structure with appropriate heading levels (# ## ###)
   - Keep tables, lists, and other formatting in Markdown syntax
   - Preserve paragraphs and line breaks appropriately
-  - Do not add any commentary or explanations
+  - Do not add any commentary or explanations, just the text
   - Return ONLY the markdown content, no additional text or formatting
 
   Return the markdown content directly without any code blocks or preamble.
