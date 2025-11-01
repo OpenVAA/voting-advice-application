@@ -15,8 +15,9 @@ Emits 'refresh' event to reload queue.
   export let documents: Array<ProcessingDocument>;
   export let failedDocuments: Array<ProcessingDocument>;
   export let currentDocumentId: string | undefined;
+  export let isCollapsed = false;
 
-  const dispatch = createEventDispatcher<{ documentSelected: string; refresh: void }>();
+  const dispatch = createEventDispatcher<{ documentSelected: string; refresh: void; toggle: void }>();
 
   function getStateColor(state: DocumentState): string {
     switch (state) {
@@ -65,25 +66,49 @@ Emits 'refresh' event to reload queue.
   }
 </script>
 
-<div class="w-80 flex h-full flex-col border-l bg-white shadow-lg">
-  <!-- Header -->
-  <div class="border-b p-4">
-    <div class="mb-2 flex items-center justify-between">
-      <h2 class="font-semibold text-lg">Processing Queue</h2>
-      <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('refresh')} title="Refresh queue">
+<div class="flex h-full flex-col border-l bg-white shadow-lg transition-all duration-300 {isCollapsed ? 'w-12' : 'w-64'}">
+  {#if isCollapsed}
+    <!-- Collapsed state: Show only expand button -->
+    <div class="flex h-full flex-col items-center justify-start p-2">
+      <button
+        class="btn btn-circle btn-ghost btn-sm"
+        on:click={() => dispatch('toggle')}
+        title="Expand queue">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
+      <div class="mt-4 text-xs text-gray-600 [writing-mode:vertical-rl] rotate-180">
+        Queue ({documents.length})
+      </div>
     </div>
-    <div class="text-sm text-gray-600">
-      {documents.length} active • {failedDocuments.length} failed
+  {:else}
+    <!-- Expanded state: Show full sidebar -->
+    <!-- Header -->
+    <div class="border-b p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="font-semibold text-lg">Processing Queue</h2>
+        <div class="flex gap-1">
+          <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('refresh')} title="Refresh queue">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+          <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('toggle')} title="Collapse queue">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="text-sm text-gray-600">
+        {documents.length} active • {failedDocuments.length} failed
+      </div>
     </div>
-  </div>
 
   <!-- Document list -->
   <div class="flex-1 space-y-2 overflow-y-auto p-4">
@@ -165,4 +190,5 @@ Emits 'refresh' event to reload queue.
       </div>
     {/if}
   </div>
+  {/if}
 </div>

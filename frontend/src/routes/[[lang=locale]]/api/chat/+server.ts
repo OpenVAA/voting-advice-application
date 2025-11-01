@@ -59,7 +59,7 @@ export async function POST({ request, params }: { request: Request; params: any 
     messages,
     locale: params.lang || 'en',
     vectorStore: await getVectorStore(),
-    queryReformulationProvider: getQueryReformulationProvider(),
+    queryRoutingProvider: getQueryReformulationProvider(),
     rerankConfig: {
       enabled: true,
       apiKey: COHERE_API_KEY,
