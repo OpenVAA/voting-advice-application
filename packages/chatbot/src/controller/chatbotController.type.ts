@@ -21,7 +21,7 @@ export interface HandleQueryInput {
   vectorStore: MultiVectorStore;
 
   /** LLM provider for query reformulation */
-  queryReformulationProvider: LLMProvider;
+  queryRoutingProvider: LLMProvider;
 
   /** Optional reranking configuration */
   rerankConfig?: RerankConfig;

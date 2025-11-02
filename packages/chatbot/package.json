@@ -5,7 +5,8 @@
   "scripts": {
     "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/core/prompts/* build/prompts/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:eval": "bun run src/scripts/chatbotEvaluation.ts"
   },
   "type": "module",
   "module": "./build/index.js",
@@ -16,6 +17,8 @@
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
     "@types/js-yaml": "^4.0.9",
+    "dotenv": "^16.4.7",
+    "promptfoo": "^0.119.1",
     "tsc-esm-fix": "^3.1.2",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"

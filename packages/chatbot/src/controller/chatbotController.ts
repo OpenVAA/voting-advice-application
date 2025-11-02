@@ -40,6 +40,11 @@ export class ChatbotController {
     // PHASE 1: Categorize and reformulate query
     const categorization = await this.categorizeQuery(input);
 
+    // PHASES
+    // 1. Update conversation state
+    // 2. 
+    // 3. Rewrite for RAG
+
     // PHASE 2: Decision - should we return canned response?
     if (this.shouldReturnCanned(categorization.category)) {
       return this.createCannedResponse(categorization);
@@ -60,7 +65,7 @@ export class ChatbotController {
    */
   private static async categorizeQuery(input: HandleQueryInput): Promise<CategorizationResult> {
     const startTime = Date.now();
-    const costsBefore = input.queryReformulationProvider.cumulativeCosts;
+    const costsBefore = input.queryRoutingProvider.cumulativeCosts;
 
     // Extract user messages for context
     const userMessages = input.messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
@@ -68,11 +73,11 @@ export class ChatbotController {
     // Route and reformulate query
     const { category, rephrased } = await routeQuery({
       messages: userMessages,
-      provider: input.queryReformulationProvider,
+      provider: input.queryRoutingProvider,
       categories: ALL_CATEGORY_VALUES
     });
 
-    const costsAfter = input.queryReformulationProvider.cumulativeCosts;
+    const costsAfter = input.queryRoutingProvider.cumulativeCosts;
     const durationMs = Date.now() - startTime;
 
     return {
