@@ -14,7 +14,6 @@ Shows current document being processed and queue sidebar.
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
   import DocumentUploadZone from './components/DocumentUploadZone.svelte';
   import ExtractionReview from './components/ExtractionReview.svelte';
   import MetadataForm from './components/MetadataForm.svelte';
@@ -28,22 +27,9 @@ Shows current document being processed and queue sidebar.
   let error: string | null = null;
   let mainContainer: HTMLDivElement;
 
-  // Sidebar state with localStorage persistence
-  let sidebarCollapsed = false;
-
   onMount(() => {
-    // Load sidebar state from localStorage
-    const savedState = localStorage.getItem('fileProcessing_sidebarCollapsed');
-    if (savedState !== null) {
-      sidebarCollapsed = savedState === 'true';
-    }
     refreshQueue();
   });
-
-  // Save sidebar state to localStorage
-  $: if (browser) {
-    localStorage.setItem('fileProcessing_sidebarCollapsed', String(sidebarCollapsed));
-  }
 
   async function refreshQueue() {
     try {
@@ -159,10 +145,6 @@ Shows current document being processed and queue sidebar.
     }
   }
 
-  function handleSidebarToggle() {
-    sidebarCollapsed = !sidebarCollapsed;
-  }
-
   $: currentStage = currentDocument?.state ?? null;
 </script>
 
@@ -256,8 +238,6 @@ Shows current document being processed and queue sidebar.
     {documents}
     {failedDocuments}
     currentDocumentId={currentDocument?.id}
-    isCollapsed={sidebarCollapsed}
     on:documentSelected={handleDocumentSelected}
-    on:refresh={refreshQueue}
-    on:toggle={handleSidebarToggle} />
+    on:refresh={refreshQueue} />
 </div>

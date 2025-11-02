@@ -291,6 +291,7 @@
       // Track time to first token
       if (firstTokenTime === 0) {
         firstTokenTime = performance.now();
+        loading = false; // Hide "Thinking..." as soon as first token arrives
       }
 
       // Handle text streaming

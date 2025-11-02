@@ -141,6 +141,7 @@ async function wrapInSSE({
               cost: {
                 llm: costs,
                 reformulation: metadata.costs.reformulation,
+                filtering: { input: 0, output: 0, total: 0 },
                 reranking: metadata.costs.reranking || { cost: 0 },
                 total: costs.total + metadata.costs.reformulation.total + (metadata.costs.reranking?.cost || 0)
               },
