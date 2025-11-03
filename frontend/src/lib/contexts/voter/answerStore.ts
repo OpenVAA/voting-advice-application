@@ -26,7 +26,8 @@ export function answerStore({ startEvent }: { startEvent: TrackingService['start
         updated[questionId] = { value };
         startEvent('answer', {
           questionId,
-          value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
+          value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`,
+          hadPreviousAnswer: answers[questionId] != null
         });
       }
       logDebugError(`answerStore.setAnswer(${questionId}, ${value})`);
