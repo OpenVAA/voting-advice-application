@@ -39,6 +39,9 @@
       output: number;
       total: number;
     };
+    reranking: {
+      total: number;
+    };
     total: number;
     timestamp: number;
   }
@@ -254,12 +257,17 @@
 
       // Store cost info
       if (data.cost) {
+        // Get reranking cost from the most recent RAG context (if any)
+        const lastRagContext = ragContexts[ragContexts.length - 1];
+        const rerankingCost = lastRagContext?.rerankingCosts?.cost ?? 0;
+
         costs = [
           ...costs,
           {
             llm: data.cost.llm,
             reformulation: data.cost.reformulation,
             filtering: data.cost.filtering,
+            reranking: { total: rerankingCost },
             total: data.cost.total,
             timestamp: data.timestamp
           }
@@ -363,9 +371,9 @@
   }
 </script>
 
-<div class="flex h-screen gap-4 p-4">
+<div class="flex w-full h-screen gap-4 p-4">
   <!-- Left side: Chat conversation -->
-  <div class="flex w-1/3 flex-col">
+  <div class="flex flex-1 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Chat</h2>
     <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
       {#each messages as message}
@@ -404,7 +412,7 @@
   </div>
 
   <!-- Middle: RAG Context -->
-  <div class="flex w-1/3 flex-col">
+  <div class="flex flex-1 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Retrieved Context (RAG)</h2>
     <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
       {#if ragContexts.length === 0}
@@ -440,7 +448,10 @@
                         </div>
                         <div class="text-xs text-gray-500">
                           Source: {result.segment.metadata.source || 'Unknown'}
-                          <span class="ml-2">Score: {result.score.toFixed(3)}</span>
+                          <span class="ml-2 text-gray-600">Vector: {result.vectorSearchScore.toFixed(3)}</span>
+                          {#if result.rerankScore !== undefined}
+                            <span class="ml-2 text-purple-600 font-semibold">Rerank: {result.rerankScore.toFixed(3)}</span>
+                          {/if}
                           <span class="ml-2 text-purple-600">via {result.foundWith}</span>
                         </div>
                       </div>
@@ -486,7 +497,7 @@
   </div>
 
   <!-- Right side: Metadata (Cost + Latency) -->
-  <div class="flex w-1/3 flex-col">
+  <div class="flex flex-1 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Response Metadata</h2>
 
     <div class="flex-1 overflow-y-auto rounded border border-gray-300 bg-gray-50 p-4">
@@ -503,7 +514,8 @@
               <div class="mt-1 text-xs text-gray-500">
                 LLM: ${costs[costs.length - 1].llm.total.toFixed(7)}<br />
                 Reformulate: ${costs[costs.length - 1].reformulation.total.toFixed(7)}<br />
-                Filter: ${costs[costs.length - 1].filtering.total.toFixed(7)}
+                Filter: ${costs[costs.length - 1].filtering.total.toFixed(7)}<br />
+                Reranking: ${costs[costs.length - 1].reranking.total.toFixed(7)}
               </div>
             {/if}
           </div>
@@ -716,6 +728,7 @@
                     <div>LLM: ${cost.llm.total.toFixed(6)}</div>
                     <div>Reformulate: ${cost.reformulation.total.toFixed(6)}</div>
                     <div>Filter: ${cost.filtering.total.toFixed(6)}</div>
+                    <div>Reranking: ${cost.reranking.total.toFixed(6)}</div>
                   </div>
                 </div>
                 {#if latency}
