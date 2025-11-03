@@ -6,6 +6,12 @@
 - Provides the data used by both apps to the `dataRoot`, which are loaded by `+layout.ts`, and handles other global definitions.
 - Handles opening popups.
 - Loads the analytics service.
+- Saves the possible `trackingId` search parameter in the tracking session.
+
+## Params
+
+- `trackingId`: A search parameter used for tracking the user in research settings. 
+  NB! Data collection consent will be automatically granted if the parameter is provided.
 
 ### Settings
 
@@ -16,9 +22,9 @@
 <script lang="ts">
   import '../../app.css';
   import { staticSettings } from '@openvaa/app-shared';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { updated } from '$app/stores';
+  import { page, updated } from '$app/stores';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -42,8 +48,19 @@
   initI18nContext();
   initComponentContext();
   initDataContext();
-  const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
-    initAppContext();
+  const {
+    appSettings,
+    dataRoot,
+    openFeedbackModal,
+    popupQueue,
+    sendTrackingEvent,
+    setDataConsent,
+    startEvent,
+    startPageview,
+    submitAllEvents,
+    t,
+    userPreferences
+  } = initAppContext();
   initLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -94,6 +111,19 @@
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
+  // Set trackingId on initial layout load and automatically accept data collection consent if needed
+  const trackingId = $page.url.searchParams.get('trackingId');
+  if (trackingId) {
+    if (
+      $appSettings.analytics?.platform &&
+      $appSettings.analytics?.trackEvents &&
+      $userPreferences.dataCollection?.consent !== 'granted'
+    ) {
+      setDataConsent('granted');
+    }
+    startEvent('trackingId_set', { trackingId });
+  }
+
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
     if ($updated && !willUnload && to?.url) location.href = to.url.href;
@@ -130,9 +160,9 @@
 </svelte:head>
 
 {#if error}
-  <ErrorMessage class="h-screen bg-base-300" />
+  <ErrorMessage class="bg-base-300 h-screen" />
 {:else if !ready}
-  <Loading class="h-screen bg-base-300" />
+  <Loading class="bg-base-300 h-screen" />
 {:else if underMaintenance}
   <MaintenancePage />
 {:else}
