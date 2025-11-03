@@ -22,6 +22,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Hero } from '$lib/components/hero';
   import { Input } from '$lib/components/input';
   import { Loading } from '$lib/components/loading';
   import { PreventNavigation } from '$lib/components/preventNavigation';
@@ -221,7 +222,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
 {#if question}
   {@const { info, text } = question}
+  {@const customData = getCustomData(question)}
   {@const answer = $userData?.candidate.answers?.[question.id]}
+
   {#key question.id}
     <PreventNavigation
       active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
@@ -235,6 +238,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           </Warning>
         {/if}
       </svelte:fragment>
+
+      <figure role="presentation" slot="hero">
+        {#if customData?.hero}
+          <Hero content={customData?.hero} />
+        {/if}
+      </figure>
 
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 

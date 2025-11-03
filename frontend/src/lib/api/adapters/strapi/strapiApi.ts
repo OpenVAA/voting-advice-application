@@ -1,4 +1,5 @@
 import type {
+  StrapiAllianceData,
   StrapiAppCustomizationData,
   StrapiAppSettingsData,
   StrapiBasicUserData,
@@ -22,6 +23,7 @@ import type {
 
 export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   // DataProvider
+  alliances: 'api/alliances',
   appSettings: 'api/app-setting',
   appCustomization: 'api/app-customization',
   candidates: 'api/candidates',
@@ -58,6 +60,7 @@ export type StrapiApi = keyof StrapiApiReturnType;
  */
 export type StrapiApiReturnType = {
   // DataProvider
+  alliances: Array<StrapiAllianceData>;
   appSettings: StrapiAppSettingsData; // Single type
   appCustomization: StrapiAppCustomizationData; // Single type
   candidates: Array<StrapiCandidateData>;

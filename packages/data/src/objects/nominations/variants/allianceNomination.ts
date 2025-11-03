@@ -27,9 +27,9 @@ export class AllianceNomination
    * @param root - The `DataRoot`.
    */
   constructor({ data, root }: { data: WithOptional<AllianceNominationData, 'id'>; root: DataRoot }) {
-    if (data.organizations.length < 2)
+    if (data.organizations.length < 1)
       throw new DataProvisionError(
-        `An AllianceNomination must have at least two organizations. The data has ${data.organizations.length}.`
+        `An AllianceNomination must have at least one organization. The data has ${data.organizations.length}.`
       );
 
     // Create the possible implied entity before calling super(), because entityId will be needed by it for id generation

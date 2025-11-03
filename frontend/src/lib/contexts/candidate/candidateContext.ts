@@ -1,5 +1,5 @@
 import { getCustomData } from '@openvaa/app-shared';
-import { isEmptyValue } from '@openvaa/data';
+import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { derived, get, writable } from 'svelte/store';
@@ -115,8 +115,14 @@ export function initCandidateContext(): CandidateContext {
 
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
+   * TODO: Reverse the order of these stores, because `questionStore` filters out some questions. We should construct the categories only after filtering all questions.
    */
-  const questionCategories = questionCategoryStore({ dataRoot, selectedElections, selectedConstituencies });
+  const questionCategories = questionCategoryStore({
+    dataRoot,
+    selectedElections,
+    selectedConstituencies,
+    entityType: ENTITY_TYPE.Candidate
+  });
 
   const infoQuestionCategories = extractInfoCategories(questionCategories);
 

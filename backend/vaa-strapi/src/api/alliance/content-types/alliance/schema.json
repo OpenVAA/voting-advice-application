@@ -44,9 +44,9 @@
     },
     "election": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::election.election",
-      "inversedBy": "alliance"
+      "inversedBy": "alliances"
     },
     "constituencies": {
       "type": "relation",
