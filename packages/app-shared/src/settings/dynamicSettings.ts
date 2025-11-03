@@ -4,7 +4,7 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      organization: ['info', 'candidates', 'opinions']
+      organization: ['opinions', 'info']
     },
     showMissingElectionSymbol: {
       candidate: true,
@@ -35,40 +35,42 @@ export const dynamicSettings: DynamicSettings = {
     hideIfMissingAnswers: {
       candidate: true
     },
-    showAllNominations: true
+    showAllNominations: false
   },
   matching: {
-    minimumAnswers: 5,
-    organizationMatching: 'impute',
-    questionWeights: 'none'
+    minimumAnswers: 3,
+    organizationMatching: 'answersOnly',
+    questionWeights: 'half-normal-double'
   },
   questions: {
     categoryIntros: {
-      allowSkip: true,
-      show: true
+      allowSkip: false,
+      show: false
     },
     interactiveInfo: {
       enabled: false
     },
     questionsIntro: {
-      allowCategorySelection: true,
+      allowCategorySelection: false,
       show: true
     },
     resultsPreview: {
-      enabled: false,
-      entityType: 'candidate'
+      enabled: true,
+      entityType: 'organization',
+      numResults: 6,
+      hideLabel: true
     },
-    showCategoryTags: true,
+    showCategoryTags: false,
     showResultsLink: true
   },
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: []
     },
-    showFeedbackPopup: 180,
+    showFeedbackPopup: 30,
     showSurveyPopup: 500,
-    sections: ['candidate', 'organization']
+    sections: ['organization']
   },
   elections: {
     disallowSelection: false,
@@ -76,7 +78,7 @@ export const dynamicSettings: DynamicSettings = {
     startFromConstituencyGroup: undefined
   },
   access: {
-    candidateApp: true,
+    candidateApp: false,
     voterApp: true,
     underMaintenance: false,
     answersLocked: false
@@ -84,5 +86,14 @@ export const dynamicSettings: DynamicSettings = {
   notifications: {
     candidateApp: null,
     voterApp: null
+  },
+  testConditions: {
+    control: {
+      questions: {
+        resultsPreview: {
+          enabled: false
+        }
+      }
+    }
   }
 };

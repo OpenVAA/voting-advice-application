@@ -2,12 +2,12 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@example.com'
+    email: 'patrick.dumont@anu.edu.au'
   },
   appVersion: {
     version: 1,
     requireUserDataVersion: 1,
-    source: 'https://github.com/OpenVAA/voting-advice-application'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-luxemburg-vaa-2025'
   },
   dataAdapter: {
     type: 'strapi',
@@ -44,25 +44,26 @@ export const staticSettings: StaticSettings = {
   },
   supportedLocales: [
     {
-      code: 'en',
-      name: 'English',
+      code: 'lb',
+      name: 'Lëtzebuergesch',
       isDefault: true
     },
     {
-      code: 'fi',
-      name: 'Suomi'
+      code: 'fr',
+      name: 'Français'
     },
     {
-      code: 'sv',
-      name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
+      code: 'en',
+      name: 'English'
     }
   ],
   analytics: {
-    trackEvents: false
+    trackEvents: true,
+    platform: {
+      name: 'umami',
+      code: '8c7d154a-9597-48f4-9038-3ee3cedc6b56',
+      infoUrl: 'https://umami.is'
+    }
   },
   preRegistration: {
     enabled: false
