@@ -81,6 +81,7 @@ Display a question for answering.
       );
       goto($getRoute('Questions'));
     } else {
+      startEvent('question_show', { questionId, questionIndex: questionBlock.index });
       progress.current.set(questionBlock.index + 1);
       // Possibly show video
       const customData = getCustomData(question);

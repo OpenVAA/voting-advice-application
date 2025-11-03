@@ -26,6 +26,7 @@ type TrackingEventName =
   | 'pageview'
   | 'question_next'
   | 'question_previous'
+  | 'question_show'
   | 'question_skip'
   | 'question_startFrom'
   | 'questionInfo_collapse'
