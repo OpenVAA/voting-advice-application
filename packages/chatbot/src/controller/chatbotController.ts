@@ -37,13 +37,11 @@ export class ChatbotController {
    * @returns Streaming response with metadata
    */
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
-    // PHASE 1: Categorize and reformulate query
+    // PHASE 1: Categorize and reformulate query (if it is queryable)
     const categorization = await this.categorizeQuery(input);
 
-    // PHASES
-    // 1. Update conversation state
-    // 2. 
-    // 3. Rewrite for RAG
+    // NEW: TO IMPLEMENT
+    // const conversationState = await this.updateConversationState(input);
 
     // PHASE 2: Decision - should we return canned response?
     if (this.shouldReturnCanned(categorization.category)) {
@@ -55,6 +53,14 @@ export class ChatbotController {
 
     // PHASE 4 & 5: Enhance messages and create LLM response
     return this.createLLMResponse(categorization, ragContext, input);
+  }
+
+  /** Update conversation state */
+  private static async updateConversationState(input: HandleQueryInput): Promise<ConversationState> {
+    return {
+      messages: input.messages,
+      locale: input.locale
+    };
   }
 
   /**
