@@ -43,6 +43,12 @@ export interface HandleQueryInput {
   /** LLM provider for query reformulation */
   queryRoutingProvider: LLMProvider;
 
+  /** LLM provider for conversation phase routing (lightweight model recommended) */
+  phaseRouterProvider: LLMProvider;
+
+  /** Conversation state including current phase and working memory */
+  conversationState: ConversationState;
+
   /** Optional reranking configuration */
   rerankConfig?: RerankConfig;
 

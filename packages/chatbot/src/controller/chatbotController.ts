@@ -3,6 +3,7 @@ import { routeQuery } from '@openvaa/vector-store';
 import { getCannedResponse } from '../core/cannedResponses';
 import { ChatEngine } from '../core/chat';
 import { ALL_CATEGORY_VALUES, isQueryable, needsCannedResponse } from '../core/queryCategories';
+import { determineConversationPhase } from '../utils/phaseRouter';
 import { loadPrompt } from '../utils/promptLoader';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store';
 import type { ModelMessage } from 'ai';
@@ -11,6 +12,8 @@ import type { LoadedPrompt } from '../types/prompt.type';
 import type {
   CategorizationResult,
   ChatbotResponse,
+  ConversationPhase,
+  ConversationState,
   HandleQueryInput,
   RAGContextResult
 } from './chatbotController.type';
@@ -37,29 +40,44 @@ export class ChatbotController {
    * @returns Streaming response with metadata
    */
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
-    // PHASE 1: Categorize and reformulate query (if it is queryable)
-    const categorization = await this.categorizeQuery(input);
+    // PHASE 1 & 2: Run categorization and phase determination in parallel
+    const [categorization, conversationState] = await Promise.all([
+      this.categorizeQuery(input),
+      this.updateConversationState(input)
+    ]);
 
-    // NEW: TO IMPLEMENT
-    // const conversationState = await this.updateConversationState(input);
-
-    // PHASE 2: Decision - should we return canned response?
+    // PHASE 3: Decision - should we return canned response?
     if (this.shouldReturnCanned(categorization.category)) {
       return this.createCannedResponse(categorization);
     }
 
-    // PHASE 3: Retrieve RAG context if needed
-    const ragContext = await this.retrieveRAGIfNeeded(categorization, input);
+    // PHASE 4: Check if RAG required → retrieve if yes
+    const ragContext = this.isRagRequired(conversationState.phase, categorization.category)
+      ? await this.retrieveRAG(categorization, input)
+      : null;
 
-    // PHASE 4 & 5: Enhance messages and create LLM response
-    return this.createLLMResponse(categorization, ragContext, input);
+    // PHASE 5: Create LLM response with phase-specific prompt
+    return this.createLLMResponse(categorization, ragContext, input, conversationState);
   }
 
-  /** Update conversation state */
+  /**
+   * Update conversation state with new phase determination
+   *
+   * @param input - Query input
+   * @returns Updated conversation state with new phase
+   */
   private static async updateConversationState(input: HandleQueryInput): Promise<ConversationState> {
+    // Use last 5 messages from working memory for phase detection
+    const recentMessages = input.messages.slice(-5);
+
+    // Determine current conversation phase
+    const phase = await determineConversationPhase(recentMessages, input.phaseRouterProvider);
+
+    // Return updated state with new phase
     return {
-      messages: input.messages,
-      locale: input.locale
+      ...input.conversationState,
+      phase,
+      workingMemory: input.messages.slice(-5) // TOOD: this is arbritrary and needs advanced summarization logic
     };
   }
 
@@ -109,19 +127,31 @@ export class ChatbotController {
   }
 
   /**
-   * Retrieve RAG context if query is queryable
+   * Check if RAG retrieval is required
+   * RAG only enabled in intent_resolution phase for queryable categories
+   *
+   * @param phase - Current conversation phase
+   * @param category - Query category
+   * @returns True if RAG should be retrieved
+   */
+  private static isRagRequired(phase: ConversationPhase, category: QueryCategory): boolean {
+    return phase === 'intent_resolution' && isQueryable(category);
+  }
+
+  /**
+   * Retrieve RAG context for query
+   * NOTE: Caller must check isRagRequired() before calling
    *
    * @param categorization - Categorization result
    * @param input - Query input
-   * @returns RAG context or null if not needed
+   * @returns RAG context
    */
-  private static async retrieveRAGIfNeeded(
+  private static async retrieveRAG(
     categorization: CategorizationResult,
     input: HandleQueryInput
-  ): Promise<RAGContextResult | null> {
-    // Check if query needs RAG retrieval
-    if (!isQueryable(categorization.category) || !categorization.rephrased) {
-      return null;
+  ): Promise<RAGContextResult> {
+    if (!categorization.rephrased) {
+      throw new Error('Cannot retrieve RAG without reformulated query');
     }
 
     const startTime = Date.now();
@@ -241,26 +271,29 @@ export class ChatbotController {
    * @param categorization - Categorization result
    * @param ragContext - RAG context (if retrieved)
    * @param input - Query input
+   * @param conversationState - Current conversation state
    * @returns Chatbot response with LLM stream
    */
   private static async createLLMResponse(
     categorization: CategorizationResult,
     ragContext: RAGContextResult | null,
-    input: HandleQueryInput
+    input: HandleQueryInput,
+    conversationState: ConversationState
   ): Promise<ChatbotResponse> {
     // Enhance messages with RAG context if available
     const messages = ragContext
       ? await this.enhanceMessagesWithRAG(input.messages, ragContext.formattedContext)
       : input.messages;
 
-    // Create LLM stream (chatProvider optional - ChatEngine has default)
+    // Create LLM stream with phase-specific prompt
     const stream = await ChatEngine.createStream({
       messages,
       context: {
         locale: input.locale
       },
       nSteps: 5,
-      llmProvider: input.chatProvider // Optional - ChatEngine will use default if not provided
+      llmProvider: input.chatProvider,
+      conversationPhase: conversationState.phase
     });
 
     return {

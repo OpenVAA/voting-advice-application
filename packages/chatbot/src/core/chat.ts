@@ -1,21 +1,27 @@
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
+import { readFile } from 'fs/promises';
+import { load as loadYaml } from 'js-yaml';
+import { join } from 'path';
 import { OPENAI_API_KEY } from '../apiKey';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
 import type { ChatbotAPIInput } from '../api.type';
+import type { ConversationPhase } from '../controller/chatbotController.type';
 import type { LoadedPrompt } from '../types/prompt.type';
 
 // Main chat engine for OpenVAA chatbot
 // Note: RAG enrichment is now handled by RAGService before calling this engine
 export class ChatEngine {
   private static systemPrompt: LoadedPrompt | null = null;
+  private static phasePrompts: LoadedPrompt | null = null;
 
   /**
-   * Create a streaming chat response
-   * Note: Messages should already be enhanced with RAG context by ChatbotController if needed
+   * Get default system prompt (fallback when no phase specified)
+   *
+   * @returns Default system prompt
    */
-  static async createStream(input: ChatbotAPIInput) {
+  private static async getDefaultSystemPrompt(): Promise<string> {
     // Load system prompt if not already loaded
     if (!this.systemPrompt) {
       console.info('Loading ChatEngine system prompt...');
@@ -23,8 +29,61 @@ export class ChatEngine {
       console.info('✓ System prompt loaded');
     }
 
-    // Use the loaded system prompt
-    const systemMessage = this.systemPrompt.prompt;
+    return this.systemPrompt.prompt;
+  }
+
+  /**
+   * Get system prompt for specific conversation phase
+   * Combines base prompt with phase-specific instructions
+   *
+   * @param phase - Conversation phase
+   * @returns Composed system prompt for the phase
+   */
+  private static async getSystemPromptForPhase(phase: ConversationPhase): Promise<string> {
+    // Load phase prompts if not already loaded
+    if (!this.phasePrompts) {
+      console.info('Loading phase-specific system prompts...');
+      // Load the raw YAML to access the structured fields
+      const filePath = join(__dirname, '..', 'prompts', 'systemPrompt_phases.yaml');
+      const raw = await readFile(filePath, 'utf-8');
+      const parsed = loadYaml(raw) as {
+        id: string;
+        params?: Record<string, string>;
+        basePrompt: string;
+        phasePrompts: Record<ConversationPhase, string>;
+      };
+
+      // Store as LoadedPrompt for caching (store the whole structure in prompt field)
+      this.phasePrompts = {
+        id: parsed.id,
+        prompt: JSON.stringify(parsed), // Store full structure as JSON
+        params: parsed.params,
+        usedVars: []
+      };
+      console.info('✓ Phase prompts loaded');
+    }
+
+    // Parse the stored structure
+    const parsed = JSON.parse(this.phasePrompts.prompt) as {
+      basePrompt: string;
+      phasePrompts: Record<ConversationPhase, string>;
+    };
+
+    const basePrompt = parsed.basePrompt || '';
+    const phaseSpecific = parsed.phasePrompts?.[phase] || '';
+
+    return `${basePrompt}\n\n${phaseSpecific}`;
+  }
+
+  /**
+   * Create a streaming chat response
+   * Note: Messages should already be enhanced with RAG context by ChatbotController if needed
+   */
+  static async createStream(input: ChatbotAPIInput) {
+    // Get system prompt - use phase-specific if phase provided, otherwise use default
+    const systemMessage = input.conversationPhase
+      ? await this.getSystemPromptForPhase(input.conversationPhase)
+      : await this.getDefaultSystemPrompt();
 
     // Use provided llmProvider or create one internally
     const provider =

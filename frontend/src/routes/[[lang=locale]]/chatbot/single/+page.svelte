@@ -1,5 +1,7 @@
 <script lang="ts">
+  import type { ConversationState } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store';
+  import { page } from '$app/stores';
 
   interface UIMessage {
     id: string;
@@ -62,6 +64,16 @@
   let latencies: Array<LatencyInfo> = [];
   let input = '';
   let loading = false;
+
+  // Conversation state for phase routing
+  let conversationState: ConversationState = {
+    sessionId: crypto.randomUUID(),
+    phase: 'intro_to_chatbot_use',
+    workingMemory: [],
+    forgottenMessages: [],
+    lossyHistorySummary: '',
+    locale: $page.params.lang || 'en'
+  };
 
   // Request timing tracking
   let requestStartTime = 0;
@@ -153,7 +165,8 @@
             id: msg.id,
             role: msg.role,
             parts: msg.parts
-          }))
+          })),
+          conversationState
         })
       });
 

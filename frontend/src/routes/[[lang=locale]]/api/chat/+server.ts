@@ -3,6 +3,7 @@ import { LLMProvider } from '@openvaa/llm-refactor';
 import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
 import { COHERE_API_KEY, OPENAI_API_KEY } from './apiKey';
+import type { ConversationState } from '@openvaa/chatbot';
 
 // Collection names for multi-vector retrieval
 const COLLECTION_NAMES = {
@@ -14,6 +15,7 @@ const COLLECTION_NAMES = {
 // Initialize embedder and vector store (singleton pattern)
 let multiVectorStore: MultiVectorStore | null = null;
 let queryReformulationProvider: LLMProvider | null = null;
+let phaseRouterProvider: LLMProvider | null = null;
 
 async function getVectorStore(): Promise<MultiVectorStore> {
   if (!multiVectorStore) {
@@ -45,21 +47,45 @@ function getQueryReformulationProvider(): LLMProvider {
   return queryReformulationProvider;
 }
 
+function getPhaseRouterProvider(): LLMProvider {
+  if (!phaseRouterProvider) {
+    phaseRouterProvider = new LLMProvider({
+      provider: 'openai',
+      apiKey: OPENAI_API_KEY,
+      modelConfig: { primary: 'gpt-4o-mini', useCachedInput: false }
+    });
+  }
+  return phaseRouterProvider;
+}
+
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function POST({ request, params }: { request: Request; params: any }) {
   const requestStartTime = Date.now();
 
   // Parse request
-  const { messages: uiMessages } = await request.json();
+  const { messages: uiMessages, conversationState: clientConversationState } = await request.json();
   const messages = convertUIMessagesToModelMessages(uiMessages);
+  const locale = params.lang || 'en';
+
+  // Initialize conversation state if not provided
+  const conversationState: ConversationState = clientConversationState || {
+    sessionId: crypto.randomUUID(),
+    phase: 'intro_to_chatbot_use',
+    workingMemory: messages,
+    forgottenMessages: [],
+    lossyHistorySummary: '',
+    locale
+  };
 
   // Call controller (all business logic orchestrated here)
   const response = await ChatbotController.handleQuery({
     messages,
-    locale: params.lang || 'en',
+    locale,
+    conversationState,
     vectorStore: await getVectorStore(),
     queryRoutingProvider: getQueryReformulationProvider(),
+    phaseRouterProvider: getPhaseRouterProvider(),
     rerankConfig: {
       enabled: true,
       apiKey: COHERE_API_KEY,

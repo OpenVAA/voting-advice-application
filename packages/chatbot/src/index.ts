@@ -23,5 +23,12 @@ export {
 } from './core/queryCategories';
 
 // Chatbot controller
-export type { CategorizationResult, ChatbotResponse, HandleQueryInput, RAGContextResult } from './controller';
+export type {
+  CategorizationResult,
+  ChatbotResponse,
+  ConversationPhase,
+  ConversationState,
+  HandleQueryInput,
+  RAGContextResult
+} from './controller';
 export { ChatbotController } from './controller';
