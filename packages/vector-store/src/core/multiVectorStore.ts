@@ -368,7 +368,7 @@ export class MultiVectorStore {
 
       // Calculate cost (search units to USD)
       const searchUnits = rerankResult.metadata.searchUnits ?? 0;
-      rerankingCosts = { cost: (searchUnits / 1000) * 1.0 }; // $1 per 1000 units
+      rerankingCosts = { cost: (searchUnits / 1000) * 2.0 }; // $2 per 1000 queries (Rerank 3.5)
     }
 
     // Final limiting to nResultsTarget

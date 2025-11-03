@@ -17,6 +17,7 @@ Emits 'failed' event when document is marked as failed.
   const dispatch = createEventDispatcher<{ approved: void; failed: void; refresh: void }>();
 
   let selectedSegmentIndex = 0;
+  let activeSegments = new Set<number>();
   let submitting = false;
   let error: string | null = null;
   let failureReason = '';
@@ -30,6 +31,28 @@ Emits 'failed' event when document is marked as failed.
   $: if (document.segments !== undefined && !hasInitializedSegments) {
     segments = [...document.segments];
     hasInitializedSegments = true;
+  }
+
+  function toggleSegment(index: number) {
+    if (activeSegments.has(index)) {
+      activeSegments.delete(index);
+    } else {
+      activeSegments.add(index);
+    }
+    activeSegments = activeSegments; // Trigger reactivity
+  }
+
+  function expandAll() {
+    activeSegments = new Set(segments.map((_, i) => i));
+  }
+
+  function collapseAll() {
+    activeSegments = new Set();
+  }
+
+  function calculateRows(text: string): number {
+    const lineCount = text.split('\n').length;
+    return Math.max(3, Math.min(lineCount + 1, 20)); // Min 3, max 20 rows
   }
 
   async function autoTriggerSegmentation() {
@@ -139,8 +162,14 @@ Emits 'failed' event when document is marked as failed.
 <div class="space-y-4">
   <div class="flex items-center justify-between">
     <h3 class="font-semibold text-xl">Segmentation Review</h3>
-    <div class="text-sm text-gray-600">
-      {segments.length} segments • {totalChars.toLocaleString()} characters total
+    <div class="flex items-center gap-4">
+      <div class="text-sm text-gray-600">
+        {segments.length} segments • {totalChars.toLocaleString()} characters total
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-xs" on:click={expandAll}>Expand All</button>
+        <button class="btn btn-ghost btn-xs" on:click={collapseAll}>Collapse All</button>
+      </div>
     </div>
   </div>
 
@@ -190,10 +219,20 @@ Emits 'failed' event when document is marked as failed.
                 class="cursor-pointer transition-colors {i === selectedSegmentIndex
                   ? 'bg-yellow-200'
                   : 'hover:bg-yellow-100'}"
-                on:click={() => (selectedSegmentIndex = i)}
+                on:click={() => {
+                  selectedSegmentIndex = i;
+                  activeSegments.add(i);
+                  activeSegments = activeSegments;
+                }}
                 role="button"
                 tabindex="0"
-                on:keydown={(e) => e.key === 'Enter' && (selectedSegmentIndex = i)}>
+                on:keydown={(e) => {
+                  if (e.key === 'Enter') {
+                    selectedSegmentIndex = i;
+                    activeSegments.add(i);
+                    activeSegments = activeSegments;
+                  }
+                }}>
                 {segment}
               </span>
               {#if i < segments.length - 1}
@@ -210,39 +249,36 @@ Emits 'failed' event when document is marked as failed.
         <div class="space-y-2">
           {#each segments as segment, i}
             <div
-              class="rounded border p-2 {i === selectedSegmentIndex
+              class="rounded border p-2 {activeSegments.has(i)
                 ? 'border-primary bg-primary/5'
                 : 'border-gray-300'}">
-              <div class="mb-1 flex items-center justify-between">
-                <span class="font-semibold text-xs text-gray-600">Segment {i + 1} ({segment.length} chars)</span>
-                <button
-                  class="btn btn-ghost btn-xs"
-                  on:click={() => (selectedSegmentIndex = i)}
-                  title="Focus this segment">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </button>
-              </div>
-              <textarea
-                bind:value={segments[i]}
-                class="font-mono textarea textarea-bordered textarea-sm w-full text-xs"
-                rows="3"
-                on:focus={() => (selectedSegmentIndex = i)}></textarea>
+              <!-- Always visible header - clickable to toggle -->
+              <button
+                class="w-full flex items-center justify-between text-left transition-colors hover:bg-gray-50 rounded p-1"
+                on:click={() => toggleSegment(i)}>
+                <span class="font-semibold text-xs text-gray-600">
+                  Segment {i + 1} ({segment.length} chars)
+                </span>
+                <!-- Chevron icon indicating expand/collapse state -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 transition-transform {activeSegments.has(i) ? 'rotate-180' : ''}"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- Conditionally rendered textarea -->
+              {#if activeSegments.has(i)}
+                <textarea
+                  bind:value={segments[i]}
+                  class="font-mono textarea textarea-bordered textarea-sm w-full text-xs mt-2"
+                  rows={calculateRows(segment)}
+                  style="max-height: 400px; overflow-y: auto;"
+                  on:focus={() => (selectedSegmentIndex = i)}></textarea>
+              {/if}
             </div>
           {/each}
         </div>

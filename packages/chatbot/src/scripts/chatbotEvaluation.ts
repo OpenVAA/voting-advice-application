@@ -13,13 +13,15 @@ import { MultiVectorStore, OpenAIEmbedder, routeQuery } from '@openvaa/vector-st
 import { config } from 'dotenv';
 import { join } from 'path';
 import { evaluate } from 'promptfoo';
-import { ALL_CATEGORY_VALUES, isQueryable } from '../core/queryCategories';
+import { ALL_CATEGORY_VALUES, isQueryable, type QueryCategory } from '../core/queryCategories';
 import { loadPrompt } from '../utils/promptLoader';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store';
-import type { EvaluateTestSuite, PromptFunction } from 'promptfoo';
+import type { ModelMessage } from 'ai';
+import type { EvaluateTestSuite } from 'promptfoo';
 
 // Load environment variables from project root
 config({ path: join(__dirname, '..', '..', '..', '..', '.env') });
+console.info('Getting Cohere API key from: ' + process.env.COHERE_API_KEY);
 
 // Collection names for multi-vector retrieval
 const COLLECTION_NAMES = {
@@ -54,7 +56,7 @@ function formatRAGContext(searchResult: MultiVectorSearchResult): string {
  * 4. Loads system prompt and user query template
  * 5. Returns OpenAI message array
  */
-const chatbotPromptFunction: PromptFunction = async ({ vars }) => {
+export async function chatbotPromptFunction({ vars }: { vars: { query: string } }): Promise<Array<ModelMessage>> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY environment variable is required');
@@ -95,7 +97,7 @@ const chatbotPromptFunction: PromptFunction = async ({ vars }) => {
 
   // PHASE 2: Retrieve RAG context if needed
   let ragContext = 'No relevant context found.';
-  if (isQueryable(category as any) && rephrased) {
+  if (isQueryable(category as QueryCategory) && rephrased) {
     const searchResult = await vectorStore.search({
       query: rephrased,
       nResultsTarget: 10,
@@ -124,7 +126,7 @@ const chatbotPromptFunction: PromptFunction = async ({ vars }) => {
     { role: 'system', content: systemPrompt.prompt },
     { role: 'user', content: userMessage }
   ];
-};
+}
 
 async function runChatbotEvaluation(): Promise<void> {
   console.info('='.repeat(60));
