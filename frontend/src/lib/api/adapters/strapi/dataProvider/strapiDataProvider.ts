@@ -146,8 +146,15 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const params = buildFilterParams(options);
     const allianceParams = structuredClone(params);
     params.filters ??= {};
-    params.filters.candidate = {
-      termsOfUseAccepted: { $notNull: 'true' }
+    params.filters = {
+      $or: [
+        {
+          candidate: {
+            termsOfUseAccepted: { $notNull: 'true' }
+          }
+        },
+        { candidate: { $null: 'true' } }
+      ]
     };
     if (!options.includeUnconfirmed) params.filters.unconfirmed = { $ne: 'true' };
     params.populate = {
@@ -161,10 +168,6 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       },
       party: { populate: { image: 'true' } }
     };
-    if (!options.includeUnconfirmed) {
-      params.filters ??= {};
-      params.filters.unconfirmed = { $ne: 'true' };
-    }
     // We need to fetch alliances separately because they're not included in the nominations API
     // Constiuencies are defined in plural for Alliances, so we need to edit that part of the params
     if (allianceParams.filters?.constituency) {
