@@ -10,8 +10,6 @@ import {
 } from '@openvaa/data';
 import { type Readable } from 'svelte/store';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
-import type { Id } from '@openvaa/core';
-import type { OrganizationNomination } from '@openvaa/data';
 import type { SelectionTree } from './selectionTree.type';
 
 /**
@@ -50,7 +48,7 @@ export function nominationAndQuestionStore({
         const constituency = election.getApplicableConstituency(constituencies);
         if (!constituency) continue;
 
-        let candidateNominationsWithMissingAnswers: Set<Id> | undefined;
+        // let candidateNominationsWithMissingAnswers: Set<Id> | undefined;
 
         tree[election.id] = Object.fromEntries(
           entityTypes
@@ -70,30 +68,40 @@ export function nominationAndQuestionStore({
                 type: QUESTION_CATEGORY_TYPE.Opinion
               });
               // Check that the entities have answers to all opinion questions
+              // TODO: Extend this behaviour to other entityTypes as well
               if (entityType === ENTITY_TYPE.Candidate && hideIfMissingAnswers?.candidate) {
                 nominations = nominations.filter((n) => {
                   const hasAllAnswers = opinionQuestions.every((q) => n.entity.getAnswer(q) != null);
-                  if (!hasAllAnswers) {
-                    candidateNominationsWithMissingAnswers ??= new Set();
-                    candidateNominationsWithMissingAnswers.add(n.id);
-                  }
+                  // if (!hasAllAnswers) {
+                  //   candidateNominationsWithMissingAnswers ??= new Set();
+                  //   candidateNominationsWithMissingAnswers.add(n.id);
+                  // }
                   return hasAllAnswers;
                 });
               }
-              if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
-                // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
-                if (entityType === ENTITY_TYPE.Organization && hideIfMissingAnswers?.candidate) {
-                  for (const organization of nominations as Array<OrganizationNomination>) {
-                    organization.data.candidateNominationIds = organization.data.candidateNominationIds?.filter(
-                      (id) => !candidateNominationsWithMissingAnswers?.has(id)
-                    );
-                  }
-                  // And finally filter out orgs with no children left
-                  nominations = nominations.filter(
-                    (n) => (n as OrganizationNomination).data.candidateNominationIds?.length
-                  );
-                }
-              }
+              // We should purge child nomination ids from the data if they don't have answers to all opinion questions and remove any OrganizationNominations that are bereft of their children in this way - but ONLY if they had children to begin with, i.e. that they were not pure OrganizationNominations. However, there's no way to perform this reliably because editing object data does not work. The commented code below will still return all parents on the next reload, because candidateNominationIds will be empty for those purged on the first go!
+              // TODO[supabase]: Perform this complex logic and the one above already on the server!
+              // if (
+              //   (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) &&
+              //   candidateNominationsWithMissingAnswers?.size
+              // ) {
+              //   const toPurge = new Set<OrganizationNomination | FactionNomination>();
+              //   for (const parent of nominations as Array<OrganizationNomination | FactionNomination>) {
+              //     // A pure OrganizationNomination, don't care about children
+              //     if (!parent.data.candidateNominationIds?.length) continue;
+              //     // Has candidates
+              //     parent.data.candidateNominationIds = parent.data.candidateNominationIds?.filter(
+              //       (id) => !candidateNominationsWithMissingAnswers?.has(id)
+              //     );
+              //     // If there are no candidates after filtering, purge the parent as well
+              //     if (!parent.data.candidateNominationIds.length) toPurge.add(parent);
+              //   }
+              //   // Filter out nominations to purge
+              //   nominations = (nominations as Array<OrganizationNomination | FactionNomination>).filter(
+              //     (n) => !toPurge.has(n)
+              //   );
+              // }
+
               return [entityType, { nominations, infoQuestions, opinionQuestions }];
             })
             .filter(([, value]) => value)
