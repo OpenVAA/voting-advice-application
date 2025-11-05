@@ -191,7 +191,7 @@ export function initVoterContext(): VoterContext {
   );
 
   const algorithm = new MatchingAlgorithm({
-    distanceMetric: DISTANCE_METRIC.Manhattan,
+    distanceMetric: DISTANCE_METRIC.Euclidean,
     missingValueOptions: {
       method: MISSING_VALUE_METHOD.RelativeMaximum
     }
