@@ -63,15 +63,14 @@ export function getCardContentsFromFile(): {
 }
 
 /**
- * Gets `cardContents` from Strapi and returns them in format used in `DynamicSettings`. The returned values are `null` if not defined.
+ * Gets `cardContents` from Strapi and returns them in format used in `DynamicSettings`.
  */
 export function parseStrapiCardContents(results: Data.ContentType<'api::app-setting.app-setting'>['results']): {
   candidate: DynamicSettings['results']['cardContents']['candidate'] | null;
   organization: DynamicSettings['results']['cardContents']['organization'] | null;
 } {
-  let candidateCardContents: DynamicSettings['results']['cardContents']['candidate'] | null = null;
+  const candidateCardContents: DynamicSettings['results']['cardContents']['candidate'] = [];
   results.candidateCardContents?.forEach((item) => {
-    candidateCardContents ??= [];
     if (item.content === 'submatches') {
       candidateCardContents.push(item.content);
     } else {
@@ -83,9 +82,8 @@ export function parseStrapiCardContents(results: Data.ContentType<'api::app-sett
     }
   });
 
-  let organizationCardContents: DynamicSettings['results']['cardContents']['organization'] | null = null;
+  const organizationCardContents: DynamicSettings['results']['cardContents']['organization'] = [];
   results.organizationCardContents?.forEach((item) => {
-    organizationCardContents ??= [];
     if (item.content === 'submatches' || item.content === 'candidates') {
       organizationCardContents.push(item.content);
     } else {

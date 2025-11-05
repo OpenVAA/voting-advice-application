@@ -1,4 +1,3 @@
-export * from '../../../utils/translateQuestionInfoSections';
 export * from './buildFilterParams';
 export * from './parseBasics';
 export * from './parseCandidate';
