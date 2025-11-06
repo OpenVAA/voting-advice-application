@@ -11,6 +11,8 @@ import { setPromptVars } from '@openvaa/llm-refactor';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { MultiVectorStore, OpenAIEmbedder, routeQuery } from '@openvaa/vector-store';
 import { config } from 'dotenv';
+import { readFile } from 'fs/promises';
+import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
 import { evaluate } from 'promptfoo';
 import { ALL_CATEGORY_VALUES, isQueryable, type QueryCategory } from '../core/queryCategories';
@@ -89,27 +91,69 @@ export async function chatbotPromptFunction({ vars }: { vars: { query: string } 
   });
 
   // PHASE 1: Categorize and reformulate query
+  console.info('\n--- PHASE 1: Query Routing ---');
+  console.info('Original query:', query);
   const { category, rephrased } = await routeQuery({
     messages: [query],
     provider: queryRoutingProvider,
     categories: ALL_CATEGORY_VALUES
   });
+  console.info('Category:', category);
+  console.info('Rephrased:', rephrased || '(no reformulation)');
+  console.info('Queryable:', isQueryable(category as QueryCategory));
 
   // PHASE 2: Retrieve RAG context if needed
+  console.info('\n--- PHASE 2: RAG Retrieval ---');
   let ragContext = 'No relevant context found.';
   if (isQueryable(category as QueryCategory) && rephrased) {
+    console.info('Searching vector store for:', rephrased);
     const searchResult = await vectorStore.search({
       query: rephrased,
       nResultsTarget: 10,
       searchCollections: ['segment', 'summary', 'fact'],
       searchConfig: {}
     });
+    console.info(`Retrieved ${searchResult.results.length} results`);
+    if (searchResult.results.length > 0) {
+      console.info('Top result sources:');
+      searchResult.results.slice(0, 3).forEach((result, idx) => {
+        console.info(
+          `  ${idx + 1}. ${result.segment.metadata.source} (score: ${result.vectorSearchScore?.toFixed(4)})`
+        );
+      });
+    }
     ragContext = formatRAGContext(searchResult);
+    console.info(`RAG context length: ${ragContext.length} chars`);
+  } else {
+    console.info('Skipping RAG retrieval (not queryable or no rephrased query)');
   }
 
   // PHASE 3: Load prompts
-  const systemPrompt = await loadPrompt({ promptFileName: 'systemPrompt_v0' });
+  console.info('\n--- PHASE 3: Loading Prompts ---');
+
+  // Load system prompt using same approach as ChatEngine
+  const systemPromptPath = join(__dirname, '..', 'core', 'prompts', 'systemPrompt_phases.yaml');
+  console.info('Loading system prompt from:', systemPromptPath);
+  const systemPromptRaw = await readFile(systemPromptPath, 'utf-8');
+  const systemPromptParsed = loadYaml(systemPromptRaw) as {
+    id: string;
+    baseReminder: string;
+    params?: Record<string, string>;
+    basePrompt: string;
+    phasePrompts: Record<string, string>;
+  };
+
+  // Compose system prompt: basePrompt + intent_resolution phase + baseReminder
+  // Using intent_resolution phase since eval tests policy questions
+  const basePrompt = systemPromptParsed.basePrompt || '';
+  const phaseSpecific = systemPromptParsed.phasePrompts?.['intent_resolution'] || '';
+  const baseReminder = systemPromptParsed.baseReminder || '';
+  const systemPrompt = `${basePrompt}\n\n${phaseSpecific}\n\n${baseReminder}`;
+  console.info('System prompt composed with phase: intent_resolution');
+  console.info(`System prompt length: ${systemPrompt.length} chars`);
+
   const userQueryPrompt = await loadPrompt({ promptFileName: 'userQueryWithContext' });
+  console.info('User query template loaded');
 
   // PHASE 4: Fill user query template with context + query
   const userMessage = setPromptVars({
@@ -123,7 +167,7 @@ export async function chatbotPromptFunction({ vars }: { vars: { query: string } 
 
   // Return OpenAI message format
   return [
-    { role: 'system', content: systemPrompt.prompt },
+    { role: 'system', content: systemPrompt },
     { role: 'user', content: userMessage }
   ];
 }
@@ -197,26 +241,81 @@ async function runChatbotEvaluation(): Promise<void> {
     // Print detailed results
     if (results.results && results.results.length > 0) {
       console.info('\n' + '-'.repeat(60));
-      for (const result of results.results) {
-        console.info(`\nTest: ${result.description || 'Unnamed test'}`);
-        console.info(`Status: ${result.success ? 'PASS' : 'FAIL'}`);
+      for (const result of results.results) {        console.info(`\n${'='.repeat(60)}`);
+        console.info(`Test: ${result.description || 'Unnamed test'}`);
+        console.info(`Status: ${result.success ? '✅ PASS' : '❌ FAIL'}`);
+        console.info(`${'='.repeat(60)}`);
 
+        // Log response
+        if (result.response) {
+          console.info('\n--- RESPONSE ---');
+          const responseText = typeof result.response === 'string' ? result.response : result.response.output;
+          const fullText = typeof responseText === 'string' ? responseText : String(responseText);
+
+          // Show full response for failed tests, truncated for passed tests
+          if (!result.success) {
+            console.info(fullText);
+          } else {
+            const preview = fullText.substring(0, 300);
+            console.info(`${preview}${fullText.length > 300 ? '...' : ''}`);
+          }
+          console.info(`\nResponse length: ${fullText.length} chars`);
+        } else {
+          console.info('\n⚠️  No response data available');
+        }
+
+        // Log grading details
         if (result.gradingResult) {
-          console.info('\nAssertions:');
-          for (const assertion of result.gradingResult.componentResults || []) {
-            console.info(`  - ${assertion.assertion?.type}: ${assertion.pass ? 'PASS' : 'FAIL'}`);
-            if (!assertion.pass && assertion.reason) {
-              console.info(`    Reason: ${assertion.reason}`);
+          console.info('\n--- ASSERTIONS ---');
+          const componentResults = result.gradingResult.componentResults || [];
+
+          if (componentResults.length === 0) {
+            console.info('⚠️  No assertion results found');
+          }
+
+          for (const assertion of componentResults) {
+            const assertionType = assertion.assertion?.type || 'unknown';
+            const assertionValue = assertion.assertion?.value || '';
+            const status = assertion.pass ? '✅ PASS' : '❌ FAIL';
+
+            console.info(`\n  ${status} - ${assertionType}`);
+
+            if (assertionValue && assertionValue.toString().length < 100) {
+              console.info(`    Value: ${assertionValue}`);
+            }
+
+            if (assertion.score !== undefined) {
+              console.info(`    Score: ${assertion.score}`);
+            }
+
+            if (!assertion.pass) {
+              if (assertion.reason) {
+                console.info(`    Reason: ${assertion.reason}`);
+              }
+              if (assertion.comment) {
+                console.info(`    Comment: ${assertion.comment}`);
+              }
             }
           }
+
+          // Log overall grading info if available
+          if (result.gradingResult.pass !== undefined) {
+            console.info(`\n  Overall grading pass: ${result.gradingResult.pass}`);
+          }
+          if (result.gradingResult.reason) {
+            console.info(`  Overall reason: ${result.gradingResult.reason}`);
+          }
+        } else {
+          console.info('\n⚠️  No grading result available');
         }
 
-        if (result.response) {
-          // Handle response which can be a string or ProviderResponse object
-          const responseText = typeof result.response === 'string' ? result.response : result.response.output;
-          const preview = typeof responseText === 'string' ? responseText.substring(0, 200) : String(responseText);
-          console.info(`\nResponse preview: ${preview}...`);
+        // Log any error information
+        if (result.error) {
+          console.info('\n--- ERROR ---');
+          console.info(result.error);
         }
+
+        console.info('\n' + '-'.repeat(60));
       }
     }
 

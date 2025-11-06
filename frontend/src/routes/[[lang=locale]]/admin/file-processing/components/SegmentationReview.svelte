@@ -22,7 +22,7 @@ Emits 'failed' event when document is marked as failed.
   let error: string | null = null;
   let failureReason = '';
   let showFailDialog = false;
-  let triggerSegmentation = document.state === 'EXTRACTION_APPROVED'; // Auto-trigger if coming from extraction
+  let triggerSegmentation = document.state === 'EXTRACTION_APPROVED' || document.state === 'METADATA_APPROVED'; // Auto-trigger if coming from extraction or metadata approval
 
   // Initialize segments from document when first available
   let segments: Array<string> = document.segments ? [...document.segments] : [];
@@ -209,37 +209,11 @@ Emits 'failed' event when document is marked as failed.
 
     <!-- Two-column layout -->
     <div class="h-96 grid grid-cols-2 gap-4">
-      <!-- Left: Full text with highlighted segments -->
+      <!-- Left: Original extracted text -->
       <div class="overflow-auto rounded-lg border bg-gray-50 p-4">
         <h4 class="font-semibold sticky top-0 mb-2 bg-gray-50">Full Text (read-only)</h4>
         <div class="font-mono whitespace-pre-wrap text-sm">
-          {#if document.extractedText}
-            {#each segments as segment, i}
-              <span
-                class="cursor-pointer transition-colors {i === selectedSegmentIndex
-                  ? 'bg-yellow-200'
-                  : 'hover:bg-yellow-100'}"
-                on:click={() => {
-                  selectedSegmentIndex = i;
-                  activeSegments.add(i);
-                  activeSegments = activeSegments;
-                }}
-                role="button"
-                tabindex="0"
-                on:keydown={(e) => {
-                  if (e.key === 'Enter') {
-                    selectedSegmentIndex = i;
-                    activeSegments.add(i);
-                    activeSegments = activeSegments;
-                  }
-                }}>
-                {segment}
-              </span>
-              {#if i < segments.length - 1}
-                <span class="text-red-500">|</span>
-              {/if}
-            {/each}
-          {/if}
+          {document.extractedText || ''}
         </div>
       </div>
 

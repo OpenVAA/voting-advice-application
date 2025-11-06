@@ -21,8 +21,8 @@ export async function POST({ request }: { request: Request }) {
       return json({ error: 'Document not found' }, { status: 404 });
     }
 
-    if (document.state !== 'EXTRACTION_APPROVED') {
-      return json({ error: 'Extraction must be approved before segmentation' }, { status: 400 });
+    if (document.state !== 'EXTRACTION_APPROVED' && document.state !== 'METADATA_APPROVED') {
+      return json({ error: 'Extraction and metadata must be approved before segmentation' }, { status: 400 });
     }
 
     if (!document.extractedText) {

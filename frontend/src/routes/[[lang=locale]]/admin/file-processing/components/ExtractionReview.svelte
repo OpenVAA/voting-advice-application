@@ -22,14 +22,9 @@ Emits 'failed' event when document is marked as failed.
   let failureReason = '';
   let showFailDialog = false;
 
-  // Initialize editedText from document when first available
-  let editedText = document.extractedText ?? '';
-  let hasInitialized = document.extractedText !== undefined;
-
-  $: if (document.extractedText !== undefined && !hasInitialized) {
-    editedText = document.extractedText;
-    hasInitialized = true;
-  }
+  // Update editedText whenever document changes
+  let editedText: string;
+  $: editedText = document.extractedText ?? '';
 
   async function handleApprove() {
     submitting = true;
@@ -50,20 +45,8 @@ Emits 'failed' event when document is marked as failed.
         throw new Error(errorData.error || 'Failed to approve extraction');
       }
 
-      // Trigger segmentation automatically after approval
-      const segmentResponse = await fetch('/api/file-processing/segment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id
-        })
-      });
-
-      if (!segmentResponse.ok) {
-        const errorData = await segmentResponse.json();
-        throw new Error(errorData.error || 'Failed to segment text');
-      }
-
+      // Document will now move to METADATA_INSERTION state
+      // Segmentation happens after metadata approval
       dispatch('approved');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to approve extraction';
@@ -178,7 +161,7 @@ Emits 'failed' event when document is marked as failed.
         <span class="loading loading-spinner"></span>
         Processing...
       {:else}
-        Accept & Segment
+        Approve Text
       {/if}
     </button>
     <button class="btn btn-outline btn-error" on:click={() => (showFailDialog = true)} disabled={submitting}>

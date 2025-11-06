@@ -2,6 +2,8 @@
   import type { ConversationState } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store';
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+  import { createOnboardingStream } from '$lib/chatbot';
 
   interface UIMessage {
     id: string;
@@ -382,6 +384,30 @@
     }
     return '';
   }
+
+  // Initialize onboarding message on component mount
+  onMount(() => {
+    // Only show onboarding if conversation is empty
+    if (messages.length === 0) {
+      const locale = $page.params.lang || 'en';
+      const { message, streamPromise } = createOnboardingStream(locale);
+
+      // Add message to array immediately (starts as empty with streaming state)
+      messages = [message as UIMessage];
+
+      // Set up interval to trigger reactivity during streaming
+      // This ensures Svelte detects changes to the message.parts[0].text property
+      const reactivityInterval = setInterval(() => {
+        messages = [...messages]; // Trigger Svelte reactivity
+      }, 50); // Update every 50ms (faster than char delay for smooth updates)
+
+      // Clean up interval when streaming completes
+      streamPromise.then(() => {
+        clearInterval(reactivityInterval);
+        messages = [...messages]; // Final reactivity trigger
+      });
+    }
+  });
 </script>
 
 <div class="flex w-full h-screen gap-4 p-4">

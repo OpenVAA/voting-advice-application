@@ -1,10 +1,11 @@
 <!--
 @component
-Metadata entry form for documents
+Metadata review form for documents
 
-Allows entering/editing document metadata before processing.
+Allows reviewing/editing document metadata extracted automatically.
+Pre-fills fields from extracted metadata with ability to edit.
 Split-screen layout: original file preview on left, metadata form on right.
-Emits 'submitted' event when metadata is saved.
+Emits 'submitted' event when metadata is approved.
 Emits 'skip' event to move to next document without processing.
 -->
 
@@ -18,13 +19,14 @@ Emits 'skip' event to move to next document without processing.
 
   const dispatch = createEventDispatcher<{ submitted: void; skip: void; delete: void }>();
 
+  // Use extracted metadata if available, otherwise use final metadata (for backwards compat)
   let metadata: DocumentMetadata = {
-    title: document.metadata?.title ?? '',
-    authors: document.metadata?.authors ?? [],
-    source: document.metadata?.source ?? '',
-    publishedDate: document.metadata?.publishedDate ?? '',
-    documentType: document.metadata?.documentType ?? 'unofficial',
-    locale: document.metadata?.locale ?? ''
+    title: document.extractedMetadata?.title ?? document.metadata?.title ?? '',
+    authors: document.extractedMetadata?.authors ?? document.metadata?.authors ?? [],
+    source: document.extractedMetadata?.source ?? document.metadata?.source ?? '',
+    publishedDate: document.extractedMetadata?.publishedDate ?? document.metadata?.publishedDate ?? '',
+    documentType: document.extractedMetadata?.documentType ?? document.metadata?.documentType ?? 'unofficial',
+    locale: document.extractedMetadata?.locale ?? document.metadata?.locale ?? ''
   };
 
   let authorsString = metadata.authors?.join(', ') ?? '';
@@ -53,7 +55,8 @@ Emits 'skip' event to move to next document without processing.
         locale: metadata.locale || undefined
       };
 
-      const response = await fetch('/api/file-processing/metadata', {
+      // Approve metadata (this saves it as final metadata)
+      const response = await fetch('/api/file-processing/approve-metadata', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -64,11 +67,11 @@ Emits 'skip' event to move to next document without processing.
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save metadata');
+        throw new Error(errorData.error || 'Failed to approve metadata');
       }
 
-      // Trigger extraction automatically after metadata is saved
-      const extractResponse = await fetch('/api/file-processing/extract', {
+      // Trigger segmentation automatically after metadata is approved
+      const segmentResponse = await fetch('/api/file-processing/segment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -76,15 +79,15 @@ Emits 'skip' event to move to next document without processing.
         })
       });
 
-      if (!extractResponse.ok) {
-        const errorData = await extractResponse.json();
-        throw new Error(errorData.error || 'Failed to extract text');
+      if (!segmentResponse.ok) {
+        const errorData = await segmentResponse.json();
+        throw new Error(errorData.error || 'Failed to segment text');
       }
 
       dispatch('submitted');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to save metadata';
-      console.error('Metadata submission error:', err);
+      error = err instanceof Error ? err.message : 'Failed to approve metadata';
+      console.error('Metadata approval error:', err);
     } finally {
       submitting = false;
     }
@@ -215,7 +218,7 @@ Emits 'skip' event to move to next document without processing.
           <span class="loading loading-spinner"></span>
           Processing...
         {:else}
-          Submit & Extract
+          Approve Metadata & Segment
         {/if}
       </button>
       <button

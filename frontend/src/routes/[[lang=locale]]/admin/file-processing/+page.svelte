@@ -16,6 +16,7 @@ Shows current document being processed and queue sidebar.
   import { onMount } from 'svelte';
   import DocumentUploadZone from './components/DocumentUploadZone.svelte';
   import ExtractionReview from './components/ExtractionReview.svelte';
+  import FileViewer from './components/FileViewer.svelte';
   import MetadataForm from './components/MetadataForm.svelte';
   import QueueSidebar from './components/QueueSidebar.svelte';
   import SegmentationReview from './components/SegmentationReview.svelte';
@@ -50,17 +51,10 @@ Shows current document being processed and queue sidebar.
   }
 
   function handleDocumentUploaded(event: CustomEvent<ProcessingDocument>) {
-    const scrollTop = mainContainer?.scrollTop ?? 0; // Store current scroll position
     const newDoc = event.detail;
     documents = [...documents, newDoc];
     if (!currentDocument) {
       currentDocument = newDoc;
-      // Restore scroll position after DOM update to keep upload zone visible
-      setTimeout(() => {
-        if (mainContainer) {
-          mainContainer.scrollTop = scrollTop;
-        }
-      }, 0);
     }
   }
 
@@ -72,9 +66,9 @@ Shows current document being processed and queue sidebar.
     }
   }
 
-  async function handleMetadataSubmitted() {
+  async function handleExtractionApproved() {
     await refreshQueue();
-    // Move to next stage
+    // Document will now be in METADATA_INSERTION state
     if (currentDocument) {
       const updated = documents.find((d) => d.id === currentDocument?.id);
       if (updated) {
@@ -83,8 +77,9 @@ Shows current document being processed and queue sidebar.
     }
   }
 
-  async function handleExtractionApproved() {
+  async function handleMetadataApproved() {
     await refreshQueue();
+    // Move to next stage after metadata approval
     if (currentDocument) {
       const updated = documents.find((d) => d.id === currentDocument?.id);
       if (updated) {
@@ -135,6 +130,100 @@ Shows current document being processed and queue sidebar.
     }
   }
 
+  async function handleQueueDocument() {
+    if (!currentDocument) return;
+
+    try {
+      const response = await fetch('/api/file-processing/queue-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentIds: [currentDocument.id]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to queue document');
+      }
+
+      await refreshQueue();
+      // Update current document reference to show new state
+      const updated = documents.find((d) => d.id === currentDocument?.id);
+      if (updated) {
+        currentDocument = updated;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to queue document';
+      console.error('Queue document error:', err);
+    }
+  }
+
+  async function handleDequeueDocument() {
+    if (!currentDocument) return;
+
+    try {
+      const response = await fetch('/api/file-processing/dequeue-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentIds: [currentDocument.id]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to dequeue document');
+      }
+
+      await refreshQueue();
+      // Update current document reference to show new state
+      const updated = documents.find((d) => d.id === currentDocument?.id);
+      if (updated) {
+        currentDocument = updated;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to dequeue document';
+      console.error('Dequeue document error:', err);
+    }
+  }
+
+  let extracting = false;
+  let deleting = false;
+  let showDeleteDialog = false;
+
+  async function handleExtractDocument() {
+    if (!currentDocument) return;
+
+    extracting = true;
+    error = null;
+
+    try {
+      const response = await fetch('/api/file-processing/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: currentDocument.id
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to extract document');
+      }
+
+      await refreshQueue();
+      // Update current document reference to show new state
+      const updated = documents.find((d) => d.id === currentDocument?.id);
+      if (updated) {
+        currentDocument = updated;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to extract document';
+      console.error('Extract document error:', err);
+    } finally {
+      extracting = false;
+    }
+  }
+
   async function handleDocumentDeleted() {
     await refreshQueue();
     // Move to next document in queue after deletion
@@ -142,6 +231,36 @@ Shows current document being processed and queue sidebar.
       currentDocument = documents[0];
     } else {
       currentDocument = null;
+    }
+  }
+
+  async function handleDelete() {
+    if (!currentDocument) return;
+
+    deleting = true;
+    error = null;
+
+    try {
+      const response = await fetch('/api/file-processing/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: currentDocument.id
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete document');
+      }
+
+      showDeleteDialog = false;
+      await handleDocumentDeleted();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to delete document';
+      console.error('Delete document error:', err);
+    } finally {
+      deleting = false;
     }
   }
 
@@ -173,19 +292,119 @@ Shows current document being processed and queue sidebar.
           </h2>
 
           <!-- Stage-specific content -->
-          {#if currentStage === 'UPLOADED' || currentStage === 'METADATA_ENTERED'}
-            <MetadataForm
-              document={currentDocument}
-              documentsCount={documents.length}
-              on:submitted={handleMetadataSubmitted}
-              on:skip={handleSkipDocument}
-              on:delete={handleDocumentDeleted} />
+          {#if currentStage === 'UPLOADED'}
+            <div class="space-y-4">
+              <h3 class="font-semibold text-xl">Document Review</h3>
+
+              <!-- Two-column layout: Document viewer + Action panel -->
+              <div class="h-[600px] grid grid-cols-2 gap-4">
+                <!-- Left: Document viewer -->
+                <FileViewer
+                  documentId={currentDocument.id}
+                  fileType={currentDocument.fileType}
+                  filename={currentDocument.filename} />
+
+                <!-- Right: Action panel -->
+                <div class="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4">
+                  <h3 class="font-semibold text-lg">Document Actions</h3>
+
+                  <!-- Document info -->
+                  <div class="space-y-2 text-sm">
+                    <p><strong>Filename:</strong> {currentDocument.filename}</p>
+                    <p><strong>Uploaded:</strong> {new Date(currentDocument.createdAt).toLocaleString()}</p>
+                    <p><strong>Type:</strong> {currentDocument.fileType.toUpperCase()}</p>
+                  </div>
+
+                  <div class="divider"></div>
+
+                  <!-- Instructions -->
+                  <p class="text-sm text-gray-600">
+                    Extract this document immediately to begin processing, or queue it for batch extraction later.
+                    You can also use "Queue All" in the sidebar to queue all unprocessed documents at once.
+                  </p>
+
+                  <!-- Action buttons -->
+                  <div class="mt-auto flex flex-col gap-2">
+                    <button class="btn btn-accent" on:click={handleExtractDocument} disabled={extracting || deleting}>
+                      {#if extracting}
+                        <span class="loading loading-spinner"></span>
+                        Extracting...
+                      {:else}
+                        Extract This Document
+                      {/if}
+                    </button>
+                    <button class="btn btn-primary" on:click={handleQueueDocument} disabled={extracting || deleting}>
+                      Queue This Document
+                    </button>
+                    <button class="btn btn-ghost" on:click={handleSkipDocument} disabled={documents.length === 1 || extracting || deleting}>
+                      Next Document
+                    </button>
+                    <button class="btn btn-ghost btn-error" on:click={() => showDeleteDialog = true} disabled={extracting || deleting}>
+                      Delete Document
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {:else if currentStage === 'QUEUED_FOR_EXTRACTION'}
+            <div class="space-y-4">
+              <h3 class="font-semibold text-xl">Queued for Extraction</h3>
+
+              <!-- Two-column layout: Document viewer + Action panel -->
+              <div class="h-[600px] grid grid-cols-2 gap-4">
+                <!-- Left: Document viewer -->
+                <FileViewer
+                  documentId={currentDocument.id}
+                  fileType={currentDocument.fileType}
+                  filename={currentDocument.filename} />
+
+                <!-- Right: Action panel -->
+                <div class="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4">
+                  <h3 class="font-semibold text-lg">Document Actions</h3>
+
+                  <!-- Document info -->
+                  <div class="space-y-2 text-sm">
+                    <p><strong>Filename:</strong> {currentDocument.filename}</p>
+                    <p><strong>Uploaded:</strong> {new Date(currentDocument.createdAt).toLocaleString()}</p>
+                    <p><strong>Type:</strong> {currentDocument.fileType.toUpperCase()}</p>
+                  </div>
+
+                  <div class="divider"></div>
+
+                  <!-- Instructions -->
+                  <p class="text-sm text-gray-600">
+                    This document is queued for extraction. Click "Extract Queued" in the sidebar to begin processing,
+                    or dequeue it to move it back to unprocessed status.
+                  </p>
+
+                  <!-- Action buttons -->
+                  <div class="mt-auto flex flex-col gap-2">
+                    <button class="btn btn-secondary" on:click={handleDequeueDocument} disabled={deleting}>
+                      Dequeue This Document
+                    </button>
+                    <button class="btn btn-ghost" on:click={handleSkipDocument} disabled={documents.length === 1 || deleting}>
+                      Next Document
+                    </button>
+                    <button class="btn btn-ghost btn-error" on:click={() => showDeleteDialog = true} disabled={deleting}>
+                      Delete Document
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           {:else if currentStage === 'EXTRACTED'}
             <ExtractionReview
               document={currentDocument}
               on:approved={handleExtractionApproved}
               on:failed={handleDocumentFailed} />
-          {:else if currentStage === 'EXTRACTION_APPROVED' || currentStage === 'SEGMENTED'}
+          {:else if currentStage === 'EXTRACTION_APPROVED' || currentStage === 'METADATA_INSERTION'}
+            <MetadataForm
+              document={currentDocument}
+              documentsCount={documents.length}
+              on:submitted={handleMetadataApproved}
+              on:skip={handleSkipDocument}
+              on:delete={handleDocumentDeleted} />
+          {:else if currentStage === 'METADATA_APPROVED' || currentStage === 'SEGMENTED'}
             <SegmentationReview
               document={currentDocument}
               on:approved={handleSegmentationApproved}
@@ -241,3 +460,29 @@ Shows current document being processed and queue sidebar.
     on:documentSelected={handleDocumentSelected}
     on:refresh={refreshQueue} />
 </div>
+
+<!-- Delete confirmation dialog -->
+{#if showDeleteDialog && currentDocument}
+  <div class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold">Delete Document</h3>
+      <p class="py-4">
+        Are you sure you want to delete <strong>{currentDocument.filename}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="modal-action">
+        <button class="btn btn-error" on:click={handleDelete} disabled={deleting}>
+          {#if deleting}
+            <span class="loading loading-spinner"></span>
+            Deleting...
+          {:else}
+            Delete Permanently
+          {/if}
+        </button>
+        <button class="btn" on:click={() => showDeleteDialog = false} disabled={deleting}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}

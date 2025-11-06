@@ -58,10 +58,9 @@ Emits 'uploaded' event with the new document.
     event.preventDefault();
     dragActive = false;
 
-    const files = event.dataTransfer?.files;
-    if (files && files.length > 0) {
-      // Upload files one by one
-      Array.from(files).forEach((file) => handleFileUpload(file));
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      handleFileUpload(file);
     }
   }
 
@@ -76,9 +75,9 @@ Emits 'uploaded' event with the new document.
 
   function handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (files && files.length > 0) {
-      Array.from(files).forEach((file) => handleFileUpload(file));
+    const file = input.files?.[0];
+    if (file) {
+      handleFileUpload(file);
     }
     // Reset input
     input.value = '';
@@ -116,7 +115,7 @@ Emits 'uploaded' event with the new document.
       Drag and drop PDF or TXT files here, or
       <label class="cursor-pointer text-primary hover:underline">
         browse
-        <input type="file" class="hidden" accept=".pdf,.txt" multiple on:change={handleFileInput} />
+        <input type="file" class="hidden" accept=".pdf,.txt" on:change={handleFileInput} />
       </label>
     </p>
     <p class="mt-1 text-xs text-gray-500">Supports PDF and TXT files</p>

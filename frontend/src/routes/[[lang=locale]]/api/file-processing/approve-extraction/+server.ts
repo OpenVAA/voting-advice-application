@@ -1,6 +1,7 @@
 /**
  * POST /api/file-processing/approve-extraction
- * Approve extracted text (with optional edits) and move to next stage
+ * Approve extracted text (with optional edits) and move to METADATA_INSERTION state
+ * Note: Does NOT trigger segmentation - that happens after metadata approval
  */
 
 import { json } from '@sveltejs/kit';
@@ -25,9 +26,10 @@ export async function POST({ request }: { request: Request }) {
     // Use edited text if provided, otherwise keep original
     const finalText = editedText !== undefined ? editedText : document.extractedText;
 
+    // Move to METADATA_INSERTION state where user can review/edit extracted metadata
     const updated = documentStore.update(documentId, {
       extractedText: finalText,
-      state: 'EXTRACTION_APPROVED'
+      state: 'METADATA_INSERTION'
     });
 
     return json(updated);

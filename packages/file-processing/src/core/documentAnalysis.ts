@@ -40,7 +40,7 @@ const segmentAnalysisSchema = z.object({
  * });
  * ```
  */
-async function extractMetadata(options: ExtractMetadataOptions) {
+export async function extractMetadata(options: ExtractMetadataOptions) {
   const { text, llmProvider } = options;
 
   // Get the first and last 500 characters of the input text

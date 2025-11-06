@@ -48,6 +48,7 @@ export class ChatEngine {
       const raw = await readFile(filePath, 'utf-8');
       const parsed = loadYaml(raw) as {
         id: string;
+        baseReminder: string;
         params?: Record<string, string>;
         basePrompt: string;
         phasePrompts: Record<ConversationPhase, string>;
@@ -67,12 +68,15 @@ export class ChatEngine {
     const parsed = JSON.parse(this.phasePrompts.prompt) as {
       basePrompt: string;
       phasePrompts: Record<ConversationPhase, string>;
+      baseReminder: string;
     };
 
     const basePrompt = parsed.basePrompt || '';
     const phaseSpecific = parsed.phasePrompts?.[phase] || '';
+    const baseReminder = parsed.baseReminder || '';
+    console.info('[ChatEngine] Full system prompt: ' + `${basePrompt}\n\n${phaseSpecific}\n\n${baseReminder}`);
 
-    return `${basePrompt}\n\n${phaseSpecific}`;
+    return `${basePrompt}\n\n${phaseSpecific}\n\n${baseReminder}`;
   }
 
   /**

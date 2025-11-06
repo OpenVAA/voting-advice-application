@@ -1,4 +1,5 @@
 import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
+import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
@@ -21,7 +22,12 @@ import type { LoadedPrompt, LoadedPromptYaml } from '../types/prompt.type';
  * ```
  */
 export async function loadPrompt({ promptFileName }: { promptFileName: string }): Promise<LoadedPrompt> {
-  const filePath = join(__dirname, '..', 'prompts', `${promptFileName}.yaml`);
+  // Try source path first (src/core/prompts/), then built path (build/prompts/)
+  const sourcePath = join(__dirname, '..', 'core', 'prompts', `${promptFileName}.yaml`);
+  const builtPath = join(__dirname, '..', 'prompts', `${promptFileName}.yaml`);
+
+  const filePath = existsSync(sourcePath) ? sourcePath : builtPath;
+
   const raw = await readFile(filePath, 'utf-8');
   const parsed = loadYaml(raw) as LoadedPromptYaml;
 

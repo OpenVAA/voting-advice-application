@@ -1,4 +1,4 @@
-import { ChatbotController } from '@openvaa/chatbot';
+import { ChatbotController, updateConversation } from '@openvaa/chatbot';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
@@ -73,8 +73,8 @@ export async function POST({ request, params }: { request: Request; params: any 
     sessionId: crypto.randomUUID(),
     phase: 'intro_to_chatbot_use',
     workingMemory: messages,
-    forgottenMessages: [],
-    lossyHistorySummary: '',
+    forgottenMessages: [], // TODO: Implement forgotten messages
+    lossyHistorySummary: '', // TODO: Implement lossy history summary
     locale
   };
 
@@ -99,7 +99,9 @@ export async function POST({ request, params }: { request: Request; params: any 
   return wrapInSSE({
     stream: response.stream,
     metadata: response.metadata,
-    requestStartTime
+    requestStartTime,
+    conversationState,
+    messages
   });
 }
 
@@ -110,11 +112,15 @@ export async function POST({ request, params }: { request: Request; params: any 
 async function wrapInSSE({
   stream,
   metadata,
-  requestStartTime
+  requestStartTime,
+  conversationState,
+  messages
 }: {
   stream: any;
   metadata: any;
   requestStartTime: number;
+  conversationState: ConversationState;
+  messages: Array<{ role: string; content: string }>;
 }) {
   const sseStream = new ReadableStream({
     async start(controller) {
@@ -147,6 +153,32 @@ async function wrapInSSE({
         }
 
         const streamEndTime = performance.now();
+
+        // Get full assistant response from AI SDK stream
+        const assistantResponse = await stream.text;
+
+        // Log conversation exchange
+        const userMessage = messages.findLast((msg) => msg.role === 'user')?.content || '';
+        console.log('[Chat API] Logging conversation:', {
+          hasUserMessage: !!userMessage,
+          hasAssistantResponse: !!assistantResponse,
+          sessionId: conversationState.sessionId,
+          phase: conversationState.phase
+        });
+
+        if (userMessage && assistantResponse) {
+          // Fire and forget - don't block response on logging
+          updateConversation(
+            userMessage,
+            assistantResponse,
+            conversationState.sessionId,
+            conversationState.phase
+          ).catch((err) => {
+            console.error('[Chat API] Failed to log conversation:', err);
+          });
+        } else {
+          console.warn('[Chat API] Skipping conversation log - missing user or assistant message');
+        }
 
         // Compute timing metrics (API route's responsibility)
         const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;

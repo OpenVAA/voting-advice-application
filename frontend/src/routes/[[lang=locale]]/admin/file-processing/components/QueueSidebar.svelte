@@ -2,10 +2,12 @@
 @component
 Queue sidebar showing document processing status
 
-Displays all documents in queue with their current state.
+Displays all documents grouped by state with section headers.
 Shows failed documents in a separate section.
 Emits 'documentSelected' event when a document is clicked.
 Emits 'refresh' event to reload queue.
+Emits 'queueAll' event to move all unprocessed documents to extraction queue.
+Emits 'extractBatch' event to trigger batch extraction.
 -->
 
 <script lang="ts">
@@ -16,60 +18,119 @@ Emits 'refresh' event to reload queue.
   export let failedDocuments: Array<ProcessingDocument>;
   export let currentDocumentId: string | undefined;
 
-  const dispatch = createEventDispatcher<{ documentSelected: string; refresh: void }>();
+  const dispatch = createEventDispatcher<{
+    documentSelected: string;
+    refresh: void;
+    queueAll: void;
+    extractBatch: void;
+  }>();
 
-  function getStateColor(state: DocumentState): string {
-    switch (state) {
-      case 'UPLOADED':
-        return 'badge-neutral';
-      case 'METADATA_ENTERED':
-        return 'badge-info';
-      case 'EXTRACTED':
-        return 'badge-warning';
-      case 'EXTRACTION_APPROVED':
-        return 'badge-warning';
-      case 'SEGMENTED':
-        return 'badge-warning';
-      case 'SEGMENTATION_APPROVED':
-        return 'badge-success';
-      case 'COMPLETED':
-        return 'badge-success';
-      case 'FAILED':
-        return 'badge-error';
-      default:
-        return 'badge-ghost';
+  // Group documents by state
+  $: unprocessed = documents.filter(d => d.state === 'UPLOADED');
+  $: queued = documents.filter(d => d.state === 'QUEUED_FOR_EXTRACTION');
+  $: extracted = documents.filter(d => d.state === 'EXTRACTED');
+  $: textApproved = documents.filter(d => d.state === 'EXTRACTION_APPROVED' || d.state === 'METADATA_INSERTION');
+  $: metadataApproved = documents.filter(d => d.state === 'METADATA_APPROVED');
+  $: segmented = documents.filter(d => d.state === 'SEGMENTED');
+  $: complete = documents.filter(d => d.state === 'SEGMENTATION_APPROVED');
+
+  // Active documents are those actively being processed (exclude unprocessed, queued, and completed)
+  $: activeDocuments = documents.filter(d =>
+    d.state !== 'UPLOADED' &&
+    d.state !== 'QUEUED_FOR_EXTRACTION' &&
+    d.state !== 'SEGMENTATION_APPROVED'
+  );
+
+  let queueing = false;
+  let dequeueing = false;
+  let extracting = false;
+
+  async function handleQueueAll() {
+    if (unprocessed.length === 0) return;
+    queueing = true;
+    try {
+      const response = await fetch('/api/file-processing/queue-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentIds: unprocessed.map(d => d.id)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to queue documents');
+      }
+
+      dispatch('refresh');
+    } catch (error) {
+      console.error('Error queuing documents:', error);
+    } finally {
+      queueing = false;
     }
   }
 
-  function getStateLabel(state: DocumentState): string {
-    switch (state) {
-      case 'UPLOADED':
-        return 'Uploaded';
-      case 'METADATA_ENTERED':
-        return 'Metadata';
-      case 'EXTRACTED':
-        return 'Extracted';
-      case 'EXTRACTION_APPROVED':
-        return 'Approved';
-      case 'SEGMENTED':
-        return 'Segmented';
-      case 'SEGMENTATION_APPROVED':
-        return 'Complete';
-      case 'COMPLETED':
-        return 'Done';
-      case 'FAILED':
-        return 'Failed';
-      default:
-        return state;
+  async function handleDequeueAll() {
+    if (queued.length === 0) return;
+    dequeueing = true;
+    try {
+      const response = await fetch('/api/file-processing/dequeue-documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentIds: queued.map(d => d.id)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to dequeue documents');
+      }
+
+      dispatch('refresh');
+    } catch (error) {
+      console.error('Error dequeueing documents:', error);
+    } finally {
+      dequeueing = false;
     }
+  }
+
+  async function handleExtractBatch() {
+    if (queued.length === 0) return;
+    extracting = true;
+    try {
+      const response = await fetch('/api/file-processing/extract-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          batchSize: 2
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to extract batch');
+      }
+
+      dispatch('refresh');
+    } catch (error) {
+      console.error('Error extracting batch:', error);
+    } finally {
+      extracting = false;
+    }
+  }
+
+  // Helper to render document card
+  function renderDocumentCard(doc: ProcessingDocument) {
+    return {
+      doc,
+      isSelected: doc.id === currentDocumentId
+    };
   }
 </script>
 
-<div class="w-64 flex h-full flex-col border-l bg-white shadow-lg">
+<div class="w-64 max-w-64 flex-none overflow-hidden flex h-full flex-col border-l bg-white shadow-lg">
   <!-- Header -->
-  <div class="border-b p-4">
+  <div class="border-b p-4 min-w-0">
     <div class="mb-2 flex items-center justify-between">
-      <h2 class="font-semibold text-lg">Processing Queue</h2>
+      <h2 class="font-semibold text-lg">Uploaded Documents</h2>
       <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('refresh')} title="Refresh queue">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -80,88 +141,206 @@ Emits 'refresh' event to reload queue.
         </svg>
       </button>
     </div>
-    <div class="text-sm text-gray-600">
-      {documents.length} active • {failedDocuments.length} failed
+    <div class="text-sm text-gray-600 truncate">
+      {activeDocuments.length} active • {unprocessed.length + queued.length} queued • {failedDocuments.length} failed
+    </div>
+
+    <!-- Action buttons -->
+    <div class="mt-3 flex flex-col gap-2">
+      <button
+        class="btn btn-primary btn-sm"
+        on:click={handleQueueAll}
+        disabled={unprocessed.length === 0 || queueing}>
+        {#if queueing}
+          <span class="loading loading-spinner loading-xs"></span>
+        {/if}
+        Queue All ({unprocessed.length})
+      </button>
+      <button
+        class="btn btn-secondary btn-sm"
+        on:click={handleDequeueAll}
+        disabled={queued.length === 0 || dequeueing}>
+        {#if dequeueing}
+          <span class="loading loading-spinner loading-xs"></span>
+        {/if}
+        Dequeue All ({queued.length})
+      </button>
+      <button class="btn btn-accent btn-sm" on:click={handleExtractBatch} disabled={queued.length === 0 || extracting}>
+        {#if extracting}
+          <span class="loading loading-spinner loading-xs"></span>
+        {/if}
+        Extract Queued ({queued.length})
+      </button>
     </div>
   </div>
 
-  <!-- Document list -->
-  <div class="flex-1 space-y-2 overflow-y-auto p-4">
+  <!-- Document list with grouping -->
+  <div class="flex-1 overflow-y-auto min-w-0 overflow-x-hidden">
     {#if documents.length === 0}
       <div class="py-8 text-center text-gray-500">
-        <p>No documents in queue</p>
+        <p>No documents uploaded</p>
         <p class="mt-2 text-xs">Upload files to begin</p>
       </div>
     {:else}
-      {#each documents as doc}
-        <button
-          class="p-3 w-full rounded-lg border text-left transition-colors {doc.id === currentDocumentId
-            ? 'border-primary bg-primary/10'
-            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}"
-          on:click={() => dispatch('documentSelected', doc.id)}>
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0 flex-1">
-              <p class="font-medium truncate text-sm" title={doc.filename}>
-                {doc.filename}
-              </p>
-              <p class="mt-1 text-xs text-gray-500">
-                {new Date(doc.createdAt).toLocaleString()}
-              </p>
-            </div>
-            <span class="badge {getStateColor(doc.state)} badge-sm">
-              {getStateLabel(doc.state)}
-            </span>
+      <!-- Unprocessed -->
+      {#if unprocessed.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-gray-100 p-2 text-xs uppercase text-gray-600">
+            Unprocessed ({unprocessed.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each unprocessed as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
           </div>
+        </div>
+      {/if}
 
-          {#if doc.metadata?.title}
-            <p class="mt-2 truncate text-xs text-gray-600" title={doc.metadata.title}>
-              {doc.metadata.title}
-            </p>
-          {/if}
-
-          <!-- Progress indicators -->
-          <div class="gap-1 mt-2 flex">
-            <div class="h-1 flex-1 rounded {doc.state !== 'UPLOADED' ? 'bg-primary' : 'bg-gray-200'}"></div>
-            <div
-              class="h-1 flex-1 rounded {doc.state !== 'UPLOADED' && doc.state !== 'METADATA_ENTERED'
-                ? 'bg-primary'
-                : 'bg-gray-200'}">
-            </div>
-            <div
-              class="h-1 flex-1 rounded {doc.state === 'SEGMENTED' || doc.state === 'SEGMENTATION_APPROVED'
-                ? 'bg-primary'
-                : 'bg-gray-200'}">
-            </div>
-            <div class="h-1 flex-1 rounded {doc.state === 'SEGMENTATION_APPROVED' ? 'bg-success' : 'bg-gray-200'}">
-            </div>
+      <!-- Queued for Extraction -->
+      {#if queued.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-blue-50 p-2 text-xs uppercase text-blue-700">
+            Queued for Extraction ({queued.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each queued as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
           </div>
-        </button>
-      {/each}
+        </div>
+      {/if}
+
+      <!-- Extracted - Pending Text Review -->
+      {#if extracted.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-yellow-50 p-2 text-xs uppercase text-yellow-700">
+            Pending Text Review ({extracted.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each extracted as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Pending Metadata Review -->
+      {#if textApproved.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-orange-50 p-2 text-xs uppercase text-orange-700">
+            Pending Metadata Review ({textApproved.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each textApproved as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Metadata Approved - Pending Segmentation -->
+      {#if metadataApproved.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-purple-50 p-2 text-xs uppercase text-purple-700">
+            Pending Segmentation ({metadataApproved.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each metadataApproved as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Segmented - Pending Review -->
+      {#if segmented.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-indigo-50 p-2 text-xs uppercase text-indigo-700">
+            Pending Segmentation Review ({segmented.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each segmented as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Complete -->
+      {#if complete.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-green-50 p-2 text-xs uppercase text-green-700">
+            Complete ({complete.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each complete as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
     {/if}
 
     <!-- Failed documents section -->
     {#if failedDocuments.length > 0}
-      <div class="mt-4 border-t pt-4">
-        <h3 class="font-semibold mb-2 text-sm text-error">Failed Documents</h3>
-        {#each failedDocuments as doc}
-          <button
-            class="p-3 mb-2 w-full rounded-lg border border-error/30 bg-error/5 text-left transition-colors hover:bg-error/10"
-            on:click={() => dispatch('documentSelected', doc.id)}>
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0 flex-1">
-                <p class="font-medium truncate text-sm" title={doc.filename}>
-                  {doc.filename}
+      <div class="min-w-0 overflow-hidden">
+        <h3 class="font-semibold bg-red-50 p-2 text-xs uppercase text-red-700">Failed ({failedDocuments.length})</h3>
+        <div class="p-2 space-y-2 min-w-0">
+          {#each failedDocuments as doc}
+            <button
+              class="p-2 w-full min-w-0 rounded border border-error/30 bg-error/5 text-left text-sm transition-colors hover:bg-error/10"
+              on:click={() => dispatch('documentSelected', doc.id)}>
+              <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              {#if doc.failureReason}
+                <p class="mt-1 text-xs text-error truncate" title={doc.failureReason}>
+                  {doc.failureReason}
                 </p>
-                {#if doc.failureReason}
-                  <p class="mt-1 text-xs text-error" title={doc.failureReason}>
-                    {doc.failureReason}
-                  </p>
-                {/if}
-              </div>
-              <span class="badge badge-error badge-sm">Failed</span>
-            </div>
-          </button>
-        {/each}
+              {/if}
+            </button>
+          {/each}
+        </div>
       </div>
     {/if}
   </div>

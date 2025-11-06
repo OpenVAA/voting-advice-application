@@ -7,9 +7,11 @@ import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
 
 export type DocumentState =
   | 'UPLOADED'
-  | 'METADATA_ENTERED'
+  | 'QUEUED_FOR_EXTRACTION'
   | 'EXTRACTED'
   | 'EXTRACTION_APPROVED'
+  | 'METADATA_INSERTION'
+  | 'METADATA_APPROVED'
   | 'SEGMENTED'
   | 'SEGMENTATION_APPROVED'
   | 'COMPLETED'
@@ -30,8 +32,9 @@ export interface ProcessingDocument {
   fileType: 'pdf' | 'txt';
   state: DocumentState;
 
-  // Metadata (user-provided)
-  metadata: DocumentMetadata;
+  // Metadata (extracted and user-edited)
+  extractedMetadata?: DocumentMetadata; // Auto-extracted metadata
+  metadata?: DocumentMetadata; // Final user-approved metadata
 
   // Processing results
   extractedText?: string;
@@ -40,6 +43,7 @@ export interface ProcessingDocument {
   // Metrics
   metrics?: {
     extraction?: LLMPipelineMetrics;
+    metadataExtraction?: LLMPipelineMetrics;
     segmentation?: TextSegmentationMetrics;
   };
 
@@ -78,7 +82,11 @@ export interface ExtractRequest {
 export interface ExtractResponse {
   documentId: string;
   extractedText: string;
-  metrics: LLMPipelineMetrics;
+  extractedMetadata: DocumentMetadata;
+  metrics: {
+    extraction: LLMPipelineMetrics;
+    metadataExtraction: LLMPipelineMetrics;
+  };
   state: DocumentState;
 }
 
@@ -111,6 +119,37 @@ export interface FailRequest {
   documentId: string;
   reason: string;
   stage: string;
+}
+
+export interface QueueDocumentsRequest {
+  documentIds: Array<string>; // Can be single or multiple
+}
+
+export interface QueueDocumentsResponse {
+  queuedDocuments: Array<ProcessingDocument>;
+}
+
+export interface DequeueDocumentsRequest {
+  documentIds: Array<string>; // Can be single or multiple
+}
+
+export interface DequeueDocumentsResponse {
+  dequeuedDocuments: Array<ProcessingDocument>;
+}
+
+export interface BatchExtractRequest {
+  batchSize?: number; // Defaults to 2
+}
+
+export interface BatchExtractResponse {
+  processed: number;
+  total: number;
+  documents: Array<ProcessingDocument>;
+}
+
+export interface ApproveMetadataRequest {
+  documentId: string;
+  metadata: DocumentMetadata;
 }
 
 export interface QueueResponse {
