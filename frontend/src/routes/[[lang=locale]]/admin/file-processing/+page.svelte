@@ -267,9 +267,9 @@ Shows current document being processed and queue sidebar.
   $: currentStage = currentDocument?.state ?? null;
 </script>
 
-<div class="flex h-screen bg-gray-100">
+<div class="grid grid-cols-[1fr_256px] h-screen bg-gray-100">
   <!-- Main content area -->
-  <div class="flex-1 overflow-auto p-8" bind:this={mainContainer}>
+  <div class="min-w-0 overflow-auto p-8" bind:this={mainContainer}>
     <h1 class="mb-6 text-3xl font-bold">Document Pre-Processing Pipeline</h1>
 
     {#if error}
@@ -286,9 +286,9 @@ Shows current document being processed and queue sidebar.
     {#if currentDocument}
       <div class="card bg-white shadow-xl">
         <div class="card-body">
-          <h2 class="card-title">
-            Processing: {currentDocument.filename}
-            <span class="badge badge-primary">{currentDocument.state}</span>
+          <h2 class="card-title flex items-center gap-2 min-w-0">
+            <span class="truncate" title={currentDocument.filename}>Processing: {currentDocument.filename}</span>
+            <span class="badge badge-primary shrink-0">{currentDocument.state}</span>
           </h2>
 
           <!-- Stage-specific content -->
