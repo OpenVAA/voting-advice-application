@@ -10,6 +10,8 @@ Emits 'failed' event when document is marked as failed.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { enhance } from '$app/forms';
+  import { invalidate } from '$app/navigation';
   import type { ProcessingDocument } from '$lib/api/file-processing/types';
   import FileViewer from './FileViewer.svelte';
 
@@ -22,74 +24,58 @@ Emits 'failed' event when document is marked as failed.
   let failureReason = '';
   let showFailDialog = false;
 
-  // Update editedText whenever document changes
-  let editedText: string;
-  $: editedText = document.extractedText ?? '';
+  // Initialize editedText from document (non-reactive to allow user edits)
+  let editedText: string = document.extractedText ?? '';
 
-  async function handleApprove() {
+  // Processing options (only for TXT files that don't have options set yet)
+  let autoSegmentText = false;
+
+  // Check if this is a TXT file (no extraction metrics means no PDF extraction happened)
+  $: isTxtFile = document.fileType === 'txt' || !document.metrics?.extraction;
+
+  // Form submission handlers following SvelteKit pattern
+  const handleApproveSubmit = () => {
     submitting = true;
     error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/approve-extraction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id,
-          editedText: editedText !== document.extractedText ? editedText : undefined
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to approve extraction');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to approve extraction';
+        submitting = false;
+        return;
       }
-
-      // Document will now move to METADATA_INSERTION state
-      // Segmentation happens after metadata approval
-      dispatch('approved');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to approve extraction';
-      console.error('Approval error:', err);
-    } finally {
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('approved');
+      }
+      await update();
       submitting = false;
-    }
-  }
+    };
+  };
 
-  async function handleFail() {
+  const handleFailSubmit = () => {
     if (!failureReason.trim()) {
       error = 'Please provide a failure reason';
-      return;
+      return () => {}; // Return no-op function
     }
 
     submitting = true;
     error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/fail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id,
-          reason: failureReason,
-          stage: 'extraction'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to mark as failed');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to mark as failed';
+        submitting = false;
+        showFailDialog = false;
+        return;
       }
-
-      dispatch('failed');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to mark as failed';
-      console.error('Fail error:', err);
-    } finally {
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('failed');
+      }
+      await update();
       submitting = false;
       showFailDialog = false;
-    }
-  }
+    };
+  };
 
   $: charCount = editedText.length;
   $: hasChanges = editedText !== document.extractedText;
@@ -148,6 +134,24 @@ Emits 'failed' event when document is marked as failed.
     </div>
   </div>
 
+  <!-- Processing options for TXT files -->
+  {#if isTxtFile}
+    <div class="rounded-lg border bg-gray-50 p-4 space-y-3">
+      <h4 class="font-semibold text-sm">Processing Options</h4>
+      <p class="text-xs text-gray-600">Configure automatic processing steps for this document</p>
+
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-4">
+          <input type="checkbox" class="checkbox checkbox-sm" bind:checked={autoSegmentText} />
+          <div>
+            <span class="label-text font-semibold">Auto-approve segmentation</span>
+            <p class="text-xs text-gray-600">Automatically segment text and skip manual review</p>
+          </div>
+        </label>
+      </div>
+    </div>
+  {/if}
+
   {#if error}
     <div class="alert alert-error">
       <span>{error}</span>
@@ -156,14 +160,20 @@ Emits 'failed' event when document is marked as failed.
 
   <!-- Actions -->
   <div class="flex gap-2">
-    <button class="btn btn-primary" on:click={handleApprove} disabled={submitting || !editedText}>
-      {#if submitting}
-        <span class="loading loading-spinner"></span>
-        Processing...
-      {:else}
-        Approve Text
-      {/if}
-    </button>
+    <!-- Approval form -->
+    <form method="POST" action="?/approveExtraction" use:enhance={handleApproveSubmit}>
+      <input type="hidden" name="documentId" value={document.id} />
+      <input type="hidden" name="editedText" value={editedText} />
+      <input type="hidden" name="autoSegmentText" value={autoSegmentText} />
+      <button type="submit" class="btn btn-primary" disabled={submitting || !editedText}>
+        {#if submitting}
+          <span class="loading loading-spinner"></span>
+          Processing...
+        {:else}
+          Approve Text
+        {/if}
+      </button>
+    </form>
     <button class="btn btn-outline btn-error" on:click={() => (showFailDialog = true)} disabled={submitting}>
       Fail Document
     </button>
@@ -180,8 +190,13 @@ Emits 'failed' event when document is marked as failed.
           class="textarea textarea-bordered w-full"
           placeholder="Extraction failed because..."></textarea>
         <div class="modal-action">
-          <button class="btn btn-error" on:click={handleFail} disabled={submitting}> Mark as Failed </button>
-          <button class="btn" on:click={() => (showFailDialog = false)} disabled={submitting}> Cancel </button>
+          <form method="POST" action="?/fail" use:enhance={handleFailSubmit}>
+            <input type="hidden" name="documentId" value={document.id} />
+            <input type="hidden" name="reason" value={failureReason} />
+            <input type="hidden" name="stage" value="extraction" />
+            <button type="submit" class="btn btn-error" disabled={submitting}> Mark as Failed </button>
+          </form>
+          <button class="btn" type="button" on:click={() => (showFailDialog = false)} disabled={submitting}> Cancel </button>
         </div>
       </div>
     </div>

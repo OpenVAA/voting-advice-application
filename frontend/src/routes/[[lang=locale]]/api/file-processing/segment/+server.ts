@@ -21,13 +21,16 @@ export async function POST({ request }: { request: Request }) {
       return json({ error: 'Document not found' }, { status: 404 });
     }
 
-    if (document.state !== 'EXTRACTION_APPROVED' && document.state !== 'METADATA_APPROVED') {
-      return json({ error: 'Extraction and metadata must be approved before segmentation' }, { status: 400 });
+    if (document.state !== 'REQUIRES_SEGMENTATION') {
+      return json({ error: 'Document must be in REQUIRES_SEGMENTATION state' }, { status: 400 });
     }
 
     if (!document.extractedText) {
       return json({ error: 'No extracted text available' }, { status: 400 });
     }
+
+    // Update state to SEGMENTING
+    documentStore.update(documentId, { state: 'SEGMENTING' });
 
     // Initialize LLM provider for segmentation
     const llmProvider = new LLMProvider({
@@ -53,10 +56,17 @@ export async function POST({ request }: { request: Request }) {
     const segments = result.data.segments;
     const metrics = result.data.metrics;
 
+    // Get fresh document to check processing options
+    const updatedDocument = documentStore.get(documentId);
+    const autoSegment = updatedDocument?.processingOptions?.auto_segment_text ?? false;
+
+    // Determine next state based on auto_segment_text flag
+    const nextState = autoSegment ? 'REQUIRES_METADATA_EXTRACTION' : 'AWAITING_SEGMENTATION_APPROVAL';
+
     // Update document with segments
     documentStore.update(documentId, {
       segments,
-      state: 'SEGMENTED',
+      state: nextState,
       metrics: {
         ...document.metrics,
         segmentation: metrics
@@ -67,7 +77,7 @@ export async function POST({ request }: { request: Request }) {
       documentId,
       segments,
       metrics,
-      state: 'SEGMENTED'
+      state: nextState
     };
 
     return json(response);

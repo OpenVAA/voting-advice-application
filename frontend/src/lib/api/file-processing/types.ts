@@ -6,14 +6,15 @@ import type { TextSegmentationMetrics } from '@openvaa/file-processing';
 import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
 
 export type DocumentState =
-  | 'UPLOADED'
-  | 'QUEUED_FOR_EXTRACTION'
-  | 'EXTRACTED'
-  | 'EXTRACTION_APPROVED'
-  | 'METADATA_INSERTION'
-  | 'METADATA_APPROVED'
-  | 'SEGMENTED'
-  | 'SEGMENTATION_APPROVED'
+  | 'REQUIRES_TEXT_EXTRACTION'
+  | 'EXTRACTING'
+  | 'AWAITING_TEXT_APPROVAL'
+  | 'REQUIRES_SEGMENTATION'
+  | 'SEGMENTING'
+  | 'AWAITING_SEGMENTATION_APPROVAL'
+  | 'REQUIRES_METADATA_EXTRACTION'
+  | 'EXTRACTING_METADATA'
+  | 'AWAITING_METADATA_APPROVAL'
   | 'COMPLETED'
   | 'FAILED';
 
@@ -31,6 +32,12 @@ export interface ProcessingDocument {
   filename: string;
   fileType: 'pdf' | 'txt';
   state: DocumentState;
+
+  // Processing options (auto-trigger flags)
+  processingOptions?: {
+    auto_extract_text: boolean; // Auto-extract PDF text, skip AWAITING_TEXT_APPROVAL
+    auto_segment_text: boolean; // Auto-segment, skip AWAITING_SEGMENTATION_APPROVAL
+  };
 
   // Metadata (extracted and user-edited)
   extractedMetadata?: DocumentMetadata; // Auto-extracted metadata
@@ -77,15 +84,17 @@ export interface MetadataRequest {
 
 export interface ExtractRequest {
   documentId: string;
+  processingOptions?: {
+    auto_extract_text?: boolean;
+    auto_segment_text?: boolean;
+  };
 }
 
 export interface ExtractResponse {
   documentId: string;
   extractedText: string;
-  extractedMetadata: DocumentMetadata;
   metrics: {
     extraction: LLMPipelineMetrics;
-    metadataExtraction: LLMPipelineMetrics;
   };
   state: DocumentState;
 }
@@ -93,6 +102,9 @@ export interface ExtractResponse {
 export interface ApproveExtractionRequest {
   documentId: string;
   editedText?: string;
+  processingOptions?: {
+    auto_segment_text?: boolean;
+  };
 }
 
 export interface SegmentRequest {
@@ -155,4 +167,19 @@ export interface ApproveMetadataRequest {
 export interface QueueResponse {
   documents: Array<ProcessingDocument>;
   failedDocuments: Array<ProcessingDocument>;
+}
+
+export interface ExtractMetadataRequest {
+  documentId: string;
+}
+
+export interface ExtractMetadataResponse {
+  documentId: string;
+  extractedMetadata: DocumentMetadata;
+  metrics: LLMPipelineMetrics;
+  state: DocumentState;
+}
+
+export interface ReReviewRequest {
+  documentId: string;
 }

@@ -29,19 +29,25 @@ export async function POST({ request }: { request: Request }) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Create document record
+    // Create document record with initial state based on file type
     const documentId = randomUUID();
     const document: ProcessingDocument = {
       id: documentId,
       filename: file.name,
       fileType,
-      state: 'UPLOADED',
+      // PDF files need extraction, TXT files can be read immediately
+      state: fileType === 'pdf' ? 'REQUIRES_TEXT_EXTRACTION' : 'AWAITING_TEXT_APPROVAL',
       metadata: {
         documentType: 'unofficial' // Default, will be set in metadata form
       },
       createdAt: new Date(),
       updatedAt: new Date()
     };
+
+    // For TXT files, read the text immediately
+    if (fileType === 'txt') {
+      document.extractedText = buffer.toString('utf-8');
+    }
 
     // Store document and file buffer
     documentStore.add(document, buffer);

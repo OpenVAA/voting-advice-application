@@ -10,6 +10,8 @@ Emits 'failed' event when document is marked as failed.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { enhance } from '$app/forms';
+  import { invalidate } from '$app/navigation';
   import type { ProcessingDocument } from '$lib/api/file-processing/types';
 
   export let document: ProcessingDocument;
@@ -22,7 +24,6 @@ Emits 'failed' event when document is marked as failed.
   let error: string | null = null;
   let failureReason = '';
   let showFailDialog = false;
-  let triggerSegmentation = document.state === 'EXTRACTION_APPROVED' || document.state === 'METADATA_APPROVED'; // Auto-trigger if coming from extraction or metadata approval
 
   // Initialize segments from document when first available
   let segments: Array<string> = document.segments ? [...document.segments] : [];
@@ -55,108 +56,51 @@ Emits 'failed' event when document is marked as failed.
     return Math.max(3, Math.min(lineCount + 1, 20)); // Min 3, max 20 rows
   }
 
-  async function autoTriggerSegmentation() {
-    if (!triggerSegmentation) return;
-
+  // Form submission handlers following SvelteKit pattern
+  const handleApproveSubmit = () => {
     submitting = true;
     error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/segment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to segment text');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to approve segmentation';
+        submitting = false;
+        return;
       }
-
-      triggerSegmentation = false;
-
-      // Dispatch to refresh parent (don't auto-approve, let user review)
-      setTimeout(() => dispatch('refresh'), 100);
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to segment text';
-      console.error('Segmentation error:', err);
-      triggerSegmentation = false;
-    } finally {
-      submitting = false;
-    }
-  }
-
-  async function handleApprove() {
-    submitting = true;
-    error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/approve-segmentation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id,
-          editedSegments: segments
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to approve segmentation');
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('approved');
       }
-
-      dispatch('approved');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to approve segmentation';
-      console.error('Approval error:', err);
-    } finally {
+      await update();
       submitting = false;
-    }
-  }
+    };
+  };
 
-  async function handleFail() {
+  const handleFailSubmit = () => {
     if (!failureReason.trim()) {
       error = 'Please provide a failure reason';
-      return;
+      return () => {}; // Return no-op function
     }
 
     submitting = true;
     error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/fail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id,
-          reason: failureReason,
-          stage: 'segmentation'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to mark as failed');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to mark as failed';
+        submitting = false;
+        showFailDialog = false;
+        return;
       }
-
-      dispatch('failed');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to mark as failed';
-      console.error('Fail error:', err);
-    } finally {
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('failed');
+      }
+      await update();
       submitting = false;
       showFailDialog = false;
-    }
-  }
+    };
+  };
 
   $: totalChars = segments.reduce((sum, seg) => sum + seg.length, 0);
-
-  // Auto-trigger segmentation if needed
-  $: if (triggerSegmentation) {
-    autoTriggerSegmentation();
-  }
 </script>
 
 <div class="space-y-4">
@@ -173,13 +117,7 @@ Emits 'failed' event when document is marked as failed.
     </div>
   </div>
 
-  {#if submitting && triggerSegmentation}
-    <div class="flex flex-col items-center gap-4 p-8">
-      <span class="loading loading-spinner loading-lg"></span>
-      <p>Segmenting text using LLM...</p>
-      <p class="text-sm text-gray-600">This may take a moment for large documents</p>
-    </div>
-  {:else if segments.length === 0}
+  {#if segments.length === 0}
     <div class="alert alert-warning">
       <span>No segments available. Please run segmentation first.</span>
     </div>
@@ -267,14 +205,18 @@ Emits 'failed' event when document is marked as failed.
 
     <!-- Actions -->
     <div class="flex gap-2">
-      <button class="btn btn-primary" on:click={handleApprove} disabled={submitting}>
-        {#if submitting}
-          <span class="loading loading-spinner"></span>
-          Processing...
-        {:else}
-          Accept Segmentation
-        {/if}
-      </button>
+      <form method="POST" action="?/approveSegmentation" use:enhance={handleApproveSubmit}>
+        <input type="hidden" name="documentId" value={document.id} />
+        <input type="hidden" name="segments" value={JSON.stringify(segments)} />
+        <button type="submit" class="btn btn-primary" disabled={submitting}>
+          {#if submitting}
+            <span class="loading loading-spinner"></span>
+            Processing...
+          {:else}
+            Accept Segmentation
+          {/if}
+        </button>
+      </form>
       <button class="btn btn-outline btn-error" on:click={() => (showFailDialog = true)} disabled={submitting}>
         Fail Document
       </button>
@@ -292,8 +234,13 @@ Emits 'failed' event when document is marked as failed.
           class="textarea textarea-bordered w-full"
           placeholder="Segmentation failed because..."></textarea>
         <div class="modal-action">
-          <button class="btn btn-error" on:click={handleFail} disabled={submitting}> Mark as Failed </button>
-          <button class="btn" on:click={() => (showFailDialog = false)} disabled={submitting}> Cancel </button>
+          <form method="POST" action="?/fail" use:enhance={handleFailSubmit}>
+            <input type="hidden" name="documentId" value={document.id} />
+            <input type="hidden" name="reason" value={failureReason} />
+            <input type="hidden" name="stage" value="segmentation" />
+            <button type="submit" class="btn btn-error" disabled={submitting}> Mark as Failed </button>
+          </form>
+          <button class="btn" type="button" on:click={() => (showFailDialog = false)} disabled={submitting}> Cancel </button>
         </div>
       </div>
     </div>

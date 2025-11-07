@@ -1,10 +1,11 @@
 /**
  * POST /api/file-processing/extract
- * Extract text from a document (PDF to markdown, or read TXT directly)
- * Also extracts metadata in parallel
+ * Extract text from a PDF document
+ * Note: TXT files are already extracted at upload time
+ * Note: Metadata extraction is now a separate endpoint
  */
 
-import { convertPdfToMarkdown, extractMetadata } from '@openvaa/file-processing';
+import { convertPdfToMarkdown } from '@openvaa/file-processing';
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { json } from '@sveltejs/kit';
 import { randomUUID } from 'crypto';
@@ -15,15 +16,20 @@ import type { ExtractRequest, ExtractResponse } from '$lib/api/file-processing/t
 export async function POST({ request }: { request: Request }) {
   try {
     const body = (await request.json()) as ExtractRequest;
-    const { documentId } = body;
+    const { documentId, processingOptions } = body;
 
     const document = documentStore.get(documentId);
     if (!document) {
       return json({ error: 'Document not found' }, { status: 404 });
     }
 
-    if (document.state !== 'QUEUED_FOR_EXTRACTION' && document.state !== 'UPLOADED') {
-      return json({ error: 'Document must be uploaded or queued for extraction' }, { status: 400 });
+    if (document.state !== 'REQUIRES_TEXT_EXTRACTION') {
+      return json({ error: 'Document must be in REQUIRES_TEXT_EXTRACTION state' }, { status: 400 });
+    }
+
+    // Only PDFs should be in this state
+    if (document.fileType !== 'pdf') {
+      return json({ error: 'Only PDF files require text extraction' }, { status: 400 });
     }
 
     const fileBuffer = documentStore.getFileBuffer(documentId);
@@ -31,7 +37,20 @@ export async function POST({ request }: { request: Request }) {
       return json({ error: 'File buffer not found' }, { status: 404 });
     }
 
-    // Initialize LLM provider for PDF conversion and metadata extraction
+    // Store processing options
+    if (processingOptions) {
+      documentStore.update(documentId, {
+        processingOptions: {
+          auto_extract_text: processingOptions.auto_extract_text ?? false,
+          auto_segment_text: processingOptions.auto_segment_text ?? false
+        }
+      });
+    }
+
+    // Update state to EXTRACTING
+    documentStore.update(documentId, { state: 'EXTRACTING' });
+
+    // Initialize LLM provider for PDF conversion
     const llmProvider = new LLMProvider({
       provider: 'google',
       apiKey: LLM_GEMINI_API_KEY,
@@ -41,81 +60,37 @@ export async function POST({ request }: { request: Request }) {
       }
     });
 
-    let extractedText: string;
-    let extractionMetrics;
-
-    // Extract text based on file type
-    if (document.fileType === 'pdf') {
-      // Convert PDF to markdown
-      const result = await convertPdfToMarkdown({
-        runId: randomUUID(),
-        pdfBuffer: fileBuffer,
-        llmProvider,
-        originalFileName: document.filename
-      });
-
-      extractedText = result.data.markdown;
-      extractionMetrics = result.llmMetrics;
-    } else {
-      // TXT file - just decode as UTF-8
-      extractedText = fileBuffer.toString('utf-8');
-      extractionMetrics = {
-        processingTimeMs: 0,
-        nLlmCalls: 0,
-        costs: { total: 0, input: 0, output: 0 },
-        tokens: { totalTokens: 0, inputTokens: 0, outputTokens: 0 }
-      };
-    }
-
-    // Extract metadata from the text (runs in parallel with any post-processing if needed)
-    // Note: For true parallelism in PDF case, we'd need to refactor convertPdfToMarkdown
-    // to expose the text earlier, but for now metadata extraction happens immediately after
-    const metadataExtractionPromise = extractMetadata({
-      text: extractedText,
+    // Convert PDF to markdown
+    const result = await convertPdfToMarkdown({
+      runId: randomUUID(),
+      pdfBuffer: fileBuffer,
       llmProvider,
-      runId: randomUUID()
+      originalFileName: document.filename
     });
 
-    // Wait for metadata extraction to complete
-    const { metadata: extractedMetadataRaw, response: metadataResponse } = await metadataExtractionPromise;
+    const extractedText = result.data.markdown;
+    const extractionMetrics = result.llmMetrics;
 
-    const metadataMetrics = {
-      processingTimeMs: metadataResponse.finishReason ? 0 : 0, // Response doesn't include time
-      nLlmCalls: 1,
-      costs: metadataResponse.costs,
-      tokens: metadataResponse.usage
-    };
+    // Determine next state based on auto_extract_text flag
+    const autoExtract = processingOptions?.auto_extract_text ?? false;
+    const nextState = autoExtract ? 'REQUIRES_SEGMENTATION' : 'AWAITING_TEXT_APPROVAL';
 
-    // Convert extracted metadata to DocumentMetadata format
-    const extractedMetadataFormatted = {
-      title: extractedMetadataRaw.title,
-      authors: extractedMetadataRaw.authors,
-      source: extractedMetadataRaw.link || extractedMetadataRaw.source,
-      publishedDate: extractedMetadataRaw.publishedDate,
-      documentType: 'unofficial' as const,
-      locale: extractedMetadataRaw.locale
-    };
-
-    // Update document with extracted text and metadata
+    // Update document with extracted text
     documentStore.update(documentId, {
       extractedText,
-      extractedMetadata: extractedMetadataFormatted,
-      state: 'EXTRACTED',
+      state: nextState,
       metrics: {
-        extraction: extractionMetrics,
-        metadataExtraction: metadataMetrics
+        extraction: extractionMetrics
       }
     });
 
     const response: ExtractResponse = {
       documentId,
       extractedText,
-      extractedMetadata: extractedMetadataFormatted,
       metrics: {
-        extraction: extractionMetrics,
-        metadataExtraction: metadataMetrics
+        extraction: extractionMetrics
       },
-      state: 'EXTRACTED'
+      state: nextState
     };
 
     return json(response);

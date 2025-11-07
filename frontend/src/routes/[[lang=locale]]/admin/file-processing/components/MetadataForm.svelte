@@ -11,6 +11,8 @@ Emits 'skip' event to move to next document without processing.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { enhance } from '$app/forms';
+  import { invalidate } from '$app/navigation';
   import type { DocumentMetadata,ProcessingDocument } from '$lib/api/file-processing/types';
   import FileViewer from './FileViewer.svelte';
 
@@ -35,91 +37,61 @@ Emits 'skip' event to move to next document without processing.
   let showDeleteDialog = false;
   let deleting = false;
 
-  async function handleSubmit() {
+  // Prepare metadata for submission
+  function prepareMetadata(): DocumentMetadata {
+    const authors = authorsString
+      .split(',')
+      .map((a) => a.trim())
+      .filter((a) => a.length > 0);
+
+    return {
+      ...metadata,
+      authors: authors.length > 0 ? authors : undefined,
+      title: metadata.title || undefined,
+      source: metadata.source || undefined,
+      publishedDate: metadata.publishedDate || undefined,
+      locale: metadata.locale || undefined
+    };
+  }
+
+  // Form submission handlers following SvelteKit pattern
+  const handleSubmitForm = () => {
     submitting = true;
     error = null;
-
-    try {
-      // Parse authors from comma-separated string
-      const authors = authorsString
-        .split(',')
-        .map((a) => a.trim())
-        .filter((a) => a.length > 0);
-
-      const metadataToSubmit: DocumentMetadata = {
-        ...metadata,
-        authors: authors.length > 0 ? authors : undefined,
-        title: metadata.title || undefined,
-        source: metadata.source || undefined,
-        publishedDate: metadata.publishedDate || undefined,
-        locale: metadata.locale || undefined
-      };
-
-      // Approve metadata (this saves it as final metadata)
-      const response = await fetch('/api/file-processing/approve-metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id,
-          metadata: metadataToSubmit
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to approve metadata');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to approve metadata';
+        submitting = false;
+        return;
       }
-
-      // Trigger segmentation automatically after metadata is approved
-      const segmentResponse = await fetch('/api/file-processing/segment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id
-        })
-      });
-
-      if (!segmentResponse.ok) {
-        const errorData = await segmentResponse.json();
-        throw new Error(errorData.error || 'Failed to segment text');
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('submitted');
       }
-
-      dispatch('submitted');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to approve metadata';
-      console.error('Metadata approval error:', err);
-    } finally {
+      await update();
       submitting = false;
-    }
-  }
+    };
+  };
 
-  async function handleDelete() {
+  const handleDeleteForm = () => {
     deleting = true;
     error = null;
-
-    try {
-      const response = await fetch('/api/file-processing/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentId: document.id
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete document');
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        error = result.data?.error || 'Failed to delete document';
+        deleting = false;
+        showDeleteDialog = false;
+        return;
       }
-
-      dispatch('delete');
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete document';
-      console.error('Delete document error:', err);
-    } finally {
+      if (result.type === 'success') {
+        await invalidate('app:documents');
+        dispatch('delete');
+      }
+      await update();
       deleting = false;
       showDeleteDialog = false;
-    }
-  }
+    };
+  };
 </script>
 
 <div class="space-y-4">
@@ -132,7 +104,9 @@ Emits 'skip' event to move to next document without processing.
 
     <!-- Right: Metadata form -->
     <div class="overflow-auto rounded-lg border bg-white p-4">
-      <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+      <form method="POST" action="?/approveMetadata" use:enhance={handleSubmitForm} class="space-y-4">
+        <input type="hidden" name="documentId" value={document.id} />
+        <input type="hidden" name="metadata" value={JSON.stringify(prepareMetadata())} />
     <!-- Title -->
     <div class="form-control">
       <label class="label" for="title">
@@ -218,7 +192,7 @@ Emits 'skip' event to move to next document without processing.
           <span class="loading loading-spinner"></span>
           Processing...
         {:else}
-          Approve Metadata & Segment
+          Complete Processing
         {/if}
       </button>
       <button
@@ -250,15 +224,18 @@ Emits 'skip' event to move to next document without processing.
           This action cannot be undone.
         </p>
         <div class="modal-action">
-          <button class="btn btn-error" on:click={handleDelete} disabled={deleting}>
-            {#if deleting}
-              <span class="loading loading-spinner"></span>
-              Deleting...
-            {:else}
-              Delete Permanently
-            {/if}
-          </button>
-          <button class="btn" on:click={() => (showDeleteDialog = false)} disabled={deleting}> Cancel </button>
+          <form method="POST" action="?/delete" use:enhance={handleDeleteForm}>
+            <input type="hidden" name="documentId" value={document.id} />
+            <button type="submit" class="btn btn-error" disabled={deleting}>
+              {#if deleting}
+                <span class="loading loading-spinner"></span>
+                Deleting...
+              {:else}
+                Delete Permanently
+              {/if}
+            </button>
+          </form>
+          <button class="btn" type="button" on:click={() => (showDeleteDialog = false)} disabled={deleting}> Cancel </button>
         </div>
       </div>
     </div>

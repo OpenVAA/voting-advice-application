@@ -4,55 +4,69 @@ Human-in-the-loop document pre-processing pipeline
 
 Main orchestrator page for the file processing workflow:
 1. Upload documents
-2. Enter metadata
-3. Review extraction (PDF->markdown or TXT)
-4. Review segmentation
-5. Complete or fail
+2. Extract text (PDF → markdown or read TXT)
+3. Review extraction
+4. Segment text
+5. Review segmentation
+6. Extract and approve metadata
+7. Complete or fail
 
-Shows current document being processed and queue sidebar.
+Shows current document being processed and document sidebar.
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { invalidate } from '$app/navigation';
   import DocumentUploadZone from './components/DocumentUploadZone.svelte';
   import ExtractionReview from './components/ExtractionReview.svelte';
   import FileViewer from './components/FileViewer.svelte';
   import MetadataForm from './components/MetadataForm.svelte';
-  import QueueSidebar from './components/QueueSidebar.svelte';
+  import DocumentSidebar from './components/DocumentSidebar.svelte';
   import SegmentationReview from './components/SegmentationReview.svelte';
   import type {ProcessingDocument} from '$lib/api/file-processing/types';
 
-  let documents: Array<ProcessingDocument> = [];
-  let failedDocuments: Array<ProcessingDocument> = [];
+  // Receive data from server load function
+  export let data;
+
+  // Initialize from server-provided data
+  let documents: Array<ProcessingDocument> = data.documents;
+  let failedDocuments: Array<ProcessingDocument> = data.failedDocuments;
   let currentDocument: ProcessingDocument | null = null;
   let error: string | null = null;
   let mainContainer: HTMLDivElement;
 
-  onMount(() => {
-    refreshQueue();
-  });
+  // Set initial current document
+  $: if (!currentDocument && documents.length > 0) {
+    currentDocument = documents[0];
+  }
 
+  // Update local state when server data changes
+  $: documents = data.documents;
+  $: failedDocuments = data.failedDocuments;
+
+  // Refresh data from server (used during long-running operations)
   async function refreshQueue() {
     try {
-      const response = await fetch('/api/file-processing/queue');
-      if (!response.ok) throw new Error('Failed to fetch queue');
-      const data = await response.json();
-      documents = data.documents;
-      failedDocuments = data.failedDocuments;
-
-      // Set current document to first in queue if none selected
-      if (!currentDocument && documents.length > 0) {
-        currentDocument = documents[0];
+      await invalidate('app:documents');
+      // Update current document reference after refresh
+      if (currentDocument) {
+        const updated = documents.find((d) => d.id === currentDocument?.id);
+        if (updated) {
+          currentDocument = updated;
+        }
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load queue';
-      console.error('Queue refresh error:', err);
+      error = err instanceof Error ? err.message : 'Failed to refresh documents';
+      console.error('Refresh error:', err);
     }
   }
 
-  function handleDocumentUploaded(event: CustomEvent<ProcessingDocument>) {
+  async function handleDocumentUploaded(event: CustomEvent<ProcessingDocument>) {
     const newDoc = event.detail;
-    documents = [...documents, newDoc];
+
+    // Refresh server data to include newly uploaded document
+    await invalidate('app:documents');
+
+    // Set as current if none selected
     if (!currentDocument) {
       currentDocument = newDoc;
     }
@@ -68,7 +82,7 @@ Shows current document being processed and queue sidebar.
 
   async function handleExtractionApproved() {
     await refreshQueue();
-    // Document will now be in METADATA_INSERTION state
+    // Document will now be in REQUIRES_SEGMENTATION state
     if (currentDocument) {
       const updated = documents.find((d) => d.id === currentDocument?.id);
       if (updated) {
@@ -130,67 +144,17 @@ Shows current document being processed and queue sidebar.
     }
   }
 
-  async function handleQueueDocument() {
-    if (!currentDocument) return;
-
-    try {
-      const response = await fetch('/api/file-processing/queue-documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentIds: [currentDocument.id]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to queue document');
-      }
-
-      await refreshQueue();
-      // Update current document reference to show new state
-      const updated = documents.find((d) => d.id === currentDocument?.id);
-      if (updated) {
-        currentDocument = updated;
-      }
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to queue document';
-      console.error('Queue document error:', err);
-    }
-  }
-
-  async function handleDequeueDocument() {
-    if (!currentDocument) return;
-
-    try {
-      const response = await fetch('/api/file-processing/dequeue-documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentIds: [currentDocument.id]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to dequeue document');
-      }
-
-      await refreshQueue();
-      // Update current document reference to show new state
-      const updated = documents.find((d) => d.id === currentDocument?.id);
-      if (updated) {
-        currentDocument = updated;
-      }
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to dequeue document';
-      console.error('Dequeue document error:', err);
-    }
-  }
-
   let extracting = false;
+  let segmenting = false;
+  let extractingMetadata = false;
   let deleting = false;
   let showDeleteDialog = false;
 
-  async function handleExtractDocument() {
+  // Auto-processing flags
+  let autoExtractText = false;
+  let autoSegmentText = false;
+
+  async function handleStartProcessing() {
     if (!currentDocument) return;
 
     extracting = true;
@@ -201,13 +165,17 @@ Shows current document being processed and queue sidebar.
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          documentId: currentDocument.id
+          documentId: currentDocument.id,
+          processingOptions: {
+            auto_extract_text: autoExtractText,
+            auto_segment_text: autoSegmentText
+          }
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to extract document');
+        throw new Error(errorData.error || 'Failed to start processing');
       }
 
       await refreshQueue();
@@ -217,8 +185,8 @@ Shows current document being processed and queue sidebar.
         currentDocument = updated;
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to extract document';
-      console.error('Extract document error:', err);
+      error = err instanceof Error ? err.message : 'Failed to start processing';
+      console.error('Start processing error:', err);
     } finally {
       extracting = false;
     }
@@ -231,6 +199,74 @@ Shows current document being processed and queue sidebar.
       currentDocument = documents[0];
     } else {
       currentDocument = null;
+    }
+  }
+
+  async function handleSegment() {
+    if (!currentDocument) return;
+
+    segmenting = true;
+    error = null;
+
+    try {
+      const response = await fetch('/api/file-processing/segment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: currentDocument.id
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to segment text');
+      }
+
+      await refreshQueue();
+      // Update current document reference to show new state
+      const updated = documents.find((d) => d.id === currentDocument?.id);
+      if (updated) {
+        currentDocument = updated;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to segment text';
+      console.error('Segment text error:', err);
+    } finally {
+      segmenting = false;
+    }
+  }
+
+  async function handleExtractMetadata() {
+    if (!currentDocument) return;
+
+    extractingMetadata = true;
+    error = null;
+
+    try {
+      const response = await fetch('/api/file-processing/extract-metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: currentDocument.id
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to extract metadata');
+      }
+
+      await refreshQueue();
+      // Update current document reference to show new state
+      const updated = documents.find((d) => d.id === currentDocument?.id);
+      if (updated) {
+        currentDocument = updated;
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to extract metadata';
+      console.error('Extract metadata error:', err);
+    } finally {
+      extractingMetadata = false;
     }
   }
 
@@ -265,6 +301,15 @@ Shows current document being processed and queue sidebar.
   }
 
   $: currentStage = currentDocument?.state ?? null;
+
+  // Auto-trigger segmentation when document enters REQUIRES_SEGMENTATION with auto_segment_text ON
+  $: if (
+    currentDocument?.state === 'REQUIRES_SEGMENTATION' &&
+    currentDocument?.processingOptions?.auto_segment_text &&
+    !segmenting
+  ) {
+    handleSegment();
+  }
 </script>
 
 <div class="grid grid-cols-[1fr_256px] h-screen bg-gray-100">
@@ -292,125 +337,159 @@ Shows current document being processed and queue sidebar.
           </h2>
 
           <!-- Stage-specific content -->
-          {#if currentStage === 'UPLOADED'}
+          {#if currentStage === 'REQUIRES_TEXT_EXTRACTION'}
             <div class="space-y-4">
-              <h3 class="font-semibold text-xl">Document Review</h3>
+              <h3 class="font-semibold text-xl">Start Processing</h3>
 
-              <!-- Two-column layout: Document viewer + Action panel -->
-              <div class="h-[600px] grid grid-cols-2 gap-4">
-                <!-- Left: Document viewer -->
-                <FileViewer
-                  documentId={currentDocument.id}
-                  fileType={currentDocument.fileType}
-                  filename={currentDocument.filename} />
+              <!-- Document info and processing options -->
+              <div class="space-y-4">
+                <div class="space-y-2 text-sm">
+                  <p><strong>Filename:</strong> {currentDocument.filename}</p>
+                  <p><strong>Type:</strong> {currentDocument.fileType.toUpperCase()}</p>
+                </div>
 
-                <!-- Right: Action panel -->
-                <div class="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4">
-                  <h3 class="font-semibold text-lg">Document Actions</h3>
+                <div class="divider"></div>
 
-                  <!-- Document info -->
-                  <div class="space-y-2 text-sm">
-                    <p><strong>Filename:</strong> {currentDocument.filename}</p>
-                    <p><strong>Uploaded:</strong> {new Date(currentDocument.createdAt).toLocaleString()}</p>
-                    <p><strong>Type:</strong> {currentDocument.fileType.toUpperCase()}</p>
-                  </div>
+                <!-- Auto-processing options -->
+                <div class="form-control">
+                  <label class="label cursor-pointer justify-start gap-4">
+                    <input type="checkbox" class="checkbox" bind:checked={autoExtractText} />
+                    <div>
+                      <span class="label-text font-semibold">Auto-approve text extraction</span>
+                      <p class="text-xs text-gray-600">Skip manual review of extracted text</p>
+                    </div>
+                  </label>
+                </div>
 
-                  <div class="divider"></div>
+                <div class="form-control">
+                  <label class="label cursor-pointer justify-start gap-4">
+                    <input type="checkbox" class="checkbox" bind:checked={autoSegmentText} />
+                    <div>
+                      <span class="label-text font-semibold">Auto-approve segmentation</span>
+                      <p class="text-xs text-gray-600">Automatically segment text and skip manual review</p>
+                    </div>
+                  </label>
+                </div>
 
-                  <!-- Instructions -->
-                  <p class="text-sm text-gray-600">
-                    Extract this document immediately to begin processing, or queue it for batch extraction later.
-                    You can also use "Queue All" in the sidebar to queue all unprocessed documents at once.
-                  </p>
+                <div class="divider"></div>
 
-                  <!-- Action buttons -->
-                  <div class="mt-auto flex flex-col gap-2">
-                    <button class="btn btn-accent" on:click={handleExtractDocument} disabled={extracting || deleting}>
-                      {#if extracting}
-                        <span class="loading loading-spinner"></span>
-                        Extracting...
-                      {:else}
-                        Extract This Document
-                      {/if}
-                    </button>
-                    <button class="btn btn-primary" on:click={handleQueueDocument} disabled={extracting || deleting}>
-                      Queue This Document
-                    </button>
-                    <button class="btn btn-ghost" on:click={handleSkipDocument} disabled={documents.length === 1 || extracting || deleting}>
-                      Next Document
-                    </button>
-                    <button class="btn btn-ghost btn-error" on:click={() => showDeleteDialog = true} disabled={extracting || deleting}>
-                      Delete Document
-                    </button>
-                  </div>
+                <!-- Action buttons -->
+                <div class="flex gap-2">
+                  <button class="btn btn-primary" on:click={handleStartProcessing} disabled={extracting}>
+                    {#if extracting}
+                      <span class="loading loading-spinner"></span>
+                      Processing...
+                    {:else}
+                      Start Processing
+                    {/if}
+                  </button>
+                  <button class="btn btn-ghost btn-error" on:click={() => showDeleteDialog = true} disabled={extracting}>
+                    Delete Document
+                  </button>
                 </div>
               </div>
             </div>
-          {:else if currentStage === 'QUEUED_FOR_EXTRACTION'}
-            <div class="space-y-4">
-              <h3 class="font-semibold text-xl">Queued for Extraction</h3>
-
-              <!-- Two-column layout: Document viewer + Action panel -->
-              <div class="h-[600px] grid grid-cols-2 gap-4">
-                <!-- Left: Document viewer -->
-                <FileViewer
-                  documentId={currentDocument.id}
-                  fileType={currentDocument.fileType}
-                  filename={currentDocument.filename} />
-
-                <!-- Right: Action panel -->
-                <div class="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4">
-                  <h3 class="font-semibold text-lg">Document Actions</h3>
-
-                  <!-- Document info -->
-                  <div class="space-y-2 text-sm">
-                    <p><strong>Filename:</strong> {currentDocument.filename}</p>
-                    <p><strong>Uploaded:</strong> {new Date(currentDocument.createdAt).toLocaleString()}</p>
-                    <p><strong>Type:</strong> {currentDocument.fileType.toUpperCase()}</p>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <!-- Instructions -->
-                  <p class="text-sm text-gray-600">
-                    This document is queued for extraction. Click "Extract Queued" in the sidebar to begin processing,
-                    or dequeue it to move it back to unprocessed status.
-                  </p>
-
-                  <!-- Action buttons -->
-                  <div class="mt-auto flex flex-col gap-2">
-                    <button class="btn btn-secondary" on:click={handleDequeueDocument} disabled={deleting}>
-                      Dequeue This Document
-                    </button>
-                    <button class="btn btn-ghost" on:click={handleSkipDocument} disabled={documents.length === 1 || deleting}>
-                      Next Document
-                    </button>
-                    <button class="btn btn-ghost btn-error" on:click={() => showDeleteDialog = true} disabled={deleting}>
-                      Delete Document
-                    </button>
-                  </div>
-                </div>
-              </div>
+          {:else if currentStage === 'EXTRACTING'}
+            <div class="flex flex-col items-center gap-4 p-8">
+              <span class="loading loading-spinner loading-lg"></span>
+              <p class="text-lg font-semibold">Extracting text from PDF...</p>
+              <p class="text-sm text-gray-600">This may take a moment for large documents</p>
             </div>
-          {:else if currentStage === 'EXTRACTED'}
+          {:else if currentStage === 'AWAITING_TEXT_APPROVAL'}
             <ExtractionReview
               document={currentDocument}
               on:approved={handleExtractionApproved}
               on:failed={handleDocumentFailed} />
-          {:else if currentStage === 'EXTRACTION_APPROVED' || currentStage === 'METADATA_INSERTION'}
+          {:else if currentStage === 'REQUIRES_SEGMENTATION'}
+            <div class="space-y-4">
+              <h3 class="font-semibold text-xl">Segment Text</h3>
+
+              <!-- Two-column layout: Original file + Extracted text -->
+              <div class="h-[600px] grid grid-cols-2 gap-4">
+                <!-- Left: Original file viewer -->
+                <FileViewer documentId={currentDocument.id} fileType={currentDocument.fileType} filename={currentDocument.filename} />
+
+                <!-- Right: Extracted text (read-only) -->
+                <div class="overflow-auto rounded-lg border bg-white p-4">
+                  <h4 class="font-semibold mb-2 sticky top-0 bg-white">Extracted Text (read-only)</h4>
+                  <div class="font-mono whitespace-pre-wrap text-sm text-gray-700">
+                    {currentDocument.extractedText || 'No extracted text available'}
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-gray-600">
+                Text extraction complete. Review the document and extracted text above, then segment the text into logical chunks for processing.
+              </p>
+
+              <!-- Actions -->
+              <div class="flex gap-2">
+                <button class="btn btn-primary" on:click={handleSegment} disabled={segmenting || deleting}>
+                  {#if segmenting}
+                    <span class="loading loading-spinner"></span>
+                    Segmenting...
+                  {:else}
+                    Segment
+                  {/if}
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  on:click={handleSkipDocument}
+                  disabled={segmenting || deleting || documents.length === 1}>
+                  Next Document
+                </button>
+                <button
+                  class="btn btn-ghost btn-error"
+                  on:click={() => showDeleteDialog = true}
+                  disabled={segmenting || deleting}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          {:else if currentStage === 'SEGMENTING'}
+            <div class="flex flex-col items-center gap-4 p-8">
+              <span class="loading loading-spinner loading-lg"></span>
+              <p class="text-lg font-semibold">Segmenting text...</p>
+              <p class="text-sm text-gray-600">Dividing document into logical chunks</p>
+            </div>
+          {:else if currentStage === 'AWAITING_SEGMENTATION_APPROVAL'}
+            <SegmentationReview
+              document={currentDocument}
+              on:approved={handleSegmentationApproved}
+              on:failed={handleDocumentFailed}
+              on:refresh={handleSegmentationRefresh} />
+          {:else if currentStage === 'REQUIRES_METADATA_EXTRACTION'}
+            <div class="space-y-4">
+              <h3 class="font-semibold text-xl">Extract Metadata</h3>
+              <p class="text-gray-600">
+                Segmentation complete. Extract metadata (title, authors, source, etc.) from the document using LLM.
+              </p>
+
+              <div class="flex gap-2">
+                <button class="btn btn-primary" on:click={handleExtractMetadata} disabled={extractingMetadata}>
+                  {#if extractingMetadata}
+                    <span class="loading loading-spinner"></span>
+                    Extracting Metadata...
+                  {:else}
+                    Extract Metadata
+                  {/if}
+                </button>
+              </div>
+            </div>
+          {:else if currentStage === 'EXTRACTING_METADATA'}
+            <div class="flex flex-col items-center gap-4 p-8">
+              <span class="loading loading-spinner loading-lg"></span>
+              <p class="text-lg font-semibold">Extracting metadata...</p>
+              <p class="text-sm text-gray-600">Analyzing document for title, authors, and other metadata</p>
+            </div>
+          {:else if currentStage === 'AWAITING_METADATA_APPROVAL'}
             <MetadataForm
               document={currentDocument}
               documentsCount={documents.length}
               on:submitted={handleMetadataApproved}
               on:skip={handleSkipDocument}
               on:delete={handleDocumentDeleted} />
-          {:else if currentStage === 'METADATA_APPROVED' || currentStage === 'SEGMENTED'}
-            <SegmentationReview
-              document={currentDocument}
-              on:approved={handleSegmentationApproved}
-              on:failed={handleDocumentFailed}
-              on:refresh={handleSegmentationRefresh} />
-          {:else if currentStage === 'SEGMENTATION_APPROVED'}
+          {:else if currentStage === 'COMPLETED'}
             <div class="alert alert-success">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -452,8 +531,8 @@ Shows current document being processed and queue sidebar.
     {/if}
   </div>
 
-  <!-- Queue sidebar -->
-  <QueueSidebar
+  <!-- Document sidebar -->
+  <DocumentSidebar
     {documents}
     {failedDocuments}
     currentDocumentId={currentDocument?.id}

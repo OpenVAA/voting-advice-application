@@ -1,13 +1,11 @@
 <!--
 @component
-Queue sidebar showing document processing status
+Document sidebar showing document processing status
 
 Displays all documents grouped by state with section headers.
 Shows failed documents in a separate section.
 Emits 'documentSelected' event when a document is clicked.
-Emits 'refresh' event to reload queue.
-Emits 'queueAll' event to move all unprocessed documents to extraction queue.
-Emits 'extractBatch' event to trigger batch extraction.
+Emits 'refresh' event to reload document list.
 -->
 
 <script lang="ts">
@@ -21,101 +19,21 @@ Emits 'extractBatch' event to trigger batch extraction.
   const dispatch = createEventDispatcher<{
     documentSelected: string;
     refresh: void;
-    queueAll: void;
-    extractBatch: void;
   }>();
 
   // Group documents by state
-  $: unprocessed = documents.filter(d => d.state === 'UPLOADED');
-  $: queued = documents.filter(d => d.state === 'QUEUED_FOR_EXTRACTION');
-  $: extracted = documents.filter(d => d.state === 'EXTRACTED');
-  $: textApproved = documents.filter(d => d.state === 'EXTRACTION_APPROVED' || d.state === 'METADATA_INSERTION');
-  $: metadataApproved = documents.filter(d => d.state === 'METADATA_APPROVED');
-  $: segmented = documents.filter(d => d.state === 'SEGMENTED');
-  $: complete = documents.filter(d => d.state === 'SEGMENTATION_APPROVED');
+  $: requiresExtraction = documents.filter(d => d.state === 'REQUIRES_TEXT_EXTRACTION');
+  $: awaitingTextApproval = documents.filter(d => d.state === 'AWAITING_TEXT_APPROVAL');
+  $: requiresSegmentation = documents.filter(d => d.state === 'REQUIRES_SEGMENTATION');
+  $: awaitingSegmentationApproval = documents.filter(d => d.state === 'AWAITING_SEGMENTATION_APPROVAL');
+  $: awaitingMetadataApproval = documents.filter(d => d.state === 'AWAITING_METADATA_APPROVAL');
+  $: complete = documents.filter(d => d.state === 'COMPLETED');
 
-  // Active documents are those actively being processed (exclude unprocessed, queued, and completed)
+  // Active documents are those actively being processed or awaiting processing
   $: activeDocuments = documents.filter(d =>
-    d.state !== 'UPLOADED' &&
-    d.state !== 'QUEUED_FOR_EXTRACTION' &&
-    d.state !== 'SEGMENTATION_APPROVED'
+    d.state !== 'COMPLETED' &&
+    d.state !== 'FAILED'
   );
-
-  let queueing = false;
-  let dequeueing = false;
-  let extracting = false;
-
-  async function handleQueueAll() {
-    if (unprocessed.length === 0) return;
-    queueing = true;
-    try {
-      const response = await fetch('/api/file-processing/queue-documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentIds: unprocessed.map(d => d.id)
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to queue documents');
-      }
-
-      dispatch('refresh');
-    } catch (error) {
-      console.error('Error queuing documents:', error);
-    } finally {
-      queueing = false;
-    }
-  }
-
-  async function handleDequeueAll() {
-    if (queued.length === 0) return;
-    dequeueing = true;
-    try {
-      const response = await fetch('/api/file-processing/dequeue-documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentIds: queued.map(d => d.id)
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to dequeue documents');
-      }
-
-      dispatch('refresh');
-    } catch (error) {
-      console.error('Error dequeueing documents:', error);
-    } finally {
-      dequeueing = false;
-    }
-  }
-
-  async function handleExtractBatch() {
-    if (queued.length === 0) return;
-    extracting = true;
-    try {
-      const response = await fetch('/api/file-processing/extract-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          batchSize: 2
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to extract batch');
-      }
-
-      dispatch('refresh');
-    } catch (error) {
-      console.error('Error extracting batch:', error);
-    } finally {
-      extracting = false;
-    }
-  }
 
   // Helper to render document card
   function renderDocumentCard(doc: ProcessingDocument) {
@@ -130,8 +48,8 @@ Emits 'extractBatch' event to trigger batch extraction.
   <!-- Header -->
   <div class="border-b p-4 min-w-0">
     <div class="mb-2 flex items-center justify-between">
-      <h2 class="font-semibold text-lg">Uploaded Documents</h2>
-      <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('refresh')} title="Refresh queue">
+      <h2 class="font-semibold text-lg">Documents</h2>
+      <button class="btn btn-circle btn-ghost btn-sm" on:click={() => dispatch('refresh')} title="Refresh">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"
@@ -142,35 +60,7 @@ Emits 'extractBatch' event to trigger batch extraction.
       </button>
     </div>
     <div class="text-sm text-gray-600 truncate">
-      {activeDocuments.length} active • {unprocessed.length + queued.length} queued • {failedDocuments.length} failed
-    </div>
-
-    <!-- Action buttons -->
-    <div class="mt-3 flex flex-col gap-2">
-      <button
-        class="btn btn-primary btn-sm"
-        on:click={handleQueueAll}
-        disabled={unprocessed.length === 0 || queueing}>
-        {#if queueing}
-          <span class="loading loading-spinner loading-xs"></span>
-        {/if}
-        Queue All ({unprocessed.length})
-      </button>
-      <button
-        class="btn btn-secondary btn-sm"
-        on:click={handleDequeueAll}
-        disabled={queued.length === 0 || dequeueing}>
-        {#if dequeueing}
-          <span class="loading loading-spinner loading-xs"></span>
-        {/if}
-        Dequeue All ({queued.length})
-      </button>
-      <button class="btn btn-accent btn-sm" on:click={handleExtractBatch} disabled={queued.length === 0 || extracting}>
-        {#if extracting}
-          <span class="loading loading-spinner loading-xs"></span>
-        {/if}
-        Extract Queued ({queued.length})
-      </button>
+      {activeDocuments.length} active • {complete.length} complete • {failedDocuments.length} failed
     </div>
   </div>
 
@@ -182,34 +72,14 @@ Emits 'extractBatch' event to trigger batch extraction.
         <p class="mt-2 text-xs">Upload files to begin</p>
       </div>
     {:else}
-      <!-- Unprocessed -->
-      {#if unprocessed.length > 0}
-        <div class="border-b min-w-0 overflow-hidden">
-          <h3 class="font-semibold bg-gray-100 p-2 text-xs uppercase text-gray-600">
-            Unprocessed ({unprocessed.length})
-          </h3>
-          <div class="p-2 space-y-2 min-w-0">
-            {#each unprocessed as doc}
-              <button
-                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
-                  ? 'border-primary bg-primary/10'
-                  : 'border-gray-200 hover:bg-gray-50'}"
-                on:click={() => dispatch('documentSelected', doc.id)}>
-                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/if}
-
-      <!-- Queued for Extraction -->
-      {#if queued.length > 0}
+      <!-- Requires Extraction -->
+      {#if requiresExtraction.length > 0}
         <div class="border-b min-w-0 overflow-hidden">
           <h3 class="font-semibold bg-blue-50 p-2 text-xs uppercase text-blue-700">
-            Queued for Extraction ({queued.length})
+            Requires Extraction ({requiresExtraction.length})
           </h3>
           <div class="p-2 space-y-2 min-w-0">
-            {#each queued as doc}
+            {#each requiresExtraction as doc}
               <button
                 class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
                   ? 'border-primary bg-primary/10'
@@ -222,14 +92,14 @@ Emits 'extractBatch' event to trigger batch extraction.
         </div>
       {/if}
 
-      <!-- Extracted - Pending Text Review -->
-      {#if extracted.length > 0}
+      <!-- Awaiting Text Approval -->
+      {#if awaitingTextApproval.length > 0}
         <div class="border-b min-w-0 overflow-hidden">
           <h3 class="font-semibold bg-yellow-50 p-2 text-xs uppercase text-yellow-700">
-            Pending Text Review ({extracted.length})
+            Awaiting Text Approval ({awaitingTextApproval.length})
           </h3>
           <div class="p-2 space-y-2 min-w-0">
-            {#each extracted as doc}
+            {#each awaitingTextApproval as doc}
               <button
                 class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
                   ? 'border-primary bg-primary/10'
@@ -242,34 +112,14 @@ Emits 'extractBatch' event to trigger batch extraction.
         </div>
       {/if}
 
-      <!-- Pending Metadata Review -->
-      {#if textApproved.length > 0}
-        <div class="border-b min-w-0 overflow-hidden">
-          <h3 class="font-semibold bg-orange-50 p-2 text-xs uppercase text-orange-700">
-            Pending Metadata Review ({textApproved.length})
-          </h3>
-          <div class="p-2 space-y-2 min-w-0">
-            {#each textApproved as doc}
-              <button
-                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
-                  ? 'border-primary bg-primary/10'
-                  : 'border-gray-200 hover:bg-gray-50'}"
-                on:click={() => dispatch('documentSelected', doc.id)}>
-                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/if}
-
-      <!-- Metadata Approved - Pending Segmentation -->
-      {#if metadataApproved.length > 0}
+      <!-- Requires Segmentation -->
+      {#if requiresSegmentation.length > 0}
         <div class="border-b min-w-0 overflow-hidden">
           <h3 class="font-semibold bg-purple-50 p-2 text-xs uppercase text-purple-700">
-            Pending Segmentation ({metadataApproved.length})
+            Requires Segmentation ({requiresSegmentation.length})
           </h3>
           <div class="p-2 space-y-2 min-w-0">
-            {#each metadataApproved as doc}
+            {#each requiresSegmentation as doc}
               <button
                 class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
                   ? 'border-primary bg-primary/10'
@@ -282,14 +132,34 @@ Emits 'extractBatch' event to trigger batch extraction.
         </div>
       {/if}
 
-      <!-- Segmented - Pending Review -->
-      {#if segmented.length > 0}
+      <!-- Awaiting Segmentation Approval -->
+      {#if awaitingSegmentationApproval.length > 0}
         <div class="border-b min-w-0 overflow-hidden">
           <h3 class="font-semibold bg-indigo-50 p-2 text-xs uppercase text-indigo-700">
-            Pending Segmentation Review ({segmented.length})
+            Awaiting Segmentation Approval ({awaitingSegmentationApproval.length})
           </h3>
           <div class="p-2 space-y-2 min-w-0">
-            {#each segmented as doc}
+            {#each awaitingSegmentationApproval as doc}
+              <button
+                class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-200 hover:bg-gray-50'}"
+                on:click={() => dispatch('documentSelected', doc.id)}>
+                <p class="font-medium truncate" title={doc.filename}>{doc.filename}</p>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Awaiting Metadata Approval -->
+      {#if awaitingMetadataApproval.length > 0}
+        <div class="border-b min-w-0 overflow-hidden">
+          <h3 class="font-semibold bg-orange-50 p-2 text-xs uppercase text-orange-700">
+            Awaiting Metadata Approval ({awaitingMetadataApproval.length})
+          </h3>
+          <div class="p-2 space-y-2 min-w-0">
+            {#each awaitingMetadataApproval as doc}
               <button
                 class="p-2 w-full min-w-0 rounded border text-left text-sm transition-colors {doc.id === currentDocumentId
                   ? 'border-primary bg-primary/10'
