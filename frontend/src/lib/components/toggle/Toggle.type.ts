@@ -13,6 +13,14 @@ export type ToggleProps = SvelteHTMLElements['fieldset'] & {
    * The currently selected option `key` of the toggle. Bind to this to get the currently selected value.
    */
   selected?: string;
+  /**
+   * Event handler triggered when the selected item changes.
+   */
+  onChange?: (key: string) => unknown;
+  /**
+   * Optional class for the `label` elements.
+   */
+  labelsClass?: string;
 };
 
 type ToggleOption = {

@@ -6,7 +6,12 @@ Display a short list of options as toggleable text or icon buttons from which on
 
 - `label`: The aria label for the toggle.
 - `options`: The options for the toggle. Each must contain a `key` and a `label` property. If an `icon` property is provided, the option will be rendered as an icon button. The `label` is still required and will be used for a screen-reader-only label.
+- `labelsClass`: Optional class for the `label` elements.
 - Any valid attributes of a `<fieldset>` element.
+
+### Callback properties
+
+- `onChange`: Event handler triggered when the selected item changes.
 
 ### Bindable properties
 
@@ -45,9 +50,8 @@ Display a short list of options as toggleable text or icon buttons from which on
       key: 'video'
     }
   ];
-  let selected: string;
 </script>
-<Toggle bind:selected label="Switch between video and text display" {options}/>
+<Toggle selected="text" onChange={(k) => console.info(`{k} selected`)} label="Switch between video and text display" {options}/>
 ```
 -->
 
@@ -60,7 +64,17 @@ Display a short list of options as toggleable text or icon buttons from which on
 
   export let label: $$Props['label'];
   export let options: $$Props['options'];
-  export let selected: $$Props['selected'] = undefined;
+  export let selected: $$Props['selected'] = options[0]?.key;
+  export let onChange: $$Props['onChange'] = undefined;
+  export let labelsClass: $$Props['labelsClass'] = undefined;
+
+  let lastSelected = selected;
+
+  // Trigger onChange event when selected changes
+  $: if (selected != null && lastSelected !== selected) {
+    onChange?.(selected);
+    lastSelected = selected;
+  }
 </script>
 
 <fieldset
@@ -72,7 +86,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   )}>
   <legend class="sr-only">{label}</legend>
   {#each options as option}
-    <label class="small-label rounded-full px-8 py-4">
+    <label class="small-label rounded-full px-8 py-4 text-center {labelsClass ?? ''}">
       <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
         <Icon name={option.icon} size="sm" />
