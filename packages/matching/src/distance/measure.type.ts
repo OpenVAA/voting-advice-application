@@ -10,7 +10,7 @@ export type DistanceMeasurementOptions = {
   metric: DistanceMetric;
   /** Options passed to imputeMissingValue */
   missingValueOptions: MissingValueImputationOptions;
-  /** Whether to allow misssing reference values. If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. */
+  /** Whether to allow misssing reference values. If `true`, dimensions with missing coordinates in the reference `Position` (i.e. voter) are ignored. Otherwise, an error will be thrown in such cases. */
   allowMissingReference?: boolean;
 };
 

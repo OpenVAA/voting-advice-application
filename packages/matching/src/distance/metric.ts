@@ -128,10 +128,17 @@ export function euclideanDistance({
     b,
     space,
     allowMissing,
-    kernel: absoluteKernel,
+    kernel: differenceKernel,
     sum: euclideanSum,
     subdimWeight: euclideanSubdimWeight
   });
+}
+
+/**
+ * A kernel that calculates the signed difference between two coordinates.
+ */
+export function differenceKernel(a: Coordinate, b: Coordinate): number {
+  return a - b;
 }
 
 /**
@@ -224,13 +231,14 @@ export function distance({
     .map((d, i) => {
       let weight = space.weights[i];
       if (d === 1) return weight;
+      // Spread the total weight evenly across the subdimensions
       weight *= subdimWeight(d);
       return Array.from({ length: d }, () => weight);
     })
     .flat();
   if (weights.length !== aFlat.length || weights.length !== bFlat.length)
     throw new Error('The shapes of the parameters are incompatible after weigthing.');
-  // Compute the distances and maximum weights for each dimension
+  // Compute the distances and maximum distances for each dimension
   // Ignore dimensions with missing coordinates if `allowMissing` is false
   const distances = new Array<number>();
   const maxima = new Array<number>();

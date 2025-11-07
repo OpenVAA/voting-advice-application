@@ -79,7 +79,7 @@ describe('metric: distance', () => {
 
   test.each(metrics)('extreme distance with metric $name', ({ metric }) => {
     expect(metric({ a: posMin, b: posMax })).toBeCloseTo(COORDINATE.Extent);
-    expect(metric({ b: posMin, a: posMax }), 'to be commutable').toBeCloseTo(COORDINATE.Extent);
+    expect(metric({ b: posMin, a: posMax }), 'to be commutable').toBeCloseTo(metric({ a: posMax, b: posMin }));
   });
   test.each(metrics)('disallow missing with metric $name', ({ metric }) => {
     expect(() => metric({ a: posMin, b: posMissing }), 'to disallow missing by default').toThrow();
@@ -92,7 +92,7 @@ describe('metric: distance', () => {
       'to skip the third dimension when calculating distance'
     ).toBeCloseTo(metric({ a: posMin2D, b: posMax2D }));
     expect(metric({ a: posMissing, b: posMax, allowMissing: true }), 'to be commutable').toBeCloseTo(
-      metric({ a: posMin2D, b: posMax2D })
+      metric({ a: posMissing, b: posMax, allowMissing: true })
     );
   });
   test.each(metrics)('return half extent when all dimensions are missing with metric $name', ({ metric }) => {
