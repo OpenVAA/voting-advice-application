@@ -23,5 +23,13 @@
   "remove": "Delete answer",
   "skip": "Skip",
   "skipToResults": "Skip to Results",
-  "title": "Opinions"
+  "title": "Opinions",
+  "weights": {
+    "title": "Importance",
+    "weightLabels": {
+      "half": "0.5×",
+      "normal": "1×",
+      "double": "2×"
+    }
+  }
 }

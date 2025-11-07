@@ -23,5 +23,13 @@
   "remove": "Radera svar",
   "skip": "Hoppa över",
   "skipToResults": "Hoppa till resultat",
-  "title": "Yttranden"
+  "title": "Yttranden",
+  "weights": {
+    "title": "Betydelse",
+    "weightLabels": {
+      "half": "0.5×",
+      "normal": "1×",
+      "double": "2×"
+    }
+  }
 }

@@ -23,5 +23,13 @@
   "remove": "Poista vastaus",
   "skip": "Ohita",
   "skipToResults": "Hyppää tuloksiin",
-  "title": "Mielipiteesi"
+  "title": "Mielipiteesi",
+  "weights": {
+    "title": "Painotus",
+    "weightLabels": {
+      "half": "0,5 ×",
+      "normal": "1 ×",
+      "double": "2 ×"
+    }
+  }
 }

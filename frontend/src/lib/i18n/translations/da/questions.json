@@ -23,5 +23,13 @@
   "remove": "Slet svar",
   "skip": "Spring over",
   "skipToResults": "Gå direkte til resultater",
-  "title": "Holdninger"
+  "title": "Holdninger",
+  "weights": {
+    "title": "Betydning",
+    "weightLabels": {
+      "half": "0.5×",
+      "normal": "1×",
+      "double": "2×"
+    }
+  }
 }

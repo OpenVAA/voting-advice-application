@@ -57,7 +57,7 @@ Display a short list of options as toggleable text or icon buttons from which on
 
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
-  import { concatClass } from '$lib/utils/components';
+  import { concatClass, getUUID } from '$lib/utils/components';
   import type { ToggleProps } from './Toggle.type';
 
   type $$Props = ToggleProps;
@@ -67,6 +67,8 @@ Display a short list of options as toggleable text or icon buttons from which on
   export let selected: $$Props['selected'] = options[0]?.key;
   export let onChange: $$Props['onChange'] = undefined;
   export let labelsClass: $$Props['labelsClass'] = undefined;
+
+  const name = getUUID();
 
   let lastSelected = selected;
 
@@ -87,7 +89,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   <legend class="sr-only">{label}</legend>
   {#each options as option}
     <label class="small-label rounded-full px-8 py-4 text-center {labelsClass ?? ''}">
-      <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
+      <input tabindex="0" type="radio" {name} value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
         <Icon name={option.icon} size="sm" />
       {/if}

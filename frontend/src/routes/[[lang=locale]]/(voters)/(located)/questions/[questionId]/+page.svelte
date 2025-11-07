@@ -37,6 +37,8 @@ Display a question for answering.
   import MainContent from '../../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
+  import QuestionWeightInput from '$lib/components/questions/QuestionWeightInput.svelte';
+  import { QUESTION_WEIGHTS, type QuestionWeightConfig } from '$lib/utils/matching';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -103,6 +105,15 @@ Display a question for answering.
   });
 
   ////////////////////////////////////////////////////////////////////
+  // Initialize possible question weights
+  ////////////////////////////////////////////////////////////////////
+
+  const questionWeights: QuestionWeightConfig | undefined =
+    $appSettings.matching.questionWeights && $appSettings.matching.questionWeights !== 'none'
+      ? QUESTION_WEIGHTS[$appSettings.matching.questionWeights]
+      : undefined;
+
+  ////////////////////////////////////////////////////////////////////
   // Anwering and moving between questions
   ////////////////////////////////////////////////////////////////////
 
@@ -110,12 +121,19 @@ Display a question for answering.
   let disabled = false;
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
-    disabled = true;
     answers.setAnswer(question.id, value);
+    // Do not autojump if weight selection is enabled
+    if (questionWeights) return;
+    disabled = true;
     setTimeout(handleJump, DELAY.md);
   }
 
-  function handleDelete() {
+  function handleSetWeight(weight: number): void {
+    if (!question) return;
+    answers.setWeight(question.id, weight);
+  }
+
+  function handleDelete(): void {
     if (!question) return;
     answers.deleteAnswer(question.id);
   }
@@ -159,63 +177,73 @@ Display a question for answering.
   }
 </script>
 
-{#if question && questionBlock}
-  {@const { info, text } = question}
-  {@const customData = getCustomData(question)}
-  {@const questions = $selectedQuestionBlocks.questions}
+{#key question}
+  {#if question && questionBlock}
+    {@const { info, text } = question}
+    {@const customData = getCustomData(question)}
+    {@const questions = $selectedQuestionBlocks.questions}
 
-  <MainContent title={text}>
-    <figure role="presentation" slot="hero">
-      {#if customData?.hero}
-        <Hero content={customData?.hero} />
+    <MainContent title={text}>
+      <figure role="presentation" slot="hero">
+        {#if customData?.hero}
+          <Hero content={customData?.hero} />
+        {/if}
+      </figure>
+
+      <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
+
+      {#if !customData.video}
+        {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+          <div class="flex items-center justify-center">
+            <QuestionExtendedInfoButton
+              {question}
+              onOpen={() => startEvent('questionExtendedInfo_open')}
+              onSectionCollapse={(title) => startEvent('questionExtendedInfo_collapseSection', { title })}
+              onSectionExpand={(title) => startEvent('questionExtendedInfo_expandSection', { title })} />
+          </div>
+        {:else if info}
+          <QuestionBasicInfo
+            {info}
+            onCollapse={() => startEvent('questionInfo_collapse')}
+            onExpand={() => startEvent('questionInfo_expand')} />
+        {/if}
       {/if}
-    </figure>
 
-    <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
+      <svelte:fragment slot="primaryActions">
+        {#if questionWeights}
+          <QuestionWeightInput
+            selected={$answers[question.id]?.weight || 1}
+            onChange={handleSetWeight}
+            options={questionWeights}
+            class="mb-[1.75rem]" />
+        {/if}
 
-    {#if !customData.video}
-      {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
-        <div class="flex items-center justify-center">
-          <QuestionExtendedInfoButton
-            {question}
-            onOpen={() => startEvent('questionExtendedInfo_open')}
-            onSectionCollapse={(title) => startEvent('questionExtendedInfo_collapseSection', { title })}
-            onSectionExpand={(title) => startEvent('questionExtendedInfo_expandSection', { title })} />
-        </div>
-      {:else if info}
-        <QuestionBasicInfo
-          {info}
-          onCollapse={() => startEvent('questionInfo_collapse')}
-          onExpand={() => startEvent('questionInfo_expand')} />
-      {/if}
-    {/if}
+        <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
 
-    <svelte:fragment slot="primaryActions">
-      <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
-
-      <QuestionActions
-        answered={$answers[question.id]?.value != null}
-        {disabled}
-        nextLabel={questionBlock.index === questions.length - 1 && $answers[question.id]?.value != null
-          ? $t('results.title.results')
-          : undefined}
-        previousLabel={questionBlock.index === 0 ? $t('common.back') : undefined}
-        separateSkip={true}
-        onPrevious={() => {
-          startEvent('question_previous', { questionIndex: questionBlock?.index });
-          handleJump(-1);
-        }}
-        onDelete={handleDelete}
-        onNext={() => {
-          startEvent('question_next', { questionIndex: questionBlock?.index });
-          handleJump(+1);
-        }}
-        onSkip={() => {
-          startEvent('question_skip', { questionIndex: questionBlock?.index });
-          handleJump(+1);
-        }} />
-    </svelte:fragment>
-  </MainContent>
-{:else}
-  <Loading class="mt-lg" />
-{/if}
+        <QuestionActions
+          answered={$answers[question.id]?.value != null}
+          {disabled}
+          nextLabel={questionBlock.index === questions.length - 1 && $answers[question.id]?.value != null
+            ? $t('results.title.results')
+            : undefined}
+          previousLabel={questionBlock.index === 0 ? $t('common.back') : undefined}
+          separateSkip={true}
+          onPrevious={() => {
+            startEvent('question_previous', { questionIndex: questionBlock?.index });
+            handleJump(-1);
+          }}
+          onDelete={handleDelete}
+          onNext={() => {
+            startEvent('question_next', { questionIndex: questionBlock?.index });
+            handleJump(+1);
+          }}
+          onSkip={() => {
+            startEvent('question_skip', { questionIndex: questionBlock?.index });
+            handleJump(+1);
+          }} />
+      </svelte:fragment>
+    </MainContent>
+  {:else}
+    <Loading class="mt-lg" />
+  {/if}
+{/key}

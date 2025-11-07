@@ -13,12 +13,13 @@ const locales = fs.readdirSync(dirPath).filter((name) => {
   return fs.lstatSync(path.join(dirPath, name)).isDirectory();
 });
 
-// Names of translation files in the directory of the first locale
-const filenames = fs.readdirSync(path.join(dirPath, locales[0]));
+// Names of translation files in the directory of the primary locale
+const primaryLocale = locales.includes('en') ? 'en' : locales[0];
+const filenames = fs.readdirSync(path.join(dirPath, primaryLocale));
 
 // Array of flattened translation keys
 const translationFilesKeys = filenames.flatMap((filename) => {
-  return getFlattenedTranslationKeys(locales[0], filename);
+  return getFlattenedTranslationKeys(primaryLocale, filename);
 });
 
 const langKeys = locales.map((locale) => `lang.${locale}`);

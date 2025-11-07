@@ -24,6 +24,8 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   import type { AnyEntityVariant, AnyQuestionVariant } from '@openvaa/data';
   import type { AnswerStore } from '$lib/contexts/voter';
   import type { EntityDetailsProps } from './EntityDetails.type';
+  import QuestionWeightInput from '$lib/components/questions/QuestionWeightInput.svelte';
+  import { QUESTION_WEIGHTS, type QuestionWeightConfig } from '$lib/utils/matching';
 
   export let entity: EntityDetailsProps['entity'];
   export let questions: Array<AnyQuestionVariant>;
@@ -46,14 +48,22 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
     ({ entity: nakedEntity } = unwrapEntity(entity));
     ({ shortName } = nakedEntity);
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Initialize possible question weights
+  ////////////////////////////////////////////////////////////////////
+
+  const questionWeights: QuestionWeightConfig | undefined =
+    $appSettings.matching.questionWeights && $appSettings.matching.questionWeights !== 'none'
+      ? QUESTION_WEIGHTS[$appSettings.matching.questionWeights]
+      : undefined;
 </script>
 
-<div class="mt-xl grid gap-xxl px-lg pb-safelgb">
+<div class="mt-xl gap-xxl px-lg pb-safelgb grid">
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
     {@const voterAnswer = $answers?.[id]}
-
     <div class="grid">
       <HeadingGroup class="mb-lg text-center">
         {#if $appSettings.questions.showCategoryTags && category}
@@ -63,27 +73,35 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
       </HeadingGroup>
 
       {#if $appType === 'candidate'}
-        {#if answer == null}
+        {#if answer?.value == null}
           <div class="small-label mb-16 text-center">
             {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
           </div>
         {/if}
-      {:else if voterAnswer == null && answer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.answers.bothHaventAnswered', { entity: shortName })}
-        </div>
-      {:else if voterAnswer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.answers.youHaventAnswered')}
-        </div>
-      {:else if answer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
-        </div>
+      {/if}
+
+      {#if $appType === 'voter'}
+        {#if questionWeights && voterAnswer?.value != null && voterAnswer?.weight != null && voterAnswer?.weight != 1}
+          <QuestionWeightInput mode="display" selected={voterAnswer.weight} options={questionWeights} class="mb-md" />
+        {/if}
+
+        {#if voterAnswer?.value == null && answer?.value == null}
+          <div class="small-label mb-16 text-center">
+            {$t('questions.answers.bothHaventAnswered', { entity: shortName })}
+          </div>
+        {:else if voterAnswer?.value == null}
+          <div class="small-label mb-16 text-center">
+            {$t('questions.answers.youHaventAnswered')}
+          </div>
+        {:else if answer?.value == null}
+          <div class="small-label mb-16 text-center">
+            {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
+          </div>
+        {/if}
       {/if}
 
       <!-- Only show the answering choices if either one has answered -->
-      {#if voterAnswer != null || answer != null}
+      {#if voterAnswer?.value != null || answer?.value != null}
         <OpinionQuestionInput
           {question}
           mode="display"
