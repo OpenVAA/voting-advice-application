@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-10-08T12:17:11.517Z"
+    "x-generation-date": "2025-11-07T14:16:43.108Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -9687,6 +9687,13 @@
               "none",
               "answersOnly",
               "impute"
+            ]
+          },
+          "questionWeights": {
+            "type": "string",
+            "enum": [
+              "none",
+              "half-normal-double"
             ]
           }
         }

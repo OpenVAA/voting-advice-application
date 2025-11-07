@@ -18,6 +18,14 @@
         "impute"
       ],
       "required": true
+    },
+    "questionWeights": {
+      "type": "enumeration",
+      "enum": [
+        "none",
+        "half-normal-double"
+      ],
+      "default": "none"
     }
   }
 }

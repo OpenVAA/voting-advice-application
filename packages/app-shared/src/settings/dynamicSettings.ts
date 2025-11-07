@@ -39,7 +39,8 @@ export const dynamicSettings: DynamicSettings = {
   },
   matching: {
     minimumAnswers: 5,
-    organizationMatching: 'impute'
+    organizationMatching: 'impute',
+    questionWeights: 'none'
   },
   questions: {
     categoryIntros: {

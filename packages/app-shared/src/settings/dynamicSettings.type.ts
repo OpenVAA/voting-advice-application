@@ -103,6 +103,10 @@ export type DynamicSettings = {
      * The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Impute: missing party answers are substituted with an anwswer imputed from the party's candidates' answers.
      */
     organizationMatching: 'none' | 'answersOnly' | 'impute';
+    /**
+     * The allowed question weights for the Voter to select when answering.
+     */
+    questionWeights?: QuestionWeights;
   };
   /**
    * Settings related to the question view.
@@ -302,3 +306,8 @@ export type NotificationData = {
    */
   icon?: string;
 };
+
+/**
+ * The possible question weights settings. Default is 'none'.
+ */
+export type QuestionWeights = 'none' | 'half-normal-double';
