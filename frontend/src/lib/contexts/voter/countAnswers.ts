@@ -1,4 +1,5 @@
 import type { Answers, AnyQuestionVariant } from '@openvaa/data';
+import type { VoterAnswers } from './answerStore.type';
 
 /**
  * Count the number of non-empty answer in `answers` for the given `questions`. Use for checking whether we can compute matches.
@@ -9,8 +10,8 @@ export function countAnswers({
   answers
 }: {
   questions: Array<AnyQuestionVariant>;
-  answers: Answers;
+  answers: Answers | VoterAnswers;
 }): number {
   const questionIds = new Set(questions.map((question) => question.id));
-  return Object.entries(answers).filter(([key, value]) => value != null && questionIds.has(key)).length;
+  return Object.entries(answers).filter(([key, answer]) => answer?.value != null && questionIds.has(key)).length;
 }

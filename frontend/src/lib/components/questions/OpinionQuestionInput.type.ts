@@ -1,15 +1,16 @@
 import type { Answer, AnyQuestionVariant } from '@openvaa/data';
+import type { VoterAnswer } from '$lib/contexts/voter';
 import type { QuestionInputProps } from '../input';
 
-export type OpinionQuestionInputProps = QuestionInputProps & {
+export type OpinionQuestionInputProps = Omit<QuestionInputProps, 'answer' | 'question' | 'onChange'> & {
   /**
    * The opinion `Question` whose input to show. Not reactive.
    */
   question: AnyQuestionVariant;
   /**
-   * The `Answer` object to the question. Not reactive.
+   * The `Answer` or `VoterAnswer` object to the question. Not reactive.
    */
-  answer?: Answer | null;
+  answer?: Answer | VoterAnswer | null;
   /**
    * The same component can be used both for answering the questions and displaying answers. @default 'answer'
    */

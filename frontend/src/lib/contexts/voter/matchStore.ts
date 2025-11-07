@@ -2,6 +2,7 @@ import { type AnyNominationVariant, ENTITY_TYPE, type EntityType } from '@openva
 import { imputeParentAnswers, unwrapProxiedMatch } from '$lib/utils/matching';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { countAnswers } from './countAnswers';
+import { parseVoterAnswers } from './parseVoterAnswers';
 import { Voter } from './voter';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { FactionNomination, OrganizationNomination } from '@openvaa/data';
@@ -24,7 +25,7 @@ import type { SelectionTree } from './selectionTree.type';
  * @returns An array of `Match`es or unmatched `WrappedNomination` for each `Election` and each `EntityType`.
  */
 export function matchStore({
-  answers,
+  answers: voterAnswers,
   nominationsAndQuestions,
   algorithm,
   minAnswers,
@@ -39,10 +40,12 @@ export function matchStore({
   parentMatchingMethod: Readable<AppSettings['matching']['organizationMatching']>;
 }): Readable<MatchTree> {
   return parsimoniusDerived(
-    [answers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod],
-    ([answers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod]) => {
+    [voterAnswers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod],
+    ([voterAnswers, nominationsAndQuestions, minAnswers, calcSubmatches, parentMatchingMethod]) => {
       minAnswers ??= 1;
       calcSubmatches ??= [];
+
+      const { answers, weights } = parseVoterAnswers(voterAnswers);
 
       const voter = new Voter(answers);
       const tree: Partial<MatchTree> = {};
@@ -85,7 +88,7 @@ export function matchStore({
               reference: voter,
               // Use proxies in matching if available
               targets: proxies ?? nominations,
-              options: { questionGroups }
+              options: { questionGroups, questionWeights: weights }
             });
 
             return [

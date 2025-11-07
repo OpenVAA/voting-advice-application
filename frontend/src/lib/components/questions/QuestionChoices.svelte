@@ -113,11 +113,11 @@ The same component can also be used to display the answers of the voter and anot
   /** Holds the currently selected value and is initialized with the value of `selectedId` */
   let selected: Id | null | undefined;
   const inputs: Record<string, HTMLInputElement> = {};
-  $: {
-    selected = selectedId;
-    // We need to explicitly set the selected value, because group binding does not consistently update the input states themeselves
-    if (selected && inputs[selected]) inputs[selected].checked = true;
-  }
+
+  // Apply the initially selected value
+  $: selected = selectedId;
+  // We need to explicitly set the selected value, because group binding does not consistently update the input states themeselves
+  $: if (selected && inputs[selected]) inputs[selected].checked = true;
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
   //
@@ -161,13 +161,22 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   /**
-   * Select the option if the user presses the space or enter key when in the radio group
+   * Select the option and trigger the callback if the user presses the space or enter key.
    */
-  function handleKeyUp(event: KeyboardEvent, value: Id) {
+  function handleKeyUp({ key }: KeyboardEvent, value: Id) {
     if (disabled) return;
-    if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
-      selected = value;
-      triggerCallback(value);
+    switch (key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        selected = value;
+        break;
+      case 'Enter':
+      case 'Spacebar':
+      case ' ':
+        selected = value;
+        triggerCallback(value);
     }
   }
 
@@ -206,6 +215,7 @@ The same component can also be used to display the answers of the voter and anot
 
 <fieldset
   use:onKeyboardFocusOut={handleGroupFocusOut}
+  role="radiogroup"
   style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
   style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
   class:vertical
@@ -251,7 +261,7 @@ The same component can also be used to display the answers of the voter and anot
     <label on:click={(e) => handleClick(e, id)} on:keyup={(e) => handleKeyUp(e, id)}>
       <input
         type="radio"
-        class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
+        class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
         class:entitySelected={otherSelected == id}
         name="questionChoices-{question.id}"
         disabled={mode !== 'answer'}
@@ -276,7 +286,7 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   fieldset.vertical {
-    @apply grid-flow-row auto-rows-fr gap-md;
+    @apply gap-md grid-flow-row auto-rows-fr;
     grid-template-columns: fr fr auto;
   }
 
@@ -286,11 +296,11 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   label {
-    @apply grid gap-md;
+    @apply gap-md grid;
   }
 
   fieldset.vertical label {
-    @apply min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start gap-md;
+    @apply gap-md min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start;
     grid-column: 2;
     grid-template-columns: auto;
   }

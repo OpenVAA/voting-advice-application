@@ -7,7 +7,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 ### Properties
 
 - `question`: The opinion `Question` for which to show the input. Not reactive.
-- `answer`: The `Answer` object to the question. Not reactive.
+- `answer`: The `Answer` or `VoterAnswer` object to the question. Not reactive.
 - `mode`: The same component can be used both for answering the questions and displaying answers. @default `'answer'`
 - `otherAnswer`:The `Answer` of the other entity in `display` mode. @default undefined
 - `otherLabel`: The label for the entity's answer. Be sure to supply this if `otherSelected` is supplied.

@@ -13,6 +13,8 @@ export interface TrackingEvent<
 type TrackingEventName =
   | 'answer_delete'
   | 'answer_resetAll'
+  | 'answer_resetWeight'
+  | 'answer_setWeight'
   | 'answer'
   | 'dataConsent_granted'
   | 'entityCard_expandSubcards'
@@ -29,17 +31,17 @@ type TrackingEventName =
   | 'question_show'
   | 'question_skip'
   | 'question_startFrom'
-  | 'questionInfo_collapse'
-  | 'questionInfo_expand'
   | 'questionExtendedInfo_collapseSection'
   | 'questionExtendedInfo_expandSection'
   | 'questionExtendedInfo_open'
-  | `results_browse_${EntityType}`
+  | 'questionInfo_collapse'
+  | 'questionInfo_expand'
   | 'results_browse'
+  | `results_browse_${EntityType}`
   | 'results_changeElection'
   | 'results_changeTab'
-  | `results_ranked_${EntityType}`
   | 'results_ranked'
+  | `results_ranked_${EntityType}`
   | 'survey_opened'
   | 'trackingId_set'
   | 'video';
