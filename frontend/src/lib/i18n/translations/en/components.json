@@ -71,5 +71,8 @@
   },
   "questionExtendedInfo": {
     "title": "Learn more"
+  },
+  "resultsPreview": {
+    "label": "Top {count}"
   }
 }

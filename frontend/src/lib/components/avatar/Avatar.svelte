@@ -79,6 +79,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
       // Set initials
       initialsClasses = 'avatar placeholder text-center';
       // Use shortName if it's short enough
+      // TODO: Use <svg> which can automatically scale the text to fit
       initials = shortName && shortName.length <= 6 ? shortName : abbreviate(name);
       switch (initials.length) {
         case 1:
@@ -86,9 +87,9 @@ Display either an image or a initials-based avatar for an entity. The color of t
           initialsClasses += ' text-2xl';
           break;
         case 3:
-        case 4:
           initialsClasses += ' text-xl';
           break;
+        case 4:
         case 5:
         case 6:
           initialsClasses += ' text-md';
@@ -124,7 +125,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
         <Image
           {image}
           format="thumbnail"
-          class="border-bg-300 h-full w-full border-md object-cover"
+          class="border-bg-300 border-md h-full w-full object-cover"
           alt={name}
           on:load={handleImgLoad}
           on:error={handleImgError} />
@@ -133,7 +134,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
       <Image
         {image}
         format="thumbnail"
-        class="border-bg-300 h-full w-full border-md object-cover"
+        class="border-bg-300 border-md h-full w-full object-cover"
         alt={name}
         on:load={handleImgLoad}
         on:error={handleImgError} />

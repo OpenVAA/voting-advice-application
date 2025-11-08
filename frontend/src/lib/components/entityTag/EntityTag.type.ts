@@ -5,9 +5,9 @@ export type EntityTagProps = SvelteHTMLElements['div'] & {
    */
   entity: MaybeWrappedEntityVariant;
   /**
-   * Whether to use an abbreviation or the full name. @default 'default'
+   * Controls whether to use an abbreviation or the full name and the size of the tag. @default 'default'
    */
-  variant?: 'default' | 'short' | 'full';
+  variant?: 'default' | 'short' | 'full' | 'small';
   /**
    * Whether to hide the possible parent nomination. @default false
    */

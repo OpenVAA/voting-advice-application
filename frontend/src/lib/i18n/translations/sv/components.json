@@ -71,5 +71,8 @@
   },
   "questionExtendedInfo": {
     "title": "Upptäck mer"
+  },
+  "resultsPreview": {
+    "label": "Topp {count}"
   }
 }

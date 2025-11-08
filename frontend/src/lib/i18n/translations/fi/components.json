@@ -71,5 +71,8 @@
   },
   "questionExtendedInfo": {
     "title": "Tutustu aiheeseen"
+  },
+  "resultsPreview": {
+    "label": "Top {count}"
   }
 }

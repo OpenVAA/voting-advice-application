@@ -13,4 +13,8 @@ export type MatchScoreProps = SvelteHTMLElements['div'] & {
    * Whether to show the label. @default true
    */
   showLabel?: boolean;
+  /**
+   * The size of the score. @default 'md'
+   */
+  size?: 'sm' | 'md';
 };

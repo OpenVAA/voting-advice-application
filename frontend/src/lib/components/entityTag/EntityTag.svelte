@@ -5,7 +5,7 @@ Used to display an `Entity` as small tag including an icon.
 ### Properties
 
 - `entity`: A possibly wrapped entity, e.g. candidate or a party.
-- `variant`: Whether to use an abbreviation or the full name. @default `'default'`
+- `variant`: Controls whether to use an abbreviation or the full name and the size of the tag. @default `'default'`
 - `hideParent`: Whether to hide the possible parent nomination. @default false
 - Any valid attributes of a `<div>` element.
 
@@ -41,13 +41,18 @@ Used to display an `Entity` as small tag including an icon.
   };
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-row items-center gap-xs font-bold')}>
+<div
+  {...concatClass(
+    $$restProps,
+    `flex flex-row items-center justify-start ${variant === 'small' ? 'gap-[0.1rem]' : 'gap-xs'} font-bold overflow-hidden max-w-full`
+  )}>
   <Icon
     name={ICONS[nakedEntity.type]}
     customColor={nakedEntity.color?.normal}
-    customColorDark={nakedEntity.color?.dark} />
-  <span>
-    {#if variant === 'short'}
+    customColorDark={nakedEntity.color?.dark}
+    size={variant === 'small' ? 'sm' : undefined} />
+  <span class:text-sm={variant === 'small'} class="overflow-hidden text-ellipsis whitespace-nowrap text-start">
+    {#if variant === 'short' || variant === 'small'}
       {nakedEntity.shortName}
     {:else if variant === 'full' && nakedEntity.shortName !== nakedEntity.name}
       {nakedEntity.name} ({nakedEntity.shortName})

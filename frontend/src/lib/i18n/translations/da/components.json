@@ -71,5 +71,8 @@
   },
   "questionExtendedInfo": {
     "title": "Læs mere"
+  },
+  "resultsPreview": {
+    "label": "Top {count}"
   }
 }
