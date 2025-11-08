@@ -46,13 +46,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         headerStyle: { populate: '*' },
         matching: 'true',
         notifications: { populate: '*' },
-        questions: {
-          populate: {
-            categoryIntros: 'true',
-            questionsIntro: 'true',
-            interactiveInfo: 'true'
-          }
-        },
+        questions: { populate: '*' },
         results: { populate: '*' },
         survey: 'true'
       }

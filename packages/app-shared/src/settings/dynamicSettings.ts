@@ -54,6 +54,10 @@ export const dynamicSettings: DynamicSettings = {
       allowCategorySelection: true,
       show: true
     },
+    resultsPreview: {
+      enabled: false,
+      entityType: 'candidate'
+    },
     showCategoryTags: true,
     showResultsLink: true
   },

@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_settings_questions_results_previews",
+  "info": {
+    "displayName": "Questions - Results Preview",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "entityType": {
+      "type": "enumeration",
+      "enum": [
+        "candidate",
+        "organization",
+        "faction",
+        "alliance"
+      ],
+      "default": "candidate",
+      "required": false
+    },
+    "numResults": {
+      "type": "integer",
+      "min": 1
+    },
+    "hideLabel": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

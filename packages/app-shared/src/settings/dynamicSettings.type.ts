@@ -149,6 +149,30 @@ export type DynamicSettings = {
       show: boolean;
     };
     /**
+     * Settings related to the results preview.
+     * NB. If the app has multiple elections, the first of these will be used for the results preview. Only use this feature in multi-election contexts if all of the questions are shared and with care.
+     */
+    resultsPreview?: {
+      /**
+       * Whether to show the results preview.
+       */
+      enabled: boolean;
+      /**
+       * The entity type for the results preview.
+       */
+      entityType: EntityType;
+      /**
+       * Override the default number of results to show in the results preview.
+       */
+      numResults?: number;
+      /**
+       * Whether to hide the label for the results preview. Defaults to `false`.
+       */
+      hideLabel?: boolean;
+    };
+    /**
+     * Settings related to the question text and answer options.
+    /**
      * Whether to show the category tag along the question text.
      */
     showCategoryTags: boolean;

@@ -31,6 +31,11 @@
     },
     "showResultsLink": {
       "type": "boolean"
+    },
+    "resultsPreview": {
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.questions-results-preview"
     }
   }
 }

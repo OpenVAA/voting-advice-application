@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-11-07T14:16:43.108Z"
+    "x-generation-date": "2025-11-08T15:30:59.774Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -9804,6 +9804,32 @@
           }
         }
       },
+      "SettingsQuestionsResultsPreviewComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "candidate",
+              "organization",
+              "faction",
+              "alliance"
+            ]
+          },
+          "numResults": {
+            "type": "integer"
+          },
+          "hideLabel": {
+            "type": "boolean"
+          }
+        }
+      },
       "SettingsQuestionsComponent": {
         "type": "object",
         "properties": {
@@ -9824,6 +9850,9 @@
           },
           "showResultsLink": {
             "type": "boolean"
+          },
+          "resultsPreview": {
+            "$ref": "#/components/schemas/SettingsQuestionsResultsPreviewComponent"
           }
         }
       },
