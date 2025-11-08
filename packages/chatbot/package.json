@@ -3,10 +3,11 @@
   "name": "@openvaa/chatbot",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/core/prompts/* build/prompts/",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:eval": "bun run src/scripts/chatbotEvaluation.ts"
+    "test:eval": "bun run src/scripts/chatbotEvaluation.ts",
+    "test:promptfoo": "bun run src/scripts/test.ts"
   },
   "type": "module",
   "module": "./build/index.js",

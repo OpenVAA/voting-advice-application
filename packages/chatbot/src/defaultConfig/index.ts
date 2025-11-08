@@ -1,7 +1,7 @@
 import { getPhaseRouterProvider, getQueryReformulationProvider } from './providers';
 import { getVectorStore } from './vectorStore';
 import type { LLMProvider } from '@openvaa/llm-refactor';
-import type { MultiVectorStore } from '@openvaa/vector-store';
+import type { MultiVectorStore } from '@openvaa/vector-store/types';
 
 export type ChatbotConfiguration = {
   vectorStore: Promise<MultiVectorStore>;

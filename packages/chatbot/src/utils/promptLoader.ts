@@ -2,9 +2,14 @@ import { extractPromptVars, setPromptVars, validatePromptVars } from '@openvaa/l
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import type { Controller } from '@openvaa/core';
 import type { LoadedPrompt, LoadedPromptYaml } from '../types/prompt.type';
+
+// ES module directory path
+const currentFilePath = fileURLToPath(import.meta.url);
+const currentDirPath = dirname(currentFilePath);
 
 /**
  * Load a YAML prompt file
@@ -22,11 +27,11 @@ import type { LoadedPrompt, LoadedPromptYaml } from '../types/prompt.type';
  * ```
  */
 export async function loadPrompt({ promptFileName }: { promptFileName: string }): Promise<LoadedPrompt> {
-  // Try source path first (src/core/prompts/), then built path (build/prompts/)
-  const sourcePath = join(__dirname, '..', 'core', 'prompts', `${promptFileName}.yaml`);
-  const builtPath = join(__dirname, '..', 'prompts', `${promptFileName}.yaml`);
+  // Prompts are in src/prompts/ (source) or build/prompts/ (built)
+  // Both resolve to ../prompts/ relative to utils/
+  const promptPath = join(currentDirPath, '..', 'prompts', `${promptFileName}.yaml`);
 
-  const filePath = existsSync(sourcePath) ? sourcePath : builtPath;
+  const filePath = promptPath;
 
   const raw = await readFile(filePath, 'utf-8');
   const parsed = loadYaml(raw) as LoadedPromptYaml;

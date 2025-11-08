@@ -1,0 +1,25 @@
+# Promptfoo E2E Chatbot Evaluation Configuration
+# Single test case with inline provider function (defined in test.ts)
+
+defaultTest:
+  options:
+    provider: openai:gpt-4.1-mini
+# Single E2E test case
+tests:
+  - name: 'model control: EPP stance on migration'
+    description: 'what to do when you dont have information available for the question'
+    vars:
+      query: "What is the EPP's stance on migration?"
+    assert:
+      # Fast assertions - deterministic checks
+      - type: javascript
+        value: output.length > 100
+      - type: javascript
+        value: context.providerResponse?.metadata?.category === 'eu2024_policy'
+      - type: javascript
+        value: context.providerResponse?.metadata?.usedRAG === true
+      - type: latency
+        threshold: 20000
+      - type: llm-rubric
+        value: should indicate that the information is not available WITHOUT mentioning its "retrieved context" explicitly.
+

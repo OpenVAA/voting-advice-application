@@ -1,11 +1,11 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
-import { routeQuery } from '@openvaa/vector-store';
+import { routeQuery } from '@openvaa/vector-store/utils';
 import { getCannedResponse } from '../core/cannedResponses';
 import { ChatEngine } from '../core/chat';
 import { ALL_CATEGORY_VALUES, isQueryable, needsCannedResponse } from '../core/queryCategories';
 import { determineConversationPhase } from '../utils/phaseRouter';
 import { loadPrompt } from '../utils/promptLoader';
-import type { MultiVectorSearchResult } from '@openvaa/vector-store';
+import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { QueryCategory } from '../core/queryCategories';
 import type { LoadedPrompt } from '../types/prompt.type';

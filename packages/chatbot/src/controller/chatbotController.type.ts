@@ -1,6 +1,6 @@
 import type { CostBreakdown } from '@openvaa/core';
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
-import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@openvaa/vector-store';
+import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { QueryCategory } from '../core/queryCategories';
 

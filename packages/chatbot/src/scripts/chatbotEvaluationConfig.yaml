@@ -1,10 +1,12 @@
 # Promptfoo E2E Chatbot Evaluation Configuration
 # This config tests the full chatbot pipeline with real API calls
-# Note: Provider is instantiated in chatbotEvaluation.ts and passed programmatically
 
 defaultTest:
   options:
-    provider: openai:chat:gpt-3.5-turbo
+    provider: openai:gpt-4.1-mini
+  assert:
+    - type: llm-rubric
+      value: should either cite the source directly or indicate that the information is not available WITHOUT mentioning its a "retrieved context" explicitly.
 
 # Single test case with mixed fast and slow assertions
 tests:

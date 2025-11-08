@@ -2,13 +2,18 @@ import { LLMProvider } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { OPENAI_API_KEY } from '../apiKey';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
 import type { ChatbotAPIInput } from '../api.type';
 import type { ConversationPhase } from '../controller/chatbotController.type';
 import type { LoadedPrompt } from '../types/prompt.type';
+
+// ES module directory path
+const currentFilePath = fileURLToPath(import.meta.url);
+const currentDirPath = dirname(currentFilePath);
 
 // Main chat engine for OpenVAA chatbot
 // Note: RAG enrichment is now handled by RAGService before calling this engine
@@ -44,7 +49,7 @@ export class ChatEngine {
     if (!this.phasePrompts) {
       console.info('Loading phase-specific system prompts...');
       // Load the raw YAML to access the structured fields
-      const filePath = join(__dirname, '..', 'prompts', 'systemPrompt_phases.yaml');
+      const filePath = join(currentDirPath, '..', 'prompts', 'systemPrompt_phases.yaml');
       const raw = await readFile(filePath, 'utf-8');
       const parsed = loadYaml(raw) as {
         id: string;
@@ -74,9 +79,17 @@ export class ChatEngine {
     const basePrompt = parsed.basePrompt || '';
     const phaseSpecific = parsed.phasePrompts?.[phase] || '';
     const baseReminder = parsed.baseReminder || '';
-    console.info('[ChatEngine] Full system prompt: ' + `${basePrompt}\n\n${phaseSpecific}\n\n${baseReminder}`);
+    console.info(`[ChatEngine] Full system prompt: ${basePrompt}
 
-    return `${basePrompt}\n\n${phaseSpecific}\n\n${baseReminder}`;
+${phaseSpecific}
+
+${baseReminder}`);
+
+    return `${basePrompt}
+
+${phaseSpecific}
+
+${baseReminder}`;
   }
 
   /**

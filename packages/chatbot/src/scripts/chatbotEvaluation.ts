@@ -36,7 +36,7 @@ async function runChatbotEvaluation() {
       locale: 'en'
     }
   });
-  console.log(response);
+  console.info(response);
 }
 
 // Run the evaluation

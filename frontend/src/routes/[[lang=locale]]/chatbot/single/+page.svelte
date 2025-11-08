@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { createOnboardingStream } from '$lib/chatbot';
   import type { ConversationState } from '@openvaa/chatbot';
-  import type { MultiVectorSearchResult } from '@openvaa/vector-store';
+  import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 
   interface UIMessage {
     id: string;
