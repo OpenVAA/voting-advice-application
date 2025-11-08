@@ -96,7 +96,7 @@ Defines the outer layout for the application, including the header and menu.
     <main id={mainContentId} class="flex flex-grow flex-col items-stretch">
       <!-- Video -->
       <div
-        class="flex max-h-screen w-screen justify-center overflow-hidden transition-all sm:mt-[1.75rem] sm:w-full sm:grow-0"
+        class="flex max-h-screen w-screen justify-center overflow-hidden transition-all sm:w-full sm:grow-0"
         class:!max-h-[0]={!$showVideo}
         inert={!$showVideo}>
         <Video

@@ -3,7 +3,7 @@ services:
   awslocal:
     image: localstack/localstack
     ports:
-      - '127.0.0.1:4566:4566'
+      - "127.0.0.1:4566:4566"
     environment:
       DEBUG: 1
       SERVICES: s3,ses
@@ -21,7 +21,7 @@ services:
       - ./localstack-s3-cors-policy.json:/etc/localstack/s3-cors-policy.json
       # Mounting the Docker socket /var/run/docker.sock as a volume is required for some services
       # that use Docker to provide the emulation, such as AWS Lambda.
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "/var/run/docker.sock:/var/run/docker.sock"
   strapi:
     build:
       # Context includes the root of the repository so that we can expose shared/ module.
@@ -69,9 +69,9 @@ services:
       PUBLIC_BROWSER_FRONTEND_URL: ${PUBLIC_BROWSER_FRONTEND_URL}
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Note that this only applies to src/, where all the source code is anyway, except the config. 
+      # Note that this only applies to src/, where all the source code is anyway, except the config.
       # If you make changes to it, you need to rebuild the container.
-      # - ./src:/opt/backend/vaa-strapi/src
+      - ./src:/opt/backend/vaa-strapi/src
       - strapi-uploads:/opt/backend/vaa-strapi/public/uploads
     healthcheck:
       test: wget --no-verbose --tries=1 --spider ${STRAPI_HOST}:${STRAPI_PORT} || exit 1
@@ -88,10 +88,11 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - '5432:5432'
+      - "5432:5432"
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      test:
+        ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -100,7 +101,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - '4567:8080'
+      - "4567:8080"
 
 volumes:
   postgres:
