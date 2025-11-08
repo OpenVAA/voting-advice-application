@@ -1,0 +1,36 @@
+# Promptfoo E2E Chatbot Evaluation Configuration
+# Single test case with inline provider function (defined in test.ts)
+
+defaultTest:
+  options:
+    provider: openai:gpt-4.1-mini # LLM-as-a-judge model
+# Single E2E test case
+tests:
+  - description: '[PROMPTING]: except EPP stance on migration to not mention "retrieved context" explicitly'
+    vars:
+      query: "What is the EPP's stance on migration?"
+    assert:
+      # Fast assertions - deterministic checks
+      - type: javascript
+        value: output.length > 100
+      - type: javascript
+        value: context.providerResponse?.metadata?.category === 'eu2024_policy'
+      - type: javascript
+        value: context.providerResponse?.metadata?.usedRAG === true
+      - type: latency
+        threshold: 10000
+      - type: llm-rubric
+        value: should not mention "retrieved context" explicitly in the response
+  - description: "[PROMPTING] expect response to 'hello' to contain a question"
+    vars: 
+      query: "hello"
+    assert:
+      - type: javascript
+        value: output.includes("?") === true
+
+  - description: "[RAG] expect number of electorates to be correct"
+    vars:
+      query: "how many people are chosen in these elections?"
+    assert:
+      - type: javascript
+        value: output.includes("720") === true # 2024 EU elections

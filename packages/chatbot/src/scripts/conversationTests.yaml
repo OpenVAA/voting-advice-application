@@ -10,19 +10,24 @@ defaultTest:
 
 # Single test case with mixed fast and slow assertions
 tests:
-  - description: 'EU policy question triggers RAG retrieval and provides factual response'
+  - description: 'TODO'
     vars:
-      query: "What is the EPP's stance on migration?"
+      messages: [
+        {
+          role: 'user',
+          content: "TODO"
+        },
+        {
+          role: 'assistant',
+          content: "TODO"
+        },
+        {
+          role: 'user',
+          content: "TODO"
+        }
+      ]
+
     assert:
       # Fast assertions - deterministic checks
       - type: javascript
         value: output.length > 100
-
-      - type: javascript
-        value: metadata.category === 'eu2024_policy'
-
-      - type: javascript
-        value: metadata.usedRAG === true
-
-      - type: latency
-        threshold: 10000

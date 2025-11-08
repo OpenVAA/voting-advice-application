@@ -31,7 +31,7 @@ async function runChatbotEvaluation() {
   console.info('Loading test configuration...');
 
   // Load test configuration from YAML
-  const configPath = join(__dirname, 'testConfig.yaml');
+  const configPath = join(__dirname, 'singleMessageTests.yaml');
   const configContent = readFileSync(configPath, 'utf-8');
   const testConfig = load(configContent) as {
     tests: Array<Record<string, unknown>>;
@@ -96,27 +96,22 @@ async function runChatbotEvaluation() {
     // Use default test settings
     defaultTest: testConfig.defaultTest
   });
-
-  // Display results
-  console.info('\n=== EVALUATION RESULTS ===\n');
-
-  const totalTests = results.results.length;
-  const passedTests = results.results.filter((r) => r.success).length;
-  const failedTests = totalTests - passedTests;
-
-  console.info(`Total tests: ${totalTests}`);
-  console.info(`Passed: ${passedTests}`);
-  console.info(`Failed: ${failedTests}`);
-  console.info(`Success rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
-
-  console.info('\n=== TEST DETAILS ===\n');
+  console.info('\n=== TEST RESULTS ===\n');
   results.results.forEach((result, index) => {
-    console.info(`Test ${index + 1}: ${result.description || 'Unnamed test'}`);
-    console.info(`  Prompt: ${result.prompt}`);
-    console.info(`  Output: ${result.response?.output?.substring(0, 200)}...`);
-    console.info(`  Success: ${result.success}`);
+    const status = result.success ? '✅' : '❌';
+    console.info(`${status} Test ${index + 1}: ${result.testCase.description || 'Unnamed test'}`);
+    // TODO: add phase to the chatbot controller response
+    // console.info(`  Phase: ${result.metadata?.phase}`);
+
+    // Print success or failure
     if (!result.success) {
-      console.info('  Failed assertions:');
+      const isUnder333 = result.response?.output?.length < 333;
+      if (isUnder333) {
+        console.info(`  Output: ${result.response?.output}\n`);
+      } else {
+        console.info(`  Output: ${result.response?.output?.substring(0, 333)}...\n`);
+      }
+      console.info('  What failed:');
       result.gradingResult?.componentResults?.forEach((comp) => {
         if (!comp.pass) {
           console.info(`    - ${comp.assertion?.type}: ${comp.reason}`);
@@ -125,6 +120,13 @@ async function runChatbotEvaluation() {
     }
     console.info('');
   });
+
+  // Display summary
+  const totalTests = results.results.length;
+  const passedTests = results.results.filter((r) => r.success).length;
+  const failedTests = totalTests - passedTests;
+
+  console.info(`SUCCESS RATE: ${((passedTests / totalTests) * 100).toFixed(1)} %`);
 
   // Exit with appropriate code
   process.exit(failedTests > 0 ? 1 : 0);
