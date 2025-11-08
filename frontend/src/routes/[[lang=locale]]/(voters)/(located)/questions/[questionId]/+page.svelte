@@ -39,6 +39,8 @@ Display a question for answering.
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import QuestionWeightInput from '$lib/components/questions/QuestionWeightInput.svelte';
   import { QUESTION_WEIGHTS, type QuestionWeightConfig } from '$lib/utils/matching';
+  import { slide } from 'svelte/transition';
+  import { ResultsPreview } from '$voter/components/resultsPreview';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -54,6 +56,7 @@ Display a question for answering.
     selectedQuestionCategoryIds,
     getRoute,
     startEvent,
+    resultsAvailable,
     t
   } = getVoterContext();
   const { progress, video } = getLayoutContext(onDestroy);
@@ -182,6 +185,18 @@ Display a question for answering.
     {@const { info, text } = question}
     {@const customData = getCustomData(question)}
     {@const questions = $selectedQuestionBlocks.questions}
+
+    {#if $appSettings.questions.resultsPreview?.enabled && $resultsAvailable}
+      <!-- Align center but if there are more results that fit, align the to start (left) so that the top ones are shown -->
+      <div
+        class="pt-md flex w-min max-w-full flex-col items-start place-self-center overflow-hidden"
+        transition:slide={{ axis: 'y', duration: DELAY['sm'] }}>
+        <ResultsPreview
+          entityType={$appSettings.questions.resultsPreview.entityType}
+          numResults={$appSettings.questions.resultsPreview.numResults}
+          hideLabel={$appSettings.questions.resultsPreview.hideLabel} />
+      </div>
+    {/if}
 
     <MainContent title={text}>
       <figure role="presentation" slot="hero">
