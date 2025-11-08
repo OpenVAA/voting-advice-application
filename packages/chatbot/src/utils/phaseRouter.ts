@@ -9,12 +9,7 @@ import type { ConversationPhase } from '../controller/chatbotController.type';
  * Ensures LLM output is one of the defined phases
  */
 const ConversationPhaseSchema = z.object({
-  phase: z.enum([
-    'intro_to_chatbot_use',
-    'user_intent_extraction',
-    'intent_resolution',
-    'alignment_check'
-  ])
+  phase: z.enum(['intro_to_chatbot_use', 'user_intent_extraction', 'intent_resolution', 'alignment_check'])
 });
 
 /**

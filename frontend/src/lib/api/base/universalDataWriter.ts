@@ -11,9 +11,13 @@ import type {
   CandidateUserData,
   CheckRegistrationData,
   DataWriter,
+  DeleteDocumentsOptions,
+  DeleteDocumentsResult,
+  DocumentInfo,
   DWReturnType,
   GetActiveJobsOptions,
   GetCandidateUserDataOptions,
+  GetDocumentsOptions,
   GetJobProgressOptions,
   GetPastJobsOptions,
   InsertJobResultOptions,
@@ -22,6 +26,8 @@ import type {
   SetPropertiesOptions,
   SetQuestionOptions,
   StartJobOptions,
+  UploadDocumentOptions,
+  UploadDocumentResult,
   WithAuth
 } from './dataWriter.type';
 
@@ -227,6 +233,44 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       url: UNIVERSAL_API_ROUTES.jobAbortAll,
       authToken
     })) as DataApiActionResult;
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // Universal document management methods for file processing
+  /////////////////////////////////////////////////////////////////////
+
+  async getDocuments({ authToken }: GetDocumentsOptions): Promise<Array<DocumentInfo>> {
+    return (await this.get({
+      url: UNIVERSAL_API_ROUTES.documents,
+      authToken
+    })) as Array<DocumentInfo>;
+  }
+
+  async uploadDocument({ authToken, file }: UploadDocumentOptions): Promise<UploadDocumentResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.documents,
+      authToken,
+      init: {
+        body: formData
+        // Let browser set Content-Type with boundary for multipart/form-data
+      }
+    })) as UploadDocumentResult;
+  }
+
+  async deleteDocuments({ authToken, documentIds }: DeleteDocumentsOptions): Promise<DeleteDocumentsResult> {
+    return (await this.delete({
+      url: UNIVERSAL_API_ROUTES.documents,
+      authToken,
+      init: {
+        body: JSON.stringify({ documentIds }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    })) as DeleteDocumentsResult;
   }
 
   /////////////////////////////////////////////////////////////////////

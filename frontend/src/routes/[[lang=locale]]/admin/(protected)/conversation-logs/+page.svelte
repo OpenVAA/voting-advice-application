@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { ConversationLog, ConversationSummary } from '@openvaa/chatbot';
+  import { onMount } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { onMount } from 'svelte';
   import MainContent from '../../../MainContent.svelte';
+  import type { ConversationLog, ConversationSummary } from '@openvaa/chatbot';
 
   const { t } = getAdminContext();
 
@@ -162,11 +162,11 @@
     <Button variant="secondary" text="Refresh" on:click={fetchSessions} disabled={loading} />
   </div>
 
-  <div slot="fullWidth" class="flex h-[calc(100vh-200px)] gap-4 px-1">
+  <div slot="fullWidth" class="px-1 flex h-[calc(100vh-200px)] gap-4">
     <!-- Left Sidebar: Session List -->
     <div class="flex w-1/3 flex-col rounded border border-gray-300 bg-white">
       <div class="border-b border-gray-300 bg-gray-50 p-4">
-        <h3 class="text-lg font-semibold">Active Sessions ({sessions.length})</h3>
+        <h3 class="font-semibold text-lg">Active Sessions ({sessions.length})</h3>
       </div>
 
       <div class="flex-1 overflow-y-auto p-2">
@@ -182,11 +182,11 @@
           <div class="space-y-2">
             {#each sessions as session}
               <button
-                class="w-full rounded border p-3 text-left transition-colors hover:bg-blue-50
+                class="p-3 w-full rounded border text-left transition-colors hover:bg-blue-50
                   {selectedSessionId === session.sessionId ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}"
                 on:click={() => fetchConversationLog(session.sessionId)}>
                 <div class="mb-1 flex items-center justify-between">
-                  <span class="text-xs font-semibold text-gray-600">
+                  <span class="font-semibold text-xs text-gray-600">
                     {session.sessionId.slice(0, 8)}...
                   </span>
                   <span class="text-xs text-gray-500">
@@ -197,7 +197,7 @@
                   {session.messageCount} messages
                 </div>
                 <div class="mt-1 flex items-center gap-2">
-                  <span class="rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
+                  <span class="py-0.5 rounded bg-purple-100 px-2 text-xs text-purple-700">
                     {session.currentPhase}
                   </span>
                 </div>
@@ -214,21 +214,15 @@
     <!-- Right Main Content: Selected Conversation Log -->
     <div class="flex flex-1 flex-col rounded border border-gray-300 bg-white">
       {#if !selectedLog}
-        <div class="flex h-full items-center justify-center text-gray-500">
-          Select a conversation to view its log
-        </div>
+        <div class="flex h-full items-center justify-center text-gray-500">Select a conversation to view its log</div>
       {:else}
         <div class="flex items-center justify-between border-b border-gray-300 bg-gray-50 p-4">
           <div>
-            <h3 class="text-lg font-semibold">Session: {selectedLog.sessionId}</h3>
+            <h3 class="font-semibold text-lg">Session: {selectedLog.sessionId}</h3>
             <p class="text-sm text-gray-600">Started: {formatTimestamp(selectedLog.startedAt)}</p>
           </div>
           <div class="flex gap-2">
-            <Button
-              variant="secondary"
-              text="Copy"
-              on:click={copyToClipboard}
-              title="Copy to clipboard" />
+            <Button variant="secondary" text="Copy" on:click={copyToClipboard} title="Copy to clipboard" />
             <Button
               variant="secondary"
               text="Download"
@@ -245,7 +239,7 @@
         <div class="flex-1 overflow-y-auto p-4">
           {#each selectedLog.phases as phase, phaseIdx}
             <!-- Phase Header -->
-            <div class="mb-4 rounded bg-purple-50 p-3 {phaseIdx > 0 ? 'mt-6' : ''}">
+            <div class="p-3 mb-4 rounded bg-purple-50 {phaseIdx > 0 ? 'mt-6' : ''}">
               <div class="flex items-center justify-between">
                 <h4 class="font-semibold text-purple-900">PHASE: {phase.phase}</h4>
                 <span class="text-sm text-purple-700">
@@ -262,9 +256,9 @@
               {#each phase.exchanges as exchange}
                 <div class="ml-4 space-y-2">
                   <!-- User Message -->
-                  <div class="rounded border border-blue-200 bg-blue-50 p-3">
+                  <div class="p-3 rounded border border-blue-200 bg-blue-50">
                     <div class="mb-1 flex items-center justify-between">
-                      <span class="text-xs font-semibold text-blue-700">USER</span>
+                      <span class="font-semibold text-xs text-blue-700">USER</span>
                       <span class="text-xs text-blue-600">
                         {new Date(exchange.timestamp).toLocaleTimeString()}
                       </span>
@@ -275,9 +269,9 @@
                   </div>
 
                   <!-- Assistant Message -->
-                  <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                  <div class="p-3 rounded border border-gray-200 bg-gray-50">
                     <div class="mb-1 flex items-center justify-between">
-                      <span class="text-xs font-semibold text-gray-700">ASSISTANT</span>
+                      <span class="font-semibold text-xs text-gray-700">ASSISTANT</span>
                       <span class="text-xs text-gray-600">
                         {new Date(exchange.timestamp).toLocaleTimeString()}
                       </span>

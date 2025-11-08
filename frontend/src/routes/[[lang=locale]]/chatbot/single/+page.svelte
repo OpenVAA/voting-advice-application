@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { createOnboardingStream } from '$lib/chatbot';
   import type { ConversationState } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store';
-  import { page } from '$app/stores';
-  import { onMount } from 'svelte';
-  import { createOnboardingStream } from '$lib/chatbot';
 
   interface UIMessage {
     id: string;
@@ -410,7 +410,7 @@
   });
 </script>
 
-<div class="flex w-full h-screen gap-4 p-4">
+<div class="flex h-screen w-full gap-4 p-4">
   <!-- Left side: Chat conversation -->
   <div class="flex flex-1 flex-col">
     <h2 class="mb-4 text-2xl font-bold">Chat</h2>
@@ -489,7 +489,8 @@
                           Source: {result.segment.metadata.source || 'Unknown'}
                           <span class="ml-2 text-gray-600">Vector: {result.vectorSearchScore.toFixed(3)}</span>
                           {#if result.rerankScore !== undefined}
-                            <span class="ml-2 text-purple-600 font-semibold">Rerank: {result.rerankScore.toFixed(3)}</span>
+                            <span class="font-semibold ml-2 text-purple-600"
+                              >Rerank: {result.rerankScore.toFixed(3)}</span>
                           {/if}
                           <span class="ml-2 text-purple-600">via {result.foundWith}</span>
                         </div>

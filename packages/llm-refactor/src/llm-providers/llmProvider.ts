@@ -79,10 +79,7 @@ export class LLMProvider {
         console.info('--------------------------------');
         console.info('LLM CALL STARTS');
         console.info('--------------------------------');
-        console.info(
-          '\n[LLMProvider] Messages: ',
-          options.messages
-        );
+        console.info('\n[LLMProvider] Messages: ', options.messages);
         console.info(`\n[LLMProvider] Response [${model}]: ${JSON.stringify(result.object)}`);
         console.info('--------------------------------');
         console.info('LLM CALL ENDS');
@@ -201,10 +198,7 @@ export class LLMProvider {
     console.info('LLM STREAM STARTS');
     console.info('--------------------------------');
     console.info('\n[LLMProvider] Streaming text with model:', model);
-    console.info(
-      '\n[LLMProvider] Messages: ',
-      options.messages
-    );
+    console.info('\n[LLMProvider] Messages: ', options.messages);
 
     const result = streamText({
       system: options.system,

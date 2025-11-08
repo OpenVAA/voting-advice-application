@@ -7,13 +7,6 @@ prompt: |
 
   ## PHASES:
 
-  ### intro_to_chatbot_use
-  Choose this phase when:
-  - This is the user's first interaction with the chatbot
-  - The user seems unfamiliar with how to use the chatbot or what it can do
-  - The user needs onboarding or introduction to the chatbot's capabilities
-  - The conversation just started and the user hasn't engaged with any specific topic yet
-
   ### user_intent_extraction
   Choose this phase when:
   - It is unclear what the user wants to know or learn about
@@ -53,21 +46,17 @@ prompt: |
 
   ## EXAMPLES:
 
-  Example 1 (intro_to_chatbot_use):
-  User: Hello
-  → Phase: intro_to_chatbot_use
-
-  Example 2 (user_intent_extraction):
+  Example 1 (user_intent_extraction):
   User: I want to learn about the elections
   Assistant: I'd be happy to help! What specific aspects of the elections are you most interested in? For example, are you curious about voting procedures, candidate positions, or how the EU Parliament works?
   User: I'm not sure, what should I know?
   → Phase: user_intent_extraction
 
-  Example 3 (intent_resolution):
+  Example 2 (intent_resolution):
   User: How does the EU Parliament voting system work?
   → Phase: intent_resolution
 
-  Example 4 (alignment_check):
+  Example 3 (alignment_check):
   User: Can you tell me about the environment policies?
   Assistant: [Provides detailed information about EU environmental policies]
   User: That's not what I meant, this isn't helpful

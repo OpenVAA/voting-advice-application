@@ -7,7 +7,7 @@ import { json } from '@sveltejs/kit';
 import { documentStore } from '$lib/server/fileProcessingStore';
 import type { MetadataRequest } from '$lib/api/file-processing/types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function POST({ request }: { request: Request }) {
   try {
     const body = (await request.json()) as MetadataRequest;

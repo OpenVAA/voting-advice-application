@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 import { documentStore } from '$lib/server/fileProcessingStore';
 import type { ProcessingDocument, UploadResponse } from '$lib/api/file-processing/types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function POST({ request }: { request: Request }) {
   try {
     const formData = await request.formData();

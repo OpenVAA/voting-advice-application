@@ -1,62 +1,13 @@
-import { ChatbotController, updateConversation } from '@openvaa/chatbot';
-import { LLMProvider } from '@openvaa/llm-refactor';
-import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
-import { convertUIMessagesToModelMessages } from '$lib/chatbot/adHocMessageConvert';
-import { COHERE_API_KEY, OPENAI_API_KEY } from './apiKey';
+import { ChatbotController, getChatbotConfiguration, updateConversation } from '@openvaa/chatbot';
+import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
+import { COHERE_API_KEY } from './apiKey';
 import type { ConversationState } from '@openvaa/chatbot';
 
-// Collection names for multi-vector retrieval
-const COLLECTION_NAMES = {
-  segments: 'eu-2024-segments',
-  summaries: 'eu-2024-summaries',
-  facts: 'eu-2024-facts'
-} as const;
-
-// Initialize embedder and vector store (singleton pattern)
-let multiVectorStore: MultiVectorStore | null = null;
-let queryReformulationProvider: LLMProvider | null = null;
-let phaseRouterProvider: LLMProvider | null = null;
-
-async function getVectorStore(): Promise<MultiVectorStore> {
-  if (!multiVectorStore) {
-    const embedder = new OpenAIEmbedder({
-      model: 'text-embedding-3-small',
-      dimensions: 1536,
-      apiKey: OPENAI_API_KEY
-    });
-
-    multiVectorStore = new MultiVectorStore({
-      collectionNames: COLLECTION_NAMES,
-      embedder,
-      chromaPath: 'http://host.docker.internal:8000'
-    });
-
-    await multiVectorStore.initialize();
-  }
-  return multiVectorStore;
-}
-
-function getQueryReformulationProvider(): LLMProvider {
-  if (!queryReformulationProvider) {
-    queryReformulationProvider = new LLMProvider({
-      provider: 'openai',
-      apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-4.1-nano-2025-04-14' }
-    });
-  }
-  return queryReformulationProvider;
-}
-
-function getPhaseRouterProvider(): LLMProvider {
-  if (!phaseRouterProvider) {
-    phaseRouterProvider = new LLMProvider({
-      provider: 'openai',
-      apiKey: OPENAI_API_KEY,
-      modelConfig: { primary: 'gpt-4o-mini', useCachedInput: false }
-    });
-  }
-  return phaseRouterProvider;
-}
+// Initialize chatbot configuration (singleton pattern)
+const config = getChatbotConfiguration();
+const multiVectorStore = await config.vectorStore;
+const queryReformulationProvider = config.queryRoutingProvider;
+const phaseRouterProvider = config.phaseRouterProvider;
 
 // API endpoint for chat functionality with RAG enrichment
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,9 +34,9 @@ export async function POST({ request, params }: { request: Request; params: any 
     messages,
     locale,
     conversationState,
-    vectorStore: await getVectorStore(),
-    queryRoutingProvider: getQueryReformulationProvider(),
-    phaseRouterProvider: getPhaseRouterProvider(),
+    vectorStore: multiVectorStore,
+    queryRoutingProvider: queryReformulationProvider,
+    phaseRouterProvider: phaseRouterProvider,
     rerankConfig: {
       enabled: true,
       apiKey: COHERE_API_KEY,

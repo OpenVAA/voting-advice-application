@@ -3,6 +3,5 @@
  * Barrel export for clean imports
  */
 
-export { simulateStreamingMessage, createOnboardingStream, startOnboarding } from './onboarding';
-export { getOnboardingMessage } from './onboardingMessages';
-export { convertUIMessagesToModelMessages } from './adHocMessageConvert';
+export { convertUIMessagesToModelMessages } from './utils/adHocMessageConvert';
+export { createOnboardingStream, simulateStreamingMessage, startOnboarding } from './utils/onboarding';

@@ -7,7 +7,7 @@ import type {
 } from '@openvaa/app-shared';
 import type { Id, Serializable } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
-import type { GenerationMetrics } from '@openvaa/llm';
+import type { LLMPipelineMetrics } from '@openvaa/llm-refactor';
 import type { AdminFeature } from '$lib/admin/features';
 import type {
   ActiveJobQueryParams,
@@ -238,6 +238,11 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
   abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
   insertJobResult: (opts: InsertJobResultOptions) => DWReturnType<DataApiActionResult, TType>;
+
+  // Document management methods for file processing
+  getDocuments: (opts: GetDocumentsOptions) => DWReturnType<Array<DocumentInfo>, TType>;
+  uploadDocument: (opts: UploadDocumentOptions) => DWReturnType<UploadDocumentResult, TType>;
+  deleteDocuments: (opts: DeleteDocumentsOptions) => DWReturnType<DeleteDocumentsResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -322,7 +327,7 @@ export type AdminJobData = {
   input?: Serializable;
   output?: Serializable;
   messages?: Array<JobMessage>;
-  metadata?: GenerationMetrics;
+  metadata?: LLMPipelineMetrics;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -419,3 +424,38 @@ export type AbortJobOptions = WithAuth & {
 export type AbortAllJobsOptions = WithAuth;
 
 export type InsertJobResultOptions = WithAuth & { data: AdminJobData };
+
+////////////////////////////////////////////////////////////////////
+// Document types
+////////////////////////////////////////////////////////////////////
+
+/**
+ * Document information for client-side use without buffer
+ */
+export interface DocumentInfo {
+  id: string;
+  filename: string;
+  fileType: 'pdf' | 'txt';
+  size: number;
+  uploadedAt: Date;
+}
+
+export type GetDocumentsOptions = WithAuth;
+
+export type UploadDocumentOptions = WithAuth & {
+  file: File;
+};
+
+export type UploadDocumentResult = {
+  success: boolean;
+  document: DocumentInfo;
+};
+
+export type DeleteDocumentsOptions = WithAuth & {
+  documentIds: Array<string>;
+};
+
+export type DeleteDocumentsResult = {
+  success: boolean;
+  removed: number;
+};

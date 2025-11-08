@@ -96,6 +96,24 @@ export function initAdminContext(): AdminContext {
     return prepareDataWriter(dataWriterPromise).then((dw) => dw.insertJobResult(injectAuthToken(opts)));
   }
 
+  function getDocuments(
+    opts: WithOptionalAuth<Parameters<DataWriter['getDocuments']>[0]>
+  ): ReturnType<DataWriter['getDocuments']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.getDocuments(injectAuthToken(opts)));
+  }
+
+  function uploadDocument(
+    opts: WithOptionalAuth<Parameters<DataWriter['uploadDocument']>[0]>
+  ): ReturnType<DataWriter['uploadDocument']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.uploadDocument(injectAuthToken(opts)));
+  }
+
+  function deleteDocuments(
+    opts: WithOptionalAuth<Parameters<DataWriter['deleteDocuments']>[0]>
+  ): ReturnType<DataWriter['deleteDocuments']> {
+    return prepareDataWriter(dataWriterPromise).then((dw) => dw.deleteDocuments(injectAuthToken(opts)));
+  }
+
   const adminContext: AdminContext = {
     ...appContext,
     ...authContext,
@@ -108,7 +126,10 @@ export function initAdminContext(): AdminContext {
     getJobProgress,
     abortJob,
     abortAllJobs,
-    insertJobResult
+    insertJobResult,
+    getDocuments,
+    uploadDocument,
+    deleteDocuments
   };
 
   setContext<AdminContext>(CONTEXT_KEY, adminContext);

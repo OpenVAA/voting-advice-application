@@ -5,20 +5,24 @@ import type { ModelMessage } from 'ai';
 import type { QueryCategory } from '../core/queryCategories';
 
 /** Possible phases of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
-export type ConversationPhase = 'intro_to_chatbot_use' | 'user_intent_extraction' | 'intent_resolution' | 'alignment_check';
+export type ConversationPhase =
+  | 'intro_to_chatbot_use'
+  | 'user_intent_extraction'
+  | 'intent_resolution'
+  | 'alignment_check';
 
 /** State of the conversation. Updates after each message. This state is required for an intelligent but efficient
  * chatbot. It is used to infer what the chatbot should know and be tasked to do depending on the conversation
  * phase and history.
-*/
+ */
 export interface ConversationState {
   sessionId: string;
   /** Phase of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
-  phase: ConversationPhase
+  phase: ConversationPhase;
   /** Messages that are currently being processed. Messages may be lost due to memory constraints */
-  workingMemory: Array<ModelMessage>; 
+  workingMemory: Array<ModelMessage>;
   /** Messages that are lost due to memory constraints */
-  forgottenMessages: Array<ModelMessage>
+  forgottenMessages: Array<ModelMessage>;
   /** Summary of the conversation history that is lost due to memory constraints */
   lossyHistorySummary: string;
   locale: string;

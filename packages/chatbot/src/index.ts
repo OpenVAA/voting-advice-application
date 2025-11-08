@@ -32,3 +32,6 @@ export type {
   RAGContextResult
 } from './controller';
 export { ChatbotController } from './controller';
+
+// Default configuration
+export * from './defaultConfig';

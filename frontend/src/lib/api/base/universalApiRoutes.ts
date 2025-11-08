@@ -20,5 +20,8 @@ export const UNIVERSAL_API_ROUTES = {
   jobStart: `${API_ROOT}/admin/jobs/start`,
   jobProgress: `${API_ROOT}/admin/jobs/single/[jobId]/progress`,
   jobAbort: `${API_ROOT}/admin/jobs/single/[jobId]/abort`,
-  jobAbortAll: `${API_ROOT}/admin/jobs/abort-all`
+  jobAbortAll: `${API_ROOT}/admin/jobs/abort-all`,
+
+  // Document management routes for file processing
+  documents: `${API_ROOT}/admin/documents`
 } as const;

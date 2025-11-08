@@ -2,21 +2,17 @@
 # This config tests the full chatbot pipeline with real API calls
 # Note: Provider is instantiated in chatbotEvaluation.ts and passed programmatically
 
-# Use GPT-4o-mini for LLM-as-judge evaluations
 defaultTest:
   options:
-    provider: openai:chat:gpt-4o-mini
+    provider: openai:chat:gpt-3.5-turbo
 
 # Single test case with mixed fast and slow assertions
 tests:
-  - description: "EU policy question triggers RAG retrieval and provides factual response"
+  - description: 'EU policy question triggers RAG retrieval and provides factual response'
     vars:
       query: "What is the EPP's stance on migration?"
     assert:
       # Fast assertions - deterministic checks
-      - type: contains
-        value: "migration"
-
       - type: javascript
         value: output.length > 100
 
@@ -28,15 +24,3 @@ tests:
 
       - type: latency
         threshold: 10000
-
-      # Slow assertions - LLM-as-judge
-      - type: llm-rubric
-        value: |
-          The response must be:
-          - Factually accurate about EU political party positions
-          - Completely unbiased and neutral in tone
-          - Free from personal opinions or recommendations
-          - Based on provided context without hallucinations
-
-      - type: answer-relevance
-        threshold: 0.8

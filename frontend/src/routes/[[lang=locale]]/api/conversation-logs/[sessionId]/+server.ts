@@ -16,7 +16,10 @@ export async function GET({ params, url }: RequestEvent) {
     console.log('[API] Found log:', !!log);
     if (log) {
       console.log('[API] Log has', log.phases.length, 'phases');
-      console.log('[API] Total exchanges:', log.phases.reduce((sum, p) => sum + p.exchanges.length, 0));
+      console.log(
+        '[API] Total exchanges:',
+        log.phases.reduce((sum, p) => sum + p.exchanges.length, 0)
+      );
     }
 
     if (!log) {
