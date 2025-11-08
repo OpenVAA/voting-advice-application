@@ -1,0 +1,8 @@
+{
+  "enterEmailAndPassword": "Saisissez votre e-mail et votre mot de passe pour vous connecter.",
+  "forgotPassword": "Mot de passe oublié ?",
+  "title": "Se connecter",
+  "unknownError": "Une erreur est survenue avec vos données utilisateur. Veuillez contacter l’assistance si le problème persiste.",
+  "wrongEmailOrPassword": "E-mail ou mot de passe incorrect",
+  "answersLockedInfo": "L’inscription ou la modification des réponses n’est plus possible, mais vous pouvez encore vous connecter pour consulter vos informations."
+}

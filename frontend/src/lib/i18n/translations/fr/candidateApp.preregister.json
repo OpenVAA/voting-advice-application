@@ -1,0 +1,71 @@
+{
+  "constituencySelect": {
+    "content": "<p>Sélectionnez la circonscription dans laquelle vous vous présentez.</p>",
+    "title": "Quelle est votre circonscription ?"
+  },
+  "electionSelect": {
+    "content": "<p>Sélectionnez les élections auxquelles vous allez vous présenter.</p>",
+    "title": "À quelles élections vous présentez-vous ?"
+  },
+  "email": {
+    "html": "<p>Bonjour {firstName},</p><p>Merci de vous être inscrit·e comme candidat·e ! Pour terminer votre inscription, veuillez confirmer votre adresse e-mail en suivant le lien ci-dessous :</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Vous serez invité·e à choisir un mot de passe ensuite.</p>",
+    "subject": "Veuillez confirmer votre adresse e-mail",
+    "text": "Bonjour {firstName},\nMerci de vous être inscrit·e comme candidat·e ! Pour terminer votre inscription, veuillez confirmer votre adresse e-mail en suivant le lien ci-dessous :\n{registrationUrl}\nVous serez invité·e à choisir un mot de passe ensuite."
+  },
+  "emailVerification": {
+    "content": "<p>À l’avenir, votre adresse e-mail servira d’identifiant. Veuillez la saisir ci-dessous deux fois pour confirmer qu’elle est correcte.</p>",
+    "title": "Saisir l’adresse e-mail et accepter les conditions d’utilisation"
+  },
+  "identification": {
+    "identifyYourselfButton": "S’identifier",
+    "identifyYourselHelpText": "Vous serez redirigé·e vers le service Bank ID. Une fois l’authentification terminée, vous serez redirigé·e vers cette page.",
+    "start": {
+      "content": "<p>Pour vous inscrire en tant que candidat·e, vous devez d’abord vérifier votre identité via un Bank ID. Lorsque la liste officielle des candidat·es sera confirmée, nous publierons votre profil si nous pouvons vous y retrouver. Nous utiliserons vos nom complet et date de naissance pour cette vérification.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Sélectionner la circonscription",
+        "electionSelect": "Sélectionner les élections",
+        "emailVerification": "Vérifier l’adresse e-mail",
+        "identification": "S’identifier avec un Bank ID",
+        "passwordSelect": "Choisir un mot de passe"
+      },
+      "title": "S’inscrire comme candidat·e"
+    },
+    "success": {
+      "content": "<p>L’authentification a réussi. Appuyez sur le bouton ci-dessous pour poursuivre l’inscription.</p>",
+      "heroEmoji": "👍",
+      "title": "Bienvenue dans la Boussole électorale, {firstName} {lastName} !"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Veuillez plutôt vous connecter avec votre e-mail et votre mot de passe ou vérifier votre e-mail pour le lien de confirmation.",
+    "title": "Il semble que vous soyez déjà inscrit·e"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Il semble que vous soyez déjà inscrit·e. Veuillez vérifier votre e-mail pour confirmer votre inscription. Une fois confirmée, vous pourrez vous connecter avec votre e-mail et votre mot de passe.</p><p>Contactez l’assistance si vous pensez qu’il s’agit d’une erreur.</p>",
+      "title": "Vous êtes déjà inscrit·e comme candidat·e"
+    },
+    "loggedInError": {
+      "content": "<p>Vous êtes déjà inscrit·e comme candidat·e. Rendez-vous sur votre compte pour continuer.</p>",
+      "title": "Vous êtes déjà connecté·e"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Cliquez sur le bouton ci-dessous pour réessayer ou contactez l’assistance si le problème persiste.</p>",
+      "title": "Un problème est survenu lors de l’authentification Bank ID"
+    },
+    "success": {
+      "content": "<p>Nous avons envoyé un message à votre e-mail. Cliquez sur le lien dans le message pour confirmer votre adresse e-mail et terminer l’inscription.</p><p>Veuillez noter que le message peut prendre un certain temps à arriver. Vérifiez aussi votre dossier spam si vous ne recevez pas le message.</p><p>Vous pouvez maintenant fermer cette fenêtre.</p>",
+      "heroEmoji": "✉️",
+      "title": "Confirmez votre adresse e-mail"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Veuillez vous identifier à nouveau pour terminer le processus d’inscription.</p>",
+      "title": "Votre session a expiré"
+    },
+    "unknownError": {
+      "content": "<p>Cliquez sur le bouton ci-dessous pour réessayer ou contactez l’assistance si le problème persiste.</p>",
+      "title": "Un problème est survenu"
+    }
+  }
+}

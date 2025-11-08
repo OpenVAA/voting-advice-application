@@ -407,6 +407,8 @@ export type TranslationKey =
   | 'lang.da'
   | 'lang.en'
   | 'lang.fi'
+  | 'lang.fr'
+  | 'lang.lb'
   | 'lang.sv'
   | 'maintenance.title'
   | 'privacy.analytics.content.umami'

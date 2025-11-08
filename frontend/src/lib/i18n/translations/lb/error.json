@@ -1,0 +1,10 @@
+{
+  "404": "Säit net fonnt, entschëllegt!",
+  "500": "Intern Serverfeeler, entschëllegt!",
+  "content": "<p>Mir entschëllegen eis fir d’Ongemittlechkeet. Probéiert zréckzegoen an d’Säit nei ze lueden, fir ze kucken, ob de Problem bestoe bleift.</p><p>Wann de Problem nach ëmmer besteet, schéckt wgl. eng E-Mail un {adminEmailLink} a beschreift de Problem. Merci!</p>",
+  "default": "Eppes ass schif gelaf, entschëllegt!",
+  "general": "Eppes ass schif gelaf",
+  "noNominations": "Et ginn an Ärem Walbezierk keng Kandidat*inne oder Parteien, déi um Wal-Kompass geäntwert hunn.",
+  "noQuestions": "Et ginn nach keng Froen am Wal-Kompass fir Äre Walbezierk.",
+  "unsupportedQuestion": "Dës Fro kann net ugewisen ginn, entschëllegt!"
+}

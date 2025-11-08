@@ -1,0 +1,23 @@
+{
+  "emailDescription": "Dës E-Mail gëtt benotzt, fir Iech ze kontaktéieren an Äert Passwuert zréckzesetzen. Se gëtt net an Ärem ëffentleche Profil gewisen.",
+  "error": {
+    "changeLanguage": "Et gouf e Feeler beim Wiessle vun der Sprooch.",
+    "changePassword": "Passwuert konnt net geännert ginn. Kontrolléiert wgl., ob Äert aktuell Passwuert richteg ass."
+  },
+  "ingress": "Dës Astellungen beaflossen nëmmen, wéi Dir d’Applikatioun benotzt. D’Informatiounen, déi Dir hei agitt, ginn net ëffentlech gewisen.",
+  "language": "Sprooch vun der Applikatioun",
+  "languageDescription": "Benotzt d’Applikatioun an dëser Sprooch. Si gëtt net an Ärem ëffentleche Profil gewisen.",
+  "password": {
+    "areSame": "Déi nei Passwuert ass datselwecht wéi dat aktuell",
+    "current": "Aktuellt Passwuert",
+    "currentDescription": "Gitt Äert aktuellt Kontopasswuert un, dat Dir wëllt änneren.",
+    "dontMatch": "D’Passwierder stëmmen net iwwereneen",
+    "new": "Neit Passwuert",
+    "newConfirmation": "Neit Passwuert bestätegen",
+    "notValid": "Passwuert ass net valabel",
+    "title": "Kontopasswuert",
+    "update": "Passwuert aktualiséieren",
+    "updated": "Passwuert gouf aktualiséiert!"
+  },
+  "title": "Astellungen"
+}

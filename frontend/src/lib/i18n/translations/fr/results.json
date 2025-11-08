@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Aucune alliance} =1 {1 alliance} other {# alliances}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Aucun·e {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Aucune faction} =1 {1 faction} other {# factions}}"
+  },
+  "inConstituency": "dans la circonscription",
+  "ingress": {
+    "answerMinQuestions": "Si vous souhaitez trouver les {candidatePlural} et {partyPlural} qui partagent le plus vos opinions, veuillez d’abord {questionsLink}.",
+    "questionsLinkText": "répondre à au moins {numQuestions, plural, =1 {une question} other {# questions}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Aucun·e candidat·e ou parti de votre circonscription n’a répondu à la Boussole électorale",
+      "content": "Vous pouvez consulter les questions si vous le souhaitez, mais aucun résultat ne peut être affiché."
+    },
+    "someNominations": {
+      "title": "Certains·es candidat·es ou partis n’ont pas répondu à la Boussole électorale",
+      "content": "Toutes les élections de votre circonscription n’ont pas encore de réponses disponibles. Les résultats afficheront uniquement celles pour lesquelles des réponses existent."
+    },
+    "noNominationsForElection": "non disponible"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Aucun {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
+  },
+  "selectElectionFirst": "Veuillez d’abord sélectionner une élection",
+  "title": {
+    "browse": "Parcourir les {candidatePlural} et {partyPlural}",
+    "results": "Résultats"
+  }
+}

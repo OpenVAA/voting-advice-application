@@ -1,0 +1,5 @@
+{
+  "loading": "Chargement des données dynamiques…",
+  "error": "Erreur lors du chargement du contenu dynamique.",
+  "retry": "Réessayer"
+}

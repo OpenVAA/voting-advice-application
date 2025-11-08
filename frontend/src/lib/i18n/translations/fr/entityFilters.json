@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Fermer les filtres",
+  "error": "Le filtre n’a pas pu être chargé, désolé !",
+  "filterButtonLabel": "Filtrer",
+  "filters": "Filtres",
+  "missingValue": "Aucune réponse",
+  "numeric": {
+    "maxLabel": "Maximum",
+    "minLabel": "Minimum"
+  },
+  "reset": "Réinitialiser les filtres",
+  "selectAll": "Tout sélectionner",
+  "text": {
+    "ariaLabel": "Texte :",
+    "placeholder": "Texte à rechercher"
+  },
+  "unselectAll": "Tout désélectionner"
+}

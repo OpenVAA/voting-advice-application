@@ -1,0 +1,78 @@
+{
+  "accordionSelect": {
+    "collapsedAriaInfo": "Tippt fir all Optiounen ze weisen"
+  },
+  "constituencySelector": {
+    "selectPrompt": "Wielt {constituencyGroup} aus"
+  },
+  "headingGroup": {
+    "roleDescription": "Iwwerschrëftgrupp"
+  },
+  "input": {
+    "addImage": "Bild derbäisetzen",
+    "allSelected": "Alles ausgewielt",
+    "changeImage": "Bild änneren",
+    "deleteOption": "{option} auswielen ophiewen",
+    "error": {
+      "fileLoadingError": "Datei konnt net geluede ginn.",
+      "invalidFile": "D’Datei ass net valabel.",
+      "invalidUrl": "D’URL ass net valabel.",
+      "oversizeFile": "D’Datei ass ze grouss. Déi maximal Gréisst ass {maxFilesize} MB."
+    },
+    "hideTranslations": "Verstoppen",
+    "imageInfo": "Déi maximal Bildgréisst ass {maxFilesize} MB. Wärt wgl. e bëssen – d’Bild kann e Moment daueren fir ze lueden.",
+    "multilingualInfo": "Dir kënnt Är Äntwert a sämtleche Sprooche vun der Applikatioun aginn, wann Dir wëllt.",
+    "noImage": "Keen Bild",
+    "selectAnother": "Aner auswielen",
+    "selectFirst": "Als éischt auswielen",
+    "selectOne": "Auswielen",
+    "showTranslations": "Iwwersetzungen"
+  },
+  "matchScore": {
+    "label": "Iwwenestëmmung",
+    "score": "{score}%"
+  },
+  "passwordInput": {
+    "hidePassword": "Passwuert verstoppen",
+    "password": "Passwuert",
+    "placeholder": "Passwuert",
+    "showPassword": "Passwuert weisen"
+  },
+  "preHeading": {
+    "roleDescription": "Vir-Iwwerschrëft"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "Dir hutt ongespäichert Ännerungen. Sidd Dir sécher, datt Dir dës Säit wëllt verloossen?"
+  },
+  "select": {
+    "noMatchingOptions": "Keng entspriechend Optiounen fonnt"
+  },
+  "video": {
+    "captions": "Ënnertitelen",
+    "error": "Entschëllegt, et gëtt e Problem mat der Video. Dir kënnt probéieren d’Säit nei ze lueden oder mam Knäppchen hei drënner op d’Textversioun wiesselen.",
+    "hideCaptions": "Ënnertitelen verstoppen",
+    "jumpBack": "Zréck sprangen",
+    "jumpForward": "Weider sprangen",
+    "mute": "Stomm schalten",
+    "pause": "Pauséieren",
+    "play": "Ofspillen",
+    "progessbarLabel": "Zäit iwwereg",
+    "replay": "Nach eng Kéier spillen",
+    "showCaptions": "Ënnertitelen weisen",
+    "showTranscript": "Video als Text weisen",
+    "showVideo": "Video weisen",
+    "subtitles": "Ënnertitelen",
+    "timeLeft": "Nach {minutes, plural, =0 {} =1 {eng Minutt} other {# Minutten}} {seconds, plural, =0 {} =1 {eng Sekonn} other {# Sekonnen}}",
+    "transcript": "Text",
+    "transcriptToggleLabel": "Tëscht Video an Text wiesselen",
+    "unmute": "Toun aktivéieren",
+    "unsupportedWarning": "Leider ënnerstëtzt Äre Browser dës Zort Video net.",
+    "video": "Video"
+  },
+  "questionExtendedInfo": {
+    "title": "Méi gewuer ginn"
+  },
+  "resultsPreview": {
+    "label": "Top {count}"
+  }
+}

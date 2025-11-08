@@ -1,0 +1,10 @@
+{
+  "404": "Page non trouvée, désolé !",
+  "500": "Erreur interne du serveur, désolé !",
+  "content": "<p>Nous sommes désolé·es pour ce désagrément. Vous pouvez essayer de revenir en arrière et de recharger la page pour voir si le problème persiste.</p><p>Si le problème continue, veuillez envoyer un e-mail à {adminEmailLink} en décrivant le problème. Merci !</p>",
+  "default": "Une erreur est survenue, désolé !",
+  "general": "Une erreur est survenue",
+  "noNominations": "Il n’y a aucun·e candidat·e ou parti dans votre circonscription ayant répondu à la Boussole électorale.",
+  "noQuestions": "Il n’y a pas encore de questions pour votre circonscription dans la Boussole électorale.",
+  "unsupportedQuestion": "Cette question ne peut pas être affichée, désolé !"
+}

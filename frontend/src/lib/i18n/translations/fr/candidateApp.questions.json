@@ -1,0 +1,24 @@
+{
+  "answerQuestion": "Répondre à cette question",
+  "answerQuestionFirst": "Veuillez d’abord répondre à la question",
+  "answerSaveError": "Échec de l’enregistrement de la réponse",
+  "editAnswer": "Modifier votre réponse",
+  "enterMissingAnswers": "Saisir les réponses manquantes",
+  "error": {
+    "answerNotFound": "Réponse introuvable pour la question {questionId}",
+    "invalidAnswer": "Réponse invalide pour la question {questionId}",
+    "questionNotFound": "Question {questionId} introuvable"
+  },
+  "ingress": {
+    "default": "Vous pouvez voir toutes vos opinions ci-dessous et les modifier.",
+    "empty": "L’application vous posera ensuite {numQuestions} affirmations sur des enjeux et valeurs politiques. Lorsque les électeur·rice·s utiliseront la Boussole électorale, ils répondront aux mêmes affirmations et verront dans quelle mesure leurs opinions concordent avec les vôtres.",
+    "partial": "Vous pouvez voir ci-dessous toutes vos opinions, les modifier et répondre à celles manquantes."
+  },
+  "notAnswered": "Vous n’avez pas répondu à cette question.",
+  "openAnswerPrompt": "Arguments",
+  "start": "Indiquer vos opinions",
+  "tip": "Vous pouvez revoir toutes vos réponses sur cette page plus tard.",
+  "title": "Vos opinions",
+  "unansweredWarning": "Il vous reste {numUnansweredQuestions, plural, =1 {une question sans réponse} other {# questions sans réponse}}.",
+  "viewAnswer": "Voir votre réponse"
+}

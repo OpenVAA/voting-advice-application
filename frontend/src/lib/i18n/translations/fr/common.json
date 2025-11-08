@@ -1,0 +1,89 @@
+{
+  "alliance": {
+    "plural": "alliances",
+    "singular": "alliance"
+  },
+  "answer": {
+    "no": "Non",
+    "yes": "Oui"
+  },
+  "back": "Retour",
+  "cancel": "Annuler",
+  "candidate": {
+    "plural": "candidat·es",
+    "singular": "candidat·e"
+  },
+  "candidatePortrait": "Portrait",
+  "clear": "Effacer",
+  "close": "Fermer",
+  "closeDialog": "Fermer la boîte de dialogue",
+  "closeMenu": "Fermer le menu",
+  "confirmed": "Confirmé",
+  "constituency": "Circonscription",
+  "continue": "Continuer",
+  "election": "Élection",
+  "electionList": "Liste",
+  "electionSymbol": {
+    "alliance": "Symbole électoral",
+    "candidate": "Numéro du·de la candidat·e",
+    "faction": "Symbole électoral",
+    "organization": "Symbole électoral"
+  },
+  "expandOrCollapse": "Développer ou réduire cette section",
+  "faction": {
+    "plural": "factions",
+    "singular": "faction"
+  },
+  "firstName": "Prénom",
+  "home": "Accueil",
+  "info": "Info",
+  "language": {
+    "select": "Sélectionner la langue"
+  },
+  "lastName": "Nom",
+  "loading": "Chargement…",
+  "locked": "Verrouillé",
+  "login": "Se connecter",
+  "logout": "Se déconnecter",
+  "madeWithPrefix": "Créé avec",
+  "madeWithSuffix": "",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
+  "nomination": "Nomination",
+  "openCloseMenu": "Ouvrir/fermer le menu",
+  "openMenu": "Ouvrir le menu",
+  "openVAA": "OpenVAA",
+  "or": "Ou",
+  "organization": {
+    "plural": "partis",
+    "singular": "parti"
+  },
+  "password": "Mot de passe",
+  "passwordConfirmation": "Confirmer le mot de passe",
+  "pending": "En attente",
+  "primaryActions": "Actions principales",
+  "privacy": {
+    "dataCollection": {
+      "content": "Nous souhaiterions collecter des données d’utilisation de façon anonyme à des fins de recherche et pour améliorer l’application. Les données collectées incluent vos réponses aux questions, le temps passé à y répondre et dans d’autres sections ainsi que les résultats consultés, sans possibilité de vous relier à ces données.",
+      "title": "Collecte de données d’utilisation"
+    }
+  },
+  "progress": "Progression",
+  "publishedBy": "Publié par {publisher}",
+  "question": "Question",
+  "readMore": "En savoir plus",
+  "required": "Obligatoire",
+  "resetAnswers": "Effacer vos réponses",
+  "return": "Retour",
+  "returnHome": "Retour à l’accueil",
+  "saveAndContinue": "Enregistrer et continuer",
+  "saveAndReturn": "Enregistrer et revenir",
+  "saving": "Enregistrement…",
+  "showFullImage": "Afficher l’image complète",
+  "skipToMain": "Aller au contenu principal",
+  "state": "État",
+  "success": "Action réussie !",
+  "thanksNo": "Non merci",
+  "unaffiliated": "Sans étiquette",
+  "website": "Site web"
+}

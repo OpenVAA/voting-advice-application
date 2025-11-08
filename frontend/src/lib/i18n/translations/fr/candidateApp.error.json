@@ -1,0 +1,8 @@
+{
+  "candidateNoNomination": "Le ou la candidat·e associé·e à l’utilisateur connecté n’a pas de nomination. Veuillez contacter l’assistance.",
+  "loginFailed": "Échec de la connexion. Veuillez vérifier votre nom d’utilisateur et votre mot de passe.",
+  "nominationNoElection": "La nomination associée au ou à la candidat·e n’a pas d’élection. Veuillez contacter l’assistance.",
+  "saveFailed": "Nous sommes désolé·es, un problème est survenu lors de l’enregistrement de vos réponses. Veuillez réessayer et, si le problème persiste, contactez l’assistance.",
+  "userNoCandidate": "L’utilisateur connecté n’a pas d’informations de candidat·e associées. Veuillez contacter l’assistance.",
+  "registrationLocked": "Malheureusement, l’inscription n’est plus possible."
+}

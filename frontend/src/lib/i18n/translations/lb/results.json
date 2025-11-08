@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Keng Allianzen} =1 {1 Allianz} other {# Allianzen}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Keng {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Keng Fraktiounen} =1 {1 Fraktioun} other {# Fraktiounen}}"
+  },
+  "inConstituency": "am Walbezierk",
+  "ingress": {
+    "answerMinQuestions": "Wann Dir déi {candidatePlural} a {partyPlural} fannen wëllt, déi am meeschte mat Iech averstanen sinn, {questionsLink} fir d’éischt.",
+    "questionsLinkText": "beäntwert op mannst {numQuestions, plural, =1 {eng Fro} other {# Froen}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Et ginn an Ärem Walbezierk keng Kandidat*inne oder Parteien, déi um Wal-Kompass geäntwert hunn",
+      "content": "Dir kënnt d’Froen duerchkucken, mee et kënne keng Resultater ugewisen ginn."
+    },
+    "someNominations": {
+      "title": "E puer Kandidat*inne oder Parteien hunn net um Wal-Kompass geäntwert",
+      "content": "Net all Wahlen an Ärem Walbezierk hunn Äntwerten. Resultater ginn nëmme fir déi gewisen, déi verfügbar sinn."
+    },
+    "noNominationsForElection": "net verfügbar"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Keng {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
+  },
+  "selectElectionFirst": "Wielt fir d’éischt eng Wahl",
+  "title": {
+    "browse": "{candidatePlural} a {partyPlural} duerchsichen",
+    "results": "Resultater"
+  }
+}

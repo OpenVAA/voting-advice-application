@@ -1,0 +1,35 @@
+{
+  "additionalActions": "Weider Aktiounen zu dëser Fro",
+  "answers": {
+    "bothHaventAnswered": "Weder Dir nach {entity} hutt dës Fro beäntwert",
+    "entityHasntAnswered": "{entity} huet dës Fro net beäntwert",
+    "youHaventAnswered": "Dir hutt dës Fro net beäntwert",
+    "yourAnswer": "Dir"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 Fro} other {# Froen}}",
+    "skip": "Dës Kategorie iwwersprangen"
+  },
+  "infoDescription": "Hannergrondinformatioun iwwer d’Fro",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "D’Froen sinn an {numCategories} Kategorie gedeelt. Dir kënnt se all beäntwerten oder nëmme wielt, wat Dir wëllt. {minQuestions, plural, =0 {} =1 {} other {Wielt awer genuch Kategorie fir op mannst # Froen am Ganze ze kréien.}}",
+      "withoutCategorySelection": "Beäntwert elo {numQuestions} Froen iwwer Politik a Wäerter. {numCategories, plural, =0 {} =1 {} other {D’Froen sinn an # Kategorie gedeelt.}}"
+    },
+    "start": "{numQuestions} Froen beäntwerten"
+  },
+  "next": "Nächst Fro",
+  "previous": "Zréck",
+  "remove": "Äntwert läschen",
+  "skip": "Iwwersprangen",
+  "skipToResults": "Direkt zu de Resultater goen",
+  "title": "Meenungen",
+  "weights": {
+    "title": "Wichtegkeet",
+    "weightLabels": {
+      "half": "0,5×",
+      "normal": "1×",
+      "double": "2×"
+    }
+  }
+}

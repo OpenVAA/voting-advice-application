@@ -1,0 +1,28 @@
+{
+  "analytics": {
+    "content": {
+      "umami": "Nous utilisons le service Umami pour les statistiques. Cela se fait entièrement de manière anonyme et ne nécessite aucun cookie. Plus d’informations : {analyticsLink}."
+    },
+    "title": "Statistiques"
+  },
+  "cookies": {
+    "content": "L’application n’utilise pas de cookies pour stocker vos données. Vos réponses et préférences sont enregistrées localement dans votre navigateur afin d’améliorer votre expérience. Ces données ne peuvent être consultées que par votre appareil, pas par l’éditeur de l’application.",
+    "title": "Cookies"
+  },
+  "dataCollection": {
+    "platform": {
+      "umami": "Nous utilisons le service Umami pour la collecte de données. Il n’utilise pas de cookies. Plus d’informations : {analyticsLink}."
+    }
+  },
+  "dataConsentInfoButton": "Plus d’informations sur la collecte de données d’utilisation",
+  "dataConsentIntro": {
+    "denied": "Vous avez refusé la collecte de données le {consentDate, date, ::yyyyMMd}. Vous pouvez modifier votre préférence ci-dessous.",
+    "granted": "Vous avez accepté la collecte de données le {consentDate, date, ::yyyyMMd}. Vous pouvez modifier votre préférence ci-dessous.",
+    "indetermined": "Vous pouvez accepter ou refuser la collecte de données en choisissant une des options ci-dessous."
+  },
+  "dataConsentLabel": {
+    "denied": "Je ne souhaite pas partager mes données",
+    "granted": "Oui, j’accepte de partager mes données"
+  },
+  "title": "Confidentialité"
+}

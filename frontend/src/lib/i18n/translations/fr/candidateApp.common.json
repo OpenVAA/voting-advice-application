@@ -1,0 +1,13 @@
+{
+  "contactSupport": "Contacter l’assistance",
+  "continueFilling": "Continuer à remplir",
+  "editingNotAllowed": "La modification de vos réponses n’est plus possible, mais vous pouvez encore les consulter. Veuillez contacter l’assistance en cas d’erreurs dans les données.",
+  "email": "E-mail",
+  "emailPlaceholder": "E-mail",
+  "fullyCompleted": "Félicitations ! Vous avez renseigné toutes les informations nécessaires pour la Boussole électorale.",
+  "greeting": "Bonjour, {username} !",
+  "home": "Accueil",
+  "isHiddenBecauseMissing": "Votre profil ne sera pas affiché car vous n’avez pas répondu à toutes les questions.",
+  "voterApp": "Boussole électorale pour les électeur·rice·s",
+  "willBeHiddenIfMissing": "Votre profil ne sera pas affiché dans l’application avant que vous n’ayez répondu à toutes les questions."
+}

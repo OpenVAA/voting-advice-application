@@ -1,0 +1,89 @@
+{
+  "alliance": {
+    "plural": "Allianzen",
+    "singular": "Allianz"
+  },
+  "answer": {
+    "no": "Nee",
+    "yes": "Jo"
+  },
+  "back": "Zréck",
+  "cancel": "Ofbriechen",
+  "candidate": {
+    "plural": "Kandidat*inne",
+    "singular": "Kandidat*in"
+  },
+  "candidatePortrait": "Portrait",
+  "clear": "Läschen",
+  "close": "Zoumaachen",
+  "closeDialog": "Dialog zoumaachen",
+  "closeMenu": "Menü zoumaachen",
+  "confirmed": "Confirméiert",
+  "constituency": "Walbezierk",
+  "continue": "Weider",
+  "election": "Wahl",
+  "electionList": "Lëscht",
+  "electionSymbol": {
+    "alliance": "Wahlsymbol",
+    "candidate": "Walnummer",
+    "faction": "Wahlsymbol",
+    "organization": "Wahlsymbol"
+  },
+  "expandOrCollapse": "Dës Sektioun op- oder zouklappen",
+  "faction": {
+    "plural": "Fraktiounen",
+    "singular": "Fraktioun"
+  },
+  "firstName": "Virnumm",
+  "home": "Start",
+  "info": "Info",
+  "language": {
+    "select": "Sprooch auswielen"
+  },
+  "lastName": "Familljennumm",
+  "loading": "Lueden…",
+  "locked": "Gesperrt",
+  "login": "Umellen",
+  "logout": "Ausloggen",
+  "madeWithPrefix": "Gemaach mat",
+  "madeWithSuffix": "",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
+  "nomination": "Nominatioun",
+  "openCloseMenu": "Menü op/zoumaachen",
+  "openMenu": "Menü opmaachen",
+  "openVAA": "OpenVAA",
+  "or": "Oder",
+  "organization": {
+    "plural": "Parteien",
+    "singular": "Partei"
+  },
+  "password": "Passwuert",
+  "passwordConfirmation": "Passwuert bestätegen",
+  "pending": "Astehend",
+  "primaryActions": "Primäraktiounen",
+  "privacy": {
+    "dataCollection": {
+      "content": "Mir wéilte Benotzungsdaten anonym sammelen – fir Fuerschungszwecker an zur Verbesserung vun der Applikatioun. D’Donnéeën enthalen Är Äntwerten op d’Froen, d’Zäit, déi Dir beim Beäntwerten a soss anere Sektiounen verbruecht hutt, an déi gekuckte Resultater; d’Donnéeë kënne net mat Iech verbonnen ginn.",
+      "title": "Benotzungsdaten sammelen"
+    }
+  },
+  "progress": "Fortschrëtt",
+  "publishedBy": "Verëffentlecht vum {publisher}",
+  "question": "Fro",
+  "readMore": "Méi gewuer ginn",
+  "required": "Obligatoresch",
+  "resetAnswers": "Är Äntwerten läschen",
+  "return": "Zréck",
+  "returnHome": "Zréck op d’Startsäit",
+  "saveAndContinue": "Späicheren a weidergoen",
+  "saveAndReturn": "Späicheren a zréckgoen",
+  "saving": "Späicheren…",
+  "showFullImage": "Ganze Bild weisen",
+  "skipToMain": "Zum Haaptinhalt sprangen",
+  "state": "Bundesland",
+  "success": "Aktioun erfollegräich!",
+  "thanksNo": "Nee merci",
+  "unaffiliated": "Onofhängeg",
+  "website": "Websäit"
+}

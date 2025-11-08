@@ -1,0 +1,21 @@
+{
+  "description": {
+    "label": "Autres commentaires",
+    "placeholder": "Autres commentaires ou suggestions"
+  },
+  "emailIntro": "Si vous le souhaitez, vous pouvez également nous contacter par e-mail à",
+  "error": {
+    "emailIntro": "Veuillez envoyer vos commentaires par e-mail en cliquant sur le bouton ci-dessous. Les commentaires que vous avez déjà écrits seront inclus automatiquement.",
+    "emailSubject": "Retour d’expérience",
+    "message": "Nous sommes désolé·es, une erreur s’est produite lors de l’envoi de votre retour."
+  },
+  "popupTitle": "Pourriez-vous évaluer la Boussole électorale ?",
+  "rating": {
+    "label": "Évaluation globale de l’application",
+    "valueLabel": "{rating, plural, =0 {Aucune note} other {Note # sur {ratingMax}}}"
+  },
+  "send": "Envoyer le retour",
+  "sending": "Envoi…",
+  "thanks": "Merci pour votre retour !",
+  "title": "Retour"
+}

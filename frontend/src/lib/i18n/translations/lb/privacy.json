@@ -1,0 +1,28 @@
+{
+  "analytics": {
+    "content": {
+      "umami": "Mir benotzen de Service Umami fir Analysen. Dat geschitt komplett anonym a brauch keng Cookien. Méi Informatioun: {analyticsLink}."
+    },
+    "title": "Analysen"
+  },
+  "cookies": {
+    "content": "D’Applikatioun benotzt keng Cookien, fir Är Donnéeën ze späicheren. Är Äntwerten a Preferenze ginn am Browser lokal gespäichert, fir Är Benotzungserfarung ze verbesseren. Dës Donnéeë kënnen nëmme vun Ärem Apparat, net vum Verëffentlecher, agesi ginn.",
+    "title": "Cookien"
+  },
+  "dataCollection": {
+    "platform": {
+      "umami": "Mir benotzen de Service Umami fir Donnéeë ze sammelen. En benotzt keng Cookien. Méi Informatioun: {analyticsLink}."
+    }
+  },
+  "dataConsentInfoButton": "Méi Informatioun iwwer d’Sammele vun Notzungsdaten",
+  "dataConsentIntro": {
+    "denied": "Dir hutt d’Sammele vun Donnéeën den {consentDate, date, ::yyyyMMd} refuséiert. Dir kënnt Är Preferenz hei ënnen änneren.",
+    "granted": "Dir hutt d’Sammele vun Donnéeën den {consentDate, date, ::yyyyMMd} zougestëmmt. Dir kënnt Är Preferenz hei ënnen änneren.",
+    "indetermined": "Dir kënnt d’Sammele vun Donnéeën zoustëmmen oder ofleen, andeems Dir eng vun den Optiounen hei ënnen auswielt."
+  },
+  "dataConsentLabel": {
+    "denied": "Ech wëll meng Donnéeën net deelen",
+    "granted": "Jo, ech sinn averstanen meng Donnéeën ze deelen"
+  },
+  "title": "Dateschutz"
+}

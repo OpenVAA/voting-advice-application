@@ -1,0 +1,71 @@
+{
+  "constituencySelect": {
+    "content": "<p>Wielt de Walbezierk aus, an deem Dir kandidéiert.</p>",
+    "title": "Wat ass Äre Walbezierk?"
+  },
+  "electionSelect": {
+    "content": "<p>Wielt d’Wahlen aus, bei deenen Dir kandidéiert.</p>",
+    "title": "Fir wéi eng Wahlen trëtt Dir un?"
+  },
+  "email": {
+    "html": "<p>Moien {firstName},</p><p>Merci fir d’Aschreiwung als Kandidat*in! Fir d’Aschreiwung ofzeschléissen, confirméiert wgl. Är E-Mail-Adress iwwer de Link hei drënner:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Duerno gitt Dir gefrot, e Passwuert ze wielen.</p>",
+    "subject": "Confirméiert wgl. Är E-Mail-Adress",
+    "text": "Moien {firstName},\nMerci fir d’Aschreiwung als Kandidat*in! Fir d’Aschreiwung ofzeschléissen, confirméiert wgl. Är E-Mail-Adress iwwer de Link hei drënner:\n{registrationUrl}\nDuerno gitt Dir gefrot, e Passwuert ze wielen."
+  },
+  "emailVerification": {
+    "content": "<p>An Zukunft déngt Är E-Mail-Adress als Benotzernumm. Gitt se wgl. hei ënnen zweemol an, fir d’Korrektheet ze confirméieren.</p>",
+    "title": "E-Mail-Adress aginn an d’Notzungsbedingunge akzeptéieren"
+  },
+  "identification": {
+    "identifyYourselfButton": "Identifizéiert Iech",
+    "identifyYourselHelpText": "Dir gitt op de Bank-ID-Service weidergeleet. No der Authentifikatioun gitt Dir op dës Säit zeréckgeleet.",
+    "start": {
+      "content": "<p>Fir Iech als Kandidat*in anzeschreiwen, musst Dir als éischt Är Identitéit mat engem Bank ID verifizéieren. Wa d’offiziell Kandidatelëscht confirméiert ass, publizéiere mir Äre Profil, wann Dir op där Lëscht ze fannen sidd. Mir benotzen Äre ganzen Numm an Äre Gebuertsdatum fir dës Iwwerpréiwung.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Walbezierk auswielen",
+        "electionSelect": "Wahlen auswielen",
+        "emailVerification": "E-Mail-Adress verifizéieren",
+        "identification": "Mat Bank ID identifizéieren",
+        "passwordSelect": "Passwuert wielen"
+      },
+      "title": "Als Kandidat*in aschreiwen"
+    },
+    "success": {
+      "content": "<p>D’Authentifikatioun war erfollegräich. Klickt op de Knäppchen hei drënner, fir weiderzemaachen.</p>",
+      "heroEmoji": "👍",
+      "title": "Wëllkomm beim Wal-Kompass, {firstName} {lastName}!"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Loggt Iech éischter mat Ärer E-Mail an Ärem Passwuert an oder kuckt an Ärer E-Mail no dem Confirmatiounslink.",
+    "title": "Et gesäit esou aus, wéi wann Dir scho registréiert sidd"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Et gesäit esou aus, wéi wann Dir scho registréiert sidd. Kontrolléiert wgl. Är E-Mail, fir d’Registréierung ze confirméieren. Nodeems se confirméiert ass, kënnt Dir Iech mat Ärer E-Mail an Ärem Passwuert aloggen.</p><p>Kontaktéiert de Support, wann Dir mengt, datt et e Feeler ass.</p>",
+      "title": "Dir sidd schonn als Kandidat*in registréiert"
+    },
+    "loggedInError": {
+      "content": "<p>Dir sidd schonn als Kandidat*in registréiert. Gitt op Äre Konto fir weiderzemaachen.</p>",
+      "title": "Dir sidd schonn ageloggt"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Klickt op de Knäppchen hei drënner, fir et nach eng Kéier ze probéieren oder kontaktéiert de Support, wann de Problem bestoe bleift.</p>",
+      "title": "Et gouf e Problem mat der Bank-ID-Authentifikatioun"
+    },
+    "success": {
+      "content": "<p>Mir hunn Iech eng Noriicht geschéckt. Klickt op de Link an där Noriicht, fir Är E-Mail-Adress ze confirméieren an d’Aschreiwung ofzeschléissen.</p><p>W.e.g. beuecht, datt et e bëssen dauere kann, bis d’E-Mail ukënnt. Kuckt och an de Spam-Filter, wann näischt ukënnt.</p><p>Dir kënnt dëst Fënster elo zoumaachen.</p>",
+      "heroEmoji": "✉️",
+      "title": "Confirméiert Är E-Mail-Adress"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Identifizéiert Iech nach eng Kéier, fir d’Aschreiwung ofzeschléissen.</p>",
+      "title": "Är Sessioun ass ofgelaf"
+    },
+    "unknownError": {
+      "content": "<p>Klickt op de Knäppchen hei drënner, fir et nach eng Kéier ze probéieren oder kontaktéiert de Support, wann de Problem bestoe bleift.</p>",
+      "title": "Eppes ass schif gelaf"
+    }
+  }
+}

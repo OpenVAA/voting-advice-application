@@ -1,0 +1,35 @@
+{
+  "additionalActions": "Actions supplémentaires pour cette question",
+  "answers": {
+    "bothHaventAnswered": "Ni vous ni {entity} n’avez répondu à cette question",
+    "entityHasntAnswered": "{entity} n’a pas répondu à cette question",
+    "youHaventAnswered": "Vous n’avez pas répondu à cette question",
+    "yourAnswer": "Vous"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
+    "skip": "Passer cette catégorie"
+  },
+  "infoDescription": "Informations de contexte sur la question",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. {minQuestions, plural, =0 {} =1 {} other {Cependant, sélectionnez assez de catégories pour atteindre au moins # questions au total.}}",
+      "withoutCategorySelection": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. {numCategories, plural, =0 {} =1 {} other {Les questions sont divisées en # catégories.}}"
+    },
+    "start": "Répondre à {numQuestions} questions"
+  },
+  "next": "Question suivante",
+  "previous": "Précédente",
+  "remove": "Supprimer la réponse",
+  "skip": "Passer",
+  "skipToResults": "Passer aux résultats",
+  "title": "Opinions",
+  "weights": {
+    "title": "Importance",
+    "weightLabels": {
+      "half": "0,5×",
+      "normal": "1×",
+      "double": "2×"
+    }
+  }
+}

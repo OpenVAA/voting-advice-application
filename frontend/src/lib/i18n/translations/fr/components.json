@@ -1,0 +1,78 @@
+{
+  "accordionSelect": {
+    "collapsedAriaInfo": "Appuyez pour afficher toutes les options"
+  },
+  "constituencySelector": {
+    "selectPrompt": "Sélectionnez {constituencyGroup}"
+  },
+  "headingGroup": {
+    "roleDescription": "Groupe d’en-têtes"
+  },
+  "input": {
+    "addImage": "Ajouter une image",
+    "allSelected": "Tout sélectionné",
+    "changeImage": "Changer l’image",
+    "deleteOption": "Désélectionner {option}",
+    "error": {
+      "fileLoadingError": "Échec du chargement du fichier.",
+      "invalidFile": "Le fichier n’est pas valide.",
+      "invalidUrl": "L’URL n’est pas valide.",
+      "oversizeFile": "Le fichier est trop volumineux. La taille maximale est de {maxFilesize} Mo."
+    },
+    "hideTranslations": "Masquer",
+    "imageInfo": "La taille maximale de l’image est de {maxFilesize} Mo. Veuillez patienter lors de l’enregistrement, le chargement peut prendre un moment.",
+    "multilingualInfo": "Vous pouvez saisir votre réponse dans toutes les langues de l’application si vous le souhaitez.",
+    "noImage": "Aucune image",
+    "selectAnother": "Sélectionner une autre",
+    "selectFirst": "Sélectionner d’abord",
+    "selectOne": "Sélectionner",
+    "showTranslations": "Traductions"
+  },
+  "matchScore": {
+    "label": "correspondance",
+    "score": "{score}%"
+  },
+  "passwordInput": {
+    "hidePassword": "Masquer le mot de passe",
+    "password": "Mot de passe",
+    "placeholder": "Mot de passe",
+    "showPassword": "Afficher le mot de passe"
+  },
+  "preHeading": {
+    "roleDescription": "Pré-titre"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "Vous avez des modifications non enregistrées. Êtes-vous sûr·e de vouloir quitter cette page ?"
+  },
+  "select": {
+    "noMatchingOptions": "Aucune option correspondante trouvée"
+  },
+  "video": {
+    "captions": "Sous-titres",
+    "error": "Désolé, il semble y avoir un problème avec la vidéo. Vous pouvez essayer de recharger la page ou utiliser le bouton ci-dessous pour passer à une version texte.",
+    "hideCaptions": "Masquer les sous-titres",
+    "jumpBack": "Reculer",
+    "jumpForward": "Avancer",
+    "mute": "Couper le son",
+    "pause": "Pause",
+    "play": "Lecture",
+    "progessbarLabel": "Temps restant",
+    "replay": "Rejouer",
+    "showCaptions": "Afficher les sous-titres",
+    "showTranscript": "Afficher la vidéo en texte",
+    "showVideo": "Afficher la vidéo",
+    "subtitles": "Sous-titres",
+    "timeLeft": "Il reste {minutes, plural, =0 {} =1 {une minute} other {# minutes}} {seconds, plural, =0 {} =1 {une seconde} other {# secondes}}",
+    "transcript": "Texte",
+    "transcriptToggleLabel": "Basculer entre la vidéo et le texte",
+    "unmute": "Activer le son",
+    "unsupportedWarning": "Malheureusement, votre navigateur ne prend pas en charge ce type de vidéo.",
+    "video": "Vidéo"
+  },
+  "questionExtendedInfo": {
+    "title": "En savoir plus"
+  },
+  "resultsPreview": {
+    "label": "Top {count}"
+  }
+}
