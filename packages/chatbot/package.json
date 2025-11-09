@@ -13,7 +13,14 @@
   "module": "./build/index.js",
   "types": "./build/index.d.ts",
   "exports": {
-    "import": "./build/index.js"
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js"
+    },
+    "./server": {
+      "types": "./build/server.d.ts",
+      "import": "./build/server.js"
+    }
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",

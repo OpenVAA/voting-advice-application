@@ -8,7 +8,9 @@ defaultTest:
 tests:
   - description: '[PROMPTING]: except EPP stance on migration to not mention "retrieved context" explicitly'
     vars:
-      query: "What is the EPP's stance on migration?"
+      messages:
+        - role: user
+          content: "What is the EPP's stance on migration?"
     assert:
       # Fast assertions - deterministic checks
       - type: javascript
@@ -22,15 +24,19 @@ tests:
       - type: llm-rubric
         value: should not mention "retrieved context" explicitly in the response
   - description: "[PROMPTING] expect response to 'hello' to contain a question"
-    vars: 
-      query: "hello"
+    vars:
+      messages:
+        - role: user
+          content: "hello"
     assert:
       - type: javascript
         value: output.includes("?") === true
 
   - description: "[RAG] expect number of electorates to be correct"
     vars:
-      query: "how many people are chosen in these elections?"
+      messages:
+        - role: user
+          content: "how many people are chosen in these elections?"
     assert:
       - type: javascript
         value: output.includes("720") === true # 2024 EU elections

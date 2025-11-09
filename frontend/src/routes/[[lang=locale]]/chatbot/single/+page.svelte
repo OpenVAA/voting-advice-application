@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { createOnboardingStream } from '$lib/chatbot';
-  import type { ConversationState } from '@openvaa/chatbot';
+  import { type ConversationState } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 
   interface UIMessage {

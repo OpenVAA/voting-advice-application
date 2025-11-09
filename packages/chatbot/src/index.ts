@@ -1,9 +1,5 @@
-export * from './api';
-export * from './api.type';
-export * from './apiKey';
-export * from './core/chat';
-export * from './core/tools/chatDataProvider.type';
-export * from './utils';
+export type { ChatbotAPIInput } from './api.type';
+export type { ConversationState } from './controller/chatbotController.type';
 
 // Query categorization
 export { CANNED_RESPONSES, getCannedResponse } from './core/cannedResponses';
@@ -22,16 +18,5 @@ export {
   QUERYABLE_CATEGORIES as QUERYABLE_CATEGORY_VALUES
 } from './core/queryCategories';
 
-// Chatbot controller
-export type {
-  CategorizationResult,
-  ChatbotResponse,
-  ConversationPhase,
-  ConversationState,
-  HandleQueryInput,
-  RAGContextResult
-} from './controller';
-export { ChatbotController } from './controller';
-
-// Default configuration
-export * from './defaultConfig';
+// Browser-safe default config
+export { getOnboardingMessage } from './defaultConfig/onboardingMessages';

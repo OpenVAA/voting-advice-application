@@ -1,4 +1,4 @@
-import { getAllConversationSummaries } from '@openvaa/chatbot';
+import { getAllConversationSummaries } from '@openvaa/chatbot/server';
 import { json } from '@sveltejs/kit';
 
 /**

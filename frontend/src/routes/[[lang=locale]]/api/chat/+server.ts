@@ -1,11 +1,12 @@
-import { ChatbotController, getChatbotConfiguration, updateConversation } from '@openvaa/chatbot';
+import { ChatbotController, updateConversation } from '@openvaa/chatbot/server';
+import { getChatbotConfiguration } from '@openvaa/chatbot/server';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
 import { COHERE_API_KEY } from './apiKey';
-import type { ConversationState } from '@openvaa/chatbot';
+import type { ConversationState } from '@openvaa/chatbot/server';
 
-// Initialize chatbot configuration (singleton pattern)
-const config = getChatbotConfiguration();
-const multiVectorStore = await config.vectorStore;
+// Get chatbot configuration
+const config = await getChatbotConfiguration();
+const multiVectorStore = config.vectorStore;
 const queryReformulationProvider = config.queryRoutingProvider;
 const phaseRouterProvider = config.phaseRouterProvider;
 
@@ -52,7 +53,7 @@ export async function POST({ request, params }: { request: Request; params: any 
     metadata: response.metadata,
     requestStartTime,
     conversationState,
-    messages
+    messages: messages as Array<{ role: string; content: string }>
   });
 }
 
@@ -110,7 +111,7 @@ async function wrapInSSE({
 
         // Log conversation exchange
         const userMessage = messages.findLast((msg) => msg.role === 'user')?.content || '';
-        console.log('[Chat API] Logging conversation:', {
+        console.info('[Chat API] Logging conversation:', {
           hasUserMessage: !!userMessage,
           hasAssistantResponse: !!assistantResponse,
           sessionId: conversationState.sessionId,

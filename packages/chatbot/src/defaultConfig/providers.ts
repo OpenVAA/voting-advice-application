@@ -1,7 +1,6 @@
 import { LLMProvider } from '@openvaa/llm-refactor';
 import { OPENAI_API_KEY } from '../apiKey';
 
-
 export function getQueryReformulationProvider(): LLMProvider {
   return new LLMProvider({
     provider: 'openai',

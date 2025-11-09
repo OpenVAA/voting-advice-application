@@ -1,6 +1,5 @@
 /**
  * Chatbot utilities and services
- * Barrel export for clean imports
  */
 
 export { convertUIMessagesToModelMessages } from './utils/adHocMessageConvert';

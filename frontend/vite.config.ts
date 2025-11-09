@@ -3,9 +3,6 @@ import viteTsConfigPaths from 'vite-tsconfig-paths';
 import type { UserConfig } from 'vite';
 
 const config: UserConfig = {
-  ssr: {
-    external: ['chromadb-default-embed']
-  },
   resolve: {
     preserveSymlinks: true
   },

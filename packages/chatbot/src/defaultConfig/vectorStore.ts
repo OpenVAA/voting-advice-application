@@ -15,10 +15,12 @@ export async function getVectorStore(): Promise<MultiVectorStore> {
     apiKey: OPENAI_API_KEY
   });
 
+  const chromaPath = process.env.CHROMA_URL || 'http://localhost:8000';
+
   const store = new MultiVectorStore({
     collectionNames: COLLECTION_NAMES,
     embedder,
-    chromaPath: 'http://localhost:8000'
+    chromaPath
   });
 
   await store.initialize();
