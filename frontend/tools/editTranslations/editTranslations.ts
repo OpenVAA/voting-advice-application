@@ -259,6 +259,7 @@ function readAllTranslations(): {
     const localeTranslations: Translations = {};
     const files = fs.readdirSync(path.join(TRANSL_DIR, locale));
     for (const file of files) {
+      if (!file.endsWith('.json')) continue;
       const prefix = file.replace(/\.json$/, '');
       if (locale === locales[0]) filePrefixes.push(prefix);
       localeTranslations[prefix] = readJsonTranslations(locale, file);
@@ -288,7 +289,12 @@ function flattenKeys(obj: Translations | string, prefix?: string): Array<[string
  */
 function readJsonTranslations(locale: string, filename: string): Translations {
   const fp = path.join(TRANSL_DIR, locale, filename);
-  return JSON.parse(fs.readFileSync(fp, ENCODING).toString());
+  try {
+    return JSON.parse(fs.readFileSync(fp, ENCODING).toString());
+  } catch (error) {
+    console.error(`[readJsonTranslations] Error reading file: ${fp}`, error);
+    throw error;
+  }
 }
 
 /**
