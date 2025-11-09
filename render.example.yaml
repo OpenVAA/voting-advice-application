@@ -4,6 +4,7 @@
 #    <INSTANCE_NAME>           e.g. demo-vaa
 #    <INSTANCE_BRANCH>         e.g. deploy-vaa
 #    <INSTANCE_DOMAIN>         e.g. vaa.openvaa.org
+#                              If you don't use a dedicated domain, comment out the "domains" part in the frontend service
 #    <INSTANCE_MAIL_FROM>      e.g. no-reply@openvaa.org
 #    <INSTANCE_MAIL_REPLY_TO>  e.g. info@openvaa.org
 #    <INSTANCE_MAIL_FROM_NAME> e.g. Voting Advice Application
@@ -14,7 +15,7 @@
 #
 # Env variables based on env.example 2025-09-25
 
-version: '2'
+version: '1'
 
 services:
   # Frontend service
