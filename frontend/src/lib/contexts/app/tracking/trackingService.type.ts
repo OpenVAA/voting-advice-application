@@ -38,9 +38,10 @@ export type TrackingService = {
    */
   sendTrackingEvent: Writable<TrackingHandler | null | undefined>;
   /**
-   * A store containing the persistent sessionId.
+   * A store containing the persistent session data.
+   * NB. Only edit `sessionData.vaaSessionId` if you're absolutely sure you want to change it.
    */
-  sessionId: Readable<string>;
+  sessionData: Writable<SessionData>;
   /**
    * A store resolving to `true` if we should track events.
    */
@@ -48,3 +49,17 @@ export type TrackingService = {
 };
 
 export type TrackingHandler = (event: TrackingEvent<Record<string, JSONData>>) => void;
+/**
+ * The common data stored for all sessions.
+ */
+
+export type SessionData = {
+  /**
+   * A generated unique identifier for the session, persisting across page loads but regenerated if the tab is closed.
+   */
+  vaaSessionId: string;
+  /**
+   * A possible trackingId for the session, passed as a query parameter to the outermost layout.
+   */
+  trackingId?: string;
+};

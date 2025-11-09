@@ -43,5 +43,7 @@ type TrackingEventName =
   | 'results_ranked'
   | `results_ranked_${EntityType}`
   | 'survey_opened'
+  | 'testCondition_reset'
+  | 'testCondition_set'
   | 'trackingId_set'
   | 'video';

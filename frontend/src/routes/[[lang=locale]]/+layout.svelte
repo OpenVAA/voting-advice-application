@@ -10,8 +10,9 @@
 
 ## Params
 
-- `trackingId`: A search parameter used for tracking the user in research settings. 
+- `trackingId`: A string parameter used for tracking the user in research settings. 
   NB! Data collection consent will be automatically granted if the parameter is provided.
+- `testCondition`: A string parameter for setting one of the predefined test conditions. If the condition is not valid, the default condition is used.
 
 ### Settings
 
@@ -54,11 +55,13 @@
     openFeedbackModal,
     popupQueue,
     sendTrackingEvent,
+    sessionData,
     setDataConsent,
     startEvent,
     startPageview,
     submitAllEvents,
     t,
+    testCondition,
     userPreferences
   } = initAppContext();
   initLayoutContext();
@@ -108,7 +111,7 @@
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Tracking
+  // Tracking and A/B testing
   ////////////////////////////////////////////////////////////////////
 
   // Set trackingId on initial layout load and automatically accept data collection consent if needed
@@ -121,7 +124,22 @@
     ) {
       setDataConsent('granted');
     }
-    startEvent('trackingId_set', { trackingId });
+    if (trackingId !== $sessionData.trackingId) {
+      startEvent('trackingId_set', { trackingId });
+      $sessionData = { ...$sessionData, trackingId };
+    }
+  }
+
+  // Set testCondition on initial layout load and automatically accept data collection consent if needed
+  const newTestCondition = $page.url.searchParams.get('testCondition');
+  if (newTestCondition && newTestCondition !== $testCondition) {
+    if ($appSettings.testConditions && newTestCondition in $appSettings.testConditions) {
+      startEvent('testCondition_set', { testCondition: newTestCondition });
+      $testCondition = newTestCondition;
+    } else {
+      startEvent('testCondition_reset', { invalidTestCondition: newTestCondition });
+      $testCondition = undefined;
+    }
   }
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js

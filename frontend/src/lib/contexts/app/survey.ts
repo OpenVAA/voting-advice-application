@@ -1,22 +1,31 @@
 import { derived, type Readable } from 'svelte/store';
-import type { TrackingService } from './tracking';
+import type { SessionData } from './tracking';
 
 /**
  * A link to the user survey, including the session ID, or `undefined` if the survey is not configured.
  */
 export function surveyLink({
   appSettings,
-  sessionId
+  sessionData
 }: {
   appSettings: Readable<AppSettings>;
-  sessionId: TrackingService['sessionId'];
+  sessionData: Readable<SessionData>;
 }): Readable<string | undefined> {
   return derived(
-    [appSettings, sessionId],
-    ([appSettings, sessionId]) => {
-      const linkTemplate = appSettings.survey?.linkTemplate;
-      return linkTemplate ? linkTemplate.replace(/\{\s*sessionId\s*\}/, sessionId ?? '') : undefined;
+    [appSettings, sessionData],
+    ([appSettings, sessionData]) => {
+      let linkTemplate = appSettings.survey?.linkTemplate;
+      if (!linkTemplate) return undefined;
+      for (const v of ['vaaSessionId', 'trackingId'] as const) {
+        linkTemplate = replaceVar(linkTemplate, v, sessionData);
+      }
+      return linkTemplate;
     },
     undefined
   );
+}
+
+function replaceVar(text: string, variable: keyof SessionData, data: SessionData): string {
+  const re = new RegExp(`\\{\\s*${variable}\\s*\\}`, 'g');
+  return text.replace(re, encodeURIComponent(data[variable] ?? ''));
 }

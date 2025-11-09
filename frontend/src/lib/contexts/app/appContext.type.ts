@@ -22,13 +22,16 @@ export type AppContext = ComponentContext &
     appCustomization: Writable<AppCustomization>;
     /**
      * A store for currently effective app settings.
-     * NB. The store is `Writable`, but it should not be written to under normal circumstances.
      */
-    appSettings: Writable<AppSettings>;
+    appSettings: Readable<AppSettings>;
     /**
      * A store for building routes.
      */
     getRoute: typeof getRoute;
+    /**
+     * A store for setting an A/B test condition.
+     */
+    testCondition: Writable<string | undefined>;
     /**
      * A store containing the possible survey link.
      */

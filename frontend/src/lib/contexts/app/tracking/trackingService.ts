@@ -6,14 +6,17 @@ import { purgeNullish } from '../../../utils/purgeNullish';
 import { sessionStorageWritable } from '../../utils/storageStore';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
+import type { SessionData } from './trackingService.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
 
 export function trackingService({
   appSettings,
-  userPreferences
+  userPreferences,
+  testCondition
 }: {
   appSettings: Readable<AppSettings>;
   userPreferences: Readable<UserPreferences>;
+  testCondition: Readable<string | undefined>;
 }): TrackingService {
   ////////////////////////////////////////////////////////////////////
   // Internal state variables
@@ -39,7 +42,9 @@ export function trackingService({
   // Stores
   ////////////////////////////////////////////////////////////////////
 
-  const sessionId = sessionStorageWritable('appContext-sessionId', getUUID());
+  const sessionData = sessionStorageWritable<SessionData>('appContext-sessionData', {
+    vaaSessionId: getUUID()
+  });
 
   const sendTrackingEvent = writable<TrackingHandler | null | undefined>(undefined);
 
@@ -98,7 +103,7 @@ export function trackingService({
     if (!get(shouldTrack)) return;
     const send = get(sendTrackingEvent);
     if (!send) return;
-    const dataToSend = purgeNullish({ vaaSessionId: get(sessionId), ...data });
+    const dataToSend = purgeNullish({ ...get(sessionData), testCondition: get(testCondition) ?? null, ...data });
     logDebugError({ name, data: dataToSend });
     send({ name, data: dataToSend });
   }
@@ -111,7 +116,7 @@ export function trackingService({
   return {
     resetAllEvents,
     sendTrackingEvent,
-    sessionId,
+    sessionData,
     shouldTrack,
     startEvent,
     startPageview,

@@ -14,7 +14,8 @@ import { trackingService } from './tracking';
 import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
 import { pageDatumStore } from '../utils/pageDatumStore';
-import { localStorageWritable } from '../utils/storageStore';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
+import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';
@@ -36,18 +37,20 @@ export function initAppContext(): AppContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitAppContext() called for a second time');
 
   ////////////////////////////////////////////////////////////////////
-  // App settings, customization and user preferences
+  // App settings, A/B test condition, customization and user preferences
   ////////////////////////////////////////////////////////////////////
 
   const appType: Writable<AppType> = writable();
 
+  const testCondition = sessionStorageWritable<string | undefined>('appContext-testCondition', '');
+
   // Both appSettings and appCustomization are updated directly from $page.data
 
   /**
-   * NB! Settings are overwritten by root key.
    * TODO: Handle merging so that empty objects do not overwrite defaults
+   * TODO[Svelte 5]: Use a derived store or similar instead of subscriptions
    */
-  const appSettings = writable<AppSettings>(mergeAppSettings(staticSettings, dynamicSettings));
+  const baseAppSettings = writable<AppSettings>(mergeAppSettings(staticSettings, dynamicSettings));
 
   // Subscribe to data update promises and update the appSettings store
   const appSettingsData = pageDatumStore<DynamicSettings>('appSettingsData');
@@ -57,7 +60,14 @@ export function initAppContext(): AppContext {
     const data = await promise;
     // Errors are handled by +layout.svelte
     if (!data || data instanceof Error) return;
-    appSettings.update((current) => mergeAppSettings(current, data));
+    baseAppSettings.update((current) => mergeAppSettings(current, data));
+  });
+
+  // We apply possible A/B test conditions to the appSettings before exporting
+  const appSettings = parsimoniusDerived([baseAppSettings, testCondition], ([baseAppSettings, testCondition]) => {
+    if (testCondition && baseAppSettings.testConditions && testCondition in baseAppSettings.testConditions)
+      return mergeAppSettings(baseAppSettings, baseAppSettings.testConditions[testCondition]);
+    return baseAppSettings;
   });
 
   const appCustomization = writable<AppCustomization>({});
@@ -80,9 +90,9 @@ export function initAppContext(): AppContext {
   // Tracking, survey and popups
   ////////////////////////////////////////////////////////////////////
 
-  const tracking = trackingService({ appSettings, userPreferences });
+  const tracking = trackingService({ appSettings, userPreferences, testCondition });
 
-  const survey = surveyLink({ appSettings, sessionId: tracking.sessionId });
+  const survey = surveyLink({ appSettings, sessionData: tracking.sessionData });
 
   const popupQueue = popupStore();
 
@@ -163,6 +173,7 @@ export function initAppContext(): AppContext {
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
     surveyLink: survey,
+    testCondition,
     userPreferences
   });
 }
