@@ -1,20 +1,16 @@
-import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
+import { mergeSettings } from '$lib/utils/merge';
+import type { DeepPartial, DynamicSettings, StaticSettings } from '@openvaa/app-shared';
 
 /**
  * A simple utility for merging settings.
- *
- * NB! Settings are overwritten by root key unless the key is nullish.
- * TODO: Handle merging so that empty objects do not overwrite defaults
+ * NB. Settings objects are not replaced, but their contents are combined. This does not apply to Arrays, which are replaced completely.
  * @param target - The static settings or complete `AppSettings`
  * @param additional - The dynamic or complete settings to add
  * @returns Complete `AppSettings`
  */
 export function mergeAppSettings(
   target: StaticSettings | AppSettings,
-  additional: AppSettings | DynamicSettings
+  additional: DeepPartial<AppSettings | DynamicSettings>
 ): AppSettings {
-  const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null)) as
-    | AppSettings
-    | DynamicSettings;
-  return Object.assign(target, nonNull);
+  return mergeSettings(target, additional) as AppSettings;
 }
