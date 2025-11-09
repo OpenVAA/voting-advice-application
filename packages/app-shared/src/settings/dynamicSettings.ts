@@ -86,14 +86,5 @@ export const dynamicSettings: DynamicSettings = {
   notifications: {
     candidateApp: null,
     voterApp: null
-  },
-  testConditions: {
-    control: {
-      questions: {
-        resultsPreview: {
-          enabled: false
-        }
-      }
-    }
   }
 };

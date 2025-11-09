@@ -1,6 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
+import type { DeepPartial } from '../types/deepPartial.type';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -11,7 +12,7 @@ export type DynamicSettings = {
    */
   survey?: {
     /**
-     * The link to the survey. This is passed to the translation function, which will replace `{sessionId}` with the URL-encoded session id if available or an empty string otherwise.
+     * The link to the survey. This is passed to the translation function, which will replace `{vaaSessionId}` and `{trackingId}` with the URL-encoded properties of the same name if available the `SessionData` or an empty string otherwise.
      */
     linkTemplate: string;
     /**
@@ -277,6 +278,13 @@ export type DynamicSettings = {
      * The notification shown to users of the Voter App.
      */
     voterApp?: NotificationData | null;
+  };
+  /**
+   * Settings related to possible A/B test conditions. The conditions are a partial settings that will be merged with the base settings.
+   * NB. These cannot be defined in Strapi.
+   */
+  testConditions?: {
+    [key: string]: DeepPartial<Omit<DynamicSettings, 'testConditions'>>;
   };
 };
 
