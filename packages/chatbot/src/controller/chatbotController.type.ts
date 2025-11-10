@@ -5,11 +5,7 @@ import type { ModelMessage } from 'ai';
 import type { QueryCategory } from '../core/queryCategories';
 
 /** Possible phases of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
-export type ConversationPhase =
-  | 'intro_to_chatbot_use'
-  | 'user_intent_extraction'
-  | 'intent_resolution'
-  | 'alignment_check';
+export type ConversationPhase = 'intro_to_chatbot_use' | 'user_intent_extraction' | 'intent_resolution';
 
 /** State of the conversation. Updates after each message. This state is required for an intelligent but efficient
  * chatbot. It is used to infer what the chatbot should know and be tasked to do depending on the conversation
@@ -17,6 +13,7 @@ export type ConversationPhase =
  */
 export interface ConversationState {
   sessionId: string;
+  messages: Array<ModelMessage>;
   /** Phase of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
   phase: ConversationPhase;
   /** Messages that are currently being processed. Messages may be lost due to memory constraints */
@@ -26,6 +23,8 @@ export interface ConversationState {
   /** Summary of the conversation history that is lost due to memory constraints */
   lossyHistorySummary: string;
   locale: string;
+  queryCategory: QueryCategory;
+  reformulatedQuery: string | null;
 }
 
 /**
@@ -35,8 +34,8 @@ export interface ConversationState {
  * to keep controller pure and testable via dependency injection.
  */
 export interface HandleQueryInput {
-  /** Conversation history as ModelMessage array */
-  messages: Array<ModelMessage>;
+  /** Conversation state including current phase and working memory */
+  state: ConversationState;
 
   /** User locale for prompts and responses */
   locale: string;
@@ -49,9 +48,6 @@ export interface HandleQueryInput {
 
   /** LLM provider for conversation phase routing (lightweight model recommended) */
   phaseRouterProvider: LLMProvider;
-
-  /** Conversation state including current phase and working memory */
-  conversationState: ConversationState;
 
   /** Optional reranking configuration */
   rerankConfig?: RerankConfig;
@@ -79,6 +75,8 @@ export interface ChatbotResponse {
    */
   stream: LLMStreamResult;
 
+  state: ConversationState;
+
   /**
    * Metadata about query processing
    *
@@ -90,10 +88,8 @@ export interface ChatbotResponse {
    * - latency.timeToFirstToken, latency.messageTime: API route's responsibility
    */
   metadata: {
-    /** Categorization results */
-    category: QueryCategory;
-    reformulatedQuery: string | null;
-
+    /** Query category */
+    categoryResult: CategorizationResult;
     /** Processing decisions */
     isCannedResponse: boolean;
     usedRAG: boolean;

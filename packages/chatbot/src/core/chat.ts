@@ -77,17 +77,11 @@ export class ChatEngine {
     };
 
     const basePrompt = parsed.basePrompt || '';
-    const phaseSpecific = parsed.phasePrompts?.[phase] || '';
+    const phaseInstructions = parsed.phasePrompts?.[phase] || '';
     const baseReminder = parsed.baseReminder || '';
-    console.info(`[ChatEngine] Full system prompt: ${basePrompt}
-
-${phaseSpecific}
-
-${baseReminder}`);
-
     return `${basePrompt}
 
-${phaseSpecific}
+${phaseInstructions}
 
 ${baseReminder}`;
   }

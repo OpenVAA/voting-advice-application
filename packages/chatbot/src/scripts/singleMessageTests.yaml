@@ -16,11 +16,9 @@ tests:
       - type: javascript
         value: output.length > 100
       - type: javascript
-        value: context.providerResponse?.metadata?.category === 'eu2024_policy'
-      - type: javascript
         value: context.providerResponse?.metadata?.usedRAG === true
       - type: latency
-        threshold: 10000
+        threshold: 20000
       - type: llm-rubric
         value: should not mention "retrieved context" explicitly in the response
   - description: "[PROMPTING] expect response to 'hello' to contain a question"

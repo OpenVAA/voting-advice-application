@@ -24,42 +24,31 @@ prompt: |
   - The conversation is in a normal question-answering flow
   - This is the main answering phase where factual information is being delivered
 
-  ### alignment_check
-  Choose this phase when:
-  - The user seems confused or dissatisfied with previous responses
-  - The user expresses frustration or indicates the chatbot isn't being helpful
-  - The conversation has drifted away from what the user actually wants
-  - The user appears to be misunderstanding the chatbot's capabilities or responses
-  - There's a disconnect between what the chatbot is providing and what the user needs
-  - The chatbot needs to inquire how it can better serve the user
-
   ## INSTRUCTIONS:
 
   1. Read the conversation messages carefully
   2. Consider the user's most recent message and the overall conversation context
   3. Determine which phase best describes the current state of the conversation
   4. Output a JSON object with a "phase" field containing one of these exact strings:
-     - intro_to_chatbot_use
      - user_intent_extraction
      - intent_resolution
-     - alignment_check
 
   ## EXAMPLES:
 
-  Example 1 (user_intent_extraction):
-  User: I want to learn about the elections
-  Assistant: I'd be happy to help! What specific aspects of the elections are you most interested in? For example, are you curious about voting procedures, candidate positions, or how the EU Parliament works?
-  User: I'm not sure, what should I know?
-  → Phase: user_intent_extraction
+  ### Example Set 1: Intent Resolution - User already knows what they want to know
 
-  Example 2 (intent_resolution):
+  ### Example 1:
   User: How does the EU Parliament voting system work?
-  → Phase: intent_resolution
+  Expected Output: { "phase": "intent_resolution" }
 
-  Example 3 (alignment_check):
-  User: Can you tell me about the environment policies?
-  Assistant: [Provides detailed information about EU environmental policies]
-  User: That's not what I meant, this isn't helpful
-  → Phase: alignment_check
+  ### Example 2:
+  
+
+  ### Example Set 2: User Intent Extraction - User doesn't know what they want to know or is exploring topics
+  User: I want to learn about the elections
+  
 
   Now analyze the conversation and output the appropriate phase.
+
+  ## CONVERSATION HISTORY:
+  {{messages}}

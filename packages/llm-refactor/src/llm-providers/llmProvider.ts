@@ -75,16 +75,19 @@ export class LLMProvider {
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
-        console.info('\n\n\n');
-        console.info('--------------------------------');
-        console.info('LLM CALL STARTS');
-        console.info('--------------------------------');
-        console.info('\n[LLMProvider] Messages: ', options.messages);
-        console.info(`\n[LLMProvider] Response [${model}]: ${JSON.stringify(result.object)}`);
-        console.info('--------------------------------');
-        console.info('LLM CALL ENDS');
-        console.info('--------------------------------');
-        console.info('\n\n\n');
+        // TODO: create utility function for logging
+        if (options.logging) {
+          console.info('\n\n\n');
+          console.info('--------------------------------');
+          console.info('LLM CALL STARTS');
+          console.info('--------------------------------');
+          console.info('\n[LLMProvider] Messages: ', options.messages);
+          console.info(`\n[LLMProvider] Response [${model}]: ${JSON.stringify(result.object)}`);
+          console.info('--------------------------------');
+          console.info('LLM CALL ENDS');
+          console.info('--------------------------------');
+          console.info('\n\n\n');
+        }
         const costs = this.calculateCosts(model, result.usage);
         this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
@@ -193,13 +196,6 @@ export class LLMProvider {
     const model =
       options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
-    console.info('\n\n\n\n\n\n');
-    console.info('--------------------------------');
-    console.info('LLM STREAM STARTS');
-    console.info('--------------------------------');
-    console.info('\n[LLMProvider] Streaming text with model:', model);
-    console.info('\n[LLMProvider] Messages: ', options.messages);
-
     const result = streamText({
       system: options.system,
       model: this.provider.languageModel(model),
@@ -211,11 +207,20 @@ export class LLMProvider {
 
     // Log the response when it arrives
     result.text.then((text) => {
-      console.info(`\n[LLMProvider] Response: ${text}`);
-      console.info('--------------------------------');
-      console.info('LLM STREAM ENDS');
-      console.info('--------------------------------');
-      console.info('\n\n\n\n\n\n');
+      if (options.logging) {
+        console.info('\n\n\n\n\n\n');
+        console.info('--------------------------------');
+        console.info('LLM STREAM STARTS');
+        console.info('--------------------------------');
+        console.info('\n[LLMProvider] Streaming text with model:', model);
+        console.info('\n[LLMProvider] Messages: ', options.messages);
+      
+        console.info(`\n[LLMProvider] Response: ${text}`);
+        console.info('--------------------------------');
+        console.info('LLM STREAM ENDS');
+        console.info('--------------------------------');
+        console.info('\n\n\n\n\n\n');
+      }
     });
 
     // Calculate costs asynchronously without blocking the return.

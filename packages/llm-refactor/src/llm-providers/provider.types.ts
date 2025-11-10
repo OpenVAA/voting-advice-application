@@ -53,6 +53,7 @@ export type LLMObjectGenerationOptions<TType> = Prompt &
     validationRetries?: number;
     controller?: Controller;
     modelConfig?: LLMModelConfig;
+    logging?: boolean;
   };
 
 export type LLMObjectGenerationResult<TType> = GenerateObjectResult<TType> & LLMCallMetadata;
@@ -67,6 +68,7 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
     controller?: Controller;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stopWhen?: StopCondition<any>; // Vercel doesn't support typing this, so we won't either
+    logging?: boolean;
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>

@@ -9,7 +9,6 @@ import type { EnrichedSegment } from './types';
  * {
  *   collectionName: 'my_collection',
  *   embedder: new OpenAIEmbedder({ model: 'text-embedding-3-small', dimensions: 1536 }),
- *   persistDirectory: './chroma_data'
  * }
  * ```
  */
@@ -17,7 +16,6 @@ export interface VectorStoreConfig {
   collectionName: string;
   collectionType: 'segment' | 'summary' | 'fact';
   embedder: Embedder;
-  persistDirectory?: string;
   /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
   chromaPath?: string;
 }
@@ -148,8 +146,6 @@ export interface MultiVectorStoreConfig {
     summaries?: Embedder;
     facts?: Embedder;
   };
-  /** Optional persist directory */
-  persistDirectory?: string;
   /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
   chromaPath?: string;
 }

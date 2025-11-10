@@ -37,6 +37,7 @@ export class MultiVectorStore {
     this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : {});
 
     // Determine embedders
+    // TODO: maybe just simplify and have a single embedder for all collections.
     const segmentEmbedder = config.embedders?.segments || config.embedder;
     const summaryEmbedder = config.embedders?.summaries || config.embedder;
     const factEmbedder = config.embedders?.facts || config.embedder;
@@ -52,7 +53,6 @@ export class MultiVectorStore {
       collectionName: config.collectionNames.segments,
       collectionType: 'segment',
       embedder: segmentEmbedder,
-      persistDirectory: config.persistDirectory,
       chromaPath: config.chromaPath
     });
 
@@ -60,7 +60,6 @@ export class MultiVectorStore {
       collectionName: config.collectionNames.summaries,
       collectionType: 'summary',
       embedder: summaryEmbedder,
-      persistDirectory: config.persistDirectory,
       chromaPath: config.chromaPath
     });
 
@@ -68,7 +67,6 @@ export class MultiVectorStore {
       collectionName: config.collectionNames.facts,
       collectionType: 'fact',
       embedder: factEmbedder,
-      persistDirectory: config.persistDirectory,
       chromaPath: config.chromaPath
     });
   }
@@ -90,7 +88,7 @@ export class MultiVectorStore {
    * @param documentId - ID of the parent document
    * @param metadata - Metadata for the source document
    */
-  async addAnalyzedSegments(
+  async addAnalyzedSegments( // TODO: insert only what is needed, not all segments, summaries, facts for all collections.
     segments: Array<SegmentWithAnalysis>,
     documentId: string,
     metadata: SourceMetadata

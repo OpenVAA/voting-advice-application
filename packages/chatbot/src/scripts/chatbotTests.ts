@@ -26,7 +26,6 @@ import type { ProviderResponse } from 'promptfoo';
 // Load environment variables from project root
 config({ path: join(__dirname, '..', '..', '..', '..', '.env') });
 
-
 async function runChatbotEvaluation() {
   // Determine which test files to run
   const testFilenames =
@@ -42,10 +41,7 @@ async function runChatbotEvaluation() {
   console.info(`Running tests from ${testFilenames.length} file(s): ${testFilenames.join(', ')}\n`);
 
   // Initialize chatbot configuration once (shared across all test files)
-  const chatbotConfig = await getChatbotConfiguration();
-  const vectorStore = chatbotConfig.vectorStore;
-  const queryRoutingProvider = chatbotConfig.queryRoutingProvider;
-  const phaseRouterProvider = chatbotConfig.phaseRouterProvider;
+  const { vectorStore, queryRoutingProvider, phaseRouterProvider } = await getChatbotConfiguration();
 
   // Track aggregate statistics
   let totalTests = 0;
@@ -111,13 +107,15 @@ async function runChatbotEvaluation() {
 
             // Call the chatbot controller
             const response = await ChatbotController.handleQuery({
-              messages,
               locale: 'en',
               vectorStore,
               queryRoutingProvider,
               phaseRouterProvider,
-              conversationState: {
+              state: {
                 sessionId: crypto.randomUUID(),
+                messages,
+                queryCategory: 'conversational',
+                reformulatedQuery: null,
                 phase: 'intent_resolution', // Use intent_resolution to enable RAG
                 workingMemory: [],
                 forgottenMessages: [],

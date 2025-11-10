@@ -41,44 +41,23 @@ export class ChatbotController {
    */
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
     // PHASE 1 & 2: Run categorization and phase determination in parallel
-    const [categorization, conversationState] = await Promise.all([
+    const [categorization, newPhase] = await Promise.all([
       this.categorizeQuery(input),
-      this.updateConversationState(input)
+     determineConversationPhase(input.state, input.phaseRouterProvider)
     ]);
 
     // PHASE 3: Decision - should we return canned response?
     if (this.shouldReturnCanned(categorization.category)) {
-      return this.createCannedResponse(categorization);
+      return this.createCannedResponse({ categorization, state: input.state });
     }
 
     // PHASE 4: Check if RAG required → retrieve if yes
-    const ragContext = this.isRagRequired(conversationState.phase, categorization.category)
-      ? await this.retrieveRAG(categorization, input)
+    const ragContext = this.isRagRequired(newPhase, categorization.category)
+      ? await this.retrieveRAG({ categorization, input })
       : null;
 
     // PHASE 5: Create LLM response with phase-specific prompt
-    return this.createLLMResponse(categorization, ragContext, input, conversationState);
-  }
-
-  /**
-   * Update conversation state with new phase determination
-   *
-   * @param input - Query input
-   * @returns Updated conversation state with new phase
-   */
-  private static async updateConversationState(input: HandleQueryInput): Promise<ConversationState> {
-    // Use last 5 messages from working memory for phase detection
-    const recentMessages = input.messages.slice(-5);
-
-    // Determine current conversation phase
-    const phase = await determineConversationPhase(recentMessages, input.phaseRouterProvider);
-
-    // Return updated state with new phase
-    return {
-      ...input.conversationState,
-      phase,
-      workingMemory: input.messages.slice(-5) // TOOD: this is arbritrary and needs advanced summarization logic
-    };
+    return this.createLLMResponse({ categorization, ragContext, input, newPhase });
   }
 
   /**
@@ -92,7 +71,7 @@ export class ChatbotController {
     const costsBefore = input.queryRoutingProvider.cumulativeCosts;
 
     // Extract user messages for context
-    const userMessages = input.messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
+    const userMessages = input.state.messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
 
     // Route and reformulate query
     const { category, rephrased } = await routeQuery({
@@ -146,10 +125,13 @@ export class ChatbotController {
    * @param input - Query input
    * @returns RAG context
    */
-  private static async retrieveRAG(
+  private static async retrieveRAG({
+    categorization,
+    input
+  }: {
     categorization: CategorizationResult,
     input: HandleQueryInput
-  ): Promise<RAGContextResult> {
+  }): Promise<RAGContextResult> {
     if (!categorization.rephrased) {
       throw new Error('Cannot retrieve RAG without reformulated query');
     }
@@ -238,7 +220,13 @@ export class ChatbotController {
    * @param categorization - Categorization result
    * @returns Chatbot response with canned stream
    */
-  private static async createCannedResponse(categorization: CategorizationResult): Promise<ChatbotResponse> {
+  private static async createCannedResponse({
+    categorization,
+    state
+  }: {
+    categorization: CategorizationResult;
+    state: ConversationState;
+  }): Promise<ChatbotResponse> {
     const message = getCannedResponse(categorization.category);
     if (!message) {
       throw new Error(`No canned response defined for category: ${categorization.category}`);
@@ -247,11 +235,16 @@ export class ChatbotController {
     // Create streaming wrapper for canned message
     const stream = await ChatEngine.createCannedStream(message);
 
+    const newState = {
+      ...state,
+      messages: [...state.messages, { role: 'assistant', content: message } as ModelMessage]
+    };
+
     return {
       stream,
+      state: newState,
       metadata: {
-        category: categorization.category,
-        reformulatedQuery: null,
+        categoryResult: categorization,
         isCannedResponse: true,
         usedRAG: false,
         costs: {
@@ -271,19 +264,24 @@ export class ChatbotController {
    * @param categorization - Categorization result
    * @param ragContext - RAG context (if retrieved)
    * @param input - Query input
-   * @param conversationState - Current conversation state
+   * @param newPhase - New conversation phase
    * @returns Chatbot response with LLM stream
    */
-  private static async createLLMResponse(
+  private static async createLLMResponse({
+    categorization,
+    ragContext,
+    input,
+    newPhase
+  }: {
     categorization: CategorizationResult,
     ragContext: RAGContextResult | null,
     input: HandleQueryInput,
-    conversationState: ConversationState
-  ): Promise<ChatbotResponse> {
+    newPhase: ConversationPhase
+  }): Promise<ChatbotResponse> {
     // Enhance messages with RAG context if available
     const messages = ragContext
-      ? await this.enhanceMessagesWithRAG(input.messages, ragContext.formattedContext)
-      : input.messages;
+      ? await this.enhanceMessagesWithRAG(input.state.messages, ragContext.formattedContext)
+      : input.state.messages;
 
     // Create LLM stream with phase-specific prompt
     const stream = await ChatEngine.createStream({
@@ -293,14 +291,21 @@ export class ChatbotController {
       },
       nSteps: 5,
       llmProvider: input.chatProvider,
-      conversationPhase: conversationState.phase
+      conversationPhase: newPhase
     });
+
+    // Update state
+    const newState = {
+      ...input.state,
+      messages,
+      phase: newPhase
+    };
 
     return {
       stream,
+      state: newState,
       metadata: {
-        category: categorization.category,
-        reformulatedQuery: categorization.rephrased,
+        categoryResult: categorization,
         isCannedResponse: false,
         usedRAG: !!ragContext,
         ragContext: ragContext

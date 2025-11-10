@@ -5,17 +5,16 @@ import { COHERE_API_KEY } from './apiKey';
 import type { ConversationState } from '@openvaa/chatbot/server';
 
 // Get chatbot configuration
-const config = await getChatbotConfiguration();
-const multiVectorStore = config.vectorStore;
-const queryReformulationProvider = config.queryRoutingProvider;
-const phaseRouterProvider = config.phaseRouterProvider;
+// TODO: move default config to chatbot package and make optional in its api
+const { vectorStore, queryRoutingProvider, phaseRouterProvider } = await getChatbotConfiguration();
 
 // API endpoint for chat functionality with RAG enrichment
+// TODO: type the params
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function POST({ request, params }: { request: Request; params: any }) {
   const requestStartTime = Date.now();
 
-  // Parse request
+  // Parse request. TODO: store conversation state in redis instead of client
   const { messages: uiMessages, conversationState: clientConversationState } = await request.json();
   const messages = convertUIMessagesToModelMessages(uiMessages);
   const locale = params.lang || 'en';
@@ -30,13 +29,13 @@ export async function POST({ request, params }: { request: Request; params: any 
     locale
   };
 
-  // Call controller (all business logic orchestrated here)
+  // Business logic handled by chatbot package
   const response = await ChatbotController.handleQuery({
     messages,
     locale,
     conversationState,
-    vectorStore: multiVectorStore,
-    queryRoutingProvider: queryReformulationProvider,
+    vectorStore: vectorStore,
+    queryRoutingProvider: queryRoutingProvider,
     phaseRouterProvider: phaseRouterProvider,
     rerankConfig: {
       enabled: true,
