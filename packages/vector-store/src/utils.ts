@@ -6,14 +6,7 @@
  *
  * Note: These utilities require LLM providers but don't directly depend on Node.js-only
  * packages like ChromaDB.
- *
- * Usage:
- *   import { routeQuery } from '@openvaa/vector-store/utils';
  */
-
-// Query routing and reformulation
-export type { QueryRoutingResult } from './core/utils/queryRouting';
-export { routeQuery } from './core/utils/queryRouting';
 
 // Query variations
 export { getQueryVariations } from './core/utils/queryVariations';

@@ -23,6 +23,10 @@
           errorText?: string;
         }
     >;
+    metadata?: {
+      phase?: string;
+      category?: string;
+    };
   }
 
   // Metadata tracking interfaces
@@ -70,7 +74,10 @@
   // Conversation state for phase routing
   let conversationState: ConversationState = {
     sessionId: crypto.randomUUID(),
-    phase: 'intro_to_chatbot_use',
+    phase: 'user_intent_extraction',
+    messages: [],
+    queryCategory: 'conversational',
+    reformulatedQuery: null,
     workingMemory: [],
     forgottenMessages: [],
     lossyHistorySummary: '',
@@ -95,15 +102,11 @@
   $: lastReformulationDuration = latencies.length > 0 ? latencies[latencies.length - 1].reformulationDuration : 0;
   $: averageReformulationDuration =
     latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.reformulationDuration, 0) / latencies.length : 0;
-  $: minReformulationDuration = latencies.length > 0 ? Math.min(...latencies.map((l) => l.reformulationDuration)) : 0;
-  $: maxReformulationDuration = latencies.length > 0 ? Math.max(...latencies.map((l) => l.reformulationDuration)) : 0;
 
   // RAG Retrieval metrics
   $: lastRetrievalDuration = latencies.length > 0 ? latencies[latencies.length - 1].retrievalDuration : 0;
   $: averageRetrievalDuration =
     latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.retrievalDuration, 0) / latencies.length : 0;
-  $: minRetrievalDuration = latencies.length > 0 ? Math.min(...latencies.map((l) => l.retrievalDuration)) : 0;
-  $: maxRetrievalDuration = latencies.length > 0 ? Math.max(...latencies.map((l) => l.retrievalDuration)) : 0;
 
   // Time to First Token metrics
   $: lastTTFT = latencies.length > 0 ? latencies[latencies.length - 1].timeToFirstToken : 0;
@@ -168,7 +171,7 @@
             role: msg.role,
             parts: msg.parts
           })),
-          conversationState
+          sessionId: conversationState.sessionId
         })
       });
 
@@ -304,6 +307,21 @@
           }
         ];
       }
+
+      // Store phase and category in the last assistant message
+      if (data.rag) {
+        const lastAssistantMessage = messages.findLast((m) => m.role === 'assistant');
+        if (lastAssistantMessage) {
+          lastAssistantMessage.metadata = {
+            phase: data.rag.phase, // Now from server
+            category: data.rag.category
+          };
+
+          // Update local conversationState for UI display
+          conversationState.phase = data.rag.phase;
+          messages = [...messages]; // Trigger reactivity
+        }
+      }
       return;
     }
 
@@ -417,7 +435,18 @@
     <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
       {#each messages as message}
         <div class="p-3 rounded {message.role === 'user' ? 'ml-8 bg-blue-100' : 'mr-8 bg-gray-100'}">
-          <div class="font-semibold mb-1">{message.role === 'user' ? 'You' : 'Assistant'}</div>
+          <div class="font-semibold mb-1">
+            {#if message.role === 'user'}
+              You
+            {:else}
+              Assistant
+              {#if message.metadata?.phase && message.metadata?.category}
+                <span class="text-xs text-gray-500">
+                  (phase: {message.metadata.phase}, category: {message.metadata.category})
+                </span>
+              {/if}
+            {/if}
+          </div>
           <div class="whitespace-pre-wrap">
             {#each message.parts as part}
               <div>{renderMessagePart(part)}</div>

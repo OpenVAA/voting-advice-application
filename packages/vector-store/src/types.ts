@@ -32,6 +32,3 @@ export type {
 // bundling these for the browser.
 export type { ChromaVectorStore } from './core/chromaVectorStore';
 export type { MultiVectorStore } from './core/multiVectorStore';
-
-// Query routing types
-export type { QueryRoutingResult } from './core/utils/queryRouting';

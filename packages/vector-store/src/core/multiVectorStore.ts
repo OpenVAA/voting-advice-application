@@ -112,7 +112,7 @@ export class MultiVectorStore {
       searchConfig = {},
       rerankConfig,
       nResultsTarget,
-      query
+      queries
     } = options;
 
     // Validation

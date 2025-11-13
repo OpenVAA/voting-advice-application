@@ -1,10 +1,12 @@
 import { LLMProvider } from '@openvaa/llm-refactor';
+import { setPromptVars } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { OPENAI_API_KEY } from '../apiKey';
+import { CHATBOT_SKILLS, FALLBACK_TOPICS } from '../defaultConfig/chatbotSkills';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
 import type { ChatbotAPIInput } from '../api.type';
@@ -81,7 +83,14 @@ export class ChatEngine {
     const baseReminder = parsed.baseReminder || '';
     return `${basePrompt}
 
-${phaseInstructions}
+${setPromptVars({ // the phase prompt
+  promptText: phaseInstructions,
+  variables: {
+    chatbotSkills: CHATBOT_SKILLS,
+    fallbackTopics: FALLBACK_TOPICS
+  }, 
+  strict: false // some prompt may not have these vars. 
+})}
 
 ${baseReminder}`;
   }

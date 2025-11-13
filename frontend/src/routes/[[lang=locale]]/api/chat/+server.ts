@@ -2,7 +2,8 @@ import { ChatbotController, updateConversation } from '@openvaa/chatbot/server';
 import { getChatbotConfiguration } from '@openvaa/chatbot/server';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
 import { COHERE_API_KEY } from './apiKey';
-import type { ConversationState } from '@openvaa/chatbot/server';
+import type { ChatbotResponse, ConversationState } from '@openvaa/chatbot/server';
+import type { LLMStreamResult } from '@openvaa/llm-refactor';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
@@ -15,25 +16,27 @@ export async function POST({ request, params }: { request: Request; params: any 
   const requestStartTime = Date.now();
 
   // Parse request. TODO: store conversation state in redis instead of client
-  const { messages: uiMessages, conversationState: clientConversationState } = await request.json();
+  const { messages: uiMessages, sessionId } = await request.json();
   const messages = convertUIMessagesToModelMessages(uiMessages);
   const locale = params.lang || 'en';
 
-  // Initialize conversation state if not provided
-  const conversationState: ConversationState = clientConversationState || {
-    sessionId: crypto.randomUUID(),
-    phase: 'intro_to_chatbot_use',
+  // Build fresh state for this request
+  const state: ConversationState = {
+    sessionId: sessionId || crypto.randomUUID(),
+    messages,
+    phase: 'user_intent_extraction', // Will be determined by phaseRouter
     workingMemory: messages,
-    forgottenMessages: [], // TODO: Implement forgotten messages
-    lossyHistorySummary: '', // TODO: Implement lossy history summary
-    locale
+    forgottenMessages: [],
+    lossyHistorySummary: '',
+    locale,
+    queryCategory: 'conversational', // Will be determined by categorizeQuery
+    reformulatedQuery: null
   };
 
   // Business logic handled by chatbot package
   const response = await ChatbotController.handleQuery({
-    messages,
     locale,
-    conversationState,
+    state,
     vectorStore: vectorStore,
     queryRoutingProvider: queryRoutingProvider,
     phaseRouterProvider: phaseRouterProvider,
@@ -51,7 +54,8 @@ export async function POST({ request, params }: { request: Request; params: any 
     stream: response.stream,
     metadata: response.metadata,
     requestStartTime,
-    conversationState,
+    conversationState: state,
+    responseState: response.state,
     messages: messages as Array<{ role: string; content: string }>
   });
 }
@@ -65,12 +69,14 @@ async function wrapInSSE({
   metadata,
   requestStartTime,
   conversationState,
+  responseState,
   messages
 }: {
-  stream: any;
-  metadata: any;
+  stream: LLMStreamResult;
+  metadata: ChatbotResponse['metadata'];
   requestStartTime: number;
   conversationState: ConversationState;
+  responseState: ConversationState;
   messages: Array<{ role: string; content: string }>;
 }) {
   const sseStream = new ReadableStream({
@@ -114,19 +120,16 @@ async function wrapInSSE({
           hasUserMessage: !!userMessage,
           hasAssistantResponse: !!assistantResponse,
           sessionId: conversationState.sessionId,
-          phase: conversationState.phase
+          phase: responseState.phase
         });
 
         if (userMessage && assistantResponse) {
           // Fire and forget - don't block response on logging
-          updateConversation(
-            userMessage,
-            assistantResponse,
-            conversationState.sessionId,
-            conversationState.phase
-          ).catch((err) => {
-            console.error('[Chat API] Failed to log conversation:', err);
-          });
+          updateConversation(userMessage, assistantResponse, conversationState.sessionId, responseState.phase).catch(
+            (err) => {
+              console.error('[Chat API] Failed to log conversation:', err);
+            }
+          );
         } else {
           console.warn('[Chat API] Skipping conversation log - missing user or assistant message');
         }
@@ -163,8 +166,9 @@ async function wrapInSSE({
                 tokensPerSecond
               },
               rag: {
-                category: metadata.category,
-                reformulatedQuery: metadata.reformulatedQuery,
+                phase: responseState.phase,
+                category: metadata.categoryResult?.category,
+                reformulatedQuery: metadata.categoryResult?.rephrased,
                 needsRAG: metadata.usedRAG,
                 segmentsRetrieved: metadata.ragContext?.segmentsUsed ?? 0
               },

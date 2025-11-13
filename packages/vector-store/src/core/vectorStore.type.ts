@@ -70,10 +70,8 @@ export interface EnrichedSearchResult {
  * Result from multi-vector search across segments, summaries, and facts
  */
 export interface MultiVectorSearchResult {
-  /** The search query that produced these results */
-  query: string;
   /** Deduplicated and enriched results */
-  results: Array<EnrichedSearchResult>;
+  results: Array<EnrichedSearchResult>; // TODO: maybe use a map? it's more an internal nice-to-have feat than necessary... 
   /** Statistics about where results came from */
   retrievalSources: {
     fromSegments: number;
@@ -94,6 +92,9 @@ export interface CollectionSearchConfig {
   topK?: number;
   /** Minimum similarity score threshold (0-1, higher is more similar) */
   minSimilarity?: number;
+  /** Cohere pricing allows reranking up to 100 search results for a fixed cost. 
+   * This is the allocation of that 100 search results to this collection type.*/
+  rerankAllocation?: number;
 }
 
 /**
@@ -112,8 +113,8 @@ export interface RerankConfig {
  * Options for multi-vector search
  */
 export interface MultiVectorSearchOptions {
-  /** The query string to search for */
-  query: string;
+  /** An array of queries to use for searching information */
+  queries: Array<string>;
   /** Target number of results to return */
   nResultsTarget: number;
   /** Which collections to search (default: all) */

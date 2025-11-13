@@ -19,7 +19,7 @@ export interface PhaseSegment {
 }
 
 /**
- * Complete conversation log for a session
+ * Complete conversation info for a session
  */
 export interface ConversationLog {
   sessionId: string;
@@ -39,13 +39,13 @@ export interface ConversationSummary {
 }
 
 /**
- * In-memory storage for conversation logs
+ * In-memory storage for conversation infos
  * Key: sessionId, Value: ConversationLog
  */
 const conversationStore = new Map<string, ConversationLog>();
 
 /**
- * Formats a timestamp for display in conversation logs
+ * Formats a timestamp for display in conversation infos
  * @param date - Date to format
  * @returns Human-readable timestamp string (e.g., "2025-11-04 14:23:45")
  */
@@ -72,7 +72,7 @@ function formatTime(date: Date): string {
 }
 
 /**
- * Creates the session header for a conversation log
+ * Creates the session header for a conversation info
  * @param sessionId - Unique session identifier
  * @param timestamp - Session start time
  * @returns Formatted session header
@@ -85,7 +85,7 @@ STARTED: ${formatTimestamp(timestamp)}
 }
 
 /**
- * Creates a phase header for the conversation log
+ * Creates a phase header for the conversation info
  * @param phase - Conversation phase
  * @returns Formatted phase header
  */
@@ -94,7 +94,7 @@ function createPhaseHeader(phase: ConversationPhase): string {
 }
 
 /**
- * Formats a message for the conversation log
+ * Formats a message for the conversation info
  * @param role - Message role (user or assistant)
  * @param content - Message content
  * @param timestamp - Message timestamp
@@ -107,8 +107,8 @@ function formatMessage(role: 'user' | 'assistant', content: string, timestamp: D
 }
 
 /**
- * Updates the conversation log with a new user-assistant message exchange.
- * Creates a new log entry if one doesn't exist, or appends to an existing one.
+ * Updates the conversation info with a new user-assistant message exchange.
+ * Creates a new info entry if one doesn't exist, or appends to an existing one.
  * Automatically detects and handles phase transitions.
  *
  * @param userMessage - The user's message text
@@ -123,7 +123,7 @@ export async function updateConversation(
   phase: ConversationPhase
 ): Promise<void> {
   try {
-    console.log('[ConversationLogger] updateConversation called:', {
+    console.info('[ConversationLogger] updateConversation called:', {
       sessionId,
       phase,
       userMessageLength: userMessage.length,
@@ -131,12 +131,12 @@ export async function updateConversation(
     });
 
     const now = new Date();
-    let log = conversationStore.get(sessionId);
+    let info = conversationStore.get(sessionId);
 
-    if (!log) {
-      console.log('[ConversationLogger] Creating new log for session:', sessionId);
-      // Create new conversation log
-      log = {
+    if (!info) {
+      console.info('[ConversationLogger] Creating new info for session:', sessionId);
+      // Create new conversation info
+      info = {
         sessionId,
         startedAt: now,
         phases: [
@@ -147,15 +147,15 @@ export async function updateConversation(
           }
         ]
       };
-      conversationStore.set(sessionId, log);
+      conversationStore.set(sessionId, info);
     }
 
     // Check if we need to start a new phase
-    const currentPhaseSegment = log.phases[log.phases.length - 1];
+    const currentPhaseSegment = info.phases[info.phases.length - 1];
     if (currentPhaseSegment.phase !== phase) {
-      console.log('[ConversationLogger] Phase transition:', currentPhaseSegment.phase, '->', phase);
+      console.info('[ConversationLogger] Phase transition:', currentPhaseSegment.phase, '->', phase);
       // Phase transition - create new phase segment
-      log.phases.push({
+      info.phases.push({
         phase,
         startedAt: now,
         exchanges: []
@@ -163,25 +163,25 @@ export async function updateConversation(
     }
 
     // Add the message exchange to the current phase
-    const activePhaseSegment = log.phases[log.phases.length - 1];
+    const activePhaseSegment = info.phases[info.phases.length - 1];
     activePhaseSegment.exchanges.push({
       userMessage,
       assistantMessage,
       timestamp: now
     });
 
-    console.log('[ConversationLogger] Store updated. Total sessions:', conversationStore.size);
-    console.log('[ConversationLogger] Session IDs in store:', Array.from(conversationStore.keys()));
+    console.info('[ConversationLogger] Store updated. Total sessions:', conversationStore.size);
+    console.info('[ConversationLogger] Session IDs in store:', Array.from(conversationStore.keys()));
   } catch (error) {
-    // Log error but don't throw - conversation logging should not break the chat
-    console.error('[ConversationLogger] Failed to log conversation:', error);
+    // Log error but don't throw - conversation infoging should not break the chat
+    console.error('[ConversationLogger] Failed to info conversation:', error);
   }
 }
 
 /**
- * Retrieves a conversation log for a specific session
+ * Retrieves a conversation info for a specific session
  * @param sessionId - The session identifier
- * @returns The conversation log, or undefined if not found
+ * @returns The conversation info, or undefined if not found
  */
 export function getConversation(sessionId: string): ConversationLog | undefined {
   return conversationStore.get(sessionId);
@@ -192,18 +192,18 @@ export function getConversation(sessionId: string): ConversationLog | undefined 
  * @returns Array of conversation summaries sorted by last activity (newest first)
  */
 export function getAllConversationSummaries(): Array<ConversationSummary> {
-  console.log('[ConversationLogger] getAllConversationSummaries called. Store size:', conversationStore.size);
-  console.log('[ConversationLogger] Session IDs:', Array.from(conversationStore.keys()));
+  console.info('[ConversationLogger] getAllConversationSummaries called. Store size:', conversationStore.size);
+  console.info('[ConversationLogger] Session IDs:', Array.from(conversationStore.keys()));
 
   const summaries: Array<ConversationSummary> = [];
 
-  for (const log of conversationStore.values()) {
-    const messageCount = log.phases.reduce((sum, phase) => sum + phase.exchanges.length, 0);
-    const currentPhase = log.phases[log.phases.length - 1].phase;
+  for (const info of conversationStore.values()) {
+    const messageCount = info.phases.reduce((sum, phase) => sum + phase.exchanges.length, 0);
+    const currentPhase = info.phases[info.phases.length - 1].phase;
 
     // Get timestamp of last exchange
-    let lastActivity = log.startedAt;
-    for (const phase of log.phases) {
+    let lastActivity = info.startedAt;
+    for (const phase of info.phases) {
       for (const exchange of phase.exchanges) {
         if (exchange.timestamp > lastActivity) {
           lastActivity = exchange.timestamp;
@@ -212,8 +212,8 @@ export function getAllConversationSummaries(): Array<ConversationSummary> {
     }
 
     summaries.push({
-      sessionId: log.sessionId,
-      startedAt: log.startedAt,
+      sessionId: info.sessionId,
+      startedAt: info.startedAt,
       messageCount,
       currentPhase,
       lastActivity
@@ -221,7 +221,7 @@ export function getAllConversationSummaries(): Array<ConversationSummary> {
   }
 
   // Sort by last activity, newest first
-  console.log('[ConversationLogger] Returning', summaries.length, 'summaries');
+  console.info('[ConversationLogger] Returning', summaries.length, 'summaries');
   return summaries.sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime());
 }
 
@@ -235,14 +235,14 @@ export function clearConversation(sessionId: string): boolean {
 }
 
 /**
- * Formats a conversation log as a human-readable text string
- * @param log - The conversation log to format
+ * Formats a conversation info as a human-readable text string
+ * @param info - The conversation info to format
  * @returns Formatted text representation
  */
-export function formatConversationAsText(log: ConversationLog): string {
-  let text = createSessionHeader(log.sessionId, log.startedAt);
+export function formatConversationAsText(info: ConversationLog): string {
+  let text = createSessionHeader(info.sessionId, info.startedAt);
 
-  for (const phaseSegment of log.phases) {
+  for (const phaseSegment of info.phases) {
     text += createPhaseHeader(phaseSegment.phase);
 
     for (const exchange of phaseSegment.exchanges) {

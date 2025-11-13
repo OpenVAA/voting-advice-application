@@ -1,5 +1,6 @@
 import { type LLMProvider, setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
+import { formatConversationHistory } from './messageHistoryFormatter';
 import { loadPrompt } from './promptLoader';
 import type { ConversationPhase, ConversationState } from '../controller/chatbotController.type';
 
@@ -14,10 +15,11 @@ const ConversationPhaseSchema = z.object({
 /**
  * Determine conversation phase from recent messages using LLM
  *
- * Analyzes the last 3-5 messages to determine which phase the conversation is in.
- * Uses a lightweight LLM model (gpt-4o-mini) with structured output for fast, cheap routing.
+ * Analyzes recent conversation messages (last 4 user + last 4 assistant) to determine
+ * which phase the conversation is in. Uses a lightweight LLM model (gpt-4o-mini) with
+ * structured output for fast, cheap routing.
  *
- * @param messages - Recent conversation messages (automatically limited to last 5)
+ * @param state - Current conversation state with messages
  * @param provider - LLM provider for phase detection
  * @returns Validated conversation phase
  *
@@ -36,20 +38,12 @@ export async function determineConversationPhase(
   // Load phase router prompt
   const promptTemplate = await loadPrompt({ promptFileName: 'phaseRouter' });
 
-  // TODO: more advanced phase detection logic.
-  // Take only last 5 messages to keep context window small
-  const recentMessages = state.messages.slice(-7);
-
-  // Format conversation history with latest message highlighted
-  const formattedHistory = recentMessages
-    .map((msg, idx) => {
-      if (idx === recentMessages.length - 1) {
-        // Highlight the latest message
-        return `<<LATEST_MESSAGE>> User: ${msg} <</LATEST_MESSAGE>>`;
-      }
-      return `User: ${msg}`;
-    })
-    .join('\n\n');
+  // Format conversation history with last 4 user + 4 assistant messages
+  const formattedHistory = formatConversationHistory(state.messages, {
+    maxUserMessages: 4,
+    maxAssistantMessages: 4,
+    highlightLatest: true
+  });
 
   // Call LLM with structured output (Zod schema validation)
   const result = await provider.generateObject({
@@ -57,8 +51,8 @@ export async function determineConversationPhase(
     messages: [
       {
         role: 'system',
-        content: setPromptVars({ 
-          promptText: promptTemplate.prompt, variables: { messages: formattedHistory } 
+        content: setPromptVars({
+          promptText: promptTemplate.prompt, variables: { messages: formattedHistory }
         })
       }
     ],

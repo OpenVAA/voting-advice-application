@@ -2,7 +2,21 @@ import type { CostBreakdown } from '@openvaa/core';
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
 import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
-import type { QueryCategory } from '../core/queryCategories';
+
+/** Message moderation and next step decision. Route either to a canned response or generation. */
+export type QueryCategory = 'appropriate' | 'inappropriate' | 'not_possible';
+
+/** Query routing result. Contains the categorization and the costs and duration of the routing. */
+export type QueryRoutingResult = {
+  category: QueryCategory;
+  costs: CostBreakdown;
+  durationMs: number;
+};
+
+export type RAGOptions = {
+  nResultsTarget?: number;
+  rerankConfig?: RerankConfig;
+}
 
 /** Possible phases of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
 export type ConversationPhase = 'intro_to_chatbot_use' | 'user_intent_extraction' | 'intent_resolution';
@@ -23,7 +37,7 @@ export interface ConversationState {
   /** Summary of the conversation history that is lost due to memory constraints */
   lossyHistorySummary: string;
   locale: string;
-  queryCategory: QueryCategory;
+  queryCategory: QueryRoutingResult; // TODO: use QueryCategory instead
   reformulatedQuery: string | null;
 }
 
@@ -88,8 +102,8 @@ export interface ChatbotResponse {
    * - latency.timeToFirstToken, latency.messageTime: API route's responsibility
    */
   metadata: {
-    /** Query category */
-    categoryResult: CategorizationResult;
+    /** Query routing result */
+    routingResult: QueryRoutingResult;
     /** Processing decisions */
     isCannedResponse: boolean;
     usedRAG: boolean;
@@ -119,16 +133,6 @@ export interface ChatbotResponse {
       // Note: TTFB and streaming time tracked by API route
     };
   };
-}
-
-/**
- * Internal result from query categorization step
- */
-export interface CategorizationResult {
-  category: QueryCategory;
-  rephrased: string | null;
-  costs: CostBreakdown;
-  durationMs: number;
 }
 
 /**

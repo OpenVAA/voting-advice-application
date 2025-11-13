@@ -1,20 +1,20 @@
 import { setPromptVars } from '@openvaa/llm-refactor';
-import { routeQuery } from '@openvaa/vector-store/utils';
 import { getCannedResponse } from '../core/cannedResponses';
 import { ChatEngine } from '../core/chat';
-import { ALL_CATEGORY_VALUES, isQueryable, needsCannedResponse } from '../core/queryCategories';
+import { CHATBOT_SKILLS, FALLBACK_TOPICS, OUT_OF_SCOPE_TOPICS } from '../defaultConfig/chatbotSkills';
 import { determineConversationPhase } from '../utils/phaseRouter';
 import { loadPrompt } from '../utils/promptLoader';
+import { routeQuery } from '../utils/queryRouter';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
-import type { QueryCategory } from '../core/queryCategories';
 import type { LoadedPrompt } from '../types/prompt.type';
 import type {
-  CategorizationResult,
   ChatbotResponse,
   ConversationPhase,
   ConversationState,
   HandleQueryInput,
+  QueryCategory,
+  QueryRoutingResult,
   RAGContextResult
 } from './chatbotController.type';
 
@@ -41,51 +41,56 @@ export class ChatbotController {
    */
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
     // PHASE 1 & 2: Run categorization and phase determination in parallel
-    const [categorization, newPhase] = await Promise.all([
+    const [routingResult, newPhase] = await Promise.all([
       this.categorizeQuery(input),
-     determineConversationPhase(input.state, input.phaseRouterProvider)
+      determineConversationPhase(input.state, input.phaseRouterProvider)
     ]);
 
     // PHASE 3: Decision - should we return canned response?
-    if (this.shouldReturnCanned(categorization.category)) {
-      return this.createCannedResponse({ categorization, state: input.state });
+    if (this.shouldReturnCanned(routingResult.category)) {
+      return this.createCannedResponse({ routingResult, state: input.state });
     }
 
-    // PHASE 4: Check if RAG required → retrieve if yes
-    const ragContext = this.isRagRequired(newPhase, categorization.category)
-      ? await this.retrieveRAG({ categorization, input })
-      : null;
-
+    // PHASE 4: RAG if necessary (uses conversation phase)
+    const isRagRequired = newPhase === 'intent_resolution'; // TODO: use something more sophisticated? like 
+    let ragContext: RAGContextResult | null = null;
+    if (isRagRequired) {
+      const rephrasals: Map<string, Array<string>> = ??? // TODO: implement. output a map whose keys are the topics and values are the rephrased queries for that topic.
+      const ragContext = await this.retrieveRAG({ queries: rephrasals }); // TODO: update the retrieval method to accept a map of topic to query array. allocate 
+    }
+    else (
+      ragContext = null);
     // PHASE 5: Create LLM response with phase-specific prompt
-    return this.createLLMResponse({ categorization, ragContext, input, newPhase });
+    return this.createLLMResponse({ routingResult, ragContext, input, newPhase });
   }
 
   /**
-   * Categorize user query and reformulate for search if needed
+   * Route user query
    *
    * @param input - Query input
-   * @returns Categorization result with costs and timing
+   * @returns Query routing result with costs and timing
    */
-  private static async categorizeQuery(input: HandleQueryInput): Promise<CategorizationResult> {
+  private static async categorizeQuery(input: HandleQueryInput): Promise<QueryRoutingResult> {
     const startTime = Date.now();
     const costsBefore = input.queryRoutingProvider.cumulativeCosts;
 
-    // Extract user messages for context
-    const userMessages = input.state.messages.filter((msg) => msg.role === 'user').map((msg) => msg.content as string);
+    // Get full conversation messages (user + assistant)
+    const msgs = Array.isArray(input.state?.messages) ? input.state.messages : [];
 
-    // Route and reformulate query
-    const { category, rephrased } = await routeQuery({
-      messages: userMessages,
+    // Route query: is it appropriate, inappropriate, or not possible to answer?
+    const routingResult = await routeQuery({
+      messages: msgs,
       provider: input.queryRoutingProvider,
-      categories: ALL_CATEGORY_VALUES
+      chatbotSkills: CHATBOT_SKILLS,
+      fallbackTopics: FALLBACK_TOPICS,
+      outOfScopeTopics: OUT_OF_SCOPE_TOPICS
     });
 
     const costsAfter = input.queryRoutingProvider.cumulativeCosts;
     const durationMs = Date.now() - startTime;
 
     return {
-      category: category as QueryCategory,
-      rephrased,
+      category: routingResult.category as QueryCategory,
       costs: {
         total: costsAfter - costsBefore,
         input: 0, // Would need detailed tracking
@@ -102,45 +107,29 @@ export class ChatbotController {
    * @returns True if canned response should be returned
    */
   private static shouldReturnCanned(category: QueryCategory): boolean {
-    return needsCannedResponse(category);
-  }
-
-  /**
-   * Check if RAG retrieval is required
-   * RAG only enabled in intent_resolution phase for queryable categories
-   *
-   * @param phase - Current conversation phase
-   * @param category - Query category
-   * @returns True if RAG should be retrieved
-   */
-  private static isRagRequired(phase: ConversationPhase, category: QueryCategory): boolean {
-    return phase === 'intent_resolution' && isQueryable(category);
+    return category !== 'appropriate'; 
   }
 
   /**
    * Retrieve RAG context for query
-   * NOTE: Caller must check isRagRequired() before calling
    *
-   * @param categorization - Categorization result
+   * @param routingResult - Query routing result
    * @param input - Query input
    * @returns RAG context
    */
   private static async retrieveRAG({
-    categorization,
+    routingResult, 
     input
   }: {
-    categorization: CategorizationResult,
-    input: HandleQueryInput
+    routingResult: QueryRoutingResult;
+    input: HandleQueryInput;
   }): Promise<RAGContextResult> {
-    if (!categorization.rephrased) {
-      throw new Error('Cannot retrieve RAG without reformulated query');
-    }
 
     const startTime = Date.now();
 
     // Perform vector search
     const searchResult = await input.vectorStore.search({
-      query: categorization.rephrased,
+      query: input.state.messages[input.state.messages.length - 1].content as string, // we know it's a user message. 
       nResultsTarget: input.nResultsTarget || 10,
       searchCollections: ['segment', 'summary', 'fact'],
       searchConfig: {}, // Use defaults: facts (topK:10, min:0.5), others (topK:8, min:0.3)
@@ -217,19 +206,19 @@ export class ChatbotController {
   /**
    * Create canned response stream
    *
-   * @param categorization - Categorization result
+   * @param routingResult - Query routing result
    * @returns Chatbot response with canned stream
    */
   private static async createCannedResponse({
-    categorization,
+    routingResult,
     state
   }: {
-    categorization: CategorizationResult;
+    routingResult: QueryRoutingResult;
     state: ConversationState;
   }): Promise<ChatbotResponse> {
-    const message = getCannedResponse(categorization.category);
+    const message = getCannedResponse(routingResult.category);
     if (!message) {
-      throw new Error(`No canned response defined for category: ${categorization.category}`);
+      throw new Error(`No canned response defined for route: ${routingResult.category}`);
     }
 
     // Create streaming wrapper for canned message
@@ -237,21 +226,22 @@ export class ChatbotController {
 
     const newState = {
       ...state,
-      messages: [...state.messages, { role: 'assistant', content: message } as ModelMessage]
+      messages: [...state.messages, { role: 'assistant', content: message } as ModelMessage],
+      queryCategory: routingResult
     };
 
     return {
       stream,
       state: newState,
       metadata: {
-        categoryResult: categorization,
+        routingResult,
         isCannedResponse: true,
         usedRAG: false,
         costs: {
-          reformulation: categorization.costs
+          reformulation: routingResult.costs
         },
         latency: {
-          reformulationMs: categorization.durationMs,
+          reformulationMs: routingResult.durationMs,
           retrievalMs: 0
         }
       }
@@ -261,22 +251,22 @@ export class ChatbotController {
   /**
    * Create LLM response stream with optional RAG context
    *
-   * @param categorization - Categorization result
+   * @param routingResult - Query routing result
    * @param ragContext - RAG context (if retrieved)
    * @param input - Query input
    * @param newPhase - New conversation phase
    * @returns Chatbot response with LLM stream
    */
   private static async createLLMResponse({
-    categorization,
+    routingResult,
     ragContext,
     input,
     newPhase
   }: {
-    categorization: CategorizationResult,
-    ragContext: RAGContextResult | null,
-    input: HandleQueryInput,
-    newPhase: ConversationPhase
+    routingResult: QueryRoutingResult;
+    ragContext: RAGContextResult | null;
+    input: HandleQueryInput;
+    newPhase: ConversationPhase;
   }): Promise<ChatbotResponse> {
     // Enhance messages with RAG context if available
     const messages = ragContext
@@ -298,14 +288,15 @@ export class ChatbotController {
     const newState = {
       ...input.state,
       messages,
-      phase: newPhase
+      phase: newPhase,
+      queryCategory: routingResult
     };
 
     return {
       stream,
       state: newState,
       metadata: {
-        categoryResult: categorization,
+        routingResult,
         isCannedResponse: false,
         usedRAG: !!ragContext,
         ragContext: ragContext
@@ -316,11 +307,11 @@ export class ChatbotController {
             }
           : undefined,
         costs: {
-          reformulation: categorization.costs,
+          reformulation: routingResult.costs,
           reranking: ragContext?.rerankingCosts
         },
         latency: {
-          reformulationMs: categorization.durationMs,
+          reformulationMs: routingResult.durationMs,
           retrievalMs: ragContext?.durationMs || 0
         }
       }
