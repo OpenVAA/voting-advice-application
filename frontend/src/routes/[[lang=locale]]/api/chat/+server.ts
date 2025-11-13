@@ -7,7 +7,8 @@ import type { LLMStreamResult } from '@openvaa/llm-refactor';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
-const { vectorStore, queryRoutingProvider, phaseRouterProvider } = await getChatbotConfiguration();
+const { vectorStore, queryRoutingProvider, queryReformulationProvider, phaseRouterProvider } =
+  await getChatbotConfiguration();
 
 // API endpoint for chat functionality with RAG enrichment
 // TODO: type the params
@@ -29,7 +30,12 @@ export async function POST({ request, params }: { request: Request; params: any 
     forgottenMessages: [],
     lossyHistorySummary: '',
     locale,
-    queryCategory: 'conversational', // Will be determined by categorizeQuery
+    queryCategory: {
+      // Will be determined by categorizeQuery
+      category: 'appropriate',
+      costs: { input: 0, output: 0, total: 0 },
+      durationMs: 0
+    },
     reformulatedQuery: null
   };
 
@@ -39,6 +45,7 @@ export async function POST({ request, params }: { request: Request; params: any 
     state,
     vectorStore: vectorStore,
     queryRoutingProvider: queryRoutingProvider,
+    queryReformulationProvider: queryReformulationProvider,
     phaseRouterProvider: phaseRouterProvider,
     rerankConfig: {
       enabled: true,
@@ -168,7 +175,7 @@ async function wrapInSSE({
               rag: {
                 phase: responseState.phase,
                 category: metadata.categoryResult?.category,
-                reformulatedQuery: metadata.categoryResult?.rephrased,
+                reformulatedQuery: metadata.reformulatedQuery,
                 needsRAG: metadata.usedRAG,
                 segmentsRetrieved: metadata.ragContext?.segmentsUsed ?? 0
               },

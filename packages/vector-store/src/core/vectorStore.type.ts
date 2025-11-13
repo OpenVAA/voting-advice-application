@@ -90,8 +90,6 @@ export interface MultiVectorSearchResult {
 export interface CollectionSearchConfig {
   /** Number of results to fetch from ChromaDB initially */
   topK?: number;
-  /** Minimum similarity score threshold (0-1, higher is more similar) */
-  minSimilarity?: number;
   /** Cohere pricing allows reranking up to 100 search results for a fixed cost. 
    * This is the allocation of that 100 search results to this collection type.*/
   rerankAllocation?: number;
@@ -113,8 +111,8 @@ export interface RerankConfig {
  * Options for multi-vector search
  */
 export interface MultiVectorSearchOptions {
-  /** An array of queries to use for searching information */
-  queries: Array<string>;
+  /** Map of topics to arrays of reformulated queries for searching */
+  queries: Record<string, Array<string>>;
   /** Target number of results to return */
   nResultsTarget: number;
   /** Which collections to search (default: all) */

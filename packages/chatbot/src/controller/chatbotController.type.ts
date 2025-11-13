@@ -57,11 +57,14 @@ export interface HandleQueryInput {
   /** Vector store instance for RAG retrieval */
   vectorStore: MultiVectorStore;
 
-  /** LLM provider for query reformulation */
+  /** LLM provider for query routing/categorization (lightweight model recommended) */
   queryRoutingProvider: LLMProvider;
 
   /** LLM provider for conversation phase routing (lightweight model recommended) */
   phaseRouterProvider: LLMProvider;
+
+  /** LLM provider for query reformulation (lightweight model recommended) */
+  queryReformulationProvider: LLMProvider;
 
   /** Optional reranking configuration */
   rerankConfig?: RerankConfig;
@@ -103,7 +106,9 @@ export interface ChatbotResponse {
    */
   metadata: {
     /** Query routing result */
-    routingResult: QueryRoutingResult;
+    categoryResult: QueryRoutingResult;
+    /** Canonical reformulated query (first query from each topic, joined) */
+    reformulatedQuery?: string;
     /** Processing decisions */
     isCannedResponse: boolean;
     usedRAG: boolean;

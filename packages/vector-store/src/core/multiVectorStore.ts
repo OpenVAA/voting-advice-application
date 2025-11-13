@@ -1,7 +1,9 @@
 import { ChromaClient } from 'chromadb';
 import { ChromaVectorStore } from './chromaVectorStore';
 import { reconstructSegmentWithAnalysis } from './utils/dataTransform';
+import { deduplicateAndSelectResults } from './utils/deduplicateResults';
 import { rerank } from './utils/rerank';
+import { allocateSegmentsPerTopic } from './utils/topicAllocation';
 import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
 import type { Metadata } from 'chromadb';
 import type { SegmentFact, SegmentSummary, SourceSegment } from './types';
@@ -15,9 +17,9 @@ import type {
 
 // Default search configuration per collection type
 const DEFAULT_SEARCH_CONFIG: Record<'segment' | 'summary' | 'fact', Required<CollectionSearchConfig>> = {
-  segment: { topK: 8, minSimilarity: 0.3 },
-  summary: { topK: 8, minSimilarity: 0.3 },
-  fact: { topK: 10, minSimilarity: 0.5 }
+  segment: { topK: 8, rerankAllocation: 30 },
+  summary: { topK: 8, rerankAllocation: 50 },
+  fact: { topK: 10, rerankAllocation: 20 }
 };
 
 /**
@@ -37,7 +39,7 @@ export class MultiVectorStore {
     this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : {});
 
     // Determine embedders
-    // TODO: maybe just simplify and have a single embedder for all collections.
+    // TODO: just simplify and have a single embedder for all collections. Embeddings reusable across collections.
     const segmentEmbedder = config.embedders?.segments || config.embedder;
     const summaryEmbedder = config.embedders?.summaries || config.embedder;
     const factEmbedder = config.embedders?.facts || config.embedder;
@@ -127,20 +129,18 @@ export class MultiVectorStore {
       }
       return {
         topK: searchConfig[type]?.topK ?? DEFAULT_SEARCH_CONFIG[type].topK,
-        minSimilarity: searchConfig[type]?.minSimilarity ?? DEFAULT_SEARCH_CONFIG[type].minSimilarity
+        rerankAllocation: searchConfig[type]?.rerankAllocation ?? DEFAULT_SEARCH_CONFIG[type].rerankAllocation
       };
     }
 
-    // Calculate total topK for all collections
-    const totalTopK = searchCollections.reduce((sum, type) => sum + getConfig(type).topK, 0);
-
-    // Fallback: if sum(topKs) <= nResultsTarget, adjust nResultsTarget
-    let adjustedNResultsTarget = nResultsTarget;
-    if (totalTopK <= nResultsTarget) {
-      adjustedNResultsTarget = totalTopK;
+    // Validate queries
+    const queryTopics = Object.keys(queries);
+    if (queryTopics.length === 0) {
+      throw new Error('[MultiVectorStore.search] No queries provided');
     }
 
-    const searchQuery = query;
+    // Allocate minimum segments per topic using topic names
+    const minSegmentsPerTopic = allocateSegmentsPerTopic(queryTopics, nResultsTarget);
 
     // Get collections based on searchCollections option
     const collectionsToSearch = await Promise.all(
@@ -155,97 +155,107 @@ export class MultiVectorStore {
       })
     );
 
-    // For each collection we want to search, get its embedder and embed the query
-    const queryEmbeddings = await Promise.all(
-      collectionsToSearch.map(({ type }) => {
-        const embedder =
-          type === 'segment'
-            ? this.segmentsStore['embedder']
-            : type === 'summary'
-              ? this.summariesStore['embedder']
-              : this.factsStore['embedder'];
-        return embedder.embed(searchQuery);
+    // For each topic, search all its query reformulations across all collections in parallel
+    const searchResultsPerTopic = await Promise.all(
+      queryTopics.map(async (topic) => {
+        const topicQueries = queries[topic];
+
+        // For each query in this topic, search all collections
+        const queryResults = await Promise.all(
+          topicQueries.map(async (query) => {
+            // Embed query for each collection type
+            const queryEmbeddings = await Promise.all(
+              collectionsToSearch.map(({ type }) => {
+                const embedder =
+                  type === 'segment'
+                    ? this.segmentsStore['embedder']
+                    : type === 'summary'
+                      ? this.summariesStore['embedder']
+                      : this.factsStore['embedder'];
+                return embedder.embed(query);
+              })
+            );
+
+            // Search all collections with this query, tracking collection type
+            return Promise.all(
+              collectionsToSearch.map(({ type, coll }, idx) => {
+                const config = getConfig(type);
+                return coll
+                  .query({
+                    queryEmbeddings: [queryEmbeddings[idx].embedding],
+                    nResults: config.topK
+                  })
+                  .then((result) => ({ result, collectionType: type }));
+              })
+            );
+          })
+        );
+
+        return { topic, searchResults: queryResults.flat() };
       })
     );
 
-    // Search selected collections in parallel with per-collection topK
-    const searchResults = await Promise.all(
-      collectionsToSearch.map(({ type, coll }, idx) => {
-        const config = getConfig(type);
-        return coll.query({
-          queryEmbeddings: [queryEmbeddings[idx].embedding],
-          nResults: config.topK
-        });
-      })
-    );
-
-    // Extract parent segment IDs and store their scores/distances
-    const segmentIdsFromSummaries: Array<string> = [];
-    const directSegmentIds: Array<string> = [];
-    const segmentIdsFromFacts = new Set<string>(); // we can have multiple facts per segment
-
-    // Map to store best score/distance for each segment ID
-    const segmentScores = new Map<
+    // Process per-topic results to extract segment IDs and scores
+    // For each topic, track which segments were found and with what scores
+    const perTopicSegmentScores = new Map<
       string,
-      { score: number; distance: number; foundWith: 'segment' | 'summary' | 'fact' }
+      Map<string, { score: number; distance: number; foundWith: 'segment' | 'summary' | 'fact'; factFound?: string }>
     >();
 
-    // Map to store which fact was found for each segment (when foundWith === 'fact')
-    const segmentFactsFound = new Map<string, string>();
+    // Collect ALL unique segment IDs across all topics
+    const allSegmentIds = new Set<string>();
 
-    searchResults.forEach((result, idx) => {
-      const collectionType = collectionsToSearch[idx].type;
-      const config = getConfig(collectionType);
+    // Process each topic's search results
+    for (const { topic, searchResults } of searchResultsPerTopic) {
+      const topicScores = new Map<
+        string,
+        { score: number; distance: number; foundWith: 'segment' | 'summary' | 'fact'; factFound?: string }
+      >();
 
-      result.ids[0]?.forEach((id, resultIdx) => {
-        const distance = result.distances?.[0]?.[resultIdx] || 0;
-        const score = 1 - distance; // Convert cosine distance to similarity score
+      // Process each search result (from different collections and queries)
+      for (const { result, collectionType } of searchResults) {
+        result.ids[0]?.forEach((id, resultIdx) => {
+          const distance = result.distances?.[0]?.[resultIdx] || 0;
+          const score = 1 - distance; // Convert cosine distance to similarity score
+          const metadata = result.metadatas[0]?.[resultIdx];
 
-        // Apply minSimilarity filter
-        if (score < config.minSimilarity) {
-          return; // Skip this result
-        }
+          let segmentId: string;
+          let factText: string | undefined;
 
-        const segmentId = id as string;
-        const metadata = result.metadatas[0]?.[resultIdx];
-
-        if (collectionType === 'segment') {
-          directSegmentIds.push(segmentId);
-          // Update if this is the best score for this segment
-          if (!segmentScores.has(segmentId) || segmentScores.get(segmentId)!.score < score) {
-            segmentScores.set(segmentId, { score, distance, foundWith: 'segment' });
+          if (collectionType === 'segment') {
+            segmentId = id as string;
+          } else if (collectionType === 'summary') {
+            segmentId = metadata?.parentSegmentId as string;
+            if (!segmentId) return;
+          } else {
+            // collectionType === 'fact'
+            segmentId = metadata?.parentSegmentId as string;
+            if (!segmentId) return;
+            factText = result.documents[0]?.[resultIdx] as string;
           }
-        } else if (collectionType === 'summary') {
-          const parentSegmentId = metadata?.parentSegmentId as string;
-          if (parentSegmentId) {
-            segmentIdsFromSummaries.push(parentSegmentId);
-            if (!segmentScores.has(parentSegmentId) || segmentScores.get(parentSegmentId)!.score < score) {
-              segmentScores.set(parentSegmentId, { score, distance, foundWith: 'summary' });
-            }
-          }
-        } else if (collectionType === 'fact') {
-          const parentSegmentId = metadata?.parentSegmentId as string;
-          if (parentSegmentId) {
-            segmentIdsFromFacts.add(parentSegmentId);
-            if (!segmentScores.has(parentSegmentId) || segmentScores.get(parentSegmentId)!.score < score) {
-              segmentScores.set(parentSegmentId, { score, distance, foundWith: 'fact' });
-              // Store the fact text that was found
-              const factText = result.documents[0]?.[resultIdx] as string;
-              if (factText) {
-                segmentFactsFound.set(parentSegmentId, factText);
-              }
-            }
-          }
-        }
-      });
-    });
 
-    // Collect all unique segment IDs
-    const allSegmentIds = new Set<string>([...directSegmentIds, ...segmentIdsFromSummaries, ...segmentIdsFromFacts]);
+          // Track this segment ID globally
+          allSegmentIds.add(segmentId);
 
+          // Update this topic's best score for this segment
+          const existing = topicScores.get(segmentId);
+          if (!existing || existing.score < score) {
+            topicScores.set(segmentId, {
+              score,
+              distance,
+              foundWith: collectionType,
+              ...(factText && { factFound: factText })
+            });
+          }
+        });
+      }
+
+      perTopicSegmentScores.set(topic, topicScores);
+    }
+
+    // Early return if no segments found
     if (allSegmentIds.size === 0) {
       return {
-        query,
         results: [],
         retrievalSources: {
           fromSegments: 0,
@@ -256,7 +266,7 @@ export class MultiVectorStore {
       };
     }
 
-    // Fetch all collections data for reconstruction
+    // Fetch all collections data for reconstruction (fetch once for all topics)
     const segmentsCollection = await this.client.getOrCreateCollection({
       name: this.config.collectionNames.segments
     });
@@ -316,72 +326,94 @@ export class MultiVectorStore {
       };
     });
 
-    // Reconstruct enriched segments
+    // Reconstruct enriched segments (all segments found across all topics)
     const enrichedSegments = reconstructSegmentWithAnalysis(segments, summaries, facts);
+    const enrichedSegmentsMap = new Map(enrichedSegments.map((seg) => [seg.id, seg]));
 
-    // Convert to search results with vector search scores
-    let results: Array<EnrichedSearchResult> = enrichedSegments.map((segment) => {
-      const scoreData = segmentScores.get(segment.id) || { score: 0, distance: 1, foundWith: 'segment' as const };
+    // Build per-topic enriched results
+    const perTopicResults: Record<string, Array<EnrichedSearchResult>> = {};
 
-      return {
-        segment,
-        vectorSearchScore: scoreData.score,
-        distance: scoreData.distance,
-        foundWith: scoreData.foundWith,
-        // Include the fact that was found, if this segment was found via fact search
-        ...(scoreData.foundWith === 'fact' &&
-          segmentFactsFound.has(segment.id) && {
-            factFound: segmentFactsFound.get(segment.id)
-          })
-      };
-    });
+    for (const topic of queryTopics) {
+      const topicScores = perTopicSegmentScores.get(topic);
+      if (!topicScores) continue;
 
-    // Sort by vector search score (highest first)
-    results.sort((a, b) => b.vectorSearchScore - a.vectorSearchScore);
+      const topicResults: Array<EnrichedSearchResult> = [];
 
-    // RERANKING STEP
-    let rerankingCosts: { cost: number } | undefined;
-    if (rerankConfig?.enabled && totalTopK > adjustedNResultsTarget) {
-      const rerankResult = await rerank({
-        query: searchQuery,
-        retrievedSegments: enrichedSegments,
-        nBest: adjustedNResultsTarget,
-        apiKey: rerankConfig.apiKey,
-        model: rerankConfig.model || 'rerank-v3.5'
-      });
+      for (const [segmentId, scoreData] of topicScores.entries()) {
+        const enrichedSegment = enrichedSegmentsMap.get(segmentId);
+        if (!enrichedSegment) continue;
 
-      // Add rerank scores to results
-      const rerankScoreMap = rerankResult.scores;
-      results = results.map((r) => ({
-        ...r,
-        rerankScore: rerankScoreMap.get(r.segment.id)
-      }));
+        topicResults.push({
+          segment: enrichedSegment,
+          vectorSearchScore: scoreData.score,
+          distance: scoreData.distance,
+          foundWith: scoreData.foundWith,
+          ...(scoreData.factFound && { factFound: scoreData.factFound })
+        });
+      }
 
-      // Filter to only reranked segments
-      const rerankedIds = new Set(rerankResult.segments.map((s) => s.id));
-      results = results.filter((r) => rerankedIds.has(r.segment.id));
-
-      // Sort by rerank score (descending)
-      results.sort((a, b) => (b.rerankScore ?? 0) - (a.rerankScore ?? 0));
-
-      // Calculate cost (search units to USD)
-      const searchUnits = rerankResult.metadata.searchUnits ?? 0;
-      rerankingCosts = { cost: (searchUnits / 1000) * 2.0 }; // $2 per 1000 queries (Rerank 3.5)
+      // Sort by vector search score (highest first)
+      topicResults.sort((a, b) => b.vectorSearchScore - a.vectorSearchScore);
+      perTopicResults[topic] = topicResults;
     }
 
-    // Final limiting to nResultsTarget
-    results = results.slice(0, adjustedNResultsTarget);
+    // Per-topic reranking (if enabled)
+    let totalRerankingCosts = 0;
+
+    if (rerankConfig?.enabled) {
+      for (const topic of queryTopics) {
+        const topicResults = perTopicResults[topic];
+        if (!topicResults || topicResults.length === 0) continue;
+
+        // Use first query reformulation as canonical query for reranking
+        const canonicalQuery = queries[topic][0];
+        const topicSegments = topicResults.map((r) => r.segment);
+
+        const rerankResult = await rerank({
+          query: canonicalQuery,
+          retrievedSegments: topicSegments,
+          nBest: topicSegments.length, // Rerank all results for this topic
+          apiKey: rerankConfig.apiKey,
+          model: rerankConfig.model || 'rerank-v3.5'
+        });
+
+        // Add rerank scores to results
+        const rerankScoreMap = rerankResult.scores;
+        perTopicResults[topic] = topicResults.map((r) => ({
+          ...r,
+          rerankScore: rerankScoreMap.get(r.segment.id)
+        }));
+
+        // Sort by rerank score (descending)
+        perTopicResults[topic].sort((a, b) => (b.rerankScore ?? 0) - (a.rerankScore ?? 0));
+
+        // Accumulate costs
+        const searchUnits = rerankResult.metadata.searchUnits ?? 0;
+        totalRerankingCosts += Math.ceil((searchUnits / 100) * 0.2); // $0.2 per batch max 100
+      }
+    }
+
+    // Deduplicate and select final results
+    const deduplicationResult = deduplicateAndSelectResults(
+      perTopicResults,
+      minSegmentsPerTopic,
+      nResultsTarget
+    );
+
+    // Count retrievalSources from FINAL results
+    const fromSegments = deduplicationResult.results.filter((r) => r.foundWith === 'segment').length;
+    const fromSummaries = deduplicationResult.results.filter((r) => r.foundWith === 'summary').length;
+    const fromFacts = deduplicationResult.results.filter((r) => r.foundWith === 'fact').length;
 
     return {
-      query,
-      results,
+      results: deduplicationResult.results,
       retrievalSources: {
-        fromSegments: directSegmentIds.length,
-        fromSummaries: segmentIdsFromSummaries.length,
-        fromFacts: segmentIdsFromFacts.size
+        fromSegments,
+        fromSummaries,
+        fromFacts
       },
       timestamp: Date.now(),
-      ...(rerankingCosts && { rerankingCosts })
+      ...(rerankConfig?.enabled && { rerankingCosts: { cost: totalRerankingCosts } })
     };
   }
 

@@ -87,9 +87,9 @@ export async function testMultiVectorRetrieval(
     nResultsTarget: topKPerCollection * 3, // Total results target
     searchCollections: ['segment', 'summary', 'fact'],
     searchConfig: {
-      segment: { topK: topKPerCollection, minSimilarity: 0.3 },
-      summary: { topK: topKPerCollection, minSimilarity: 0.3 },
-      fact: { topK: topKPerCollection, minSimilarity: 0.5 }
+      segment: { topK: topKPerCollection, rerankAllocation: 30 },
+      summary: { topK: topKPerCollection, rerankAllocation: 50 },
+      fact: { topK: topKPerCollection, rerankAllocation: 20 }
     }
   });
 

@@ -4,6 +4,7 @@ import { ChatEngine } from '../core/chat';
 import { CHATBOT_SKILLS, FALLBACK_TOPICS, OUT_OF_SCOPE_TOPICS } from '../defaultConfig/chatbotSkills';
 import { determineConversationPhase } from '../utils/phaseRouter';
 import { loadPrompt } from '../utils/promptLoader';
+import { reformulateQuery } from '../utils/queryReformulator';
 import { routeQuery } from '../utils/queryRouter';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
@@ -41,7 +42,7 @@ export class ChatbotController {
    */
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
     // PHASE 1 & 2: Run categorization and phase determination in parallel
-    const [routingResult, newPhase] = await Promise.all([
+    const [routingResult, phase] = await Promise.all([
       this.categorizeQuery(input),
       determineConversationPhase(input.state, input.phaseRouterProvider)
     ]);
@@ -52,16 +53,40 @@ export class ChatbotController {
     }
 
     // PHASE 4: RAG if necessary (uses conversation phase)
-    const isRagRequired = newPhase === 'intent_resolution'; // TODO: use something more sophisticated? like 
+    const isRagRequired = phase === 'intent_resolution'; // TODO: use something more sophisticated? like
     let ragContext: RAGContextResult | null = null;
+    let canonicalQuery: string | null = null;
+
     if (isRagRequired) {
-      const rephrasals: Map<string, Array<string>> = ??? // TODO: implement. output a map whose keys are the topics and values are the rephrased queries for that topic.
-      const ragContext = await this.retrieveRAG({ queries: rephrasals }); // TODO: update the retrieval method to accept a map of topic to query array. allocate 
+      // Reformulate query into topics with k diverse reformulations per topic
+      const reformulations = await reformulateQuery(
+        input.state,
+        input.queryReformulationProvider,
+        3 // k = 3 reformulations per topic
+      );
+
+      // Extract canonical queries (first query from each topic)
+      canonicalQuery = Object.values(reformulations)
+        .map((queries) => queries[0])
+        .filter(Boolean)
+        .join('. ');
+
+      ragContext = await this.retrieveRAG({
+        queries: reformulations,
+        input
+      });
+    } else {
+      ragContext = null;
     }
-    else (
-      ragContext = null);
+
     // PHASE 5: Create LLM response with phase-specific prompt
-    return this.createLLMResponse({ routingResult, ragContext, input, newPhase });
+    return this.createLLMResponse({
+      routingResult,
+      ragContext,
+      input,
+      newPhase: phase,
+      canonicalQuery
+    });
   }
 
   /**
@@ -111,28 +136,27 @@ export class ChatbotController {
   }
 
   /**
-   * Retrieve RAG context for query
+   * Retrieve RAG context for reformulated queries
    *
-   * @param routingResult - Query routing result
+   * @param queries - Map of topics to reformulated query arrays
    * @param input - Query input
    * @returns RAG context
    */
   private static async retrieveRAG({
-    routingResult, 
+    queries,
     input
   }: {
-    routingResult: QueryRoutingResult;
+    queries: Record<string, Array<string>>;
     input: HandleQueryInput;
   }): Promise<RAGContextResult> {
-
     const startTime = Date.now();
 
-    // Perform vector search
+    // Perform vector search with reformulated queries
     const searchResult = await input.vectorStore.search({
-      query: input.state.messages[input.state.messages.length - 1].content as string, // we know it's a user message. 
+      queries,
       nResultsTarget: input.nResultsTarget || 10,
       searchCollections: ['segment', 'summary', 'fact'],
-      searchConfig: {}, // Use defaults: facts (topK:10, min:0.5), others (topK:8, min:0.3)
+      searchConfig: {}, // Use defaults from multiVectorStore
       rerankConfig: input.rerankConfig
     });
 
@@ -227,14 +251,16 @@ export class ChatbotController {
     const newState = {
       ...state,
       messages: [...state.messages, { role: 'assistant', content: message } as ModelMessage],
-      queryCategory: routingResult
+      queryCategory: routingResult,
+      reformulatedQuery: null // No reformulation for canned responses
     };
 
     return {
       stream,
       state: newState,
       metadata: {
-        routingResult,
+        categoryResult: routingResult,
+        reformulatedQuery: undefined,
         isCannedResponse: true,
         usedRAG: false,
         costs: {
@@ -255,18 +281,21 @@ export class ChatbotController {
    * @param ragContext - RAG context (if retrieved)
    * @param input - Query input
    * @param newPhase - New conversation phase
+   * @param canonicalQuery - Canonical reformulated query (first query from each topic)
    * @returns Chatbot response with LLM stream
    */
   private static async createLLMResponse({
     routingResult,
     ragContext,
     input,
-    newPhase
+    newPhase,
+    canonicalQuery
   }: {
     routingResult: QueryRoutingResult;
     ragContext: RAGContextResult | null;
     input: HandleQueryInput;
     newPhase: ConversationPhase;
+    canonicalQuery: string | null;
   }): Promise<ChatbotResponse> {
     // Enhance messages with RAG context if available
     const messages = ragContext
@@ -289,14 +318,16 @@ export class ChatbotController {
       ...input.state,
       messages,
       phase: newPhase,
-      queryCategory: routingResult
+      queryCategory: routingResult,
+      reformulatedQuery: canonicalQuery
     };
 
     return {
       stream,
       state: newState,
       metadata: {
-        routingResult,
+        categoryResult: routingResult,
+        reformulatedQuery: canonicalQuery || undefined,
         isCannedResponse: false,
         usedRAG: !!ragContext,
         ragContext: ragContext

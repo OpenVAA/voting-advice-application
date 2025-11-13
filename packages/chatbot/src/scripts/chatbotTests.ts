@@ -114,8 +114,6 @@ async function runChatbotEvaluation() {
               state: {
                 sessionId: crypto.randomUUID(),
                 messages,
-                queryCategory: 'conversational',
-                reformulatedQuery: null,
                 phase: 'intent_resolution', // Use intent_resolution to enable RAG
                 workingMemory: [],
                 forgottenMessages: [],
