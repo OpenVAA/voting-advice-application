@@ -8,5 +8,9 @@
   },
   "include": ["src/**/*"],
   "exclude": ["tests/**/*"],
-  "references": [{ "path": "../llm-refactor/tsconfig.json" }, { "path": "../core/tsconfig.json" }]
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../data/tsconfig.json" },
+    { "path": "../llm-refactor/tsconfig.json" }
+  ]
 }
