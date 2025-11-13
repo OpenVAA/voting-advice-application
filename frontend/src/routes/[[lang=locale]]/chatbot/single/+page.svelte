@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { createOnboardingStream } from '$lib/chatbot';
-  import { type ConversationState } from '@openvaa/chatbot';
+  import { type ConversationState, type QueryRoutingResult, type QueryCategory } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 
   interface UIMessage {
@@ -66,6 +66,7 @@
 
   let messages: Array<UIMessage> = [];
   let ragContexts: Array<MultiVectorSearchResult> = [];
+  let reformulatedQueries: Array<string | null> = []; // Track reformulated queries for each RAG context
   let costs: Array<CostInfo> = [];
   let latencies: Array<LatencyInfo> = [];
   let input = '';
@@ -76,7 +77,11 @@
     sessionId: crypto.randomUUID(),
     phase: 'user_intent_extraction',
     messages: [],
-    queryCategory: 'conversational',
+    queryCategory: {
+      category: 'appropriate',
+      costs: { input: 0, output: 0, total: 0 },
+      durationMs: 0
+    },
     reformulatedQuery: null,
     workingMemory: [],
     forgottenMessages: [],
@@ -319,6 +324,12 @@
 
           // Update local conversationState for UI display
           conversationState.phase = data.rag.phase;
+
+          // Store reformulated query if available
+          if (data.rag.reformulatedQuery) {
+            reformulatedQueries = [...reformulatedQueries, data.rag.reformulatedQuery];
+          }
+
           messages = [...messages]; // Trigger reactivity
         }
       }
@@ -496,7 +507,11 @@
                 <div class="text-xs text-gray-500">
                   Query #{ragContexts.length - idx}
                 </div>
-                <div class="font-semibold mt-1 text-blue-700">{context.query}</div>
+                {#if reformulatedQueries[idx]}
+                  <div class="font-semibold mt-1 text-blue-700">{reformulatedQueries[idx]}</div>
+                {:else}
+                  <div class="italic mt-1 text-sm text-gray-500">Multi-topic query</div>
+                {/if}
                 <div class="mt-1 text-xs text-gray-600">
                   Found via: {context.retrievalSources.fromSegments} segments,
                   {context.retrievalSources.fromSummaries} summaries,

@@ -12,17 +12,7 @@ export const FALLBACK_TOPICS = [
   'Different political topics like immigration, climate change, etc.',
   'Why these elections are important',
   'Party positions on election topics',
-  'Clarify differences between EU institutions (Parliament, Council, Commission) and how they interact.',
-  'What the EU Parliament is',
-  'How the EU Parliament works',
-  'How the EU Parliament makes decisions',
-  'How the EU Parliament is elected',
-  'How the EU Parliament is structured',
-  'How the EU Parliament is composed',
-  'How the European Union works',
-  'How the European Union is structured',
-  'How the European Union is funded',
-  'How the European Union is governed'
+  'different parts of the EU and how they work together'
 ]
 
 export const OUT_OF_SCOPE_TOPICS = [

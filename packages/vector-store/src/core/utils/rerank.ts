@@ -3,8 +3,7 @@ import type { EnrichedSegment } from '../types/source.types';
 
 /**
  * Cohere Rerank API Pricing
- * - rerank-v3.5: $1.00 per 1000 search units
- * - Search units are billed based on the number of documents and query complexity
+ * - Search units are billed based on the number of segments to be reranked.
  */
 
 /**

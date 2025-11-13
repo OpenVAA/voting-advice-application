@@ -389,7 +389,7 @@ export class MultiVectorStore {
 
         // Accumulate costs
         const searchUnits = rerankResult.metadata.searchUnits ?? 0;
-        totalRerankingCosts += Math.ceil((searchUnits / 100) * 0.2); // $0.2 per batch max 100
+        totalRerankingCosts += Math.ceil(searchUnits) * 0.002; // $0.002 per search unit
       }
     }
 

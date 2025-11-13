@@ -240,7 +240,12 @@ export class ChatbotController {
     routingResult: QueryRoutingResult;
     state: ConversationState;
   }): Promise<ChatbotResponse> {
-    const message = getCannedResponse(routingResult.category);
+    // Format topics as bulleted list for the not_possible response
+    const topicsList = FALLBACK_TOPICS.map((topic) => `- ${topic}`).join('\n');
+
+    const message = getCannedResponse(routingResult.category, {
+      topics: topicsList
+    });
     if (!message) {
       throw new Error(`No canned response defined for route: ${routingResult.category}`);
     }
