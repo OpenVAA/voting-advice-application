@@ -1,8 +1,8 @@
-# @openvaa/llm-refactor
+# @openvaa/llm
 
 ## Why?
 
-This package is a utility wrapper around [Vercel AI SDK](https://sdk.vercel.ai) that centralizes LLM calls and enrichens Vercel's SDK capabilities with useful stuff: it handles cost calculations automatically, implements validation error retrial and exposes an in-memory queue for LLM calls. The queue can be configured to send out the LLM calls in parallel batches. These capabilities are not provided by the Vercel AI SDK v5. 
+This package is a utility wrapper around [Vercel AI SDK](https://sdk.vercel.ai) that centralizes LLM calls and enrichens Vercel's SDK capabilities with useful stuff: it handles cost calculations automatically, implements validation error retrial and exposes an in-memory queue for LLM calls. The queue can be configured to send out the LLM calls in parallel batches. These capabilities are not provided by the Vercel AI SDK v5.
 
 To reiterate, the package provides:
 
@@ -17,7 +17,7 @@ Internally it uses Vercel AI SDK types and functions (`messages`, `generateObjec
 ## Quick Start
 
 ```typescript
-import { LLMProvider } from '@openvaa/llm-refactor';
+import { LLMProvider } from '@openvaa/llm';
 import { z } from 'zod';
 
 const llm = new LLMProvider({
@@ -32,14 +32,16 @@ const llm = new LLMProvider({
 // but adds cost tracking, latency calcs, and validation retries
 const result = await llm.generateObject({
   modelConfig: { primary: 'gpt-4o-mini' },
-  schema: z.object({ 
+  schema: z.object({
     name: z.string(),
-    age: z.number() 
+    age: z.number()
   }),
-  messages: [{ 
-    role: 'user', 
-    content: 'Create a user profile for John, age 30' 
-  }],
+  messages: [
+    {
+      role: 'user',
+      content: 'Create a user profile for John, age 30'
+    }
+  ],
   temperature: 0.7,
   validationRetries: 3 // Automatically retry if validation fails
 });
@@ -60,7 +62,7 @@ The main value-add here is automatic retry when the LLM produces invalid output.
 ```typescript
 const result = await llm.generateObject({
   modelConfig: { primary: 'gpt-4o-mini' },
-  schema: z.object({ 
+  schema: z.object({
     items: z.array(z.string()),
     count: z.number()
   }),
@@ -119,7 +121,7 @@ console.log(`Total cost: $${costs.total}`);
 ### Cost Calculation
 
 ```typescript
-import { calculateLLMCost, getModelPricing } from '@openvaa/llm-refactor';
+import { calculateLLMCost, getModelPricing } from '@openvaa/llm';
 
 // Get pricing for a model
 const pricing = getModelPricing('openai', 'gpt-4o-mini');
@@ -136,11 +138,11 @@ const costs = calculateLLMCost({
 ### Prompt Template Variables
 
 ```typescript
-import { setPromptVars } from '@openvaa/llm-refactor';
+import { setPromptVars } from '@openvaa/llm';
 
 const prompt = setPromptVars({
   promptText: 'Analyze {{topic}} in the context of {{context}}. Focus on {{focus}}.',
-  variables: { 
+  variables: {
     topic: 'renewable energy',
     context: 'urban planning',
     focus: 'cost-benefit analysis'
@@ -154,13 +156,13 @@ const prompt = setPromptVars({
 This package re-exports relevant types from Vercel AI SDK and adds its own:
 
 ```typescript
-import type { 
-  TokenUsage,           // From Vercel AI SDK
-  LLMProvider,          // This package
-  LLMModelConfig,       // This package
+import type {
+  TokenUsage, // From Vercel AI SDK
+  LLMProvider, // This package
+  LLMModelConfig, // This package
   LLMObjectGenerationResult, // This package (enhances Vercel's result)
-  CommonLLMParams       // This package
-} from '@openvaa/llm-refactor';
+  CommonLLMParams // This package
+} from '@openvaa/llm';
 ```
 
 Message format, schemas, and core types come directly from Vercel AI SDK - see their [documentation](https://sdk.vercel.ai/docs) for details.

@@ -14,7 +14,7 @@ The main pipeline uses map-reduce, although you can configure your own pipelines
 
 - `@openvaa/data`: Definitions for VAA data types. Especially entities with answers used in getting data for the condensation process. Shared between this and other vaa modules.
 - `@openvaa/core`: Definitions for Controller type and questions. Also includes default implementation for Controller.
-- `@openvaa/llm-refactor`: LLM provider class built on Vercel AI SDK. Handles LLM interactions with cost tracking and validation retries.
+- `@openvaa/llm`: LLM provider class built on Vercel AI SDK. Handles LLM interactions with cost tracking and validation retries.
 - `js-yaml`: YAML parsing for reading prompt configuration files.
 
 ## Example
@@ -57,7 +57,7 @@ This is the recommended way to use the package, as it abstracts away the details
 ```typescript
 import { handleQuestion } from '@openvaa/argument-condensation';
 import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
-import { LLMProvider } from '@openvaa/llm-refactor';
+import { LLMProvider } from '@openvaa/llm';
 import type { HasAnswers } from '@openvaa/core';
 
 // 1. Set up your question, entities, and LLM provider

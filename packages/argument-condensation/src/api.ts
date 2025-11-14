@@ -36,7 +36,7 @@ import type {
  * @example
  * import { handleQuestion } from '@openvaa/argument-condensation';
  * import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { LLMProvider } from '@openvaa/llm-refactor';
+ * import { LLMProvider } from '@openvaa/llm';
  * import type { HasAnswers } from '@openvaa/core';
  *
  * // 1. Set up your question, entities, and LLM provider

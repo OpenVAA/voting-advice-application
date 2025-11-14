@@ -1,6 +1,6 @@
 import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { LLMObjectGenerationResult, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationResult, LLMPipelineResult } from '@openvaa/llm';
 
 // ------------------------------------------------------------------
 // Types for all possible generation response formats in this package
@@ -57,7 +57,7 @@ export interface QuestionInfoData {
 export interface QuestionInfoResult extends LLMPipelineResult<QuestionInfoData> {}
 
 /**
- * Raw information from question info generation. This is not the same as the package's 
+ * Raw information from question info generation. This is not the same as the package's
  * output type QuestionInfoResult. This type is concerned with LLM interaction, whereas
  * QuestionInfoResult is concerned with the package's output type.
  *

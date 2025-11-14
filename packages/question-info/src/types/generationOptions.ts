@@ -1,4 +1,4 @@
-import type { CommonLLMParams } from '@openvaa/llm-refactor';
+import type { CommonLLMParams } from '@openvaa/llm';
 
 /**
  * Available operations for question info generation

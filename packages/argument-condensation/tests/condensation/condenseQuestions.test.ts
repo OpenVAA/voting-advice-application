@@ -10,7 +10,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
 import type { Controller, HasAnswers } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { LLMProvider } from '@openvaa/llm';
 
 // No-op controller for tests to prevent logging output
 const noOpLogger: Controller = {
