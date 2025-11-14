@@ -1,13 +1,14 @@
 {
   "private": true,
   "scripts": {
-    "dev:update": "yarn build:shared && docker restart openvaa-frontend-1",
     "build:app-shared": "yarn workspaces foreach -Rt --from '@openvaa/app-shared' run build && true",
     "build:shared": "yarn workspaces foreach -At --include 'packages/*' run build && true",
-    "dev": "docker compose -f docker-compose.dev.yml up -d --force-recreate --build --wait",
+    "watch:shared": "echo 'Watching packages for changes...' && onchange 'packages/*/src/**/*' -- sh -c 'echo \"Rebuilding @openvaa/$(echo {{changed}} | cut -d/ -f2)...\" && yarn workspace @openvaa/$(echo {{changed}} | cut -d/ -f2) build && echo \"Restarting frontend container\" && yarn dev:restart-frontend'",
+    "dev": "docker compose -f docker-compose.dev.yml up -d --force-recreate --build --wait && yarn watch:shared",
     "dev:attach": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev:down": "docker compose -f docker-compose.dev.yml down -v --rmi all --remove-orphans",
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
+    "dev:restart-frontend": "docker restart voting-advice-application-frontend-1",
     "docker:delete-all": "docker rm --force --volumes $(docker ps -q); docker volume rm --force $(docker volume ls -q); docker image rm --force $(docker images -q); docker builder prune -f; rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw; docker system df",
     "prepare": "husky",
     "sync:translations": "rsync -av --include='*/' --include='dynamic.json' --exclude='*' frontend/src/lib/i18n/translations/ backend/vaa-strapi/src/util/translations/",
@@ -34,6 +35,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
     "mailparser": "^3.7.2",
+    "onchange": "^7.1.0",
     "prettier": "^3.4.2",
     "vitest": "^2.1.8"
   },
