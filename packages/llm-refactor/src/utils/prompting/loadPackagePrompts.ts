@@ -6,7 +6,7 @@
  */
 export function extractPromptVars(promptText: string): Array<string> {
   const variables: Array<string> = [];
-  const placeholderRegex = /\{\{([^}]+)\}\}/g;
+  const placeholderRegex = /\{\{([^{}]+)\}\}/g;
   let match;
 
   while ((match = placeholderRegex.exec(promptText)) !== null) {
