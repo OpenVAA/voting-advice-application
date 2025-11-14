@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
 import { CondensationOperations } from '../../src/core/types';
 import type { Controller } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { LLMProvider } from '@openvaa/llm';
 import type {
   CondensationRunInput,
   IterateMapOperationParams,

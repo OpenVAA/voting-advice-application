@@ -13,7 +13,7 @@ import {
 } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
 import type { Controller } from '@openvaa/core';
-import type { LLMObjectGenerationResult, LLMProvider } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationResult, LLMProvider } from '@openvaa/llm';
 import type {
   Argument,
   CondensationOperation,

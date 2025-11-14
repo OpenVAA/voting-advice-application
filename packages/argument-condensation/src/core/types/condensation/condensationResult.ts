@@ -1,4 +1,4 @@
-import type { LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { LLMPipelineResult } from '@openvaa/llm';
 import type { Argument } from './argument';
 import type { CondensationOutputType } from './condensationType';
 

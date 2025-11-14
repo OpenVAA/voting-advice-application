@@ -1,4 +1,4 @@
-import { extractPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
+import { extractPromptVars, validatePromptVars } from '@openvaa/llm';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { SUPPORTED_LANGUAGES } from '../../src/core/types';
@@ -282,7 +282,10 @@ describe('variable validation edge cases', () => {
 
       if (prompt) {
         // Test that the prompt's variables are properly documented
-        const validation = validatePromptVars({ promptText: prompt.promptText, params: prompt.params as unknown as Record<string, unknown> });
+        const validation = validatePromptVars({
+          promptText: prompt.promptText,
+          params: prompt.params as unknown as Record<string, unknown>
+        });
         expect(validation.valid).toBe(true);
       }
     }

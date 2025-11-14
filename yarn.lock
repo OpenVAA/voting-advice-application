@@ -4235,7 +4235,7 @@ __metadata:
   dependencies:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
-    "@openvaa/llm-refactor": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@types/js-yaml": "npm:^4.0.9"
     dotenv: "npm:^16.3.1"
@@ -4299,7 +4299,7 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
-    "@openvaa/llm-refactor": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/question-info": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
@@ -4347,9 +4347,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/llm-refactor@workspace:^, @openvaa/llm-refactor@workspace:packages/llm-refactor":
+"@openvaa/llm@workspace:^, @openvaa/llm@workspace:packages/llm":
   version: 0.0.0-use.local
-  resolution: "@openvaa/llm-refactor@workspace:packages/llm-refactor"
+  resolution: "@openvaa/llm@workspace:packages/llm"
   dependencies:
     "@ai-sdk/google": "npm:^2.0.20"
     "@ai-sdk/openai": "npm:^2.0.31"
@@ -4383,7 +4383,7 @@ __metadata:
   dependencies:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
-    "@openvaa/llm-refactor": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@types/js-yaml": "npm:^4.0.9"
     js-yaml: "npm:^4.1.0"

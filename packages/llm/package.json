@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@openvaa/llm-refactor",
+  "name": "@openvaa/llm",
   "version": "0.1.0",
   "scripts": {
     "build": "yarn tsc --build && yarn tsc-esm-fix",

@@ -17,7 +17,7 @@ This package uses large language models to generate two types of contextual info
 
 - `@openvaa/data`: VAA data types and question definitions
 - `@openvaa/core`: Controller and base types
-- `@openvaa/llm-refactor`: LLM provider interface built on Vercel AI SDK
+- `@openvaa/llm`: LLM provider interface built on Vercel AI SDK
 - `zod`: Schema validation for structured LLM outputs
 - `js-yaml`: YAML parsing for prompt configuration
 
@@ -27,7 +27,7 @@ This package uses large language models to generate two types of contextual info
 
 ```typescript
 import { generateQuestionInfo, QUESTION_INFO_OPERATION } from '@openvaa/question-info';
-import { LLMProvider } from '@openvaa/llm-refactor';
+import { LLMProvider } from '@openvaa/llm';
 
 // Create an LLM provider instance
 const llmProvider = new LLMProvider({

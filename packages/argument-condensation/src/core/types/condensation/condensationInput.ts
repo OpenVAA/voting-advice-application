@@ -1,4 +1,4 @@
-import type { CommonLLMParams } from '@openvaa/llm-refactor';
+import type { CommonLLMParams } from '@openvaa/llm';
 import type { CondensationOutputType } from './condensationType';
 import type { ProcessingStep } from './processDefinition';
 import type { SupportedQuestion } from './supportedQuestion';

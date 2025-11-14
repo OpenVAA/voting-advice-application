@@ -1,4 +1,4 @@
-import { LLMProvider } from '@openvaa/llm-refactor';
+import { LLMProvider } from '@openvaa/llm';
 import { constants } from '$lib/server/constants';
 
 /**
@@ -16,5 +16,5 @@ export function getLLMProvider(): LLMProvider {
       primary: 'gpt-4o-mini',
       useCachedInput: false
     }
-  })
-};
+  });
+}
