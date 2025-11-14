@@ -1,0 +1,187 @@
+=== SEGMENT 1 ===
+[Summary: The European Union possesses legal personality and maintains its own legal order, which is distinct from international law and exerts direct or indirect effect on Member State laws. This legal order is generally structured into primary legislation (Treaties and general legal principles), secondary legislation, and supplementary law. Key sources of Union law include the TEU, TFEU, the Charter of Fundamental Rights, the Euratom Treaty, international agreements, general principles, and secondary legislation.]
+
+FACTSHEETS
+
+# SOURCES AND SCOPE OF EUROPEAN UNION LAW
+
+> The European Union has legal personality and as such its own legal order separate from international law. Furthermore, EU law has direct or indirect effect on the laws of its Member States and becomes part of the legal system of each Member State. The European Union is in itself a source of law. The legal order is usually divided into primary legislation (the Treaties and general legal principles), secondary legislation (based on the Treaties) and supplementary law.
+
+## SOURCES AND HIERARCHY OF UNION LAW
+
+- Treaty on European Union (TEU), Treaty on the Functioning of the European Union (TFEU), and their protocols (there are 37 protocols, 2 annexes and 65 declarations, which are attached to the treaties to fill in details, without being incorporated into the full legal text) 1.1.5;
+- Charter of Fundamental Rights of the European Union 4.1.2;
+- The Treaty Establishing the European Atomic Energy Community (Euratom) is still in force as a separate treaty;
+- International agreements 5.2.1;
+- General principles of Union law;
+- Secondary legislation.
+
+
+=== SEGMENT 2 ===
+[Summary: The European Union is founded on the rule of law, utilizing a complete system of legal remedies that empowers the Court of Justice of the European Union (CJEU) to review the legality of institutional acts, as detailed in Article 263 TFEU. The hierarchy of EU law places Treaties and general principles (primary legislation) at the highest level, a rank shared by the Charter of Fundamental Rights since the Lisbon Treaty took effect in 2009. Below primary legislation are international agreements, followed by secondary legislation, which must be consistent with all superior acts.]
+
+The European Union is a Union based on the rule of law that has established a complete system of legal remedies and procedures designed to enable the Court of Justice of the European Union (CJEU) to review the legality of the EU institutions' acts (Article 263 TFEU). The Treaties and the general principles are at the top of the hierarchy, and are known as primary legislation. Following the entry into force of the Lisbon Treaty on 1 December 2009, the same value was also given to the Charter of Fundamental Rights. International agreements concluded by the European Union are subordinate to primary legislation. Secondary legislation is the next level down in the hierarchy and is valid only if it is consistent with the acts and agreements which have precedence over it.
+
+
+=== SEGMENT 3 ===
+[Summary: The doctrine of primacy of EU law is a fundamental pillar of the EU legal order, intended to ensure the unity and consistency of EU law. The CJEU insists that EU law has absolute primacy over Member State domestic laws and established this doctrine, alongside direct effect, in the landmark cases van Gend en Loos v Nederlandse Administratie der Belastingen and Costa v ENEL. The CJEU further asserted in Internationale Handelsgesellschaft that EU law maintains primacy even over fundamental rights guaranteed in national constitutions.]
+
+The doctrine of primacy of EU law is a fundamental pillar of the EU legal order and aims to ensure the unity and consistency of EU law. The CJEU formally insists that EU law has absolute primacy over the domestic laws of the Member States, and that this must be taken into account by domestic courts in their decisions. It has always claimed ultimate authority in determining the relationship between EU and domestic law. In the landmark cases van Gend en Loos v Nederlandse Administratie der Belastingen and Costa v ENEL, the CJEU developed the fundamental doctrines of direct effect and primacy of EU law. The CJEU upheld these doctrines in subsequent cases. Notably, it argued in Internationale Handelsgesellschaft that EU law enjoys primacy even with respect to fundamental rights guaranteed in national constitutions.
+
+## OBJECTIVES
+
+Creation of a legal order for the Union to achieve the objectives stipulated in the Treaties.
+
+## EU SOURCES OF LAW
+
+**A. Primary legislation of the European Union 1.1.1, 1.1.2, 1.1.3, 1.1.4, 1.1.5, 4.1.2**
+
+
+=== SEGMENT 4 ===
+[Summary: The legal acts constituting the secondary legislation of the Union are listed in Article 288 TFEU and include regulations, directives, decisions, recommendations, and opinions. The institutions' power to adopt these acts is strictly limited by the principle of conferral, which is enshrined in Article 5(1) TEU. Union competences are divided into three categories by the TFEU: exclusive (Article 3), shared (Article 4), and supporting (Article 6), with Article 352 TFEU providing a mechanism for adopting measures when necessary powers are otherwise lacking.]
+
+**B. Secondary legislation of the European Union**
+
+**1. General points**
+
+The legal acts of the Union are listed in Article 288 TFEU. They are regulations, directives, decisions, recommendations and opinions. EU institutions may adopt legal acts of these kinds only if they are empowered to do so by the Treaties. The limits of Union competences are governed by the principle of conferral, which is enshrined in Article 5(1) TEU. The TFEU defines the scope of Union competences, dividing them into three categories: exclusive competences (Article 3), shared competences (Article 4) and supporting competences (Article 6), whereby the EU adopts measures to support or complement Member States' policies. Articles 3, 4 and 6 TFEU list the areas that come under each category of Union competence. In the absence of the necessary powers to attain one of the objectives set out in the Treaties, the institutions may apply the provisions of Article 352 TFEU, and thus adopt the 'appropriate measures'.
+
+
+=== SEGMENT 5 ===
+[Summary: EU institutions primarily adopt legal instruments listed in Article 288 TFEU, but the common foreign, security and defence policies (CFSDP) are a notable exception, continuing to apply the intergovernmental method. In the CFSDP area, specific instruments like 'general guidelines' and 'decisions defining' actions are used, as outlined in Article 25 TEU. Furthermore, various procedural and organizational acts, such as recommendations, communications, and interinstitutional agreements, exist, deriving their legal basis from other Treaty provisions.]
+
+The institutions adopt only those legal instruments listed in Article 288 TFEU. The only exceptions are the common foreign, security and defence policies, to which the intergovernmental method still applies. In this area, common strategies, common actions and common positions have been replaced by 'general guidelines' and 'decisions defining' actions to be undertaken and positions to be adopted by the Union, and the arrangements for the implementation of those decisions (Article 25 TEU).
+
+There are, in addition, various forms of action, such as recommendations, communications and acts on the organisation and running of the institutions (including interinstitutional agreements), the designation, structure and legal effects of which stem from various provisions in the Treaties or the rules adopted pursuant to the Treaties.
+
+
+=== SEGMENT 6 ===
+[Summary: The hierarchy of EU secondary legislation, established by Articles 289, 290, and 291 TFEU, distinguishes between legislative acts, delegated acts, and implementing acts. Legislative acts are adopted via ordinary or special legislative procedures. Delegated acts are non-legislative acts of general application used to supplement or amend non-essential elements of a legislative act. The power to adopt delegated acts is granted by the legislator (Parliament and Council) to the Commission, with the legislative act defining the scope, duration, and conditions of the delegation.]
+
+**2. Hierarchy of EU secondary legislation**
+
+A hierarchy of secondary legislation is established by Articles 289, 290 and 291 TFEU between legislative acts, delegated acts and implementing acts. Legislative acts are legal acts which are adopted through the ordinary or a special legislative procedure. Delegated acts for their part are non-legislative acts of general application that supplement or amend certain non-essential elements of a legislative act. The power to adopt these acts may be delegated to the Commission by the legislator (Parliament and the Council). The objectives, content, scope and duration of the delegation of power are defined in the legislative act, as are any urgent procedures, where applicable. In addition, the legislator lays down the conditions to which the delegation is subject, which may be the authority to revoke the delegation or the right to express an objection.
+
+
+=== SEGMENT 7 ===
+[Summary: The first section of the text describes implementing acts, which are generally adopted by the Commission to ensure uniform application of EU law, though the Council handles them in areas like CFSP or in specific justified cases. It establishes a mechanism allowing Parliament or the Council to require the Commission to revise a draft implementing act if it exceeds the powers provided in the basic legislative act. The text then defines Regulations as EU secondary legislation that is of general application, binding in its entirety, and directly applicable in all Member States without requiring national transposition, ensuring the uniform application of Union law and superseding incompatible national laws.]
+
+Implementing acts are generally adopted by the Commission, which is competent to do so in cases where uniform conditions for implementing legally binding acts are needed. Implementing acts are a matter for the Council only in specific cases which are duly justified and in areas of common foreign and security policy. Where a basic act is adopted under the ordinary legislative procedure, Parliament or the Council may at any time indicate to the Commission that, in its view, a draft implementing act goes beyond the implementing powers provided for in the basic act. In this case, the Commission must revise the draft act in question.
+
+**3. The various types of EU secondary legislation**
+
+**a. Regulations**
+
+Regulations are of general application, binding in their entirety and directly applicable. They must be complied with fully by those to whom they apply (private individuals, Member States, EU institutions). Regulations are directly applicable in all the Member States as soon as they enter into force (on the date stipulated or, failing that, on the twentieth day following their publication in the Official Journal of the European Union) and do not need to be transposed into national law.
+
+They are designed to ensure the uniform application of Union law in all the Member States. Regulations supersede national laws incompatible with their substantive provisions.
+
+
+=== SEGMENT 8 ===
+[Summary: Directives are a form of EU secondary legislation binding upon Member States concerning the result to be achieved, while leaving the choice of implementation form and methods to national authorities. They require national legislators to adopt a specific transposing act or 'national implementing measure' to integrate them into domestic law, and citizens are only bound by the directive once this transposition is complete. Member States must effect this transposition within the specified period, exercising some discretion to account for national circumstances, thereby guaranteeing the effectiveness of EU law in line with the principle of sincere cooperation (Article 4(3) TEU).]
+
+**b. Directives**
+Directives are binding, as to the result to be achieved, upon any or all of the Member States to whom they are addressed, but leave to the national authorities the choice of form and methods. National legislators must adopt a transposing act or 'national implementing measure' to transpose directives and bring national law into line with their objectives. Individual citizens are given rights and bound by the legal act only once the transposing act has been adopted. Member States are given some discretion, in transposing directives, to take account of specific national circumstances. Transposition must be effected within the period laid down in the directive. In transposing directives, Member States guarantee the effectiveness of EU law, in accordance with the principle of sincere cooperation established in Article 4(3) TEU.
+
+
+=== SEGMENT 9 ===
+[Summary: Directives are generally not directly applicable, but the CJEU has established exceptions allowing certain provisions to have direct effects against public authorities (vertical direct effect). This requires the directive to be untransposed or incorrectly transposed, and the provisions must be imperative, sufficiently clear, precise, and confer rights on individuals. However, this direct effect cannot be relied upon by an individual in dealings with other private parties, a prohibition known as the 'horizontal effect'.]
+
+In principle, directives are not directly applicable. The CJEU, however, has ruled that certain provisions of a directive may, exceptionally, have direct effects in a Member State even if the latter has not yet adopted a transposing act in cases where: (a) the directive has not been transposed into national law or has been transposed incorrectly; (b) the provisions of the directive are imperative and sufficiently clear and precise; and (c) the provisions of the directive confer rights on individuals.
+
+If these conditions have been met, individuals may invoke the provision in question in their dealings with the public authorities. Even when the provision does not confer any rights on the individual, and only the first and second conditions have been met, Member State authorities are required to take account of the untransposed directive. This ruling is based chiefly on the principles of effectiveness, the prevention of Treaty violations and legal protection. On the other hand, an individual may not rely on the direct effect of an untransposed directive in dealings with other individuals (the 'horizontal effect' – Faccini Dori v Recreb Srl, Case C-91/92, point 25).
+
+
+=== SEGMENT 10 ===
+[Summary: The CJEU's Francovich case-law establishes that individuals can seek compensation from a Member State for failure to comply with Union law, particularly regarding untransposed or inadequately transposed directives. This liability requires three conditions: the directive must confer identifiable rights on individuals, and there must be a causal link between the breach and the damages suffered, notably without needing to demonstrate fault on the part of the Member State. The text then transitions to defining Decisions, stating they are binding in their entirety, though they only bind the stipulated addressees.]
+
+According to the case-law of the CJEU (Francovich, joined cases C-6/90 and C-9/90), an individual citizen is entitled to seek compensation from a Member State that is not complying with Union law. This is possible, in the case of a directive which has not been transposed or which has been transposed inadequately, where: (a) the directive is intended to confer rights on individuals; (b) the content of the rights can be identified on the basis of the provisions of the directive; and (c) there is a causal link between the breach of the obligation to transpose the directive and the loss and damage suffered by the injured parties. Fault on the part of the Member State does not then have to be demonstrated in order to establish liability.
+
+**c. Decisions, recommendations and opinions**
+Decisions are binding in their entirety. Where those to whom they are addressed are stipulated (Member States,
+
+
+=== SEGMENT 11 ===
+[Summary: Decisions are binding on those addressed and can be directly applicable, similar to directives, though individuals invoking rights from a decision addressed to a Member State typically require a national transposing act. Conversely, recommendations and opinions are non-binding and serve only as guidance on Union law. Furthermore, the CJEU lacks jurisdiction under Article 263 TFEU over acts adopted solely by representatives of the Member States (not acting as the Council), as confirmed by a 2022 judgment regarding the relocation of the European Medicines Agency (EMA).]
+
+natural or legal persons), they are binding only on them, and address situations specific to those Member States or persons. An individual may invoke the rights conferred by a decision addressed to a Member State only if that Member State has adopted a transposing act. Decisions may be directly applicable on the same basis as directives.Recommendations and opinions do not confer any rights or obligations on those to whom they are addressed, but may provide guidance as to the interpretation and content of Union law.As actions brought against Member States under Article 263 TFEU must concern acts that have been adopted by EU institutions, bodies, offices or agencies, the CJEU has no jurisdiction over the decisions of the representatives of the Member States, e.g. as regards establishing the seats of the EU agencies. Acts adopted by representatives of the Member States acting, not in their capacity as members of the Council, but as representatives of their governments, and thus collectively exercising the powers of the Member States, are not subject to judicial review by EU courts, according to a judgment of the Court of 14 July 2022 in the case of relocation of the European Medicines Agency (EMA)[1].
+
+
+=== SEGMENT 12 ===
+[Summary: The Court held that Article 341 TFEU applies only to the designation of seats for Union institutions, confirming that the competence to determine the location of Union agencies lies with the EU legislature. The text then transitions to legislative procedures, noting that Parliament, the Council, and the Commission participate in the adoption of Union legislation to varying degrees. Implementation of Union law is primarily handled by Member States, who must adopt necessary national measures (Article 291(1) TFEU), but the Commission exercises implementing powers when uniform conditions are required (Article 291(2) TFEU).]
+
+The Court held that Article 341 TFEU does not apply to the designation of the location of the seat of a body, office or agency of the Union, only to institutions. The competence to determine the location of the seat of Union agencies lies with the EU legislature, which must act to that end in accordance with the procedures laid down by the substantively relevant provisions of the Treaties. The decision in question was a non-binding measure of political cooperation, which is not capable of limiting the discretion of the EU legislature. In that sense, the decision is not capable of limiting the discretion of the EU legislature or Parliament.4. Provisions on competences, procedures, implementation and enforcement of legal acts
+a. Legislative competence, right of initiative and legislative procedures: 1.3.2, 1.3.6, 1.3.8 and 1.2.3
+Parliament, the Council and the Commission take part in the adoption of the Union's legislation to varying degrees, depending on the individual legal basis. Parliament can ask the Commission to present legislative proposals to itself and to the Council.
+b. Implementation of Union legislation
+Under primary law, the EU has only limited powers of enforcement, as EU law is usually enforced by the Member States. Furthermore, Article 291(1) TFEU adds that 'Member States shall adopt all measures of national law necessary to implement legally binding Union acts'. Where uniform conditions for implementing legally binding Union acts are needed, the Commission exercises its implementing powers (Article 291(2) TFEU).
+
+
+=== SEGMENT 13 ===
+[Summary: The segment details the selection of legal acts, noting that if the Treaties do not specify the type, institutions must choose case-by-case according to Article 296(1) TFEU, adhering to proportionality. Furthermore, it explains that the general principles of Union law and fundamental rights were primarily developed by the case-law of the CJEU, though they are now formally enshrined in Article 6(3) TEU, which references the ECHR, common constitutional traditions, and the Charter of Fundamental Rights.]
+
+c. Choice of type of legal act
+In many cases, the Treaties lay down the type of legal act to be adopted. In many other cases, however, no type of legal act is specified. In these cases, Article 296(1) TFEU states that the institutions must select it on a case-by-case basis, 'in compliance with the applicable procedures and with the principle of proportionality'.
+C. General principles of Union law and fundamental rights
+The Treaties make very few references to the general principles of Union law. These principles have mainly been developed in the case-law of the CJEU (legal certainty, institutional balance, legitimate expectation, etc.), which is also the basis for the recognition of fundamental rights as general principles of Union law. These principles are now enshrined in Article 6(3) TEU, which refers to the fundamental rights as guaranteed by the Convention for the Protection of Human Rights and Fundamental Freedoms and as they result from the constitutional traditions common to the Member States and the Charter of Fundamental Rights of the European Union (4.1.2).
+
+
+=== SEGMENT 14 ===
+[Summary: The EU is empowered to conclude international agreements, including association agreements, under Articles 216 and 217 TFEU. These agreements are binding on the Union and the Member States and form an integral part of Union law. Moreover, CJEU case-law stipulates that these international agreements prevail over secondary EU law, a principle derived from Article 216(2) TFEU.]
+
+D. International agreements concluded by the EU under Articles 216 and 217 TFEU
+The Union may, within its sphere of competence, conclude international agreements with third countries or international organisations (Article 216(1) TFEU). These agreements are binding on the Union and the Member States, and are an integral part of Union law (Article 216(2) TFEU). According to Article 217 TFEU, the EU may also conclude agreements establishing an association involving reciprocal rights and obligations, common action and special procedure. The Trade and Cooperation Agreement between the European Union and the European Atomic Energy Community, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, was concluded in accordance with this provision. On 28 April 2021, Parliament gave its consent under Article 218, paragraph 6a, TFEU.
+According to the case-law of the CJEU, international law takes precedence over (secondary) EU law: 'It should also be pointed out that, by virtue of Article 216(2) TFEU, where international agreements are concluded by the European Union they are binding upon its institutions and, consequently, they prevail over acts of the European Union'.
+
+
+=== SEGMENT 15 ===
+[Summary: Parliament created five policy departments in 2004 to provide high-level independent expertise and analysis, which is intended to accompany legislative initiatives and ensure high-quality legislation. Optimal EU legislation is estimated to lead to potential annual gains of over EUR 2,200 billion. This commitment to quality is formalized by the Interinstitutional Agreement on Better Law-Making, which covers the entire policy cycle and aims to deliver efficient, clear, and effective EU legislation while avoiding unnecessary burdens.]
+
+Ε. Independent expertise and better lawmaking
+In 2004, Parliament created five policy departments providing high-level independent expertise, analysis and policy advice at the request of committees and other parliamentary bodies. This independent research – connecting MEPs, academia and citizens – should accompany every legislative initiative, from its planning until the evaluation of its implementation. It should contribute to the high quality of legislation and its interpretation, as an indispensable part of preparatory work[2].
+Optimal EU legislation can lead to potential gains of over EUR 2 200 billion annually. Research prepared for Parliament by the policy departments indicates that annual gains of EUR 386 billion can be achieved for the free movement of goods, EUR 189 billion for the customs union, EUR 289 billion for the free movement of services and EUR 177 billion for the digital single market.
+The Interinstitutional Agreement on Better Law-Making covers annual and multiannual programming and all aspects of the policy cycle. It also sets out the institutions' various commitments to deliver high-quality EU legislation that is efficient, effective, simple and clear, and that avoids overregulation and unnecessary burdens for individuals, public authorities and businesses, especially small and medium-sized enterprises.
+
+
+=== SEGMENT 16 ===
+[Summary: Research commissioned by the European Parliament indicates that the involvement of independent research must be improved, particularly by ensuring its consistent application to all legislative initiatives and evaluations, and by improving data collection for assessing quantified effects. Additionally, recent findings suggest that the overly complex structure and language of EU legislation create barriers for citizens to understand their rights, leading experts from Parliament and Member States to call for reforms aimed at making EU law more accessible and citizen-centered.]
+
+However, research commissioned by Parliament indicates that the involvement of independent research needs to be: (1) improved at the stage of formulating and planning EU strategies, including by shortening delays to introducing legislative reforms; (2) equally applied to all legislative initiatives (e.g. exceptions for urgent files lower the quality of EU legislation in important areas); and (3) equally applied to evaluations of the effects of EU law, which currently lack crucial assessments of quantified effects due to a lack of data collection.
+Furthermore, recent research carried out for Parliament suggests that the overly complex structure and language of EU legislation create barriers for EU citizens in understanding their rights[3]. Experts from Parliament and the Member States highlight the need to reform EU legislation to make it more accessible and citizen-centred.[4]
+
+
+=== SEGMENT 17 ===
+[Summary: Under Article 14(1) TEU, the European Parliament (EP) jointly exercises legislative (via the ordinary legislative procedure) and budgetary functions with the Council. The EP actively seeks to simplify the legislative process, improve the quality of legal texts, and ensure more effective penalties for Member States that fail to comply with Union law, notably by reviewing the Commission's Annual Working and Legislative Programme. Furthermore, the EP plays a critical role in foreign policy, as its consent is required for international agreements in areas like the common commercial policy, a power demonstrated by its consent to the EU-UK Trade and Cooperation Agreement and its veto of the Anti-Counterfeiting Trade Agreement (ACTA) in 2012.]
+
+## ROLE OF THE EUROPEAN PARLIAMENT
+Under Article 14(1) TEU: 'The European Parliament shall, jointly with the Council, exercise legislative (via the 'ordinary legislative procedure') and budgetary (via a special legislative procedure under Article 314 TFEU) functions'. Parliament is seeking to simplify the legislative process, improve the drafting quality of legal texts and ensure that more effective penalties are imposed on Member States that fail to comply with Union law. The Commission's Annual Working and Legislative Programme presents the major political priorities of the Commission and identifies concrete actions, either legislative or non-legislative, that translate these priorities into operational terms. Parliament plays a genuine role in creating new laws, since it examines the Commission's Annual Programme of Work and says which laws it would like to see introduced.
+Having gained legal personality, the Union can conclude international agreements (Article 216-217 TFEU). Any agreement concluded in the field of the common commercial policy and in all fields whose policies fall under the ordinary legislative procedure require the consent of Parliament (Article 218(6)(a) TFEU). For example, Parliament gave its consent on 28 April 2021 to the EU-UK Trade and Cooperation Agreement. On other occasions, Parliament had already shown that it will not hesitate to use its veto if it has serious concerns. For example, it rejected the Anti-Counterfeiting Trade Agreement (ACTA) in 2012.
+
+
+=== SEGMENT 18 ===
+[Summary: The European Parliament is actively pursuing reforms to enhance EU lawmaking quality, evidenced by a resolution adopted in July 2022 responding to the Commission’s ‘Better Regulation’ communication. Research commissioned by Parliament highlights the necessity for reforms in drafting and structure to improve clarity, better communicate benefits, and facilitate the digital use of legislation by EU citizens. This focus includes recommendations for the progressive digitalization of the EU legal system.]
+
+In July 2022, Parliament adopted a resolution in response to the communication from the Commission entitled ‘Better Regulation: Joining forces to make better laws'.
+Research commissioned by Parliament's policy departments indicates a need for reform to promote better lawmaking and regulation in the EU[5]. The research also shows that EU legislation can benefit from a reform of its drafting and its structure so as to indicate its benefits more clearly and facilitate the digital use of legislation by EU citizens[6]. A recent study on Law and ICT recommends the progressive digitalisation of the EU legal system, including its sources.[7]
+This fact sheet was prepared by the Policy Department for Justice, Civil Liberties and Institutional Affairs (IUST).
+Mariusz Maciejewski
+05/2025
+---
+[1]See Joined Cases C-59/18 Italy v Council and C-182/18 Comune di Milano v Council, Joined Cases C-106/19 Italy v Council and Parliament and C-232/19 Comune di Milano v Parliament and Council, and Case C-743/19 Parliament v Council).
+[2]Maciejewski M., Role of the European Parliament in promoting the use of independent experti
+
+
+=== SEGMENT 19 ===
+[Summary: This segment consists of six references to specific research papers published by various European Parliament Policy Departments between 2018 and 2025. These studies address critical aspects of the EU legislative process, focusing on better law-making, better regulation principles, the use of independent expertise, and the integration of Law and ICT.]
+
+se in the legislative process, Policy Department for Economic, Scientific and Quality of Life Policies, European Parliament, December 2018.
+
+[3]Vanyskova Z. et al., Better Law-Making in the European Union, Policy Department for Justice, Civil Liberties and Institutional Affairs, European Parliament, February 2025.
+
+[4]Vanyskova Z. et al., Critical Approach to EU law-making: French Senate's report on EU legislation, Policy Department for Justice, Civil Liberties and Institutional Affairs, European Parliament, April 2025.
+
+[5]Jones, S. et al., Better regulation in the EU, Policy Department for Citizens' Rights and Constitutional Affairs, European Parliament, October 2023.
+
+[6]Xanthaki H., The 'one in, one out' principle. A real better lawmaking tool?, Policy Department for Citizens' Rights and Constitutional Affairs, European Parliament, October 2023.
+
+[7]Maciejewski M., Law and ICT, Policy Department for Citizens' Rights and Constitutional Affairs, European Parliament, April 2024.

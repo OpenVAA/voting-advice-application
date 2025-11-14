@@ -23,10 +23,8 @@ import type {
  * @param question - The question to condense arguments for
  * @param entities - The entity objects (e.g. candidates or parties) with an 'answers' property
  * @param options - Configuration options including:
- * @param options.llmProvider - The LLM provider: an abstract to-implement class for provider-agnostic LLM calls
+ * @param options.llmProvider - The LLM provider configured with model and TPM limit settings
  * @param options.language - The language of the question and entity answers
- * @param options.llmModel - The LLM model to use
- * @param options.modelTPMLimit - The number of tokens per minute the LLM model can handle
  * @param options.runId - The ID of the run: useful for tracking and visualizing multiple runs
  * @param options.maxCommentsPerGroup - The maximum number of comments per group
  * @param options.invertProsAndCons - Whether to invert the pros and cons for ordinal questions (rarely needed)
@@ -38,7 +36,7 @@ import type {
  * @example
  * import { handleQuestion } from '@openvaa/argument-condensation';
  * import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { OpenAIProvider } from '@openvaa/llm';
+ * import { LLMProvider } from '@openvaa/llm-refactor';
  * import type { HasAnswers } from '@openvaa/core';
  *
  * // 1. Set up your question, entities, and LLM provider
@@ -71,7 +69,11 @@ import type {
  *   }
  * ];
  *
- * const llmProvider = new OpenAIProvider({ apiKey: '...' });
+ * const llmProvider = new LLMProvider({
+ *   provider: 'openai',
+ *   apiKey: '...',
+ *   modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+ * });
  *
  * // 2. Call handleQuestion with the setup
  * const results = await handleQuestion({
@@ -80,8 +82,6 @@ import type {
  *   options: {
  *     llmProvider,
  *     language: 'en',
- *     llmModel: 'gpt-4o',
- *     modelTPMLimit: 30000,
  *     runId: 'some-run-id',
  *     maxCommentsPerGroup: 1000,
  *     invertProsAndCons: false,
@@ -103,13 +103,15 @@ export async function handleQuestion({
   // Default promptIds and the visualization flag (false) are set in runSingleCondensation
   const options = {
     ...userOptions,
-    modelTPMLimit: userOptions.modelTPMLimit ?? MODEL_DEFAULTS.TPM_LIMIT, // A conservative limit for low-TPM models of OpenAI (8/25)
     invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed
     controller: userOptions.controller ?? new BaseController() // Default controller for progress and issue tracking
   };
 
   // Destructure for easier use
-  const { language, maxCommentsPerGroup, modelTPMLimit, invertProsAndCons } = options;
+  const { language, maxCommentsPerGroup, invertProsAndCons, llmProvider } = options;
+
+  // Get TPM limit from the LLMProvider config (configured when the provider was instantiated)
+  const modelTPMLimit = llmProvider.config.modelConfig.tpmLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
 
   // Check that the language is supported
   if (!SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {

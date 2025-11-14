@@ -1,0 +1,613 @@
+=== SEGMENT 1 ===
+[Summary: This section outlines the foundational aspects of 'How the European Union works,' divided into two main areas: the historical development of European integration and the EU's legal system and decision-making procedures. The historical overview lists key treaties, including the First Treaties, the Single European Act, and the Treaties of Maastricht, Amsterdam, Nice, and Lisbon. The legal system section details the sources and scope of EU law, the principle of subsidiarity, and various decision-making processes, such as supranational, intergovernmental, and budgetary procedures.]
+
+FACTSHEETS
+
+# 1. How the European Union works
+
+- 1.1. Historical development of European integration
+    - 1.1.1. The First Treaties
+    - 1.1.2. Developments up to the Single European Act
+    - 1.1.3. The Maastricht and Amsterdam Treaties
+    - 1.1.4. The Treaty of Nice and the Convention on the Future of Europe
+    - 1.1.5. The Treaty of Lisbon
+- 1.2. The European Union’s legal system and decision-making procedures
+    - 1.2.1. Sources and scope of European Union law
+    - 1.2.2. The principle of subsidiarity
+    - 1.2.3. Supranational decision-making procedures
+    - 1.2.4. Intergovernmental decision-making procedures
+    - 1.2.5. The budgetary procedure
+
+
+=== SEGMENT 2 ===
+[Summary: This segment details the structure of the European Union by cataloging its major institutions and bodies, including extensive coverage of the European Parliament's history, powers, and operations. Furthermore, it outlines the comprehensive framework for EU financing, covering essential topics like the Union's revenue and expenditure, the multiannual financial framework, budgetary control, and measures for combating fraud.]
+
+- 1.3. European Union institutions and bodies
+    - 1.3.1. The European Parliament: Historical background
+    - 1.3.2. The European Parliament: Powers
+    - 1.3.3. The European Parliament: organisation and operation
+    - 1.3.4. The European Parliament: electoral procedures
+    - 1.3.5. European Parliament: relations with the national parliaments
+    - 1.3.6. The European Council
+    - 1.3.7. The Council of the European Union
+    - 1.3.8. The European Commission
+    - 1.3.9. The Court of Justice of the European Union
+    - 1.3.10. Competences of the Court of Justice of the European Union
+    - 1.3.11. The European Central Bank (ECB)
+    - 1.3.12. The Court of Auditors
+    - 1.3.13. The European Economic and Social Committee
+    - 1.3.14. The European Committee of the Regions
+    - 1.3.15. The European Investment Bank
+    - 1.3.16. The European Ombudsman
+- 1.4. Financing
+    - 1.4.1. The Union’s revenue
+    - 1.4.2. The EU’s expenditure
+    - 1.4.3. Multiannual financial framework
+    - 1.4.4. Implementation of the budget
+    - 1.4.5. Budgetary control
+    - 1.4.6. Combating fraud and protecting the EU’s financial interests
+
+
+=== SEGMENT 3 ===
+[Summary: The initial move towards European integration was prompted by the need for Franco-German reconciliation following the Second World War and the persistent East-West confrontation. The first concrete step was the decision to pool the coal and steel industries of six European countries, formalized by the Treaty of Paris in 1951. This integration was further strengthened by the Treaties of Rome in 1957, which reinforced the notion of a common future for the participating nations.]
+
+## 1.1. HISTORICAL DEVELOPMENT OF EUROPEAN INTEGRATION
+
+### 1.1.1. THE FIRST TREATIES
+
+> The disastrous effects of the Second World War and the constant threat of an East West confrontation meant that Franco-German reconciliation had become a top priority. The decision to pool the coal and steel industries of six European countries, brought into force by the Treaty of Paris in 1951, marked the first step towards European integration. The Treaties of Rome of 1957 strengthened the foundations of this integration, as well as the notion of a common future for the six European countries involved.
+
+
+=== SEGMENT 4 ===
+[Summary: The Treaty establishing the European Coal and Steel Community (ECSC), also known as the Treaty of Paris, was signed in 1951 and entered into force in 1952, marking the first time six European states agreed to work toward integration. This foundational treaty established core institutions, including the 'High Authority' executive, a Parliamentary Assembly, and a Court of Justice. The ECSC Treaty expired on 23 July 2002, exactly 50 years after its enactment, and its net assets were subsequently assigned to the Research Fund for Coal and Steel to finance industry research.]
+
+#### LEGAL BASIS
+
+- The Treaty establishing the European Coal and Steel Community (ECSC), or Treaty of Paris, was signed on 18 April 1951 and came into force on 23 July 1952. For the first time, six European States agreed to work towards integration. This Treaty laid the foundations of the Community by setting up an executive known as the ‘High Authority’, a Parliamentary Assembly, a Council of Ministers, a Court of Justice and a Consultative Committee. The ECSC Treaty expired on 23 July 2002 at the end of the 50-year validity period laid down in Article 97. In accordance with the Protocol (No 37) annexed to the Treaties (the Treaty on European Union and the Treaty on the Functioning of the European Union), the net worth of the ECSC’s assets at the time of its dissolution was assigned to the Research Fund for Coal and Steel to finance research by Member States in sectors relating to the coal and steel industry.
+
+
+=== SEGMENT 5 ===
+[Summary: The Treaties of Rome, signed on 25 March 1957 and effective from 1 January 1958, established the European Economic Community (EEC) and the European Atomic Energy Community (Euratom). These treaties, concluded for an unlimited period by the six founding countries (Belgium, France, Germany, Italy, Luxembourg, and the Netherlands), conferred quasi-constitutional status upon them. The EEC aimed to establish a common market built on the four freedoms of movement, while Euratom focused on coordinating research and supply related to the peaceful use of nuclear energy.]
+
+- The Treaties establishing the European Economic Community (EEC) and the European Atomic Energy Community (EAEC, otherwise known as ‘Euratom’), or the Treaties of Rome, were signed on 25 March 1957 and came into force on 1 January 1958. Unlike the ECSC Treaty, the Treaties of Rome were concluded ‘for an unlimited period’ (Article 240 of the EEC Treaty and Article 208 of the EAEC Treaty), which conferred quasi-constitutional status on them.
+- The six founding countries were Belgium, France, Germany, Italy, Luxembourg and the Netherlands.
+
+#### OBJECTIVES
+
+- The founders of the ECSC were clear about their intentions for the Treaty, namely that it was merely the first step towards a ‘European Federation’. The common coal and steel market was to be an experiment which could gradually be extended to other economic spheres, culminating in a political Europe.
+- The aim of the European Economic Community was to establish a common market based on the four freedoms of movement (goods, persons, capital and services).
+- The aim of Euratom was to coordinate the supply of fissile materials and the research programmes initiated or being prepared by Member States on the peaceful use of nuclear energy.
+- The preambles to the three Treaties reveal a unity of purpose behind the creation of the Communities, namely the conviction that the States of Europe must work together to build a common future as this alone will enable them to control their destiny.
+
+
+=== SEGMENT 6 ===
+[Summary: The European Communities (ECSC, EEC, and Euratom) were founded on the desire for a united Europe, primarily driven by the need for Franco-German reconciliation and the reorganization of strategic industries following the Second World War. The process of integration officially started with the appeal made by French Foreign Minister Robert Schuman on May 9, 1950, which proposed pooling vital coal and steel resources to end historical rivalry and create "de facto solidarity."]
+
+#### MAIN PRINCIPLES
+
+The European Communities (the ECSC, EEC and Euratom) were born of the desire for a united Europe, an idea which gradually took shape as a direct response to the events that had shattered the continent. In the wake of the Second World War, the strategic industries, in particular the steel industry, needed reorganising. The future of Europe, threatened by East-West confrontation, lay in Franco-German reconciliation.
+
+The appeal made by Robert Schuman, the French Foreign Minister, on 9 May 1950 can be regarded as the starting point for European integration. At that time, the choice of coal and steel was highly symbolic: in the early 1950s, coal and steel were vital industries and the basis of a country’s power. In addition to the clear economic benefits, the pooling of French and German resources was intended to mark the end of the rivalry between the two countries. On 9 May 1950, Robert Schuman declared: ‘Europe will not be made all at once, or according to a single plan. It will be built through concrete achievements which first create a de facto solidarity.’
+
+
+=== SEGMENT 7 ===
+[Summary: The Treaty of Paris was signed by France, Italy, Germany, and the Benelux countries, establishing principles like the free movement of goods, market monitoring, and support for the coal and steel sectors. Following this, efforts were made to form a European army through the European Defence Community (EDC), which was negotiated in 1952 and intended to be accompanied by a Political Community (EPC). However, both plans were ultimately shelved when the French National Assembly refused to ratify the EDC treaty on 30 August 1954.]
+
+It was on the basis of that principle that France, Italy, Germany and the Benelux countries (Belgium, the Netherlands and Luxembourg) signed the Treaty of Paris, which concentrated predominantly on ensuring:
+
+- Free movement of goods and free access to sources of production;
+- Permanent monitoring of the market to avoid distortions which could lead to the introduction of production quotas;
+- Compliance with the rules of competition and the principle of price transparency;
+- Support for modernisation and conversion of the coal and steel sectors.
+
+Following the signing of the Treaty of Paris, and despite France being opposed to the re-establishment of a German national military force, René Pleven was giving thought to the formation of a European army. The European Defence Community (EDC), negotiated in 1952, was to have been accompanied by a Political Community (EPC). Both plans were shelved following the French National Assembly’s refusal to ratify the treaty on 30 August 1954.
+
+
+=== SEGMENT 8 ===
+[Summary: The failure of the European Defence Community (EDC) prompted renewed integration efforts starting with the Messina Conference in June 1955, which proposed a customs union and atomic energy, culminating in the signing of the EEC Treaty (Treaty of Rome) and the EAEC Treaty. The EEC Treaty focused on achieving a common market by eliminating internal customs duties, establishing an external Common Customs Tariff, and creating key institutions like the European Social Fund and the European Investment Bank. Furthermore, the EEC Treaty laid down guiding principles for common policies, including agriculture, transport, and commerce, intended to guarantee the free movement of goods and mobility of factors of production.]
+
+Efforts to get the process of European integration under way again following the failure of the EDC took the form of specific proposals at the Messina Conference (in June 1955) on a customs union and atomic energy. They culminated in the signing of the EEC and EAEC Treaties.
+
+The provisions of the Treaty establishing the European Economic Community (EEC Treaty, the Treaty of Rome) included:
+
+- The elimination of customs duties between Member States;
+- The establishment of an external Common Customs Tariff;
+- The introduction of common policies for agriculture and transport;
+- The creation of a European Social Fund;
+- The establishment of a European Investment Bank;
+- The development of closer relations between the Member States.
+
+To achieve these objectives the EEC Treaty laid down guiding principles and set the framework for the legislative activities of the Community institutions. These involved common policies: the common agricultural policy (Articles 38 to 43), transport policy (Articles 74 and 75) and a common commercial policy (Articles 110 to 113).
+
+The common market is intended to guarantee the free movement of goods and the mobility of factors of production (the free movement of workers and enterprises, the freedom to provide services and the free movement of capital).
+
+
+=== SEGMENT 9 ===
+[Summary: The Euratom Treaty's original ambitious goal for the rapid growth of nuclear industries had to be scaled back due to the sensitive nature of the sector, impacting national defense and independence. Institutional unification was achieved through the Convention on certain common institutions, which made the Parliamentary Assembly and Court of Justice common, and fully completed by the 1965 Merger Treaty, which established a Single Council and a Single Commission. This process resulted in the EEC gaining institutional dominance over the existing sectoral communities (ECSC and EAEC).]
+
+The Treaty establishing the European Atomic Energy Community (The Euratom Treaty) had originally set highly ambitious objectives, including the ‘speedy establishment and growth of nuclear industries’. However, owing to the complex and sensitive nature of the nuclear sector, which touched on the vital interests of the Member States (defence and national independence), those ambitions had to be scaled back.
+
+The Convention on certain institutions common to the European Communities, which was signed and entered into force at the same time as the Treaties of Rome, stipulated that the Parliamentary Assembly and Court of Justice would be common institutions. This Convention lapsed on 1 May 1999. All that remained was for the ‘Executives’ to be merged, so the Treaty establishing a Single Council and a Single Commission of the European Communities of 8 April 1965, known as the ‘Merger Treaty’, duly completed the process of unifying the institutions.
+
+From then on, the EEC held sway over the sectoral communities, the ECSC, and the EAEC. This amounted to a victory for the general EEC system over the coexistence of organisations with sectoral competence, and an establishment of its institutions.
+
+This fact sheet was prepared by the European Parliament’s Policy Department for Justice, Civil Liberties and Institutional Affairs.
+
+Mariusz Maciejewski
+04/2025
+
+
+=== SEGMENT 10 ===
+[Summary: Key developments preceding the Single European Act (SEA) included establishing Community own resources, reinforcing the budgetary powers of the Parliament, introducing direct universal suffrage for MEPs, and setting up the European Monetary System (EMS). The SEA itself entered into force in 1986, substantially altering the Treaty of Rome and bolstering integration through the creation of a large internal market.]
+
+### 1.1.2. DEVELOPMENTS UP TO THE SINGLE EUROPEAN ACT
+
+> The main developments of the early Treaties are related to the creation of Community own resources, the reinforcement of the budgetary powers of Parliament, election of MEPs by direct universal suffrage and the setting-up of the European Monetary System (EMS). The entry into force of the Single European Act in 1986, which substantially altered the Treaty of Rome, bolstered the notion of int
+
+
+=== SEGMENT 11 ===
+[Summary: The first stage of integration, following the Single European Act, focused on creating a large internal market and implementing the common market provisions outlined in Article 8 of the Treaty of Rome. Although the common market was planned for completion by the end of 1969, the customs union was achieved early on July 1, 1968, alongside the adoption of a common external tariff. This period also saw the creation of 'Green Europe,' marked by the adoption of the first Common Agricultural Policy (CAP) regulations and the establishment of the European Agricultural Guidance and Guarantee Fund in 1962.]
+
+egration by creating a large internal market.#### MAIN ACHIEVEMENTS IN THE FIRST STAGE OF INTEGRATIONArticle 8 of the Treaty establishing the European Economic Community (EEC), also known as the Treaty of Rome, provided for the completion of a common market over a transitional period of 12 years, in three stages, ending on 31 December 1969. Its first aim, the customs union, was completed more quickly than expected. The transitional period for enlarging quotas and phasing out internal customs ended as early as 1 July 1968. Even so, at the end of the transitional period there were still major obstacles to freedom of movement. By then, the EEC had adopted a common external tariff for trade with non-EEC countries.Creating a ‘Green Europe’ was another major project for European integration. The first regulations on the common agricultural policy (CAP) were adopted and the European Agricultural Guidance and Guarantee Fund was set up in 1962.
+
+
+=== SEGMENT 12 ===
+[Summary: The initial amendments to the founding treaties, starting with the 1965 Merger Treaty, streamlined the institutional structure by creating a single Council and Commission. Financially, the system shifted in 1970 from Member State contributions to Community own resources. Furthermore, treaties in the early 1970s, notably the 1975 Treaty of Brussels, greatly enhanced the budgetary authority of the Parliament (including the right to reject the budget) and established the Court of Auditors for financial scrutiny.]
+
+#### FIRST TREATY AMENDMENTS##### A. Improvements to the institutionsThe first institutional change came about with the Merger Treaty of 8 April 1965, which merged the executive bodies. This took effect in 1967, setting up a single Council and Commission of the European Communities (the European Coal and Steel Community, the EEC and the European Atomic Energy Community) and introducing the principle of a single budget.##### B. Own resources and budgetary powersThe Council decision of 21 April 1970 on the replacement of financial contributions from Member States by the Communities’ own resources set up a system of Community own resources, replacing financial contributions by the Member States (1.4.1).- The Treaty of Luxembourg of 22 April 1970 granted Parliament certain budgetary powers (1.3.1).- The Treaty amending certain financial provisions of the Treaties establishing the European Economic Communities and of the Treaty establishing a single Council of the European Communities (the Treaty of Brussels) of 22 July 1975 gave Parliament the right to reject the budget and to grant the Commission a discharge for implementing the budget. The same Treaty set up the Court of Auditors, a body responsible for scrutinising the Community’s accounts and for financial management (1.3.12).
+
+
+=== SEGMENT 13 ===
+[Summary: The period detailed significant institutional and membership changes. The legitimacy of the European Parliament was enhanced by the Act of 1976, which introduced direct universal suffrage, later revised in 2002 to mandate proportional representation. Furthermore, the Community expanded significantly, notably including the UK, Denmark, and Ireland in 1973, Greece in 1981, and Portugal and Spain in 1986, while budgetary issues following enlargement led to the 1984 Fontainebleau agreements establishing a mechanism for financial burden adjustment.]
+
+##### C. ElectionsThe Act of 20 September 1976 gave Parliament new legitimacy and authority by introducing election by direct universal suffrage (1.3.4). The 1976 Act was revised in 2002 to introduce the general principle of proportional representation and other framework provisions for national legislation on the European elections.##### D. EnlargementThe UK joined the Community on 1 January 1973, together with Denmark and Ireland; the Norwegian people had voted against accession in a referendum. Greece became a member in 1981 and Portugal and Spain joined in 1986.##### E. EU budgetAfter the first round of enlargement, there were calls for greater budgetary rigour and reform of the CAP. The 1979 European Council reached agreement on a series of complementary measures. The 1984 Fontainebleau agreements produced a sustainable solution based on the principle that adjustments could be made to assist any Member State with a financial burden that was excessive in terms of its relative prosperity.
+
+
+=== SEGMENT 14 ===
+[Summary: The goal of uniting Member States politically resurfaced in the early 1960s, despite the 1954 failure of the European Defence Community. Following the 1961 Bonn summit, an intergovernmental committee chaired by Christian Fouchet attempted between 1960 and 1962 to draft an acceptable treaty for political union, but failed, rejecting the federal option. This failure led to the adoption of European Political Cooperation (EPC) as a substitute, which was formalized following the December 1969 Hague summit and based initially on the Davignon report until the Single European Act entered into force.]
+
+#### PLANS FOR FURTHER INTEGRATIONBuilding on the initial successes of the economic community, the aim of also uniting the Member States politically resurfaced in the early 1960s, despite the failure of the European Defence Community in August 1954.##### A. Failure of an attempt to achieve political unionAt the 1961 Bonn summit, the Heads of State or Government of the six founding Member States of the European Community asked an intergovernmental committee, chaired by French ambassador Christian Fouchet, to put forward proposals on the political status of a union of European peoples. The study committee tried in vain, on two occasions between 1960 and 1962, to present the Member States with a draft treaty that was acceptable to all, even though Fouchet based his plan on strict respect for the identity of the Member States, thus rejecting the federal option.In the absence of a political community, its substitute took the form of European Political Cooperation, or EPC. At the summit conference in The Hague in December 1969, the Heads of State or Government decided to look into the best way of making progress in the field of political unification. The Davignon report, adopted by the foreign ministers in October 1970 and subsequently elaborated on by further reports, formed the basis of EPC until the Single European Act (SEA) entered into force.
+
+
+=== SEGMENT 15 ===
+[Summary: The European Community experienced the 1966 crisis when France opposed the proposed shift from unanimity to qualified majority voting in the Council, leading to the 'empty chair' policy. The crisis was resolved by the Luxembourg Compromise, which protected vital national interests in decision-making. Simultaneously, the importance of European 'summits' grew, culminating in the 1974 Fontainebleau summit, where leaders decided to formalize these meetings as the European Council, convening three times annually.]
+
+##### B. The 1966 crisisA serious crisis arose when, at the third stage of the transition period, voting procedures in the Council were to change from the unanimity rule to qualified majority voting in a number of areas. France opposed a range of Commission proposals, which included measures for financing the CAP, and stopped attending the main Community meetings (the ‘empty chair’ policy). Eventually, agreement was reached on the Luxembourg Compromise (1.3.7), which stated that, when vital interests of one or more countries were at stake, members of the Council would endeavour to reach solutions that could be adopted by all while respecting their mutual interests.##### C. The increasing importance of European ‘summits’Though remaining outside the Community institutional context, the conferences of Heads of State or Government of the Member States started to provide political guidance and to settle the problems that the Council of Ministers could not handle. After early meetings in 1961 and 1967, the conferences took on increasing significance with the summit at The Hague on 1 and 2 December 1969, which allowed negotiations to begin on enlarging the Community and saw agreement on the Community finance system, and with the Fontainebleau summit (in December 1974), at which major political decisions were taken on the direct election of the European Parliament and the decision-taking procedure within the Council. At that summit, the Heads of State or Government also decided to meet three times a year as the ‘European Council’ to discuss Community affairs and political cooperation (1.3.6).
+
+
+=== SEGMENT 16 ===
+[Summary: Towards the end of the 1970s, Member States initiated efforts to align economic policies, resulting in the establishment of the European Monetary System (EMS) by the Bremen and Brussels European Councils in 1978, using the European currency unit (ECU). Furthermore, the Foreign Ministers of Germany and Italy proposed a 'European Act' at the 1981 London European Council covering political cooperation and fundamental rights; although not adopted in its original form, elements of this proposal contributed to the 1983 Solemn declaration on European Union.]
+
+##### D. Institutional reform and monetary policyTowards the end of the 1970s, there were various initiatives in the Member States to bring their economic and fiscal policies into line with each other. To solve the problem of monetary instability and its adverse effects on the CAP and cohesion between Member States, the Bremen and Brussels European Councils in 1978 set up the EMS. Established on a voluntary and differentiated basis – the UK decided not to participate in the exchange-rate mechanism – the EMS was based on a common accounting unit, the European currency unit.At the London European Council in 1981, the Foreign Ministers of Germany and Italy, Hans-Dietrich Genscher and Emilio Colombo, put forward a proposal for a ‘European Act’ covering a range of subjects: political cooperation, culture, fundamental rights, harmonisation of the law outside the fields covered by the Community Treaties, and ways of dealing with violence, terrorism and crime. It was not adopted in its original form, but some parts of it resurfaced in the ‘Solemn declaration on European Union’ adopted in Stuttgart on 19 June 1983.
+
+
+=== SEGMENT 17 ===
+[Summary: Prompted by a serious crisis over the 1980 budget, MEP Altiero Spinelli initiated a project in 1980 to revitalize the operation of European institutions. Parliament subsequently formed an institutional affairs committee in July 1981, with Spinelli as rapporteur, to draft a new treaty intended as a constitution for the European Union. Although the draft, which proposed a bicameral legislative system, was adopted by Parliament on February 14, 1984, it was ultimately not acceptable to the Member States.]
+
+##### E. The Spinelli projectA few months after its first direct election in 1979, Parliament’s relations with the Council were thrown into a serious crisis by the budget for 1980. At the instigation of Altiero Spinelli, MEP, founder of the European Federalist Movement and a former commissioner, a group of nine MEPs met in July 1980 to discuss ways of revitalising the operation of the institutions. In July 1981, Parliament set up an institutional affairs committee, with Spinelli as its coordinating rapporteur, to draw up a plan for amending the existing Treaties. The committee decided to formulate plans for what was to become the constitution of the European Union. The draft treaty was adopted by a large majority on 14 February 1984. Legislative power would come under a bicameral system akin to that of a federal state[1]. The system aimed to strike a balance between Parliament and the Council, but it was not acceptable to the Member States.
+
+
+=== SEGMENT 18 ===
+[Summary: Following the settlement of the Community budget dispute, the European Council established the Dooge Committee in June 1984, which paved the way for an Intergovernmental Conference convened by the Milan European Council in June 1985. The resulting Single European Act (SEA) was signed in February 1986 and, despite a delay caused by an appeal in the Irish courts, came into force on July 1, 1987, marking it the first substantial modification to the Treaty of Rome.]
+
+#### THE SINGLE EUROPEAN ACTHaving settled the Community budget dispute of the early 1980s, the European Council decided at its Fontainebleau meeting in June 1984 to set up an ad hoc committee of the personal representatives of the Heads of State or Government, named the Dooge Committee after its chairman. The committee was asked to make proposals for improving the functioning of the Community system and of political cooperation. The June 1985 Milan European Council decided by a majority (seven votes to three), in an exceptional procedure for that body, to convene an intergovernmental conference to consider strengthening the powers of the institutions, extending Community activities to new areas and establishing a ‘genuine’ internal market.On 17 February 1986, nine Member States signed the SEA, followed later, on 28 February 1986, by Denmark (after a referendum vote in favour), Italy and Greece. The SEA was ratified by the Member States’ parliaments in 1986, but, because a private citizen had appealed to the Irish courts, its entry into force was delayed for six months until 1 July 1987. The SEA was the first substantial change to the Treaty of Rome. Its principal provisions were as follows:
+
+
+=== SEGMENT 19 ===
+[Summary: The Single European Act (SEA) extended the Union's powers, primarily by setting the goal for a fully operational internal market to be completed by 1 January 1993, which broadened the scope of the common market introduced in 1958. This extension also established new Union competencies in critical areas including monetary policy, social policy, economic and social cohesion, and research and technological development.]
+
+##### A. Extension of the Union’s powers###### 1. Through the creation of a large internal marketA fully operational internal market was to be completed by 1 January 1993, taking up and broadening the objective of the common market introduced in 1958 (2.1.1).###### 2. Through the establishment of new powers as regards:- Monetary policy;- Social policy;- Economic and social cohesion;- Research and technolog
+
+
+=== SEGMENT 20 ===
+[Summary: The Single European Act (SEA) expanded the EU's competence into new fields, including environmental policy and foreign policy cooperation. Institutionally, it streamlined the Council of Ministers' operations by significantly replacing unanimity with Qualified Majority Voting (QMV) in both existing and new policy areas. Furthermore, the SEA strengthened the European Parliament's role by requiring its assent for enlargement and association agreements and introducing the cooperation procedure, which provided Parliament with initial legislative powers.]
+
+ical development;- The environment;- Cooperation in the field of foreign policy.##### B. Improvement in the decision-making capacity of the Council of MinistersQualified majority voting replaced unanimity in four of the Community’s existing areas of responsibility (amendment of the common customs tariff, freedom to provide services, the free movement of capital and the common sea and air transport policy). Qualified majority voting was also introduced for several new areas of responsibility, such as the internal market, social policy, economic and social cohesion, research and technological development, and environmental policy. Finally, qualified majority voting was the subject of an amendment to the Council’s internal rules of procedure, so as to comply with a previous presidency declaration that, in future, the Council could be called upon to vote not only on the initiative of its president, but also at the request of the Commission or a Member State if a simple majority of the Council’s members were in favour.##### C. Growth of the role of the European ParliamentParliament’s powers were strengthened by:- Making Community agreements on enlargement and association agreements subject to Parliament’s assent;- Introducing a procedure for cooperation with the Council (1.2.3), which gave Parliament real, albeit limited, legislative powers; it applied to about a dozen legal bases at the time and marked a watershed in turning Parliament into a genuine co-legislator.
+
+
+=== SEGMENT 21 ===
+[Summary: The Maastricht Treaty, signed on 7 February 1992 and entering into force on 1 November 1993, fundamentally altered previous treaties by creating the European Union based on a three-pillar structure: the European Communities, the common foreign and security policy (CFSP), and cooperation in the field of justice and home affairs (JHI). Subsequently, the Amsterdam Treaty introduced necessary adjustments to enable the Union to function more efficiently and democratically, particularly in preparation for enlargement.]
+
+This fact sheet was prepared by the European Parliament’s Policy Department for Justice, Civil Liberties and Institutional Affairs.Mariusz Maciejewski04/2025[1]Amato, G., Bribosia, H., De Witte, B., Genesis and destiny of the European Constitution, Bruylant, Brussels, 2007, p. 14.### 1.1.3. THE MAASTRICHT AND AMSTERDAM TREATIES> The Maastricht Treaty altered the former European treaties and created a European Union based on three pillars: the European Communities, the common foreign and security policy (CFSP) and cooperation in the field of justice and home affairs (JHI). With a view to the enlargement of the Union, the Amsterdam Treaty made the adjustments needed to enable the Union to function more efficiently and democratically.#### THE MAASTRICHT TREATYThe Treaty on European Union[1], signed in Maastricht on 7 February 1992, entered into force on 1 November 1993.
+
+
+=== SEGMENT 22 ===
+[Summary: The Maastricht Treaty instituted the European Union, which marked a new step toward an 'ever-closer union' and was based on the existing European Communities. It established a single institutional structure consisting of the Council, the European Parliament, the European Commission, the Court of Justice, and the Court of Auditors. Additionally, the Treaty created new bodies, including the advisory Economic and Social Committee and European Committee of the Regions, as well as the European System of Central Banks and the European Central Bank.]
+
+##### A. The Union’s structuresBy instituting a European Union, the Maastricht Treaty marked a new step in the process of creating an ‘ever-closer union among the peoples of Europe’. The Union was based on the European Communities and supported by policies and forms of cooperation provided for in the Treaty on European Union. It had a single institutional structure, consisting of the Council, the European Parliament, the European Commission, the Court of Justice and the Court of Auditors which (being at the time strictly speaking the only EU institutions) exercised their powers in accordance with the Treaties. The Treaty established an Economic and Social Committee and a European Committee of the Regions, which both had advisory powers. A European System of Central Banks and a European Central Bank were set up under the provisions of the Treaty in addition to the existing financial institutions in the EIB group, namely the European Investment Bank and the European Investment Fund.
+
+
+=== SEGMENT 23 ===
+[Summary: The Maastricht Treaty structured the Union's powers into three pillars: the European Communities (first pillar), the common foreign and security policy (second pillar, Title V), and cooperation in justice and home affairs (third pillar, Title VI). The first pillar involved areas where Member States transferred sovereignty, focusing on ensuring the single market functions, promoting economic development, and achieving social objectives. The second and third pillars generally involved intergovernmental cooperation, albeit utilizing common institutions.]
+
+##### B. The Union’s powersThe Union created by the Maastricht Treaty was given certain powers by the Treaty, which were classified into three groups and were commonly referred to as ‘pillars’: the first pillar consisted of the European Communities and provided a framework enabling powers for which Member States had transferred sovereignty in areas governed by the Treaty to be exercised by the Community institutions. The second pillar was the common foreign and security policy laid down in Title V of the Treaty. The third pillar was cooperation in the fields of justice and home affairs laid down in Title VI of the Treaty. Titles V and VI provided for intergovernmental cooperation using the common institutions, with certain supranational features such as involving the Commission and consulting Parliament.###### 1. The European Community (first pillar)The Community’s task was to make the single market work and to promote, among other things, a harmonious, balanced and sustainable development of economic activities, a high level of employment and of social protection and equality between men and women. The Community pursued these objectives, acting within the limits of its powers, by establishing a common market and related measures set out in Article 3 of the EC Treaty and by initiating the economic and single monetary policy referred to in Article 4. Community activities had to respect the principle of proportionality and, in areas that did not fall within its exclusive competence, the principle of subsidiarity (Article 5 of the EC Treaty).
+
+
+=== SEGMENT 24 ===
+[Summary: The second pillar involved the Common Foreign and Security Policy (CFSP), which the Union defined and implemented using intergovernmental methods. Member States were required to actively support this policy, which aimed to safeguard the Union's interests, strengthen security, and promote democracy, the rule of law, and human rights internationally. The third pillar focused on cooperation in Justice and Home Affairs, also utilizing intergovernmental methods, to provide citizens with high safety within an area of freedom, security, and justice, covering areas such as external border control, combating serious crime, judicial cooperation, and establishing Europol.]
+
+###### 2. The common foreign and security policy (CFSP) (second pillar)The Union had the task of defining and implementing, by intergovernmental methods, a common foreign and security policy. The Member States were to support this policy actively and unreservedly in a spirit of loyalty and mutual solidarity. Its objectives were: to safeguard the common values, fundamental interests, independence and integrity of the Union in conformity with the principles of the United Nations Charter; to strengthen the security of the Union in all ways; to promote international cooperation; to develop and consolidate democracy and the rule of law, and respect for human rights and fundamental freedoms.###### 3. Cooperation in the fields of justice and home affairs (third pillar)The Union’s objective was to develop common action in these areas by intergovernmental methods to provide citizens with a high level of safety within an area of freedom, security and justice. It covered the following areas:- Rules and the exercise of controls on crossing the Community’s external borders;- Combating terrorism, serious crime, drug trafficking and international fraud;- Judicial cooperation in criminal and civil matters;- Creation of a European Police Office (Europol) with a system for exchanging information between national police forces;- Controlling illegal immigration;- Common asylum policy.
+
+
+=== SEGMENT 25 ===
+[Summary: The Treaty of Amsterdam, signed on 2 October 1997 and effective 1 May 1999, increased the powers of the European Community and introduced new policy priorities. It gave special prominence to balanced and sustainable development and a high level of employment, setting up a mechanism for employment policy coordination and incorporating the Agreement on Social Policy into the EC Treaty. Crucially, the Treaty shifted several major areas previously under the intergovernmental third pillar (such as asylum, immigration, and judicial cooperation in civil matters) to the Community method.]
+
+#### THE AMSTERDAM TREATYThe Treaty of Amsterdam amending the Treaty on European Union, the Treaties establishing the European Communities and certain related acts[2], signed in Amsterdam on 2 October 1997, entered into force on 1 May 1999.##### A. Increased powers for the Union###### 1. European CommunityWith regard to objectives, special prominence was given to balanced and sustainable development and a high level of employment. A mechanism was set up to coordinate Member States’ policies on employment, and there was a possibility of some Community measures in this area. The Agreement on Social Policy was incorporated into the EC Treaty with some improvements (removal of the opt-out). The Community method now applied to some major areas which had hitherto come under the third pillar, such as asylum, immigration, crossing external borders, combating fraud, customs cooperation and judicial cooperation in civil matters, in addition to some of the cooperation under the Schengen Agreement, which the EU and Communities endorsed in full.
+
+
+=== SEGMENT 26 ===
+[Summary: The Treaty strengthened intergovernmental cooperation in police and judicial matters and developed the Common Foreign and Security Policy (CFSP) by creating new instruments, such as the common strategy, and new structures, including the Policy Planning and Early Warning Unit and the Secretary-General of the Council responsible for the CFSP. Concurrently, the European Parliament gained a stronger position through the extension of the codecision procedure, making it a co-legislator with the Council on a practically equal footing for most legislative areas decided by qualified majority.]
+
+###### 2. European UnionIntergovernmental cooperation in the areas of police and judicial cooperation was strengthened by defining objectives and precise tasks and creating a new legal instrument similar to a directive. The instruments of the common foreign and security policy were developed later, in particular by creating a new instrument, the common strategy, a new office, the ‘Secretary-General of the Council responsible for the CFSP’, and a new structure, the ‘Policy Planning and Early Warning Unit’.##### B. A stronger position for Parliament###### 1. Legislative powerUnder the codecision procedure, which was extended to the existing 15 legal bases under the EC Treaty, Parliament and the Council became co-legislators on a practically equal footing. With the exception of agriculture and competition policy, the codecision procedure applied to all the areas where the Council was permitted to take decisions by qualified majority. In four cases (Articles 18, 42 and 47 and Article 151 on cultural policy, which remained unchanged) the codecision procedure was combined with a requirement for a unanimous decision in the Council. The other legislative areas where unanimity was required were not subject to codecision.
+
+
+=== SEGMENT 27 ===
+[Summary: The segment details the strengthening of the European Parliament's role, specifically granting it the power to approve in advance the person nominated as President of the Commission (Article 214). It also enhanced electoral provisions (Article 190), adding the Community's power to adopt common principles and including a legal basis for a single statute for MEPs. Furthermore, the Treaties introduced, for the first time, general provisions allowing a subset of Member States to organize closer cooperation, applicable mainly to the third pillar and matters of non-exclusive Community competence.]
+
+###### 2. Power of controlAs well as voting to approve the Commission as a body, Parliament also had a vote to approve in advance the person nominated as President of the future Commission (Article 214).###### 3. Election and statute of MembersWith regard to the procedure for elections to Parliament by direct universal suffrage (Article 190 of the EC Treaty), the Community’s power to adopt common principles was added to the existing power to adopt a uniform procedure. A legal basis making it possible to adopt a single statute for MEPs was included in the same article. However, there was still no provision allowing measures to develop political parties at European level (cf. Article 191).##### C. Closer cooperationFor the first time, the Treaties contained general provisions allowing some Member States under certain conditions to take advantage of common institutions to organise closer cooperation between themselves. This option was in addition to the closer cooperation covered by specific provisions, such as economic and monetary union, creation of the area of freedom, security and justice and incorporating the Schengen provisions. The areas where closer cooperation was possible were the third pillar and, under particularly restrictive conditions, matters subject to non-exclusive Community competence.
+
+
+=== SEGMENT 28 ===
+[Summary: The rules established for closer cooperation were designed to ensure the mechanism remained exceptional, serving only to promote further integration and prevent any retrograde steps. Furthermore, the Amsterdam Treaty achieved simplification by removing obsolete provisions and renumbering the articles of the European Treaties. For ratification, the Treaty was signed and submitted as amendments to the existing Treaties.]
+
+The conditions which any closer cooperation had to fulfil and the planned decision-making procedures had been drawn up in such a way as to ensure that this new factor in the process of integration would remain exceptional and, at all events, could only be used to move further towards integration and not to take retrograde steps.
+
+##### D. Simplification
+
+The Amsterdam Treaty removed from the European Treaties all provisions that the passage of time had rendered void or obsolete, while ensuring that this did not affect the legal effects derived from them in the past. It also renumbered the Treaty articles. For legal and political reasons the Treaty was signed and submitted for ratification in the form of amendments to the existing Treaties.
+
+
+=== SEGMENT 29 ===
+[Summary: The Amsterdam Treaty introduced institutional reforms necessary for future enlargement, notably setting the maximum size of the European Parliament at 700 members. A dedicated Protocol addressed the size of the Commission and the modification of weighted votes in the Council for a Union of up to 20 Member States, requiring a subsequent intergovernmental conference before the 21st member joined. While Qualified Majority Voting (QMV) was extended to several new legal bases, among existing policies, QMV provisions were only expanded for research policy, leaving most others subject to unanimity.]
+
+##### E. Institutional reforms with a view to enlargement
+
+1. The Amsterdam Treaty set the maximum number of Members of the European Parliament, in line with Parliament’s request, at 700 (Article 189).
+2. The composition of the Commission and the question of weighted votes were covered by a ‘Protocol on the Institutions’ attached to the Treaty. This provided that, in a Union of up to 20 Member States, the Commission would comprise one national of each Member State, provided that by that date, weighting of the votes in the Council had been modified. At all events, at least a year before the 21st Member State joined, a new intergovernmental conference would have to comprehensively review the Treaties’ provisions on the institutions.
+3. There was provision for the Council to use qualified majority voting in a number of the legal bases newly established by the Amsterdam Treaty. However, of the existing Community policies, only research policy had new provisions on qualified majority voting, with other policies still requiring unanimity.
+
+
+=== SEGMENT 30 ===
+[Summary: The segment details miscellaneous provisions, including a protocol governing Community procedures for implementing the principle of subsidiarity. Furthermore, new provisions (Article 255 and Article 207(3)) were introduced to enhance transparency regarding access to documents and the openness of the Council's legislative work. It also confirms the important role of the European Parliament, which was consulted before an intergovernmental conference was called and participated in the IGCs, often represented by its President or two Members.]
+
+##### F. Other matters
+
+A protocol covered Community procedures for implementing the principle of subsidiarity. New provisions on access to documents (Article 255) and greater openness in the Council’s legislative work (Article 207(3)) improved transparency.
+
+#### ROLE OF THE EUROPEAN PARLIAMENT
+
+The European Parliament was consulted before an intergovernmental conference was called. Parliament was also involved in the intergovernmental conferences according to ad hoc formulas; during the last three it was represented, depending on the case, by its President or by two of its Members.
+
+This fact sheet was prepared by the European Parliament’s Policy Department for Justice, Civil Liberties and Institutional Affairs.
+
+Mariusz Maciejewski
+04/2025
+
+[1]OJ C 191, 29.7.1992, p. 1.
+[2]OJ C 340, 10.11.1997, p. 115
+
+
+=== SEGMENT 31 ===
+[Summary: The Treaty of Nice only partially prepared the EU for the significant enlargements of 2004 and 2007, prompting EU leaders to establish the European Convention on the Future of Europe in December 2001 following the Laeken European Council. This Convention sought to create a new legal basis in the form of a treaty establishing a Constitution for Europe, which ultimately failed ratification after two member states rejected it in referendums.]
+
+### 1.1.4. THE TREATY OF NICE AND THE CONVENTION ON THE FUTURE OF EUROPE
+
+> The Treaty of Nice only partially prepared the EU for its significant enlargements to the east and south on 1 May 2004 and 1 January 2007. Therefore, as part of the conclusions to the Laeken European Council meeting in December 2001, EU leaders established the European Convention on the Future of Europe – an effort to produce a new legal basis for the EU in the form of a treaty establishing a Constitution for Europe. Following ‘no’ votes in referendums in two of the Member States, this treaty was not ratified.
+
+
+=== SEGMENT 32 ===
+[Summary: The Treaty of Nice, which amended the Treaty on European Union (TEU) and the Treaties establishing the European Communities, was signed on 26 February 2001 and entered into force on 1 February 2003. The primary objective of the Treaty was to increase the efficiency and legitimacy of EU institutions and prepare the Union for its next major enlargement. This preparation was mandated by the December 1999 Helsinki European Council, which required the EU to be ready to welcome new applicant countries by the end of 2002.]
+
+#### TREATY OF NICE
+
+The Treaty of Nice, which amended the Treaty on European Union (TEU) and the Treaties establishing the European Communities and certain related acts, was signed on 26 February 2001 and entered into force on 1 February 2003.
+
+##### A. Objectives
+
+The conclusions of the December 1999 Helsinki European Council meeting required that the EU be able, by the end of 2002, to welcome as new Member States the applicant countries that were ready for accession. Since only two of the applicant countries were more populous than the Member State average at the time, this meant that the political weight of countries with smaller populations was due to increase considerably. The Treaty of Nice was therefore meant to increase the efficiency and legitimacy of the EU institutions and to prepare the EU for its next major enlargement.
+
+
+=== SEGMENT 33 ===
+[Summary: The next Intergovernmental Conference (IGC) was necessitated by unresolved institutional issues, dubbed the ‘Amsterdam leftovers,’ dating back to the Maastricht (1992) and Amsterdam (1997) IGCs. These specific issues included determining the size and composition of the Commission, the weighting of votes in the Council, and the extension of qualified majority voting. Based on a report from the Finnish Council Presidency, the Helsinki European Council decided in December 1999 that a new IGC was required to address these matters and prepare the EU for enlargement.]
+
+##### B. Background
+
+A number of institutional issues had been addressed by the EU intergovernmental conferences (IGCs) of Maastricht in 1992 and Amsterdam in 1997, but were not yet satisfactorily resolved. These issues, which became known as the ‘Amsterdam leftovers’, included the size and composition of the Commission, the weighting of votes in the Council, and the extension of qualified majority voting. On the basis of a report by the Finnish Council Presidency, the Helsinki European Council decided at its December 1999 meeting that an IGC should deal with these ‘leftovers’ and all other changes required in preparation for the enlargement.
+
+
+=== SEGMENT 34 ===
+[Summary: The Intergovernmental Conference (IGC) leading to the Treaty of Nice opened on February 14, 2000, and concluded on December 10, 2000, reaching agreement on institutional questions. Key achievements included defining a new distribution of seats in the European Parliament, establishing more flexible arrangements for enhanced cooperation, and strengthening the EU judicial system. The IGC identified the primary necessary change as adjusting the relative weighting of Member States’ votes in the Council, a subject not addressed by an IGC since 1956-1957.]
+
+##### C. Content
+
+The resulting IGC opened on 14 February 2000 and completed its work in Nice on 10 December 2000, reaching agreement on the institutional questions and on a range of other points, namely a new distribution of seats in the European Parliament, more flexible arrangements for enhanced cooperation, the monitoring of fundamental rights and values in the EU, and a strengthening of the EU judicial system.
+
+###### 1. Weighting of votes in the Council
+
+Taking together the system of voting in the Council, the composition of the Commission and, to some extent, the distribution of seats in the European Parliament, the 2000 IGC concluded that the main imperative was to change the relative weighting of the Member States’ votes in the Council – a subject no other IGC had addressed since that of 1956-1957, which had led to the Treaty of Rome.
+
+
+=== SEGMENT 35 ===
+[Summary: The IGC analyzed two potential methods for defining a qualified majoritya new weighting system or a dual majority (votes and population)ultimately selecting the former, despite the latter being favored by the Commission and Parliament. This new system increased the total number of votes but reduced the relative share held by the most populous Member States, falling to 45% upon the 2004 enlargement. A demographic safety net was also introduced, allowing any Member State to request verification that the qualified majority represents at least 62% of the total EU population, without which the decision fails.]
+
+Two methods of defining a qualified majority were considered: a new system of weighting (modifying the existing one) or the application of a dual majority (of votes and of population) – the latter solution having been proposed by the Commission and endorsed by Parliament. The IGC chose the first option. The number of votes was increased for all Member States, but the share accounted for by the most populous Member States decreased: previously 55% of votes, this fell to 45% when the 10 new members joined in 2004, and to 44.5% on 1 January 2007. These changes were accompanied by the introduction of a demographic ‘safety net’: a Member State may request verification that the qualified majority represents at least 62% of the total population of the EU. If it does not, the decision subject to the vote cannot be adopted.
+
+
+=== SEGMENT 36 ===
+[Summary: The Treaty of Nice defined the composition and internal organization of the European Commission, stipulating that since 2005, the College of Commissioners has comprised one Commissioner per Member State. It also gave the Council the power to unanimously decide on the number of Commissioners and establish a rotation system reflecting demographic and geographical range. Furthermore, the Treaty strengthened the role of the Commission President, granting the power to allocate responsibilities to Commissioners, reassign them during their term, and select and determine the number of Vice-Presidents.]
+
+###### 2. The Commission
+
+**a. Composition**
+
+Since 2005, as stipulated by the Treaty of Nice, the Commission’s College of Commissioners has comprised one Commissioner per Member State. The Council has the power to decide, acting unanimously, on the number of Commissioners and on arrangements for a Member State rotation system, ensuring that each College of Commissioners reflects the demographic and geographical range of the Member States.
+
+**b. Internal organisation**
+
+The Treaty of Nice provides the President of the Commission with the power to allocate responsibilities to the Commissioners and to reassign them during his or her term of office, as well as to select and determine the number of Vice-Presidents.
+
+
+=== SEGMENT 37 ===
+[Summary: The Treaty of Nice revised the European Parliament's composition, increasing the maximum number of MEPs from the 700 set by the Treaty of Amsterdam to 732, primarily to prepare for enlargement and counterbalance the altered weighting of votes in the Council. Additionally, Parliament's powers were enhanced, enabling it to bring legal challenges against acts of the Council, the Commission, or the European Central Bank on grounds such as lack of competence or misuse of powers.]
+
+###### 3. The European Parliament
+
+**a. Composition**
+
+The Treaty of Amsterdam had set the maximum number of MEPs at 700. In developing the Treaty of Nice, the European Council thought it necessary, with an eye to enlargement, to revise the number of MEPs for each Member State. The new composition of Parliament was also used to counterbalance the altered weighting of votes in the Council. The maximum number of MEPs was therefore set at 732.
+
+**b. Powers**
+
+Parliament was enabled, as were the Council, the Commission and the Member States, to bring a legal challenge to acts of the main decision-makers leading the EU’s administration – in Parliament’s case, the Council or the Commission – or the European Central Bank on grounds of lack of competence, infringement of an essential procedural requirement, infringement of the Treaties or of any rule of law matter relating to its application, or misuse of powers.
+
+
+=== SEGMENT 38 ===
+[Summary: The Treaty of Nice expanded the European Parliament's legislative role by slightly broadening the scope of the co-decision procedure and requiring its assent for enhanced cooperation in co-decision areas. It also amended Article 191 TEU to provide the legal basis for regulating and funding political parties at the EU level. Simultaneously, the Treaty reformed the judicial system by empowering the Court of Justice of the EU (CJEU) to sit in various configurations, including chambers of three or five judges, or a Grand Chamber of 11 judges.]
+
+Further to a proposal by the Commission, the Treaty of Nice amended Article 191 TEU to form the operational legal basis for the adoption, under the co-decision procedure, of regulations governing political parties at EU level and rules on their funding.
+
+Parliament’s legislative powers were increased through a slight broadening of the scope of the co-decision procedure and by requiring Parliament’s assent for the establishment of enhanced cooperation in areas covered by co-decision. Parliament must also be asked for its opinion should the Council adopt a position on the risk of a serious breach of fundamental rights in a Member State.
+
+###### 4. Reform of the judicial system
+
+**a. The Court of Justice of the EU**
+
+The Court of Justice of the EU (CJEU) was empowered by the Treaty of Nice to sit in a number of different configurations: in chambers (where it consists of three or five judges), in a Grand Chamber (11 judges) or as the full Court. The Council, acting unanimously, may increase the number of Advocates-General.
+
+
+=== SEGMENT 39 ===
+[Summary: The Treaty of Nice reforms adjusted the judicial structure by allowing the CJEU to refer an increased range of actions to the General Court, which simultaneously saw its powers expanded to handle specific preliminary rulings and permit the establishment of judicial panels by unanimous Council decision. Regarding legislative procedures, while 27 new policies and measures were subjected to qualified majority voting in the Council, the extension of the co-decision procedure was limited to only a few minor policy areas.]
+
+The CJEU retained jurisdiction over questions referred for a preliminary ruling, but it was enabled, under its Statute, to refer an increased range of actions or proceedings to the General Court – which, before the December 2009 entry into force of the Treaty of Lisbon, was the Court of First Instance.
+
+**b. General Court**
+
+The powers of the General Court were increased to include certain categories of preliminary ruling, with the possibility of judicial panels being established by unanimous decision of the Council. All these operating provisions, notably on the powers of the Court, were thereafter set out in the amended Treaty establishing the European Community (TEC).
+
+###### 5. Legislative procedures
+
+Although a considerable number (27) of new policies and measures now required qualified majority voting in the Council, co-decision was extended to only a few minor areas (covered by former Articles 13, 62, 63, 65
+
+
+=== SEGMENT 40 ===
+[Summary: The Treaty of Nice expanded the co-decision procedure to several minor areas and introduced the requirement of Parliamentary assent for matters under former Article 161 TEC. Furthermore, the Treaty significantly reformed enhanced cooperation, extending its scope to cover all three pillars established by the Treaty of Maastricht, whereas the Treaty of Amsterdam only covered two. Key procedural changes included eliminating referral to the European Council and requiring Parliament's assent when enhanced cooperation intersected with the co-decision procedure.]
+
+, 157, 159 and 191 TEC); for matters covered by former Article 161 TEC assent was now required.###### 6. Enhanced cooperationLike the Treaty of Amsterdam, the Treaty of Nice contained general provisions applying to all areas of enhanced cooperation and provisions specific to each of the three EU ‘pillars’ – or competencies – established by the Treaty of Maastricht: the European Communities pillar, the Common Foreign and Security pillar, and the Justice and Home Affairs pillar. Whereas the Treaty of Amsterdam provided for enhanced cooperation under the first and third pillars only, the Treaty of Nice encompassed all three pillars.The Treaty of Nice made further changes: referral to the European Council ceased to be an option, the concept of ‘a reasonable period of time’ was clarified, and the assent of Parliament was now required in all areas where enhanced cooperation related to a question covered by the co-decision procedure.
+
+
+=== SEGMENT 41 ===
+[Summary: The Treaty of Nice strengthened fundamental rights protection by adding a paragraph to Article 7 TEU, allowing action when there is a 'clear risk' of a patent breach; determining this risk requires the Council to act by a four-fifths majority after obtaining Parliament's assent. Concurrently, a non-binding Charter of Fundamental Rights of the European Union was proclaimed. The European Parliament was actively involved in preparations for the 2000 Intergovernmental Conference (IGC), offering resolutions on the agenda and insisting that the process be transparent and aim for a constitution-type document.]
+
+###### 7. Protection of fundamental rightsThe Treaty of Nice added a paragraph to Article 7 TEU to cover cases where a patent breach of fundamental rights has not actually occurred but where there is a ‘clear risk’ that it may occur. The Council, acting by a majority of four fifths of its members and after obtaining the assent of Parliament, determines the existence of the risk and addresses appropriate recommendations to the Member State in question. A non binding Charter of Fundamental Rights of the European Union was proclaimed.##### D. Role of the European ParliamentAs with earlier IGCs, Parliament was actively involved in preparations for the IGC held in 2000. In its resolutions of 18 November 1999 on the preparation of the reform of the Treaties and the next Intergovernmental Conference and its resolution of 31 May 2001 on the Treaty of Nice and the future of the European Union, it provided its views on the conference agenda and its progress and objectives. Parliament also expressed its opinion on the substance and judicial implications of the Charter of Fundamental Rights of the European Union. Parliament insisted that the 2000 IGC should be a transparent process, involving European and national parliamentarians and the Commission, as well as input from ordinary people, and that what it produced should be a constitution-type document.
+
+
+=== SEGMENT 42 ===
+[Summary: The Convention on the Future of Europe was established following Declaration No 23 of the Treaty of Nice and organized by the Laeken European Council in December 2001. Its primary goals were to prepare the next Intergovernmental Conference transparently and address key issues, including the division of competences, simplification of EU instruments, improving democracy and efficiency, and drafting an EU constitution. The Convention comprised a total of 105 members, including representatives from Member States, national parliaments, the European Parliament, and the Commission, chaired by Valéry Giscard D’Estaing.]
+
+#### CONVENTION ON THE FUTURE OF EUROPE##### A. Basis and objectivesIn accordance with Declaration No 23 annexed to the Treaty of Nice, the Laeken European Council meeting of 14 and 15 December 2001 decided to organise the Convention on the Future of Europe to bring together the main parties concerned for debates and discussions on the future of the EU. The objectives were to prepare for the next IGC as transparently as possible, and to address the four main issues concerning the further development of the EU: a better division of competences; the simplification of the EU’s instruments for action; increased democracy, transparency and efficiency; and the drafting of a constitution for the EU’s citizens.##### B. OrganisationThe Convention comprised a chair (Valéry Giscard D’Estaing), two vice-chairs (Giuliano Amato and Jean-Luc Dehaene), 15 representatives of the Member States’ heads of state or government, 30 members of the national parliaments (two per Member State), 16 Members of the European Parliament and two Commissioners. The countries that had applied to join the EU also took part in the debate on an equal footing, but could not block any consensus that might emerge among the Member States. The Convention therefore had a total of 105 members.
+
+
+=== SEGMENT 43 ===
+[Summary: The Convention on the Future of Europe was guided by its Praesidium, which included the chair, vice-chairs, nine members, and a representative from applicant countries, tasked with providing impetus and a working basis. The Convention's work comprised a three-part process: a listening phase, a study phase, and a drafting phase for recommendations, culminating in findings presented by 11 working groups at the end of 2002. In the first half of 2003, the Convention drafted the Treaty establishing a Constitution for Europe, presenting Parts I (59 articles) and II (Charter of Fundamental Rights, 54 articles) to the Thessaloniki European Council on June 20, 2003.]
+
+The Convention was guided by its Praesidium, comprising, in addition to the chair and vice-chairs, nine members of the Convention and an invited representative chosen by the applicant countries. The Praesidium had the role of lending impetus to the Convention and providing it with a basis on which to work.##### C. OutcomeThe work of the Convention on the Future of Europe comprised: a ‘listening phase’, in which it sought to identify the expectations and needs of the Member States and the EU’s citizens; a phase in which the ideas expressed were studied; and a phase in which recommendations based on the essence of the debate were drafted. At the end of 2002, 11 working groups presented their findings to the Convention. During the first half of 2003, the Convention drew up and debated a text which became the draft Treaty establishing a Constitution for Europe.Part I of the draft Treaty (59 articles) and Part II (Charter of Fundamental Rights; 54 articles) were laid before the Thessaloniki European Council on 20 June 2003.
+
+
+=== SEGMENT 44 ===
+[Summary: The final sections of the draft Treaty establishing a Constitution for Europe (Part III and Part IV) were presented in July 2003, and the European Council formally adopted the text, with amendments, on June 18, 2004. Although the European Parliament approved the proposed treaty in January 2005, the subsequent ratification procedure failed when the treaty was rejected by national referendums in both France (May 2005) and the Netherlands (June 2005).]
+
+Part III (policies and functioning; 342 articles) and Part IV (general and final provisions; 10 articles) were presented to the Italian Presidency on 18 July 2003. The European Council adopted this text on 18 June 2004, retaining the basic structure of the Convention’s draft, albeit with a considerable number of amendments. The proposed treaty was approved by the European Parliament in January 2005, but was then rejected by France (29 May 2005) and the Netherlands (1 June 2005) in their national referendums. As a result of two ‘no’ votes in referendums in two of the Member States, the ratification procedure for the treaty establishing a Constitution for Europe was not completed.
+
+
+=== SEGMENT 45 ===
+[Summary: The European Parliament's influence in the Convention on the Future of Europe was viewed as decisive, facilitated by MEPs' negotiation experience and the Convention meeting on Parliament's premises. Consequently, Parliament achieved many of its original goals, which were later safeguarded in the Treaty of Lisbon. The text then transitions to introduce a fact sheet (1.1.5) dedicated to the background and essential provisions of the Treaty of Lisbon.]
+
+##### D. Role of the European ParliamentThe impact of MEPs during the work of the Convention on the Future of Europe was seen by most observers as decisive. Thanks to several factors, including their experience of negotiating in an international environment and the fact that the Convention was meeting on Parliament’s premises, MEPs were able to leave a strong imprint on the debates and on the proceedings of the Convention. They were also instrumental in the formation of political families comprising MEPs and national MPs. Parliament thus achieved a considerable number of its original aims, and most of that achievement is now safeguarded in the Treaty of Lisbon.This fact sheet is prepared by the European Parliament’s Policy Department for Justice, Civil Liberties and Institutional Affairs.Mariusz Maciejewski04/2025### 1.1.5. THE TREATY OF LISBON> This fact sheet presents the background and essential provisions of the Treaty of Lisbon. The objective is to provide historical context for the emergence of this latest fundamental EU text from those that came before it. The specific provisions (with article references) and their effects on EU policies are explained in more detail in the fact sheets dealing with particular policies and issues.
+
+
+=== SEGMENT 46 ===
+[Summary: The Treaty of Lisbon, which formally entered into force on December 1, 2009, originated from a constitutional project initiated by the Laeken Declaration in 2001. Its development was a direct response to the negative referendums on the Constitutional Treaty in 2005, leading to a two-year period of reflection and eventually an Intergovernmental Conference (IGC). The resulting Treaty was signed in Lisbon on December 13, 2007, after the IGC concluded its work in October 2007.]
+
+#### LEGAL BASISTreaty of Lisbon amending the Treaty on European Union and the Treaty establishing the European Community (OJ C 306, 17.12.2007); entry into force on 1 December 2009.#### HISTORYThe Treaty of Lisbon started as a constitutional project at the end of 2001 (European Council declaration on the future of the European Union, or Laeken Declaration) and was followed up in 2002 and 2003 by the European Convention which drafted the Treaty establishing a Constitution for Europe (Constitutional Treaty) (1.1.4). The process leading to the Treaty of Lisbon is a result of the negative outcome of two referendums on the Constitutional Treaty in May and June 2005, in response to which the European Council decided to have a two-year ‘period of reflection’. Finally, on the basis of the Berlin Declaration of March 2007, the European Council of 21 to 23 June 2007 adopted a detailed mandate for a subsequent Intergovernmental Conference (IGC), under the Portuguese Presidency. The IGC concluded its work in October 2007. The Treaty was signed by the European Council in Lisbon on 13 December 2007 and has been ratified by all Member States.
+
+
+=== SEGMENT 47 ===
+[Summary: The Treaty of Lisbon renamed the Treaty establishing the European Community as the 'Treaty on the Functioning of the European Union' (TFEU), officially replacing the term 'Community' with 'Union' and establishing the Union as the Community's legal successor. While it preserved substantial achievements and did not transfer additional exclusive competences, the Treaty enhanced democratic accountability, parliamentary scrutiny, and efficiency by changing how the Union exercises its powers and amending decision-making processes.]
+
+#### CONTENT##### A. Objectives and legal principlesThe Treaty establishing the European Community is renamed the ‘Treaty on the Functioning of the European Union’ (TFEU) and the term ‘Community’ is replaced by ‘Union’ throughout the text. The Union takes the place of the Community and is its legal successor. The Treaty of Lisbon does not create state-like Union symbols like a flag or an anthem. Although the new text is, hence, no longer a constitutional treaty by name, it preserves most of the substantial achievements.No additional exclusive competences are transferred to the Union by the Treaty of Lisbon. However, it changes the way the Union exercises its existing powers and some new (shared) powers, by enhancing citizens’ participation and protection, creating a new institutional set-up and amending the decision-making processes for increased efficiency and transparency. It therefore brings a higher level of parliamentary scrutiny and democratic accountability.
+
+
+=== SEGMENT 48 ===
+[Summary: The Treaty of Lisbon did not formally enshrine the supremacy of Union law but addressed this principle via Declaration 17, explaining precedence in accordance with existing case-law. For the first time, it clarified the Union's powers by distinguishing between exclusive, shared, and supporting competences, and allowing for competences to be returned to Member States during treaty revision. Crucially, the Treaty also granted the EU full legal personality, enabling it to sign international treaties and join international organizations.]
+
+Unlike the Constitutional Treaty, the Treaty of Lisbon contains no article formally enshrining the supremacy of Union law over national legislation. However, a declaration was attached to the Treaty to this effect (Declaration 17). It explains how EU law takes precedence over national law in accordance with well settled case-law of the Court of Justice of the European Union.The Treaty of Lisbon clarifies the powers of the Union for the first time. It distinguishes between three types of competences: exclusive competence, where the Union alone can legislate, and Member States can only implement; shared competence, where the Member States can legislate and adopt legally binding measures if the Union has not done so; and supporting competence, where the EU adopts measures to support or complement Member States’ policies. Union competences can now be handed back to the Member States in the course of a Treaty revision.The Treaty of Lisbon gives the EU full legal personality. Therefore, the Union obtains the ability to sign international treaties in the areas of its attributed powers or to join an international organisation. Member States may only sign international agreements that are compatible with EU law.For the first time, the Treaty prov
+
+
+=== SEGMENT 49 ===
+[Summary: The Treaty of Lisbon introduced a formal procedure, specified in Article 50 of the TEU, for Member States wishing to withdraw from the EU. Furthermore, the Treaty completed the absorption of the remaining third pillar aspects, specifically police and judicial cooperation in criminal matters, into the first pillar. This integration subjects these areas to the ordinary legislative procedure (qualified majority and codecision) and the legal instruments of the Community method.]
+
+ides for a formal procedure to be followed by Member States wishing to withdraw from the EU in accordance with their constitutional requirements, namely Article 50 of the Treaty on European Union (TEU).
+
+The Treaty of Lisbon completes the absorption of the remaining third pillar aspects of the area of freedom, security and justice, i.e. police and judicial cooperation in criminal matters, into the first pillar. The former intergovernmental structure ceases to exist, as the acts adopted in this area are now made subject to the ordinary legislative procedure (qualified majority and codecision), using the legal instruments of the Community method (regulations, directives and decisions), unless otherwise specified.
+
+
+=== SEGMENT 50 ===
+[Summary: The Treaty of Lisbon grants the European Parliament the power to propose amendments to the Treaties, aligning it with the existing rights of the Council, Member States, and the Commission. Treaty amendments normally require a convention to recommend changes to an Intergovernmental Conference (IGC), though the European Council can bypass the convention subject to Parliament's consent (Article 48(3) TEU). Simplified revision procedures are also available for revisions concerning the Union's internal policies, allowing changes via a European Council decision without convening an IGC, although national ratification may still be necessary (Article 48(6) and 48(7) TEU).]
+
+With the Treaty of Lisbon in force, Parliament is able to propose amendments to the Treaties, as was already the case for the Council, a Member State government or the Commission. Normally, such an amendment would require the convocation of a convention which would recommend amendments to an IGC. The European Council could, however, decide not to hold such a convention, subject to Parliament’s consent (Article 48(3) TEU, second paragraph). An IGC could then be convened to determine amendments to the Treaties by common accord. It is, however, also possible to revise the Treaties without convening an IGC, as well as through simplified revision procedures, where the revision concerns the internal policies and actions of the Union (Article 48(6) and 48(7) TEU). The revision would then be adopted as a European Council decision but might remain subject to national ratification rules.
+
+
+=== SEGMENT 51 ===
+[Summary: The Treaty of Lisbon enhanced democracy by establishing the core principles of democratic equality, representative democracy, and participatory democracy, the latter formalized through the new citizens’ initiative. Furthermore, the Treaty improved the protection of fundamental rights by granting the Charter of Fundamental Rights legally binding status via Article 6(1) TEU, giving it the same legal value as the Treaties themselves, even though it was not directly incorporated.]
+
+##### B. Enhanced democracy and better protection of fundamental rights
+
+The Treaty of Lisbon expresses the three fundamental principles of democratic equality, representative democracy and participatory democracy. Participatory democracy takes the new form of a citizens’ initiative (4.1.5).
+
+The Charter of Fundamental Rights is not incorporated directly into the Treaty of Lisbon, but acquires a legally binding character through Article 6(1) TEU, which gives the Charter the same legal value as the Treaties (4.1.2).
+
+
+=== SEGMENT 52 ===
+[Summary: The EU began the process of acceding to the European Convention on Human Rights (ECHR) following the entry into force of the 14th protocol on June 1, 2010, which permits international organizations to join. While a draft agreement was finalized in April 2013, it was later rejected by the CJEU in Opinion 2/13 as incompatible with Article 6 TEU. Negotiations formally resumed in October 2020, leading to a provisional agreement on a revised draft accession agreement in March 2023.]
+
+The process of the EU’s accession to the European Convention on Human Rights (ECHR) was opened when the 14th protocol to the ECHR entered into force on 1 June 2010. This allows not only states but also an international organisation, i.e. the EU, to become signatories of the ECHR. Accession still requires ratification by all states that are parties to the ECHR, as well as by the EU itself. Negotiations between Council of Europe and EU representatives led to the finalisation of a draft agreement in April 2013, which, however, was deemed incompatible with Article 6 TEU by the Court of Justice of the European Union (CJEU) in its Opinion 2/13. In October 2019, the Commission told the Council of Europe it was ready to restart negotiations. Formal negotiations resumed in October 2020, and the negotiators reached a provisional agreement on a revised draft accession agreement in March 2023.
+
+
+=== SEGMENT 53 ===
+[Summary: The revised draft accession agreement for the EU to the ECHR addresses all concerns raised by the CJEU except for jurisdiction over the Common Foreign and Security Policy (CFSP), which the EU plans to resolve internally. Furthermore, in the context of the new institutional set-up, Article 14(2) TEU specifies that the European Parliament is now composed of representatives of the Union’s citizens, rather than representatives of ‘the peoples of the States’.]
+
+The revised agreement covers all issues raised by the CJEU except one, concerning jurisdiction over the EU’s common foreign and security policy (CFSP). The EU has committed to resolving this issue internally[1].
+
+##### C. A new institutional set-up
+
+###### 1. The European Parliament
+
+Under Article 14(2) TEU, Parliament is now ‘composed of representatives of the Union’s citizens’, not of representatives of ‘the peoples of the States’.
+
+
+=== SEGMENT 54 ===
+[Summary: The European Parliament's legislative and budgetary powers have been significantly increased. The former codecision procedure, renamed the 'ordinary legislative procedure,' was greatly expanded to cover 85 policy areas in total. Additionally, a new budgetary procedure grants Parliament full parity with the Council in approving the annual budget, and Parliament must now agree to the multiannual financial framework.]
+
+Parliament’s legislative powers have been increased, as the scope of the former codecision procedure, now renamed ‘ordinary legislative procedure’, was significantly enlarged. It now applies to more than 40 new policy areas, raising the total number to 85. The assent procedure continues to exist as ‘consent’, and the consultation procedure remains unchanged. The new budgetary procedure creates full parity between Parliament and the Council for approval of the annual budget. The multiannual financial framework has to be agreed by Parliament.
+
+
+=== SEGMENT 55 ===
+[Summary: The segment outlines the European Parliament's enhanced role in the election of the Commission President and details the rules governing its composition. Parliament elects the Commission President from a candidate proposed by the European Council, which must use a defined qualified majority based on Member State and population percentages. Regarding composition, the maximum number of MEPs is set at 751, with representation being degressively proportional, and limits established at a maximum of 96 and a minimum of six seats per Member State.]
+
+Parliament now elects the President of the Commission by a majority of its members on a proposal from the European Council, which is obliged to select a candidate by qualified majority, taking into account the outcome of the European elections. That is, in this case, according to Article 238 (2) TFEU, the qualified majority refers to at least 72% of Member States representing at least 65% of the EU population. Parliament continues to approve the Commission as a college.
+
+The maximum number of MEPs has been set at 751, with citizens’ representation being degressively proportional. The maximum number of seats per Member State is reduced to 96, while the minimum number is increased to six.
+
+
+=== SEGMENT 56 ===
+[Summary: Following the UK's departure from the EU on 1 February 2020, the European Parliament voted in 2018 to reduce its number of seats from 751 to 705. This new composition was applied until the start of the 10th parliamentary term in 2024. Of the 73 seats vacated by the UK, 27 were reallocated among 14 Member States (including 5 each for France and Spain) to better reflect degressive proportionality, ensuring no existing Member State lost any seats.]
+
+On 7 February 2018, Parliament voted in favour of reducing the number of its seats from 751 to 705 after the UK’s departure from the EU and re-distributing some of the seats thereby freed up among those Member States that were slightly under-represented (1.3.3).
+
+The UK left the EU on 1 February 2020. Between this date and the beginning of the 10th parliamentary term in 2024, the new composition of 705 MEPs was applied. Of the 73 seats vacated by the UK’s withdrawal, 27 seats have been reallocated to better reflect the principle of degressive proportionality: the 27 seats have been distributed to France (+5), Spain (+5), Italy (+3), the Netherlands (+3), Ireland (+2), Sweden (+1), Austria (+1), Denmark (+1), Finland (+1), Slovakia (+1), Croatia (+1), Estonia (+1), Poland (+1) and Romania (+1). No Member State has lost any seats.
+
+
+=== SEGMENT 57 ===
+[Summary: The European Council Decision (EU) 2023/2061 established the composition of the European Parliament for the 2024–2029 parliamentary term, setting the total number of representatives at 720 based on recent demographic developments. This decision resulted in the allocation of 15 additional seats, which were distributed among twelve different Member States.]
+
+European Council Decision (EU) 2023/2061[2] sets the number of representatives in Parliament – 720 in total – elected in each Member State for the 2024–2029 parliamentary term based on recent demographic developments. The 15 additional seats were allocated to France (+2), Spain (+2), the Netherlands (+2), Austria (+1), Denmark (+1), Belgium (+1), Poland (+1), Finland (+1), Slovakia (+1), Ireland (+1), Slovenia (+1) and Latvia (+1).
+
+###### 2. The European Council
+
+
+=== SEGMENT 58 ===
+[Summary: The Treaty of Lisbon formally recognized the European Council as an EU institution, responsible for providing impetus for the Union's development and establishing its general political directions and priorities, but it holds no legislative functions. The Council adopted a long-term presidency, replacing the previous six-month rotation system. The President is elected by a qualified majority for a once-renewable term of 30 months and represents the Union externally.]
+
+The Treaty of Lisbon formally recognises the European Council as an EU institution, responsible for providing the Union with the ‘impetus necessary for its development’ and for establishing its ‘general political directions and priorities’. The European Council has no legislative functions. A long-term presidency replaces the previous system of six-month rotation. A qualified majority of the European Council elects the President for a once-renewable term of 30 months (two and a half years). This should improve the continuity and coherence of the European Council’s work. The President also represents the Union externally, without prejudice to the duties of the High Representative of the Union for Foreign Affairs and Security Policy (see below).
+
+
+=== SEGMENT 59 ===
+[Summary: The Vice-President of the Commission / High Representative (VP / HR) is responsible for the EU’s Common Foreign and Security Policy (CFSP) and is appointed by the European Council with the Commission President's agreement, while also chairing the Foreign Affairs Council and being assisted by the European External Action Service. Additionally, the Council operates under the principle of double majority voting (citizens and Member States), a system maintained by the Treaty of Lisbon, with the new rules applying since 1 November 2014.]
+
+###### 3. The Vice-President of the Commission / High Representative of the Union for Foreign Affairs and Security Policy (VP / HR)
+
+The VP / HR is appointed by a qualified majority of the European Council with the agreement of the President of the Commission and is responsible for the EU’s CFSP, and has the right to put forward proposals. Besides chairing the Foreign Affairs Council, the VP / HR also has the role of Vice-President of the Commission. The VP / HR is assisted by the European External Action Service, which comprises staff from the Council, the Commission and national diplomatic services.
+
+###### 4. The Council
+
+The Treaty of Lisbon maintains the principle of double majority voting (citizens and Member States). However, the previous arrangements remained in place until November 2014. Since 1 November 2014, the new rules have applied.
+
+
+=== SEGMENT 60 ===
+[Summary: The text outlines the criteria for achieving a qualified majority (QMV) in the Council, which typically requires 55% of members representing 65% of the EU population. The rules for reaching a majority change to 72% of Member States if the Council is not acting on a proposal from the Commission or the VP/HR. Furthermore, blocking legislation requires a minimum of four Member States, and a mechanism inspired by the 'Ioannina compromise' allows a large minority to request reconsideration.]
+
+A qualified majority is reached when 55% of members of the Council (in practice, 15 states out of 27), comprising at least 65% of the population, support a proposal (Article 16(4) TEU). When the Council is not acting on a proposal from the Commission or the VP / HR, the necessary majority of Member States increases to 72% (Article 238(2) TFEU). To block legislation, at least four Member States have to vote against a proposal. A new scheme inspired by the ‘Ioannina compromise’ allows 55% (75% until 1 April 2017) of the Member States necessary for the blocking minority to ask for reconsideration of a proposal during a ‘reasonable time period’ (Declaration 7).
+
+
+=== SEGMENT 61 ===
+[Summary: The Council structures its meetings into two parts, separating legislative acts (which are deliberated and voted on in public) from non-legislative activities. While the Council presidency rotates every six months, 18-month group presidencies involving three Member States are used to ensure continuity of work. However, the Foreign Affairs Council is uniquely chaired continuously by the VP/HR.]
+
+The Council meets in public when it deliberates and votes on a draft legislative act. To this end, each Council meeting is divided into two parts, dealing respectively with legislative acts and non-legislative activities. The Council presidency continues to rotate on a six-month basis, but there are 18-month group presidencies of three Member States in order to ensure better continuity of work. As an exception, the Foreign Affairs Council is continuously chaired by the VP / HR.
+
+###### 5. The Commission
+
+Since the President of the Commission is now chosen and elected taking into account the outcome of the European elections, the political legitimacy of the office is increased. The President is responsible for the internal organisation of the college (appointment of commissioners, distribution of portfolios, requests to resign under particular circumstances).
+
+
+=== SEGMENT 62 ===
+[Summary: The segment outlines recent changes regarding the Court of Justice of the European Union (CJEU), whose jurisdiction is now extended to cover all Union activities except the CFSP, while individual access has been facilitated. It also describes the use of 'passerelle clauses' as a means to improve policymaking efficiency by switching from unanimous voting or consultation procedures to qualified majority voting or codecision, a shift actively promoted by Commission President Juncker in 2017.]
+
+###### 6. The Court of Justice of the European Union
+
+The jurisdiction of the Court is extended to all activities of the Union with the exception of the CFSP. Access to the Court is facilitated for individuals.
+
+##### D. More efficient and democratic policymaking with new policies and new competencies
+
+Several passerelle clauses allow for a change from unanimous decision-making to qualified majority voting and from the consultation procedure to codecision (Article 31(3) TEU, Articles 81, 153, 192, 312 and 333 TFEU, as well as some passerelle-type procedures concerning judicial cooperation in criminal matters) (1.2.4). In his 2017 State of the Union speech, Commission President Juncker announced initiatives to move away from the unanimity rule in a number of areas by using the passerelle clauses. As a follow-u
+
+
+=== SEGMENT 63 ===
+[Summary: The European Commission adopted four communications between September 2018 and April 2019, proposing to enhance the use of qualified majority voting (QMV) instead of unanimity in four key policy areas: CFSP, tax policy, energy/climate policy, and social policy. These proposals aim to make decision-making more prompt and efficient where EU competence already exists. Furthermore, the text details the rules for enhanced cooperation, requiring at least nine Member States and authorization by the Council after obtaining Parliament’s consent, while noting that unanimity still applies to CFSP matters.]
+
+p, the Commission has adopted four communications, proposing to enhance the use of qualified majority voting instead of unanimity in the fields of the CFSP (September 2018), tax policy (January 2019), energy and climate policy (April 2019) and social policy (April 2019). These communications aim to render decision-making more prompt, flexible and efficient where an EU competence already exists.In areas where the Union has no exclusive powers, at least nine Member States can establish enhanced cooperation among themselves. The Council must authorise its usage after obtaining Parliament’s consent. On CFSP matters, unanimity applies.
+
+
+=== SEGMENT 64 ===
+[Summary: The Treaty of Lisbon considerably strengthened the principle of subsidiarity by formalizing the involvement of national parliaments in the EU decision-making process. It also introduced or extended several policies, notably broadening environment policy to include the fight against climate change and updating energy policy with new references to solidarity and supply security. Furthermore, intellectual property rights, sport, space, tourism, civil protection, and administrative cooperation became possible subjects of EU lawmaking.]
+
+The Treaty of Lisbon considerably strengthens the principle of subsidiarity by involving the national parliaments in the EU decision-making process (1.2.2) (1.3.5). A certain number of new or extended policies have been introduced in both environment policy, which now includes the fight against climate change, and energy policy, which makes new references to solidarity and the security and interconnectivity of supply. Furthermore, intellectual property rights, sport, space, tourism, civil protection and administrative cooperation are now possible subjects of EU lawmaking.
+
+
+=== SEGMENT 65 ===
+[Summary: The Treaty of Lisbon significantly strengthened the common security and defence policy by introducing several key provisions. These include a mutual defence clause, obligating all Member States to assist a member under military attack, and a solidarity clause, requiring assistance during natural disasters, human catastrophes, or terrorist attacks. Furthermore, the Treaty established ‘permanent structured cooperation’ (PESCO) for committed Member States participating in European military equipment programs and providing rapid-action combat units, which is established by a qualified majority vote in the Council after consulting the VP/HR.]
+
+On the common security and defence policy (5.1.2), the Treaty of Lisbon introduces a mutual defence clause, which provides that all Member States are obliged to provide help to a Member State under attack. A solidarity clause provides that the Union and each of its Member States have to provide assistance by all possible means to a Member State affected by a human or natural catastrophe or by a terrorist attack. A ‘permanent structured cooperation’ is open to all Member States that commit themselves both to taking part in European military equipment programmes and to providing combat units that are available for immediate action. To establish such cooperation, it is necessary to obtain a qualified majority in the Council after consultation with the VP / HR.
+
+
+=== SEGMENT 66 ===
+[Summary: The European Parliament (EP) significantly increased its involvement in the process leading up to the Treaty of Lisbon by sending three representatives to the 2007 Intergovernmental Conference (IGC) for the first time. Recognizing that the Treaty's potential remained underutilized nearly a decade later, the EP adopted two key resolutions on February 16, 2017. These resolutions aimed both at improving the functioning of the EU by maximizing the existing potential of the Lisbon Treaty and suggesting concrete proposals for future Treaty reforms.]
+
+#### ROLE OF THE EUROPEAN PARLIAMENT
+
+See 1.1.4 for Parliament’s contributions to the European Convention and its involvement in previous IGCs. With respect to the 2007 IGC, leading to the signature of the Treaty of Lisbon, Parliament, for the first time, sent three representatives to the conference under the Portuguese Presidency.
+
+Almost a decade after the signature of the Treaty of Lisbon, Parliament acknowledged that some of its provisions were not being used to the fullest. Therefore, on 16 February 2017 it adopted a resolution on improving the functioning of the European Union by building on the potential of the Lisbon Treaty, which puts forward a number of recommendations on how to unblock this potential in order to enhance the Union’s capacity to tackle current global challenges.
+
+On the same day, Parliament also adopted a resolution on the possible evolution of and adjustments to the current institutional set-up of the European Union, suggesting concrete proposals for Treaty reforms.
+
+
+=== SEGMENT 67 ===
+[Summary: The EU has recently faced several major crises, including Brexit, the COVID-19 pandemic, and the Russian invasion of Ukraine, which exposed shortcomings in governance and decision-making efficiency, leading to decreased public support. In response, the EU institutions launched the Conference on the Future of Europe on 10 March 2021 to reshape the Union and increase effectiveness and transparency. The Conference concluded on 9 May 2022, resulting in 49 proposals, some of which require changes to the EU Treaties.]
+
+The EU has lately faced several crises, particularly in relation to Brexit, the rule of law, the multiannual financial framework, the COVID-19 pandemic and the Russian invasion of Ukraine. The handling of these crises has again exposed shortcomings in the current system of governance, and the lack of efficient decision-making has contributed to a decrease in public support for the European project. In response to current challenges, on 10 March 2021, the EU institutions launched the Conference on the Future of Europe, designed to give citizens a say on how to reshape the EU and increase the effectiveness and transparency of its decision-making procedures. On 9 May 2022, the Conference concluded its work, which resulted in 49 proposals, some of which require changes to the EU Treaties.
+
+
+=== SEGMENT 68 ===
+[Summary: The European Parliament recently adopted a series of resolutions between June 2022 and November 2023 concerning treaty revisions, the implementation of passerelle clauses, and proposals for amendments. By adopting these measures, Parliament is urging the European Council to call for a convention to revise the Treaties, aiming to modernize legislative procedures and enhance the overall effectiveness of the EU.]
+
+Consequently, Parliament adopted a resolution on the call for a convention for the revision of the Treaties on 9 June 2022; a resolution on the implementation of the passerelle clauses in the EU Treaties on 11 July 2023 and a resolution on proposals for the amendment of the Treaties on 22 November 2023. By urging the European Council to call for a convention to revise the Treaties, Parliament is attempting to modernise legislative procedures to address current challenges and enhance EU effectiveness.
+
+This fact sheet was prepared by the Policy Department for Justice, Civil Liberties and Institutional Affairs.
+
+Katharina MASSAY-KOSUBEK / Mariusz Maciejewski
+05/2025
+
+[1]Council of Europe, ‘European Union accession to the European Convention on Human Rights – Questions and Answers’, Council of Europe website, https://www.coe.int/en/web/portal/eu-accession-echr-questions-and-answers.
+[2]European Council Decision (EU) 2023/2061 of 22 September 2023 establishing the composition of the European Parliament, OJ L 238, 27.9.2023, p. 114.
+
+---

@@ -1,0 +1,349 @@
+=== SEGMENT 1 ===
+[Summary: The article, "Multi-level governance in a 'Europe with the regions'," by Arjan H Schakel, discusses how the concept of multi-level governance (MLG) exposes regional involvement in European Union (EU) affairs both in Brussels and within member states. It argues that MLG is key for understanding the three-tiered EU polity by revealing significant authority sharing between governmental actors, contrasting with perspectives focused solely on formal central government decision-making. The concept directs scholarly attention to the incentives for regions to participate and for national governments and EU institutions to share authority.]
+
+☑ Check for updates
+
+Breakthrough Article
+
+Political Studies Association
+
+# BJPIR
+
+The British Journal of Politics and International Relations
+2020, Vol. 22(4) 767-775
+© The Author(s) 2020
+CC
+Article reuse guidelines:
+sagepub.com/journals-permissions
+DOI: 10.1177/1369148120937982
+journals.sagepub.com/home/bpi
+
+# Multi-level governance in a 'Europe with the regions'
+
+**Arjan H Schakel** 🆔
+
+## Abstract
+
+The concept of multilevel governance was introduced to reveal the impact of regions on European Union (EU) policy making in Brussels. In this contribution, I show that multilevel governance also exposes regional involvement in EU affairs within the member states. In contrast to perspectives that focus on formal decision-making by central governments, multilevel governance uncovers significant sharing of authority between governmental actors within and beyond national states even in cases where the formal right to make a decision lies with national governments or the EU legislator. I argue that the concept of multilevel governance is key for understanding developments within a three-tiered EU polity because it directs scholarly attention to the incentives for regions to be involved in EU affairs and for national governments and EU institutions to share their authority with regions.
+
+## Keywords
+
+European Union, multi-level governance, regional governance, regional government, regional representation, regions
+
+
+=== SEGMENT 2 ===
+[Summary: The concept of Multi-Level Governance (MLG) originated in the 1990s, stemming from the seminal work of Liesbet Hooghe and Gary Marks, to explain the growing presence of regions in EU affairs. This regional involvement was significantly boosted by the 1988 revision of Cohesion Policy and the 1992 Maastricht Treaty, which established the Committee of the Regions (CoR). MLG was necessary because prevailing theories of European integration, such as neofunctionalism and intergovernmentalism, failed to capture this new three-tiered structure of EU governance.]
+
+## Introduction
+
+The concept of multilevel governance (MLG) can be traced back to the seminal work of Liesbet Hooghe (1995, 1996) and Gary Marks (1992, 1993) of the 1990s. During this time, regions started to become prominently present and active in Brussels because of a revision of Cohesion Policy in 1988 which required national governments to co-develop plans to implement the funds with subnational governments. Furthermore, the Maastricht Treaty of 1992 granted regions access to the Council of Ministers and established the Committee of the Regions (CoR) which has to be consulted by the European Union (EU) legislator on key areas of regional concern. Liesbet Hooghe and Gary Marks' (2001) landmark study Multi-Level Governance and European Integration clearly revealed that a new conceptual tool had to be developed to account for the presence of regions in Brussels and the impact they made on EU policy. Theories of European integration which were in fashion at the time – that is, neofunctionalism and intergovernmentalism – could no longer capture and explain what was going on in EU governance. MLG was introduced as an original concept to understand this new mode of EU governance which involved a third regional tier alongside member states and EU institutions (Jeffery and Peterson, this issue).
+
+
+=== SEGMENT 3 ===
+[Summary: The concept of multi-level governance (MLG) remains widely used, particularly for understanding how regionalization has shifted political authority, increasing regional involvement both within and beyond EU member states. MLG's analytical strength lies in focusing on the sharing of authority throughout the entire policy process, moving beyond formal decision-making roles. The author plans to utilize MLG to analyze the incentives for regional involvement in EU affairs and the willingness of higher-level institutions to share authority.]
+
+The concept of multi-level governance is still widely used in the literature that deals with regions in the EU.¹ Whereas Hooghe and Marks' research was pivotal in revealing the involvement of regions in EU affairs at the EU level, later research exposed that regions have undermined the capacity of central governments to maintain a monopoly over EU policy in the intra-state arena (Jeffery, 2000). A process of regionalization has shifted political authority from the national level down to subnational levels of government and has increased the involvement of regions in EU affairs beyond but also within the member states. One of the main analytical leverages of MLG is its implied shift in focus from formal decision-making by governments to sharing of authority between levels of government during the entire process from policy making to implementation (Hooghe and Marks, this issue; Tortola, 2017). As I will show in this contribution, MLG reveals that regional governments and actors are increasingly involved in EU-affairs beyond and within member-states even in cases where the formal right to make a decision lies with national governments or the EU legislator.
+
+In the next two sections, I briefly discuss the research that reveals the involvement of regions in EU affairs at the EU level and within the member states. In both sections, I discuss the formal legislative role of regions in EU-decision-making processes as well as the involvement of regions in EU policy beyond their formal legislative role. In the fourth section, I argue that MLG is key for understanding the developments in a three-tier EU polity because it steers scholarly focus towards the incentives for regions to be involved in EU affairs and for national governments and EU institutions to share their authority with regions.
+
+Department of Comparative Politics, Faculty of Social Sciences, University of Bergen, Bergen, Norway
+
+**Corresponding author:**
+Arjan H Schakel, Department of Comparative Politics, Faculty of Social Sciences, University of Bergen,
+PO Box 7802, 5020 Bergen, Norway.
+Email: arjan.schakel@uib.no
+
+
+=== SEGMENT 4 ===
+[Summary: Regional involvement in EU decision-making at the EU level primarily occurs through three channels: the Committee of the Regions (CoR), regional access to the Council of Ministers, and regional lobby offices. The CoR, established by the Maastricht Treaty in 1992, gives subnational authorities a formal legislative role, initially requiring mandatory consultation on specific policy areas like cohesion and public health. The CoR's powers significantly increased with the Treaty of Lisbon, which extended mandatory consultation to areas such as environment and energy, and granted the CoR the right to issue opinions on its own initiative and protect its prerogatives before the European Court of Justice.]
+
+## Regional involvement in EU affairs at the EU level
+
+Hooghe and Marks (1996, 2001) have been at the forefront of exploring the involvement of regions in EU decision-making, and they identify three main channels: regional representation the CoR, regional access to the Council of Ministers, and regional lobby offices.²
+
+The CoR gives subnational authorities a formal role in the EU decision-making process since the CoR was established by the Maastricht Treaty in 1992.³ The CoR consists of 350 representatives from regional and local governments who should hold a regional or local authority electoral mandate or who are politically accountable to an elected assembly.⁴ Since the Maastricht Treaty, the involvement of the CoR in the EU legislative process is mandatory for policy related to ‘social and economic cohesion, public health, trans-European networks in the fields of energy, transport and telecommunications, education and youth, culture'.⁵ The powers for the CoR have gradually increased over time and with the Treaty of Lisbon mandatory consultation was extended to include employment, social affairs, sport, environment, energy, and climate change. Furthermore, the CoR gained the right of issuing an opinion on its own initiative and to protect its prerogatives before the European Court of Justice.⁶
+
+
+=== SEGMENT 5 ===
+[Summary: The segment analyzes regional involvement in EU affairs via the Committee of the Regions (CoR) and direct access to the Council of Ministers. Although the CoR's formal role is limited to advice, the Commission seriously considers its opinions, and high-profile regional executives often serve as representatives. Furthermore, the Maastricht Treaty enabled regional ministers from federal states (Austria, Belgium, Germany) to replace national ministers in the Council for specific regional policies, while representatives from regionalized states (Italy, Spain, UK) may be authorized to speak.]
+
+Within the EU legislative process, the role of the CoR may be conceived to be limited because it does not have veto-powers or co-decision rights and can only provide advice. In addition, in almost all member states, national governments decide on the list of candidates for the CoR, although regional governments and/or local and regional government associations can propose candidates (Committee of the Regions, 2009b).⁷ However, the CoR is taken seriously by the Commission which reports to the CoR how its opinions have been taken into account even when there is no treaty obligation on the part of the Commission to do so.⁸ A closer look at the profiles of the CoR regional government representatives reveals that, in December 2019, 71% are the head or member of a regional executive, whereas 29% is member of a regional assembly. The corresponding percentages for the representatives of local government are 50% and 50%.⁹ Nominating high-profile candidates may signal that regional governments take their representation in the CoR very seriously and manage to get their preferred candidates approved by their national governments.
+
+Apart from the CoR, the Maastricht Treaty introduced another legislative role for regions which is the possibility for regional ministers to represent the member state in the Council of Ministers.¹⁰ Numerous regions have sought and gained access to heart of EU decision making. Regional ministers from the federal states of Austria, Belgium and Germany (may) replace national ministers and exercise the full rights associated with the position for policies that are exclusively assigned to the regions. Regional representatives from the regionalized states of Italy, Spain, and the United Kingdom may be authorised to speak during council meetings (Högenauer, 2008; Tilindyte, 2016).
+
+
+=== SEGMENT 6 ===
+[Summary: Although regions gain a formal role in the EU legislative process through access to the Council of Ministers, this participation is often viewed skeptically because central governments act as gatekeepers, frequently requiring their agreement for regional ministers to participate. Nevertheless, regions that successfully replace their national minister exert influence by becoming actively involved in the preparation phase of EU decision-making. This preparatory involvement includes participating in member state delegations and serving as members of the Council of Ministers' working groups.]
+
+Although access to the Council of Ministers grants regions a formal and direct role in the EU legislative process, a focus on formal decision-making provides for a sceptical view on the possibility of regions to impact EU policy. Central governments act as ‘gatekeepers' and regional minister access to the Council of Ministers depends in many member states on the agreement of central government (Högenauer, 2008; Noferini, 2012; Tatham, 2008). However, those regions which have gained the right to replace their national minister are actively involved in the preparation phase of EU decision-making through their participation in member state delegations and through their membership in the working groups of the Council of Ministers.
+
+
+=== SEGMENT 7 ===
+[Summary: The growth of regional lobby offices (RLOs) in Brussels, increasing from 15 in 1988 to over 200 by 2013, represents a major development in the EU multi-level polity. This increase is largely attributed to the 1988 structural funds reform, which mandated 'partnership' involving regional authorities in economic programs, thus incentivizing regions to establish representations. While RLOs lack a formal role in EU decision-making, they operate as key top-down and bottom-up information brokers, primarily seeking details on funding and legislation, and conveying regional positions to EU decision makers.]
+
+A major development in the EU multi-level polity has been the growth in the number of regional lobby offices in Brussels. There were 15 of such offices in 1988, and this number increased to more than 200 in 2013 (Callanan and Tatham, 2014; Donas and Beyers, 2013; Greenwood, 2011; Hooghe and Marks, 1996; Marks et al., 2002; Tatham, 2010). This growth in the number of regional lobby offices can arguably be linked to the 1988 reform of the structural funds which instituted ‘partnership' among the Commission, national governments, and local and regional authorities in designing, implementing, and monitoring economic programmes (Hooghe and Marks, 2001: 83–86). The partnership principle induced the Commission to involve regional representatives in EU policy-making and incentivized regions to establish representations in Brussels.
+
+Regional lobby offices in Brussels do not have a formal role in the EU decision-making process. However, research reveals that regions perform a dual role as top-down and bottom-up information broker. The most important role regional lobby offices see for themselves is to gain information about funding opportunities and EU legislation relevant to a region and to explain a region's position on issues to EU decision makers as to 
+
+### IMPORTANT:
+
+Segments MUST be 500-1000 characters.
+
+
+=== SEGMENT 8 ===
+[Summary: Regional lobby offices primarily function to influence EU decision-making in favor of their regions. The European Commission relies on these offices for insightful regional-level data, compensating for the lack of internal expertise and resources within the EU bureaucracy. While most regions collaborate closely with central state authorities rather than bypassing them, this dynamic between cooperation and bypassing is influenced by contextual factors such as political alignment between regional and national governments, and the fiscal resources available to the office.]
+
+influence the EU decision-making in favour of the region. Regional lobby offices are welcomed by the European Commission which relies on regional representatives for information because the European bureaucracy lacks the expertise and resources to gather insightful regional-level data. (Greenwood, 2011; Marks et al., 2002; Tatham, 2017). In addition, most regions intensively collaborate with central state authorities rather than bypassing them (Beyers et al., 2015; Callanan and Tatham, 2014) but contextual factors such as different parties in government at the regional and national levels, (fiscal) resources of the office, and length of exposure the integration process may affect the incidence of bypassing versus cooperation (Tatham, 2010).
+
+
+=== SEGMENT 9 ===
+[Summary: The literature identifies three main ways regions participate in EU affairs within member states: involvement in Cohesion Policy, intergovernmental coordination meetings, and subsidiarity monitoring by regional parliaments. Regional participation in EU Cohesion Policy is highlighted as the most visible form of involvement. This visibility stems from the 1988 Cohesion Policy reform, which introduced the partnership principle requiring implementing decisions about operational programmes to be taken jointly by the Commission, national governments, and regional governments.]
+
+## Regional involvement in EU affairs within the member states
+
+The literature identifies three ways in which regions are involved in EU affairs within the member states: regional involvement in Cohesion Policy, intergovernmental meetings to coordinate EU affairs, and subsidiarity monitoring by regional parliaments.
+
+Perhaps the most visible regional involvement in EU affairs within the member states concerns EU Cohesion Policy. When (candidate) member states, in the opinion of the Commission, did not have adequate regional institutions capable of managing cohesion funds than they were expected to create them (Piattoni, 2009). This expectation arose after the 1988 Cohesion Policy reform which enshrined the partnership principle. This principle stipulates that (implementing) decisions about operational programmes – that is, the plans to implement and spent the funds – should be taken in partnership among the Commission, the member state governments, and regional governments (Allen, 2010).
+
+
+=== SEGMENT 10 ===
+[Summary: Piattoni (2010) distinguishes between two potential outcomes of EU Cohesion Policy regarding regional empowerment: policy empowerment, which increases a region's capacity to contribute to policy-making, and institutional empowerment, which involves redefining the member state's institutional or constitutional structure. She notes that expecting the former is fundamentally different from expecting the latter.]
+
+Piattoni (2010: 128) notes that
+
+> it is one thing to expect cohesion policy to empower the regions of Europe, in the sense of making them more capable of contributing to the policy-making process (policy empowerment), while it is an entirely different issue to expect cohesion policy to bring about a redefinition of the institutional or even constitutional setup of the member states (institutional empowerment).
+
+
+=== SEGMENT 11 ===
+[Summary: Although Cohesion Policy has not fundamentally redefined the institutional setup of regional governments, with national governments retaining administrative responsibility in 19 out of 28 member states during the 2014–2020 period, regional involvement in governance has increased. Regions in nine member states (Austria, Belgium, France, Germany, Italy, Poland, Finland, Sweden, and the UK) are fully or largely in charge of Cohesion Policy implementation. Furthermore, regional representatives across all EU member states advise and inform managing authorities, integrating these tasks into general-purpose regional government in 14 member states or utilizing specific regional development councils in 9 others.]
+
+Indeed, Cohesion Policy seems not to have significantly strengthened regional government. During the 2014–2020 programme period, national governments are responsible for administering and implementing Cohesion Policy in 19 out of 28 member states. Nevertheless, regions in six member states are fully in charge of Cohesion Policy – that is, Austria, Belgium, France, Germany, Italy, and Poland – and regions in three member states – that is, Finland, Sweden, and the United Kingdom – are in full control of administering and implementing Cohesion Policy (Balsiger, 2016; Charles, 2016; Kovács, 2016; Muravska et al., 2016; Polverari, 2016). Although national governments seem to remain in control of Cohesion Policy, regions have become increasingly involved in the governance of Cohesion Policy (Baun and Marek, 2008). In all EU member states regional representatives advise and inform managing authorities and, in some cases, they also help managing authorities with implementing Cohesion Policy. In 14 member states, the aforementioned tasks are integrated into general-purpose regional government, 9 member states have set up specific regional development councils, and only in 5 member states regional development is an exclusive competence of the central government (Hooghe et al., 2016; Schakel, 2018).¹¹
+
+
+=== SEGMENT 12 ===
+[Summary: The right for regional ministers to replace national ministers in the EU Council of Ministers drove the creation of formal intra-state coordination mechanisms between central and regional governments. Following the Treaty of Maastricht, eight member states established specific intergovernmental meetings dedicated to EU affairs. Regions in Austria, Belgium, Germany, and Spain possess the power to veto national positions in the Council, while regions in Finland, Italy, Portugal, and the UK have consultation rights but no formal veto.]
+
+The possibility for regional ministers to replace their national ministers in the Council of Ministers at the EU level led to the establishment of formalised intra-state coordination mechanisms between central and regional governments. Eight member states established formalised intergovernmental meetings specifically dedicated to EU affairs soon after the Treaty of Maastricht introduced the right for regions to participate in the Council of Ministers. In Austria, Belgium, Germany, and Spain regions can exercise a veto on member states positions to be taken up in the Council of Ministers. Regions in Finland (Åland), Italy, Portugal (Azores and Madeira), and the United Kingdom (Northern Ireland, Scotland, and Wales) do not have a veto, but they can voice their concerns to their national governments before the latter expresses the member state opinion in Brussels (Högenauer, 2008; Hooghe et al., 2016; Lanceiro, 2015).
+
+
+=== SEGMENT 13 ===
+[Summary: Although regions have a formal role in determining a member state's position for the Council of Ministers, this often results in limited impact on EU decision-making because the numerous regions within a state (e.g., Austria, Germany, Italy) must agree on a single, common position, frequently leading to a low common denominator. Despite these difficulties, research shows that regions discussing EU affairs with central governments prefer to mobilize their rights through established national structures rather than attempting to act beyond them.]
+
+Although these regions have a formal role in determining a member state position to be taken up in the Council of Ministers this may not translate into a strong impact of regions on EU decision making. Each member state representative should be able to commit the government of their member state because each member state has only one vote.¹² This requirement implies that there has to be one common position among 9 Austrian, 5 Belgian, 16 German, 21 Italian, and 17 Spanish regions. This often results in a fairly low common denominator (Jeffery, 2007). Nevertheless, research reveals that regions which have the opportunity to meet with their central governments to discuss EU affairs prefer to mobilise their rights *through* rather than *beyond* the established structures of the member state (Börzel, 1999; Jeffery, 2000; Keating, 2008).
+
+
+=== SEGMENT 14 ===
+[Summary: The Treaty of Lisbon introduced the early warning system for the principle of subsidiarity, a mechanism allowing national parliaments to review and potentially raise objections against EU legislative proposals before enactment. Each member state has two votes allocated either to a unicameral parliament or divided between the chambers of a bicameral parliament. This system also involves regional parliaments, as national parliaments must consult regional legislatures with legislative powers on relevant matters, enabling those regional bodies to raise objections concerning subsidiarity breaches within their specific competences.]
+
+The Treaty of Lisbon introduced the early warning system for the principle of subsidiarity.¹³ This is a legal instrument for national parliaments to review EU legislation before it is discussed and enacted at the EU level. Parliaments have a chance to raise objections and prevent EU action when they have the opinion that the EU legislative proposal violates the subsidiarity principle (Abels, 2015). Each member state has two votes which are both assigned to unicameral national parliaments or divided between the lower and upper chamber in the case of bicameral national parliaments.¹⁴ Subsidiarity concerns may also involve regional autonomy and ‘it is for each national parliament to consult, where appropriate, regional parliaments with legislative powers'.¹⁵ National parliaments are required to consult regional parliaments on those matters which are encompassed by a region's legislative powers and thereby regional legislatures can raise objections against breaches of the subsidiarity principle for those powers that are within their competences.¹⁶
+
+
+=== SEGMENT 15 ===
+[Summary: The early warning system offers limited direct influence for regions on EU legislative affairs due to structural constraints, including the need for agreement among potentially dozens of regions and national parliamentary chambers within a challenging 8-week timeframe, and the restriction of regional parliaments' role to consultation. Despite these limitations, most regional parliaments have proactively implemented internal reforms, such as establishing EU affairs committees and negotiating agreements on scrutiny power, aiming to increase their indirect influence by enhancing accountability over regional and national executives.]
+
+Seen from a perspective that focuses on the EU legislative process, the early warning system does not provide regions much leeway to impact on EU affairs even for regions in the member states which consist fully or in large part of regional representatives appointed by regional executives or regional legislatures.¹⁷ In addition to the need to find agreement among up to one or two dozen regions, agreement also need to be found with the lower and upper chambers of national parliament and this needs to be achieved within the challenging time frame of 8 weeks. In addition, the role of the parliaments of the regions with legislative powers¹⁸ is restricted to consultation. Despite these reservations, most regional parliaments have set up EU affairs committees when they did not have one previously, many regional parliaments have changed their (internal) regulations or rules of procedure, and some regional parliaments negotiated inter-institutional agreements on information rights and scrutiny power regarding EU affairs with their executives (Abels and Eppler, 2015; Borońska-Hryniewiecka, 2017; Committee of the Regions, 2013). These reforms may eventually lead to an increased influence of regional parliaments on EU affairs through an enlarged ability to hold regional and national executives accountable.
+
+
+=== SEGMENT 16 ===
+[Summary: Regions have solidified their status as an unextractable and important tier within the EU's multi-level governance structure. Although regions have not achieved significant influence through an increased formal legislative role in the EU decision-making process in Brussels, their crucial involvement in EU policy-making extends significantly beyond these formal legislative roles and operates within the member states.]
+
+## Multilevel governance in the three-tiered EU polity
+
+The above overview on regional involvement in EU decision-making processes at the EU level and within the member states reveals that regions have become an unextractable and important tier of government within the EU multi-level polity. Regions have not gained much traction on EU affairs through an increased legislative role within the EU decision-making process in Brussels. However, such a perspective does not recognise the involvement of regions in the EU policy making process *beyond* their formal legislative role and within the member states.
+
+
+=== SEGMENT 17 ===
+[Summary: The concept of 'Europe of the Regions,' which envisioned the EU and regional levels gaining power at the expense of member states, peaked around the time of Hooghe and Marks’ 2001 study. However, since the EU did not develop into this type of federal polity, many scholars now prefer the description 'Europe with the Regions.' The concept of multilevel governance is instrumental in describing and explaining the development of this 'Europe with the Regions.']
+
+Hooghe and Marks (2001) published their landmark study (2001) during the heydays of the idea of a 'Europe of the Regions' – that is, a vision that foresaw development of a EU polity in which the EU and the regional levels would gradually gain ever more competences at the expense of the member-states which might even eventually disappear (Loughlin, 1996; Madrino, 2008). The EU clearly did not develop into a federal polity consisting of a federal government at the European level and state government at the regional level. Therefore, several scholars prefer to describe the EU as 'Europe with the Regions' rather than ‘Europe of the Regions' (Hepburn, 2008; Hooghe and Marks, 1996; Moore, 2008). The main contribution of the concept of multilevel governance is that it helps to describe as well as to explain the development of a 'Europe with the Regions' (Piattoni, 2010).
+
+
+=== SEGMENT 18 ===
+[Summary: Liesbet Hooghe and Gary Marks attribute the increase in multi-level governance in Europe primarily to two developments: European integration, which shifts authority upward to EU institutions, and regionalization, which shifts political authority downward to subnational levels. The continuation of these processes during the 2000s and 2010s deepened the interdependency among regional, national, and EU institutions. This interconnectedness is evidenced by estimates showing that 60% of decisions by local and regional authorities are influenced by European legislation, and nearly 70% of EU legislation is implemented by these subnational entities.]
+
+Liesbet Hooghe and Gary Marks attribute increasing multi-level governance in Europe to two developments: European integration which has shifted authority from national states to European-level institutions and regionalization which has shifted political authority from the national level down to subnational levels of government (Hooghe and Marks, 2001: xi). Continuing processes of European integration and regionalization during the 2000s and 2010s have further increased the interdependency between regional and national governments and the EU institutions. Recent estimates reveal that 60% of the decisions taken by local and regional authorities are influenced by European legislation and nearly 70% of EU legislation is implemented by local and regional authorities (Committee of the Regions, 2009a; Council of European Municipalities and Regions, 2016). The Commissi
+
+
+=== SEGMENT 19 ===
+[Summary: The EU Commission strongly encourages member states to delegate authority to regions to ensure effective EU policy implementation. Regions, especially those heavily involved in implementation, are motivated to influence EU legislation early and often find collaborating with central governments beneficial for protecting their competences. While regions with central access typically avoid bypassing the member state, they will directly contact EU officials if they are dissatisfied or disagree with the national position.]
+
+on has much interest in making sure that EU policy is appropriately implemented in the regions and it strongly induces member states to share authority with their regions when they implement EU policy. Regions have much reason to influence EU legislation from the initial stages onwards and especially regions with a large policy portfolio – that is, regions which more often are required to implement EU law – have a higher inclination to monitor EU affairs and are keener to make the EU institutions aware of regional preferences regarding EU policy (Donas and Beyers, 2013; Hooghe and Marks, 1996; Noferini, 2012). Regions which seek to protect their competences from EU interference have come to learn that their interests are best served by collaborating with their central governments through participating in intergovernmental meetings on EU affairs (Börzel, 1999). Regions with access to central state decision making are less prone to bypassing their member states and less often directly seek contact with EU institutions. But these regions will resort to bypassing strategies and directly contact EU officials in cases when they are dissatisfied or disagree with the national position (Högenauer, 2014; Jeffery, 2007; Tatham, 2010, 2014, 2017).
+
+
+=== SEGMENT 20 ===
+[Summary: The multilevel governance (MLG) perspective identifies coordination as a major challenge within the three-tiered EU polity, requiring coordination across member states, regions, and between regions within states. This challenge is intensified by deepening European integration and regionalization, which increase the overlap of governmental competences and necessitate a willingness to share authority to achieve better policy outcomes. MLG research focuses on understanding the incentives that drive regions to engage in EU affairs and motivate national governments and EU institutions to share authority.]
+
+A multilevel governance perspective reveals that a major challenge within the threetiered EU polity is to coordinate governments across member states and regions as well as between regions within member states (see also Hooghe and Marks, this issue). Deepening European integration and continuing regionalization have significantly increased the overlap of competences between governments and an action or decision at one level is increasingly more likely to have an impact at another level. Coordination across levels of government is necessary to improve policy outcomes and effective coordination depends on the willingness of governments to share authority (Allain-Dupré, this issue; Charbit, this issue). Multilevel governance directs scholarly attention to the means through which governments try to achieve coordination. Typical examples of research questions raised by multilevel scholars are when and why regions are present and active in Brussels, when and why EU institutions provide a listening ear to them, when and why national governments are willing to co-determine member state positions with their regions, and when and why regions prefer to work through rather than beyond central state institutions. In other words, knowing the incentives for regions to be involved in EU affairs and for national governments and EU institutions to share their authority with regions is key for understanding the EU multilevel governance system.
+
+
+=== SEGMENT 21 ===
+[Summary: This segment provides administrative details for the commentary, including its origin, acknowledgments, and funding. A previous version of the commentary was presented at the MLG ‘breakthrough' political science symposium held at the European University Institute in Fiesole, Italy, on May 23, 2019. The research received financial support from the Trond Mohn Foundation (grant no. 812468).]
+
+## Author's note
+A previous version of this commentary was presented during the MLG ‘breakthrough' political science symposium held at the European University Institute in Fiesole, Italy on 23 May 2019. I am grateful to Liesbet Hooghe, Charlie Jeffery, Gary Marks, and John Peterson for organising the symposium.
+
+## Acknowledgements
+I would like to thank the participants of the symposium for their valuable feedback and inspiring discussions during and after the symposium.
+
+## Funding
+The author(s) disclosed receipt of the following financial support for the research, authorship, and/or publication of this article: This research was supported by the Trond Mohn Foundation (grant no. 812468).
+
+## ORCID iD
+Arjan H Schakel 🆔 https://orcid.org/0000-0002-1173-9316
+
+
+=== SEGMENT 22 ===
+[Summary: This note details the rapid growth in academic interest concerning 'multi-level governance' (MLG), using Google Scholar search statistics compiled on July 26, 2019. Searches for MLG increased dramatically from five hits in 1992 to over 30,000 in 2018. The data also reveals a growing focus on the regional and EU dimensions of MLG, as the percentage of hits including 'region' and 'EU' rose from 23% in the 1990s to 55% since 2010.]
+
+## Notes
+1. A Google Scholar search with the words 'multi-level governance' generates five 'hits' for 1992 after which the number of 'hits' increases to 1320 in 2000; 16,100 in 2010; and to more than 30,000 in 2018. On average, the number of hits for a search which includes the terms 'multi-level governance' & 'region' & 'EU' constitutes 38% of the full set of hits generated by a search with only the terms 'multi-level governance'. This percentage increases from 23% in the 1990s, to 35% during the 2000s, and to 55% since 2010. The Google searches were conducted on 26 July 2019.
+
+
+=== SEGMENT 23 ===
+[Summary: The author notes that while Hooghe and Marks (2001) discuss 'links with the Commission' and 'transnational networks' as regional representation channels, these are excluded from the current analysis due to space constraints and their perceived limited transformative impact on the EU's multilevel polity. The segment subsequently provides several specific treaty citations from the 1992 Treaty of Maastricht and the 2007 Treaty on the Functioning of the European Union. Finally, it highlights Germany and Ireland as exceptions in their procedures for selecting nominees, noting that Germany uses the Conference of Länder Presidents and Ireland does not specify consultation with local government associations.]
+
+2. Hooghe and Marks (2001) also discuss 'links with the Commission' and 'transnational networks' as channels of regional representation at the EU level. I do not discuss these channels in this contribution because of a lack of space and because these channels have had a less 'transformative impact' on the EU's multilevel polity. See Schakel and Massetti (2020) for a more extensive review of the literature on regional governance in the EU.
+3. Treaty of Maastricht 1992, Art. 198a.
+4. Treaty on the Functioning of the European Union 2007, Art. 300 (3).
+5. Treaty of Maastricht 1992, Art. 198c.
+6. Treaty on the Functioning of the European Union 2007, Arts. 263 and 307.
+7. Germany and Ireland are exceptions. In Germany, the list of nominees is decided by the Conference of Länder Presidents (*Ministerpräsidentenkonferenz*). In Ireland, the selection procedure does not specify that local government associations have to be consulted.
+
+
+=== SEGMENT 24 ===
+[Summary: This segment primarily provides legal citations and methodological notes related to EU governance structures. It references Article 14 of the Protocol on Cooperation between the European Commission and the Committee of the Regions, alongside articles from the Treaty of Maastricht and the TFEU. Furthermore, the text details the scope of data used for CoR analysis (312 member profiles) and classifies EU member states into three distinct regional governance categories: Integrated, Regional development councils, and Central government.]
+
+8. Protocol on the Cooperation between the European Commission and the Committee of the Regions, Art. 14.
+9. The percentages are based on the profiles of 312 CoR members. A profile was missing for 38 CoR members at the time when the CoR's member database was accessed. Committee of the Regions: https://cor.europa.eu/en/members/ (consulted on 12 December 2019).
+10. Treaty of Maastricht 1992, Art. 146; Treaty on the Functioning of the European Union 2007, Art. 16(2).
+11. *Integrated*: Austria, Belgium, Denmark, Finland, France, Germany, Greece, Hungary, Italy, Netherlands, Poland, Slovakia, Spain, and Sweden. *Regional development councils*: Bulgaria, Czech Republic, Croatia, Ireland, Latvia, Lithuania, Portugal, Romania, and Slovenia. *Central government*: Cyprus, Estonia, Luxembourg, Malta, and the United Kingdom (only for England).
+
+
+=== SEGMENT 25 ===
+[Summary: The text provides legal citations related to EU governance, referencing the Treaty on the Functioning of the European Union, the Treaty on European Union, and Protocol (No 2) concerning the principles of subsidiarity and proportionality. A key observation is that six out of eight EU member states possessing legislative regions utilize a bicameral structure for their national parliaments, including Austria, Belgium, Germany, Italy, Spain, and the United Kingdom.]
+
+12. Treaty on the Functioning of the European Union 2007, Art. 16(2).
+13. Treaty on European Union 2007, Art. 5.
+14. Six out of eight national parliaments of the member states with legislative regions are bicameral: Austria, Belgium, Germany, Italy, Spain, and the United Kingdom.
+15. Protocol (No 2) on the application of the principles of subsidiarity and proportionality, Art. 6.
+16. Full detail on the early warning system for the principle of subsidiarity can be found in Kiiver (2012).
+
+
+=== SEGMENT 26 ===
+[Summary: The analysis highlights the integration of regional representation in national politics, noting that the upper chambers in five out of eight member states with legislative regions (Austria, Belgium, Germany, Italy, and Spain) are largely composed of regional representatives. Furthermore, these eight member states collectively possess 74 regional parliaments with legislative powers, including bodies such as the 16 German Länder parliaments and the 17 Spanish *comunidades autónomas* parliaments.]
+
+17. The upper chambers in five out of eight member states with legislative regions – that is, Austria, Belgium, Germany, Italy, and Spain- consist fully or in large part of regional representatives appointed by regional executives or regional legislatures.
+18. There are 74 regional parliaments in eight member states which possess legislative powers: nine Austrian Landtage, five regional and communal parliaments in Belgium, the parliament of Åland in Finland, 16 Germany Länder parliaments, 19 parliaments of ordinary and special regions plus two parliaments of two special provinces in Italy, the parliaments of Azores and Madeira in Portugal, the 17 parliaments of the *comunidades autónomas* in Spain, and the parliaments of Northern Ireland, Scotland, and Wales in the United Kingdom (Committee of the Regions, 2013).
+
+
+=== SEGMENT 27 ===
+[Summary: This segment provides three academic references relevant to EU studies, focusing primarily on the role of subnational parliaments and German Länder parliaments in the EU multi-level system, published in 2015. Additionally, it lists a 2010 chapter concerning the structural funds and cohesion policy within the European Union policy-making context.]
+
+## References
+Abels G (2015) No longer losers - Reforming the German Länder parliaments in EU affairs. In: Abels G and Eppler A (eds) *Subnational Parliaments in the EU Multil-Level Parliamentary System: Taking Stock of the Post-Lisbon Era*. Innsbruck: Studienverlag, pp.193-209.
+
+Abels G and Eppler A (eds) (2015) *Subnational Parliaments in the EU Multil-Level Parliamentary System: Taking Stock of the Post-Lisbon Era*. Innsbruck: Studienverlag.
+
+Allen D (2010) The structural funds and cohesion policy: Extending the bargain to meet new challenges. In: Wallace H, Pollack MA and Young AR (eds) *Policy-Making the European Union*. Oxford: Oxford University Press, pp.229-252.
+
+
+=== SEGMENT 28 ===
+[Summary: This segment lists four academic references published between 2008 and 2017 concerning European Union policy and sub-national governance. The publications cover topics such as the EU cohesion policy's application in rich central regions and new member states, the venue selection strategies of regional offices in Brussels, and the analytical framework for regional parliamentary empowerment in EU affairs.]
+
+Balsiger J (2016) Cohesion policy in the rich central regions. In: Piattoni S and Polverari L (eds) *Handbook on Cohesion Policy in the European Union*. Cheltenham: Edward Elgar, pp.250-267.
+
+Baun M and Marek D (2008) EU cohesion policy and sub-national authorities in the new member states. *Contemporary European Studies* 16(2): 5–20.
+
+Beyers J, Donas T and Fraussen B (2015) No place like home? Explaining venue selection of regional offices in Brussels. *Journal of European Public Policy* 22(5): 589–608.
+
+Borońska-Hryniewiecka K (2017) Regional parliamentary empowerment in EU affairs: Building an analytical framework. *The Journal of Legislative Studies* 23(2): 144–161.
+
+
+=== SEGMENT 29 ===
+[Summary: This segment presents four bibliographic entries covering several themes relevant to European studies, including institutional adaptation to Europeanization, territorial interest representation in the EU, and analysis of EU Cohesion Policy in the Southern periphery. It also includes the Committee of the Regions' 2009 publication on multilevel governance.]
+
+Börzel TA (1999) Towards convergence in Europe? Institutional adaptation to Europeanization in Germany and Spain. *Journal of Common Market Studies* 37(4): 573-596.
+
+Callanan M and Tatham M (2014) Territorial interest representation in the European Union: Actors, objectives and strategies. *Journal of European Public Policy* 21(2): 188-210.
+
+Charles D (2016) Cohesion policy in the Southern periphery. In: Piattoni S and Polverari L (eds) *Handbook on Cohesion Policy in the European Union*. Cheltenham: Edward Elgar, pp.231–249.
+
+Committee of the Regions (2009a) *The Committee of the Regions' White Paper on Multilevel Governance*. Brussels: Committee of the Regions.
+
+
+=== SEGMENT 30 ===
+[Summary: This segment lists three institutional publications focusing on the roles and mechanisms related to sub-national governance within the EU structure. The Committee of the Regions produced reports detailing the selection procedures for its members and the function of regional parliaments in the Lisbon Treaty's Early Warning System for subsidiarity analysis. The Council of European Municipalities and Regions contributed a general overview of local and regional governments in Europe.]
+
+Committee of the Regions (2009b) *The Selection Process for Committee of the Region Members: Procedures in the Member States*. Brussels: Committee of the Regions.
+
+Committee of the Regions (2013) *The Role of Regional Parliaments in the Process of Subsidiarity Analysis within the Early Warning System of the Lisbon Treaty*. Brussels: Committee of the Regions.
+
+Council of European Municipalities and Regions (2016) *Local and Regional Governments in Europe*. Brussels: Council of European Municipalities and Regions.
+
+
+=== SEGMENT 31 ===
+[Summary: This segment lists two academic articles focusing on the representation of regions within the European Union. The first, by Donas and Beyers (2013), analyzes the organizational forms regions use for territorial representation in Brussels, while the second, by Greenwood (2011), examines the function and role of the Brussels offices established by these regions.]
+
+Donas T and Beyers J (2013) How regions assemble in Brussels: The organizational form of territorial representation in the European Union. *Publius: The Journal of Federalism* 43(4): 527–550.
+
+Greenwood J (2011) Actors of the common interest? The Brussels offices of the regions. *
+
+
+=== SEGMENT 32 ===
+[Summary: This segment lists several academic publications published between 1995 and 2014 focusing on the role of regions and subnational entities within the European Union. Key topics covered include the concept of a 'Europe of the regions,' the impact of the Lisbon Treaty on regional engagement in EU policy-making, and the dynamics of subnational mobilization and access to the European level.]
+
+Journal of European Integration* 33(4): 437-451.¥nHepburn E (2008) The rise and fall of a 'Europe of the regions'. *Regional & Federal Studies* 18(5): 537–555.¥nHögenauer A-L (2008) The impact of the Lisbon reform treaty on regional engagement in EU policy-making Continuity or change?. *European Journal of Law Reform* 10(4): 535-555.¥nHögenauer A-L (2014) All by themselves? Legislative regions and the use of unmediated access to the European level. *European Political Science Review* 6(3): 451-475.¥nHooghe L (1995) Subnational mobilization in the European Union. In: Hayward J (ed.) *The Crisis of Representation in Europe*. London: Frank Cass, pp.175-198.
+
+
+=== SEGMENT 33 ===
+[Summary: This bibliographic segment highlights three influential works by Liesbet Hooghe, often in collaboration with Gary Marks, published between 1996 and 2001. These publications centrally address the themes of regional involvement, representation, and the evolution of governance within the European Union. Key topics include the changing role of the European Commission regarding regions and the foundational concept detailed in their book, *Multi-Level Governance and European Integration*.]
+
+Hooghe L (1996) Building a Europe with the regions: The changing role of the European Commission. In: Hooghe L (ed.) *Cohesion Policy and European Integration: Building Multi-Level Governance*. Oxford: Oxford University Press, pp.89-128.¥nHooghe L and Marks G (1996) 'Europe with the regions': Channels of regional representation in the European Union. *Publius: The Journal of Federalism* 26(1): 73–91.¥nHooghe L and Marks G (2001) *Multi-Level Governance and European Integration*. Lanham, MD: Rowman & Littlefield.
+
+
+=== SEGMENT 34 ===
+[Summary: This segment lists three academic publications dating from 2000 to 2016, focusing on regional authority and sub-national involvement in European integration. Key works include a 2016 book by Hooghe, Marks, and Schakel on measuring regional authority, and two contributions by C. Jeffery examining the significance of sub-national mobilization and the changing role of regions concerning the nation-state.]
+
+Hooghe L, Marks G, Schakel AH, et al. (2016) *Measuring Regional Authority: A Postfunctionalist Theory of Governance, vol. 1*. Oxford: Oxford University Press.¥nJeffery C (2000) Sub-national mobilization and European integration: Does it make any difference? *Journal of Common Market Studies* 38(1): 1–24.¥nJeffery C (2007) A regional rescue of the nation-state: Changing regional perspectives on Europe. In: *Paper presented at the EUSA tenth biennial international conference, Montreal, QC, Canada, 17-19 May*.
+
+
+=== SEGMENT 35 ===
+[Summary: This segment lists academic publications concerning European integration, governance, and regional studies. The works address the development of the concept of the 'Europe of the regions,' the constitutional theory and empirical reality of the Early Warning System for the Principle of Subsidiarity, and the specific challenges of implementing Cohesion Policy in Central and Eastern European countries.]
+
+Keating M (2008) A quarter century of the Europe of the regions. *Regional and Federal Studies* 18(5): 629–635.¥nKiiver P (2012) *The Early Warning System for the Principle of Subsidiarity: Constitutional Theory and Empirical Reality*. London: Routledge.¥nKovács IP (2016) Cohesion policy in Central and Eastern Europe: The challenge of learning. In: Piattoni S and Polverari L (eds) *Handbook on Cohesion Policy in the European Union*. Cheltenham: Edward Elgar, pp.302-321.
+
+
+=== SEGMENT 36 ===
+[Summary: The analyzed segment presents two academic citations focusing on regional governance and European integration. R.T. Lanceiro's 2015 work specifically analyzes the international powers of the Portuguese autonomous regions of Azores and Madeira. J. Loughlin's 1996 article discusses the relationship between the concept of the 'Europe of the regions' and the broader federalization process in Europe.]
+
+Lanceiro RT (2015) The international powers of the Portuguese autonomous regions of Azores and Madeira. Available at: https://www.academia.edu/2058722/THE_INTERNATIONAL_POWERS_OF_THE_PORTUGUESE_AUTONOMOUS_REGIONS_OF_AZORES_AND_MADEIRA (accessed 26 July 2019).¥nLoughlin J (1996) 'Europe of the regions' and the federalization of Europe. *Publius: The Journal of Federalism* 26(4): 141-162.
+
+
+=== SEGMENT 37 ===
+[Summary: This segment of the bibliography lists three academic publications concerning European governance and policy. Topics covered include the effects of the Lisbon Treaty on the powers of regions (Madrino, 2008) and early analyses of structural policy and the concept of multilevel governance within the European Community (Marks, 1992, 1993).]
+
+Madrino C (2008) The Lisbon treaty and the new powers of regions. *European Journal of Law Reform* 10(4): 515-533.¥nMarks G (1992) Structural policy in the European community. In: Sbragia AM (ed.) *Europolitics: Institutions and Policymaking the 'New' European Community*. Washington, DC: The Brookings Institute, pp.191-224.¥nMarks G (1993) Structural policy and multilevel governance in the EC. In: Cafrany AW and Rosenthal GG (eds) *The State of the European Community*. Boulder, CO: Lynne Riemer, pp.391-409.
+
+
+=== SEGMENT 38 ===
+[Summary: This bibliographic segment features three academic publications concerning regional engagement and policy within the European Union framework. Two articles discuss the function and purpose of regional representation and subnational offices in Brussels, reflecting on the concept versus the reality of a 'Europe of the regions'. The final entry addresses the specific challenge of implementing EU Cohesion Policy in sparsely populated countries.]
+
+Marks G, Heasly R and Mbaye HAD (2002) What do subnational offices think they are doing in Brussels? *Regional and Federal Studies* 12(3): 1–23.¥nMoore C (2008) A Europe of the regions vs. the regions in Europe: Reflections on regional engagement in Brussels. *Regional & Federal Studies* 18(5): 517-535.¥nMuravska T, Aprāns J and Dahs A (2016) Cohesion policy in the sparsely populated countries. In: Piattoni S and Polverari L (eds) *Handbook on Cohesion Policy in the European Union*. Cheltenham: Edward Elgar, pp.285-301.
+
+
+=== SEGMENT 39 ===
+[Summary: This segment lists four academic publications dating from 2009 to 2016, focusing on key themes in EU studies. The works cover the participation of subnational governments in the Council of the EU, theoretical and conceptual analyses of multi-level governance, and the implementation of Cohesion Policy, specifically concerning the southern periphery.]
+
+Noferini A (2012) The participation of subnational governments in the council of the EU: Some evidence from Spain. *Regional and Federal Studies* 22(4): 361-385.¥nPiattoni S (2009) Multi-level governance: A historical and conceptual analysis. *Journal of Common Market Studies* 31(2): 163–180.¥nPiattoni S (2010) *The Theory of Multi-Level Governance: Conceptual, Empirical, and Normative Challenges*. Oxford: Oxford University Press.¥nPolverari L (2016) Cohesion policy in the southern periphery. In: Piattoni S and Polverari L (eds) *Handbook on Cohesion Policy in the European Union*. Cheltenham: Edward Elgar, pp.231–249.
+
+
+=== SEGMENT 40 ===
+[Summary: The segment lists two academic works by A.H. Schakel concerning regional governance and the European Union. These include a 2018 Final Report for the European Commission on updating the Regional Authority Index (RAI) for 45 countries, covering the years 2010 to 2016. The second publication, co-authored with E. Massetti, is a forthcoming 2020 entry titled 'Regional institutions and the European Union' for *The Encyclopedia of European Union Politics*.]
+
+Schakel AH (2018) *Final Report on Updating the Regional Authority Index (RAI) for Forty-Five Countries (2010-2016)*. Brussels: European Commission.¥nSchakel AH and Massetti E (forthcoming, 2020) Regional institutions and the European Union. In: Laursen F (ed.) *The Encyclopedia of European Union Politics*. New York: Oxford University Press. Published ahead of print, 2020, oxfordre.com/politics.
+
+
+=== SEGMENT 41 ===
+[Summary: This bibliography segment lists scholarly works, prominently featuring four articles by M. Tatham (2008–2017), that examine the direct representation, lobbying, and varied activities of subnational regions within the European Union, including analysis of territorial state bypassing. It also includes works by L. Tilindyte on regional participation in EU decision-making and P.D. Tortola on the clarification of multilevel governance.]
+
+Tatham M (2008) Going solo: Direct regional representation in the European Union. *Regional and Federal Studies* 18(5): 493-515.¥nTatham M (2010) With or without you? Revisiting territorial state bypassing in EU interest representation. *Journal of European Public Policy* 17(1): 76-99.¥nTatham M (2014) Same game but more players? Subnational lobbying in an enlarged union. *Regional and Federal Studies* 24(3): 341-361.¥nTatham M (2017) Networkers, fund hunters, intermediaries, or policy players? The activities of regions in Brussels. *West European Politics* 40(5): 1088–1108.¥nTilindyte L (2016) *Regional Participation in EU Decision-Making: Role in the Legislature and Subsidiarity Monitoring*. Brussels: European Parliamentary Research Service.¥nTortola PD (2017) Clarifying multilevel governance. *European Journal of Political Research* 56(2): 234–250

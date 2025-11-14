@@ -1,21 +1,19 @@
 import { AbortError, BaseController } from '@openvaa/core';
 import * as path from 'path';
-import { RESPONSE_WITH_ARGUMENTS_CONTRACT } from './responseValidators';
+import { ResponseWithArgumentsSchema } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
 import { CondensationOperations } from '../types';
 import {
   calculateStepWeights,
   createBatches,
-  createPromptInstance,
   LatencyTracker,
   normalizeArgumentLists,
-  parse,
   setPromptVars,
   validatePlan
 } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
 import type { Controller } from '@openvaa/core';
-import type { ParsedLLMResponse } from '@openvaa/llm';
+import type { LLMObjectGenerationResult, LLMProvider } from '@openvaa/llm-refactor';
 import type {
   Argument,
   CondensationOperation,
@@ -112,6 +110,9 @@ export class Condenser {
   private treeBuilder: OperationTreeBuilder | DummyTreeBuilder;
   private latencyTracker: LatencyTracker;
   private totalCost: number = 0;
+  private totalInputCost: number = 0;
+  private totalOutputCost: number = 0;
+  private modelsUsed: Set<string> = new Set();
   private startTime: Date;
   private controller: Controller;
 
@@ -149,7 +150,7 @@ export class Condenser {
     // Validate the plan before execution
     validatePlan({ steps: processingSteps, commentCount: this.input.comments.length });
 
-    //  Granularize progress tracking by defining sub-operations for each processing step
+    // Granularize progress tracking by defining sub-operations for each processing step
     if (processingSteps.length > 0) {
       const currentOperationId = this.controller.getCurrentOperation()?.id;
       if (currentOperationId) {
@@ -184,17 +185,17 @@ export class Condenser {
     // Calculate total token usage from all prompt calls
     const totalTokens = this.allPromptCalls.reduce(
       (acc, call) => ({
-        inputs: acc.inputs + call.metadata.tokens.input,
-        outputs: acc.outputs + call.metadata.tokens.output,
-        total: acc.total + call.metadata.tokens.total
+        inputTokens: acc.inputTokens + call.metadata.tokens.inputTokens,
+        outputTokens: acc.outputTokens + call.metadata.tokens.outputTokens,
+        totalTokens: acc.totalTokens + call.metadata.tokens.totalTokens
       }),
-      { inputs: 0, outputs: 0, total: 0 }
+      { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
     );
 
     // Set final arguments in tree and save operation tree to JSON file
     this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
 
-    // Use a more reliable path resolution method that works in both test and production environments
+    // Works in both test and production environments
     const treeFilePath = path.join(process.cwd(), 'data/operationTrees', `${this.runId}.json`);
     await this.treeBuilder.saveTree(treeFilePath);
 
@@ -202,16 +203,24 @@ export class Condenser {
     return {
       runId: this.runId,
       condensationType: this.input.options.outputType,
-      arguments: currentData as Array<Argument>,
-      metrics: {
-        duration: totalDuration / 1000, // Convert to seconds
+      data: { arguments: currentData as Array<Argument> },
+      llmMetrics: {
+        processingTimeMs: totalDuration,
         nLlmCalls: this.allPromptCalls.length,
-        cost: this.totalCost,
-        tokensUsed: totalTokens
+        costs: {
+          total: this.totalCost,
+          input: this.totalInputCost,
+          output: this.totalOutputCost
+        },
+        tokens: {
+          totalTokens: totalTokens.totalTokens,
+          inputTokens: totalTokens.inputTokens,
+          outputTokens: totalTokens.outputTokens
+        }
       },
       success: true,
       metadata: {
-        llmModel: this.allPromptCalls.length > 0 ? this.allPromptCalls[0].modelUsed : 'unknown',
+        modelsUsed: Array.from(this.modelsUsed),
         language: this.input.options.language,
         startTime: this.startTime,
         endTime: endTime
@@ -362,11 +371,12 @@ export class Condenser {
       const callOperationId = `refine_${nodeId}`;
       this.latencyTracker.start(callOperationId);
 
-      // Make LLM call and process response
-      const llmResponse = await this.input.options.llmProvider.generate({
+      // Make LLM call and process response using the new provider (object generation with schema)
+      const llmResult = await this.input.options.llmProvider.generateObject({
+        schema: ResponseWithArgumentsSchema,
         messages,
         temperature: 0.7,
-        model: this.input.options.llmModel
+        maxRetries: 3
       });
 
       // Stop latency tracking for LLM call after it has completed
@@ -375,7 +385,7 @@ export class Condenser {
       // Parse and validate the response
       let parsedResponse: ResponseWithArguments;
       try {
-        parsedResponse = parse(llmResponse.content, RESPONSE_WITH_ARGUMENTS_CONTRACT);
+        parsedResponse = llmResult.object;
 
         // Update visualization tree node with output
         this.treeBuilder.setNodeOutput(nodeId, { arguments: parsedResponse.arguments });
@@ -390,16 +400,30 @@ export class Condenser {
 
       // Track the LLM call for metrics
       const latency = this.latencyTracker.getDuration(callOperationId) ?? 0;
-      const promptCall = createPromptInstance({
+      const usage = llmResult.usage;
+      const costs = await llmResult.costs;
+      const modelUsed = llmResult.model;
+      this.modelsUsed.add(modelUsed);
+      const promptCall = {
+        promptTemplateId: isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId,
         operation: CondensationOperations.REFINE,
-        promptId: isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId,
         rawInputText: `${isFirstBatch ? 'Initial' : 'Refinement'} for batch ${i + 1}/${batches.length}`,
-        llmResponse,
-        latency,
-        llmProvider: this.input.options.llmProvider,
-        controller: this.controller
-      });
-      this.totalCost += promptCall.metadata.cost;
+        rawOutputText: JSON.stringify(parsedResponse, null, 2),
+        modelUsed,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          tokens: {
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0
+          },
+          latency,
+          cost: costs.total
+        }
+      };
+      this.totalCost += costs.total;
+      this.totalInputCost += costs.input;
+      this.totalOutputCost += costs.output;
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
@@ -733,25 +757,27 @@ export class Condenser {
       });
       return {
         messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7,
-        model: this.input.options.llmModel
+        temperature: 0.7
       };
     });
 
     // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
     // The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
-    let validatedResponses: Array<ParsedLLMResponse<{ arguments: Array<Argument> }>>;
+    let results: Array<LLMObjectGenerationResult<ResponseWithArguments>>;
+
     try {
-      validatedResponses = await this.input.options.llmProvider.generateMultipleParallel(
-        {
-          inputs: llmInputs,
-          responseContract: RESPONSE_WITH_ARGUMENTS_CONTRACT,
-          parallelBatches,
-          validationAttempts: MODEL_DEFAULTS.VALIDATION_ATTEMPTS
-        },
-        this.controller
-      );
+      results = await (this.input.options.llmProvider as LLMProvider).generateObjectParallel({
+        requests: llmInputs.map((input) => ({
+          schema: ResponseWithArgumentsSchema,
+          messages: input.messages,
+          temperature: input.temperature,
+          maxRetries: 3,
+          validationRetries: 2
+        })),
+        maxConcurrent: parallelBatches,
+        controller: this.controller
+      });
     } catch (error) {
       if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
         throw error;
@@ -770,14 +796,14 @@ export class Condenser {
     const allPromptCalls: Array<PromptCall> = [];
 
     for (let i = 0; i < items.length; i++) {
-      const response = validatedResponses[i];
+      const result = results[i];
       const nodeId = nodeIds[i];
 
       // Store the successfully parsed arguments
-      const parsedArgs = response.parsed.arguments;
+      const parsedArgs = result.object.arguments;
 
       // Generate unique IDs for final arguments
-      const argsWithNewIds = parsedArgs.map((arg) => ({
+      const argsWithNewIds = parsedArgs.map((arg: Argument) => ({
         ...arg,
         id: crypto.randomUUID()
       }));
@@ -790,19 +816,33 @@ export class Condenser {
 
       // Collect metrics for cost and performance tracking
       const latency = this.latencyTracker.getDuration(nodeId) ?? 0;
-      const promptCall: PromptCall = createPromptInstance({
+      const usage = result.usage;
+      const costs = await result.costs;
+      const modelUsed = result.model;
+      this.modelsUsed.add(modelUsed);
+      const promptCall: PromptCall = {
+        promptTemplateId: promptId,
         operation,
-        promptId,
         rawInputText: `${operation} for ${logIdentifier} ${i + 1}/${items.length}`,
-        llmResponse: response.raw, // Pass the raw response to extract metadata
-        latency,
-        llmProvider: this.input.options.llmProvider,
-        controller: this.controller
-      });
+        rawOutputText: JSON.stringify(result.object, null, 2),
+        modelUsed,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          tokens: {
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0
+          },
+          latency,
+          cost: costs.total
+        }
+      };
 
       allPromptCalls.push(promptCall);
       this.allPromptCalls.push(promptCall);
-      this.totalCost += promptCall.metadata.cost;
+      this.totalCost += costs.total;
+      this.totalInputCost += costs.input;
+      this.totalOutputCost += costs.output;
     }
 
     return { arguments: finalArguments, promptCalls: allPromptCalls, nodeIds };

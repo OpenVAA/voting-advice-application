@@ -7,6 +7,7 @@ services:
       strapi:
         condition: service_healthy
     environment:
+      CHROMA_URL: http://host.docker.internal:8000
       PUBLIC_BROWSER_BACKEND_URL: ${PUBLIC_BROWSER_BACKEND_URL}
       PUBLIC_SERVER_BACKEND_URL: ${PUBLIC_SERVER_BACKEND_URL}
       PUBLIC_BROWSER_FRONTEND_URL: ${PUBLIC_BROWSER_FRONTEND_URL}
@@ -27,6 +28,8 @@ services:
       CACHE_LRU_SIZE: ${CACHE_LRU_SIZE}
       CACHE_EXPIRATION_INTERVAL: ${CACHE_EXPIRATION_INTERVAL}
       LLM_OPENAI_API_KEY: ${LLM_OPENAI_API_KEY}
+      COHERE_API_KEY: ${COHERE_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
   awslocal:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml

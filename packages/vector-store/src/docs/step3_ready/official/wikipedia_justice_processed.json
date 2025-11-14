@@ -1,0 +1,144 @@
+{
+  "runId": "pipeline_1763070489739",
+  "success": true,
+  "data": {
+    "documentId": "official_txt_wikipedia_justice",
+    "metadata": {
+      "title": "Court of Justice of the European Union",
+      "locale": "en"
+    },
+    "segmentAnalyses": [
+      {
+        "parentDocId": "official_txt_wikipedia_justice",
+        "id": "57e58b7e-9fab-47f4-a2a0-93d44c88cf01",
+        "segment": "The Court of Justice of the European Union (CJEU) (French: Cour de justice de l'Union européenne or \"CJUE\"; Latin: Curia[2]) is the judicial branch of the European Union (EU). Seated in the Kirchberg quarter of Luxembourg City, Luxembourg, this EU institution consists of two separate courts: the Court of Justice and the General Court.[3][4] From 2005 to 2016, it also contained the Civil Service Tribunal. It has a sui generis court system, meaning 'of its own kind', and is a supranational institution.[5]\n\nThe CJEU is the chief judicial authority of the EU and oversees the uniform application and interpretation of European Union law, in co-operation with the national judiciary of the EU member states.[4] CJEU also resolves legal disputes between national governments and EU institutions, and may take action against EU institutions on behalf of individuals, companies, or organisations whose rights have been infringed.[6]",
+        "segmentIndex": 0,
+        "summary": "The Court of Justice of the European Union (CJEU) is the judicial branch and chief judicial authority of the EU, operating as a supranational institution with a sui generis court system. Seated in Luxembourg City, the CJEU currently comprises two separate courts: the Court of Justice and the General Court. Its primary functions include overseeing the uniform application and interpretation of EU law, resolving legal disputes between national governments and EU institutions, and handling actions brought against EU institutions by individuals or organizations.",
+        "standaloneFacts": [
+          "The Court of Justice of the European Union (CJEU) is the judicial branch of the European Union (EU).",
+          "The CJEU is seated in the Kirchberg quarter of Luxembourg City, Luxembourg.",
+          "The CJEU consists of two separate courts: the Court of Justice and the General Court.",
+          "The CJEU formerly contained the Civil Service Tribunal from 2005 to 2016.",
+          "The CJEU has a sui generis court system, meaning 'of its own kind'.",
+          "The CJEU is a supranational institution.",
+          "The CJEU is the chief judicial authority of the EU.",
+          "The CJEU oversees the uniform application and interpretation of European Union law.",
+          "The CJEU resolves legal disputes between national governments and EU institutions."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_wikipedia_justice",
+        "id": "b48ba1c0-d2e4-44f8-adb4-29f31b67a4dc",
+        "segment": "Composition\nThe CJEU consists of two major courts:[7]\n\nthe Court of Justice, informally known as European Court of Justice (ECJ), has the competence to hear applications from national courts for preliminary rulings on the interpretation of EU law, direct actions against EU member states for failure to fulfil an obligation, direct actions against EU institutions for annulment and for failure to act, as well as to hear appeals on points of law in rulings and orders of the General Court.[8] The Court of Justice is composed of one judge from each EU member state (currently 27), assisted by 11 Advocates General. If assigned to a case, an Advocate General prepares an independent, non-binding opinion to assist the court in its deliberations.[9]",
+        "segmentIndex": 1,
+        "summary": "The composition of the CJEU includes the Court of Justice (ECJ), which handles preliminary rulings from national courts, direct actions against member states or EU institutions, and appeals from the General Court. The Court of Justice is composed of one judge from each EU member state (currently 27) and is assisted by 11 Advocates General. These Advocates General prepare independent, non-binding opinions to aid the court in its deliberations.",
+        "standaloneFacts": [
+          "The Court of Justice is informally known as the European Court of Justice (ECJ).",
+          "The Court of Justice has the competence to hear applications from national courts for preliminary rulings on the interpretation of EU law.",
+          "The Court of Justice hears appeals on points of law in rulings and orders of the General Court.",
+          "The Court of Justice is composed of one judge from each EU member state, currently totaling 27 judges.",
+          "The Court of Justice is assisted by 11 Advocates General.",
+          "An Advocate General prepares an independent, non-binding opinion to assist the Court of Justice in its deliberations."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_wikipedia_justice",
+        "id": "57e7fbbf-7ecd-408e-a512-f1fbd273df1e",
+        "segment": "the General Court, known prior to the Treaty of Lisbon as the Court of First Instance, has the competence to hear actions brought by natural or legal persons against acts of EU institutions and agencies, actions brought by EU member states against the Commission or Council, actions for damages caused by EU institutions or agencies, actions relating to intellectual property, actions relating to employment and social security disputes between EU institutions and their staff, as well as limited applications from national courts for preliminary rulings.[10] The General Court is composed of two judges from each EU member state (currently 54),[11] though only 53 seats are currently filled.[12]\nJudges and Advocates General are appointed for a \"renewable 6-year term, jointly by national governments\".[13]\n\nFunction\nThe CJEU's specific mission is to ensure that \"the law is observed\" \"in the interpretation and application\" of the Treaties of the European Union. To achieve this, it:\n\nreviews the legality of actions taken by the EU's institutions;\nenforces compliance by member states with their obligations under the Treaties, and\ninterprets European Union law.[4]\nThe composition and functioning of the courts are regulated by the Rules of Procedure.[14]",
+        "segmentIndex": 2,
+        "summary": "The General Court, formerly the Court of First Instance prior to the Treaty of Lisbon, handles a wide array of cases, including actions brought by individuals or member states against EU institutions, intellectual property matters, and employment disputes. The court is composed of two judges from each EU member state, and these judges, along with Advocates General, are appointed for renewable six-year terms. The overarching function of the CJEU is to ensure the law is observed in the interpretation and application of EU Treaties by reviewing institutional legality, enforcing member state obligations, and interpreting European Union law.",
+        "standaloneFacts": [
+          "The General Court was known as the Court of First Instance prior to the Treaty of Lisbon.",
+          "The General Court has competence to hear actions brought by natural or legal persons against acts of EU institutions and agencies.",
+          "The General Court is composed of two judges from each EU member state.",
+          "Judges and Advocates General are appointed jointly by national governments for a renewable 6-year term.",
+          "The specific mission of the CJEU is to ensure that the law is observed in the interpretation and application of the Treaties of the European Union.",
+          "The CJEU reviews the legality of actions taken by the EU's institutions.",
+          "The CJEU enforces compliance by member states with their obligations under the Treaties.",
+          "The composition and functioning of the CJEU courts are regulated by the Rules of Procedure."
+        ]
+      },
+      {
+        "parentDocId": "official_txt_wikipedia_justice",
+        "id": "e6eee1a5-5e5d-45be-8346-5a25d8147211",
+        "segment": "History\nThe CJEU was originally established in 1951 as a single court called the Court of Justice of the European Coal and Steel Communities. With the Euratom and the European Economic Community in 1957 its name changed to the Court of Justice of the European Communities (CJEC).[14] In 1988 the Court requested the Commission to create a Court of First Instance and in 2004 it added the Civil Service Tribunal.[14] The Civil Service Tribunal are for issues of public employment.\n\nThe Treaty of Lisbon in 2009 renamed the court system to the \"Court of Justice of the European Union\" and renamed the CJEC to the \"Court of Justice\".\n\nThe working language of the Court of Justice of the European Union is French.",
+        "segmentIndex": 3,
+        "summary": "The CJEU's history began in 1951 as the Court of Justice of the European Coal and Steel Communities, changing its name to the Court of Justice of the European Communities (CJEC) in 1957. The structure expanded with the addition of the Court of First Instance (1988) and the Civil Service Tribunal (2004). The court system was officially renamed the \"Court of Justice of the European Union\" by the Treaty of Lisbon in 2009, and its working language is French.",
+        "standaloneFacts": [
+          "The CJEU was originally established in 1951 as the Court of Justice of the European Coal and Steel Communities.",
+          "In 1957, the court's name changed to the Court of Justice of the European Communities (CJEC).",
+          "The Court requested the creation of the Court of First Instance in 1988.",
+          "The Civil Service Tribunal, which handles issues of public employment, was added to the court system in 2004.",
+          "The Treaty of Lisbon in 2009 renamed the overall court system to the \"Court of Justice of the European Union\" and renamed the CJEC to the \"Court of Justice\".",
+          "The working language of the Court of Justice of the European Union is French."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 4,
+        "totalCharacters": 3650,
+        "averageSegmentLength": 911.25,
+        "minSegmentLength": 709,
+        "maxSegmentLength": 1259,
+        "segmentLengths": [
+          930,
+          747,
+          1259,
+          709
+        ],
+        "nLlmCalls": 1,
+        "costs": {
+          "total": 0.0023055,
+          "input": 0.00027299999999999997,
+          "output": 0.0020325
+        },
+        "tokens": {
+          "totalTokens": 4429,
+          "inputTokens": 910,
+          "outputTokens": 813
+        },
+        "processingTimeMs": 14117
+      },
+      "analysis": {
+        "nSegments": 4,
+        "nFactsExtracted": 29,
+        "nLlmCalls": 5,
+        "costs": {
+          "total": 0.0039959,
+          "input": 0.0010809,
+          "output": 0.002915
+        },
+        "tokens": {
+          "totalTokens": 8588,
+          "inputTokens": 3603,
+          "outputTokens": 1166
+        },
+        "processingTimeMs": 8424
+      }
+    }
+  },
+  "llmMetrics": {
+    "processingTimeMs": 22541,
+    "nLlmCalls": 6,
+    "costs": {
+      "total": 0.0063014,
+      "input": 0.0013539000000000001,
+      "output": 0.0049475000000000005
+    },
+    "tokens": {
+      "totalTokens": 13017,
+      "inputTokens": 4513,
+      "outputTokens": 1979
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025"
+    ],
+    "language": "en",
+    "startTime": "2025-11-13T21:48:23.856Z",
+    "endTime": "2025-11-13T21:48:32.280Z"
+  }
+}

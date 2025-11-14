@@ -46,6 +46,18 @@ export type AdminContext = AppContext &
     insertJobResult(
       opts: WithOptionalAuth<Parameters<DataWriter['insertJobResult']>[0]>
     ): ReturnType<DataWriter['insertJobResult']>;
+
+    getDocuments(
+      opts: WithOptionalAuth<Parameters<DataWriter['getDocuments']>[0]>
+    ): ReturnType<DataWriter['getDocuments']>;
+
+    uploadDocument(
+      opts: WithOptionalAuth<Parameters<DataWriter['uploadDocument']>[0]>
+    ): ReturnType<DataWriter['uploadDocument']>;
+
+    deleteDocuments(
+      opts: WithOptionalAuth<Parameters<DataWriter['deleteDocuments']>[0]>
+    ): ReturnType<DataWriter['deleteDocuments']>;
   };
 
 export type WithOptionalAuth<TParams> = Omit<TParams, 'authToken'> & { authToken?: string };

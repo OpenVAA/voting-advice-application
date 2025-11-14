@@ -37,7 +37,7 @@ export async function condenseArguments({
   fetch: Fetch;
   locale: string;
   jobId: string;
-  authToken: string; // Add this parameter
+  authToken: string;
 }): Promise<DataApiActionResult> {
   // Create controller immediately - it will be initialized with pipeline later
   const controller = new PipelineController(jobId);
@@ -118,8 +118,7 @@ export async function condenseArguments({
         question,
         entities,
         options: {
-          llmProvider: llm,
-          llmModel: 'gpt-4o',
+          llmProvider: llm, // Model configured in llmProvider (currently gpt-4o-mini)
           language: locale,
           runId,
           maxCommentsPerGroup: 1000,
@@ -128,7 +127,7 @@ export async function condenseArguments({
         }
       });
 
-      if (!condensationResults.length || condensationResults.every((r) => !r.arguments.length)) {
+      if (!condensationResults.length || condensationResults.every((r) => !r.data.arguments.length)) {
         controller.info(`No condensed arguments found for question: ${question.name}`);
         controller.info('Adding a mock result for testing');
 
@@ -165,9 +164,9 @@ export async function condenseArguments({
       }
 
       const condensedArguments: Array<LocalizedQuestionArguments> = condensationResults.map(
-        ({ condensationType, arguments: args }) => ({
+        ({ condensationType, data }) => ({
           type: condensationType,
-          arguments: args.map(({ id, text }) => ({
+          arguments: data.arguments.map(({ id, text }) => ({
             id,
             content: { [locale]: text }
           }))
