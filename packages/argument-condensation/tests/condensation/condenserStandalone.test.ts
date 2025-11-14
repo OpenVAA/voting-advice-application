@@ -3,7 +3,7 @@ import { Condenser } from '../../src/core/condensation/condenser';
 import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { CONDENSATION_TYPE } from '../../src/core/types';
 import type { Controller } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { LLMProvider } from '@openvaa/llm';
 import type { CondensationRunInput } from '../../src/core/types';
 
 // No-op controller for tests to prevent logging output

@@ -67,7 +67,7 @@
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/filters": "workspace:^",
-    "@openvaa/llm-refactor": "workspace:^",
+    "@openvaa/llm": "workspace:^",
     "@openvaa/matching": "workspace:^",
     "@openvaa/question-info": "workspace:^",
     "@sveltekit-i18n/parser-icu": "^1.0.8",

@@ -11,6 +11,6 @@
   "references": [
     { "path": "../core/tsconfig.json" },
     { "path": "../data/tsconfig.json" },
-    { "path": "../llm-refactor/tsconfig.json" }
+    { "path": "../llm/tsconfig.json" }
   ]
 }

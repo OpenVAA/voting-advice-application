@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES } from '../../src';
 import { handleQuestion } from '../../src/api';
 import type { Controller, HasAnswers } from '@openvaa/core';
 import type { DataRoot } from '@openvaa/data';
-import type { LLMProvider } from '@openvaa/llm-refactor';
+import type { LLMProvider } from '@openvaa/llm';
 
 // No-op controller for tests to prevent logging output
 const noOpLogger: Controller = {

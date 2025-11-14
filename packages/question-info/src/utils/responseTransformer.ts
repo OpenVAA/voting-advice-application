@@ -1,4 +1,4 @@
-import type { LLMObjectGenerationResult } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationResult } from '@openvaa/llm';
 import type { QuestionInfoData, QuestionInfoResult, ResponseWithInfo } from '../types';
 
 /**
