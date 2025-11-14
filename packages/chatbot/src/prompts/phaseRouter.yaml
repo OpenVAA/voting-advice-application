@@ -29,42 +29,47 @@ prompt: |
      - user_intent_extraction
      - intent_resolution
 
+  The user may answer very briefly and expect you to understand. Prefer being cautious and choosing user_intent_extraction if you are not sure.
+
   ## EXAMPLES:
 
   ### Example Set 1: user_intent_extraction phase
   Examples where the user is exploring or unclear about what they want to know:
 
-  **Example 1a: Intent clear but need more info **
+  ####Example 1a: Intent clear but need more info 
+
   User: I want to learn about the elections
-
-  Assistant: I'd be happy to help you learn about the 2024 EU elections! Here are some example topics we can talk about: [3-5 topics that seem most relevant to the user]. Does any of those seem good to you or is there something else you're interested in? 
-
-  <<LATEST_MESSAGE>> User: voting process <</LATEST_MESSAGE>>
-
-  Assistant: Great! I can help explain how the voting process works. Which country are you voting from? 
+  Assistant: I'd be happy to help you learn about the 2024 EU elections! Here are some example topics we can talk about: [3-5 topics that seem most relevant to the user]. Does any of those seem good to you or is there something else you're interested in?
+  User: voting process
 
   Expected Output: { "phase": "user_intent_extraction" }
-  Reasoning: Although the topic is now clear, the assistant needs to know what country the user is from before continuing to resolution. It will help with giving specific information about voting procedures
+  Reasoning: Although the topic is now clear, the assistant needs to know what country the user is from before continuing to resolution. It will help with giving specific information about voting procedures, as they differ from country to country.
 
   ### Example Set 2: intent_resolution phase
-  Examples where the user has clear intent from the start or has arrived at clear intent:
+  Examples where the user has clear intent or interest from the start or has arrived at clear interest(s):
 
-  **Example 2a: Direct specific question**
-  <<LATEST_MESSAGE>> User: How does the EU Parliament voting system work? <</LATEST_MESSAGE>>
+  #### Example 2a: Direct specific question
+  User: How does the EU Parliament voting system work?
 
   Expected Output: { "phase": "intent_resolution" }
   Reasoning: The user is looking for general information about voting systems. The intent of the user does not seem to be related to how they themselves should vote, so we can proceed to next phase without questions. Next correct steps include resolving their request and ending the intent_resolution message with a question about whether they want to talk about a specific country or move to another topic. The pattern is: resolve and re-align. 
 
-  **Example 2b: Specific question after assistant guidance**
+  #### Example 2b: Specific question after assistant guidance
   User: Tell me about the elections
-
   Assistant: I can help with the 2024 EU elections! Are you interested in learning about the voting process, the European Parliament's role, or specific policy issues and different party positions?
-
-  <<LATEST_MESSAGE>> User: role and election topics <</LATEST_MESSAGE>>
+  User: role and election topics
 
   Expected Output: { "phase": "intent_resolution" }
   Reasoning: Clear commitment with specific question: EU Parliament's role and relevant election topics and different (party) positions on those topics.
 
+
+  #### Example 2c: Intent clear about a very broad topic
+  User: what is the eu? 
+  Expected Output: { "phase": "intent_resolution" }
+  Reasoning: Though the question is very broad, it shows a specific direction: we know now that we want to give the user an explanation about the EU. It that response's end, we can give the user suggestions on how to continue honing in on details. But at this point, it is better that we give them something to work with rather than directly asking more questions. 
+
+
+  ### 
   Now analyze the conversation and output the appropriate phase.
 
   ## CONVERSATION HISTORY:

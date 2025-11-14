@@ -38,3 +38,15 @@ tests:
     assert:
       - type: javascript
         value: output.includes("720") === true # 2024 EU elections
+  - description: "[PROMPTING] expect to try to answer ambiguous leadership question"
+    vars:
+      messages:
+        - role: user
+          content: "who is the leader of the eu?"
+    assert:
+      - type: javascript
+        value: output.includes("leader") === true
+      - type: javascript
+        value: context.providerResponse?.metadata?.categoryResult.category === 'appropriate'
+      - type: llm-rubric
+        value: should NOT reject the question as not possible to answer, but rather explain the nuance behind it

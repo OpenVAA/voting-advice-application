@@ -15,19 +15,18 @@
 export function getOnboardingMessage(locale: string = 'en'): string { 
   // Currently only supports English, but structure allows for i18n expansion. TODO: i18n 
   if (locale === 'en') {
-    return `Hello! I'm your EU 2024 election assistant.
+    return `Hello! I'm your EU 2024 election assistant. I'm still being developed, so I may not be able to answer all your questions.
 
-Some things I can help you with:
-• Election procedures like how to vote and when
+You can ask me about:
 • Different political topics like immigration, climate change, etc.
-• What the EU Parliament is and why these elections are important
-• Party positions on election topics
+• Different branches of the EU and how they work together
+• Why these elections matter
+• General questions about the EU and its history
 
-Some things I can't do:
-• Find information about election candidates
-• Provide specific voting recommendations
-• Answer off-topic questions unrelated to EU elections
-• Express political opinions or predictions
+I unfortunately can't help you with:
+• Information about specific candidates
+• Specific voting recommendations
+• Questions unrelated to EU elections
 
 What would you like to learn about?`; 
   }

@@ -53,7 +53,7 @@ export async function simulateStreamingMessage(
   onChunk: (char: string) => void,
   config: StreamingConfig = {}
 ): Promise<void> {
-  const { charDelayMs = 12, randomizeDelay = true } = config;
+  const { charDelayMs = 5, randomizeDelay = true } = config;
 
   for (const char of text) {
     onChunk(char);

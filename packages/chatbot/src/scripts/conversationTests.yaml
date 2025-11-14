@@ -31,3 +31,17 @@ tests:
       # Fast assertions - deterministic checks
       - type: javascript
         value: output.length > 100
+
+  - description: 'TODO'
+    vars:
+      messages: [
+        {
+          role: 'user',
+          content: "TODO"
+        },
+      ]
+
+    assert:
+      # Fast assertions - deterministic checks
+      - type: javascript
+        value: output.length > 100

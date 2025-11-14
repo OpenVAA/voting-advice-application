@@ -1,14 +1,14 @@
 import { ChatbotController, updateConversation } from '@openvaa/chatbot/server';
 import { getChatbotConfiguration } from '@openvaa/chatbot/server';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
-import { COHERE_API_KEY } from './apiKey';
+import { constants } from '$lib/server/constants';
 import type { ChatbotResponse, ConversationState } from '@openvaa/chatbot/server';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
-const { vectorStore, queryRoutingProvider, queryReformulationProvider, phaseRouterProvider } =
-  await getChatbotConfiguration();
+const { vectorStore, queryRoutingProvider, queryReformulationProvider, phaseRouterProvider, chatProvider } =
+  await getChatbotConfiguration(constants.LLM_OPENAI_API_KEY);
 
 // API endpoint for chat functionality with RAG enrichment
 // TODO: type the params
@@ -47,9 +47,10 @@ export async function POST({ request, params }: { request: Request; params: any 
     queryRoutingProvider: queryRoutingProvider,
     queryReformulationProvider: queryReformulationProvider,
     phaseRouterProvider: phaseRouterProvider,
+    chatProvider,
     rerankConfig: {
       enabled: true,
-      apiKey: COHERE_API_KEY,
+      apiKey: constants.COHERE_API_KEY as string, // TODO: check if it exists!
       model: 'rerank-v3.5'
     },
     nResultsTarget: 5

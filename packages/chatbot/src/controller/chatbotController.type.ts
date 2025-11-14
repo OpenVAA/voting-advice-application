@@ -4,7 +4,7 @@ import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@o
 import type { ModelMessage } from 'ai';
 
 /** Message moderation and next step decision. Route either to a canned response or generation. */
-export type QueryCategory = 'appropriate' | 'inappropriate' | 'not_possible';
+export type QueryCategory = 'conversational' |'appropriate' | 'inappropriate' | 'not_possible';
 
 /** Query routing result. Contains the categorization and the costs and duration of the routing. */
 export type QueryRoutingResult = {
@@ -19,13 +19,13 @@ export type RAGOptions = {
 }
 
 /** Possible phases of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
-export type ConversationPhase = 'intro_to_chatbot_use' | 'user_intent_extraction' | 'intent_resolution';
+export type ConversationPhase = 'user_intent_extraction' | 'intent_resolution';
 
 /** State of the conversation. Updates after each message. This state is required for an intelligent but efficient
  * chatbot. It is used to infer what the chatbot should know and be tasked to do depending on the conversation
  * phase and history.
- */
-export interface ConversationState {
+ */ // TODO: separate chatbot input and output states, there is dead weight being passed around
+export interface ConversationState { 
   sessionId: string;
   messages: Array<ModelMessage>;
   /** Phase of the conversation. Used for retrieval gating and guiding the chatbot's behaviour */
@@ -73,7 +73,7 @@ export interface HandleQueryInput {
   nResultsTarget?: number;
 
   /** LLM provider for chat responses (optional - ChatEngine has a default) */
-  chatProvider?: LLMProvider;
+  chatProvider: LLMProvider;
 }
 
 /**

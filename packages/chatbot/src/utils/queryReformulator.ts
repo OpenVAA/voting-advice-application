@@ -81,7 +81,8 @@ export async function reformulateQuery(
       }
     ],
     temperature: 1, // Some creativity for diverse reformulations
-    modelConfig: { primary: 'gpt-4o-mini' } // Fast, cheap model
+    modelConfig: { primary: 'gpt-4o-mini' }, // Fast, cheap model,
+    validationRetries: 2
   });
 
   return result.object.topics;

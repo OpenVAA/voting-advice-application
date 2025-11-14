@@ -59,7 +59,6 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
     minSegmentLength = 500,
     maxSegmentLength = 1000,
     charsPerLLMCall = 10000,
-    validateTextPreservation = false // TODO: implement validation and set default to true. It's just such a nested if-else hell.
   } = options;
   // Create charsPerLLMCall character parts of the input text to avoid context window issues
   const inputTextParts: Array<string> = [];

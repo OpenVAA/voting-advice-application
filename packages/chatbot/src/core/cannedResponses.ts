@@ -5,8 +5,8 @@ import type { QueryCategory } from '../controller/chatbotController.type';
  * Canned responses for canned response categories
  */
 export const CANNED_RESPONSES: Record<string, string> = {
-  inappropriate: "Our system has flagged your message as inappropriate. I'm here to help with questions about the 2024 EU elections. Please keep our conversation constructive and on-topic or your conversation will be terminated.",
-  not_possible: "I'm sorry, I can't help with that specifically. Just to remind you, here is a list of topics I can help with: {{topics}}",
+  inappropriate: "Our system has flagged your message as inappropriate. I'm here to help with questions about the 2024 EU elections. Please keep our conversation constructive and on-topic or your usage rights to this chatbot will be removed. If you have any questions related to the EU, feel free to ask!",
+  not_possible: 'Our system has flagged your message as out of my knowledge capabilities. This may be a mistake. You can try asking the question again with more specific details. Just to remind you, here is a list of topics I can help with: \n\n{{topics}}', // TODO: instead of listing these here, we should have a centralized place for users to navigate to
 };
 
 /**

@@ -10,7 +10,7 @@ export type ChatbotAPIInput = {
     locale: string;
     // userRole: 'voter'; maybe we can expect that we are talking to a voter?
   };
+  chatProvider: LLMProvider; // LLM provider for dependency injection
   nSteps?: number; // number of different message types (tool-call, text, etc.) before halting
-  llmProvider?: LLMProvider; // Optional LLM provider for dependency injection
   conversationPhase?: ConversationPhase; // Optional conversation phase for phase-specific system prompts
 };

@@ -132,7 +132,7 @@ export class ChatbotController {
    * @returns True if canned response should be returned
    */
   private static shouldReturnCanned(category: QueryCategory): boolean {
-    return category !== 'appropriate'; 
+    return category !== 'appropriate' && category !== 'conversational'; 
   }
 
   /**
@@ -314,7 +314,7 @@ export class ChatbotController {
         locale: input.locale
       },
       nSteps: 5,
-      llmProvider: input.chatProvider,
+      chatProvider: input.chatProvider,
       conversationPhase: newPhase
     });
 

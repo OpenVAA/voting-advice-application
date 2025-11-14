@@ -1,11 +1,9 @@
-import { LLMProvider } from '@openvaa/llm-refactor';
 import { setPromptVars } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { OPENAI_API_KEY } from '../apiKey';
 import { CHATBOT_SKILLS, FALLBACK_TOPICS } from '../defaultConfig/chatbotSkills';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
@@ -105,14 +103,8 @@ ${baseReminder}`;
       ? await this.getSystemPromptForPhase(input.conversationPhase)
       : await this.getDefaultSystemPrompt();
 
-    // Use provided llmProvider or create one internally
-    const provider =
-      input.llmProvider ??
-      new LLMProvider({
-        provider: 'openai',
-        apiKey: OPENAI_API_KEY,
-        modelConfig: { primary: 'gpt-4.1-mini' }
-      });
+    // Use provided LLM provider
+    const provider = input.chatProvider;
 
     const result = provider.streamText({
       system: systemMessage,

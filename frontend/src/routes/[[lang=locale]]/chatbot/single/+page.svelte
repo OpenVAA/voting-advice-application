@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { createOnboardingStream } from '$lib/chatbot';
-  import { type ConversationState, type QueryRoutingResult, type QueryCategory } from '@openvaa/chatbot';
+  import { type ConversationState } from '@openvaa/chatbot';
   import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 
   interface UIMessage {
@@ -73,6 +73,7 @@
   let loading = false;
 
   // Conversation state for phase routing
+  // TODO: be smarted about passing around the state.
   let conversationState: ConversationState = {
     sessionId: crypto.randomUUID(),
     phase: 'user_intent_extraction',
@@ -501,14 +502,14 @@
         </div>
       {:else}
         <div class="space-y-6">
-          {#each ragContexts as context, idx}
+          {#each ragContexts.slice().reverse() as context, idx}
             <div class="rounded border border-gray-300 bg-white p-4 shadow-sm">
               <div class="mb-3 border-b border-gray-200 pb-2">
                 <div class="text-xs text-gray-500">
                   Query #{ragContexts.length - idx}
                 </div>
-                {#if reformulatedQueries[idx]}
-                  <div class="font-semibold mt-1 text-blue-700">{reformulatedQueries[idx]}</div>
+                {#if reformulatedQueries[ragContexts.length - 1 - idx]}
+                  <div class="font-semibold mt-1 text-blue-700">{reformulatedQueries[ragContexts.length - 1 - idx]}</div>
                 {:else}
                   <div class="italic mt-1 text-sm text-gray-500">Multi-topic query</div>
                 {/if}

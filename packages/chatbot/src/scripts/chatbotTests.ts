@@ -24,7 +24,10 @@ import type { ModelMessage } from 'ai';
 import type { ProviderResponse } from 'promptfoo';
 
 // Load environment variables from project root
-config({ path: join(__dirname, '..', '..', '..', '..', '.env') });
+const path = join(__dirname, '..', '..', '..', '..', '.env');
+config({ path: path });
+const keyExists = process.env.OPENAI_API_KEY ? true : false;
+console.info('[CHATBOT TESTS]: OPENAI_API_KEY' + (keyExists ? ' was loaded successfully' : ' does not exist in ' + path));
 
 async function runChatbotEvaluation() {
   // Determine which test files to run
@@ -41,7 +44,7 @@ async function runChatbotEvaluation() {
   console.info(`Running tests from ${testFilenames.length} file(s): ${testFilenames.join(', ')}\n`);
 
   // Initialize chatbot configuration once (shared across all test files)
-  const { vectorStore, queryRoutingProvider, phaseRouterProvider } = await getChatbotConfiguration();
+  const { vectorStore, queryRoutingProvider, phaseRouterProvider, chatProvider, queryReformulationProvider } = await getChatbotConfiguration(process.env.OPENAI_API_KEY || '');
 
   // Track aggregate statistics
   let totalTests = 0;
@@ -105,7 +108,7 @@ async function runChatbotEvaluation() {
             // Get full message history from context
             const messages = (context?.vars?.messages as Array<ModelMessage>) || [{ role: 'user', content: prompt }];
 
-            // Call the chatbot controller
+            // Call the chatbot controller. TODO: get state from redis  
             const response = await ChatbotController.handleQuery({
               locale: 'en',
               vectorStore,
@@ -114,12 +117,20 @@ async function runChatbotEvaluation() {
               state: {
                 sessionId: crypto.randomUUID(),
                 messages,
-                phase: 'intent_resolution', // Use intent_resolution to enable RAG
+                phase: 'intent_resolution', // Does not matter. Will be overridden. 
                 workingMemory: [],
                 forgottenMessages: [],
                 lossyHistorySummary: '',
-                locale: 'en'
-              }
+                locale: 'en',
+                reformulatedQuery: null,
+                queryCategory: {
+                  category: 'appropriate',
+                  costs: { input: 0, output: 0, total: 0 },
+                  durationMs: 0
+                }
+              },
+              queryReformulationProvider,
+              chatProvider
             });
 
             // Consume the stream to get full text output

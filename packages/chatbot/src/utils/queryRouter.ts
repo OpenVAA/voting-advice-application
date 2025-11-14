@@ -28,7 +28,7 @@ export async function routeQuery({
   }
 
   const ActionSchema = z.object({
-    action: z.enum(['appropriate', 'inappropriate', 'not_possible']),
+    action: z.enum(['conversational', 'appropriate', 'inappropriate', 'not_possible']), // TODO: make dynamic from type QueryCategory
     rephrased: z.string().nullable().optional()
   });
 
@@ -43,7 +43,7 @@ export async function routeQuery({
   const filledPrompt = setPromptVars({
     promptText: promptTemplate,
     variables: {
-      possibleActions: 'appropriate | inappropriate | not_possible',
+      possibleActions: 'conversational | appropriate | inappropriate | not_possible',
       chatbotSkills: chatbotSkills.join('\n- '),
       fallbackTopics: fallbackTopics.join('\n- '),
       outOfScopeTopics: outOfScopeTopics.join('\n- '),
@@ -57,7 +57,7 @@ export async function routeQuery({
     schema: ActionSchema,
     temperature: 0,
     maxRetries: 1,
-    validationRetries: 1
+    validationRetries: 2
   });
 
   return {
