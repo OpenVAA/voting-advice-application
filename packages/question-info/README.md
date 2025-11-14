@@ -52,10 +52,10 @@ const results = await generateQuestionInfo({
   }
 });
 
-console.log(results[0].data.terms); // Generated term definitions
-console.log(results[0].data.infoSections); // Generated info sections
-console.log(results[0].metrics.cost); // Automatic cost tracking
-console.log(results[0].metrics.tokensUsed); // Token usage statistics
+console.info(results[0].data.terms); // Generated term definitions
+console.info(results[0].data.infoSections); // Generated info sections
+console.info(results[0].metrics.cost); // Automatic cost tracking
+console.info(results[0].metrics.tokensUsed); // Token usage statistics
 ```
 
 ### Generate Only Terms
