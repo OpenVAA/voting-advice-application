@@ -13,7 +13,7 @@ import type {
   QuestionTypeSettings
 } from '@openvaa/app-shared';
 import type { Serializable } from '@openvaa/core';
-import type { GenerationMetrics } from '@openvaa/llm';
+import type { LLMPipelineMetrics } from '@openvaa/llm';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
 
@@ -313,5 +313,5 @@ export type StrapiAdminJobData = StrapiObject<{
   input: Serializable;
   output: Serializable;
   messages: Array<JobMessage> | null;
-  metadata: GenerationMetrics | null;
+  metadata: LLMPipelineMetrics | null;
 }>;
