@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
+import { getFallbackModel } from '../fallbackModels';
 import { calculateLLMCost, getModelPricing } from '../utils/costCalculation';
 import type { Controller } from '@openvaa/core';
 import type { LanguageModelUsage as TokenUsage, Provider, ToolSet } from 'ai';
@@ -180,9 +181,12 @@ export class LLMProvider {
    */ 
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
+    const model =
+      options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
     const result = streamText({
-      model: this.provider.languageModel(options.modelConfig?.primary ?? ''),
+      system: options.system,
+      model: this.provider.languageModel(model),
       messages: options.messages ?? [],
       temperature: options.temperature,
       tools: options.tools,
@@ -190,14 +194,14 @@ export class LLMProvider {
     });
 
     // Calculate costs asynchronously without blocking the return.
-    const costs = result.usage.then((usage) => this.calculateCosts(options.modelConfig?.primary ?? '', usage));
+    const costs = result.usage.then((usage) => this.calculateCosts(model, usage));
     costs.then((costs) => (this.cumulativeCosts += costs.total));
 
     const enhancedResult = Object.assign(result, {
       latencyMs: performance.now() - startTime,
       attempts: 1,
       costs,
-      fallbackUsed: false
+      fallbackUsed: false // TODO: add fallback used logic
     });
 
     return enhancedResult as unknown as LLMStreamResult<TOOLS>; // it is this type, even if TS doesn't believe
