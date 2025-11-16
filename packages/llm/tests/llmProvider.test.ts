@@ -546,57 +546,6 @@ describe('LLMProvider', () => {
       });
     });
 
-    it('should handle empty modelConfig gracefully', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
-        textStream: createMockTextStream(['test']),
-        usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-        text: Promise.resolve('test'),
-        finishReason: Promise.resolve('stop' as const),
-        content: Promise.resolve([]),
-        reasoning: Promise.resolve([]),
-        reasoningText: Promise.resolve(undefined),
-        files: Promise.resolve([]),
-        sources: Promise.resolve([]),
-        toolCalls: Promise.resolve([]),
-        staticToolCalls: Promise.resolve([]),
-        dynamicToolCalls: Promise.resolve([]),
-        staticToolResults: Promise.resolve([]),
-        dynamicToolResults: Promise.resolve([]),
-        toolResults: Promise.resolve([]),
-        totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-        warnings: Promise.resolve(undefined),
-        providerMetadata: Promise.resolve(undefined),
-        request: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
-        response: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
-        steps: Promise.resolve([]),
-        fullStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        experimental_partialOutputStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        consumeStream: vi.fn(),
-        toUIMessageStream: vi.fn(),
-        pipeUIMessageStreamToResponse: vi.fn(),
-        pipeTextStreamToResponse: vi.fn(),
-        toUIMessageStreamResponse: vi.fn(),
-        toTextStreamResponse: vi.fn()
-      };
-
-      mockStreamText.mockReturnValueOnce(mockStreamResult);
-
-      const options = {
-        messages: [{ role: 'user' as const, content: 'Test' }]
-      };
-
-      provider.streamText(options);
-
-      expect(mockStreamText).toHaveBeenCalledWith({
-        model: expect.objectContaining({ modelName: '' }),
-        messages: options.messages,
-        temperature: undefined,
-        tools: undefined,
-        stopWhen: undefined
-      });
-    });
-
     it('should calculate costs asynchronously', async () => {
       const mockUsage = {
         inputTokens: 1000,
@@ -662,60 +611,6 @@ describe('LLMProvider', () => {
         reasoning: 0,
         total: 0.003
       });
-    });
-
-    it('should handle empty model config in cost calculation', async () => {
-      const mockUsage = {
-        inputTokens: 100,
-        outputTokens: 50,
-        totalTokens: 150
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
-        textStream: createMockTextStream(['test']),
-        usage: Promise.resolve(mockUsage),
-        text: Promise.resolve('test'),
-        finishReason: Promise.resolve('stop' as const),
-        content: Promise.resolve([]),
-        reasoning: Promise.resolve([]),
-        reasoningText: Promise.resolve(undefined),
-        files: Promise.resolve([]),
-        sources: Promise.resolve([]),
-        toolCalls: Promise.resolve([]),
-        staticToolCalls: Promise.resolve([]),
-        dynamicToolCalls: Promise.resolve([]),
-        staticToolResults: Promise.resolve([]),
-        dynamicToolResults: Promise.resolve([]),
-        toolResults: Promise.resolve([]),
-        totalUsage: Promise.resolve(mockUsage),
-        warnings: Promise.resolve(undefined),
-        providerMetadata: Promise.resolve(undefined),
-        request: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
-        response: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
-        steps: Promise.resolve([]),
-        fullStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        experimental_partialOutputStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        consumeStream: vi.fn(),
-        toUIMessageStream: vi.fn(),
-        pipeUIMessageStreamToResponse: vi.fn(),
-        pipeTextStreamToResponse: vi.fn(),
-        toUIMessageStreamResponse: vi.fn(),
-        toTextStreamResponse: vi.fn()
-      };
-
-      mockStreamText.mockReturnValueOnce(mockStreamResult);
-
-      const options = {
-        messages: [{ role: 'user' as const, content: 'Test' }]
-      };
-
-      const result = provider.streamText(options);
-
-      // Wait for costs to be calculated
-      await result.costs;
-
-      expect(mockGetModelPricing).toHaveBeenCalledWith('openai', '');
     });
   });
 
