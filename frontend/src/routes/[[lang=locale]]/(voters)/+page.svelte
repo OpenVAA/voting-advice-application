@@ -46,7 +46,7 @@ The frontpage of the app for voters.
     })}
   </p>
 
-  <a href={$getRoute('Info')} class="btn btn-ghost w-full max-w-md">{$t('info.title')}</a>
+  <!-- <a href={$getRoute('Info')} class="btn btn-ghost w-full max-w-md">{$t('info.title')}</a> -->
   <a href={$getRoute('About')} class="btn btn-ghost w-full max-w-md">{$t('about.title')}</a>
 
   {#if $appSettings.survey?.showIn?.includes('frontpage')}

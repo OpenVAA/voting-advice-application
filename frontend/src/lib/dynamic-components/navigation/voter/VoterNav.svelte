@@ -76,11 +76,11 @@ A template part that outputs the navigation menu for the Voter App for use in `L
         icon="election"
         text={$t('elections.title')} />
     {/if}
-    <NavItem
+    <!-- <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Questions')}
       icon="opinion"
-      text={$t('questions.title')} />
+      text={$t('questions.title')} /> -->
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Results')}
@@ -91,7 +91,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
+    <!-- <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} /> -->
     <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
     {#if $appSettings.entities.showAllNominations}
       <NavItem href={$getRoute('Nominations')} icon="search" text={$t('dynamic.nominations.title')} />
