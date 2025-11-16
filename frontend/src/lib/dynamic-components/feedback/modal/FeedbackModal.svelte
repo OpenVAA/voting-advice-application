@@ -76,6 +76,7 @@ Show a modal dialog for sending feedback.
 <Modal
   title={title ?? $t('feedback.title')}
   boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
+  closeOnBackdropClick={false}
   bind:openModal
   bind:closeModal
   {...$$restProps}>
