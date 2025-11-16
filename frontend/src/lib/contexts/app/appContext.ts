@@ -4,7 +4,6 @@ import { getContext, hasContext, setContext } from 'svelte';
 import { get, type Writable, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
-import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings } from '$lib/utils/settings';
 import { getRoute } from './getRoute';
@@ -96,7 +95,7 @@ export function initAppContext(): AppContext {
 
   const popupQueue = popupStore();
 
-  // TODO: Refactor when Cand App is refactored
+  // TODO[Svelte 5]: Refactor if needed
   const openFeedbackModal: Writable<() => void | undefined> = writable();
 
   ////////////////////////////////////////////////////////////////////
@@ -119,7 +118,10 @@ export function initAppContext(): AppContext {
   function startFeedbackPopupCountdown(delay = 3 * 60): void {
     if (feedbackTimeout) return;
     feedbackTimeout = setTimeout(() => {
-      if (get(userPreferences).feedback?.status !== 'received') popupQueue.push({ component: FeedbackPopup });
+      if (get(userPreferences).feedback?.status !== 'received') {
+        get(openFeedbackModal)?.();
+        // popupQueue.push({ component: FeedbackPopup })
+      }
     }, delay * 1000);
   }
 
