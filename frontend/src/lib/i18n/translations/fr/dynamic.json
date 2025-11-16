@@ -68,6 +68,7 @@
       "details": "Les examiner en détail",
       "elections": "Sélectionner une élection",
       "opinions": "Saisir vos opinions",
+      "questionWeights": "YVous pouvez également indiquer l'importance que vous accordez à chaque sujet",
       "results": "Voir les {candidatePlural} et {partyPlural} qui vous correspondent le mieux"
     },
     "title": "Commençons !"

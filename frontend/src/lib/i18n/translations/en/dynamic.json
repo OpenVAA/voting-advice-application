@@ -68,6 +68,7 @@
       "details": "Study them in detail",
       "elections": "Select an election",
       "opinions": "Enter your opinions",
+      "questionWeights": "You can also indicate how important each issue is to you",
       "results": "See the {candidatePlural} and {partyPlural} that best agree with you"
     },
     "title": "Let’s start!"

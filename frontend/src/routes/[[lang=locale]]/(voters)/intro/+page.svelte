@@ -39,6 +39,9 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
       <li>{$t('dynamic.intro.list.elections')}</li>
     {/if}
     <li>{$t('dynamic.intro.list.opinions')}</li>
+    {#if $appSettings.matching.questionWeights && $appSettings.matching.questionWeights !== 'none'}
+      <li>{$t('dynamic.intro.list.questionWeights')}</li>
+    {/if}
     <li>{$t('dynamic.intro.list.results')}</li>
     <li>{$t('dynamic.intro.list.details')}</li>
   </ol>

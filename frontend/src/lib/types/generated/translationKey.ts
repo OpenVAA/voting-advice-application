@@ -332,6 +332,7 @@ export type TranslationKey =
   | 'dynamic.intro.list.details'
   | 'dynamic.intro.list.elections'
   | 'dynamic.intro.list.opinions'
+  | 'dynamic.intro.list.questionWeights'
   | 'dynamic.intro.list.results'
   | 'dynamic.intro.title'
   | 'dynamic.maintenance.content'
