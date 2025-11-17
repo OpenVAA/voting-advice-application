@@ -7,6 +7,8 @@ import type { LLMProvider } from '../llm-providers/llmProvider';
 export interface CommonLLMParams {
   runId: string;
   llmProvider: LLMProvider;
+  /** Output language. Try to use a prompt in this language if possible. */
+  language: string;
   /** Optional controller for tracking progress */
   controller?: Controller;
 }
