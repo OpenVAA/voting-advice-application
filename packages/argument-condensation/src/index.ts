@@ -1,3 +1,6 @@
+// Register prompts (must be first import to ensure registration happens)
+import './prompts';
+
 // Export main functionality
 export * from './api'; // API
 export { Condenser } from './core/condensation/condenser'; // Main condensation engine class
