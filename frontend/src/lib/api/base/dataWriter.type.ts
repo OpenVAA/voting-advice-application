@@ -7,7 +7,7 @@ import type {
 } from '@openvaa/app-shared';
 import type { Id, Serializable } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
-import type { GenerationMetrics } from '@openvaa/llm';
+import type { LLMPipelineMetrics } from '@openvaa/llm';
 import type { AdminFeature } from '$lib/admin/features';
 import type {
   ActiveJobQueryParams,
@@ -316,13 +316,13 @@ export type AdminJobData = {
    * Author email
    */
   author: string;
-  status: 'completed' | 'failed';
+  status: 'completed' | 'failed' | 'aborted';
   startTime?: string;
   endTime?: string;
   input?: Serializable;
   output?: Serializable;
   messages?: Array<JobMessage>;
-  metadata?: GenerationMetrics;
+  metadata?: LLMPipelineMetrics;
 };
 
 ////////////////////////////////////////////////////////////////////
