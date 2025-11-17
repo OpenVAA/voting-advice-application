@@ -35,7 +35,6 @@ export type PromptConfig = {
  * };
  */
 export type CondensationAPIOptions = CommonLLMParams & {
-  language: string;
   maxCommentsPerGroup: number;
   createVisualizationData?: boolean;
   invertProsAndCons?: boolean;
