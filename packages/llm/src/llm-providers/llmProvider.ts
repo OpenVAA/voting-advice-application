@@ -17,6 +17,7 @@ import type {
 // Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
 // TODO: implement fallback model usage
 // TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
+// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
