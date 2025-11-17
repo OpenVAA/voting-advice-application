@@ -51,6 +51,7 @@ export function setPromptVars({
     if (strict) throw new Error(remainingErrorMsg);
     controller.warning(`setPromptVars: ${remainingErrorMsg}`);
   }
+  // TODO: remove the {{variable}} placeholders from the output. It's smarter than leaving placeholders hanging.
   // If not strict, the output will have the missing variables as {{variable}} placeholders
   return result;
 }
