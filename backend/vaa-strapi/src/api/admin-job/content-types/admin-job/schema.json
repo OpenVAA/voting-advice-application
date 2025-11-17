@@ -29,7 +29,8 @@
       "type": "enumeration",
       "enum": [
         "completed",
-        "failed"
+        "failed",
+        "aborted"
       ]
     },
     "startTime": {
