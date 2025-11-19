@@ -4,16 +4,23 @@ devNote: this prompt is incomplete - we need to improve it.
 
 devNote2: rename to "examples" and only make examples configurable through source code (here)
 
-params:
-  question: string
-  generalInstructions: string
-  termDefInstructions: string
-  questionContext: string
-  customInstructions: string
-  neutralityRequirements: string
-  examples: string
+promptId: generateTerms
 
-prompt: |
+params:
+  required:
+    - question
+    - generalInstructions
+    - termDefInstructions
+    - questionContext
+    - customInstructions
+    - neutralityRequirements
+    - examples
+  optional:
+    - localizationInstructions
+
+promptText: |
+  {{localizationInstructions}}
+
   {{generalInstructions}}
 
   ## Task: Identify terms that voters might need explained, such as:

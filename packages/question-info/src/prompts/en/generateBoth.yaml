@@ -4,18 +4,25 @@ devNote: this prompt is incomplete - we need to improve it.
   or, if we should stick to hard-coded sections, we should at least give more examples of what kind of sections are good in this context.
   + general prompt engineering improvements
 
-params:
-  question: string
-  generalInstructions: string
-  infoSectionInstructions: string
-  sectionTopics: array
-  termDefInstructions: string
-  questionContext: string
-  customInstructions: string
-  neutralityRequirements: string
-  examples: string 
+promptId: generateBoth
 
-prompt: |
+params:
+  required:
+    - question
+    - generalInstructions
+    - infoSectionInstructions
+    - sectionTopics
+    - termDefInstructions
+    - questionContext
+    - customInstructions
+    - neutralityRequirements
+    - examples
+  optional:
+    - localizationInstructions
+
+promptText: |
+  {{localizationInstructions}}
+
   {{generalInstructions}}
 
   ## Task 1: Info Section Generation:

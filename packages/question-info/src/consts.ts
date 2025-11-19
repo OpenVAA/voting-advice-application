@@ -19,11 +19,3 @@ export const FILENAMES_FOR_EXAMPLES = ['transactionFees'];
  * ```
  */
 export const DEFAULT_SECTION_TOPICS = ['Background', 'Current situation'];
-
-/**
- * Supported languages for question info generation
- * Currently only English is supported
- *
- * @todo Add language support for other languages
- */
-export const SUPPORTED_QINFO_LANG = ['en'];

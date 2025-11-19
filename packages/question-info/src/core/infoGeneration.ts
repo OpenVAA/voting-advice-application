@@ -1,13 +1,13 @@
+import { loadPrompt } from '@openvaa/llm';
 import { DEFAULT_SECTION_TOPICS } from '../consts';
 import {
-  chooseQInfoSchema,
-  determinePromptKey,
-  embedPromptVars,
-  loadAllExamples,
-  loadInstructions,
-  loadPrompt,
-  transformResponse
-} from '../utils';
+  EXAMPLES,
+  GENERAL_INSTRUCTIONS,
+  INFO_SECTIONS_INSTRUCTIONS,
+  NEUTRALITY_REQUIREMENTS,
+  TERM_DEF_INSTRUCTIONS
+} from '../prompts/en/consts';
+import { chooseQInfoSchema, determinePromptKey, transformResponse } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { z } from 'zod';
 import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
@@ -44,23 +44,23 @@ export async function generateInfo({
     // Determine which prompt to use based on which operations we want to run
     const promptKey = determinePromptKey({ operations: options.operations });
 
-    // Load prompt template, instructions and examples
-    const promptTemplate = await loadPrompt({ promptFileName: promptKey, language: options.language });
-    const instructions = await loadInstructions({ language: options.language });
-    const examples = (await loadAllExamples({ language: options.language })).slice(0, 3); // over 3 examples is almost never useful
-
-    // Format examples with their questions
-    const formattedExamples = examples
+    // Format examples with their questions (using up to 3 examples)
+    const examplesSlice = EXAMPLES.slice(0, 3);
+    const formattedExamples = examplesSlice
       .map((example) => {
         let exampleOutput = '';
 
         if (promptKey === 'generateTerms') {
-          exampleOutput = example.termExample;
+          exampleOutput = JSON.stringify({ terms: example.terms }, null, 2);
         } else if (promptKey === 'generateInfoSections') {
-          exampleOutput = example.infoSectionExample;
+          exampleOutput = JSON.stringify({ infoSections: example.infoSections }, null, 2);
         } else {
           // generateBoth
-          exampleOutput = `{${example.termExample}, ${example.infoSectionExample}}`;
+          exampleOutput = JSON.stringify(
+            { infoSections: example.infoSections, terms: example.terms },
+            null,
+            2
+          );
         }
 
         return `### Question: ${example.question}\nOutput: ${exampleOutput}`;
@@ -73,42 +73,49 @@ export async function generateInfo({
     }) as z.ZodSchema<ResponseWithInfo>;
 
     // Prepare prompt inputs for parallel generation
-    const requests = questions.map((question) => {
-      // Build variables object based on the operation type. Start with tasks' shared variables
-      const variables: Record<string, unknown> = {
-        question: question.name,
-        generalInstructions: instructions.generalInstructions,
-        neutralityRequirements: instructions.neutralityRequirements,
-        questionContext: options.questionContext || '',
-        customInstructions: options.customInstructions || '',
-        examples: formattedExamples
-      };
+    const requests = await Promise.all(
+      questions.map(async (question) => {
+        // Build variables object based on the operation type. Start with tasks' shared variables
+        const variables: Record<string, unknown> = {
+          question: question.name,
+          generalInstructions: GENERAL_INSTRUCTIONS,
+          neutralityRequirements: NEUTRALITY_REQUIREMENTS,
+          questionContext: options.questionContext || '',
+          customInstructions: options.customInstructions || '',
+          examples: formattedExamples
+        };
 
-      // Add operation-specific variables
-      if (promptKey === 'generateTerms' || promptKey === 'generateBoth') {
-        variables.termDefInstructions = instructions.termDefInstructions;
-      }
-      if (promptKey === 'generateInfoSections' || promptKey === 'generateBoth') {
-        variables.infoSectionInstructions = instructions.infoSectionsInstructions;
-        variables.sectionTopics = options.sectionTopics || DEFAULT_SECTION_TOPICS;
-      }
+        // Add operation-specific variables
+        if (promptKey === 'generateTerms' || promptKey === 'generateBoth') {
+          variables.termDefInstructions = TERM_DEF_INSTRUCTIONS;
+        }
+        if (promptKey === 'generateInfoSections' || promptKey === 'generateBoth') {
+          variables.infoSectionInstructions = INFO_SECTIONS_INSTRUCTIONS;
+          variables.sectionTopics = options.sectionTopics || DEFAULT_SECTION_TOPICS;
+        }
 
-      return {
-        schema: responseSchema,
-        messages: [
-          {
-            role: 'system' as const,
-            content: embedPromptVars({
-              promptText: promptTemplate.prompt,
-              variables,
-              controller: options.controller
-            })
-          }
-        ],
-        temperature: 0,
-        validationRetries: 3
-      };
-    });
+        // Load and compose the prompt using centralized registry
+        const { promptText } = await loadPrompt({
+          promptId: promptKey,
+          language: options.language,
+          variables,
+          throwIfVarsMissing: true,
+          fallbackLocalization: true
+        });
+
+        return {
+          schema: responseSchema,
+          messages: [
+            {
+              role: 'system' as const,
+              content: promptText
+            }
+          ],
+          temperature: 0,
+          validationRetries: 3
+        };
+      })
+    );
 
     // Generate responses in parallel with validation
     const responses = await options.llmProvider.generateObjectParallel<ResponseWithInfo>({
