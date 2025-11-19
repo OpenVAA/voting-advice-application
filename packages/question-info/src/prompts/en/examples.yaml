@@ -1,3 +1,4 @@
+devNote: TODO: make this a .ts file, as this creates unnecessary complexity. loading yamls adds boilerplate
 infoSectionsExamples: |
   ### Question: 
   Private service providers should be utilized more in the provision of primary healthcare.
