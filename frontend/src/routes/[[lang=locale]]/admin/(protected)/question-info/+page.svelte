@@ -6,7 +6,9 @@ Page for controlling the question info generation feature.
 
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { page } from '$app/stores';
   import { FeatureJobs } from '$lib/admin/components/jobs';
+  import { LanguageSelector } from '$lib/admin/components/languageFeatures';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
@@ -25,6 +27,9 @@ Page for controlling the question info generation feature.
     abortJob,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
+
+  // Get current locale from route params
+  $: currentLocale = $page.params.lang || 'en';
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
@@ -65,6 +70,7 @@ Page for controlling the question info generation feature.
   ////////////////////////////////////////////////////////////////////////
 
   let selectedOperations: Array<'terms' | 'infoSections'> = ['terms', 'infoSections'];
+  let selectedLanguage = '';
   let sectionTopics = '';
   let customInstructions = '';
   let questionContext = '';
@@ -240,6 +246,9 @@ Page for controlling the question info generation feature.
       <!-- Generation Options Section -->
       <div class="divider"></div>
       <h3 class="font-semibold text-lg">{$t('adminApp.questionInfo.options.heading')}</h3>
+
+      <!-- Target Language Selector -->
+      <LanguageSelector bind:selectedLanguage {currentLocale} />
 
       <!-- Operations Checkboxes -->
       <div class="form-control">
