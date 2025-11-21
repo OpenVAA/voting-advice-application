@@ -4367,6 +4367,7 @@ __metadata:
   dependencies:
     "@ai-sdk/google": "npm:^2.0.20"
     "@ai-sdk/openai": "npm:^2.0.31"
+    "@openvaa/app-shared": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     ai: "npm:^5.0.0"
