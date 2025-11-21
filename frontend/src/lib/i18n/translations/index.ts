@@ -12,6 +12,7 @@ export const keys = [
   'adminApp.error',
   'adminApp.factorAnalysis',
   'adminApp.jobs',
+  'adminApp.languageFeatures',
   'adminApp.login',
   'adminApp.notSupported',
   'adminApp.questionInfo',

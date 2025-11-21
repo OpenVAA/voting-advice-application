@@ -19,7 +19,7 @@ import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
  * @param args.electionId - Election id to scope questions
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
  * @param args.fetch - SvelteKit fetch function for data loading
- * @param args.locale - Language for prompts and results
+ * @param args.locale - Output language 
  * @param args.jobId - Job ID for tracking progress
  * @param args.authToken - Authentication token for API calls
  * @param args.operations - Which operations to perform (Terms, InfoSections, or both)
