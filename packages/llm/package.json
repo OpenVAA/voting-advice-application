@@ -22,6 +22,7 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.20",
     "@ai-sdk/openai": "^2.0.31",
+    "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
     "ai": "^5.0.0",
     "jsonrepair": "^3.13.0",

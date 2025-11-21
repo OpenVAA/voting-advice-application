@@ -1,3 +1,11 @@
+import { staticSettings } from '@openvaa/app-shared';
+import { setPromptVars } from '../utils';
+
+const englishLocalizationPrompt = `### CRUCIAL: Provide your entire response in {{language}}.
+Even though the examples or input data may be in a different language, the output is expected to be in {{language}}.
+
+### REMEMBER: The OUTPUT NEEDS TO BE in {{language}}. Your OUTPUT MUST BE WRITTEN IN {{language}}.`;
+
 /**
  * Localization instructions for LLM prompts
  *
@@ -8,13 +16,21 @@
  *
  * This allows us to reuse English prompts for other languages by instructing
  * the LLM to provide its response in the requested language.
+ *
+ * Generated dynamically from staticSettings.supportedLocales using the same
+ * source of truth as SvelteKit locale routes.
  */
-
-export const LOCALIZATION_INSTRUCTIONS: Record<string, string> = {
-  en: '', // No instruction needed for English
-  fi: 'Please provide your entire response in Finnish. All text, arguments, reasoning, and any other output must be written in Finnish.',
-  sv: 'Please provide your entire response in Swedish. All text, arguments, reasoning, and any other output must be written in Swedish.'
-};
+export const LOCALIZATION_INSTRUCTIONS: Record<string, string> = Object.fromEntries(
+  staticSettings.supportedLocales.map(locale => [
+    locale.code,
+    locale.isDefault
+      ? ''
+      : setPromptVars({
+          promptText: englishLocalizationPrompt,
+          variables: { language: locale.name }
+        })
+  ])
+);
 
 /**
  * Languages that we support in prompt files.
