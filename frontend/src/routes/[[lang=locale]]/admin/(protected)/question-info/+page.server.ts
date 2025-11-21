@@ -15,6 +15,7 @@ export const actions: Actions = {
       const formData = await request.formData();
       const electionId = formData.get('electionId')?.toString();
       const questionIds = formData.getAll('questionIds').map((id) => id.toString());
+      const language = formData.get('language')?.toString() || lang || 'en';
       const operationsString = formData.get('operations')?.toString() || '';
       const sectionTopicsString = formData.get('sectionTopics')?.toString() || '';
       const customInstructions = formData.get('customInstructions')?.toString() || '';
@@ -23,6 +24,7 @@ export const actions: Actions = {
       console.info('[question-info] parsed form', {
         electionId,
         nQuestionIds: questionIds.length,
+        language,
         operations: operationsString,
         sectionTopics: sectionTopicsString,
         customInstructions,
@@ -79,7 +81,7 @@ export const actions: Actions = {
         electionId,
         questionIds,
         fetch,
-        locale: lang || 'en',
+        locale: language,
         jobId: jobInfo.id,
         authToken,
         operations: operationEnums,

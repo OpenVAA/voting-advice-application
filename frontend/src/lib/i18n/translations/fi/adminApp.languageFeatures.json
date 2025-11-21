@@ -1,0 +1,6 @@
+{
+  "targetLanguage": {
+    "label": "Kohdekieli",
+    "help": "Kieli, jolla sisältö luodaan. Kysymykset käsitellään ja tulokset tallennetaan tällä kielellä."
+  }
+}
