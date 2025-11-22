@@ -28,18 +28,7 @@ export type { SupportedQuestion } from './condensation/supportedQuestion';
 export type { OperationNode, OperationTree } from './base/operationTree';
 
 // Prompt-related types
-export type {
-  CondensationPrompt,
-  GroundingPrompt,
-  IterateMapPrompt,
-  MapPrompt,
-  ReducePrompt,
-  RefinePrompt
-} from './llm/prompt';
 export type { CondensationPromptCall as PromptCall } from './llm/promptInstance';
 
 // LLM response type
 export type { ResponseWithArguments } from './llm/responseWithArguments';
-
-// Supported languages (update as needed)
-export { SUPPORTED_LANGUAGES, type SupportedLanguage } from './base/supportedLanguages';

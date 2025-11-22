@@ -1,21 +1,10 @@
+import { type HasAnswers, noOpController } from '@openvaa/core';
 import { BooleanQuestion, QUESTION_TYPE } from '@openvaa/data';
 import { describe, expect, test } from 'vitest';
 import { SUPPORTED_LANGUAGES } from '../../src';
 import { handleQuestion } from '../../src/api';
-import type { Controller, HasAnswers } from '@openvaa/core';
 import type { DataRoot } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
-
-// No-op controller for tests to prevent logging output
-const noOpLogger: Controller = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {},
-  checkAbort: () => {},
-  defineSubOperations: () => {},
-  getCurrentOperation: () => null
-};
 
 // Mock LLMProvider for new API
 const mockLLMProvider = {
@@ -73,7 +62,7 @@ describe('handleQuestion', () => {
           llmProvider: mockLLMProvider,
           runId: 'test-run',
           maxCommentsPerGroup: 1000,
-          controller: noOpLogger
+          controller: noOpController
         }
       })
     ).rejects.toThrow(
