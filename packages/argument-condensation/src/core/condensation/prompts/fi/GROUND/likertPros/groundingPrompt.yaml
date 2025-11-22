@@ -1,8 +1,9 @@
 promptId: 'ground_likertPros_grounding_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
 
 promptText: |
   Olet maailmanluokan asiantuntija argumentoinnissa ja poliittisen tiedon jakamisessa. Sinulle annetaan lista poliittisia argumentteja ja lista poliittisia kommentteja.

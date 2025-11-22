@@ -1,7 +1,10 @@
 promptId: 'reduce_booleanCons_coalescing_v1'
 params:
-  topic: string
-  argumentLists: string
+  required:
+    - topic
+    - argumentLists
+  optional:
+    - localizationInstructions
 
 promptText: |
   You are an expert in argumentation and political discourse. Below you are given multiple argument lists that are used to oppose a certain political statement ("{{topic}}").

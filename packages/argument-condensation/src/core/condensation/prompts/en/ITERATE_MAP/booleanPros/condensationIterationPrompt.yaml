@@ -1,8 +1,11 @@
 promptId: 'map_booleanPros_iterate_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
+  optional:
+    - localizationInstructions
 
 promptText: |
   You are refining arguments that support a policy position ("{{topic}}") based on additional feedback from comments.

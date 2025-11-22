@@ -1,7 +1,8 @@
 promptId: 'map_likertPros_condensation_v1'
 params:
-  topic: string
-  comments: string
+  required:
+    - topic
+    - comments
 
 promptText: |
   Analysoit erää kommentteja äänestysneuvontasovelluksesta (VAA) poimiaksesi tukiargumentteja politiikkakannan ("{{topic}}") puolesta.
