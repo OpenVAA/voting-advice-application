@@ -12,6 +12,10 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "electionId": {
+      "type": "string",
+      "required": true
+    },
     "jobId": {
       "type": "uid",
       "required": true

@@ -5,7 +5,7 @@
 
 import { DEFAULT_MAX_MESSAGES } from '$lib/admin/components/jobs/shared';
 import type { AdminFeature } from '$lib/admin/features';
-import type { JobInfo, PastJobStatus } from './jobStore.type';
+import type { JobInfo, JobMessage, PastJobStatus } from './jobStore.type';
 
 // Global in-memory job stores
 const activeJobs = new Map<string, JobInfo>();
@@ -229,6 +229,22 @@ export function markAborted(jobId: string): void {
  */
 export function getJob(jobId: string): JobInfo | undefined {
   return activeJobs.get(jobId) || pastJobs.get(jobId);
+}
+
+/**
+ * Get all messages from a job (info, warning, error) sorted by timestamp
+ * @param jobId - The job ID to retrieve messages from
+ * @returns Array of all messages sorted by timestamp, or empty array if job not found
+ */
+export function getAllMessagesFromJob(jobId: string): Array<JobMessage> {
+  const job = getJob(jobId);
+  if (!job) return [];
+
+  return [
+    ...job.infoMessages,
+    ...job.warningMessages,
+    ...job.errorMessages
+  ].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 }
 
 /**

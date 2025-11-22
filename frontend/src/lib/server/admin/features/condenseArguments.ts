@@ -4,9 +4,11 @@ import { type AnyQuestionVariant, ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/da
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
-import { markAborted } from '../jobs/jobStore';
+import { getAllMessagesFromJob, getJob, markAborted } from '../jobs/jobStore';
 import { PipelineController } from '../jobs/pipelineController';
-import type { ArgumentType, LocalizedQuestionArguments } from '@openvaa/app-shared';
+import type { LocalizedQuestionArguments } from '@openvaa/app-shared';
+import type { CondensationRunResult } from '@openvaa/argument-condensation';
+import type { Serializable } from '@openvaa/core';
 import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -44,6 +46,21 @@ export async function condenseArguments({
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
+
+  // Track start time and input parameters for job record
+  const startTime = new Date().toISOString();
+  const inputParams = {
+    electionId,
+    questionIds,
+    locale
+  };
+
+  // Accumulate all condensation results across all questions
+  const allCondensationResults: Array<{
+    questionId: string;
+    questionName: string;
+    results: Array<CondensationRunResult>;
+  }> = [];
 
   try {
     // 1) Load data
@@ -127,39 +144,15 @@ export async function condenseArguments({
         }
       });
 
+      // Store results for this question
+      allCondensationResults.push({
+        questionId: question.id,
+        questionName: question.name,
+        results: condensationResults
+      });
+
       if (!condensationResults.length || condensationResults.every((r) => !r.data.arguments.length)) {
-        controller.info(`No condensed arguments found for question: ${question.name}`);
-        controller.info('Adding a mock result for testing');
-
-        // ------------------------------------------------------------
-        // MOCK SAVING
-        // ------------------------------------------------------------
-        const mockResults = [
-          {
-            type: 'likertPros' as ArgumentType,
-            arguments: [
-              {
-                id: '1',
-                content: {
-                  [locale]: 'This is a test argument'
-                }
-              }
-            ]
-          }
-        ];
-        await dataWriter.updateQuestion({
-          authToken,
-          id: question.id,
-          data: {
-            customData: {
-              arguments: mockResults
-            }
-          }
-        });
-        // ------------------------------------------------------------
-        // MOCK SAVING END
-        // ------------------------------------------------------------
-
+        controller.warning(`Condensation failed for question: ${question.name}`);
         continue;
       }
 
@@ -202,15 +195,80 @@ export async function condenseArguments({
 
     controller.complete();
 
+    // Save job record to Strapi
+    const job = getJob(jobId);
+    if (job) {
+      await dataWriter.insertJobResult({
+        authToken,
+        data: {
+          jobId,
+          jobType: 'ArgumentCondensation',
+          electionId,
+          author: job.author,
+          endStatus: 'completed',
+          startTime,
+          endTime: new Date().toISOString(),
+          input: inputParams,
+          output: allCondensationResults as unknown as Array<Serializable>,
+          messages: getAllMessagesFromJob(jobId),
+          metadata: { questionsProcessed: allCondensationResults.length }
+        }
+      });
+    }
+
     return { type: 'success' };
   } catch (error) {
+    const job = getJob(jobId);
+
     // Job was aborted if the error is an AbortError. Avoid instanceof, check name instead
     if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
       markAborted(jobId);
+
+      // Save aborted job record to Strapi
+      if (job) {
+        await dataWriter.insertJobResult({
+          authToken,
+          data: {
+            jobId,
+            jobType: 'ArgumentCondensation',
+            electionId,
+            author: job.author,
+            endStatus: 'aborted',
+            startTime,
+            endTime: new Date().toISOString(),
+            input: inputParams,
+            output:
+              allCondensationResults.length > 0 ? (allCondensationResults as unknown as Array<Serializable>) : null,
+            messages: getAllMessagesFromJob(jobId),
+            metadata: null
+          }
+        });
+      }
     } else {
       // else it's a real error so we fail the job
-      const message = error && typeof error === 'object' && 'message' in error ? error.message : JSON.stringify(error);
+      const message =
+        error && typeof error === 'object' && 'message' in error ? String(error.message) : JSON.stringify(error);
       controller.fail(`Argument condensation failed: ${message}`);
+
+      // Save failed job record to Strapi
+      if (job) {
+        await dataWriter.insertJobResult({
+          authToken,
+          data: {
+            jobId,
+            jobType: 'ArgumentCondensation',
+            electionId,
+            author: job.author,
+            endStatus: 'failed',
+            startTime,
+            endTime: new Date().toISOString(),
+            input: inputParams,
+            output: null,
+            messages: getAllMessagesFromJob(jobId),
+            metadata: { error: message }
+          }
+        });
+      }
     }
     throw error;
   }
