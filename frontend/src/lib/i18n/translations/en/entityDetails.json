@@ -3,7 +3,7 @@
   "memberOfOrganization": "member of {organization}",
   "tabs": {
     "candidates": "{candidatePlural}",
-    "info": "Basic Info",
-    "opinions": "Opinions"
+    "info": "Comments",
+    "opinions": "Positions"
   }
 }

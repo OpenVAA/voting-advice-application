@@ -51,8 +51,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Mat dëser Applikatioun kënnt Dir {candidatePlural} a {partyPlural} op Basis vun hire Meenungen an aneren Donnéeën vergläichen.",
-    "startButton": "Bescht {candidatePlural} a {partyPlural} fannen!"
+    "ingress": "Mat dëser Applikatioun kënnt Dir lëtzebuergesch  {partyPlural} no hire politesche Positiounen vergläichen. ",
+    "startButton": "Fannt {partyPlural} déi Är Meenungen deelen!"
   },
   "info": {
     "content": "Liest méi iwwer d’Wahlen hei drënner.",
@@ -62,14 +62,14 @@
   "intro": {
     "continue": "Weider",
     "heroEmoji": "🚀",
-    "ingress": "D’Applikatioun hëlleft Iech déi {candidatePlural} an {partyPlural} ze fannen, déi am Beschten zu Äre Meenunge passen.",
+    "ingress": "Dës App hëlleft Iech déi {partyPlural} ze fannen, déi am beschten Äre politesche Virléiften entspriechen. ",
     "list": {
       "constituencies": "Äre Walbezierk auswielen",
-      "details": "Se am Detail nokucken",
       "elections": "Eng Wahl auswielen",
-      "opinions": "Är Meenungen aginn",
+      "opinions": "Gitt Är Meenung zu 20 Themen an",
       "questionWeights": "Dir kënnt och auswielen, wéi wichteg d'Thema fir Iech ass",
-      "results": "Déi {candidatePlural} an {partyPlural} gesinn, déi am Beschten mat Iech iwwenestëmmen"
+      "results": "Entdeckt déi {partyPlural}, déi am beschte mat Iech iwwereneestëmmen {partyPlural} gesinn",
+      "details": "Kuckt Iech méi detailléiert Resultater un"
     },
     "title": "Loosst eis ufänken!"
   },
@@ -96,7 +96,7 @@
     "heroEmoji": "🎊",
     "ingress": {
       "browse": "Hei sinn déi {candidatePlural} an {partyPlural}, déi bei dëse Wahlen ustinn, nogeuerdent no Wahlsymbol oder Numm. Mat de Filtere kënnt Dir d’Lëscht andämmen.",
-      "results": "Hei sinn déi {candidatePlural} an {partyPlural}, déi bei dëse Wahlen ustinn. Déi beschte Matching stinn uewen. Dir kënnt d’Resultater och mat de Filtere andämmen."
+      "results": "Hei sinn Är Resultater mat lëtzebuergesche politesche {partyPlural}. Déi bescht Resultater erschéngen als éischt. Klickt op den Numm vun der Partei fir méi detailléiert Vergläicher an fir Zougang zu de Kommentarer vun de politesche Parteien zu all Fro ze kréien. "
     },
     "multipleElections": "Wielt fir d’éischt hei drënner, vun wéi enger Wahl Dir {candidatePlural} an {partyPlural} wëllt gesinn, a wielt duerno ob {candidatePlural} oder {partyPlural}."
   },

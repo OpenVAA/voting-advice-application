@@ -1,7 +1,7 @@
 {
   "content": "<p>De Wal-Kompass vergläicht d’Meenungen, déi Dir agitt, mat deenen, déi {candidatePlural} an {partyPlural} uginn. D’Resultater kréien e Match-Score, dat ass de Prozentsaz, wéi no Dir mat hinnen averstanen sidd.</p> <ul> <li>En Score vun 100 bedeit, datt Dir bei all de Froen, déi Dir beäntwert hutt, komplett averstanen sidd.</li> <li>En Score vun 0 bedeit, datt Dir bei all de Froen net averstanen sidd.</li> <li>E Score tëscht dësen zwou Extremer bedeit, datt Dir mat e puer Froen averstanen sidd an anerem net.</li> </ul>",
   "feedback": {
-    "title": "Réckmeldung / Feedback"
+    "title": "Feedback"
   },
   "organizationMatching": {
     "content": "{partyMatchingMethod, select, answersOnly {<p>D’Parteiresultater goufe berechent op Basis vun de Reaktioune vun de Parteien.</p>} imputed {<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, aus dem Modus oder der Median vun den Äntwerte vun hire Kandidat*inne am Walbezierk.</p>} other {<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, op Basis vun den Äntwerte vu senge Kandidat*inne am Walbezierk.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Gitt weg, datt d’Kandidat*inne vun enger Partei bei bestëmmte Froen net mat hirer Partei averstanen sinn; dës berechent Positioun spigelt dofir eventuell net komplett déi offiziell Haltung vun der Partei erëm.</p>}}",

@@ -10,7 +10,7 @@
   },
   "inConstituency": "in constituency",
   "ingress": {
-    "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
+    "answerMinQuestions": "If you want to find the {partyPlural} that agree with you the most, {questionsLink} first.",
     "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
   },
   "missingNominations": {

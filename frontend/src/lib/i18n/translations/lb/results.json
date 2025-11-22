@@ -10,7 +10,7 @@
   },
   "inConstituency": "am Walbezierk",
   "ingress": {
-    "answerMinQuestions": "Wann Dir déi {candidatePlural} a {partyPlural} fannen wëllt, déi am meeschte mat Iech averstanen sinn, {questionsLink} fir d’éischt.",
+    "answerMinQuestions": "Wann Dir déi {partyPlural} fannen wëllt, déi am meeschte mat Iech averstanen sinn, {questionsLink} fir d’éischt.",
     "questionsLinkText": "beäntwert op mannst {numQuestions, plural, =1 {eng Fro} other {# Froen}}"
   },
   "missingNominations": {

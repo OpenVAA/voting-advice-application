@@ -10,7 +10,7 @@
   },
   "inConstituency": "dans la circonscription",
   "ingress": {
-    "answerMinQuestions": "Si vous souhaitez trouver les {candidatePlural} et {partyPlural} qui partagent le plus vos opinions, veuillez d’abord {questionsLink}.",
+    "answerMinQuestions": "Si vous souhaitez trouver les {partyPlural} qui partagent le plus vos opinions, veuillez d’abord {questionsLink}.",
     "questionsLinkText": "répondre à au moins {numQuestions, plural, =1 {une question} other {# questions}}"
   },
   "missingNominations": {

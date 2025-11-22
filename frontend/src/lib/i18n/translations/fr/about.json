@@ -1,7 +1,7 @@
 {
   "content": "<p>La Boussole électorale fonctionne en comparant les opinions que vous saisissez à celles fournies par {candidatePlural} et {partyPlural}. Les résultats reçoivent un score de correspondance, qui indique en pourcentage à quel point vous êtes d’accord avec eux.</p> <ul> <li>Un score de 100 signifie que vous êtes entièrement d’accord sur toutes les questions auxquelles vous avez répondu.</li> <li>Un score de 0 signifie que vous n’êtes d’accord sur aucune des questions.</li> <li>Un score entre ces deux extrêmes signifie que vous êtes d’accord sur certaines questions et en désaccord sur d’autres.</li> </ul>",
   "feedback": {
-    "title": "Retour / Commentaire"
+    "title": "Commentaire"
   },
   "organizationMatching": {
     "content": "{partyMatchingMethod, select, answersOnly {<p>Les résultats des partis ont été calculés à partir des réponses fournies par les partis.</p>} imputed {<p>Les résultats des partis ont été calculés sur la base de leurs réponses ou, si un parti n’a pas répondu aux questions, à partir de la valeur la plus fréquente (mode) ou de la médiane des réponses de ses candidat·es dans la circonscription.</p>} other {<p>Les résultats des partis ont été calculés sur la base de leurs réponses ou, si un parti n’a pas répondu aux questions, sur la base des réponses de ses candidat·es dans la circonscription.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Veuillez noter que les candidat·es d’un parti peuvent être en désaccord avec leur parti sur certaines questions ; cette position calculée peut donc ne pas refléter entièrement la position officielle du parti.</p>}}",

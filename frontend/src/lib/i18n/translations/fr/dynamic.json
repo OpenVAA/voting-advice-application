@@ -51,8 +51,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Avec cette application, vous pouvez comparer des {candidatePlural} et des {partyPlural} selon leurs opinions et autres informations.",
-    "startButton": "Trouver les meilleurs {candidatePlural} et {partyPlural} !"
+    "ingress": "Avec cette application, vous pouvez comparer les {partyPlural} luxebourgeois selon leurs positions politiques.",
+    "startButton": "Trouvez les {partyPlural} qui partagent vos opinions!"
   },
   "info": {
     "content": "En savoir plus sur les élections ci‑dessous.",
@@ -62,16 +62,16 @@
   "intro": {
     "continue": "Continuer",
     "heroEmoji": "🚀",
-    "ingress": "Cette application vous aide à trouver les {candidatePlural} et {partyPlural} qui correspondent le mieux à vos opinions pour ces élections.",
+    "ingress": "Cette application vous aide à trouver les {partyPlural} qui correspondent le mieux à vos préférences politiques.",
     "list": {
       "constituencies": "Sélectionner votre circonscription",
-      "details": "Les examiner en détail",
       "elections": "Sélectionner une élection",
-      "opinions": "Saisir vos opinions",
-      "questionWeights": "YVous pouvez également indiquer l'importance que vous accordez à chaque sujet",
-      "results": "Voir les {candidatePlural} et {partyPlural} qui vous correspondent le mieux"
+      "opinions": "Exprimez votre opinion sur 20 sujets",
+      "questionWeights": "Vous pouvez également indiquer l'importance que vous accordez à chaque sujet",
+      "results": "Découvrez les {partyPlural}  qui vous correspondent le mieux ",
+      "details": "Consultez des résultats plus détaillés"
     },
-    "title": "Commençons !"
+    "title": "Allons-y!"
   },
   "maintenance": {
     "content": "<p>Nous sommes désolé·es, la Boussole électorale est actuellement indisponible pour cause de maintenance. Elle devrait être de retour très bientôt ; veuillez réessayer plus tard.</p><p>Ne vous inquiétez pas si vous étiez en train de répondre : vous pourrez reprendre là où vous vous êtes arrêté·e quand vous reviendrez.</p>",
@@ -96,7 +96,7 @@
     "heroEmoji": "🎊",
     "ingress": {
       "browse": "Voici les {candidatePlural} et {partyPlural} qui se présentent à ces élections, classé·es par symbole électoral ou par nom. Vous pouvez affiner avec les filtres.",
-      "results": "Voici les {candidatePlural} et {partyPlural} qui se présentent à ces élections. Les meilleures correspondances apparaissent en premier. Vous pouvez aussi affiner les résultats avec les filtres."
+      "results": "Voici vos correspondances avec les {partyPlural} luxembourgeois. Les meilleures correspondances apparaissent en premier. Cliquez sur le nom du parti pour des comparaisons plus précises, et pour accéder aux commentaires des partis politiques sur chaque question."
     },
     "multipleElections": "Sélectionnez d’abord ci‑dessous l’élection dont vous voulez voir les {candidatePlural} et {partyPlural}, puis choisissez si vous souhaitez voir les {candidatePlural} ou les {partyPlural}."
   },

@@ -65,10 +65,11 @@
     "ingress": "Denna applikation hjälper dig att hitta den {candidatePlural} och {partyPlural} som bäst matchar dina åsikter i valet.",
     "list": {
       "constituencies": "Välj din valkrets",
-      "details": "Studera dem i detalj",
       "elections": "Välj ett val",
       "opinions": "Ange dina åsikter",
-      "results": "Se de {candidatePlural} och {partyPlural} som bäst överensstämmer med dig"
+      "questionWeights": "Du kan också ange hur viktig varje fråga är för dig",
+      "results": "Se de {candidatePlural} och {partyPlural} som bäst överensstämmer med dig",
+      "details": "Studera dem i detalj"
     },
     "title": "Låt oss börja!"
   },
@@ -81,7 +82,6 @@
     "content": "På denna sida hittar du alla kandidater som har fyllt i valkompassen.",
     "heroEmoji": "🔍"
   },
-
   "privacy": {
     "content": "Nedan beskrivs hur applikationen hanterar sekretess och datainsamling.",
     "dataConsentIntro": {
