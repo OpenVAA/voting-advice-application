@@ -1,8 +1,11 @@
 promptId: 'map_categoricalPros_iterate_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
+  optional:
+    - localizationInstructions
 
 promptText: |
   You are refining arguments that support a specific option in a categorical choice ("{{topic}}") based on additional feedback from comments.

@@ -1,7 +1,11 @@
 promptId: 'refine_likertPros_initial_v1'
 params:
-  topic: string
-  comments: string
+  required:
+    - topic
+    - comments
+  optional:
+    - localizationInstructions
+
 promptText: |
   You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a policy position.
 
