@@ -1,7 +1,5 @@
-import { BaseController } from '@openvaa/core';
-import { setPromptVars } from '@openvaa/llm';
+import { loadPrompt } from '@openvaa/llm';
 import { COMMENT_PROCESSING } from '../../../defaultValues';
-import type { Controller } from '@openvaa/core';
 import type { VAAComment } from '../../types';
 
 /**
@@ -11,40 +9,48 @@ import type { VAAComment } from '../../types';
  *
  * @param batches - The batches of comments to validate
  * @param topic - The topic of the comments (although quite irrelevant for token count estimation)
- * @param condensationPrompt - The prompt template to use for condensation
+ * @param condensationPromptId - The prompt ID to load from the centralized registry
+ * @param language - The language for the prompt
  * @param parallelFactor - The number of batches to process in parallel
  * @param modelTPMLimit - The maximum number of tokens the model can handle per minute
  * @returns An object indicating whether the validation was successful. If not, it includes the index
  * of the failed batch group and its estimated token count.
  */
-export function validateInputTokenCount({
+export async function validateInputTokenCount({
   batches,
   topic,
-  condensationPrompt,
+  condensationPromptId,
+  language,
   parallelFactor,
-  modelTPMLimit,
-  controller = new BaseController()
+  modelTPMLimit
 }: {
   batches: Array<Array<VAAComment>>;
   topic: string;
-  condensationPrompt: string;
+  condensationPromptId: string;
+  language: string;
   parallelFactor: number;
   modelTPMLimit: number;
-  controller?: Controller;
-}): {
+}): Promise<{
   success: boolean;
   failedBatchIndex?: number;
   tokenCount?: number;
-} {
+}> {
   // Estimate token usage by creating sample prompts
-  const llmInputsForTokenCheck = batches.map((batch) => {
-    const templateVariables = {
-      topic: topic,
-      comments: batch.map((c) => c.text).join('\n')
-    };
-    const promptText = setPromptVars({ promptText: condensationPrompt, variables: templateVariables, controller });
-    return { messages: [{ role: 'system' as const, content: promptText }] };
-  });
+  const llmInputsForTokenCheck = await Promise.all(
+    batches.map(async (batch) => {
+      const templateVariables = {
+        topic: topic,
+        comments: batch.map((c) => c.text).join('\n')
+      };
+      const { promptText } = await loadPrompt({
+        promptId: condensationPromptId,
+        language,
+        variables: templateVariables,
+        throwIfVarsMissing: false
+      });
+      return { messages: [{ role: 'system' as const, content: promptText }] };
+    })
+  );
 
   // Rough token estimation: characters / CHAR_TO_TOKEN_RATIO * safety margin
   const promptCharsCounts = llmInputsForTokenCheck.map((input) =>

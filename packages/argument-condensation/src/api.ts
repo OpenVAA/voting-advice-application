@@ -1,6 +1,6 @@
+import { staticSettings } from '@openvaa/app-shared';
 import { BaseController, type HasAnswers } from '@openvaa/core';
 import { QUESTION_TYPE } from '@openvaa/data';
-import { SUPPORTED_LANGUAGES } from './core/types';
 import { getAndSliceComments, getParallelFactor } from './core/utils';
 import { MODEL_DEFAULTS } from './defaultValues';
 import { handleBooleanQuestion, handleCategoricalQuestion, handleOrdinalQuestion } from './question-handlers';
@@ -9,7 +9,6 @@ import type {
   CommentGroupingOptions,
   CondensationAPIOptions,
   CondensationRunResult,
-  SupportedLanguage,
   SupportedQuestion
 } from './core/types';
 /**
@@ -113,10 +112,11 @@ export async function handleQuestion({
   // Get TPM limit from the LLMProvider config (configured when the provider was instantiated)
   const modelTPMLimit = llmProvider.config.modelConfig.tpmLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
 
-  // Check that the language is supported
-  if (!SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {
+  // Check that the language is in supportedLocales in staticSettings
+  const supportedLanguages = staticSettings.supportedLocales.map((locale) => locale.code);
+  if (!supportedLanguages.includes(language)) {
     throw new Error(
-      `Unsupported language: ${language}. Please use a supported language: ` + SUPPORTED_LANGUAGES.join(', ')
+      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
     );
   }
 

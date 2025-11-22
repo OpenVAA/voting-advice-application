@@ -6,21 +6,15 @@
  * @example
  *
  * const params: RefineOperationParams = {
- *   initialBatchPrompt: 'Get this prompt from the prompt registry',
  *   initialBatchPromptId: 'Initial-batch-id',
- *   refinementPrompt: 'Get this prompt from the prompt registry',
  *   refinementPromptId: 'Refinement-id',
  *   batchSize: 42
  * };
  */
 export interface RefineOperationParams {
-  /** The prompt to use for the initial batch. Doesn't have an argument list as context, only comments */
-  initialBatchPrompt: string;
-  /** Initial batch prompt id */
+  /** Initial batch prompt id (loaded from centralized registry) */
   initialBatchPromptId: string;
-  /** The prompt to use for the refinement. Takes in an argument list and comments to refine the running argument list with */
-  refinementPrompt: string;
-  /** Refinement prompt id */
+  /** Refinement prompt id (loaded from centralized registry) */
   refinementPromptId: string;
   /** The number of arguments to process in each batch */
   batchSize: number;
@@ -33,15 +27,12 @@ export interface RefineOperationParams {
  * @example
  *
  * const params: MapOperationParams = {
- *   condensationPrompt: 'Get this prompt from the prompt registry',
  *   condensationPromptId: 'Condensation-id',
  *   batchSize: 42
  * };
  */
 export interface MapOperationParams {
-  /** The prompt to use for the condensation. Takes in a list of comments and condenses them into a single argument list. */
-  condensationPrompt: string;
-  /** Condensation prompt id */
+  /** Condensation prompt id (loaded from centralized registry) */
   condensationPromptId: string;
   /** The number of comments to process in at once. */
   batchSize: number;
@@ -55,15 +46,12 @@ export interface MapOperationParams {
  * @example
  *
  * const params: IterateMapOperationParams = {
- *   iterationPrompt: 'Get this prompt from the prompt registry',
  *   iterationPromptId: 'Iteration-id',
  *   batchSize: 42
  * };
  */
 export interface IterateMapOperationParams {
-  /** Prompt to use for improving the argument lists created by the initial map step. Takes in both the original comments and the argument lists. */
-  iterationPrompt: string;
-  /** Iteration prompt id */
+  /** Iteration prompt id (loaded from centralized registry) */
   iterationPromptId: string;
   /** The number of comment batches to process at once. Should match the map step batch size */
   batchSize: number;
@@ -76,15 +64,12 @@ export interface IterateMapOperationParams {
  * @example
  *
  * const params: ReduceOperationParams = {
- *   coalescingPrompt: 'Get this prompt from the prompt registry',
  *   coalescingPromptId: 'Coalescing-id',
  *   denominator: 42
  * };
  */
 export interface ReduceOperationParams {
-  /** The prompt to use for combining argument lists. */
-  coalescingPrompt: string;
-  /** Coalescing prompt id */
+  /** Coalescing prompt id (loaded from centralized registry) */
   coalescingPromptId: string;
   /** How many argument lists to coalesce into one argument list? */
   denominator: number;
@@ -99,15 +84,12 @@ export interface ReduceOperationParams {
  * @example
  *
  * const params: GroundingOperationParams = {
- *   groundingPrompt: 'Get this prompt from the prompt registry',
  *   groundingPromptId: 'Grounding-id',
  *   batchSize: 42
  * };
  */
 export interface GroundingOperationParams {
-  /** The prompt to use for improving an arguments list with comments */
-  groundingPrompt: string;
-  /** Grounding prompt id */
+  /** Grounding prompt id (loaded from centralized registry) */
   groundingPromptId: string;
   /** The number of source comments to use as context for the grounding prompt to improve the argument list */
   batchSize: number;

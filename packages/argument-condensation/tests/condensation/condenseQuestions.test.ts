@@ -1,3 +1,4 @@
+import { noOpController } from '@openvaa/core';
 import {
   type Answer,
   BooleanQuestion,
@@ -9,19 +10,8 @@ import {
 import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
-import type { Controller, HasAnswers } from '@openvaa/core';
+import type { HasAnswers } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
-
-// No-op controller for tests to prevent logging output
-const noOpLogger: Controller = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {},
-  checkAbort: () => {},
-  defineSubOperations: () => {},
-  getCurrentOperation: () => null
-};
 
 // Mock LLM Provider for new API
 const mockLLMProvider = {
@@ -141,7 +131,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        controller: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -217,7 +207,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        controller: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -270,7 +260,7 @@ describe('handleQuestion', () => {
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        controller: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -320,7 +310,7 @@ describe('handleQuestion', () => {
           language: 'en',
           runId: 'test-run-invalid-prompts',
           maxCommentsPerGroup: 1000,
-          controller: noOpLogger,
+          controller: noOpController,
           prompts: {
             [CONDENSATION_TYPE.BooleanPros]: {
               map: 'map-pros-42-haha',

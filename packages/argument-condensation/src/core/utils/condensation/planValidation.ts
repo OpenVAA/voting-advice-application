@@ -63,32 +63,32 @@ function validateStepParameters(step: ProcessingStep): void {
     case CondensationOperations.REFINE: {
       const p = params as RefineOperationParams;
       if (p.batchSize <= 0) throw new Error('refine batchSize must be positive');
-      if (!p.initialBatchPrompt) throw new Error('refine needs initialBatchPrompt');
-      if (!p.refinementPrompt) throw new Error('refine needs refinementPrompt');
+      if (!p.initialBatchPromptId) throw new Error('refine needs initialBatchPromptId');
+      if (!p.refinementPromptId) throw new Error('refine needs refinementPromptId');
       break;
     }
     case CondensationOperations.MAP: {
       const p = params as MapOperationParams;
       if (p.batchSize <= 0) throw new Error('map batchSize must be positive');
-      if (!p.condensationPrompt) throw new Error('map needs condensationPrompt');
+      if (!p.condensationPromptId) throw new Error('map needs condensationPromptId');
       break;
     }
     case CondensationOperations.ITERATE_MAP: {
       const p = params as IterateMapOperationParams;
       if (p.batchSize <= 0) throw new Error('iterate_map batchSize must be positive');
-      if (!p.iterationPrompt) throw new Error('iterate_map needs iterationPrompt');
+      if (!p.iterationPromptId) throw new Error('iterate_map needs iterationPromptId');
       break;
     }
     case CondensationOperations.REDUCE: {
       const p = params as ReduceOperationParams;
       if (p.denominator <= 1) throw new Error('reduce denominator must be greater than 1');
-      if (!p.coalescingPrompt) throw new Error('reduce needs coalescingPrompt');
+      if (!p.coalescingPromptId) throw new Error('reduce needs coalescingPromptId');
       break;
     }
     case CondensationOperations.GROUND: {
       const p = params as GroundingOperationParams;
       if (p.batchSize <= 0) throw new Error('ground batchSize must be positive');
-      if (!p.groundingPrompt) throw new Error('ground needs groundingPrompt');
+      if (!p.groundingPromptId) throw new Error('ground needs groundingPromptId');
       break;
     }
     default:
