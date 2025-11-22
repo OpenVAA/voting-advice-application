@@ -39,6 +39,6 @@ Display an entity's match score.
       >{$t('components.matchScore.score', { score })}</span>
   {/key}
   {#if showLabel && label !== ''}
-    <span class="text-secondary text-center text-xs">{label ?? $t('components.matchScore.label')}</span>
+    <span class="text-center text-xs text-secondary">{label ?? $t('components.matchScore.label')}</span>
   {/if}
 </div>

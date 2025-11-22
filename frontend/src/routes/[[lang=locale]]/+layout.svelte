@@ -178,9 +178,9 @@
 </svelte:head>
 
 {#if error}
-  <ErrorMessage class="bg-base-300 h-screen" />
+  <ErrorMessage class="h-screen bg-base-300" />
 {:else if !ready}
-  <Loading class="bg-base-300 h-screen" />
+  <Loading class="h-screen bg-base-300" />
 {:else if underMaintenance}
   <MaintenancePage />
 {:else}

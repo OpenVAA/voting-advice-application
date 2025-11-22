@@ -125,7 +125,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
         <Image
           {image}
           format="thumbnail"
-          class="border-bg-300 border-md h-full w-full object-cover"
+          class="border-bg-300 h-full w-full border-md object-cover"
           alt={name}
           on:load={handleImgLoad}
           on:error={handleImgError} />
@@ -134,7 +134,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
       <Image
         {image}
         format="thumbnail"
-        class="border-bg-300 border-md h-full w-full object-cover"
+        class="border-bg-300 h-full w-full border-md object-cover"
         alt={name}
         on:load={handleImgLoad}
         on:error={handleImgError} />

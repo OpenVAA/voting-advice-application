@@ -261,7 +261,7 @@ The same component can also be used to display the answers of the voter and anot
     <label on:click={(e) => handleClick(e, id)} on:keyup={(e) => handleKeyUp(e, id)}>
       <input
         type="radio"
-        class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
+        class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
         class:entitySelected={otherSelected == id}
         name="questionChoices-{question.id}"
         disabled={mode !== 'answer'}
@@ -286,7 +286,7 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   fieldset.vertical {
-    @apply gap-md grid-flow-row auto-rows-fr;
+    @apply grid-flow-row auto-rows-fr gap-md;
     grid-template-columns: fr fr auto;
   }
 
@@ -296,11 +296,11 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   label {
-    @apply gap-md grid;
+    @apply grid gap-md;
   }
 
   fieldset.vertical label {
-    @apply gap-md min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start;
+    @apply min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start gap-md;
     grid-column: 2;
     grid-template-columns: auto;
   }

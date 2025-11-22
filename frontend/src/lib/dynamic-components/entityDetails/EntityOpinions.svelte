@@ -59,7 +59,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
       : undefined;
 </script>
 
-<div class="mt-xl gap-xxl px-lg pb-safelgb grid">
+<div class="mt-xl grid gap-xxl px-lg pb-safelgb">
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}

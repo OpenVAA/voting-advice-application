@@ -189,7 +189,7 @@ Display a question for answering.
     {#if $appSettings.questions.resultsPreview?.enabled && $resultsAvailable}
       <!-- Align center but if there are more results that fit, align the to start (left) so that the top ones are shown -->
       <div
-        class="pt-md flex w-min max-w-full flex-col items-start place-self-center overflow-hidden"
+        class="flex w-min max-w-full flex-col items-start place-self-center overflow-hidden pt-md"
         transition:slide={{ axis: 'y', duration: DELAY['sm'] }}>
         <ResultsPreview
           entityType={$appSettings.questions.resultsPreview.entityType}

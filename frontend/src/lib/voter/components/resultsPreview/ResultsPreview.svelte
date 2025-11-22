@@ -70,7 +70,7 @@ A dynamic component for showing a preview of the current best matches.
     {#if !hideLabel}
       <!-- Match height to Avatar.size=sm: h-[2.75rem] -->
       <div
-        class="small-label pe-sm pt-sm absolute start-0 top-0 flex h-[2.75rem] w-min -translate-x-[100%] items-center text-center">
+        class="small-label absolute start-0 top-0 flex h-[2.75rem] w-min -translate-x-[100%] items-center pe-sm pt-sm text-center">
         {$t('components.resultsPreview.label', { count: numResults })}
       </div>
     {/if}
