@@ -1,6 +1,7 @@
 export * from './controller/abortError';
 export * from './controller/controller';
 export * from './controller/controller.type';
+export * from './controller/noOpController';
 export * from './entity/entity.type';
 export * from './entity/getEntity';
 export * from './id/haveSameId';
