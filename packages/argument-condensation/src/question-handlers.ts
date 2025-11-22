@@ -34,7 +34,7 @@ export async function handleBooleanQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.BooleanPros,
-        options: { ...options, runId: options.runId },
+        options: { ...options, runId: options.runId + '-pros' },
         parallelBatches
       });
       results.push(prosResult);
@@ -44,7 +44,7 @@ export async function handleBooleanQuestion({
         question,
         comments: group.comments,
         condensationType: CONDENSATION_TYPE.BooleanCons,
-        options: { ...options, runId: options.runId },
+        options: { ...options, runId: options.runId + '-cons' },
         parallelBatches
       });
       results.push(consResult);
