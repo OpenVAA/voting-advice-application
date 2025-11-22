@@ -306,21 +306,20 @@ export type CandidateUserData<TNominations extends boolean | undefined = undefin
 };
 
 /**
- * Results for an admin job.
+ * Result of an admin job. 
  * TODO: Define in a more logical place when saved job listing is implemented.
  */
-export type AdminJobData = {
+export type AdminJobResult = {
   jobId: JobInfo['id'];
   jobType: AdminFeature;
   /**
    * Author email
    */
   author: string;
-  status: 'completed' | 'failed' | 'aborted';
+  status: 'completed' | 'failed' | 'aborted'; // TODO: this could be dynamic, right?
   startTime?: string;
   endTime?: string;
   input?: Serializable;
-  output?: Serializable;
   messages?: Array<JobMessage>;
   metadata?: LLMPipelineMetrics;
 };
@@ -418,4 +417,4 @@ export type AbortJobOptions = WithAuth & {
 // Most likely will be extended in the future (e.g. cancel queued jobs also?)
 export type AbortAllJobsOptions = WithAuth;
 
-export type InsertJobResultOptions = WithAuth & { data: AdminJobData };
+export type InsertJobResultOptions = WithAuth & { data: AdminJobResult };

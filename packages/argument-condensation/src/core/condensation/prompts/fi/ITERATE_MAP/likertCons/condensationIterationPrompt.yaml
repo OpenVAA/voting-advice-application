@@ -1,8 +1,9 @@
 promptId: 'map_likertCons_iterate_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
 
 promptText: |
   olet asiantuntija poliittisessa argumentaatiossa. tehtäväsi on lukea lista kommentteja ja lista argumentteja ja selvittää, löytyykö kommenteista joitakin argumentteja, joita kommenteissa on esitetty aihetta "{{topic}}" vastaan mutta joita ei vielä löydy argumenttilistasta. Argumentti voi olla looginen perustelu tai periaate. Jos argumenttilista sisältää kaikki argumentit väitettä vastaan, joita kommenteista löytyy, vastaa tyhjällä listalla ja tyhjällä reasoning-kohdalla. Toimi näin myös, jos argumenttilista on tyhjä ja kommenteista ei löydy argumentteja, jotka perustelevat, miksi väite ei pidä täysin paikkaansa. 
