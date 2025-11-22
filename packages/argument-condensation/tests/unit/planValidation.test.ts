@@ -8,17 +8,11 @@ describe('validatePlan', () => {
   function createStep(operation: CondensationOperation, params: Record<string, unknown>): ProcessingStep {
     // Add default required prompt fields to params to pass individual step validation
     const fullParams = {
-      initialBatchPrompt: 'initial',
       initialBatchPromptId: 'initial-id',
-      refinementPrompt: 'refine',
       refinementPromptId: 'refine-id',
-      condensationPrompt: 'condense',
       condensationPromptId: 'condense-id',
-      iterationPrompt: 'iterate',
       iterationPromptId: 'iterate-id',
-      coalescingPrompt: 'coalesce',
       coalescingPromptId: 'coalesce-id',
-      groundingPrompt: 'ground',
       groundingPromptId: 'ground-id',
       ...params
     };

@@ -2,17 +2,13 @@ import { BaseController } from '@openvaa/core';
 import { createBatches } from './createBatches';
 import { validateInputTokenCount } from './validateInputTokenCount';
 import { BATCH_PROCESSING } from '../../../defaultValues';
-import { PromptRegistry } from '../../condensation/prompts/promptRegistry';
 import { CondensationOperations } from '../../types';
 import type { Controller } from '@openvaa/core';
 import type {
   IterateMapOperationParams,
-  IterateMapPrompt,
   MapOperationParams,
-  MapPrompt,
   ProcessingStep,
   ReduceOperationParams,
-  ReducePrompt,
   VAAComment
 } from '../../types';
 
@@ -61,12 +57,6 @@ export async function createCondensationSteps({
     throw new Error('There must be at least one comment to process.');
   }
 
-  const promptRegistry = await PromptRegistry.create(language, controller);
-
-  const mapPrompt = promptRegistry.getPrompt(mapPromptId) as MapPrompt;
-  const mapIterationPrompt = promptRegistry.getPrompt(mapIterationPromptId) as IterateMapPrompt;
-  const reducePrompt = promptRegistry.getPrompt(reducePromptId) as ReducePrompt;
-
   // --- Dynamic Calculation of Batch Size with Validation ---
 
   // 1. Determine initial map batchSize - use max batch size, but if there are fewer comments, use the comment count
@@ -76,10 +66,11 @@ export async function createCondensationSteps({
 
   // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures
   // Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
-  let validationResult = validateInputTokenCount({
+  let validationResult = await validateInputTokenCount({
     batches,
     topic: questionName,
-    condensationPrompt: mapPrompt.promptText,
+    condensationPromptId: mapPromptId,
+    language,
     parallelFactor,
     modelTPMLimit
   });
@@ -100,10 +91,11 @@ export async function createCondensationSteps({
 
       // Recreate batches with new size and revalidate
       batches = createBatches({ array: comments, batchSize: currentBatchSize });
-      validationResult = validateInputTokenCount({
+      validationResult = await validateInputTokenCount({
         batches,
         topic: questionName,
-        condensationPrompt: mapPrompt.promptText,
+        condensationPromptId: mapPromptId,
+        language,
         parallelFactor,
         modelTPMLimit
       });
@@ -155,16 +147,14 @@ export async function createCondensationSteps({
       operation: CondensationOperations.MAP,
       params: {
         batchSize,
-        condensationPromptId: mapPromptId,
-        condensationPrompt: mapPrompt.promptText
+        condensationPromptId: mapPromptId
       } as MapOperationParams
     },
     {
       operation: CondensationOperations.ITERATE_MAP,
       params: {
         batchSize,
-        iterationPromptId: mapIterationPromptId,
-        iterationPrompt: mapIterationPrompt.promptText
+        iterationPromptId: mapIterationPromptId
       } as IterateMapOperationParams
     }
   ];
@@ -183,8 +173,7 @@ export async function createCondensationSteps({
       operation: CondensationOperations.REDUCE,
       params: {
         denominator,
-        coalescingPromptId: reducePromptId,
-        coalescingPrompt: reducePrompt.promptText
+        coalescingPromptId: reducePromptId
       } as ReduceOperationParams
     });
 

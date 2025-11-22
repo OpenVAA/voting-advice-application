@@ -1,16 +1,10 @@
 import { AbortError, BaseController } from '@openvaa/core';
+import { loadPrompt } from '@openvaa/llm';
 import * as path from 'path';
 import { ResponseWithArgumentsSchema } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
 import { CondensationOperations } from '../types';
-import {
-  calculateStepWeights,
-  createBatches,
-  LatencyTracker,
-  normalizeArgumentLists,
-  setPromptVars,
-  validatePlan
-} from '../utils';
+import { calculateStepWeights, createBatches, LatencyTracker, normalizeArgumentLists, validatePlan } from '../utils';
 import { OperationTreeBuilder } from '../utils/operationTrees/operationTreeBuilder';
 import type { Controller } from '@openvaa/core';
 import type { LLMObjectGenerationResult, LLMProvider } from '@openvaa/llm';
@@ -115,10 +109,12 @@ export class Condenser {
   private modelsUsed: Set<string> = new Set();
   private startTime: Date;
   private controller: Controller;
+  private language: string;
 
   constructor(private input: CondensationRunInput) {
     this.runId = input.options.runId;
     this.controller = input.options.controller ?? new BaseController();
+    this.language = input.options.language;
     this.latencyTracker = new LatencyTracker(this.controller);
     this.startTime = new Date();
 
@@ -338,7 +334,6 @@ export class Condenser {
 
     // Sequential processing: each batch builds upon previous results
     let currentArguments: Array<Argument> = []; // Accumulates arguments across batches
-    const prompt = params.initialBatchPrompt; // Initial doesn't get arguments as input. Separate prompt for this is kept for clarity
     const allPromptCalls: Array<PromptCall> = [];
 
     // Go through each batch and refine it
@@ -358,10 +353,13 @@ export class Condenser {
         templateVariables.existingArguments = JSON.stringify(currentArguments, null, 2);
       }
 
-      const promptText = setPromptVars({
-        promptText: prompt,
+      // Load prompt from centralized registry with variables
+      const promptId = isFirstBatch ? params.initialBatchPromptId : params.refinementPromptId;
+      const { promptText } = await loadPrompt({
+        promptId,
+        language: this.language,
         variables: templateVariables,
-        controller: this.controller
+        throwIfVarsMissing: false
       });
 
       // Prepare messages for LLM
@@ -466,9 +464,8 @@ export class Condenser {
       stepIndex,
       previousNodeMapping,
       operation: CondensationOperations.MAP,
-      prompt: params.condensationPrompt,
-      logIdentifier: 'BATCH',
       promptId: params.condensationPromptId,
+      logIdentifier: 'BATCH',
       prepareTemplateVars: (batch) => ({
         topic: this.input.question.name,
         comments: (batch as Array<VAAComment>).map((c) => c.text).join('\n')
@@ -518,9 +515,8 @@ export class Condenser {
       stepIndex,
       previousNodeMapping,
       operation: CondensationOperations.ITERATE_MAP,
-      prompt: params.iterationPrompt,
-      logIdentifier: 'ITERATION BATCH',
       promptId: params.iterationPromptId,
+      logIdentifier: 'ITERATION BATCH',
       prepareTemplateVars: (item) => ({
         topic: this.input.question.name,
         arguments: JSON.stringify(item.argList, null, 2), // Previous arguments
@@ -591,9 +587,8 @@ export class Condenser {
       stepIndex,
       previousNodeMapping: chunkNodeMapping,
       operation: CondensationOperations.REDUCE,
-      prompt: params.coalescingPrompt,
-      logIdentifier: 'CHUNK',
       promptId: params.coalescingPromptId,
+      logIdentifier: 'CHUNK',
       prepareTemplateVars: (chunk) => ({
         topic: this.input.question.name,
         argumentLists: JSON.stringify(chunk, null, 2) // Multiple argument lists to merge
@@ -649,9 +644,8 @@ export class Condenser {
       stepIndex,
       previousNodeMapping,
       operation: CondensationOperations.GROUND,
-      prompt: params.groundingPrompt,
-      logIdentifier: 'LIST',
       promptId: params.groundingPromptId,
+      logIdentifier: 'LIST',
       prepareTemplateVars: (argumentList, i) => ({
         topic: this.input.question.name,
         arguments: JSON.stringify(argumentList, null, 2), // Arguments to ground
@@ -685,9 +679,8 @@ export class Condenser {
     stepIndex: number;
     previousNodeMapping: Array<Array<string>>;
     operation: CondensationOperation;
-    prompt: string;
-    logIdentifier: string;
     promptId: string;
+    logIdentifier: string;
     prepareTemplateVars: (item: TInputItem, index: number) => Record<string, unknown>; // Custom logic for how to format variables
     parallelBatches?: number;
   }): Promise<{
@@ -700,9 +693,8 @@ export class Condenser {
       stepIndex,
       previousNodeMapping,
       operation,
-      prompt,
-      logIdentifier,
       promptId,
+      logIdentifier,
       prepareTemplateVars,
       parallelBatches = MODEL_DEFAULTS.PARALLEL_BATCHES
     } = config;
@@ -748,18 +740,21 @@ export class Condenser {
 
     // PHASE 2: PREPARE LLM INPUTS
     // Transform each item into an LLM input using operation-specific logic
-    const llmInputs = items.map((item, i) => {
-      const templateVariables = prepareTemplateVars(item, i);
-      const promptText = setPromptVars({
-        promptText: prompt,
-        variables: templateVariables,
-        controller: this.controller
-      });
-      return {
-        messages: [{ role: 'system' as const, content: promptText }],
-        temperature: 0.7
-      };
-    });
+    const llmInputs = await Promise.all(
+      items.map(async (item, i) => {
+        const templateVariables = prepareTemplateVars(item, i);
+        const { promptText } = await loadPrompt({
+          promptId,
+          language: this.language,
+          variables: templateVariables,
+          throwIfVarsMissing: false
+        });
+        return {
+          messages: [{ role: 'system' as const, content: promptText }],
+          temperature: 0.7
+        };
+      })
+    );
 
     // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
     // The llmProvider handles all retry logic (for both network and validation errors) internally.

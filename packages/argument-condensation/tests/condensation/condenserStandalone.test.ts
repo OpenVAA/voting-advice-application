@@ -1,21 +1,9 @@
+import { noOpController } from '@openvaa/core';
 import { describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
-import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { CONDENSATION_TYPE } from '../../src/core/types';
-import type { Controller } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
 import type { CondensationRunInput } from '../../src/core/types';
-
-// No-op controller for tests to prevent logging output
-const noOpLogger: Controller = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {},
-  checkAbort: () => {},
-  defineSubOperations: () => {},
-  getCurrentOperation: () => null
-};
 
 // Mock LLM Provider for new API
 function createMockLLMProvider() {
@@ -99,9 +87,6 @@ const mockComments = [
 
 describe('Condenser Standalone Test', () => {
   test('It should run the complete condensation pipeline with mock data', async () => {
-    // Initialize prompt registry
-    await PromptRegistry.create('en');
-
     // Create condensation input
     const input = {
       question: mockQuestion,
@@ -114,22 +99,26 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 3,
-              condensationPrompt:
-                'Extract and summarize the main arguments from these comments that support the position.',
-              iterationPrompt: 'Refine the arguments based on feedback and ensure clarity.'
+              condensationPromptId: 'map_likertPros_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 3,
+              iterationPromptId: 'map_likertPros_iterate_v1'
             }
           },
           {
             operation: 'REDUCE' as const,
             params: {
               denominator: 2,
-              coalescingPrompt:
-                'Combine similar arguments into cohesive statements while preserving unique perspectives.'
+              coalescingPromptId: 'reduce_likertPros_coalescing_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        controller: noOpLogger
+        controller: noOpController
       }
     };
 
@@ -164,21 +153,26 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 2,
-              condensationPrompt: 'Extract arguments that oppose the position.',
-              iterationPrompt: 'Refine opposing arguments.'
+              condensationPromptId: 'map_likertCons_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 2,
+              iterationPromptId: 'map_likertCons_iterate_v1'
             }
           },
           {
             operation: 'REDUCE' as const,
             params: {
               denominator: 2,
-              coalescingPrompt:
-                'Combine similar arguments into cohesive statements while preserving unique perspectives.'
+              coalescingPromptId: 'reduce_likertCons_coalescing_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        controller: noOpLogger
+        controller: noOpController
       }
     };
 
@@ -201,13 +195,19 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 1,
-              condensationPrompt: 'Extract arguments.',
-              iterationPrompt: 'Refine arguments.'
+              condensationPromptId: 'map_likertPros_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 1,
+              iterationPromptId: 'map_likertPros_iterate_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        controller: noOpLogger
+        controller: noOpController
       }
     };
 

@@ -1,7 +1,7 @@
+import { noOpController } from '@openvaa/core';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
 import { CondensationOperations } from '../../src/core/types';
-import type { Controller } from '@openvaa/core';
 import type { LLMProvider } from '@openvaa/llm';
 import type {
   CondensationRunInput,
@@ -11,17 +11,6 @@ import type {
   SupportedQuestion,
   VAAComment
 } from '../../src/core/types';
-
-// No-op controller for tests to prevent logging output
-const noOpLogger: Controller = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {},
-  checkAbort: () => {},
-  defineSubOperations: () => {},
-  getCurrentOperation: () => null
-};
 
 // Mock the file system to prevent writing operation trees
 vi.mock('fs/promises', () => ({
@@ -102,24 +91,22 @@ describe('Condenser Integration Tests', () => {
 
     const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      .mockResolvedValueOnce([...mapResponses]) // For the map phase
-      .mockResolvedValueOnce([...iterateMapResponses]); // For the iterate_map phase
+      .mockResolvedValueOnce([...mapResponses.map(response => ({ ...response, model: 'gpt-4o' }))]) // For the map phase
+      .mockResolvedValueOnce([...iterateMapResponses.map(response => ({ ...response, model: 'gpt-4o' }))]); // For the iterate_map phase
 
     const steps: Array<ProcessingStep> = [
       {
         operation: CondensationOperations.MAP,
         params: {
           batchSize: 10,
-          condensationPrompt: 'map prompt',
-          condensationPromptId: 'map-prompt-id'
+          condensationPromptId: 'map_booleanPros_condensation_v1'
         } as MapOperationParams
       },
       {
         operation: CondensationOperations.ITERATE_MAP,
         params: {
           batchSize: 10,
-          iterationPrompt: 'iteration prompt',
-          iterationPromptId: 'iteration-prompt-id'
+          iterationPromptId: 'map_booleanPros_iterate_v1'
         } as IterateMapOperationParams
       }
     ];
@@ -129,13 +116,12 @@ describe('Condenser Integration Tests', () => {
       comments: mockComments,
       options: {
         llmProvider: llmProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         outputType: 'booleanPros',
         processingSteps: steps,
         runId: 'happy-path-test',
         createVisualizationData: false,
-        controller: noOpLogger
+        controller: noOpController
       }
     };
 
@@ -157,24 +143,22 @@ describe('Condenser Integration Tests', () => {
     // Simulate success for all calls since generateObjectParallel handles retries internally
     const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      .mockResolvedValueOnce([validResponse]) // map phase
-      .mockResolvedValueOnce([validResponse]); // iterate_map phase
+      .mockResolvedValueOnce([...[validResponse].map(response => ({ ...response, model: 'gpt-4o' }))]) // map phase
+      .mockResolvedValueOnce([...[validResponse].map(response => ({ ...response, model: 'gpt-4o' }))]); // iterate_map phase
 
     const steps: Array<ProcessingStep> = [
       {
         operation: CondensationOperations.MAP,
         params: {
           batchSize: 1,
-          condensationPrompt: 'map prompt',
-          condensationPromptId: 'map-prompt-id'
+          condensationPromptId: 'map_booleanPros_condensation_v1'
         } as MapOperationParams
       },
       {
         operation: CondensationOperations.ITERATE_MAP,
         params: {
           batchSize: 1,
-          iterationPrompt: 'iteration prompt',
-          iterationPromptId: 'iteration-prompt-id'
+          iterationPromptId: 'map_booleanPros_iterate_v1'
         } as IterateMapOperationParams
       }
     ];
@@ -184,13 +168,12 @@ describe('Condenser Integration Tests', () => {
       comments: mockComments,
       options: {
         llmProvider: llmProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         outputType: 'booleanPros',
         processingSteps: steps,
         runId: 'retry-test',
         createVisualizationData: false,
-        controller: noOpLogger
+        controller: noOpController
       }
     };
 

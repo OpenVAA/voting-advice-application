@@ -1,12 +1,8 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
-import { CONDENSATION_TYPE, CondensationOperations } from '../../src/core/types';
+import { describe, expect, test, vi } from 'vitest';
 import { createCondensationSteps } from '../../src/core/utils/condensation/defineCondensationSteps';
 import { validatePlan } from '../../src/core/utils/condensation/planValidation';
 import type { VAAComment } from '../../src/core/types';
-import type { MapPrompt, ReducePrompt } from '../../src/core/types/llm/prompt';
 
-vi.mock('../../src/core/condensation/prompts/promptRegistry');
 vi.mock('../../src/core/utils/condensation/validateInputTokenCount', () => ({
   validateInputTokenCount: vi.fn(() => ({ success: true }))
 }));
@@ -14,33 +10,6 @@ vi.mock('../../src/core/utils/condensation/validateInputTokenCount', () => ({
 const mapPromptId = 'map-prompt';
 const mapIterationPromptId = 'map-iteration-prompt';
 const reducePromptId = 'reduce-prompt';
-
-function mockGetPrompt(promptId: string): MapPrompt | ReducePrompt {
-  if (promptId.includes('reduce')) {
-    return {
-      promptId,
-      promptText: 'Test reduce prompt',
-      operation: CondensationOperations.REDUCE,
-      condensationType: CONDENSATION_TYPE.LikertPros,
-      params: {
-        coalescingPrompt: 'Test reduce prompt',
-        coalescingPromptId: reducePromptId,
-        denominator: 2
-      }
-    };
-  }
-  return {
-    promptId,
-    promptText: 'Test map prompt',
-    operation: CondensationOperations.MAP,
-    condensationType: CONDENSATION_TYPE.LikertPros,
-    params: {
-      condensationPrompt: 'Test map prompt',
-      condensationPromptId: mapPromptId,
-      batchSize: 30
-    }
-  };
-}
 
 function createMockComments(count: number): Array<VAAComment> {
   return Array.from({ length: count }, (_, i) => ({
@@ -56,12 +25,6 @@ describe('createCondensationSteps', () => {
   const questionName = 'Test Question';
   const parallelFactor = 3;
   const modelTPMLimit = 30000;
-
-  beforeEach(() => {
-    vi.mocked(PromptRegistry.create).mockResolvedValue({
-      getPrompt: mockGetPrompt
-    } as unknown as PromptRegistry);
-  });
 
   const testCases = [
     { totalComments: 1 },
