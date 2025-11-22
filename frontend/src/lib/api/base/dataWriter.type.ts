@@ -7,7 +7,6 @@ import type {
 } from '@openvaa/app-shared';
 import type { Id, Serializable } from '@openvaa/core';
 import type { CandidateData, EntityType } from '@openvaa/data';
-import type { LLMPipelineMetrics } from '@openvaa/llm';
 import type { AdminFeature } from '$lib/admin/features';
 import type {
   ActiveJobQueryParams,
@@ -306,22 +305,24 @@ export type CandidateUserData<TNominations extends boolean | undefined = undefin
 };
 
 /**
- * Result of an admin job. 
+ * Result of an admin job.
  * TODO: Define in a more logical place when saved job listing is implemented.
  */
-export type AdminJobResult = {
+export type AdminJobRecord = {
   jobId: JobInfo['id'];
   jobType: AdminFeature;
+  electionId: Id;
   /**
    * Author email
    */
   author: string;
-  status: 'completed' | 'failed' | 'aborted'; // TODO: this could be dynamic, right?
+  endStatus: 'completed' | 'failed' | 'aborted'; // TODO: this could be dynamic, right?
   startTime?: string;
   endTime?: string;
   input?: Serializable;
+  output?: Serializable;
   messages?: Array<JobMessage>;
-  metadata?: LLMPipelineMetrics;
+  metadata?: Serializable;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -417,4 +418,4 @@ export type AbortJobOptions = WithAuth & {
 // Most likely will be extended in the future (e.g. cancel queued jobs also?)
 export type AbortAllJobsOptions = WithAuth;
 
-export type InsertJobResultOptions = WithAuth & { data: AdminJobResult };
+export type InsertJobResultOptions = WithAuth & { data: AdminJobRecord };
