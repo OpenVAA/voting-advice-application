@@ -267,7 +267,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       endpoint: 'adminJobs',
       body: { data },
       authToken
-    }).catch((err) => err);
+    });
     return { type: 'success' };
   }
 

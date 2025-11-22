@@ -1,10 +1,10 @@
-import { AbortError, type Id } from '@openvaa/core';
+import { AbortError, type Id, type Serializable } from '@openvaa/core';
 import { generateQuestionInfo as generateQuestionInfoAPI } from '@openvaa/question-info';
 import { type QuestionInfoOperation } from '@openvaa/question-info';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
-import { markAborted } from '../jobs/jobStore';
+import { getAllMessagesFromJob, getJob, markAborted } from '../jobs/jobStore';
 import { PipelineController } from '../jobs/pipelineController';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -19,7 +19,7 @@ import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
  * @param args.electionId - Election id to scope questions
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
  * @param args.fetch - SvelteKit fetch function for data loading
- * @param args.locale - Output language 
+ * @param args.locale - Output language
  * @param args.jobId - Job ID for tracking progress
  * @param args.authToken - Authentication token for API calls
  * @param args.operations - Which operations to perform (Terms, InfoSections, or both)
@@ -56,6 +56,18 @@ export async function generateQuestionInfo({
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
+
+  // Track start time and input parameters for job record
+  const startTime = new Date().toISOString();
+  const inputParams = {
+    electionId,
+    questionIds,
+    operations: operations.map(String),
+    locale,
+    ...(sectionTopics && { sectionTopics }),
+    ...(customInstructions && { customInstructions }),
+    ...(questionContext && { questionContext })
+  };
 
   try {
     // 1) Load data
@@ -173,15 +185,80 @@ export async function generateQuestionInfo({
     }
 
     controller.complete();
+
+    // Save job record to Strapi
+    const job = getJob(jobId);
+    if (job) {
+      await dataWriter.insertJobResult({
+        authToken,
+        data: {
+          jobId,
+          jobType: 'QuestionInfoGeneration',
+          electionId,
+          author: job.author,
+          endStatus: 'completed',
+          startTime,
+          endTime: new Date().toISOString(),
+          input: inputParams,
+          output: results as unknown as Array<Serializable>,
+          messages: getAllMessagesFromJob(jobId),
+          metadata: { questionsProcessed: results.length }
+        }
+      });
+    }
+
     return { type: 'success' };
   } catch (error) {
+    const job = getJob(jobId);
+
     // Job was aborted if the error is an AbortError
     if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
       markAborted(jobId);
+
+      // Save aborted job record to Strapi
+      if (job) {
+        await dataWriter.insertJobResult({
+          authToken,
+          data: {
+            jobId,
+            jobType: 'QuestionInfoGeneration',
+            electionId,
+            author: job.author,
+            endStatus: 'aborted',
+            startTime,
+            endTime: new Date().toISOString(),
+            input: inputParams,
+            output: null,
+            messages: getAllMessagesFromJob(jobId),
+            metadata: null
+          }
+        });
+      }
     } else {
       // else it's a real error so we fail the job
-      const message = error && typeof error === 'object' && 'message' in error ? error.message : JSON.stringify(error);
+      const message =
+        error && typeof error === 'object' && 'message' in error ? String(error.message) : JSON.stringify(error);
       controller.fail(`Question info generation failed: ${message}`);
+
+      // Save failed job record to Strapi
+      if (job) {
+        await dataWriter.insertJobResult({
+          authToken,
+          data: {
+            jobId,
+            jobType: 'QuestionInfoGeneration',
+            electionId,
+            author: job.author,
+            endStatus: 'failed',
+            startTime,
+            endTime: new Date().toISOString(),
+            input: inputParams,
+            output: null,
+            messages: getAllMessagesFromJob(jobId),
+            metadata: { error: message }
+          }
+        });
+      }
     }
     throw error;
   }
