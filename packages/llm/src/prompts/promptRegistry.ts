@@ -368,7 +368,8 @@ export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPrompt
     promptText: promptData.prompt,
     variables: finalVariables,
     strict,
-    controller: new BaseController()
+    controller: new BaseController(),
+    optional: promptData.optionalParams
   });
 
   // Build metadata
