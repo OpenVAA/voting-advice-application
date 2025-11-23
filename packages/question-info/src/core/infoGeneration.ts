@@ -10,7 +10,7 @@ import {
 import { chooseQInfoSchema, determinePromptKey, transformResponse } from '../utils';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { z } from 'zod';
-import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from '../types';
+import type { QuestionInfoOptions, QuestionInfoResult, ResponseWithInfo } from './infoGeneration.type';
 
 /**
  * Generate question info for any number of questions with parallelization
