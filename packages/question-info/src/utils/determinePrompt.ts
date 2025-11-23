@@ -1,4 +1,4 @@
-import { QUESTION_INFO_OPERATION } from '../types';
+import { QUESTION_INFO_OPERATION } from '../core/infoGeneration.type';
 
 /**
  * Determine which prompt template to use based on operations

@@ -1,6 +1,6 @@
 import { generateInfo } from './core/infoGeneration';
 import type { AnyQuestionVariant } from '@openvaa/data';
-import type { QuestionInfoOptions, QuestionInfoResult } from './types';
+import type { QuestionInfoOptions, QuestionInfoResult } from './core/infoGeneration.type';
 
 /**
  * Generate question info (sections and/or terms) using LLM

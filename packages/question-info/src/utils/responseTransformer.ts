@@ -1,5 +1,5 @@
 import type { LLMObjectGenerationResult } from '@openvaa/llm';
-import type { QuestionInfoData, QuestionInfoResult, ResponseWithInfo } from '../types';
+import type { QuestionInfoData, QuestionInfoResult, ResponseWithInfo } from '../core/infoGeneration.type';
 
 /**
  * Transform any LLM response into a standardized QuestionInfoResult

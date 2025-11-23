@@ -3,4 +3,4 @@ import './prompts';
 
 export * from './api';
 export * from './consts';
-export * from './types';
+export * from './core/infoGeneration.type';
