@@ -29,8 +29,6 @@ interface Operation {
   progress: number;
 }
 
-// TODO: make more readable :,) - e.g. use a PipelineState
-
 /**
  * A controller that can be used to track progress of a sequential pipeline of operations
  * This way we can track progress of long running jobs more granularly

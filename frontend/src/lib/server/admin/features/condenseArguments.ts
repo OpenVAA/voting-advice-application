@@ -152,7 +152,7 @@ export async function condenseArguments({
       });
 
       if (!condensationResults.length || condensationResults.every((r) => !r.data.arguments.length)) {
-        controller.warning(`Condensation failed for question: ${question.name}`);
+        controller.warning(`No arguments found for question: ${question.name}`);
         continue;
       }
 
