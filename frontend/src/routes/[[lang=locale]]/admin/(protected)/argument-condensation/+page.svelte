@@ -14,6 +14,7 @@ Page for controlling the argument condensation feature.
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
+  import { handleAbortJob } from '$lib/admin/utils/abortJob';
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -113,33 +114,6 @@ Page for controlling the argument condensation feature.
       // Always cancel the form action to prevent page reload
       return { cancel: true };
     };
-  }
-
-  ////////////////////////////////////////////////////////////////////////
-  // Aborting the job
-  ////////////////////////////////////////////////////////////////////////
-
-  // Handle kill job for argument condensation. TODO: start using a utility that is not arg-cond specific
-  async function handleAbortJob(jobId: string) {
-    if (
-      !confirm(
-        t.get('adminApp.jobs.confirmAbortJob', {
-          feature: t.get('adminApp.argumentCondensation.title')
-        })
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await abortJob({
-        jobId,
-        reason: 'Admin aborted this argument condensation process'
-      });
-    } catch (error) {
-      console.error('Error aborting job:', error);
-      alert(t.get('adminApp.jobs.abortJobFailed'));
-    }
   }
 </script>
 
@@ -258,7 +232,7 @@ Page for controlling the argument condensation feature.
         class="w-full"
         feature={'ArgumentCondensation'}
         showFeatureLink={false}
-        onAbortJob={handleAbortJob} />
+        onAbortJob={(jobId) => handleAbortJob(jobId, { feature: 'ArgumentCondensation', abortJob, t })} />
     </div>
   </div>
 </MainContent>

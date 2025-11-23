@@ -16,6 +16,7 @@ Page for controlling the question info generation feature.
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
+  import { handleAbortJob } from '$lib/admin/utils/abortJob';
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -136,32 +137,6 @@ Page for controlling the question info generation feature.
 
       return { cancel: true };
     };
-  }
-
-  ////////////////////////////////////////////////////////////////////////
-  // Aborting the job
-  ////////////////////////////////////////////////////////////////////////
-
-  async function handleAbortJob(jobId: string) {
-    if (
-      !confirm(
-        t.get('adminApp.jobs.confirmAbortJob', {
-          feature: t.get('adminApp.questionInfo.title')
-        })
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await abortJob({
-        jobId,
-        reason: 'Admin aborted this question info generation process'
-      });
-    } catch (error) {
-      console.error('Error aborting job:', error);
-      alert(t.get('adminApp.jobs.abortJobFailed'));
-    }
   }
 </script>
 
@@ -361,7 +336,7 @@ Page for controlling the question info generation feature.
         class="w-full"
         feature={'QuestionInfoGeneration'}
         showFeatureLink={false}
-        onAbortJob={handleAbortJob} />
+        onAbortJob={(jobId) => handleAbortJob(jobId, { feature: 'QuestionInfoGeneration', abortJob, t })} />
     </div>
   </div>
 </MainContent>
