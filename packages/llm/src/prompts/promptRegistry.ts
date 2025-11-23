@@ -314,7 +314,7 @@ export async function registerPrompts(options: RegisterPromptsOptions): Promise<
  * }
  */
 export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPromptResult> {
-  const { promptId, language, variables, throwIfVarsMissing: strict = true } = options;
+  const { promptId, language, variables, throwIfVarsMissing: strict = true, fallbackLocalization = false } = options;
 
   // Check if prompt exists
   if (!GlobalPromptRegistry.hasPrompt(promptId)) {
@@ -329,7 +329,7 @@ export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPrompt
   let usedFallback = false;
 
   // Fallback to English if not found
-  if (!promptData) {
+  if (!promptData && fallbackLocalization) {
     promptData = GlobalPromptRegistry.getPromptData(promptId, 'en');
     usedFallback = true;
 
@@ -339,6 +339,10 @@ export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPrompt
         `[PromptRegistry] Prompt '${promptId}' not found in language '${language}' or 'en'. Available languages: ${availableLanguages.join(', ')}`
       );
     }
+  } else {
+    throw new Error(
+      `[PromptRegistry] Prompt '${promptId}' not found in language '${language}' and fallbackLocalization is false. Setting fallbackLocalization as false indicates that the developer of this prompt has deemed this task too complex to be reliably localized without a new prompt in the native language of the task.`
+    );
   }
 
   // Validate required parameters
