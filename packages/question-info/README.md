@@ -77,30 +77,15 @@ const results = await generateQuestionInfo({
 
 ## Configuration
 
-### Custom Section Topics
-
-Override default section topics:
+### Output Customization
 
 ```typescript
 const options = {
+  runId,
   operations: [QUESTION_INFO_OPERATION.InfoSections],
   language: 'en',
-  llmProvider,
-  modelConfig: { primary: 'gpt-4o' },
+  llmProvider, // A class instance for making LLM calls
   sectionTopics: ['Historical context', 'Economic implications', 'International comparison']
-};
-```
-
-### Custom Instructions
-
-Add domain-specific guidance:
-
-```typescript
-const options = {
-  operations: [QUESTION_INFO_OPERATION.Terms],
-  language: 'en',
-  llmProvider,
-  modelConfig: { primary: 'gpt-4o' },
   customInstructions: 'Focus on local governance and municipal policy aspects',
   questionContext: 'Finnish municipal elections 2025'
 };
