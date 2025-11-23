@@ -328,21 +328,23 @@ export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPrompt
   let promptData = GlobalPromptRegistry.getPromptData(promptId, language);
   let usedFallback = false;
 
-  // Fallback to English if not found
-  if (!promptData && fallbackLocalization) {
-    promptData = GlobalPromptRegistry.getPromptData(promptId, 'en');
-    usedFallback = true;
+  // Handle missing prompt
+  if (!promptData) {
+    if (fallbackLocalization) {
+      promptData = GlobalPromptRegistry.getPromptData(promptId, 'en');
+      usedFallback = true;
 
-    if (!promptData) {
-      const availableLanguages = GlobalPromptRegistry.getAvailableLanguages(promptId);
+      if (!promptData) {
+        const availableLanguages = GlobalPromptRegistry.getAvailableLanguages(promptId);
+        throw new Error(
+          `[PromptRegistry] Fallback localization failed for prompt '${promptId}'. Prompt is available in these languages: ${availableLanguages.join(', ')}`
+        );
+      }
+    } else {
       throw new Error(
-        `[PromptRegistry] Prompt '${promptId}' not found in language '${language}' or 'en'. Available languages: ${availableLanguages.join(', ')}`
+        `[PromptRegistry] Prompt '${promptId}' not found in language '${language}' and fallbackLocalization is false. Setting fallbackLocalization as false indicates that the developer of this prompt has deemed this task too complex to be reliably localized without a new prompt in the native language of the task. Either create a new native prompt or experiment with fallback localization.`
       );
     }
-  } else {
-    throw new Error(
-      `[PromptRegistry] Prompt '${promptId}' not found in language '${language}' and fallbackLocalization is false. Setting fallbackLocalization as false indicates that the developer of this prompt has deemed this task too complex to be reliably localized without a new prompt in the native language of the task.`
-    );
   }
 
   // Validate required parameters
