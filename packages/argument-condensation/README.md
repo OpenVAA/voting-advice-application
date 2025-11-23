@@ -90,11 +90,14 @@ const entities: Array<HasAnswers> = [
   }
 ];
 
-// Configure LLM provider with model and TPM limit
+// Configure LLM provider
 const llmProvider = new LLMProvider({
   provider: 'openai',
-  apiKey: '...',
-  modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+  apiKey: 'yourkey',
+  modelConfig: {
+    primary: 'gpt-4o',
+    fallback: 'gpt-4o-mini'
+  }
 });
 
 // 2. Call handleQuestion with the setup
@@ -155,8 +158,11 @@ const comments = [
 
 const llmProvider = new LLMProvider({
   provider: 'openai',
-  apiKey: 'sk-proj-42',
-  modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+  apiKey: 'yourkey',
+  modelConfig: {
+    primary: 'gpt-4o',
+    fallback: 'gpt-4o-mini'
+  }
 });
 
 const options = {
