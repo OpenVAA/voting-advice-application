@@ -13,8 +13,8 @@ import type {
   ProviderConfig
 } from './provider.types';
 
-// TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
-// Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
+// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages)
+// TODO: middleware for centralized rate limiting & usage throttling: track TPM across models & providers, gating users, etc.
 // TODO: implement fallback model usage
 // TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
 // TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message
