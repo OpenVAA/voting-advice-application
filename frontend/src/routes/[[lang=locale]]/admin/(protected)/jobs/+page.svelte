@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
+  import { handleAbortJob } from '$lib/admin/utils/abortJob';
 
   // TODO: add error handling & info updates if polling service refresh, abortAllJobs or abortJob fails
 
@@ -39,22 +40,6 @@
     } catch (error) {
       console.error('Error during emergency cleanup:', error);
       alert(t.get('adminApp.jobs.abortAllFailed'));
-    }
-  }
-
-  // TODO: centralize this, used in all feature pages
-  async function handleAbortJob(jobId: string, feature: AdminFeature) {
-    if (!confirm(t.get('adminApp.jobs.confirmAbortJob', { feature }))) {
-      return;
-    }
-    try {
-      await abortJob({
-        jobId,
-        reason: 'Admin aborted this process'
-      });
-    } catch (error) {
-      console.error('Error aborting job:', error);
-      alert(t.get('adminApp.jobs.abortJobFailed'));
     }
   }
 </script>
@@ -106,7 +91,7 @@
       <div class="flex w-3/4 flex-col gap-lg">
         {#each ADMIN_FEATURES as feature}
           <div class="relative">
-            <FeatureJobs {feature} onAbortJob={(jobId) => handleAbortJob(jobId, feature)} />
+            <FeatureJobs {feature} onAbortJob={(jobId) => handleAbortJob(jobId, { feature, abortJob, t })} />
           </div>
         {/each}
       </div>
