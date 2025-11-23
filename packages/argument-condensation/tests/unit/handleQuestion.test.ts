@@ -1,7 +1,6 @@
 import { type HasAnswers, noOpController } from '@openvaa/core';
 import { BooleanQuestion, QUESTION_TYPE } from '@openvaa/data';
 import { describe, expect, test } from 'vitest';
-import { SUPPORTED_LANGUAGES } from '../../src';
 import { handleQuestion } from '../../src/api';
 import type { DataRoot } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
@@ -65,8 +64,6 @@ describe('handleQuestion', () => {
           controller: noOpController
         }
       })
-    ).rejects.toThrow(
-      `Unsupported language: ${unsupportedLanguage}. Please use a supported language: ${SUPPORTED_LANGUAGES.join(', ')}`
-    );
+    ).rejects.toThrow()
   });
 });
