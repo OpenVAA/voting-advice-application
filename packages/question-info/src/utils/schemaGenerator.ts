@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { QUESTION_INFO_OPERATION } from '../types';
-import type { QuestionInfoOperation } from '../types';
+import { QUESTION_INFO_OPERATION } from '../core/infoGeneration.type';
+import type { QuestionInfoOperation } from '../core/infoGeneration.type';
 
 /**
  * Zod schema for a single info section

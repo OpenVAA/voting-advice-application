@@ -1,61 +1,52 @@
 # Question Info
 
-Generate contextual information for VAA questions using LLMs.
+VAA questions often contain terminology that is not be familiar to all voters.
 
-## Problem Description
-
-VAA questions often contain complex political concepts and terminology that may not be familiar to all voters. This package automatically generates helpful contextual information including term definitions and informational sections to help voters better understand the questions.
-
-## Solution
-
-This package uses large language models to generate two types of contextual information:
+To mitigate this issue, LLMs can generate:
 
 - **Term definitions**: Clear explanations of key concepts and terminology in the question itself
 - **Info sections**: Background information and context about the topic
 
-## Dependencies
+This information is then shown to the user next to the question to help clarify the context.
 
-- `@openvaa/data`: VAA data types and question definitions
-- `@openvaa/core`: Controller and base types
-- `@openvaa/llm`: LLM provider interface built on Vercel AI SDK
-- `zod`: Schema validation for structured LLM outputs
-- `js-yaml`: YAML parsing for prompt configuration
+## Package Structure
+
+- [`src/api.ts`](src/api.ts): Main public API
+- [`src/core/`](src/core/): Core generation logic
+- [`src/utils/`](src/utils/): Utility functions for prompt handling and response processing
+- [`src/prompts/`](src/prompts/): Language-specific prompt templates
+- [`src/consts.ts`](src/consts.ts): Package constants and configuration
 
 ## Usage
 
 ### Basic Example
 
-```typescript
-import { generateQuestionInfo, QUESTION_INFO_OPERATION } from '@openvaa/question-info';
-import { LLMProvider } from '@openvaa/llm';
+### Generate Both
 
-// Create an LLM provider instance
+```typescript
+import { LLMProvider } from '@openvaa/llm';
+import { generateQuestionInfo, QUESTION_INFO_OPERATION } from '@openvaa/question-info';
+
+// Initialize the LLM provider
 const llmProvider = new LLMProvider({
   provider: 'openai',
-  apiKey: 'some-key!',
+  apiKey: process.env.OPENAI_API_KEY!,
   modelConfig: {
     primary: 'gpt-4o',
-    fallback: 'gpt-4o-mini' // Optional fallback model
+    fallback: 'gpt-4o-mini'
   }
 });
 
-const questions = [{ id: 'q1', name: 'Should the capital gains tax be increased?' }];
-
+// Generate both terms and info sections
 const results = await generateQuestionInfo({
   questions,
   options: {
     operations: [QUESTION_INFO_OPERATION.Terms, QUESTION_INFO_OPERATION.InfoSections],
     language: 'en',
     llmProvider,
-    runId: 'generation-run-1',
-    questionContext: 'Finnish municipal elections 2025'
+    runId: 'generation-run-1'
   }
 });
-
-console.info(results[0].data.terms); // Generated term definitions
-console.info(results[0].data.infoSections); // Generated info sections
-console.info(results[0].metrics.cost); // Automatic cost tracking
-console.info(results[0].metrics.tokensUsed); // Token usage statistics
 ```
 
 ### Generate Only Terms
@@ -72,44 +63,19 @@ const results = await generateQuestionInfo({
 });
 ```
 
-### Generate Only Info Sections
-
-```typescript
-const results = await generateQuestionInfo({
-  questions,
-  options: {
-    operations: [QUESTION_INFO_OPERATION.InfoSections],
-    language: 'en',
-    llmProvider,
-    modelConfig: { primary: 'gpt-4o' },
-    sectionTopics: ['Background', 'Current situation', 'Key stakeholders']
-  }
-});
-```
-
 ## API Reference
 
 ### Main Function
 
 - [`generateQuestionInfo`](src/api.ts): Generate question info for multiple questions in parallel
 
-### Types
-
-- [`QuestionInfoOptions`](src/types/generationOptions.ts): Configuration options for generation
-- [`QuestionInfoResult`](src/types/generationResult.ts): Result format with generated info and metadata
-- [`QUESTION_INFO_OPERATION`](src/types/generationOptions.ts): Available operations (Terms, InfoSections)
-
 ### Utilities
 
-- [`determinePromptKey`](src/utils/determinePrompt.ts): Select appropriate prompt based on operations
-- [`createDynamicResponseContract`](src/utils/schemaGenerator.ts): Create validation schema for LLM responses
-- [`transformResponse`](src/utils/responseTransformer.ts): Transform LLM responses to result format
+- [`determinePromptKey`](src/utils/determinePrompt.ts): Choose prompt based on the output being asked for
+- [`createDynamicResponseContract`](src/utils/schemaGenerator.ts): Create validation schema for LLM response format
+- [`transformResponse`](src/utils/responseTransformer.ts): Transform LLM responses to package result type
 
 ## Configuration
-
-### Language Support
-
-See [`SUPPORTED_QINFO_LANG`](src/consts.ts) for available languages.
 
 ### Custom Section Topics
 
@@ -140,21 +106,22 @@ const options = {
 };
 ```
 
-## Package Structure
+## Prompting
 
-- [`src/api.ts`](src/api.ts): Main public API
-- [`src/core/`](src/core/): Core generation logic
-- [`src/types/`](src/types/): TypeScript type definitions
-- [`src/utils/`](src/utils/): Utility functions for prompt handling and response processing
-- [`src/prompts/`](src/prompts/): Language-specific prompt templates
-- [`src/consts.ts`](src/consts.ts): Package constants and configuration
+See existing English prompts in [`src/prompts/en/`](src/prompts/en/) for reference. Adhere to .yaml structure when making changes. 
 
-## Adding Language Support
+### Adding Language Support 
+
+#### Option 1: Doing nothing (almost)
+
+Question info is an automatically localized feature. If you want output in Swahili, simply make sure it is one of the app's supported languages. For how this works, see the [`../llm/src/prompts/promptRegistry.ts`](../llm/src/prompts/promptRegistry.ts) loadPrompt() function. 
+
+#### Option 2: Advanced
+
+Only relevant if you want to make sure you are always using a native prompt instead of automatic localization:
 
 1. Create directory in [`src/prompts/`](src/prompts/) with your language code
 2. Add prompt templates: `generateTerms.yaml`, `generateInfoSections.yaml`, `generateBoth.yaml`
 3. Add `instructions.yaml` with generation guidelines
 4. Add example files in the same directory
 5. Update [`SUPPORTED_QINFO_LANG`](src/consts.ts) to include your language
-
-See existing English prompts in [`src/prompts/en/`](src/prompts/en/) for reference.
