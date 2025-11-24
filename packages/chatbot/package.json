@@ -3,7 +3,7 @@
   "name": "@openvaa/chatbot",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/",
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/ && mkdir -p build/core/tools/tmpDB && cp -R src/core/tools/tmpDB/* build/core/tools/tmpDB/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:eval": "bun run src/scripts/chatbotEvaluation.ts",

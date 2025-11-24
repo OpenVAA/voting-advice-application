@@ -90,8 +90,9 @@ export interface ChatbotResponse {
    * LLMStreamResult extends Vercel's StreamTextResult with additional metadata:
    * - latencyMs, attempts, costs (Promise), model, fallbackUsed
    */
-  stream: LLMStreamResult;
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stream: LLMStreamResult<any>; // i wouldn't stress this 'any' type too much, complex generic types are hard to type properly
+  
   state: ConversationState;
 
   /**

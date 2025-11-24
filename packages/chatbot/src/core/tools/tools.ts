@@ -1,28 +1,68 @@
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import type { AnyQuestionVariantData } from '@openvaa/data';
 import type { ChatDataProvider } from './chatDataProvider.type';
 import type { CandidateInfo } from './chatDataProvider.type';
 import type { Tool } from './tool.type';
 
+// ES module directory path
+const currentFilePath = fileURLToPath(import.meta.url);
+const currentDirPath = dirname(currentFilePath);
+
+// Load party information from text files
+const PARTY_INFO = {
+  "European People's Party": readFileSync(join(currentDirPath, 'tmpDB', 'epp.txt'), 'utf-8'),
+  'Progressive Alliance of Socialists and Democrats': readFileSync(
+    join(currentDirPath, 'tmpDB', 'progressives.txt'),
+    'utf-8'
+  ),
+  'Patriots for Europe': readFileSync(join(currentDirPath, 'tmpDB', 'patriots.txt'), 'utf-8')
+};
+
 export function getTools(
-  dataProvider?: ChatDataProvider
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, Tool<any, any>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tools: Record<string, Tool<any, any>> = {};
-
-  // We will also support tools without a data provider but we don't have them defined yet.
-  // E.g. vector search, web search, etc.
-  if (!dataProvider) {
-    return tools;
-  }
-
-  // Automatically create all tools with 1-to-1 correspondence
-  Object.entries(toolFactories).forEach(([toolName, toolFactory]) => {
-    tools[toolName] = toolFactory(dataProvider);
-  });
+  const tools: Record<string, Tool<any, any>> = {
+    getAvailableParties: getAvailableParties(),
+    getPartyInfo: getPartyInfo()
+  };
 
   return tools;
+}
+
+export function getAvailableParties(): Tool<object, Array<string>> {
+  return {
+    description: 'Get all available parties in the 2024 European Parliament election.',
+    inputSchema: z.object({}), // 
+    execute: () => Object.keys(PARTY_INFO)
+  };
+}
+
+export function getPartyInfo(): Tool<{ name: string }, { name: string; information: string }> {
+  return {
+    description: 'Get information about a party by name in the 2024 European Parliament election.',
+    inputSchema: z.object({
+      name: z.string().describe('The name of the party')
+    }),
+    execute: (input) => {
+      // Get the party information from the PARTY_INFO object
+      // TODO: store in DB or redis cache (this information is probably needed often)
+      const name = input.name;
+      const information = PARTY_INFO[name as keyof typeof PARTY_INFO];
+
+      if (!information) {
+        throw new Error(`Party with name ${name} not found`);
+      }
+
+      return {
+        name,
+        information
+      };
+    }
+  };
 }
 
 export function getCandidateInfo(dataProvider: ChatDataProvider): Tool<{ id: string }, CandidateInfo> {

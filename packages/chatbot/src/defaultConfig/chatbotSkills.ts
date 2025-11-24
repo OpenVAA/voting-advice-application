@@ -1,6 +1,7 @@
 export const CHATBOT_SKILLS = [
   'find information about the 2024 EU elections',
-  'find information about parties in the 2024 EU elections',
+  'find information about parties in the 2024 EU elections (including which parties are running)',
+  'explain party histories and policies',
   'help understand election theory and importance',
   'help understand the European Union and how its subsystems work',
   'turn vague interests into concrete questions and propose next step topics when the user is unsure.',

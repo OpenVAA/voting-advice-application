@@ -45,6 +45,11 @@ prompt: |
   Expected Output: { "phase": "user_intent_extraction" }
   Reasoning: Although the topic is now clear, the assistant needs to know what country the user is from before continuing to resolution. It will help with giving specific information about voting procedures, as they differ from country to country.
 
+  Example 1b: Intent clear but need more info
+  User: i would like to know about the parties in the election
+  
+  Expected Output: { "phase": "user_intent_extraction" }
+
   ### Example Set 2: intent_resolution phase
   Examples where the user has clear intent or interest from the start or has arrived at clear interest(s):
 

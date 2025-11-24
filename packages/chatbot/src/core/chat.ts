@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { getTools } from './tools/tools';
 import { CHATBOT_SKILLS, FALLBACK_TOPICS } from '../defaultConfig/chatbotSkills';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
@@ -81,13 +82,14 @@ export class ChatEngine {
     const baseReminder = parsed.baseReminder || '';
     return `${basePrompt}
 
-${setPromptVars({ // the phase prompt
+${setPromptVars({
+  // the phase prompt
   promptText: phaseInstructions,
   variables: {
     chatbotSkills: CHATBOT_SKILLS,
     fallbackTopics: FALLBACK_TOPICS
-  }, 
-  strict: false // some prompt may not have these vars. 
+  },
+  strict: false // some prompt may not have these vars.
 })}
 
 ${baseReminder}`;
@@ -109,6 +111,7 @@ ${baseReminder}`;
     const result = provider.streamText({
       system: systemMessage,
       messages: input.messages,
+      tools: getTools(),
       stopWhen: stepCountIs(input.nSteps ?? 5)
     });
 
