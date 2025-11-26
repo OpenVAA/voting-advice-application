@@ -2,13 +2,15 @@ import { ChatbotController, updateConversation } from '@openvaa/chatbot/server';
 import { getChatbotConfiguration } from '@openvaa/chatbot/server';
 import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
 import { constants } from '$lib/server/constants';
-import type { ChatbotResponse, ConversationState } from '@openvaa/chatbot/server';
+import type { RAGRetrievalResult } from '@openvaa/chatbot';
+import type { ConversationState } from '@openvaa/chatbot/server';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
-const { vectorStore, queryRoutingProvider, queryReformulationProvider, phaseRouterProvider, chatProvider } =
-  await getChatbotConfiguration(constants.LLM_OPENAI_API_KEY);
+const { vectorStore, queryReformulationProvider, chatProvider } = await getChatbotConfiguration(
+  constants.LLM_OPENAI_API_KEY
+);
 
 // API endpoint for chat functionality with RAG enrichment
 // TODO: type the params
@@ -21,22 +23,15 @@ export async function POST({ request, params }: { request: Request; params: any 
   const messages = convertUIMessagesToModelMessages(uiMessages);
   const locale = params.lang || 'en';
 
+  // TODO: fix state management.
   // Build fresh state for this request
   const state: ConversationState = {
     sessionId: sessionId || crypto.randomUUID(),
     messages,
-    phase: 'user_intent_extraction', // Will be determined by phaseRouter
     workingMemory: messages,
     forgottenMessages: [],
     lossyHistorySummary: '',
-    locale,
-    queryCategory: {
-      // Will be determined by categorizeQuery
-      category: 'appropriate',
-      costs: { input: 0, output: 0, total: 0 },
-      durationMs: 0
-    },
-    reformulatedQuery: null
+    locale
   };
 
   // Business logic handled by chatbot package
@@ -44,9 +39,7 @@ export async function POST({ request, params }: { request: Request; params: any 
     locale,
     state,
     vectorStore: vectorStore,
-    queryRoutingProvider: queryRoutingProvider,
-    queryReformulationProvider: queryReformulationProvider,
-    phaseRouterProvider: phaseRouterProvider,
+    reformulationProvider: queryReformulationProvider,
     chatProvider,
     rerankConfig: {
       enabled: true,
@@ -54,16 +47,14 @@ export async function POST({ request, params }: { request: Request; params: any 
       model: 'rerank-v3.5'
     },
     nResultsTarget: 5
-    // chatProvider omitted - ChatEngine will use its default
   });
 
-  // Wrap in SSE stream with metadata
+  // Wrap in SSE stream with RAG metadata collector
   return wrapInSSE({
     stream: response.stream,
-    metadata: response.metadata,
+    ragMetadataCollector: response.metadata.ragMetadataCollector,
     requestStartTime,
     conversationState: state,
-    responseState: response.state,
     messages: messages as Array<{ role: string; content: string }>
   });
 }
@@ -74,17 +65,15 @@ export async function POST({ request, params }: { request: Request; params: any 
  */
 async function wrapInSSE({
   stream,
-  metadata,
+  ragMetadataCollector,
   requestStartTime,
   conversationState,
-  responseState,
   messages
 }: {
   stream: LLMStreamResult;
-  metadata: ChatbotResponse['metadata'];
+  ragMetadataCollector: Array<RAGRetrievalResult>;
   requestStartTime: number;
   conversationState: ConversationState;
-  responseState: ConversationState;
   messages: Array<{ role: string; content: string }>;
 }) {
   const sseStream = new ReadableStream({
@@ -94,12 +83,6 @@ async function wrapInSSE({
       let firstTokenTime = 0;
 
       try {
-        // Send RAG context if available (before streaming starts)
-        if (metadata.ragContext) {
-          controller.enqueue(encoder.encode('event: rag-context\n'));
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(metadata.ragContext.searchResult)}\n\n`));
-        }
-
         // Pipe AI SDK stream
         const aiResponse = stream.toUIMessageStreamResponse();
         const reader = aiResponse.body?.getReader();
@@ -124,20 +107,11 @@ async function wrapInSSE({
 
         // Log conversation exchange
         const userMessage = messages.findLast((msg) => msg.role === 'user')?.content || '';
-        console.info('[Chat API] Logging conversation:', {
-          hasUserMessage: !!userMessage,
-          hasAssistantResponse: !!assistantResponse,
-          sessionId: conversationState.sessionId,
-          phase: responseState.phase
-        });
-
         if (userMessage && assistantResponse) {
           // Fire and forget - don't block response on logging
-          updateConversation(userMessage, assistantResponse, conversationState.sessionId, responseState.phase).catch(
-            (err) => {
-              console.error('[Chat API] Failed to log conversation:', err);
-            }
-          );
+          updateConversation(userMessage, assistantResponse, conversationState.sessionId).catch((err) => {
+            console.error('[Chat API] Failed to log conversation:', err);
+          });
         } else {
           console.warn('[Chat API] Skipping conversation log - missing user or assistant message');
         }
@@ -153,6 +127,55 @@ async function wrapInSSE({
         const tokensPerSecond =
           usage.outputTokens && messageTime > 0 ? usage.outputTokens / (messageTime / 1000) : undefined;
 
+        // Get all steps from stream (available after stream completes)
+        // Each step contains tool calls and tool results from that step
+        const steps = await stream.steps;
+        console.info('[Chat API] Number of steps:', steps.length);
+
+        // Collect all tool results from all steps
+        const allToolResults = steps.flatMap((step) => step.toolResults);
+        console.info('[Chat API] All tool results from all steps:', allToolResults);
+
+        // Extract tool calls for display (collect from all steps)
+        const toolsUsed = allToolResults.map((tr) => ({
+          name: tr.toolName,
+          args: tr.input
+        }));
+        console.info('[Chat API] Formatted toolsUsed:', toolsUsed);
+
+        // Extract RAG metadata from collector
+        // The collector was populated during tool execution with full RAGRetrievalResult objects
+        let ragContexts = null;
+        let rerankingCost = 0;
+        let retrievalDuration = 0;
+        let totalSegments = 0;
+
+        // Get all RAG results from the collector (now an array)
+        if (ragMetadataCollector.length > 0) {
+          console.info('[Chat API] Found RAG metadata from collector:', {
+            numberOfSearches: ragMetadataCollector.length,
+            searches: ragMetadataCollector.map((r, i) => ({
+              index: i,
+              segmentsUsed: r.segmentsUsed,
+              resultsCount: r.searchResult?.results?.length
+            }))
+          });
+
+          // Extract metadata (sum costs and durations across all searches)
+          rerankingCost = ragMetadataCollector.reduce((sum, r) => sum + (r.rerankingCosts?.cost || 0), 0);
+          retrievalDuration = ragMetadataCollector.reduce((sum, r) => sum + (r.durationMs || 0), 0);
+          totalSegments = ragMetadataCollector.reduce((sum, r) => sum + (r.segmentsUsed || 0), 0);
+
+          // Prepare RAG contexts for frontend (send all RAGRetrievalResults)
+          ragContexts = ragMetadataCollector;
+        }
+
+        // Send RAG contexts if available (after streaming completes)
+        if (ragContexts) {
+          controller.enqueue(encoder.encode('event: rag-contexts\n'));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(ragContexts)}\n\n`));
+        }
+
         // Send combined metadata (after streaming completes)
         controller.enqueue(encoder.encode('event: metadata-info\n'));
         controller.enqueue(
@@ -160,25 +183,21 @@ async function wrapInSSE({
             `data: ${JSON.stringify({
               cost: {
                 llm: costs,
-                reformulation: metadata.costs.reformulation,
                 filtering: { input: 0, output: 0, total: 0 },
-                reranking: metadata.costs.reranking || { cost: 0 },
-                total: costs.total + metadata.costs.reformulation.total + (metadata.costs.reranking?.cost || 0)
+                reranking: { cost: rerankingCost },
+                total: costs.total + rerankingCost
               },
               latency: {
-                reformulationDuration: metadata.latency.reformulationMs,
-                retrievalDuration: metadata.latency.retrievalMs,
+                retrievalDuration,
                 timeToFirstToken,
                 messageTime,
                 totalTime,
                 tokensPerSecond
               },
               rag: {
-                phase: responseState.phase,
-                category: metadata.categoryResult?.category,
-                reformulatedQuery: metadata.reformulatedQuery,
-                needsRAG: metadata.usedRAG,
-                segmentsRetrieved: metadata.ragContext?.segmentsUsed ?? 0
+                needsRAG: !!ragContexts,
+                segmentsRetrieved: totalSegments,
+                toolsUsed
               },
               timestamp: Date.now()
             })}\n\n`

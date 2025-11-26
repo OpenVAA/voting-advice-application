@@ -1,5 +1,3 @@
-import type { ConversationPhase } from '../controller/chatbotController.type';
-
 /**
  * Represents a single message exchange in the conversation
  */
@@ -10,21 +8,12 @@ export interface MessageExchange {
 }
 
 /**
- * Represents a conversation phase segment
- */
-export interface PhaseSegment {
-  phase: ConversationPhase;
-  startedAt: Date;
-  exchanges: Array<MessageExchange>;
-}
-
-/**
  * Complete conversation info for a session
  */
 export interface ConversationLog {
   sessionId: string;
   startedAt: Date;
-  phases: Array<PhaseSegment>;
+  exchanges: Array<MessageExchange>;
 }
 
 /**
@@ -34,7 +23,6 @@ export interface ConversationSummary {
   sessionId: string;
   startedAt: Date;
   messageCount: number;
-  currentPhase: ConversationPhase;
   lastActivity: Date;
 }
 
@@ -85,15 +73,6 @@ STARTED: ${formatTimestamp(timestamp)}
 }
 
 /**
- * Creates a phase header for the conversation info
- * @param phase - Conversation phase
- * @returns Formatted phase header
- */
-function createPhaseHeader(phase: ConversationPhase): string {
-  return `>>> PHASE: ${phase}\n\n`;
-}
-
-/**
  * Formats a message for the conversation info
  * @param role - Message role (user or assistant)
  * @param content - Message content
@@ -107,74 +86,41 @@ function formatMessage(role: 'user' | 'assistant', content: string, timestamp: D
 }
 
 /**
- * Updates the conversation info with a new user-assistant message exchange.
- * Creates a new info entry if one doesn't exist, or appends to an existing one.
- * Automatically detects and handles phase transitions.
+ * Updates the conversation log with a new user-assistant message exchange.
+ * Creates a new log entry if one doesn't exist, or appends to an existing one.
  *
  * @param userMessage - The user's message text
  * @param assistantMessage - The assistant's response text
  * @param sessionId - Unique session identifier
- * @param phase - Current conversation phase
  */
 export async function updateConversation(
   userMessage: string,
   assistantMessage: string,
-  sessionId: string,
-  phase: ConversationPhase
+  sessionId: string
 ): Promise<void> {
   try {
-    console.info('[ConversationLogger] updateConversation called:', {
-      sessionId,
-      phase,
-      userMessageLength: userMessage.length,
-      assistantMessageLength: assistantMessage.length
-    });
-
     const now = new Date();
-    let info = conversationStore.get(sessionId);
+    let log = conversationStore.get(sessionId);
 
-    if (!info) {
-      console.info('[ConversationLogger] Creating new info for session:', sessionId);
-      // Create new conversation info
-      info = {
+    if (!log) {
+      // Create new conversation log
+      log = {
         sessionId,
         startedAt: now,
-        phases: [
-          {
-            phase,
-            startedAt: now,
-            exchanges: []
-          }
-        ]
-      };
-      conversationStore.set(sessionId, info);
-    }
-
-    // Check if we need to start a new phase
-    const currentPhaseSegment = info.phases[info.phases.length - 1];
-    if (currentPhaseSegment.phase !== phase) {
-      console.info('[ConversationLogger] Phase transition:', currentPhaseSegment.phase, '->', phase);
-      // Phase transition - create new phase segment
-      info.phases.push({
-        phase,
-        startedAt: now,
         exchanges: []
-      });
+      };
+      conversationStore.set(sessionId, log);
     }
 
-    // Add the message exchange to the current phase
-    const activePhaseSegment = info.phases[info.phases.length - 1];
-    activePhaseSegment.exchanges.push({
+    // Add the message exchange
+    log.exchanges.push({
       userMessage,
       assistantMessage,
       timestamp: now
     });
-
-    console.info('[ConversationLogger] Store updated. Total sessions:', conversationStore.size);
-    console.info('[ConversationLogger] Session IDs in store:', Array.from(conversationStore.keys()));
   } catch (error) {
-    // Log error but don't throw - conversation infoging should not break the chat
-    console.error('[ConversationLogger] Failed to info conversation:', error);
+    // Log error but don't throw - conversation logging should not break the chat
+    console.error('[ConversationLogger] Failed to log conversation:', error);
   }
 }
 
@@ -192,36 +138,28 @@ export function getConversation(sessionId: string): ConversationLog | undefined 
  * @returns Array of conversation summaries sorted by last activity (newest first)
  */
 export function getAllConversationSummaries(): Array<ConversationSummary> {
-  console.info('[ConversationLogger] getAllConversationSummaries called. Store size:', conversationStore.size);
-  console.info('[ConversationLogger] Session IDs:', Array.from(conversationStore.keys()));
-
   const summaries: Array<ConversationSummary> = [];
 
-  for (const info of conversationStore.values()) {
-    const messageCount = info.phases.reduce((sum, phase) => sum + phase.exchanges.length, 0);
-    const currentPhase = info.phases[info.phases.length - 1].phase;
+  for (const log of conversationStore.values()) {
+    const messageCount = log.exchanges.length;
 
     // Get timestamp of last exchange
-    let lastActivity = info.startedAt;
-    for (const phase of info.phases) {
-      for (const exchange of phase.exchanges) {
-        if (exchange.timestamp > lastActivity) {
-          lastActivity = exchange.timestamp;
-        }
+    let lastActivity = log.startedAt;
+    for (const exchange of log.exchanges) {
+      if (exchange.timestamp > lastActivity) {
+        lastActivity = exchange.timestamp;
       }
     }
 
     summaries.push({
-      sessionId: info.sessionId,
-      startedAt: info.startedAt,
+      sessionId: log.sessionId,
+      startedAt: log.startedAt,
       messageCount,
-      currentPhase,
       lastActivity
     });
   }
 
   // Sort by last activity, newest first
-  console.info('[ConversationLogger] Returning', summaries.length, 'summaries');
   return summaries.sort((a, b) => b.lastActivity.getTime() - a.lastActivity.getTime());
 }
 
@@ -235,26 +173,19 @@ export function clearConversation(sessionId: string): boolean {
 }
 
 /**
- * Formats a conversation info as a human-readable text string
- * @param info - The conversation info to format
+ * Formats a conversation log as a human-readable text string
+ * @param log - The conversation log to format
  * @returns Formatted text representation
  */
-export function formatConversationAsText(info: ConversationLog): string {
-  let text = createSessionHeader(info.sessionId, info.startedAt);
+export function formatConversationAsText(log: ConversationLog): string {
+  let text = createSessionHeader(log.sessionId, log.startedAt);
 
-  for (const phaseSegment of info.phases) {
-    text += createPhaseHeader(phaseSegment.phase);
+  for (const exchange of log.exchanges) {
+    text += formatMessage('user', exchange.userMessage, exchange.timestamp);
 
-    for (const exchange of phaseSegment.exchanges) {
-      text += formatMessage('user', exchange.userMessage, exchange.timestamp);
-
-      // Assistant message slightly after user (simulate response time)
-      const assistantTimestamp = new Date(exchange.timestamp.getTime() + 2000);
-      text += formatMessage('assistant', exchange.assistantMessage, assistantTimestamp);
-    }
-
-    // Add spacing between phases
-    text += '\n';
+    // Assistant message slightly after user (simulate response time)
+    const assistantTimestamp = new Date(exchange.timestamp.getTime() + 2000);
+    text += formatMessage('assistant', exchange.assistantMessage, assistantTimestamp);
   }
 
   return text;

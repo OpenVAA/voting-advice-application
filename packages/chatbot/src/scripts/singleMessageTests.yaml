@@ -15,8 +15,6 @@ tests:
       # Fast assertions - deterministic checks
       - type: javascript
         value: output.length > 100
-      - type: javascript
-        value: context.providerResponse?.metadata?.usedRAG === true
       - type: latency
         threshold: 20000
       - type: llm-rubric
@@ -46,7 +44,5 @@ tests:
     assert:
       - type: javascript
         value: output.includes("leader") === true
-      - type: javascript
-        value: context.providerResponse?.metadata?.categoryResult.category === 'appropriate'
       - type: llm-rubric
         value: should NOT reject the question as not possible to answer, but rather explain the nuance behind it

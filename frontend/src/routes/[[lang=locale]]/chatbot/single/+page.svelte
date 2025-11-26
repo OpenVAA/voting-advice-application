@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { createOnboardingStream } from '$lib/chatbot';
   import { type ConversationState } from '@openvaa/chatbot';
-  import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
+  import type { RAGRetrievalResult } from '@openvaa/chatbot';
 
   interface UIMessage {
     id: string;
@@ -26,6 +26,7 @@
     metadata?: {
       phase?: string;
       category?: string;
+      toolsUsed?: Array<{name: string; args: any}>;
     };
   }
 
@@ -35,11 +36,6 @@
       input: number;
       output: number;
       reasoning?: number;
-      total: number;
-    };
-    reformulation: {
-      input: number;
-      output: number;
       total: number;
     };
     filtering: {
@@ -55,35 +51,26 @@
   }
 
   interface LatencyInfo {
-    reformulationDuration: number; // ms to reformulate query into standalone version
     retrievalDuration: number; // ms to fetch from vector store (0 if RAG not used)
     timeToFirstToken: number; // ms from LLM stream start to first token (LLM latency only)
     messageTime: number; // ms from LLM stream start to completion (LLM generation time)
-    totalTime: number; // ms end-to-end (reformulation + retrieval + message generation)
-    tokensPerSecond?: number; // output tokens / second
+    totalTime: number; // ms end-to-end (retrieval + message generation)
     timestamp: number;
+    tokensPerSecond?: number; // output tokens / second
   }
 
   let messages: Array<UIMessage> = [];
-  let ragContexts: Array<MultiVectorSearchResult> = [];
-  let reformulatedQueries: Array<string | null> = []; // Track reformulated queries for each RAG context
+  let ragContexts: Array<RAGRetrievalResult> = [];
   let costs: Array<CostInfo> = [];
   let latencies: Array<LatencyInfo> = [];
   let input = '';
   let loading = false;
 
-  // Conversation state for phase routing
+  // Conversation state
   // TODO: be smarted about passing around the state.
   let conversationState: ConversationState = {
     sessionId: crypto.randomUUID(),
-    phase: 'user_intent_extraction',
     messages: [],
-    queryCategory: {
-      category: 'appropriate',
-      costs: { input: 0, output: 0, total: 0 },
-      durationMs: 0
-    },
-    reformulatedQuery: null,
     workingMemory: [],
     forgottenMessages: [],
     lossyHistorySummary: '',
@@ -104,11 +91,6 @@
   $: maxCost = costs.length > 0 ? Math.max(...costs.map((c) => c.total)) : 0;
 
   // Latency calculation helpers
-  // Query Reformulation metrics
-  $: lastReformulationDuration = latencies.length > 0 ? latencies[latencies.length - 1].reformulationDuration : 0;
-  $: averageReformulationDuration =
-    latencies.length > 0 ? latencies.reduce((sum, l) => sum + l.reformulationDuration, 0) / latencies.length : 0;
-
   // RAG Retrieval metrics
   $: lastRetrievalDuration = latencies.length > 0 ? latencies[latencies.length - 1].retrievalDuration : 0;
   $: averageRetrievalDuration =
@@ -267,11 +249,11 @@
   }
 
   function handleStreamChunk(data: any) {
-    // Handle RAG context events (not tied to specific messages)
-    if (data.type === 'rag-context') {
-      console.log('[Chatbot] Received RAG context:', data);
-      // data is a MultiVectorSearchResult with query, results, retrievalSources, timestamp
-      ragContexts = [...ragContexts, data];
+    // Handle RAG contexts events (not tied to specific messages)
+    if (data.type === 'rag-contexts') {
+      console.log('[Chatbot] Received RAG contexts:', data);
+      // data is an array of RAGRetrievalResult objects
+      ragContexts = [...ragContexts, ...data];
       return;
     }
 
@@ -281,17 +263,12 @@
 
       // Store cost info
       if (data.cost) {
-        // Get reranking cost from the most recent RAG context (if any)
-        const lastRagContext = ragContexts[ragContexts.length - 1];
-        const rerankingCost = lastRagContext?.rerankingCosts?.cost ?? 0;
-
         costs = [
           ...costs,
           {
             llm: data.cost.llm,
-            reformulation: data.cost.reformulation,
             filtering: data.cost.filtering,
-            reranking: { total: rerankingCost },
+            reranking: { total: data.cost.reranking.cost },
             total: data.cost.total,
             timestamp: data.timestamp
           }
@@ -303,7 +280,6 @@
         latencies = [
           ...latencies,
           {
-            reformulationDuration: data.latency.reformulationDuration,
             retrievalDuration: data.latency.retrievalDuration,
             timeToFirstToken: data.latency.timeToFirstToken,
             messageTime: data.latency.messageTime,
@@ -314,22 +290,16 @@
         ];
       }
 
-      // Store phase and category in the last assistant message
+      // Store RAG metadata in the last assistant message
       if (data.rag) {
+        console.log('[Chatbot] Received metadata-info with rag data:', data.rag);
         const lastAssistantMessage = messages.findLast((m) => m.role === 'assistant');
         if (lastAssistantMessage) {
           lastAssistantMessage.metadata = {
-            phase: data.rag.phase, // Now from server
-            category: data.rag.category
+            category: data.rag.category,
+            toolsUsed: data.rag.toolsUsed
           };
-
-          // Update local conversationState for UI display
-          conversationState.phase = data.rag.phase;
-
-          // Store reformulated query if available
-          if (data.rag.reformulatedQuery) {
-            reformulatedQueries = [...reformulatedQueries, data.rag.reformulatedQuery];
-          }
+          console.log('[Chatbot] Set message metadata:', lastAssistantMessage.metadata);
 
           messages = [...messages]; // Trigger reactivity
         }
@@ -400,6 +370,13 @@
     }
   }
 
+  function formatToolCall(tool: {name: string; args: any}): string {
+    const argsStr = tool.args && Object.keys(tool.args).length > 0
+      ? Object.values(tool.args).map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')
+      : '';
+    return `${tool.name}(${argsStr})`;
+  }
+
   function renderMessagePart(part: any) {
     if (part.type === 'text') {
       return part.text;
@@ -452,9 +429,9 @@
               You
             {:else}
               Assistant
-              {#if message.metadata?.phase && message.metadata?.category}
+              {#if message.metadata?.category || (message.metadata?.toolsUsed && message.metadata.toolsUsed.length > 0)}
                 <span class="text-xs text-gray-500">
-                  (phase: {message.metadata.phase}, category: {message.metadata.category})
+                  ({#if message.metadata.category}category: {message.metadata.category}{/if}{#if message.metadata.category && message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0}, {/if}{#if message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0}tools: {message.metadata.toolsUsed.map(formatToolCall).join(', ')}{/if})
                 </span>
               {/if}
             {/if}
@@ -502,29 +479,31 @@
         </div>
       {:else}
         <div class="space-y-6">
-          {#each ragContexts.slice().reverse() as context, idx}
+          {#each ragContexts.slice().reverse() as ragResult, idx}
             <div class="rounded border border-gray-300 bg-white p-4 shadow-sm">
               <div class="mb-3 border-b border-gray-200 pb-2">
                 <div class="text-xs text-gray-500">
-                  Query #{ragContexts.length - idx}
+                  Search #{ragContexts.length - idx}
                 </div>
-                {#if reformulatedQueries[ragContexts.length - 1 - idx]}
-                  <div class="font-semibold mt-1 text-blue-700">{reformulatedQueries[ragContexts.length - 1 - idx]}</div>
-                {:else}
-                  <div class="italic mt-1 text-sm text-gray-500">Multi-topic query</div>
-                {/if}
+                <div class="font-semibold mt-1 text-blue-700">{ragResult.canonicalQuery}</div>
                 <div class="mt-1 text-xs text-gray-600">
-                  Found via: {context.retrievalSources.fromSegments} segments,
-                  {context.retrievalSources.fromSummaries} summaries,
-                  {context.retrievalSources.fromFacts} facts
+                  Found via: {ragResult.searchResult.retrievalSources.fromSegments} segments,
+                  {ragResult.searchResult.retrievalSources.fromSummaries} summaries,
+                  {ragResult.searchResult.retrievalSources.fromFacts} facts
+                </div>
+                <div class="mt-1 text-xs text-gray-500">
+                  Retrieved in {ragResult.durationMs.toFixed(0)}ms
+                  {#if ragResult.rerankingCosts}
+                    • Reranking cost: ${ragResult.rerankingCosts.cost.toFixed(6)}
+                  {/if}
                 </div>
               </div>
 
-              {#if context.results.length === 0}
+              {#if ragResult.searchResult.results.length === 0}
                 <div class="text-sm italic text-gray-500">No relevant context found.</div>
               {:else}
                 <div class="space-y-3">
-                  {#each context.results as result, resultIdx}
+                  {#each ragResult.searchResult.results as result, resultIdx}
                     <div class="p-3 rounded border border-gray-200 bg-gray-50">
                       <div class="mb-2 flex items-center justify-between">
                         <div class="font-semibold text-xs text-gray-700">
@@ -598,7 +577,6 @@
             {#if costs.length > 0}
               <div class="mt-1 text-xs text-gray-500">
                 LLM: ${costs[costs.length - 1].llm.total.toFixed(7)}<br />
-                Reformulate: ${costs[costs.length - 1].reformulation.total.toFixed(7)}<br />
                 Filter: ${costs[costs.length - 1].filtering.total.toFixed(7)}<br />
                 Reranking: ${costs[costs.length - 1].reranking.total.toFixed(7)}
               </div>
@@ -651,20 +629,6 @@
           <h4 class="font-semibold mb-2 text-sm text-gray-700">RAG Timing</h4>
           <div class="mb-2 grid grid-cols-2 gap-2">
             <div class="p-3 rounded border border-gray-200 bg-white shadow-sm">
-              <div class="mb-1 text-xs text-gray-500">Reformulation (Last)</div>
-              <div class="text-lg font-bold text-blue-600">
-                {lastReformulationDuration.toFixed(0)}ms
-              </div>
-            </div>
-
-            <div class="p-3 rounded border border-gray-200 bg-white shadow-sm">
-              <div class="mb-1 text-xs text-gray-500">Reformulation (Avg)</div>
-              <div class="text-lg font-bold text-green-600">
-                {averageReformulationDuration.toFixed(0)}ms
-              </div>
-            </div>
-
-            <div class="p-3 rounded border border-gray-200 bg-white shadow-sm">
               <div class="mb-1 text-xs text-gray-500">Retrieval (Last)</div>
               <div class="text-lg font-bold text-blue-600">
                 {lastRetrievalDuration.toFixed(0)}ms
@@ -679,7 +643,7 @@
             </div>
           </div>
           <div class="rounded bg-gray-100 p-2 text-xs text-gray-600">
-            Reformulation: converts follow-ups to standalone queries | Retrieval: fetching from vector store
+            Retrieval: fetching from vector store
           </div>
         </div>
 
@@ -784,7 +748,7 @@
             </div>
           </div>
           <div class="mt-2 rounded bg-gray-100 p-2 text-xs text-gray-600">
-            Total = Reformulation + Retrieval + Message Generation
+            Total = Retrieval + Message Generation
           </div>
         </div>
       </div>
@@ -811,7 +775,6 @@
                   <div class="font-semibold text-gray-700">Cost Breakdown:</div>
                   <div class="gap-1 grid grid-cols-2">
                     <div>LLM: ${cost.llm.total.toFixed(6)}</div>
-                    <div>Reformulate: ${cost.reformulation.total.toFixed(6)}</div>
                     <div>Filter: ${cost.filtering.total.toFixed(6)}</div>
                     <div>Reranking: ${cost.reranking.total.toFixed(6)}</div>
                   </div>
@@ -820,7 +783,6 @@
                   <div class="space-y-1 text-xs text-gray-600">
                     <div class="font-semibold text-gray-700">Timing Breakdown:</div>
                     <div class="gap-1 grid grid-cols-2">
-                      <div>Reformulation: {latency.reformulationDuration.toFixed(0)}ms</div>
                       <div>Retrieval: {latency.retrievalDuration.toFixed(0)}ms</div>
                       <div>TTFT: {latency.timeToFirstToken.toFixed(0)}ms</div>
                       <div>Message: {(latency.messageTime / 1000).toFixed(2)}s</div>

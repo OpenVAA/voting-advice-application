@@ -44,7 +44,7 @@ async function runChatbotEvaluation() {
   console.info(`Running tests from ${testFilenames.length} file(s): ${testFilenames.join(', ')}\n`);
 
   // Initialize chatbot configuration once (shared across all test files)
-  const { vectorStore, queryRoutingProvider, phaseRouterProvider, chatProvider, queryReformulationProvider } = await getChatbotConfiguration(process.env.OPENAI_API_KEY || '');
+  const { vectorStore, chatProvider, queryReformulationProvider } = await getChatbotConfiguration(process.env.OPENAI_API_KEY || '');
 
   // Track aggregate statistics
   let totalTests = 0;
@@ -108,28 +108,19 @@ async function runChatbotEvaluation() {
             // Get full message history from context
             const messages = (context?.vars?.messages as Array<ModelMessage>) || [{ role: 'user', content: prompt }];
 
-            // Call the chatbot controller. TODO: get state from redis  
+            // Call the chatbot controller. TODO: get state from redis
             const response = await ChatbotController.handleQuery({
               locale: 'en',
               vectorStore,
-              queryRoutingProvider,
-              phaseRouterProvider,
               state: {
                 sessionId: crypto.randomUUID(),
                 messages,
-                phase: 'intent_resolution', // Does not matter. Will be overridden. 
                 workingMemory: [],
                 forgottenMessages: [],
                 lossyHistorySummary: '',
-                locale: 'en',
-                reformulatedQuery: null,
-                queryCategory: {
-                  category: 'appropriate',
-                  costs: { input: 0, output: 0, total: 0 },
-                  durationMs: 0
-                }
+                locale: 'en'
               },
-              queryReformulationProvider,
+              reformulationProvider: queryReformulationProvider,
               chatProvider
             });
 
@@ -166,8 +157,6 @@ async function runChatbotEvaluation() {
     results.results.forEach((result, index) => {
       const status = result.success ? '✅' : '❌';
       console.info(`${status} Test ${index + 1}: ${result.testCase.description || 'Unnamed test'}`);
-      // TODO: add phase to the chatbot controller response
-      // console.info(`  Phase: ${result.metadata?.phase}`);
 
       // Print success or failure
       if (!result.success) {

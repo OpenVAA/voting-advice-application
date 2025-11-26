@@ -1,6 +1,6 @@
 import type { LLMProvider } from '@openvaa/llm-refactor';
 import type { ModelMessage } from 'ai';
-import type { ConversationPhase } from './controller/chatbotController.type';
+import type { RAGDependencies } from './core/tools/tools';
 
 // Input type for chatbot API requests
 export type ChatbotAPIInput = {
@@ -12,5 +12,5 @@ export type ChatbotAPIInput = {
   };
   chatProvider: LLMProvider; // LLM provider for dependency injection
   nSteps?: number; // number of different message types (tool-call, text, etc.) before halting
-  conversationPhase?: ConversationPhase; // Optional conversation phase for phase-specific system prompts
+  ragDependencies: RAGDependencies;
 };

@@ -2,7 +2,6 @@
 export { ChatbotController } from './chatbotController';
 export type {
   ChatbotResponse,
-  ConversationPhase,
   ConversationState,
   HandleQueryInput,
   RAGContextResult
