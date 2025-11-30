@@ -201,16 +201,8 @@ export async function condenseArguments({
       await dataWriter.insertJobResult({
         authToken,
         data: {
-          jobId,
-          jobType: 'ArgumentCondensation',
-          electionId,
-          author: job.author,
+          ..._getResultData(),
           endStatus: 'completed',
-          startTime,
-          endTime: new Date().toISOString(),
-          input: inputParams,
-          output: allCondensationResults as unknown as Array<Serializable>,
-          messages: getAllMessagesFromJob(jobId),
           metadata: { questionsProcessed: allCondensationResults.length }
         }
       });
@@ -229,17 +221,8 @@ export async function condenseArguments({
         await dataWriter.insertJobResult({
           authToken,
           data: {
-            jobId,
-            jobType: 'ArgumentCondensation',
-            electionId,
-            author: job.author,
+            ..._getResultData(),
             endStatus: 'aborted',
-            startTime,
-            endTime: new Date().toISOString(),
-            input: inputParams,
-            output:
-              allCondensationResults.length > 0 ? (allCondensationResults as unknown as Array<Serializable>) : null,
-            messages: getAllMessagesFromJob(jobId),
             metadata: null
           }
         });
@@ -255,22 +238,31 @@ export async function condenseArguments({
         await dataWriter.insertJobResult({
           authToken,
           data: {
-            jobId,
-            jobType: 'ArgumentCondensation',
-            electionId,
-            author: job.author,
+            ..._getResultData(),
             endStatus: 'failed',
-            startTime,
-            endTime: new Date().toISOString(),
-            input: inputParams,
-            output: null,
-            messages: getAllMessagesFromJob(jobId),
             metadata: { error: message }
           }
         });
       }
     }
     throw error;
+  }
+
+  function _getResultData() {
+    const job = getJob(jobId);
+    if (!job) throw new Error(`[condenseArguments] Job ${jobId} not found in the job store.`);
+    const { jobType, author } = job;
+    return {
+      jobId,
+      jobType,
+      electionId,
+      author,
+      startTime,
+      endTime: new Date().toISOString(),
+      input: inputParams,
+      output: allCondensationResults.length > 0 ? (allCondensationResults as unknown as Array<Serializable>) : null,
+      messages: getAllMessagesFromJob(jobId)
+    };
   }
 }
 
