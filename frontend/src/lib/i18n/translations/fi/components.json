@@ -45,7 +45,8 @@
     "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
   },
   "select": {
-    "noMatchingOptions": "Ei hakuasi vastaavia vaihtoehtoja"
+    "noMatchingOptions": "Ei hakuasi vastaavia vaihtoehtoja",
+    "placeholder": "Valitse vaihtoehto alta"
   },
   "video": {
     "captions": "Kuvailevat tekstitykset",

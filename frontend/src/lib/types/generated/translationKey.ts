@@ -392,6 +392,7 @@ export type TranslationKey =
   | 'components.preventNavigation.unsavedChanges'
   | 'components.questionExtendedInfo.title'
   | 'components.select.noMatchingOptions'
+  | 'components.select.placeholder'
   | 'components.video.captions'
   | 'components.video.error'
   | 'components.video.hideCaptions'

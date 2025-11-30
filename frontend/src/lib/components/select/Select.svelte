@@ -9,8 +9,8 @@ If there’s only one option available, the selected value will be set automatic
 ### Properties
 
 - `label`: The `aria-label` and `placeholder` text for the select input.
-- `options`: A list of selectable options. @default `[]`.
-- `selected`: A bindable value for the `Id` of the selected option. @default `undefined` if multiple options are available, the first option if `options.length === 1`.
+- `options`: The list of selectable options. You can provide an array of objects with `id` and `label` properties, or an array of strings in which case the ids will be the same as the labels.
+- `selected`: A bindable value for the id of the selected option. @default the only option if there’s only one, `undefined` otherwise.
 - `onChange`: A callback function triggered when the selection changes.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`
 - `autocomplete`: Controls autocomplete behavior; supported values: `on` or `off`. @default `off`
@@ -48,8 +48,9 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
   type $$Props = SelectProps;
 
-  export let options: $$Props['options'] = [];
+  export let options: $$Props['options'];
   export let label: $$Props['label'] = undefined;
+  export let name: $$Props['name'] = undefined;
   export let onShadedBg: $$Props['onShadedBg'] = undefined;
   export let selected: $$Props['selected'] = '';
   export let onChange: $$Props['onChange'] = undefined;
@@ -69,6 +70,11 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   const selectedPrefix = '✔︎ ';
   let autocompleteInput: HTMLInputElement | undefined;
 
+  let canonicalOptions: Array<{ id: Id; label: string }>;
+  $: canonicalOptions = options.map((o) => (typeof o === 'string' ? { id: o, label: o } : o));
+
+  $: label ||= $t('components.select.placeholder');
+
   let inputValue = '';
   let isOptionListOpen = false;
   let focusIndex = -1;
@@ -81,12 +87,12 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
       .toLowerCase();
   }
 
-  $: filteredOptions = options.filter(function (option) {
+  $: filteredOptions = canonicalOptions.filter(function (option) {
     return normalize(option.label).includes(normalize(inputValue));
   });
 
-  $: if (options.length === 1 && !selected) {
-    handleSelect(options[0]);
+  $: if (canonicalOptions.length === 1 && !selected) {
+    handleSelect(canonicalOptions[0]);
   }
 
   $: if (!isOptionListOpen || focusIndex > filteredOptions.length - 1) {
@@ -112,7 +118,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
    * Called when the non-autocomplete input is clicked to ensure selection of the only option
    */
   function handleClick(): void {
-    if (options.length === 1) {
+    if (canonicalOptions.length === 1) {
       handleChange();
     }
   }
@@ -223,7 +229,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
   function closeOptionList(): void {
     if (selected && !inputValue.startsWith(selectedPrefix))
-      inputValue = `${selectedPrefix}${options.find((o) => o.id === selected)?.label}`;
+      inputValue = `${selectedPrefix}${canonicalOptions.find((o) => o.id === selected)?.label}`;
     else inputValue = '';
     isOptionListOpen = false;
     // Make sure the input is no longer focused
@@ -238,7 +244,11 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   $: inputClass = `w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`;
 </script>
 
-{#if options.length === 1}
+{#if name}
+  <input type="hidden" {name} bind:value={selected} />
+{/if}
+
+{#if canonicalOptions.length === 1}
   <div
     aria-label={label}
     {...concatClass(
@@ -246,7 +256,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
       'flex items-center h-[3rem] rounded-lg px-[1rem] w-full max-w-md place-self-center text-secondary'
     )}>
     {selectedPrefix}
-    {options[0].label}
+    {canonicalOptions[0].label}
   </div>
 {:else if autocomplete === 'on'}
   <div class="w-full max-w-md place-self-center" on:focusout={handleFocusOut}>
@@ -269,7 +279,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
         <ul
           id="menu-{id}"
           role="listbox"
-          class="menu absolute left-0 top-6 z-10 mb-xl w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
+          class="menu mb-xl absolute left-0 top-6 z-10 w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
             ? 'bg-base-100'
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
@@ -284,7 +294,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
               on:click={() => handleSelect(option)}>
               <span
                 class={optionIndex === focusIndex
-                  ? 'bg-neutral/10 !outline !outline-2 !outline-offset-0 !outline-neutral'
+                  ? 'bg-neutral/10 !outline-neutral !outline !outline-2 !outline-offset-0'
                   : ''}>
                 {option.label}
               </span>
@@ -309,7 +319,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     <option disabled selected value="">
       {label}
     </option>
-    {#each options as { id, label }}
+    {#each canonicalOptions as { id, label }}
       <option value={id}>
         {#if selected === id}{selectedPrefix}{/if}
         {label}
