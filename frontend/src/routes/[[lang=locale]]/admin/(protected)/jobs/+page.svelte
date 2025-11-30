@@ -2,6 +2,7 @@
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURES } from '$lib/admin/features';
   import { Button } from '$lib/components/button';
+  import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
 
@@ -30,21 +31,23 @@
 
   // Emergency: abort all running jobs
   async function performEmergencyCleanup() {
-    if (!confirm(t.get('adminApp.jobs.confirmAbortAll'))) {
-      return;
-    }
     try {
       await abortAllJobs({});
     } catch (error) {
-      console.error('Error during emergency cleanup:', error);
-      alert(t.get('adminApp.jobs.abortAllFailed'));
+      console.error(error);
+      alert($t('adminApp.jobs.abortAllFailed'));
     }
   }
 </script>
 
 <MainContent title={$t('adminApp.jobs.title')}>
   <div slot="primaryActions" class="flex gap-2">
-    <Button variant="secondary" text={$t('adminApp.jobs.emergencyCleanup')} on:click={performEmergencyCleanup} />
+    <ButtonWithConfirmation
+      text={$t('adminApp.jobs.emergencyCleanup')}
+      modalTitle={$t('adminApp.jobs.confirmAbortAll')}
+      variant="secondary"
+      onConfirm={performEmergencyCleanup}>
+    </ButtonWithConfirmation>
   </div>
 
   <div slot="fullWidth" class="gap-lg flex flex-col">
