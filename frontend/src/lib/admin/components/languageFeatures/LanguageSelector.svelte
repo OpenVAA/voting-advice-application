@@ -2,47 +2,38 @@
 # Language Selector
 
 Reusable component for selecting target language for language-based features (question info, argument condensation, etc.).
-Automatically hides if only one language is available.
+Automatically selected if only one language is available.
 
-@prop {string} selectedLanguage - The currently selected language code (bindable)
-@prop {string} currentLocale - The current locale from route params (used as default)
 -->
 
 <script lang="ts">
-  import { getAdminContext } from '$lib/contexts/admin';
+  import { Select } from '$lib/components/select';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { assertTranslationKey } from '$lib/i18n/utils';
+  import { getUUID } from '$lib/utils/components';
+  import type { LanguageSelectorProps } from './LanguageSelector.type';
 
-  const { appSettings, t } = getAdminContext();
+  const { locale, locales, t } = getComponentContext();
 
-  export let selectedLanguage: string;
-  export let currentLocale: string;
+  type $Props = LanguageSelectorProps;
 
-  // Get supported locales from appSettings
-  $: supportedLocales = $appSettings.supportedLocales || [];
+  export let selected: $Props['selected'] = $locale;
+  export let name: $Props['name'] = 'language';
+  export let id: $Props['id'] = getUUID();
 
-  // Auto-select current locale on mount if no selection
-  $: if (!selectedLanguage && currentLocale) {
-    selectedLanguage = currentLocale;
-  }
-
-  // Hide selector if only one language available
-  $: showSelector = supportedLocales.length > 1;
+  let options: LanguageSelectorProps['options'];
+  $: options = $locales.map((l) => ({
+    id: l,
+    label: $t(assertTranslationKey(`lang.${l}`))
+  }));
 </script>
 
-{#if showSelector}
-  <div class="form-control w-full">
-    <label for="target-language" class="label">
-      <span class="label-text">{$t('adminApp.languageFeatures.targetLanguage.label')}</span>
-    </label>
-    <select id="target-language" name="language" class="select select-bordered w-full" bind:value={selectedLanguage}>
-      {#each supportedLocales as locale}
-        <option value={locale.code}>{locale.name}</option>
-      {/each}
-    </select>
-    <label class="label">
-      <span class="label-text-alt text-neutral">{$t('adminApp.languageFeatures.targetLanguage.help')}</span>
-    </label>
+<div class="form-control w-full">
+  <label for={id} class="label">
+    {$t('adminApp.languageFeatures.targetLanguage.label')}
+  </label>
+  <Select {id} {name} bind:selected {options} class="max-w-none" autocomplete="off" />
+  <div class="text-secondary mt-md text-sm">
+    {$t('adminApp.languageFeatures.targetLanguage.help')}
   </div>
-{:else}
-  <!-- Hidden input to ensure language is always submitted -->
-  <input type="hidden" name="language" value={selectedLanguage} />
-{/if}
+</div>
