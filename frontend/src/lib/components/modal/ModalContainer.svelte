@@ -65,13 +65,13 @@ A modal dialog.
   export let onOpen: $$Props['onOpen'] = undefined;
 
   /** Bind to open the modal dialog */
-  export function openModal() {
-    handleOpen();
+  export function openModal(noCallbacks?: boolean) {
+    handleOpen(noCallbacks);
   }
 
   /** Bind to close the modal dialog */
-  export function closeModal() {
-    handleClose();
+  export function closeModal(noCallbacks?: boolean) {
+    handleClose(noCallbacks);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -100,18 +100,18 @@ A modal dialog.
     }
   }
 
-  function handleClose() {
+  function handleClose(noCallbacks?: boolean) {
     modalContainer?.close();
     inTransition = true;
     isOpen = false;
-    onClose?.();
+    if (!noCallbacks) onClose?.();
   }
 
-  function handleOpen() {
+  function handleOpen(noCallbacks?: boolean) {
     modalContainer?.showModal();
     inTransition = false;
     isOpen = true;
-    onOpen?.();
+    if (!noCallbacks) onOpen?.();
     setTimeout(() => {
       if (!isOpen) return;
       if (modalContainer) {
@@ -134,7 +134,6 @@ A modal dialog.
 
 <dialog
   bind:this={modalContainer}
-  on:close={handleClose}
   on:transitionend={handleTransitionEnd}
   class:hidden={!isOpen && !inTransition}
   aria-modal="true"
@@ -143,7 +142,7 @@ A modal dialog.
   <slot />
   {#if closeOnBackdropClick}
     <div class="modal-backdrop">
-      <button on:click={handleClose} tabindex="-1">{$t('common.closeDialog')}</button>
+      <button on:click={() => handleClose()} tabindex="-1">{$t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>
