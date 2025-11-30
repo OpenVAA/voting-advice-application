@@ -45,7 +45,8 @@
     "unsavedChanges": "Du har osparade ändringar. Är du säker på att du vill lämna denna sida?"
   },
   "select": {
-    "noMatchingOptions": "Inga alternativ matchade din sökning"
+    "noMatchingOptions": "Inga alternativ matchade din sökning",
+    "placeholder": "Välj ett alternativ nedan"
   },
   "video": {
     "captions": "Bildtexter",
