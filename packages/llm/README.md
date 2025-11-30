@@ -4,7 +4,7 @@
 
 This package is a utility wrapper around [Vercel AI SDK](https://sdk.vercel.ai) that centralizes LLM calls and enrichens Vercel's SDK capabilities with useful stuff: it handles cost calculations automatically (IF you set the used model's current pricing to src/modelPricing.ts - otherwise it may calculate using an old price or omit and fallback to $0), implements validation error retrial boilerplate and exposes an in-memory queue for LLM calls with no specified limit. The queue can also be configured to send out the LLM calls in parallel batches. These capabilities are not provided by the Vercel AI SDK v5.
 
-Additionally, we provide localization support. We use English fallback prompts that generate output in any of the supported languages of your elections. 
+Additionally, we provide localization support. We use English fallback prompts that generate output in any of the supported languages of your elections.
 
 To reiterate, the package provides:
 
@@ -14,7 +14,7 @@ To reiterate, the package provides:
 - **Latency monitoring** - Track performance metrics for each call
 - **Centralized prompt registry** - Prompts from the whole repo are saved from to one location
 - **Prompt logic reusability across locales** - Dynamic, out-of-the-box localization instruction injection
-- **Automatic variable injection** - Load & inject: loadPrompt({ id, variables: { a: 'name', b: 'address' } }), 
+- **Automatic variable injection** - Load & inject: loadPrompt({ id, variables: { a: 'name', b: 'address' } }),
 
 Internally it uses Vercel AI SDK types and functions (`messages`, `generateObject`, `streamText`, etc.). These utilities are just layered on top for convinience.
 
@@ -119,6 +119,7 @@ for await (const chunk of stream.textStream) {
 const costs = await stream.costs;
 console.log(`Total cost: $${costs.total}`);
 ```
+
 ### Prompt Registry
 
 The package provides a **Prompt Registry** for centralized prompt management with automatic localization support. Features register their prompts once, then load them with automatic language fallback and variable injection.
@@ -167,18 +168,19 @@ import { loadPrompt } from '@openvaa/llm';
 
 const { promptText, metadata } = await loadPrompt({
   promptId: 'my_feature_summarize_v1',
-  language: 'fi',                    // Output language
+  language: 'fi', // Output language
   variables: {
     contentType: 'article',
     topic: 'renewable energy',
     content: '...'
   },
-  fallbackLocalization: false,       // Optional: Use localization instructions if true (default: false)
-  throwIfVarsMissing: true           // Optional: Strict mode - throw on prompt variable mismatches (default: true)
+  fallbackLocalization: false, // Optional: Use localization instructions if true (default: false)
+  throwIfVarsMissing: true // Optional: Strict mode - throw on prompt variable mismatches (default: true)
 });
 ```
 
 **Options:**
+
 - `promptId`: Unique identifier for the prompt
 - `language`: Requested output language
 - `variables`: Object with values for `{{placeholder}}` variables

@@ -93,13 +93,13 @@ const options = {
 
 ## Prompting
 
-See existing English prompts in [`src/prompts/en/`](src/prompts/en/) for reference. Adhere to .yaml structure when making changes. 
+See existing English prompts in [`src/prompts/en/`](src/prompts/en/) for reference. Adhere to .yaml structure when making changes.
 
-### Adding Language Support 
+### Adding Language Support
 
 #### Option 1: Doing nothing (almost)
 
-Question info is an automatically localized feature. If you want output in Swahili, simply make sure it is one of the app's supported languages. For how this works, see the [`../llm/src/prompts/promptRegistry.ts`](../llm/src/prompts/promptRegistry.ts) loadPrompt() function. 
+Question info is an automatically localized feature. If you want output in Swahili, simply make sure it is one of the app's supported languages. For how this works, see the [`../llm/src/prompts/promptRegistry.ts`](../llm/src/prompts/promptRegistry.ts) loadPrompt() function.
 
 #### Option 2: Advanced
 

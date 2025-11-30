@@ -45,10 +45,10 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 -->
 
 <script lang="ts">
-  import Modal from '../Modal.svelte';
-  import type { ConfirmationModalProps } from './ConfirmationModal.type';
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
+  import Modal from '../Modal.svelte';
+  import type { ConfirmationModalProps } from './ConfirmationModal.type';
 
   type $$Props = ConfirmationModalProps;
 

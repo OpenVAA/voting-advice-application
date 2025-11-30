@@ -64,6 +64,6 @@ describe('handleQuestion', () => {
           controller: noOpController
         }
       })
-    ).rejects.toThrow()
+    ).rejects.toThrow();
   });
 });

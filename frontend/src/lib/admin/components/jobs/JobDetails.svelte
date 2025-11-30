@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Button } from '$lib/components/button';
+  import ButtonWithConfirmation from '$lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte';
   import { InfoMessages, ProgressBar, WarningMessages } from '$lib/components/controller';
+  import { getAdminContext } from '$lib/contexts/admin';
   import { concatClass } from '$lib/utils/components';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import type { JobDetailsProps } from './JobDetails.type';
-  import ButtonWithConfirmation from '$lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte';
-  import { getAdminContext } from '$lib/contexts/admin';
 
   type $$Props = JobDetailsProps;
 
@@ -69,9 +69,9 @@
   <div class="card-body overflow-hidden p-6">
     <!-- Header with status and actions -->
     <div class="mb-4 flex items-start justify-between">
-      <div class="flex items-center gap-3">
+      <div class="gap-3 flex items-center">
         <span
-          class="badge badge-lg font-medium {job.status === 'completed'
+          class="font-medium badge badge-lg {job.status === 'completed'
             ? 'badge-success'
             : job.status === 'failed'
               ? 'badge-error'
@@ -80,7 +80,7 @@
                 : 'badge-info'}">
           {job.status}
         </span>
-        <div class="text-base-content/70 text-sm">
+        <div class="text-sm text-base-content/70">
           {$t('adminApp.jobs.id')}: <span class="font-mono text-xs">{job.id.slice(0, 8)}...</span>
         </div>
       </div>
@@ -100,20 +100,20 @@
     <!-- Job metadata in a clean grid -->
     <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
       <div class="flex flex-col">
-        <span class="text-base-content/60 text-xs font-medium uppercase tracking-wide"
+        <span class="font-medium text-xs uppercase tracking-wide text-base-content/60"
           >{$t('adminApp.jobs.author')}</span>
-        <span class="mt-1 text-sm font-medium">{job.author}</span>
+        <span class="mt-1 font-medium text-sm">{job.author}</span>
       </div>
       <div class="flex flex-col">
-        <span class="text-base-content/60 text-xs font-medium uppercase tracking-wide"
+        <span class="font-medium text-xs uppercase tracking-wide text-base-content/60"
           >{$t('adminApp.jobs.started')}</span>
-        <span class="mt-1 text-sm font-medium">{new Date(job.startTime).toLocaleString()}</span>
+        <span class="mt-1 font-medium text-sm">{new Date(job.startTime).toLocaleString()}</span>
       </div>
       {#if job.endTime}
         <div class="flex flex-col">
-          <span class="text-base-content/60 text-xs font-medium uppercase tracking-wide"
+          <span class="font-medium text-xs uppercase tracking-wide text-base-content/60"
             >{$t('adminApp.jobs.duration')}</span>
-          <span class="mt-1 text-sm font-medium">{formatJobDuration(job)}</span>
+          <span class="mt-1 font-medium text-sm">{formatJobDuration(job)}</span>
         </div>
       {/if}
     </div>
@@ -126,19 +126,19 @@
         <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="loading loading-spinner loading-sm text-warning"></span>
-            <span class="text-warning text-sm font-medium">{$t('adminApp.jobs.aborting')}</span>
+            <span class="font-medium text-sm text-warning">{$t('adminApp.jobs.aborting')}</span>
           </div>
-          <span class="text-base-content/60 text-xs">{Math.round(job.progress * 100)}%</span>
+          <span class="text-xs text-base-content/60">{Math.round(job.progress * 100)}%</span>
         </div>
         <ProgressBar progress={job.progress} label="" showPercentage={false} color="accent" size="md" />
-        <div class="text-base-content/70 mt-2 text-xs">
+        <div class="mt-2 text-xs text-base-content/70">
           {$t('adminApp.jobs.abortingInfo')}
         </div>
       </div>
     {/if}
 
     <!-- Messages toggle -->
-    <div class="border-base-300 flex items-center justify-end border-t pt-2">
+    <div class="flex items-center justify-end border-t border-base-300 pt-2">
       <Button
         text={messagesOpen ? $t('adminApp.jobs.hideMessages') : $t('adminApp.jobs.showMessages')}
         variant="secondary"
@@ -147,7 +147,7 @@
 
     <!-- Messages section -->
     {#if messagesOpen}
-      <div class="border-base-300 mt-4 space-y-4 border-t pt-4">
+      <div class="mt-4 space-y-4 border-t border-base-300 pt-4">
         <WarningMessages warnings={job.warningMessages} errors={job.errorMessages} />
         <InfoMessages messages={job.infoMessages} />
       </div>

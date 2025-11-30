@@ -91,8 +91,8 @@ describe('Condenser Integration Tests', () => {
 
     const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      .mockResolvedValueOnce([...mapResponses.map(response => ({ ...response, model: 'gpt-4o' }))]) // For the map phase
-      .mockResolvedValueOnce([...iterateMapResponses.map(response => ({ ...response, model: 'gpt-4o' }))]); // For the iterate_map phase
+      .mockResolvedValueOnce([...mapResponses.map((response) => ({ ...response, model: 'gpt-4o' }))]) // For the map phase
+      .mockResolvedValueOnce([...iterateMapResponses.map((response) => ({ ...response, model: 'gpt-4o' }))]); // For the iterate_map phase
 
     const steps: Array<ProcessingStep> = [
       {
@@ -143,8 +143,8 @@ describe('Condenser Integration Tests', () => {
     // Simulate success for all calls since generateObjectParallel handles retries internally
     const spy = vi.spyOn(llmProvider, 'generateObjectParallel');
     spy
-      .mockResolvedValueOnce([...[validResponse].map(response => ({ ...response, model: 'gpt-4o' }))]) // map phase
-      .mockResolvedValueOnce([...[validResponse].map(response => ({ ...response, model: 'gpt-4o' }))]); // iterate_map phase
+      .mockResolvedValueOnce([...[validResponse].map((response) => ({ ...response, model: 'gpt-4o' }))]) // map phase
+      .mockResolvedValueOnce([...[validResponse].map((response) => ({ ...response, model: 'gpt-4o' }))]); // iterate_map phase
 
     const steps: Array<ProcessingStep> = [
       {

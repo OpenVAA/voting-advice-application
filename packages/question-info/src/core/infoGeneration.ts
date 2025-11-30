@@ -56,11 +56,7 @@ export async function generateInfo({
           exampleOutput = JSON.stringify({ infoSections: example.infoSections }, null, 2);
         } else {
           // generateBoth
-          exampleOutput = JSON.stringify(
-            { infoSections: example.infoSections, terms: example.terms },
-            null,
-            2
-          );
+          exampleOutput = JSON.stringify({ infoSections: example.infoSections, terms: example.terms }, null, 2);
         }
 
         return `### Question: ${example.question}\nOutput: ${exampleOutput}`;

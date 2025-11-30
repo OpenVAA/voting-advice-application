@@ -33,11 +33,7 @@ Automatically hides if only one language is available.
     <label for="target-language" class="label">
       <span class="label-text">{$t('adminApp.languageFeatures.targetLanguage.label')}</span>
     </label>
-    <select
-      id="target-language"
-      name="language"
-      class="select select-bordered w-full"
-      bind:value={selectedLanguage}>
+    <select id="target-language" name="language" class="select select-bordered w-full" bind:value={selectedLanguage}>
       {#each supportedLocales as locale}
         <option value={locale.code}>{locale.name}</option>
       {/each}

@@ -22,7 +22,6 @@ Page for controlling the argument condensation feature.
   const {
     dataRoot,
     t,
-    abortJob,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
 

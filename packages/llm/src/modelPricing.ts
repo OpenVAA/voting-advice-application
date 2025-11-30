@@ -1,7 +1,7 @@
 import type { ModelPricing } from './utils/costCalculation.type';
 
 /** Pricing per million tokens in USD
- * 
+ *
  * @example
  * ```typescript
  * const pricing = MODEL_PRICING.openai['gpt-4o-mini'];
