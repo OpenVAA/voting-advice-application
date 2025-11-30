@@ -16,7 +16,6 @@ Page for controlling the question info generation feature.
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
-  import { handleAbortJob } from '$lib/admin/utils/abortJob';
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -144,7 +143,7 @@ Page for controlling the question info generation feature.
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.description')}</p>
 
-    <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
+    <form method="POST" class="gap-lg grid w-full max-w-xl" use:enhance={handleSubmit}>
       <!-- Hidden input for operations -->
       <input type="hidden" name="operations" value={selectedOperations.join(',')} />
       <input type="hidden" name="sectionTopics" value={sectionTopics} />
@@ -196,12 +195,12 @@ Page for controlling the question info generation feature.
               <span>{questionError}</span>
             </div>
           {:else if availableQuestions.length > 0}
-            <div class="max-h-64 form-control overflow-y-auto rounded-lg border border-base-300 p-md">
+            <div class="form-control border-base-300 p-md max-h-64 overflow-y-auto rounded-lg border">
               <label class="label">
-                <span class="font-semibold label-text">{$t('adminApp.questionInfo.selectQuestions')}</span>
+                <span class="label-text font-semibold">{$t('adminApp.questionInfo.selectQuestions')}</span>
               </label>
               {#each availableQuestions as question, i}
-                <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
+                <label class="border-base-200 flex items-start space-x-10 border-b pb-8 last:border-0">
                   <input
                     type="checkbox"
                     name="questionIds"
@@ -213,14 +212,14 @@ Page for controlling the question info generation feature.
               {/each}
             </div>
           {:else}
-            <p class="text-sm text-neutral">{$t('adminApp.questionInfo.noQuestions')}</p>
+            <p class="text-neutral text-sm">{$t('adminApp.questionInfo.noQuestions')}</p>
           {/if}
         {/if}
       {/if}
 
       <!-- Generation Options Section -->
       <div class="divider"></div>
-      <h3 class="font-semibold text-lg">{$t('adminApp.questionInfo.options.heading')}</h3>
+      <h3 class="text-lg font-semibold">{$t('adminApp.questionInfo.options.heading')}</h3>
 
       <!-- Target Language Selector -->
       <LanguageSelector bind:selectedLanguage {currentLocale} />
@@ -228,7 +227,7 @@ Page for controlling the question info generation feature.
       <!-- Operations Checkboxes -->
       <div class="form-control">
         <label class="label">
-          <span class="font-medium label-text">{$t('adminApp.questionInfo.options.whatToGenerate')}</span>
+          <span class="label-text font-medium">{$t('adminApp.questionInfo.options.whatToGenerate')}</span>
         </label>
         <label class="label cursor-pointer justify-start space-x-8">
           <input type="checkbox" class="checkbox-primary checkbox" value="terms" bind:group={selectedOperations} />
@@ -309,7 +308,7 @@ Page for controlling the question info generation feature.
       {/if}
 
       <!-- Submit Button -->
-      <div class="flex flex-col items-center gap-sm">
+      <div class="gap-sm flex flex-col items-center">
         <Button
           text={status === 'loading'
             ? $t('adminApp.questionInfo.generate.buttonLoading')
@@ -323,7 +322,7 @@ Page for controlling the question info generation feature.
             (selectedOption === 'selectedQuestions' && selectedQuestionIds.length === 0) ||
             selectedOperations.length === 0} />
         {#if !!questionInfoJob}
-          <p class="mt-1 text-xs text-neutral">{$t('adminApp.jobs.alreadyRunning')}</p>
+          <p class="text-neutral mt-1 text-xs">{$t('adminApp.jobs.alreadyRunning')}</p>
         {/if}
       </div>
     </form>
@@ -332,11 +331,7 @@ Page for controlling the question info generation feature.
   <!-- Both active and past jobs -->
   <div slot="fullWidth" class="mt-8 w-full">
     <div class="mx-auto max-w-4xl px-4">
-      <FeatureJobs
-        class="w-full"
-        feature={'QuestionInfoGeneration'}
-        showFeatureLink={false}
-        onAbortJob={(jobId) => handleAbortJob(jobId, { feature: 'QuestionInfoGeneration', abortJob, t })} />
+      <FeatureJobs class="w-full" feature="QuestionInfoGeneration" showFeatureLink={false} />
     </div>
   </div>
 </MainContent>

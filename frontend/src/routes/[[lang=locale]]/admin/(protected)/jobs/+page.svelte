@@ -4,7 +4,6 @@
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
-  import { handleAbortJob } from '$lib/admin/utils/abortJob';
 
   // TODO: add error handling & info updates if polling service refresh, abortAllJobs or abortJob fails
 
@@ -49,7 +48,7 @@
     <Button variant="secondary" text={$t('adminApp.jobs.emergencyCleanup')} on:click={performEmergencyCleanup} />
   </div>
 
-  <div slot="fullWidth" class="flex flex-col gap-lg">
+  <div slot="fullWidth" class="gap-lg flex flex-col">
     <div class="px-1">
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
@@ -86,12 +85,12 @@
       </div>
     </div>
 
-    <div class="px-1 flex w-full gap-lg">
+    <div class="gap-lg flex w-full px-1">
       <!-- Main Content - Features list -->
-      <div class="flex w-3/4 flex-col gap-lg">
+      <div class="gap-lg flex w-3/4 flex-col">
         {#each ADMIN_FEATURES as feature}
           <div class="relative">
-            <FeatureJobs {feature} onAbortJob={(jobId) => handleAbortJob(jobId, { feature, abortJob, t })} />
+            <FeatureJobs {feature} />
           </div>
         {/each}
       </div>
