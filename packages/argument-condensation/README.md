@@ -13,8 +13,8 @@ The main pipeline uses map-reduce, although you can configure your own pipelines
 ## Dependencies
 
 - `@openvaa/data`: Definitions for VAA data types. Especially entities with answers used in getting data for the condensation process. Shared between this and other vaa modules.
-- `@openvaa/core`: Definitions for Logger type and questions. Also includes default implementation for Logger.
-- `@openvaa/llm`: LLM provider class and its implementations. For interacting with language models during argument extraction.
+- `@openvaa/core`: Definitions for Controller type and questions. Also includes default implementation for Controller.
+- `@openvaa/llm`: LLM provider class built on Vercel AI SDK. Handles LLM interactions with cost tracking and validation retries.
 - `js-yaml`: YAML parsing for reading prompt configuration files.
 
 ## Example
@@ -57,7 +57,7 @@ This is the recommended way to use the package, as it abstracts away the details
 ```typescript
 import { handleQuestion } from '@openvaa/argument-condensation';
 import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
-import { OpenAIProvider } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm';
 import type { HasAnswers } from '@openvaa/core';
 
 // 1. Set up your question, entities, and LLM provider
@@ -90,7 +90,15 @@ const entities: Array<HasAnswers> = [
   }
 ];
 
-const llmProvider = new OpenAIProvider({ apiKey: '...' });
+// Configure LLM provider
+const llmProvider = new LLMProvider({
+  provider: 'openai',
+  apiKey: 'yourkey',
+  modelConfig: {
+    primary: 'gpt-4o',
+    fallback: 'gpt-4o-mini'
+  }
+});
 
 // 2. Call handleQuestion with the setup
 const results = await handleQuestion({
@@ -99,13 +107,11 @@ const results = await handleQuestion({
   options: {
     llmProvider,
     language: 'en',
-    llmModel: 'gpt-4o',
-    modelTPMLimit: 30000,
     runId: 'some-run-id',
     maxCommentsPerGroup: 1000,
     invertProsAndCons: false,
     prompts: {}
-    // Optional logger
+    // Optional controller
   }
 });
 ```
@@ -150,7 +156,15 @@ const comments = [
 // Note: by default, we use only map-reduce prompts, which are configured in main.ts's function 'runSingleCondensation'.
 // For flexibility which prompts and operation to use, see 'runSingleCondensation' (e.g. if you want to use refine instead).
 
-const llmProvider = new OpenAIProvider({ apiKey: 'sk-proj-42' });
+const llmProvider = new LLMProvider({
+  provider: 'openai',
+  apiKey: 'yourkey',
+  modelConfig: {
+    primary: 'gpt-4o',
+    fallback: 'gpt-4o-mini'
+  }
+});
+
 const options = {
   llmProvider, // An instance of an LLMProvider
   language: 'en',
@@ -173,11 +187,9 @@ const options = {
       }
     }
   ],
-  llmModel: 'gpt-4o',
-  modelTPMLimit: 30000,
   runId: 'run-456',
   createVisualizationData: true
-  // Optional logger from OpenVAA/core/src/logger
+  // Optional controller from OpenVAA/core/src/controller
 };
 
 // 4. Combine into condensation input

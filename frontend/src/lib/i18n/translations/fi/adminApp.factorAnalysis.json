@@ -1,0 +1,20 @@
+{
+  "title": "Faktorianalyysi",
+  "description": "Analysoi ja hallinnoi vaalikysymysten faktoreita.",
+  "compute": {
+    "title": "Laske faktorit",
+    "description": "Laske latentteja faktoreita ehdokkaiden ja puolueiden vastauksista.",
+    "selectElections": "Valitse vaalit, joille faktorit lasketaan.",
+    "button": "Laske faktorit",
+    "buttonLoading": "Lasketaan faktoreita...",
+    "mayTakeTime": "Tämä saattaa kestää hetken.",
+    "noElections": "Ei vaaleja saatavilla",
+    "candidates": "ehdokasta",
+    "parties": {
+      "some": "ja {count} puoluetta",
+      "none": "eikä yhtään puoluetta"
+    },
+    "haveAnswered": "on vastannut",
+    "error": "Faktoreiden laskeminen epäonnistui"
+  }
+}

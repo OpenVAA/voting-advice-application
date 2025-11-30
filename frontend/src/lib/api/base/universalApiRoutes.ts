@@ -8,8 +8,17 @@ export const API_ROOT = '/api';
  * Api routes that are used by the universal adapters.
  */
 export const UNIVERSAL_API_ROUTES = {
+  cacheProxy: `${API_ROOT}/auth/cache`,
+  login: `${API_ROOT}/auth/login`,
   logout: `${API_ROOT}/candidate/logout`,
   preregister: `${API_ROOT}/candidate/preregister`,
   token: `${API_ROOT}/oidc/token`,
-  cacheProxy: `${API_ROOT}/cache`
+
+  // Job management routes for the Admin App
+  jobsActive: `${API_ROOT}/admin/jobs/active`,
+  jobsPast: `${API_ROOT}/admin/jobs/past`,
+  jobStart: `${API_ROOT}/admin/jobs/start`,
+  jobProgress: `${API_ROOT}/admin/jobs/single/[jobId]/progress`,
+  jobAbort: `${API_ROOT}/admin/jobs/single/[jobId]/abort`,
+  jobAbortAll: `${API_ROOT}/admin/jobs/abort-all`
 } as const;

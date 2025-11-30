@@ -1,484 +1,247 @@
-# `@openvaa/llm`: LLM Integration for OpenVAA
+# @openvaa/llm
 
-This package provides a robust and extensible interface for integrating Large Language Models (LLMs) into the OpenVAA platform. It offers a unified API for different LLM providers with built-in retry logic, response validation, cost tracking, and parallel processing capabilities.
+## Why?
 
-## Features
+This package is a utility wrapper around [Vercel AI SDK](https://sdk.vercel.ai) that centralizes LLM calls and enrichens Vercel's SDK capabilities with useful stuff: it handles cost calculations automatically (IF you set the used model's current pricing to src/modelPricing.ts - otherwise it may calculate using an old price or omit and fallback to $0), implements validation error retrial boilerplate and exposes an in-memory queue for LLM calls with no specified limit. The queue can also be configured to send out the LLM calls in parallel batches. These capabilities are not provided by the Vercel AI SDK v5.
 
-- **Abstract Provider Interface**: Consistent API across different LLM providers
-- **Built-in OpenAI Provider**: Full OpenAI API integration with all models
-- **Response Validation**: Type-safe response parsing with retry logic
-- **Parallel Processing**: Efficient batch processing with configurable concurrency
-- **Cost Tracking**: Built-in token usage and cost calculation
-- **Retry Logic**: Automatic retry with exponential backoff for network errors
-- **Rate Limiting**: Intelligent handling of rate limit errors
-- **Latency Tracking**: Performance monitoring for LLM calls
+Additionally, we provide localization support. We use English fallback prompts that generate output in any of the supported languages of your elections.
 
-## Dependencies
+To reiterate, the package provides:
 
-- `openai`: Official OpenAI SDK for API communication
-- `@openvaa/core`: Core types and utilities shared across OpenVAA modules
-- `jsonrepair`: For safer JSON parsing
+- **Cost tracking** - Automatic calculation of API costs per request
+- **Validation retries** - Automatic retry when LLM output fails schema validation
+- **Parallel processing** - Batch multiple requests with configurable concurrency
+- **Latency monitoring** - Track performance metrics for each call
+- **Centralized prompt registry** - Prompts from the whole repo are saved from to one location
+- **Prompt logic reusability across locales** - Dynamic, out-of-the-box localization instruction injection
+- **Automatic variable injection** - Load & inject: loadPrompt({ id, variables: { a: 'name', b: 'address' } }),
+
+Internally it uses Vercel AI SDK types and functions (`messages`, `generateObject`, `streamText`, etc.). These utilities are just layered on top for convinience.
 
 ## Quick Start
 
-### Basic Usage
-
 ```typescript
-import { OpenAIProvider, Message, Role } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm';
+import { z } from 'zod';
 
-// Create an OpenAI provider instance. The constructor variable 'model' is the fallback model,
-// which is used only if function calls do not contain a model parameter (or if the model in
-// the function call fails for some reason).
-const llm = new OpenAIProvider({
-  apiKey: 'your-openai-api-key', // Required. Set in repo's root .env
-  model: 'gpt-4o', // Optional, defaults to 'gpt-4o'
-  maxContextTokens: 4096 // Optional, defaults to 4096
+const llm = new LLMProvider({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+  modelConfig: {
+    primary: 'gpt-4o-mini'
+  }
 });
 
-// Generate a simple response
-const response = await llm.generate({
+// Uses Vercel AI SDK's generateObject under the hood,
+// but adds cost tracking, latency calcs, and validation retries
+const result = await llm.generateObject({
+  modelConfig: { primary: 'gpt-4o-mini' },
+  schema: z.object({
+    name: z.string(),
+    age: z.number()
+  }),
   messages: [
-    new Message({ role: Role.SYSTEM, content: 'You are a helpful assistant' }),
-    new Message({ role: Role.USER, content: 'Hello! How are you today?' })
-  ],
-  temperature: 0.7,
-  maxTokens: 100
-});
-
-console.log(response.content);
-console.log('Token usage:', response.usage);
-```
-
-### With Retry Logic
-
-```typescript
-// Use generateWithRetry for automatic error handling. Handles API errors like timeouts gracefully.
-const response = await llm.generateWithRetry({
-  messages: [new Message({ role: Role.USER, content: 'Explain quantum computing in simple terms' })],
-  temperature: 0.3,
-  maxTokens: 200,
-  maxAttempts: 3 // Optional, defaults to 3
-});
-```
-
-### Response Validation
-
-```typescript
-// Define a response contract for type-safe parsing
-interface UserProfile {
-  name: string;
-  age: number;
-  interests: string[];
-}
-
-const responseContract = {
-  validate: (obj: unknown): obj is UserProfile => {
-    return (
-      typeof obj === 'object' &&
-      obj !== null &&
-      'name' in obj &&
-      'age' in obj &&
-      'interests' in obj &&
-      typeof obj.name === 'string' &&
-      typeof obj.age === 'number' &&
-      Array.isArray(obj.interests)
-    );
-  }
-};
-
-// Generate and validate response
-const result = await llm.generateAndValidateWithRetry({
-  messages: [
-    new Message({
-      role: Role.USER,
-      content: 'Create a user profile with name, age, and interests. Respond with valid JSON.'
-    })
-  ],
-  responseContract,
-  temperature: 0.1,
-  maxTokens: 150,
-  validationAttempts: 3
-});
-
-// result.parsed is now typed as UserProfile
-console.log(result.parsed.name); // Type-safe access
-console.log(result.raw.content); // Original response
-
-// For manual parsing with error handling, you can also use LlmParser directly:
-import { LlmParser, ValidationError } from '@openvaa/llm';
-
-try {
-  const parsed = LlmParser.parse(response.content, responseContract);
-  console.log('Validated user profile:', parsed);
-} catch (error) {
-  if (isValidationError(error)) {
-    console.error('Validation failed:', error.message);
-    console.error('Raw response:', error.unparsedText);
-  }
-}
-```
-
-### Parallel Processing
-
-```typescript
-// Process multiple requests in parallel
-const inputs = [
-  {
-    messages: [new Message({ role: Role.USER, content: 'What is AI?' })],
-    temperature: 0.7,
-    maxTokens: 100
-  },
-  {
-    messages: [new Message({ role: Role.USER, content: 'What is machine learning?' })],
-    temperature: 0.7,
-    maxTokens: 100
-  },
-  {
-    messages: [new Message({ role: Role.USER, content: 'What is deep learning?' })],
-    temperature: 0.7,
-    maxTokens: 100
-  }
-];
-
-// Overloaded method. Used here without output structure validation & parsing.
-// Requires a responseContract parameter to return a validated object
-const responses = await llm.generateMultipleParallel({
-  inputs,
-  parallelBatches: 3 // Optional, defaults to 3
-});
-
-responses.forEach((response, index) => {
-  console.log(`Response ${index + 1}:`, response.content);
-});
-```
-
-### Parallel Processing with Validation
-
-```typescript
-interface Summary {
-  keyPoints: string[];
-  conclusion: string;
-}
-
-const summaryContract = {
-  validate: (obj: unknown): obj is Summary => {
-    return (
-      typeof obj === 'object' &&
-      obj !== null &&
-      'keyPoints' in obj &&
-      'conclusion' in obj &&
-      Array.isArray(obj.keyPoints) &&
-      typeof obj.conclusion === 'string'
-    );
-  }
-};
-
-const validatedResponses = await llm.generateMultipleParallel({
-  inputs: [
     {
-      messages: [new Message({ role: Role.USER, content: 'Summarize the benefits of renewable energy' })],
-      temperature: 0.3,
-      maxTokens: 150
-    },
-    {
-      messages: [new Message({ role: Role.USER, content: 'Summarize the challenges of renewable energy' })],
-      temperature: 0.3,
-      maxTokens: 150
+      role: 'user',
+      content: 'Create a user profile for John, age 30'
     }
   ],
-  responseContract: summaryContract,
-  parallelBatches: 2,
-  validationAttempts: 2
+  temperature: 0.7,
+  validationRetries: 3 // Automatically retry if validation fails
 });
 
-// Each response is now typed as ParsedLLMResponse<Summary>
-validatedResponses.forEach((response, index) => {
-  console.log(`Summary ${index + 1} key points:`, response.parsed.keyPoints);
-  console.log(`Summary ${index + 1} conclusion:`, response.parsed.conclusion);
+// Enhanced response includes costs and metadata
+console.log(result.object); // { name: 'John', age: 30 }
+console.log(result.costs); // { input: 0.0001, output: 0.0002, total: 0.0003 }
+console.log(result.latencyMs); // 1234
+console.log(result.attempts); // 1
+```
+
+## Core Functionality
+
+### Object Generation with Validation Retries
+
+The main value-add here is automatic retry when the LLM produces invalid output. Uses Vercel's `generateObject` but retries on validation failures:
+
+```typescript
+const result = await llm.generateObject({
+  modelConfig: { primary: 'gpt-4o-mini' },
+  schema: z.object({
+    items: z.array(z.string()),
+    count: z.number()
+  }),
+  messages: [{ role: 'user', content: 'List 3 fruits' }],
+  validationRetries: 3, // Will retry up to 3 times if schema validation fails
+  maxRetries: 3 // Vercel AI SDK's network retry parameter
 });
 ```
 
-## Data Structures and Utilities
+### Parallel Batch Processing
 
-### Core Data Structures
-
-The LLM package is built around several key data structures that provide type safety and consistency across different providers.
-
-#### Message and Role System
+Process multiple requests concurrently with automatic cost tracking for each:
 
 ```typescript
-class Message {
-  role: Role;
-  content: string;
-
-  constructor({ role, content }: { role: Role; content: string });
-}
-
-type Role = 'system' | 'user' | 'assistant' | 'developer';
+const results = await llm.generateObjectParallel({
+  requests: [
+    {
+      modelConfig: { primary: 'gpt-4o-mini' },
+      schema: summarySchema,
+      messages: [{ role: 'user', content: 'Summarize article 1' }]
+    },
+    {
+      modelConfig: { primary: 'gpt-4o-mini' },
+      schema: summarySchema,
+      messages: [{ role: 'user', content: 'Summarize article 2' }]
+    }
+    // ... more requests
+  ],
+  maxConcurrent: 5 // Process 5 at a time
+});
 ```
 
-Messages represent individual interactions in a conversation. The `Role` type defines who is speaking:
+### Text Streaming
 
-- `system`: Instructions or context for the LLM
-- `user`: Input from the user
-- `assistant`: Responses from the LLM
-- `developer`: Special role for debugging or development purposes
-
-#### Response Types
+Wraps Vercel's `streamText` with cost calculation:
 
 ```typescript
-interface LLMResponse {
-  content: string; // The generated text response
-  usage: TokenUsage; // Token consumption information
-  model: string; // Model used for generation
-  finishReason?: string; // Why the generation stopped
-}
-
-interface ParsedLLMResponse<TType> {
-  parsed: TType; // Type-safe parsed response
-  raw: LLMResponse; // Original response object
-}
-
-interface TokenUsage {
-  promptTokens: number; // Tokens in the input
-  completionTokens: number; // Tokens in the output
-  totalTokens: number; // Total tokens used
-}
-```
-
-#### Validation Contracts
-
-```typescript
-interface LLMResponseContract<TType> {
-  validate(obj: unknown): obj is TType;
-}
-```
-
-Response contracts provide type-safe validation for LLM responses, ensuring the output matches your expected structure.
-
-### Important Utilities
-
-The package includes several utility functions and classes that simplify common LLM operations.
-
-#### Cost Calculation
-
-```typescript
-import { calculateLLMCost, getModelPricing, getSupportedModels } from '@openvaa/llm';
-
-// Calculate the cost of an LLM call
-const cost = calculateLLMCost({
-  provider: llm, // LLMProvider instance or provider name string
-  model: 'gpt-4o',
-  usage: response.usage,
-  useCachedInput: false // Set to true if using API provider's queue (cheaper but not real-time)
+const stream = llm.streamText({
+  modelConfig: { primary: 'gpt-4o-mini' },
+  messages: [{ role: 'user', content: 'Tell me a story' }],
+  temperature: 0.7
 });
 
-// Get pricing information for a specific model
-const pricing = getModelPricing(llm, 'gpt-4o');
-console.log(`Input cost per 1M tokens: $${pricing?.input}`);
-console.log(`Output cost per 1M tokens: $${pricing?.output}`);
+// Standard Vercel AI SDK streaming
+for await (const chunk of stream.textStream) {
+  process.stdout.write(chunk);
+}
 
-// List all supported models for cost calculation
-const models = getSupportedModels(llm);
-console.log('Supported models:', models);
+// Costs calculated after stream completes
+const costs = await stream.costs;
+console.log(`Total cost: $${costs.total}`);
 ```
 
-#### Prompt Template Variables
+### Prompt Registry
+
+The package provides a **Prompt Registry** for centralized prompt management with automatic localization support. Features register their prompts once, then load them with automatic language fallback and variable injection.
+
+#### Registering Prompts
+
+Register your prompts directory once at initialization:
+
+```typescript
+// In packages/my-feature/src/prompts.ts
+import { registerPrompts } from '@openvaa/llm';
+import * as path from 'path';
+
+registerPrompts({
+  packageName: 'my-feature',
+  promptsDir: path.join(__dirname, 'prompts')
+});
+```
+
+#### Prompt YAML Structure
+
+Organize prompts by language:
+
+```yaml
+# prompts/en/summarize.yaml
+promptId: my_feature_summarize_v1
+promptText: |
+  Summarize the following {{contentType}} about {{topic}}.
+
+  Content: {{content}}
+
+  {{localizationInstructions}}
+params:
+  required:
+    - contentType
+    - topic
+    - content
+  optional:
+    - localizationInstructions
+```
+
+#### Loading Prompts
+
+```typescript
+import { loadPrompt } from '@openvaa/llm';
+
+const { promptText, metadata } = await loadPrompt({
+  promptId: 'my_feature_summarize_v1',
+  language: 'fi', // Output language
+  variables: {
+    contentType: 'article',
+    topic: 'renewable energy',
+    content: '...'
+  },
+  fallbackLocalization: false, // Optional: Use localization instructions if true (default: false)
+  throwIfVarsMissing: true // Optional: Strict mode - throw on prompt variable mismatches (default: true)
+});
+```
+
+**Options:**
+
+- `promptId`: Unique identifier for the prompt
+- `language`: Requested output language
+- `variables`: Object with values for `{{placeholder}}` variables
+- `fallbackLocalization`: If `true`, uses localization instructions when prompt unavailable in requested language. If `false`, throws error. Default: `false` (recommended - create native prompts for important tasks)
+- `throwIfVarsMissing`: If `true`, throws error on missing required variables. If `false`, leaves `{{placeholders}}` and logs warning. Default: `true`
+
+#### Automatic Language Fallback
+
+When `fallbackLocalization: true` and a prompt isn't available in the requested language:
+
+1. Falls back to English version
+2. Auto-injects localization instructions (if prompt has `{{localizationInstructions}}` optional param)
+3. LLM responds in target language despite English prompt
+
+## Utilities
+
+### Cost Calculation
+
+```typescript
+import { calculateLLMCost, getModelPricing } from '@openvaa/llm';
+
+// Get pricing for a model
+const pricing = getModelPricing('openai', 'gpt-4o-mini');
+// { input: 0.15, output: 0.6, cachedInput: 0.075, reasoning: 0 }
+
+// Calculate costs from token usage
+const costs = calculateLLMCost({
+  pricing,
+  usage: { inputTokens: 1000, outputTokens: 500 },
+  useCachedInput: false
+});
+```
+
+### Prompt Template Variables
 
 ```typescript
 import { setPromptVars } from '@openvaa/llm';
 
-const promptTemplate = `
-You are analyzing political comments about {{topic}}.
-Please extract arguments from the following comments:
-{{comments}}
-
-Focus on arguments that are {{focus}}.
-`;
-
-const variables = {
-  topic: 'climate change',
-  comments: ['Comment 1', 'Comment 2', 'Comment 3'],
-  focus: 'economic impacts'
-};
-
-const finalPrompt = setPromptVars({ promptText: promptTemplate, variables });
-```
-
-#### Latency Tracking
-
-```typescript
-import { LatencyTracker, measureLatency } from '@openvaa/llm';
-
-// Using the LatencyTracker class
-const tracker = new LatencyTracker();
-
-tracker.start('llm-call');
-const response = await llm.generate({ messages, temperature: 0.7 });
-const duration = tracker.stop('llm-call');
-
-console.log(`LLM call took ${duration}ms`);
-
-// Using the measureLatency utility function
-const [result, latency] = await measureLatency('batch-processing', async () => {
-  return await llm.generateMultipleParallel({ inputs, parallelBatches: 3 });
+const prompt = setPromptVars({
+  promptText: 'Analyze {{topic}} in the context of {{context}}. Focus on {{focus}}.',
+  variables: {
+    topic: 'renewable energy',
+    context: 'urban planning',
+    focus: 'cost-benefit analysis'
+  },
+  strict: true // Throw error if variables are missing
 });
-
-console.log(`Batch processing took ${latency}ms`);
 ```
 
-#### Error Handling Utilities
+## Types
+
+This package re-exports relevant types from Vercel AI SDK and adds its own:
 
 ```typescript
-import { parseWaitTimeFromError } from '@openvaa/llm';
-
-try {
-  await llm.generate({ messages, temperature: 0.7 });
-} catch (error) {
-  const waitTime = parseWaitTimeFromError(error);
-  if (waitTime) {
-    console.log(`Rate limited. Wait ${waitTime}ms before retrying.`);
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
-  }
-}
+import type {
+  TokenUsage, // From Vercel AI SDK
+  LLMProvider, // This package
+  LLMModelConfig, // This package
+  LLMObjectGenerationResult, // This package (enhances Vercel's result)
+  CommonLLMParams // This package
+} from '@openvaa/llm';
 ```
 
-## API Reference
-
-### LLMProvider (Abstract Class)
-
-The base class that all LLM providers must extend. Provides a unified interface for different LLM services.
-
-#### Methods
-
-- `generate()`: Generate a single response
-- `generateWithRetry()`: Generate with automatic retry logic
-- `generateAndValidateWithRetry()`: Generate with validation and retry
-- `generateMultipleParallel()`: Process multiple requests in parallel with inherent retry. Validation optional
-- `generateMultipleSequential()`: Process multiple requests sequentially
-
-### OpenAIProvider
-
-The OpenAI implementation of the LLMProvider interface.
-
-#### Constructor Options
-
-```typescript
-interface OpenAIProviderOptions {
-  apiKey: string; // Required
-  model?: string; // Optional, defaults to 'gpt-4o'
-  maxContextTokens?: number; // Optional, defaults to 4096
-  fallbackModel?: string; // Optional fallback model
-}
-```
-
-#### Supported Models
-
-The package includes pricing information for all major OpenAI models:
-
-- **GPT-4.1 family**: `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`
-- **GPT-4.5**: `gpt-4.5-preview`
-- **GPT-4o family**: `gpt-4o`, `gpt-4o-mini`, `gpt-4o-audio-preview`
-- **o1 family**: `o1`, `o1-pro`, `o1-mini`
-- **o3 family**: `o3`, `o3-pro`, `o3-mini`, `o3-deep-research`
-- **o4 family**: `o4-mini`, `o4-mini-deep-research`
-
-See, update and add model pricing information in [`src/consts.ts`](src/consts.ts). Although accurate in 8/2025, be sure to update at least your main model's pricing info to keep yourself updated throughout costly LLM operations. As the costs are calculated with token counts provided by the model provider in their responses, they should be fairly accurate.
-
-## Advanced Usage
-
-### Cost Tracking
-
-```typescript
-import { calculateLLMCost } from '@openvaa/llm';
-
-const response = await llm.generate({
-  messages: [new Message({ role: Role.USER, content: 'Hello' })],
-  temperature: 0.7
-});
-
-const cost = calculateLLMCost({
-  provider: llm,
-  model: response.model,
-  usage: response.usage
-});
-console.log(`Cost: $${cost.toFixed(4)}`);
-```
-
-### Error Handling
-
-```typescript
-try {
-  const response = await llm.generateWithRetry({
-    messages: [new Message({ role: Role.USER, content: 'Test message' })],
-    temperature: 0.7,
-    maxAttempts: 5
-  });
-} catch (error) {
-  if (error instanceof Error) {
-    console.error('LLM Error:', error.message);
-
-    // Check for specific error types
-    if (error.message.includes('rate limit')) {
-      console.log('Rate limit exceeded, consider implementing backoff');
-    } else if (error.message.includes('context length')) {
-      console.log('Context too long, consider reducing input size');
-    }
-  }
-}
-```
-
-## Extending the Package
-
-### Adding a New Provider
-
-To add support for a new LLM provider (e.g., Anthropic Claude), extend the `LLMProvider` class:
-
-```typescript
-import { LLMProvider, Message, LLMResponse } from '@openvaa/llm';
-
-export class AnthropicProvider extends LLMProvider {
-  public readonly name = 'anthropic';
-
-  constructor(
-    private apiKey: string,
-    private model = 'claude-3-sonnet-20240229'
-  ) {
-    super();
-  }
-
-  async generate({
-    messages,
-    temperature,
-    maxTokens,
-    model
-  }: {
-    messages: Array<Message>;
-    temperature: number;
-    maxTokens?: number;
-    model?: string;
-  }): Promise<LLMResponse> {
-    // Implement Anthropic API calls here
-    // Return LLMResponse object
-  }
-
-  // Implement other abstract methods...
-}
-```
-
-## Environment Setup
-
-Make sure your OpenAI API key is set in the repository root `.env` file:
-
-```bash
-LLM_OPENAI_API_KEY=your-openai-api-key-here
-```
-
-Or pass it directly to the provider constructor as shown in the examples above.
-
-## Performance Considerations
-
-- **Parallel Processing**: Use `generateMultipleParallel()` for batch operations to improve throughput. If your API key's token-per-minute limit is low (e.g. 30000 tpm), don't expect the parallelization to provide 10x improvements. The limits will be hit fast with a high parallelization coefficient.
-- **Model Selection**: Choose appropriate models based on your use case (e.g., `gpt-4o-mini` for simple tasks, `gpt-4o` for complex reasoning)
-- **Token Limits**: Set appropriate `maxTokens` to control costs and response length
-- **Temperature**: Use lower temperatures (0.1-0.3) for consistent, factual responses; higher temperatures (0.7-0.9) for creative content
+Message format, schemas, and core types come directly from Vercel AI SDK - see their [documentation](https://sdk.vercel.ai/docs) for details.

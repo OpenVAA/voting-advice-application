@@ -75,7 +75,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       target="_blank"
       rel="noopener noreferrer"
       {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
-      {question.text}
+      {question.shortName}
     </a>
   {:else}
     {question.formatAnswer()}

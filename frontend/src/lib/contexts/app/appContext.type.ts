@@ -80,4 +80,4 @@ export type AppContext = ComponentContext &
 /**
  * The possible types of the application
  */
-export type AppType = 'candidate' | 'voter' | undefined;
+export type AppType = 'admin' | 'candidate' | 'voter' | undefined;

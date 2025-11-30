@@ -23,6 +23,7 @@
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
+  import { initAuthContext } from '$lib/contexts/auth';
   import { initComponentContext } from '$lib/contexts/component';
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
@@ -45,6 +46,8 @@
   const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
     initAppContext();
   initLayoutContext();
+  // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
+  initAuthContext();
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data

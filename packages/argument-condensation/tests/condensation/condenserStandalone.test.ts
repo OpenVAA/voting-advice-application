@@ -1,79 +1,47 @@
+import { noOpController } from '@openvaa/core';
 import { describe, expect, test, vi } from 'vitest';
 import { Condenser } from '../../src/core/condensation/condenser';
-import { PromptRegistry } from '../../src/core/condensation/prompts/promptRegistry';
 import { CONDENSATION_TYPE } from '../../src/core/types';
-import type { Logger } from '@openvaa/core';
-import type { ParsedLLMResponse } from '@openvaa/llm';
-import type { CondensationRunInput, ResponseWithArguments } from '../../src/core/types';
+import type { LLMProvider } from '@openvaa/llm';
+import type { CondensationRunInput } from '../../src/core/types';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {}
-};
-
-// Define minimal LLM Provider interface
-interface MockLLMProvider {
-  name: string;
-  generate: ReturnType<typeof vi.fn>;
-  generateMultipleParallel: ReturnType<typeof vi.fn>;
-  generateMultipleSequential: ReturnType<typeof vi.fn>;
-  generateAndValidateWithRetry: ReturnType<typeof vi.fn>;
-  countTokens: ReturnType<typeof vi.fn>;
-}
-
-// Mock LLM Provider
-function createMockLLMProvider(): MockLLMProvider {
+// Mock LLM Provider for new API
+function createMockLLMProvider() {
   return {
-    name: 'mock',
-    generate: vi.fn().mockResolvedValue({
-      content: JSON.stringify({
+    generateObject: vi.fn().mockResolvedValue({
+      object: {
         arguments: [
           { id: 'arg1', text: 'Lower voting age increases youth participation' },
           { id: 'arg2', text: 'Young people are informed about local issues' }
         ],
         reasoning: 'These arguments support lowering the voting age'
-      }),
-      model: 'gpt-4o-mini',
-      usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
+      },
+      usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+      costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+      finishReason: 'stop' as const,
+      latencyMs: 100,
+      attempts: 1,
+      fallbackUsed: false
     }),
-    generateMultipleParallel: vi.fn().mockImplementation(({ inputs }) => {
-      const parsedContent: ResponseWithArguments = {
-        arguments: [
-          { id: 'arg1', text: 'Generated argument from batch' },
-          { id: 'arg2', text: 'Another generated argument' }
-        ],
-        reasoning: 'Batch processing reasoning'
+    generateObjectParallel: vi.fn().mockImplementation(({ requests }) => {
+      const mockResponse = {
+        object: {
+          arguments: [
+            { id: 'arg1', text: 'Generated argument from batch' },
+            { id: 'arg2', text: 'Another generated argument' }
+          ],
+          reasoning: 'Batch processing reasoning'
+        },
+        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+        finishReason: 'stop' as const,
+        latencyMs: 100,
+        attempts: 1,
+        fallbackUsed: false
       };
-      const mockResponse: ParsedLLMResponse<ResponseWithArguments> = {
-        parsed: parsedContent,
-        raw: {
-          content: JSON.stringify(parsedContent),
-          model: 'gpt-4o-mini',
-          usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-        }
-      };
-      return Promise.resolve(Array(inputs.length).fill(mockResponse));
-    }),
-    generateMultipleSequential: vi.fn().mockImplementation(async (inputs: Array<unknown>) => {
-      const results: Array<unknown> = [];
-      for (let i = 0; i < inputs.length; i++) {
-        results.push({
-          content: JSON.stringify({
-            arguments: [{ id: `seq-arg-${i}`, text: `Sequential argument ${i}` }],
-            reasoning: `Sequential reasoning ${i}`
-          }),
-          model: 'gpt-4o-mini',
-          usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-        });
-      }
-      return results;
-    }),
-    generateAndValidateWithRetry: vi.fn(),
-    countTokens: vi.fn().mockResolvedValue(100)
-  };
+      return Promise.resolve(Array(requests.length).fill(mockResponse));
+    })
+  } as unknown as LLMProvider;
 }
 
 // Mock question object (minimal interface)
@@ -119,9 +87,6 @@ const mockComments = [
 
 describe('Condenser Standalone Test', () => {
   test('It should run the complete condensation pipeline with mock data', async () => {
-    // Initialize prompt registry
-    await PromptRegistry.create('en');
-
     // Create condensation input
     const input = {
       question: mockQuestion,
@@ -134,22 +99,26 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 3,
-              condensationPrompt:
-                'Extract and summarize the main arguments from these comments that support the position.',
-              iterationPrompt: 'Refine the arguments based on feedback and ensure clarity.'
+              condensationPromptId: 'map_likertPros_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 3,
+              iterationPromptId: 'map_likertPros_iterate_v1'
             }
           },
           {
             operation: 'REDUCE' as const,
             params: {
               denominator: 2,
-              coalescingPrompt:
-                'Combine similar arguments into cohesive statements while preserving unique perspectives.'
+              coalescingPromptId: 'reduce_likertPros_coalescing_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpController
       }
     };
 
@@ -162,14 +131,14 @@ describe('Condenser Standalone Test', () => {
     expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertPros);
 
     // Check metrics
-    expect(result.metrics).toBeDefined();
-    expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
-    expect(result.metrics.duration).toBeGreaterThan(0);
-    expect(result.metrics.tokensUsed).toBeDefined();
-    expect(result.metrics.tokensUsed.total).toBeGreaterThan(0);
+    expect(result.llmMetrics).toBeDefined();
+    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
+    expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);
+    expect(result.llmMetrics.tokens).toBeDefined();
+    expect(result.llmMetrics.tokens.totalTokens).toBeGreaterThan(0);
 
     // Verify LLM provider was called
-    expect(input.options.llmProvider.generateMultipleParallel).toHaveBeenCalled();
+    expect(input.options.llmProvider.generateObjectParallel).toHaveBeenCalled();
   }, 30000); // 30 second timeout for the full pipeline
 
   test('It should handle different condensation types', async () => {
@@ -184,21 +153,26 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 2,
-              condensationPrompt: 'Extract arguments that oppose the position.',
-              iterationPrompt: 'Refine opposing arguments.'
+              condensationPromptId: 'map_likertCons_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 2,
+              iterationPromptId: 'map_likertCons_iterate_v1'
             }
           },
           {
             operation: 'REDUCE' as const,
             params: {
               denominator: 2,
-              coalescingPrompt:
-                'Combine similar arguments into cohesive statements while preserving unique perspectives.'
+              coalescingPromptId: 'reduce_likertCons_coalescing_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpController
       }
     };
 
@@ -206,7 +180,7 @@ describe('Condenser Standalone Test', () => {
     const result = await condenser.run();
 
     expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertCons);
-    expect(result.metrics.nLlmCalls).toBeGreaterThan(0);
+    expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
   });
 
   test('It should handle empty comments gracefully', async () => {
@@ -221,13 +195,19 @@ describe('Condenser Standalone Test', () => {
             operation: 'MAP' as const,
             params: {
               batchSize: 1,
-              condensationPrompt: 'Extract arguments.',
-              iterationPrompt: 'Refine arguments.'
+              condensationPromptId: 'map_likertPros_condensation_v1'
+            }
+          },
+          {
+            operation: 'ITERATE_MAP' as const,
+            params: {
+              batchSize: 1,
+              iterationPromptId: 'map_likertPros_iterate_v1'
             }
           }
         ],
         llmProvider: createMockLLMProvider(),
-        logger: noOpLogger
+        controller: noOpController
       }
     };
 

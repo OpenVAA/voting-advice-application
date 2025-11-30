@@ -1,5 +1,5 @@
 import { getCustomData } from '@openvaa/app-shared';
-import { isEmptyValue } from '@openvaa/data';
+import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { derived, get, writable } from 'svelte/store';
@@ -9,15 +9,15 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
-import { prepareDataWriter } from './prepareDataWriter';
-import { userDataStore } from './userDataStore';
+import { candidateUserDataStore } from './candidateUserDataStore';
 import { getAppContext } from '../app';
+import { getAuthContext } from '../auth';
+import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
 import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
-import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
 
@@ -42,17 +42,18 @@ export function initCandidateContext(): CandidateContext {
   const appContext = getAppContext();
   const { appSettings, dataRoot, getRoute, locale } = appContext;
 
+  const authContext = getAuthContext();
+  const { authToken, logout: _logout } = authContext;
+
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and answersLocked
   ////////////////////////////////////////////////////////////////////
 
   const answersLocked = derived(appSettings, (appSettings) => !!appSettings.access.answersLocked);
 
-  const authToken = derived(page, (page) => page.data.token ?? undefined);
-
   const idTokenClaims = derived(page, (page) => page.data.claims ?? undefined);
 
-  const userData = userDataStore({ answersLocked, authToken, dataWriterPromise, locale });
+  const userData = candidateUserDataStore({ answersLocked, authToken, dataWriterPromise, locale });
 
   const newUserEmail = writable<string | undefined>();
 
@@ -115,8 +116,14 @@ export function initCandidateContext(): CandidateContext {
 
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
+   * TODO: Reverse the order of these stores, because `questionStore` filters out some questions. We should construct the categories only after filtering all questions.
    */
-  const questionCategories = questionCategoryStore({ dataRoot, selectedElections, selectedConstituencies });
+  const questionCategories = questionCategoryStore({
+    dataRoot,
+    selectedElections,
+    selectedConstituencies,
+    entityType: ENTITY_TYPE.Candidate
+  });
 
   const infoQuestionCategories = extractInfoCategories(questionCategories);
 
@@ -158,30 +165,10 @@ export function initCandidateContext(): CandidateContext {
   function register(...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> {
     return prepareDataWriter(dataWriterPromise).then((dw) => dw.register(...args));
   }
-  function requestForgotPasswordEmail(
-    ...args: Parameters<DataWriter['requestForgotPasswordEmail']>
-  ): ReturnType<DataWriter['requestForgotPasswordEmail']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.requestForgotPasswordEmail(...args));
-  }
-  function resetPassword(...args: Parameters<DataWriter['resetPassword']>): ReturnType<DataWriter['resetPassword']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.resetPassword(...args));
-  }
 
   async function logout(): Promise<void> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.logout({ authToken: token }).catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
-    });
+    await _logout();
     return goto(get(getRoute)('CandAppLogin'), { invalidateAll: true }).then(_reset);
-  }
-
-  async function setPassword(opts: { currentPassword: string; password: string }): Promise<DataApiActionResult> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
   async function exchangeCodeForIdToken(opts: {
@@ -302,8 +289,8 @@ export function initCandidateContext(): CandidateContext {
 
   return setContext<CandidateContext>(CONTEXT_KEY, {
     ...appContext,
+    ...authContext,
     answersLocked,
-    authToken,
     preregister,
     checkRegistrationKey,
     constituenciesSelectable,
@@ -320,10 +307,7 @@ export function initCandidateContext(): CandidateContext {
     profileComplete,
     questionBlocks,
     register,
-    requestForgotPasswordEmail,
     requiredInfoQuestions,
-    resetPassword,
-    setPassword,
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
     userData,

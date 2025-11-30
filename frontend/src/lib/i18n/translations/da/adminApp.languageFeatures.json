@@ -1,0 +1,6 @@
+{
+  "targetLanguage": {
+    "label": "Målsprog",
+    "help": "Sproget som indholdet skal genereres på. Spørgsmål vil blive behandlet og resultater gemt på dette sprog."
+  }
+}

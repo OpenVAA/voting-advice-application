@@ -3,6 +3,5 @@
   "forgotPassword": "Glömt lösenord?",
   "title": "Registrera dig",
   "unknownError": "Det uppstod ett fel med dina användardata. Kontakta supporten om problemet kvarstår.",
-  "wrongEmailOrPassword": "Fel e-post eller lösenord",
   "answersLockedInfo": "Registrering eller redigering av svar är inte längre möjligt, men du kan fortfarande logga in för att se din information."
 }

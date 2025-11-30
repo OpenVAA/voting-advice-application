@@ -86,7 +86,7 @@ Shows the candidate's user settings.
   <section class="mt-lg">
     <Input
       type="text"
-      label={$t('candidateApp.common.email')}
+      label={$t('common.email')}
       info={$t('candidateApp.settings.emailDescription')}
       value={$userData?.user.email}
       onShadedBg

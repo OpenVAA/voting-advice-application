@@ -43,6 +43,7 @@ export interface SettingsAccess extends Struct.ComponentSchema {
     displayName: 'Access';
   };
   attributes: {
+    adminApp: Schema.Attribute.Boolean;
     answersLocked: Schema.Attribute.Boolean;
     candidateApp: Schema.Attribute.Boolean;
     underMaintenance: Schema.Attribute.Boolean;
@@ -71,6 +72,7 @@ export interface SettingsEntities extends Struct.ComponentSchema {
   };
   attributes: {
     hideIfMissingAnswers: Schema.Attribute.Component<'settings.hide-if-missing-answers', false>;
+    showAllNominations: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
   };
 }
 
@@ -233,6 +235,7 @@ export interface SettingsQuestions extends Struct.ComponentSchema {
   };
   attributes: {
     categoryIntros: Schema.Attribute.Component<'settings.questions-category-intros', false>;
+    interactiveInfo: Schema.Attribute.Component<'settings.questions-interactive-info', false>;
     questionsIntro: Schema.Attribute.Component<'settings.questions-intro', false> & Schema.Attribute.Required;
     showCategoryTags: Schema.Attribute.Boolean & Schema.Attribute.Required;
     showResultsLink: Schema.Attribute.Boolean;
@@ -248,6 +251,17 @@ export interface SettingsQuestionsCategoryIntros extends Struct.ComponentSchema 
   attributes: {
     allowSkip: Schema.Attribute.Boolean;
     show: Schema.Attribute.Boolean & Schema.Attribute.Required;
+  };
+}
+
+export interface SettingsQuestionsInteractiveInfo extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_interactive_info';
+  info: {
+    description: '';
+    displayName: 'Questions - Interactive Info';
+  };
+  attributes: {
+    enabled: Schema.Attribute.Boolean;
   };
 }
 
@@ -348,6 +362,7 @@ declare module '@strapi/strapi' {
       'settings.notifications-notification-data': SettingsNotificationsNotificationData;
       'settings.questions': SettingsQuestions;
       'settings.questions-category-intros': SettingsQuestionsCategoryIntros;
+      'settings.questions-interactive-info': SettingsQuestionsInteractiveInfo;
       'settings.questions-intro': SettingsQuestionsIntro;
       'settings.results': SettingsResults;
       'settings.results-candidate-card-contents': SettingsResultsCandidateCardContents;

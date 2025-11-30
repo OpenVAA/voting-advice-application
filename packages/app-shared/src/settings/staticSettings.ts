@@ -11,7 +11,8 @@ export const staticSettings: StaticSettings = {
   },
   dataAdapter: {
     type: 'strapi',
-    supportsCandidateApp: true
+    supportsCandidateApp: true,
+    supportsAdminApp: true
   },
   colors: {
     light: {

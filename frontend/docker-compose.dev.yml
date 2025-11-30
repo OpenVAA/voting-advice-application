@@ -5,8 +5,10 @@ services:
       dockerfile: frontend/Dockerfile
       target: development
     volumes:
-      # Creating this volume will make Docker update changes from local automatically
+      # Creating this volumes will make Docker update changes from local automatically
       - ./:/opt/frontend
+      # Imported packages must be rebuilt to apply changes
+      - ../packages:/opt/packages:ro
       # Local data
       - ./data:/var/data/local
       # Cache volume
@@ -18,7 +20,7 @@ services:
       - /opt/frontend/android
       - /opt/frontend/ios
     ports:
-      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://127.0.0.1:${FRONTEND_PORT}/ || exit 1
       interval: 30s

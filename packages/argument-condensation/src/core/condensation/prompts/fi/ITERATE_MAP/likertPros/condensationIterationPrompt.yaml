@@ -1,8 +1,9 @@
 promptId: 'map_likertPros_iterate_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
 
 promptText: |
   olet asiantuntija poliittisessa argumentaatiossa. tehtäväsi on lukea kommentteja ja lista argumentteja ja selvittää, löytyykö kommenteista joitakin argumentteja, joita kommenteissa on esitetty aiheen "{{topic}}"" puolesta mutta joita ei vielä löydy argumenttilistasta. 

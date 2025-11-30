@@ -1,3 +1,6 @@
+// Register prompts (must be first import to ensure registration happens)
+import './prompts';
+
 // Export main functionality
 export * from './api'; // API
 export { Condenser } from './core/condensation/condenser'; // Main condensation engine class
@@ -8,10 +11,4 @@ export * from './core/utils';
 export * from './defaultValues';
 
 // Re-export useful LLM utilities for convenience
-export {
-  calculateLLMCost,
-  getModelPricing,
-  getSupportedModels,
-  getSupportedProviders,
-  MODEL_PRICING
-} from '@openvaa/llm';
+export { getModelPricing, MODEL_PRICING } from '@openvaa/llm';

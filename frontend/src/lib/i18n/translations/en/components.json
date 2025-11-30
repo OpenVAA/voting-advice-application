@@ -45,7 +45,8 @@
     "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"
   },
   "select": {
-    "noMatchingOptions": "No matching options found"
+    "noMatchingOptions": "No matching options found",
+    "placeholder": "Select an option below"
   },
   "video": {
     "captions": "Captions",
