@@ -45,7 +45,8 @@
     "unsavedChanges": "Du har ændringer, der ikke er gemt. Er du sikker på, at du vil forlade siden?"
   },
   "select": {
-    "noMatchingOptions": "Ingen matchende muligheder fundet"
+    "noMatchingOptions": "Ingen matchende muligheder fundet",
+    "placeholder": "Vælg en mulighed nedenfor"
   },
   "video": {
     "captions": "Undertekster",
