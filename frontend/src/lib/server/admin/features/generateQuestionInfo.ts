@@ -1,5 +1,5 @@
 import { AbortError, type Id, type Serializable } from '@openvaa/core';
-import { generateQuestionInfo as generateQuestionInfoAPI } from '@openvaa/question-info';
+import { generateQuestionInfo as generateQuestionInfoAPI, type QuestionInfoResult } from '@openvaa/question-info';
 import { type QuestionInfoOperation } from '@openvaa/question-info';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
@@ -69,6 +69,8 @@ export async function generateQuestionInfo({
     ...(questionContext && { questionContext })
   };
 
+  let results: Array<QuestionInfoResult> | undefined;
+
   try {
     // 1) Load data
     controller.info('Loading election and question data for question info generation...');
@@ -121,7 +123,7 @@ export async function generateQuestionInfo({
     controller.info(`Processing ${selectedQuestions.length} question(s) in parallel...`);
 
     // Call generateQuestionInfo API once with all questions
-    const results = await generateQuestionInfoAPI({
+    results = await generateQuestionInfoAPI({
       questions: selectedQuestions,
       options
     });
@@ -192,16 +194,8 @@ export async function generateQuestionInfo({
       await dataWriter.insertJobResult({
         authToken,
         data: {
-          jobId,
-          jobType: 'QuestionInfoGeneration',
-          electionId,
-          author: job.author,
+          ..._getResultData(),
           endStatus: 'completed',
-          startTime,
-          endTime: new Date().toISOString(),
-          input: inputParams,
-          output: results as unknown as Array<Serializable>,
-          messages: getAllMessagesFromJob(jobId),
           metadata: { questionsProcessed: results.length }
         }
       });
@@ -220,16 +214,8 @@ export async function generateQuestionInfo({
         await dataWriter.insertJobResult({
           authToken,
           data: {
-            jobId,
-            jobType: 'QuestionInfoGeneration',
-            electionId,
-            author: job.author,
+            ..._getResultData(),
             endStatus: 'aborted',
-            startTime,
-            endTime: new Date().toISOString(),
-            input: inputParams,
-            output: null,
-            messages: getAllMessagesFromJob(jobId),
             metadata: null
           }
         });
@@ -245,22 +231,31 @@ export async function generateQuestionInfo({
         await dataWriter.insertJobResult({
           authToken,
           data: {
-            jobId,
-            jobType: 'QuestionInfoGeneration',
-            electionId,
-            author: job.author,
+            ..._getResultData(),
             endStatus: 'failed',
-            startTime,
-            endTime: new Date().toISOString(),
-            input: inputParams,
-            output: null,
-            messages: getAllMessagesFromJob(jobId),
             metadata: { error: message }
           }
         });
       }
     }
     throw error;
+  }
+
+  function _getResultData() {
+    const job = getJob(jobId);
+    if (!job) throw new Error(`[generateQuestionInfo] Job ${jobId} not found in the job store.`);
+    const { jobType, author } = job;
+    return {
+      jobId,
+      jobType,
+      electionId,
+      author,
+      startTime,
+      endTime: new Date().toISOString(),
+      input: inputParams,
+      output: results ? (results as unknown as Array<Serializable>) : null,
+      messages: getAllMessagesFromJob(jobId)
+    };
   }
 }
 
