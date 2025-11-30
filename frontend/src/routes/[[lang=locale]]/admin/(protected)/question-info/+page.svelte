@@ -24,7 +24,6 @@ Page for controlling the question info generation feature.
   const {
     dataRoot,
     t,
-    abortJob,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
 

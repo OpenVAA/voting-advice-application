@@ -179,7 +179,7 @@ export class LLMProvider {
    *   messages: [{ role: 'user', content: 'Whats yar favorite meal?' }]
    * });
    * ```
-   */ 
+   */
   streamText<TOOLS extends ToolSet | undefined = undefined>(options: LLMStreamOptions<TOOLS>): LLMStreamResult<TOOLS> {
     const startTime = performance.now();
     const model =

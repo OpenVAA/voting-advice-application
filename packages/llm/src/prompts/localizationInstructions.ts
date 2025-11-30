@@ -21,7 +21,7 @@ Even though the examples or input data may be in a different language, the outpu
  * source of truth as SvelteKit locale routes.
  */
 export const LOCALIZATION_INSTRUCTIONS: Record<string, string> = Object.fromEntries(
-  staticSettings.supportedLocales.map(locale => [
+  staticSettings.supportedLocales.map((locale) => [
     locale.code,
     locale.isDefault
       ? ''
