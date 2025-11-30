@@ -34,12 +34,12 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
   export let emoji: $$Props['emoji'] = undefined;
 
   // We cannot currently use this filtering to remove non-emoji glyphs because it breaks the emojis on Safari. See: https://developer.apple.com/forums/thread/729609
-  // $: if (emoji != null && emoji !== '') {
+  // $: if (emoji {
   //   emoji = emoji.replace(/\P{Extended_Pictographic}/gu, '');
   // }
 </script>
 
-{#if emoji != null && emoji !== ''}
+{#if emoji}
   <div
     aria-hidden="true"
     role="img"
