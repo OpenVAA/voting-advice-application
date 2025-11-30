@@ -69,7 +69,6 @@ Page for controlling the question info generation feature.
   ////////////////////////////////////////////////////////////////////////
 
   let selectedOperations: Array<'terms' | 'infoSections'> = ['terms', 'infoSections'];
-  let selectedLanguage = '';
   let sectionTopics = '';
   let customInstructions = '';
   let questionContext = '';
@@ -195,9 +194,9 @@ Page for controlling the question info generation feature.
             </div>
           {:else if availableQuestions.length > 0}
             <div class="form-control border-base-300 p-md max-h-64 overflow-y-auto rounded-lg border">
-              <label class="label">
+              <div class="label">
                 <span class="label-text font-semibold">{$t('adminApp.questionInfo.selectQuestions')}</span>
-              </label>
+              </div>
               {#each availableQuestions as question, i}
                 <label class="border-base-200 flex items-start space-x-10 border-b pb-8 last:border-0">
                   <input
@@ -221,13 +220,13 @@ Page for controlling the question info generation feature.
       <h3 class="text-lg font-semibold">{$t('adminApp.questionInfo.options.heading')}</h3>
 
       <!-- Target Language Selector -->
-      <LanguageSelector bind:selectedLanguage {currentLocale} />
+      <LanguageSelector name="language" />
 
       <!-- Operations Checkboxes -->
       <div class="form-control">
-        <label class="label">
+        <div class="label">
           <span class="label-text font-medium">{$t('adminApp.questionInfo.options.whatToGenerate')}</span>
-        </label>
+        </div>
         <label class="label cursor-pointer justify-start space-x-8">
           <input type="checkbox" class="checkbox-primary checkbox" value="terms" bind:group={selectedOperations} />
           <span class="label-text">{$t('adminApp.questionInfo.options.terms')}</span>
@@ -254,9 +253,9 @@ Page for controlling the question info generation feature.
             class="input input-bordered w-full"
             placeholder={$t('adminApp.questionInfo.sectionTopics.placeholder')}
             bind:value={sectionTopics} />
-          <label class="label">
+          <div class="label">
             <span class="label-text-alt text-neutral">{$t('adminApp.questionInfo.sectionTopics.help')}</span>
-          </label>
+          </div>
         </div>
       {/if}
 
@@ -270,9 +269,9 @@ Page for controlling the question info generation feature.
           class="textarea textarea-bordered h-24 w-full"
           placeholder={$t('adminApp.questionInfo.customInstructions.placeholder')}
           bind:value={customInstructions}></textarea>
-        <label class="label">
+        <div class="label">
           <span class="label-text-alt text-neutral">{$t('adminApp.questionInfo.customInstructions.help')}</span>
-        </label>
+        </div>
       </div>
 
       <!-- Question Context Input -->
@@ -286,9 +285,9 @@ Page for controlling the question info generation feature.
           class="input input-bordered w-full"
           placeholder={$t('adminApp.questionInfo.questionContext.placeholder')}
           bind:value={questionContext} />
-        <label class="label">
+        <div class="label">
           <span class="label-text-alt text-neutral">{$t('adminApp.questionInfo.questionContext.help')}</span>
-        </label>
+        </div>
       </div>
 
       <!-- Validation Error Messages -->
