@@ -39,7 +39,7 @@ class DummyTreeBuilder {
   completeNode() {}
 }
 
- // TODO: test whether fallbackLocalization works for argument condensation qualitatively. you can use the visualization tool to do qualitative analysis on what kind of outputs are produced
+// TODO: test whether fallbackLocalization works for argument condensation qualitatively. you can use the visualization tool to do qualitative analysis on what kind of outputs are produced
 
 /**
  * Takes in an array of comments and a configuration object and orchestrates the condensation process using these inputs.
@@ -361,7 +361,7 @@ export class Condenser {
         promptId,
         language: this.language,
         variables: templateVariables,
-        throwIfVarsMissing: false, 
+        throwIfVarsMissing: false,
         fallbackLocalization: false // argument condensation is an operation with potentially hundreds of llm calls, so using a non-native prompt is probably not the best idea
       });
 

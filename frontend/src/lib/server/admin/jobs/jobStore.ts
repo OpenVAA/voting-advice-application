@@ -240,11 +240,9 @@ export function getAllMessagesFromJob(jobId: string): Array<JobMessage> {
   const job = getJob(jobId);
   if (!job) return [];
 
-  return [
-    ...job.infoMessages,
-    ...job.warningMessages,
-    ...job.errorMessages
-  ].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return [...job.infoMessages, ...job.warningMessages, ...job.errorMessages].sort((a, b) =>
+    a.timestamp.localeCompare(b.timestamp)
+  );
 }
 
 /**

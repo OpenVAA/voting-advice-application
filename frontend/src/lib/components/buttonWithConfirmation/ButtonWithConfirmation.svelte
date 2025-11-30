@@ -51,8 +51,8 @@ text="Add to list">
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import type { ButtonWithConfirmationProps } from './ButtonWithConfirmation.type';
   import { ConfirmationModal } from '$lib/components/modal/confirmation';
+  import type { ButtonWithConfirmationProps } from './ButtonWithConfirmation.type';
 
   type $$Props = ButtonWithConfirmationProps;
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { FeatureJobs } from '$lib/admin/components/jobs';
-  import { ADMIN_FEATURES, type AdminFeature } from '$lib/admin/features';
+  import { ADMIN_FEATURES } from '$lib/admin/features';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
@@ -14,8 +14,7 @@
   const {
     t,
     jobs: { activeJobsByFeature, pastJobs },
-    abortAllJobs,
-    abortJob
+    abortAllJobs
   } = getAdminContext();
 
   ////////////////////////////////////////////////////////////////////////
