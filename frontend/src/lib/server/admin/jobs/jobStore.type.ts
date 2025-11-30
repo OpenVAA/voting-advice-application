@@ -6,7 +6,7 @@ import type { AdminFeature } from '$lib/admin/features';
  * @example
  * {
  *   id: '123',
- *   jobType: 'argument-condensation',
+ *   jobType: 'AdminAppArgumentCondensation',
  *   author: 'admin@example.com',
  *   status: 'running',
  *   progress: 0.5,
