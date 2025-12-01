@@ -76,7 +76,7 @@ The project is coordinated by the Finnish non-profit association [OpenVAA](https
 - 🕶️ Privacy-preserving
 - 🎓 Informed by research and research-friendly
 
-See full list of [features](/docs/features/).
+See full list of [features](#features-1).
 
 ### 🔨 Use cases
 
@@ -112,21 +112,6 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 |  Postgres server and two Docker containers running on Render                                                  | Single Docker container running on Render                                                                                                         |
 | nuortenvaalikone.openvaa.org                                                                                  | vaalikone.openvaa.org                                                                                                                             |
 
-### 🎢 Roadmap
-
-**2025 H2** — Expand documentation and improve developer-friendliness and first release
-
-- Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
-- Create a research-backed methodological guide to supplement the technical documentation
-- Integrate experimental AI features into the codebase (currently in a test branch)
-- Build application manager UI
-  - First production release
-
-**2026** - Added features for developer-friendliness
-
-- Enable plugins or easier customisation of pages and main components
-- Multi-tenant model
-
 ### 🪢 Collaborate
 
 In addition to developers and designers willing to contribute to the codebase (see below), we’re also looking for researchers to collaborate with and organisations willing to publish their own VAAs. Reach us at info@openvaa.org if you’re interested.
@@ -135,7 +120,7 @@ In addition to developers and designers willing to contribute to the codebase (s
 
 We’re very happy to accept any help in coding, design, testing, translating and so on. If you want to help, drop a line at info@openvaa.org.
 
-See [the contribution guide](docs/contributing/CONTRIBUTING.md) for further info about contributing to the project.
+See [the contribution guide](#contributing) for further info about contributing to the project.
 
 ===
 
@@ -328,28 +313,28 @@ A non-exhaustive list of the application features.
    - Username `admin`
    - Password `admin`
 
-- If you run into errors, try checking the tips related to Docker in [Troubleshooting](./troubleshooting.md).
+- If you run into errors, try checking the tips related to Docker in [Troubleshooting](#troubleshooting).
 
 ## App and repo structure
 
 The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module). See the READMEs in each for more information.
 
 - Abstract logic
-  - [`@openvaa/core`](./packages/core/)
-  - [`@openvaa/data`](./packages/data/)
-  - [`@openvaa/filters`](./packages/filters/)
-  - [`@openvaa/matching`](./packages/matching/)
+  - [`@openvaa/core`](/packages/core/)
+  - [`@openvaa/data`](/packages/data/)
+  - [`@openvaa/filters`](/packages/filters/)
+  - [`@openvaa/matching`](/packages/matching/)
 - Application
-  - [`@openvaa/app-shared`](./packages/app-shared/)
-  - [`@openvaa/strapi`](./backend/vaa-strapi/)
-  - [`@openvaa/strapi-admin-tools`](./backend/vaa-strapi/src/plugins/openvaa-admin-tools/)
-  - [`@openvaa/frontend`](./frontend/)
+  - [`@openvaa/app-shared`](/packages/app-shared/)
+  - [`@openvaa/strapi`](/backend/vaa-strapi/)
+  - [`@openvaa/strapi-admin-tools`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/)
+  - [`@openvaa/frontend`](/frontend/)
 - Experimental LLM features
-  - [`@openvaa/argument-condensation`](./packages/argument-condensation/)
-  - [`@openvaa/llm`](./packages/llm/)
-  - [`@openvaa/question-info`](./packages/question-info/)
+  - [`@openvaa/argument-condensation`](/packages/argument-condensation/)
+  - [`@openvaa/llm`](/packages/llm/)
+  - [`@openvaa/question-info`](/packages/question-info/)
 - Development
-  - [`@openvaa/shared-config`](./packages/shared-config/)
+  - [`@openvaa/shared-config`](/packages/shared-config/)
 
 ## Development
 
@@ -359,7 +344,7 @@ You can run the whole application in Docker containers (frontend, backend, postg
 
 - Yarn 4
 - Docker (unless you plan to run the app outside of Docker)
-- Node.js. Use the version specified under `engines` in the root [package.json](../package.json). Use of nvm is encouraged for Node version management
+- Node.js. Use the version specified under `engines` in the root [package.json](/package.json). Use of nvm is encouraged for Node version management
 - Ports 1337, 5173 and 5432 should be free for the application if using default settings
   - These ports can be changed in the `.env` file if desired.
 
@@ -377,7 +362,7 @@ To build and run development Docker images for the entire stack (frontend, backe
 
 - Make a copy of the `.env.example` file and rename the copy as `.env`
 - Run `yarn dev`
-- If you run into errors, try checking the tips related to Docker in [Troubleshooting](./troubleshooting.md).
+- If you run into errors, try checking the tips related to Docker in [Troubleshooting](#troubleshooting).
 
 The `yarn dev` script will automatically build all the shared packages and start watching them for changes. If these change, they will be rerebuilt and the frontend restarted to reflect the changes.
 
@@ -390,11 +375,11 @@ yarn dev:down
 **When running the project in Docker, only use the `.env` file in project root. You usually
 don't have to touch the separate .env files for frontend and backend.**
 
-If you want to seed backend DB with mock data (e.g. for demostration, development or testing purposes purposes), please follow the instructions [here](../backend/vaa-strapi/README.md#mock-data).
+If you want to seed backend DB with mock data (e.g. for demostration, development or testing purposes purposes), please follow the instructions [here](#mock-data-generation).
 
 #### Hot Reloading the Backend
 
-Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't need to be re-generated after making changes to the codebase. Hot reloading is enabled by default in the frontend, but for backend this can be enabled by adding the volume `- ./:/opt` as a mounted point in [docker-compose.dev.yml](../backend/vaa-strapi/docker-compose.dev.yml) and re-building the Docker container. However, this can make the development process slow at times, so it is not recommended to keep that on unless doing direct development on the backend source code.
+Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't need to be re-generated after making changes to the codebase. Hot reloading is enabled by default in the frontend, but for backend this can be enabled by adding the volume `- ./:/opt` as a mounted point in [docker-compose.dev.yml](/backend/vaa-strapi/docker-compose.dev.yml) and re-building the Docker container. However, this can make the development process slow at times, so it is not recommended to keep that on unless doing direct development on the backend source code.
 
 ### Monorepo
 
@@ -433,7 +418,7 @@ Also add a reference to the package’s `tsconfig.json` file (see more in [Modul
   "references": [{ "path": "../core/tsconfig.json" }]
 ```
 
-The root [`package.json`](./package.json) contains scipts for many repo-wide tasks.
+The root [`package.json`](/package.json) contains scipts for many repo-wide tasks.
 
 #### Module resolution
 
@@ -494,7 +479,7 @@ yarn playwright install
 yarn test:e2e
 ```
 
-If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](./backend/vaa-strapi/README.md#mock-data)).
+If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](#mock-data-generation)).
 
 To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
 
@@ -568,7 +553,7 @@ STATIC_MEDIA_CONTENT_PATH=public/media
 
 Login to Render or create an account.
 
-You can either use the [Render Blueprints](https://render.com/docs/infrastructure-as-code) feature by modifying the [render.example.yaml](./render.example.yaml) or create the services manually.
+You can either use the [Render Blueprints](https://render.com/docs/infrastructure-as-code) feature by modifying the [render.example.yaml](/render.example.yaml) or create the services manually.
 
 If you choose the blueprints option, you can skip to [Step 9](#9-use-your-own-domain-name-for-the-frontend).
 
@@ -794,12 +779,12 @@ following these steps.
 1. Add a descriptive title.
 2. Add a descriptive description.
 3. Assign the issue to the Voting Advice Application project.
-4. [Add labels](how-to-use-labels.md).
+4. [Add labels](#issue-labels).
 
 #### Search for an issue
 
 Scan through our [existing issues](https://github.com/OpenVAA/voting-advice-application/issues). You can
-narrow down the search using `labels` as filters. See [Labels](how-to-use-labels.md) for more information.
+narrow down the search using `labels` as filters. See [Labels](#issue-labels) for more information.
 If you find an issue to work on, you are welcome to open a PR with a fix.
 
 #### Issue labels
@@ -862,13 +847,13 @@ Once your changes are ready, make sure you have followed all the steps in the [P
 
 ### Workflows
 
-The project uses GitHub Actions among other things to verify each commit passes unit tests, is able to build the app successfully and adheres to the [coding conventions used by the project](style-guides.md). If a commit fails the verification, please check your changes from the logs and fix changes before submitting a review request.
+The project uses GitHub Actions among other things to verify each commit passes unit tests, is able to build the app successfully and adheres to the [coding conventions used by the project](#code-style-guide). If a commit fails the verification, please check your changes from the logs and fix changes before submitting a review request.
 
 ### Pull Request
 
 When you're done with the changes, create a pull request known as a PR.
 
-- Make sure that your commits pass the validation workflows, are able to run the [tests](/docs/testing.md), and build the application.
+- Make sure that your commits pass the validation workflows, are able to run the [tests](#testing), and build the application.
 - Make sure you have followed all the steps in the [PR Review Checklist](#self-review).
 - Fill in the pull requested template. Mark your PR as a draft if you're still working on it.
 - Don't forget to [link PR to an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) if you are solving one.
@@ -886,7 +871,7 @@ You should always review your own PR first before asking someone to review it. B
 
 - [ ] Confirm that the changes solve the issue you are trying to solve partially or fully.
 - [ ] Review the code in terms of the [OWASP top 10 security issues](https://owasp.org/Top10/).
-- [ ] Verify that your code follows the [Code style guide](style-guides.md). Prettier will take care most of the formatting, but the guide specifies some things regarding documentation.
+- [ ] Verify that your code follows the [Code style guide](#code-style-guide). Prettier will take care most of the formatting, but the guide specifies some things regarding documentation.
 - [ ] There is no code that is repeated within your PR or elsewhere in the repo.
 - [ ] You have documented all new components, functions and other entities.
 - [ ] You have updated the repo documentation md files if your changes touch those.
@@ -900,7 +885,7 @@ You should always review your own PR first before asking someone to review it. B
 - [ ] Test the changes using the [WAVE extension](https://wave.webaim.org/extension/) for accessibility.
 - [ ] Test the changes using keyboard navigation and screen-reading.
 - [ ] Make sure you have added documentation where necessary.
-- [ ] Cleaned up the commit history and check that the commits follow [the guidelines](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/CONTRIBUTING.md#commit-your-update)
+- [ ] Cleaned up the commit history and check that the commits follow [the guidelines](#commit-your-update)
 
 ### Code style guide
 
@@ -1023,7 +1008,7 @@ Try to separate pure type files from the functional ones and keep them next to e
 
 Use Tailwind for styling.
 
-See the [frontend styling guide](../frontend/styling.md) for information about using Tailwind classes.
+See the [frontend styling guide](#frontend) for information about using Tailwind classes.
 
 #### Svelte components
 
@@ -1097,7 +1082,7 @@ In most cases, default values for properties included in `$$restProps`, such as 
 </div>
 ```
 
-However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](../../frontend/src/lib/utils/components.ts). For example:
+However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](/frontend/src/lib/utils/components.ts). For example:
 
 ```tsx
 <div {...concatClass($$restProps, 'default-class')}>...</div>
@@ -1122,7 +1107,7 @@ let className: $$Props['class'] = $$props['class'];
 
 ##### Component documentation
 
-Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](../../frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](../../frontend/src/lib/components/icon/base/IconBase.type.ts).
+Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](/frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](/frontend/src/lib/components/icon/base/IconBase.type.ts).
 
 Place the Svelte docstring at the top of the file, before the `<script>` block.
 
@@ -1149,13 +1134,13 @@ yarn workspace @openvaa/app-shared build
 
 ### Plugins
 
-- Email uses AWS SES, see [Candidate App documentation](/docs/candidate-app/candidates.md)
-- Upload uses AWS S3, see [plugins.ts](config/plugins.ts)
-- [OpenVAA Strapi Admin Tools plugin](src/plugins/openvaa-admin-tools/README.md) (local plugin)
+- Email uses AWS SES, see [Candidate App documentation](#candidate-user-management)
+- Upload uses AWS S3, see [plugins.ts](/backend/vaa-strapi/config/plugins.ts)
+- [OpenVAA Strapi Admin Tools plugin](#openvaa-admin-tools-plugin-for-strapi) (local plugin)
 
 ### Running the backend separately
 
-0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](../../package.json). Use of nvm is encouraged. **Additionally, you need Docker!**
+0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](/package.json). Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `yarn install`.
 2. Copy or rename the `.env.example` to `.env` before running any of the commands.
 3. Run `docker compose -f docker-compose.dev.yml up postgres` to start Postgres container.
@@ -1167,17 +1152,17 @@ Run `yarn strapi ts:generate-types` to re-generate `types` folder.
 
 ### Customized behaviour
 
-The Strapi backend has been customized in many ways to cater to VAA needs. The current implementation is split between direct edits to Strapi code and some functions implemented in the [OpenVAA Admin Tools plugin](src/plugins/openvaa-admin-tools/README.md). Most of the customizations should be migrated to the plugin in the future.
+The Strapi backend has been customized in many ways to cater to VAA needs. The current implementation is split between direct edits to Strapi code and some functions implemented in the [OpenVAA Admin Tools plugin](#openvaa-admin-tools-plugin-for-strapi). Most of the customizations should be migrated to the plugin in the future.
 
 ### Default data loading
 
 Some data is automatically loaded when Strapi is initialized. The data include:
 
-- [Question Types](src/functions/loadDefaultData.ts)
-- [App Settings](src/functions/loadDefaultAppSettings.ts)
-- [Translation overrides](src/functions/loadDynamicTranslations.ts) (under the `dynamic` key)
+- [Question Types](/backend/vaa-strapi/src/functions/loadDefaultData.ts)
+- [App Settings](/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts)
+- [Translation overrides](/backend/vaa-strapi/src/functions/loadDynamicTranslations.ts) (under the `dynamic` key)
 
-API permissions are also set by defaul by [setDefaultApiPermissions.ts](src/functions/setDefaultApiPermissions.ts).
+API permissions are also set by defaul by [setDefaultApiPermissions.ts](/backend/vaa-strapi/src/functions/setDefaultApiPermissions.ts).
 
 > Note that some of the defaults are **not** loaded if mock data generations is enabled.
 
@@ -1187,7 +1172,7 @@ API permissions are also set by defaul by [setDefaultApiPermissions.ts](src/func
 
 The database can be seeded with generated mock data using Faker.js.
 
-If enabled, the data is generated by the rather messy [generateMockData](backend/vaa-strapi/src/functions/generateMockData.ts) function. See the implementation for details and constants you can edit in-code to control the amount of data.
+If enabled, the data is generated by the rather messy [generateMockData](/backend/vaa-strapi/src/functions/generateMockData.ts) function. See the implementation for details and constants you can edit in-code to control the amount of data.
 
 Mock data can be seeded only once on initialising the backend DB or on each restart of the Strapi backend. Mock data generation is controlled by these `.env` variables:
 
@@ -1210,7 +1195,7 @@ Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DAT
 
 #### Mock users
 
-By default, mock data includes the following Users (for up-to-date details, see [mockUsers](backend/vaa-strapi/src/functions/mockData/mockUsers.json)):
+By default, mock data includes the following Users (for up-to-date details, see [mockUsers](/backend/vaa-strapi/src/functions/mockData/mockUsers.json)):
 
 | User type   | User role     | Email                    | Password     | Remarks                       |
 | ----------- | ------------- | ------------------------ | ------------ | ----------------------------- |
@@ -1226,21 +1211,21 @@ Note that the mock admin is different from the default Strapi Admin, generated a
 
 ### Authentication
 
-Standard read calls require no authentication and are included in the default permissions, which are customized in the [Users’ permissions plugin](./src/extensions/users-permissions/strapi-server.ts).
+Standard read calls require no authentication and are included in the default permissions, which are customized in the [Users’ permissions plugin](/src/extensions/users-permissions/strapi-server.ts).
 
 Furthermore, all API routes are configured
 
 Write calls require authentication:
 
-- For registered Candidates, this is handled by creating a user. Read more in the [Candidate App documentation](/docs/candidate-app/candidates.md).
+- For registered Candidates, this is handled by creating a user. Read more in the [Candidate App documentation](#candidate-user-management).
 - For pre-registration, an API token with the `users-permissions.candidate.preregister` priviledge is required, which must be saved in the `BACKEND_API_TOKEN` env variable. Read more on creating the token in the [Strapi documenation](https://docs.strapi.io/user-docs/settings/API-tokens#creating-a-new-api-token).
 
 #### Adding new content types
 
 If you add new content types that should be accessible, make sure:
 
-1. Edit the `CONTENT_API` list in [api.ts](src/util/api.ts) to grant read rights to the public
-2. Add the permission in the [Users’ permissions plugin](./src/extensions/users-permissions/strapi-server.ts) so that registered users are granted access sa well
+1. Edit the `CONTENT_API` list in [api.ts](/backend/vaa-strapi/src/util/api.ts) to grant read rights to the public
+2. Add the permission in the [Users’ permissions plugin](/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts) so that registered users are granted access sa well
 3. Also make sure that the route config includes the default restrictions:
 
 ```ts
@@ -1264,9 +1249,9 @@ export default factories.createCoreRouter('api::<COLLECTION>.<COLLECTION>', {
 
 By default, all content types inside Strapi are assumed to be safe to be publicly exposed. For reading, all the fields except any fields marked with the `private` keyword in their schema definition are returned per how Strapi works. For writing, the majority of the create, update, and delete endpoints are disabled by default unless explicitly used by the candidate application, and otherwise restricted to only resources that belong to the logged in candidate to prevent unauthorized modification of the data.
 
-The restrictions are enforced using policies for each content type's route, usually found in the `backend/vaa-strapi/src/api/[schema]/routes/[schema].ts` file. To simplify this, there are a couple of helper functions available in [acl.ts](`../backend/vaa-strapi/src/util/acl.ts`) and [policies](`../backend/vaa-strapi/src/policies/`). Please see [Strapi's documentation on policies](https://docs.strapi.io/dev-docs/backend-customization/policies#usage) on how to use them.
+The restrictions are enforced using policies for each content type's route, usually found in the `backend/vaa-strapi/src/api/[schema]/routes/[schema].ts` file. To simplify this, there are a couple of helper functions available in [acl.ts](`/backend/vaa-strapi/src/util/acl.ts`) and [policies](`/backend/vaa-strapi/src/policies/`). Please see [Strapi's documentation on policies](https://docs.strapi.io/dev-docs/backend-customization/policies#usage) on how to use them.
 
-The default permissions unauthenticated and authenticated users are managed in the [strapi-server.js](..backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js) file, in the `defaultPermissions` array.
+The default permissions unauthenticated and authenticated users are managed in the [strapi-server.js](/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js) file, in the `defaultPermissions` array.
 
 #### filter-by-candidate
 
@@ -1487,7 +1472,7 @@ Only some of the custom functions are currently contained in the plugin. Functio
 
 The plugin is a local plugin and not currently published as an NPM package.
 
-It is enabled by default in `@openvaa/strapi`’s [plugin config](backend/vaa-strapi/config/plugins.ts):
+It is enabled by default in `@openvaa/strapi`’s [plugin config](/backend/vaa-strapi/config/plugins.ts):
 
 ```ts
 export default ({ env }) => {
@@ -1503,7 +1488,7 @@ export default ({ env }) => {
 
 #### Developing
 
-1. Enable [hot-reloading](/docs/docker-setup-guide.md#hot-reloading) in Strapi.
+1. Enable [hot-reloading](#hot-reloading-the-backend) in Strapi.
 2. Watch plugin source for edits by running `yarn workspace @openvaa/strapi-admin-tools watch`.
 
 > NB! Before merging it’s safest to also try the plugin in the production environment as well, because some (unstable) Strapi function may not work there. To do that set `services.strapi.build.target=production` in [docker-compose](/backend/vaa-strapi/docker-compose.dev.yml).
@@ -1524,8 +1509,8 @@ The services can also be invoked like any other plugins services with, e.g., `st
 ###### Send the registration email to a single Candidate
 
 - UI: Content manager > Candidates > Edit view
-- Component: [RegistrationEmailToOne](admin/src/components/RegistrationEmailToOne.tsx)
-- Service: [`email.sendEmail`](server/src/services/email.ts)
+- Component: [RegistrationEmailToOne](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/admin/src/components/RegistrationEmailToOne.tsx)
+- Service: [`email.sendEmail`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
 - API: `/openvaa-admin-tools/send-email`
 
 Sends a registration link email with customizable content and subject to the Candidate.
@@ -1535,8 +1520,8 @@ Throws if the content does not include the link placeholder.
 ###### Send the registration email to all unregistered Candidates
 
 - UI: Content manager > Candidates > List view
-- Component: [RegistrationEmailToAll](admin/src/components/RegistrationEmailToAll.tsx)
-- Service: [`email.sendEmailToUnregistered`](server/src/services/email.ts)
+- Component: [RegistrationEmailToAll](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/RegistrationEmailToAll.tsx)
+- Service: [`email.sendEmailToUnregistered`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
 - API: `/openvaa-admin-tools//send-email-to-unregistered`
 - Required permission: `plugin::openvaa-admin-tools.send-email`
 
@@ -1551,8 +1536,8 @@ The `externalId` is a private field that all collection types have which is used
 ###### Import any data in JSON format
 
 - UI: OpenVAA Admin Tools page
-- Component: [ImportData](admin/src/components/ImportData.tsx)
-- Service: [`data.import`](server/src/services/data.ts)
+- Component: [ImportData](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/ImportData.tsx)
+- Service: [`data.import`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
 - API: `/openvaa-admin-tools/import-data`
 - Required permission: `plugin::openvaa-admin-tools.import-data`
 
@@ -1563,8 +1548,8 @@ See the instructions in the component for further info.
 ###### Delete any data by its `externalId`
 
 - UI: OpenVAA Admin Tools page
-- Component: [DeleteData](admin/src/components/DeleteData.tsx)
-- Service: [`data.delete`](server/src/services/data.ts)
+- Component: [DeleteData](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/DeleteData.tsx)
+- Service: [`data.delete`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
 - API: `/openvaa-admin-tools/delete-data`
 - Required permission: `plugin::openvaa-admin-tools.import-data`
 
@@ -1575,8 +1560,8 @@ See the instructions in the component for further info.
 ###### Find any data using `filters`
 
 - UI: OpenVAA Admin Tools page
-- Component: [FindData](admin/src/components/FindData.tsx)
-- Service: [`data.find`](server/src/services/data.ts)
+- Component: [FindData](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/FindData.tsx)
+- Service: [`data.find`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
 - API: `/openvaa-admin-tools/find-data`
 - Required permission: `plugin::openvaa-admin-tools.import-data`
 
@@ -1587,10 +1572,10 @@ See the instructions in the component for further info.
 ###### Send email to selected Candidates
 
 - UI: OpenVAA Admin Tools page
-- Component: [SendEmail](admin/src/components/SendEmail.tsx)
+- Component: [SendEmail](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/SendEmail.tsx)
 - Services:
-  - [`data.findCandidates`](server/src/services/data.ts)
-  - [`email.sendEmail`](server/src/services/email.ts)
+  - [`data.findCandidates`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
+  - [`email.sendEmail`](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
 - APIs:
   - `/openvaa-admin-tools/find-candidates`
   - `/openvaa-admin-tools/send-email`
@@ -1604,7 +1589,7 @@ See the instructions in the component for further info.
 
 #### Access control
 
-In addition to the specified permissions, all routes require `admin::isAuthenticatedAdmin`, see [route policies](server/src/routes/admin/index.ts).
+In addition to the specified permissions, all routes require `admin::isAuthenticatedAdmin`, see [route policies](/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/routes/admin/index.ts).
 
 ## Frontend
 
@@ -1616,18 +1601,18 @@ See also:
 
 ### Components
 
-For information about component properties, typing and documentation, see [Svelte components](../contributing/style-guides.md#svelte-components) in the Contributors’ guide.
+For information about component properties, typing and documentation, see [Svelte components](#svelte-components) in the Contributors’ guide.
 
 #### Dynamic and static components
 
-The components used in the app are divided into dynamic and static ones, contained in [\$lib/components](../../frontend/src/lib/components) and [\$lib/dynamic-components](../../frontend/src/lib/dynamic-components), respectively.
+The components used in the app are divided into dynamic and static ones, contained in [\$lib/components](/frontend/src/lib/components) and [\$lib/dynamic-components](/frontend/src/lib/dynamic-components), respectively.
 
-**Static components** are ’dumb’ in the sense that their access to the application state is limited to the [`ComponentContext`](../../frontend/src/lib/contexts/component/componentContext.type.ts), which currently includes only localization functions and a `darkMode` store. The reasons for this restriction is twofold:
+**Static components** are ’dumb’ in the sense that their access to the application state is limited to the [`ComponentContext`](/frontend/src/lib/contexts/component/componentContext.type.ts), which currently includes only localization functions and a `darkMode` store. The reasons for this restriction is twofold:
 
 1. When properties related to the application state are changed, static components need not be updated.
 2. Static components can be used anywhere, even outside the app if the `ComponentContext` is available.
 
-**Dynamic components**, on the other hand, are given full access to the application state and data. They implement sometimes complex logic dependent on the application settings, VAA data, search and route parameters, user selections etc. [`EntityDetails`](../../frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte), for example, provides the Voter’s answers to the [`EntityOpinions`](../../frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte) subcomponent if it’s used within the Voter App:
+**Dynamic components**, on the other hand, are given full access to the application state and data. They implement sometimes complex logic dependent on the application settings, VAA data, search and route parameters, user selections etc. [`EntityDetails`](/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte), for example, provides the Voter’s answers to the [`EntityOpinions`](/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte) subcomponent if it’s used within the Voter App:
 
 ```tsx
 const { appType } = getAppContext();
@@ -1642,19 +1627,19 @@ if ($appType === 'voter') {
 
 ### Contexts
 
-All of the data, shared stores and other state variables used by the app and components are collected in [Svelte contexts](https://svelte.dev/docs/svelte#setcontext). They are defined in the [$lib/api/contexts](../../frontend/src/lib/contexts) folder.
+All of the data, shared stores and other state variables used by the app and components are collected in [Svelte contexts](https://svelte.dev/docs/svelte#setcontext). They are defined in the [$lib/api/contexts](/frontend/src/lib/contexts) folder.
 
 Contexts must be initialized before they can be used by calling the `initFooContext()` function. Initialisation is performed by the ancestor `+layout.svelte` files of the routes on which the contexts are available. Afterwards the contexts are accessed by `getFooContext()`.
 
-For ease of use, most contexts contain the properties provided by lower-level contexts. The [`VoterContext`](../../frontend/src/lib/contexts/voter), for example, contains the [`AppContext`](../../frontend/src/lib/contexts/app/appContext.type.ts), which in turn contains the [`I18nContext`](../../frontend/src/lib/contexts/i18n/i18nContext.type.ts) and [`DataContext`](../../frontend/src/lib/contexts/data/dataContext.type.ts).
+For ease of use, most contexts contain the properties provided by lower-level contexts. The [`VoterContext`](/frontend/src/lib/contexts/voter), for example, contains the [`AppContext`](/frontend/src/lib/contexts/app/appContext.type.ts), which in turn contains the [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts) and [`DataContext`](/frontend/src/lib/contexts/data/dataContext.type.ts).
 
-> See also an [example of the data loading cascade](./data-and-state-management.md#example).
+> See also an [example of the data loading cascade](#example-loading-cascade-for-the-voterlocatedquestions-route-example).
 
 #### Contexts vs global stores
 
 Contexts are used instead of global stores, because they are explicitly initialised and restricted to components and their children. Tracking the use and dependency-loading of directly imported global stores is hard, because they’re initialized immediately when imported.
 
-#### Example
+#### Example of Context Use
 
 On the `/(voters)/elections/` route where the Voter can select which elections to get results for we have:
 
@@ -1674,15 +1659,15 @@ The properties accessed are:
 
 > For complete descriptions of the contexts’ contents, see their associated type files.
 
-| Context                                                                                  | Description                                                   |  Consumer                                                           | Includes                       | Own contents (non-exhaustive)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Initialized by      |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| [`I18nContext`](../../frontend/src/lib/contexts/i18n/i18nContext.type.ts)                | All localization functions                                    | Other contexts                                                      | —                              | — `t`<br> — `locale`<br> — `locales` from `$lib/i18n`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `/[lang]`           |
-| [`ComponentContext`](../../frontend/src/lib/contexts/component/componentContext.type.ts) | Functions available to all components                         | Any component                                                       | `I18n`                         | — `darkMode: Readable<boolean>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `/[lang]`           |
-| [`DataContext`](../../frontend/src/lib/contexts/data/dataContext.type.ts)                | All VAA data (using the `@openvaa/data` model)                | Other contexts                                                      | `I18n`\*                       | — `dataRoot: Readable<dataRoot>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `/[lang]`           |
-| [`AppContext`](../../frontend/src/lib/contexts/app/appContext.type.ts)                   | All functions shared by the Voter and Candidate Apps          | Any page, layout or dynamic component                               | `I18n`, `VaaData`, `Component` | — `appType: Writable<AppType>`<br> — `appSettings: SettingsStore`<br> — `userPreferences: Writable<UserPreferences>`<br> — `getRoute: Readable<(options: RouteOptions) => string>`<br> — `sendFeedback: (data: FeedbackData) => Promise<Response>`<br> — contents of `TrackinService`<br> — popup and modal dialog handling<br> — handling data consent and user surveys                                                                                                                                                                                                                                                                | `/[lang]`           |
-| [`LayoutContext`](../../frontend/src/lib/contexts/layout/layoutContext.type.ts)          | Functions for subpages to affect the outer application layout | Any page or layout                                                  | —                              | — `topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>`<br> — `pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>`<br> — `progress: Progress`<br> — `navigation: Navigation`                                                                                                                                                                                                                                                                                                                                                                                                                           | `/[lang]`           |
-| [`VoterContext`](../../frontend/src/lib/contexts/voter/voterContext.type.ts)             | All functions exclusive to the Voter App                      | Any part of the Voter App or dynamic components (conditionally)     | `App`                          | — `answers: AnswerStore`<br> — `matches: Readable<MatchTree>`<br> — `entityFilters: Readable<FilterTree>`<br> — `infoQuestions: Readable<Array<AnyQuestionVariant>>`<br> — `opinionQuestions: Readable<Array<AnyQuestionVariant>>`<br> — `selectedConstituencies: Readable<Array<Constituency>>`<br> — `selectedElections: Readable<Array<Election>>`<br> — handling question category selection and question ordering<br> — other selection-related functions                                                                                                                                                                          | `/[lang]/(voter)`   |
-| [`CandidateContext`](../../frontend/src/lib/contexts/candidate/candidateContext.type.ts) | All functions exclusive to the Candidate App                  | Any part of the Candidate App or dynamic components (conditionally) | `App`                          | — `userData: UserDataStore`<br> — `preregistrationElectionIds: Readable<Array<Id>>` and other preregisration stores<br> — `selectedElections: Readable<Array<Election>>` and other stores matching those in `VoterContext`<br> — `checkRegistrationKey(opts)`<br> — `register(opts)`<br> — `logout()`<br> — `requestForgotPasswordEmail(opts)`<br> — `resetPassword(opts)`<br> — `setPassword(opts)`<br> — `exchangeCodeForIdToken(opts)`<br> — `preregister(opts)`<br> — `clearIdToken()`<br> — `answersLocked: Readable<boolean>`<br> — `requiredInfoQuestions: Readable<Array<AnyQuestionVariant>>` and other utility derived stores | `/[lang]/candidate` |
+| Context                                                                             | Description                                                   |  Consumer                                                           | Includes                       | Own contents (non-exhaustive)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Initialized by      |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts)                | All localization functions                                    | Other contexts                                                      | —                              | — `t`<br> — `locale`<br> — `locales` from `$lib/i18n`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `/[lang]`           |
+| [`ComponentContext`](/frontend/src/lib/contexts/component/componentContext.type.ts) | Functions available to all components                         | Any component                                                       | `I18n`                         | — `darkMode: Readable<boolean>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `/[lang]`           |
+| [`DataContext`](/frontend/src/lib/contexts/data/dataContext.type.ts)                | All VAA data (using the `@openvaa/data` model)                | Other contexts                                                      | `I18n`\*                       | — `dataRoot: Readable<dataRoot>`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | `/[lang]`           |
+| [`AppContext`](/frontend/src/lib/contexts/app/appContext.type.ts)                   | All functions shared by the Voter and Candidate Apps          | Any page, layout or dynamic component                               | `I18n`, `VaaData`, `Component` | — `appType: Writable<AppType>`<br> — `appSettings: SettingsStore`<br> — `userPreferences: Writable<UserPreferences>`<br> — `getRoute: Readable<(options: RouteOptions) => string>`<br> — `sendFeedback: (data: FeedbackData) => Promise<Response>`<br> — contents of `TrackinService`<br> — popup and modal dialog handling<br> — handling data consent and user surveys                                                                                                                                                                                                                                                                | `/[lang]`           |
+| [`LayoutContext`](/frontend/src/lib/contexts/layout/layoutContext.type.ts)          | Functions for subpages to affect the outer application layout | Any page or layout                                                  | —                              | — `topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>`<br> — `pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>`<br> — `progress: Progress`<br> — `navigation: Navigation`                                                                                                                                                                                                                                                                                                                                                                                                                           | `/[lang]`           |
+| [`VoterContext`](/frontend/src/lib/contexts/voter/voterContext.type.ts)             | All functions exclusive to the Voter App                      | Any part of the Voter App or dynamic components (conditionally)     | `App`                          | — `answers: AnswerStore`<br> — `matches: Readable<MatchTree>`<br> — `entityFilters: Readable<FilterTree>`<br> — `infoQuestions: Readable<Array<AnyQuestionVariant>>`<br> — `opinionQuestions: Readable<Array<AnyQuestionVariant>>`<br> — `selectedConstituencies: Readable<Array<Constituency>>`<br> — `selectedElections: Readable<Array<Election>>`<br> — handling question category selection and question ordering<br> — other selection-related functions                                                                                                                                                                          | `/[lang]/(voter)`   |
+| [`CandidateContext`](/frontend/src/lib/contexts/candidate/candidateContext.type.ts) | All functions exclusive to the Candidate App                  | Any part of the Candidate App or dynamic components (conditionally) | `App`                          | — `userData: UserDataStore`<br> — `preregistrationElectionIds: Readable<Array<Id>>` and other preregisration stores<br> — `selectedElections: Readable<Array<Election>>` and other stores matching those in `VoterContext`<br> — `checkRegistrationKey(opts)`<br> — `register(opts)`<br> — `logout()`<br> — `requestForgotPasswordEmail(opts)`<br> — `resetPassword(opts)`<br> — `setPassword(opts)`<br> — `exchangeCodeForIdToken(opts)`<br> — `preregister(opts)`<br> — `clearIdToken()`<br> — `answersLocked: Readable<boolean>`<br> — `requiredInfoQuestions: Readable<Array<AnyQuestionVariant>>` and other utility derived stores | `/[lang]/candidate` |
 
 \* The `DataContext` accesses the `I18nContext` because it needs `locale` but it doesn’t export its contents.
 
@@ -1691,11 +1676,11 @@ The properties accessed are:
 The overall model for loading and writing data and managing the application state is as follows.
 
 1. External data is loaded (and written) using the [Data API](#data-api). The API is accessed by universal `load` functions in `+layout.ts` files, the `Context`s or some API routes.
-   - Depending on [settings](../../packages/app-shared/src/settings/staticSettings.type.ts), either a Strapi backend is accessed or data is read from local `json` files.
-2. The loaded data is passed to the `dataRoot` store accessible via the `DataContext` and converted into functional objects using the [`@openvaa/data` model](../../packages/data/).
-   - All pages, some other [contexts](contexts.md) and [dynamic components](./components.md) can access the `DataContext`.
+   - Depending on [settings](/packages/app-shared/src/settings/staticSettings.type.ts), either a Strapi backend is accessed or data is read from local `json` files.
+2. The loaded data is passed to the `dataRoot` store accessible via the `DataContext` and converted into functional objects using the [`@openvaa/data` model](/packages/data/).
+   - All pages, some other [contexts](#contexts) and [dynamic components](#components) can access the `DataContext`.
    - Some data in the Candidate App is contained in a `UserDataStore` instead of the `dataRoot` store.
-3. All other shared stores are contained in [contexts](./contexts.md).
+3. All other shared stores are contained in [contexts](#contexts).
    - Some contexts are globally available and some to only certain parts of the application.
 
 #### Example: loading cascade for the `/(voter)/(located)/questions` route {#example}
@@ -1887,7 +1872,7 @@ The Data API is composed of three services:
 2. `FeedbackWriter`: Writes feedback items from either the Voter or Candidate App to the backend.
 3. `DataWriter`: Writes data from the Candidate App to the backend and reads some data requiring authentication.
 
-> See also an [example of the data loading cascade](./data-and-state-management.md#example).
+> See also an [example of the data loading cascade](#example-loading-cascade-for-the-voterlocatedquestions-route-example).
 
 #### Cache
 
@@ -1897,21 +1882,21 @@ Note that the cache can be enabled also when the `local` data adapter is used. T
 
 #### Folder structure
 
-- [frontend/](../../frontend)
-  - [src/](../../frontend/src)
-    - [lib/api/](../../frontend/src/lib/api) — All universally available Data API implementations.
-      - [adapters/](../../frontend/src/lib/api/adapters) — Specific Data API implemenations.
-        - [apiRoute/](../../frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
-        - [strapi/](../../frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
-      - [base/](../../frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
-      - [utils/](../../frontend/src/lib/api/utils) — Utilities related to the Data API.
-      - [dataProvider.ts](../../frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
-      - [dataWriter.ts](../../frontend/src/lib/api/dataWriter.ts) — The main entry point for the `CandidateContext` methods.
-      - [feedbackWriter.ts](../../frontend/src/lib/api/feedbackWriter.ts) — The main entry point for the `sendFeedback` method of `AppContext`.
-    - [server/api/](../../frontend/src/lib/server/api) – All Data API implementations that must run on the server.
-      - [adapters/local/](../../frontend/src/lib/server/api/adapters/local) — Specific `LocalServerDataProvider` and `LocalServerFeedbackWriter` implementations that read and write local `json` files in the [data](../../frontend/data) folder.
-      - [dataProvider.ts](../../frontend/src/lib/server/api/dataProvider.ts) — The main entry point for the `GET` function of the `/api/data/[collection]/+server.ts` API route.
-      - [feedbackWriter.ts](../../frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
+- [frontend/](/frontend)
+  - [src/](/frontend/src)
+    - [lib/api/](/frontend/src/lib/api) — All universally available Data API implementations.
+      - [adapters/](/frontend/src/lib/api/adapters) — Specific Data API implemenations.
+        - [apiRoute/](/frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
+        - [strapi/](/frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
+      - [base/](/frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
+      - [utils/](/frontend/src/lib/api/utils) — Utilities related to the Data API.
+      - [dataProvider.ts](/frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
+      - [dataWriter.ts](/frontend/src/lib/api/dataWriter.ts) — The main entry point for the `CandidateContext` methods.
+      - [feedbackWriter.ts](/frontend/src/lib/api/feedbackWriter.ts) — The main entry point for the `sendFeedback` method of `AppContext`.
+    - [server/api/](/frontend/src/lib/server/api) – All Data API implementations that must run on the server.
+      - [adapters/local/](/frontend/src/lib/server/api/adapters/local) — Specific `LocalServerDataProvider` and `LocalServerFeedbackWriter` implementations that read and write local `json` files in the [data](/frontend/data) folder.
+      - [dataProvider.ts](/frontend/src/lib/server/api/dataProvider.ts) — The main entry point for the `GET` function of the `/api/data/[collection]/+server.ts` API route.
+      - [feedbackWriter.ts](/frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
     - `routes/[lang=locale]/`
       - `api/` – Contains the API routes.
         - `cache/+server.ts` – Implements simple disk caching using [`flat-cache`](https://github.com/jaredwray/cacheable#readme)
@@ -1920,7 +1905,7 @@ Note that the cache can be enabled also when the `local` data adapter is used. T
         - `data/[collection]/+server.ts` – Access to the server-run `ServerDataProvider` implementations.
         - `feedback/+server.ts` – Access to the server-run `ServerFeedbackWriter` implementations.
       - `candidate/login/+page.server.ts` - Access to `DataWriter.login` and set the authentication cookie.
-  - [data/](../../frontend/data) — For data used by the `LocalServerDataProvider` and `LocalServerFeedbackWriter`.
+  - [data/](/frontend/data) — For data used by the `LocalServerDataProvider` and `LocalServerFeedbackWriter`.
 
 #### Classes and interfaces
 
@@ -2123,8 +2108,8 @@ classDef abstract fill:#aaf
 
 Environmental variables are never accessed directly in the frontend (i.e. from `$env/static/public` etc.), but instead via two utility modules:
 
-- [$lib/utils/constants](../../frontend/src/lib/utils/constants.ts) which contains the publicly accessible variables, always prefixed with `PUBLIC_`.
-- [$lib/server/constants](../../frontend/src/lib/server/constants.ts) which contains the private variables only accessible on the server.
+- [$lib/utils/constants](/frontend/src/lib/utils/constants.ts) which contains the publicly accessible variables, always prefixed with `PUBLIC_`.
+- [$lib/server/constants](/frontend/src/lib/server/constants.ts) which contains the private variables only accessible on the server.
 
 Furthermore, the variables are not imported directly from these modules due to production compilation intricacies. They are imported wholesale instead:
 
@@ -2140,19 +2125,19 @@ Routing is based on either route or search parameters:
 - Route parameters are used when the parameters are required, such as the `entityType` and `entityId` parameters on the route displaying individual `Entity`s.
 - Search parameters are used when the parameters are always or sometimes optional, such as the `electionId` parameter which is optional if there data only has one `Election` or the `elections.disallowSelection` setting is `true`.
 
-For a list of the parameters in use, see [params.ts](../../frontend/src/lib/utils/route/params.ts). Some of the parameters (`ArrayParam`s) support multiple values but always accept single values as well.
+For a list of the parameters in use, see [params.ts](/frontend/src/lib/utils/route/params.ts). Some of the parameters (`ArrayParam`s) support multiple values but always accept single values as well.
 
-For implying optional parameters, the utilities in [impliedParams.ts](../../frontend/src/lib/utils/route/impliedParams.ts) are used.
+For implying optional parameters, the utilities in [impliedParams.ts](/frontend/src/lib/utils/route/impliedParams.ts) are used.
 
 #### Building routes
 
-Routes are constructed using the [`buildRoute`](../../frontend/src/lib/utils/route/buildRoute.ts) function, which takes as arguments the name of the [`Route`](../../frontend/src/lib/utils/route/route.ts), parameter values and values of the current route.
+Routes are constructed using the [`buildRoute`](/frontend/src/lib/utils/route/buildRoute.ts) function, which takes as arguments the name of the [`Route`](/frontend/src/lib/utils/route/route.ts), parameter values and values of the current route.
 
-In most cases, the dynamic function contained in the [`getRoute`](../../frontend/src/lib/contexts/app/getRoute.ts) store of [`AppContext`](../../frontend/src/lib/contexts/app/appContext.type.ts) is used. It automatically supplies the current route to the route builder, so that already effective parameters need not be explicitly supplied.
+In most cases, the dynamic function contained in the [`getRoute`](/frontend/src/lib/contexts/app/getRoute.ts) store of [`AppContext`](/frontend/src/lib/contexts/app/appContext.type.ts) is used. It automatically supplies the current route to the route builder, so that already effective parameters need not be explicitly supplied.
 
 Calling `$getRoute('Results')`, for example, will build a route to the Results page taking into account the currently selected `electionId`s, `constituencyId`s and `lang`. They can also be set explicitly, such as on the election selection page, with `$getRoute({ route: 'Results', electionId: ['e1', 'e2'] })`.
 
-When passing parameters to [`buildRoute`](../../frontend/src/lib/utils/route/buildRoute.ts) or [`$getRoute`](../../frontend/src/lib/contexts/app/getRoute.ts), search and route parameters need not be treated differently. The function will take care of rendering them correctly.
+When passing parameters to [`buildRoute`](/frontend/src/lib/utils/route/buildRoute.ts) or [`$getRoute`](/frontend/src/lib/contexts/app/getRoute.ts), search and route parameters need not be treated differently. The function will take care of rendering them correctly.
 
 ### Styling
 
@@ -2168,7 +2153,7 @@ Note that you can still use [arbitrary values](https://tailwindcss.com/docs/addi
 
 ##### Passing classes to components
 
-The components in the app allow passing any attributes of the underlying element as component properties. This is most commonly used to add extra classes to those defined by the component (see [Component properties](../contributing/style-guides.md#component-properties) in the Contributors’ guide). However, note that due to styling compartmentalization, **you should only pass Tailwind or global classes, not any classes defined locally**.
+The components in the app allow passing any attributes of the underlying element as component properties. This is most commonly used to add extra classes to those defined by the component (see [Component properties](/contributing/style-guides.md#component-properties) in the Contributors’ guide). However, note that due to styling compartmentalization, **you should only pass Tailwind or global classes, not any classes defined locally**.
 
 #### Colors
 
@@ -2195,7 +2180,7 @@ In order to fulfil the application's accessibility requirements, a [WGAC AA leve
 
 ##### Testing the colors
 
-To test all of the application's colors, copy-paste the contents of [`color-test.txt`](./docs/frontend/color-test.txt) in a `+page.svelte` file somewhere, navigate to it and use the Wave browser extension to check the colors. Remember to do this for both the light and dark modes.
+To test all of the application's colors, copy-paste the contents of [`color-test.txt`](/docs/frontend/color-test.txt) in a `+page.svelte` file somewhere, navigate to it and use the Wave browser extension to check the colors. Remember to do this for both the light and dark modes.
 
 The file is not included anywhere as a ready Svelte file, because otherwise all of the color classes in it would unnecessarily be compiled into the application by Tailwind.
 
@@ -2206,12 +2191,12 @@ For basic content, avoid using `z-index` and prefer layerying using the element 
 For elements that absolutely need their `z-index` set, the following Tailwind classes are used:
 
 - `z-10`: Navigation drawer menu, page header
-- `z-20`: Buttons overlaid on the header by the [`<Video>`](../../frontend/src/lib/components/video/Video.svelte) component
-- `z-30`: The [`<Alert>`](<(../../frontend/src/lib/components/alert/Alert.svelte)>) component
+- `z-20`: Buttons overlaid on the header by the [`<Video>`](/frontend/src/lib/components/video/Video.svelte) component
+- `z-30`: The [`<Alert>`](<(/frontend/src/lib/components/alert/Alert.svelte)>) component
 - `z-40`: Not used currently
 - `z-50`: Not used currently
 
-Note that the dialog created by the [`<Modal>`](../../frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
+Note that the dialog created by the [`<Modal>`](/frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
 
 #### Default styling
 
@@ -2228,11 +2213,11 @@ backend into a single image that can be built with just a few commands.
 
 ### Components
 
-For information about component properties, typing and documentation, see [Svelte components](../contributing/style-guides.md#svelte-components) in the Contributors’ guide.
+For information about component properties, typing and documentation, see [Svelte components](#svelte-components) in the Contributors’ guide.
 
 #### Dynamic and static components
 
-The components used in the app are divided into dynamic and static ones, contained in [\$lib/components](../../frontend/src/lib/components) and [\$lib/dynamic-components](../../frontend/src/lib/dynamic-components), respectively.
+The components used in the app are divided into dynamic and static ones, contained in [\$lib/components](/frontend/src/lib/components) and [\$lib/dynamic-components](/frontend/src/lib/dynamic-components), respectively.
 
 ## Localization
 
@@ -2251,18 +2236,18 @@ In short:
 
 ### Localization in the frontend
 
-All localized strings are fetched using the same `$t('foo.bar', {numBar: 5})` provided by the [`I18nContext`](../frontend/src/lib/contexts/i18n/i18nContext.type.ts) and, for convenience, all other contexts including it, such as the [`ComponentContext`](../frontend/src/lib/contexts/component/componentContext.type.ts). This is agnostic to both:
+All localized strings are fetched using the same `$t('foo.bar', {numBar: 5})` provided by the [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts) and, for convenience, all other contexts including it, such as the [`ComponentContext`](/frontend/src/lib/contexts/component/componentContext.type.ts). This is agnostic to both:
 
 1. Whether the translations are local (i.e. from `json` files) or fetched from the database. Local fallbacks are overwritten by those from the database.
 2. Whether SSR or CSR rendering is used.
 
-> Never import any stores directly from `$lib/i18n`. Use the imports provided by the contexts instead. You can safely use the utilities in [`$lib/i18n/utils`](../frontend/src/lib/i18n/utils), however.
+> Never import any stores directly from `$lib/i18n`. Use the imports provided by the contexts instead. You can safely use the utilities in [`$lib/i18n/utils`](/frontend/src/lib/i18n/utils), however.
 
 #### Value interpolation
 
 For value interpolation in already translated strings, such as those contained in database objects, the same [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation is provided with a `parse('Foo is {value}', {value: 'bar'})` function also provided by `$lib/i18n`.
 
-Some commonly used values are automatically provided for interpolation. See [`updateDefaultPayload`](../frontend/src/lib/i18n/init.ts).
+Some commonly used values are automatically provided for interpolation. See [`updateDefaultPayload`](/frontend/src/lib/i18n/init.ts).
 
 > If any interpolated values are missing, the string will not be translated and its key will be displayed.
 
@@ -2286,7 +2271,7 @@ export let label = undefined;
 
 Specific care must be taken with any localized content loaded dynamically so that language changes are propagated everywhere where the data is used.
 
-The data loaded by the Data API (settings, app customization and anything contained in the [`dataRoot`](../frontend/src/lib/contexts/data/dataContext.type.ts) store or its descendants) is always returned already translated. Therefore, if any such data is used in the frontend, it should be reactive.
+The data loaded by the Data API (settings, app customization and anything contained in the [`dataRoot`](/frontend/src/lib/contexts/data/dataContext.type.ts) store or its descendants) is always returned already translated. Therefore, if any such data is used in the frontend, it should be reactive.
 
 This is usually automatically the case, because the contexts hold such data in stores, but when reading store values make sure not to use outdated local copies.
 
@@ -2308,29 +2293,29 @@ Strapi's built-in i18n plugin is not used because it creates objects with differ
 }
 ```
 
-The methods offered by [`DataProvider`](../frontend/src/lib/api/base/dataProvider.type.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions pick the requested language (or the best match) from the `json` fields and return them as regular `string`s.
+The methods offered by [`DataProvider`](/frontend/src/lib/api/base/dataProvider.type.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions pick the requested language (or the best match) from the `json` fields and return them as regular `string`s.
 
 ### Local translations
 
 Local translations are stored in `$lib/i18n/translations` and organized by language and key. The logic by which they're separated into different files is not absolutely rigid, but the following principles should be followed:
 
-1. Create a new file for each Voter App page or [dynamic component](./frontend/components.md#dynamic-and-static-components), named `<pageOrComponentName>.json`.
+1. Create a new file for each Voter App page or [dynamic component](#dynamic-and-static-components), named `<pageOrComponentName>.json`.
 2. Create a new file for each Candidate App page, named `candidateApp.<pageName>.json`.
-3. For translations needed by [static components](./frontend/components.md#dynamic-and-static-components), create a new subkey in the `components.json` file.
+3. For translations needed by [static components](#dynamic-and-static-components), create a new subkey in the `components.json` file.
 
 Whenever adding translations, be sure to create them for all supported languages.
 
-#### The [`TranslationKey`](../frontend/src/lib/types/generated/translationKey.ts) type
+#### The [`TranslationKey`](/frontend/src/lib/types/generated/translationKey.ts) type
 
-The available translation keys are defined by the [`TranslationKey`](../frontend/src/lib/types/generated/translationKey.ts) type. These can be automatically generated by running `yarn workspace @openvaa/frontend generate:translation-key-type`.
+The available translation keys are defined by the [`TranslationKey`](/frontend/src/lib/types/generated/translationKey.ts) type. These can be automatically generated by running `yarn workspace @openvaa/frontend generate:translation-key-type`.
 
-If you need to use a dynamically constructed translation key that is not recognized by the linter, use the [assertTranslationKey](../frontend/src/lib/i18n/utils/assertTranslationKey.ts) utility.
+If you need to use a dynamically constructed translation key that is not recognized by the linter, use the [assertTranslationKey](/frontend/src/lib/i18n/utils/assertTranslationKey.ts) utility.
 
 When committing any changes the `pre-commit` hook will check that the type matches the translations.
 
 ### Locale routes
 
-All routes start with an optional `locale` route parameter. The parameter matches any supported locale defined in the [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts) and their soft matches (using [`$lib/i18n/utils/matchLocale`](../frontend/src/lib/i18n/utils/matchLocale.ts)). Thus, if `en`, `fi` and `es-CO` are supported and `en` is marked as `isDefault`, routes behave as follows:
+All routes start with an optional `locale` route parameter. The parameter matches any supported locale defined in the [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts) and their soft matches (using [`$lib/i18n/utils/matchLocale`](/frontend/src/lib/i18n/utils/matchLocale.ts)). Thus, if `en`, `fi` and `es-CO` are supported and `en` is marked as `isDefault`, routes behave as follows:
 
 - `/foo` redirects to the default English version unless the user has a supported locale listed in `Request.accept-language`, in which case the user is redirected to `/fi/foo` (if `fi` is preferred)
 - `/en/foo` shows the English version
@@ -2342,7 +2327,7 @@ Switching between locales happens by only changing the language parameter in the
 
 #### The `getRoute` helper
 
-To facilitate locale switching, a `getRoute` helper function is provided as a store by the [`I18nContext`](../frontend/src/lib/contexts/i18n/i18nContext.type.ts). It is passed a `Route` name, possible parameters and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`.
+To facilitate locale switching, a `getRoute` helper function is provided as a store by the [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts). It is passed a `Route` name, possible parameters and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`.
 
 ### Locale selection step-by-step
 
@@ -2350,9 +2335,9 @@ The locale selection process works as follows.
 
 [`$lib/i18n`](init.ts) is initialized:
 
-1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts)
+1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts)
 
-[`hooks.server.ts: handle`](../frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
+[`hooks.server.ts: handle`](/frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
 
 1. Supported `locales` are loaded from `$lib/i18n`
 2. The locales listed in `Request.accept-language` are iterated and the first one found (using a soft match) in `locales` is saved as `preferredLocale`
@@ -2368,7 +2353,7 @@ The locale selection process works as follows.
 
 1. Both `preferredLocale` and `currentLocale` (in which the content is served) are passed further in `locals`.
 
-[`+layout.ts`](../frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
+[`+layout.ts`](/frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
 
 1. Load `DataProvider.getAppCustomization(•).translationOverrides` as dynamic translations for use with `i18n`.
 2. Load local translations with `$lib/i18n: loadTranslations`
@@ -2378,45 +2363,45 @@ The locale selection process works as follows.
 
 ### Supported locales
 
-Supported locales are defined app-wide in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+Supported locales are defined app-wide in [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts).
 
 #### Adding new locales
 
-1. Add the locale to [`locales`](../frontend/src/lib/i18n/translations/index.ts)
+1. Add the locale to [`locales`](/frontend/src/lib/i18n/translations/index.ts)
 2. Create versions of all the translation files in the new locale and place them in `frontend/src/lib/i18n/translations/<LOCALE>`
 3. Copy the `dynamic.json` translation file to `../backend/vaa-strapi/src/util/translations/<LOCALE>/dynamic.json`
-4. Make the locale available in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+4. Make the locale available in [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts).
 
 ## App Settings
 
-App settings are located in [`@openvaa/app-shared`](../packages/app-shared/src/settings/) module. Settings are separated into static and dynamic settings.
+App settings are located in [`@openvaa/app-shared`](/packages/app-shared/src/settings/) module. Settings are separated into static and dynamic settings.
 
-Static settings can be changed only by modifying [staticSettings.ts](../packages/app-shared/src/settings/staticSettings.ts).
+Static settings can be changed only by modifying [staticSettings.ts](/packages/app-shared/src/settings/staticSettings.ts).
 
-Dynamic settings can be changed by modifying [dynamicSettings.ts](../packages/app-shared/src/settings/dynamicSettings.ts). In addition, dynamic settings can also be changed in the backend. This has been currently implemented only in Strapi. Settings from `dynamicSettings.ts` are loaded into Strapi if the app settings collection is empty.
+Dynamic settings can be changed by modifying [dynamicSettings.ts](/packages/app-shared/src/settings/dynamicSettings.ts). In addition, dynamic settings can also be changed in the backend. This has been currently implemented only in Strapi. Settings from `dynamicSettings.ts` are loaded into Strapi if the app settings collection is empty.
 
-Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvider are merged together into [`settings` store](../frontend/src/lib/stores/stores.ts). Settings from `dynamicSettings.ts` are overwritten by dynamic settings from the DataProvider. Settings from `staticSettings.ts` are merged last to prevent overwriting them.
+Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvider are merged together into [`settings` store](/frontend/src/lib/stores/stores.ts). Settings from `dynamicSettings.ts` are overwritten by dynamic settings from the DataProvider. Settings from `staticSettings.ts` are merged last to prevent overwriting them.
 
 ### Adding New Settings
 
 In case of static settings:
 
-1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.type.ts](../packages/app-shared/src/settings/staticSettings.type.ts).
-2. Add the default value for the setting to [staticSettings.ts](../packages/app-shared/src/settings/staticSettings.ts).
+1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.type.ts](/packages/app-shared/src/settings/staticSettings.type.ts).
+2. Add the default value for the setting to [staticSettings.ts](/packages/app-shared/src/settings/staticSettings.ts).
 
 In case of dynamic settings:
 
-1. Add the type and documentation for the new setting to the `DynamicSettings` type in [dynamicSettings.type.ts](../packages/app-shared/src/settings/dynamicSettings.type.ts).
-2. Add the default value for the setting to [dynamicSettings.ts](../packages/app-shared/src/settings/dynamicSettings.ts).
+1. Add the type and documentation for the new setting to the `DynamicSettings` type in [dynamicSettings.type.ts](/packages/app-shared/src/settings/dynamicSettings.type.ts).
+2. Add the default value for the setting to [dynamicSettings.ts](/packages/app-shared/src/settings/dynamicSettings.ts).
 3. Edit the settings components in Strapi:
    1. If the new setting is a top-level one, create a new component for the setting and add it to the `App Settings` content-type.
    2. If the new setting is a subsetting of a top-level item, edit that setting.
-4. Possibly update the [`app-settings` route controller](../backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts) or the utilities it uses, e.g., for [`cardContents`](../backend/vaa-strapi/src/functions/utils/appSettings.ts).
-5. Add the necessary `populate` query params to the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts), because components need to be explicitly populated. Note that if the components have subcomponents, you need to explicitly populate all the way down.
+4. Possibly update the [`app-settings` route controller](/backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts) or the utilities it uses, e.g., for [`cardContents`](/backend/vaa-strapi/src/functions/utils/appSettings.ts).
+5. Add the necessary `populate` query params to the `getAppSettings` method in [strapiDataProvider.ts](/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts), because components need to be explicitly populated. Note that if the components have subcomponents, you need to explicitly populate all the way down.
 6. If the data type for the setting does not match the one in the `DynamicSettings` type:
-   1. Update the Strapi data types for `StrapiAppSettingsData` in [strapiData.type.ts](../frontend/src/lib/api/adapters/strapi/strapiData.type.ts).
-   2. Edit the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts) so that it returns the setting in the correct format.
-   3. Edit the [loadDefaultAppSettings](../backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the default settings to a format suitable for Strapi.
+   1. Update the Strapi data types for `StrapiAppSettingsData` in [strapiData.type.ts](/frontend/src/lib/api/adapters/strapi/strapiData.type.ts).
+   2. Edit the `getAppSettings` method in [strapiDataProvider.ts](/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts) so that it returns the setting in the correct format.
+   3. Edit the [loadDefaultAppSettings](/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the default settings to a format suitable for Strapi.
 7. Repeat applicable steps for all other `DataProvider` implementations that support `getAppSettings`.
 
 ## App Customization
@@ -2430,10 +2415,10 @@ Translations from `dynamic.json` are loaded into Strapi if the app customization
 1. Add the new option to `AppCustomization` type in [global.d.ts](frontend/src/lib/types/global.d.ts).
 2. Add the new option to the `App Customization` content type in Strapi.
 3. If the new setting is a relation, media field or a component:
-   1. Edit the populate restrictions for the [app-customization route](backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts).
-   2. Add the necessary `populate` query params to the `getAppCustomization` method in [strapiDataProvider.ts](../frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts).
-4. Possibly edit how the data is preprocessed by the [app-customization route](backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts).
-5. Update the Strapi data types for `StrapiAppCustomizationData` in [strapiData.type.ts](../frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
+   1. Edit the populate restrictions for the [app-customization route](/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts).
+   2. Add the necessary `populate` query params to the `getAppCustomization` method in [strapiDataProvider.ts](/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts).
+4. Possibly edit how the data is preprocessed by the [app-customization route](/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts).
+5. Update the Strapi data types for `StrapiAppCustomizationData` in [strapiData.type.ts](/frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
 
 ## Candidate User Management
 
@@ -2501,7 +2486,7 @@ The user registration process is primarily handled by the `users-permissions` pl
 
 The existing content-type of `User` is used to identify the users that can log in, but extended with the `candidate` field so a logged-in user could be associated to a specific candidate. Similarly, the candidate schema also has a belong-to relation back to the user if any exists. This makes it possible to rely on the logic provided by `users-permissions` plugin instead of implementing all the login logic manually. You can find the schema definition for user in the [`schema.json`](/backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json).
 
-See [password-validation.md](./password-validation.md) on additional information on how password validation is handled.
+See [password-validation.md](#password-validation) on additional information on how password validation is handled.
 
 For logging in and logging out, the frontend stores the session JWT token returned by Strapi in the local storage of the browser. The primary logic for this is handled in [`authenticationStore.ts`](/frontend/src/lib/utils/authenticationStore.ts). Log out is handled simply by resetting the state to being logged out and discarding the saved JWT token inside local storage.
 
@@ -2633,6 +2618,8 @@ repetition: {
 
 ## LLM features
 
+See the relevant packages for these experimental features.
+
 ## Troubleshooting
 
 ### Commit error: ’Husky not found’
@@ -2703,15 +2690,15 @@ If that's not the issue, open Docker and check the `frontend` and `strapi` conta
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
-Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`](../backend/vaa-strapi/src/api). For more information, see [Security](./security.md).
+Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`](/backend/vaa-strapi/src/api). For more information, see [Security](#security).
 
 ### Playwright: `TimeoutError` when locating elements and running the tests locally
 
-Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../packages/app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
+Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](/packages/app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
 
 ### Strapi: Content model is reset after restart
 
-Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
+Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](#hot-reloading-the-backend).
 
 ### Strapi error: ’Relation already exists’ error on restart after editing the content model
 
@@ -2739,872 +2726,4 @@ If Strapi gives an error dealing with creating a table with the message that a r
 |   at TCP.onStreamRead (node:internal/stream_base_commons:190:23)             |
 |                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
-```
-
-# Packages
-
-## `@openvaa/app-shared`: Common settings and utilities shared by the frontend and backend
-
-A module shared between `@openvaa/frontend` and `@openvaa/strapi`, which contains:
-
-- The [application settings](./src/settings/)
-- Definitions for data types extending those defined in the `@openvaa/core` and `@openvaa/data` modules, such as [`CustomData`](./src/data/customData.type.ts) and [`Localized`](./src/data/extendedData.type.ts) types
-- Utilities for [password validation](./src/utils/passwordValidation.ts)
-
-### Development
-
-In order to build ESM and CommonJS versions of the module in its directory run:
-
-```bash
-yarn build
-```
-
-...or from the project's root directory:
-
-```bash
-yarn workspace @openvaa/app-shared build
-```
-
-Currently ESM version is used by `@openvaa/frontend` and CommonJS by `@openvaa/strapi` modules.
-
-The ideation behind this hybrid module solution, as well as different approaches which did not work, are described in [this article](https://www.sensedeep.com/blog/posts/2021/how-to-create-single-source-npm-module.html).
-
-## `@openvaa/core`: Core types and utilities shared by the `@openvaa` modules
-
-The module contains types and constants that all the `@openvaa` modules (`@openvaa/data`, `@openvaa/filters` and `@openvaa/matching`) handling abstract logic use and which must be aligned for module interoperation.
-
-It contains:
-
-- Typing for [`Entity`s, `WrappedEntity`s etc.](./src/entity/entity.type.ts)
-- Typing for [`Id`s](./src/id) and related utilities
-- Typing for JSON [`Serializable`](./src/serializable/serializable.type.ts) objects
-- Typing for distances, answers and missing values related to [matching](./src/matching/)
-- An interface and a default implementation for [progress logging](./src/logger/), which is used as a common method of providing progress, info and warning callback to (server) functions that take a longer time to complete
-
-### Developing
-
-The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
-
-## `@openvaa/data`: A universal data model for voting advice applications
-
-The module defines an abstract data model for Voting Advice Applications encompassing (simultaneous) elections; candidates, parties and other entities; the constituencies in which these may be nominated and such nominations; questions or statements posed for the entities and voters to answer; the entities’ answers to these questions.
-
-The module can be used by itself to build an easily traversable, hierarchical model of these data, but it is also designed to work seamlessly with the `@openvaa/matching` and `@openvaa/filters` modules as well as the OpenVAA voting advice application frontend and backend.
-
-### Dependencies
-
-- `@openvaa/core`: Definitions related to ids, answers, missing values and matching distances to these are shared between this and other `vaa` modules.
-- Node or browser: `console` for debugging. The `tsconfig` includes the `dom` lib for this purpose.
-- If used with Node: `crypto` and `Intl`.
-
-### Developing
-
-- The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
-- See also note on [Exports](#exports).
-
-#### Test data
-
-Test data is available in [testData.ts](./src/testUtils/testData.ts). It’s in a tree-like format and can be exported into multiple json files with the [`exportTestData`](./tools/exportTestData.ts) tool:
-
-```bash
-yarn tsx ./tools/exportTestData.ts path/to/export-folder
-```
-
-### Quick start
-
-```ts
-import { DataRoot, EXAMPLE_DATA } from '@openvaa/data';
-const root = new DataRoot({ data: EXAMPLE_DATA });
-for (const e of root.elections!) console.info(`- ${e}`);
-// Output:
-// > - Election 'Hyrule Parliamentary Elections 2033' • id: election-1
-// > - Election 'Hyrule Municipal Elections 2033' • id: election-2
-```
-
-For more interactions, see [example.ts](./examples/example.ts).
-
-### Features
-
-- Single source of truth: all objects are accessed by reference and are never copied
-- Smart default values for all properties: all missing values are converted to empty literals of the same data type, e.g. empty strings. In the rare cases, where an explicitly missing value is needed, `null` is returned, or in the case of methods related to `@openvaa/matching`, the `MISSING_VALUE` constant defined in `@openvaa/core`
-- Utility getters for accessing other objects within the same hierarchy, e.g. all objects have the `root` getter returning the [`DataRoot`](./src/root/dataRoot.ts)
-- [`Question`](./src/objects/questions/base/question.ts) and [`Entity`](./src/objects/entities/base/entity.ts) classes implement the required interfaces defined in `@openvaa/matching` for seamless use with the matching algorithm
-- Support for multiple simultaneous elections with possibly linked constituencies
-- Idempotent data provision
-
-#### Localization
-
-The data model itself does not support localization, but the module contains a [`translate`](./src/i18n/translate.ts) utility, which can be used to translate localized data structures into a single-locale format. The function accepts data structures in which localized `string` values are be replaced by [`LocalizedValue`](./src/i18n/localized.ts) objects.
-
-### Exports
-
-The default exports contain a set of non-abstract classes, some abstract base classes, types and utilities.
-
-Imports are handled internally from [`/internal`](./src/internal.ts), which collects all exports from the source files in an order that prevents errors due to circular dependencies. When editing the source code, always route internal imports from this file. Note that these exports should not be used by external consumers of the module, because their availability may change in future versions.
-
-### Constraints and future developments
-
-- The constructors for the `Entity`, `Nomination` and `Question` variants require a redundant `type` to be passed in the arguments, although this could be added by default. This could be changed in the future.
-- `Question.appliesTo` is based on the super class method and does not take into account the filters in the `QuestionCategory` it belongs to (contrary to `DataRoot.findQuestions`). This could be changed.
-- Currently no way to define the internals of the `customData` property all [`DataObjectData`](./src/core/dataObject.type.ts) share
-- Currently no way to extend the model with new subclasses _ad hoc_. This could perhaps be remedied by making provision methods of objects user-definable such that their return types would be used to type the `children` collections.
-- Question types not fully implemented:
-  - [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) – not matchable yet
-  - `PreferenceOrderQuestion` – not implemented at all (this can be based on [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) because the logic for the matching algorithm is the same)
-- Data passed to the provision methods is only partially validated with [`checkObject`](./src/root/dataRoot.ts).
-- The [`OrganizationNomination.allianceNomination`](./src/objects/nominations/variants/organizationNomination.ts) getter may need to be called for all [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts)s. It calls the [`DataRoot.getAllianceNominationForOrganizationNomination`](./src/root/dataRoot.ts) method each time it’s accessed, so it could be useful to cache the results or save the `allianceNominationId` directly in the [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts) object.
-- An object is only added to the [`DataRoot`](./src/root/dataRoot.ts)’s collection when using the data provision methods. Thus, it’s possible to create dangling objects by just using the [`DataObject`](./src/core/dataObject.ts) constructors. An option would be to register each object with [`DataRoot`](./src/root/dataRoot.ts) directly in the [`DataObject`](./src/core/dataObject.ts) constructor.
-- The `value` property of [`Answer`](./src/objects/questions/base/answer.type.ts)s is generic and not connected to the type of [`Question`](./src/objects/questions/base/question.ts). It might be good to offer typing for the `value` in the form of either an accompanying reference to the [`QuestionType`](./src/objects/questions/base/questionTypes.ts) or different property names for different value kinds, e.g. `stringValue` and `idArrayValue`.
-
-### Source file organisation
-
-- [`index.ts`](./src/index.ts): provides public exports
-- [`internal.ts`](./src/internal.ts): provides all exports used internally, ordered such that the module can be built without errors
-- [`core/`](./src/core/): contains the abstract base classes [`Updatable`](./src/core/updatable.ts) and [`DataObject`](./src/core/dataObject.ts) as well as atomic data types and some interfaces
-- [`i18n/`](./src/i18n/): contains [localization](#Localization) utilities and types
-- [`objects/`](./src/objects/):
-  - [`constituency/`](./src/objects/constituency/): [`Constituency`](./src/objects/constituency/constituency.ts) and [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)
-  - [`election/`](./src/objects/election/): [`Election`](./src/objects/election/election.ts)
-  - [`entities/`](./src/objects/entities/): the abstract [`Entity`](./src/objects/entities/base/entity.ts) base class and its descendants: [`Candidate`](./src/objects/entities/variants/candidate.ts), [`Organization`](./src/objects/entities/variants/organization.ts), [`Faction`](./src/objects/entities/variants/faction.ts), [`Alliance`](./src/objects/entities/variants/alliance.ts)
-    - [`base/`](./src/objects/entities/base/): the abstract base classes for all entities and common types
-    - [`variants/`](./src/objects/entities/variants/): the concrete entity subclasses that can be instantiated
-  - [`nominations/`](./src/objects/nominations): the abstract [`Nomination`](./src/objects/nominations/base/nomination.ts) base class which connects [`Entity`](./src/objects/entities/base/entity.ts)s to [`Election`](./src/objects/election/election.ts)-[`Constituency`](./src/objects/constituency/constituency.ts) pairs
-    - [`base/`](./src/objects/nominations/base/): the abstract base classes for all nominations and common types
-    - [`variants/`](./src/objects/nominations/variants/): the concrete nomination subclasses that can be instantiated
-  - [`questions/`](./src/objects/questions/): [`Question`](./src/objects/questions/base/question.ts) and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts) as well as subclasses of the former
-    - [`base/`](./src/objects/questions/base/): the abstract base classes for all questions and question categories and common types
-    - [`category/`](./src/objects/questions/category): the class for question categories
-    - [`variants/`](./src/objects/questions/variants): the concrete question subclasses that can be instantiated
-- [`root/`](./src/root/): [`DataRoot`](./src/root/dataRoot.ts)
-- [`testUtils/`](./src/testUtils/): utilities and data used for testing (not exported)
-- [`utils/`](./src/utils/): utilities that are mostly used internally, but a few are exported by default
-
-See boxes in the class diagram below to see in which folder the classes are located.
-
-The [`DataObjectData`](./src/core/dataObject.type.ts) subtype for each class using such is defined in the accompanying `type.ts` file, e.g. `ElectionData` is defined in [election.type.ts](./src/objects/election/election.type.ts). However, if the data type is inherited unchanged, see the superclass’ `type.ts` file.
-
-### General structure
-
-All of the data is contained in the [`DataRoot`](./src/root/dataRoot.ts) object. Objects are added to the root using the data provision methods described below. The data provided is JSON-serializable and is converted into rich [`DataObject`](./src/core/dataObject.ts)s upon provision. The objects are accessed via [`DataRoot`](./src/root/dataRoot.ts) or other [`DataObject`](./src/core/dataObject.ts)s.
-
-#### Object data
-
-Each [`DataObject`](./src/core/dataObject.ts) is associated with a matching [`DataObjectData`](./src/core/dataObject.type.ts) type, which is used to provide the object with JSON-serializable data.
-
-The data passed to the objects is accessed via getters mandated by the [`DataAccessor<TData extends DataObjectData>`](./src/core/dataAccessor.type.ts) interface. The getters always provide a sensible default for the values of the same data type. Thus, for example, getters for optional `string` data properties always return an empty string (`''`).
-
-The data is expected to be immutable and no setters are provided for the properties.
-
-#### Providing data
-
-The [`DataRoot`](./src/root/dataRoot.ts) exposes data provision methods like `provideElectionData(data: Readonly<Array<ElectionData>>)`, which are used to build the child [`DataObject`](./src/core/dataObject.ts)s. The objects are stored in the root’s `children` collections.
-
-Data provision is designed to be idempotent and for this reason whenever data is provided the whole collection is rewritten, along with those depending on it. See [`DEPENDENT_COLLECTIONS`](./src/root/dependentCollections.ts) for details. This means that data should be provided in this order:
-
-1. Elections
-2. Constituency groups
-3. Constituencies
-4. In either order:
-   1. Entities and the Nominations
-   2. Question categories and then Questions
-
-#### Accessing data objects
-
-The objects are stored internally in the [`DataRoot`](./src/root/dataRoot.ts) in `Id`-mapped collections. These collections cannot be accessed directly, but the [`DataRoot`](./src/root/dataRoot.ts) provides two main ways for accessing them:
-
-- collection getters, such as `DataRoot.elections`, which return an `Array` of the objects, sorted by their `order` property (ascending)
-- `Id`-based getters, such as `DataRoot.getElection(id: Id)`, which return the individual object and throw a `DataNotFoundError` if the object is not found.
-
-In addition to accessing the objects via the root, many objects provide getters and methods for accessing related objects. The [`Election`](./src/objects/election/election.ts) object, for example, provides a `constituencyGroups` getter for the [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s available for that election as well as a `getCandidateNominations({id})` method which returns the [`CandidateNomination`](./src/objects/nominations/variants/candidateNomination.ts)s for the [`Constituency`](./src/objects/constituency/constituency.ts) with the `id` passed as the argument.
-
-None of these utility getters store references to the objects, but use the [`DataRoot`](./src/root/dataRoot.ts)’s getters when called.
-
-##### NB: Always reference objects by `id`
-
-The objects are always compared and referenced by their `id` instead of proper object equality. This is to prevent errors in cases where the data for is accidentally provided twice and the objects are recreated.
-
-Dynamically created objects – implied [`Entity`](./src/objects/entities/base/entity.ts)s (see also below) and [`Nomination`](./src/objects/nominations/base/nomination.ts)s – will be given a deterministic `Id` based on their hashed properties:
-
-- For [`Nomination`](./src/objects/nominations/base/nomination.ts)s a hash of:
-  1. Keyword `nomination`
-  2. `electionId`
-  3. `constituencyId`
-  4. `electionRound`
-  5. `entityType`
-  6. `entityId`
-  7. possible `parentNominationId`
-- For implied [`Alliance`](./src/objects/entities/variants/alliance.ts)s or [`Faction`](./src/objects/entities/variants/faction.ts)s:
-  1. Keyword `alliance` or `faction`
-  2. `electionId`
-  3. `constituencyId`
-  4. `electionRound`
-  5. `entityType`
-  6. `parentNominationId` for `FactionNomination`s
-  7. `Id`s of the entities in the child nominations:
-     - `Organization`s for `AllianceNomination`s
-     - `Candidate`s for `FactionNomination`s
-
-#### [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s and [`Constituency`](./src/objects/constituency/constituency.ts)s
-
-The [`Constituency`](./src/objects/constituency/constituency.ts) objects represent constituencies or [electoral districts](https://en.wikipedia.org/wiki/Electoral_district), which are most commonly the geographical areas into which nominees and voters are grouped.
-
-[`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s are groups of [`Constituency`](./src/objects/constituency/constituency.ts) objects that the voter can choose from. An [`Election`](./src/objects/election/election.ts) usually has only one such group, but in some cases the voters may be eligible to cast their vote in both a geographical and an ethnic [`Constituency`](./src/objects/constituency/constituency.ts).
-
-For consistency, a [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts) with one [`Constituency`](./src/objects/constituency/constituency.ts) must be defined for [`Election`](./src/objects/election/election.ts)s only having one, e.g. countrywide, constituency.
-
-##### Nested [`Constituency`](./src/objects/constituency/constituency.ts)s
-
-[`Constituency`](./src/objects/constituency/constituency.ts) objects may have a `parentConstituency`, which can be used in situations where multiple elections take place on differing levels of a country’s regional hierarchy, such as regional and municipal. In these cases, the VAA use may be shown only the lowest-level [`Constituency`](./src/objects/constituency/constituency.ts)s for selecting from and the parentage used to deduce the higher-level ones. (See [Recipes](#recipes), below.)
-
-#### [`Nomination`](./src/objects/nominations/base/nomination.ts)s and [`Entity`](./src/objects/entities/base/entity.ts)s
-
-In order to provide an accurate description of an election, the model maintains a distinction between entities and nominations. As an example, a candidate standing in an election is represented by a combination of a [`Candidate`](./src/objects/entities/variants/candidate.ts) (a subclass of [`Entity`](./src/objects/entities/base/entity.ts)) and a [`CandidateNomination`](./src/objects/nominations/variants/candidateNomination.ts) (a subclass of [`Nomination`](./src/objects/nominations/base/nomination.ts)) object.
-
-- The [`Entity`](./src/objects/entities/base/entity.ts) represents the entity itself and can exist without an associated [`Nomination`](./src/objects/nominations/base/nomination.ts), a person in the case of a [`Candidate`](./src/objects/entities/variants/candidate.ts). The [`Entity`](./src/objects/entities/base/entity.ts) has the `name` and the possible [`Answers`](#answers) to the [VAA questions](#questions-and-questioncategorys).
-- The [`Nomination`](./src/objects/nominations/base/nomination.ts) in turn represents the nomination of the associated [`Entity`](./src/objects/entities/base/entity.ts) in a [`Constituency`](./src/objects/constituency/constituency.ts) in an [`Election`](./src/objects/election/election.ts). It is basically just a combination of references to those three objects, but may also defined an `electionSymbol`, e.g. a candidate number marked on the ballot.
-
-The reason for not collating these two object types is that the same [`Entity`](./src/objects/entities/base/entity.ts) may have multiple [`Nomination`](./src/objects/nominations/base/nomination.ts)s, even in the same [`Election`](./src/objects/election/election.ts).
-
-The nominated [`Entity`](./src/objects/entities/base/entity.ts) can be accessed via the [`Nomination`](./src/objects/nominations/base/nomination.ts)’s `entity` property.
-
-##### Explicit and implied [`Entity`](./src/objects/entities/base/entity.ts) **objects**
-
-There are four types of [`Entity`](./src/objects/entities/base/entity.ts) objects. Two of them are _explicit_, meaning that when providing the [`NominationData`](./src/objects/nominations/base/nomination.type.ts) for them, the associated [`EntityData`](./src/objects/entities/base/entity.type.ts) must also be (separately) provided:
-
-- [`Candidate`](./src/objects/entities/variants/candidate.ts), a person
-- [`Organization`](./src/objects/entities/variants/organization.ts), a political party, constituency association or similar organization nominating candidates.
-
-The other two may be _implied_, which means that they can be defined with just the [`NominationData`](./src/objects/nominations/base/nomination.type.ts). For these, the [`Nomination`](./src/objects/nominations/base/nomination.ts) constructor will create an implied [`Entity`](./src/objects/entities/base/entity.ts) for these, if the data does not contain an `entityId`.
-
-- [`Faction`](./src/objects/entities/variants/faction.ts), a grouping of candidates inside a party, used in ’ley de lemas’ election systems
-- [`Alliance`](./src/objects/entities/variants/alliance.ts), an electoral alliance between [`Organization`](./src/objects/entities/variants/organization.ts)s
-
-In the case of implied entities, this means that they will be specific to a [`Constituency`](./src/objects/constituency/constituency.ts) and an [`Election`](./src/objects/election/election.ts), which is in line with actual elections. Electoral alliances, for example, are most often constituency-specific. If, however, the alliance is an election-wide one (or its representatives have provided answers to the VAA questions), one can provide [`AllianceData`](./src/objects/entities/variants/alliance.type.ts) for an explicit [`Alliance`](./src/objects/entities/variants/alliance.ts) and link the [`AllianceNomination`](./src/objects/nominations/variants/allianceNomination.ts) to that by specifying the `entityId` the same way as for [`Candidate`](./src/objects/entities/variants/candidate.ts)s.
-
-The implied entities are created for consistency of the data model.
-
-#### [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts)s
-
-The [[`Question`](./src/objects/questions/base/question.ts)](./src/objects/questions/base/question.ts) objects represent, naturally enough, the questions or statements posed by the VAA. They’re grouped into categories and are expect belong to one and only one [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts).
-
-There are subclasses for many different types of questions, dubbed [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts)s. The data for each of these is differentiated by the [`type: QuestionType`](./src/objects/questions/base/questionTypes.ts) property. The subclasses differ in the type of [`Answer`](./src/objects/questions/base/answer.type.ts)s they accept. If they can be used in matching, they also implement the `MatchableQuestion` interface defined by the `@openvaa/core` module and required by `@openvaa/matching`.
-
-Both [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts)s can be made specific to an [`Election`](./src/objects/election/election.ts), [`Constituency`](./src/objects/constituency/constituency.ts), [`EntityType`](./src/objects/entities/base/entityTypes.ts) or `electionRound` by setting the relavant filters in the data. The [`QuestionAndCategoryBase.appliesTo(targets: FilterTargets)`](./src/objects/questions/base/questionAndCategoryBase.ts) method can be used to this effect.
-
-#### [`Answer`](./src/objects/questions/base/answer.type.ts)s
-
-The answers of [`Entity`](./src/objects/entities/base/entity.ts)s to the VAA questions are stored as a `Id`-[`Answer`](./src/objects/questions/base/answer.type.ts) record in their data. The `Answer<TValue>` interface is defined by the `@openvaa/core` module. The type parameter defines the type of the [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` property, which is used to store the answer proper. [`Answer`](./src/objects/questions/base/answer.type.ts)s may also contain an `info: string` property, which usually is the respondent’s freeform explanation for their answer.
-
-While the `value` types of the [`Entity`](./src/objects/entities/base/entity.ts)s [`Answer`](./src/objects/questions/base/answer.type.ts)s are currently not checked when the object is initialised, the [`Entity.getAnswer(question: AnyQuestionVariant)`](./src/objects/entities/base/entity.ts) method does that and will return a `MISSING_ANSWER` (i.e. `undefined`, typed in `@openvaa/core`) if the stored [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` is not valid for the [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts) in case. This way the consumers of the `@openvaa/data` model do not have to perform further checks when accessing the answers.
-
-##### Formatting [`Answer`](./src/objects/questions/base/answer.type.ts)s for output
-
-For convenience, [`Entity`](./src/objects/entities/base/entity.ts)s also have a `getFormattedAnswer(question: AnyQuestionVariant)` method, which can be used to retrieve the `Answer.value` and format it as a string, regardless of the `value` type. To overwrite the default formats, the [`DataRoot.setFormatter(...)`](./src/root/dataRoot.ts) method can be used. The optional [`DataRoot.locale`](./src/root/dataRoot.ts) property also affects some of the formats (e.g. [`formatDateAnswer`](./src/utils/formatAnswer.ts)).
-
-#### [`Updatable`](./src/core/updatable.ts) and subscribictions
-
-All objects, including [`DataRoot`](./src/root/dataRoot.ts), inherit from the abstract [`Updatable`](./src/core/updatable.ts) class, which allows others to `subscribe` to an `onUpdate` event triggered whenever the object’s data or children change.
-
-### Classes
-
-Note that the diagrams below does not contain all defined types, only object classes as well as some central interfaces and types.
-
-The hierarchy is split into two diagrams with [`Question`](./src/objects/questions/base/question.ts)s in their own diagram.
-
-#### Classes and inheritance without [`Question`](./src/objects/questions/base/question.ts)s
-
-```mermaid
----
-title: VAAData class inheritance (with Questions collapsed)
----
-classDiagram
-  direction TD
-
-  %% CLASS DEFINITIONS
-
-  namespace core {
-
-    class Updatable {
-      <<Abstract>>
-      Provides methods for updates and subscribing to changes in this object
-    }
-
-    class DataAccessor~DataObjectData~ {
-      <<Interface>>
-      Mandates getters for all properties of DataObjectData
-      All subclasses implement this for their own data type
-    }
-
-    class DataObject {
-      <<Abstract>>
-      Mandates an id and provides getters for other properties common to all DataObjects
-      Implements the DataAccessor interface
-      Provides access to DataRoot
-    }
-  }
-
-  namespace objects_constituency {
-
-    class Constituency {
-      An electoral district, usually representing a geographical area, in which candidates can be nominated
-    }
-
-    class ConstituencyGroup {
-      A group of Constituencies that the voter can choose from.
-    }
-  }
-
-  namespace objects_election {
-
-    class Election {
-      Defines the name of the election and possible dates
-    }
-  }
-
-  namespace objects_entities_base {
-
-    class Entity {
-      <<Abstract>>
-      Any entity standing in an Election
-      Can have Answers
-    }
-  }
-
-  namespace objects_entities_variants {
-
-    class Alliance {
-      An electoral alliance of Organizations
-      Usually specific to an Election and a Constituency
-      May be implied by an AllianceNomination
-    }
-
-    class Candidate {
-      A person that can be nominated
-    }
-
-    class Faction {
-      A subgroup of an Organization, used in ’ley de lemas’ electoral systems
-      Usually specific to an Election and a Constituency
-      May be implied by an FactionNomination
-    }
-
-    class Organization {
-      A political organization that can nominate Candidates or Factions
-      Usually a party or a constituency association
-    }
-  }
-
-  namespace objects_nomination_base {
-    class Nomination {
-      <<Abstract>>
-      Defines an Entity nominated for an Election in a Constituency
-      Defines the electionSymbol and possible electionRound
-    }
-  }
-
-  namespace objects_nomination_variants {
-
-    class AllianceNomination {
-      Defines an alliance of OrganizationNominations
-      May create an implied Alliance entity
-    }
-
-    class CandidateNomination {
-      Defines a nomination of a Candidate
-    }
-
-    class FactionNomination {
-      Defines a faction of nominated Candidates for an Organization
-      May create an implied Faction entity
-      Must be part of an OrganizationNomination
-    }
-
-    class OrganizationNomination {
-      Defines a nomination of an Organization
-      May contain nominated Candidates
-    }
-  }
-
-  namespace objects_questions {
-
-    class Answer~TValue~ {
-      <<Type>>
-      An answer to a Question with value of typoe TValue
-      Implements the @openvaa/core Answer interface
-    }
-
-    class QuestionAndCategoryBase {
-      <<Abstract>>
-      A base class for both Questions and QuestionCategories
-      Can be made specific to an Election, Constituency, EntityType or electionRound
-    }
-
-    class Question {
-      <<Abstract>>
-      A base class for all questions
-      Implements methods for ensuring Answer values match the expected value type
-      Implements the @openvaa/core MatchableQuestion interface,
-      but for subclasses that can be used for matching the isMatchable property must be true
-      See separate diagram for subclasses
-    }
-
-    class QuestionCategory {
-      A category of Questions
-    }
-
-  }
-
-  namespace root {
-    class DataRoot {
-      Contains all data objects
-      Provides id-based and array getters for all objects
-      Exposes data provision methods
-      Contains formatters for some data objects’ properties
-    }
-  }
-
-  %% INHERITANCE
-
-  Updatable <|-- DataRoot
-  Updatable <|-- DataObject
-  DataObject <|.. DataAccessor : implements
-  DataObject <|-- Constituency
-  DataObject <|-- ConstituencyGroup
-  DataObject <|-- Election
-  DataObject <|-- Entity
-  DataObject <|-- Nomination
-  DataObject <|-- QuestionAndCategoryBase
-  Entity <|-- Alliance
-  Entity <|-- Candidate
-  Entity <|-- Faction
-  Entity <|-- Organization
-  Nomination <|-- AllianceNomination
-  Nomination <|-- CandidateNomination
-  Nomination <|-- FactionNomination
-  Nomination <|-- OrganizationNomination
-  QuestionAndCategoryBase <|-- Question
-  QuestionAndCategoryBase <|-- QuestionCategory
-```
-
-#### [`Question`](./src/objects/questions/base/question.ts) and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts) classes and inheritance
-
-```mermaid
----
-title: VAAData Question and QuestionCategory class inheritance
----
-classDiagram
-  direction TD
-
-  %% CLASS DEFINITIONS
-
-  namespace objects_questions_base {
-
-    class Answer~TValue~ {
-      <<Type>>
-      An answer to a Question with value of typoe TValue
-      Implements the @openvaa/core Answer interface
-    }
-
-    class Choice~TValue~ {
-      <<Type>>
-      An answering option in a ChoiceQuestion with a possible normalizableValue of type TValue
-      Referenced in Answers by the Choice’s id
-    }
-
-    class QuestionAndCategoryBase {
-      <<Abstract>>
-      A base class for both Questions and QuestionCategories
-      Can be made specific to an Election, Constituency, EntityType or electionRound
-    }
-
-    class Question {
-      <<Abstract>>
-      A base class for all questions
-      Implements methods for ensuring Answer values match the expected value type
-      Implements the @openvaa/core MatchableQuestion interface,
-      but for subclasses that can be used for matching the isMatchable property must be true
-    }
-
-    class ChoiceQuestion {
-      <<Abstract>>
-      A base class for all questions that have enumerated Choices for answering
-    }
-
-    class SingleChoiceQuestion {
-      <<Abstract>>
-      A base class for all ChoiceQuestions for which a single value can be selected
-    }
-
-    class MultipleChoiceQuestion {
-      <<Abstract>>
-      A base class for all ChoiceQuestions for which multiple values can be selected
-    }
-  }
-
-  namespace objects_questions_variants {
-
-    class BooleanQuestion {
-      A matchable Question whose Answer.value is a boolean
-    }
-
-    class DateQuestion {
-      A matchable Question whose Answer.value is a Date
-      The answer is stored as a string in the data but converted to a Date
-      when retrieved by Entity.getAnswer(question)
-    }
-
-    class ImageQuestion {
-      A nonmatchable Question whose Answer.value is an Image
-    }
-
-    class MultipleChoiceCategoricalQuestion {
-      A (currently) nonmatchable Question whose Answer.value is a possibly ordered array of Choice ids
-      The Choices are categorical, meaning that they cannot be numerically compared in terms of matching
-      E.g. "Pick one or more of your favourite colors"
-    }
-
-    class MultipleTextQuestion {
-      A nonmatchable Question whose Answer.value is an Array of strings
-    }
-
-    class NumberQuestion {
-      A possibly matchable Question whose Answer.value is a number
-      Matchable if it has a defined min and max range
-    }
-
-    class SingleChoiceCategoricalQuestion {
-      A matchable Question whose Answer.value is one Choice id
-      The Choices are categorical, meaning that they cannot be numerically compared in terms of matching
-      E.g. "Choose your favourite color"
-    }
-
-    class SingleChoiceOrdinalQuestion {
-      A matchable Question whose Answer.value is one Choice id
-      The Choices are ordinal, meaning that they can be numerically compared in terms of matching
-      E.g. a Likert question
-    }
-
-    class TextQuestion {
-      A nonmatchable Question whose Answer.value is a string
-    }
-  }
-
-  %% INHERITANCE
-
-  QuestionAndCategoryBase <|-- Question
-  Question <|-- BooleanQuestion
-  Question <|-- ChoiceQuestion
-  Question <|-- ImageQuestion
-  Question <|-- MultipleTextQuestion
-  Question <|-- NumberQuestion
-  Question <|-- TextQuestion
-  ChoiceQuestion <|-- MultipleChoiceQuestion
-  ChoiceQuestion <|-- SingleChoiceQuestion
-  MultipleChoiceQuestion <|-- MultipleChoiceCategoricalQuestion
-  SingleChoiceQuestion <|-- SingleChoiceCategoricalQuestion
-  SingleChoiceQuestion <|-- SingleChoiceOrdinalQuestion
-
-  %% LINKAGES
-
-  ChoiceQuestion ..> Choice : has
-```
-
-#### Links between objects without [`Question`](./src/objects/questions/base/question.ts)s
-
-> Accessors inherited from subclasses of [`DataObject`](./src/core/dataObject.ts), [`Entity`](./src/objects/entities/base/entity.ts) and [`Nomination`](./src/objects/nominations/base/nomination.ts), are only shown for the superclass.
-> Also exluded from the diagram are the getters for all objects that [`DataRoot`](./src/root/dataRoot.ts) provides.
-
-```mermaid
----
-title: VAAData links between classes
----
-classDiagram
-  direction TD
-
-  %% CLASS DEFINITIONS
-
-  namespace core {
-
-    class Updatable {
-      <<Abstract>>
-      Provides methods for updates and subscribing to changes in this object
-    }
-
-    class DataAccessor~DataObjectData~ {
-      <<Interface>>
-      Mandates getters for all properties of DataObjectData
-      All subclasses implement this for their own data type
-    }
-
-    class DataObject {
-      <<Abstract>>
-      Mandates an id and provides getters for other properties common to all DataObjects
-      Implements the DataAccessor interface
-      Provides access to DataRoot
-    }
-  }
-
-  namespace objects_constituency {
-
-    class Constituency {
-      An electoral district, usually representing a geographical area, in which candidates can be nominated
-    }
-
-    class ConstituencyGroup {
-      A group of Constituencies that the voter can choose from.
-    }
-  }
-
-  namespace objects_election {
-
-    class Election {
-      Defines the name of the election and possible dates
-    }
-  }
-
-  namespace objects_entities_base {
-
-    class Entity {
-      <<Abstract>>
-      Any entity standing in an Election
-      Can have Answers
-    }
-  }
-
-  namespace objects_entities_variants {
-
-    class Alliance {
-      An electoral alliance of Organizations
-      Usually specific to an Election and a Constituency
-      May be implied by an AllianceNomination
-    }
-
-    class Candidate {
-      A person that can be nominated
-    }
-
-    class Faction {
-      A subgroup of an Organization, used in ’ley de lemas’ electoral systems
-      Usually specific to an Election and a Constituency
-      May be implied by an FactionNomination
-    }
-
-    class Organization {
-      A political organization that can nominate Candidates or Factions
-      Usually a party or a constituency association
-    }
-  }
-
-  namespace objects_nomination_base {
-    class Nomination {
-      <<Abstract>>
-      Defines an Entity nominated for an Election in a Constituency
-      Defines the electionSymbol and possible electionRound
-    }
-  }
-
-  namespace objects_nomination_variants {
-
-    class AllianceNomination {
-      Defines an alliance of OrganizationNominations
-      May create an implied Alliance entity
-    }
-
-    class CandidateNomination {
-      Defines a nomination of a Candidate
-    }
-
-    class FactionNomination {
-      Defines a faction of nominated Candidates for an Organization
-      May create an implied Faction entity
-      Must be part of an OrganizationNomination
-    }
-
-    class OrganizationNomination {
-      Defines a nomination of an Organization
-      May contain nominated Candidates
-    }
-  }
-
-  namespace objects_questions {
-
-    class Answer~TValue~ {
-      <<Type>>
-      An answer to a Question with value of typoe TValue
-      Implements the @openvaa/core Answer interface
-    }
-
-    class QuestionAndCategoryBase {
-      <<Abstract>>
-      A base class for both Questions and QuestionCategories
-      Can be made specific to an Election, Constituency, EntityType or electionRound
-    }
-
-    class Question {
-      <<Abstract>>
-      A base class for all questions
-      Implements methods for ensuring Answer values match the expected value type
-      Implements the @openvaa/core MatchableQuestion interface,
-      but for subclasses that can be used for matching the isMatchable property must be true
-      See separate diagram for subclasses
-    }
-
-    class QuestionCategory {
-      A category of Questions
-    }
-
-  }
-
-  namespace root {
-    class DataRoot {
-      Contains all data objects
-      Provides id-based and array getters for all objects
-      Exposes data provision methods
-      Contains formatters for some data objects’ properties
-    }
-  }
-
-  %% LINKAGES
-
-  DataObject ..> DataRoot : links to
-
-  Election ..> ConstituencyGroup : has
-  ConstituencyGroup ..> Constituency : has
-  Constituency ..> Constituency : may belong to
-
-  Entity ..> Answer : has
-  Candidate ..> Organization : may belong to
-
-  Nomination ..> Constituency : links to
-  Nomination ..> Election : links to
-
-  AllianceNomination ..> OrganizationNomination : has
-  AllianceNomination ..> Alliance : links to
-  CandidateNomination ..> Candidate : links to
-  OrganizationNomination ..> CandidateNomination : may have
-  OrganizationNomination ..> Organization : links to
-  OrganizationNomination ..> FactionNomination : may have
-  FactionNomination ..> CandidateNomination : has
-  FactionNomination ..> Faction : links to
-
-  QuestionAndCategoryBase ..> Constituency : may link to
-  QuestionAndCategoryBase ..> Election : may link to
-  Question ..> QuestionCategory : belongs to
-```
-
-## `@openvaa/matching`: Matching algorithms for candidates and other entities
-
-The module provides a generic implementation for matching algorithms used in VAAs.
-
-In order to use the algorithms provided, the target entities and questions must fulfil certain requirements defined in the `@openvaa/core` module:
-
-- [`HasAnswers`](/packages/core/src/matching/hasAnswers.type.ts)
-- [`MatchableQuestion`](/packages/core/src/matching/matchableQuestion.type.ts)
-
-### Features
-
-- Supports any type of question
-  - Sample implementations provided for ordinal questions (including Likert questions of any scale) and categorical questions
-  - For custom question implementations, the only requirement is that answers to can be represented as positions in uni- or multidimensional space
-- Manhattan, directional and Euclidean distance metrics
-- Assign arbitrary weights to questions
-- Computing matches for subgroups of questions, such as for specific themes
-- Projecting positions to a lower-dimensional space, such as a 2D map, using custom projector
-
-See also [Future developments](#future-developments)
-
-### Dependencies
-
-`@openvaa/core`: Definitions related to matching space distances, matchable questions and entities having answers to these are shared between this and other `vaa` modules.
-
-### Developing
-
-The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
-
-### Quick start
-
-1. Create question objects that implement [`MatchableQuestion`](/packages/core/src/matching/matchableQuestion.type.ts)
-2. Create candidate objects and a voter that implement [`HasAnswers`](/packages/core/src/matching/hasAnswers.type.ts). With regard to the matching algorithm, there’s no difference between the voter and candidates
-3. Instantiate a [`MatchingAlgorithm`](./src/algorithms/matchingAlgorithm.ts) with suitable options
-4. Call the algorithm’s [`match`](./src/algorithms/matchingAlgorithm.ts) method passing as arguments the questions to match for, the voter, the candidates and optional [`MatchingOptions`](./src/algorithms/matchingAlgorithm.type.ts). The algorithm returns an array of [`Match`](./src/match/match.ts) objects for each candidate ordered by ascending distance
-   1. The `Match` objects contain a reference to the `entity` they target
-   2. You can get submatches for question categories by supplying `questionGroups` in the options. These are objects implementing [`MatchableQuestionGroup`](./src/question/matchableQuestionGroup.ts). The submatches are contained in the [`subMatches`](./src/match/subMatch.ts) array of the [`Match`](./src/match/match.ts) objects
-   3. You can weight the questions by supplying `questionWeights` in the options
-   4. Only those questions that the voter has answered will be considered in the matching
-
-### Trying it out
-
-See [`examples/example.ts`](./examples/example.ts).
-
-Run with `tsx examples/example.ts`.
-
-### Principles
-
-At first glance, it may well seem that the algorithm module is overly complicated for such a simple task as Manhattan matching. This would be true if we were to limit ourselves to using just that algorithm. However, the purpose of the module is to provide a very flexible framework for implementing different matching algorithms.
-
-To that end, the module is built following these principles:
-
-1. Enable mixing of different kinds of questions
-2. Provide flexible methods of dealing with missing values
-3. Do not expect answers to questions to be inherently numeric
-4. Prefer reliability even at the cost of performance
-5. Prefer verbosity if it can help avoid confusion
-
-### Paradigm
-
-The general operational paradigm of the algorithm is to treat the voter and the candidate as positions in a multidimensional space. To compute a match we measure the distance between the two in that space and return a value, which is normalized so that it represents the fraction of the maximum possible distance in that space, i.e. 0–100 %.
-
-The algorithm also supports a more complicated method of matching, in which the positions are projected to a lower-dimensional space before calculating the distance. This method is used often to place the persons into a two or three-dimensional space with axes such as ‘Economical left–right’ and ‘Value conservative–liberal’. In this kind of projection, different weights are given to the dimensions in source space (that is, the questions) in calculating the positions in the target space. In the basic method, on the contrary, all of the questions have equal weights in calculating the distance.
-
-In order to do this, you need to supply a [`MatchingSpaceProjector`](./src/algorithms/matchingSpaceProjector.ts) when instantiating the algorithm.
-
-#### Process
-
-The process of computing a match goes roughly as follows. (This is a simplified example that does not use subcategory matching, question weighting or projection into a lower-dimensional space.)
-
-1. [`MatchingAlgorithm.match()`](./src/algorithms/matchingAlgorithm.ts) is called and passed an array of [`MatchableQuestion`](/packages/core/src/matching/matchableQuestion.type.ts)[^1], a `reference` (usually the voter) and a `targets` array (usually the candidates or parties), which we’ll refer to as entities below. All of these must implement the [`HasAnswers`](/packages/core/src/matching/hasAnswers.type.ts) interface. [Options](./src/algorithms/matchingAlgorithm.type.ts) may also be provided.
-2. The `reference` is queried for the questions they have answered by calling the [`answers`](/packages/core/src/matching/hasAnswers.type.ts) getter. The questions they have not answered are removed from matching. If no questions remain, an error will be thrown.
-3. Before using the actual answers, we create the [`MatchingSpace`](./src/space/matchingSpace.ts) in which we position the entities. Usually this is simply a space with `N` dimensions of equal weight, where `N` is the number of questions.[^2]
-4. To place them in the space, we iterate over each entity and over each question.
-   - The position is represented by an `N`-length array of numbers ([`Position`](./src/space/position.ts)) with possible subdimensions.
-   - We build that get by getting the entity’s answer to each question by querying their [`answers`](/packages/core/src/matching/hasAnswers.type.ts) record with the question [id](/packages/core/src/matching/id.type.ts).
-   - The values we have are still of an unknown type, so we pass them to the question’s [`normalizeValue(value: unknown)`](/packages/core/src/matching/matchableQuestion.ts) method, which returns either a [`CoordinateOrMissing`](/packages/core/src/matching/distance.type.ts) (`number` or `undefined`) or an array of these.[^3]
-5. Now that the entities are positioned in a normalized space, we can finally calculate the matches, that is, the normalized distances of the `targets` to the `reference`.
-6. To do that, we iterate over each `target` and calculate their distance to the `reference` in each dimension of the [`MatchingSpace`](./src/space/matchingSpace.ts), sum these up and normalise.[^4]
-   - Recall that some coordinates of the `targets`’ positions may be `undefined`. To calculate distances between these and the `reference`’s respective coordinates, we need to impute a value in place of the missing one.[^5]
-7. Finally, we use the distances to create a [`Match`](./src/match/match.ts) object for each of the `targets`, which includes a reference to the `target` entity and the distance. The [`Match`es](./src/match/match.ts) also contain getters for presenting the distance as, e.g., a percentage score.[^6]
-8. The [`Match`es](./src/match/match.ts) are returned and may be passed on to UI components. They are ordered by ascending match distance.
-
-### Future developments
-
-1. Distances are now measured using combinatios of [`kernels`](./src/distance/metric.ts) and other helper functions. It seems likely that we could simplify all of these to simple distance measurements in a vector space.
-2. Provide an example implementation of a ranked preference question, which involves creating `f(n) / (2 * f(n-2))` subdimensions where `n` is the number of options and `f(•)` the factorial to map each pairwise preference.
-3. Implement Manhattan-directional hybrid and Mahalanobis distance metrics.
-
-[^1]: The questions have to implement a [`normalizeValue()`](/packages/core/src/matching/matchableQuestion.type.ts) method, because otherwise we don’t know how to compare the answer values, whose type is unspecified, to each other.
-
-[^2]: Some question types, such as ranked preference questions, create multiple subdimensions with a total weight of 1.
-
-[^3]: [`normalizeValue()`](/packages/core/src/matching/matchableQuestion.ts) returns an array of numbers if the question is one that creates multiple subdimensions, such as a [`CategoricalQuestion`](./src/question/categoricalQuestion.ts)
-
-[^4]: To be precise, it’s the average weighted by the weights of the dimensions, which may differ from 1 in case of questions creating subdimensions.
-
-[^5]: There are several methods to this, which are defined in the constructor options to the [`MatchingAlgorithm`](./src/algorithms/matchingAlgorithm.ts).
-
-[^6]: And in case of subcategory matching, they also contain [`subMatches`](./src/match/subMatch.ts) for each category.
-
-## `@openvaa/shared-config`: Shared dev configuration for all modules
-
-Contains exports for configuring `eslint`, `prettier` and `ts`. Import or extend these in the modules.
-
-### Shared `devDependencies`
-
-`devDependencies` cannot be shared using packages. Make sure to update the common dependencies below in all workspaces at the same time:
-
-```json
-"devDependencies": {
-  "@openvaa/shared-config": "^1.0.0",
-  "tsc-esm-fix": "^3.1.2", // If using TypeScript
-  "typescript": "^5.6.3",  // If using TypeScript
-}
 ```
