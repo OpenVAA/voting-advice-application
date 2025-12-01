@@ -1,10 +1,13 @@
-import { ChatbotController, updateConversation } from '@openvaa/chatbot/server';
+import { ChatbotController } from '@openvaa/chatbot/server';
 import { getChatbotConfiguration } from '@openvaa/chatbot/server';
-import { convertUIMessagesToModelMessages } from '$lib/chatbot/utils/adHocMessageConvert';
 import { constants } from '$lib/server/constants';
+import { getRedisClient } from '$lib/server/redis/client';
+import { RedisConversationStore } from '$lib/server/redis/conversationStore';
+import { RateLimiter } from '$lib/server/redis/rateLimiter';
 import type { RAGRetrievalResult } from '@openvaa/chatbot';
 import type { ConversationState } from '@openvaa/chatbot/server';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
+import type { RequestEvent } from '@sveltejs/kit';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
@@ -12,51 +15,107 @@ const { vectorStore, queryReformulationProvider, chatProvider } = await getChatb
   constants.LLM_OPENAI_API_KEY
 );
 
+// Initialize Redis store and rate limiter
+const conversationStore = new RedisConversationStore(getRedisClient());
+const rateLimiter = new RateLimiter(getRedisClient(), 20, 60);
+
 // API endpoint for chat functionality with RAG enrichment
-// TODO: type the params
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function POST({ request, params }: { request: Request; params: any }) {
+export async function POST({ request, params, getClientAddress }: RequestEvent) {
   const requestStartTime = Date.now();
+  const clientIp = getClientAddress();
 
-  // Parse request. TODO: store conversation state in redis instead of client
-  const { messages: uiMessages, sessionId } = await request.json();
-  const messages = convertUIMessagesToModelMessages(uiMessages);
-  const locale = params.lang || 'en';
+  try {
+    // Rate limiting check
+    const allowed = await rateLimiter.checkLimit(clientIp);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded. Try again later.',
+          retryAfter: 60
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60'
+          }
+        }
+      );
+    }
 
-  // TODO: fix state management.
-  // Build fresh state for this request
-  const state: ConversationState = {
-    sessionId: sessionId || crypto.randomUUID(),
-    messages,
-    workingMemory: messages,
+    // Parse request - client sends single message with optional sessionId
+    const { message, sessionId: clientSessionId } = await request.json();
+    const locale = params.lang || 'en';
+
+    // Load or create session
+    let sessionId: string;
+    let state: ConversationState;
+
+    if (clientSessionId) {
+      // Try to load existing session
+      const existingState = await conversationStore.get(clientSessionId);
+      if (existingState) {
+        sessionId = clientSessionId;
+        state = existingState;
+      } else {
+        // Invalid sessionId - create new session
+        console.warn(`[Chat API] Invalid sessionId ${clientSessionId}, creating new session`);
+        sessionId = crypto.randomUUID();
+        state = createNewState(sessionId, locale);
+      }
+    } else {
+      // New conversation
+      sessionId = crypto.randomUUID();
+      state = createNewState(sessionId, locale);
+    }
+
+    // Append new user message to state
+    state.messages.push({ role: 'user', content: message });
+    state.workingMemory.push({ role: 'user', content: message });
+
+    // Business logic handled by chatbot package
+    const response = await ChatbotController.handleQuery({
+      locale,
+      state,
+      vectorStore: vectorStore,
+      reformulationProvider: queryReformulationProvider,
+      chatProvider,
+      rerankConfig: {
+        enabled: true,
+        apiKey: constants.COHERE_API_KEY as string,
+        model: 'rerank-v3.5'
+      },
+      nResultsTarget: 5
+    });
+
+    // Save updated state to Redis
+    await conversationStore.set(sessionId, response.state);
+
+    // Wrap in SSE stream with RAG metadata collector
+    return wrapInSSE({
+      sessionId,
+      stream: response.stream,
+      ragMetadataCollector: response.metadata.ragMetadataCollector,
+      requestStartTime
+    });
+  } catch (error) {
+    console.error('[Chat API] Error:', error);
+    return new Response(JSON.stringify({ error: 'Chat service unavailable' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+function createNewState(sessionId: string, locale: string): ConversationState {
+  return {
+    sessionId,
+    messages: [],
+    workingMemory: [],
     forgottenMessages: [],
     lossyHistorySummary: '',
     locale
   };
-
-  // Business logic handled by chatbot package
-  const response = await ChatbotController.handleQuery({
-    locale,
-    state,
-    vectorStore: vectorStore,
-    reformulationProvider: queryReformulationProvider,
-    chatProvider,
-    rerankConfig: {
-      enabled: true,
-      apiKey: constants.COHERE_API_KEY as string, // TODO: check if it exists!
-      model: 'rerank-v3.5'
-    },
-    nResultsTarget: 5
-  });
-
-  // Wrap in SSE stream with RAG metadata collector
-  return wrapInSSE({
-    stream: response.stream,
-    ragMetadataCollector: response.metadata.ragMetadataCollector,
-    requestStartTime,
-    conversationState: state,
-    messages: messages as Array<{ role: string; content: string }>
-  });
 }
 
 /**
@@ -64,17 +123,15 @@ export async function POST({ request, params }: { request: Request; params: any 
  * Pure HTTP/SSE protocol handling
  */
 async function wrapInSSE({
+  sessionId,
   stream,
   ragMetadataCollector,
-  requestStartTime,
-  conversationState,
-  messages
+  requestStartTime
 }: {
+  sessionId: string;
   stream: LLMStreamResult;
   ragMetadataCollector: Array<RAGRetrievalResult>;
   requestStartTime: number;
-  conversationState: ConversationState;
-  messages: Array<{ role: string; content: string }>;
 }) {
   const sseStream = new ReadableStream({
     async start(controller) {
@@ -83,6 +140,10 @@ async function wrapInSSE({
       let firstTokenTime = 0;
 
       try {
+        // Send sessionId immediately so client can store it
+        controller.enqueue(encoder.encode('event: session-id\n'));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ sessionId })}\n\n`));
+
         // Pipe AI SDK stream
         const aiResponse = stream.toUIMessageStreamResponse();
         const reader = aiResponse.body?.getReader();
@@ -102,19 +163,6 @@ async function wrapInSSE({
 
         const streamEndTime = performance.now();
 
-        // Get full assistant response from AI SDK stream
-        const assistantResponse = await stream.text;
-
-        // Log conversation exchange
-        const userMessage = messages.findLast((msg) => msg.role === 'user')?.content || '';
-        if (userMessage && assistantResponse) {
-          // Fire and forget - don't block response on logging
-          updateConversation(userMessage, assistantResponse, conversationState.sessionId).catch((err) => {
-            console.error('[Chat API] Failed to log conversation:', err);
-          });
-        } else {
-          console.warn('[Chat API] Skipping conversation log - missing user or assistant message');
-        }
 
         // Compute timing metrics (API route's responsibility)
         const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;

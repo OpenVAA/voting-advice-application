@@ -1,6 +1,7 @@
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
+import type { RAGRetrievalResult } from '../core/rag/ragService.type';
 import type { RAGDependencies } from '../core/tools/tools';
 
 /** State of the conversation. Updates after each message. This state is required for an intelligent but efficient
@@ -68,7 +69,7 @@ export interface ChatbotResponse {
     isCannedResponse: boolean;
 
     /** RAG metadata collector - populated during tool execution */
-    ragMetadataCollector: Array<import('../core/rag/ragService.type').RAGRetrievalResult>;
+    ragMetadataCollector: Array<RAGRetrievalResult>;
 
     /** Legacy RAG fields (deprecated - use ragMetadataCollector instead) */
     usedRAG: boolean;

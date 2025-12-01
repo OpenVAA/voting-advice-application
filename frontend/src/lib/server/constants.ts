@@ -15,4 +15,6 @@ export const constants = {
   LLM_OPENAI_API_KEY: env.LLM_OPENAI_API_KEY,
   COHERE_API_KEY: env.COHERE_API_KEY,
   GEMINI_API_KEY: env.GEMINI_API_KEY,
-};
+  REDIS_URL: env.REDIS_URL ?? 'redis://redis:6379',
+  REDIS_TLS_ENABLED: env.REDIS_TLS_ENABLED === 'true'
+} as const;

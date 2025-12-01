@@ -6,6 +6,8 @@ services:
     depends_on:
       strapi:
         condition: service_healthy
+      redis: 
+        condition: service_healthy
     environment:
       CHROMA_URL: http://host.docker.internal:8000
       PUBLIC_BROWSER_BACKEND_URL: ${PUBLIC_BROWSER_BACKEND_URL}
@@ -23,6 +25,7 @@ services:
       BACKEND_API_TOKEN: ${BACKEND_API_TOKEN}
       PUBLIC_DEBUG: ${PUBLIC_DEBUG}
       PUBLIC_CACHE_ENABLED: ${PUBLIC_CACHE_ENABLED}
+      REDIS_URL: redis://redis:6379
       CACHE_DIR: ${CACHE_DIR}
       CACHE_TTL: ${CACHE_TTL}
       CACHE_LRU_SIZE: ${CACHE_LRU_SIZE}
@@ -94,9 +97,25 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 
+  redis:
+    image: redis:7.4.1-alpine
+    volumes:
+      - redis-data:/data
+    ports:
+      - '6379:6379'
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   postgres:
   strapi-uploads:
   awslocal:
   cache:
     driver: local
+  redis-data:

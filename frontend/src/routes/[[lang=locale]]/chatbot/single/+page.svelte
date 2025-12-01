@@ -66,16 +66,13 @@
   let input = '';
   let loading = false;
 
-  // Conversation state
-  // TODO: be smarted about passing around the state.
-  let conversationState: ConversationState = {
-    sessionId: crypto.randomUUID(),
-    messages: [],
-    workingMemory: [],
-    forgottenMessages: [],
-    lossyHistorySummary: '',
-    locale: $page.params.lang || 'en'
-  };
+  // Session ID stored in localStorage for persistence across page refreshes
+  let sessionId: string | null = null;
+
+  // Load sessionId from localStorage on mount
+  if (typeof window !== 'undefined') {
+    sessionId = localStorage.getItem('chatbot_sessionId');
+  }
 
   // Request timing tracking
   let requestStartTime = 0;
@@ -154,12 +151,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: messages.map((msg) => ({
-            id: msg.id,
-            role: msg.role,
-            parts: msg.parts
-          })),
-          sessionId: conversationState.sessionId
+          message: userMessage.parts[0].text,
+          sessionId: sessionId
         })
       });
 
@@ -249,6 +242,16 @@
   }
 
   function handleStreamChunk(data: any) {
+    // Handle session ID event
+    if (data.type === 'session-id') {
+      console.log('[Chatbot] Received sessionId:', data.sessionId);
+      sessionId = data.sessionId;
+      if (typeof window !== 'undefined' && sessionId) {
+        localStorage.setItem('chatbot_sessionId', sessionId);
+      }
+      return;
+    }
+
     // Handle RAG contexts events (not tied to specific messages)
     if (data.type === 'rag-contexts') {
       console.log('[Chatbot] Received RAG contexts:', data);
