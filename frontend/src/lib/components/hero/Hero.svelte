@@ -25,8 +25,6 @@ Display a hero illustration.
   type $$Props = HeroProps;
 
   export let content: $$Props['content'];
-
-  isImage(content);
 </script>
 
 <div {...concatClass($$restProps, 'overflow-hidden max-w-full flex items-center justify-center')}>

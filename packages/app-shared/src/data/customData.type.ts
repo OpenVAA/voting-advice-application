@@ -114,8 +114,10 @@ export type HeroContent = Emoji | Image;
 
 /**
  * An emoji to be displayed as a hero figure.
+ * @example { emoji: '🎃' }
  */
 export type Emoji = {
+  /** A single emoji character or emoji sequence */
   emoji: string;
 };
 
