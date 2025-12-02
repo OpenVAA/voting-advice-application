@@ -14,9 +14,8 @@ jobs:
   claude-review:
     # Only run on mentions and only on PRs
     if: |
-      github.event.pull_request &&
       (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-review')) ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude-review')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-review')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude-review'))
       )
