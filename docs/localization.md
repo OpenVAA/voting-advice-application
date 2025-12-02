@@ -15,18 +15,18 @@ In short:
 
 ## Localization in the frontend
 
-All localized strings are fetched using the same `$t('foo.bar', {numBar: 5})` provided by the [`I18nContext`](../frontend/src/lib/contexts/i18n/i18nContext.type.ts) and, for convenience, all other contexts including it, such as the [`ComponentContext`](../frontend/src/lib/contexts/component/componentContext.type.ts). This is agnostic to both:
+All localized strings are fetched using the same `$t('foo.bar', {numBar: 5})` provided by the [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts) and, for convenience, all other contexts including it, such as the [`ComponentContext`](/frontend/src/lib/contexts/component/componentContext.type.ts). This is agnostic to both:
 
 1. Whether the translations are local (i.e. from `json` files) or fetched from the database. Local fallbacks are overwritten by those from the database.
 2. Whether SSR or CSR rendering is used.
 
-> Never import any stores directly from `$lib/i18n`. Use the imports provided by the contexts instead. You can safely use the utilities in [`$lib/i18n/utils`](../frontend/src/lib/i18n/utils), however.
+> Never import any stores directly from `$lib/i18n`. Use the imports provided by the contexts instead. You can safely use the utilities in [`$lib/i18n/utils`](/frontend/src/lib/i18n/utils), however.
 
 ### Value interpolation
 
 For value interpolation in already translated strings, such as those contained in database objects, the same [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation is provided with a `parse('Foo is {value}', {value: 'bar'})` function also provided by `$lib/i18n`.
 
-Some commonly used values are automatically provided for interpolation. See [`updateDefaultPayload`](../frontend/src/lib/i18n/init.ts).
+Some commonly used values are automatically provided for interpolation. See [`updateDefaultPayload`](/frontend/src/lib/i18n/init.ts).
 
 > If any interpolated values are missing, the string will not be translated and its key will be displayed.
 
@@ -50,7 +50,7 @@ export let label = undefined;
 
 Specific care must be taken with any localized content loaded dynamically so that language changes are propagated everywhere where the data is used.
 
-The data loaded by the Data API (settings, app customization and anything contained in the [`dataRoot`](../frontend/src/lib/contexts/data/dataContext.type.ts) store or its descendants) is always returned already translated. Therefore, if any such data is used in the frontend, it should be reactive.
+The data loaded by the Data API (settings, app customization and anything contained in the [`dataRoot`](/frontend/src/lib/contexts/data/dataContext.type.ts) store or its descendants) is always returned already translated. Therefore, if any such data is used in the frontend, it should be reactive.
 
 This is usually automatically the case, because the contexts hold such data in stores, but when reading store values make sure not to use outdated local copies.
 
@@ -72,29 +72,29 @@ Strapi's built-in i18n plugin is not used because it creates objects with differ
 }
 ```
 
-The methods offered by [`DataProvider`](../frontend/src/lib/api/base/dataProvider.type.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions pick the requested language (or the best match) from the `json` fields and return them as regular `string`s.
+The methods offered by [`DataProvider`](/frontend/src/lib/api/base/dataProvider.type.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions pick the requested language (or the best match) from the `json` fields and return them as regular `string`s.
 
 ## Local translations
 
 Local translations are stored in `$lib/i18n/translations` and organized by language and key. The logic by which they're separated into different files is not absolutely rigid, but the following principles should be followed:
 
-1. Create a new file for each Voter App page or [dynamic component](./frontend/components.md#dynamic-and-static-components), named `<pageOrComponentName>.json`.
+1. Create a new file for each Voter App page or [dynamic component](#dynamic-and-static-components), named `<pageOrComponentName>.json`.
 2. Create a new file for each Candidate App page, named `candidateApp.<pageName>.json`.
-3. For translations needed by [static components](./frontend/components.md#dynamic-and-static-components), create a new subkey in the `components.json` file.
+3. For translations needed by [static components](#dynamic-and-static-components), create a new subkey in the `components.json` file.
 
 Whenever adding translations, be sure to create them for all supported languages.
 
-### The [`TranslationKey`](../frontend/src/lib/types/generated/translationKey.ts) type
+### The [`TranslationKey`](/frontend/src/lib/types/generated/translationKey.ts) type
 
-The available translation keys are defined by the [`TranslationKey`](../frontend/src/lib/types/generated/translationKey.ts) type. These can be automatically generated by running `yarn workspace @openvaa/frontend generate:translation-key-type`.
+The available translation keys are defined by the [`TranslationKey`](/frontend/src/lib/types/generated/translationKey.ts) type. These can be automatically generated by running `yarn workspace @openvaa/frontend generate:translation-key-type`.
 
-If you need to use a dynamically constructed translation key that is not recognized by the linter, use the [assertTranslationKey](../frontend/src/lib/i18n/utils/assertTranslationKey.ts) utility.
+If you need to use a dynamically constructed translation key that is not recognized by the linter, use the [assertTranslationKey](/frontend/src/lib/i18n/utils/assertTranslationKey.ts) utility.
 
 When committing any changes the `pre-commit` hook will check that the type matches the translations.
 
 ## Locale routes
 
-All routes start with an optional `locale` route parameter. The parameter matches any supported locale defined in the [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts) and their soft matches (using [`$lib/i18n/utils/matchLocale`](../frontend/src/lib/i18n/utils/matchLocale.ts)). Thus, if `en`, `fi` and `es-CO` are supported and `en` is marked as `isDefault`, routes behave as follows:
+All routes start with an optional `locale` route parameter. The parameter matches any supported locale defined in the [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts) and their soft matches (using [`$lib/i18n/utils/matchLocale`](/frontend/src/lib/i18n/utils/matchLocale.ts)). Thus, if `en`, `fi` and `es-CO` are supported and `en` is marked as `isDefault`, routes behave as follows:
 
 - `/foo` redirects to the default English version unless the user has a supported locale listed in `Request.accept-language`, in which case the user is redirected to `/fi/foo` (if `fi` is preferred)
 - `/en/foo` shows the English version
@@ -106,7 +106,7 @@ Switching between locales happens by only changing the language parameter in the
 
 ### The `getRoute` helper
 
-To facilitate locale switching, a `getRoute` helper function is provided as a store by the [`I18nContext`](../frontend/src/lib/contexts/i18n/i18nContext.type.ts). It is passed a `Route` name, possible parameters and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`.
+To facilitate locale switching, a `getRoute` helper function is provided as a store by the [`I18nContext`](/frontend/src/lib/contexts/i18n/i18nContext.type.ts). It is passed a `Route` name, possible parameters and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`.
 
 ## Locale selection step-by-step
 
@@ -114,9 +114,9 @@ The locale selection process works as follows.
 
 [`$lib/i18n`](init.ts) is initialized:
 
-1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts)
+1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts)
 
-[`hooks.server.ts: handle`](../frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
+[`hooks.server.ts: handle`](/frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
 
 1. Supported `locales` are loaded from `$lib/i18n`
 2. The locales listed in `Request.accept-language` are iterated and the first one found (using a soft match) in `locales` is saved as `preferredLocale`
@@ -132,7 +132,7 @@ The locale selection process works as follows.
 
 1. Both `preferredLocale` and `currentLocale` (in which the content is served) are passed further in `locals`.
 
-[`+layout.ts`](../frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
+[`+layout.ts`](/frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
 
 1. Load `DataProvider.getAppCustomization(•).translationOverrides` as dynamic translations for use with `i18n`.
 2. Load local translations with `$lib/i18n: loadTranslations`
@@ -142,11 +142,11 @@ The locale selection process works as follows.
 
 ## Supported locales
 
-Supported locales are defined app-wide in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+Supported locales are defined app-wide in [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts).
 
 ### Adding new locales
 
-1. Add the locale to [`locales`](../frontend/src/lib/i18n/translations/index.ts)
+1. Add the locale to [`locales`](/frontend/src/lib/i18n/translations/index.ts)
 2. Create versions of all the translation files in the new locale and place them in `frontend/src/lib/i18n/translations/<LOCALE>`
 3. Copy the `dynamic.json` translation file to `../backend/vaa-strapi/src/util/translations/<LOCALE>/dynamic.json`
-4. Make the locale available in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+4. Make the locale available in [`StaticSettings`](/packages/app-shared/src/settings/staticSettings.ts).

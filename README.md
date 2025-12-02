@@ -76,96 +76,18 @@ In addition to developers and designers willing to contribute to the codebase (s
 
 We’re very happy to accept any help in coding, design, testing, translating and so on. If you want to help, drop a line at info@openvaa.org.
 
-See [the contribution guide](docs/contributing/CONTRIBUTING.md) for further info about contributing to the project.
+See [the contribution guide](/docs/README.md#contributing) for further info about contributing to the project.
 
 ---
 
-## Getting started
+## Getting Started
 
-You can run the whole application in Docker containers (frontend, backend, postgres database,and AWS local stack for developing), or run the frontend or backend separately depending on your preferences. Using the Docker image is recommended and the quickest way to set up the application.
-
-- See [the Docker setup guide](docs/docker-setup-guide.md) for running the whole application.
-- See [the frontend Readme](frontend/README.md) for instructions on running the frontend individually.
-- See [the backend Readme](/backend/vaa-strapi/README.md) for instructions on running the backend individually.
-
-The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module). See the READMEs in each for more information.
-
-- Abstract logic
-  - [`@openvaa/core`](./packages/core/)
-  - [`@openvaa/data`](./packages/data/)
-  - [`@openvaa/filters`](./packages/filters/)
-  - [`@openvaa/matching`](./packages/matching/)
-- Application
-  - [`@openvaa/app-shared`](./packages/app-shared/)
-  - [`@openvaa/strapi`](./backend/vaa-strapi/)
-  - [`@openvaa/strapi-admin-tools`](./backend/vaa-strapi/src/plugins/openvaa-admin-tools/)
-  - [`@openvaa/frontend`](./frontend/)
-- Development
-  - [`@openvaa/shared-config`](./packages/shared-config/)
-
-All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
-
-The workspaces can be addressed by yarn from any directory as follows:
-
-```bash
-yarn workspace [module-name] [script-name].
-```
-
-E.g., the `app-shared` module can be built by running:
-
-```bash
-yarn workspace @openvaa/app-shared build
-```
-
-In order to install dependencies for all modules and build all modules (although, you’d rarely want to this) run:
-
-```bash
-yarn install
-yarn workspaces foreach -A build
-```
-
-When adding interdependencies between the modules, use yarn’s `workspace:` syntax:
-
-```json
-  "dependencies": {
-    "@openvaa/core": "workspace:^"
-  }
-```
-
-Also add a reference to the package’s `tsconfig.json` file:
-
-```json
-  "references": [{ "path": "../core/tsconfig.json" }]
-```
-
-The root [`package.json`](./package.json) contains scipts for many repo-wide tasks.
-
-### Module resolution
-
-#### IDE
-
-In order to resolve cross `import`s between the monorepo modules Visual Code Studio uses TypeScript references, which are defined in the `tsconfig.json` files of the corresponding modules.
-
-In other words, you DO NOT have to build the **dependee** modules in order for the IDE to resolve their `import`s within a **dependent** module or to pick up changes you make in the **dependee’s** `.ts` sources.
-
-#### NPM/Node
-
-When you use Yarn and during runtime NPM/Node module resolution mechanism is used instead. It relies on various pointers defined in `package.json` files of the corresponding modules (e.g. `main`, `module` or `exports`). These pointers usually refer to `build`/`dist` directory containing already transpiled TS sources of a given module (`.js` files). This directory subsequently gets symlinked by `yarn install` in a `node_modules` directory of a **dependent** module.
-
-In other words, you DO have to build the **dependee** modules prior to running a **dependent** module or using Yarn on it, so that NPM/Node can find the transpiled `.js` sources and pick up changes you make in the original `.ts` code (see also on hot module reloading support or a lack of such [here](./docs/docker-setup-guide.md#hot-reloading)).
+See [Developer Guide](/docs/README.md)
 
 ## Deploying
 
-See [deployment guide](/docs/deploying/).
-
-## Maintaining dependencies
-
-The project uses [Dependabot](https://github.com/dependabot) to maintain security updates for its dependencies. Dependabot will create automated pull requests monthly to fix potential known security issues in application dependencies.
+See [Deployment guide](/docs/README.md#deployment).
 
 ## Troubleshooting
 
-See [Troubleshooting](docs/troubleshooting.md) for solutions to some common issues.
-
-Read more about [Testing](docs/testing.md).
-
-Find further documentation in the [docs](docs/) folder.
+See [Troubleshooting](/docs/README.md#troubleshooting) for solutions to some common issues.

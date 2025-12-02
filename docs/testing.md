@@ -8,9 +8,9 @@ The unit tests can be run centrally from the repo root. You need to only build t
 
 ```bash
 yarn build:shared
-# Run once
+## Run once
 yarn test:unit
-# or keep running
+## or keep running
 yarn test:unit:watch
 ```
 
@@ -31,7 +31,7 @@ yarn playwright install
 yarn test:e2e
 ```
 
-If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](./backend/vaa-strapi/README.md#mock-data)).
+If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](backend.md#mock-data-generation)).
 
 To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
 
