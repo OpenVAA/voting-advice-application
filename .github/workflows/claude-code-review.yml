@@ -4,16 +4,22 @@ on:
   # Don't run automatically on all pull requests yet
   # pull_request:
   #   types: [opened, synchronize]
+  issue_comment:
+    types: [created]
   pull_request_review_comment:
     types: [created]
   pull_request_review:
     types: [submitted]
 jobs:
   claude-review:
-    # Only run on mentions
+    # Only run on mentions and only on PRs
     if: |
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-review')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude-review'))
+      github.event.pull_request &&
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-review')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-review')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude-review'))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
