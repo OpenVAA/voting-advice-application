@@ -1,4 +1,4 @@
-# Development troubleshooting
+# Troubleshooting
 
 ## Commit error: ’Husky not found’
 
@@ -68,15 +68,15 @@ If that's not the issue, open Docker and check the `frontend` and `strapi` conta
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
-Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`](../backend/vaa-strapi/src/api). For more information, see [Security](./security.md).
+Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`](/backend/vaa-strapi/src/api). For more information, see [Security](backend.md#security).
 
 ## Playwright: `TimeoutError` when locating elements and running the tests locally
 
-Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../packages/app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
+Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](/packages/app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
 
 ## Strapi: Content model is reset after restart
 
-Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
+Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](#hot-reloading-the-backend).
 
 ## Strapi error: ’Relation already exists’ error on restart after editing the content model
 

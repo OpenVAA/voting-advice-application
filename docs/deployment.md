@@ -1,8 +1,6 @@
-# Deploying the Voting Advice Application
+# Deployment
 
 The application is fully containerized and the recommended way of deploying it is as Docker containers.
-
-The instructions below detail how the application is deployed using [Render](https://render.com/) and [AWS](https://aws.amazon.com/) for email and media CDN, but the process is essentially the same with other cloud infrastructure providers.
 
 ## Costs
 
@@ -18,6 +16,8 @@ Recent (2024–2025) realized costs on Render have been:
 
 ## Setup with Render and AWS
 
+The instructions below detail how the application is deployed using [Render](https://render.com/) and [AWS](https://aws.amazon.com/) for email and media CDN, but the process is essentially the same with other cloud infrastructure providers.
+
 ### 1. Fork
 
 Fork the repo and make any changes you need to the source code. You’ll most likely need to edit at least:
@@ -32,30 +32,30 @@ The backend uses AWS by default for media storage (S3) and email (SES). If you d
 You will need to set the following `env` variables for AWS to work. You can collect the variables in an `.env` file for easier import into Render services, which are set up below.
 
 ```dotenv
-## These settings correspond to LocalStack system defaults
-## https://docs.localstack.cloud/references/configuration/
+### These settings correspond to LocalStack system defaults
+### https://docs.localstack.cloud/references/configuration/
 AWS_SES_ACCESS_KEY_ID="test"
 AWS_SES_SECRET_ACCESS_KEY="test"
 AWS_SES_REGION=us-east-1
 
-# Used for emails sent by Strapi. (`MAIL_FROM_NAME` only affects emails sent by the `users-permissions` plugin.)
+## Used for emails sent by Strapi. (`MAIL_FROM_NAME` only affects emails sent by the `users-permissions` plugin.)
 MAIL_FROM="no-reply@example.com"
 MAIL_FROM_NAME="Voting Advice Application"
 MAIL_REPLY_TO="contact@example.com"
 
-## AWS S3 settings
+### AWS S3 settings
 
 AWS_S3_BUCKET=static.example.com
 
-## These settings correspond to LocalStack system defaults
-## https://docs.localstack.cloud/references/configuration/
+### These settings correspond to LocalStack system defaults
+### https://docs.localstack.cloud/references/configuration/
 AWS_S3_ACCESS_KEY_ID="test"
 AWS_S3_ACCESS_SECRET="test"
 AWS_S3_REGION=us-east-1
 
-## The base URL is used to access static content uploaded via Strapi's UI to AWS S3:
-## - on production it uses a dedicated subdomain which is linked to an eponymous AWS S3 bucket via a CNAME DNS record
-## - in development it points directly to LocalStack host and is appended by the S3 bucket name in Strapi's `plugin.ts`
+### The base URL is used to access static content uploaded via Strapi's UI to AWS S3:
+### - on production it uses a dedicated subdomain which is linked to an eponymous AWS S3 bucket via a CNAME DNS record
+### - in development it points directly to LocalStack host and is appended by the S3 bucket name in Strapi's `plugin.ts`
 STATIC_CONTENT_BASE_URL=http://localhost:4566
 STATIC_MEDIA_CONTENT_PATH=public/media
 ```
@@ -64,7 +64,11 @@ STATIC_MEDIA_CONTENT_PATH=public/media
 
 Login to Render or create an account.
 
-Create a new project for your app. Next, you’ll need to create three services in it.
+You can either use the [Render Blueprints](https://render.com/docs/infrastructure-as-code) feature by modifying the [render.example.yaml](/render.example.yaml) or create the services manually.
+
+If you choose the blueprints option, you can skip to [Step 9](#9-use-your-own-domain-name-for-the-frontend).
+
+Otherwise, create a new project for your app. Next, you’ll need to create three services in it.
 
 ### 4. Create Postgres database
 
@@ -107,12 +111,12 @@ STRAPI_HOST=0.0.0.0
 STRAPI_PORT=1337
 APP_KEYS="<toBeModified1>,<toBeModified2>"
 API_TOKEN_SALT=<tobemodified3>
-# ADMIN_JWT_SECRET and JWT_SECRET have to be different
+## ADMIN_JWT_SECRET and JWT_SECRET have to be different
 ADMIN_JWT_SECRET=<tobemodified4>
 JWT_SECRET=<tobemodified5>
 DATABASE_SCHEMA=public
 DATABASE_SSL_SELF=false
-# Set to true if you want create mock data on an empty database
+## Set to true if you want create mock data on an empty database
 GENERATE_MOCK_DATA_ON_INITIALISE=false
 GENERATE_MOCK_DATA_ON_RESTART=false
 ```
@@ -164,19 +168,19 @@ PUBLIC_SERVER_BACKEND_URL
 3. If you're using bank authentication, also add the following variables:
 
 ```dotenv
-# Source: https://openvaa.sandbox.signicat.com/auth/open/.well-known/openid-configuration
-# The URL where users are redirected to authenticate with the OpenID Connect provider before obtaining an authorization code.
+## Source: https://openvaa.sandbox.signicat.com/auth/open/.well-known/openid-configuration
+## The URL where users are redirected to authenticate with the OpenID Connect provider before obtaining an authorization code.
 PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT=https://openvaa.sandbox.signicat.com/auth/open/connect/authorize
-# The URL used to exchange an authorization code for access, ID, and refresh tokens.
+## The URL used to exchange an authorization code for access, ID, and refresh tokens.
 IDENTITY_PROVIDER_TOKEN_ENDPOINT=https://openvaa.sandbox.signicat.com/auth/open/connect/token
-# The endpoint that provides a JSON Web Key Set (JWKS) used to verify the authenticity of signed tokens from the identity provider.
+## The endpoint that provides a JSON Web Key Set (JWKS) used to verify the authenticity of signed tokens from the identity provider.
 IDENTITY_PROVIDER_JWKS_URI=https://openvaa.sandbox.signicat.com/auth/open/.well-known/openid-configuration/jwks
-# Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}
+## Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}
 PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=client_id
-# Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}/secrets
+## Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}/secrets
 IDENTITY_PROVIDER_CLIENT_SECRET=client_secret
-# Source: https://dashboard.signicat.com/oidc-clients/new-public-key/{client_id}.
-# Select "Encryption", keep the private part of the key pair.
+## Source: https://dashboard.signicat.com/oidc-clients/new-public-key/{client_id}.
+## Select "Encryption", keep the private part of the key pair.
 IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY='{"kty":"RSA","kid":"{key_id}","use":"enc","alg":"RSA-OAEP","e":"{secret}","n":"{secret}","d":"{secret}","p":"{secret}","q":"{secret}","dp":"{secret}","dq":"{secret}","qi":"{secret}"}'
 ```
 
@@ -226,3 +230,26 @@ BACKEND_API_TOKEN
      - Name: the `subdomain` you chose above
      - Target: the Render frontend URL
 3. Go back to Render and verify the domain.
+
+## Manually Creating a Production Build
+
+You can also create production builds of the frontend and backend, but directly using the Docker containers is the recommended approach.
+
+### Build from Dockerimage
+
+Run `yarn prod` in the project root. This will create a production-ready build of the app in Docker and create containers
+for both backend and frontend which are ready to use by themselves. Frontend is accessible from port 80 by default.
+
+### Building the frontend separately
+
+To build the frontend separately for production, run `yarn build` in the `frontend` directory. This will build the frontend into JavaScript
+files contained in the `build` directory. You can then copy the contents of the `build` folder into a Node server along with
+the `package.json` and `yarn.lock` files and can start the frontend by running `node index.js` in the directory. The frontend
+will use port 3000 by default.
+
+Don't forget to run `yarn install --production` before starting the frontend.
+
+### Building the backend separately
+
+To build the backend separately, run `yarn build` and `yarn start` in the `backend/vaa-strapi` directory.
+This will build Strapi and start it in port 1337.
