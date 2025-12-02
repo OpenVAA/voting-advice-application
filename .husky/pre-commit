@@ -1,7 +1,7 @@
-# yarn build:app-shared
+yarn build:app-shared
 
-# cd frontend
-# yarn generate:translation-key-type && git diff --quiet src/lib/types/generated/translationKey.ts || (echo "Run 'yarn generate:translation-key-type' and 'git add' generated file" && exit 1)
+cd frontend
+yarn generate:translation-key-type && git diff --quiet src/lib/types/generated/translationKey.ts || (echo "Run 'yarn generate:translation-key-type' and 'git add' generated file" && exit 1)
 
-# cd ..
-# yarn lint-staged
+cd ..
+yarn lint-staged
