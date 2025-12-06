@@ -1,5 +1,6 @@
 export * from './entity/entity.type';
 export * from './entity/getEntity';
+export * from './id/haveSameId';
 export * from './id/id.type';
 export * from './id/isValidId';
 export * from './logger/logger';
