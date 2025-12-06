@@ -5,6 +5,7 @@ When performing code review, double check all of the items below:
 - [ ] Confirm that the changes solve the issues the PR is trying to solve partially or fully.
 - [ ] Review the code in terms of the [OWASP top 10 security issues](https://owasp.org/Top10/).
 - [ ] Verify that the code follows the [Code style guide](contributing.md#code-style-guide).
+- [ ] Avoid using `any` at all costs. If there is no way to circumvent using it, document the reason carefully and consider using `@ts-expect-error` instead.
 - [ ] There is no code that is repeated within the PR or elsewhere in the repo.
 - [ ] All new components, functions and other entities are documented
 - [ ] The repo documentation markdown files are updated if the changes touch upon those.

@@ -124,23 +124,26 @@ Once all the changes have been approved, the reviewers may still ask you to clea
 
 You should always review your own PR first before asking someone to review it. Below you can find a checklist of things you should check before submitting your PR.
 
-- [ ] Confirm that the changes solve the issue you are trying to solve partially or fully.
+- [ ] Confirm that the changes solve the issues the PR is trying to solve partially or fully.
 - [ ] Review the code in terms of the [OWASP top 10 security issues](https://owasp.org/Top10/).
-- [ ] Verify that your code follows the [Code style guide](#code-style-guide). Prettier will take care most of the formatting, but the guide specifies some things regarding documentation.
-- [ ] There is no code that is repeated within your PR or elsewhere in the repo.
-- [ ] You have documented all new components, functions and other entities.
-- [ ] You have updated the repo documentation md files if your changes touch those.
-- [ ] You have enabled possibly new tracking events if your change adds functions available to the user.
-- [ ] Any new Svelte components you have created, follow the [Svelte component guidelines](#svelte-components).
-- [ ] Errors are handled properly and logged in your code.
-- [ ] If there are any failing checks in your PR, troubleshoot them until they're all passing.
+- [ ] Verify that the code follows the [Code style guide](contributing.md#code-style-guide).
+- [ ] Avoid using `any` at all costs. If there is no way to circumvent using it, document the reason carefully and consider using `@ts-expect-error` instead.
+- [ ] There is no code that is repeated within the PR or elsewhere in the repo.
+- [ ] All new components, functions and other entities are documented
+- [ ] The repo documentation markdown files are updated if the changes touch upon those.
+- [ ] If the change adds functions available to the user, tracking events are enabled with new ones defined if needed.
+- [ ] Any new Svelte components that have been created, follow the [Svelte component guidelines](contributing.md#svelte-components).
+- [ ] Errors are handled properly and logged in the code.
 - [ ] Run the unit tests successfully.
 - [ ] Run the e2e tests successfully.
-- [ ] Test the change thoroughly on my own device, including parts that may have been affected via shared code.
+- [ ] Troubleshoot any failing checks in the PR.
+- [ ] Test the change thoroughly on your own device, including parts that may have been affected via shared code.
+- [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
 - [ ] Test the changes using the [WAVE extension](https://wave.webaim.org/extension/) for accessibility.
+- [ ] The changes pass the [WGAC A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] Test the changes using keyboard navigation and screen-reading.
-- [ ] Make sure you have added documentation where necessary.
-- [ ] Cleaned up the commit history and check that the commits follow [the guidelines](#commit-your-update)
+- [ ] Documentation is added wherever necessary.
+- [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](contributing.md#commit-your-update)
 
 ## Code style guide
 
@@ -222,6 +225,12 @@ Common errors, which will be flagged, include:
 
 - `Array<Foo>` must be used instead of `Foo[]`
 - Type parameters cannot be single letters: `type Foo<TBar> = ...` instead of `type Foo<T>`.
+
+#### `any` and `unknown`
+
+Avoid using `any` at all costs. If there is no way to circumvent using it, document the reason carefully and consider using `@ts-expect-error` instead.
+
+Also avoid `unknown` unless it is genuinely appropriate for the context like, e.g., in callback functions whose return values have no effect on the caller.
 
 #### Function parameters
 
