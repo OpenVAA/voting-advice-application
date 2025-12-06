@@ -1,10 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(fi:*)",
-      "Bash(done)",
-      "Bash(yarn test:unit:*)"
-    ],
+    "allow": ["Bash(fi:*)", "Bash(done)", "Bash(yarn test:unit:*)"],
     "deny": [],
     "ask": []
   }
