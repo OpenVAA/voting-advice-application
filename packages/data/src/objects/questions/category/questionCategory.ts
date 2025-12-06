@@ -34,8 +34,10 @@ export class QuestionCategory
   /**
    * Get the questions in this category that match the given filter targets.
    * @param targets - The targets to check for
+   * @param options.dontInherit - If set to true, only check the question's own filters, not the category's. Otherwise this will retur an empty collection if the category itself is not applicable.
    */
-  getApplicableQuestions(targets: FilterTargets): Collection<AnyQuestionVariant> {
-    return this.questions.filter((q) => q.appliesTo(targets));
+  getApplicableQuestions(targets: FilterTargets, options?: { dontInherit?: boolean }): Collection<AnyQuestionVariant> {
+    if (!options?.dontInherit && !this.appliesTo(targets)) return [];
+    return this.questions.filter((q) => q.appliesTo(targets, { dontInherit: true }));
   }
 }
