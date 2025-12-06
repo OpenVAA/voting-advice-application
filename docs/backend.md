@@ -76,17 +76,17 @@ Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DAT
 
 By default, mock data includes the following Users (for up-to-date details, see [mockUsers](/backend/vaa-strapi/src/functions/mockData/mockUsers.json)):
 
-| User type   | User role     | Email                    | Password     | Remarks                       |
-| ----------- | ------------- | ------------------------ | ------------ | ----------------------------- |
-| Candidate 1 | Authenticated | `first.last@example.com` | `Password1!` | Use to test the Candidate App |
-| Candidate 2 | Authenticated | `test.test@example.com`  | `Password1!` | Use to test the Candidate App |
-| Admin       | Admin         | `mock.admin@example.com` | `Password1!` | Use to test the Admin App     |
+| User type   | User role     | Email                          | Password     | Remarks                       |
+| ----------- | ------------- | ------------------------------ | ------------ | ----------------------------- |
+| Candidate 1 | Authenticated | `mock.candidate@openvaa.org`   | `Password1!` | Use to test the Candidate App |
+| Candidate 2 | Authenticated | `mock.candidate.2@openvaa.org` | `Password1!` | Use to test the Candidate App |
+| Admin       | Admin         | `mock.admin@openvaa.org`       | `Password1!` | Use to test the Admin App     |
 
 Note that the mock admin is different from the default Strapi Admin, generated along with mock data.
 
-| User type    | Username | Email               | Password | Remarks                |
-| ------------ | -------- | ------------------- | -------- | ---------------------- |
-| Strapi Admin | `admin`  | `admin@example.com` | `admin`  | Use to login to Strapi |
+| User type    | Username | Email                     | Password | Remarks                |
+| ------------ | -------- | ------------------------- | -------- | ---------------------- |
+| Strapi Admin | `admin`  | `mock.admin@openvaa.org` | `admin`  | Use to login to Strapi |
 
 ## Authentication
 
