@@ -78,7 +78,7 @@ export type LocalizedAnswer<TValue extends AnswerValue | unknown = unknown> = Om
 /**
  * A localized `HeroContent` object.
  */
-export type LocalizedHeroContent = Emoji | LocalizedObject<Image>;
+export type LocalizedHeroContent = LocalizedObject<Emoji> | LocalizedObject<Image>;
 
 /**
  * A localized `QuestionArguments` object.
