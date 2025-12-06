@@ -508,10 +508,7 @@ export class DataRoot extends Updatable {
     if (type && !hasFilters) return this.getQuestionsByType(type);
     // Apply filters first to categories and then questions
     return this.questionCategories
-      ?.filter((qc) => {
-        if (type && qc.type !== type) return false;
-        return qc.appliesTo(filters);
-      })
+      .filter((qc) => !type || qc.type === type)
       .flatMap((qc) => qc.getApplicableQuestions(filters));
   }
 
