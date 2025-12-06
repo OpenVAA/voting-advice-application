@@ -32,7 +32,7 @@ The frontpage of the app for voters.
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     imageSrc: $darkMode
-      ? ($appCustomization.poster?.urlDark ?? '/images/hero.png')
+      ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
       : ($appCustomization.poster?.url ?? '/images/hero.png')
   });
 </script>
