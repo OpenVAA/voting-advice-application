@@ -76,5 +76,5 @@ console.info('Select an entity to view');
 const entityType = ENTITY_TYPE.Candidate;
 const entity = root.getEntity(entityType, 'candidate-3');
 console.info(`Details for ${entity.type} '${entity.name}'`);
-for (const question of root.questions!.filter((q) => q.appliesTo({ ...filters, entityTypes: entityType })))
+for (const question of root.questions!.filter((q) => q.appliesTo({ ...filters, entityType })))
   console.info(`- ${question.name}: ${entity.getAnswer(question)?.value ?? '--'}`);
