@@ -239,7 +239,7 @@ async function createStrapiAdmin() {
       password: process.env.DEV_PASSWORD ?? 'admin',
       firstname: process.env.DEV_USERNAME ?? 'Admin',
       lastname: process.env.DEV_USERNAME ?? 'Admin',
-      email: process.env.DEV_EMAIL ?? 'admin@example.com',
+      email: process.env.DEV_EMAIL ?? 'mock.admin@openvaa.org',
       blocked: false,
       isActive: true,
       registrationToken: null,
@@ -429,7 +429,7 @@ async function createCandidates(length: number) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const party = faker.helpers.arrayElement(parties);
-    const email = `${firstName}.${lastName}@example.com`;
+    const email = `mock.${firstName}.${lastName}@openvaa.org`.toLowerCase();
     await strapi.documents('api::candidate.candidate').create({
       data: {
         firstName,
