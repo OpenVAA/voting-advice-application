@@ -78,7 +78,7 @@ test.describe.configure({ mode: 'serial' });
 
 test('should log into Strapi and send email', async ({ page, baseURL }) => {
   await page.goto(`${strapiURL}/admin`);
-  await page.getByLabel('Email*').fill('admin@example.com');
+  await page.getByLabel('Email*').fill('mock.admin@openvaa.org');
   await page.getByLabel('Password*').fill('admin');
   await page.getByRole('button', { name: 'Login' }).click();
 

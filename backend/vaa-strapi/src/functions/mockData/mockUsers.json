@@ -1,12 +1,12 @@
 [
   {
-    "username": "first.last",
-    "email": "first.last@example.com",
+    "username": "mock.candidate",
+    "email": "mock.candidate@openvaa.org",
     "password": "Password1!"
   },
   {
-    "username": "test.test",
-    "email": "test.test@example.com",
+    "username": "mock.candidate.2",
+    "email": "mock.candidate.2@openvaa.org",
     "password": "Password1!"
   }
 ]
