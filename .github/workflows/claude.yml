@@ -1,5 +1,14 @@
 name: Claude Code
 
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  actions: read
+
+env:
+  ALLOWED_TEAM: contributors
+
 on:
   issue_comment:
     types: [created]
@@ -11,36 +20,147 @@ on:
     types: [submitted]
 
 jobs:
-  claude:
-    if: |
-      (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude-review')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude-review')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude-review')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && !contains(github.event.issue.body, '@claude-review') && !contains(github.event.issue.title, '@claude-review'))
-      )
+  # Route to appropriate workflow based on trigger keywords
+  route:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-      issues: read
-      id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+    outputs:
+      action: ${{ steps.determine-action.outputs.action }}
+      pr_number: ${{ steps.determine-action.outputs.pr_number }}
+      issue_number: ${{ steps.determine-action.outputs.issue_number }}
+    steps:
+      - name: Check team membership
+        id: check-team
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          REVIEW_AUTHOR: ${{ github.event.review.user.login }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          ALLOWED_TEAM: ${{ env.ALLOWED_TEAM }}
+        run: |
+          # Determine the author based on event type
+          AUTHOR=""
+          if [[ "$EVENT_NAME" == "issue_comment" || "$EVENT_NAME" == "pull_request_review_comment" ]]; then
+            AUTHOR="$COMMENT_AUTHOR"
+          elif [[ "$EVENT_NAME" == "pull_request_review" ]]; then
+            AUTHOR="$REVIEW_AUTHOR"
+          elif [[ "$EVENT_NAME" == "issues" ]]; then
+            AUTHOR="$ISSUE_AUTHOR"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
+            AUTHOR="$PR_AUTHOR"
+          fi
+
+          ORG=$(echo "$REPO" | cut -d'/' -f1)
+
+          echo "Checking if $AUTHOR is a member of $ORG/$ALLOWED_TEAM team..."
+
+          # Check if user is a member of the Contributors team
+          if gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/orgs/$ORG/teams/$ALLOWED_TEAM/memberships/$AUTHOR" \
+            --silent 2>/dev/null; then
+            echo "is_member=true" >> $GITHUB_OUTPUT
+            echo "✓ $AUTHOR is a member of the $ALLOWED_TEAM team"
+          else
+            echo "is_member=false" >> $GITHUB_OUTPUT
+            echo "✗ $AUTHOR is not a member of the $ALLOWED_TEAM team"
+          fi
+
+      - name: Determine action
+        id: determine-action
+        if: steps.check-team.outputs.is_member == 'true'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          REVIEW_BODY: ${{ github.event.review.body }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          IS_PULL_REQUEST: ${{ github.event.issue.pull_request != '' }}
+        run: |
+          ACTION="generic"
+          PR_NUM=""
+          ISSUE_NUM=""
+
+          # Get the text to check
+          TEXT=""
+          if [[ "$EVENT_NAME" == "issue_comment" ]]; then
+            TEXT="$COMMENT_BODY"
+            if [[ "$IS_PULL_REQUEST" == "true" ]]; then
+              PR_NUM="$ISSUE_NUMBER"
+            else
+              ISSUE_NUM="$ISSUE_NUMBER"
+            fi
+          elif [[ "$EVENT_NAME" == "pull_request_review_comment" ]]; then
+            TEXT="$COMMENT_BODY"
+            PR_NUM="$PR_NUMBER"
+          elif [[ "$EVENT_NAME" == "pull_request_review" ]]; then
+            TEXT="$REVIEW_BODY"
+            PR_NUM="$PR_NUMBER"
+          elif [[ "$EVENT_NAME" == "issues" ]]; then
+            TEXT="$ISSUE_BODY $ISSUE_TITLE"
+            ISSUE_NUM="$ISSUE_NUMBER"
+          fi
+
+          # Skip if no @claude mention and not a label trigger
+          if [[ ! "$TEXT" =~ @claude ]] && [[ "$ACTION" == "generic" ]]; then
+            echo "No @claude mention found, skipping"
+            echo "action=skip" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check for review trigger: @claude + spacing/punctuation + review (case insensitive)
+          if echo "$TEXT" | grep -qiE '@claude[[:space:][:punct:]]+review'; then
+            ACTION="review"
+          # Check for solve trigger: @claude + spacing/punctuation + solve (case insensitive)
+          elif echo "$TEXT" | grep -qiE '@claude[[:space:][:punct:]]+solve'; then
+            ACTION="solve"
+          fi
+
+          echo "action=$ACTION" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUM" >> $GITHUB_OUTPUT
+          echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
+          echo "Determined action: $ACTION (PR: $PR_NUM, Issue: $ISSUE_NUM)"
+
+  # Call review workflow
+  review:
+    needs: route
+    if: needs.route.outputs.action == 'review' && needs.route.outputs.pr_number != ''
+    uses: ./.github/workflows/claude-code-review.yml
+    with:
+      pr_number: ${{ fromJSON(needs.route.outputs.pr_number) }}
+    secrets: inherit
+
+  # Call solve workflow
+  solve:
+    needs: route
+    if: needs.route.outputs.action == 'solve' && needs.route.outputs.issue_number != ''
+    uses: ./.github/workflows/claude-solve-issue.yml
+    with:
+      issue_number: ${{ fromJSON(needs.route.outputs.issue_number) }}
+    secrets: inherit
+
+  # Generic Claude workflow (fallback)
+  claude:
+    needs: route
+    if: needs.route.outputs.action == 'generic'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
 
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
           # prompt: 'Update the pull request description to include a summary of changes.'
