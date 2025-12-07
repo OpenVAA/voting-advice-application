@@ -6,9 +6,6 @@ permissions:
   issues: read
   actions: read
 
-env:
-  ALLOWED_TEAM: contributors
-
 on:
   issue_comment:
     types: [created]
@@ -27,9 +24,12 @@ jobs:
       action: ${{ steps.determine-action.outputs.action }}
       pr_number: ${{ steps.determine-action.outputs.pr_number }}
       issue_number: ${{ steps.determine-action.outputs.issue_number }}
+      author: ${{ steps.check-permissions.outputs.author }}
+      has_access: ${{ steps.check-permissions.outputs.has_access }}
+      permission: ${{ steps.check-permissions.outputs.permission }}
     steps:
-      - name: Check team membership
-        id: check-team
+      - name: Check repository permissions
+        id: check-permissions
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
@@ -38,7 +38,6 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           EVENT_NAME: ${{ github.event_name }}
           REPO: ${{ github.repository }}
-          ALLOWED_TEAM: ${{ env.ALLOWED_TEAM }}
         run: |
           # Determine the author based on event type
           AUTHOR=""
@@ -52,26 +51,32 @@ jobs:
             AUTHOR="$PR_AUTHOR"
           fi
 
-          ORG=$(echo "$REPO" | cut -d'/' -f1)
+          echo "Author: $AUTHOR"
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
 
-          echo "Checking if $AUTHOR is a member of $ORG/$ALLOWED_TEAM team..."
-
-          # Check if user is a member of the Contributors team
-          if gh api \
+          echo "Checking permissions for $AUTHOR in $REPO..."
+          # Check user's permission level in the repository
+          PERMISSION=$(gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/orgs/$ORG/teams/$ALLOWED_TEAM/memberships/$AUTHOR" \
-            --silent 2>/dev/null; then
-            echo "is_member=true" >> $GITHUB_OUTPUT
-            echo "✓ $AUTHOR is a member of the $ALLOWED_TEAM team"
+            "/repos/$REPO/collaborators/$AUTHOR/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+
+          echo "Permission level: $PERMISSION"
+          echo "permission=$PERMISSION" >> $GITHUB_OUTPUT
+
+          # Check if user has write, maintain, or admin access
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
+            echo "has_access=true" >> $GITHUB_OUTPUT
+            echo "✓ $AUTHOR has sufficient access ($PERMISSION)"
           else
-            echo "is_member=false" >> $GITHUB_OUTPUT
-            echo "✗ $AUTHOR is not a member of the $ALLOWED_TEAM team"
+            echo "has_access=false" >> $GITHUB_OUTPUT
+            echo "✗ $AUTHOR does not have sufficient access ($PERMISSION)"
           fi
 
       - name: Determine action
         id: determine-action
-        if: steps.check-team.outputs.is_member == 'true'
+        if: steps.check-permissions.outputs.has_access == 'true'
         env:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_ACTION: ${{ github.event.action }}
