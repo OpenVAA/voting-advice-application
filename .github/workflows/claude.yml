@@ -129,6 +129,12 @@ jobs:
 
   # Call review workflow
   review:
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+      actions: read
     needs: route
     if: needs.route.outputs.action == 'review' && needs.route.outputs.pr_number != ''
     uses: ./.github/workflows/claude-code-review.yml
@@ -138,6 +144,12 @@ jobs:
 
   # Call solve workflow
   solve:
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
     needs: route
     if: needs.route.outputs.action == 'solve' && needs.route.outputs.issue_number != ''
     uses: ./.github/workflows/claude-solve-issue.yml
