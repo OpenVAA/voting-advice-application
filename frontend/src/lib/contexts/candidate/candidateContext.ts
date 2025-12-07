@@ -213,7 +213,7 @@ export function initCandidateContext(): CandidateContext {
     );
   }
 
-  const isPreregistered = localStorageWritable('candidateContext-selisPreregisteredectedCategoryIds', false);
+  const isPreregistered = localStorageWritable('candidateContext-isPreregistered', false);
 
   async function preregister(opts: {
     email: string;
