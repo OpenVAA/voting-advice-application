@@ -1,0 +1,60 @@
+name: Claude Solve Issue
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to solve"
+        required: true
+        type: number
+  workflow_call:
+    inputs:
+      issue_number:
+        description: "Issue number to solve"
+        required: true
+        type: number
+
+jobs:
+  solve-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude to Solve Issue
+        id: claude-solve
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          plugins: "code-review@claude-code-plugins"
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ inputs.issue_number }}
+
+            Please solve the issue #${{ inputs.issue_number }}.
+
+            Steps:
+            1. Read the issue details using `gh issue view ${{ inputs.issue_number }}`
+            2. Understand the requirements and context
+            3. If you cannot proceed without more information, ask for it by commenting on this issue with `gh issue comment ${{ inputs.issue_number }}`
+            4. Implement the solution following the guidelines in CLAUDE.md
+            5. Run relevant tests to ensure your changes work
+            6. Create a pull request with your solution using `gh pr create`
+
+            Important:
+            - Follow the code review checklist in docs/code-review-checklist.md
+            - Write clear commit messages
+            - Include tests if applicable
+            - Reference the issue in your PR description with "Fixes #${{ inputs.issue_number }}"
+
+          claude_args: '--allowed-tools "Bash(gh issue:*)" --allowed-tools "Bash(gh pr:*)" --allowed-tools "Bash(git add:*)" --allowed-tools "Bash(git commit:*)" --allowed-tools "Bash(git push:*)" --allowed-tools "Bash(git status:*)" --allowed-tools "Bash(git diff:*)" --allowed-tools "Bash(yarn test:*)" --allowed-tools "Bash(yarn lint:*)" --allowed-tools "Bash(yarn build:*)"'
