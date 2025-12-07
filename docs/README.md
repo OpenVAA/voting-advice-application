@@ -65,6 +65,7 @@ Instructions for developers and contributors.
 ### [Contributing](contributing.md)
 
 - [Recommended IDE settings (Code)](contributing.md#recommended-ide-settings-code)
+- [AI agents](contributing.md#ai-agents)
 - [Issues](contributing.md#issues)
   - [Create a new issue](contributing.md#create-a-new-issue)
   - [Search for an issue](contributing.md#search-for-an-issue)
