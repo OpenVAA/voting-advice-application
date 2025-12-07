@@ -11,6 +11,8 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 ## Settings
 
 - `questions.showCategoryTags`: Whether to show category tags for questions.
+- `candidateApp.questions.showVideo`: Whether to show video content for questions.
+- `candidateApp.questions.showHero`: Whether to show hero content for questions.
 -->
 
 <script lang="ts">
@@ -22,6 +24,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Hero } from '$lib/components/hero';
   import { Input } from '$lib/components/input';
   import { Loading } from '$lib/components/loading';
   import { PreventNavigation } from '$lib/components/preventNavigation';
@@ -39,9 +42,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
+  const { answersLocked, appSettings, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
     getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // State variables
@@ -74,6 +77,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       customData = getCustomData(question);
       nextQuestionId = getNextQuestionId(question);
       status = 'idle';
+      // Load video content if enabled and available
+      if ($appSettings.candidateApp.questions.showVideo && customData?.video) {
+        video.load(customData.video);
+      }
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
@@ -236,9 +243,15 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
         {/if}
       </svelte:fragment>
 
+      <figure role="presentation" slot="hero">
+        {#if $appSettings.candidateApp.questions.showHero && customData?.hero}
+          <Hero content={customData.hero} />
+        {/if}
+      </figure>
+
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
-      {#if info && info !== ''}
+      {#if !($appSettings.candidateApp.questions.showVideo && customData.video) && info && info !== ''}
         <QuestionBasicInfo {info} />
       {/if}
 

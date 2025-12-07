@@ -250,6 +250,24 @@ export type DynamicSettings = {
      */
     voterApp?: NotificationData | null;
   };
+  /**
+   * Settings related to the Candidate App.
+   */
+  candidateApp: {
+    /**
+     * Settings related to the question view in the Candidate App.
+     */
+    questions: {
+      /**
+       * Whether to show video content for questions in the Candidate App.
+       */
+      showVideo: boolean;
+      /**
+       * Whether to show hero content for questions in the Candidate App.
+       */
+      showHero: boolean;
+    };
+  };
 };
 
 /**

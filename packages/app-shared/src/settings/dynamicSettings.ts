@@ -79,5 +79,11 @@ export const dynamicSettings: DynamicSettings = {
   notifications: {
     candidateApp: null,
     voterApp: null
+  },
+  candidateApp: {
+    questions: {
+      showVideo: true,
+      showHero: true
+    }
   }
 };
