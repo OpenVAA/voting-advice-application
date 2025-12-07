@@ -6,12 +6,14 @@ import { derived, get, writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { hashIds } from '$lib/utils/hashIds';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
 import { candidateUserDataStore } from './candidateUserDataStore';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
@@ -73,11 +75,14 @@ export function initCandidateContext(): CandidateContext {
     [electionId: Id]: Id;
   }>('candidateContext-preselectedConstituencyIds', {});
 
-  const preregistrationElections = derived(
+  const preregistrationElections = parsimoniusDerived(
     [appSettings, dataRoot, preregistrationElectionIds],
     ([appSettings, dataRoot, preregistrationElectionIds]) => {
       const ids = getImpliedElectionIds({ appSettings, dataRoot }) ?? preregistrationElectionIds;
       return ids.map((id) => dataRoot.getElection(id));
+    },
+    {
+      differenceChecker: hashIds
     }
   );
 
@@ -96,22 +101,28 @@ export function initCandidateContext(): CandidateContext {
     }
   );
 
-  const selectedElections = derived(
+  const selectedElections = parsimoniusDerived(
     [dataRoot, userData],
     ([dataRoot, userData]) => {
       if (!userData) return [];
       return removeDuplicates(userData.nominations.nominations.map((n) => dataRoot.getElection(n.electionId)));
     },
-    []
+    {
+      differenceChecker: hashIds,
+      initialValue: []
+    }
   );
 
-  const selectedConstituencies = derived(
+  const selectedConstituencies = parsimoniusDerived(
     [dataRoot, userData],
     ([dataRoot, userData]) => {
       if (!userData) return [];
       return removeDuplicates(userData.nominations.nominations.map((n) => dataRoot.getConstituency(n.constituencyId)));
     },
-    []
+    {
+      differenceChecker: hashIds,
+      initialValue: []
+    }
   );
 
   /**
