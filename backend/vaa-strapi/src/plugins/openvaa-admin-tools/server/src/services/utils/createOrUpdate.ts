@@ -50,7 +50,7 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
   if (existing) {
     const { documentId, answers: currentAnswers, ...rest } = existing;
     const { answers: newAnswers, ...newRest } = parsed;
-    let answers: object | unknown | undefined;
+    let answers: unknown;
     if (newAnswers && typeof newAnswers === 'object') {
       answers =
         currentAnswers && typeof currentAnswers === 'object'
