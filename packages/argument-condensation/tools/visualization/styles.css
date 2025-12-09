@@ -1,36 +1,37 @@
 /* CSS Custom Properties (Variables) */
 :root {
-  /* Colors */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-purple: #8b5cf6;
+  /* Colors - OpenVAA Theme */
+  --color-primary: #3d5fc4;
+  --color-primary-hover: #2546a8;
+  --color-secondary: #666666;
+  --color-accent: #0a716b;
+  --color-success: #3d5fc4;
+  --color-warning: #a82525;
+  --color-error: #a82525;
 
   /* Grays */
-  --color-gray-50: #f8fafc;
-  --color-gray-100: #f1f5f9;
-  --color-gray-200: #e2e8f0;
-  --color-gray-300: #cbd5e1;
-  --color-gray-400: #94a3b8;
-  --color-gray-500: #64748b;
-  --color-gray-600: #475569;
-  --color-gray-700: #334155;
-  --color-gray-800: #1e293b;
-  --color-gray-900: #0f172a;
+  --color-gray-50: #f5f5f5;
+  --color-gray-100: #e8e8e8;
+  --color-gray-200: #d1d1d1;
+  --color-gray-300: #b8b8b8;
+  --color-gray-400: #999999;
+  --color-gray-500: #666666;
+  --color-gray-600: #4d4d4d;
+  --color-gray-700: #333333;
+  --color-gray-800: #1a1a1a;
+  --color-gray-900: #0d0d0d;
 
   /* Operation Colors */
   --color-map: var(--color-success);
-  --color-map-bg: #ecfdf5;
-  --color-iterate-map: #6366f1;
-  --color-iterate-map-bg: #f0f9ff;
-  --color-reduce: var(--color-warning);
-  --color-reduce-bg: #fefce8;
-  --color-refine: var(--color-purple);
-  --color-refine-bg: #f3e8ff;
+  --color-map-bg: #e8f0fc;
+  --color-iterate-map: var(--color-accent);
+  --color-iterate-map-bg: #e6f5f4;
+  --color-reduce: var(--color-secondary);
+  --color-reduce-bg: #f0f0f0;
+  --color-refine: var(--color-accent);
+  --color-refine-bg: #e6f5f4;
   --color-ground: var(--color-error);
-  --color-ground-bg: #fef2f2;
+  --color-ground-bg: #fce8e8;
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -94,7 +95,7 @@ body {
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-primary);
   color: white;
   padding: var(--space-xl);
   text-align: center;
@@ -184,7 +185,7 @@ body {
 }
 
 .sidebar {
-  width: 350px;
+  width: 450px;
   background: white;
   border-left: 1px solid var(--color-gray-200);
   padding: var(--space-lg);
@@ -492,6 +493,9 @@ body {
   margin-bottom: var(--space-sm);
   font-size: var(--font-size-sm);
   border-left: 3px solid var(--color-primary);
+  /* Prevent long IDs or text from overflowing the container */
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .comment-item {
@@ -523,6 +527,22 @@ body {
   font-size: var(--font-size-xs);
   color: var(--color-gray-500);
   margin-bottom: var(--space-xs);
+  /* Allow very long IDs to wrap instead of overflowing */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.item-label {
+  white-space: nowrap;
+}
+
+.item-id {
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .comment-item .item-header {

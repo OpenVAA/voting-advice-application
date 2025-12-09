@@ -368,18 +368,6 @@ class TreeVisualizer {
       .attr('dy', '0.35em')
       .text((d) => this.getOperationIcon(d.data.operation));
 
-    // Add operation labels
-    nodeGroups
-      .append('text')
-      .attr('class', 'node-text')
-      .attr('dy', this.nodeRadius + 15)
-      .text((d) => {
-        if (d.data.virtual) return '';
-        const op = d.data.operation;
-        const batch = d.data.batchIndex !== undefined ? ` [${d.data.batchIndex}]` : '';
-        return `${op}${batch}`;
-      });
-
     // Add batch info if details are enabled
     if (this.showDetails) {
       nodeGroups
@@ -476,30 +464,52 @@ class TreeVisualizer {
   }
 
   /**
+   * Format duration from milliseconds to "Xm Ys" format
+   */
+  formatDuration(durationMs) {
+    const totalSeconds = Math.floor(durationMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}m ${seconds}s`;
+  }
+
+  /**
    * Update tree statistics in sidebar
    */
   updateTreeStats() {
     if (!this.currentTree) return;
 
     const stats = this.currentTree.metadata || {};
-    const statsHtml = `
+    const formattedDuration = this.formatDuration(stats.totalDuration || 0);
+
+    // Build stats HTML with optional fields
+    let statsHtml = `
             <div class="tree-stats">
-                <h3>Tree Statistics</h3>
+                <h3>Tree Statistics</h3>`;
+
+    // Add Question if available
+    if (stats.questionText) {
+      statsHtml += `
                 <div class="stat-item">
-                    <span class="stat-label">Run ID:</span>
-                    <span class="stat-value">${this.currentTree.runId || 'N/A'}</span>
-                </div>
+                    <span class="stat-label">Question:</span>
+                    <span class="stat-value">${stats.questionText}</span>
+                </div>`;
+    }
+
+    // Add Condensation Type if available
+    if (stats.condensationType) {
+      statsHtml += `
                 <div class="stat-item">
-                    <span class="stat-label">Total Operations:</span>
-                    <span class="stat-value">${stats.totalOperations || 0}</span>
-                </div>
+                    <span class="stat-label">Condensation Type:</span>
+                    <span class="stat-value">${stats.condensationType}</span>
+                </div>`;
+    }
+
+    // Add remaining stats
+    statsHtml += `
                 <div class="stat-item">
-                    <span class="stat-label">Max Depth:</span>
-                    <span class="stat-value">${stats.maxDepth || 0}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Total Duration:</span>
-                    <span class="stat-value">${stats.totalDuration || 0}ms</span>
+                    <span class="stat-label">Duration:</span>
+                    <span class="stat-value">${formattedDuration}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">LLM Calls:</span>
@@ -508,6 +518,14 @@ class TreeVisualizer {
                 <div class="stat-item">
                     <span class="stat-label">Final Arguments:</span>
                     <span class="stat-value">${this.currentTree.finalArguments?.length || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Analysis Depth:</span>
+                    <span class="stat-value">${stats.maxDepth || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Run ID:</span>
+                    <span class="stat-value">${this.currentTree.runId || 'N/A'}</span>
                 </div>
             </div>
         `;
@@ -585,7 +603,7 @@ class TreeVisualizer {
     const inputSection = container.append('div').attr('class', 'data-section');
     const inputHeader = inputSection.append('div').attr('class', 'data-section-header');
 
-    inputHeader.append('h4').attr('class', 'section-title').text('📥 Input Data');
+    inputHeader.append('h4').attr('class', 'section-title').text('Input Data');
 
     const inputContent = inputSection.append('div').attr('class', 'data-content');
 
@@ -616,7 +634,7 @@ class TreeVisualizer {
     const outputSection = container.append('div').attr('class', 'data-section');
     const outputHeader = outputSection.append('div').attr('class', 'data-section-header');
 
-    outputHeader.append('h4').attr('class', 'section-title').text('📤 Output Data');
+    outputHeader.append('h4').attr('class', 'section-title').text('Output Data');
 
     const outputContent = outputSection.append('div').attr('class', 'data-content');
 
@@ -649,11 +667,12 @@ class TreeVisualizer {
     comments.forEach((comment, index) => {
       const commentItem = commentsList.append('div').attr('class', 'comment-item');
 
-      // Comment header with ID
-      commentItem
-        .append('div')
-        .attr('class', 'item-header')
-        .text(`Comment ${index + 1} (${comment.id})`);
+      // Comment header with ID: "Comment x (id...)" with ID wrapping but starting on same line
+      const header = commentItem.append('div').attr('class', 'item-header');
+      header.append('span').attr('class', 'item-label').text(`Comment ${index + 1}`);
+      if (comment.id) {
+        header.append('span').attr('class', 'item-id').text(` (${comment.id})`);
+      }
 
       // Comment text
       commentItem.append('div').attr('class', 'item-content').text(comment.text);
@@ -678,11 +697,11 @@ class TreeVisualizer {
     argumentList.forEach((argument, index) => {
       const argumentItem = argumentsList.append('div').attr('class', 'argument-item');
 
-      // Argument header with ID
-      argumentItem
-        .append('div')
-        .attr('class', 'item-header')
-        .text(`Argument ${index + 1} (${argument.id || 'No ID'})`);
+      // Argument header with ID: "Argument x (id...)" with ID wrapping but starting on same line
+      const header = argumentItem.append('div').attr('class', 'item-header');
+      header.append('span').attr('class', 'item-label').text(`Argument ${index + 1}`);
+      const idText = argument.id || 'No ID';
+      header.append('span').attr('class', 'item-id').text(` (${idText})`);
 
       // Argument text
       argumentItem.append('div').attr('class', 'item-content').text(argument.text);

@@ -43,8 +43,8 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
       );
     }
 
-    // Parse request - client sends single message with optional sessionId
-    const { message, sessionId: clientSessionId } = await request.json();
+    // Parse request - client sends single message with optional sessionId and questionContext
+    const { message, sessionId: clientSessionId, questionContext } = await request.json();
     const locale = params.lang || 'en';
 
     // Load or create session
@@ -69,9 +69,21 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
       state = createNewState(sessionId, locale);
     }
 
+    // Build user message with optional question context
+    let userMessageContent = message;
+    if (questionContext) {
+      const contextInfo = [
+        `Question: ${questionContext.questionText}`,
+        questionContext.category ? `Category: ${questionContext.category.name}` : null,
+        message
+      ]
+        .filter(Boolean)
+        .join('\n');
+      userMessageContent = contextInfo;
+    }
+
     // Append new user message to state
-    state.messages.push({ role: 'user', content: message });
-    state.workingMemory.push({ role: 'user', content: message });
+    state.messages.push({ role: 'user', content: userMessageContent });
 
     // Business logic handled by chatbot package
     const response = await ChatbotController.handleQuery({
@@ -96,7 +108,9 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
       sessionId,
       stream: response.stream,
       ragMetadataCollector: response.metadata.ragMetadataCollector,
-      requestStartTime
+      requestStartTime,
+      conversationState: response.state,
+      conversationStore
     });
   } catch (error) {
     console.error('[Chat API] Error:', error);
@@ -111,9 +125,6 @@ function createNewState(sessionId: string, locale: string): ConversationState {
   return {
     sessionId,
     messages: [],
-    workingMemory: [],
-    forgottenMessages: [],
-    lossyHistorySummary: '',
     locale
   };
 }
@@ -126,12 +137,16 @@ async function wrapInSSE({
   sessionId,
   stream,
   ragMetadataCollector,
-  requestStartTime
+  requestStartTime,
+  conversationState,
+  conversationStore
 }: {
   sessionId: string;
   stream: LLMStreamResult;
   ragMetadataCollector: Array<RAGRetrievalResult>;
   requestStartTime: number;
+  conversationState: ConversationState;
+  conversationStore: RedisConversationStore;
 }) {
   const sseStream = new ReadableStream({
     async start(controller) {
@@ -163,6 +178,12 @@ async function wrapInSSE({
 
         const streamEndTime = performance.now();
 
+        // Get full assistant response from AI SDK stream
+        const assistantResponse = await stream.text;
+
+        // Append assistant message to conversation state and save to Redis
+        conversationState.messages.push({ role: 'assistant', content: assistantResponse });
+        await conversationStore.set(sessionId, conversationState);
 
         // Compute timing metrics (API route's responsibility)
         const timeToFirstToken = firstTokenTime > 0 ? firstTokenTime - streamStartTime : 0;
@@ -221,7 +242,7 @@ async function wrapInSSE({
         // Send RAG contexts if available (after streaming completes)
         if (ragContexts) {
           controller.enqueue(encoder.encode('event: rag-contexts\n'));
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(ragContexts)}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ contexts: ragContexts })}\n\n`));
         }
 
         // Send combined metadata (after streaming completes)

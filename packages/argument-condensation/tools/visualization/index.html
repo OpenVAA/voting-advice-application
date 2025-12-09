@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Operation Tree Visualizer</title>
+    <title>Political Argument Condensation Visualizer</title>
     <link rel="icon" href="data:," />
     <!-- define a blank favicon so a 404 error doesn't occur and create confusion -->
     <link rel="stylesheet" href="styles.css" />
@@ -13,21 +13,21 @@
     <div class="container">
       <!-- Header -->
       <div class="header">
-        <h1>🌳 Operation Tree Visualizer</h1>
-        <p>Interactive visualization of argument condensation workflows</p>
+        <h1>Argument Condensation Visualizer</h1>
+        <p>Inspect the condensation process and its results</p>
       </div>
 
       <!-- Controls -->
       <div class="controls">
         <div class="file-input-section">
-          <label for="tree-file" class="file-label">📁 Load Tree Data</label>
+          <label for="tree-file" class="file-label">Load Condensation Data</label>
           <input type="file" id="tree-file" class="file-input" accept=".json" />
         </div>
 
         <div class="view-controls">
-          <button id="fit-btn" class="btn btn-secondary">📐 Fit to Screen</button>
-          <button id="toggle-details" class="btn btn-secondary">🔍 Show Details</button>
-          <button id="export-svg" class="btn btn-secondary">💾 Export SVG</button>
+          <button id="fit-btn" class="btn btn-secondary">Fit to Screen</button>
+          <button id="toggle-details" class="btn btn-secondary">Show Details</button>
+          <button id="export-svg" class="btn btn-secondary">Export SVG</button>
         </div>
       </div>
 
@@ -37,7 +37,6 @@
         <div class="visualization-area">
           <div id="tree-container" class="tree-container">
             <div class="empty-state">
-              <div class="empty-icon">🌳</div>
               <h2>No tree data loaded</h2>
               <p>Upload a JSON file or load a sample tree to get started</p>
             </div>

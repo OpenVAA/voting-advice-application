@@ -151,7 +151,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMessage.parts[0].text,
+          message: userMessage.parts[0]?.type === 'text' ? userMessage.parts[0].text : '',
           sessionId: sessionId
         })
       });
@@ -255,8 +255,8 @@
     // Handle RAG contexts events (not tied to specific messages)
     if (data.type === 'rag-contexts') {
       console.log('[Chatbot] Received RAG contexts:', data);
-      // data is an array of RAGRetrievalResult objects
-      ragContexts = [...ragContexts, ...data];
+      // data.contexts is an array of RAGRetrievalResult objects
+      ragContexts = [...ragContexts, ...data.contexts];
       return;
     }
 

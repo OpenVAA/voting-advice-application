@@ -1,23 +1,28 @@
+import type { QuestionType } from '@openvaa/data';
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
 import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { RAGRetrievalResult } from '../core/rag/ragService.type';
 import type { RAGDependencies } from '../core/tools/tools';
 
+export interface ChatbotQuestionContext {
+  questionId: string;
+  type: QuestionType;
+  text: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+}
 /** State of the conversation. Updates after each message. This state is required for an intelligent but efficient
  * chatbot. It is used to infer what the chatbot should know and be tasked to do depending on the conversation
  * history.
- */ // TODO: separate chatbot input and output states, there is dead weight being passed around
+ */
 export interface ConversationState {
   sessionId: string;
   messages: Array<ModelMessage>;
-  /** Messages that are currently being processed. Messages may be lost due to memory constraints */
-  workingMemory: Array<ModelMessage>;
-  /** Messages that are lost due to memory constraints */
-  forgottenMessages: Array<ModelMessage>;
-  /** Summary of the conversation history that is lost due to memory constraints */
-  lossyHistorySummary: string;
   locale: string;
+  questionContext?: ChatbotQuestionContext;
 }
 
 /**

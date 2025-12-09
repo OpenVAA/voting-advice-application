@@ -197,7 +197,7 @@ class OperationTreeApp {
    * Update toggle button text
    */
   updateToggleButton() {
-    this.elements.toggleDetails.textContent = this.visualizer.showDetails ? '📊 Hide Details' : '📊 Show Details';
+    this.elements.toggleDetails.textContent = this.visualizer.showDetails ? 'Hide Details' : 'Show Details';
   }
 
   /**
@@ -246,7 +246,7 @@ class OperationTreeApp {
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new OperationTreeApp();
 
-  console.info('🌳 Operation Tree Visualizer initialized');
+  console.info('Operation Tree Visualizer initialized');
   console.info('Keyboard shortcuts:');
   console.info('  F - Fit to screen');
   console.info('  D - Toggle details');
