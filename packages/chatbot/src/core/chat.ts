@@ -2,6 +2,7 @@ import { setPromptVars } from '@openvaa/llm-refactor';
 import { stepCountIs } from 'ai';
 import { getTools } from './tools/tools';
 import { CHATBOT_SKILLS, FALLBACK_TOPICS } from '../defaultConfig/chatbotSkills';
+import { USER_CONTEXT_INSTRUCTIONS } from '../defaultConfig/usageContext';
 import { loadPrompt } from '../utils/promptLoader';
 import type { ChatbotAPIInput } from '../api.type';
 import type { LoadedPrompt } from '../types/prompt.type';
@@ -29,7 +30,8 @@ export class ChatEngine {
       promptText: this.systemPrompt.prompt,
       variables: {
         chatbotSkills: CHATBOT_SKILLS,
-        fallbackTopics: FALLBACK_TOPICS
+        fallbackTopics: FALLBACK_TOPICS,
+        userContextInstructions: USER_CONTEXT_INSTRUCTIONS
       },
       strict: false
     });
@@ -55,5 +57,4 @@ export class ChatEngine {
 
     return result;
   }
-
 }

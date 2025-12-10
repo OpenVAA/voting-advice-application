@@ -4,10 +4,9 @@ import { constants } from '$lib/server/constants';
 import { getRedisClient } from '$lib/server/redis/client';
 import { RedisConversationStore } from '$lib/server/redis/conversationStore';
 import { RateLimiter } from '$lib/server/redis/rateLimiter';
-import type { RAGRetrievalResult } from '@openvaa/chatbot';
+import type { ChatbotQuestionContext, RAGRetrievalResult } from '@openvaa/chatbot';
 import type { ConversationState } from '@openvaa/chatbot/server';
 import type { LLMStreamResult } from '@openvaa/llm-refactor';
-import type { RequestEvent } from '@sveltejs/kit';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
@@ -19,8 +18,14 @@ const { vectorStore, queryReformulationProvider, chatProvider } = await getChatb
 const conversationStore = new RedisConversationStore(getRedisClient());
 const rateLimiter = new RateLimiter(getRedisClient(), 20, 60);
 
+type ChatRequestBody = {
+  message: string;
+  sessionId?: string;
+  questionContext?: ChatbotQuestionContext;
+};
+
 // API endpoint for chat functionality with RAG enrichment
-export async function POST({ request, params, getClientAddress }: RequestEvent) {
+export async function POST({ request, params, getClientAddress }) {
   const requestStartTime = Date.now();
   const clientIp = getClientAddress();
 
@@ -44,7 +49,7 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
     }
 
     // Parse request - client sends single message with optional sessionId and questionContext
-    const { message, sessionId: clientSessionId, questionContext } = await request.json();
+    const { message, sessionId: clientSessionId, questionContext } = (await request.json()) as ChatRequestBody;
     const locale = params.lang || 'en';
 
     // Load or create session
@@ -69,21 +74,9 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
       state = createNewState(sessionId, locale);
     }
 
-    // Build user message with optional question context
-    let userMessageContent = message;
-    if (questionContext) {
-      const contextInfo = [
-        `Question: ${questionContext.questionText}`,
-        questionContext.category ? `Category: ${questionContext.category.name}` : null,
-        message
-      ]
-        .filter(Boolean)
-        .join('\n');
-      userMessageContent = contextInfo;
-    }
-
     // Append new user message to state
-    state.messages.push({ role: 'user', content: userMessageContent });
+    state.messages.push({ role: 'user', content: message });
+    state.questionContext = questionContext;
 
     // Business logic handled by chatbot package
     const response = await ChatbotController.handleQuery({
@@ -101,6 +94,7 @@ export async function POST({ request, params, getClientAddress }: RequestEvent) 
     });
 
     // Save updated state to Redis
+    console.info('Conversation state: ' + JSON.stringify(response.state));
     await conversationStore.set(sessionId, response.state);
 
     // Wrap in SSE stream with RAG metadata collector
@@ -219,17 +213,8 @@ async function wrapInSSE({
         let retrievalDuration = 0;
         let totalSegments = 0;
 
-        // Get all RAG results from the collector (now an array)
+        // Get all RAG results from the collector
         if (ragMetadataCollector.length > 0) {
-          console.info('[Chat API] Found RAG metadata from collector:', {
-            numberOfSearches: ragMetadataCollector.length,
-            searches: ragMetadataCollector.map((r, i) => ({
-              index: i,
-              segmentsUsed: r.segmentsUsed,
-              resultsCount: r.searchResult?.results?.length
-            }))
-          });
-
           // Extract metadata (sum costs and durations across all searches)
           rerankingCost = ragMetadataCollector.reduce((sum, r) => sum + (r.rerankingCosts?.cost || 0), 0);
           retrievalDuration = ragMetadataCollector.reduce((sum, r) => sum + (r.durationMs || 0), 0);

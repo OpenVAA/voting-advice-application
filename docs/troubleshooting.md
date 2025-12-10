@@ -107,4 +107,6 @@ If Strapi gives an error dealing with creating a table with the message that a r
 ```
 ## Vite: The requested module _ does not provide an export named _
 
-Vite keeps it own .vite cache volume inside the development Docker container. Unfortunately, you need to down the containers to remove the cache. More specifically, make sure frontend/node_modules/.vite is created with your new source code.
+First try disabling browser cache.
+
+Note: Vite keeps it own .vite cache volume inside the development Docker container, so disabling browser cache may not suffice. You may need to down the containers to remove the cache. Important cache locations: node_modules/.vite and frontend/node_modules/.vite. There is also frontend/.vite, but I am not sure which of these is the culprit, so best advice is to realign all with your current source code before restarting. 

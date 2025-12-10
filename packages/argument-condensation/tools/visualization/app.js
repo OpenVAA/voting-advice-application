@@ -11,8 +11,8 @@ class OperationTreeApp {
     this.elements = {
       fileInput: document.getElementById('tree-file'),
       fitBtn: document.getElementById('fit-btn'),
-      toggleDetails: document.getElementById('toggle-details'),
-      exportSvg: document.getElementById('export-svg')
+      exportSvg: document.getElementById('export-svg'),
+      questionText: document.getElementById('question-text')
     };
 
     this.initializeEventListeners();
@@ -28,11 +28,6 @@ class OperationTreeApp {
     // Control buttons
     this.elements.fitBtn.addEventListener('click', () => {
       this.visualizer.fitToScreen();
-    });
-
-    this.elements.toggleDetails.addEventListener('click', () => {
-      this.visualizer.toggleDetails();
-      this.updateToggleButton();
     });
 
     this.elements.exportSvg.addEventListener('click', () => {
@@ -72,11 +67,22 @@ class OperationTreeApp {
 
       this.currentTreeData = treeData;
       this.visualizer.loadTree(treeData);
+      this.updateQuestionText(treeData);
       this.showSuccessMessage(`Loaded tree: ${treeData.runId}`);
     } catch (error) {
       this.showErrorMessage(`Failed to load tree: ${error.message}`);
       console.error('Tree loading error:', error);
     }
+  }
+
+  /**
+   * Update the question text shown next to the load control
+   */
+  updateQuestionText(treeData) {
+    if (!this.elements.questionText) return;
+
+    const question = treeData?.metadata?.questionText;
+    this.elements.questionText.textContent = question ? `Question: "${question}"` : '';
   }
 
   /**
@@ -170,12 +176,6 @@ class OperationTreeApp {
         event.preventDefault();
         this.visualizer.fitToScreen();
         break;
-      case 'd':
-      case 'D':
-        event.preventDefault();
-        this.visualizer.toggleDetails();
-        this.updateToggleButton();
-        break;
       case 'e':
       case 'E':
         if (event.ctrlKey || event.metaKey) {
@@ -191,13 +191,6 @@ class OperationTreeApp {
         }
         break;
     }
-  }
-
-  /**
-   * Update toggle button text
-   */
-  updateToggleButton() {
-    this.elements.toggleDetails.textContent = this.visualizer.showDetails ? 'Hide Details' : 'Show Details';
   }
 
   /**
@@ -249,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
   console.info('Operation Tree Visualizer initialized');
   console.info('Keyboard shortcuts:');
   console.info('  F - Fit to screen');
-  console.info('  D - Toggle details');
   console.info('  Ctrl/Cmd + E - Export SVG');
   console.info('  Ctrl/Cmd + O - Open file');
 });

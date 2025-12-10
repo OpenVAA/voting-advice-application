@@ -80,7 +80,8 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family-sans);
-  background: var(--color-gray-50);
+  /* Soft vertical gradient background for the whole app */
+  background: linear-gradient(to bottom, var(--color-gray-50), var(--color-gray-100));
   line-height: 1.5;
   height: 100vh;
   overflow: hidden;
@@ -115,7 +116,8 @@ body {
 
 /* Controls */
 .controls {
-  background: white;
+  /* Subtle horizontal gradient behind controls */
+  background: linear-gradient(to right, #ffffff, var(--color-gray-50));
   padding: var(--space-lg) var(--space-xl);
   border-bottom: 1px solid var(--color-gray-200);
   display: flex;
@@ -129,6 +131,14 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-md);
+}
+
+.question-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-black);
+  max-width: 734px;
+  font-weight: 600;
+  text-align: left;
 }
 
 .file-label {
@@ -185,8 +195,8 @@ body {
 }
 
 .sidebar {
-  width: 450px;
-  background: white;
+  width: 734px;
+  background: linear-gradient(to bottom, #f9fafb, #e5edf7);
   border-left: 1px solid var(--color-gray-200);
   padding: var(--space-lg);
   overflow-y: auto;
@@ -260,6 +270,8 @@ body {
   position: relative;
   overflow: hidden;
   min-height: 400px; /* Ensure minimum height */
+  /* Give the active view a soft, focused background */
+  background: radial-gradient(circle at top left, #e0ecff 0, #f4f5ff 45%, #edf2ff 100%);
 }
 
 .tree-container {
@@ -267,6 +279,11 @@ body {
   height: 100%;
   position: relative;
   min-height: 400px; /* Ensure minimum height */
+  /* Conventional "graph paper" style background for visualizations, on a light tint */
+  background-color: #f3f6ff;
+  background-image: linear-gradient(to right, rgba(61, 95, 196, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(61, 95, 196, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 .empty-state {

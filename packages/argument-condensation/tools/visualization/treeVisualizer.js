@@ -11,7 +11,6 @@ class TreeVisualizer {
     this.g = null;
     this.currentTree = null;
     this.selectedNode = null;
-    this.showDetails = false;
 
     // Create reusable tooltip to prevent memory leaks
     this.tooltip = d3
@@ -368,21 +367,6 @@ class TreeVisualizer {
       .attr('dy', '0.35em')
       .text((d) => this.getOperationIcon(d.data.operation));
 
-    // Add batch info if details are enabled
-    if (this.showDetails) {
-      nodeGroups
-        .append('text')
-        .attr('class', 'node-batch-info')
-        .attr('dy', this.nodeRadius + 28)
-        .text((d) => {
-          if (d.data.virtual) return '';
-          const node = d.data;
-          const inputCount = this.getInputCount(node);
-          const outputCount = this.getOutputCount(node);
-          return `${inputCount}→${outputCount}`;
-        });
-    }
-
     // Add success/error indicators
     nodeGroups
       .append('circle')
@@ -482,26 +466,26 @@ class TreeVisualizer {
     const stats = this.currentTree.metadata || {};
     const formattedDuration = this.formatDuration(stats.totalDuration || 0);
 
+    // Map internal condensation types to human-friendly labels
+    function formatCondensationType(type) {
+      const mapping = {
+        likertPros: 'Pros',
+        likertCons: 'Cons'
+      };
+      return mapping[type] || type;
+    }
+
     // Build stats HTML with optional fields
     let statsHtml = `
             <div class="tree-stats">
-                <h3>Tree Statistics</h3>`;
-
-    // Add Question if available
-    if (stats.questionText) {
-      statsHtml += `
-                <div class="stat-item">
-                    <span class="stat-label">Question:</span>
-                    <span class="stat-value">${stats.questionText}</span>
-                </div>`;
-    }
+                <h3>Condensation Information</h3>`;
 
     // Add Condensation Type if available
     if (stats.condensationType) {
       statsHtml += `
                 <div class="stat-item">
-                    <span class="stat-label">Condensation Type:</span>
-                    <span class="stat-value">${stats.condensationType}</span>
+                    <span class="stat-label">Condensation Type: </span>
+                    <span class="stat-value">${formatCondensationType(stats.condensationType)}</span>
                 </div>`;
     }
 
@@ -556,28 +540,13 @@ class TreeVisualizer {
     nodeInfo.html('');
 
     // Basic info
-    const basicInfo = [
-      { label: 'Operation', value: node.operation },
-      { label: 'Step Index', value: node.stepIndex },
-      { label: 'Batch Index', value: node.batchIndex ?? 'N/A' },
-      { label: 'Duration', value: `${node.metadata.duration}ms` },
-      { label: 'LLM Calls', value: node.metadata.llmCalls },
-      { label: 'Status', value: node.metadata.success ? 'Success' : 'Failed' }
-    ];
+    const basicInfo = [{ label: 'Batch', value: node.batchIndex !== undefined ? node.batchIndex + 1 : 'N/A' }];
 
     basicInfo.forEach((info) => {
       const detail = nodeInfo.append('div').attr('class', 'node-detail');
       detail.append('div').attr('class', 'node-detail-label').text(info.label);
       detail.append('div').attr('class', 'node-detail-value').text(info.value);
     });
-
-    // Input/Output counts
-    const inputCount = this.getInputCount(node);
-    const outputCount = this.getOutputCount(node);
-
-    const ioDetail = nodeInfo.append('div').attr('class', 'node-detail');
-    ioDetail.append('div').attr('class', 'node-detail-label').text('Input → Output');
-    ioDetail.append('div').attr('class', 'node-detail-value').text(`${inputCount} → ${outputCount}`);
 
     // Error message if failed
     if (!node.metadata.success && node.metadata.error) {
@@ -669,7 +638,10 @@ class TreeVisualizer {
 
       // Comment header with ID: "Comment x (id...)" with ID wrapping but starting on same line
       const header = commentItem.append('div').attr('class', 'item-header');
-      header.append('span').attr('class', 'item-label').text(`Comment ${index + 1}`);
+      header
+        .append('span')
+        .attr('class', 'item-label')
+        .text(`Comment ${index + 1}`);
       if (comment.id) {
         header.append('span').attr('class', 'item-id').text(` (${comment.id})`);
       }
@@ -699,7 +671,10 @@ class TreeVisualizer {
 
       // Argument header with ID: "Argument x (id...)" with ID wrapping but starting on same line
       const header = argumentItem.append('div').attr('class', 'item-header');
-      header.append('span').attr('class', 'item-label').text(`Argument ${index + 1}`);
+      header
+        .append('span')
+        .attr('class', 'item-label')
+        .text(`Argument ${index + 1}`);
       const idText = argument.id || 'No ID';
       header.append('span').attr('class', 'item-id').text(` (${idText})`);
 
@@ -760,16 +735,6 @@ class TreeVisualizer {
       .transition()
       .duration(VISUALIZATION_CONFIG.timing.fitToScreenDelay)
       .call(this.zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
-  }
-
-  /**
-   * Toggle display of detailed node information (input/output counts)
-   */
-  toggleDetails() {
-    this.showDetails = !this.showDetails;
-    if (this.currentTree) {
-      this.renderTree();
-    }
   }
 
   /**

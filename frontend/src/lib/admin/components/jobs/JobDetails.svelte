@@ -64,7 +64,8 @@
     <div class="mb-4 flex items-start justify-between">
       <div class="gap-3 flex items-center">
         <span
-          class="font-medium badge badge-lg {job.status === 'completed'
+          class="font-medium badge badge-sm flex-shrink-0 whitespace-nowrap text-xs md:text-sm {job.status ===
+          'completed'
             ? 'badge-success'
             : job.status === 'failed'
               ? 'badge-error'
@@ -73,7 +74,7 @@
                 : 'badge-info'}">
           {job.status}
         </span>
-        <div class="text-sm text-base-content/70">
+        <div class="whitespace-nowrap text-sm text-base-content/70">
           {$t('adminApp.jobs.id')}: <span class="font-mono text-xs">{job.id.slice(0, 8)}...</span>
         </div>
       </div>

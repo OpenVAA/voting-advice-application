@@ -20,6 +20,15 @@ export class ChatbotController {
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
     // Create LLM response with unified prompt and tools
     // RAG tool is available for LLM to invoke autonomously when needed
+
+    // Modify the last user message to include the question context if provided
+    const messages = input.state.messages;
+    if (input.state.questionContext) {
+      const contextString = JSON.stringify(input.state.questionContext, null, 2);
+      const messageWithContext = '### User Message: ' + messages[messages.length - 1].content + '\n\n### User Page Context: ' + contextString;
+      messages[messages.length - 1] = { role: 'user', content: messageWithContext };
+    }
+    console.info('Latest message: ' + messages[messages.length - 1].content)
     return this.createLLMResponse({ input });
   }
 

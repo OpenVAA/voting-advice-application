@@ -54,13 +54,6 @@ A floating chat widget for helping voters with questions.
     sessionId = localStorage.getItem('chatbot_sessionId');
   }
 
-  // Auto-scroll to bottom when new messages arrive
-  $: if (messages.length && messagesContainer) {
-    setTimeout(() => {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 100);
-  }
-
   async function sendMessage() {
     if (!input.trim() || loading) return;
 
@@ -79,8 +72,8 @@ A floating chat widget for helping voters with questions.
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage.parts[0].text,
-          sessionId: sessionId,
-          questionContext: questionContext
+          sessionId,
+          questionContext
         })
       });
 
@@ -226,6 +219,89 @@ A floating chat widget for helping voters with questions.
   });
 </script>
 
+{#if isOpen}
+  <div class="widget-wrapper" transition:fly={{ y: 20, duration: 200 }}>
+    <div class="header">
+      <div class="header-content">
+        <div class="header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div class="header-title">Chat Assistant</div>
+      </div>
+      <button class="close-button" on:click={onClose} aria-label="Close chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="messages" bind:this={messagesContainer}>
+      {#each messages as message}
+        <div class="message-wrapper {message.role}">
+          <div class="avatar {message.role}">
+            {#if message.role === 'user'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path>
+              </svg>
+            {:else}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+              </svg>
+            {/if}
+          </div>
+          <div class="message">
+            {#each message.parts as part}
+              {#if part.type === 'text'}
+                {part.text}
+              {/if}
+            {/each}
+          </div>
+        </div>
+      {/each}
+
+      {#if loading}
+        <div class="message-wrapper assistant">
+          <div class="assistant avatar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <div class="input-container">
+      <form
+        on:submit={(event) => {
+          event.preventDefault();
+          sendMessage();
+        }}>
+        <div class="input-wrapper">
+          <textarea
+            bind:value={input}
+            placeholder="Send a message..."
+            on:keydown={handleKeydown}
+            on:input={adjustTextareaHeight}
+            disabled={loading}></textarea>
+          <button class="send-button" type="submit" aria-label="Send message" disabled={!input.trim() || loading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
+
 <style>
   .widget-wrapper {
     position: fixed;
@@ -291,7 +367,9 @@ A floating chat widget for helping voters with questions.
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
   }
 
   .close-button:hover {
@@ -467,89 +545,3 @@ A floating chat widget for helping voters with questions.
     }
   }
 </style>
-
-{#if isOpen}
-  <div class="widget-wrapper" transition:fly={{ y: 20, duration: 200 }}>
-    <div class="header">
-      <div class="header-content">
-        <div class="header-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        </div>
-        <div class="header-title">Chat Assistant</div>
-      </div>
-      <button class="close-button" on:click={onClose} aria-label="Close chat">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <div class="messages" bind:this={messagesContainer}>
-      {#each messages as message}
-        <div class="message-wrapper {message.role}">
-          <div class="avatar {message.role}">
-            {#if message.role === 'user'}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"></path>
-              </svg>
-            {:else}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-              </svg>
-            {/if}
-          </div>
-          <div class="message">
-            {#each message.parts as part}
-              {#if part.type === 'text'}
-                {part.text}
-              {/if}
-            {/each}
-          </div>
-        </div>
-      {/each}
-
-      {#if loading}
-        <div class="message-wrapper assistant">
-          <div class="avatar assistant">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-          </div>
-          <div class="loading-dots">
-            <div class="loading-dot"></div>
-            <div class="loading-dot"></div>
-            <div class="loading-dot"></div>
-          </div>
-        </div>
-      {/if}
-    </div>
-
-    <div class="input-container">
-      <form on:submit={(event) => { event.preventDefault(); sendMessage(); }}>
-        <div class="input-wrapper">
-          <textarea
-            bind:value={input}
-            placeholder="Send a message..."
-            on:keydown={handleKeydown}
-            on:input={adjustTextareaHeight}
-            disabled={loading}></textarea>
-          <button
-            class="send-button"
-            type="submit"
-            aria-label="Send message"
-            disabled={!input.trim() || loading}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-            </svg>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-{/if}
