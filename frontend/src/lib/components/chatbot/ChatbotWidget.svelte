@@ -21,9 +21,9 @@ A floating chat widget for helping voters with questions.
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
-  import { createOnboardingStream } from '$lib/chatbot';
+  import { createChatStore } from '$lib/chatbot';
   import type { ChatbotWidgetProps } from './ChatbotWidget.type';
 
   type $$Props = ChatbotWidgetProps;
@@ -33,248 +33,27 @@ A floating chat widget for helping voters with questions.
   export let locale: $$Props['locale'];
   export let onClose: $$Props['onClose'] = undefined;
 
-  interface UIMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    parts: Array<{
-      type: 'text';
-      text: string;
-      state?: 'streaming' | 'done';
-    }>;
-  }
+  // Create the chat store
+  const chatStore = createChatStore({ locale, questionContext });
 
-  let messages: Array<UIMessage> = [];
+  // Derived state from store
+  $: messages = $chatStore.messages;
+  $: loading = $chatStore.loading;
+
   let input = '';
-  let loading = false;
-  let sessionId: string | null = null;
   let messagesContainer: HTMLDivElement;
-  let clientId: string | null = null;
 
-  type ModelMessage = {
-    role: string;
-    // `content` might be string or an array; handle both
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    content: string | Array<{ type: string; text?: string } & Record<string, any>>;
-  };
-
-  function modelMessageToUIMessage(m: ModelMessage): UIMessage | null {
-    if (m.role !== 'user' && m.role !== 'assistant') {
-      // Skip system / tool messages for UI
-      return null;
-    }
-
-    let text = '';
-
-    if (typeof m.content === 'string') {
-      text = m.content;
-    } else if (Array.isArray(m.content)) {
-      const textPart = m.content.find((p) => p.type === 'text');
-      if (textPart?.text) text = textPart.text;
-    }
-
-    if (!text) return null;
-
-    return {
-      id: Math.random().toString(),
-      role: m.role as 'user' | 'assistant',
-      parts: [{ type: 'text', text, state: 'done' }]
-    };
-  }
-
-  // Load sessionId and clientId from localStorage on mount
-  if (typeof window !== 'undefined') {
-    sessionId = localStorage.getItem('chatbot_sessionId');
-    clientId = localStorage.getItem('chatbot_client_id');
-
-    if (!clientId) {
-      // Generate a stable anonymous client identifier for rate limiting
-      try {
-        // Prefer crypto.randomUUID when available
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        clientId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : null;
-      } catch {
-        clientId = null;
-      }
-
-      if (!clientId) {
-        clientId = Math.random().toString(36).slice(2);
-      }
-
-      localStorage.setItem('chatbot_client_id', clientId);
-    }
-  }
-
-  async function resetConversation() {
-    if (sessionId) {
-      try {
-        await fetch(`/api/chat?sessionId=${encodeURIComponent(sessionId)}`, {
-          method: 'DELETE'
-        });
-      } catch (error) {
-        console.warn('Failed to delete conversation on server', error);
-      }
-    }
-
-    sessionId = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('chatbot_sessionId');
-    }
-
-    messages = [];
-
-    // Start a fresh onboarding conversation
-    const { message, streamPromise } = createOnboardingStream(locale);
-    messages = [message as UIMessage];
-
-    const reactivityInterval = setInterval(() => {
-      messages = [...messages];
-    }, 50);
-
-    streamPromise.then(() => {
-      clearInterval(reactivityInterval);
-      messages = [...messages];
-    });
-  }
-
-  async function sendMessage() {
+  async function handleSendMessage() {
     if (!input.trim() || loading) return;
-
-    const userMessage: UIMessage = {
-      id: Math.random().toString(),
-      role: 'user',
-      parts: [{ type: 'text', text: input, state: 'done' }]
-    };
-    messages = [...messages, userMessage];
+    const messageText = input;
     input = '';
-    loading = true;
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage.parts[0].text,
-          sessionId,
-          clientId,
-          questionContext
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No reader available');
-
-      const assistantMessage: UIMessage = {
-        id: Math.random().toString(),
-        role: 'assistant',
-        parts: []
-      };
-      messages = [...messages, assistantMessage];
-
-      const decoder = new TextDecoder();
-      let sseBuffer = '';
-      let eventName = '';
-      let dataBuffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        sseBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex;
-        while ((newlineIndex = sseBuffer.indexOf('\n')) !== -1) {
-          const line = sseBuffer.slice(0, newlineIndex);
-          sseBuffer = sseBuffer.slice(newlineIndex + 1);
-
-          if (line.startsWith('event:')) {
-            eventName = line.slice(6).trim();
-          } else if (line.startsWith('data:')) {
-            dataBuffer += line.slice(5).trimStart() + '\n';
-          } else if (line === '') {
-            const raw = dataBuffer.trim();
-            const currentEvent = eventName;
-            eventName = '';
-            dataBuffer = '';
-
-            if (!raw) continue;
-            if (raw === '[DONE]') {
-              handleStreamChunk({ type: 'finish' });
-              continue;
-            }
-
-            try {
-              const payload = JSON.parse(raw);
-              const withType = payload.type ? payload : { type: currentEvent || payload.type, ...payload };
-              handleStreamChunk(withType);
-            } catch {
-              console.warn('Failed to parse SSE payload:', raw);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      messages = [
-        ...messages,
-        {
-          id: Math.random().toString(),
-          role: 'assistant',
-          parts: [{ type: 'text', text: 'Sorry, there was an error.', state: 'done' }]
-        }
-      ];
-    } finally {
-      loading = false;
-    }
-  }
-
-  function handleStreamChunk(data: any) {
-    if (data.type === 'session-id') {
-      sessionId = data.sessionId;
-      if (typeof window !== 'undefined' && sessionId) {
-        localStorage.setItem('chatbot_sessionId', sessionId);
-      }
-      return;
-    }
-
-    if (data.type === 'rag-contexts' || data.type === 'metadata-info') {
-      return;
-    }
-
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== 'assistant') return;
-
-    if (data.type === 'text-delta') {
-      loading = false;
-      const textPart = lastMessage.parts.find((p) => p.type === 'text') as any;
-      if (textPart) {
-        textPart.text += data.delta;
-        textPart.state = 'streaming';
-      } else {
-        lastMessage.parts.push({
-          type: 'text',
-          text: data.delta,
-          state: 'streaming'
-        });
-      }
-      messages = [...messages];
-    } else if (data.type === 'finish') {
-      lastMessage.parts.forEach((part) => {
-        if (part.type === 'text') {
-          (part as any).state = 'done';
-        }
-      });
-      messages = [...messages];
-    }
+    await chatStore.sendMessage(messageText);
   }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      sendMessage();
+      handleSendMessage();
     }
   }
 
@@ -284,48 +63,12 @@ A floating chat widget for helping voters with questions.
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
 
-  // Initialize by hydrating history if available, otherwise show onboarding
-  onMount(async () => {
-    if (sessionId) {
-      try {
-        const res = await fetch(`/api/chat?sessionId=${encodeURIComponent(sessionId)}`);
+  onMount(() => {
+    chatStore.initialize();
+  });
 
-        if (res.ok) {
-          const data = await res.json();
-          const historyMessages = (data.messages as ModelMessage[])
-            .map(modelMessageToUIMessage)
-            .filter((m): m is UIMessage => m !== null);
-
-          if (historyMessages.length > 0) {
-            messages = historyMessages;
-            return; // Skip onboarding when we have history
-          }
-        } else if (res.status === 404) {
-          // Stored session expired / missing; clear invalid sessionId
-          sessionId = null;
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('chatbot_sessionId');
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to load chat history', error);
-        // Fall back to onboarding below
-      }
-    }
-
-    if (messages.length === 0) {
-      const { message, streamPromise } = createOnboardingStream(locale);
-      messages = [message as UIMessage];
-
-      const reactivityInterval = setInterval(() => {
-        messages = [...messages];
-      }, 50);
-
-      streamPromise.then(() => {
-        clearInterval(reactivityInterval);
-        messages = [...messages];
-      });
-    }
+  onDestroy(() => {
+    chatStore.destroy();
   });
 </script>
 
@@ -341,7 +84,7 @@ A floating chat widget for helping voters with questions.
         <div class="header-title">Chat Assistant</div>
       </div>
       <div class="header-actions">
-        <button class="new-conversation-button" type="button" on:click={resetConversation}>
+        <button class="new-conversation-button" type="button" on:click={() => chatStore.resetConversation()}>
           New conversation
         </button>
         <button class="close-button" on:click={onClose} aria-label="Close chat">
@@ -369,7 +112,7 @@ A floating chat widget for helping voters with questions.
           </div>
           <div class="message">
             {#each message.parts as part}
-              {#if part.type === 'text'}
+              {#if part.type === 'text' && 'text' in part}
                 {part.text}
               {/if}
             {/each}
@@ -397,7 +140,7 @@ A floating chat widget for helping voters with questions.
       <form
         on:submit={(event) => {
           event.preventDefault();
-          sendMessage();
+          handleSendMessage();
         }}>
         <div class="input-wrapper">
           <textarea

@@ -1,21 +1,5 @@
 import type { ModelMessage } from 'ai';
-
-// Define the shape of the ad-hoc UI messages from chatbotTest/+page.svelte
-// This should be kept in sync with the client-side definition.
-interface UIMessagePart {
-  type: string; // 'text', 'tool-findCandidateInfo', etc.
-  text?: string;
-  toolCallId?: string;
-  input?: any;
-  output?: any;
-  state?: string; // 'streaming', 'done', 'input-available', etc.
-}
-
-interface UIMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  parts: Array<UIMessagePart>;
-}
+import type { UIMessage } from '../types';
 
 /**
  * Converts an array of ad-hoc UI messages into the CoreMessage format
@@ -38,7 +22,9 @@ export function convertUIMessagesToModelMessages(uiMessages: Array<UIMessage>): 
         modelMessages.push({ role: 'user', content: textContent });
       }
     } else if (uiMessage.role === 'assistant') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const assistantParts: Array<any> = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const toolResultParts: Array<any> = [];
 
       for (const part of uiMessage.parts) {

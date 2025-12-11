@@ -1,29 +1,5 @@
 import { getOnboardingMessage } from '@openvaa/chatbot';
-
-/**
- * UIMessage interface matching the chatbot page structure
- */
-interface UIMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  parts: Array<
-    | {
-        type: 'text';
-        text: string;
-        state?: 'streaming' | 'done';
-      }
-    | {
-        type: string;
-        toolCallId: string;
-        state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        input?: any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        output?: any;
-        errorText?: string;
-      }
-  >;
-}
+import type { UIMessage } from '../types';
 
 /**
  * Configuration for streaming simulation

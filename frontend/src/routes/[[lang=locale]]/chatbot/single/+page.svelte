@@ -1,36 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
-  import { createOnboardingStream } from '$lib/chatbot';
-  import { type ConversationState } from '@openvaa/chatbot';
+  import { createChatStore, isTextPart } from '$lib/chatbot';
   import type { RAGRetrievalResult } from '@openvaa/chatbot';
 
-  interface UIMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    parts: Array<
-      | {
-          type: 'text';
-          text: string;
-          state?: 'streaming' | 'done';
-        }
-      | {
-          type: 'tool-findCandidateInfo';
-          toolCallId: string;
-          state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
-          input?: any;
-          output?: any;
-          errorText?: string;
-        }
-    >;
-    metadata?: {
-      phase?: string;
-      category?: string;
-      toolsUsed?: Array<{name: string; args: any}>;
-    };
-  }
-
-  // Metadata tracking interfaces
+  // Metadata tracking interfaces (dev-specific)
   interface CostInfo {
     llm: {
       input: number;
@@ -59,24 +33,59 @@
     tokensPerSecond?: number; // output tokens / second
   }
 
-  let messages: Array<UIMessage> = [];
+  // Dev-specific state for RAG and metadata tracking
   let ragContexts: Array<RAGRetrievalResult> = [];
   let costs: Array<CostInfo> = [];
   let latencies: Array<LatencyInfo> = [];
   let input = '';
-  let loading = false;
 
-  // Session ID stored in localStorage for persistence across page refreshes
-  let sessionId: string | null = null;
+  // Create the chat store with extended callbacks for dev features
+  const locale = $page.params.lang || 'en';
+  const chatStore = createChatStore({
+    locale,
+    extendedCallbacks: {
+      onRagContexts: (contexts) => {
+        console.log('[Chatbot Dev] Received RAG contexts:', contexts);
+        ragContexts = [...ragContexts, ...contexts];
+      },
+      onMetadata: (data) => {
+        console.log('[Chatbot Dev] Received metadata info:', data);
 
-  // Load sessionId from localStorage on mount
-  if (typeof window !== 'undefined') {
-    sessionId = localStorage.getItem('chatbot_sessionId');
-  }
+        // Store cost info
+        if (data.cost) {
+          costs = [
+            ...costs,
+            {
+              llm: data.cost.llm,
+              filtering: data.cost.filtering,
+              reranking: { total: data.cost.reranking.cost },
+              total: data.cost.total,
+              timestamp: data.timestamp
+            }
+          ];
+        }
 
-  // Request timing tracking
-  let requestStartTime = 0;
-  let firstTokenTime = 0;
+        // Store latency info
+        if (data.latency) {
+          latencies = [
+            ...latencies,
+            {
+              retrievalDuration: data.latency.retrievalDuration,
+              timeToFirstToken: data.latency.timeToFirstToken,
+              messageTime: data.latency.messageTime,
+              totalTime: data.latency.totalTime,
+              tokensPerSecond: data.latency.tokensPerSecond,
+              timestamp: data.timestamp
+            }
+          ];
+        }
+      }
+    }
+  });
+
+  // Derived state from store
+  $: messages = $chatStore.messages;
+  $: loading = $chatStore.loading;
 
   // Cost calculation helpers
   $: lastCost = costs.length > 0 ? costs[costs.length - 1].total : 0;
@@ -129,294 +138,53 @@
         latencies.filter((l) => l.tokensPerSecond).length
       : 0;
 
-  async function sendMessage() {
+  async function handleSendMessage() {
     if (!input.trim() || loading) return;
-
-    const userMessage: UIMessage = {
-      id: Math.random().toString(),
-      role: 'user',
-      parts: [{ type: 'text', text: input, state: 'done' }]
-    };
-    messages = [...messages, userMessage];
+    const messageText = input;
     input = '';
-    loading = true;
-
-    // Track request start time
-    requestStartTime = performance.now();
-    firstTokenTime = 0;
-
-    try {
-      console.log('[Chatbot] Starting API request for assistant response');
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage.parts[0]?.type === 'text' ? userMessage.parts[0].text : '',
-          sessionId: sessionId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No reader available');
-
-      // Add empty assistant message
-      const assistantMessage: UIMessage = {
-        id: Math.random().toString(),
-        role: 'assistant',
-        parts: []
-      };
-      messages = [...messages, assistantMessage];
-      console.log('[Chatbot] Started processing SSE stream for assistant message:', assistantMessage.id);
-
-      const decoder = new TextDecoder();
-
-      // SSE state
-      let sseBuffer = '';
-      let eventName = '';
-      let dataBuffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        sseBuffer += decoder.decode(value, { stream: true });
-
-        // Process line-by-line; dispatch on blank line
-        let newlineIndex;
-        while ((newlineIndex = sseBuffer.indexOf('\n')) !== -1) {
-          const line = sseBuffer.slice(0, newlineIndex);
-          sseBuffer = sseBuffer.slice(newlineIndex + 1);
-
-          if (line.startsWith('event:')) {
-            eventName = line.slice(6).trim();
-          } else if (line.startsWith('data:')) {
-            // Accumulate multi-line data
-            dataBuffer += line.slice(5).trimStart() + '\n';
-          } else if (line === '') {
-            // Message boundary: dispatch accumulated event/data
-            const raw = dataBuffer.trim();
-
-            // Reset buffers for next message
-            const currentEvent = eventName;
-            eventName = '';
-            dataBuffer = '';
-
-            if (!raw) continue;
-            if (raw === '[DONE]') {
-              handleStreamChunk({ type: 'finish' });
-              continue;
-            }
-
-            try {
-              const payload = JSON.parse(raw);
-              const withType = payload.type ? payload : { type: currentEvent || payload.type, ...payload };
-              console.log(
-                '[Chatbot] Received stream chunk:',
-                withType.type,
-                withType.type === 'text-delta' ? `"${withType.delta}"` : withType
-              );
-              handleStreamChunk(withType);
-            } catch {
-              console.warn('Failed to parse SSE payload:', raw);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      messages = [
-        ...messages,
-        {
-          id: Math.random().toString(),
-          role: 'assistant',
-          parts: [{ type: 'text', text: 'Sorry, there was an error.', state: 'done' }]
-        }
-      ];
-    } finally {
-      loading = false;
-    }
-  }
-
-  function handleStreamChunk(data: any) {
-    // Handle session ID event
-    if (data.type === 'session-id') {
-      console.log('[Chatbot] Received sessionId:', data.sessionId);
-      sessionId = data.sessionId;
-      if (typeof window !== 'undefined' && sessionId) {
-        localStorage.setItem('chatbot_sessionId', sessionId);
-      }
-      return;
-    }
-
-    // Handle RAG contexts events (not tied to specific messages)
-    if (data.type === 'rag-contexts') {
-      console.log('[Chatbot] Received RAG contexts:', data);
-      // data.contexts is an array of RAGRetrievalResult objects
-      ragContexts = [...ragContexts, ...data.contexts];
-      return;
-    }
-
-    // Handle metadata information (cost + latency)
-    if (data.type === 'metadata-info') {
-      console.log('[Chatbot] Received metadata info:', data);
-
-      // Store cost info
-      if (data.cost) {
-        costs = [
-          ...costs,
-          {
-            llm: data.cost.llm,
-            filtering: data.cost.filtering,
-            reranking: { total: data.cost.reranking.cost },
-            total: data.cost.total,
-            timestamp: data.timestamp
-          }
-        ];
-      }
-
-      // Store latency info
-      if (data.latency) {
-        latencies = [
-          ...latencies,
-          {
-            retrievalDuration: data.latency.retrievalDuration,
-            timeToFirstToken: data.latency.timeToFirstToken,
-            messageTime: data.latency.messageTime,
-            totalTime: data.latency.totalTime,
-            tokensPerSecond: data.latency.tokensPerSecond,
-            timestamp: data.timestamp
-          }
-        ];
-      }
-
-      // Store RAG metadata in the last assistant message
-      if (data.rag) {
-        console.log('[Chatbot] Received metadata-info with rag data:', data.rag);
-        const lastAssistantMessage = messages.findLast((m) => m.role === 'assistant');
-        if (lastAssistantMessage) {
-          lastAssistantMessage.metadata = {
-            category: data.rag.category,
-            toolsUsed: data.rag.toolsUsed
-          };
-          console.log('[Chatbot] Set message metadata:', lastAssistantMessage.metadata);
-
-          messages = [...messages]; // Trigger reactivity
-        }
-      }
-      return;
-    }
-
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== 'assistant') return;
-
-    if (data.type === 'text-delta') {
-      // Track time to first token
-      if (firstTokenTime === 0) {
-        firstTokenTime = performance.now();
-        loading = false; // Hide "Thinking..." as soon as first token arrives
-      }
-
-      // Handle text streaming
-      const textPart = lastMessage.parts.find((p) => p.type === 'text') as any;
-      if (textPart) {
-        textPart.text += data.delta;
-        textPart.state = 'streaming';
-      } else {
-        lastMessage.parts.push({
-          type: 'text',
-          text: data.delta,
-          state: 'streaming'
-        });
-      }
-      messages = [...messages]; // Trigger reactivity
-    } else if (data.type === 'tool-call') {
-      // Handle tool calls
-      console.log('[Chatbot] AI is calling tool:', data.toolName, 'with args:', data.args);
-      lastMessage.parts.push({
-        type: `tool-${data.toolName}` as any,
-        toolCallId: data.toolCallId,
-        state: 'input-streaming',
-        input: data.args
-      });
-      messages = [...messages]; // Trigger reactivity
-    } else if (data.type === 'tool-result') {
-      // Handle tool results
-      console.log('[Chatbot] Tool execution completed:', data.toolName, 'result:', data.result);
-      const toolPart = lastMessage.parts.find(
-        (p) => p.type === `tool-${data.toolName}` && (p as any).toolCallId === data.toolCallId
-      ) as any;
-      if (toolPart) {
-        toolPart.state = 'output-available';
-        toolPart.output = data.result;
-      }
-      messages = [...messages]; // Trigger reactivity
-    } else if (data.type === 'finish') {
-      // Mark text parts as done
-      console.log('[Chatbot] Assistant message completed for:', lastMessage.id);
-      lastMessage.parts.forEach((part) => {
-        if (part.type === 'text') {
-          (part as any).state = 'done';
-        }
-      });
-      messages = [...messages]; // Trigger reactivity
-    }
+    await chatStore.sendMessage(messageText);
   }
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       event.preventDefault();
-      sendMessage();
+      handleSendMessage();
     }
   }
 
-  function formatToolCall(tool: {name: string; args: any}): string {
-    const argsStr = tool.args && Object.keys(tool.args).length > 0
-      ? Object.values(tool.args).map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')
-      : '';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function formatToolCall(tool: { name: string; args: any }): string {
+    const argsStr =
+      tool.args && Object.keys(tool.args).length > 0
+        ? Object.values(tool.args)
+            .map((v) => (typeof v === 'string' ? `"${v}"` : v))
+            .join(', ')
+        : '';
     return `${tool.name}(${argsStr})`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function renderMessagePart(part: any) {
     if (part.type === 'text') {
       return part.text;
     } else if (part.type === 'tool-findCandidateInfo') {
       if (part.state === 'input-streaming' || part.state === 'input-available') {
-        return `🔍 Looking up candidate: ${part.input?.candidateId || '...'}`;
+        return `Looking up candidate: ${part.input?.candidateId || '...'}`;
       } else if (part.state === 'output-available') {
-        return `✅ Found candidate: ${part.output?.name} (${part.output?.party})`;
+        return `Found candidate: ${part.output?.name} (${part.output?.party})`;
       } else if (part.state === 'output-error') {
-        return `❌ Error: ${part.errorText}`;
+        return `Error: ${part.errorText}`;
       }
     }
     return '';
   }
 
-  // Initialize onboarding message on component mount
   onMount(() => {
-    // Only show onboarding if conversation is empty
-    if (messages.length === 0) {
-      const locale = $page.params.lang || 'en';
-      const { message, streamPromise } = createOnboardingStream(locale);
+    chatStore.initialize();
+  });
 
-      // Add message to array immediately (starts as empty with streaming state)
-      messages = [message as UIMessage];
-
-      // Set up interval to trigger reactivity during streaming
-      // This ensures Svelte detects changes to the message.parts[0].text property
-      const reactivityInterval = setInterval(() => {
-        messages = [...messages]; // Trigger Svelte reactivity
-      }, 50); // Update every 50ms (faster than char delay for smooth updates)
-
-      // Clean up interval when streaming completes
-      streamPromise.then(() => {
-        clearInterval(reactivityInterval);
-        messages = [...messages]; // Final reactivity trigger
-      });
-    }
+  onDestroy(() => {
+    chatStore.destroy();
   });
 </script>
 
@@ -434,7 +202,11 @@
               Assistant
               {#if message.metadata?.category || (message.metadata?.toolsUsed && message.metadata.toolsUsed.length > 0)}
                 <span class="text-xs text-gray-500">
-                  ({#if message.metadata.category}category: {message.metadata.category}{/if}{#if message.metadata.category && message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0}, {/if}{#if message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0}tools: {message.metadata.toolsUsed.map(formatToolCall).join(', ')}{/if})
+                  ({#if message.metadata.category}category: {message.metadata
+                      .category}{/if}{#if message.metadata.category && message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0},
+                  {/if}{#if message.metadata.toolsUsed && message.metadata.toolsUsed.length > 0}tools: {message.metadata.toolsUsed
+                      .map(formatToolCall)
+                      .join(', ')}{/if})
                 </span>
               {/if}
             {/if}
@@ -463,7 +235,7 @@
         class="py-3 flex-1 rounded border px-4 text-lg"
         disabled={loading} />
       <button
-        on:click={sendMessage}
+        on:click={handleSendMessage}
         disabled={loading || !input.trim()}
         class="py-3 rounded bg-blue-600 px-6 text-white disabled:bg-gray-300">
         Send
@@ -645,9 +417,7 @@
               </div>
             </div>
           </div>
-          <div class="rounded bg-gray-100 p-2 text-xs text-gray-600">
-            Retrieval: fetching from vector store
-          </div>
+          <div class="rounded bg-gray-100 p-2 text-xs text-gray-600">Retrieval: fetching from vector store</div>
         </div>
 
         <!-- Time to First Token -->
@@ -750,9 +520,7 @@
               </div>
             </div>
           </div>
-          <div class="mt-2 rounded bg-gray-100 p-2 text-xs text-gray-600">
-            Total = Retrieval + Message Generation
-          </div>
+          <div class="mt-2 rounded bg-gray-100 p-2 text-xs text-gray-600">Total = Retrieval + Message Generation</div>
         </div>
       </div>
 
