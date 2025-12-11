@@ -16,7 +16,9 @@ interface UIMessage {
         type: string;
         toolCallId: string;
         state: 'input-streaming' | 'input-available' | 'output-available' | 'output-error';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         input?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         output?: any;
         errorText?: string;
       }

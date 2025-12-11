@@ -22,7 +22,7 @@ A floating chat widget for helping voters with questions.
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { fade, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
   import { createOnboardingStream } from '$lib/chatbot';
   import type { ChatbotWidgetProps } from './ChatbotWidget.type';
 
@@ -48,10 +48,92 @@ A floating chat widget for helping voters with questions.
   let loading = false;
   let sessionId: string | null = null;
   let messagesContainer: HTMLDivElement;
+  let clientId: string | null = null;
 
-  // Load sessionId from localStorage on mount
+  type ModelMessage = {
+    role: string;
+    // `content` might be string or an array; handle both
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    content: string | Array<{ type: string; text?: string } & Record<string, any>>;
+  };
+
+  function modelMessageToUIMessage(m: ModelMessage): UIMessage | null {
+    if (m.role !== 'user' && m.role !== 'assistant') {
+      // Skip system / tool messages for UI
+      return null;
+    }
+
+    let text = '';
+
+    if (typeof m.content === 'string') {
+      text = m.content;
+    } else if (Array.isArray(m.content)) {
+      const textPart = m.content.find((p) => p.type === 'text');
+      if (textPart?.text) text = textPart.text;
+    }
+
+    if (!text) return null;
+
+    return {
+      id: Math.random().toString(),
+      role: m.role as 'user' | 'assistant',
+      parts: [{ type: 'text', text, state: 'done' }]
+    };
+  }
+
+  // Load sessionId and clientId from localStorage on mount
   if (typeof window !== 'undefined') {
     sessionId = localStorage.getItem('chatbot_sessionId');
+    clientId = localStorage.getItem('chatbot_client_id');
+
+    if (!clientId) {
+      // Generate a stable anonymous client identifier for rate limiting
+      try {
+        // Prefer crypto.randomUUID when available
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        clientId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : null;
+      } catch {
+        clientId = null;
+      }
+
+      if (!clientId) {
+        clientId = Math.random().toString(36).slice(2);
+      }
+
+      localStorage.setItem('chatbot_client_id', clientId);
+    }
+  }
+
+  async function resetConversation() {
+    if (sessionId) {
+      try {
+        await fetch(`/api/chat?sessionId=${encodeURIComponent(sessionId)}`, {
+          method: 'DELETE'
+        });
+      } catch (error) {
+        console.warn('Failed to delete conversation on server', error);
+      }
+    }
+
+    sessionId = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('chatbot_sessionId');
+    }
+
+    messages = [];
+
+    // Start a fresh onboarding conversation
+    const { message, streamPromise } = createOnboardingStream(locale);
+    messages = [message as UIMessage];
+
+    const reactivityInterval = setInterval(() => {
+      messages = [...messages];
+    }, 50);
+
+    streamPromise.then(() => {
+      clearInterval(reactivityInterval);
+      messages = [...messages];
+    });
   }
 
   async function sendMessage() {
@@ -73,6 +155,7 @@ A floating chat widget for helping voters with questions.
         body: JSON.stringify({
           message: userMessage.parts[0].text,
           sessionId,
+          clientId,
           questionContext
         })
       });
@@ -201,8 +284,35 @@ A floating chat widget for helping voters with questions.
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
 
-  // Initialize onboarding message on first mount
-  onMount(() => {
+  // Initialize by hydrating history if available, otherwise show onboarding
+  onMount(async () => {
+    if (sessionId) {
+      try {
+        const res = await fetch(`/api/chat?sessionId=${encodeURIComponent(sessionId)}`);
+
+        if (res.ok) {
+          const data = await res.json();
+          const historyMessages = (data.messages as ModelMessage[])
+            .map(modelMessageToUIMessage)
+            .filter((m): m is UIMessage => m !== null);
+
+          if (historyMessages.length > 0) {
+            messages = historyMessages;
+            return; // Skip onboarding when we have history
+          }
+        } else if (res.status === 404) {
+          // Stored session expired / missing; clear invalid sessionId
+          sessionId = null;
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('chatbot_sessionId');
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load chat history', error);
+        // Fall back to onboarding below
+      }
+    }
+
     if (messages.length === 0) {
       const { message, streamPromise } = createOnboardingStream(locale);
       messages = [message as UIMessage];
@@ -230,12 +340,17 @@ A floating chat widget for helping voters with questions.
         </div>
         <div class="header-title">Chat Assistant</div>
       </div>
-      <button class="close-button" on:click={onClose} aria-label="Close chat">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
+      <div class="header-actions">
+        <button class="new-conversation-button" type="button" on:click={resetConversation}>
+          New conversation
+        </button>
+        <button class="close-button" on:click={onClose} aria-label="Close chat">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="messages" bind:this={messagesContainer}>
@@ -338,6 +453,12 @@ A floating chat widget for helping voters with questions.
     gap: 0.75rem;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .header-icon {
     width: 28px;
     height: 28px;
@@ -375,6 +496,28 @@ A floating chat widget for helping voters with questions.
   .close-button:hover {
     background: #f7f7f8;
     color: #202123;
+  }
+
+  .new-conversation-button {
+    padding: 0.35rem 0.7rem;
+    border-radius: 9999px;
+    border: 1px solid #e5e5e5;
+    background: #f7f7f8;
+    color: #202123;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .new-conversation-button:hover {
+    background: #ffffff;
+    border-color: #10a37f;
+    color: #10a37f;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 
   .messages {

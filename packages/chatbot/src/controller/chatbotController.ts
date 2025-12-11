@@ -20,15 +20,6 @@ export class ChatbotController {
   static async handleQuery(input: HandleQueryInput): Promise<ChatbotResponse> {
     // Create LLM response with unified prompt and tools
     // RAG tool is available for LLM to invoke autonomously when needed
-
-    // Modify the last user message to include the question context if provided
-    const messages = input.state.messages;
-    if (input.state.questionContext) {
-      const contextString = JSON.stringify(input.state.questionContext, null, 2);
-      const messageWithContext = '### User Message: ' + messages[messages.length - 1].content + '\n\n### User Page Context: ' + contextString;
-      messages[messages.length - 1] = { role: 'user', content: messageWithContext };
-    }
-    console.info('Latest message: ' + messages[messages.length - 1].content)
     return this.createLLMResponse({ input });
   }
 
@@ -45,6 +36,26 @@ export class ChatbotController {
     // Create metadata collector for RAG tool results
     const ragMetadataCollector: Array<RAGRetrievalResult> = [];
 
+    const messagesForLLM = [...input.state.messages];
+    // Modify the last user message to include the question context if provided
+
+    if (input.state.questionContext) {
+      const lastMessage = messagesForLLM[messagesForLLM.length - 1];
+
+      if (lastMessage.role === 'user') {
+        const contextString = JSON.stringify(input.state.questionContext, null, 2);
+        const messageWithContext =
+          '### User Message: ' +
+          lastMessage.content +
+          '\n\n### User is Looking at this VAA Page. Use this information ONLY if the user asks about it. You can gently ask if they are interested in this topic or something else, if they dont have clear intentions. This is what the user sees in the VAA application while talking to you: ' +
+          contextString;
+
+        messagesForLLM[messagesForLLM.length - 1] = {
+          ...lastMessage,
+          content: messageWithContext
+        };
+      }}
+      
     // Create LLM stream with unified prompt and tools
     const stream = await ChatEngine.createStream({
       messages: input.state.messages,
