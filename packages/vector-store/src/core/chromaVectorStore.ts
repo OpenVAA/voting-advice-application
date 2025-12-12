@@ -1,19 +1,16 @@
 import { ChromaClient } from 'chromadb';
-import { transformToVectorStoreFormat } from './utils/dataTransform';
+import { enrichSegmentsWithMetadata } from './utils/dataTransform';
+import { unwrapChromaResult } from './utils/unwrapChromaResult';
 import { VectorStore } from '../core/vectorStore.type';
-import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
+import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/file-processing';
 import type { Collection, Metadata } from 'chromadb';
-import type { SearchResult, VectorStoreConfig } from '../core/vectorStore.type';
+import type { SingleSearchResult, VectorSearchResult, VectorStoreConfig } from '../core/vectorStore.type';
 import type { Embedder } from './embedder.type';
-import type { SegmentFact, SegmentSummary, SourceSegment } from './types/source.types';
 
 /**
- * Low-level ChromaDB Vector Store for single collection operations
- * Stores segments, summaries, or facts in a single collection
- * For multi-vector retrieval, use MultiVectorStore instead
+ * ChromaDB vector store.
  */
 export class ChromaVectorStore extends VectorStore {
-  private collectionType: 'segment' | 'summary' | 'fact';
   private client: ChromaClient;
   private collection: Collection | null = null;
   private config: VectorStoreConfig;
@@ -23,7 +20,6 @@ export class ChromaVectorStore extends VectorStore {
     super();
     this.config = config;
     this.embedder = config.embedder;
-    this.collectionType = config.collectionType;
     this.client = new ChromaClient(config.chromaPath ? { path: config.chromaPath } : {});
   }
 
@@ -34,65 +30,32 @@ export class ChromaVectorStore extends VectorStore {
     });
   }
 
-  // TODO: accept only the object type of the collection type?
-  async addAnalyzedSegments(
-    segments: Array<SegmentWithAnalysis>,
-    documentId: string,
-    metadata: SourceMetadata
-  ): Promise<void> {
-    if (!this.collection) throw new Error('Not initialized');
+  async addSegments({
+    segments,
+    metadata
+  }: {
+    segments: Array<SourceSegment>;
+    metadata: SourceMetadata;
+  }): Promise<void> {
+    if (!this.collection) throw new Error('ChromaVectorStore not properly initialized. Call initialize() first.');
 
-    // Transform to vector store format (splits into segments, summaries, facts)
-    // TODO: don't reconstruct all segments, summaries, facts, just the ones that are relevant to the collection type?
-    const { segments: segs, summaries, facts } = transformToVectorStoreFormat(segments, documentId, metadata);
+    // Add parent document's metadata before embedding (de-normalize)
+    const segs = enrichSegmentsWithMetadata({ segments, metadata });
 
-    // Embed and add based on collection type
-    if (this.collectionType === 'segment') {
-      await this.addToCollection(segs);
-    } else if (this.collectionType === 'summary') {
-      await this.addToCollection(summaries);
-    } else if (this.collectionType === 'fact') {
-      await this.addToCollection(facts);
-    }
-  }
-
-  /**
-   * Internal method to add embeddable items to the current collection
-   */
-  private async addToCollection(items: Array<SourceSegment | SegmentSummary | SegmentFact>): Promise<void> {
+    // Check if the collection exists
     if (!this.collection)
       throw new Error(
         'ChromaVectorStore cannot add items to a non-existent collection. Vector store not properly initialized. Call initialize() first.'
       );
-    if (items.length === 0) return;
 
-    // Embed items only if they don't have embeddings OR the embedding dimension is different from the embedder
-    const itemsWithEmbeddings = await Promise.all(
-      items.map(async (item) => {
-        if (!item.embedding || item.embedding.length !== this.embedder.getDimension()) {
-          const result = await this.embedder.embed(item.content);
-          return { ...item, embedding: result.embedding };
-        }
-        return item;
-      })
-    );
+    // Any segments to add?
+    if (segs.length === 0) return;
 
     // Add to ChromaDB collection
     await this.collection.add({
-      ids: itemsWithEmbeddings.map((item: SourceSegment | SegmentSummary | SegmentFact) => item.id),
-      documents: itemsWithEmbeddings.map((item: SourceSegment | SegmentSummary | SegmentFact) => item.content),
-      embeddings: itemsWithEmbeddings.map((item: SourceSegment | SegmentSummary | SegmentFact) => item.embedding || []),
-      metadatas: itemsWithEmbeddings.map((item: SourceSegment | SegmentSummary | SegmentFact) => {
-        const baseMetadata: Record<string, string | number> = {
-          parentDocId: item.parentDocId,
-          segmentIndex: item.segmentIndex
-        };
-        // Add parentSegmentId for summaries and facts
-        if ('parentSegmentId' in item) {
-          baseMetadata.parentSegmentId = item.parentSegmentId;
-        }
-        return serializeMetadata(item.metadata, baseMetadata);
-      })
+      ids: segs.map((seg: SegmentWithMetadata) => seg.id),
+      documents: segs.map((seg: SegmentWithMetadata) => seg.content),
+      metadatas: segs.map((seg: SegmentWithMetadata) => seg.metadata as Metadata)
     });
   }
 
@@ -115,10 +78,7 @@ export class ChromaVectorStore extends VectorStore {
     }
   }
 
-  async search(
-    query: string,
-    topK: number = 10
-  ): Promise<Array<SearchResult<SourceSegment | SegmentSummary | SegmentFact>>> {
+  async search({ query, topK = 100 }: { query: string; topK?: number }): Promise<VectorSearchResult> {
     if (!this.collection)
       throw new Error(
         'ChromaVectorStore cannot search in a non-existent collection. Vector store not properly initialized. Call initialize() first.'
@@ -128,76 +88,43 @@ export class ChromaVectorStore extends VectorStore {
     const queryEmbedding = await this.embedder.embed(query);
 
     // Search ChromaDB
-    const results = await this.collection.query({
+    const rawResults = await this.collection.query({
       queryEmbeddings: [queryEmbedding.embedding],
       nResults: topK
     });
 
-    // Convert to SearchResult format
-    const searchResults: Array<SearchResult<SourceSegment | SegmentSummary | SegmentFact>> = [];
+    // Unwrap the results
+    const { ids, distances, documents, metadatas } = unwrapChromaResult(rawResults);
 
-    if (!results.ids[0] || results.ids[0].length === 0) {
-      return [];
+    // Any results?
+    if (!ids || ids.length === 0) {
+      return { results: [], timestamp: Date.now(), rerankingCosts: undefined };
     }
 
-    for (let i = 0; i < results.ids[0].length; i++) {
-      const id = results.ids[0][i] as string;
-      const content = results.documents[0]?.[i] as string;
-      const distance = results.distances?.[0]?.[i] || 0;
-      const metadata = results.metadatas[0]?.[i];
+    // Convert to our own format: SingleSearchResult
+    const searchResults: Array<SingleSearchResult> = [];
 
-      const item = {
-        id,
-        parentDocId: metadata?.parentDocId as string,
-        segmentIndex: metadata?.segmentIndex as number,
-        content,
-        embedding: results.embeddings?.[0]?.[i] || [],
-        metadata: deserializeMetadata(metadata || {}),
-        // Add parentSegmentId for summaries/facts
-        ...(metadata?.parentSegmentId && { parentSegmentId: metadata.parentSegmentId as string })
-      };
+    // Loop through results and convert to SearchResult format
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const distance = distances?.[i] || 0;
+      const documentId = metadatas?.[i]?.documentId as string;
+      const segmentIndex = metadatas?.[i]?.segmentIndex as number;
 
       searchResults.push({
-        item: item as SourceSegment | SegmentSummary | SegmentFact,
-        score: 1 - distance, // Convert distance to similarity score (assuming cosine)
-        distance
+        segment: {
+          id,
+          documentId,
+          segmentIndex,
+          content: documents?.[i] || '',
+          metadata: metadatas?.[i] || {}
+        },
+        vectorSearchScore: 1 - distance, // Convert distance to similarity score (assuming cosine)
+        distance,
+        rerankScore: undefined
       });
     }
 
-    return searchResults;
+    return { results: searchResults, timestamp: Date.now(), rerankingCosts: undefined };
   }
-}
-
-// ----------------------------------------
-// HELPERS
-// ----------------------------------------
-
-/**
- * Helper function to serialize metadata for ChromaDB
- * ChromaDB only accepts string | number | boolean in metadata
- */
-function serializeMetadata(metadata: SourceMetadata, additionalFields?: Record<string, string | number>): Metadata {
-  const serialized: Metadata = {
-    ...(metadata.source && { source: metadata.source }),
-    ...(metadata.title && { title: metadata.title }),
-    ...(metadata.link && { link: metadata.link }),
-    ...(metadata.authors && { authors: JSON.stringify(metadata.authors) }),
-    ...(metadata.publishedDate && { publishedDate: metadata.publishedDate }),
-    ...(metadata.createdAt && { createdAt: metadata.createdAt }),
-    ...(metadata.locale && { locale: metadata.locale }),
-    ...additionalFields
-  };
-  return serialized;
-}
-
-function deserializeMetadata(metadata: Metadata): SourceMetadata {
-  return {
-    ...(metadata.source && { source: metadata.source as string }),
-    ...(metadata.title && { title: metadata.title as string }),
-    ...(metadata.link && { link: metadata.link as string }),
-    ...(metadata.authors && { authors: JSON.parse(metadata.authors as string) as Array<string> }),
-    ...(metadata.publishedDate && { publishedDate: metadata.publishedDate as string }),
-    ...(metadata.createdAt && { createdAt: metadata.createdAt as string }),
-    ...(metadata.locale && { locale: metadata.locale as string })
-  };
 }

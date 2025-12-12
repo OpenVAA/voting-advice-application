@@ -1,6 +1,5 @@
-import type { SegmentWithAnalysis, SourceMetadata } from '@openvaa/file-processing';
+import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/file-processing';
 import type { Embedder } from './embedder.type';
-import type { EnrichedSegment } from './types';
 
 /**
  * Configuration for vector store initialization
@@ -14,22 +13,9 @@ import type { EnrichedSegment } from './types';
  */
 export interface VectorStoreConfig {
   collectionName: string;
-  collectionType: 'segment' | 'summary' | 'fact';
   embedder: Embedder;
   /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
   chromaPath?: string;
-}
-
-/**
- * Generic search result
- */
-export interface SearchResult<TItem = unknown> {
-  /** The retrieved item */
-  item: TItem;
-  /** Similarity score (higher is better, 0-1 range) */
-  score: number;
-  /** Distance metric (lower is better) */
-  distance: number;
 }
 
 /**
@@ -51,33 +37,25 @@ export interface SearchResult<TItem = unknown> {
  * }
  * ```
  */
-export interface EnrichedSearchResult {
+export interface SingleSearchResult {
   /** Enriched segment with full analysis context */
-  segment: EnrichedSegment;
+  segment: SegmentWithMetadata;
   /** Original vector similarity score (higher is better, 0-1 range) */
   vectorSearchScore: number;
-  /** Reranking score (only present when reranking is enabled) */
-  rerankScore?: number;
   /** Distance metric (lower is better) */
   distance: number;
-  /** Which collection found this result */
-  foundWith: 'segment' | 'summary' | 'fact';
+  /** Reranking score (only present when reranking is enabled) */
+  rerankScore?: number;
   /** Optional fact that was found */
   factFound?: string;
 }
 
 /**
- * Result from multi-vector search across segments, summaries, and facts
+ * Results from a vector search operation. Includes
  */
-export interface MultiVectorSearchResult {
-  /** Deduplicated and enriched results */
-  results: Array<EnrichedSearchResult>; // TODO: maybe use a map? it's more an internal nice-to-have feat than necessary... 
-  /** Statistics about where results came from */
-  retrievalSources: {
-    fromSegments: number;
-    fromSummaries: number;
-    fromFacts: number;
-  };
+export interface VectorSearchResult {
+  /** Segments found in the vector search */
+  results: Array<SingleSearchResult>;
   /** Timestamp when search was performed */
   timestamp: number;
   /** Costs incurred from reranking (if enabled) */
@@ -87,12 +65,9 @@ export interface MultiVectorSearchResult {
 /**
  * Per-collection search configuration
  */
-export interface CollectionSearchConfig {
+export interface VectorSearchConfig {
   /** Number of results to fetch from ChromaDB initially */
   topK?: number;
-  /** Cohere pricing allows reranking up to 100 search results for a fixed cost. 
-   * This is the allocation of that 100 search results to this collection type.*/
-  rerankAllocation?: number;
 }
 
 /**
@@ -108,48 +83,6 @@ export interface RerankConfig {
 }
 
 /**
- * Options for multi-vector search
- */
-export interface MultiVectorSearchOptions {
-  /** Map of topics to arrays of reformulated queries for searching */
-  queries: Record<string, Array<string>>;
-  /** Target number of results to return */
-  nResultsTarget: number;
-  /** Which collections to search (default: all) */
-  searchCollections?: Array<'segment' | 'summary' | 'fact'>;
-  /** Per-collection search configuration */
-  searchConfig?: {
-    segment?: CollectionSearchConfig;
-    summary?: CollectionSearchConfig;
-    fact?: CollectionSearchConfig;
-  };
-  /** Optional reranking configuration */
-  rerankConfig?: RerankConfig;
-}
-
-/**
- * Configuration for MultiVectorStore
- */
-export interface MultiVectorStoreConfig {
-  /** Collection names for each type */
-  collectionNames: {
-    segments: string;
-    summaries: string;
-    facts: string;
-  };
-  /** Embedder for all collections (if same) */
-  embedder?: Embedder;
-  /** Individual embedders per collection (overrides embedder) */
-  embedders?: {
-    segments?: Embedder;
-    summaries?: Embedder;
-    facts?: Embedder;
-  };
-  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
-  chromaPath?: string;
-}
-
-/**
  * Abstract base class for vector stores
  * Low-level interface for single-collection operations
  */
@@ -160,14 +93,15 @@ export abstract class VectorStore {
   /**
    * Add analyzed segments to the vector store
    * @param segments - Array of segments with analysis
-   * @param documentId - ID of the parent document
    * @param metadata - Metadata for the source document
    */
-  abstract addAnalyzedSegments(
-    segments: Array<SegmentWithAnalysis>,
-    documentId: string,
-    metadata: SourceMetadata
-  ): Promise<void>;
+  abstract addSegments({
+    segments,
+    metadata
+  }: {
+    segments: Array<SourceSegment>;
+    metadata: SourceMetadata;
+  }): Promise<void>;
 
   /**
    * Delete segments by ID
@@ -179,7 +113,7 @@ export abstract class VectorStore {
    * Search for similar items in the vector store
    * @param query - Search query string or embedding vector
    * @param topK - Number of results to return
-   * @returns Array of search results with similarity scores
+   * @returns Vector search results
    */
-  abstract search(query: string, topK?: number): Promise<Array<SearchResult<unknown>>>;
+  abstract search({ query, topK }: { query: string; topK?: number }): Promise<VectorSearchResult>;
 }

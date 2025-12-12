@@ -1,57 +1,5 @@
 import type { CommonLLMParams, LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
-
-/**
- * Document source metadata extracted by LLM
- * @example
- * ```typescript
- * const sourceMetadata: SourceMetadata = {
- *   source: 'Source Name',
- *   title: 'Source Title',
- *   link: 'https://source.com',
- *   authors: ['Author 1', 'Author 2'],
- *   publishedDate: '2021-01-01',
- *   createdAt: '2021-01-01',
- *   locale: 'en-US'
- * }
- * ```
- */
-export interface SourceMetadata {
-  source?: string;
-  title?: string;
-  link?: string;
-  authors?: Array<string>;
-  publishedDate?: string;
-  createdAt?: string;
-  locale?: string;
-}
-
-/**
- * A source segment with its LLM-generated analysis
- * @example
- * ```typescript
- * const segmentWithAnalysis: SegmentWithAnalysis = {
- *   id: '1',
- *   parentDocId: '1',
- *   segment: 'This is a segment',
- *   segmentIndex: 0,
- *   summary: 'This is a summary',
- *   standaloneFacts: ['This is a fact']
- * }
- * ```
- */
-export interface SegmentWithAnalysis {
-  id: string; // TODO: should be Id
-  parentDocId: string;
-  /** The actual text from the source. Derived from markdown with some formatting differences. */
-  segment: string;
-  /** Index of the segment in the source. Used for ordering. */
-  segmentIndex: number;
-  /** Summary that is embedded & searched separately. Helps find relevant segments. */
-  summary: string;
-  /** Extracted facts embedded & searched separately. Used to improve retrieval.
-   * For model input, always use the original segment to prevent hallucination. */
-  standaloneFacts?: Array<string>;
-}
+import type { SourceMetadata, SourceSegment } from './source.types';
 
 /**
  * Options for analyzing a source and its segments
@@ -74,7 +22,7 @@ export interface AnalyzeSourceOptions extends CommonLLMParams {
   segments: Array<string>;
   /** Optional: Source ID. If not provided, one will be generated */
   documentId?: string;
-}
+} // TODO: separate options and data (segments and text)
 
 /**
  * Metrics specific to text analysis operations
@@ -169,7 +117,7 @@ export interface AnalyzeSourceData {
   documentId: string;
   sourceMetadata: SourceMetadata;
   /** Analysis results for each segment */
-  segmentAnalyses: Array<SegmentWithAnalysis>;
+  segmentAnalyses: Array<SourceSegment>;
   /** Analysis metadata and metrics */
   metrics: SourceAnalysisMetrics;
 }
@@ -185,4 +133,4 @@ export type AnalyzeSourceResult = LLMPipelineResult<AnalyzeSourceData>;
 export interface ExtractMetadataOptions extends CommonLLMParams {
   /** The full document text to extract metadata from */
   text: string;
-}
+} // TODO: separate options and data (text)

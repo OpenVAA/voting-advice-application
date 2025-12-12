@@ -1,5 +1,6 @@
 import type { LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
-import type { SegmentWithAnalysis, SourceAnalysisMetrics, SourceMetadata } from './core/documentAnalysis.type';
+import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store';
+import type { SourceAnalysisMetrics } from './core/documentAnalysis.type';
 import type { ConvertPdfOptions } from './core/pdfConversion.type';
 import type { SegmentTextOptions, TextSegmentationMetrics } from './core/textSegmentation.type';
 
@@ -13,7 +14,7 @@ interface BaseFileProcessingResultData {
   /** Extracted document metadata */
   metadata: SourceMetadata;
   /** Analysis results for each segment */
-  segmentAnalyses: Array<SegmentWithAnalysis>;
+  segments: Array<SourceSegment>;
   /** Processing metadata extending multi-stage pipeline metrics */
   processingMetadata: {
     /** Segmentation stage metadata */

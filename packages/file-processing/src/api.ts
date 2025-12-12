@@ -93,7 +93,7 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     data: {
       documentId: analysisResult.data.documentId,
       metadata: analysisResult.data.sourceMetadata,
-      segmentAnalyses: analysisResult.data.segmentAnalyses,
+      segments: analysisResult.data.segmentAnalyses,
       processingMetadata
     },
     llmMetrics: combinedLlmMetrics,

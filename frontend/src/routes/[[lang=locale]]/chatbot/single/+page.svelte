@@ -191,7 +191,14 @@
 <div class="flex h-screen w-full gap-4 p-4">
   <!-- Left side: Chat conversation -->
   <div class="flex flex-1 flex-col">
-    <h2 class="mb-4 text-2xl font-bold">Chat</h2>
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-2xl font-bold">Chat</h2>
+      <button
+        on:click={() => chatStore.resetConversation()}
+        class="rounded bg-gray-200 px-4 py-2 text-black hover:bg-gray-300">
+        New conversation
+      </button>
+    </div>
     <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
       {#each messages as message}
         <div class="p-3 rounded {message.role === 'user' ? 'ml-8 bg-blue-100' : 'mr-8 bg-gray-100'}">

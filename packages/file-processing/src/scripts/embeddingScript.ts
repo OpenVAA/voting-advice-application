@@ -1,8 +1,7 @@
+import { OpenAIEmbedder } from '@openvaa/vector-store';
 import dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import { MultiVectorStore } from '../core/multiVectorStore';
-import { OpenAIEmbedder } from '../core/openAIEmbedder';
 import type { ProcessPdfResult } from '@openvaa/file-processing';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });

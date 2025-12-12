@@ -1,45 +1,6 @@
 import { CohereClientV2 } from 'cohere-ai';
-import type { EnrichedSegment } from '../types/source.types';
-
-/**
- * Cohere Rerank API Pricing
- * - Search units are billed based on the number of segments to be reranked.
- */
-
-/**
- * Parameters for the rerank function
- */
-export interface RerankParams {
-  /** The search query used for retrieval */
-  query: string;
-  /** Array of segments to rerank */
-  retrievedSegments: Array<EnrichedSegment>;
-  /** Number of top results to return */
-  nBest: number;
-  /** API key for Cohere */
-  apiKey: string;
-  /** Reranking model to use (default: 'rerank-v3.5') */
-  model?: string;
-}
-
-/**
- * Result from reranking operation
- */
-export interface RerankResult {
-  /** Reranked segments in order of relevance */
-  segments: Array<EnrichedSegment>;
-  /** Map of segment IDs to their relevance scores */
-  scores: Map<string, number>;
-  /** Metadata about the reranking operation */
-  metadata: {
-    /** Search units billed by Cohere */
-    searchUnits?: number;
-    /** Input tokens used */
-    inputTokens?: number;
-    /** Output tokens used */
-    outputTokens?: number;
-  };
-}
+import type { SegmentWithMetadata } from '@openvaa/file-processing';
+import type { RerankParams, RerankResult } from './rerank.types';
 
 /**
  * Rerank retrieved segments using Cohere's reranking model
@@ -69,7 +30,7 @@ export async function rerank(params: RerankParams): Promise<RerankResult> {
 
   // Extract text content from segments for reranking
   // Use the original segment text as the primary content for reranking
-  const documents = retrievedSegments.map((seg) => seg.segment);
+  const documents = retrievedSegments.map((seg) => seg.content);
 
   // Call Cohere rerank API
   const response = await cohere.rerank({
@@ -80,7 +41,7 @@ export async function rerank(params: RerankParams): Promise<RerankResult> {
   });
 
   // Map results back to enriched segments with scores
-  const rerankedSegments: Array<EnrichedSegment> = [];
+  const rerankedSegments: Array<SegmentWithMetadata> = [];
   const scores = new Map<string, number>();
 
   for (const result of response.results) {

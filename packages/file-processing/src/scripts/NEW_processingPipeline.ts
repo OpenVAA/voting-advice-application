@@ -9,9 +9,9 @@ import * as path from 'path';
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
 // Directories
-const UNPROCESSED_DIR = path.join(__dirname, '../docs/step0_unprocessed');
-const OUTPUT_DIR = path.join(__dirname, '../docs/step3_ready');
-const SEGMENTED_TEXT_JOINED = path.join(__dirname, '../docs/NEW_segmentedTexts');
+const UNPROCESSED_DIR = path.join(__dirname, '../documents/step0_unprocessed');
+const OUTPUT_DIR = path.join(__dirname, '../documents/step3_ready');
+const SEGMENTED_TEXT_JOINED = path.join(__dirname, '../documents/NEW_segmentedTexts');
 
 // --------------------------------------------------------------
 // HELPERS
@@ -189,7 +189,7 @@ async function main() {
         : path.join(OUTPUT_DIR, `${baseFilename}_processed.json`);
 
       // Save readable segments
-      saveSegmentsToFile(result.data.segmentAnalyses, segmentsPath);
+      saveSegmentsToFile(result.data.segments, segmentsPath);
 
       // Save complete JSON result
       fs.writeFileSync(jsonPath, JSON.stringify(result, null, 2), 'utf-8');
@@ -197,7 +197,7 @@ async function main() {
 
       // Print processing stats
       console.info('\n  📊 Processing Stats:');
-      console.info(`    - Segments: ${result.data.segmentAnalyses.length}`);
+      console.info(`    - Segments: ${result.data.segments.length}`);
       console.info(`    - Total cost: $${result.llmMetrics.costs.total.toFixed(4)}`);
       console.info(`    - Processing time: ${(result.llmMetrics.processingTimeMs / 1000).toFixed(2)}s`);
       console.info(`    - LLM calls: ${result.llmMetrics.nLlmCalls}`);

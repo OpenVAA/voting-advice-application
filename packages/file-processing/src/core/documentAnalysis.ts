@@ -2,13 +2,9 @@ import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
+import type { SourceMetadata } from '@openvaa/vector-store';
 import type { ModelMessage } from 'ai';
-import type {
-  AnalyzeSourceOptions,
-  AnalyzeSourceResult,
-  ExtractMetadataOptions,
-  SourceMetadata
-} from './documentAnalysis.type';
+import type { AnalyzeSourceOptions, AnalyzeSourceResult, ExtractMetadataOptions } from './documentAnalysis.type';
 
 // TODO: use controller to track progress
 
@@ -148,9 +144,9 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
 
   // Map responses to segment analyses
   const segmentAnalyses = responses.map((response, index) => ({
-    parentDocId: finalDocumentId,
+    documentId: finalDocumentId,
     id: crypto.randomUUID(),
-    segment: segments[index],
+    content: segments[index],
     segmentIndex: index,
     summary: response.object.summary,
     standaloneFacts: response.object.standaloneFacts || []
