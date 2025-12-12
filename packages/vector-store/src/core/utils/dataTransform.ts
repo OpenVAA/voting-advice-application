@@ -1,4 +1,4 @@
-import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/file-processing';
+import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '../source.types';
 
 /**
  * Adds document metadata to SourceSegment objects, transforming them into SegmentWithMetadata objects.

@@ -1,4 +1,4 @@
-import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/file-processing';
+import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/vector-store/types';
 import type { Embedder } from './embedder.type';
 
 /**

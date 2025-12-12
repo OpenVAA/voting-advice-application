@@ -1,4 +1,4 @@
-import type { SegmentWithMetadata } from '@openvaa/file-processing';
+import type { SegmentWithMetadata } from '../source.types';
 
 /**
  * Cohere Rerank API Pricing

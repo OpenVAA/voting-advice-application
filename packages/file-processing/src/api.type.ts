@@ -1,5 +1,5 @@
 import type { LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
-import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store';
+import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store/types';
 import type { SourceAnalysisMetrics } from './core/documentAnalysis.type';
 import type { ConvertPdfOptions } from './core/pdfConversion.type';
 import type { SegmentTextOptions, TextSegmentationMetrics } from './core/textSegmentation.type';

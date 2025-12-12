@@ -2,10 +2,10 @@ import { ChromaClient } from 'chromadb';
 import { enrichSegmentsWithMetadata } from './utils/dataTransform';
 import { unwrapChromaResult } from './utils/unwrapChromaResult';
 import { VectorStore } from '../core/vectorStore.type';
-import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from '@openvaa/file-processing';
 import type { Collection, Metadata } from 'chromadb';
 import type { SingleSearchResult, VectorSearchResult, VectorStoreConfig } from '../core/vectorStore.type';
 import type { Embedder } from './embedder.type';
+import type { SegmentWithMetadata, SourceMetadata, SourceSegment } from './source.types';
 
 /**
  * ChromaDB vector store.
@@ -51,11 +51,15 @@ export class ChromaVectorStore extends VectorStore {
     // Any segments to add?
     if (segs.length === 0) return;
 
+    // Generate embeddings for each segment
+    const embeddings = await Promise.all(segs.map((seg) => this.embedder.embed(seg.content)));
+
     // Add to ChromaDB collection
     await this.collection.add({
       ids: segs.map((seg: SegmentWithMetadata) => seg.id),
       documents: segs.map((seg: SegmentWithMetadata) => seg.content),
-      metadatas: segs.map((seg: SegmentWithMetadata) => seg.metadata as Metadata)
+      metadatas: segs.map((seg: SegmentWithMetadata) => seg.metadata as Metadata),
+      embeddings: embeddings.map((embedding) => embedding.embedding)
     });
   }
 

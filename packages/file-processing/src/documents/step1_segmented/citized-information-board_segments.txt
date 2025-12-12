@@ -1,0 +1,190 @@
+=== SEGMENT 1 ===
+[Summary: This segment introduces the May/June 2019 issue (Volume 47: Issues 5-6) of "Relate," a journal published by the Citizens Information Board covering social services, policy, and legislation in Ireland. The text then defines the European Union (EU) as an economic and political union and lists its 28 member states, including Ireland and the UK, as of that publication date.]
+
+undefined
+
+
+=== SEGMENT 2 ===
+[Summary: The segment details the UK's postponed departure from the EU, noting the 2016 vote, the original March 29, 2019 deadline, and the subsequent delay until a withdrawal agreement is approved or October 31, 2019. It also outlines the EU's structure, mentioning key institutions (Council, Commission, Parliament), its budget funded by member states, and its power to create laws, such as Regulations and Directives, based on treaties. Historically, the EU evolved from three post-WWII communities: the European Coal and Steel Community (ECSC), the European Atomic Energy Community (Euratom), and the European Economic Community (EEC).]
+
+undefined
+
+
+=== SEGMENT 3 ===
+[Summary: This segment outlines the document's structure and details the origins of the European Economic Community (EEC). The EEC was formed by the Treaty of Rome in 1957, establishing a customs union among its six founding members: West Germany, France, Italy, Netherlands, Belgium, and Luxembourg. The institutions of the three original communities eventually merged to become the current Council of the European Union, European Commission, and European Parliament.]
+
+undefined
+
+
+=== SEGMENT 4 ===
+[Summary: The EEC expanded significantly on January 1, 1973, when Ireland, the UK, and Denmark became member states. Subsequent treaties dramatically evolved the organization: the 1986 Single European Act aimed to create a single market, and the 1992 Maastricht Treaty renamed the EEC as the European Community within the wider European Union (EU), expanding its scope to include foreign policy, security, and the creation of the euro. Constitutional amendments continued with the Amsterdam (1997), Nice (2001), and Lisbon (2007) Treaties.]
+
+undefined
+
+
+=== SEGMENT 5 ===
+[Summary: The current goals of the EU focus on promoting peace, freedom, security, justice, and the wellbeing of its citizens, while also fostering sustainable development based on balanced economic growth, full employment, and environmental protection. Furthermore, the EU seeks to enhance cohesion, respect diversity, and maintain the Euro as the currency of its economic and monetary union. The most important institutions include the European Parliament, the European Commission, the Council of the European Union, the European Council, the Court of Justice of the European Union, and the Court of Auditors.]
+
+undefined
+
+
+=== SEGMENT 6 ===
+[Summary: The European Parliament is the EU's only directly elected institution, with 751 seats and elections occurring every five years. Its members (MEPs) organize into parliamentary groups and elect a Bureau, including a president, for 2.5-year terms. While its powers have increased, requiring its approval alongside the Council of the European Union for most European laws, its role is limited to offering opinions on certain important areas, such as tax legislation.]
+
+undefined
+
+
+=== SEGMENT 7 ===
+[Summary: The European Parliament (EP) lacks the power to initiate legislation, a function reserved exclusively for the Commission, but it retains crucial powers to vote on and amend proposals. The EP also plays a critical supervisory role over the EU institutions, notably by approving the Commission's President and Commissioners, and has the authority to force the entire Commission to resign through a two-thirds motion of censure. Additionally, the EP must approve the annual EU budget and grant consent for any new member state to join the EU.]
+
+undefined
+
+
+=== SEGMENT 8 ===
+[Summary: The European Commission, the executive body of the EU based in Brussels, is composed of 28 commissioners (one from each member state) who collectively form the College of Commissioners and serve five-year terms. While nominated by their respective member states, commissioners are not meant to represent national interests. The appointment process requires the European Parliament's approval for both the President and each individual commissioner following scrutiny by parliamentary committees.]
+
+undefined
+
+
+=== SEGMENT 9 ===
+[Summary: The European Commission meets weekly to adopt proposals and finalize policy, with decisions made by a simple majority vote that subsequently receives the full support of all commissioners. The Commission is supported by approximately 32,000 staff members from all member states, including various experts. Crucially, the Commission initiates legislation by drafting proposals for European laws and sending them to the Council and European Parliament for amendment.]
+
+undefined
+
+
+=== SEGMENT 10 ===
+[Summary: The European Commission exercises significant powers across legislative planning, enforcement, executive management, and international relations. It develops the annual legislative plan, ensures compliance with EU law by acting as the guardian of the EU treaties, and manages policies while drafting and implementing the annual budget. Furthermore, the Commission represents the EU internationally by negotiating trade and cooperation agreements, though these usually require approval from the Parliament and the Council.]
+
+undefined
+
+
+=== SEGMENT 11 ===
+[Summary: The Council of the European Union shares decision-making power with the European Parliament, particularly concerning law-making and budget approval. It operates under a rotating presidency and is composed of one government minister from every member state, with the specific minister attending depending on the subject matter being discussed. While the Council generally meets in Brussels, meetings during April, June, and October are held in Luxembourg.]
+
+undefined
+
+
+=== SEGMENT 12 ===
+[Summary: The Council of the European Union is responsible for four core functions: legislation, coordination of member state economic policies, development of the common foreign and security policy, and budget approval. The Council shares legislative and budgetary powers with the European Parliament, jointly adopting or rejecting proposals that originate from the European Commission. Furthermore, the Council defines and implements the EU's foreign and security policy, covering areas like aid, defense, and trade, based on guidelines set by the European Council.]
+
+undefined
+
+
+=== SEGMENT 13 ===
+[Summary: The Council of the European Union typically uses qualified majority voting (QMV) for decisions on Commission proposals. Achieving a qualified majority requires 55% of member states (currently at least 16) to agree, provided they represent at least 65% of the EU population. While a blocking minority requires at least four member states, sensitive topics like foreign policy and taxation still necessitate a unanimous vote.]
+
+undefined
+
+
+=== SEGMENT 14 ===
+[Summary: The European Council is composed of the heads of state or government of EU member states, the president of the European Council, and the president of the European Commission. Its primary function is to define the EU's overall political direction, priorities, and strategic guidelines, but it is explicitly not a legislating body. The Council also holds critical appointment powers, including electing its own president, nominating the candidate for the European Commission president, and exclusively deciding on the leadership of the European Central Bank.]
+
+undefined
+
+
+=== SEGMENT 15 ===
+[Summary: European Council meetings are summits held at least twice every six months, normally in Brussels, where EU leaders determine broad political priorities. These meetings are chaired by the European Council president, and the president of the European Parliament attends the start to outline Parliament's views. Decisions are typically reached by consensus, though specific treaty-outlined cases require unanimity or qualified majority, and the Council and Commission presidents do not vote.]
+
+undefined
+
+
+=== SEGMENT 16 ===
+[Summary: The Court of Justice of the European Union (CJEU) serves as the judicial branch of the EU, consisting of the European Court of Justice (ECJ), the General Court, and specialized courts, and is based in Luxembourg. Its core duties involve ensuring EU law is applied consistently across all member states and resolving legal disputes between national governments, EU institutions, or, in specific cases, individuals and companies. The ECJ, the highest court, operates with 28 judges and 11 advocate generals, functions as a collegiate body, and issues a single ruling per case without allowing dissenting opinions.]
+
+undefined
+
+
+=== SEGMENT 17 ===
+[Summary: Judges and advocate generals of the European Court of Justice (ECJ) must meet high national court qualifications or be academic lawyers (jurisconsults). Strict independence requirements mandate that they cannot hold other administrative or political offices, nor engage in any other occupation, paid or unpaid. They are appointed by joint agreement of member state governments for a renewable term of six years.]
+
+undefined
+
+
+=== SEGMENT 18 ===
+[Summary: The General Court operates with panels of three, five, or a single judge, and can utilize a 15-judge Grand Chamber for complex cases, with initial jurisdiction over specific matters like competition law and EU staff regulations. Decisions from the General Court can be appealed to the ECJ strictly on points of law. Furthermore, the CJEU uses mechanisms like preliminary rulings—where national courts refer questions of EU law interpretation to the ECJ—and proceedings for failure to fulfil an obligation to ensure EU law is consistently upheld and applied across all member states.]
+
+undefined
+
+
+=== SEGMENT 19 ===
+[Summary: This segment details two types of legal actions before the CJEU: Proceedings for failure to fulfil an obligation, and Proceedings for annulment. The former allows the Commission or a member state to compel another member state to comply with EU law, resulting in mandatory immediate rectification if the CJEU finds fault. The latter allows applicants to challenge the legality of EU measures, such as Regulations or Directives, enabling the ECJ to annul acts deemed contrary to EU law.]
+
+undefined
+
+
+=== SEGMENT 20 ===
+[Summary: The General Court and the ECJ divide jurisdiction over certain actions; the ECJ holds exclusive jurisdiction over disputes between member states and major EU institutions (with exceptions) or between EU institutions themselves. The General Court handles most other actions, particularly those brought by individuals. Private individuals seeking proceedings for annulment must demonstrate they are directly and individually affected, but they can approach the ECJ directly. If successful, the EU pays costs and the law is annulled; if they lose, they may be liable for the costs of both sides.]
+
+undefined
+
+
+=== SEGMENT 21 ===
+[Summary: The Court of Auditors is responsible for auditing the accounts and overseeing the implementation of EU institutional budgets, aiming to improve financial management and report to citizens on the use of EU money. It draws up an annual report at the end of each financial year, which must be published in the Official Journal of the European Union. The Court is headquartered in Luxembourg and is composed of 28 independent members, who are appointed by the Council for a renewable six-year term after consulting the European Parliament.]
+
+undefined
+
+
+=== SEGMENT 22 ===
+[Summary: The annual EU budget process starts with a draft prepared by the European Commission, requiring approval from both the European Council and the European Parliament; a disagreement necessitates a new draft. The EU's income sources primarily include member state contributions (like VAT percentages), import duties, and fines, while expenditures fund running costs and diverse policy areas such as agricultural grants (CAP), regional development, and border control. Furthermore, a broader seven-year multi-annual financial framework is used for long-term planning certainty.]
+
+undefined
+
+
+=== SEGMENT 23 ===
+[Summary: European legislation is founded on treaties, notably the Treaty of the European Union (TEU) and the Treaty on the Functioning of the European Union (TFEU), which distribute legislative authority and must be ratified by member states. Most laws are drafted by the Commission and agreed upon by the Council and Parliament. This legislation takes forms such as Regulations, which are immediately binding and applicable without national transposition, and Directives, which mandate member states to implement specific national legislation while allowing flexibility in method and form.]
+
+undefined
+
+
+=== SEGMENT 24 ===
+[Summary: This segment completes the description of EU legislative forms, noting that Decisions are binding on a specific group (like a member state or corporation), while Recommendations and opinions are non-binding. It then details the initial stages of the Ordinary Legislative Procedure (formerly co-decision procedure), explaining that the Commission submits a proposal to the Council and Parliament, and outlining the steps for adoption during the first reading or progression to a second reading if disagreements arise.]
+
+undefined
+
+
+=== SEGMENT 25 ===
+[Summary: This section outlines the final stages of the Ordinary Legislative Procedure, starting with the potential adoption if the Council accepts the Parliament's second-reading amendments. If no agreement is reached after the second reading, a Conciliation Committee, composed of equal representatives from both institutions, is convened to agree on a joint text. This legislative act is only adopted if both the Council and the Parliament approve the joint text during the third reading; otherwise, the proposal is rejected and the procedure ends.]
+
+undefined
+
+
+=== SEGMENT 26 ===
+[Summary: The second reading of the legislative procedure concludes the adoption process if the Parliament approves the Council's position, or if the Parliament successfully amends the Council's position and the Council accepts those amendments; otherwise, the proposal is rejected or moves to a third reading. The third reading involves convening a Conciliation Committee to establish a joint text, which must then be approved by both the Parliament and the Council for the act to be adopted. Throughout these stages, informal negotiations known as 'trilogues' often take place, with the Commission acting as a mediator.]
+
+undefined
+
+
+=== SEGMENT 27 ===
+[Summary: The Consent procedure is an EU legislative process similar to the ordinary legislative procedure, but it significantly restricts the European Parliament's role. Under this procedure, the Parliament cannot propose amendments; instead, it is limited to either accepting or rejecting the version of the legislation approved by the Council of the European Union. This procedure is applicable in areas like discrimination law.]
+
+undefined
+
+
+=== SEGMENT 28 ===
+[Summary: The Consultation procedure allows the Council of the European Union to adopt legislation, typically requiring unanimous or qualified majority approval, based on a Commission proposal after consulting the Parliament, though the Council is not bound by Parliament's advice. All EU legislation, along with its effective date, is published daily in the Official Journal of the European Union and can be searched on the EUR-Lex website. A core principle of the EU legal system is the supremacy of EU legislation, asserting that European law overrides all conflicting national legislation.]
+
+undefined
+
+
+=== SEGMENT 29 ===
+[Summary: The Citizens Information Board (CIB) provides independent information, advice, and advocacy on public and social services through its website, phone service, and local network. The CIB is also responsible for the Money Advice and Budgeting Service and offers advocacy services for people with disabilities. Contact details and the address for its Dublin 2 head office are included.]
+
+undefined
+
+
+=== SEGMENT 30 ===
+[Summary: The text outlines two recent EU legislative developments: the General Data Protection Regulation (GDPR) and the Geo-blocking Regulation. The GDPR, effective since May 25, 2018, along with the Law Enforcement Directive, significantly reforms data protection rules by setting higher standards for individuals and increasing obligations and sanctions for organizations processing personal data. The Geo-blocking Regulation (EU Regulation 2018/302), applied since December 3, 2018, ensures equal consumer access to the digital market across the EU by prohibiting geo-blocking and geo-discrimination.]
+
+undefined
+
+
+=== SEGMENT 31 ===
+[Summary: This segment details key consumer protections resulting from recent EU legislation, focusing primarily on prohibitions under the Geo-blocking Regulation, which prevents EU businesses from restricting website access, forcing local site purchases, or discriminating based on payment location. It also notes that Regulation (EU) 2017/920 abolished temporary EU roaming charges starting June 15, 2017, and introduces the Consumer Rights Directive (Directive 2011/83/EU), which standardized minimum consumer protection across the EU and was incorporated into Irish law on June 13, 2014.]
+
+undefined
+
+
+=== SEGMENT 32 ===
+[Summary: This segment outlines consumer protections derived from the Consumer Rights Directive, such as the right to detailed pre-purchase information, a 14-day cooling-off period for online purchases, and protection against payment surcharges. Furthermore, it introduces the Single-Use Plastics Directive, which mandates a ban on single-use plastics in the EU by 2021 where alternatives are available, and concludes with contact information for Citizens Information.]
+
+undefined

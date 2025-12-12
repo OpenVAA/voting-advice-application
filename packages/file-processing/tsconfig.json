@@ -7,6 +7,6 @@
     "outDir": "./build"
   },
   "include": ["src/**/*"],
-  "exclude": ["tests/**/*"],
+  "exclude": ["tests/**/*", "src/scripts/**/*"],
   "references": [{ "path": "../core/tsconfig.json" }, { "path": "../llm-refactor/tsconfig.json" }, { "path": "../vector-store/tsconfig.json" }]
 }

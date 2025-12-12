@@ -2,7 +2,7 @@ import { setPromptVars } from '@openvaa/llm-refactor';
 import { z } from 'zod';
 import { loadPrompt } from '../utils/promptLoader';
 import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
-import type { SourceMetadata } from '@openvaa/vector-store';
+import type { SourceMetadata } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { AnalyzeSourceOptions, AnalyzeSourceResult, ExtractMetadataOptions } from './documentAnalysis.type';
 

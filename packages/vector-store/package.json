@@ -39,6 +39,7 @@
     "@openvaa/llm-refactor": "workspace:^",
     "ai": "^5.0.0",
     "chromadb": "^1.10.5",
+    "chromadb-default-embed": "^2.14.0",
     "cohere-ai": "^7.19.0"
   }
 }

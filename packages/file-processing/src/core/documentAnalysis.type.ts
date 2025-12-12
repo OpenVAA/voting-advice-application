@@ -1,5 +1,5 @@
 import type { CommonLLMParams, LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
-import type { SourceMetadata, SourceSegment } from './source.types';
+import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store/types';
 
 /**
  * Options for analyzing a source and its segments

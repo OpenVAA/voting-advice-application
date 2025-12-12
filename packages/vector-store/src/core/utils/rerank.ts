@@ -1,5 +1,5 @@
 import { CohereClientV2 } from 'cohere-ai';
-import type { SegmentWithMetadata } from '@openvaa/file-processing';
+import type { SegmentWithMetadata } from '../source.types';
 import type { RerankParams, RerankResult } from './rerank.types';
 
 /**

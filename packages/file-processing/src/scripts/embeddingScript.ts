@@ -6,12 +6,7 @@ import type { ProcessPdfResult } from '@openvaa/file-processing';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
-/** Collection names for multi-vector retrieval */
-const COLLECTION_NAMES = {
-  segments: 'eu-2024-segments',
-  summaries: 'eu-2024-summaries',
-  facts: 'eu-2024-facts'
-} as const;
+const COLLECTION_NAME = 'eu-2024-vector-store';
 
 /**
  * Recursively find all JSON files in a directory and its subdirectories
@@ -146,9 +141,7 @@ export async function embedDocumentsMultiVector(): Promise<void> {
   console.info(`Total time: ${duration} seconds`);
   console.info('═══════════════════════════════════════\n');
   console.info('Collections created:');
-  console.info(`  - ${COLLECTION_NAMES.segments}`);
-  console.info(`  - ${COLLECTION_NAMES.summaries}`);
-  console.info(`  - ${COLLECTION_NAMES.facts}`);
+  console.info(`  - ${COLLECTION_NAME}`);
 }
 
 // Run the embedding if this script is executed directly
