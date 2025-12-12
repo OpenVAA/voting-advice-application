@@ -14,12 +14,15 @@ import type { Embedder } from './embedder.type';
 export interface VectorStoreConfig {
   collectionName: string;
   embedder: Embedder;
-  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) */
+  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) 
+   * @default 
+   * localhost:8000
+   */
   chromaPath?: string;
 }
 
 /**
- * Result from multi-vector search with enriched segments
+ * Result from vector search with enriched segments
  * @example
  * ```typescript
  * {
@@ -32,8 +35,7 @@ export interface VectorStoreConfig {
  *   },
  *   vectorSearchScore: 0.95,
  *   rerankScore: 0.98,
- *   distance: 0.1,
- *   foundWith: 'summary'
+ *   distance: 0.1
  * }
  * ```
  */
@@ -46,8 +48,6 @@ export interface SingleSearchResult {
   distance: number;
   /** Reranking score (only present when reranking is enabled) */
   rerankScore?: number;
-  /** Optional fact that was found */
-  factFound?: string;
 }
 
 /**
@@ -66,7 +66,7 @@ export interface VectorSearchResult {
  * Per-collection search configuration
  */
 export interface VectorSearchConfig {
-  /** Number of results to fetch from ChromaDB initially */
+  /** Number of results to fetch */
   topK?: number;
 }
 

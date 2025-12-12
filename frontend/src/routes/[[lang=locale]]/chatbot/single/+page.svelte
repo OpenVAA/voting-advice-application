@@ -269,9 +269,7 @@
                 </div>
                 <div class="font-semibold mt-1 text-blue-700">{ragResult.canonicalQuery}</div>
                 <div class="mt-1 text-xs text-gray-600">
-                  Found via: {ragResult.searchResult.retrievalSources.fromSegments} segments,
-                  {ragResult.searchResult.retrievalSources.fromSummaries} summaries,
-                  {ragResult.searchResult.retrievalSources.fromFacts} facts
+                  Found {ragResult.searchResult.results.length} results
                 </div>
                 <div class="mt-1 text-xs text-gray-500">
                   Retrieved in {ragResult.durationMs.toFixed(0)}ms
@@ -298,39 +296,11 @@
                             <span class="font-semibold ml-2 text-purple-600"
                               >Rerank: {result.rerankScore.toFixed(3)}</span>
                           {/if}
-                          <span class="ml-2 text-purple-600">via {result.foundWith}</span>
                         </div>
                       </div>
                       <div class="mb-2 whitespace-pre-wrap text-sm text-gray-700">
-                        {result.segment.segment}
+                        {result.segment.content}
                       </div>
-
-                      <!-- Dev debugging: show AI-generated content -->
-                      <details class="mt-2">
-                        <summary class="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
-                          Debug: AI-generated content (not shown to LLM)
-                        </summary>
-                        <div class="mt-2 space-y-2 text-xs">
-                          {#if result.segment.summary}
-                            <div class="rounded bg-blue-50 p-2">
-                              <div class="font-semibold text-blue-700">Summary:</div>
-                              <div class="text-gray-700">{result.segment.summary}</div>
-                            </div>
-                          {/if}
-                          {#if result.segment.standaloneFacts && result.segment.standaloneFacts.length > 0}
-                            <div class="rounded bg-green-50 p-2">
-                              <div class="font-semibold text-green-700">Facts:</div>
-                              <ul class="list-inside list-disc text-gray-700">
-                                {#each result.segment.standaloneFacts as fact}
-                                  <li class={fact === result.factFound ? 'px-1 rounded bg-yellow-200 font-bold' : ''}>
-                                    {fact}
-                                  </li>
-                                {/each}
-                              </ul>
-                            </div>
-                          {/if}
-                        </div>
-                      </details>
                     </div>
                   {/each}
                 </div>

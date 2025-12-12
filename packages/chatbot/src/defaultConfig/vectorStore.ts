@@ -1,13 +1,9 @@
-import { MultiVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
+import { ChromaVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 
-/** Collection identifiers for multi-vector retrieval. Change according to the election. */
-export const COLLECTION_NAMES = {
-  segments: 'eu-2024-segments',
-  summaries: 'eu-2024-summaries',
-  facts: 'eu-2024-facts'
-} as const;
+/** Collection name for vector store. Change according to the election. */
+export const COLLECTION_NAME = 'openvaa-eu-2024-elections';
 
-export async function getVectorStore(openAIAPIKey: string): Promise<MultiVectorStore> {
+export async function getVectorStore(openAIAPIKey: string): Promise<ChromaVectorStore> {
   const embedder = new OpenAIEmbedder({
     model: 'text-embedding-3-small',
     dimensions: 1536,
@@ -16,8 +12,8 @@ export async function getVectorStore(openAIAPIKey: string): Promise<MultiVectorS
 
   const chromaPath = process.env.CHROMA_URL || 'http://localhost:8000';
 
-  const store = new MultiVectorStore({
-    collectionNames: COLLECTION_NAMES,
+  const store = new ChromaVectorStore({
+    collectionName: COLLECTION_NAME,
     embedder,
     chromaPath
   });

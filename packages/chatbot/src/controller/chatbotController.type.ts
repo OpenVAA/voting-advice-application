@@ -1,6 +1,6 @@
 import type { QuestionType } from '@openvaa/data';
 import type { LLMProvider, LLMStreamResult } from '@openvaa/llm-refactor';
-import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
+import type { VectorSearchResult } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { RAGRetrievalResult } from '../core/rag/ragService.type';
 import type { RAGDependencies } from '../core/tools/tools';
@@ -79,7 +79,7 @@ export interface ChatbotResponse {
     /** Legacy RAG fields (deprecated - use ragMetadataCollector instead) */
     usedRAG: boolean;
     ragContext?: {
-      searchResult: MultiVectorSearchResult;
+      searchResult: VectorSearchResult;
       segmentsUsed: number;
       formattedContext: string;
     };
@@ -107,7 +107,7 @@ export interface ChatbotResponse {
  * Internal result from RAG retrieval step
  */
 export interface RAGContextResult {
-  searchResult: MultiVectorSearchResult;
+  searchResult: VectorSearchResult;
   segmentsUsed: number;
   formattedContext: string;
   rerankingCosts?: { cost: number };

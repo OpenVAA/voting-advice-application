@@ -5,8 +5,7 @@ import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { performRAGRetrieval } from '../rag/ragService';
 import type { AnyQuestionVariantData } from '@openvaa/data';
-import type { LLMProvider } from '@openvaa/llm-refactor';
-import type { MultiVectorStore, RerankConfig } from '@openvaa/vector-store/types';
+import type { VectorStore } from '@openvaa/vector-store/types';
 import type { RAGRetrievalResult } from '../rag/ragService.type';
 import type { ChatDataProvider } from './chatDataProvider.type';
 import type { CandidateInfo } from './chatDataProvider.type';
@@ -102,10 +101,9 @@ Note: Non-affiliated MEPs have limited influence as they cannot participate in g
  * Dependencies required for RAG tool
  */
 export interface RAGDependencies {
-  vectorStore: MultiVectorStore;
-  reformulationProvider: LLMProvider;
+  vectorStore: VectorStore;
   nResultsTarget?: number;
-  rerankConfig?: RerankConfig;
+  rerankConfig?: { enabled: boolean; apiKey: string; model?: string };
   /** Optional metadata collector to capture full RAG retrieval results */
   metadataCollector?: Array<RAGRetrievalResult>;
 }
@@ -156,7 +154,6 @@ export function vectorSearchForElectionInfo(deps: RAGDependencies) {
       const result = await performRAGRetrieval({
         query: input.query,
         vectorStore: deps.vectorStore,
-        reformulationProvider: deps.reformulationProvider,
         nResultsTarget: deps.nResultsTarget,
         rerankConfig: deps.rerankConfig
       });

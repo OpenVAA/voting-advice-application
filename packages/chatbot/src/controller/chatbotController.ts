@@ -61,7 +61,6 @@ export class ChatbotController {
       messages: input.state.messages,
       ragDependencies: {
         vectorStore: input.vectorStore,
-        reformulationProvider: input.reformulationProvider,
         nResultsTarget: input.nResultsTarget,
         rerankConfig: input.rerankConfig,
         metadataCollector: ragMetadataCollector

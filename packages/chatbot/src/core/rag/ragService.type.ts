@@ -1,6 +1,5 @@
-import type { LLMProvider } from '@openvaa/llm-refactor';
-import type { MultiVectorSearchResult, MultiVectorStore, RerankConfig } from '@openvaa/vector-store/types';
-
+import type { VectorSearchResult, VectorStore } from '@openvaa/vector-store/types';
+import type { RerankConfig } from '@openvaa/vector-store/types';
 /**
  * Input parameters for RAG retrieval
  */
@@ -9,10 +8,7 @@ export interface RAGRetrievalInput {
   query: string;
 
   /** Vector store instance for retrieval */
-  vectorStore: MultiVectorStore;
-
-  /** LLM provider for query reformulation */
-  reformulationProvider: LLMProvider;
+  vectorStore: VectorStore;
 
   /** Target number of results to retrieve */
   nResultsTarget?: number;
@@ -26,7 +22,7 @@ export interface RAGRetrievalInput {
  */
 export interface RAGRetrievalResult {
   /** Vector search results */
-  searchResult: MultiVectorSearchResult;
+  searchResult: VectorSearchResult;
 
   /** Number of segments used in context */
   segmentsUsed: number;

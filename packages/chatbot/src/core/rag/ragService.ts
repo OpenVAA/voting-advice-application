@@ -1,14 +1,13 @@
-import type { MultiVectorSearchResult } from '@openvaa/vector-store/types';
+import type { VectorSearchResult } from '@openvaa/vector-store/types';
 import type { RAGRetrievalInput, RAGRetrievalResult } from './ragService.type';
 
 /**
  * Perform RAG retrieval for a user query
  *
  * This function:
- * 1. Reformulates the query into diverse variations (overcomes embedding space limitations)
- * 2. Performs multi-vector search across collections
- * 3. Optionally reranks results
- * 4. Formats context for LLM consumption
+ * 1. Performs vector search to find relevant segments
+ * 2. Optionally reranks results
+ * 3. Formats context for LLM consumption
  *
  * Designed to be used as a tool - accepts simple query string and returns formatted context.
  *
@@ -18,16 +17,13 @@ import type { RAGRetrievalInput, RAGRetrievalResult } from './ragService.type';
 export async function performRAGRetrieval(input: RAGRetrievalInput): Promise<RAGRetrievalResult> {
   const startTime = Date.now();
 
-  // STEP 1: Perform vector search with reformulated queries
+  // STEP 1: Perform vector search
   const searchResult = await input.vectorStore.search({
-    queries: { [input.query]: [input.query] }, // Single query and single topic, though the vector store can handle multiple queries and topics
-    nResultsTarget: input.nResultsTarget ?? 10,
-    searchCollections: ['segment', 'summary', 'fact'],
-    searchConfig: {}, // Use defaults from multiVectorStore
-    rerankConfig: input.rerankConfig
+    query: input.query,
+    topK: input.nResultsTarget ?? 10
   });
 
-  // STEP 3: Format context for LLM
+  // STEP 2: Format context for LLM
   const formattedContext = formatRAGContext(searchResult);
 
   const durationMs = Date.now() - startTime;
@@ -45,12 +41,12 @@ export async function performRAGRetrieval(input: RAGRetrievalInput): Promise<RAG
 
 /**
  * Format RAG search results for LLM prompt
- * Only includes actual segment text, not AI-generated summaries/facts
+ * Includes segment text from the vector store
  *
  * @param searchResult - Vector search result
  * @returns Formatted context string
  */
-export function formatRAGContext(searchResult: MultiVectorSearchResult): string {
+export function formatRAGContext(searchResult: VectorSearchResult): string {
   if (searchResult.results.length === 0) {
     return 'No relevant context found.';
   }
@@ -58,7 +54,7 @@ export function formatRAGContext(searchResult: MultiVectorSearchResult): string 
   return searchResult.results
     .map((result) => {
       const source = result.segment.metadata.source || 'Unknown';
-      return `### Source: ${source}\n${result.segment.segment}`;
+      return `### Source: ${source}\n${result.segment.content}`;
     })
     .join('\n\n---\n\n');
 }
