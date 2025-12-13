@@ -40,7 +40,7 @@ const translationLocales = fs.readdirSync(dirPath).filter((name) => {
 });
 
 // First locale is chosen as the locale to which other locales are compared in the tests
-const firstLocale = translationLocales[0];
+const firstLocale = translationLocales.includes('en') ? 'en' : translationLocales[0];
 const otherLocales = translationLocales.slice(1);
 
 // Names of translation files in the directory of the first locale
