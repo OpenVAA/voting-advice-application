@@ -29,7 +29,7 @@ const LOCALE = 'en';
 // TODO: When importing works, use faker instead of the imported data
 // const userFirstName = faker.person.firstName();
 // const userLastName = faker.person.lastName();
-// const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
+// const userEmail = `${userFirstName}.${userLastName}@openvaa.org`.toLowerCase();
 // const userPassword = 'Password1!';
 const userFirstName = mockCandidateForTesting.firstName;
 const userLastName = mockCandidateForTesting.lastName;
@@ -123,8 +123,8 @@ test('should log into Strapi and send email', async ({ page, baseURL }) => {
   // await page.getByLabel('Editor content;Press Alt+F1').fill(
   //   `firstName,lastName,party,email,published
   //   ${userFirstName},${userLastName},${partyId},${userEmail},true
-  //   Bob,Bobsson,${partyId},bob@example.com,false
-  //   Carol,Carolsson,${partyId},carol@example.com,false`
+  //   Bob,Bobsson,${partyId},bob@openvaa.org,false
+  //   Carol,Carolsson,${partyId},carol@openvaa.org,false`
   // );
   // await page.getByLabel('Import', { exact: true }).getByRole('button', { name: 'Import' }).click();
 

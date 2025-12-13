@@ -13,7 +13,7 @@ test('Should assert value and not be matchable', () => {
   expect(obj).toBeInstanceOf(ImageQuestion);
 
   const image: Image = {
-    url: 'https://example.com/image.jpg',
+    url: 'https://openvaa.org/image.jpg',
     alt: 'Image description'
   };
   expect(obj.ensureValue(image)).toEqual(image);

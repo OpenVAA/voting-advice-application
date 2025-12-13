@@ -2,7 +2,7 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@example.com'
+    email: 'first.last@openvaa.org'
   },
   appVersion: {
     version: 1,

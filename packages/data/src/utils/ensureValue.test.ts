@@ -66,7 +66,7 @@ describe('ensureBoolean', () => {
 });
 describe('ensureImage', () => {
   test('Should return the image value when the input is a valid image object', () => {
-    const validImage = { url: 'http://example.com/image.jpg' };
+    const validImage = { url: 'http://openvaa.org/image.jpg' };
     expect(ensureImage(validImage)).toBe(validImage);
   });
   test.each(literals)('Should return MISSING_VALUE for %p', (value) => expect(ensureImage(value)).toBe(MISSING_VALUE));
