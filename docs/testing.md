@@ -16,9 +16,9 @@ yarn test:unit:watch
 
 ## E2E tests
 
-The project uses Playwright for E2E testing. The tests rely on generated data which the local PosgresDB is being seeded with. All of the E2E tests are collected in the [`tests`](/tests) folder.
+The project uses Playwright for E2E testing. The tests rely on generated data which the local PosgresDB is being seeded with. If you need to run the tests repeatedly it's useful to set the `GENERATE_MOCK_DATA_ON_RESTART` to `true` and restart the backend between test runs.
 
-To run the E2E tests start all the services locally:
+All of the E2E tests are collected in the [`tests`](/tests) folder. To run the E2E tests start all the services locally:
 
 ```bash
 yarn dev
