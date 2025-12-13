@@ -1,3 +1,4 @@
+import { noOpController } from '@openvaa/core';
 import {
   type Answer,
   BooleanQuestion,
@@ -9,51 +10,53 @@ import {
 import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
-import type { HasAnswers, Logger } from '@openvaa/core';
-import type { LLMProvider, ParsedLLMResponse } from '@openvaa/llm';
-import type { ResponseWithArguments } from '../../src/core/types/index.ts';
+import type { HasAnswers } from '@openvaa/core';
+import type { LLMProvider } from '@openvaa/llm';
 
-// No-op logger for tests to prevent logging output
-const noOpLogger: Logger = {
-  info: () => {},
-  warning: () => {},
-  error: () => {},
-  progress: () => {}
-};
-
-// Mock LLM Provider
-const mockLLMProvider: LLMProvider = {
-  name: 'mock',
-  generate: vi.fn().mockResolvedValue({
-    content:
-      '{"arguments": [{"id": "arg1", "text": "Test argument 1"}, {"id": "arg2", "text": "Test argument 2"}], "reasoning": "Test reasoning for arguments"}',
-    model: 'gpt-4o-mini',
-    usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-  }),
-  generateWithRetry: vi.fn().mockImplementation(({ messages, temperature, maxTokens, model }) => {
-    return mockLLMProvider.generate({ messages, temperature, maxTokens, model });
-  }),
-  generateMultipleParallel: vi.fn().mockImplementation(({ inputs }) => {
-    const parsedContent: ResponseWithArguments = {
+// Mock LLM Provider for new API
+const mockLLMProvider = {
+  config: {
+    provider: 'openai' as const,
+    apiKey: 'test-api-key',
+    modelConfig: {
+      primary: 'gpt-4o',
+      tpmLimit: 30000
+    }
+  },
+  generateObject: vi.fn().mockResolvedValue({
+    object: {
       arguments: [
         { id: 'arg1', text: 'Test argument 1' },
         { id: 'arg2', text: 'Test argument 2' }
       ],
       reasoning: 'Test reasoning for arguments'
-    };
-    const mockResponse: ParsedLLMResponse<ResponseWithArguments> = {
-      parsed: parsedContent,
-      raw: {
-        content: JSON.stringify(parsedContent),
-        model: 'gpt-4o-mini',
-        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 }
-      }
-    };
-    return Promise.resolve(Array(inputs.length).fill(mockResponse));
+    },
+    usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+    costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+    finishReason: 'stop' as const,
+    latencyMs: 100,
+    attempts: 1,
+    fallbackUsed: false
   }),
-  generateMultipleSequential: vi.fn().mockResolvedValue([]),
-  generateAndValidateWithRetry: vi.fn()
-};
+  generateObjectParallel: vi.fn().mockImplementation(({ requests }) => {
+    const mockResponse = {
+      object: {
+        arguments: [
+          { id: 'arg1', text: 'Test argument 1' },
+          { id: 'arg2', text: 'Test argument 2' }
+        ],
+        reasoning: 'Test reasoning for arguments'
+      },
+      usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+      costs: Promise.resolve({ input: 0.001, output: 0.002, reasoning: 0, total: 0.003 }),
+      finishReason: 'stop' as const,
+      latencyMs: 100,
+      attempts: 1,
+      fallbackUsed: false
+    };
+    return Promise.resolve(Array(requests.length).fill(mockResponse));
+  })
+} as unknown as LLMProvider;
 
 describe('handleQuestion', () => {
   test('It should condense arguments for both pros and cons of a likert question', async () => {
@@ -125,11 +128,10 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -202,11 +204,10 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -256,11 +257,10 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: 'test-run',
         maxCommentsPerGroup: 1000,
-        logger: noOpLogger
+        controller: noOpController
       }
     });
 
@@ -307,11 +307,10 @@ describe('handleQuestion', () => {
         entities,
         options: {
           llmProvider: mockLLMProvider,
-          llmModel: 'gpt-4o',
           language: 'en',
           runId: 'test-run-invalid-prompts',
           maxCommentsPerGroup: 1000,
-          logger: noOpLogger,
+          controller: noOpController,
           prompts: {
             [CONDENSATION_TYPE.BooleanPros]: {
               map: 'map-pros-42-haha',
@@ -371,12 +370,10 @@ describe('handleQuestion', () => {
       entities,
       options: {
         llmProvider: mockLLMProvider,
-        llmModel: 'gpt-4o',
         language: 'en',
         runId: uniqueId,
         maxCommentsPerGroup: 1000,
-        createVisualizationData: true, // We are testing the createVisualizationData flag
-        logger: noOpLogger
+        createVisualizationData: true // We are testing the createVisualizationData flag
       }
     });
 
@@ -388,8 +385,8 @@ describe('handleQuestion', () => {
     const fs = await import('fs');
     const path = await import('path');
 
-    const expectedProsPath = path.join(__dirname, '../../data/operationTrees', `${uniqueId}-pros.json`);
-    const expectedConsPath = path.join(__dirname, '../../data/operationTrees', `${uniqueId}-cons.json`);
+    const expectedProsPath = path.join(process.cwd(), 'data/operationTrees', `${uniqueId}-pros.json`);
+    const expectedConsPath = path.join(process.cwd(), 'data/operationTrees', `${uniqueId}-cons.json`);
 
     expect(fs.existsSync(expectedProsPath)).toBe(true);
     expect(fs.existsSync(expectedConsPath)).toBe(true);

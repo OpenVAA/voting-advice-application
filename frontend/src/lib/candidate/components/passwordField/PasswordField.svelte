@@ -54,6 +54,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     name="password"
     class="input w-full"
     placeholder={$t('components.passwordInput.placeholder')}
+    data-testid="password-field"
     bind:value={password}
     bind:this={input}
     {autocomplete}

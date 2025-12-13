@@ -50,7 +50,7 @@ Used to display an error message. Also logs the error to the console.
     : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg';
 </script>
 
-<div {...concatClass($$restProps, classes)}>
+<div data-testid="errorMessage" {...concatClass($$restProps, classes)}>
   {#if inline}
     <span class="text-center text-error">{emoji} {message}</span>
   {:else}

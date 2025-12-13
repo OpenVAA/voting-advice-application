@@ -1,8 +1,9 @@
 promptId: 'refine_likertPros_refinement_v1'
 params:
-  topic: string
-  existingArguments: string
-  comments: string
+  required:
+    - topic
+    - existingArguments
+    - comments
 promptText: |
   You are refining a list of supporting arguments for a policy position based on new comments from a Voting Advice Application (VAA).
 

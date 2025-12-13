@@ -6,18 +6,20 @@ import { derived, get, writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { hashIds } from '$lib/utils/hashIds';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { getImpliedElectionIds } from '$lib/utils/route';
-import { prepareDataWriter } from './prepareDataWriter';
-import { userDataStore } from './userDataStore';
+import { candidateUserDataStore } from './candidateUserDataStore';
 import { getAppContext } from '../app';
+import { getAuthContext } from '../auth';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
+import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
 import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
-import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
 
@@ -42,17 +44,18 @@ export function initCandidateContext(): CandidateContext {
   const appContext = getAppContext();
   const { appSettings, dataRoot, getRoute, locale } = appContext;
 
+  const authContext = getAuthContext();
+  const { authToken, logout: _logout } = authContext;
+
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and answersLocked
   ////////////////////////////////////////////////////////////////////
 
   const answersLocked = derived(appSettings, (appSettings) => !!appSettings.access.answersLocked);
 
-  const authToken = derived(page, (page) => page.data.token ?? undefined);
-
   const idTokenClaims = derived(page, (page) => page.data.claims ?? undefined);
 
-  const userData = userDataStore({ answersLocked, authToken, dataWriterPromise, locale });
+  const userData = candidateUserDataStore({ answersLocked, authToken, dataWriterPromise, locale });
 
   const newUserEmail = writable<string | undefined>();
 
@@ -72,11 +75,14 @@ export function initCandidateContext(): CandidateContext {
     [electionId: Id]: Id;
   }>('candidateContext-preselectedConstituencyIds', {});
 
-  const preregistrationElections = derived(
+  const preregistrationElections = parsimoniusDerived(
     [appSettings, dataRoot, preregistrationElectionIds],
     ([appSettings, dataRoot, preregistrationElectionIds]) => {
       const ids = getImpliedElectionIds({ appSettings, dataRoot }) ?? preregistrationElectionIds;
       return ids.map((id) => dataRoot.getElection(id));
+    },
+    {
+      differenceChecker: hashIds
     }
   );
 
@@ -95,22 +101,28 @@ export function initCandidateContext(): CandidateContext {
     }
   );
 
-  const selectedElections = derived(
+  const selectedElections = parsimoniusDerived(
     [dataRoot, userData],
     ([dataRoot, userData]) => {
       if (!userData) return [];
       return removeDuplicates(userData.nominations.nominations.map((n) => dataRoot.getElection(n.electionId)));
     },
-    []
+    {
+      differenceChecker: hashIds,
+      initialValue: []
+    }
   );
 
-  const selectedConstituencies = derived(
+  const selectedConstituencies = parsimoniusDerived(
     [dataRoot, userData],
     ([dataRoot, userData]) => {
       if (!userData) return [];
       return removeDuplicates(userData.nominations.nominations.map((n) => dataRoot.getConstituency(n.constituencyId)));
     },
-    []
+    {
+      differenceChecker: hashIds,
+      initialValue: []
+    }
   );
 
   /**
@@ -164,30 +176,10 @@ export function initCandidateContext(): CandidateContext {
   function register(...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> {
     return prepareDataWriter(dataWriterPromise).then((dw) => dw.register(...args));
   }
-  function requestForgotPasswordEmail(
-    ...args: Parameters<DataWriter['requestForgotPasswordEmail']>
-  ): ReturnType<DataWriter['requestForgotPasswordEmail']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.requestForgotPasswordEmail(...args));
-  }
-  function resetPassword(...args: Parameters<DataWriter['resetPassword']>): ReturnType<DataWriter['resetPassword']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.resetPassword(...args));
-  }
 
   async function logout(): Promise<void> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.logout({ authToken: token }).catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
-    });
+    await _logout();
     return goto(get(getRoute)('CandAppLogin'), { invalidateAll: true }).then(_reset);
-  }
-
-  async function setPassword(opts: { currentPassword: string; password: string }): Promise<DataApiActionResult> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
-    const dataWriter = await prepareDataWriter(dataWriterPromise);
-    return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
   async function exchangeCodeForIdToken(opts: {
@@ -308,8 +300,8 @@ export function initCandidateContext(): CandidateContext {
 
   return setContext<CandidateContext>(CONTEXT_KEY, {
     ...appContext,
+    ...authContext,
     answersLocked,
-    authToken,
     preregister,
     checkRegistrationKey,
     constituenciesSelectable,
@@ -326,10 +318,7 @@ export function initCandidateContext(): CandidateContext {
     profileComplete,
     questionBlocks,
     register,
-    requestForgotPasswordEmail,
     requiredInfoQuestions,
-    resetPassword,
-    setPassword,
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
     userData,

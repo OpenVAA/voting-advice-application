@@ -1,7 +1,10 @@
 promptId: 'map_categoricalPros_condensation_v1'
 params:
-  topic: string
-  comments: string
+  required:
+    - topic
+    - comments
+  optional:
+    - localizationInstructions
 
 promptText: |
   You are analyzing comments from a Voting Advice Application (VAA) to extract supporting arguments for a specific option in a categorical choice ("{{topic}}").

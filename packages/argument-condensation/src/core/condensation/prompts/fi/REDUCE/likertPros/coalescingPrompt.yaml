@@ -1,7 +1,8 @@
 promptId: 'reduce_likertPros_coalescing_v1'
 params:
-  topic: string
-  argumentLists: string
+  required:
+    - topic
+    - argumentLists
 
 promptText: |
   Olet argumentaation ja poliittisen diskurssin asiantuntija. Alla on annettu useita argumentteja, joita käytetään tietyn poliittisen väitteen ("{{topic}}") tukemisessa.

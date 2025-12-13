@@ -1,7 +1,8 @@
 promptId: 'refine_likertCons_initial_v1'
 params:
-  topic: string
-  comments: string
+  required:
+    - topic
+    - comments
 promptText: |
   You are analyzing comments from a Voting Advice Application (VAA) to extract opposing arguments against a policy position.
 

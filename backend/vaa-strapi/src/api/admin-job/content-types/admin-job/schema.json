@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "admin_jobs",
+  "info": {
+    "singularName": "admin-job",
+    "pluralName": "admin-jobs",
+    "displayName": "Admin Job",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "electionId": {
+      "type": "string",
+      "required": true
+    },
+    "jobId": {
+      "type": "uid",
+      "required": true
+    },
+    "jobType": {
+      "type": "string",
+      "required": true,
+      "minLength": 1
+    },
+    "author": {
+      "type": "email",
+      "required": true
+    },
+    "endStatus": {
+      "type": "enumeration",
+      "enum": [
+        "completed",
+        "failed",
+        "aborted"
+      ]
+    },
+    "startTime": {
+      "type": "datetime"
+    },
+    "endTime": {
+      "type": "datetime"
+    },
+    "input": {
+      "type": "json"
+    },
+    "output": {
+      "type": "json"
+    },
+    "messages": {
+      "type": "json"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

@@ -25,7 +25,7 @@
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { getErrorTranslationKey } from '$candidate/utils/loginError';
+  import { type CandidateLoginError, getErrorTranslationKey } from '$candidate/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -47,7 +47,7 @@
   // Handle form and error messages
   ////////////////////////////////////////////////////////////////////
 
-  const errorParam = $page.url.searchParams.get('errorMessage');
+  const errorParam = $page.url.searchParams.get('errorMessage') as CandidateLoginError | null;
   const redirectTo = $page.url.searchParams.get('redirectTo');
 
   let canSubmit: boolean;
@@ -132,8 +132,10 @@
           status = 'error';
           errorMessage =
             result.status === 400
-              ? $t('candidateApp.login.wrongEmailOrPassword')
-              : $t('candidateApp.login.unknownError');
+              ? $t('error.wrongEmailOrPassword')
+              : result.status === 403
+                ? $t('error.403')
+                : $t('candidateApp.login.unknownError');
           return;
         }
         await applyAction(result);
@@ -149,30 +151,32 @@
               : $t('candidateApp.login.enterEmailAndPassword')}
           </p>
         {/if}
-        <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
+        <label for="email" class="hidden">{$t('common.email')}</label>
         <input hidden name="redirectTo" value={redirectTo} />
         <input
           type="email"
           name="email"
           id="email"
+          data-testid="login-email"
           bind:this={emailInput}
           bind:value={email}
           class="input mb-md w-full max-w-md"
-          placeholder={$t('candidateApp.common.emailPlaceholder')}
+          placeholder={$t('common.emailPlaceholder')}
           autocomplete="email"
           required />
         <div class="mb-md w-full max-w-md">
           <PasswordField autocomplete="current-password" id="password" bind:password bind:focus={focusPassword} />
         </div>
         {#if status === 'error'}
-          <ErrorMessage inline message={errorMessage} class="mb-md" />
+          <ErrorMessage inline message={errorMessage} class="mb-md" data-testid="login-errorMessage" />
         {/if}
         <Button
           type="submit"
           disabled={!canSubmit}
           loading={status === 'loading'}
           text={$t('common.login')}
-          variant="main" />
+          variant="main"
+          data-testid="login-submit" />
       </div>
     {:else}
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">

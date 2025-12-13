@@ -6,6 +6,11 @@ export {};
 
 declare global {
   /**
+   * A reusable type for the `fetch` function passed to load functions.
+   */
+  type Fetch = typeof fetch;
+
+  /**
    * A shorthand for the types of `Match` objects the frontend uses.
    */
   type EntityVariantMatch = Match<AnyEntityVariant, QuestionCategory>;

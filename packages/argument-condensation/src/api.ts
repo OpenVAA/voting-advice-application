@@ -1,6 +1,6 @@
-import { DefaultLogger, type HasAnswers } from '@openvaa/core';
+import { staticSettings } from '@openvaa/app-shared';
+import { BaseController, type HasAnswers } from '@openvaa/core';
 import { QUESTION_TYPE } from '@openvaa/data';
-import { SUPPORTED_LANGUAGES } from './core/types';
 import { getAndSliceComments, getParallelFactor } from './core/utils';
 import { MODEL_DEFAULTS } from './defaultValues';
 import { handleBooleanQuestion, handleCategoricalQuestion, handleOrdinalQuestion } from './question-handlers';
@@ -9,7 +9,6 @@ import type {
   CommentGroupingOptions,
   CondensationAPIOptions,
   CondensationRunResult,
-  SupportedLanguage,
   SupportedQuestion
 } from './core/types';
 /**
@@ -23,22 +22,20 @@ import type {
  * @param question - The question to condense arguments for
  * @param entities - The entity objects (e.g. candidates or parties) with an 'answers' property
  * @param options - Configuration options including:
- * @param options.llmProvider - The LLM provider: an abstract to-implement class for provider-agnostic LLM calls
+ * @param options.llmProvider - The LLM provider configured with model and TPM limit settings
  * @param options.language - The language of the question and entity answers
- * @param options.llmModel - The LLM model to use
- * @param options.modelTPMLimit - The number of tokens per minute the LLM model can handle
  * @param options.runId - The ID of the run: useful for tracking and visualizing multiple runs
  * @param options.maxCommentsPerGroup - The maximum number of comments per group
  * @param options.invertProsAndCons - Whether to invert the pros and cons for ordinal questions (rarely needed)
  * @param options.createVisualizationData - Whether to create visualization data for the condensation process
  * @param options.prompts - Optional promptsIds if your language is inherently supported.
- * @param options.logger - Optional logger for tracking progress and issues during condensation
+ * @param options.controller - Optional controller for tracking progress and issues during condensation
  * @returns The condensation results as an array of CondensationRunResult
  *
  * @example
  * import { handleQuestion } from '@openvaa/argument-condensation';
  * import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { OpenAIProvider } from '@openvaa/llm';
+ * import { LLMProvider } from '@openvaa/llm';
  * import type { HasAnswers } from '@openvaa/core';
  *
  * // 1. Set up your question, entities, and LLM provider
@@ -71,7 +68,11 @@ import type {
  *   }
  * ];
  *
- * const llmProvider = new OpenAIProvider({ apiKey: '...' });
+ * const llmProvider = new LLMProvider({
+ *   provider: 'openai',
+ *   apiKey: '...',
+ *   modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+ * });
  *
  * // 2. Call handleQuestion with the setup
  * const results = await handleQuestion({
@@ -80,13 +81,11 @@ import type {
  *   options: {
  *     llmProvider,
  *     language: 'en',
- *     llmModel: 'gpt-4o',
- *     modelTPMLimit: 30000,
  *     runId: 'some-run-id',
  *     maxCommentsPerGroup: 1000,
  *     invertProsAndCons: false,
  *     prompts: {}
- *     // Optional logger
+ *     // Optional controller
  *   }
  * });
  */
@@ -103,18 +102,21 @@ export async function handleQuestion({
   // Default promptIds and the visualization flag (false) are set in runSingleCondensation
   const options = {
     ...userOptions,
-    modelTPMLimit: userOptions.modelTPMLimit ?? MODEL_DEFAULTS.TPM_LIMIT, // A conservative limit for low-TPM models of OpenAI (8/25)
     invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed
-    logger: userOptions.logger ?? new DefaultLogger() // Default logger for progress and issue tracking
+    controller: userOptions.controller ?? new BaseController() // Default controller for progress and issue tracking
   };
 
   // Destructure for easier use
-  const { language, maxCommentsPerGroup, modelTPMLimit, invertProsAndCons } = options;
+  const { language, maxCommentsPerGroup, invertProsAndCons, llmProvider } = options;
 
-  // Check that the language is supported
-  if (!SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)) {
+  // Get TPM limit from the LLMProvider config (configured when the provider was instantiated)
+  const modelTPMLimit = llmProvider.config.modelConfig.tpmLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
+
+  // Check that the language is in supportedLocales in staticSettings
+  const supportedLanguages = staticSettings.supportedLocales.map((locale) => locale.code);
+  if (!supportedLanguages.includes(language)) {
     throw new Error(
-      `Unsupported language: ${language}. Please use a supported language: ` + SUPPORTED_LANGUAGES.join(', ')
+      `Unsupported language: ${language}. Please use a supported language: ${supportedLanguages.join(', ')}`
     );
   }
 
@@ -122,7 +124,7 @@ export async function handleQuestion({
   const commentGroups = getAndSliceComments({
     question,
     entities,
-    options: { invertProsAndCons, maxCommentsPerGroup, logger: options.logger } as CommentGroupingOptions
+    options: { invertProsAndCons, maxCommentsPerGroup, controller: options.controller } as CommentGroupingOptions
   });
 
   // Calculate a reasonable number of parallel batches based on the LLM model's TPM limit

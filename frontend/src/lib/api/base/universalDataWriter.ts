@@ -1,24 +1,34 @@
+import { resolveRoute } from '$app/paths';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import type { Id } from '@openvaa/core';
+import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
+  AbortAllJobsOptions,
+  AbortJobOptions,
   BasicUserData,
   CandidateUserData,
   CheckRegistrationData,
   DataWriter,
   DWReturnType,
+  GetActiveJobsOptions,
   GetCandidateUserDataOptions,
+  GetJobProgressOptions,
+  GetPastJobsOptions,
+  InsertJobResultOptions,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
+  SetQuestionOptions,
+  StartJobOptions,
   WithAuth
 } from './dataWriter.type';
 
 /**
  * The abstract base class that all universal `DataWriter`s should extend.
  *
- * The subclasses must implement the protected `_foo` methods paired with each public `Foo` method. The implementations may freely throw errors.
+ * The subclasses must implement the protected methods. The implementations may freely throw errors.
  */
 export abstract class UniversalDataWriter extends UniversalAdapter implements DataWriter {
   ////////////////////////////////////////////////////////////////////
@@ -105,7 +115,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
           }
         }
       })) as DataApiActionResult,
-      this._logout(opts)
+      this.backendLogout(opts)
     ]);
     if (clientResult.type === 'success' && backendResult.type === 'success') return backendResult;
     else
@@ -115,6 +125,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         clientResult,
         backendResult
       };
+  }
+
+  async backendLogout(opts: WithAuth): DWReturnType<DataApiActionResult> {
+    return this._logout(opts);
   }
 
   getBasicUserData(opts: WithAuth): DWReturnType<BasicUserData> {
@@ -155,6 +169,66 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._updateEntityProperties(opts);
   }
 
+  updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+    return this._updateQuestion(opts);
+  }
+
+  insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
+    return this._insertJobResult(opts);
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // Universal job management methods for the Admin App
+  /////////////////////////////////////////////////////////////////////
+
+  async getActiveJobs({ authToken, ...opts }: GetActiveJobsOptions): Promise<Array<JobInfo>> {
+    const params = buildGetJobParams(opts);
+    return (await this.get({
+      url: UNIVERSAL_API_ROUTES.jobsActive,
+      params,
+      authToken
+    })) as Array<JobInfo>;
+  }
+
+  async getPastJobs({ authToken, ...opts }: GetPastJobsOptions): Promise<Array<JobInfo>> {
+    const params = buildGetJobParams(opts);
+    return (await this.get({
+      url: UNIVERSAL_API_ROUTES.jobsPast,
+      params,
+      authToken
+    })) as Array<JobInfo>;
+  }
+
+  async startJob({ authToken, ...body }: StartJobOptions): Promise<JobInfo> {
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.jobStart,
+      authToken,
+      body
+    })) as JobInfo;
+  }
+
+  async getJobProgress({ authToken, jobId }: GetJobProgressOptions): Promise<JobInfo> {
+    return (await this.get({
+      url: resolveRoute(UNIVERSAL_API_ROUTES.jobProgress, { jobId }),
+      authToken
+    })) as JobInfo;
+  }
+
+  async abortJob({ authToken, jobId, reason }: AbortJobOptions): Promise<DataApiActionResult> {
+    return (await this.post({
+      url: resolveRoute(UNIVERSAL_API_ROUTES.jobAbort, { jobId }),
+      authToken,
+      body: { reason: reason || 'Admin requested abort' }
+    })) as DataApiActionResult;
+  }
+
+  async abortAllJobs({ authToken }: AbortAllJobsOptions): Promise<DataApiActionResult> {
+    return (await this.post({
+      url: UNIVERSAL_API_ROUTES.jobAbortAll,
+      authToken
+    })) as DataApiActionResult;
+  }
+
   /////////////////////////////////////////////////////////////////////
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
@@ -190,4 +264,28 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     opts: SetAnswersOptions & { overwrite: boolean }
   ): DWReturnType<LocalizedCandidateData>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
+  protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
+  protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;
+}
+
+/**
+ * Build query string from job options for API requests.
+ *
+ * Handles the different parameter sets between active and past job queries:
+ * - Active jobs: jobType only
+ * - Past jobs: jobType, statuses array, and startFrom date
+ *
+ * @param opts - Job query options with authToken omitted
+ * @returns URL-encoded query string, empty string if no valid params
+ */
+function buildGetJobParams(
+  opts: Omit<GetActiveJobsOptions, 'authToken'> | Omit<GetPastJobsOptions, 'authToken'>
+): Record<string, unknown> {
+  const params: Record<string, unknown> = {};
+  // Both active and past jobs
+  if (opts.jobType) params.jobType = opts.jobType;
+  // Past jobs only (expect statuses as an array)
+  if ('statuses' in opts && Array.isArray(opts.statuses) && opts.statuses.length) params.statuses = opts.statuses;
+  if ('startFrom' in opts && opts.startFrom) params.startFrom = opts.startFrom.toISOString();
+  return params;
 }
