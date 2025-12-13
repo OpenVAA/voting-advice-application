@@ -10,7 +10,7 @@ export const API_ROOT = '/api';
 export const UNIVERSAL_API_ROUTES = {
   cacheProxy: `${API_ROOT}/cache`,
   login: `${API_ROOT}/auth/login`,
-  logout: `${API_ROOT}/candidate/logout`,
+  logout: `${API_ROOT}/auth/logout`,
   preregister: `${API_ROOT}/candidate/preregister`,
   token: `${API_ROOT}/oidc/token`,
 
