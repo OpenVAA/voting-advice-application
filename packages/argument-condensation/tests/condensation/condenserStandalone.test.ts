@@ -94,6 +94,7 @@ describe('Condenser Standalone Test', () => {
       options: {
         runId: 'standalone-test-1',
         outputType: CONDENSATION_TYPE.LikertPros,
+        language: 'en',
         processingSteps: [
           {
             operation: 'MAP' as const,
@@ -148,6 +149,7 @@ describe('Condenser Standalone Test', () => {
       options: {
         runId: 'standalone-test-cons',
         outputType: CONDENSATION_TYPE.LikertCons,
+        language: 'en',
         processingSteps: [
           {
             operation: 'MAP' as const,

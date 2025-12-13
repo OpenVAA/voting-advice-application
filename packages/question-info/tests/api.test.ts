@@ -6,10 +6,10 @@ import {
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { QUESTION_INFO_OPERATION } from '../src/';
 import { generateQuestionInfo } from '../src/api';
-import { QUESTION_INFO_OPERATION } from '../src/types';
 import type { Controller } from '@openvaa/core';
-import type { QuestionInfoOptions } from '../src/types';
+import type { QuestionInfoOptions } from '../src/';
 
 // No-op controller for tests to prevent logging output
 const noOpLogger: Controller = {
