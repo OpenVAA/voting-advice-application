@@ -221,11 +221,9 @@ test('should log into Strapi and send email', async ({ page, baseURL }) => {
 
   // Check that the password was set by logging in
   await expect(page.getByText(T.en['candidateApp.setPassword.passwordSetSuccesfully'])).toBeVisible();
-  expect(await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).inputValue()).toBe(
-    userEmail
-  );
-  await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(userPassword);
-  await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
+  expect(await page.getByTestId('login-email').inputValue()).toBe(userEmail);
+  await page.getByTestId('password-field').fill(userPassword);
+  await page.getByTestId('login-submit').click();
 
   // Check that the login was successful
   await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE })}`);
@@ -238,9 +236,9 @@ test.describe('when logged in with imported user', () => {
     await page.getByLabel(T.en['common.logout'], { exact: true }).click();
 
     // Log in with the imported user
-    await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).fill(userEmail);
-    await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(userPassword);
-    await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
+    await page.getByTestId('login-email').fill(userEmail);
+    await page.getByTestId('password-field').fill(userPassword);
+    await page.getByTestId('login-submit').click();
     await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE })}`);
   });
 
@@ -374,7 +372,7 @@ test.describe('when logged in with imported user', () => {
       .getByRole('button', { name: T.en['common.logout'], exact: true })
       .click();
     await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE })}`);
-    await expect(page.getByRole('button', { name: T.en['common.login'], exact: true })).toBeVisible();
+    await expect(page.getByTestId('login-submit')).toBeVisible();
   });
 
   test('your opinions page should work correctly', async ({ page, baseURL }) => {

@@ -1,8 +1,12 @@
 promptId: 'refine_likertPros_refinement_v1'
 params:
-  topic: string
-  comments: string
-  existingArguments: string
+  required:
+    - topic
+    - comments
+    - existingArguments
+  optional:
+    - localizationInstructions
+
 promptText: |
   You are refining arguments extracted from Voting Advice Application (VAA) comments to support a policy position.
 

@@ -20,17 +20,19 @@ export type ModalContainerProps = SvelteHTMLElements['dialog'] & {
   /**
    * Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
    */
-  onClose?: () => void;
+  onClose?: () => unknown;
   /**
    * Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
    */
-  onOpen?: () => void;
+  onOpen?: () => unknown;
   /**
    * Bind to this to access the modal's close function.
+   * @param noCallbacks - Set to `true` to prevent any callbacks from being triggered when opening or closing the modal.
    */
-  readonly closeModal?: () => void;
+  readonly closeModal?: (noCallbacks?: boolean) => void;
   /**
    * Bind to this to access the modal's open function.
+   * @param noCallbacks - Set to `true` to prevent any callbacks from being triggered when opening or closing the modal.
    */
-  readonly openModal?: () => void;
+  readonly openModal?: (noCallbacks?: boolean) => void;
 };

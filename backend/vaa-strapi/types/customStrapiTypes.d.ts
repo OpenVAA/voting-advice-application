@@ -9,7 +9,7 @@ export type StrapiContext = RequestContext & {
     query: StrapiQuery | Record<string, Array<string>>;
     url: string;
   };
-  state?: { user: { id: number } };
+  state?: { user: { id: number; role: StrapiRole } };
 };
 
 /**
@@ -24,6 +24,17 @@ export type StrapiQuery = {
   pagination: object;
   status: 'draft' | 'published';
   locale: string | Array<string>;
+};
+
+/**
+ * A non-exhaustive type for a Strapi Role.
+ * See: https://docs.strapi.io/dev-docs/backend-customization/requests-responses#ctxstateuser
+ */
+export type StrapiRole = {
+  id: number;
+  documentId: string;
+  description: string;
+  type: 'authenticated' | 'public' | 'admin';
 };
 
 type RequestContext = ReturnType<typeof strapi.requestContext.get>;

@@ -1,5 +1,4 @@
-import type { Logger } from '@openvaa/core';
-import type { LLMProvider } from '@openvaa/llm';
+import type { CommonLLMParams } from '@openvaa/llm';
 import type { CondensationOutputType } from '../condensation/condensationType';
 
 /**
@@ -18,28 +17,26 @@ export type PromptConfig = {
 
 /**
  * Configuration options for the condensation API.
+ * Note: llmModel and modelTPMLimit are configured via the LLMProvider instance.
  *
  * @example
+ * const llmProvider = new LLMProvider({
+ *   provider: 'openai',
+ *   apiKey: 'your-api-key',
+ *   modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+ * });
+ *
  * const apiConfig: CondensationAPIOptions = {
- *   llmProvider: new OpenAIProvider({ apiKey: 'your-api-key' }),
- *   llmModel: 'gpt-4o',
+ *   llmProvider,
  *   language: 'en',
  *   runId: '123',
- *   parallelBatches: 3,
- *   modelTPMLimit: 30000,
+ *   maxCommentsPerGroup: 1000,
  *   createVisualizationData: true
  * };
- * .
  */
-export type CondensationAPIOptions = {
-  runId: string;
-  llmProvider: LLMProvider;
-  llmModel: string;
-  language: string;
+export type CondensationAPIOptions = CommonLLMParams & {
   maxCommentsPerGroup: number;
   createVisualizationData?: boolean;
   invertProsAndCons?: boolean;
-  modelTPMLimit?: number;
   prompts?: PromptConfig;
-  logger?: Logger;
 };

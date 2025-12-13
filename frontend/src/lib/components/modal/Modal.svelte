@@ -92,11 +92,9 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
         <slot name="actions" />
       </div>
     {/if}
-    <form method="dialog">
-      <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
-        <span aria-hidden="true">✕</span>
-        <span class="sr-only">{$t('common.closeDialog')}</span>
-      </button>
-    </form>
+    <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2" on:click={() => closeModal?.()}>
+      <span aria-hidden="true">✕</span>
+      <span class="sr-only">{$t('common.closeDialog')}</span>
+    </button>
   </div>
 </ModalContainer>

@@ -1,8 +1,12 @@
 promptId: 'map_likertCons_iterate_v1'
 params:
-  topic: string
-  arguments: string
-  comments: string
+  required:
+    - topic
+    - arguments
+    - comments
+  optional:
+    - localizationInstructions
+
 promptText: |
   You are an expert in political argumentation. Your task is to read a list of comments and a list of arguments and determine if there are any arguments from the comments opposing "{{topic}}" that are not yet found in the argument list. An argument can be a logical rationale or principle. If the argument list contains all arguments opposing the statement that can be found in the comments, respond with an empty list and empty reasoning field. Do this also if the argument list is empty and no arguments opposing the statement are found in the comments.
 
