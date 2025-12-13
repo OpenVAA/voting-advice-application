@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
-      - '**/*/.env.example'
-      - '.env.example'
+      - "**.md"
+      - "**/*/.env.example"
+      - ".env.example"
   pull_request:
     types:
       - opened
@@ -17,12 +17,11 @@ on:
     branches:
       - main
     paths-ignore:
-      - '**.md'
-      - '**/*/.env.example'
-      - '.env.example'
+      - "**.md"
+      - "**/*/.env.example"
+      - ".env.example"
 
 jobs:
-
   frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
 
@@ -40,10 +39,10 @@ jobs:
         with:
           node-version: 20.18.1
           cache: "yarn"
-  
+
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
-  
+
       - name: "Build all shared modules"
         run: yarn build:shared
 
@@ -100,7 +99,7 @@ jobs:
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
-            
+
       - name: "Build all shared modules"
         run: yarn build:shared
 
@@ -134,7 +133,7 @@ jobs:
         uses: threeal/setup-yarn-action@v2
         with:
           version: 4.6
-  
+
       - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v4
         with:
@@ -161,7 +160,7 @@ jobs:
         run: yarn playwright install
 
       - name: "Start OpenVAA"
-        run: yarn dev
+        run: yarn dev:start
 
       - name: "Collect Docker logs on failure"
         if: failure()
