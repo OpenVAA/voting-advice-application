@@ -6,7 +6,6 @@ Page for controlling the question info generation feature.
 
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { page } from '$app/stores';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { LanguageSelector } from '$lib/admin/components/languageFeatures';
   import { Button } from '$lib/components/button';
@@ -27,11 +26,8 @@ Page for controlling the question info generation feature.
     jobs: { activeJobsByFeature }
   } = getAdminContext();
 
-  // Get current locale from route params
-  $: currentLocale = $page.params.lang || 'en';
-
   ////////////////////////////////////////////////////////////////////////
-  // Get active job
+  // Get active jobcurrentLocale
   ////////////////////////////////////////////////////////////////////////
 
   let questionInfoJob: JobInfo | undefined;
@@ -141,7 +137,7 @@ Page for controlling the question info generation feature.
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.description')}</p>
 
-    <form method="POST" class="gap-lg grid w-full max-w-xl" use:enhance={handleSubmit}>
+    <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
       <!-- Hidden input for operations -->
       <input type="hidden" name="operations" value={selectedOperations.join(',')} />
       <input type="hidden" name="sectionTopics" value={sectionTopics} />
@@ -193,12 +189,12 @@ Page for controlling the question info generation feature.
               <span>{questionError}</span>
             </div>
           {:else if availableQuestions.length > 0}
-            <div class="form-control border-base-300 p-md max-h-64 overflow-y-auto rounded-lg border">
+            <div class="max-h-64 form-control overflow-y-auto rounded-lg border border-base-300 p-md">
               <div class="label">
-                <span class="label-text font-semibold">{$t('adminApp.questionInfo.selectQuestions')}</span>
+                <span class="font-semibold label-text">{$t('adminApp.questionInfo.selectQuestions')}</span>
               </div>
               {#each availableQuestions as question, i}
-                <label class="border-base-200 flex items-start space-x-10 border-b pb-8 last:border-0">
+                <label class="flex items-start space-x-10 border-b border-base-200 pb-8 last:border-0">
                   <input
                     type="checkbox"
                     name="questionIds"
@@ -210,14 +206,14 @@ Page for controlling the question info generation feature.
               {/each}
             </div>
           {:else}
-            <p class="text-neutral text-sm">{$t('adminApp.questionInfo.noQuestions')}</p>
+            <p class="text-sm text-neutral">{$t('adminApp.questionInfo.noQuestions')}</p>
           {/if}
         {/if}
       {/if}
 
       <!-- Generation Options Section -->
       <div class="divider"></div>
-      <h3 class="text-lg font-semibold">{$t('adminApp.questionInfo.options.heading')}</h3>
+      <h3 class="font-semibold text-lg">{$t('adminApp.questionInfo.options.heading')}</h3>
 
       <!-- Target Language Selector -->
       <LanguageSelector name="language" />
@@ -225,7 +221,7 @@ Page for controlling the question info generation feature.
       <!-- Operations Checkboxes -->
       <div class="form-control">
         <div class="label">
-          <span class="label-text font-medium">{$t('adminApp.questionInfo.options.whatToGenerate')}</span>
+          <span class="font-medium label-text">{$t('adminApp.questionInfo.options.whatToGenerate')}</span>
         </div>
         <label class="label cursor-pointer justify-start space-x-8">
           <input type="checkbox" class="checkbox-primary checkbox" value="terms" bind:group={selectedOperations} />
@@ -306,7 +302,7 @@ Page for controlling the question info generation feature.
       {/if}
 
       <!-- Submit Button -->
-      <div class="gap-sm flex flex-col items-center">
+      <div class="flex flex-col items-center gap-sm">
         <Button
           text={status === 'loading'
             ? $t('adminApp.questionInfo.generate.buttonLoading')
@@ -320,7 +316,7 @@ Page for controlling the question info generation feature.
             (selectedOption === 'selectedQuestions' && selectedQuestionIds.length === 0) ||
             selectedOperations.length === 0} />
         {#if !!questionInfoJob}
-          <p class="text-neutral mt-1 text-xs">{$t('adminApp.jobs.alreadyRunning')}</p>
+          <p class="mt-1 text-xs text-neutral">{$t('adminApp.jobs.alreadyRunning')}</p>
         {/if}
       </div>
     </form>

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURES } from '$lib/admin/features';
-  import { Button } from '$lib/components/button';
   import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
   import { getAdminContext } from '$lib/contexts/admin';
   import MainContent from '../../../MainContent.svelte';
@@ -50,7 +49,7 @@
     </ButtonWithConfirmation>
   </div>
 
-  <div slot="fullWidth" class="gap-lg flex flex-col">
+  <div slot="fullWidth" class="flex flex-col gap-lg">
     <div class="px-1">
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
@@ -87,9 +86,9 @@
       </div>
     </div>
 
-    <div class="gap-lg flex w-full px-1">
+    <div class="px-1 flex w-full gap-lg">
       <!-- Main Content - Features list -->
-      <div class="gap-lg flex w-3/4 flex-col">
+      <div class="flex w-3/4 flex-col gap-lg">
         {#each ADMIN_FEATURES as feature}
           <div class="relative">
             <FeatureJobs {feature} />

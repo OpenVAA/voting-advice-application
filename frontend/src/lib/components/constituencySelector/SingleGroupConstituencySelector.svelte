@@ -26,8 +26,8 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 
 <script lang="ts">
   import { type Constituency } from '@openvaa/data';
-  import { getComponentContext } from '$lib/contexts/component';
   import { Select } from '$lib/components/select';
+  import { getComponentContext } from '$lib/contexts/component';
   import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
 
   type $$Props = SingleGroupConstituencySelectorProps;
