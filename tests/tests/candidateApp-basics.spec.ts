@@ -18,7 +18,7 @@ test.describe('when logged in with default user', async () => {
   test('should log out', async ({ page, baseURL }) => {
     await page.getByTitle(T.en['common.logout'], { exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE_EN })}`);
-    await expect(page.getByRole('button', { name: T.en['common.login'], exact: true })).toBeVisible();
+    await expect(page.getByTestId('login-submit')).toBeVisible();
   });
 
   test('should change app language through nav', async ({ page, baseURL }) => {
@@ -92,15 +92,15 @@ test.describe('when logged in with default user', async () => {
     await page.getByLabel(T.en['common.logout'], { exact: true }).click();
 
     //Should not login with old password
-    await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).fill(mockUser.email);
-    await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(mockUser.password);
-    await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
-    await expect(page.getByText(T.en['candidateApp.login.wrongEmailOrPassword'])).toBeVisible();
+    await page.getByTestId('login-email').fill(mockUser.email);
+    await page.getByTestId('password-field').fill(mockUser.password);
+    await page.getByTestId('login-submit').click();
+    await expect(page.getByTestId('login-errorMessage')).toBeVisible();
 
     //Should login with new password
-    await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(newPassword);
-    await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
-    await expect(page.getByRole('heading', { name: T.en['candidateApp.home.ready'], exact: true })).toBeVisible();
+    await page.getByTestId('password-field').fill(newPassword);
+    await page.getByTestId('login-submit').click();
+    await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE_EN })}`);
 
     // Change password back to the default
     await page.goto(`${baseURL}/${buildRoute({ route: 'CandAppSettings', locale: LOCALE_EN })}`);

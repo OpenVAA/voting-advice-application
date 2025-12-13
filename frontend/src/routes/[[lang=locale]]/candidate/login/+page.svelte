@@ -157,6 +157,7 @@
           type="email"
           name="email"
           id="email"
+          data-testid="login-email"
           bind:this={emailInput}
           bind:value={email}
           class="input mb-md w-full max-w-md"
@@ -167,14 +168,15 @@
           <PasswordField autocomplete="current-password" id="password" bind:password bind:focus={focusPassword} />
         </div>
         {#if status === 'error'}
-          <ErrorMessage inline message={errorMessage} class="mb-md" />
+          <ErrorMessage inline message={errorMessage} class="mb-md" data-testid="login-errorMessage" />
         {/if}
         <Button
           type="submit"
           disabled={!canSubmit}
           loading={status === 'loading'}
           text={$t('common.login')}
-          variant="main" />
+          variant="main"
+          data-testid="login-submit" />
       </div>
     {:else}
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
