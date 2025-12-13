@@ -662,12 +662,12 @@ If not provided, the `video` element will be hidden until these properties are p
       icon="videoOff"
       on:click={() => toggleTranscript(false)}
       text={$t('components.video.showVideo')}
-      class="left-sm bg-primary !absolute bottom-4 z-20 rounded-full" />
+      class="!absolute bottom-4 left-sm z-20 rounded-full bg-primary" />
   {/if}
 
   <!-- Transcript -->
   <div
-    class="video-transcript bg-base-300 p-lg leading-lg relative h-full w-full overflow-scroll rounded-md sm:mt-0 sm:h-full"
+    class="video-transcript relative h-full w-full overflow-scroll rounded-md bg-base-300 p-lg leading-lg sm:mt-0 sm:h-full"
     class:pb-[4rem]={!hideControls?.includes('transcript')}
     class:hidden={!transcriptVisible}>
     <div class="w-full">
@@ -710,7 +710,7 @@ If not provided, the `video` element will be hidden until these properties are p
         src={captions}
         default={textTracksHidden ? undefined : true} />
 
-      <div class="bg-base-100 p-lg text-warning flex items-center text-center">
+      <div class="flex items-center bg-base-100 p-lg text-center text-warning">
         {$t('components.video.unsupportedWarning')}
       </div>
     </video>
@@ -724,28 +724,28 @@ If not provided, the `video` element will be hidden until these properties are p
           on:click|capture={() => screenJump(-1)}
           aria-hidden="true"
           tabindex="-1"
-          class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-r active:to-50%"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral active:to-50%"
           ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
         <button
           on:click|once={tryUnmute}
           on:click|capture={() => screenJump(0)}
           aria-hidden="true"
           tabindex="-1"
-          class="grow-1 duration-sm active:via-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-r active:from-transparent active:via-50%"
+          class="grow-1 w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-transparent active:via-neutral active:via-50%"
           ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
         <button
           on:click|once={tryUnmute}
           on:click|capture={() => screenJump(+1)}
           aria-hidden="true"
           tabindex="-1"
-          class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-l active:to-50%"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
           class:hidden={atEnd}><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
       </div>
 
       <!-- Icon buttons -->
       <div
-        class="px-sm flex items-center justify-between py-4 {!hideControls || hideControls.length === 0
-          ? "before:from-neutral before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-50% before:opacity-50 before:content-['']"
+        class="flex items-center justify-between px-sm py-4 {!hideControls || hideControls.length === 0
+          ? "before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-neutral before:from-50% before:opacity-50 before:content-['']"
           : ''}">
         {#if !hideControls?.includes('transcript')}
           <Button
@@ -815,14 +815,14 @@ If not provided, the `video` element will be hidden until these properties are p
         aria-valuenow={Math.round(currentTime)}
         aria-label={$t('components.video.progessbarLabel')}
         style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
-        class="bg-primary relative h-2 w-[var(--progress)] overflow-hidden rounded-full" />
+        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-primary" />
     </div>
 
     <!-- Loading spinner -->
     <Loading
       inline
       size="md"
-      class="duration-sm absolute right-[0.8rem] top-[3.1rem] !text-white transition-all
+      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm
         {status === 'waiting' || status === 'error-pending' ? '' : 'opacity-0'}" />
 
     <!-- Error message -->
@@ -831,7 +831,7 @@ If not provided, the `video` element will be hidden until these properties are p
         role="status"
         aria-live="polite"
         transition:fade
-        class="bg-base-100 p-md text-warning absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] grid justify-items-center rounded-md">
+        class="absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] grid justify-items-center rounded-md bg-base-100 p-md text-warning">
         <Icon name="warning" />
         <div class="mt-sm text-center">
           {$t('components.video.error')}
@@ -849,11 +849,11 @@ If not provided, the `video` element will be hidden until these properties are p
 <style lang="postcss">
   :global(video::cue) {
     /* sm: is a valid class prefix even though it's flagged by the linter */
-    @apply font-base sm:text-md text-[0.85rem];
+    @apply font-base text-[0.85rem] sm:text-md;
   }
 
   :global(video::-webkit-media-text-track-display) {
-    @apply p-md box-border rounded-lg;
+    @apply box-border rounded-lg p-md;
   }
 
   :global(video::-webkit-media-text-track-container) {
@@ -862,7 +862,7 @@ If not provided, the `video` element will be hidden until these properties are p
   }
 
   :global(.video-transcript img) {
-    @apply my-lg mx-auto max-h-[100vw] rounded-sm;
+    @apply mx-auto my-lg max-h-[100vw] rounded-sm;
   }
   :global(.video-transcript figure img) {
     @apply mb-sm;
@@ -878,6 +878,6 @@ If not provided, the `video` element will be hidden until these properties are p
   :global(.video-transcript h2),
   :global(.video-transcript h3),
   :global(.video-transcript h4) {
-    @apply mb-sm mt-lg text-md text-start;
+    @apply mb-sm mt-lg text-start text-md;
   }
 </style>
