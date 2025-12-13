@@ -279,7 +279,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
         <ul
           id="menu-{id}"
           role="listbox"
-          class="menu mb-xl absolute left-0 top-6 z-10 w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
+          class="menu absolute left-0 top-6 z-10 mb-xl w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
             ? 'bg-base-100'
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
@@ -294,7 +294,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
               on:click={() => handleSelect(option)}>
               <span
                 class={optionIndex === focusIndex
-                  ? 'bg-neutral/10 !outline-neutral !outline !outline-2 !outline-offset-0'
+                  ? 'bg-neutral/10 !outline !outline-2 !outline-offset-0 !outline-neutral'
                   : ''}>
                 {option.label}
               </span>

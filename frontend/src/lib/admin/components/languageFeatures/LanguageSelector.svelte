@@ -33,7 +33,7 @@ Automatically selected if only one language is available.
     {$t('adminApp.languageFeatures.targetLanguage.label')}
   </label>
   <Select {id} {name} bind:selected {options} class="max-w-none" autocomplete="off" />
-  <div class="text-secondary mt-md text-sm">
+  <div class="mt-md text-sm text-secondary">
     {$t('adminApp.languageFeatures.targetLanguage.help')}
   </div>
 </div>
