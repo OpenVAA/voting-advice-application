@@ -38,7 +38,7 @@ The system consists of:
 ```typescript
 import { createJob } from '$lib/server/admin/jobs/jobStore';
 
-const job = createJob('ArgumentCondensation', 'admin@example.com');
+const job = createJob('ArgumentCondensation', 'mock.admin@openvaa.org');
 ```
 
 ### Using PipelineController
