@@ -7,7 +7,7 @@ import type { AdminFeature } from '$lib/admin/features';
  * {
  *   id: '123',
  *   jobType: 'AdminAppArgumentCondensation',
- *   author: 'admin@example.com',
+ *   author: 'admin@openvaa.org',
  *   status: 'running',
  *   progress: 0.5,
  *   startTime: '2024-01-01T00:00:00.000Z',

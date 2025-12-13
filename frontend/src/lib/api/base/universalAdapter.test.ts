@@ -27,7 +27,7 @@ describe('UniversalAdapter', () => {
     });
 
     test('should throw error if fetch is used before init', async () => {
-      await expect(adapter.fetch('http://example.com')).rejects.toThrow();
+      await expect(adapter.fetch('http://openvaa.org')).rejects.toThrow();
     });
   });
 
@@ -44,9 +44,9 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.fetch('http://example.com/api');
+      const result = await adapter.fetch('http://openvaa.org/api');
 
-      expect(mockFetch).toHaveBeenCalledWith('http://example.com/api', {});
+      expect(mockFetch).toHaveBeenCalledWith('http://openvaa.org/api', {});
       expect(result).toBe(mockResponse);
     });
 
@@ -58,7 +58,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      await adapter.fetch('http://example.com/api', {}, { authToken: 'test-token' });
+      await adapter.fetch('http://openvaa.org/api', {}, { authToken: 'test-token' });
 
       const callArgs = mockFetch.mock.calls[0];
       const headers = new Headers(callArgs[1]?.headers);
@@ -73,7 +73,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      await expect(adapter.fetch('http://example.com/api')).rejects.toThrow(
+      await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(
         /Error with UniversalAdapter\.fetch when parsing response.*404.*Not found/
       );
     });
@@ -81,7 +81,7 @@ describe('UniversalAdapter', () => {
     test('should handle fetch network error', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      await expect(adapter.fetch('http://example.com/api')).rejects.toThrow(
+      await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(
         /Error with UniversalAdapter\.fetch when fetching.*Network error/
       );
     });
@@ -94,7 +94,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      await expect(adapter.fetch('http://example.com/api')).rejects.toThrow(
+      await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(
         /Could not parse error message from Response/
       );
     });
@@ -107,7 +107,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      await expect(adapter.fetch('http://example.com/api')).rejects.toThrow(
+      await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(
         /Could not parse error message from Response/
       );
     });
@@ -143,11 +143,11 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api');
+      await adapterWithCache.fetch('http://openvaa.org/api');
 
       const [url] = mockFetchForCache.mock.calls[0];
       expect(url).toContain('/api/cache?resource=');
-      expect(url).toContain(encodeURIComponent('http://example.com/api'));
+      expect(url).toContain(encodeURIComponent('http://openvaa.org/api'));
     });
 
     test('should cache GET requests with explicit GET method', async () => {
@@ -157,7 +157,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', { method: 'GET' });
+      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'GET' });
 
       const [url] = mockFetchForCache.mock.calls[0];
       expect(url).toContain('/api/cache?resource=');
@@ -170,10 +170,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', {}, { disableCache: true });
+      await adapterWithCache.fetch('http://openvaa.org/api', {}, { disableCache: true });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -184,12 +184,12 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', {
+      await adapterWithCache.fetch('http://openvaa.org/api', {
         headers: { Authorization: 'Bearer token' }
       });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -200,10 +200,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', {}, { authToken: 'my-token' });
+      await adapterWithCache.fetch('http://openvaa.org/api', {}, { authToken: 'my-token' });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -214,10 +214,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', { method: 'POST' });
+      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'POST' });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -228,10 +228,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', { method: 'PUT' });
+      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'PUT' });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -242,10 +242,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', { method: 'DELETE' });
+      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'DELETE' });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
 
@@ -256,10 +256,10 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetchForCache.mockResolvedValue(mockResponse);
 
-      await adapterWithCache.fetch('http://example.com/api', { method: 'PATCH' });
+      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'PATCH' });
 
       const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(url).not.toContain('/api/cache');
     });
   });
@@ -277,11 +277,11 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.get({ url: 'http://example.com/api' });
+      const result = await adapter.get({ url: 'http://openvaa.org/api' });
 
       expect(mockFetch).toHaveBeenCalled();
       const [url, init] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://example.com/api');
+      expect(url).toBe('http://openvaa.org/api');
       expect(init).toEqual({ method: 'GET' });
       expect(result).toEqual(mockData);
     });
@@ -294,7 +294,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.get({ url: 'http://example.com/api', parser: 'text' });
+      const result = await adapter.get({ url: 'http://openvaa.org/api', parser: 'text' });
 
       expect(result).toBe(mockText);
     });
@@ -307,7 +307,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.get({ url: 'http://example.com/api', parser: 'blob' });
+      const result = await adapter.get({ url: 'http://openvaa.org/api', parser: 'blob' });
 
       expect(result).toBe(mockBlob);
     });
@@ -319,7 +319,7 @@ describe('UniversalAdapter', () => {
       } as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.get({ url: 'http://example.com/api', parser: 'none' });
+      const result = await adapter.get({ url: 'http://openvaa.org/api', parser: 'none' });
 
       expect(result).toBe(mockResponse);
     });
@@ -332,7 +332,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       await adapter.get({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         params: { foo: 'bar', baz: 123 }
       });
 
@@ -349,7 +349,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       await adapter.get({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         authToken: 'my-token'
       });
 
@@ -366,7 +366,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       await adapter.get({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         init: { headers: { 'X-Custom': 'value' } }
       });
 
@@ -387,11 +387,11 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      const result = await adapter.delete({ url: 'http://example.com/api/1' });
+      const result = await adapter.delete({ url: 'http://openvaa.org/api/1' });
 
       expect(mockFetch).toHaveBeenCalled();
       const [url, init] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://example.com/api/1');
+      expect(url).toBe('http://openvaa.org/api/1');
       expect(init).toEqual({ method: 'DELETE' });
       expect(result).toEqual({ deleted: true });
     });
@@ -404,7 +404,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await adapter.delete({
-        url: 'http://example.com/api/1',
+        url: 'http://openvaa.org/api/1',
         parser: 'text'
       });
 
@@ -427,7 +427,7 @@ describe('UniversalAdapter', () => {
 
       const body = { name: 'test', value: 123 };
       const result = await adapter.post({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         body
       });
 
@@ -445,7 +445,7 @@ describe('UniversalAdapter', () => {
       } as unknown as Response;
       mockFetch.mockResolvedValue(mockResponse);
 
-      await adapter.post({ url: 'http://example.com/api' });
+      await adapter.post({ url: 'http://openvaa.org/api' });
 
       const callInit = mockFetch.mock.calls[0][1];
       expect(callInit.method).toBe('POST');
@@ -460,7 +460,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await adapter.post({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         body: { data: 'test' },
         parser: 'text'
       });
@@ -471,7 +471,7 @@ describe('UniversalAdapter', () => {
     test('should throw error when both body and init.body are provided', async () => {
       await expect(
         adapter.post({
-          url: 'http://example.com/api',
+          url: 'http://openvaa.org/api',
           body: { data: 'test' },
           init: { body: 'duplicate' }
         })
@@ -482,7 +482,7 @@ describe('UniversalAdapter', () => {
       const formData = new FormData();
       await expect(
         adapter.post({
-          url: 'http://example.com/api',
+          url: 'http://openvaa.org/api',
           body: formData as unknown as JSONData
         })
       ).rejects.toThrow('Do not pass non-serializable data to the body');
@@ -500,7 +500,7 @@ describe('UniversalAdapter', () => {
         array: [1, 2, 3]
       };
 
-      await adapter.post({ url: 'http://example.com/api', body });
+      await adapter.post({ url: 'http://openvaa.org/api', body });
 
       const callInit = mockFetch.mock.calls[0][1];
       expect(callInit.body).toBe(JSON.stringify(body));
@@ -514,7 +514,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       await adapter.post({
-        url: 'http://example.com/api',
+        url: 'http://openvaa.org/api',
         body: { test: 'data' },
         init: { headers: { 'X-Custom': 'header' } }
       });
@@ -538,7 +538,7 @@ describe('UniversalAdapter', () => {
 
       const body = { name: 'updated' };
       const result = await adapter.put({
-        url: 'http://example.com/api/1',
+        url: 'http://openvaa.org/api/1',
         body
       });
 
@@ -557,7 +557,7 @@ describe('UniversalAdapter', () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       const result = await adapter.put({
-        url: 'http://example.com/api/1',
+        url: 'http://openvaa.org/api/1',
         body: { data: 'test' },
         parser: 'blob'
       });
