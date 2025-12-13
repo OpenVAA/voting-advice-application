@@ -84,8 +84,8 @@ By default, mock data includes the following Users (for up-to-date details, see 
 
 Note that the mock admin is different from the default Strapi Admin, generated along with mock data.
 
-| User type    | Username | Email                     | Password | Remarks                |
-| ------------ | -------- | ------------------------- | -------- | ---------------------- |
+| User type    | Username | Email                    | Password | Remarks                |
+| ------------ | -------- | ------------------------ | -------- | ---------------------- |
 | Strapi Admin | `admin`  | `mock.admin@openvaa.org` | `admin`  | Use to login to Strapi |
 
 ## Authentication
