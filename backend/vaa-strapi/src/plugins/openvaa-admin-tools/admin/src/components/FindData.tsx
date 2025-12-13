@@ -27,7 +27,7 @@ export function FindData(): ReactElement {
           {'{'}
           "collection": "candidates", "filters": {'{'}
           "email": {'{'}
-          "$contains": "example.com"
+          "$contains": "openvaa.org"
           {'}'}
           {'}'}, "populate": {'{'}
           "nominations": true

@@ -509,7 +509,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
           },
           'question-5': {
             value: {
-              url: 'https://example.com/underworld.jpg',
+              url: 'https://openvaa.org/underworld.jpg',
               alt: 'Ganon Dorf exploring the underworld.'
             }
           },
@@ -832,8 +832,8 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         name: 'The Evil Party',
         shortName: 'EP',
         image: {
-          url: 'https://example.com/the-evil-party-logo.png',
-          urlDark: 'https://example.com/the-evil-party-logo-negative.png',
+          url: 'https://openvaa.org/the-evil-party-logo.png',
+          urlDark: 'https://openvaa.org/the-evil-party-logo-negative.png',
           alt: 'Logo of the Evil Party'
         },
         answers: {

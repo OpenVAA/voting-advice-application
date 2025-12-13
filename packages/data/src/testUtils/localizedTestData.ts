@@ -152,8 +152,8 @@ const LOCALIZED_TEST_DATA: {
         value: {
           url: {
             __translations__: {
-              en: 'https://example.com/image.jpg',
-              fi: 'FI https://example.com/image.jpg'
+              en: 'https://openvaa.org/image.jpg',
+              fi: 'FI https://openvaa.org/image.jpg'
             }
           },
           alt: {
@@ -282,7 +282,7 @@ const TRANSLATED_TEST_DATA: {
       },
       'question-5': {
         value: {
-          url: 'https://example.com/image.jpg',
+          url: 'https://openvaa.org/image.jpg',
           alt: 'Alt text'
         }
       },

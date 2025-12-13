@@ -35,19 +35,19 @@ describe('formatDateAnswer', () => {
 
 describe('formatImageAnswer', () => {
   test('Should return an img tag without data-dark-src attribute when urlDark is undefined for formatImageAnswer', () => {
-    const image = { url: 'http://example.com/image.jpg', alt: 'Example Image', urlDark: undefined };
+    const image = { url: 'http://openvaa.org/image.jpg', alt: 'Example Image', urlDark: undefined };
     const result = formatImageAnswer({ value: image });
-    expect(result).toBe('<img src="http://example.com/image.jpg" alt="Example Image" />');
+    expect(result).toBe('<img src="http://openvaa.org/image.jpg" alt="Example Image" />');
   });
   test('Should return an img tag with data-dark-src attribute when urlDark is provided for formatImageAnswer', () => {
     const image = {
-      url: 'http://example.com/image.jpg',
+      url: 'http://openvaa.org/image.jpg',
       alt: 'Example Image',
-      urlDark: 'http://example.com/image-dark.jpg'
+      urlDark: 'http://openvaa.org/image-dark.jpg'
     };
     const result = formatImageAnswer({ value: image });
     expect(result).toBe(
-      '<img src="http://example.com/image.jpg" alt="Example Image" data-dark-src="http://example.com/image-dark.jpg" />'
+      '<img src="http://openvaa.org/image.jpg" alt="Example Image" data-dark-src="http://openvaa.org/image-dark.jpg" />'
     );
   });
 });

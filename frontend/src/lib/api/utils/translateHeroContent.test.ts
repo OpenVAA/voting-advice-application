@@ -22,7 +22,7 @@ describe('translateHeroContent', () => {
 
   test('should return image content as-is', () => {
     const image: Image = {
-      url: 'https://example.com/image.jpg',
+      url: 'https://openvaa.org/image.jpg',
       alt: 'Test image'
     };
     expect(translateHeroContent(image as unknown as LocalizedHeroContent, 'en')).toEqual(image);
@@ -30,21 +30,21 @@ describe('translateHeroContent', () => {
 
   test('should translate localized object for given locale', () => {
     const localizedImage = {
-      en: { url: 'https://example.com/en-image.jpg', alt: 'English' },
-      fi: { url: 'https://example.com/fi-image.jpg', alt: 'Finnish' }
+      en: { url: 'https://openvaa.org/en-image.jpg', alt: 'English' },
+      fi: { url: 'https://openvaa.org/fi-image.jpg', alt: 'Finnish' }
     };
 
     const result = translateHeroContent(localizedImage, 'en');
     expect(result).toEqual({
-      url: 'https://example.com/en-image.jpg',
+      url: 'https://openvaa.org/en-image.jpg',
       alt: 'English'
     });
   });
 
   test('should handle null locale', () => {
     const localizedImage = {
-      en: { url: 'https://example.com/en-image.jpg', alt: 'English' },
-      fi: { url: 'https://example.com/fi-image.jpg', alt: 'Finnish' }
+      en: { url: 'https://openvaa.org/en-image.jpg', alt: 'English' },
+      fi: { url: 'https://openvaa.org/fi-image.jpg', alt: 'Finnish' }
     };
 
     const result = translateHeroContent(localizedImage, null);
