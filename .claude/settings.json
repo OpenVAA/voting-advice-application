@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": ["Bash(yarn test:*)", "Bash(find:*)"],
+    "deny": [],
+    "ask": []
+  }
+}
