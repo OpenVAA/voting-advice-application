@@ -1,7 +1,7 @@
 /**
  * A callback passed to admin or other operations that take long to complete.
  *
- * @usage
+ * @example
  * ```ts
  * // In the backend
  *

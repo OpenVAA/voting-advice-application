@@ -219,7 +219,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Call when explicitly toggling play/paused to use `errorCheckInterval` to check whether we should show an error message. This is automatically called by `setPaused()`.
-   * @param value Whether the video should be playing
+   * @param value - Whether the video should be playing
    */
   function setShouldPlay(value: boolean): void {
     if (!hasContent || !value) {
@@ -390,7 +390,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Fired when the invisible jump areas of the screen are pressed. We treat this clicks as jumps only if the video is not paused.
-   * @param steps Passed to `jump`
+   * @param steps - Passed to `jump`
    */
   function screenJump(steps: number): void {
     if (!playing || steps === 0) {
@@ -412,7 +412,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Toggle video playback or replay.
-   * @param action The action to perform: `'play'`, `'pause'` or `'replay'`. Default: Toggle between `'play'` and `'pause'`.
+   * @param action - The action to perform: `'play'`, `'pause'` or `'replay'`. Default: Toggle between `'play'` and `'pause'`.
    */
   export function togglePlay(action?: PlayButtonAction): void {
     if (action == null) action = playButtonAction;
@@ -426,7 +426,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Toggle sound
-   * @param unmuted If defined will define whether sounds are unmuted, otherwise sound will be toggled.
+   * @param unmuted - If defined will define whether sounds are unmuted, otherwise sound will be toggled.
    */
   export function toggleSound(unmute?: boolean): void {
     unmute ??= muted;
@@ -436,7 +436,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Show or hide captions.
-   * @param show If defined will define whether the captions should be shown, otherwise their visibility will be toggled.
+   * @param show - If defined will define whether the captions should be shown, otherwise their visibility will be toggled.
    */
   export function toggleCaptions(show?: boolean): void {
     const track = getTrack();
@@ -449,7 +449,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Toggle transcript visibility.
-   * @param show If defined will define whether the transcript should be shown, otherwise its visibility will be toggled.
+   * @param show - If defined will define whether the transcript should be shown, otherwise its visibility will be toggled.
    */
   export function toggleTranscript(show?: boolean): void {
     if (!hasContent) return;
@@ -468,7 +468,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
-   * @param steps A positive or negative number of steps to skip. If zero, the current cue will be rewound.
+   * @param steps - A positive or negative number of steps to skip. If zero, the current cue will be rewound.
    */
   export function jump(steps: number): void {
     if (!video || !hasContent || (steps > 0 && atEnd)) return;
@@ -498,7 +498,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Try to play or pause the video.
-   * @param paused Whether to pause or play the video.
+   * @param paused - Whether to pause or play the video.
    */
   function setPaused(paused: boolean): void {
     if (!video || !hasContent) return;
@@ -615,7 +615,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Returns the index of the cue which would have been the current or the last to display for the given time, or -1 if the first cue would not have been displayed yet.
-   * @param timepoint The time point on the video to check.
+   * @param timepoint - The time point on the video to check.
    * @returns The index of the cue or `-1` if the first cue would not have been displayed.
    * @throws Error if no cues are available.
    */

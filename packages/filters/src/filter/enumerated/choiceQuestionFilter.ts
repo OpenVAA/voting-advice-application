@@ -23,9 +23,9 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity = MaybeWrap
 
   /**
    * Create a filter for single or multiple choice questions
-   * @param question The single or multiple choice question
-   * @param locale The locale is used for value sorting
-   * @param name  Optional name for use when displaying the filter
+   * @param question - The single or multiple choice question
+   * @param locale - The locale is used for value sorting
+   * @param name -  Optional name for use when displaying the filter
    */
   constructor(
     {

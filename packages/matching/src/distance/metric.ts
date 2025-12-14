@@ -46,10 +46,10 @@ type MetricFunction = (params: {
 
 /**
  * Calculate the Manhattan distance between two `Position`s. See `distance` for more details.
- * @param a The first `Position`
- * @param b The second `Position`
- * @param space An optional separate `MatchingSpace` in which to measure the distance. @default a.space
- * @param allowMissing If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
+ * @param a - The first `Position`
+ * @param b - The second `Position`
+ * @param space - An optional separate `MatchingSpace` in which to measure the distance. @default a.space
+ * @param allowMissing - If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
  * @returns A normalized distance
  */
 export function manhattanDistance({
@@ -76,10 +76,10 @@ export function manhattanDistance({
 
 /**
  * Calculate the Directional distance between two `Position`s. See `distance` for more details.
- * @param a The first `Position`
- * @param b The second `Position`
- * @param space An optional separate `MatchingSpace` in which to measure the distance. @default a.space
- * @param allowMissing If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
+ * @param a - The first `Position`
+ * @param b - The second `Position`
+ * @param space - An optional separate `MatchingSpace` in which to measure the distance. @default a.space
+ * @param allowMissing - If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
  * @returns A normalized distance
  */
 export function directionalDistance({
@@ -106,10 +106,10 @@ export function directionalDistance({
 
 /**
  * Calculate the Euclidean distance between two `Position`s. See `distance` for more details.
- * @param a The first `Position`
- * @param b The second `Position`
- * @param space An optional separate `MatchingSpace` in which to measure the distance. @default a.space
- * @param allowMissing If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
+ * @param a - The first `Position`
+ * @param b - The second `Position`
+ * @param space - An optional separate `MatchingSpace` in which to measure the distance. @default a.space
+ * @param allowMissing - If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
  * @returns A normalized distance
  */
 export function euclideanDistance({
@@ -187,13 +187,13 @@ export function euclideanSubdimWeight(numDimensions: number): number {
  * 3. Compute the distances between `Position`s for each (flattened) dimension using `kernel(a, b)`
  * 4. Sum the distances for each dimension using `sum(distances)`
  * 5. Divided the sum by a similar sum computed over the maximum possible distances
- * @param a The first `Position`
- * @param b The second `Position`
- * @param kernel A kernel function to compute the distance between a pair of coordinates in one dimension.
- * @param sum A function to compute the sum of the dimensions’ distances.
- * @param subdimWeight A function to compute the relative weight of each subdimension. The function is passed the number of subdimensions and it should return the relative weight of one subdimension (the same is used for all). In most circumstances, this should be the inverse of `sum`.
- * @param space An optional separate `MatchingSpace` in which to measure the distance. @default a.space
- * @param allowMissing If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
+ * @param a - The first `Position`
+ * @param b - The second `Position`
+ * @param kernel - A kernel function to compute the distance between a pair of coordinates in one dimension.
+ * @param sum - A function to compute the sum of the dimensions’ distances.
+ * @param subdimWeight - A function to compute the relative weight of each subdimension. The function is passed the number of subdimensions and it should return the relative weight of one subdimension (the same is used for all). In most circumstances, this should be the inverse of `sum`.
+ * @param space - An optional separate `MatchingSpace` in which to measure the distance. @default a.space
+ * @param allowMissing - If `true` and dimensions with missing coordinates in either `Position` are ignored. Otherwise, an error will be thrown in such cases. @default false
  * @returns A normalized distance
  */
 export function distance({

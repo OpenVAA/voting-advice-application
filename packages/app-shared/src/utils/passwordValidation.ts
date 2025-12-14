@@ -24,7 +24,7 @@ export interface PasswordValidation {
  * Checks if the given password contains any repeated characters.
  * The number of repeated characters is defined in the `repetitionLimit` variable.
  *
- * @param {string} password - The password to check.
+ * @param {string} - password - The password to check.
  * @returns {boolean} `true` if the password contains repeated characters, `false` otherwise.
  */
 function checkRepetition(password: string): boolean {
@@ -45,8 +45,8 @@ function isLetter(character: string): boolean {
 /**
  * Checks if the given password contains a character that satisfies the given condition.
  *
- * @param {string} password - The password to check.
- * @param {(char: string) => boolean} condition - The condition to check for each character.
+ * @param {string} - password - The password to check.
+ * @param {(char: - string) => boolean} condition - The condition to check for each character.
  * @returns {boolean} `true` if the password contains a character that satisfies the condition, `false` otherwise.
  */
 function containsCharacter(password: string, condition: (char: string) => boolean): boolean {
@@ -56,8 +56,8 @@ function containsCharacter(password: string, condition: (char: string) => boolea
 /**
  * Validates the given password and username according to the defined rules.
  *
- * @param {string} password - The password to validate.
- * @param {string} username - The username used to check that the password does not contain the username.
+ * @param {string} - password - The password to validate.
+ * @param {string} - username - The username used to check that the password does not contain the username.
  * @returns {Record<string, ValidationDetail>} An object containing the validation details for each rule.
  */
 function passwordValidation(password: string, username: string): Record<string, ValidationDetail> {
@@ -102,7 +102,7 @@ function passwordValidation(password: string, username: string): Record<string, 
 /**
  * Checks if all enforced requirements are met in the given validation object.
  *
- * @param {Record<string, ValidationDetail>} validation - The validation object to check.
+ * @param {Record<string, - ValidationDetail>} validation - The validation object to check.
  * @returns {boolean} `true` if all enforced requirements are met, `false` otherwise.
  */
 function isValid(validation: Record<string, ValidationDetail>): boolean {
@@ -115,8 +115,8 @@ function isValid(validation: Record<string, ValidationDetail>): boolean {
 /**
  * Validates the given password and returns whether the password is valid.
  *
- * @param {string} password - The password to validate.
- * @param {string} [username=''] - The username used to check that the password does not contain the username
+ * @param {string} - password - The password to validate.
+ * @param {string} - [username=''] - The username used to check that the password does not contain the username
  * @returns {boolean} `true` if the password is valid, `false` otherwise.
  */
 export function validatePassword(password: string, username = ''): boolean {
@@ -127,8 +127,8 @@ export function validatePassword(password: string, username = ''): boolean {
  * Validates the given password and username and returns a PasswordValidation object.
  * The PasswordValidation object contains the validation status and details for each requirement.
  *
- * @param {string} password - The password to validate.
- * @param {string} [username=''] - The username used to check that the password does not contain the username
+ * @param {string} - password - The password to validate.
+ * @param {string} - [username=''] - The username used to check that the password does not contain the username
  * @returns {PasswordValidation} An object containing the validation status and details.
  */
 export function validatePasswordDetails(password: string, username = ''): PasswordValidation {

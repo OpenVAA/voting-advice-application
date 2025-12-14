@@ -37,8 +37,8 @@ test('Should have nested nominations', () => {
 
 /**
  * Find the implicit alliance that matches the nomination, i.e. has the same electionId, constituencyId, and member organizations
- * @param entities The entities to search in
- * @param nominationData The data for the nomination
+ * @param entities - The entities to search in
+ * @param nominationData - The data for the nomination
  * @returns An array of matching implicit alliances, which should have one and only one item
  */
 function findEntities(entities: Array<Alliance>, nominationData: PublicAllianceNominationData): Array<Alliance> {
@@ -62,8 +62,8 @@ function findEntities(entities: Array<Alliance>, nominationData: PublicAllianceN
 
 /**
  * Find the nomination object that matches the nomination data, i.e. has the same electionId, electionRound, constituencyId, and member organizations
- * @param nominations The entities to search in
- * @param nominationData The data for the nomination
+ * @param nominations - The entities to search in
+ * @param nominationData - The data for the nomination
  * @returns An array of matching implicit nominations, which should have one and only one item
  */
 function findNominations(

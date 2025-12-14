@@ -11,8 +11,8 @@ export class SubMatch<TGroup extends MatchableQuestionGroup = MatchableQuestionG
   readonly questionGroup: TGroup;
   /**
    * Create a new `SubMatch`.
-   * @param distance The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that a large distance (e.g. 1) means a bad match and a low one (e.g. 0) a perfect one.
-   * @param questionGroup The subgroup of questions for which the match is computed.
+   * @param distance - The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that a large distance (e.g. 1) means a bad match and a low one (e.g. 0) a perfect one.
+   * @param questionGroup - The subgroup of questions for which the match is computed.
    */
   constructor({ distance, questionGroup }: { distance: NormalizedDistance; questionGroup: TGroup }) {
     super(distance);

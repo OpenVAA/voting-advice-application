@@ -3,7 +3,7 @@
 
 /**
  * @description Set focus on descendant elements until the first focusable element is found.
- * @param el The element for which to find the first focusable descendant.
+ * @param el - The element for which to find the first focusable descendant.
  * @returns true if a focusable element is found and focus is set.
  */
 export function focusFirstDescendant(el: Element): boolean {
@@ -15,7 +15,7 @@ export function focusFirstDescendant(el: Element): boolean {
 
 /**
  * @description Attempt to set focus on the current element.
- * @param el The element to attempt to focus on.
+ * @param el - The element to attempt to focus on.
  * @returns true if element is focused
  */
 export function attemptFocus(el: Element): boolean {
@@ -30,7 +30,7 @@ export function attemptFocus(el: Element): boolean {
 
 /**
  * Check whether the given element is focusable by keyboard navigation.
- * @param el Any HTML element
+ * @param el - Any HTML element
  * @returns true if the element is focusable
  */
 export function isFocusable(el: Element): el is Element & { focus: () => void } {

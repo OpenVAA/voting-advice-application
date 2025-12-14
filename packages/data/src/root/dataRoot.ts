@@ -455,7 +455,7 @@ export class DataRoot extends Updatable {
    * Get all provided `Nomination`s for a specific `Entity` passing either itself or its `type` and `id`.
    * @param type - The type of the nominated entity.
    * @param id - The id of the nominated entity.
-   * @paramn options - Additional options passed to `findNominations`.
+   * @param options - Additional options passed to `findNominations`.
    * @returns An array of `Nomination`s for the given `Entity` or `undefined` if `Nomination`s have not yet been provided.
    */
   getNominationsForEntity<TEntity extends EntityType>(

@@ -14,8 +14,8 @@ import type { UID } from '@strapi/strapi';
  * The data folder must contain separate json files for each data type: `answers.json`, `appSettings.json`, `candidates.json`, `constituencies.json`, `elections.json`, `infoQuestions.json`, `locales.json`, `nominations.json`, `opinionQuestions.json`, `parties.json`, `questionCategories.json`, `questionTypes.json`.
  * Possible images should be placed in the same folder and referenced by a relative path.
  * The data folder is set by the env variable `LOAD_DATA_ON_INITIALISE_FOLDER` by default.
- * @param folder The folder to load data from
- * @param force Load and clear data regardless of `AppSettings.allowOverwrite`
+ * @param folder - The folder to load data from
+ * @param force - Load and clear data regardless of `AppSettings.allowOverwrite`
  */
 export async function loadData(folder: string, force = false) {
   console.warn('[loadData] This function has not been tested on Strapi 5 yet!');
@@ -149,11 +149,11 @@ async function createLocales(locales: Array<{ code: string; name: string }>) {
 
 /**
  * Load a JSON file from disk and create Strapi objects from it.
- * @param folder The import folder
- * @param name The name of the file without extension
- * @param api The api name
- * @param mediaFields The names of the fields that contain media files. These are defined as paths (relative to the import folder) to the corresponding media file.
- * @param publish If `true` the objects will be published with the current time
+ * @param folder - The import folder
+ * @param name - The name of the file without extension
+ * @param api - The api name
+ * @param mediaFields - The names of the fields that contain media files. These are defined as paths (relative to the import folder) to the corresponding media file.
+ * @param publish - If `true` the objects will be published with the current time
  * @returns The created Strapi objects if succesfull
  * @throws Never
  */
@@ -190,8 +190,8 @@ async function createFromFile(
 
 /**
  * Load a JSON file from disk.
- * @param folder The import folder
- * @param name The name of the file without extension
+ * @param folder - The import folder
+ * @param name - The name of the file without extension
  * @returns The JSON data
  * @throws Error
  */
@@ -215,11 +215,11 @@ async function loadFile(folder: string, name: string): Promise<Array<object>> {
 
 /**
  * Create Strapi objects from JSON data.
- * @param folder The import folder
- * @param api The api name
- * @param data An array of JSON objects
- * @param mediaFields The names of the fields that contain media files. These are defined as paths (relative to the import folder) to the corresponding media file.
- * @param publish If `true` the objects will be published with the current time
+ * @param folder - The import folder
+ * @param api - The api name
+ * @param data - An array of JSON objects
+ * @param mediaFields - The names of the fields that contain media files. These are defined as paths (relative to the import folder) to the corresponding media file.
+ * @param publish - If `true` the objects will be published with the current time
  * @returns The created objects
  * @throws Error
  */

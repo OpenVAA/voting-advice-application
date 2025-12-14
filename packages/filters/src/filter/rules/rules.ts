@@ -22,7 +22,7 @@ export function copyRules<TRule extends Rules>(rules: TRule): TRule {
 }
 
 /**
- * Check whether @param rule is empty for purposes of finding out whether a filter is active or not.
+ * Check whether @param rule - is empty for purposes of finding out whether a filter is active or not.
  */
 export function ruleIsActive(rule: Rule): boolean {
   if (rule == null || rule === '' || rule === false) return false;
@@ -34,8 +34,8 @@ export function ruleIsActive(rule: Rule): boolean {
 
 /**
  * A simple utility to check whether to rule values are equal.
- * @param a A rule value
- * @param b A rule value
+ * @param a - A rule value
+ * @param b - A rule value
  * @returns true if the rules are equal
  */
 export function matchRules(a: Rule, b: Rule): boolean {

@@ -2,7 +2,7 @@ import type { Data } from '@strapi/strapi';
 
 /**
  * Get the `Candidate` associated with a given `userId`.
- * @param userId The `id` (not `documentId`) of the `User`.
+ * @param userId - The `id` (not `documentId`) of the `User`.
  * @returns The `Candidate` associated with the given `userId` or `null` if no `Candidate` is found.
  * @throws If multiple `Candidate`s are found for the same `User`.
  */

@@ -2,7 +2,7 @@
  * Parse the `Accept-Language` request header and return an ordered list
  * of preferred locales. The format of the header is as follows:
  * `fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5`
- * @param acceptLanguage The `Accept-Language` request header.
+ * @param acceptLanguage - The `Accept-Language` request header.
  * @returns An ordered list of preferred locale strings
  */
 export function parseAcceptedLanguages(acceptLanguage: string): Array<string> {

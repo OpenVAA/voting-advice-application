@@ -7,8 +7,8 @@ export function getUUID(): string {
  * Concat string values with properties passed by the user. Mainly used to
  * prepend default `class` values into `$$restProps` before passing them
  * to an element or a Svelte component.
- * @param props The passed properties, usually `$$restProps`
- * @param defaults A record of string properties that will be prepended to the
+ * @param props - The passed properties, usually `$$restProps`
+ * @param defaults - A record of string properties that will be prepended to the
  *   same values in `props`
  * @returns The merged props, based on a shallow copy of `props`
  */
@@ -26,8 +26,8 @@ export function concatProps<TObject extends object>(props: TObject, defaults: Pa
 /**
  * Prepend default class value into `$$restProps` before passing them
  * to an element or a Svelte component. A shorthand for `concatProps`.
- * @param props The passed properties, usually `$$restProps`
- * @param classes The base classes to use
+ * @param props - The passed properties, usually `$$restProps`
+ * @param classes - The base classes to use
  * @returns The merged props, based on a shallow copy of `props` with
  *   `classes` joined with possible `props.class`
  */

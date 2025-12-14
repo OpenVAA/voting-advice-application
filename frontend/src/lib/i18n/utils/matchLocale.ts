@@ -2,8 +2,8 @@
  * Performs a soft match between locales.
  * NB. This implementation is not 100% accurate, and it does not work properly
  * with some legacy ('grandfathered') locales or fully proprietary ones.
- * @param targets The locale or ordered list of locales to find
- * @param locales The locales to find the target in
+ * @param targets - The locale or ordered list of locales to find
+ * @param locales - The locales to find the target in
  * @returns The first matching locale in `locales` or `undefined` if not found.
  */
 export function matchLocale(targets: string | Array<string>, locales: Array<string>): string | undefined {

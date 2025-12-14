@@ -7,10 +7,10 @@ export class TextPropertyFilter<TEntity extends MaybeWrappedEntity = MaybeWrappe
 
   /**
    * Create a filter for matching text to an entity's property.
-   * @param property The property name
-   * @param subProperty An optional sub-property name
-   * @param name  Optional name for use when displaying the filter
-   * @param locale The locale is used for case-insensitive matching
+   * @param property - The property name
+   * @param subProperty - An optional sub-property name
+   * @param name -  Optional name for use when displaying the filter
+   * @param locale - The locale is used for case-insensitive matching
    */
   constructor(
     options: {

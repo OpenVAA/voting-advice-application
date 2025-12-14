@@ -292,7 +292,7 @@ function readJsonTranslations(locale: string, filename: string): Translations {
 }
 
 /**
- * Return a recursive async generator yielding file paths in @param {string} dir.
+ * Return a recursive async generator yielding file paths in @param {string} - dir.
  * (By qwtel)[https://stackoverflow.com/a/45130990/13409631]
  */
 async function* getFiles(dir: string): AsyncGenerator<string> {

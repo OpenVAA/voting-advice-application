@@ -9,9 +9,9 @@ export class TextQuestionFilter<TEntity extends MaybeWrappedEntity = MaybeWrappe
 
   /**
    * Create a filter for matching a text question.
-   * @param question The text question
-   * @param name  Optional name for use when displaying the filter
-   * @param locale The locale is used for case-insensitive matching
+   * @param question - The text question
+   * @param name -  Optional name for use when displaying the filter
+   * @param locale - The locale is used for case-insensitive matching
    */
   constructor(
     options: {

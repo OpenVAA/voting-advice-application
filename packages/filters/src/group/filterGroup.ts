@@ -39,7 +39,7 @@ export class FilterGroup<TEntity extends MaybeWrappedEntity> {
 
   /**
    * Apply the filters to the inputs. If the group has no active filters (or any filters at all), returns the original list.
-   * @input A list of entities.
+   * @param targets - A list of entities.
    * @returns Filtered targets
    */
   apply<TTarget extends TEntity>(targets: Array<TTarget>) {
@@ -102,8 +102,8 @@ export class FilterGroup<TEntity extends MaybeWrappedEntity> {
 
   /**
    * Add or remove an event handlers that is called when the results change. To use the changed results, access `filterGroup.results`.
-   * @param handler The event handler
-   * @add Add the event handler if true, remove it otherwise
+   * @param handler - The event handler
+   * @param add -  Add the event handler if true, remove it otherwise
    */
   onChange(handler: (filterGroup: typeof this) => void, add = true) {
     if (add) {
@@ -115,7 +115,7 @@ export class FilterGroup<TEntity extends MaybeWrappedEntity> {
 
   /**
    * Wrap a function call with this to temporarily bypass `onChange` events.
-   * @param f The function to call without triggering `onChange`
+   * @param f - The function to call without triggering `onChange`
    */
   withoutOnChange(f: () => void) {
     this.suspendOnChange = true;

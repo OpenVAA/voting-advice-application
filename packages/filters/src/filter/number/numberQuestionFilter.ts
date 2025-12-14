@@ -13,8 +13,8 @@ export class NumberQuestionFilter<
 
   /**
    * Create a number question filter.
-   * @param question The number question
-   * @param name  Optional name for use when displaying the filter
+   * @param question - The number question
+   * @param name -  Optional name for use when displaying the filter
    */
   constructor({ question, name }: { question: NumberQuestion; name?: string }) {
     super({ question, name });

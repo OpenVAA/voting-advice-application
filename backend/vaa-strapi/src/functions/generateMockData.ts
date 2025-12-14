@@ -662,7 +662,7 @@ async function createAlliances(numParties: Array<number>) {
 
 /**
  * Create questions
- * @param options.electionPctg The fraction of opinion questions categories that will have their `election` relation set to a random election.
+ * @param options.electionPctg - The fraction of opinion questions categories that will have their `election` relation set to a random election.
  */
 async function createQuestionCategories({ electionPctg = 0.2 }: { electionPctg?: number } = {}) {
   const elections = await strapi.documents('api::election.election').findMany({});
@@ -721,7 +721,7 @@ async function createQuestionTypes() {
 
 /**
  * Create questions
- * @param options.constituencyPctg The fraction of Likert questions that will
+ * @param options.constituencyPctg - The fraction of Likert questions that will
  *   have their `constituency` relation set to a random constituency.
  */
 async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: number } = {}) {
@@ -903,8 +903,8 @@ function fakeTranslate<TTranslation extends string | Record<string, string>>(
 
 /**
  * Uses faker to create a localized string json with the callback
- * @param callback The function to call for each translation
- * @param template Optional template object to which translations will only be added
+ * @param callback - The function to call for each translation
+ * @param template - Optional template object to which translations will only be added
  *   if they don't already exist in it
  */
 function fakeLocalized(
@@ -916,8 +916,8 @@ function fakeLocalized(
 
 /**
  * Converts a localized string json to an abbreviation of its values
- * @values The localized string json to translate
- * @options Optional settings for abbreviation
+ * @param values - The localized string json to translate
+ * @param options - Optional settings for abbreviation
  */
 function abbreviate(values: LocalizedString, options: AbbreviationOptions = { type: 'acronym' }): LocalizedString {
   return Object.fromEntries(

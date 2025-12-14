@@ -15,8 +15,8 @@
  *   track whether we have focus or not. (We cannot use
  *   `document.activeElement` because it's not reliable.)
  *
- * @param node The target element
- * @param callback The event handler to call
+ * @param node - The target element
+ * @param callback - The event handler to call
  *
  * @example `<Navigation on:keyboardFocusOut={closeDrawer} />`
  */

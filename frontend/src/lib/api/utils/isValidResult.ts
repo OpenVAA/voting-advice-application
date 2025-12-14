@@ -3,7 +3,7 @@ import type { DPDataType } from '../base/dataTypes';
 
 /**
  * Checks the result returned by a `DataProvider` get data method, logs the possible error and returning `false` if it is invalid.
- * @param options.allowEmpty Whether to allow an empty array as result. Default is `false`.
+ * @param options.allowEmpty - Whether to allow an empty array as result. Default is `false`.
  */
 export function isValidResult<TData extends keyof DPDataType>(
   result: DPDataType[TData] | Error | null | undefined,

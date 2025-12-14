@@ -2,7 +2,7 @@ import type { RGB } from './rgb';
 
 /**
  * Converts an RGB color value to hex.
- * @param rgb The RGB color value to convert.
+ * @param rgb - The RGB color value to convert.
  * @returns The hex color string.
  */
 

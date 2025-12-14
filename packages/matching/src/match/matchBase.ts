@@ -24,7 +24,7 @@ export class MatchBase {
 
   /**
    * Create a new MatchBase.
-   * @param distance The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that 1 means a bad match and 0 a perfect one.
+   * @param distance - The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that 1 means a bad match and 0 a perfect one.
    */
   constructor(distance: NormalizedDistance) {
     this.distance = distance;
@@ -39,7 +39,7 @@ export class MatchBase {
 
   /**
    * Set the match distance as an unsigned normalized distance.
-   * @param value The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that 1 means a bad match and 0 a perfect one.
+   * @param value - The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that 1 means a bad match and 0 a perfect one.
    */
   set distance(value: NormalizedDistance) {
     assertDistance(value);

@@ -5,7 +5,7 @@ export const LUM_F = [0.2126, 0.7152, 0.0722];
 
 /**
  * Calculates the luminance of an RGB color array.
- * @param color The color to calculate the luminance of.
+ * @param color - The color to calculate the luminance of.
  * @returns The luminance of the color.
  */
 export function luminance(color: RGB) {
@@ -14,7 +14,7 @@ export function luminance(color: RGB) {
 
 /**
  * Calculates the partial luminance of an RGB color channel value.
- * @param v The channel value
+ * @param v - The channel value
  * @returns The partial luminance of the value
  */
 function valueToLum(v: number): number {
@@ -25,11 +25,11 @@ function valueToLum(v: number): number {
 
 /**
  * Set the luminance of a color to a target maintaining its hue. This works by iteratively shifting the color either towards white or black, bc of difficulty of an analytical solution.
- * @param color The RGB color array to adjust
- * @param lum The target luminance (between 0 and 1)
- * @param eps The difference to target luminance to accept. @default 1e-3
- * @param maxSteps The maximum number of steps to take. @default 50
- * @param stepFactor The factor by which to increase or decrease the step size. @default 0.91
+ * @param color - The RGB color array to adjust
+ * @param lum - The target luminance (between 0 and 1)
+ * @param eps - The difference to target luminance to accept. @default 1e-3
+ * @param maxSteps - The maximum number of steps to take. @default 50
+ * @param stepFactor - The factor by which to increase or decrease the step size. @default 0.91
  * @returns The adjusted color
  */
 export function setLuminance(color: RGB, lum: number, eps = 0.001, maxSteps = 50, stepFactor = 0.91) {

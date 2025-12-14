@@ -24,9 +24,9 @@ export class MatchingAlgorithm {
 
   /**
    * Create a new MatchingAlgorithm.
-   * @param distanceMetric The metric to use for distance calculations, e.g. `DistanceMetric.Manhattan`.
-   * @param missingValueOptions The options to use for imputing missing values
-   * @param projector An optional projector that will project the results from one matching space to another, usually lower-dimensional one
+   * @param distanceMetric - The metric to use for distance calculations, e.g. `DistanceMetric.Manhattan`.
+   * @param missingValueOptions - The options to use for imputing missing values
+   * @param projector - An optional projector that will project the results from one matching space to another, usually lower-dimensional one
    */
   constructor({ distanceMetric, missingValueOptions, projector }: MatchingAlgorithmOptions) {
     this.distanceMetric = distanceMetric;
@@ -36,10 +36,10 @@ export class MatchingAlgorithm {
 
   /**
    * Calculate matches between the reference and the other targets.
-   * @param questions The questions to include in the matching. Note that only those of the questions that the reference has answered will be included in the matching.
-   * @param reference The entity to match against, e.g. voter
-   * @param targets The targets to match with, e.g. candidates
-   * @options Matching options, see. `MatchingOptions`.
+   * @param questions - The questions to include in the matching. Note that only those of the questions that the reference has answered will be included in the matching.
+   * @param reference - The entity to match against, e.g. voter
+   * @param targets - The targets to match with, e.g. candidates
+   * @param options - Matching options, see. `MatchingOptions`.
    * @returns An array of Match objects
    */
   match<TTarget extends HasAnswers, TGroup extends MatchableQuestionGroup = MatchableQuestionGroup>({
@@ -123,8 +123,8 @@ export class MatchingAlgorithm {
 
   /**
    * Project targets into a normalized `MatchingSpace`, where distances can be calculated.
-   * @param questions The list of questions to use for distance calculations
-   * @param targets The targets to project
+   * @param questions - The list of questions to use for distance calculations
+   * @param targets - The targets to project
    * @returns An array of positions in the normalized `MatchingSpace`
    */
   projectToNormalizedSpace({
