@@ -22,8 +22,8 @@ The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which
 
 ## Basic use
 
-1. Choose from one of the implemented filters, e.g. [`SingleChoiceQuestionFilter`](./src/filter/enumerated/singleChoiceQuestionFilter.ts), which works on questions that have an enumerated list of values of which the entity may select one.
-2. Depending on the filter, they take different constructor parameters and type generics. [`SingleChoiceQuestionFilter`](./src/filter/enumerated/singleChoiceQuestionFilter.ts) takes a `question` parameter implementing the [`ChoiceQuestion`](./src/question/filterableQuestion.ts) interface and an optional `locale` code, which is used in value sorting.
+1. Choose from one of the implemented filters, e.g. `SingleChoiceQuestionFilter`, which works on questions that have an enumerated list of values of which the entity may select one.
+2. Depending on the filter, they take different constructor parameters and type generics. `SingleChoiceQuestionFilter` takes a `question` parameter implementing the `ChoiceQuestion` interface and an optional `locale` code, which is used in value sorting.
 3. After creating the filter, you can add rules to it to filter down the results.
 4. To apply the filter, use the `apply` method.
 5. To list the value options, use the `parse` method on the available targets.

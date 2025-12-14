@@ -111,7 +111,7 @@ The data is expected to be immutable and no setters are provided for the propert
 
 The [`DataRoot`](./src/root/dataRoot.ts) exposes data provision methods like `provideElectionData(data: Readonly<Array<ElectionData>>)`, which are used to build the child [`DataObject`](./src/core/dataObject.ts)s. The objects are stored in the root’s `children` collections.
 
-Data provision is designed to be idempotent and for this reason whenever data is provided the whole collection is rewritten, along with those depending on it. See [`DEPENDENT_COLLECTIONS`](./src/root/dependentCollections.ts) for details. This means that data should be provided in this order:
+Data provision is designed to be idempotent and for this reason whenever data is provided the whole collection is rewritten, along with those depending on it. See the `DataRoot` implementation for details on dependent collections. This means that data should be provided in this order:
 
 1. Elections
 2. Constituency groups
