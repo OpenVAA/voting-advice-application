@@ -9,7 +9,8 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 ### Properties
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
-- `questions`: An array of `info` questions 
+- `questions`: An array of `info` questions.
+- Any valid attributes of a `<div>` element
 
 ### Settings
 
@@ -28,7 +29,6 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   import {
     type AnyEntityVariant,
     type AnyNominationVariant,
-    type AnyQuestionVariant,
     ENTITY_TYPE,
     type EntityType,
     isObjectType,
@@ -42,10 +42,12 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   import { unwrapEntity } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
-  import type { EntityDetailsProps } from './EntityDetails.type';
+  import type { EntityInfoProps } from './EntityInfo.type';
 
-  export let entity: EntityDetailsProps['entity'];
-  export let questions: Array<AnyQuestionVariant>;
+  type $$Props = EntityInfoProps;
+
+  export let entity: $$Props['entity'];
+  export let questions: $$Props['questions'];
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

@@ -31,6 +31,10 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   import { getVoterContext } from '$lib/contexts/voter';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
+  import type { VoterNavProps } from './VoterNav.type';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type $$Props = VoterNavProps;
 
   const { navigation } = getLayoutContext(onDestroy);
 

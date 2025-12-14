@@ -12,10 +12,7 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
 
 ### Properties
 
-- `emoji`: The emoji to use. Note that all non-emoji characters will be removed. If `undefined` the component will not be rendered at all. @default `undefined`
-- `aria-hidden`: @default `true`
-- `role`: Aria role @default `img`
-- `class`: Additional class string to append to the element's default classes.
+- `emoji`: The emoji to use. Note that all non-emoji characters will be removed. If `undefined` the component will not be rendered at all. Default: `undefined`
 - Any valid attributes of a `<div>` element.
 
 ### Usage

@@ -2,15 +2,14 @@
 @component
 Create navigation menus for the application in a predefined style.
 
-### Slots
-
-- default: The content of the navigation menu. It should mainly consist
-  of `<NavGroup>` components containing `<NavItem>` components.
-
 ### Properties
 
-- `hidden`: Set to `true` to whenever the navigation is hidden. @default false
+- `hidden`: Set to `true` to whenever the navigation is hidden. Default: `false`
 - Any valid attributes of a `<nav>` element.
+
+### Slots
+
+- default: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
 
 ### Events
 

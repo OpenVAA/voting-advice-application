@@ -21,9 +21,11 @@ Therefore, the validity should be also checked on form submit as well and on the
 Accesses validation functions from `@openvaa/app-shared`.
 
 ### Properties
-- `password`: The password to validate
-- `username`: The username used to prevent the password from being too similar
-- `validPassword`: A boolean that is set to true when the password is valid
+
+- `password`: The password to validate.
+- `username`: The username used to prevent the password from being too similar. Default: `''`
+- `validPassword`: Bindable: Whether the password is valid.
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -42,10 +44,13 @@ When using this component, the `validPassword` property should be bound to a boo
   import { tweened } from 'svelte/motion';
   import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import type { PasswordValidatorProps } from './PasswordValidator.type';
 
-  export let password = '';
-  export let username = '';
-  export let validPassword = false;
+  type $$Props = PasswordValidatorProps;
+
+  export let password: $$Props['password'] = '';
+  export let username: $$Props['username'] = '';
+  export let validPassword: $$Props['validPassword'] = false;
 
   const { t } = getComponentContext();
 

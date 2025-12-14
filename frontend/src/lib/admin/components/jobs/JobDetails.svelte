@@ -1,3 +1,19 @@
+<!--
+@component
+Displays detailed information about a job, including its status, progress, and messages.
+
+### Properties
+
+- `job`: The job information to display.
+- Any valid attributes of an `<article>` element
+
+### Usage
+
+```tsx
+<JobDetails job={jobInfo} />
+```
+-->
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import ButtonWithConfirmation from '$lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte';

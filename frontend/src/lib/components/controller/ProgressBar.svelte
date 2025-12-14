@@ -1,15 +1,45 @@
-<!--@component
-# Progress Bar Component
+<!--
+@component
+Reusable progress bar component for displaying task progress.
 
-Reusable progress bar component for displaying task progress
+### Properties
+
+- `progress`: Progress value between 0 and 1.
+- `label`: Label for the progress bar. Default: `t('adminApp.jobs.progress')`
+- `showPercentage`: Whether to show the percentage. Default: `true`
+- `color`: Color theme for the progress bar. Default: `'primary'`
+- `size`: Size of the progress bar. Default: `'md'`
+- Any valid attributes of a `<div>` element
+
+### Usage
+
+```tsx
+<ProgressBar progress={0.75} label="Processing" />
+```
 -->
 
 <script lang="ts">
-  export let progress: number; // Value between 0 and 1
-  export let label: string = 'Progress';
-  export let showPercentage: boolean = true;
-  export let color: 'primary' | 'secondary' | 'accent' = 'primary';
-  export let size: 'sm' | 'md' | 'lg' = 'md';
+  import { getComponentContext } from '$lib/contexts/component';
+  import type { ProgressBarProps } from './ProgressBar.type';
+
+  type $$Props = ProgressBarProps;
+
+  export let progress: $$Props['progress'];
+  export let label: $$Props['label'] = undefined;
+  export let showPercentage: $$Props['showPercentage'] = true;
+  export let color: $$Props['color'] = undefined;
+  export let size: $$Props['size'] = undefined;
+
+  const { t } = getComponentContext();
+
+  // Set defaults
+  $: size ||= 'md';
+  $: color ||= 'primary';
+  $: label ||= $t('adminApp.jobs.progress');
+
+  // Normalize progress value
+  let normalizedProgress: number;
+  let percentage: number;
 
   // Ensure progress is between 0 and 1
   $: normalizedProgress = Math.max(0, Math.min(1, progress));

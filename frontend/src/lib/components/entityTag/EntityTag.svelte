@@ -5,8 +5,8 @@ Used to display an `Entity` as small tag including an icon.
 ### Properties
 
 - `entity`: A possibly wrapped entity, e.g. candidate or a party.
-- `variant`: Whether to use an abbreviation or the full name. @default `'default'`
-- `hideParent`: Whether to hide the possible parent nomination. @default false
+- `variant`: Whether to use an abbreviation or the full name. Default: `'default'`
+- `hideParent`: Whether to hide the possible parent nomination. Default: `false`
 - Any valid attributes of a `<div>` element.
 
 ### Usage

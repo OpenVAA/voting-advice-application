@@ -5,8 +5,8 @@ Display either an image or a initials-based avatar for an entity. The color of t
 ### Properties
 
 - `entity`: The entity for which to display the avatar.
-- `size`: The size of the avatar. @default `'md'`
-- `linkFullImage`: Whether to link the thumbnail to the full image. @default false
+- `size`: The size of the avatar. Default: `'md'`
+- `linkFullImage`: Whether to link the thumbnail to the full image. Default: `false`
 - Any valid attributes of a `<figure>` element
 
 ### Usage

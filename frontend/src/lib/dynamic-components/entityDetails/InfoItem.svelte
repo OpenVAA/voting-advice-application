@@ -4,8 +4,9 @@ Used to show a label-content pair in a Candidate's basic information.
 
 ### Properties
 
-- `label`: the label of the information
-- `vertical`: layout mode for the item
+- `label`: The label of the information.
+- `vertical`: Layout mode for the item. Default: `false`
+- Any valid attributes of a `<div>` element
 
 ### Slots
 
@@ -21,10 +22,12 @@ Used to show a label-content pair in a Candidate's basic information.
 -->
 
 <script lang="ts">
-  /** The info label */
-  export let label: string;
-  /** The info layout mode */
-  export let vertical = false;
+  import type { InfoItemProps } from './InfoItem.type';
+
+  type $$Props = InfoItemProps;
+
+  export let label: $$Props['label'];
+  export let vertical: $$Props['vertical'] = false;
 </script>
 
 <div class="grid justify-start gap-md {vertical ? 'vertical-grid' : 'horizontal-grid'}">

@@ -1,12 +1,32 @@
+<!--
+@component
+Preview component displaying all available input types.
+
+### Properties
+
+- `info`: Optional info text to display with inputs.
+- `locked`: Whether inputs are locked. Default: `false`
+- Any valid attributes of a `<div>` element
+
+### Usage
+
+```tsx
+<PreviewAllInputs info="Example info" locked={false} />
+```
+-->
+
 <script lang="ts">
   import { Input } from '.';
+  import type { PreviewAllInputsProps } from './PreviewAllInputs.type';
+
+  type $$Props = PreviewAllInputsProps;
+
+  export let info: $$Props['info'] = undefined;
+  export let locked: $$Props['locked'] = false;
 
   function onChange(value: unknown) {
     console.info('New value:', value);
   }
-
-  export let info: string | undefined = undefined;
-  export let locked = false;
 </script>
 
 <div class="mb-[10rem] flex w-[30rem] flex-col gap-md">
