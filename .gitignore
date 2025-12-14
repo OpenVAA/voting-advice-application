@@ -15,3 +15,7 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Generated documentation
+docs/generated/
+typedoc.frontend.json
