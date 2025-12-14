@@ -22,8 +22,9 @@ declare global {
 
   /*
    * The format for JSON structure.
+   * Unfortunately we cannot use a more restrictive formulation: null | string | number | boolean | { [x: string]: JSONData } | Array<JSONData>;
    */
-  type JSONData = null | string | number | boolean | { [x: string]: JSONData } | Array<JSONData>;
+  type JSONData = Parameters<typeof JSON.stringify>[0];
 
   /**
    * Make specific properties of an interface required. Works the same way as
