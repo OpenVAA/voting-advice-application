@@ -1,4 +1,4 @@
-import type { ButtonProps } from '../button';
+import type { ButtonProps } from '$lib/components/button';
 
 export type SurveyButtonProps = Partial<ButtonProps> & {
   /**

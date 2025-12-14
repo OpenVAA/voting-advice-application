@@ -4,7 +4,7 @@ import { constants as publicConstants } from '$lib/utils/constants';
 
 export const defaultOptions = {
   privateEncryptionJWKSet: JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]'),
-  publicSignatureJWKSetUri: constants.IDENTITY_PROVIDER_JWKS_URI,
+  publicSignatureJWKSetUri: constants.IDENTITY_PROVIDER_JWKS_URI!,
   audience: publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
   issuer: constants.IDENTITY_PROVIDER_ISSUER
 } as const;
