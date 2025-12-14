@@ -1,7 +1,12 @@
 export { default as EntityChildren } from './EntityChildren.svelte';
+export * from './EntityChildren.type';
 export { default as EntityDetails } from './EntityDetails.svelte';
 export * from './EntityDetails.type';
 export { default as EntityDetailsDrawer } from './EntityDetailsDrawer.svelte';
 export * from './EntityDetailsDrawer.type';
 export { default as EntityInfo } from './EntityInfo.svelte';
+export * from './EntityInfo.type';
 export { default as EntityOpinions } from './EntityOpinions.svelte';
+export * from './EntityOpinions.type';
+export { default as InfoItem } from './InfoItem.svelte';
+export * from './InfoItem.type';

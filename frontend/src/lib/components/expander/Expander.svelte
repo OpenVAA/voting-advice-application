@@ -13,15 +13,14 @@ A component for expanders that contain a title and some content. Use the
 
 ### Properties
 
-- `title`: Title used for the expander. This is also used as the aria-label for 
-  the checkbox on which the expander operates on.
-- `variant`: The type for the expander.
-- `iconColor`: The color for the icon. Default color is primary.
-- `iconPos`: The position for the icon. Default is text, which means the icon will
-    be where the text ends.
-- `titleClass`: Custom class string to add to the `<div>` containing the title.
-- `contentClass`: Custom class string to add to the `<div>` containing the main content.
+- `title`: Title is seen as the text in the expander's visible part, and it is mandatory. Title will also be used as a 'aria-label' for a checkbow on which the expander operates on.
+- `iconColor`: The color of the next-icon that is used in the expander. Default: `'primary'`
+- `iconPos`: The position of the next-icon that is used in the expander. Default: `'text'`
+- `titleClass`: Variable with which to configure the expanders title if no variants are in use.
+- `contentClass`: Variable with which to configure the expanders content if no variants are in use.
 - `defaultExpanded`: Variable used to define if the expander is expanded or not by default.
+- `variant`: Variable used to define a variant for the expander.
+- Any valid attributes of a `<div>` element.
 
 You should not try to use a variant and customize at the same time.
 

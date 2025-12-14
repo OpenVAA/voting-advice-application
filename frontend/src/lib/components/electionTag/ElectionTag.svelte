@@ -7,8 +7,8 @@ Used when the application has multiple elections and question may apply to only 
 ### Properties
 
 - `election`: The `Election` object.
-- `variant`: Whether to use an abbreviation or the full name. @default `'short'`
-- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
+- `variant`: Whether to use an abbreviation or the full name. Default: `'short'`
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. Default: `false`
 - Any valid attributes of a `<span>` element.
 
 ### Usage

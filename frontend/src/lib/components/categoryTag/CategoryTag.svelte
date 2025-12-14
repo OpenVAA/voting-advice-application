@@ -5,10 +5,10 @@ Used to display a question category tag with the category's color.
 ### Properties
 
 - `category`: The `QuestionCategory` object.
-- `variant`: Whether to use an abbreviation or the full name. @default `'full'`
-- `suffix`: An optional suffix to add after the category name, e.g. '1/3'. @default undefined
-- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
-- Any valid attributes of a `<span>` element.
+- `variant`: Whether to use an abbreviation or the full name. Default: `'full'`
+- `suffix`: An optional suffix to add after the category name, e.g. '1/3'.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. Default: `false`
+- Any valid attributes of a `<span>` element
 
 ### Usage
 

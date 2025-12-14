@@ -1,9 +1,20 @@
-<!--@component
-# Language Selector
+<!--
+@component
+Reusable component for selecting target language for language-based features (question info, argument condensation, etc.). Automatically selected if only one language is available.
 
-Reusable component for selecting target language for language-based features (question info, argument condensation, etc.).
-Automatically selected if only one language is available.
+### Properties
 
+- `selected`: The selected language value.
+- `name`: The name of the form element. Default: `'language'`
+- `id`: The id of the select element.
+- `options`: The available language options.
+- Any valid attributes of a `Select` component
+
+### Usage
+
+```tsx
+<LanguageSelector bind:selected={targetLanguage} />
+```
 -->
 
 <script lang="ts">

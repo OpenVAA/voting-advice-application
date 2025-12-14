@@ -2,23 +2,24 @@
 @component
 Show a non-model alert or dialog that appears at the bottom of the screen.
 
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the alert.
-
 ### Properties
 
-- `title`: The title of the modal 
-- `icon`: The icon of the alert. @default `info`
-- `autoOpen`: Whether to open the alert automatically. @default `true`
+- `title`: The title of the alert.
+- `icon`: Possible icon of the alert.
+- `autoOpen`: Whether to open the alert automatically. Default: `true`
+- `isOpen`: Bind to this to get the alert's open state.
 - `onClose`: The callback triggered when the alert is closed.
-- Any valid properties of a `<div>` element.
+- Any valid attributes of a `<dialog>` element
 
 ### Bindable functions
 
 - `openAlert`: Opens the alert
 - `closeAlert`: Closes the alert
+
+### Slots
+
+- `actions`: The action buttons to display.
+- default: The content of the alert.
 
 ### Events
 
@@ -32,7 +33,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 <script lang="ts">
   let closeAlert: () => void;
 </script>
-<Alert 
+<Alert
   bind:closeAlert
   title="Can we help you?"
   icon="warning"

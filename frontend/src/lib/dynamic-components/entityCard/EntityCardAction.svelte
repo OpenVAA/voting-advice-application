@@ -6,7 +6,7 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 ### Properties
 
 - `action`: The action to take when the part or card is clicked.
-- `shadeOnHover`: Whether to shade the element on hover. Use when applying to subcards or their parent card's header. @default `false`
+- `shadeOnHover`: Whether to shade the element on hover. Use when applying to subcards or their parent card's header. Default: `false`
 - Any valid attributes common to HTML elements. Note that these will only be applied if `<EntityCardAction>` is rendered.
 
 ### Slots

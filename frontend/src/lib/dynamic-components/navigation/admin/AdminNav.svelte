@@ -25,6 +25,10 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   import { getLayoutContext } from '$lib/contexts/layout';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
+  import type { AdminNavProps } from './AdminNav.type';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type $$Props = AdminNavProps;
 
   const { navigation } = getLayoutContext(onDestroy);
   const { authToken, t, getRoute } = getAdminContext();

@@ -16,16 +16,12 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 
 ### Properties
 
-- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
-- `text`: The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
-- `variant`: The type of the button.
-- `icon`: The name of the icon to display.
-- `color`: The color of the button or text.
-- `iconPos`: The position of the icon relative to the text.
-- `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
-- `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. @default false
-- `loadingText`: The text shown when `loading` is `true`. @default $t('common.loading')
-- Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
+- `modalTitle`: The title of the confirmation modal.
+- `onConfirm`: Callback triggered when the user confirms the action.
+- `onCancel`: Callback triggered when the user cancels the action.
+- `cancelLabel`: The label for the cancel button in the modal.
+- `confirmLabel`: The label for the confirm button in the modal.
+- Any valid properties of a `<Button>` component except `href` and `on:click`.
 
 ### Slots
 

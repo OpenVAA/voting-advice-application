@@ -16,15 +16,15 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 
 ### Properties
 
-- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
 - `text`: The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
-- `variant`: The type of the button.
-- `icon`: The name of the icon to display.
-- `color`: The color of the button or text.
-- `iconPos`: The position of the icon relative to the text.
+- `icon`: The name of the icon to use in the button or `null` if no icon should be used. Default: `'next'` if `variant='main'`, otherwise `null`
+- `color`: The color of the button or text. Default: `'primary'`
 - `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
-- `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. @default false
-- `loadingText`: The text shown when `loading` is `true`. @default $t('common.loading')
+- `variant`: Type of the button, which defines it's appearance. Default: `'normal'`
+- `iconPos`: Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon` or `floating-icon`. Note that `top` and `bottom` are not supported if `variant='main'`. Default: `'right'` if `variant='main'`, otherwise `'left'`
+- `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. Default: `false`
+- `loadingText`: The text shown when `loading` is `true`. Default: `$t('common.loading')`
+- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
 ### Slots

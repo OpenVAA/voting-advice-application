@@ -2,29 +2,30 @@
 @component
 Show a notification prompting the user to login instead of preregistering again.
 
-### Props
+### Properties
 
-- Any valid props for the `Alert` component.
+- Any valid properties of an `Alert` component
 
 ### Usage
 
 ```tsx
-popupQueue.push({ 
-  component: PreregisteredNotification, 
+popupQueue.push({
+  component: PreregisteredNotification,
 });
 ```
 -->
 
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { Alert, type AlertProps } from '$lib/components/alert';
+  import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { Route } from '$lib/utils/route';
+  import type { PreregisteredNotificationProps } from './PreregisteredNotification.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = Partial<AlertProps>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type $$Props = PreregisteredNotificationProps;
 
   const { getRoute, t } = getAppContext();
 

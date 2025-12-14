@@ -1,21 +1,34 @@
-<!--@component
-# Warning Messages Component
+<!--
+@component
+Reusable component for displaying warning and error messages with scrolling.
 
-Reusable component for displaying warning and error messages with scrolling
+### Properties
+
+- `warnings`: Array of warning messages to display. Default: `[]`
+- `errors`: Array of error messages to display. Default: `[]`
+- Any valid attributes of a `<div>` element
+
+### Usage
+
+```tsx
+<WarningMessages warnings={warningMessages} errors={errorMessages} />
+```
 -->
 
 <script lang="ts">
   import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from '$lib/admin/components/jobs/shared';
   import { getAdminContext } from '$lib/contexts/admin';
-  import type { JobMessage } from '$lib/server/admin/jobs/jobStore.type';
+  import type { WarningMessagesProps } from './WarningMessages.type';
+
+  type $$Props = WarningMessagesProps;
+
+  export let warnings: $$Props['warnings'] = [];
+  export let errors: $$Props['errors'] = [];
 
   const { t } = getAdminContext();
 
-  export let warnings: Array<JobMessage> = [];
-  export let errors: Array<JobMessage> = [];
-
   // Combine warnings and errors for display, limiting to maxMessages, and reverse order (latest first)
-  $: allMessages = [...warnings, ...errors].slice(-DEFAULT_MAX_MESSAGES).reverse();
+  $: allMessages = [...(warnings ?? []), ...(errors ?? [])].slice(-DEFAULT_MAX_MESSAGES).reverse();
 </script>
 
 <div class="p-3 rounded-lg bg-base-200 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">

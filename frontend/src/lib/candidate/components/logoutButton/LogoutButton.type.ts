@@ -6,7 +6,7 @@ export type LogoutButtonProps = Partial<ButtonProps> & {
    */
   logoutModalTimer?: number;
   /**
-   * Whether pressing the button takes the user to the login page or not. @default true
+   * Whether pressing the button takes the user to the login page or not. @default false
    */
   stayOnPage?: boolean;
 };

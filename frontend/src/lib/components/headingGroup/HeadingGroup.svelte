@@ -5,8 +5,8 @@ and the main title.
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<hgroup>` element representing the pre-title. @default $t('components.headingGroup.roleDescription')
-- `role`: The Aria role of the `<hgroup>` element. @default 'group'
+- `aria-roledescription`: The Aria role description of the `<hgroup>` element. Default: `$t('aria.headingGroup')`
+- `role`: The Aria role of the `<hgroup>` element. Default: `'group'`
 - Any valid attributes of a `<hgroup>` element.
 
 ### Slots
