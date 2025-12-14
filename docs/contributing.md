@@ -379,7 +379,14 @@ let className: $$Props['class'] = $$props['class'];
 
 Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](/frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](/frontend/src/lib/components/icon/base/IconBase.type.ts).
 
-Place the Svelte docstring at the top of the file, before the `<script>` block.
+Place the Svelte docstring at the top of the file, before the `<script>` block. The documentation must consist of:
+
+- general description
+- 'Properties' (see below)
+- 'Slots' detailing all slots and their uses (if applicable)
+- 'Usage' showing a concise code block of the component’s use
+
+The type file defining the properties is the prime source of truth for the properties’ descriptions. Make sure the "Properties" section of the component doc string matches that.
 
 Add documentation for pages, layouts and other non-reusable components, detailing their main purpose. Include in their documentation under separate subheadings:
 
