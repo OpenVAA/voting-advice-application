@@ -10,7 +10,7 @@ When performing code review, double check all of the items below:
 - [ ] All new components, functions and other entities are documented
 - [ ] The repo documentation markdown files are updated if the changes touch upon those.
 - [ ] If the change adds functions available to the user, tracking events are enabled with new ones defined if needed.
-- [ ] Any new Svelte components that have been created, follow the [Svelte component guidelines](contributing.md#svelte-components).
+- [ ] Any new Svelte components that have been created follow the [Svelte component guidelines](contributing.md#svelte-components).
 - [ ] Errors are handled properly and logged in the code.
 - [ ] Troubleshoot any failing checks in the PR.
 - [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
