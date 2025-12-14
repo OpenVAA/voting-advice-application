@@ -1,10 +1,14 @@
 <!--
 @component
-A template part that outputs the navigation menu for the Candidate App for use in use in `Layout`.
+A template part that outputs the navigation menu for the Candidate App for use in `Layout`.
 
 ### Dynamic component
 
 - Accesses the `CandidateContext`.
+
+### Properties
+
+- Any valid properties of a `Navigation` component
 
 ### Usage
 
@@ -22,6 +26,10 @@ A template part that outputs the navigation menu for the Candidate App for use i
   import { getLayoutContext } from '$lib/contexts/layout';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
+  import type { CandidateNavProps } from './CandidateNav.type';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type $$Props = CandidateNavProps;
 
   const { navigation } = getLayoutContext(onDestroy);
   const {

@@ -6,7 +6,8 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
 - `questions`: An array of `opinion` questions.
-- `answers`: An optional `AnswerStore` with the Voter’s answers to the questions.
+- `answers`: An optional `AnswerStore` with the Voter's answers to the questions.
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -21,13 +22,14 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   import { OpinionQuestionInput, QuestionOpenAnswer } from '$lib/components/questions';
   import { getAppContext } from '$lib/contexts/app';
   import { unwrapEntity } from '$lib/utils/entities';
-  import type { AnyEntityVariant, AnyQuestionVariant } from '@openvaa/data';
-  import type { AnswerStore } from '$lib/contexts/voter';
-  import type { EntityDetailsProps } from './EntityDetails.type';
+  import type { AnyEntityVariant } from '@openvaa/data';
+  import type { EntityOpinionsProps } from './EntityOpinions.type';
 
-  export let entity: EntityDetailsProps['entity'];
-  export let questions: Array<AnyQuestionVariant>;
-  export let answers: AnswerStore | undefined = undefined;
+  type $$Props = EntityOpinionsProps;
+
+  export let entity: $$Props['entity'];
+  export let questions: $$Props['questions'];
+  export let answers: $$Props['answers'] = undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

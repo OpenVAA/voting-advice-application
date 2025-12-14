@@ -8,15 +8,16 @@ Accesses `CandidateContext`.
 
 ### Properties
 
-- `logoutModalTimer`:Time in seconds that the logout modal created by the button waits before automatically logging the user out. Defaults to 30
-- `stayOnPage`: boolean deciding if pressing the button takes the user to the login page or not. Defaults to true
-- Any valid properties of a `<Button>` component.
+- `logoutModalTimer`: The duration in seconds a logout modal will wait before automatically logging the user out. Default: `30`
+- `stayOnPage`: Whether pressing the button takes the user to the login page or not. Default: `false`
+- Any valid properties of a `Button` component
 
 ### Settings
 
 - `entities.hideIfMissingAnswers.candidate`: Affects message shown.
 
 ### Usage
+
 ```tsx
 <LogoutButton />
 ```
@@ -30,10 +31,10 @@ Accesses `CandidateContext`.
   import { logDebugError } from '$lib/utils/logger';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  type $$props = LogoutButtonProps;
+  type $$Props = LogoutButtonProps;
 
-  export let stayOnPage: $$props['stayOnPage'] = false;
-  export let logoutModalTimer: $$props['logoutModalTimer'] = 30;
+  export let stayOnPage: $$Props['stayOnPage'] = false;
+  export let logoutModalTimer: $$Props['logoutModalTimer'] = 30;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

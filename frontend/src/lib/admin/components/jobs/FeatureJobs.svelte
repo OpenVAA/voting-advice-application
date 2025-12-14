@@ -1,3 +1,20 @@
+<!--
+@component
+Displays jobs for a specific admin feature, showing active and past job details.
+
+### Properties
+
+- `feature`: The admin feature to display jobs for.
+- `showFeatureLink`: Whether to show the "Go to Feature" link. Default: `true`
+- Any valid attributes of a `<section>` element
+
+### Usage
+
+```tsx
+<FeatureJobs feature={ADMIN_FEATURE.FactorAnalysis} />
+```
+-->
+
 <script lang="ts">
   import { ADMIN_FEATURE } from '$lib/admin/features';
   import { Button } from '$lib/components/button';

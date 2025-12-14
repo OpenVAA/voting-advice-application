@@ -10,11 +10,10 @@ Logo files for use on a light and a dark background can be defined. If the latte
 
 ### Properties
 
-- `alt`: The `alt` text for the logo image.
-- `inverse`: If `true`, the light and dark versions of the logo will be reversed. Set to `true` if using the logo on a dark background. @default `false`
-- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` attribute, such as `class="h-[3.5rem]"`. @default `'md'`
-- `class`: Additional class string to append to the element's default classes.
-- Any valid attributes of the `<div>` element wrapping the light and dark `<img>` elements
+- `alt`: The `alt` text for the logo image. If missing, the publisher name or 'OpenVAA' will be used, depending on the logo shown.
+- `inverse`: If `true`, the light and dark versions of the logo will be reversed. Set to `true` if using the logo on a dark background. Default: `false`
+- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` attribute, such as `class="h-[3.5rem]"`. Default: `'md'`
+- Any valid attributes of a `<div>` element
 
 ### Usage
 

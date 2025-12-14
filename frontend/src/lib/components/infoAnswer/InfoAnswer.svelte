@@ -6,7 +6,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 
 - `answer`: The possibly missing answer to the question.
 - `question`: The info question object.
-- `format`: How to format the answer. @default `default`
+- `format`: How to format the answer. Default: `'default'`
   - `default`: use the same format as in `<EntityDetails>`.
   - `tag`: format the answers as a pill or tag. Nb. links are always rendered as tags.
 - Any valid common attributes of an HTML element.

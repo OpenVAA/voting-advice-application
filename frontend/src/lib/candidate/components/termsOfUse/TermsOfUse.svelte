@@ -1,10 +1,8 @@
-<!--@component
-
-# Candidate app terms of use
-
+<!--
+@component
 A utility component for displaying candidate app terms of use and privacy statement.
 
-## Usage
+### Usage
 
 ```tsx
 <TermsOfUse />

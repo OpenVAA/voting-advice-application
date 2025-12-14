@@ -6,7 +6,13 @@ Allows user to log out.
 
 Accesses `AuthContext` and `AppContext`.
 
+### Properties
+
+- `redirectTo`: The route to redirect to after logging out. Default: `'Home'`
+- Any valid properties of a `<Button>` component.
+
 ### Usage
+
 ```tsx
 <LogoutButton />
 ```

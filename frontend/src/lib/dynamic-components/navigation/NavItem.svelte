@@ -10,12 +10,10 @@ Accesses `LayoutContext`.
 
 ### Properties
 
-- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
-- `icon`: An optional `IconName` of the icon to use. @default `undefined`
-- `text`: A required text to display.
-- `autoCloseNav`: Whether the menu available from the page context should be closed when the item is clicked. @default `true`
+- `icon`: The optional name of the icon to use with the navigation item. See the `Icon` component for more details.
+- `text`: The text to display in the navigation item.
 - `disabled`: Whether the button is disabled. This can also be used with items rendered as `<a>` elements.
-- `class`: Additional class string to append to the element's default classes.
+- `autoCloseNav`: Whether the menu available from the page context should be closed when the item is clicked. Default: `true`
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
 ### Usage

@@ -4,9 +4,9 @@ Show filters for entities. This component and the individual filter components o
 
 ### Properties
 
-- `filters`: The filter objects to render.
+- `filterGroup`: The filters applied to the contents.
 - `targets`: The target entitiess of the filter objects. Note that these will only be used to get value options, not for actual filtering.
-- Any valid attributes of a `<div>` element
+- Any valid attributes of a `<div>` element.
 
 ### Usage
 

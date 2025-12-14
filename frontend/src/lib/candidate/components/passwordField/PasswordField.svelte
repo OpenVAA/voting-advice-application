@@ -3,14 +3,17 @@
 PasswordField is an input box for password that comes with a button to reveal and hide the password
 
 ### Properties
-- `id` : optional id for the input
-- `password` : value of the password, bindable
-- `autoComplete` : autocomplete value for password input
-- `label`: the label for the password field. Defaults to `$t('common.password')`
-- `externalLabel` : whether the label is outside the component and should not be rendered inside
-- `focus`: bindable function to set focus to the password input
+
+- `id`: Optional id for the input.
+- `password`: Bindable: The password value.
+- `autocomplete`: The autocomplete value for password input. Default: `''`
+- `label`: The label for the password field.
+- `externalLabel`: Whether the label is outside the component and should not be rendered inside. Default: `false`
+- `focus`: Bindable: Function to set focus to the password input.
+- Any valid attributes of a `<div>` element
 
 ### Usage
+
 ```tsx
 <PasswordField bind:password={passwordOfContext} autocomplete="current-password" />
 ```
@@ -20,12 +23,15 @@ PasswordField is an input box for password that comes with a button to reveal an
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { getUUID } from '$lib/utils/components';
+  import type { PasswordFieldProps } from './PasswordField.type';
 
-  export let id: string | undefined = undefined;
-  export let password = '';
-  export let autocomplete = '';
-  export let label: string | undefined = undefined;
-  export let externalLabel = false;
+  type $$Props = PasswordFieldProps;
+
+  export let id: $$Props['id'] = undefined;
+  export let password: $$Props['password'] = '';
+  export let autocomplete: $$Props['autocomplete'] = '';
+  export let label: $$Props['label'] = undefined;
+  export let externalLabel: $$Props['externalLabel'] = false;
   export function focus(): void {
     input?.focus();
   }

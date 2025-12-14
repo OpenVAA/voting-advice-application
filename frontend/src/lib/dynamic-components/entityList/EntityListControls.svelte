@@ -7,13 +7,10 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Properties
 
 - `entities`: A list of possibly ranked entities, e.g. candidates or a parties.
-- `filterGroup`: The filters applied to the entities
-- `searchProperty`: The property used for the search tool. Default 'name'
+- `filterGroup`: The filters applied to the contents.
+- `searchProperty`: The property used for the search tool. Default: `'name'`
+- `onUpdate`: Callback for when the filters are applied.
 - Any valid attributes of a `<div>` element.
-
-###  Callbacks
-
--  `onUpdate`: Callback for when the filters are applied.
 
 ### Tracking events
 

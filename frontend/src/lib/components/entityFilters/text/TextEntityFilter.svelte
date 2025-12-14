@@ -4,9 +4,10 @@ Render a text filter for entities.
 
 ### Properties
 
-- `filter`: The text filter object to render.
-- `placeholder`: The placeholder text. @default `$t('entityFilters.text.placeholder')`
-- Any valid attributes of a `<div>` element
+- `filter`: The text filter object.
+- `placeholder`: The placeholder text. Default: `$t('components.entityFilters.text.placeholder')`
+- `variant`: The styling variant for the text field. Default: `'default'`
+- Any valid attributes of a `<div>` element.
 
 ### Usage
 

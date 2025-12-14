@@ -8,15 +8,10 @@ attributes of one.
 
 ### Properties
 
-- `title`: The `<title>` of the SVG logo. Functions much the same way as the `alt``
-  attribute of an `<img>`.
-- `color`: The color of the logo as one of the predefined colours.
-  For arbitrary values, you can supply a `class` property, such as
-  `fill-[#123456]`. @default `'neutral'`
-  - `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
-    For arbitrary values, you can supply a `class` attribute, such as 
-    `class="h-[3.5rem]"`. @default `'md'`
-  - Any valid attributes of a `<svg>` element
+- `title`: The `<title>` of the SVG logo. Functions much the same way as the `alt` attribute of an `<img>`. Default: `'OpenVAA'`
+- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` property, such as `h-[3.15rem] w-[3.15rem]`. Default: `'md'`
+- `color`: The color of the logo as one of the predefined colours. For arbitrary values, you can supply a `class` property, such as `fill-[#123456]`. Default: `'neutral'`
+- Any valid attributes of a `<svg>` element.
   
 ### Usage
 

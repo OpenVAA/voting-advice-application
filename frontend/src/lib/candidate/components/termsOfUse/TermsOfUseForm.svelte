@@ -1,14 +1,17 @@
-<!--@component
-
-# Candidate app terms of use form
-
+<!--
+@component
 Show the terms of use along with a checkbox for accepting them.
 
-## Dynamic component
+### Dynamic component
 
 Accesses `CandidateContext`.
 
-## Usage
+### Properties
+
+- `termsAccepted`: Bindable: Whether the terms are accepted. Default: `false`
+- Any valid attributes of a `<section>` element
+
+### Usage
 
 ```tsx
 <script lang="ts">

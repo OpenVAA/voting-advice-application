@@ -1,16 +1,18 @@
 <!--
-  @component
-  Small badge component used to display information next to other components.
+@component
+Small badge component used to display information next to other components.
 
-  ### Properties
+### Properties
 
-  - `text`: Text to be dispyled in the badge.
-  - `classes`: Custom css classes added to the wrapping div element.
+- `text`: Text to be displayed in the badge.
+- `classes`: Custom css classes.
+- `disabled`: Whether the badge is disabled and rendered as grey.
 
-  ### Usage
+### Usage
 
-  <InfoBadge text="example" classes="p-10" />
-
+```tsx
+<InfoBadge text="example" classes="p-10" />
+```
 -->
 
 <script lang="ts">

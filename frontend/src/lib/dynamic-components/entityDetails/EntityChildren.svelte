@@ -4,9 +4,10 @@ Used to show an entity's children in an `EntityDetails` component.
 
 ### Properties
 
-- `entities`: An array of possibly ranked entities, e.g. a party’s candidates.
-- `entityType`: The type of the entities being displayed. Used to pick correct translations
+- `entities`: An array of possibly ranked entities, e.g. a party's candidates.
+- `entityType`: The type of the entities being displayed. Used to pick correct translations.
 - `action`: An optional callback for building the card actions for the child possible entities. If nullish, the default action filled in by `EntityCard` will be used. If `false`, no actions will be added.
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -19,12 +20,14 @@ Used to show an entity's children in an `EntityDetails` component.
   import { getComponentContext } from '$lib/contexts/component';
   import { EntityList } from '$lib/dynamic-components/entityList';
   import { EntityListControls } from '../entityList';
-  import type { EntityType } from '@openvaa/data';
-  import type { CardAction, EntityCardProps } from '../entityCard';
+  import type { EntityCardProps } from '../entityCard';
+  import type { EntityChildrenProps } from './EntityChildren.type';
 
-  export let entities: Array<MaybeWrappedEntityVariant>;
-  export let entityType: EntityType;
-  export let action: ((entity: MaybeWrappedEntityVariant) => CardAction) | false | null | undefined = undefined;
+  type $$Props = EntityChildrenProps;
+
+  export let entities: $$Props['entities'];
+  export let entityType: $$Props['entityType'];
+  export let action: $$Props['action'] = undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

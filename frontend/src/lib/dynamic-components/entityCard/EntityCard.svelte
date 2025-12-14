@@ -12,14 +12,14 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ### Properties
 
-- `action`: Custom action to take when the card is clicked, defaults to a link to the entity’s `ResultEntity` route. If the card has subentites, the action will only be triggered by clicking the content above them.
-- `entity`: A possibly ranked nakedEntity, e.g. candidate or a party.
-- `variant`: The variant-dependend layout variant. Usually set automatically.
-  - `'list'`: In a list of entities. The default.
+- `action`: Custom action to take when the card is clicked, defaults to a link to the entity's `ResultEntity` route. If the card has subentites, the action will only be triggered by clicking the content above them.
+- `entity`: A possibly ranked entity, e.g. candidate or a party.
+- `variant`: The context-dependend layout variant. Usually set automatically. Default: `'list'`
+  - `'list'`: In a list of entities.
   - `'details'`: As part of the header of `EntityDetails`.
-  - `'subcard'`; In a list of nested nakedEntity cards, e.g., the candidates for a party.
-- `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default `3`
-- `showElection`: Whether to show the possible nomination’s election and constituency. @default `false`
+  - `'subcard'`: In a list of nested entity cards, e.g., the candidates for a party.
+- `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. Default: `3`
+- `showElection`: Whether to show the possible nomination's election and constituency. Default: `false`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
