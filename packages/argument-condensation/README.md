@@ -120,7 +120,7 @@ const results = await handleQuestion({
 
 Not recommended - see Package API Usage above for the preferred approach.
 
-If you want to configure comment grouping and prompt selection, please consult [`main.ts`](src/main.ts).
+If you want to configure comment grouping and prompt selection, please consult [`api.ts`](src/api.ts).
 
 ```typescript
 import { Condenser } from '@openvaa/argument-condensation';
@@ -203,7 +203,7 @@ const condenser = new Condenser(input);
 const output = await condenser.run(); // the arguments with metadata and other jazz
 ```
 
-Currently, we automatically run MAP --> ITERATE_MAP --> REDUCE (k times as needed to reduce to 1 list). The reasoning for the extra iteration step is to make sure that information gathered from the source data is maximized before moving onto processing generated arguments. To change to a custom plan, please see [`core/utils/condensation/defineCondensationPlan.ts`](src/core/utils/condensation/defineCondensationPlan.ts)
+Currently, we automatically run MAP --> ITERATE_MAP --> REDUCE (k times as needed to reduce to 1 list). The reasoning for the extra iteration step is to make sure that information gathered from the source data is maximized before moving onto processing generated arguments. To change to a custom plan, please see [`core/utils/condensation/defineCondensationSteps.ts`](src/core/utils/condensation/defineCondensationSteps.ts)
 
 ### Visualization
 
@@ -228,7 +228,7 @@ Also, if you want to see the exact prompts and outputs in each prompt call, you 
 
 ## Package Structure
 
-- [`src/main.ts`](src/main.ts): Contains outward-facing API function `handleQuestion`. This is where you should start your investigation of the system.
+- [`src/api.ts`](src/api.ts): Contains outward-facing API function `handleQuestion`. This is where you should start your investigation of the system.
 - `src/core`: Contains the condensation logic. Many subtasks are delegated to utils/
   - `/condensation`: The `Condenser` class and other core logic for running the condensation process. Good place to dive deeper into the implementation details. Sub-dir prompts has the prompts used in condensation operations. Add your own prompts as needed, either to provide language support or to simply get more control of the LLM instructions.
   - `/types`: All TypeScript type definitions used in the package.
@@ -240,11 +240,11 @@ Also, if you want to see the exact prompts and outputs in each prompt call, you 
 
 The most important data structures you need to know about are:
 
-- `SupportedQuestion`: Type of the questions you can condense arguments for in the OpenVAA repo. It's a subset of the question types from `@openvaa/data`. For more info, see [`@openvaa/data/objects/questions/base/question.ts`](@openvaa/data/objects/questions/base/question.ts).
-- `HasAnswers`: A generic entity (like a candidate or party) that has answers and some freely drafted texts regarding a particular quesetion. A condensation run doesn't need anything else than VAA answers with non-empty accompanied texts. Every HasAnswers entity has answers but may not have non-empty comments on why they answered as they did. Defined in [`@openvaa/core/src/matching/hasAnswers.type.ts`](@openvaa/core/src/matching/hasAnswers.type.ts).
+- `SupportedQuestion`: Type of the questions you can condense arguments for in the OpenVAA repo. It's a subset of the question types from `@openvaa/data`. For more info, see the `@openvaa/data` package documentation on Question types.
+- `HasAnswers`: A generic entity (like a candidate or party) that has answers and some freely drafted texts regarding a particular question. A condensation run doesn't need anything else than VAA answers with non-empty accompanied texts. Every HasAnswers entity has answers but may not have non-empty comments on why they answered as they did. Defined in the `@openvaa/core` package.
 - `CondensationRunInput`: Configuration for the condensation process. See [`src/core/types/condensation/condensationInput.ts`](src/core/types/condensation/condensationInput.ts).
 - `CondensationRunResult`: The final output. It contains the list of condensed arguments, metadata about the run, and the original comments that were processed. See [`src/core/types/condensation/condensationResult.ts`](src/core/types/condensation/condensationResult.ts).
-- `Argument`: A single condensed argument, including its text and an ID. Note that the ID is currently without much purpose other than being a placeholder. They are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without needing to change it. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract instead of having different contracts for id-free and id-able arguments. See [`src/core/types/base/argument.ts`](src/core/types/base/argument.ts).
+- `Argument`: A single condensed argument, including its text and an ID. Note that the ID is currently without much purpose other than being a placeholder. They are a mandatory field in the Argument type, because it keeps the Argument abstraction clean and ready to handle ids without needing to change it. Currently, LLM generates mock ids for the 'id' field, so we can simply parse the arguments with a single parsing contract instead of having different contracts for id-free and id-able arguments. See [`src/core/types/condensation/argument.ts`](src/core/types/condensation/argument.ts).
 
 ## Adding Language Support
 
