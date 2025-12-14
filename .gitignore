@@ -4,6 +4,9 @@
 !.env.example
 node_modules
 
+# Claude Code local settings
+.claude/*.local.json
+
 # Yarn 4 without Zero-installs
 .pnp.*
 .yarn/*
