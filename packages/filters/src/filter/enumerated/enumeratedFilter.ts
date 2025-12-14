@@ -22,7 +22,7 @@ export abstract class EnumeratedFilter<
 
   /**
    * Parse all the values from the targets into a map that contains the value counts as well.
-   * @input A list of entities.
+   * @param targets - A list of entities.
    * @returns An array of the values, their counts and possible other properties.
    */
   parseValues(targets: Array<TEntity>): Array<ReturnType<typeof this.processValueForDisplay>> {

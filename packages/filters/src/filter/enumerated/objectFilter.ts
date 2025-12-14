@@ -17,12 +17,12 @@ export class ObjectFilter<
 
   /**
    * Create a filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
-   * @param property The property of the entity, e.g. candidate, in which the object is stored, e.g. party
-   * @param keyProperty The key property of the object, usually id
-   * @param labelProperty The label property of the object, usually name or shortName
-   * @param objects A list of all the possible objects, e.g. parties
-   * @param name Optional name for use when displaying the filter
-   * @param locale The locale is used for value sorting
+   * @param property - The property of the entity, e.g. candidate, in which the object is stored, e.g. party
+   * @param keyProperty - The key property of the object, usually id
+   * @param labelProperty - The label property of the object, usually name or shortName
+   * @param objects - A list of all the possible objects, e.g. parties
+   * @param name - Optional name for use when displaying the filter
+   * @param locale - The locale is used for value sorting
    */
   constructor(
     {

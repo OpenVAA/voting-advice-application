@@ -32,8 +32,8 @@ export abstract class Nomination<
 
   /**
    * The `Nomination` constructor can be called with data lacking an `id` in which case a non-deterministic, unique `id` will be generated.
-   * @param data The data with an optional `id`.
-   * @param root The `DataRoot` object.
+   * @param data - The data with an optional `id`.
+   * @param root - The `DataRoot` object.
    */
   constructor({ data, root }: { data: WithOptional<TData, 'id'>; root: DataRoot }) {
     if (

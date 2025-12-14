@@ -84,9 +84,9 @@ function main(
 /**
  * Create dummy answers.
  *
- * @param questions Question list
- * @param answerValue The same value for all or a function to generate on
- * @param missing Number of missing answers
+ * @param questions - Question list
+ * @param answerValue - The same value for all or a function to generate on
+ * @param missing - Number of missing answers
  * @returns Answer dict
  */
 function createAnswers(

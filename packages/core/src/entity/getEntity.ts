@@ -2,7 +2,7 @@ import type { Entity, MaybeWrappedEntity } from './entity.type';
 
 /**
  * Return the entity for a wrapped entity or the entity itself if it's not wrapped.
- * @param target A possibly wrapped entity.
+ * @param target - A possibly wrapped entity.
  * @returns The entity.
  */
 export function getEntity<TEntity extends Entity>(maybeWrapped: MaybeWrappedEntity<TEntity>): TEntity {

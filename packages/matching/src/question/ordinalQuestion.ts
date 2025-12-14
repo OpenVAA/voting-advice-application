@@ -23,8 +23,8 @@ export class OrdinalQuestion implements MatchableQuestion {
   [key: string]: unknown;
 
   /**
-   * @param id Unique id
-   * @param values Array of objects with a value property
+   * @param id - Unique id
+   * @param values - Array of objects with a value property
    */
   constructor({ id, values }: { id: Id; values: ReadonlyArray<MultipleChoiceValue> }) {
     if (values.length < 2) throw new Error('There must be at least 2 values in the values array.');
@@ -44,7 +44,7 @@ export class OrdinalQuestion implements MatchableQuestion {
 
   /**
    * Used to convert answers to the question into normalized distances for used in matching.
-   * @param value A question's native value
+   * @param value - A question's native value
    * @returns The value in the signed normalized range (e.g. [-.5, .5])
    */
   normalizeValue(value: unknown): CoordinateOrMissing {
@@ -57,7 +57,7 @@ export class OrdinalQuestion implements MatchableQuestion {
 
   /**
    * Utility for creating Likert questions.
-   * @param scale The number of options to show
+   * @param scale - The number of options to show
    * @returns A OrdinalQuestion object
    */
   static fromLikert({ id, scale }: { id: string; scale: number }): OrdinalQuestion {

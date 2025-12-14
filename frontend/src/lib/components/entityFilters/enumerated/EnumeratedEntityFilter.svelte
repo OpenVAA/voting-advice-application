@@ -83,7 +83,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
 
   /**
    * Parse the selected checkboxes into values accepted by `filter.include`
-   * @param selectedValues We need to explicitly pass this to trigger reactive updates
+   * @param selectedValues - We need to explicitly pass this to trigger reactive updates
    * @returns The selected values for `filter.include`
    */
   function parseSelected(selectedValues: typeof selected) {
@@ -113,7 +113,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
 
   /**
    * Get the text label from the object returned by the filter.
-   * @param object party object or choice
+   * @param object - party object or choice
    */
   function getLabel(object: AnyEntityVariant | AnyChoice | undefined): string | undefined {
     if (!object) return $t('entityFilters.missingValue');

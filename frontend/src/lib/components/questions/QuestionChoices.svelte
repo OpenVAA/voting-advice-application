@@ -188,7 +188,7 @@ The same component can also be used to display the answers of the voter and anot
    *
    * NB. The event will only be dispatched if a valid value is either supplied or selected in the radio group.
    *
-   * @param value Optional value that overrides the current value of the radio group. This should be passed when invoking this function from the `click` event handler, because it is fired before the radio group's value is updated. @default undefined
+   * @param value - Optional value that overrides the current value of the radio group. This should be passed when invoking this function from the `click` event handler, because it is fired before the radio group's value is updated. @default undefined
    */
   function triggerCallback(value?: Id | null): void {
     // Use the selected value if no value is supplied

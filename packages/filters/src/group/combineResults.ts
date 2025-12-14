@@ -14,8 +14,8 @@ export type LogicOp = (typeof LOGIC_OP)[keyof typeof LOGIC_OP];
 
 /**
  * Combine the results of multiple filters.
- * @param results An array of results arrays
- * @param logicOperator And or Or logic operator to use in combination. @default LogicOp.And
+ * @param results - An array of results arrays
+ * @param logicOperator - And or Or logic operator to use in combination. @default LogicOp.And
  * @returns Combined results.
  */
 export function combineResults<TEntity extends MaybeWrappedEntity>(

@@ -11,11 +11,11 @@ import type { MissingValueMethod } from '../src/missingValue';
 
 /**
  * Create dummy matches for testing.
- * @param voterAnswers Array of voter answers as indeces of the likert scale
- * @param candidateAnswers Array of Arrays of candidate answers as numbers of the likert scale (1-based)
- * @param likertScale The likert scale, e.g. 5
- * @param distanceMetric The DistanceMetric to use
- * @param method The MISSING_VALUE_METHOD
+ * @param voterAnswers - Array of voter answers as indeces of the likert scale
+ * @param candidateAnswers - Array of Arrays of candidate answers as numbers of the likert scale (1-based)
+ * @param likertScale - The likert scale, e.g. 5
+ * @param distanceMetric - The DistanceMetric to use
+ * @param method - The MISSING_VALUE_METHOD
  * @returns A dict of all generated objects
  */
 export function createMatchesAndEntities(
@@ -87,8 +87,8 @@ export class MockQuestion implements MatchableQuestion {
 
 /**
  * Create dummy answers.
- * @param questions Question list
- * @param answerValues The answer values
+ * @param questions - Question list
+ * @param answerValues - The answer values
  * @returns An answer dict
  */
 export function createAnswers(questions: Array<MatchableQuestion>, answerValues: Array<Id | undefined>): AnswerDict {
@@ -101,8 +101,8 @@ export function createAnswers(questions: Array<MatchableQuestion>, answerValues:
 
 /**
  * Create dummy questions.
- * @param numQuestions Number of questions to creata
- * @param scale The likert scale, e.g. 5
+ * @param numQuestions - Number of questions to creata
+ * @param scale - The likert scale, e.g. 5
  * @returns Array of questions
  */
 export function createQuestions(numQuestions: number, scale: number): Array<OrdinalQuestion> {
@@ -111,8 +111,8 @@ export function createQuestions(numQuestions: number, scale: number): Array<Ordi
 
 /**
  * Create dummy candidates
- * @param questions The dummy questions
- * @param candidateAnswers Array of Arrays of candidate answers
+ * @param questions - The dummy questions
+ * @param candidateAnswers - Array of Arrays of candidate answers
  * @returns Array of candidates
  */
 export function createCandidates(
@@ -124,8 +124,8 @@ export function createCandidates(
 
 /**
  * Create a dummy Candidate to represent the voter
- * @param questions The dummy questions
- * @param voterAnswers Array of voter answers
+ * @param questions - The dummy questions
+ * @param voterAnswers - Array of voter answers
  * @returns A candidate
  */
 export function createVoter(questions: Array<MatchableQuestion>, voterAnswers: Array<Id | undefined>): Candidate {

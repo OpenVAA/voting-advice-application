@@ -5,7 +5,7 @@ import type { AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
 /**
  * Moves items with a specified value to the front of the array while retaining the order of other items.
  * @param array - The array to sort.
- * @param target . The value to move to the front.
+ * @param target - . The value to move to the front.
  * @returns A new array with the target value at the front.
  */
 export function sortToFirst<TItem>(array: ReadonlyArray<TItem>, targetValue: TItem): Array<TItem> {

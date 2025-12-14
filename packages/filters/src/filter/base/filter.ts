@@ -52,7 +52,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Ge the value from an entity.
-   * @param target The target entity.
+   * @param target - The target entity.
    * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
   getValue(target: TTarget): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
@@ -83,7 +83,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Apply the filter to the inputs.
-   * @param targets A list of entities.
+   * @param targets - A list of entities.
    * @returns Filtered targets
    */
   apply<TType extends TTarget>(targets: Array<TType>): Array<TTarget> {
@@ -92,7 +92,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Test an entity against the filter.
-   * @param target The target entity.
+   * @param target - The target entity.
    * @returns true if the entity passes the filter.
    */
   test(target: TTarget): boolean {
@@ -130,8 +130,8 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Add a rule to the filter.
-   * @param name The rule key
-   * @param value The rule value
+   * @param name - The rule key
+   * @param value - The rule value
    */
   setRule(name: keyof typeof this._rules, value: Rule): void {
     // If there's no change, don't trigger an update
@@ -147,8 +147,8 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Add or remove an event handlers that is called when the filter's results change. To use the changed results, access `filter.results`.
-   * @param handler The event handler
-   * @add Add the event handler if true, remove it otherwise
+   * @param handler - The event handler
+   * @param add -  Add the event handler if true, remove it otherwise
    */
   onChange(handler: (filter: unknown) => void, add = true): void {
     if (add) {
@@ -169,7 +169,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Wrap a function call with this to temporarily bypass `onChange` events.
-   * @param f The function to call without triggering `onChange`
+   * @param f - The function to call without triggering `onChange`
    */
   withoutOnChange(f: () => void): void {
     this.suspendOnChange = true;
@@ -183,7 +183,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Test one value against this filter. Implement this method in subclasses. This throws by default and will only be called if `this.options.multipleValues` is `false`.
-   * @param value A possibly missing value
+   * @param value - A possibly missing value
    * @returns true if the value passes the filter.
    */
   testValue(value: MaybeMissing<TValue>): boolean {
@@ -192,7 +192,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
 
   /**
    * Test multiple values against this filter. Implement this method in subclasses. This throws by default and will only be called if `this.options.multipleValues` is `true`.
-   * @param values An array of possibly missing values
+   * @param values - An array of possibly missing values
    * @returns true if the value passes the filter.
    */
   testValues(values: Array<MaybeMissing<TValue>>): boolean {

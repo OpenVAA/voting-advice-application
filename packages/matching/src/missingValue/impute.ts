@@ -15,9 +15,9 @@ export interface MissingValueImputationOptions {
 
 /**
  * Impute a value for a missing one.
- * @param reference The value used as reference, e.g. the voter's answer
- * @param method The imputation method
- * @param bias The direction of the bias used in imputing missing values, when the reference value is neutral
+ * @param reference - The value used as reference, e.g. the voter's answer
+ * @param method - The imputation method
+ * @param bias - The direction of the bias used in imputing missing values, when the reference value is neutral
  * @returns The imputed coordinate.
  */
 export function imputeMissingValue({
@@ -46,9 +46,9 @@ export function imputeMissingValue({
 /**
  * Impute a `Position` for where coordinates missing in `target` are imputed based on `reference`.
  * NB. If a coordinate is missing in `target`, the neutral coordinate is imputed.
- * @param reference The `Position` used as reference, e.g. the voter's answers
- * @param target The `Position` for which to impute missing coordinates
- * @param options Options passed to `imputeMissingValue`
+ * @param reference - The `Position` used as reference, e.g. the voter's answers
+ * @param target - The `Position` for which to impute missing coordinates
+ * @param options - Options passed to `imputeMissingValue`
  * @returns The imputed position.
  */
 export function imputeMissingPosition({

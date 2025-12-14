@@ -3,7 +3,7 @@ import type { RGB } from './rgb';
 
 /**
  * Parses a color string and returns an RGB array.
- * @param color The color string to parse in any of the formats: '000', '000000', '#000', '#000000', 'rgb(0,0,0)',
+ * @param color - The color string to parse in any of the formats: '000', '000000', '#000', '#000000', 'rgb(0,0,0)',
  * @returns An RGB array, or `undefined` if the color string is not valid.
  */
 

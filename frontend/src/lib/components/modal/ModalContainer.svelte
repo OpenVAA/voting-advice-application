@@ -91,7 +91,7 @@ A modal dialog.
 
   /**
    * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
-   * @param e The keyboard event.
+   * @param e - The keyboard event.
    */
   function handleEscape(e: KeyboardEvent) {
     if (isOpen && e.key == 'Escape') {

@@ -21,9 +21,9 @@ export const COORDINATE = {
 
 /**
  * A utility that will normalize the given value within the given range.
- * @param value The numeric value
- * @param min The minimum of the value range
- * @param max The maximum of the value range
+ * @param value - The numeric value
+ * @param min - The minimum of the value range
+ * @param max - The maximum of the value range
  */
 export function normalizeCoordinate({ value, min, max }: { value: number; min: number; max: number }): Coordinate {
   if (min > max || min == max) throw new Error('Range is invalid');
@@ -33,7 +33,7 @@ export function normalizeCoordinate({ value, min, max }: { value: number; min: n
 
 /**
  * Assert that `value` is a `Coordinate` within the correct range.
- * @param value The number to test
+ * @param value - The number to test
  * @returns True if the value is a `Coordinate`
  * @throws If the value is not a `Coordinate`
  */
@@ -45,7 +45,7 @@ export function assertCoordinate(value: Coordinate): value is Coordinate {
 
 /**
  * Assert that `value` is a `NormalizedDistance` within the correct range.
- * @param value The number to test
+ * @param value - The number to test
  * @returns True if the value is a `NormalizedDistance`
  * @throws If the value is not a `NormalizedDistance`
  */

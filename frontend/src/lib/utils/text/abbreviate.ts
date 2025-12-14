@@ -2,9 +2,9 @@ import { locale } from '$lib/i18n';
 
 /**
  * Abbreviate a string.
- * @param text The localized string json to translate
- * @param method The abbreviation method. @default acronym
- * @param length The maximum abbreviation length. @default 3
+ * @param text - The localized string json to translate
+ * @param method - The abbreviation method. @default acronym
+ * @param length - The maximum abbreviation length. @default 3
  */
 export function abbreviate(text: string, options: AbbreviationOptions = {}) {
   if (!text) return '';

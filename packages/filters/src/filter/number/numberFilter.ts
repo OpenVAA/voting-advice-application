@@ -15,7 +15,7 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
 
   /**
    * Create a number filter.
-   * @param options The filter options
+   * @param options - The filter options
    */
   constructor(
     options: Omit<FilterOptionsBase<TTarget>, 'type' | 'multipleValues'> &
@@ -30,7 +30,7 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
 
   /**
    * Parse all the values from the targets to find min and max values.
-   * @input A list of entities.
+   * @param targets - A list of entities.
    * @returns The possible min and max values as well as the number of missing values.
    */
   parseValues(targets: Array<TTarget>): {

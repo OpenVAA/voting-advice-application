@@ -52,9 +52,9 @@ function isValidDomain(domain: string): boolean {
 
 /**
  * Returns a nice text to display for a link.
- * @param url The link
- * @param maxLength The maximum length of the text to display
- * @param defaultText The text to display if the url is longer than `maxLength`.
+ * @param url - The link
+ * @param maxLength - The maximum length of the text to display
+ * @param defaultText - The text to display if the url is longer than `maxLength`.
  */
 export function getLinkText(url: string, maxLength = 30, defaultText?: string): string | undefined {
   try {

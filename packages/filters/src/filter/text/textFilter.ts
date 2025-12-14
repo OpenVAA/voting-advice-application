@@ -23,8 +23,8 @@ export class TextFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity>
 
   /**
    * Create a filter for text matching
-   * @param options The filter options
-   * @param locale The locale is used for case-insensitive matching
+   * @param options - The filter options
+   * @param locale - The locale is used for case-insensitive matching
    */
   constructor(
     options: Omit<FilterOptionsBase<TEntity>, 'type'> & (PropertyFilterOptions | QuestionFilterOptions),
@@ -78,7 +78,7 @@ export class TextFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity>
   }
 
   /**
-   * Test whether @param rule is found in @param text
+   * Test whether @param rule - is found in @param text
    */
   testText(rule: string, text: string): boolean {
     // We do not care about leading and trailing whitespace. Because we use indexOf, we only need to trim the rule

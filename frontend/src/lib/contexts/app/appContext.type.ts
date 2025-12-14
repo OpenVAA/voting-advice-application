@@ -52,27 +52,27 @@ export type AppContext = ComponentContext &
     sendFeedback: FeedbackWriter['postFeedback'];
     /**
      * Start the countdown for the feedback popup, after which it will be shown on next page load. This will do nothing, if the user has already given their feedback.
-     * @param delay The delay in seconds. @default 180 (3 minutes)
+     * @param delay - The delay in seconds. @default 180 (3 minutes)
      */
     startFeedbackPopupCountdown: (delay?: number) => void;
     /**
      * Start the countdown for the survey popup, after which it will be shown on next page load. This will do nothing, if the user has already opened the survey.
-     * @param delay The delay in seconds. @default 300 (5 minutes)
+     * @param delay - The delay in seconds. @default 300 (5 minutes)
      */
     startSurveyPopupCountdown: (delay?: number) => void;
     /**
      * Set the user's data consent together with the date of giving or denying the consent.
-     * @param consent The value for the consent
+     * @param consent - The value for the consent
      */
     setDataConsent: (consent: UserDataCollectionConsent) => void;
     /**
      * Set the user's feedback status together with the date of update.
-     * @param status The value for the status
+     * @param status - The value for the status
      */
     setFeedbackStatus: (status: UserFeedbackStatus) => void;
     /**
      * Set the user's survey filling status together with the date of update.
-     * @param status The value for the status
+     * @param status - The value for the status
      */
     setSurveyStatus: (status: UserFeedbackStatus) => void;
   };
