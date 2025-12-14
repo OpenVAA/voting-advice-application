@@ -57,4 +57,4 @@ jobs:
             - Include tests if applicable
             - Reference the issue in your PR description with "Fixes #${{ inputs.issue_number }}"
 
-          claude_args: '--allowed-tools "Bash(gh issue:*)" --allowed-tools "Bash(gh pr:*)" --allowed-tools "Bash(git add:*)" --allowed-tools "Bash(git commit:*)" --allowed-tools "Bash(git push:*)" --allowed-tools "Bash(git status:*)" --allowed-tools "Bash(git diff:*)" --allowed-tools "Bash(yarn test:*)" --allowed-tools "Bash(yarn lint:*)" --allowed-tools "Bash(yarn build:*)"'
+          claude_args: '--allowed-tools "Bash(gh issue:*),Bash(gh pr:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(yarn test:*),Bash(yarn lint:*),Bash(yarn build:*)"'
