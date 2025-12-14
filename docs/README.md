@@ -19,6 +19,7 @@ Instructions for developers and contributors.
 - [LLM features](llm-features.md) - Experimental LLM features
 - [Troubleshooting](troubleshooting.md) - Common issues and solutions
 - [Code Review Checklist](code-review-checklist.md) - Checklist for code reviews
+- [Auto Documentation](auto-documentation.md) - Automatic documentation generation system
 
 ## Full Table of Contents
 
