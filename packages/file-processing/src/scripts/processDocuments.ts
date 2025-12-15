@@ -10,7 +10,7 @@ import { findDocuments, saveSegmentsToFile } from './utils/processing';
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
 // Directories
-const UNPROCESSED_DIR = path.join(__dirname, '../documents/step0_raw/pdf');
+const UNPROCESSED_DIR = path.join(__dirname, '../documents/step0_raw/');
 const SEGMENTED_TEXT_JOINED = path.join(__dirname, '../documents/step1_segmented');
 const OUTPUT_DIR = path.join(__dirname, '../documents/step2_processed');
 

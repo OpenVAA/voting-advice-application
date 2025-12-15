@@ -79,6 +79,19 @@
             }
           ];
         }
+
+        // Attach toolsUsed to the last assistant message
+        if (data.rag?.toolsUsed && data.rag.toolsUsed.length > 0) {
+          const lastAssistantMessage = [...$chatStore.messages].reverse().find((m) => m.role === 'assistant');
+          if (lastAssistantMessage) {
+            lastAssistantMessage.metadata = {
+              ...lastAssistantMessage.metadata,
+              toolsUsed: data.rag.toolsUsed
+            };
+            // Force reactivity update
+            messages = [...messages];
+          }
+        }
       }
     }
   });
@@ -152,6 +165,16 @@
     }
   }
 
+  function handleNewConversation() {
+    // Reset chat store
+    chatStore.resetConversation();
+
+    // Clear dev-specific tracking state
+    ragContexts = [];
+    costs = [];
+    latencies = [];
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function formatToolCall(tool: { name: string; args: any }): string {
     const argsStr =
@@ -193,9 +216,7 @@
   <div class="flex flex-1 flex-col">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-2xl font-bold">Chat</h2>
-      <button
-        on:click={() => chatStore.resetConversation()}
-        class="rounded bg-gray-200 px-4 py-2 text-black hover:bg-gray-300">
+      <button on:click={handleNewConversation} class="rounded bg-gray-200 px-4 py-2 text-black hover:bg-gray-300">
         New conversation
       </button>
     </div>

@@ -1,10 +1,9 @@
+// Non-browser export file. Don't use this file in browser contexts. Use the ./types.ts file instead.
+// Note: some of these exports could be moved to the ./types.ts file to avoid duplication.
+
 // Core classes
 export { ChromaVectorStore } from './core/chromaVectorStore';
 export { OpenAIEmbedder } from './core/openAIEmbedder';
-
-// Types
-export type { Embedder, EmbedderOptions, EmbedderResponse } from './core/embedder.type';
-export type { VectorStore, VectorStoreConfig } from './core/vectorStore.type';
 
 // Utilities
 export * from './core/utils';

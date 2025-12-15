@@ -1,0 +1,424 @@
+{
+  "runId": "pipeline_1765707992925",
+  "success": true,
+  "data": {
+    "documentId": "txt_wikipedia_institutions",
+    "metadata": {
+      "locale": "en"
+    },
+    "segments": [
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "53b51d62-155a-4728-a4b2-2b98c690bdf4",
+        "content": "The institutions of the European Union are the seven principal decision-making bodies of the European Union and Euratom governed under the Treaties of the European Union and European Union law. They are, as listed in Article 13 of the Treaty on the European Union:\n\nthe European Parliament,\nthe European Council (of heads of state or government),\nthe Council of the European Union (of member state ministers, a council for each area of responsibility),\nthe European Commission,\nthe Court of Justice of the European Union,\nthe European Central Bank and\nthe European Court of Auditors.[1]\nInstitutions are distinct from both advisory bodies to the European Union and agencies of the European Union.\n\nHistory\nFurther information: History of the European Union\nMost EU institutions were created with the establishment of the European Community in 1958. Much change since then has been in the context of shifting the balance of power away from the council and towards the Parliament. The role of the commission has often been to mediate between the two or tip the balance.[2] However, the commission is becoming more accountable to the Parliament: in 1999 it forced the resignation of the Santer Commission[3] and forced a reshuffle of the proposed Barroso Commission in 2004.[4] The development of the institutions, with incremental changes from treaties and agreements, is testament to the evolution of the Union's structures without one clear \"master plan.\" Some observers like Tom Reid of The Washington Post said of the institutions that \"nobody would have deliberately designed a government as complex and as redundant as the EU.\"[5]",
+        "segmentIndex": 0,
+        "summary": "The Institutions of the European Union are the seven principal decision-making bodies, including the Parliament, Council, and Commission, governed under EU Treaties. Most institutions were established in 1958 with the European Community, and their evolution has involved a gradual shift of power from the Council toward the Parliament. This complex structure developed incrementally, leading to increased accountability, such as the Commission's forced resignation in 1999.",
+        "standaloneFacts": [
+          "The institutions of the European Union are the seven principal decision-making bodies of the European Union and Euratom.",
+          "The seven principal EU institutions are listed in Article 13 of the Treaty on the European Union.",
+          "The seven principal institutions of the EU are the European Parliament, the European Council, the Council of the European Union, the European Commission, the Court of Justice of the European Union, the European Central Bank, and the European Court of Auditors.",
+          "Most EU institutions were created with the establishment of the European Community in 1958.",
+          "Historically, power within the EU institutions has shifted away from the Council and towards the Parliament.",
+          "The Santer Commission was forced to resign in 1999.",
+          "The Parliament forced a reshuffle of the proposed Barroso Commission in 2004."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "6c1bb60a-abde-4177-8cb1-142d3a0f6ed7",
+        "content": "Under the Treaty of Paris\nThe first institutions were created at the start of the 1950s with the creation of the European Coal and Steel Community (ECSC), based on the Schuman declaration, between six states. The ECSC was designed to bring the markets of coal and steel, the materials needed to wage war, under the control of a supranational authority with the aim of encouraging peace and economic development. It established the first institutions. At its core was an independent executive called the \"High Authority\" with supranational powers over the Community. The laws made by the Authority would be observed by a Court of Justice in order to ensure they were upheld and to arbitrate.[6]\n\nDuring the negotiations, two supervisory institutions were put forward to counterbalance the power of the High Authority. The \"Common Assembly\" proposed by Jean Monnet to act as a monitor, counterweight and to add democratic legitimacy was composed of 78 national parliamentarians.[7] The second was the Council of Ministers, pushed by the smaller states also to add an intergovernmental element and harmonise national policies with those of the authority.[8]",
+        "segmentIndex": 1,
+        "summary": "The first European institutions were established in the early 1950s under the Treaty of Paris, creating the European Coal and Steel Community (ECSC) among six states to place coal and steel markets under a supranational authority aimed at encouraging peace and economic development. This initial structure featured an independent executive called the \"High Authority\" and a Court of Justice, balanced by two supervisory bodies: the \"Common Assembly\" (providing democratic legitimacy) and the Council of Ministers (adding an intergovernmental element and harmonizing national policies).",
+        "standaloneFacts": [
+          "The first European institutions were created with the establishment of the European Coal and Steel Community (ECSC) in the early 1950s.",
+          "The ECSC was based on the Schuman declaration and formed between six states.",
+          "The ECSC was designed to bring the markets of coal and steel under the control of a supranational authority.",
+          "The core independent executive of the ECSC was the \"High Authority,\" which had supranational powers.",
+          "A Court of Justice was established under the ECSC to observe and arbitrate the laws made by the High Authority.",
+          "The \"Common Assembly\" was proposed by Jean Monnet to act as a monitor and counterweight to the High Authority.",
+          "The Common Assembly was composed of 78 national parliamentarians.",
+          "The Council of Ministers was created to add an intergovernmental element and harmonize national policies with the High Authority."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "77d13990-e470-49d3-8266-ad7f9902261f",
+        "content": "Establishment and changes\nIn 1957 the Treaties of Rome established two similar communities, creating a common market (European Economic Community) and promoting atomic energy co-operation (Euratom). The three institutions shared the Court of Justice and the Parliament, however, they had a separate Council and High Authority, which was called the Commission in these Communities. The reason for this is the different relationship between the Commission and Council. At the time the French government was suspicious of the supranational and wanted to limit the powers of the High Authority in the new Communities, giving the council a greater role in checking the executive.[8][9][10]",
+        "segmentIndex": 2,
+        "summary": "In 1957, the Treaties of Rome established two new communities: the European Economic Community (EEC) for a common market and Euratom for atomic energy cooperation. While these new communities shared the Court of Justice and the Parliament with the existing ECSC, they maintained separate Councils and executive bodies, which were renamed the Commission. This structural change, which gave the Council a greater role in checking the executive, was influenced by the French government's desire to limit supranational authority.",
+        "standaloneFacts": [
+          "The Treaties of Rome established the European Economic Community (EEC) and Euratom in 1957.",
+          "The European Economic Community (EEC) was created to establish a common market.",
+          "Euratom was created to promote atomic energy co-operation.",
+          "The three communities (ECSC, EEC, and Euratom) shared the Court of Justice and the Parliament.",
+          "In the EEC and Euratom, the executive body previously known as the High Authority was called the Commission.",
+          "The French government wanted to limit the powers of the High Authority in the new Communities and gave the Council a greater role in checking the executive."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "7168b721-e4cb-457f-a5d4-f798da3d556e",
+        "content": "The three communities were later merged in 1967, by the Merger Treaty, into the European Communities. The institutions were carried over from the European Economic Community (making the Commission of that community the direct ancestor of the current Commission).[9] Under the Treaties of Rome, the Common Assembly (which renamed itself the Parliamentary Assembly, and then the European Parliament) was supposed to become elected. However, this was delayed by the council until 1979. Since then it gained more powers via successive treaties.[2][7] The Maastricht Treaty also gave further powers to the council by giving it a key role in the two new pillars of the EU which were based on intergovernmental principles.[8]",
+        "segmentIndex": 3,
+        "summary": "The three original communities were merged into the European Communities in 1967 by the Merger Treaty, establishing the European Economic Community's Commission as the ancestor of the current institution. Although the Common Assembly (later the European Parliament) was supposed to become elected under the Treaties of Rome, the Council delayed this until 1979, after which the Parliament steadily gained more powers. The Council itself also gained significant influence through the Maastricht Treaty, which assigned it a key role in the two new intergovernmental pillars of the EU structure.",
+        "standaloneFacts": [
+          "The three communities were merged into the European Communities in 1967 by the Merger Treaty.",
+          "The institutions of the European Communities were carried over from the European Economic Community.",
+          "The Commission of the European Economic Community is the direct ancestor of the current Commission.",
+          "The Common Assembly renamed itself the Parliamentary Assembly, and subsequently the European Parliament.",
+          "Direct elections for the European Parliament were delayed by the Council until 1979.",
+          "The European Parliament has gained more powers via successive treaties since 1979.",
+          "The Maastricht Treaty gave further powers to the Council.",
+          "The Maastricht Treaty gave the Council a key role in the two new pillars of the EU, which were based on intergovernmental principles."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "b2a7b881-134d-4eef-b2aa-0612a9aaf272",
+        "content": "The 2009 Lisbon Treaty brought nearly all policy areas (including the budget) under the co-decision procedure (renamed \"ordinary legislative procedure\"), hence increasing the power of the Parliament. The rules for the distribution of seats in the parliament were also changed to a formula system.[11][12] The High Representative merged with the European Commissioner for External Relations and joined the commission. The appointment of the Commission President became dependent upon the last EU elections. The Council of Ministers adopted more qualified majority voting and the European Council was made a distinct institution with a permanent president. The Court of Justice had some minor renaming and adjustments. In addition, the central bank became a full institution.[11][12]",
+        "segmentIndex": 4,
+        "summary": "The 2009 Lisbon Treaty significantly reformed the institutional framework and legislative processes of the EU. It substantially increased the power of the European Parliament by expanding the use of the co-decision procedure, which was renamed the \"ordinary legislative procedure,\" to nearly all policy areas, including the budget. Additionally, the treaty formalized the European Council as a distinct institution with a permanent president, mandated more qualified majority voting in the Council of Ministers, and made the appointment of the Commission President dependent upon the results of EU elections.",
+        "standaloneFacts": [
+          "The 2009 Lisbon Treaty renamed the co-decision procedure the \"ordinary legislative procedure.\"",
+          "The Lisbon Treaty increased the power of the European Parliament by bringing nearly all policy areas, including the budget, under the ordinary legislative procedure.",
+          "The rules for the distribution of seats in the European Parliament were changed to a formula system by the Lisbon Treaty.",
+          "The High Representative merged with the European Commissioner for External Relations under the Lisbon Treaty and joined the Commission.",
+          "Following the Lisbon Treaty, the appointment of the Commission President became dependent upon the last EU elections.",
+          "The Lisbon Treaty mandated that the Council of Ministers adopt more qualified majority voting.",
+          "The European Council was made a distinct institution with a permanent president by the Lisbon Treaty.",
+          "Under the Lisbon Treaty, the central bank became a full institution of the European Union."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "d1e2fee0-92e0-45e3-8f0a-f140a1250574",
+        "content": "Overview\nInstitutions of the European Union[13]vte\t\t\nEuropean Council\tCouncil of the European Union\tEuropean Parliament\nProvides impetus and direction\tLegislative\tLegislative\nMembers of the European Council 2011\nCouncil of the EU and European Council meeting room in the Europa building\nEuropean Parliament\nBased in Brussels,  Belgium.\tBased in Brussels,  Belgium. Meets in Luxembourg,  Luxembourg for the months of April, June and October.\tMeets in Strasbourg,  France and Brussels,  Belgium. Secretariat based in Luxembourg,  Luxembourg.\nsummit of the Heads of state or government, the President of the European Council and the President of the European Commission.\ngives the necessary political impetus for the development of the Union and sets its general objectives and priorities\ndoes not legislate",
+        "segmentIndex": 5,
+        "summary": "This overview section of the EU institutions compares the European Council, the Council of the European Union, and the European Parliament, highlighting their distinct roles: the latter two are legislative, while the European Council provides political impetus and direction without legislating. The segment also specifies the membership of the European Council and details the various locations where these institutions are based or hold their meetings, such as Brussels, Strasbourg, and Luxembourg.",
+        "standaloneFacts": [
+          "The European Council's role is to provide impetus and direction for the European Union.",
+          "The Council of the European Union is categorized as a legislative institution.",
+          "The European Parliament is categorized as a legislative institution.",
+          "The European Council is based in Brussels, Belgium.",
+          "The Council of the European Union is based in Brussels, Belgium.",
+          "The Council of the European Union meets in Luxembourg, Luxembourg during April, June, and October.",
+          "The European Parliament meets in Strasbourg, France and Brussels, Belgium.",
+          "The European Parliament Secretariat is based in Luxembourg, Luxembourg.",
+          "The European Council is composed of a summit of Heads of state or government, the President of the European Council, and the President of the European Commission.",
+          "The European Council does not legislate.",
+          "The European Council sets the general objectives and priorities of the Union."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "85af4875-27d7-45fd-8a57-edc82d3b7a29",
+        "content": "composed of twenty-seven national ministers (one per state)\nformally known as \"the Council\"; informally known as the \"Council of Ministers\"\nacts together with the Parliament as a legislature\nshares with the Parliament the budgetary power\nensures coordination of the broad economic and social policy and sets out guidelines for the Common Foreign and Security Policy (CFSP)\nconcludes international agreements\nacts together with the Council (of the European Union) as a legislature\nshares with the Council (of the European Union) the budgetary power\nexerts the democratic control over the institutions including the European Commission and approves the Commission members\t\t\nEuropean Commission\tCourt of Justice of the European Union\tEuropean Central Bank\nExecutive\tJudicial\tCentral bank\nEuropean Commission building\nECJ room\nEuropean Central Bank\nBased in Brussels,  Belgium. Various departments and services hosted in Luxembourg,  Luxembourg.\tBased in Luxembourg,  Luxembourg.\tBased in Frankfurt,  Germany.\nis the executive\nsubmits proposals for new legislation to the Parliament and Council (of the European Union)\nimplements policies\nadministers the budget\nensures compliance with European law (\"guardian of the treaties\")\nnegotiates international agreements",
+        "segmentIndex": 6,
+        "summary": "This segment outlines the composition and functions of several key EU institutions, including the Council of the European Union, the European Parliament, and the European Commission. The Council, composed of 27 national ministers, shares legislative and budgetary power with the Parliament, while also coordinating economic policy and CFSP guidelines. The European Commission serves as the executive, submitting legislative proposals, implementing policies, administering the budget, and acting as the 'guardian of the treaties'.",
+        "standaloneFacts": [
+          "The Council of the European Union is composed of twenty-seven national ministers, one per state.",
+          "The Council of the European Union is formally known as \"the Council\" and informally known as the \"Council of Ministers\".",
+          "The Council of the European Union and the European Parliament act together as the legislature and share budgetary power.",
+          "The Council of the European Union concludes international agreements.",
+          "The European Parliament exerts democratic control over the institutions, including the European Commission, and approves the Commission members.",
+          "The European Commission is the executive body of the European Union.",
+          "The European Commission submits proposals for new legislation to the Parliament and the Council (of the European Union).",
+          "The European Commission ensures compliance with European law and is known as the \"guardian of the treaties\".",
+          "The Court of Justice of the European Union (CJEU) is the judicial institution and is based in Luxembourg, Luxembourg.",
+          "The European Central Bank (ECB) is the central bank and is based in Frankfurt, Germany."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "b54efac8-90d6-4aef-93a4-707ab5879e8c",
+        "content": "ensures the uniform application and interpretation of European law\nhas the power to decide legal disputes between member states, the institutions, businesses and individuals\nis the only among the 7 institutions, which also is an international entity with treaty capability in its own right\nforms together with the national central banks the European System of Central Banks and thereby determines the monetary policy of the eurozone\nensures price stability in the eurozone by controlling the money supply\n\nEuropean Court of Auditors\nAuditory\nECA building\nBased in Luxembourg,  Luxembourg.\nchecks the proper implementation of the budget\nOrganisational chart",
+        "segmentIndex": 7,
+        "summary": "The text outlines the functions of several EU institutions: one entity ensures the uniform application of European law and resolves disputes, while another, forming the European System of Central Banks, determines the monetary policy of the eurozone and controls the money supply to ensure price stability. Additionally, the European Court of Auditors (ECA), based in Luxembourg, is responsible for auditing and checking the proper implementation of the EU budget.",
+        "standaloneFacts": [
+          "One EU entity ensures the uniform application and interpretation of European law and has the power to decide legal disputes between member states, the institutions, businesses and individuals.",
+          "One EU entity is the only one among the 7 institutions that is also an international entity with treaty capability in its own right.",
+          "One EU entity forms the European System of Central Banks (ESCB) together with the national central banks and determines the monetary policy of the eurozone.",
+          "One EU entity ensures price stability in the eurozone by controlling the money supply.",
+          "The European Court of Auditors (ECA) is based in Luxembourg, Luxembourg.",
+          "The European Court of Auditors (ECA) checks the proper implementation of the budget."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "f95d4338-2e68-4b2f-b576-c9b435a32eb5",
+        "content": "List\nThere are three political institutions which hold the executive and legislative power of the union. The Council of the European Union represents governments, the parliament represents citizens and the commission represents the European interest.[14] Essentially, the Council of the European Union, parliament or another party place a request for legislation to the commission. The commission then drafts this and presents it to the parliament and the Council of the European Union, where in most cases both must give their assent. Although the exact nature of this depends upon the legislative procedure in use, once it is approved and signed by both bodies it becomes law.[15] The commission's duty is to ensure it is implemented by dealing with the day-to-day running of the Union and taking others to Court if they fail to comply.[14]",
+        "segmentIndex": 8,
+        "summary": "The executive and legislative power of the European Union is shared among three political institutions: the Council of the European Union (representing governments), the Parliament (representing citizens), and the Commission (representing European interests). The legislative process involves the Commission drafting proposals, which generally require the assent of both the Parliament and the Council to become law. The Commission also enforces the law, manages the Union's daily operations, and ensures compliance.",
+        "standaloneFacts": [
+          "Three political institutions hold the executive and legislative power of the European Union.",
+          "The Council of the European Union represents governments, the European Parliament represents citizens, and the European Commission represents the European interest.",
+          "The European Commission drafts legislation after receiving a request from the Council of the European Union, the Parliament, or another party.",
+          "In most cases, both the European Parliament and the Council of the European Union must give their assent for drafted legislation to become EU law.",
+          "The European Commission is responsible for implementing EU legislation, dealing with the day-to-day running of the Union, and taking non-compliant parties to Court."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "0e72f2d9-c54a-4746-b025-5c24a9b53728",
+        "content": "European Parliament\nMain article: European Parliament\nThe European Parliament (EP) shares the legislative and budgetary authority of the Union with the Council of the European Union (of relevant national government ministers). Its 705[16] members are elected every five years by universal suffrage and sit according to political allegiance. They represent nearly 500 million citizens (the world's second largest democratic electorate) and form the only directly elected body in the Union. Despite forming one of the two legislative chambers of the Union, it has weaker powers than the Council in some sensitive areas, and does not have legislative initiative.",
+        "segmentIndex": 9,
+        "summary": "The European Parliament (EP) shares legislative and budgetary authority with the Council of the European Union. It is the Union's only directly elected body, comprising 705 members chosen every five years by universal suffrage, representing nearly 500 million citizens. However, despite being one of the two legislative chambers, the EP has weaker powers than the Council in certain sensitive areas and lacks legislative initiative.",
+        "standaloneFacts": [
+          "The European Parliament (EP) shares the legislative and budgetary authority of the Union with the Council of the European Union.",
+          "The European Parliament has 705 members.",
+          "Members of the European Parliament are elected every five years by universal suffrage.",
+          "The European Parliament is the only directly elected body in the Union.",
+          "The European Parliament represents nearly 500 million citizens.",
+          "The electorate for the European Parliament is the world's second largest democratic electorate.",
+          "The European Parliament does not have legislative initiative."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "8840f0f6-7228-4135-92bf-28f93026c761",
+        "content": "It does, however, have powers over the Commission which the Council does not. It has been said that its democratic nature and growing powers have made it one of the most powerful legislatures in the world.[15][17][18]\n\nThe Parliament's President (its speaker) is Roberta Metsola (European People's Party), who was elected from the Parliament's members in 2022.\n\nEuropean Council\nMain article: European Council\n\nThe European Council provides political direction at head of state or government level to the Union.\nThe European Council is the group of heads of state or government of the EU member states. It meets four times a year to define the Union's policy agenda and give impetus to integration. The President of the European Council is the person responsible for chairing and driving fo",
+        "segmentIndex": 10,
+        "summary": "The European Parliament holds specific powers over the Commission that the Council lacks, contributing to its status as a powerful global legislature. The Parliament's current President (speaker) is Roberta Metsola, elected in 2022. The text then introduces the European Council, composed of EU heads of state or government, which meets quarterly to provide political direction, define the policy agenda, and drive integration.",
+        "standaloneFacts": [
+          "The European Parliament has powers over the Commission that the Council of the European Union does not have.",
+          "The President (speaker) of the European Parliament is Roberta Metsola.",
+          "Roberta Metsola was elected President of the European Parliament in 2022 and belongs to the European People's Party.",
+          "The European Council provides political direction to the Union at the head of state or government level.",
+          "The European Council is the group of heads of state or government of the EU member states.",
+          "The European Council meets four times a year to define the Union's policy agenda and give impetus to integration.",
+          "The President of the European Council is responsible for chairing and driving forward the work of the institution."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "4df60671-49d8-4369-8426-4b96cbce0733",
+        "content": "rward the work of the institution, which has been described as the highest political body of the European Union.[19]\n\nThe current president is António Costa (since 1 December 2024).\n\nCouncil of the European Union\nMain article: Council of the European Union\nThe Council of the European Union (informally known as the Council of Ministers or just the Council) is a body holding legislative and some limited executive powers and is thus the main decision-making body of the Union.[citation needed][clarification needed] Its Presidency rotates between the states every six months, but every three Presidencies now cooperate on a common programme. This body is separate from the European Council, which is a similar body, but is composed of national leaders.[20]\n\nThe council is composed of twenty-seven national ministers (one per state). However the Council meets in various forms depending upon the topic. For example, if agriculture is being discussed, the council will be composed of each national minister for agriculture. They represent their governments and are accountable to their national political systems. Votes are taken either by majority or unanimity with votes allocated according to population. In these various forms they share the legislative and budgetary power of the Parliament, and also lead the Common Foreign and Security Policy.[20]\n\nThe presidency is being held by Denmark since July 2025.[21]\n\nEuropean Commission\nMain article: European Commission\nThe European Commission (EC) is the executive arm of the Union. It is a body composed of one appointee from each state, currently twenty-seven, but is designed to be independent of national interests. The body is responsible for drafting all law of the European Union and has the ability to propose new laws (bills).[22] It also deals with the day-to-day running of the Union and has the duty of upholding the law and treaties (in this role it is known as the \"Guardian of the Treaties\").[14]",
+        "segmentIndex": 11,
+        "summary": "The analyzed segment describes the roles of the European Council, the Council of the European Union, and the European Commission. The European Council is deemed the highest political body, currently led by António Costa. The Council of the European Union, or Council of Ministers, is the main decision-making body whose presidency rotates every six months among member states and shares legislative power with the Parliament. Finally, the European Commission acts as the executive arm and 'Guardian of the Treaties,' responsible for drafting and proposing all EU law while maintaining independence from national interests.",
+        "standaloneFacts": [
+          "The current president of the European Council is António Costa, serving since 1 December 2024.",
+          "The Council of the European Union is informally known as the Council of Ministers or just the Council.",
+          "The Council of the European Union is the main decision-making body of the Union, holding legislative and some limited executive powers.",
+          "The Presidency of the Council of the European Union rotates between member states every six months.",
+          "The Council of the European Union is composed of twenty-seven national ministers.",
+          "Denmark is holding the presidency of the Council of the European Union since July 2025.",
+          "The European Commission (EC) is the executive arm of the European Union.",
+          "The European Commission is responsible for drafting all law of the European Union and has the ability to propose new laws.",
+          "The European Commission is known as the \"Guardian of the Treaties\" for its duty of upholding the law and treaties."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "c2ecf765-7cf8-487e-9f0e-da221d7becc5",
+        "content": "The commission is led by a President who is nominated by the council (in practice the European Council) and approved by Parliament. The remaining 26 Commissioners are nominated by member states, in consultation with the President, and have their portfolios assigned by the President. The Council then adopts this list of nominee-Commissioners. The council's adoption of the commission is not an area which requires the decision to be unanimous; their acceptance is arrived at according to the rules for qualified majority voting. The European Parliament then interviews and casts its vote upon the Commissioners. The interviews of individual nominees are conducted separately, in contrast to Parliament's vote of approval which must be cast on the commission as a whole without the ability to accept or reject individual Commissioners. Once approval has been obtained from the Parliament, the Commissioners can take office.[23] The current President is Ursula von der Leyen (EPP); her commission was elected in 2019.[24]\n\nCourt of Justice of the European Union\nMain article: Court of Justice of the European Union\nThe Court of Justice of the European Union (CJEU) (French: Cour de justice de l'Union européenne or \"CJUE\"; Latin: Curia[25]) is the judicial branch of the European Union (EU) and is responsible for interpreting EU law and treaties.\n\nThe CJUE consists of two separate courts: the Court of Justice and the General Court.\n\nFrom 2005 to 2016 it also consisted of the Civil Service Tribunal.\n\nThe CJEU is located in Luxembourg.",
+        "segmentIndex": 12,
+        "summary": "The process for appointing the European Commission involves the Council nominating the President, who is then approved by Parliament. The remaining 26 Commissioners are nominated by member states, adopted by the Council using qualified majority voting, and finally approved as a whole by the European Parliament. The text also introduces the Court of Justice of the European Union (CJEU), the EU's judicial branch responsible for interpreting EU law and treaties, which is located in Luxembourg and comprises the Court of Justice and the General Court.",
+        "standaloneFacts": [
+          "The President of the European Commission is nominated by the Council (in practice the European Council) and approved by the European Parliament.",
+          "The remaining 26 European Commissioners are nominated by member states.",
+          "The Council adopts the list of nominee-Commissioners according to the rules for qualified majority voting.",
+          "The European Parliament casts its vote of approval on the European Commission as a whole, without the ability to accept or reject individual Commissioners.",
+          "The current President of the European Commission is Ursula von der Leyen (EPP).",
+          "Ursula von der Leyen's commission was elected in 2019.",
+          "The Court of Justice of the European Union (CJEU) is the judicial branch of the European Union.",
+          "The CJEU is responsible for interpreting EU law and treaties.",
+          "The CJEU consists of two separate courts: the Court of Justice and the General Court.",
+          "The CJEU previously included the Civil Service Tribunal from 2005 to 2016.",
+          "The Court of Justice of the European Union (CJEU) is located in Luxembourg."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "935c44c0-ef02-4c2f-ac5b-3300c05dcdc2",
+        "content": "European Central Bank\n\nEuropean Central Bank headquarters in Frankfurt\nMain article: European Central Bank\nThe European Central Bank (ECB) is the only one among the 7 institutions that is also an international entity with treaty capability in its own right. It is at the centre of the European System of Central Banks which comprises all EU national banks. The bank is governed by a board of national bank governors and a president.[11][26] It is also the central bank for the eurozone (the states which have adopted the euro) and thus controls monetary policy in that area with an agenda to maintain price stability.\n\nThe ECB is located in Frankfurt.\n\nThe current president is Christine Lagarde.\n\nEuropean Court of Auditors\nMain article: European Court of Auditors\nThe European Court of Auditors (ECA), despite its name, has no judicial powers. It ensures that taxpayer funds from the budget of the European Union have been correctly spent. The court provides an audit report for each financial year to the Council and Parliament. The Parliament uses this to decide whether to approve the commission's handling of the budget. The Court also gives opinions and proposals on financial legislation and anti-fraud actions.[27]\n\nThe Court of Auditors was set up in 1975. It was created as an independent institution due to the sensitivity of the issue of fraud in the Union (the anti-fraud agency, OLAF, is also built on its independence). It is composed of one member from each state appointed by the Council every six years. Every three years one of them is elected as the president of the court, who is currently Tony Murphy.[27]",
+        "segmentIndex": 13,
+        "summary": "This segment details the roles and structures of the European Central Bank (ECB) and the European Court of Auditors (ECA). The ECB, located in Frankfurt and led by Christine Lagarde, is the central bank for the eurozone, responsible for controlling monetary policy and maintaining price stability, and is unique as an international entity with treaty capability. The ECA, established in 1975 and currently headed by Tony Murphy, has no judicial powers but ensures that EU taxpayer funds are correctly spent, providing audit reports to the Council and Parliament.",
+        "standaloneFacts": [
+          "The European Central Bank (ECB) is the only one among the 7 EU institutions that is also an international entity with treaty capability in its own right.",
+          "The European Central Bank (ECB) is the central bank for the eurozone.",
+          "The European Central Bank (ECB) controls monetary policy in the eurozone with an agenda to maintain price stability.",
+          "The European Central Bank (ECB) is located in Frankfurt.",
+          "The current president of the European Central Bank is Christine Lagarde.",
+          "The European Court of Auditors (ECA) ensures that taxpayer funds from the budget of the European Union have been correctly spent.",
+          "The European Court of Auditors (ECA) provides an audit report for each financial year to the Council and Parliament.",
+          "The European Court of Auditors (ECA) was set up in 1975.",
+          "The European Court of Auditors (ECA) is composed of one member from each state appointed by the Council every six years.",
+          "The current president of the European Court of Auditors is Tony Murphy."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "4168b437-2a73-42c2-848d-eef4abd98e5b",
+        "content": "Acts and procedures\nMain article: European Union legislative procedure\n\nThe codecision procedure is most common, and means the Council and Parliament jointly consider law proposals from the Commission.\nThere are a number of types of legislation which can be passed. The strongest is a regulation, an act or law which is directly applicable in its entirety. Then there are directives which bind members to certain goals which they must achieve. They do this through their own laws and hence have room to manoeuvre in deciding upon them. A decision is an instrument which is focused at a particular person/group and is directly applicable. Institutions may also issue recommendations and opinions which are merely non-binding declarations.[28]\n\nThe ordinary legislative procedure is used in nearly all policy areas and provides an equal footing between the two bodies. Under the procedure, the Commission presents a proposal to Parliament and the council. They then send amendments to the Council which can either adopt the text with those amendments or send back a \"common position\". That proposal may either be approved or further amendments may be tabled by the Parliament. If the Council does not approve those, then a \"Conciliation Committee\" is formed. The committee is composed of the Council members plus an equal number of MEPs who seek to agree a common position. Once a position is agreed, it has to be approved by Parliament again by an absolute majority.[15][29] There are other special procedures used in sensitive areas which reduce the power of Parliament.",
+        "segmentIndex": 14,
+        "summary": "The European Union utilizes several types of legal acts, including Regulations (directly applicable laws), Directives (binding members to goals while allowing implementation flexibility), and non-binding Recommendations and Opinions. The primary method for creating legislation is the ordinary legislative procedure, which ensures the Council and the Parliament have equal power when considering proposals from the Commission. This procedure involves multiple stages of review and amendment, potentially culminating in a Conciliation Committee if agreement cannot be reached.",
+        "standaloneFacts": [
+          "A regulation is the strongest type of EU legislation, which is an act or law directly applicable in its entirety.",
+          "Directives bind EU members to certain goals which they must achieve through their own laws, providing room for manoeuvre in implementation.",
+          "A decision is an EU instrument focused at a particular person or group and is directly applicable.",
+          "EU institutions may issue recommendations and opinions, which are non-binding declarations.",
+          "The ordinary legislative procedure is used in nearly all EU policy areas and provides an equal footing between the Council and the Parliament.",
+          "Under the ordinary legislative procedure, if the Council does not approve the Parliament's amendments, a Conciliation Committee is formed.",
+          "A Conciliation Committee is composed of the Council members plus an equal number of MEPs who seek to agree a common position.",
+          "Once a common position is agreed by the Conciliation Committee, it must be approved by Parliament again by an absolute majority."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "80873197-12ad-45f7-b55c-79063d6bf701",
+        "content": "Comparisons\n\nThis section possibly contains original research. Please improve it by verifying the claims made and adding inline citations. Statements consisting only of original research should be removed. (January 2024) (Learn how and when to remove this message)\n\nThe EU's institution bears a resemblance to the Swiss government.\nWhile the EU's system of governance is largely unique, elements can be compared to other models. One general observation on the nature of the distribution of powers would be that the EU resembles the federalism of Germany. There, powers are predominantly shared (states can exercise federal powers where the federation has not already exercised them) between the levels of government, and the states participate strongly with decision-making at the federal level. This is in contrast with other federations, for example the United States, where powers are more clearly divided between the levels of government, and the states have little say in federal decision-making.[30]\n\nThe EU's institutional set up is also somewhat similar to the government of Switzerland. The Swiss consensus-driven system is seen as successfully uniting a state divided by language and religion, although the EU was not directly modelled on the Swiss system despite bearing a number of similarities. The European Commission has similarities to the Swiss Federal Council in that both have all-party representation and are appointed on the basis of nationality rather than popularity. The President of the Federal Council rotates between its members each year, in a fashion similar to that of the EU's Council Presidency. Due to this system of presidency Swiss leaders, like those of the EU, are relatively unknown with national politics viewed as somewhat technocratic resulting in low voter turnout, in a similar fashion to that of the European Parliament. Other parallels include the jealously guarded powers of states, the considerable level of translation and the choice of a lesser city as the capital.[31]",
+        "segmentIndex": 15,
+        "summary": "The EU's largely unique system of governance is often compared to other models, particularly the federalism of Germany, where powers are predominantly shared and sub-units participate strongly in federal decision-making, contrasting sharply with the US federal model. Institutionally, the EU bears a strong resemblance to the consensus-driven government of Switzerland, sharing features like all-party executive representation (the Commission and the Federal Council), rotating presidencies, and a resulting technocratic political environment that often leads to low voter turnout.",
+        "standaloneFacts": [
+          "The EU's distribution of powers resembles the federalism of Germany, where powers are predominantly shared between levels of government and states participate strongly in federal decision-making.",
+          "The EU's institutional set up is somewhat similar to the government of Switzerland.",
+          "The European Commission has similarities to the Swiss Federal Council, as both bodies feature all-party representation and appointments based on nationality rather than popularity.",
+          "The rotation of the President of the Swiss Federal Council is similar to the fashion of the EU's Council Presidency.",
+          "The EU and Swiss systems both often result in national politics being viewed as somewhat technocratic, leading to relatively unknown leaders and low voter turnout."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "c2442759-1d3f-4c17-89bf-9bc04e914336",
+        "content": "The European Parliament\n\nThe European Parliament is better compared with the U. S. House of Representatives than with the national parliaments.\nFurthermore, executive power in the EU is not concentrated in a single institution. It becomes clearer under the Lisbon Treaty with the division of the European Council as a distinct institution with a fixed President. This arrangement has been compared to the dual executives found in the French republic, a system devised by Charles de Gaulle in 1958, where there is a President—cognate with EU's Council (of Ministers) President, and a Prime Minister—equivalent to the European Commission President. However, unlike the French model, the Council President does not hold strong formal powers such as the ability to directly appoint and sack the other, or the ability to dissolve Parliament. Hence while the Council President may have prestige, it would lack power and while the Commission President would have power, it would lack the prestige of the former.[32]\n\nThe nature of the European Parliament is better compared with the United States House of Representatives than with the national parliaments of the European Union. This is notable in terms of the committees being of greater size and power, political parties being",
+        "segmentIndex": 16,
+        "summary": "The EU's executive structure, formalized by the Lisbon Treaty into distinct institutions (European Council President and European Commission President), is compared to the dual executive system of the French republic devised by Charles de Gaulle in 1958. However, the EU's Council President lacks the strong formal powers found in the French model, resulting in a division where the Council President holds prestige but little power, and the Commission President holds power but less prestige. Furthermore, the European Parliament is considered more comparable to the U.S. House of Representatives than to national parliaments within the EU.",
+        "standaloneFacts": [
+          "Executive power in the EU is not concentrated in a single institution.",
+          "The Lisbon Treaty clarified the division of the European Council as a distinct institution with a fixed President.",
+          "The EU's dual executive arrangement has been compared to the French republic's dual executive system devised by Charles de Gaulle in 1958.",
+          "The European Parliament is better compared with the U. S. House of Representatives than with the national parliaments of the European Union."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "912804c8-690c-4b01-8364-cbd4ff56b3dc",
+        "content": "very decentralised and it being separated from the executive branch—most national governments operate under a parliamentary system. A difference from all other parliaments is the absence of a Parliamentary legislative initiative. However, given that in most national parliaments initiatives not backed by the executive rarely succeed the value of this difference is in question. Equally, its independence and power means that the European Parliament has an unusually high success rate for its amendments in comparison to national parliaments; 80% average and 30% for controversial proposals.[33] The Council and the German Bundesrat are both composed by representatives of the states governments.",
+        "segmentIndex": 17,
+        "summary": "The European Parliament (EP) is characterized by decentralized political parties and separation from the executive branch, unlike most national parliamentary systems. A notable difference is the EP's lack of a parliamentary legislative initiative, though its independence results in a high success rate for amendments, averaging 80% overall and 30% for controversial proposals. The segment also notes that the Council and the German Bundesrat share the characteristic of being composed of representatives of state governments.",
+        "standaloneFacts": [
+          "The European Parliament operates separately from the executive branch.",
+          "A key difference between the European Parliament and all other parliaments is the absence of a Parliamentary legislative initiative.",
+          "The average success rate for the European Parliament's amendments is 80%.",
+          "The success rate for the European Parliament's controversial proposals is 30%.",
+          "The Council and the German Bundesrat are both composed by representatives of the states governments."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "e7efd7d4-a11f-4892-a1f7-469cebca38e4",
+        "content": "The composition of the council can only be compared with the quite unique and unusual composition of the German upper house, the Bundesrat. Membership of the Bundesrat is limited to members of the governments of the states of Germany and can be recalled by those governments in the same manner as the EU's Council. They retain their state role while sitting in the Bundesrat and their term ends when they are recalled by their state governments (who are solely responsible for their appointment) or they cease to sit in their state government. Hence they also are not elected at the same time and the body as a whole cannot be dissolved like most parliaments. As government representatives, members do not vote as individual members but in state blocks, rather than political alignment, to their state governments' agreed line.[34] Each state has unequal voting powers based on population, with an absolute majority required for decisions. Likewise, the presidency rotates equally between members, though each year rather than every six months like in the EU Council.[35] However, unlike the EU's Council, the Bundesrat does not vary its composition depending on the topic being discussed.[34] They both bear similar criticisms, because of the interference of executives in the legislative process.",
+        "segmentIndex": 18,
+        "summary": "The composition of the EU Council is uniquely compared to that of the German Bundesrat, as both upper houses are composed exclusively of representatives from state governments who can be recalled and whose voting is dictated by their state government's agreed line. Both institutions feature unequal voting powers based on population and a rotating presidency, though the Bundesrat rotates yearly instead of every six months. A key difference is that the Bundesrat's composition does not vary by topic, yet both bodies face similar criticism regarding executive interference in the legislative process.",
+        "standaloneFacts": [
+          "The composition of the EU Council is compared to the German upper house, the Bundesrat.",
+          "Membership of the German Bundesrat is limited to members of the governments of the states of Germany.",
+          "Members of the Bundesrat can be recalled by their state governments, which are solely responsible for their appointment.",
+          "Members of the Bundesrat vote in state blocks, according to their state governments' agreed line, rather than based on individual political alignment.",
+          "In the Bundesrat, each state has unequal voting powers based on population, and an absolute majority is required for decisions.",
+          "The presidency of the Bundesrat rotates equally between members each year.",
+          "Unlike the EU's Council, the Bundesrat does not vary its composition depending on the topic being discussed.",
+          "Both the EU Council and the Bundesrat are criticized for the interference of executives in the legislative process."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_institutions",
+        "id": "905f6250-dd8d-43e0-86f8-f26a329e91d2",
+        "content": "Locations Main article: Location of European Union institutions The institutions are not concentrated in a single capital city; instead, their headquarters are spread across four cities: Brussels, Luxembourg, Strasbourg and Frankfurt. The current arrangement was approved in 1992 and attached to the Treaty of Amsterdam.[36] The treaty states that the Commission and Council would be based in Brussels, the Courts in Luxembourg City, and the Parliament in Strasbourg. However some departments of the commission and meetings of the Council take place in Luxembourg City, while the Parliament has its committees and some sessions in Brussels and its secretariat in Luxembourg City. Of the new institutions, the Central Bank is based in Frankfurt,[37] while the European Council is based in Brussels (but has some extraordinary meetings elsewhere).[38] Brussels' hosting of institutions has made it a major centre for the EU. Together with NATO it has attracted more journalists and ambassadors than Washington, D.C.[39] However the three-city agreement has been criticised, notably concerning the Parliament, due to the large number of people that move between the cities. The European Green Party estimated that the arrangement costs 200 million euro and 20,268 tonnes of carbon dioxide.[40] Brussels is preferred by some due to the presence of other institutions and other groups whereas Strasbourg is supported due to its historical importance to European unity.",
+        "segmentIndex": 19,
+        "summary": "The European Union institutions are decentralized, with headquarters spread across Brussels, Luxembourg, Strasbourg, and Frankfurt, an arrangement formalized by the Treaty of Amsterdam. The treaty designates Brussels for the Commission and Council, Luxembourg City for the Courts, and Strasbourg for the Parliament, although the Parliament utilizes all three cities. This multi-city structure has drawn criticism for its logistical costs and environmental impact, estimated at 200 million euro and 20,268 tonnes of carbon dioxide.",
+        "standaloneFacts": [
+          "The headquarters of European Union institutions are spread across four cities: Brussels, Luxembourg, Strasbourg, and Frankfurt.",
+          "The current arrangement for the location of EU institutions was approved in 1992 and attached to the Treaty of Amsterdam.",
+          "The treaty states that the European Commission and Council are based in Brussels and the Courts are based in Luxembourg City.",
+          "The European Parliament is based in Strasbourg, but holds committees and some sessions in Brussels and its secretariat in Luxembourg City.",
+          "The European Central Bank is based in Frankfurt.",
+          "Brussels, hosting EU institutions and NATO, has attracted more journalists and ambassadors than Washington, D.C.",
+          "The European Green Party estimated that the multi-city arrangement for the Parliament costs 200 million euro and 20,268 tonnes of carbon dioxide."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 20,
+        "totalCharacters": 23464,
+        "averageSegmentLength": 1171.35,
+        "minSegmentLength": 656,
+        "maxSegmentLength": 2018,
+        "segmentLengths": [
+          1634,
+          1154,
+          684,
+          718,
+          781,
+          804,
+          1259,
+          656,
+          842,
+          659,
+          790,
+          1964,
+          1537,
+          1628,
+          1570,
+          2018,
+          1272,
+          696,
+          1298,
+          1463
+        ],
+        "nLlmCalls": 3,
+        "costs": {
+          "total": 0.0135009,
+          "input": 0.0015008999999999997,
+          "output": 0.012
+        },
+        "tokens": {
+          "totalTokens": 30900,
+          "inputTokens": 5003,
+          "outputTokens": 4800
+        },
+        "processingTimeMs": 59832
+      },
+      "analysis": {
+        "nSegments": 20,
+        "nFactsExtracted": 150,
+        "nLlmCalls": 21,
+        "costs": {
+          "total": 0.0199279,
+          "input": 0.0056079,
+          "output": 0.014320000000000001
+        },
+        "tokens": {
+          "totalTokens": 42992,
+          "inputTokens": 18693,
+          "outputTokens": 5728
+        },
+        "processingTimeMs": 35364
+      }
+    }
+  },
+  "llmMetrics": {
+    "processingTimeMs": 95196,
+    "nLlmCalls": 24,
+    "costs": {
+      "total": 0.033428799999999995,
+      "input": 0.007108799999999999,
+      "output": 0.026320000000000003
+    },
+    "tokens": {
+      "totalTokens": 73892,
+      "inputTokens": 23696,
+      "outputTokens": 10528
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025"
+    ],
+    "language": "en",
+    "startTime": "2025-12-14T10:27:32.758Z",
+    "endTime": "2025-12-14T10:28:08.123Z"
+  }
+}

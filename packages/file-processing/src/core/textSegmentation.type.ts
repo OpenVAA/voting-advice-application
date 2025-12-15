@@ -14,8 +14,6 @@ export interface SegmentTextOptions extends CommonLLMParams {
   minSegmentLength?: number;
   /** Guidance for maximum segment length */
   maxSegmentLength?: number;
-  /** Optional: Validate text preservation (default: true) */
-  validateTextPreservation?: boolean;
 }
 
 /**
@@ -40,7 +38,7 @@ export interface TextSegmentationMetrics extends LLMPipelineMetrics {
 /**
  * Data payload for text segmentation result
  */
-export interface SegmentTextData {
+export interface SegmentTextResultData {
   /** Array of text segments */
   segments: Array<string>;
   /** Segmentation metadata and metrics */
@@ -50,4 +48,4 @@ export interface SegmentTextData {
 /**
  * Result from text segmentation
  */
-export type SegmentTextResult = LLMPipelineResult<SegmentTextData>;
+export type SegmentTextResult = LLMPipelineResult<SegmentTextResultData>;

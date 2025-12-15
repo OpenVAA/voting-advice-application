@@ -76,13 +76,14 @@ export class ChromaVectorStore extends VectorStore {
   }
 
   async clear(): Promise<void> {
-    if (!this.collection) {
+    if (this.collection && this.collection.name === this.config.collectionName) {
       await this.client.deleteCollection({ name: this.config.collectionName });
       await this.initialize();
     }
   }
 
   async search({ query, topK = 100 }: { query: string; topK?: number }): Promise<VectorSearchResult> {
+    console.info('[ChromaVectorStore] Searching with query:', query);
     if (!this.collection)
       throw new Error(
         'ChromaVectorStore cannot search in a non-existent collection. Vector store not properly initialized. Call initialize() first.'
@@ -90,16 +91,17 @@ export class ChromaVectorStore extends VectorStore {
 
     // Embed the query
     const queryEmbedding = await this.embedder.embed(query);
+    console.info('[ChromaVectorStore] Query embedding:', queryEmbedding);
 
     // Search ChromaDB
     const rawResults = await this.collection.query({
       queryEmbeddings: [queryEmbedding.embedding],
       nResults: topK
     });
-
+    console.info('[ChromaVectorStore] Raw results:', rawResults);
     // Unwrap the results
     const { ids, distances, documents, metadatas } = unwrapChromaResult(rawResults);
-
+    console.info('[ChromaVectorStore] Unwrapped results:', { ids, distances, documents, metadatas });
     // Any results?
     if (!ids || ids.length === 0) {
       return { results: [], timestamp: Date.now(), rerankingCosts: undefined };
@@ -128,7 +130,7 @@ export class ChromaVectorStore extends VectorStore {
         rerankScore: undefined
       });
     }
-
+    console.info('[ChromaVectorStore] Search results:', searchResults);
     return { results: searchResults, timestamp: Date.now(), rerankingCosts: undefined };
   }
 }

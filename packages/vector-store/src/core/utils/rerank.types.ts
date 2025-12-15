@@ -1,4 +1,4 @@
-import type { SegmentWithMetadata } from '../source.types';
+import type { SingleSearchResult } from '../vectorStore.type';
 
 /**
  * Cohere Rerank API Pricing
@@ -12,7 +12,7 @@ export interface RerankParams {
   /** The search query used for retrieval */
   query: string;
   /** Array of segments to rerank */
-  retrievedSegments: Array<SegmentWithMetadata>;
+  retrievedSegments: Array<SingleSearchResult>;
   /** Number of top results to return */
   nBest: number;
   /** API key for Cohere */
@@ -26,7 +26,7 @@ export interface RerankParams {
  */
 export interface RerankResult {
   /** Reranked segments in order of relevance */
-  segments: Array<SegmentWithMetadata>;
+  segments: Array<SingleSearchResult>;
   /** Map of segment IDs to their relevance scores */
   scores: Map<string, number>;
   /** Metadata about the reranking operation */

@@ -1,7 +1,7 @@
 import { ChromaVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 
 /** Collection name for vector store. Change according to the election. */
-export const COLLECTION_NAME = 'openvaa-eu-2024-elections';
+export const COLLECTION_NAME = 'openvaa-eu-2024-example-chatbot';
 
 export async function getVectorStore(openAIAPIKey: string): Promise<ChromaVectorStore> {
   const embedder = new OpenAIEmbedder({

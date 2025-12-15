@@ -24,8 +24,7 @@ const segmentationSchema = z.object({
  *   modelConfig: { primary: 'gemini-2.5-flash-preview-09-2025' },
  *   minSegmentLength: 300,
  *   maxSegmentLength: 2500,
- *   charsPerLLMCall: 10000,
- *   validateTextPreservation: false
+ *   charsPerLLMCall: 10000
  * });
  *
  * const printResult = {
@@ -96,16 +95,6 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
   });
 
   const segments = responses.map((response) => response.object.segments).flat();
-
-  // // Validate text preservation if enabled
-  // if (validateTextPreservation) {
-  //   try {
-  //     isTextPreserved(text, segments);
-  //   } catch (error) {
-  //     console.error('Text preservation validation failed:', error);
-  //     throw error;
-  //   }
-  // }
 
   // Calculate costs
   const totalCost = responses.reduce((sum, response) => sum + response.costs.total, 0);

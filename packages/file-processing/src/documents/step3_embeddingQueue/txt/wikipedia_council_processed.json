@@ -1,0 +1,592 @@
+{
+  "runId": "pipeline_1765709416483",
+  "success": true,
+  "data": {
+    "documentId": "txt_wikipedia_council",
+    "metadata": {
+      "title": "Council of the European Union",
+      "locale": "en"
+    },
+    "segments": [
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "7fad646f-c690-4d99-bd14-1df597880a49",
+        "content": "The Council of the European Union, often referred to in the treaties and other official documents simply as the Council,[a] and less formally known as the Council of Ministers, is the third of the seven institutions of the European Union (EU) as listed in the Treaty on European Union.[2] It is one of two legislative bodies and together with the European Parliament serves to amend and approve, or veto, the proposals of the European Commission, which holds the right of initiative.[3][4][5]. The Council of the European Union and the European Council are the only EU institutions that are explicitly intergovernmental, that is, forums whose attendees express and represent the position of their Member State's executive, be they ambassadors, ministers or heads of state/government. The Council meets in 10 different configurations of 27 national ministers (one per state). The precise membership of these configurations varies according to the topic under consideration; for example, when discussing agricultural policy the council is formed by the 27 national ministers whose portfolio includes this policy area (with the related European commissioners contributing but not voting).",
+        "segmentIndex": 0,
+        "summary": "The Council of the European Union, also known as the Council of Ministers, is the third of the seven primary EU institutions and serves as one of the two legislative bodies. Working alongside the European Parliament, it amends, approves, or vetoes proposals initiated by the European Commission. It is explicitly intergovernmental and meets in 10 different configurations, each consisting of 27 national ministers whose specific attendance depends on the policy topic.",
+        "standaloneFacts": [
+          "The Council of the European Union is the third of the seven institutions of the European Union (EU) listed in the Treaty on European Union.",
+          "The Council of the European Union is often informally known as the Council of Ministers.",
+          "The Council of the European Union is one of two legislative bodies of the EU.",
+          "The Council of the European Union and the European Parliament amend, approve, or veto proposals put forward by the European Commission.",
+          "The Council of the European Union and the European Council are the only EU institutions that are explicitly intergovernmental.",
+          "The Council of the European Union meets in 10 different configurations, each composed of 27 national ministers (one per state)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "ca9a9950-9a55-4148-bb1b-28e6e70fa84b",
+        "content": "Composition The presidency of the Council rotates every six months among the governments of EU member states, with the relevant ministers of the respective country holding the Presidency at any given time ensuring the smooth running of the meetings and setting the daily agenda.[6] The continuity between presidencies is provided by an arrangement under which three successive presidencies, known as Presidency trios, share common political programmes. The Foreign Affairs Council (national foreign ministers) is however chaired by the Union's High Representative.[7] Its decisions are made by qualified majority voting in most areas, unanimity in others, or just simple majority for procedural issues. Usually where it operates unanimously, it only needs to consult the Parliament. However, in most areas the ordinary legislative procedure applies meaning both Council and Parliament share legislative and budgetary powers equally, meaning both have to agree for a proposal to pass. In a few limited areas the Council may initiate new EU law itself.[6]",
+        "segmentIndex": 1,
+        "summary": "The Council's presidency rotates among EU member states every six months, managed by the relevant minister of the presiding country, while continuity is ensured by three successive presidencies known as Presidency trios. Decisions are primarily made through qualified majority voting, though some require unanimity. Under the ordinary legislative procedure, the Council shares equal legislative and budgetary powers with the European Parliament, but in limited areas, the Council can initiate new EU law itself.",
+        "standaloneFacts": [
+          "The presidency of the Council rotates every six months among the governments of EU member states.",
+          "Continuity between Council presidencies is provided by Presidency trios, which are three successive presidencies sharing common political programmes.",
+          "The Foreign Affairs Council, composed of national foreign ministers, is chaired by the Union's High Representative.",
+          "The Council's decisions are made by qualified majority voting in most areas, unanimity in others, or simple majority for procedural issues.",
+          "In most areas, the Council and the European Parliament share legislative and budgetary powers equally under the ordinary legislative procedure."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "5db9cd6e-067f-446d-99eb-c0e4fc06db43",
+        "content": "The General Secretariat of the Council of the European Union, also known as Council Secretariat, assists the Council of the European Union, the presidency of the Council of the European Union, the European Council and the president of the European Council.[8] The Secretariat is headed by the secretary-general of the Council of the European Union.[9] The Secretariat is divided into eleven directorates-general, each administered by a director-general.[10] History Further information: History of the European Union The Council first appeared in the European Coal and Steel Community (ECSC) as the \"Special Council of Ministers\", set up to counterbalance the High Authority (the supranational executive, now the commission). The original Council had limited powers: issues relating only to coal and steel were in the Authority's domain, and the council's consent was only required on decisions outside coal and steel. As a whole, the Council only scrutinised the High Authority (the executive). In 1957, the Treaties of Rome established two new communities, and with them two new Councils: the Council of the European Atomic Energy Community (EAEC) and the Council of the European Economic Community (EEC). However, due to objections over the supranational power of the Authority, their Councils had more powers; the new executive bodies were known as \"Commissions\".[11]",
+        "segmentIndex": 2,
+        "summary": "The General Secretariat of the Council of the European Union, also known as the Council Secretariat, assists the Council, its Presidency, the European Council, and the European Council president, and is structured into eleven directorates-general led by a secretary-general. Historically, the Council originated in the European Coal and Steel Community (ECSC) as the \"Special Council of Ministers\" to counterbalance the High Authority. Subsequent Treaties of Rome in 1957 established two new Councils for the EAEC and the EEC, which were granted expanded powers compared to the original ECSC Council.",
+        "standaloneFacts": [
+          "The General Secretariat of the Council of the European Union is also known as the Council Secretariat.",
+          "The Council Secretariat assists the Council of the European Union, the presidency of the Council of the European Union, the European Council, and the president of the European Council.",
+          "The Secretariat is headed by the secretary-general of the Council of the European Union.",
+          "The Secretariat is divided into eleven directorates-general, each administered by a director-general.",
+          "The Council first appeared in the European Coal and Steel Community (ECSC) as the \"Special Council of Ministers\".",
+          "The \"Special Council of Ministers\" in the ECSC was set up to counterbalance the High Authority (the supranational executive).",
+          "The Treaties of Rome established the Council of the European Atomic Energy Community (EAEC) and the Council of the European Economic Community (EEC) in 1957."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "4d875880-69ba-4081-83cd-5215b8c0949b",
+        "content": "In 1965, the council was hit by the \"empty chair crisis\". Due to disagreements between French president Charles de Gaulle and the commission's agriculture proposals, among other things, France boycotted all meetings of the council. This halted the council's work until the impasse was resolved the following year by the Luxembourg compromise. Although initiated by a gamble of the President of the commission, Walter Hallstein, who later on lost the Presidency, the crisis exposed flaws in the council's workings.[12] Under the Merger Treaty of 1967, the ECSC's Special Council of Ministers and the Council of the EAEC (together with their other independent institutions) were merged into the Council of the European Communities, which would act as a single Council for all three institutions.[13] In 1993, the Council adopted the name 'Council of the European Union', following the establishment of the European Union by the Maastricht Treaty. That treaty strengthened the council, with the addition of more intergovernmental elements in the three pillars system. However, at the same time the Parliament and Commission had been strengthened inside the Community pillar, curtailing the ability of the council to act independently.[11]",
+        "segmentIndex": 3,
+        "summary": "The Council experienced major institutional events between 1965 and 1993, beginning with the \"empty chair crisis\" in 1965, where a French boycott halted work until the 1966 Luxembourg compromise resolved the impasse. The 1967 Merger Treaty unified the separate Councils into the Council of the European Communities. Finally, the 1993 Maastricht Treaty renamed it the Council of the European Union, simultaneously strengthening its intergovernmental role through the three pillars system while reducing its ability to act independently due to the increased powers of the Parliament and Commission.",
+        "standaloneFacts": [
+          "The \"empty chair crisis\" hit the council in 1965.",
+          "The empty chair crisis involved disagreements between French president Charles de Gaulle and the commission's agriculture proposals.",
+          "The crisis was resolved by the Luxembourg compromise in 1966.",
+          "The 1967 Merger Treaty unified the ECSC's Special Council of Ministers and the Council of the EAEC into the Council of the European Communities.",
+          "The Council adopted the name 'Council of the European Union' in 1993.",
+          "The name 'Council of the European Union' was adopted following the establishment of the European Union by the Maastricht Treaty.",
+          "The Maastricht Treaty strengthened the council through the addition of more intergovernmental elements in the three pillars system."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "0ab2c64e-6772-4c82-b63a-f87df19a786a",
+        "content": "The Treaty of Lisbon abolished the pillar system and gave further powers to Parliament. It also merged the council's High Representative with the Commission's foreign policy head, with this new figure chairing the foreign affairs Council rather than the rotating presidency. The European Council was declared a separate institution from the council, also chaired by a permanent president, and the different Council configurations were mentioned in the treaties for the first time.[7] The development of the council has been characterised by the rise in power of the Parliament, with which the council has had to share its legislative powers. The Parliament has often provided opposition to the council's wishes. This has in some cases led to clashes between both bodies with the council's system of intergovernmentalism contradicting the developing parliamentary system and supranational principles.[14]",
+        "segmentIndex": 4,
+        "summary": "The Treaty of Lisbon initiated major structural changes, abolishing the pillar system, granting more powers to the Parliament, and formally separating the European Council as an institution with a permanent president. It also reformed foreign policy leadership by merging the Council's High Representative with the Commission's foreign policy head, who now chairs the foreign affairs Council. This development highlights the Council's ongoing challenge of sharing legislative powers with an increasingly powerful Parliament, often resulting in clashes between intergovernmental and supranational principles.",
+        "standaloneFacts": [
+          "The Treaty of Lisbon abolished the pillar system.",
+          "The Treaty of Lisbon gave further powers to the Parliament.",
+          "The Treaty of Lisbon merged the council's High Representative with the Commission's foreign policy head.",
+          "The new merged foreign policy figure chairs the foreign affairs Council instead of the rotating presidency.",
+          "The Treaty of Lisbon declared the European Council a separate institution from the council.",
+          "The European Council is chaired by a permanent president.",
+          "The Treaty of Lisbon mentioned the different Council configurations in the treaties for the first time."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "d2fa8a29-b072-46f8-9a63-32a163ee945b",
+        "content": "Powers and functions The primary purpose of the council is to act as one of two vetoing bodies of the EU's legislative branch, the other being the European Parliament. Together they serve to amend, approve or disapprove the proposals of the European Commission, which has the sole power to propose laws.[3][5] Jointly with the Parliament, the Council holds the budgetary power of the Union and has greater control than the Parliament over the more intergovernmental areas of the EU, such as foreign policy and macroeconomic co-ordination. Finally, before the entry into force of the Treaty of Lisbon, it formally held the executive power of the EU which it conferred upon the European Commission.[15][16] It is considered by some to be equivalent to an upper house of the EU legislature, although it is not described as such in the treaties.[17][18][19] The Council represents the executive governments of the EU's member states[2][15] and is based in the Europa building in Brussels.[20] The council also has an important role in the formation of the European Commission. The Council sitting in the General Affairs Council configuration, in agreement with the President-elect of the Commissission, adopts a list of candidates for the Commission proposed by the member states.[21] Legislative procedure Main article: European Union legislative procedure",
+        "segmentIndex": 5,
+        "summary": "The Council acts as a co-legislator and vetoing body alongside the European Parliament, examining proposals initiated solely by the European Commission, and jointly holding the EU's budgetary power. It maintains greater control over intergovernmental policy areas like foreign policy and macroeconomic coordination, and plays a crucial role in the formation of the European Commission by approving the list of candidates. The Council, which represents the executive governments of the EU's member states, is based in the Europa building in Brussels.",
+        "standaloneFacts": [
+          "The Council is one of two vetoing bodies of the EU's legislative branch, the other being the European Parliament.",
+          "The European Commission holds the sole power to propose EU laws.",
+          "The Council and the European Parliament jointly hold the budgetary power of the European Union.",
+          "The Council has greater control than the Parliament over intergovernmental areas of the EU, such as foreign policy and macroeconomic co-ordination.",
+          "Before the entry into force of the Treaty of Lisbon, the Council formally held the executive power of the EU.",
+          "The Council represents the executive governments of the EU's member states.",
+          "The Council is based in the Europa building in Brussels.",
+          "The Council, sitting in the General Affairs Council configuration, adopts a list of candidates for the European Commission in agreement with the President-elect of the Commission."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "64e7ff4d-2678-406d-8106-5927f49c553f",
+        "content": "Simplified illustration of the voting rules that apply within the ordinary legislative procedure. The actual procedure involves various stages of consultations aimed at achieving compromise between the positions of the two legislative chambers. The EU's legislative authority is divided between the council, the Parliament and the commission. As the relationships and powers of these institutions have developed, various legislative procedures have been created for adopting laws.[15] In early times, the avis facultatif maxim was: \"The Commission proposes, and the Council disposes\";[22] but now the vast majority of laws are subject to the ordinary legislative procedure, which works on the principle that consent from both the Council and Parliament are required before a law may be adopted.[23]",
+        "segmentIndex": 6,
+        "summary": "The EU's legislative authority is divided among the Council, the Parliament, and the Commission, and various procedures exist for adopting laws. Historically, the Council dominated the process, summarized by the maxim: \"The Commission proposes, and the Council disposes.\" However, the vast majority of laws now follow the ordinary legislative procedure, which mandates that consent from both the Council and the Parliament is required for a law to be adopted.",
+        "standaloneFacts": [
+          "The EU's legislative authority is divided between the Council, the Parliament, and the Commission.",
+          "In early times, the maxim regarding EU lawmaking was: \"The Commission proposes, and the Council disposes.\"",
+          "The vast majority of EU laws are subject to the ordinary legislative procedure.",
+          "The ordinary legislative procedure requires consent from both the Council and Parliament before a law may be adopted."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "57eb6a2b-c687-4582-948a-f2cad8e62f11",
+        "content": "Under this procedure, the Commission presents a proposal to Parliament and the council. Following its first reading the Parliament may propose amendments. If the Council accepts these amendments then the legislation is approved. If it does not then it adopts a \"common position\" and submits that new version to the Parliament. At its second reading, if the Parliament approves the text or does not act, the text is adopted, otherwise the Parliament may propose further amendments to the council's proposal. It may be rejected out right by an absolute majority of MEPs. If the Council still does not approve the Parliament's position, then the text is taken to a \"Conciliation Committee\" composed of the Council members plus an equal number of MEPs. If a Committee manages to adopt a joint text, it then has to be approved in a third reading by both the Council and Parliament or the proposal is abandoned.[24]",
+        "segmentIndex": 7,
+        "summary": "The ordinary legislative procedure starts with the Commission proposing legislation to the Parliament and the Council. It involves multiple readings where the Parliament can propose amendments, and the Council may adopt a \"common position\" if amendments are rejected. If disagreements persist after the second reading, a Conciliation Committee is formed to adopt a joint text, which must then be approved in a final third reading by both institutions for the proposal to be adopted.",
+        "standaloneFacts": [
+          "Under the ordinary legislative procedure, the Commission presents a proposal to the Parliament and the Council.",
+          "If the Council does not accept the Parliament's first reading amendments, it adopts a \"common position\" and submits that new version to the Parliament.",
+          "During the second reading of the ordinary legislative procedure, the Parliament can reject the proposal outright by an absolute majority of MEPs.",
+          "If the Council and Parliament cannot agree after the second reading, the text is taken to a \"Conciliation Committee\" composed of Council members and an equal number of MEPs.",
+          "Any joint text adopted by the Conciliation Committee must be approved in a third reading by both the Council and Parliament or the proposal is abandoned."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "f6539105-b94a-4d9b-8d35-7e55aff495f1",
+        "content": "The few other areas that operate the special legislative procedures are justice & home affairs, budget and taxation and certain aspects of other policy areas: such as the fiscal aspects of environmental policy. In these areas, the council or Parliament decide law alone.[25][26] The procedure used also depends upon which type of institutional act is being used. The strongest act is a regulation, an act or law which is directly applicable in its entirety. Then there are directives which bind members to certain goals which they must achieve, but they do this through their own laws and hence have room to manoeuvre in deciding upon them. A decision is an instrument which is focused at a particular person or group and is directly applicable. Institutions may also issue recommendations and opinions which are merely non-binding declarations.[27] The Council votes in one of three ways; unanimity, simple majority, or qualified majority. In most cases, the Council votes on issues by qualified majority voting, meaning that there must be a minimum of 55% of member states agreeing (at least 15) who together represent at least 65% of the EU population.[28] A 'blocki",
+        "segmentIndex": 8,
+        "summary": "This segment details the use of special legislative procedures in areas like justice, budget, and taxation, where the Council or Parliament may decide law alone. It also distinguishes between the various types of institutional acts, such as directly applicable regulations and decisions, goal-setting directives, and non-binding recommendations or opinions. Furthermore, it explains that the Council usually votes using Qualified Majority Voting (QMV), which requires 55% of member states (at least 15) representing 65% of the EU population.",
+        "standaloneFacts": [
+          "Special legislative procedures are applied to justice & home affairs, budget and taxation, and certain aspects of other policy areas, such as the fiscal aspects of environmental policy.",
+          "In areas using special legislative procedures, either the Council or Parliament decides law alone.",
+          "A regulation is the strongest institutional act and is directly applicable in its entirety.",
+          "Directives bind members to certain goals that they must achieve through their own laws, providing room to maneuver.",
+          "A decision is an institutional instrument focused at a particular person or group and is directly applicable.",
+          "Institutional recommendations and opinions are merely non-binding declarations.",
+          "The Council votes in one of three ways: unanimity, simple majority, or qualified majority.",
+          "Qualified Majority Voting (QMV) requires a minimum of 55% of member states agreeing (at least 15) who together represent at least 65% of the EU population."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "99fb1aac-2209-45c6-ac3a-65f234263e17",
+        "content": "ng minority' can only be formed by at least 4 member states, even if the objecting states constitute more than 35% of the population.[29]ResolutionsCouncil resolutions have no legal effect. Usually the council's intention is to set out future work foreseen in a specific policy area or to invite action by the commission. If a resolution covers a policy area which is not entirely within an area of EU competency, the resolution will be issued as a \"resolution of the Council and the representatives of the governments of the member states\".[30] Examples are the Council Resolution of 26 September 1989 on the development of subcontracting in the Community[31] and the Council Resolution of 26 November 2001 on consumer credit and indebtedness.[32]",
+        "segmentIndex": 9,
+        "summary": "The text details the requirements for forming a 'blocking minority' within the Council, which mandates a minimum of four member states regardless of the population they represent. It then explains that Council resolutions possess no legal effect, instead serving to outline future work or invite action by the Commission. Resolutions covering policy areas not fully within EU competency are issued jointly as a \"resolution of the Council and the representatives of the governments of the member states.\"",
+        "standaloneFacts": [
+          "A 'blocking minority' in the Council can only be formed by at least 4 member states, even if the objecting states constitute more than 35% of the population.",
+          "Council resolutions have no legal effect.",
+          "Council resolutions are usually intended to set out future work foreseen in a specific policy area or to invite action by the commission.",
+          "If a resolution covers a policy area which is not entirely within an area of EU competency, it is issued as a \"resolution of the Council and the representatives of the governments of the member states.\"",
+          "The Council Resolution of 26 September 1989 concerned the development of subcontracting in the Community.",
+          "The Council Resolution of 26 November 2001 concerned consumer credit and indebtedness."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "8d6c3c44-169e-4e2a-aaa8-0add06a16cba",
+        "content": "Foreign affairsThe legal instruments used by the council for the Common Foreign and Security Policy are different from the legislative acts. Under the CFSP they consist of \"common positions\", \"joint actions\", and \"common strategies\". Common positions relate to defining a European foreign policy towards a particular third-country such as the promotion of human rights and democracy in Myanmar, a region such as the stabilisation efforts in the African Great Lakes, or a certain issue such as support for the International Criminal Court. A common position, once agreed, is binding on all EU states who must follow and defend the policy, which is regularly revised. A joint action refers to a co-ordinated action of the states to deploy resources to achieve an objective, for example for mine clearing or to combat the spread of small arms. Common strategies defined an objective and commits the EUs resources to that task for four years.[33]",
+        "segmentIndex": 10,
+        "summary": "The legal instruments used by the Council for the Common Foreign and Security Policy (CFSP) are distinct from standard legislative acts, consisting instead of \"common positions,\" \"joint actions,\" and \"common strategies.\" Common positions are binding definitions of foreign policy towards specific entities or issues, such as human rights or regional stabilization. Joint actions refer to coordinated deployment of resources for objectives like mine clearing, while common strategies define long-term objectives and commit EU resources for four years.",
+        "standaloneFacts": [
+          "The legal instruments used by the Council for the Common Foreign and Security Policy (CFSP) are different from the standard legislative acts.",
+          "The legal instruments used under the CFSP consist of \"common positions,\" \"joint actions,\" and \"common strategies.\"",
+          "A common position defines a European foreign policy towards a particular third-country, region, or issue (e.g., promotion of human rights in Myanmar).",
+          "A common position, once agreed, is binding on all EU states who must follow and defend the policy.",
+          "A joint action refers to a co-ordinated action of the states to deploy resources to achieve an objective, such as mine clearing or combating the spread of small arms.",
+          "Common strategies define an objective and commit the EU's resources to that task for four years."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "c5723a69-3536-4276-8e3b-23174e1145f2",
+        "content": "The Council must practice unanimity when voting on foreign affairs issues because Common Foreign and Security Policy is a \"sensitive\" issue (according to EUR-Lex).[34] An exception to this rule exists via Article 31 of the Treaty on European Union, which stipulates circumstances in which qualified majority voting is permissible for the Council in discussing Common Foreign and Security Policy.[34][35][36] Article 31 lays out provisions regarding a passerelle clause as well as the possibilities for Member State abstentions.[35][37] Additionally, Article 31 stipulates derogation for \"a decision defining a Union action or position\".[35][37] In late 2023 and early 2024, unanimity voting on foreign affairs issues by the council made headlines due to the resistance of Viktor Orbán, Prime Minister of Hungary, to passing European Union aid to Ukraine.[38][39][40] In this recent example, the Council came to a unified conclusion after discussions with the Hungarian leader;[40] previously at the end of 2023, Orbán had left the room during the Council vote on Ukraine-EU accession talks, this ensuring that the Council passed that issue without veto.[39]",
+        "segmentIndex": 11,
+        "summary": "The Council is generally required to vote by unanimity on sensitive Common Foreign and Security Policy (CFSP) issues, although Article 31 of the Treaty on European Union provides exceptions allowing for qualified majority voting, abstentions, and passerelle clauses. This rule was recently highlighted by Hungarian Prime Minister Viktor Orbán's resistance to passing EU aid to Ukraine. Orbán ultimately allowed key decisions to proceed, notably by physically leaving the room during a late 2023 Council vote on Ukraine-EU accession talks to prevent a veto.",
+        "standaloneFacts": [
+          "The Council must practice unanimity when voting on foreign affairs issues because Common Foreign and Security Policy is considered a \"sensitive\" issue.",
+          "Article 31 of the Treaty on European Union stipulates circumstances in which qualified majority voting is permissible for the Council when discussing Common Foreign and Security Policy.",
+          "Article 31 of the Treaty on European Union includes provisions regarding a passerelle clause and the possibilities for Member State abstentions concerning CFSP.",
+          "In late 2023 and early 2024, Hungarian Prime Minister Viktor Orbán resisted passing European Union aid to Ukraine, bringing attention to the requirement for unanimity voting on foreign affairs.",
+          "At the end of 2023, Viktor Orbán left the room during the Council vote on Ukraine-EU accession talks, which ensured that the Council passed the issue without a veto."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "768f2f1d-1210-4c14-8676-9437de234754",
+        "content": "Budgetary authorityThe legislative branch officially holds the Union's budgetary authority. The EU's budget (which is around 155 billion euro)[41] is subject to a form of the ordinary legislative procedure with a single reading giving Parliament power over the entire budget (prior to 2009, its influence was limited to certain areas) on an equal footing with the council. If there is a disagreement between them, it is taken to a conciliation committee as it is for legislative proposals. But if the joint conciliation text is not approved, the Parliament may adopt the budget definitively.[25] In addition to the budget, the Council coordinates the economic policy of members.[6].OrganisationThe council's rules of procedure contain the provisions necessary for its organisation and functioning.[42]",
+        "segmentIndex": 12,
+        "summary": "The legislative branch officially holds the EU's budgetary authority, overseeing a budget of around 155 billion euro. The budget process follows a modified ordinary legislative procedure, giving the Parliament power over the entire budget on an equal footing with the Council. Notably, if a disagreement is taken to a conciliation committee and the joint text is not approved, the Parliament may adopt the budget definitively, while the Council also coordinates the economic policy of member states.",
+        "standaloneFacts": [
+          "The legislative branch officially holds the European Union's budgetary authority.",
+          "The EU's budget is approximately 155 billion euro.",
+          "The EU budget process is subject to a form of the ordinary legislative procedure with a single reading.",
+          "Since 2009, the European Parliament has power over the entire EU budget on an equal footing with the Council.",
+          "If the joint conciliation text regarding the budget is not approved, the Parliament may adopt the budget definitively.",
+          "The Council coordinates the economic policy of EU members.",
+          "The Council's rules of procedure contain the provisions necessary for its organisation and functioning."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "6d3b0bfd-e1ab-457c-a47d-697551b24058",
+        "content": "PresidencyMain article: Presidency of the Council of the European UnionThe Presidency of the council is not a single post, but is held by a member state's government. Every six months the presidency rotates among the states, in an order predefined by the council's members, allowing each state to preside over the body. From 2007, every three member states co-operate for their combined eighteen months on a common agenda, although only one formally holds the presidency for the normal six-month period. For example, the President for the second half of 2007, Portugal, was the second in a trio of states alongside Germany and Slovenia with whom Portugal had been co-operating. The Council meets in various configurations (as outlined below) so its membership changes depending upon the issue. The person chairing the council will always be the member from the state holding the Presidency. A delegate from the following Presidency also assists the presiding member and may take over work if requested.[43][44] The exception however is the foreign affairs council, which has been chaired by the High Representative since the entry into force of the Lisbon Treaty.[7]",
+        "segmentIndex": 13,
+        "summary": "The Presidency of the Council of the European Union is held by a rotating member state's government for six-month periods, following a predefined order. Since 2007, three consecutive member states cooperate on an 18-month common agenda. While the presiding state generally chairs the Council meetings, the Foreign Affairs Council is an exception, chaired by the High Representative since the entry into force of the Lisbon Treaty.",
+        "standaloneFacts": [
+          "The Presidency of the Council of the European Union is held by a rotating member state's government every six months.",
+          "The rotation order for the Council Presidency is predefined by the council's members.",
+          "Since 2007, three EU member states co-operate on an 18-month common agenda for the Council Presidency.",
+          "The member from the state holding the Presidency typically chairs the Council.",
+          "The Foreign Affairs Council is chaired by the High Representative, a rule implemented since the entry into force of the Lisbon Treaty."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "4e904eaa-ba6d-4d21-a608-368d7650918a",
+        "content": "The role of the Presidency is administrative and political. On the administrative side it is responsible for procedures and organising the work of the council during its term. This includes summoning the council for meetings along with directing the work of COREPER and other committees and working parties. The political element is the role of successfully dealing with issues and mediating in the council. In particular this includes setting the agenda of the council, hence giving the Presidency substantial influence in the work of the council during its term. The Presidency also plays a major role in representing the Council within the EU and representing the EU internationally, for example at the United Nations.[44][45][46]",
+        "segmentIndex": 14,
+        "summary": "The role of the Council Presidency is dual, encompassing both administrative and political functions. Administratively, it is responsible for procedures, organizing the council's work during its term, summoning meetings, and directing COREPER and other working groups. Politically, the Presidency mediates issues, sets the council's agenda (thereby gaining substantial influence), and represents the Council within the EU and internationally, such as at the United Nations.",
+        "standaloneFacts": [
+          "The role of the Council Presidency is administrative and political.",
+          "The administrative role of the Presidency includes organizing the work of the council during its term.",
+          "The administrative role of the Presidency includes summoning the council for meetings.",
+          "The Presidency directs the work of COREPER and other committees and working parties.",
+          "The political element of the Presidency involves successfully dealing with issues and mediating in the council.",
+          "The Presidency sets the agenda of the council.",
+          "The Presidency plays a major role in representing the Council within the EU.",
+          "The Presidency represents the EU internationally, for example, at the United Nations."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "4c4c1ac4-94b4-48f1-a1fe-03e22d0308d1",
+        "content": "ConfigurationsLegally speaking, the council is a single entity (this means that technically any Council configuration can adopt decisions that fall within the remit of any other Council configuration)[47] but it is in practice divided into several different council configurations (or '(con)formations'). Article 16(6) of the Treaty on European Union provides:The Council shall meet in different configurations, the list of which shall be adopted in accordance with Article 236 of the Treaty on the Functioning of the European Union.The General Affairs Council shall ensure consistency in the work of the different Council configurations. It shall prepare and ensure the follow-up to meetings of the European Council, in liaison with the President of the European Council and the Commission.The Foreign Affairs Council shall elaborate the Union's external action on the basis of strategic guidelines laid down by the European Council and ensure that the Union's action is consistent.",
+        "segmentIndex": 15,
+        "summary": "Although the Council is legally a single entity, allowing any configuration to adopt decisions falling under the remit of another, it is practically divided into different configurations (or formations), as mandated by Article 16(6) of the Treaty on European Union. The General Affairs Council (GAC) is responsible for ensuring consistency across the different configurations and preparing for European Council meetings. Meanwhile, the Foreign Affairs Council (FAC) elaborates and ensures the consistency of the Union's external action based on strategic guidelines.",
+        "standaloneFacts": [
+          "Legally, the Council of the European Union is a single entity, meaning any Council configuration can technically adopt decisions that fall within the remit of any other Council configuration.",
+          "The structure requiring the Council to meet in different configurations is provided for in Article 16(6) of the Treaty on European Union.",
+          "The General Affairs Council (GAC) ensures consistency in the work of the different Council configurations.",
+          "The GAC prepares and ensures the follow-up to meetings of the European Council, in liaison with the President of the European Council and the Commission.",
+          "The Foreign Affairs Council (FAC) elaborates the Union's external action based on strategic guidelines laid down by the European Council."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "980cd2cf-208f-4583-aba7-f74f57cc09ec",
+        "content": "Each council configuration deals with a different functional area, for example agriculture and fisheries. In this formation, the council is composed of ministers from each state government who are responsible for this area: the agriculture and fisheries ministers. The chair of this council is held by the member from the state holding the presidency (see section above). Similarly, the Economic and Financial Affairs Council is composed of national finance ministers, and they are still one per state and the chair is held by the member coming from the presiding country. The Councils meet irregularly throughout the year except for the three major configurations (top three below) which meet once a month. As of 2020, there are ten formations:[48][49]General Affairs (GAC)General affairs co-ordinates the work of the council, prepares for European Council meetings and deals with issues crossing various council formations.Foreign Affairs (FAC)Chaired by the High Representative, rather than the Presidency, it manages the CFSP, CSDP, trade and development co-operation. It sometimes meets in a defence configuration.[50]",
+        "segmentIndex": 16,
+        "summary": "EU Council configurations are specialized formations, each dealing with a different functional area (e.g., agriculture or finance) and composed of the relevant national ministers. The chair is typically held by the minister from the state holding the Presidency, although the Foreign Affairs Council is chaired by the High Representative. As of 2020, there are ten formations, with the three major configurations meeting monthly while the others meet irregularly.",
+        "standaloneFacts": [
+          "As of 2020, there are ten EU Council formations.",
+          "A council configuration is composed of ministers from each state government responsible for that specific functional area.",
+          "The chair of most council configurations is held by the minister from the state holding the presidency.",
+          "The three major council configurations meet once a month, while others meet irregularly throughout the year.",
+          "The General Affairs Council (GAC) coordinates the work of the council and prepares for European Council meetings.",
+          "The Foreign Affairs Council (FAC) is chaired by the High Representative, rather than the Presidency.",
+          "The Foreign Affairs Council (FAC) manages the CFSP, CSDP, trade, and development co-operation."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "9ebe47f6-d057-402a-9299-23d9a6d075b7",
+        "content": "Since 2017, the Europa building, seen here, has been the seat of the council.Economic and Financial Affairs (Ecofin)Composed of economics and finance ministers of the member states. It includes budgetary and eurozone matters via an informal group composed only of eurozone member ministers.[51]Agriculture and Fisheries (Agrifish)Composed of the agriculture and fisheries ministers of the member states. It considers matters concerning the Common Agricultural Policy, the Common Fisheries Policy, forestry, organic farming, food and feed safety, seeds, pesticides, and fisheries.[52]Justice and Home Affairs (JHA)This configuration brings together Justice ministers and Interior Ministers of the Member States. Includes civil protection.Employment, Social Policy, Health and Consumer Affairs (EPSCO)Composed of employment, social protection, consumer protection, health and equal opportunities ministers.",
+        "segmentIndex": 17,
+        "summary": "The Europa building has served as the seat of the council since 2017. The text then details the composition and responsibilities of four major Council configurations: Economic and Financial Affairs (Ecofin), Agriculture and Fisheries (Agrifish), Justice and Home Affairs (JHA), and Employment, Social Policy, Health and Consumer Affairs (EPSCO). These formations are composed of the corresponding national ministers and handle specific policy areas, such as budgetary matters, common agricultural and fisheries policies, and civil protection.",
+        "standaloneFacts": [
+          "The Europa building has been the seat of the council since 2017.",
+          "The Economic and Financial Affairs Council (Ecofin) is composed of economics and finance ministers of the member states.",
+          "Ecofin addresses budgetary and eurozone matters.",
+          "The Agriculture and Fisheries Council (Agrifish) is composed of the agriculture and fisheries ministers of the member states.",
+          "Agrifish considers matters concerning the Common Agricultural Policy and the Common Fisheries Policy.",
+          "The Justice and Home Affairs Council (JHA) configuration brings together Justice ministers and Interior Ministers of the Member States.",
+          "JHA includes civil protection.",
+          "The Employment, Social Policy, Health and Consumer Affairs Council (EPSCO) is composed of employment, social protection, consumer protection, health, and equal opportunities ministers."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "61873d8d-b3fc-434b-b1ce-ebfac8682e95",
+        "content": "Competitiveness (COMPET)Created in June 2002 through the merging of three previous configurations (Internal Market, Industry and Research). Depending on the items on the agenda, this formation is composed of ministers responsible for areas such as European affairs, industry, tourism and scientific research. With the entry into force of the Lisbon Treaty, the EU acquired competence in space matters,[53] and space policy has been attributed to the Competitiveness Council.[54]Transport, Telecommunications and Energy (TTE)Created in June 2002, through the merging of three policies under one configuration, and with a composition varying according to the specific items on its agenda. This formation meets approximately once every two months.",
+        "segmentIndex": 18,
+        "summary": "This segment details the Competitiveness (COMPET) and Transport, Telecommunications and Energy (TTE) Council configurations, both established in June 2002 through the merging of previous functional areas. COMPET handles matters ranging from industry and research to space policy (following the Lisbon Treaty), while TTE focuses on transport, telecommunications, and energy, meeting roughly every two months.",
+        "standaloneFacts": [
+          "The Competitiveness (COMPET) Council configuration was created in June 2002.",
+          "COMPET was formed by merging the Internal Market, Industry, and Research configurations.",
+          "Space policy has been attributed to the Competitiveness Council.",
+          "The Transport, Telecommunications and Energy (TTE) Council configuration was created in June 2002.",
+          "The TTE formation meets approximately once every two months."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "57061368-0b23-4b0d-9b1c-8ac1cfcb7823",
+        "content": "Environment (ENVI)Composed of environment ministers, who meet about four times a year.Education, Youth, Culture and Sport (EYCS)Composed of education, culture, youth, communications and sport ministers, who meet around three or four times a year.[55] Includes audiovisual issues.Complementing these, the Political and Security Committee (PSC) brings together ambassadors to monitor international situations and define policies within the CSDP, particularly in crises.[49] The European Council is similar to a configuration of the council and operates in a similar way, but is composed of the national leaders (heads of government or state) and h",
+        "segmentIndex": 19,
+        "summary": "This segment describes two Council configurations: Environment (ENVI), composed of environment ministers meeting quarterly, and Education, Youth, Culture and Sport (EYCS), which involves ministers for education, culture, youth, communications, and sport, meeting three to four times annually and handling audiovisual issues. Complementing these, the Political and Security Committee (PSC) brings together ambassadors to monitor international situations and define CSDP policies, and the European Council is noted for being composed of national leaders.",
+        "standaloneFacts": [
+          "The Environment (ENVI) configuration is composed of environment ministers.",
+          "The ENVI configuration meets about four times a year.",
+          "The Education, Youth, Culture and Sport (EYCS) configuration is composed of education, culture, youth, communications and sport ministers.",
+          "The EYCS configuration meets around three or four times a year.",
+          "The EYCS configuration includes audiovisual issues.",
+          "The Political and Security Committee (PSC) brings together ambassadors.",
+          "The PSC monitors international situations and defines policies within the CSDP, particularly in crises.",
+          "The European Council is composed of national leaders (heads of government or state)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "325652be-17a9-46b4-9259-94046cd15052",
+        "content": "as its own President,[56] since 2019, Charles Michel. The body's purpose is to define the general \"impetus\" of the Union.[57] The European Council deals with the major issues such as the appointment of the President of the European Commission who takes part in the body's meetings.[58]Ecofin's Eurozone component, the Euro group, is also a formal group with its own President.[51] Its European Council counterpart is the Euro summit formalized in 2011[59] and the TSCG.Following the entry into force of a framework agreement between the EU and ESA there is a Space Council configuration—a joint and concomitant meeting of the EU Council and of the ESA Council at ministerial level dealing with the implementation of the ESP adopted by both organisations.[60][61]",
+        "segmentIndex": 20,
+        "summary": "The European Council, led by President Charles Michel since 2019, defines the general \"impetus\" of the Union and handles major issues like the appointment of the European Commission President. The text also notes the existence of the Euro group and the formalized Euro summit, as well as the specialized Space Council configuration. The Space Council is a joint ministerial meeting between the EU Council and the ESA Council dedicated to implementing the European Space Policy (ESP).",
+        "standaloneFacts": [
+          "The President of the European Council since 2019 is Charles Michel.",
+          "The purpose of the European Council is to define the general \"impetus\" of the Union.",
+          "The European Council deals with the appointment of the President of the European Commission.",
+          "The President of the European Commission takes part in the European Council's meetings.",
+          "The Euro group is Ecofin's Eurozone component and is a formal group with its own President.",
+          "The Euro summit was formalized in 2011.",
+          "The Space Council configuration is a joint ministerial meeting of the EU Council and the ESA Council.",
+          "The Space Council deals with the implementation of the European Space Policy (ESP)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "19f11b24-7346-4b54-9085-9318e61ccb81",
+        "content": "AdministrationThe General Secretariat of the Council provides the continuous infrastructure of the council, carrying out preparation for meetings, draft reports, translation, records, documents, agendas and assisting the presidency.[62] The Secretary General of the Council is head of the Secretariat.[9] The Secretariat is divided into eleven directorates-general, each administered by a director-general.[10]The Committee of Permanent Representatives (COREPER) is a body composed of representatives from the states (ambassadors, civil servants etc.) who meet each week to prepare the work and tasks of the council. It monitors and co-ordinates work and deals with the Parliament on co-decision legislation.[63] It is divided into two groups of the representatives (Coreper II) and their deputies (Coreper I). Agriculture is dealt with separately by the Special Committee on Agriculture (SCA). The numerous working parties submit their reports to the Council through Coreper or SCA.[49]",
+        "segmentIndex": 21,
+        "summary": "The Council's administrative infrastructure is primarily supported by the General Secretariat and the Committee of Permanent Representatives (COREPER). The Secretariat handles continuous operational tasks like documentation, translation, and meeting preparation, and is led by the Secretary General. COREPER, composed of state representatives, meets weekly to prepare the Council's work, coordinate tasks, manage co-decision legislation with the Parliament, and channel reports from working parties.",
+        "standaloneFacts": [
+          "The General Secretariat of the Council provides the continuous infrastructure for the council, including preparation for meetings, translation, and records.",
+          "The Secretary General of the Council is the head of the General Secretariat.",
+          "The General Secretariat is divided into eleven directorates-general.",
+          "The Committee of Permanent Representatives (COREPER) is composed of state representatives who meet weekly to prepare the work and tasks of the council.",
+          "COREPER is divided into two groups: Coreper II (representatives) and Coreper I (deputies).",
+          "The Special Committee on Agriculture (SCA) handles agricultural matters separately from COREPER."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "43259979-9098-4817-b0a4-54182b6520b0",
+        "content": "Governments represented in the CouncilFurther information: Voting in the Council of the European UnionThe Treaty of Lisbon mandated a change in voting system from 1 November 2014 for most cases to double majority Qualified Majority Voting, replacing the voting weights system. Decisions made by the council have to be taken by 55% of member states representing at least 65% of the EU's population.[7]Almost all members of the council are members of a political party at national level, and most of these are members of a European-level political party. However the council is composed to represent the Member States rather than political parties[6] and the nature of coalition governments in a number of states means that party breakdown at different configuration of the Council vary depending on which domestic party was assigned the portfolio. However, the broad ideological alignment of the government in each state does influence the nature of the law the Council produces and the extent to which the link between domestic parties puts pressure on the members in the European Parliament to vote a certain way.",
+        "segmentIndex": 22,
+        "summary": "The segment outlines the Council of the European Union's voting rules, which, since November 1, 2014, rely on a double majority Qualified Majority Voting system mandated by the Treaty of Lisbon. This system requires 55% of member states representing at least 65% of the EU population for a decision to pass. Although Council members are generally affiliated with national and European political parties, the Council's structure is intended to represent Member States, though the ideological leanings of national governments still influence the legislation produced.",
+        "standaloneFacts": [
+          "The Treaty of Lisbon mandated a change in the Council of the European Union's voting system to double majority Qualified Majority Voting (QMV) for most cases.",
+          "The double majority QMV system replaced the previous voting weights system in the Council.",
+          "The double majority QMV system took effect in the Council from November 1, 2014, for most cases.",
+          "Decisions made by the Council using QMV require 55% of member states to vote in favor.",
+          "Decisions made by the Council using QMV require the supporting member states to represent at least 65% of the EU's population.",
+          "The Council of the European Union is composed to represent the Member States rather than political parties.",
+          "Almost all members of the Council belong to a political party at the national level."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "9078c1ef-3567-4269-a9b5-0f697f3745be",
+        "content": "State\tGoverning parties\tEU party\tEU group\tPopulation\tCabinetGermany\tChristian Democratic Union of Germany\t\tEPP\t\tEPP\t84,311,244\tMerzSocial Democratic Party of Germany\t\tPES\t\tS&DChristian Social Union in Bavaria\t\tEPP\t\tEPPFrance\tRenaissance\t\tNone\t\tRE\t68,070,697\tLecornuDemocratic Movement\t\tEDP\t\tREHorizons\t\tNone\t\tREUnion of Democrats and Independents\t\tALDE\t\tREItaly\tBrothers of Italy\t\tECR\t\tECR\t59,691,110\tMeloniLeague for Salvini Premier\t\tP.eu\t\tPfEForza Italia\t\tEPP\t\tEPPUs Moderates\t\tEPP\t\tNoneSpain\tSpanish Socialist Workers' Party\t\tPES\t\tS&D\t48,063,694\tSánchez IIISocialists' Party of Catalonia\t\tNone\t\tS&DUnite Movement\t\tNone\t\tLeftUnited Left\t\tPEL\t\tNoneCatalonia in Common\t\tEGP\t\tG/EFAMore Madrid\t\tNone\t\tNonePoland\tCivic Coalition\t\tEPP\t\tEPP\t37,723,532\tTusk IIIPolish People's Party\t\tEPP\t\tEPPNew Left\t\tPES\t\tS&DSzymon Hołownia's Poland 2050\t\tNone\t\tRERomania\tNational Liberal Party\t\tEPP\t\tEPP\t19,051,562\tBolojanSocial Democratic Party\t\tPES\t\tS&DSave Romania Union\t\tALDE\t\tREDemocratic Union of Hungarians in Romania\t\tEPP\t\tEPPRenewing Romania's European Project\t\tNone\t\tNone",
+        "segmentIndex": 23,
+        "summary": "This segment details the political composition of the governments in several major EU member states, including Germany, France, Italy, Spain, Poland, and Romania, providing their population figures and listing the governing parties' affiliations with European political parties (e.g., EPP, PES, ECR) and their corresponding groups in the European Parliament (e.g., S&D, RE). It illustrates the complexity of national coalitions and their alignment within the broader European political spectrum.",
+        "standaloneFacts": [
+          "Germany has a population of 84,311,244.",
+          "The governing coalition in Germany includes the Christian Democratic Union of Germany (CDU), the Social Democratic Party of Germany (SPD), and the Christian Social Union in Bavaria (CSU).",
+          "France has a population of 68,070,697 and its governing parties include Renaissance and Democratic Movement.",
+          "Italy has a population of 59,691,110 and its governing coalition includes Brothers of Italy (ECR group) and Forza Italia (EPP group).",
+          "Spain has a population of 48,063,694 and its governing parties include the Spanish Socialist Workers' Party (PSOE).",
+          "Poland has a population of 37,723,532 and its government includes the Civic Coalition (EPP) and New Left (PES/S&D).",
+          "Romania has a population of 19,051,562."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "70ac7c7e-4205-44d9-970b-7c5611bc4d38",
+        "content": "Netherlands\tPeople's Party for Freedom and Democracy\t\tALDE\t\tRE\t17,956,453\tSchoofFarmer–Citizen Movement\t\tNone\t\tEPPBelgium\tNew Flemish Alliance\t\tEFA\t\tECR\t11,754,004\tDe WeverReformist Movement\t\tALDE\t\tRELes Engagés\t\tEDP\t\tREVooruit\t\tPES\t\tS&DChristian Democratic and Flemish\t\tEPP\t\tEPPCzech Republic\tCivic Democratic Party\t\tECR\t\tECR\t10,833,385\tFialaMayors and Independents\t\tNone\t\tEPPKDU-ČSL\t\tEPP\t\tEPPTOP 09\t\tEPP\t\tEPPPortugal\tSocial Democratic Party\t\tEPP\t\tEPP\t10,749,635\tMontenegro IICDS – People's Party\t\tEPP\t\tEPP",
+        "segmentIndex": 24,
+        "summary": "This segment outlines the governing coalitions, key parties, and populations for the Netherlands, Belgium, the Czech Republic, and Portugal. The Netherlands, with nearly 18 million residents, is governed by parties including the People's Party for Freedom and Democracy. Belgium (11.75 million) has a diverse coalition featuring the New Flemish Alliance and several liberal and socialist parties, while the Czech Republic (10.8 million) and Portugal (10.75 million) are led by center-right coalitions.",
+        "standaloneFacts": [
+          "The Netherlands has a population of 17,956,453 and its cabinet is led by Schoof.",
+          "Belgium has a population of 11,754,004 and its cabinet is led by De Wever.",
+          "The Czech Republic has a population of 10,833,385 and its cabinet is led by Fiala.",
+          "Portugal has a population of 10,749,635 and its cabinet is led by Montenegro III.",
+          "The governing parties in Portugal are the Social Democratic Party and the CDS – People's Party, both aligned with the EPP EU group.",
+          "Key governing parties in the Czech Republic include the Civic Democratic Party (ECR), KDU-ČSL (EPP), and TOP 09 (EPP).",
+          "The New Flemish Alliance (EFA/ECR) is among the governing parties in Belgium."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "3724cc99-7da4-4592-95e5-2b0f3f98a103",
+        "content": "Sweden\tModerate Party\t\tEPP\t\tEPP\t10,541,000\tKristerssonChristian Democrats\t\tEPP\t\tEPPLiberals\t\tALDE\t\tREGreece\tNew Democracy\t\tEPP\t\tEPP\t10,415,585\tMitsotakis IIHungary\tFidesz – Hungarian Civic Alliance\t\tP.eu\t\tPfE\t9,599,744\tOrbán VChristian Democratic People's Party\t\tNone\t\tPfEAustria\tAustrian People's Party\t\tEPP\t\tEPP\t9,087,000\tStockerSocial Democratic Party of Austria\t\tPES\t\tS&DNEOS – The New Austria and Liberal Forum\t\tALDE\t\tREBulgaria\tGERB\t\tEPP\t\tEPP\t6,498,567\tZhelyazkovBulgarian Socialist Party\t\tPES\t\tS&DThere is Such a People\t\tECR\t\tECRDenmark\tSocial Democrats\t\tPES\t\tS&D\t5,921,952\tFrederiksen IIVenstre, Denmark's Liberal Party\t\tALDE\t\tREModerates\t\tNone\t\tRE",
+        "segmentIndex": 25,
+        "summary": "This segment provides key political and demographic data for six European countries: Sweden, Greece, Hungary, Austria, Bulgaria, and Denmark. It lists their populations, cabinet leaders (Kristersson, Mitsotakis II, Orbán V, Stocker, Zhelyazkov, and Frederiksen II, respectively), and details the EU party and EU group affiliations of their governing parties. The populations of these nations range from Sweden's 10.54 million down to Denmark's 5.92 million.",
+        "standaloneFacts": [
+          "Sweden has a population of 10,541,000 and its cabinet is led by Kristersson.",
+          "Greece has a population of 10,415,585 and its cabinet is led by Mitsotakis II.",
+          "Hungary has a population of 9,599,744 and its cabinet is led by Orbán V.",
+          "Austria has a population of 9,087,000 and its cabinet is led by Stocker.",
+          "Bulgaria has a population of 6,498,567 and its cabinet is led by Zhelyazkov.",
+          "Denmark has a population of 5,921,952 and its cabinet is led by Frederiksen II.",
+          "The Moderate Party and Christian Democrats (Sweden), New Democracy (Greece), and Austrian People's Party (Austria) are affiliated with the EPP EU group.",
+          "The Fidesz – Hungarian Civic Alliance and the Christian Democratic People's Party in Hungary are affiliated with the PfE EU group.",
+          "The Social Democrats in Denmark and the Bulgarian Socialist Party in Bulgaria are affiliated with the S&D EU group."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "8410693f-87c5-4a5f-b188-a5ad0c8fd256",
+        "content": "Finland\tNational Coalition Party\t\tEPP\t\tEPP\t5,593,070\tOrpoFinns Party\t\tNone\t\tECRSwedish People's Party of Finland\t\tALDE\t\tREChristian Democrats\t\tEPP\t\tNoneSlovakia\tDirection – Social Democracy\t\tNone\t\tNI\t5,454,629\tFico IVVoice – Social Democracy\t\tNone\t\tNISlovak National Party\t\tNone\t\tNoneNational Coalition / Independent Candidates\t\tNone\t\tNoneIreland\tFianna Fáil\t\tALDE\t\tRE\t5,194,336\tMartin IIFine Gael\t\tEPP\t\tEPP",
+        "segmentIndex": 26,
+        "summary": "This segment provides political data for Finland, Slovakia, and Ireland, detailing their populations, leaders, and major party affiliations. Finland (5,593,070 inhabitants, led by Orpo) features the EPP-affiliated National Coalition Party and the ECR-affiliated Finns Party. Slovakia (5,454,629 inhabitants, led by Fico IV) lists several parties, including Direction – Social Democracy, which are designated as Non-Inscrits (NI) in the European Parliament. Ireland (5,194,336 inhabitants, led by Martin II) includes Fianna Fáil (RE) and Fine Gael (EPP).",
+        "standaloneFacts": [
+          "Finland has a population of 5,593,070 and is led by Orpo.",
+          "The National Coalition Party in Finland is affiliated with the EPP, while the Finns Party is affiliated with the ECR.",
+          "Slovakia has a population of 5,454,629 and is led by Fico IV.",
+          "The Slovakian parties Direction – Social Democracy and Voice – Social Democracy are affiliated with Non-Inscrits (NI) in the European Parliament.",
+          "Ireland has a population of 5,194,336 and is led by Martin II.",
+          "Fine Gael in Ireland is affiliated with the EPP, and Fianna Fáil is affiliated with Renew Europe (RE)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "7f634145-dfae-4a29-8af0-8455d1f6a20a",
+        "content": "Croatia\tCroatian Democratic Union\t\tEPP\t\tEPP\t3,850,894\tPlenković IIIHomeland Movement\t\tNone\t\tNoneLithuania\tSocial Democratic Party of Lithuania\t\tPES\t\tS&D\t2,857,279\tRuginienėDawn of Nemunas\t\tNone\t\tNoneLithuanian Farmers and Greens Union\t\tECR\t\tECRElectoral Action of Poles\t\tECR\t\tECRSlovenia\tFreedom Movement\t\tALDE\t\tRE\t2,116,972\tGolobSocial Democrats\t\tPES\t\tS&DThe Left\t\tPEL\t\tNoneLatvia\tUnity\t\tEPP\t\tEPP\t1,883,008\tSiliņaLatvian Farmers' Union\t\tNone\t\tNoneThe Progressives\t\tEGP\t\tG/EFAEstonia\tEstonian Reform Party\t\tALDE\t\tRE\t1,365,884\tMichalEstonia 200\t\tNone\t\tNoneCyprus\tDemocratic Rally dissidents\t\tEPP\t\tEPP\t920,701\tChristodoulidesDemocratic Party\t\tNone\t\tS&DEDEK Socialist Party\t\tPES\t\tNoneMovement of Ecologists – Citizens' Cooperation\t\tEGP\t\tNoneLuxembourg\tChristian Social People's Party\t\tEPP\t\tEPP\t658,278\tFriedenDemocratic Party\t\tALDE\t\tREMalta\tLabour Party\t\tPES\t\tS&D\t542,051\tAbela II",
+        "segmentIndex": 27,
+        "summary": "This section details the political landscape of eight smaller EU nations—Croatia, Lithuania, Slovenia, Latvia, Estonia, Cyprus, Luxembourg, and Malta—providing their current population figures and head of government. It also lists key political parties within each country and their corresponding affiliations with European political groups, showing a diverse distribution across EPP, PES, RE, and ECR factions.",
+        "standaloneFacts": [
+          "Croatia has a population of 3,850,894 and is led by Plenković III.",
+          "Lithuania has a population of 2,857,279 and is led by Ruginienė.",
+          "Slovenia has a population of 2,116,972 and is led by Golob.",
+          "Latvia has a population of 1,883,008 and is led by Siliņa.",
+          "Estonia has a population of 1,365,884 and is led by Michal.",
+          "Cyprus has a population of 920,701 and is led by Christodoulides.",
+          "Luxembourg has a population of 658,278 and is led by Frieden.",
+          "Malta has the smallest population listed at 542,051 and is led by Abela II.",
+          "The Croatian Democratic Union is affiliated with the EPP.",
+          "Slovenia's Freedom Movement is affiliated with ALDE and the Renew Europe (RE) group."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "fe30a497-22f8-418e-ac1b-183479a7ba92",
+        "content": "LocationFurther information: Location of European Union institutions, Europa building, and Justus Lipsius buildingBy a decision of the European Council at Edinburgh in December 1992, the council has its seat in Brussels but in April, June, and October, it holds its meetings in Luxembourg City.[64] Between 1952 and 1967, the ECSC Council held its Luxembourg City meetings in the Cercle Municipal on Place d'Armes. Its secretariat moved on numerous occasions but between 1955 and 1967 it was housed in the Verlorenkost district of the city. In 1957, with the creation of two new Communities with their own Councils, discretion on location was given to the current Presidency. In practice this was to be in the Château of Val-Duchesse until the autumn of 1958, at which point it moved to 2 Rue Ravensteinstraat in Brussels.[65]",
+        "segmentIndex": 28,
+        "summary": "The location of the Council was formalized by a European Council decision in Edinburgh in December 1992, establishing its official seat in Brussels while mandating meetings in Luxembourg City during April, June, and October. Historically, the ECSC Council met in the Cercle Municipal in Luxembourg City between 1952 and 1967. Following the creation of new Communities in 1957, the Council met temporarily at the Château of Val-Duchesse before moving its operations to 2 Rue Ravensteinstraat in Brussels by the autumn of 1958.",
+        "standaloneFacts": [
+          "The council's seat is in Brussels, established by a decision of the European Council at Edinburgh in December 1992.",
+          "The council holds meetings in Luxembourg City in April, June, and October.",
+          "Between 1952 and 1967, the ECSC Council held its Luxembourg City meetings in the Cercle Municipal on Place d'Armes.",
+          "The ECSC Council secretariat was housed in the Verlorenkost district of Luxembourg City between 1955 and 1967.",
+          "After the creation of two new Communities in 1957, discretion on location was given to the current Presidency.",
+          "The Communities' Councils met at the Château of Val-Duchesse until the autumn of 1958.",
+          "The Communities' Councils moved to 2 Rue Ravensteinstraat in Brussels in the autumn of 1958."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "4c8313f5-1768-4b88-acbc-4c4798deefd2",
+        "content": "The 1965 agreement (finalised by the Edinburgh agreement and annexed to the treaties) on the location of the newly merged institutions, the council was to be in Brussels but would meet in Luxembourg City during April, June, and October. The ECSC secretariat moved from Luxembourg City to the merged body Council secretariat in the Ravenstein building of Brussels. In 1971 the council and its secretariat moved into the Charlemagne building, next to the commission's Berlaymont, but the Council rapidly ran out of space and administrative branch of the Secretariat moved to a building at 76 Rue Joseph II/Jozef II-straat and during the 1980s the language divisions moved out into the Nerviens, Frère Orban, and Guimard buildings.[65]In 1995, the Council moved into the Justus Lipsius building, across the road from Charlemagne.[clarification needed] However, its staff was still increasing, so it continued to rent the Frère Orban building to house the Finnish and Swedish language divisions. Staff continued to increase and the Council rented, in addition to owning Justus Lipsius, the Kortenberg, Froissart, Espace Rolin, and Woluwe Heights buildings. Since acquiring the Lex building in 2008, the three aforementioned buildings are no longer in use by the Council services.[citation needed]",
+        "segmentIndex": 29,
+        "summary": "Following the 1965 agreement, the Council of the European Union was formally seated in Brussels but scheduled meetings in Luxembourg City three months a year. Due to rapid staff growth, the Council and its secretariat frequently relocated and expanded, moving from the Ravenstein building (post-merger) to the Charlemagne building in 1971, and finally into the Justus Lipsius building in 1995. Despite acquiring Justus Lipsius, the Council continued to rent several external buildings until the 2008 acquisition of the Lex building allowed for service consolidation.",
+        "standaloneFacts": [
+          "The 1965 agreement established the Council's seat in Brussels, with meetings held in Luxembourg City during April, June, and October.",
+          "The ECSC secretariat moved from Luxembourg City to the merged Council secretariat in the Ravenstein building in Brussels.",
+          "In 1971, the Council and its secretariat moved into the Charlemagne building, located next to the commission's Berlaymont.",
+          "In 1995, the Council moved into the Justus Lipsius building.",
+          "The Council acquired the Lex building in 2008."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_council",
+        "id": "16baf0d8-6c51-4f91-a4bf-4889fe734820",
+        "content": "When the council is meeting in Luxembourg City, it meets in the Kirchberg Conference Centre,[65] and its offices are based at the European Centre on the plateau du Kirchberg.[49] The council has also met occasionally in Strasbourg, in various other cities, and also outside the Union: for example in 1974 when it met in Tokyo and Washington, D. C. while trade and energy talks were taking place. Under the council's present rules of procedures the council can, in extraordinary circumstances, hold one of its meetings outside Brussels and Luxembourg.[65]From 2017, both the Council of the European Union and the European Council adopted the purpose-built Europa building as their official headquarters, although they continue to utilise the facilities afforded by the adjacent Justus Lipsius building. The focal point of the new building, the distinctive multi-storey \"lantern\" shaped structure in which the main meeting room is located, is utilised in both EU institutions' new official logos.",
+        "segmentIndex": 30,
+        "summary": "When meeting in Luxembourg City, the council convenes at the Kirchberg Conference Centre, with its offices located at the European Centre. Although the council usually meets in Brussels and Luxembourg, its rules allow for meetings in extraordinary circumstances elsewhere, including historically outside the EU in places like Tokyo and Washington, D.C. Since 2017, both the Council of the European Union and the European Council have adopted the purpose-built Europa building as their official headquarters, while still utilizing the adjacent Justus Lipsius building.",
+        "standaloneFacts": [
+          "When the council meets in Luxembourg City, it meets in the Kirchberg Conference Centre.",
+          "The council's offices in Luxembourg City are based at the European Centre on the plateau du Kirchberg.",
+          "The council met outside the Union in 1974 in Tokyo and Washington, D. C. during trade and energy talks.",
+          "Under the council's present rules of procedures, the council can hold one of its meetings outside Brussels and Luxembourg in extraordinary circumstances.",
+          "From 2017, both the Council of the European Union and the European Council adopted the purpose-built Europa building as their official headquarters.",
+          "The Council of the European Union and the European Council continue to utilize the facilities of the adjacent Justus Lipsius building.",
+          "The focal point of the Europa building is a distinctive multi-storey \"lantern\" shaped structure where the main meeting room is located.",
+          "The \"lantern\" shaped structure of the Europa building is utilized in the new official logos of both the Council of the European Union and the European Council."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 31,
+        "totalCharacters": 29596,
+        "averageSegmentLength": 948.5483870967741,
+        "minSegmentLength": 407,
+        "maxSegmentLength": 1371,
+        "segmentLengths": [
+          1185,
+          1053,
+          1371,
+          1235,
+          903,
+          1353,
+          798,
+          909,
+          1169,
+          748,
+          942,
+          1157,
+          801,
+          1166,
+          733,
+          983,
+          1123,
+          904,
+          744,
+          645,
+          762,
+          987,
+          1114,
+          1061,
+          507,
+          656,
+          407,
+          877,
+          826,
+          1292,
+          994
+        ],
+        "nLlmCalls": 3,
+        "costs": {
+          "total": 0.0200549,
+          "input": 0.0021024,
+          "output": 0.017952499999999996
+        },
+        "tokens": {
+          "totalTokens": 37009,
+          "inputTokens": 7008,
+          "outputTokens": 7181
+        },
+        "processingTimeMs": 54423
+      },
+      "analysis": {
+        "nSegments": 31,
+        "nFactsExtracted": 207,
+        "nLlmCalls": 32,
+        "costs": {
+          "total": 0.030640900000000006,
+          "input": 0.0087459,
+          "output": 0.021895
+        },
+        "tokens": {
+          "totalTokens": 66811,
+          "inputTokens": 29153,
+          "outputTokens": 8758
+        },
+        "processingTimeMs": 296847
+      }
+    }
+  },
+  "llmMetrics": {
+    "processingTimeMs": 351270,
+    "nLlmCalls": 35,
+    "costs": {
+      "total": 0.050695800000000006,
+      "input": 0.010848299999999998,
+      "output": 0.039847499999999994
+    },
+    "tokens": {
+      "totalTokens": 103820,
+      "inputTokens": 36161,
+      "outputTokens": 15939
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025"
+    ],
+    "language": "en",
+    "startTime": "2025-12-14T10:51:10.907Z",
+    "endTime": "2025-12-14T10:56:07.755Z"
+  }
+}

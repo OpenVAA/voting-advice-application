@@ -125,6 +125,7 @@ export function getTools(ragDeps: RAGDependencies) {
   // Add RAG tool if dependencies are provided
   if (ragDeps) {
     tools.vectorSearchForElectionInfo = vectorSearchForElectionInfo(ragDeps);
+    console.info('RAG tool added!:', tools.vectorSearchForElectionInfo);
   }
 
   return tools;
@@ -151,17 +152,19 @@ export function vectorSearchForElectionInfo(deps: RAGDependencies) {
         )
     }),
     execute: async (input) => {
+      console.info('RAG tool executing with query:', input.query);
       const result = await performRAGRetrieval({
         query: input.query,
         vectorStore: deps.vectorStore,
         nResultsTarget: deps.nResultsTarget,
         rerankConfig: deps.rerankConfig
       });
-
+      console.info('RAG tool executed with result:', result.formattedContext);
       // Store full result in metadata collector if provided
       if (deps.metadataCollector) {
         deps.metadataCollector.push(result);
       }
+      console.info('RAG retrieval result:', result.formattedContext);
 
       // Return ONLY formatted context for LLM (keep response clean)
       return result.formattedContext;
@@ -179,7 +182,8 @@ export function getAvailableParties() {
 
 export function getPartyManifesto() {
   return tool({
-    description: 'Get the manifesto of a party by name in the 2024 European Parliament election. If looking for more specific information, use the vectorSearchForElectionInfo tool.',
+    description:
+      'Get the manifesto of a party by name in the 2024 European Parliament election. If looking for more specific information, use the vectorSearchForElectionInfo tool.',
     inputSchema: z.object({
       name: z.string().describe('The name of the party (e.g., "European People\'s Party", "Patriots for Europe")')
     }),

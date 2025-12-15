@@ -31,7 +31,6 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation,
     controller
   } = options;
 
@@ -43,7 +42,6 @@ export async function processText(options: ProcessTextOptions): Promise<ProcessT
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation,
     controller
   });
 
@@ -113,7 +111,6 @@ export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdf
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation,
     controller
   } = options;
 
@@ -135,7 +132,6 @@ export async function processPdf(options: ProcessPdfOptions): Promise<ProcessPdf
     minSegmentLength,
     maxSegmentLength,
     charsPerLLMCall,
-    validateTextPreservation,
     controller
   });
 

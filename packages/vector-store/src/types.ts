@@ -4,17 +4,16 @@
  * This file contains ONLY TypeScript type definitions with no runtime code
  * or class implementations. Safe for importing in browser contexts.
  *
- * Usage:
- *   import type { VectorSearchResult } from '@openvaa/vector-store/types';
  */
 
 // Embedder types
 export type { Embedder, EmbedderOptions, EmbedderResponse } from './core/embedder.type';
-
 // Source segment types
 export type { SegmentWithMetadata, SourceMetadata, SourceSegment } from './core/source.types';
 
 // Vector store types
+export type { ChromaVectorStore } from './core/chromaVectorStore';
+export type { RerankResult } from './core/utils/rerank.types';
 export type {
   RerankConfig,
   SingleSearchResult,
@@ -22,7 +21,3 @@ export type {
   VectorStore,
   VectorStoreConfig
 } from './core/vectorStore.type';
-
-// Vector store class types (type-only imports from class files)
-// NOTE: These imports reference files that contain ChromaDB
-export type { ChromaVectorStore } from './core/chromaVectorStore';

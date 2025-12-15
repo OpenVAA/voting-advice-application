@@ -1,5 +1,5 @@
 import { CohereClientV2 } from 'cohere-ai';
-import type { SegmentWithMetadata } from '../source.types';
+import type { SingleSearchResult } from '../vectorStore.type';
 import type { RerankParams, RerankResult } from './rerank.types';
 
 /**
@@ -30,7 +30,7 @@ export async function rerank(params: RerankParams): Promise<RerankResult> {
 
   // Extract text content from segments for reranking
   // Use the original segment text as the primary content for reranking
-  const documents = retrievedSegments.map((seg) => seg.content);
+  const documents = retrievedSegments.map((seg) => seg.segment.content);
 
   // Call Cohere rerank API
   const response = await cohere.rerank({
@@ -41,14 +41,19 @@ export async function rerank(params: RerankParams): Promise<RerankResult> {
   });
 
   // Map results back to enriched segments with scores
-  const rerankedSegments: Array<SegmentWithMetadata> = [];
+  const rerankedSegments: Array<SingleSearchResult> = [];
   const scores = new Map<string, number>();
 
   for (const result of response.results) {
     const originalSegment = retrievedSegments[result.index];
     if (originalSegment) {
-      rerankedSegments.push(originalSegment);
-      scores.set(originalSegment.id, result.relevanceScore);
+      rerankedSegments.push({
+        segment: originalSegment.segment,
+        vectorSearchScore: originalSegment.vectorSearchScore,
+        distance: originalSegment.distance,
+        rerankScore: result.relevanceScore
+      });
+      scores.set(originalSegment.segment.id, result.relevanceScore);
     }
   }
 

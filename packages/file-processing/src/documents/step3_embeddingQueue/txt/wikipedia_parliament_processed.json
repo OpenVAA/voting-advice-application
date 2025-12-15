@@ -1,0 +1,1236 @@
+{
+  "runId": "pipeline_1765708996118",
+  "success": true,
+  "data": {
+    "documentId": "txt_wikipedia_parliament",
+    "metadata": {
+      "title": "European Parliament",
+      "locale": "en"
+    },
+    "segments": [
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "4f10c522-ebb3-4645-9d2f-a1b70d7ef5a7",
+        "content": "The European Parliament (EP) is one of the two legislative bodies of the European Union (EU) and one of its seven institutions. Together with the Council of the European Union (known as the Council and informally as the Council of Ministers), it adopts European legislation, following a proposal by the European Commission. The Parliament is composed of 720 members (MEPs), after the June 2024 European elections, from a previous 705 MEPs. It represents the second-largest democratic electorate in the world (after the Parliament of India), with an electorate of around 375 million eligible voters in 2024.[4][5][6]",
+        "segmentIndex": 0,
+        "summary": "The European Parliament (EP) is one of the two legislative bodies and one of the seven institutions of the European Union (EU). It works alongside the Council of the European Union to adopt legislation proposed by the European Commission. Following the June 2024 elections, the EP is composed of 720 members (MEPs) and represents the world's second-largest democratic electorate, encompassing approximately 375 million eligible voters in 2024.",
+        "standaloneFacts": [
+          "The European Parliament (EP) is one of the two legislative bodies of the European Union (EU).",
+          "The EP is one of the seven institutions of the European Union.",
+          "The European Parliament adopts European legislation together with the Council of the European Union, following a proposal by the European Commission.",
+          "The European Parliament is composed of 720 members (MEPs) after the June 2024 European elections.",
+          "The European Parliament represents the second-largest democratic electorate in the world, after the Parliament of India.",
+          "The EP electorate consisted of around 375 million eligible voters in 2024."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "6dd896f3-516b-4b9b-9a34-f4c9a7563e3a",
+        "content": "Since 1979, the Parliament has been directly elected every five years by the citizens of the European Union through universal suffrage. Voter turnout in parliamentary elections decreased each time after 1979 until 2019, when voter turnout increased by eight percentage points, and rose above 50% for the first time since 1994.[7] The voting age is 18 in all EU member states except for Malta, Belgium, Austria and Germany, where it is 16, and Greece, where it is 17.[8]The European Parliament has legislative power in that the adoption of EU legislation normally requires its approval, and that of the Council, in what amounts to a bicameral legislature. However, it does not formally possess the right of initiative (i.e. the right to formally initiate the legislative procedure) in the way that most national parliaments of the member states do, as the right of initiative is a prerogative of the European Commission.[9][10] Nonetheless, the Parliament and the Council each have the right to request the Commission to initiate the legislative procedure and put forward a proposal.[11]",
+        "segmentIndex": 1,
+        "summary": "Since 1979, the Parliament has been directly elected every five years by EU citizens; voter turnout, which had decreased post-1979, rose above 50% in 2019 for the first time since 1994. The European Parliament holds legislative power, requiring its approval for EU legislation alongside the Council, forming a bicameral structure. Crucially, the EP does not hold the formal right of legislative initiative, which belongs to the European Commission, though the Parliament can request the Commission to propose legislation.",
+        "standaloneFacts": [
+          "The European Parliament has been directly elected every five years by the citizens of the European Union through universal suffrage since 1979.",
+          "In 2019, voter turnout for European Parliament elections increased by eight percentage points and rose above 50% for the first time since 1994.",
+          "The standard voting age in most EU member states is 18, but it is 16 in Malta, Belgium, Austria, and Germany, and 17 in Greece.",
+          "The adoption of EU legislation normally requires the approval of both the European Parliament and the Council, functioning as a bicameral legislature.",
+          "The European Parliament does not formally possess the right of legislative initiative.",
+          "The right of legislative initiative in the EU is a prerogative of the European Commission.",
+          "The European Parliament and the Council each have the right to request the European Commission to initiate the legislative procedure."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "4efe899d-1b6e-427c-b945-da767e8c71d4",
+        "content": "The Parliament is, in protocol terms, the \"first institution\" of the European Union (mentioned first in its treaties and having ceremonial precedence over the other EU institutions),[12] and shares equal legislative and budgetary powers with the Council (except on a few issues where special legislative procedures apply). It likewise has equal control over the EU budget. Ultimately, the European Commission, which serves as the executive branch of the EU, is accountable to Parliament. In particular, Parliament can decide whether or not to approve the European Council's nominee for President of the Commission, and is further tasked with approving (or rejecting) the appointment of the Commission as a whole. It can subsequently force the current Commission to resign by adopting a motion of censure.[9]",
+        "segmentIndex": 2,
+        "summary": "The European Parliament is considered the EU's \"first institution\" in protocol terms and shares equal legislative and budgetary powers with the Council, except where special legislative procedures are applied. Crucially, the Parliament holds the European Commission accountable by approving the nominee for the President of the Commission and the Commission as a whole, and it retains the power to force the executive body to resign through a motion of censure.",
+        "standaloneFacts": [
+          "The European Parliament is, in protocol terms, the \"first institution\" of the European Union.",
+          "The European Parliament shares equal legislative and budgetary powers with the Council.",
+          "The European Parliament has equal control over the EU budget.",
+          "The European Commission is accountable to the European Parliament.",
+          "The European Parliament approves or rejects the European Council's nominee for President of the Commission.",
+          "The European Parliament must approve or reject the appointment of the European Commission as a whole.",
+          "The European Parliament can force the current European Commission to resign by adopting a motion of censure."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "f8e4eccd-5d57-41e5-b3fc-310a0f6bdd7b",
+        "content": "The president of the European Parliament is the body's speaker and presides over the multi-party chamber. The five largest political groups are the European People's Party Group (EPP), the Progressive Alliance of Socialists and Democrats (S&D), Patriots for Europe (PfE), the European Conservatives and Reformists Group (ECR), and Renew Europe (Renew). The last EU-wide election was held in 2024.The Parliament's headquarters are officially in Strasbourg, France,[13] and has its administrative offices in Luxembourg City. Plenary sessions are normally held in Strasbourg for four days a month, but sometimes there are additional sessions in Brussels,[14] while the Parliament's committee meetings are held primarily in Brussels, Belgium.[14][15] In practice, the Parliament works three weeks per month in Brussels and one week (four days) in Strasbourg.",
+        "segmentIndex": 3,
+        "summary": "The President of the European Parliament serves as the body's speaker, presiding over a chamber featuring five major political groups: EPP, S&D, PfE, ECR, and Renew. The Parliament operates across multiple locations, with its official headquarters in Strasbourg, administrative offices in Luxembourg City, and committee meetings primarily held in Brussels, reflecting a practice of splitting work between Brussels and Strasbourg.",
+        "standaloneFacts": [
+          "The president of the European Parliament is the body's speaker and presides over the multi-party chamber.",
+          "The five largest political groups in the European Parliament are the European People's Party Group (EPP), the Progressive Alliance of Socialists and Democrats (S&D), Patriots for Europe (PfE), the European Conservatives and Reformists Group (ECR), and Renew Europe (Renew).",
+          "The last EU-wide election was held in 2024.",
+          "The European Parliament's headquarters are officially located in Strasbourg, France.",
+          "The European Parliament has its administrative offices in Luxembourg City.",
+          "The European Parliament's committee meetings are held primarily in Brussels, Belgium.",
+          "In practice, the European Parliament works three weeks per month in Brussels and one week (four days) in Strasbourg."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "bd6b02c1-7dc3-4f12-9489-fb72a443067f",
+        "content": "The European Parliament in Strasbourg\nHistory\nFurther information: History of the European Union\n\nThe European Parliament's flag until 1983\nThe Parliament, like the other EU institutions, was not designed in its current form when it first met on 10 September 1952. One of the oldest common institutions, it began as the Common Assembly of the European Coal and Steel Community (ECSC). It was a consultative assembly of 78 appointed parliamentarians drawn from the national parliaments of member states, having no legislative powers.[16][17] The change since its foundation was highlighted by Professor David Farrell of the University of Manchester: \"For much of its life, the European Parliament could have been justly labelled a 'multi-lingual talking shop' [but] is now one of the most powerful legislatures in the world\".\"[18] This was done notably through successive treaty changes and other agreements.[19]",
+        "segmentIndex": 4,
+        "summary": "The European Parliament, initially called the Common Assembly of the European Coal and Steel Community (ECSC), first convened on September 10, 1952. It began as a consultative assembly of 78 appointed parliamentarians and possessed no legislative powers. Through successive treaty changes, the institution has transformed from a simple 'talking shop' into one of the most powerful legislatures globally.",
+        "standaloneFacts": [
+          "The European Parliament first met on September 10, 1952.",
+          "The European Parliament began as the Common Assembly of the European Coal and Steel Community (ECSC).",
+          "The initial Common Assembly was a consultative assembly.",
+          "The initial Common Assembly was composed of 78 appointed parliamentarians.",
+          "The original Common Assembly had no legislative powers.",
+          "The European Parliament has transformed into one of the most powerful legislatures in the world through successive treaty changes and agreements."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "513063fc-9f6b-4cf8-93a3-baa9d1da74a4",
+        "content": "Its development since its foundation shows how the European Union's structures have evolved without a clear 'master plan'. Tom Reid of The Washington Post has said of the union that \"nobody would have deliberately designed a government as complex and as redundant as the EU\".[20] Even the Parliament's three working locations are a result of various disagreements and partial agreements among the governments of the Member States. Although most MEPs would prefer to be based just in Brussels, where it conducts the bulk of its work, at the 1992 Edinburgh summit chaired by John Major, France engineered an agreement whereby the European Parliament's official seat is in Strasbourg, but most of its work is done in Brussels.[16][21]",
+        "segmentIndex": 5,
+        "summary": "The development of the European Union's structures, including the European Parliament, proceeded without a clear 'master plan,' leading to a complex and sometimes redundant governmental system. This is exemplified by the Parliament's three working locations, which resulted from political compromises; specifically, France successfully engineered an agreement at the 1992 Edinburgh summit establishing Strasbourg as the official seat, even though the majority of parliamentary work is performed in Brussels.",
+        "standaloneFacts": [
+          "Tom Reid of The Washington Post stated that the EU's government structure is so complex and redundant that 'nobody would have deliberately designed' it.",
+          "The European Parliament's multiple working locations are the result of disagreements and partial agreements among Member States.",
+          "At the 1992 Edinburgh summit, an agreement was reached designating Strasbourg as the European Parliament's official seat.",
+          "The 1992 Edinburgh summit was chaired by John Major.",
+          "The bulk of the European Parliament's work is conducted in Brussels."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "acd185d2-2cfa-48c8-b794-046dc53b8437",
+        "content": "Consultative assembly\n\nSession of the Parliamentary Assembly of the Council of Europe in the former House of Europe in Strasbourg, France in January 1967. Willy Brandt, West German minister for Foreign Affairs, is speaking.\nThe body was not mentioned in the original Schuman Declaration. It was assumed or hoped that difficulties with the British[clarification needed] would be resolved to allow the Parliamentary Assembly of the Council of Europe to perform legislative tasks. A separate Assembly was introduced during negotiations on the Treaty as an institution to counterbalance and monitor the executive while providing democratic legitimacy.[16] The wording of the ECSC Treaty demonstrated leaders' desire for more than a normal consultative assembly by allowing for direct election and using the term \"representatives of the people\". Its early importance was highlighted when the Assembly was given the task of drawing up the draft treaty to establish a European Political Community. By this document, the Ad Hoc Assembly was established on 13 September 1952[22] with extra members, but after the failure of the negotiated and proposed European Defence Community (French parliament veto), the project was dropped.[23]",
+        "segmentIndex": 6,
+        "summary": "The parliamentary body, later known as the Common Assembly, was introduced during treaty negotiations—despite being absent from the original Schuman Declaration—to provide democratic legitimacy and monitor the executive. Although the ECSC Treaty indicated aspirations for it to be more than a purely consultative assembly by allowing for direct elections, its early significant task of drafting a treaty for a European Political Community was eventually dropped after the French parliament vetoed the proposed European Defence Community.",
+        "standaloneFacts": [
+          "The consultative assembly was not mentioned in the original Schuman Declaration.",
+          "A separate Assembly was introduced during treaty negotiations to counterbalance and monitor the executive and provide democratic legitimacy.",
+          "The wording of the ECSC Treaty demonstrated a desire for more than a normal consultative assembly by allowing for direct election and using the term \"representatives of the people\".",
+          "The Assembly was given the task of drawing up the draft treaty to establish a European Political Community.",
+          "The Ad Hoc Assembly was established on 13 September 1952.",
+          "The project to establish a European Political Community was dropped after the French parliament vetoed the negotiated and proposed European Defence Community."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "3a2c2879-7b9e-4c21-9527-41d056b8cb00",
+        "content": "Instead, the European Economic Community and Euratom were established in 1958 by the Treaties of Rome. The Common Assembly was shared by all three communities (which had separate executives) and it renamed itself the European Parliamentary Assembly.[16] The first meeting was held on 19 March 1958 having been set up in Luxembourg City, it elected Schuman as its president and on 13 May it rearranged itself to sit according to political ideology rather than nationality.[24] This is seen as the birth of the modern European Parliament, with Parliament's 50 years celebrations being held in March 2008 rather than 2002.[25]",
+        "segmentIndex": 7,
+        "summary": "The European Economic Community (EEC) and Euratom were established in 1958 by the Treaties of Rome, leading the existing Common Assembly to be shared by all three communities and renamed the European Parliamentary Assembly. This Assembly held its first meeting on March 19, 1958, in Luxembourg City, where it elected Schuman as president. Crucially, on May 13, 1958, it began organizing its members based on political ideology rather than nationality, a change viewed as the birth of the modern European Parliament.",
+        "standaloneFacts": [
+          "The European Economic Community and Euratom were established in 1958 by the Treaties of Rome.",
+          "The Common Assembly was shared by the three European communities and renamed itself the European Parliamentary Assembly.",
+          "The first meeting of the European Parliamentary Assembly was held on 19 March 1958.",
+          "The European Parliamentary Assembly was set up in Luxembourg City.",
+          "The European Parliamentary Assembly elected Schuman as its president.",
+          "On 13 May 1958, the European Parliamentary Assembly rearranged itself to sit according to political ideology rather than nationality.",
+          "The European Parliament's 50 years celebrations were held in March 2008."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "9556a7df-4241-4769-b02a-3c8161c7e197",
+        "content": "The three communities merged their remaining organs as the European Communities in 1967, and the body's name was changed to the current \"European Parliament\" in 1962.[16] In 1970 the Parliament was granted power over areas of the Communities' budget, which were expanded to the whole budget in 1975.[26] Under the Rome Treaties, the Parliament should have become elected. However, the Council was required to agree a uniform voting system beforehand, which it failed to do. The Parliament threatened to take the Council to the European Court of Justice; this led to a compromise whereby the Council would agree to elections, but with each Member State using its own electoral system, leaving the issue of a uniform voting systems to be decided at a later date.[27]For its sessions the assembly, and later the parliament, until 1999 convened in the same premises as the Parliamentary Assembly of the Council of Europe: the House of Europe[28][29] until 1977, and the Palace of Europe until 1999.",
+        "segmentIndex": 8,
+        "summary": "The European Parliament gained its current name in 1962, preceding the merger of the three European Communities' organs in 1967. The Parliament significantly expanded its financial authority, gaining control over portions of the Communities' budget in 1970 and the entire budget by 1975. Separately, the move toward direct elections, mandated by the Rome Treaties, was delayed due to the Council's failure to agree on a uniform voting system, leading to a compromise where elections proceeded using varied national rules, while the EP continued to convene in shared premises (House of Europe and Palace of Europe) until 1999.",
+        "standaloneFacts": [
+          "The three communities merged their remaining organs to form the European Communities in 1967.",
+          "The body's name was officially changed to the current \"European Parliament\" in 1962.",
+          "In 1970, the Parliament was granted power over specific areas of the Communities' budget.",
+          "The Parliament gained control over the entire Communities' budget in 1975.",
+          "The Parliament convened in the House of Europe until 1977.",
+          "The Parliament convened in the Palace of Europe until 1999.",
+          "Until 1999, the European Parliament held its sessions in the same premises as the Parliamentary Assembly of the Council of Europe."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "79fc57f9-dfee-4808-87a8-d032947cd941",
+        "content": "Elected Parliament\n\nA plenary session in the Palace of Europe in April 1985, in Strasbourg, France. It was the EP's hemicycle until 1999 when a new building was constructed in Strasbourg, France.\nIn 1979, its members were directly elected for the first time. This sets it apart from similar institutions such as those of the Parliamentary Assembly of the Council of Europe or Pan-African Parliament which are appointed.[16][30][31] After that first election, the parliament held its first session on 17 July 1979, electing Simone Veil MEP as its president.[32] Veil was also the first female president of the Parliament since it was formed as the Common Assembly.As an elected body, the Parliament began to draft proposals addressing the functioning of the EU. For example, in 1984, inspired by its previous work on the Political Community, it drafted the \"draft Treaty establishing the European Union\" (also known as the 'Spinelli Plan' after its rapporteur Altiero Spinelli MEP). Although it was not adopted as such by the Member States, many of its ideas were later taken up in subsequent amending treaties.[33] Furthermore, the Parliament began holding votes on proposed Commission Presidents from the 1980s, before it was given any formal right to veto their appointment.[34]",
+        "segmentIndex": 9,
+        "summary": "The European Parliament's members were directly elected for the first time in 1979, distinguishing it from other appointed assemblies. The first session of the elected Parliament was held on July 17, 1979, during which Simone Veil was elected as its president and the first woman to hold the position. As an elected body, the Parliament increased its political influence, drafting significant proposals like the 1984 'Spinelli Plan' and initiating votes on proposed Commission Presidents starting in the 1980s.",
+        "standaloneFacts": [
+          "The members of the European Parliament were directly elected for the first time in 1979.",
+          "The first session of the directly elected European Parliament was held on July 17, 1979.",
+          "Simone Veil was elected as the president of the European Parliament following the first direct elections.",
+          "Simone Veil was the first female president of the European Parliament since it was formed as the Common Assembly.",
+          "In 1984, the European Parliament drafted the \"draft Treaty establishing the European Union,\" which is also known as the 'Spinelli Plan'.",
+          "The European Parliament began holding votes on proposed Commission Presidents starting in the 1980s.",
+          "The Palace of Europe in Strasbourg, France, served as the European Parliament's hemicycle until 1999."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "d6fa9b32-a5bd-4b79-b7d4-07c2aab04263",
+        "content": "Since it became an elected body, the membership of the European Parliament has expanded when new nations have joined (the membership was also adjusted upwards in 1994 after German reunification). Following this, the Treaty of Nice imposed a cap on the number of members to be elected: 732, later raised to 751 by the Treaty of Lisbon.[16]Like the other institutions, the Parliament's seat was not yet fixed. The provisional arrangements placed Parliament in Strasbourg, while the Commission and Council had their seats in Brussels. In 1985 the Parliament, wishing to be closer to these institutions, built a second chamber in Brussels and moved some of its work there despite protests from some states. A final agreement was eventually reached by the European Council in 1992. It stated the Parliament would retain its formal seat in Strasbourg",
+        "segmentIndex": 10,
+        "summary": "The European Parliament's membership expanded with the accession of new nations, including an adjustment after German reunification in 1994, before being capped at 732 members by the Treaty of Nice and later raised to 751 by the Treaty of Lisbon. Although provisionally located in Strasbourg, the Parliament built a second chamber in Brussels in 1985 to be closer to the Commission and Council, leading the European Council to formally agree in 1992 that Strasbourg would remain the formal seat.",
+        "standaloneFacts": [
+          "The membership of the European Parliament expanded when new nations joined the EU.",
+          "European Parliament membership was adjusted upwards in 1994 after German reunification.",
+          "The Treaty of Nice imposed a cap of 732 on the number of members to be elected to the European Parliament.",
+          "The Treaty of Lisbon raised the cap on European Parliament membership to 751.",
+          "Provisional arrangements placed the European Parliament's seat in Strasbourg.",
+          "The European Commission and the Council had their seats in Brussels under provisional arrangements.",
+          "In 1985, the European Parliament built a second chamber in Brussels and moved some of its work there.",
+          "The European Council reached a final agreement on the European Parliament's seat in 1992.",
+          "The 1992 European Council agreement stated that the European Parliament would retain its formal seat in Strasbourg."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "4635eaa2-bb5b-4bb9-908b-811759f34915",
+        "content": ", where twelve sessions a year would be held, but with all other parliamentary activity in Brussels. This two-seat arrangement was contested by the Parliament, but was later enshrined in the Treaty of Amsterdam. To this day the institution's locations are a source of contention.[35]The Parliament gained more powers from successive revisions of the EU treaties, notably through the extension of the ordinary legislative procedure (originally called the codecision procedure),[36] and the right to approve international agreements through the consent procedure.In 1999, the Parliament forced the resignation of the Santer Commission.[37] The Parliament had refused to approve the Community budget over allegations of fraud and mis-management in the commission. The two main parties took on a government-opposition dynamic for the first time during the crisis which ended in the Commission resigning en masse, the first of any forced resignation, in the face of an impending censure from the Parliament.[38]Commission accountability to the ParliamentThe Parliament had always had the right to dismiss the European Commission in a vote of censure, but it initially had no role in its appointment. In the 1992 Treaty of Maastricht, the Member States gave the Parliament the right to approve or reject an incoming Commission. In the 1997 Treaty of Amsterdam, they gave it the right to approve or reject an incoming Commission President, subsequently (in the Treaty of Lisbon) describing Parliament's vote as the \"election\" of the President, and requiring the European Council to make its proposal to Parliament in light of the results of the European elections.[39]",
+        "segmentIndex": 11,
+        "summary": "The European Parliament's institutional framework was finalized by the European Council in 1992, establishing a contentious two-seat arrangement—Strasbourg for twelve annual sessions and Brussels for all other activity—which was later enshrined in the Treaty of Amsterdam. Concurrently, the Parliament significantly increased its political power, notably forcing the resignation of the Santer Commission in 1999, the first such forced resignation. Subsequent treaties, including Maastricht (1992) and Amsterdam (1997), formalized the Parliament's right to approve or reject both the incoming Commission and its President, culminating in the Treaty of Lisbon describing this vote as an \"election.\"",
+        "standaloneFacts": [
+          "The two-seat arrangement for the European Parliament, requiring twelve annual sessions in Strasbourg and all other activity in Brussels, was enshrined in the Treaty of Amsterdam.",
+          "The European Parliament gained power through the extension of the ordinary legislative procedure, which was originally called the codecision procedure.",
+          "The European Parliament gained the right to approve international agreements through the consent procedure.",
+          "In 1999, the European Parliament forced the resignation of the Santer Commission over allegations of fraud and mismanagement.",
+          "The mass resignation of the Santer Commission in 1999 was the first forced resignation of any European Commission.",
+          "The 1992 Treaty of Maastricht gave the European Parliament the right to approve or reject an incoming European Commission.",
+          "The 1997 Treaty of Amsterdam gave the European Parliament the right to approve or reject an incoming Commission President.",
+          "The Treaty of Lisbon described the European Parliament's vote on the Commission President as an \"election.\""
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "35127084-a03a-4f71-ba83-b8da2c3e2b80",
+        "content": "In 2004, following the largest trans-national election in history, the European Council proposed as Commission President a candidate, José Manuel Barroso, from the largest political party (the EPP). The Parliament approved him by 431 votes to 251. However, when it came to the vote on the Commission as a whole, MEPs raised doubts about some of the nominees following their performance in the public hearings of them conducted by Parliament's committees. Most notably, the Civil Liberties committee rejected Rocco Buttiglione for the post of Commissioner for Justice, Freedom and Security over his views on homosexuality. That was the first time the Parliament had ever opposed an incoming Commissioner and, despite Barroso's initial insistence upon Buttiglione, the Parliament forced Buttiglione to be withdrawn. A number of other Commissioners also had to be withdrawn or reassigned before Parliament voted to allow the Barroso Commission to take office.[40][41]",
+        "segmentIndex": 12,
+        "summary": "The 2004 appointment process for the Barroso Commission showcased the European Parliament's growing assertiveness. Although Parliament approved President José Manuel Barroso, it used public hearings to scrutinize nominees, forcing significant changes. The Parliament successfully compelled the withdrawal of Rocco Buttiglione, the Commissioner for Justice, Freedom and Security, marking the first time it had ever opposed an incoming Commissioner.",
+        "standaloneFacts": [
+          "The European Parliament approved José Manuel Barroso as Commission President by 431 votes to 251 in 2004.",
+          "The Civil Liberties committee rejected Rocco Buttiglione as Commissioner for Justice, Freedom and Security over his views on homosexuality in 2004.",
+          "The rejection of Rocco Buttiglione in 2004 was the first time the European Parliament had ever opposed an incoming Commissioner."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "5b9b9467-d148-4cd0-babd-034268a97967",
+        "content": "Parliament's overhaul of the Bolkestein directive signalled a major growth in status for Parliament.The Parliament also became more assertive in amending legislative proposals put forward by the European Commission. A notable example was on the Bolkestein directive in 2006, when the Parliament voted by a large majority for over 400 amendments that changed the fundamental principle of the law. The Financial Times described it in the following terms:[42]That is where the European parliament has suddenly come into its own. It marks another shift in power between the three central EU institutions. Last week's vote suggests that the directly elected MEPs, in spite of their multitude of ideological, national and historical allegiances, have started to coalesce as a serious and effective EU institution, just as enlargement has greatly complicated negotiations inside both the Council and Commission.—\t\"How the European parliament got serious\", Financial Times (23 February 2006)In 2007, for the first time, Justice Commissioner Franco Frattini included Parliament in talks on the second Schengen Information System even though, in this field at the time, MEPs only needed to be consulted on parts of the package. After that experiment, Frattini indicated he would like to include Parliament in all justice and criminal matters, informally pre-empting the new powers they were due to gain in 2009 as part of the Treaty of Lisbon.[43]",
+        "segmentIndex": 13,
+        "summary": "The European Parliament demonstrated a major increase in status and legislative assertiveness, exemplified by its overhaul of the Bolkestein directive in 2006, where it passed over 400 amendments that fundamentally changed the proposed law. This growth in influence was also informally recognized by Justice Commissioner Franco Frattini in 2007, who included Parliament in talks on the second Schengen Information System and indicated a willingness to involve MEPs in all justice and criminal matters, anticipating powers granted by the Treaty of Lisbon.",
+        "standaloneFacts": [
+          "The European Parliament overhauled the Bolkestein directive in 2006.",
+          "The Parliament voted for over 400 amendments to the Bolkestein directive, changing the fundamental principle of the law.",
+          "In 2007, Justice Commissioner Franco Frattini included the European Parliament in discussions on the second Schengen Information System.",
+          "Franco Frattini indicated a desire to include the European Parliament in all justice and criminal matters, informally anticipating new powers due as part of the Treaty of Lisbon."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "20f01cab-b089-4d0b-b9a6-f7d79b11d8d8",
+        "content": "Recent historyFurther information: Barroso CommissionBetween 2007 and 2009, a special working group on parliamentary reform implemented a series of changes to modernise the institution such as more speaking time for rapporteurs, increased committee co-operation and other efficiency reforms.[44][45]The Lisbon Treaty came into force on 1 December 2009, granting Parliament powers over the entire EU budget, making Parliament's legislative powers equal to the Council's in nearly all areas and describing Parliament's vote on an incoming Commission President Commission President as an \"election\", with the European Council having to make its proposal to Parliament in light of the results of the European elections.[39]Barroso gained the support of the European Council for a second term and secured majority support from the Parliament in September 2009. Parliament voted 382 votes in favour and 219 votes against (117 abstentions) with support of the European People's Party, European Conservatives and Reformists Party and the Alliance of Liberals and Democrats for Europe.[46] The liberals gave support after Barroso gave them a number of concessions; the liberals previously joined the socialists' call for a delayed vote (the EPP had wanted to approve Barroso in July of that year).[47]",
+        "segmentIndex": 14,
+        "summary": "The European Parliament implemented internal modernization reforms between 2007 and 2009, coinciding with the entry into force of the Lisbon Treaty on December 1, 2009. The Lisbon Treaty significantly enhanced Parliament's power, granting it legislative parity with the Council in most areas, full authority over the EU budget, and defining the vote on the Commission President as an election. Concurrently, José Manuel Barroso secured majority support for his second term as Commission President in September 2009, garnering 382 votes after making concessions to liberal groups.",
+        "standaloneFacts": [
+          "A special working group on parliamentary reform implemented changes to modernize the European Parliament between 2007 and 2009.",
+          "The Lisbon Treaty came into force on 1 December 2009.",
+          "The Lisbon Treaty granted the European Parliament powers over the entire EU budget.",
+          "The Lisbon Treaty made the European Parliament's legislative powers equal to the Council's in nearly all areas.",
+          "The Lisbon Treaty described the Parliament's vote on an incoming Commission President as an \"election\".",
+          "José Manuel Barroso secured majority support from the European Parliament for a second term as Commission President in September 2009.",
+          "Barroso's second term confirmation vote in Parliament resulted in 382 votes in favour, 219 votes against, and 117 abstentions.",
+          "Support for Barroso's second term came from the European People's Party, European Conservatives and Reformists Party, and the Alliance of Liberals and Democrats for Europe."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "5b8f4be1-3594-4dad-81fb-8999b1576739",
+        "content": "Once Barroso put forward the candidates for his next Commission, another case of MEPs opposing a particular nominee arose. Bulgarian nominee Rumiana Jeleva was forced to step down by Parliament due to concerns over her experience and financial interests. She only had the support of the EPP which began to retaliate on left wing candidates before Jeleva gave in and was replaced (setting back the final vote further).[48]Before the final vote on the Commission, Parliament demanded a number of concessions as part of a future working agreement under the new Lisbon Treaty. The deal includes that Parliament's president will attend high level Commission meetings. Parliament will have an observer seat in the EU's Commission-led international negotiations and have a right to information on agreements. Parliament did not secure an explicit vote over the appointment of delegation heads and special representatives for foreign policy, but it was agreed that they will appear before parliament after they have been appointed by the High Representative. Parliament wanted a pledge from the Commission that it would automatically put forward legislation when parliament requests. Barroso considered this an infringement on the Commission's powers but did agree to respond within three months. Most requests are already responded to positively.[49]",
+        "segmentIndex": 15,
+        "summary": "The formation of the next Commission was marked by parliamentary opposition, notably forcing Bulgarian nominee Rumiana Jeleva to step down due to concerns over her experience and financial interests. Before the final vote, Parliament used the leverage provided by the Lisbon Treaty to demand and secure several working concessions from the Commission, including the right for Parliament's president to attend high-level Commission meetings and gaining an observer seat in the EU's Commission-led international negotiations. The Commission also agreed to respond to Parliament's requests for legislation within three months.",
+        "standaloneFacts": [
+          "Bulgarian nominee Rumiana Jeleva was forced to step down as a Commission candidate by Parliament due to concerns over her experience and financial interests.",
+          "Parliament demanded a number of concessions from the Commission as part of a future working agreement under the new Lisbon Treaty.",
+          "One concession secured by Parliament was that its president would attend high level Commission meetings.",
+          "Parliament secured an observer seat in the EU's Commission-led international negotiations and a right to information on agreements.",
+          "It was agreed that delegation heads and special representatives for foreign policy will appear before Parliament after they have been appointed by the High Representative.",
+          "The Commission agreed to respond to Parliament's requests for legislation within three months."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "f9d3a181-e8b1-47bf-a5f4-4d466eff68f1",
+        "content": "During the setting up of the European External Action Service (EEAS), Parliament used its control over the EU budget to influence the shape of the EEAS. MEPs had aimed at getting greater oversight over the EEAS by linking it to the Commission and having political deputies to the High Representative. MEPs did not manage to get everything they demanded. However, they got broader financial control over the new body.[50][51]In December 2017, Politico denounced the insufficient racial diversity among Members of the European Parliament.[52] The subsequent news coverage contributed to create the Brussels So White movement to campaign to rectify this situation.[53]On gender balance, some 37 percent of MEPs were women in the 2014-19 Parliament and 40 percent in the 2019-24 Parliament, a greater proposition than in most national Parliaments in Member States [54] In January 2019, MEPs supported proposals to boost opportunities for women and tackle sexual harassment in the European Parliament.[55]In 2022, four people were arrested because of corruption. This came to be known as the Qatar corruption scandal at the European Parliament.[56]In October 2023, the Parliament adopted a resolution to condemn \"Hamas' despicable terrorist attacks against Israel\".[57]",
+        "segmentIndex": 16,
+        "summary": "The European Parliament leveraged its control over the EU budget to influence the setup of the European External Action Service (EEAS), resulting in greater financial control over the new body. The Parliament also dealt with issues of internal representation, noting that women comprised 40% of MEPs in the 2019-24 term, while reports of insufficient racial diversity led to the \"Brussels So White\" movement. Additionally, the segment highlights the 2022 Qatar corruption scandal and the Parliament's October 2023 resolution condemning Hamas' attacks against Israel.",
+        "standaloneFacts": [
+          "The European Parliament used its control over the EU budget to influence the shape of the European External Action Service (EEAS).",
+          "MEPs gained broader financial control over the European External Action Service (EEAS).",
+          "In December 2017, Politico denounced the insufficient racial diversity among Members of the European Parliament.",
+          "The subsequent news coverage regarding racial diversity contributed to the creation of the Brussels So White movement.",
+          "Women constituted 37 percent of MEPs in the 2014-19 European Parliament.",
+          "Women constituted 40 percent of MEPs in the 2019-24 European Parliament.",
+          "In January 2019, MEPs supported proposals to boost opportunities for women and tackle sexual harassment in the European Parliament.",
+          "Four people were arrested in 2022 due to corruption in the European Parliament, which became known as the Qatar corruption scandal.",
+          "In October 2023, the European Parliament adopted a resolution to condemn \"Hamas' despicable terrorist attacks against Israel\"."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "9736ebbb-abc6-477b-a2c9-eb593ea8d65c",
+        "content": "Moment of silence for victims of Hamas' terrorist attack on Israel, October 2023Since then, Europe's initial and almost unconditional support for Israel started to dwindle due to the disproportionate attacks on the civilian population of Gaza and the Occupied West Bank, with tens of thousands of deaths reported. In July 2025, the EU was weighing partly suspending parts of the EU-Israel Association Agreement over reports the country is breaching its human rights obligations in Gaza.[58] A majority for a suspension was not found, but the EU’s 27 foreign ministers agreed to “keep a close watch” on Israel’s compliance with a recent agreement to improve humanitarian aid access into Gaza. They also delayed agreeing on a list of 10 options to respond to Israel's action in Gaza during a meeting of the Foreign Affairs Council.[59]Powers and functionsThis article is part of a series onPolitics of the European UnionMember states (27)Treaties and DeclarationsExecutive institutionsLegislative institutionsJudicial institutionsAuditory institutionsEuropean Central BankOther bodiesEuratomEconomic and Monetary UnionSchengen AreaEuropean Economic AreaElectionsLawPolicies and issuesForeign relationsDefunct bodiesflag European Union portalOther countriesvte",
+        "segmentIndex": 17,
+        "summary": "Following the October 2023 Hamas attack, Europe's initial unconditional support for Israel began to diminish due to the disproportionate attacks and high civilian death toll reported in Gaza and the Occupied West Bank. By July 2025, the EU considered partially suspending the EU-Israel Association Agreement over alleged human rights breaches, although a majority for suspension was not achieved. Instead, the 27 foreign ministers agreed to closely monitor Israel's compliance with humanitarian aid access agreements and delayed agreeing on a list of 10 response options.",
+        "standaloneFacts": [
+          "Europe's initial unconditional support for Israel started to dwindle after October 2023 due to reported disproportionate attacks on the civilian population of Gaza and the Occupied West Bank.",
+          "In July 2025, the EU was weighing partly suspending parts of the EU-Israel Association Agreement over reports that Israel was breaching its human rights obligations in Gaza.",
+          "A majority for the suspension of the EU-Israel Association Agreement was not found among the EU's 27 foreign ministers in July 2025.",
+          "The EU’s 27 foreign ministers agreed to keep a close watch on Israel’s compliance with an agreement to improve humanitarian aid access into Gaza.",
+          "The Foreign Affairs Council delayed agreeing on a list of 10 options to respond to Israel's action in Gaza."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "19d5386d-544e-4f1f-baa8-06e431d5fbf5",
+        "content": "The Parliament and Council have been compared to the two chambers of a bicameral legislature.[60] However, there are some differences from national legislatures; for example, neither the Parliament nor the Council have the power of legislative initiative (except for the fact that the Council has the power in some intergovernmental matters). In Community matters, this is a power uniquely reserved for the European Commission (the executive). Therefore, while Parliament can amend and reject legislation, to make a proposal for legislation, it needs the Commission to draft a bill before anything can become law.[61] The value of a right of initiative has anyway been questioned by noting that in the national l",
+        "segmentIndex": 18,
+        "summary": "The European Parliament and the Council are often compared to the two chambers of a bicameral legislature, though they differ significantly from national systems. Neither the Parliament nor the Council generally holds the power of legislative initiative in Community matters; this power is uniquely reserved for the European Commission (the executive). Consequently, while Parliament can amend or reject legislation, it relies on the Commission to draft proposals before laws can be enacted.",
+        "standaloneFacts": [
+          "The European Parliament and the Council have been compared to the two chambers of a bicameral legislature.",
+          "Neither the European Parliament nor the Council generally has the power of legislative initiative in Community matters.",
+          "The power of legislative initiative in Community matters is uniquely reserved for the European Commission (the executive).",
+          "The Council has the power of legislative initiative in some intergovernmental matters.",
+          "The European Parliament can amend and reject legislation."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "95e9bbda-cfb7-4361-ae08-92965f62f9ce",
+        "content": "egislatures of the member states 85% of initiatives introduced without executive support fail to become law.[62] Yet it has been argued by former Parliament president Hans-Gert Pöttering that as the Parliament does have the right to ask the Commission to draft such legislation, and as the Commission is following Parliament's proposals more and more Parliament does have a de facto right of legislative initiative.[10]The Parliament also has a great deal of indirect influence, through non-binding resolutions and committee hearings, as a \"pan-European soapbox\" with the ear of thousands of Brussels-based journalists. There is also an indirect effect on foreign policy; the Parliament must approve all development grants, including those overseas. For example, the support for post-war Iraq reconstruction, or incentives for the cessation of Iranian nuclear development, must be supported by the Parliament. Parliamentary support was also required for the transatlantic passenger data-sharing deal with the United States.[63] Finally, Parliament holds a non-binding vote on new EU treaties and treaties amending the EU treaties, but cannot veto them. However, when Parliament threatened to vote down the Nice Treaty, the Belgian and Italian Parliaments said that if it did so, they would veto the treaty on the European Parliament's behalf.[64]",
+        "segmentIndex": 19,
+        "summary": "Although lacking a formal right of legislative initiative, the European Parliament (EP) is argued to possess a de facto right due to its ability to direct the Commission to draft legislation. The EP wields considerable indirect influence through non-binding resolutions, committee hearings, and its crucial requirement to approve all EU development grants, impacting foreign policy matters like post-war reconstruction and international agreements. While the EP's vote on new EU treaties is non-binding, it holds significant political leverage.",
+        "standaloneFacts": [
+          "In the national legislatures of member states, 85% of initiatives introduced without executive support fail to become law.",
+          "Former Parliament president Hans-Gert Pöttering argued that the European Parliament has a de facto right of legislative initiative.",
+          "The European Parliament must approve all development grants, including those overseas, affecting foreign policy matters like post-war Iraq reconstruction.",
+          "Parliamentary support was required for the transatlantic passenger data-sharing deal with the United States.",
+          "The European Parliament holds a non-binding vote on new EU treaties but cannot veto them.",
+          "When the European Parliament threatened to vote down the Nice Treaty, the Belgian and Italian Parliaments offered to veto the treaty on the European Parliament's behalf."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "2c8d914c-e991-4a0c-95ae-9a2774521b53",
+        "content": "Legislative procedureWith each new treaty, the powers of the Parliament, in terms of its role in the Union's legislative procedures, have expanded. The procedure which has slowly become dominant is the \"ordinary legislative procedure\" (previously named \"codecision procedure\"), which provides an equal footing between Parliament and Council. In particular, under the procedure, the Commission presents a proposal to Parliament and the Council which can only become law if both agree on a text, which they do (or not) through successive readings up to a maximum of three. In its first reading, Parliament may send amendments to the Council which can either adopt the text with those amendments or send back a \"common position\". That position may either be approved by Parliament, or it may reject the text by an absolute majority, causing it to fail, or it may adopt further amendments, also by an absolute majority. If the Council does not approve these, then a \"Conciliation Committee\" is formed. The committee is composed of the Council members plus an equal number of MEPs who seek to agree a compromise. Once a position is agreed, it has to be approved by Parliament, by a simple majority.[9][65]",
+        "segmentIndex": 20,
+        "summary": "The Ordinary Legislative Procedure (OLP), formerly known as the codecision procedure, has become the dominant legislative method, expanding the European Parliament's powers and placing it on equal footing with the Council. Under the OLP, a law requires agreement from both institutions on a text, which may involve up to three successive readings. If disagreements persist after the initial readings, a Conciliation Committee is formed to seek compromise, which must then be approved by Parliament via a simple majority.",
+        "standaloneFacts": [
+          "The procedure which has become dominant in the EU legislative process is the \"ordinary legislative procedure,\" previously named the \"codecision procedure.\"",
+          "The ordinary legislative procedure provides an equal footing between the European Parliament and the Council.",
+          "Under the ordinary legislative procedure, a Commission proposal can only become law if both the European Parliament and the Council agree on a text.",
+          "The ordinary legislative procedure involves successive readings up to a maximum of three.",
+          "If the Council does not approve further amendments adopted by Parliament, a Conciliation Committee is formed.",
+          "The Conciliation Committee is composed of Council members plus an equal number of MEPs who seek to agree on a compromise.",
+          "Parliament can reject the Council's \"common position\" in the second reading by an absolute majority, causing the legislative text to fail.",
+          "Once a position is agreed upon by the Conciliation Committee, it must be approved by the European Parliament by a simple majority."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "a9e2b4b5-55f9-492e-8091-603410896af9",
+        "content": "This is also aided by Parliament's mandate as the only directly democratic institution, which has given it leeway to have greater control over legislation than other institutions, for example over its changes to the Bolkestein directive in 2006.[42]In practice, most legislation is adopted at the first reading stage after the Parliament and the Council, having set out their initial positions, then negotiate a compromise text.[66] These negotiations take place in so-called \"trilogue\" meetings, in which the Commission is also present.In a few areas, special legislative procedures apply. These include justice and home affairs, budget and taxation, and certain aspects of other policy areas, such as the fiscal aspects of environmental policy. In these areas, the Council or Parliament decide law alone after consulting the other (or with its consent).[67]",
+        "segmentIndex": 21,
+        "summary": "The European Parliament's unique mandate as the only directly democratic institution gives it significant control over legislation. Although formal procedures exist, most laws are adopted quickly at the first reading stage through informal \"trilogue\" negotiations involving the Parliament, the Council, and the Commission. However, specific areas like justice, budget, and taxation utilize special legislative procedures where either the Council or Parliament may decide law alone after consultation or consent from the other institution.",
+        "standaloneFacts": [
+          "The European Parliament is the only directly democratic institution in the EU.",
+          "Most EU legislation is adopted at the first reading stage after the Parliament and the Council negotiate a compromise text.",
+          "Legislative negotiations between the Parliament and the Council take place in \"trilogue\" meetings, which also include the Commission.",
+          "Special legislative procedures apply in areas including justice and home affairs, budget and taxation, and fiscal aspects of environmental policy."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "91d92c09-9a70-4b0c-88c2-5d0a97226908",
+        "content": "There are different types of European Union law#Legislation.[9] The strongest act is a regulation, an act or law which is directly applicable in its entirety. Then there are directives which bind member states to certain goals which they must achieve. They do this through their own laws and hence have room to manoeuvre in deciding upon them. A decision is an instrument which is applicable to a particular person or group. Institutions may also issue recommendations and opinions which are merely non-binding, declarations.[68]BudgetThe Parliament and the Council are also the Union's budgetary authority since the Budgetary Treaties of the 1970s and the Lisbon Treaty. The EU budget is subject to a form of the ordinary legislative procedure with a single reading giving Parliament power over the entire budget (before 2009, its influence was limited to certain areas) on an equal footing to the Council. If there is a disagreement between them, it is taken to a conciliation committee as it is for legislative proposals. If the joint conciliation text is not approved by the Council, the Parliament may adopt the budget definitively, but only by a three-fifths majority.[67]",
+        "segmentIndex": 22,
+        "summary": "European Union law encompasses several distinct legal acts, such as regulations (directly applicable in full), directives (binding member states to goals while allowing implementation flexibility), and decisions (applicable to specific entities). Additionally, the text outlines the EU budgetary procedure, where the Parliament and the Council serve as the budgetary authority with equal power over the entire budget under a modified ordinary legislative procedure; notably, Parliament holds the final authority to adopt the budget with a three-fifths majority if the Council rejects the conciliation text.",
+        "standaloneFacts": [
+          "The strongest act of European Union law is a regulation, which is directly applicable in its entirety.",
+          "Directives bind European Union member states to specific goals which they must achieve, but allow flexibility in implementation through national laws.",
+          "A decision is an EU instrument applicable to a particular person or group.",
+          "Recommendations and opinions issued by EU institutions are non-binding declarations.",
+          "The Parliament and the Council serve as the European Union's budgetary authority.",
+          "The EU budget procedure uses a form of the ordinary legislative procedure with a single reading.",
+          "The European Parliament has power over the entire EU budget on an equal footing with the Council.",
+          "If the joint conciliation text for the budget is not approved by the Council, the Parliament may adopt the budget definitively, but only by a three-fifths majority."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "f9579227-85e3-4558-9d56-db7b915aa9cf",
+        "content": "The Parliament is also responsible for discharging the implementation of previous budgets based on the annual report of the European Court of Auditors. It has refused to grant discharge only twice, in 1984 and in 1998. On the latter occasion it led to the resignation of the Santer Commission; highlighting how the discharge power gives Parliament a great deal of power over the Commission.[27][38][69] Parliament also makes extensive use of its budgetary, and other powers, elsewhere; for example in the setting up of the European External Action Service, Parliament had a de facto veto over its design as it has to approve the budgetary and staff changes.[50]",
+        "segmentIndex": 23,
+        "summary": "The European Parliament holds significant power over the European Commission through its responsibility for discharging the implementation of previous budgets, a process based on the annual report of the European Court of Auditors. This power is substantial; for instance, the refusal to grant discharge in 1998 resulted in the resignation of the Santer Commission. Additionally, the Parliament uses its budgetary authority to exert influence over the design of new bodies, such as having a de facto veto over the creation of the European External Action Service.",
+        "standaloneFacts": [
+          "The European Parliament is responsible for discharging the implementation of previous EU budgets.",
+          "The Parliament bases its decision to discharge the budget on the annual report of the European Court of Auditors.",
+          "The European Parliament has refused to grant budget discharge only twice: in 1984 and 1998.",
+          "The refusal of budget discharge in 1998 resulted in the resignation of the Santer Commission.",
+          "The European Parliament had a de facto veto over the design of the European External Action Service."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "9b2047c0-6b7d-45ec-827b-b2615a6f7118",
+        "content": "Control of the executiveEuropean Parliament in 2025The President of the European Commission is proposed by the European Council on the basis of the European elections to Parliament.[39] That proposal has to be approved by the Parliament (by a majority of members of the Parliament) who thereby \"elect\" the President according to the treaties. Following the approval of the Commission President, the members of the Commission are proposed by the President in accord with the member states. Each Commissioner comes before a relevant parliamentary committee hearing covering the proposed portfolio. They are then, as a body, approved or rejected by the Parliament.[70][71]",
+        "segmentIndex": 24,
+        "summary": "The European Parliament exercises control over the executive by approving the President and the entire body of the European Commission. The European Council proposes the Commission President based on European election results, but this proposal must be approved by a majority of the Parliament's members. Subsequently, after the President proposes the rest of the Commissioners in accord with member states, each nominee faces a parliamentary committee hearing before the Parliament votes to approve or reject the Commission as a whole.",
+        "standaloneFacts": [
+          "The President of the European Commission is proposed by the European Council based on the European elections to Parliament.",
+          "The European Parliament must approve the proposed President of the European Commission by a majority of its members.",
+          "Following the approval of the Commission President, the members of the Commission are proposed by the President in accord with the member states.",
+          "Each proposed Commissioner must appear before a relevant parliamentary committee hearing covering their proposed portfolio.",
+          "The European Parliament approves or rejects the members of the European Commission as a single body."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "afeb33e4-e6b2-4a75-930d-b05f22c2cd4a",
+        "content": "In practice, the Parliament has never voted against a President or his Commission, but the threat to do so has produced concessions to Parliament on the Commission's composition or on policy commitments. As described above, when the Barroso Commission was put forward, the Parliament forced the proposal to be withdrawn and changed to be more acceptable to Parliament.[40] That pressure was seen as an important sign by some of the evolving nature of the Parliament and its ability to make the Commission accountable, rather than being a rubber stamp for candidates. Furthermore, in voting on the Commission, MEPs also vote along party lines, rather than national lines, despite frequent pressure from national governments on their MEPs. This cohesion and willingness to use the Parliament's power ensured greater attention from national leaders, other institutions and the public – reversing the previous decline in turnout for the Parliament's elections.[72]",
+        "segmentIndex": 25,
+        "summary": "While the European Parliament has never formally voted against a Commission President or the full Commission body, the threat of doing so successfully extracts concessions regarding composition or policy commitments, demonstrating the Parliament's evolving power. This leverage was notably used to compel the withdrawal and modification of the Barroso Commission proposal. Furthermore, MEPs typically vote along party lines, enhancing the Parliament's cohesion and influence, which has helped reverse the previous decline in turnout for its elections.",
+        "standaloneFacts": [
+          "The European Parliament has never voted against a President of the European Commission or the full Commission body.",
+          "The threat of the European Parliament voting against a Commission proposal successfully forces concessions on the Commission's composition or policy commitments.",
+          "The European Parliament forced the withdrawal and subsequent modification of the Barroso Commission proposal.",
+          "When voting on the Commission, MEPs vote along party lines rather than national lines, despite pressure from national governments.",
+          "The cohesion of the European Parliament and its willingness to use its power has reversed the previous decline in turnout for the Parliament's elections."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "a60ab20f-1490-4687-aa13-eb1cea3dadb3",
+        "content": "The Parliament also has the power to censure the Commission by a two-thirds majority which will force the resignation of the entire Commission from office. As with approval, this power has never been explicitly used, but when faced with such a vote, the Santer Commission then resigned of their own accord.There are other control instruments, such as: the requirement of Commission to submit reports to the Parliament and answer written and oral questions from MEPs; the requirement of the President-in-office of the Council to present its programme at the start of their presidency; the obligation on the President of the European Council to report to Parliament after each of its meetings; the right of MEPs to make requests for legislation and policy to the Commission; and the right to question members of those institutions (e.g. \"Commission Question Time\" every Tuesday).[34][71] Regarding written and oral questions, MEPs voted in July 2008 to limit questions to those within the EU's mandate and ban offensive or personal questions.[73]",
+        "segmentIndex": 26,
+        "summary": "The European Parliament holds the ultimate control mechanism over the Commission through the power of censure, requiring a two-thirds majority to force the resignation of the entire body; although never formally used, this threat previously led to the resignation of the Santer Commission. Furthermore, the Parliament maintains ongoing scrutiny via several instruments, including requiring the Commission to submit reports and answer questions, obligating Council Presidents to report on their activities, and allowing MEPs the right to request new legislation and policy.",
+        "standaloneFacts": [
+          "The European Parliament can censure the European Commission by a two-thirds majority, forcing the resignation of the entire Commission from office.",
+          "The power of censure has never been explicitly used by the European Parliament.",
+          "The Santer Commission resigned of its own accord when faced with a censure vote from the European Parliament.",
+          "The European Commission is required to submit reports to the Parliament and answer written and oral questions from MEPs.",
+          "The President-in-office of the Council must present its program to the Parliament at the start of their presidency.",
+          "The President of the European Council is obligated to report to the Parliament after each of its meetings.",
+          "MEPs have the right to question members of institutions during sessions like \"Commission Question Time\" every Tuesday.",
+          "In July 2008, MEPs voted to limit written and oral questions to those within the EU's mandate and ban offensive or personal questions."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "3fff3834-da87-4117-a24c-733b714716cf",
+        "content": "Supervisory and scrutiny powersThe Parliament also has other powers of general supervision, mainly granted by the Maastricht Treaty.[74] The Parliament has the power to set up a Committee of Inquiry, which it has done, for example over mad cow disease and CIA detention flights – the former led to the creation of the European veterinary agency. The Parliament can call other institutions to answer questions and if necessary to take them to court if they break EU law or treaties.[75] Furthermore, it has powers over the appointment of the members of the Court of Auditors[76] and the president and executive board of the European Central Bank. The ECB president is also obliged to present an annual report to the parliament.[75]",
+        "segmentIndex": 27,
+        "summary": "The European Parliament holds substantial supervisory and scrutiny powers, mainly granted by the Maastricht Treaty, allowing it to hold other EU institutions accountable. These powers include the ability to set up Committees of Inquiry, such as those investigating mad cow disease and CIA detention flights, and the right to take institutions to court for violating EU law. Additionally, the Parliament oversees the appointment of members of the Court of Auditors and the leadership of the European Central Bank, whose president is required to present an annual report.",
+        "standaloneFacts": [
+          "The European Parliament's general supervisory powers were mainly granted by the Maastricht Treaty.",
+          "The European Parliament has the power to set up a Committee of Inquiry.",
+          "A Committee of Inquiry set up by the European Parliament over mad cow disease led to the creation of the European veterinary agency.",
+          "The European Parliament can take other EU institutions to court if they break EU law or treaties.",
+          "The European Parliament has powers over the appointment of the members of the Court of Auditors.",
+          "The European Parliament has powers over the appointment of the president and executive board of the European Central Bank (ECB).",
+          "The President of the European Central Bank (ECB) is obliged to present an annual report to the European Parliament."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "d21d5de2-c764-4866-ad96-5b5f40c9bbbf",
+        "content": "The European Ombudsman is elected by the Parliament to deal with public complaints about maladministration (administrative irregularities, unfairness, discrimination, abuse of power, failure to reply, refusal of information or unnecessary delay) by any EU institution or body.[75]Petitions can be brought to the Parliament by any EU citizen on a matter within the EU's sphere of activities. The Parliament's Committee on Petitions hears cases, some 1500 each year, sometimes presented by the citizen themselves at the Parliament. While the Parliament attempts to resolve the issue as a mediator they do resort to legal proceedings if it is necessary to resolve the citizens dispute.[77]",
+        "segmentIndex": 28,
+        "summary": "The Parliament maintains supervisory control and provides avenues for citizen redress through the European Ombudsman and the Committee on Petitions. The European Ombudsman is elected by Parliament to address public complaints concerning maladministration by any EU institution, covering issues like abuse of power or unnecessary delay. Additionally, any EU citizen can submit petitions to the Parliament's Committee on Petitions, which hears about 1,500 cases annually and acts as a mediator, resorting to legal action only when necessary to resolve disputes.",
+        "standaloneFacts": [
+          "The European Ombudsman is elected by the European Parliament.",
+          "The European Ombudsman handles public complaints about maladministration by any EU institution or body.",
+          "Maladministration includes administrative irregularities, unfairness, discrimination, abuse of power, failure to reply, refusal of information, or unnecessary delay.",
+          "Any EU citizen can bring petitions to the Parliament on matters within the EU's sphere of activities.",
+          "The Parliament's Committee on Petitions hears approximately 1,500 petition cases each year."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "3f06b85d-dc47-4c28-9976-2020b5a148da",
+        "content": "MembersNational apportionment of MEP seats (total 720) Germany\t96 (13.33%) France\t81 (11.25%) Italy\t76 (10.56%) Spain\t61 (8.47%) Poland\t53 (7.36%) Romania\t33 (4.58%) Netherlands\t31 (4.31%) Belgium\t22 (3.06%) Czech Republic\t21 (2.92%) Greece\t21 (2.92%) Hungary\t21 (2.92%) Portugal\t21 (2.92%) Sweden\t21 (2.92%) Austria\t20 (2.78%) Bulgaria\t17 (2.36%) Denmark\t15 (2.08%) Finland\t15 (2.08%) Slovakia\t15 (2.08%) Ireland\t14 (1.94%) Croatia\t12 (1.67%) Lithuania\t11 (1.53%) Latvia\t9 (1.25%) Slovenia\t9 (1.25%) Estonia\t7 (0.97%) Cyprus\t6 (0.83%) Luxembourg\t6 (0.83%) Malta\t6 (0.83%)G",
+        "segmentIndex": 29,
+        "summary": "This segment details the national apportionment of the total 720 Members of the European Parliament (MEP) seats across member states. Germany holds the largest share with 96 seats (13.33%), followed by France (81 seats) and Italy (76 seats). The apportionment specifies the seat count and percentage for each listed country.",
+        "standaloneFacts": [
+          "The total number of MEP seats apportioned nationally is 720.",
+          "Germany is allocated the largest share of MEP seats, holding 96 seats (13.33%).",
+          "France is allocated 81 MEP seats (11.25%).",
+          "Italy is allocated 76 MEP seats (10.56%).",
+          "Spain is allocated 61 MEP seats (8.47%).",
+          "Poland is allocated 53 MEP seats (7.36%).",
+          "Cyprus, Luxembourg, and Malta are each allocated 6 MEP seats (0.83%)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "734f9275-db1a-4f8a-a629-98b6b60f98ca",
+        "content": "ender of the members of the European ParliamentMain article: Members of the European ParliamentThe parliamentarians are known in English as Members of the European Parliament (MEPs). They are elected every five years by universal suffrage and sit according to political allegiance. About 40 percent are women. Before the first direct elections, in 1979, they were appointed by their national parliaments.[23][78]The Parliament has been criticized for underrepresentation of minority groups. In 2017, an estimated 17 MEPs were non-white,[79] and of these, three were black, a disproportionately low number.[80] According to activist organization European Network Against Racism, while an estimated 10% of Europe is composed of racial and ethnic minorities, only 5% of MEPs were members of such groups following the 2019 European Parliament election.[81]Under the Lisbon Treaty, seats are allocated to each state according to population and the maximum number of members is set at 751.[82] Since 1 February 2020 and the United Kingdom's leaving the EU, 705 MEPs sit in the European Parliament. It rose to 720 after the 2024 elections.",
+        "segmentIndex": 30,
+        "summary": "Members of the European Parliament (MEPs) are elected every five years by universal suffrage, with approximately 40 percent being women. Historically, MEPs were appointed until the first direct elections in 1979. The Parliament has been criticized for the underrepresentation of racial and ethnic minority groups. While the Lisbon Treaty set the maximum number of members at 751, the total number of MEPs was 705 following the UK's departure in 2020, and this number subsequently rose to 720 after the 2024 elections.",
+        "standaloneFacts": [
+          "Members of the European Parliament (MEPs) are elected every five years by universal suffrage.",
+          "Approximately 40 percent of MEPs are women.",
+          "Before the first direct elections in 1979, members of the European Parliament were appointed by their national parliaments.",
+          "Under the Lisbon Treaty, the maximum number of members of the European Parliament is set at 751.",
+          "Following the UK's departure from the EU, 705 MEPs sat in the European Parliament starting 1 February 2020.",
+          "The number of MEPs increased to 720 after the 2024 elections.",
+          "According to activist organization European Network Against Racism, only 5% of MEPs were members of racial and ethnic minority groups following the 2019 European Parliament election."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "e1bed416-2916-4a36-802b-60d8a066b21a",
+        "content": "Representation is currently limited to a maximum of 96 seats and a minimum of 6 seats per state and the seats are distributed according to \"degressive proportionality\", i.e., the larger the state, the more citizens are represented per MEP. As a result, Maltese and Luxembourgish voters have roughly 10x more influence per voter than citizens of the six largest countries.As of 2014, Germany (80.9 million inhabitants) has 96 seats (previously 99 seats), i.e. one seat for 843,000 inhabitants. Malta (0.4 million inhabitants) has 6 seats, i.e. one seat for 70,000 inhabitants.The new system implemented under the Lisbon Treaty, including revising the seating well before elections, was intended to avoid political horse trading when the allocations have to be revised to reflect demographic changes.[83]Pursuant to this apportionment, the constituencies are formed. In four EU member states (Belgium, Ireland, Italy and Poland), the national territory is divided into a number of constituencies. In the remaining member states, the whole country forms a single constituency. All member states hold elections to the European Parliament using various forms of proportional representation.",
+        "segmentIndex": 31,
+        "summary": "The allocation of European Parliament seats operates under the principle of \"degressive proportionality,\" which mandates a maximum of 96 and a minimum of 6 seats per state, resulting in smaller countries having significantly greater voter influence per representative than larger ones. For instance, Maltese voters have roughly ten times more influence per voter than citizens of the six largest EU countries. The system implemented under the Lisbon Treaty was designed to streamline the revision of seat allocations based on demographic changes and avoid political negotiation, with all member states using various forms of proportional representation for elections.",
+        "standaloneFacts": [
+          "European Parliament representation is limited to a maximum of 96 seats per state and a minimum of 6 seats per state.",
+          "European Parliament seats are distributed according to \"degressive proportionality.\"",
+          "As of 2014, Germany held 96 seats (representing one seat for 843,000 inhabitants), while Malta held 6 seats (representing one seat for 70,000 inhabitants).",
+          "Maltese and Luxembourgish voters have roughly 10x more influence per voter than citizens of the six largest countries due to degressive proportionality.",
+          "The new seat allocation system implemented under the Lisbon Treaty was intended to avoid political horse trading when revising allocations due to demographic changes.",
+          "Four EU member states (Belgium, Ireland, Italy, and Poland) divide their national territory into multiple constituencies for European Parliament elections.",
+          "All member states hold elections to the European Parliament using various forms of proportional representation."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "c6f21a92-b2a7-4447-bdd6-91ae83816126",
+        "content": "Transitional arrangementsDue to the delay in ratifying the Lisbon Treaty, the seventh parliament was elected under the lower Nice Treaty cap. A small scale treaty amendment was ratified on 29 November 2011.[84] This amendment brought in transitional provisions to allow the 18 additional MEPs created under the Lisbon Treaty to be elected or appointed before the 2014 election.[85] Under the Lisbon Treaty reforms, Germany was the only state to lose members from 99 to 96. However, these seats were not removed until the 2014 election.[86]Salaries and expensesBefore 2009, members received the same salary as members of their national parliament. However, from 2009 a new members statute came into force, after years of attempts, which gave all members an equal monthly pay, of €8,484.05 each in 2016, subject to a European Union tax and which can also be taxed nationally. MEPs are entitled to a pension, paid by Parliament, from the age of 63. Members are also entitled to allowances for office costs and subsistence, and travelling expenses, based on actual cost.[87]",
+        "segmentIndex": 32,
+        "summary": "Transitional arrangements were implemented due to the delayed ratification of the Lisbon Treaty, including a 2011 amendment that allowed 18 additional MEPs to take their seats before the 2014 election. Separately, a new members statute came into force in 2009, standardizing MEP compensation, which included equal monthly pay (€8,484.05 in 2016), pension eligibility from age 63, and allowances for office and travel expenses.",
+        "standaloneFacts": [
+          "The seventh parliament was elected under the lower Nice Treaty cap.",
+          "A small scale treaty amendment was ratified on November 29, 2011.",
+          "The 2011 treaty amendment introduced transitional provisions allowing 18 additional MEPs created under the Lisbon Treaty to be elected or appointed before the 2014 election.",
+          "Under the Lisbon Treaty reforms, Germany was the only state to lose MEP members, decreasing from 99 to 96 seats.",
+          "Germany's loss of MEP seats (from 99 to 96) did not take effect until the 2014 election.",
+          "Before 2009, Members of the European Parliament (MEPs) received the same salary as members of their national parliament.",
+          "A new members statute came into force in 2009, which gave all MEPs an equal monthly pay.",
+          "In 2016, the equal monthly pay for MEPs was €8,484.05.",
+          "MEP pay is subject to a European Union tax and can also be taxed nationally.",
+          "MEPs are entitled to a pension, paid by Parliament, starting from the age of 63.",
+          "MEPs are entitled to allowances for office costs, subsistence, and travelling expenses, based on actual cost."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "eb58e2e9-a353-4b04-977c-b7fabcd8046f",
+        "content": "Besides their pay, members are granted a number of privileges and immunities. To ensure their free movement to and from the Parliament, they are accorded by their own states the facilities accorded to senior officials travelling abroad and, by other state governments, the status of visiting foreign representatives. When in their own state, they have all the immunities accorded to national parliamentarians, and, in other states, they have immunity from detention and legal proceedings. They may then only be prosecuted after the European Parliament waives their immunity. However, immunity cannot be claimed when a member is found committing a criminal offence and the Parliament also has the right to strip a member of their immunity.[88]",
+        "segmentIndex": 33,
+        "summary": "The privileges and immunities granted to Members of the European Parliament (MEPs) ensure their free movement and protect them from detention and legal proceedings in other member states. While prosecution generally requires the European Parliament to waive immunity, immunity cannot be claimed if an MEP is caught committing a criminal offense. Furthermore, the Parliament reserves the right to strip a member of their immunity.",
+        "standaloneFacts": [
+          "To ensure free movement, MEPs are accorded facilities by their own states similar to those given to senior officials traveling abroad.",
+          "In states other than their own, MEPs are granted the status of visiting foreign representatives.",
+          "When in their own state, MEPs have the immunities accorded to national parliamentarians.",
+          "In states other than their own, MEPs have immunity from detention and legal proceedings.",
+          "MEPs can only be prosecuted after the European Parliament waives their immunity.",
+          "Immunity cannot be claimed when an MEP is found committing a criminal offence.",
+          "The European Parliament has the right to strip a member of their immunity."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "be1a2af9-ea1b-45dc-8096-adbe05c7c627",
+        "content": "Political groupsMain article: Political groups of the European ParliamentMEPs in Parliament are organised into eight different parliamentary groups; members who do not join a group are known as non-attached members or non-inscrits.The two largest groups are the European People's Party Group (EPP) and the Socialists & Democrats (S&D). These two groups have dominated the Parliament for much of its existence, jointly holding between 50 and 70 percent of the seats until 2019. No single group has ever held an absolute majority in Parliament.[89]As a result of being broad alliances of national parties, political groups in the European Parliament are decentralised and have more in common with parties in federal states like Germany or the United States than with unitary states, like the majority of the EU member states.[62] Nevertheless, the political groups were actually more cohesive than their US counterparts between 2004 and 2009.[90][91]",
+        "segmentIndex": 34,
+        "summary": "MEPs in the European Parliament are organized into eight political groups, with members who do not join a group known as non-attached members or non-inscrits. The Parliament has historically been dominated by the two largest groups, the European People's Party Group (EPP) and the Socialists & Democrats (S&D), which jointly held 50 to 70 percent of the seats until 2019, though no single group has ever achieved an absolute majority. Due to being broad alliances of national parties, these groups are decentralized, resembling parties in federal states, yet were more cohesive than their US counterparts between 2004 and 2009.",
+        "standaloneFacts": [
+          "MEPs in the European Parliament are organized into eight different parliamentary groups.",
+          "Members of the European Parliament who do not join a group are known as non-attached members or non-inscrits.",
+          "The two largest political groups in the European Parliament are the European People's Party Group (EPP) and the Socialists & Democrats (S&D).",
+          "The EPP and S&D groups jointly held between 50 and 70 percent of the seats in the European Parliament until 2019.",
+          "No single political group has ever held an absolute majority in the European Parliament.",
+          "Political groups in the European Parliament are decentralized because they are broad alliances of national parties.",
+          "Between 2004 and 2009, European Parliament political groups were more cohesive than their US counterparts."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "77912763-8389-4978-94a6-6e966ac28e65",
+        "content": "Half of the groups are based on a single European political party, such as the European People's Party, with the addition of MEPs from national parties not members of a European party and independent MEPs. The others, such as the Greens–European Free Alliance group or the European Conservatives and Reformists Group, center on two European parties, as well as other national parties and independents.[92]Groups need 23 MEPs from seven different member states to register. Following registration, groups receive public funding from the budget of the European Parliament.[93]CoalitionsGiven that the Parliament does not form the government in the traditional sense of many parliamentary systems, majorities are built issue by issue. Generally, this is along broadly consensual lines with dynamic coalitions[94] rather than majority rule of competing parties and coalitions.These coalitions usually involve the European People's Party and the Socialist and Democrat Group of the Party of European Socialists who tend to co-operate to find compromises between them and then bring in others. Their relationship has been described as a grand coalition.[95] However, this does not always produce agreement, and each may instead try to build other alliances, the EPP normally with other centre-right or right wing Groups and the PES with centre-left or left wing groups. Sometimes, the Liberal (Renew Europe) Group is then in the pivotal position.",
+        "segmentIndex": 35,
+        "summary": "European Parliament political groups vary in structure, with approximately half based on a single European party and others centering on two European parties, supplemented by national parties and independents. To gain public funding and official status, a group must register with 23 MEPs from at least seven different member states. Since the Parliament does not form a traditional government, majorities are built issue-by-issue through dynamic coalitions, usually involving the European People's Party and the Socialist and Democrat Group in what is often described as a grand coalition.",
+        "standaloneFacts": [
+          "Approximately half of the European Parliament's political groups are based on a single European political party.",
+          "Examples of political groups centering on two European parties include the Greens–European Free Alliance group and the European Conservatives and Reformists Group.",
+          "To register, a political group in the European Parliament needs 23 MEPs from seven different member states.",
+          "Registered political groups in the European Parliament receive public funding from the Parliament's budget.",
+          "Majorities in the European Parliament are built issue-by-issue through dynamic coalitions.",
+          "Coalitions in the European Parliament usually involve the European People's Party (EPP) and the Socialist and Democrat Group (S&D).",
+          "The co-operative relationship between the European People's Party and the Socialist and Democrat Group has been described as a grand coalition.",
+          "The Liberal (Renew Europe) Group sometimes holds the pivotal position in coalition building within the European Parliament."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "ad6dd88b-039b-45e3-ad10-ff79926fe763",
+        "content": "There are also occasions where very sharp party political divisions have emerged, for example over the resignation of the Santer Commission.[38] When the initial allegations against the Commission emerged, they were directed primarily against Édith Cresson and Manuel Marín, both socialist members. When the parliament was considering refusing to discharge the Community budget, President Jacques Santer stated that a no vote would be tantamount to a vote of no confidence. The Socialist Group initially supported the Commission and saw the issue as an attempt by the EPP to discredit their party ahead of the 1999 elections. Socialist leader, Pauline Green MEP, attempted a vote of confidence and the EPP put forward counter motions. During this period the two parties took on similar roles to a government-opposition dynamic, with the Socialists supporting the executive and EPP renouncing its previous coalition support and voting it down.[38] Politicisation such as this has been increasing, in 2007 Simon Hix of the London School of Economics noted that:[18]",
+        "segmentIndex": 36,
+        "summary": "Sharp party political divisions, such as those surrounding the resignation of the Santer Commission, occasionally disrupt the Parliament's typical consensual approach. During this crisis, the Socialist Group supported the executive against allegations targeting its members (Édith Cresson and Manuel Marín), while the EPP abandoned its coalition role to vote down the Commission. This event created a temporary government-opposition dynamic, illustrating increasing politicization within the European Parliament.",
+        "standaloneFacts": [
+          "Sharp party political divisions emerged over the resignation of the Santer Commission.",
+          "Initial allegations against the Santer Commission were directed primarily against socialist members Édith Cresson and Manuel Marín.",
+          "President Jacques Santer stated that refusing to discharge the Community budget would be tantamount to a vote of no confidence.",
+          "Pauline Green MEP, the Socialist leader, attempted a vote of confidence during the Santer Commission crisis.",
+          "During the Santer Commission crisis, the European People's Party (EPP) renounced its previous coalition support and voted down the Commission."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "f0ad6299-5bc9-4d34-ac80-a2d395f9a1b0",
+        "content": "Our work also shows that politics in the European Parliament is becoming increasingly based around party and ideology. Voting is increasingly split along left-right lines, and the cohesion of the party groups has risen dramatically, particularly in the fourth and fifth parliaments. So there are likely to be policy implications here too.During the fifth term, 1999 to 2004, there was a break in the grand coalition resulting in a centre-right coalition between the Liberal and People's parties.[96] This was reflected in the Presidency of the Parliament with the terms being shared between the EPP and the Liberals (then called ELDR), rather than the EPP and Socialists.[97] In the following term the liberal group grew to hold 88 seats, the largest number of seats held by any third party in Parliament.[98] The EPP-S&D coalition lost their majority after the 2019 European Parliament election,[99] requiring support by at least one other political group for a majority, most frequently the liberal Renew Group or the Greens.",
+        "segmentIndex": 37,
+        "summary": "The political landscape in the European Parliament is increasingly polarized, with voting patterns splitting along left-right ideological lines and party group cohesion rising dramatically. This increased politicization fractured the traditional grand coalition during the 1999\n\nto 2004 term, leading to a center-right alliance between the Liberal and People's parties. Most recently, the EPP-S\n&D coalition lost its majority after the 2019 elections, requiring support from groups like the Renew Group or the Greens to secure a majority.",
+        "standaloneFacts": [
+          "Politics in the European Parliament is increasingly based around party and ideology.",
+          "During the fifth European Parliament term (1999 to 2004), the grand coalition broke, resulting in a center-right coalition between the Liberal and People's parties.",
+          "The Presidency of the Parliament during the fifth term was shared between the EPP and the Liberals (then called ELDR).",
+          "In the term following the fifth term, the liberal group held 88 seats, the largest number of seats held by any third party in Parliament.",
+          "The EPP-S\n&D coalition lost their majority after the 2019 European Parliament election.",
+          "Following the 2019 European Parliament election, a majority requires support by at least one other political group, most frequently the liberal Renew Group or the Greens."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "2c7c5dbe-f21e-48ea-8aa8-cd8f9cb7f1a3",
+        "content": "ElectionsMain article: Elections to the European ParliamentElections have taken place, directly in every member state, every five years since 1979. As of 2019 there have been ten elections. When a nation joins mid-term, a by-election is held in that country to elect its representatives. This has happened six times, most recently when Croatia joined in 2013. Elections take place on over a four-day period from a Thursday to a Sunday (each Member State votes on the day of its choice).Member States choose their electoral system within common guidelines, notably that the suffrage must be universal and that seats are allocated by proportional representation. This includes determining constituencies: while most Member States have a national constituencies, some divide their allocation between regions. Seats are allocated to member states according to their population, since 2014 with no state having more than 96, but no fewer than 6, to maintain proportionality.[100]The most recent Union-wide elections to the European Parliament were the European elections of 2019, held from 23 to 26 May 2019. They were the largest simultaneous transnational elections ever held anywhere in the world. The first session of the ninth parliament started 2 July 2019.[101]European political parties have the exclusive right to campaign during the E",
+        "segmentIndex": 38,
+        "summary": "Elections to the European Parliament have occurred directly in every member state every five years since 1979, totaling ten elections as of 2019. Member States choose their specific electoral systems, but must adhere to common guidelines requiring universal suffrage and proportional representation, with seat allocation limits set between 6 and 96 seats per state since 2014. The most recent elections, held over four days in May 2019, were the largest simultaneous transnational elections globally, marking the beginning of the ninth parliament session on July 2, 2019.",
+        "standaloneFacts": [
+          "Elections to the European Parliament have been held directly in every member state every five years since 1979.",
+          "As of 2019, there have been ten elections to the European Parliament.",
+          "When a nation joins the EU mid-term, a by-election is held in that country to elect its representatives; this happened most recently when Croatia joined in 2013.",
+          "European Parliament elections take place over a four-day period, from a Thursday to a Sunday.",
+          "Member States must allocate seats in the European Parliament using proportional representation and universal suffrage.",
+          "Since 2014, no state can have more than 96 seats or fewer than 6 seats in the European Parliament.",
+          "The most recent Union-wide elections to the European Parliament were held from May 23 to May 26, 2019.",
+          "The 2019 European elections were the largest simultaneous transnational elections ever held anywhere in the world.",
+          "The first session of the ninth European Parliament started on July 2, 2019."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "15eca6ef-227d-4742-9fe3-3d46c36a9631",
+        "content": "uropean elections (as opposed to their corresponding EP groups).[102] There have been a number of proposals designed to attract greater public attention to the elections. One such innovation in the 2014 elections was that the pan-European political parties announced, ahead of the elections, their candidates for president of the Commission, the so-called Spitzenkandidaten (German, \"leading candidates\" or \"top candidates\"). The President of the European Commission is nominated by the European Council, representing the governments of the member states, and while there is no obligation for them to nominate the successful \"candidate\", the Lisbon Treaty states that they should take account of the results of the elections when choosing whom to nominate, and the candidate they propose must be endorsed by a majority of members of the European Parliament.[103]The Spitzenkandidaten in 2014 were Jean-Claude Juncker for the European People's Party,[104] Martin Schulz for the Party of European Socialists, Guy Verhofstadt for the Alliance of Liberals and Democrats for Europe Party, Ska Keller and José Bové jointly for the European Green Party and Alexis Tsipras for the Party of the European Left. The EPP won the most seats and Jean-Claude Juncker was nominated by the European Council and elected by the Parliament.",
+        "segmentIndex": 39,
+        "summary": "To increase public attention, the 2014 European elections introduced the *Spitzenkandidaten* system, where pan-European political parties announced their candidates for President of the European Commission (EC) ahead of time. Although the European Council nominates the EC President, the Lisbon Treaty mandates that they must consider the election results, and the nominee requires endorsement by the European Parliament. Following the 2014 elections, Jean-Claude Juncker, the *Spitzenkandidat* for the victorious European People's Party, was nominated and subsequently elected.",
+        "standaloneFacts": [
+          "European political parties have the exclusive right to campaign during the European elections.",
+          "The *Spitzenkandidaten* system was an innovation introduced in the 2014 elections to attract greater public attention.",
+          "The Lisbon Treaty states that the European Council should take account of the results of the elections when choosing whom to nominate for President of the European Commission.",
+          "The candidate proposed for President of the European Commission must be endorsed by a majority of members of the European Parliament.",
+          "Jean-Claude Juncker was the *Spitzenkandidat* for the European People's Party (EPP) in the 2014 elections.",
+          "The European People's Party (EPP) won the most seats in the 2014 European elections."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "ed9905f4-a970-4dd6-8ccf-16300d5fe016",
+        "content": "In 2019, the parties again announced their candidates for President of the Commission ahead of the European elections, notably Manfred Weber for the EPP and Frans Timmermans for the Party of European Socialists. However, after the election, there was no agreement among the parties after the election to back any of them. After a period of deadlock, the European Council proposed Ursula von der Leyen as a compromise and Parliament elected her, albeit by a narrow majority.In 2024, the EPP decided to back Von der Leyen for a second term of office and put her forward as their \"Spitzenkandidat\" while the PES put forward Nicolas Schmit. After the election, the European Council duly nominated her and the Parliament elected her by 401 votes to 284, with support from the EPP, the Socialists, the liberal Renew Group and the Greens.[105]Until 2014, turnout dropped consistently in every election since the first election, and from 1999 until 2014 was below 50%. In 2007 both Bulgaria and Romania elected their MEPs in by-elections, having joined at the beginning of 2007. The Bulgarian and Romanian elections saw two of the lowest turnouts for European elections, just 28.6%[106] and 28.3% respectively.[107] This trend was interrupted in the 2019 election, when turnout increased by 8% EU-wide, rising to 50.6%, the highest since 1994.",
+        "segmentIndex": 40,
+        "summary": "The use of the Spitzenkandidaten system continued in the 2019 and 2024 European elections, though the 2019 result led to a deadlock, resulting in the compromise nomination and narrow election of Ursula von der Leyen. She secured her second term in 2024 with support from major political groups. Crucially, the long-term trend of declining voter turnout was reversed in 2019, when participation rose by 8% EU-wide to 50.6%, the highest level since 1994.",
+        "standaloneFacts": [
+          "In the 2019 European elections, Manfred Weber was the EPP candidate and Frans Timmermans was the Party of European Socialists (PES) candidate for President of the Commission.",
+          "After the 2019 European elections, the European Council proposed Ursula von der Leyen as a compromise candidate, and Parliament elected her by a narrow majority.",
+          "For the 2024 European elections, the EPP backed Ursula von der Leyen and the PES put forward Nicolas Schmit as their candidates for Commission President.",
+          "Ursula von der Leyen was elected by the Parliament in 2024 by 401 votes to 284.",
+          "In the 2024 election, Ursula von der Leyen received support from the EPP, the Socialists, the liberal Renew Group, and the Greens.",
+          "Turnout in European elections dropped consistently until the 2014 election, and was below 50% from 1999 until 2014.",
+          "The 2007 European elections in Bulgaria and Romania saw turnouts of 28.6% and 28.3% respectively.",
+          "The trend of declining European election turnout was interrupted in 2019 when turnout increased by 8% EU-wide, rising to 50.6%.",
+          "The 50.6% turnout recorded in the 2019 European election was the highest since 1994."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "23712a25-c5a5-4b6d-86b2-949c651d8c14",
+        "content": "In England, Scotland and Wales, EP elections were originally held for a constituency MEP on a first-past-the-post basis. In 1999 the system was changed to a form of proportional representation where parties put up a team of candidates in regional constituencies.[108] One could vote for a party's list of candidates, but not for an individual candidate (unless that party had a single candidate).ProceedingsThese \"relocation boxes\" of the European Parliament, called \"cantines\", are ready to be transported between Strasbourg and Brussels. The EP moves back and forth to meet the EU treaty obligation to hold plenary sessions in Strasbourg.Formally, the European Parliament has an annual \"session\", divided into monthly \"part-sessions\" and daily \"sittings\". In practice, this entails a monthly cycle with two committee weeks where matters are discussed in committees, political group weeks for members to discuss work within their political groups, and session weeks where members spend 3+1⁄2 days in Strasbourg for part-sessions. In addition six 2-day part sessions are organised in Brussels throughout the year. Four weeks a year are allocated as constituency week to allow members to do exclusively constituency work, which they otherwise have to do at weekends. Finally there are no meetings planned during the summer weeks.[109]",
+        "segmentIndex": 41,
+        "summary": "The text first describes the change in the electoral system for European Parliament (EP) elections in England, Scotland, and Wales, which shifted from first-past-the-post to proportional representation in 1999, requiring voters to select party lists. Secondly, it details the procedural organization of the EP, noting its obligation to move between Brussels and Strasbourg (where plenary sessions must be held by treaty) and outlining its monthly schedule, which includes committee weeks, political group weeks, and session weeks.",
+        "standaloneFacts": [
+          "EP elections in England, Scotland, and Wales changed from a first-past-the-post system to proportional representation in 1999.",
+          "Under the proportional representation system implemented in 1999 for EP elections in England, Scotland, and Wales, voters generally voted for a party's list of candidates.",
+          "The European Parliament utilizes \"relocation boxes\" called \"cantines\" for transporting materials between Strasbourg and Brussels.",
+          "The European Parliament moves between Strasbourg and Brussels to fulfill the EU treaty obligation to hold plenary sessions in Strasbourg.",
+          "The European Parliament's annual \"session\" is divided into monthly \"part-sessions\" and daily \"sittings.\"",
+          "The European Parliament's monthly cycle includes two committee weeks, political group weeks, and session weeks.",
+          "Six two-day part sessions of the European Parliament are organized in Brussels throughout the year.",
+          "Four weeks a year are allocated as constituency week for MEPs to perform constituency work."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "c331c717-5a62-4596-a196-fac3d177c077",
+        "content": "The Parliament has the power to meet without being convened by another authority. Its meetings are partly set out by the treaties but are otherwise up to Parliament according to its own \"Rules of Procedure\" (the regulations governing the parliament).[110]During sittings, members may speak after being called on by the President. Members of the Council or Commission may also attend and speak in debates.[111][112] Partly due to the need for interpretation, and the politics of consensus in the chamber, debates tend to be calmer and more polite than, say, the Westminster system.[113] Voting is conducted primarily by a show of hands, that may be checked on request by electronic voting.[114] Votes of MEPs are not recorded in either case, however; that only occurs when there is a roll-call ballot. This is required for the final votes on legislation and also whenever a political group or 30 MEPs request it. The number of roll-call votes has increased with time. Votes can also be a completely secret ballot (for example, when the president is elected).[115][116] All recorded votes, along with minutes and legislation, are recorded in the Official Journal of the European Union and can be accessed online.[117] Votes usually do not follow a debate, but rather they are grouped with other due votes on specific occasions, usually at noon on Tuesdays, Wednesdays or Thursdays. This is because the length of the vote is unpredictable and if it continues for longer than allocated it can disrupt other debates and meetings later in the day.[118]",
+        "segmentIndex": 42,
+        "summary": "The European Parliament operates autonomously, setting its meeting schedule partly through treaties and partly through its 'Rules of Procedure.' Debates, which are generally calmer than the Westminster system, allow participation from the Council and Commission. Voting is primarily conducted via a show of hands, but recorded roll-call ballots are mandatory for final legislation and upon request, with all official records being published online in the Official Journal of the European Union.",
+        "standaloneFacts": [
+          "The European Parliament has the power to meet without being convened by another authority.",
+          "The regulations governing the European Parliament are called its 'Rules of Procedure.'",
+          "Members of the Council or the Commission may attend and speak in European Parliament debates.",
+          "The European Parliament's debates tend to be calmer than the Westminster system, partly due to the need for interpretation.",
+          "Voting in the European Parliament is primarily conducted by a show of hands, which can be checked by electronic voting upon request.",
+          "Votes of MEPs are not recorded during show of hands or electronic checks.",
+          "Roll-call ballots are required for the final votes on legislation in the European Parliament.",
+          "A roll-call ballot in the European Parliament can be requested by a political group or 30 MEPs.",
+          "The election of the European Parliament President is conducted by a completely secret ballot.",
+          "All recorded votes, minutes, and legislation of the European Parliament are recorded in the Official Journal of the European Union.",
+          "Votes in the European Parliament are typically grouped together and usually occur around noon on Tuesdays, Wednesdays, or Thursdays."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "79c2086c-1ba2-4e22-90c4-3e08a0aac682",
+        "content": "Members sit in a hemicycle according to their political groups (in the Common Assembly, prior to 1958, members sat alphabetically[119]) who are ordered mainly by left to right. All desks are equipped with microphones, headphones for listening to interpretation, and electronic voting equipment. The leaders of the Groups sit on the front benches, and in the very centre is a podium for guest speakers. The remaining half of the circular chamber is primarily composed of the raised area where the President and staff sit. Further benches are provided between the sides of this area and the MEPs, these are taken up by the Council on the far left and the Commission on the far right. Both the Brussels and Strasbourg hemicycle roughly follow this layout with only minor differences.[120] The hemicycle design is a compromise between the different Parliamentary systems. The British-based system has the different groups directly facing each other while the French-based system is a semicircle (and the traditional German system had all members in rows facing a rostrum for speeches). Although the design is mainly based on a semicircle, the opposite ends of the spectrum do still face each other.[119]",
+        "segmentIndex": 43,
+        "summary": "The European Parliament's hemicycle arranges members by political groups, ordered generally from left to right, with all desks equipped for electronic voting and interpretation. The chamber features a raised area for the President and staff, a central podium for guest speakers, and designated seating for the Council (far left) and the Commission (far right). This seating plan is a deliberate compromise between different national parliamentary systems, such as the British and French models.",
+        "standaloneFacts": [
+          "Members of the European Parliament sit in a hemicycle according to their political groups, ordered mainly by left to right.",
+          "All desks in the hemicycle are equipped with microphones, headphones for listening to interpretation, and electronic voting equipment.",
+          "The leaders of the political groups sit on the front benches of the hemicycle.",
+          "A podium for guest speakers is located in the very center of the European Parliament's chamber.",
+          "The remaining half of the circular chamber is a raised area where the President and staff sit.",
+          "The Council sits on benches on the far left, and the Commission sits on benches on the far right, between the raised area and the MEPs.",
+          "Both the Brussels and Strasbourg hemicycles roughly follow the same seating layout.",
+          "The hemicycle design is a compromise between the British-based system (where groups directly face each other) and the French-based system (a semicircle)."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "d8686d96-e544-4bba-a421-d6b30139785b",
+        "content": "Access to the chamber limited, entrance is controlled by ushers who also aid MEPs in the chamber (for example in delivering documents). The ushers can also occasionally act as a form of police in enforcing the President, for example in ejecting an MEP who is disrupting the session (although this is rare). The first head of protocol in the Parliament was French, so many of the duties in the Parliament are based on the French model first developed following the French Revolution. The ushers are highly visible in the Parliament, dressed in black tails and wearing a silver chain, and are recruited in the same manner as the European civil service. The President is allocated a personal usher.[121]",
+        "segmentIndex": 44,
+        "summary": "Access to the European Parliament chamber is limited and controlled by ushers, who perform essential functions such as aiding MEPs and enforcing the President's authority, including the rare power to eject disruptive members. Their duties and protocol are largely derived from the French model, established because the Parliament's first head of protocol was French. These highly visible ushers are recruited in the same manner as the European civil service.",
+        "standaloneFacts": [
+          "Access to the European Parliament chamber is limited and controlled by ushers.",
+          "Ushers aid MEPs in the chamber, for example, by delivering documents.",
+          "Ushers can enforce the President's authority, occasionally acting as police to eject disruptive MEPs.",
+          "The first head of protocol in the European Parliament was French.",
+          "Many of the Parliament's duties are based on the French model first developed following the French Revolution.",
+          "Parliament ushers are highly visible, dressed in black tails and wearing a silver chain.",
+          "Ushers are recruited in the same manner as the European civil service.",
+          "The President of the European Parliament is allocated a personal usher."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "7080c7d6-2dd3-448e-8c95-e9aaa493c92c",
+        "content": "President and organisationRoberta Metsola, the current President of the European ParliamentMain article: President of the European ParliamentThe President is essentially the speaker of the Parliament and presides over the plenary when it is in session. The President's signature is required for all acts adopted by co-decision, including the EU budget. The President is also responsible for representing the Parliament externally, including in legal matters, and for the application of the rules of procedure. The President is elected for two-and-a-half-year terms, meaning two elections per parliamentary term.[122][123] The current President of the European Parliament is Roberta Metsola, who was elected in January 2022.[124]In most countries, the protocol of the head of state comes before all others; however, in the EU the Parliament is listed as the first institution, and hence the protocol ranking of its president comes before any other European, or national, protocol. The gifts given to numerous visiting dignitaries depend upon the President. President Josep Borrell MEP of Spain gave his counterparts a crystal cup created by an artist from Barcelona who had engraved upon it parts of the Charter of Fundamental Rights among other things.[12]",
+        "segmentIndex": 45,
+        "summary": "The President of the European Parliament acts as the speaker, presiding over plenary sessions and requiring their signature for all co-decided acts, including the EU budget. The President is elected for two-and-a-half-year terms, meaning two elections occur per parliamentary term. The current President is Roberta Metsola, elected in January 2022, and her protocol ranking takes precedence over all other European or national protocols since the Parliament is listed as the EU's first institution.",
+        "standaloneFacts": [
+          "The President of the European Parliament is essentially the speaker of the Parliament and presides over the plenary when it is in session.",
+          "The President's signature is required for all acts adopted by co-decision, including the EU budget.",
+          "The President of the European Parliament is elected for two-and-a-half-year terms.",
+          "The current President of the European Parliament is Roberta Metsola, who was elected in January 2022.",
+          "The Parliament is listed as the first institution in the EU protocol ranking.",
+          "The protocol ranking of the President of the European Parliament comes before any other European or national protocol."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "fcd1e195-7585-4101-9a49-460b7611594d",
+        "content": "A number of notable figures have been President of the Parliament and its predecessors. The first President was Paul-Henri Spaak MEP,[125] one of the founding fathers of the Union. Other founding fathers include Alcide de Gasperi MEP and Robert Schuman MEP. The three female Presidents were Simone Veil MEP in 1979 (first President of the elected Parliament), Nicole Fontaine MEP in 1999, both Frenchwomen, and Roberta Metsola from Malta in 2022.[126] The previous president, Jerzy Buzek was the first East-Central European to lead an EU institution, a former Prime Minister of Poland who rose out of the Solidarity movement in Poland that helped overthrow communism in the Eastern Bloc.[127]During the election of a President, the previous President (or, if unable to, one of the previous vice-presidents) presides over the chamber.[128] Prior to 2009, the oldest member fulfilled this role[129] but the rule was changed to prevent far-right French MEP Jean-Marie Le Pen taking the chair.[128]The Parliament also elects 14 Vice-Presidents who chair debates when the President is not in the chamber. There are a number of bodies responsible for the running of Parliament. The two main ones are the Bureau, which is responsible for budgetary and administration issues and is",
+        "segmentIndex": 46,
+        "summary": "The segment details several notable figures who have served as President of the European Parliament, including founding father Paul-Henri Spaak and the three female Presidents: Simone Veil (the first elected President in 1979), Nicole Fontaine, and Roberta Metsola. It also outlines procedural rules, noting the election of 14 Vice-Presidents to chair debates and the change in 2009 regarding who presides over presidential elections (shifting from the oldest member to the previous President).",
+        "standaloneFacts": [
+          "The first President of the European Parliament (or its predecessors) was Paul-Henri Spaak MEP.",
+          "Founding fathers of the Union mentioned include Paul-Henri Spaak, Alcide de Gasperi, and Robert Schuman.",
+          "Simone Veil was the first President of the elected European Parliament in 1979.",
+          "The three female Presidents of the European Parliament are Simone Veil (1979), Nicole Fontaine (1999), and Roberta Metsola (2022).",
+          "Jerzy Buzek was the first East-Central European to lead an EU institution, having previously served as Prime Minister of Poland.",
+          "The European Parliament elects 14 Vice-Presidents who chair debates when the President is not present.",
+          "Prior to 2009, the oldest member of the European Parliament presided over the election of a President, but the rule was changed to prevent Jean-Marie Le Pen from taking the chair.",
+          "The Bureau is a main body responsible for the running of the European Parliament, handling budgetary and administration issues."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "31e88598-7921-4880-86de-ed4dfea8269d",
+        "content": "composed of the President and the Vice-Presidents, and the Conference of Presidents which is the political governing body and is composed of the President of the Parliament and the leaders of each of the Parliament's political groups. Looking after the financial and administrative interests of members are five Quaestors.As of 2014, the European Parliament budget was EUR 1.756 billion.[130] A 2008 report on the Parliament's finances highlighted certain overspending and miss-payments. Despite some MEPs calling for the report to be published, Parliamentary authorities had refused until an MEP broke confidentiality and leaked it.[131]Committees and delegationsA Committee roomMain article: Committees of the European ParliamentThe Parliament has 20 Standing Committees ranging in size from 25 to 88 MEPs (each reflecting the political make-up of the whole Parliament) including a chair, a bureau and secretariat. They meet twice a month in public to draw up, amend to adopt legislative proposals and reports to be presented to the plenary.[132] The rapporteurs for a committee are supposed to present the view of the committee, although notably this has not always been the case: in the events leading to the resignation of the Santer Commission, the rapporteur went against the Budgetary Control Committee's narrow vote to discharge the budget, and urged the Parliament to reject it.[38]",
+        "segmentIndex": 47,
+        "summary": "The European Parliament's governance involves two main bodies: the Bureau, responsible for budget and administration (composed of the President and Vice-Presidents), and the Conference of Presidents, which serves as the political governing body. The Parliament, whose budget was EUR 1.756 billion in 2014, relies heavily on 20 Standing Committees that meet publicly twice monthly to process legislative proposals. Notably, the actions of committee rapporteurs have occasionally diverged from the official committee stance, as seen in the events leading to the resignation of the Santer Commission.",
+        "standaloneFacts": [
+          "The Bureau of the European Parliament is composed of the President and the Vice-Presidents and is responsible for budgetary and administration issues.",
+          "The Conference of Presidents is the political governing body of the European Parliament and is composed of the President of the Parliament and the leaders of each of the Parliament's political groups.",
+          "Five Quaestors look after the financial and administrative interests of members of the European Parliament.",
+          "As of 2014, the European Parliament budget was EUR 1.756 billion.",
+          "The European Parliament has 20 Standing Committees, which range in size from 25 to 88 MEPs.",
+          "European Parliament Standing Committees meet twice a month in public to draw up, amend, and adopt legislative proposals and reports."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "9910710e-ea38-421a-9e20-c7320c02629d",
+        "content": "The Parliament can also set up sub-committees (e.g. the Subcommittee on Human Rights) and temporary committees to deal with a specific topic (e.g. the Special Committee on Foreign Interference in Democratic Processes in the European Union, 2020–23). The chairs of the Committees co-ordinate their work through the \"Conference of Committee Chairmen\".[132]The nature of the committees differ from their national counterparts as, although smaller in comparison to those of the United States Congress, the European Parliament's committee secretariats are unusually large by European standards with between eight and twelve dedicated members of staff and three to four support staff. Considerable administration, archives and research resources are also at the disposal of the whole Parliament when needed.[62]Delegations of the Parliament are formed in a similar manner and are responsible for relations with Parliaments outside the EU. There are 44 delegations, mostly small (around 15 MEPs) but some larger. Chairpersons of the delegations also cooperate in a conference like the committee chairs do. Delegations include \"Interparliamentary delegations\" (maintain relations with Parliament outside the EU), \"joint parliamentary committees\" (maintaining relations with parliaments of states which are candidates or associates of the EU), the delegation to the ACP EU Joint Parliamentary Assembly and the delegation to the Euro-Mediterranean Parliamentary Assembly.[132] MEPs also participate in other international activities such as the Euro-Latin American Parliamentary Assembly, the NATO Assembly, the Transatlantic Legislators' Dialogue and through election observation in third countries.[133]",
+        "segmentIndex": 48,
+        "summary": "The European Parliament utilizes specialized structures, including sub-committees and temporary committees, with their chairs coordinating work through the Conference of Committee Chairmen. The Parliament also maintains 44 delegations responsible for relations with Parliaments outside the EU, such as Interparliamentary delegations and joint parliamentary committees, with most delegations consisting of around 15 MEPs.",
+        "standaloneFacts": [
+          "The European Parliament can set up sub-committees (e.g., the Subcommittee on Human Rights) and temporary committees to deal with specific topics.",
+          "The chairs of the European Parliament Committees co-ordinate their work through the \"Conference of Committee Chairmen\".",
+          "European Parliament committee secretariats typically have between eight and twelve dedicated members of staff and three to four support staff.",
+          "The European Parliament has 44 delegations responsible for relations with Parliaments outside the EU.",
+          "Most European Parliament delegations are small, consisting of around 15 MEPs.",
+          "Types of European Parliament delegations include Interparliamentary delegations, joint parliamentary committees, the delegation to the ACP EU Joint Parliamentary Assembly, and the delegation to the Euro-Mediterranean Parliamentary Assembly.",
+          "MEPs participate in international activities such as the Euro-Latin American Parliamentary Assembly, the NATO Assembly, and the Transatlantic Legislators' Dialogue."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "48f07e4f-1a38-4452-b641-9db69797d82b",
+        "content": "IntergroupsJože Pučnik conference roomThe Intergroups in the European Parliament are informal fora which gather MEPs from various political groups around any topic. They do not express the view of the European Parliament. They serve a double purpose: to address a topic which is transversal to several committees and in a less formal manner. Their daily secretariat can be run either through the office of MEPs or through interest groups, be them corporate lobbies or NGOs. The favored access to MEPs which the organization running the secretariat enjoys can be one explanation to the multiplication of Intergroups in the 1990s.[134] They are now strictly regulated and financial support, direct or otherwise (via Secretariat staff, for example), must be officially specified in a declaration of financial interests.[135][136] Also Intergroups are established or renewed at the beginning of each legislature through a specific process. Indeed, the proposal for the constitution or renewal of an Intergroup must be supported by at least 3 political groups who can each support a limited number of proposals in proportion to their size (for example, for the legislature 2014–2019, the EPP or S&D political groups could support 22 proposals whereas the Greens/EFA or the EFDD political groups only 7).[137]",
+        "segmentIndex": 49,
+        "summary": "Intergroups in the European Parliament are informal fora that gather MEPs from various political groups to address transversal topics, but they do not express the official view of the Parliament. Although their secretariat can be run by MEPs' offices or interest groups, they are now strictly regulated, requiring official declaration of financial support. To be established or renewed at the start of a legislature, a proposal must be supported by at least three political groups, with limits on the number of proposals based on the groups' size.",
+        "standaloneFacts": [
+          "Intergroups in the European Parliament are informal fora that gather MEPs from various political groups around any topic.",
+          "Intergroups do not express the official view of the European Parliament.",
+          "The daily secretariat of Intergroups can be run either through the office of MEPs or through interest groups, including corporate lobbies or NGOs.",
+          "Financial support for Intergroups must be officially specified in a declaration of financial interests.",
+          "The proposal for the constitution or renewal of an Intergroup must be supported by at least 3 political groups.",
+          "Political groups can only support a limited number of Intergroup proposals in proportion to their size."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "6b0794e8-f0e4-4b0f-af20-e8d258d6c8f2",
+        "content": "Translation and interpretationInterpretation in the European ParliamentInterpreting booths in the hemicycle simultaneously interpret debates between 24 languages.Interpreter at a committee hearing for the confirmation of Thierry Breton to the European Commission in 2019See also: Languages of the European UnionSpeakers in the European Parliament are entitled to speak in any of the 24 official languages of the European Union, ranging from French and German to Maltese and Irish. Simultaneous interpreting is offered in all plenary sessions, and all final texts of legislation are translated. With twenty-four languages, the European Parliament is the most multilingual parliament in the world[138] and the biggest employer of interpreters in the world (employing 350 full-time and 400 freelancers when there is higher demand).[139] Citizens may also address the Parliament in Basque, Catalan/Valencian and Galician.[140]Usually a language is translated from a foreign tongue into a translator's native tongue. Due to the large number of languages, some being minor ones, since 1995 interpreting is sometimes done the opposite way, out of an interpreter's native tongue (the \"retour\" system). In addition, a speech in a minor language may be interpreted through a third language for lack of interpreters (\"relay\" interpreting) – for example, when interpreting out of Estonian into Maltese.[139] Due to the complexity of the issues, interpretation is not word for word. Instead, interpreters have to convey the political meaning of a speech, regardless of their own views. This requires detailed understanding of the politics and terms of the Parliament, involving a great deal of preparation beforehand (e.g. reading the documents in question).",
+        "segmentIndex": 50,
+        "summary": "The European Parliament (EP) is the world's most multilingual parliament and the largest employer of interpreters globally, handling all 24 official EU languages. Simultaneous interpreting is provided during plenary sessions, and all final legislative texts are fully translated. Due to the vast number of languages, the EP employs specialized techniques like the 'retour' and 'relay' systems, requiring interpreters to convey the political meaning of a speech rather than a literal, word-for-word translation.",
+        "standaloneFacts": [
+          "Speakers in the European Parliament are entitled to speak in any of the 24 official languages of the European Union.",
+          "The European Parliament is the most multilingual parliament in the world, accommodating twenty-four official languages.",
+          "The European Parliament is the biggest employer of interpreters in the world.",
+          "The European Parliament employs 350 full-time interpreters and 400 freelancers when there is higher demand.",
+          "Citizens may address the European Parliament in Basque, Catalan/Valencian, and Galician.",
+          "Since 1995, the European Parliament has sometimes used the 'retour' system, where interpreting is done out of an interpreter's native tongue, due to the large number of languages.",
+          "In the European Parliament, 'relay' interpreting involves interpreting a speech in a minor language through a third language due to a lack of available interpreters."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "12209a59-53c1-4ec3-950f-dec9e42cb982",
+        "content": "Difficulty can often arise when MEPs use profanities, jokes and word play or speak too fast.[139]While some see speaking their native language as an important part of their identity, and can speak more fluently in debates, interpretation and its cost has been criticised by some. A 2006 report by Alexander Stubb MEP highlighted that by only using English, French and German costs could be reduced from €118,000 per day (for 21 languages then – Romanian, Bulgarian and Croatian having not yet been included) to €8,900 per day.[141] There has also been a small-scale campaign to make French the reference language for all legal texts, on the basis of an argument that it is more clear and precise for legal purposes.[142]Because the proceedings are translated into all of the official EU languages, they have been used to make a multilingual corpus known as Europarl. It is widely used to train statistical machine translation systems.[143]Corruption scandalsQatar relatedMain article: Qatar corruption scandal at the European ParliamentQatargate is an ongoing political scandal, involving allegations that European Parliament officials, lobbyists and their families have been influenced by the governments of Qatar, Morocco and Mauritania, engaging in corruption, money laundering, and organized crime to improve the image of these countries in the EU[144] amongst others to kill off six parliamentary resolutions condemning Qatar's human rights record, and working to deliver a visa-free travel deal between Doha and the EU. Law enforcement authorities in Belgium, Italy and Greece seized €1.5 million in cash, confiscated computers and mobile phones, and charged four individuals with the alleged offences:[145][146][147][148] Eva Kaili, Antonio Panzeri, an Italian former MEP, Francesco Giorgi and Luca Visentini.",
+        "segmentIndex": 51,
+        "summary": "The segment addresses issues surrounding language in the European Parliament, noting that interpretation is often complicated by MEPs' use of profanities or rapid speech, and highlights criticisms over the high cost of maintaining all official languages. Furthermore, it introduces the Qatargate corruption scandal, which involves allegations that Parliament officials and lobbyists were influenced by Qatar, Morocco, and Mauritania, leading to charges against four individuals and the seizure of €1.5 million in cash.",
+        "standaloneFacts": [
+          "Interpretation in the European Parliament can be difficult when MEPs use profanities, jokes, or word play, or if they speak too fast.",
+          "A 2006 report by MEP Alexander Stubb suggested that limiting the European Parliament's working languages to English, French, and German could reduce daily interpretation costs from €118,000 to €8,900.",
+          "The translated proceedings of the European Parliament are used to create a multilingual corpus known as Europarl, which is widely used to train statistical machine translation systems.",
+          "Qatargate is an ongoing political scandal involving allegations that European Parliament officials and lobbyists were influenced by the governments of Qatar, Morocco, and Mauritania.",
+          "The alleged corruption in the Qatargate scandal was intended to improve the image of Qatar, Morocco, and Mauritania in the EU and halt parliamentary resolutions condemning Qatar's human rights record.",
+          "Law enforcement authorities in Belgium, Italy, and Greece seized €1.5 million in cash in connection with the Qatargate scandal.",
+          "Four individuals charged in the Qatargate scandal include Eva Kaili, Antonio Panzeri, Francesco Giorgi, and Luca Visentini."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "e710d9a4-9257-4ba0-9c95-9b82fe1c376f",
+        "content": "Later also Niccolò Figà-Talamanca, Marc Tarabella and Andrea Cozzolino were arrested. In 2023, Belgian MEP Marie Arena was charged, and in 2025, two more women: Elisabetta Gualmini and Alessandra Moretti.Azerbaijan relatedAzerbaijan has been harshly criticized for bribing foreign officials and diplomats to promote its causes abroad and legitimize its elections at home, a practice termed caviar diplomacy.[149][150][151] In 2023 the Swedish-German investigative platform Blankspot published several investigative reports about freewheeling trips made by several European Parliament members to Azerbaijan.[152] Several publications have emphasised how these trips raise questions on the reliability of EU Parliament ethics codes and the importance to enforce them.[153][154]French National Front Assistants AffairIn December 2023, Marine Le Pen was ordered to stand trial after she was charged with paying National Front party officials through funds earmarked for European Parliament assistants.[155] Twenty-seven others, including her father Jean Marie, served as her co-defendants.[156] Her trial, for misappropriation of public funds, was scheduled in March 2024 to occur between 30 September and 27 November the same year.[157]On 31 March 2025, eight MEPs, 12 assistants from the National Rally, and Le Pen were found guilty of embezzling European Union funds by a Paris court.[158] Le Pen received a four-year prison sentence, two years of which were suspended, in addition to a €100,000 fine. She did not begin serving the two years' house arrest immediately as all appeals must be exhausted before this part of the sentence is executed. Similarly, she did not lose her seat in the lower house of the French parliament immediately. On the other hand, the court also banned her, effective immediately, from standing for political office for five years, making her ineligible to run in the 2027 French presidential election.[159]Russia relatedThe former British MEP Nathan Gill (UKIP and lat",
+        "segmentIndex": 52,
+        "summary": "This segment details the progression of several corruption issues affecting the European Parliament, including the ongoing Qatargate scandal which led to further arrests, such as Marc Tarabella and Marie Arena. It also addresses the controversy surrounding Azerbaijan's 'caviar diplomacy' used to influence MEPs. Most significantly, the segment reports on the conviction of Marine Le Pen and 27 co-defendants in 2025 for embezzling EU funds, resulting in a four-year sentence (two suspended) and an immediate five-year ban from political office for Le Pen.",
+        "standaloneFacts": [
+          "Niccolò Figà-Talamanca, Marc Tarabella, and Andrea Cozzolino were arrested in connection with the Qatargate scandal.",
+          "Belgian MEP Marie Arena was charged in 2023 in connection with the Qatargate scandal.",
+          "The practice of Azerbaijan bribing foreign officials to promote its causes abroad is termed 'caviar diplomacy'.",
+          "Marine Le Pen was ordered to stand trial in December 2023 for allegedly paying National Front party officials using funds designated for European Parliament assistants.",
+          "On March 31, 2025, Marine Le Pen, eight MEPs, and 12 assistants from the National Rally were found guilty by a Paris court of embezzling European Union funds.",
+          "Marine Le Pen received a four-year prison sentence (two years suspended) and a €100,000 fine for embezzling EU funds.",
+          "Marine Le Pen was immediately banned from standing for political office for five years following her conviction in March 2025."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "15eaeca0-95cb-4b58-8c45-9da621b5b89b",
+        "content": "er the Leader of the Reform UK party in Wales) pleaded guilty on Friday, 26 September 2025 to eight counts of bribery, under the UK's Bribery Act, 2010. He had taken payments to speak in the European Parliament to promote Russian interests, in particular in relation to Ukraine[160].OtherA January 2024 report published by investigative outlet Follow the Money found that 1 in 4 EU lawmakers have been implicated in judicial cases or scandals. Out of 253 cases highlighted in the report, only 23 have resulted in convictions.[161]There are also ongoing concerns related to allegations that members of the European Parliament were illegally or unethically influenced by Russia. Such concerns have been raised several times in 2023 and 2024 and dubbed \"Russiagate\".[162][163][164]Panzeri's lobbying group, Fight Impunity, was largely funded by Iqbal Survé, a controversial South African billionaire. Survé's Sekunjalo Development Foundation was found to be the \"most important donor\" having donated €250,000 to the group.[165][166]",
+        "segmentIndex": 53,
+        "summary": "The segment details several instances of corruption and ethical concerns involving the European Parliament, including the case of former British MEP Nathan Gill, who pleaded guilty to bribery for promoting Russian interests. Furthermore, a January 2024 report revealed that one in four EU lawmakers have been implicated in judicial cases or scandals, though resulting convictions are low. The text also noted ongoing concerns about Russian influence, dubbed \"Russiagate,\" and the funding sources of Panzeri's lobbying group, Fight Impunity.",
+        "standaloneFacts": [
+          "Former British MEP Nathan Gill pleaded guilty on September 26, 2025, to eight counts of bribery under the UK's Bribery Act, 2010.",
+          "A January 2024 report published by investigative outlet Follow the Money found that 1 in 4 EU lawmakers have been implicated in judicial cases or scandals.",
+          "Out of 253 cases highlighted in the Follow the Money report regarding EU lawmakers, only 23 resulted in convictions.",
+          "Allegations that members of the European Parliament were illegally or unethically influenced by Russia have been dubbed \"Russiagate.\"",
+          "Panzeri's lobbying group, Fight Impunity, received a €250,000 donation from Iqbal Survé's Sekunjalo Development Foundation."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "483e8d9d-8689-4d7e-8486-f36a5a923018",
+        "content": "Anti-corruption policiesThe European Parliament has had criticism over its prodigality and for being too complacent with conflicts of interest.[167][168] Its refusal to become full member of the GRECO like all its member states is also a matter of criticism.[168]The European Parliament revised its rules of procedure and its code of conduct in September 2023,[169] placing six main obligations on MEPs:[170][171]To make a detailed Declaration of private interests, including those from the 3 years prior to their electionWhen total external income exceeds €5,000, all the entities from which their income is received to be disclosedWith regard to conflicts of interest, to resolved or declare themNot to engage in paid lobbying activities linked to the EU's decision-making processTo meet only with interested parties who sign up to the EU's Transparency Register and to make disclosure of such meetings, and also of meetings held with representatives of third country diplomatsTo make a Declaration of all assets and liabilities at the beginning, and again at the end, of every term of office.",
+        "segmentIndex": 54,
+        "summary": "The European Parliament has faced criticism regarding its perceived prodigality, complacency with conflicts of interest, and its refusal to join GRECO as a full member. In response, the Parliament revised its rules of procedure and code of conduct in September 2023, introducing six key obligations for MEPs. These obligations mandate detailed disclosure of private interests, external income over \n\n5,000, assets and liabilities, and require the resolution or declaration of conflicts of interest, alongside restrictions on paid lobbying and mandatory disclosure of meetings with registered lobbyists and third-country diplomats.",
+        "standaloneFacts": [
+          "The European Parliament has been criticized for refusing to become a full member of GRECO (Group of States against Corruption).",
+          "The European Parliament revised its rules of procedure and its code of conduct in September 2023.",
+          "Under the revised rules, MEPs must make a detailed Declaration of private interests, including those from the three years prior to their election.",
+          "If an MEP's total external income exceeds \n\n5,000, all entities providing that income must be disclosed.",
+          "MEPs are prohibited from engaging in paid lobbying activities linked to the EU's decision-making process.",
+          "MEPs must make a Declaration of all assets and liabilities at the beginning and end of every term of office."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "bb9dafd8-fede-482d-9ce7-661e365115b7",
+        "content": "Annual costsAccording to the European Parliament website, the annual parliament budget for 2021 was €2.064 billion, which corresponds to 1.2% of EU budget.[172] The main cost categories were:45% – staff (staff expenses, contract agents, linguistic services)22% – operational costs (buildings, IT, administration)26% – political activities (members, activities of political groups, parties and foundations)6% – communicationsAccording to a European Parliament study prepared in 2013, the Strasbourg seat costs an extra €103 million over maintaining a single location and according to the Court of Auditors an additional €5 million is related to travel expenses caused by having two seats.[173]The composition of the European Parliament with regard to percentage share of deputies for each political group, 1979 to 2024. Left to right:[174][175]  Left-wing  Social democrats  Greens and regionalists  Liberals and centrists  Christian democrats and conservatives  Eurosceptics  Eurosceptic conservatives  Right-wing nationalists  Heterogeneous  Non-Inscritsvte",
+        "segmentIndex": 55,
+        "summary": "The European Parliament's annual budget for 2021 was €2.064 billion, equating to 1.2% of the EU budget. The costs were primarily driven by staff expenses (45%), political activities (26%), and operational costs (22%). Additionally, the maintenance of the Strasbourg seat and associated travel expenses due to operating two seats were estimated to cost an extra €108 million annually.",
+        "standaloneFacts": [
+          "The European Parliament's annual budget for 2021 was €2.064 billion.",
+          "The 2021 European Parliament budget corresponded to 1.2% of the EU budget.",
+          "Staff expenses, contract agents, and linguistic services accounted for 45% of the European Parliament's main cost categories.",
+          "Political activities accounted for 26% of the European Parliament's main cost categories.",
+          "Operational costs accounted for 22% of the European Parliament's main cost categories.",
+          "Communications accounted for 6% of the European Parliament's main cost categories.",
+          "A 2013 European Parliament study estimated that the Strasbourg seat costs an extra €103 million over maintaining a single location.",
+          "The Court of Auditors estimates an additional €5 million is related to travel expenses caused by the European Parliament having two seats."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "986946ca-fde3-4445-bb35-47521db2da0e",
+        "content": "As a comparison, the German lower house of parliament (Bundestag) is estimated to cost €517 million in total for 2018, for a parliament with 709 members.[176] The British House of Commons reported total annual costs in 2016–2017 of £249 million (€279 million). It had 650 seats.[177]According to The Economist, the European Parliament costs more than the British, French and German parliaments combined. A quarter of the costs is estimated to be related to translation and interpretation costs (c. €460 million) and the double seats are estimated to add an additional €180 million a year.[178] For a like-for-like comparison, these two cost blocks can be excluded.On 2 July 2018, MEPs rejected proposals to tighten the rules around the General Expenditure Allowance (GEA),[179] which \"is a controversial €4,416 per month payment that MEPs are given to cover office and other expenses, but they are not required to provide any evidence of how the money is spent\".[180]",
+        "segmentIndex": 56,
+        "summary": "The analysis compares the European Parliament's high operational costs unfavorably to national legislatures, noting that the EP costs more than the British, French, and German parliaments combined. Key drivers of these costs are estimated to be translation and interpretation (c. €460 million) and the expense of maintaining double seats (an additional €180 million annually). The segment concludes by noting that on July 2, 2018, MEPs rejected proposals aimed at increasing transparency regarding the controversial €4,416 monthly General Expenditure Allowance.",
+        "standaloneFacts": [
+          "The German lower house of parliament (Bundestag) was estimated to cost €517 million in total for 2018 and has 709 members.",
+          "The British House of Commons reported total annual costs of £249 million (€279 million) in 2016–2017 and has 650 seats.",
+          "According to The Economist, the European Parliament costs more than the British, French, and German parliaments combined.",
+          "Translation and interpretation costs for the European Parliament are estimated to be approximately €460 million annually.",
+          "The European Parliament's double seats are estimated to add an additional €180 million a year to costs.",
+          "On 2 July 2018, MEPs rejected proposals to tighten the rules around the General Expenditure Allowance (GEA).",
+          "The General Expenditure Allowance (GEA) is a €4,416 per month payment given to MEPs for office and other expenses, for which they are not required to provide evidence of spending."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "e087f83d-a5c4-4e93-95ad-d8ad9f427737",
+        "content": "SeatSeats of the European ParliamentEspace Léopold building in Brussels, BelgiumEspace Léopold building in Brussels,  BelgiumKonrad Adenauer building in Luxembourg City, LuxembourgKonrad Adenauer building in Luxembourg City,  Luxembourg (seat of the Secretariat-General)Further information: Location of European Union institutions, Espace Léopold, and Seat of the European Parliament in StrasbourgThe Parliament is based in three different cities with numerous buildings. The Member States attached a protocol to the Treaty of Amsterdam that requires 12 plenary sessions to be held in Strasbourg (in practice, none in August but two in October), which is described as the Parliament's official seat, while extra part sessions as well as committee meetings are held in Brussels. Luxembourg City hosts the Secretariat of the European Parliament.[15] The European Parliament is one of at least two assemblies in the world with more than one meeting place (another being the parliament of the Isle of Man, Tynwald) and one of the few that does not have the power to decide its own location.[181]",
+        "segmentIndex": 57,
+        "summary": "The European Parliament operates from three different locations: Strasbourg, Brussels, and Luxembourg City. Strasbourg is designated as the official seat, where 12 annual plenary sessions must be held according to a protocol attached to the Treaty of Amsterdam. Brussels hosts extra part sessions and committee meetings, while Luxembourg City hosts the Parliament's Secretariat.",
+        "standaloneFacts": [
+          "The European Parliament is based in three different cities.",
+          "Strasbourg is described as the European Parliament's official seat.",
+          "A protocol attached to the Treaty of Amsterdam requires 12 plenary sessions of the European Parliament to be held in Strasbourg annually.",
+          "Extra part sessions and committee meetings of the European Parliament are held in Brussels.",
+          "Luxembourg City hosts the Secretariat of the European Parliament.",
+          "The European Parliament does not have the power to decide its own location."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "4ee267a9-cca6-41a4-8d80-f5e89e4205b4",
+        "content": "The Strasbourg seat is considered a symbol of reconciliation between France and Germany, two countries that previously fought over the region. However, the cost and inconvenience of having two seats is questioned. While Strasbourg is the official seat, and sits alongside the Council of Europe,[182] Brussels is home to nearly all other major EU institutions, with the majority of Parliament's work being carried out there. Critics have described the two-seat arrangement as a \"travelling circus\",[183] and there is a strong movement to establish Brussels as the sole seat. This is because the other political institutions (the Commission, Council and European Council) are located there, and hence Brussels is treated as the 'capital' of the EU. This movement has received strong backing from numerous figures, including Margot Wallström, Commission First-Vice President from 2004 to 2010, who stated that \"something that was once a very positive symbol of the EU reuniting France and Germany has now become a negative symbol – of wasting money, bureaucracy and the insanity of the Brussels institutions\".[184]",
+        "segmentIndex": 58,
+        "summary": "The European Parliament's Strasbourg seat, originally a symbol of reconciliation between France and Germany, is now widely criticized for the cost and inconvenience of maintaining a dual-seat arrangement, often labeled a \"travelling circus.\" Although Strasbourg is the official seat, Brussels conducts the majority of the Parliament's work and houses nearly all other major EU institutions, fueling a strong movement to consolidate the Parliament's location in Brussels as the sole seat.",
+        "standaloneFacts": [
+          "The Strasbourg seat of the European Parliament is considered a symbol of reconciliation between France and Germany.",
+          "The majority of the European Parliament's work is carried out in Brussels, despite Strasbourg being the official seat.",
+          "Brussels is home to nearly all other major EU institutions, including the Commission, Council, and European Council.",
+          "Critics have described the European Parliament's two-seat arrangement as a \"travelling circus.\"",
+          "Margot Wallström, who served as Commission First-Vice President from 2004 to 2010, strongly backed the movement to establish Brussels as the European Parliament's sole seat."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "dfc73b72-fa24-4bd7-b4b1-f70cc2c7fbb2",
+        "content": "The Green Party has also noted the environmental cost in a study led by Jean Lambert MEP and Caroline Lucas MEP; in addition to the extra 200 million euro spent on the extra seat, there are over 20,268 tonnes of additional carbon dioxide, undermining any environmental stance of the institution and the Union.[183] The campaign is further backed by a million-strong online petition started by Cecilia Malmström MEP.[185] In August 2014, an assessment by the European Court of Auditors calculated that relocating the Strasbourg seat of the European Parliament to Brussels would save €113.8 million per year.[186] In 2006, there were allegations of irregularities in the charges made by the city of Strasbourg on buildings the Parliament rented, thus further harming the case for the Strasbourg seat.[187]",
+        "segmentIndex": 59,
+        "summary": "The segment details the substantial costs, both financial and environmental, associated with maintaining the European Parliament's dual seat arrangement. A Green Party study highlighted the expenditure of 200 million euro and over 20,000 tonnes of additional carbon dioxide, while a 2014 assessment by the European Court of Auditors calculated that relocating the Strasbourg seat to Brussels would save €113.8 million annually. The campaign for a single seat is also supported by a million-strong online petition and historical allegations of financial irregularities in Strasbourg's building charges.",
+        "standaloneFacts": [
+          "A study led by MEPs Jean Lambert and Caroline Lucas noted the European Parliament's extra seat costs an additional 200 million euro and generates over 20,268 tonnes of additional carbon dioxide.",
+          "The European Court of Auditors assessed in August 2014 that relocating the Strasbourg seat of the European Parliament to Brussels would save €113.8 million per year.",
+          "A million-strong online petition supporting the campaign for a single seat was started by Cecilia Malmström MEP.",
+          "In 2006, allegations were made regarding irregularities in the charges imposed by the city of Strasbourg for buildings rented by the European Parliament."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "fce5a554-835d-4479-a30d-070aba0528d6",
+        "content": "Most MEPs prefer Brussels as a single base.[188] A poll of MEPs found 89% of the respondents wanting a single seat, and 81% preferring Brussels.[189] Another survey found 68% support.[18] In July 2011, an absolute majority of MEPs voted in favour of a single seat.[190] In early 2011, the Parliament voted to scrap one of the Strasbourg sessions by holding two within a single week.[191] The mayor of Strasbourg officially reacted by stating \"we will counter-attack by upturning the adversary's strength to our own profit, as a judoka would do\".[192] However, as Parliament's seat is now fixed by the treaties, it can only be changed by the Member States, acting unanimously and with national ratification, meaning that France could veto any move.[181] Former French President Nicolas Sarkozy stated that the Strasbourg seat is \"non-negotiable\" and that France has no intention of surrendering the only EU Institution on French soil.[193] Given France's declared intention to veto any relocation to Brussels, some MEPs have advocated civil disobedience by refusing to take part in the monthly exodus to Strasbourg.[194][195][196]",
+        "segmentIndex": 60,
+        "summary": "Despite strong support among Members of the European Parliament (MEPs) for a single base in Brussels, including votes and high poll numbers favoring the move, the relocation is blocked by political realities. The Parliament's seat is fixed by treaties, requiring unanimous agreement and national ratification from all Member States, which allows France to veto any change. Former French President Nicolas Sarkozy stated that the Strasbourg seat is 'non-negotiable,' leading some MEPs to advocate for civil disobedience in protest of the monthly travel.",
+        "standaloneFacts": [
+          "A poll of MEPs found 89% of the respondents wanted a single seat for the European Parliament.",
+          "The same poll found 81% of MEP respondents preferred Brussels as the single seat.",
+          "In July 2011, an absolute majority of MEPs voted in favour of establishing a single seat.",
+          "In early 2011, the European Parliament voted to scrap one of the Strasbourg sessions by holding two sessions within a single week.",
+          "The European Parliament's seat is fixed by treaties and can only be changed by Member States acting unanimously and with national ratification.",
+          "Former French President Nicolas Sarkozy stated that the Strasbourg seat is \"non-negotiable\"."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "47dc0b39-d147-4813-8a53-5b6cd4aaff91",
+        "content": "However, the main building in Brussels has been suffering for more than a decade from a state of degradation. Renovation or reconstruction works including a hemicycle were estimated to cost at least €500 million in 2017 with fear that the cost would be even higher[197] and possibly escalate up to €1 billion,[198] whereas the seat in Strasbourg already offers a fully-fledged hemicycle.Channels of dialogue, information, and communication with European civil societyIndividual MEPs are the main point of contact for citizens with the Parliament. They normally have an office in their constituency and travel back at the end of every week (and during weeks without parliamentary meetings) to participate in an array of meetings, events, interviews, visits and suchlike with voters, businesses, trade unions, local authorities and media.The Parliament itself maintains a detailed website,[199] receives around one million visitors a year, and streamlines debates and committee meetings.Over the last few years, European institutions have committed to promoting transparency, openness, and the availability of information about their work.[200] In particular, transparency is regarded as pivotal to the action of European institutions and a general principle of EU law, to be applied to the activities of EU institutions in order to strengthen the Union's democratic foundation.[201] The general principles of openness and transparency are reaffirmed in the articles 8 A, point 3 and 10.3 of the Treaty of Lisbon and the Maastricht Treaty respectively, stating that \"every citizen shall have the right to participate in the democratic life of the Uni",
+        "segmentIndex": 61,
+        "summary": "The main European Parliament building in Brussels is severely degraded, with renovation costs estimated between €500 million and potentially €1 billion as of 2017, although the Strasbourg seat already provides a fully-fledged hemicycle. The Parliament connects with citizens primarily through individual MEPs who maintain local constituency contact, and institutionally through a detailed website and streaming of debates. These efforts underscore the European institutions' commitment to promoting transparency and openness, principles reaffirmed in the Treaty of Lisbon and the Maastricht Treaty.",
+        "standaloneFacts": [
+          "The main European Parliament building in Brussels has been suffering from a state of degradation for more than a decade.",
+          "Renovation or reconstruction works on the main Brussels Parliament building were estimated to cost at least €500 million in 2017.",
+          "The potential cost for renovating or reconstructing the Brussels Parliament building was feared to escalate up to €1 billion.",
+          "The European Parliament seat in Strasbourg already offers a fully-fledged hemicycle.",
+          "Individual MEPs are the main point of contact for citizens with the European Parliament.",
+          "The European Parliament receives around one million visitors a year.",
+          "Transparency is regarded as a general principle of EU law.",
+          "The general principles of openness and transparency are reaffirmed in Article 8 A, point 3 of the Treaty of Lisbon.",
+          "The general principles of openness and transparency are reaffirmed in Article 10.3 of the Maastricht Treaty."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "c07e040e-41bb-44fb-9ec4-e801d1064d95",
+        "content": "on. Decisions shall be taken as openly and as closely as possible to the citizen\".[202][203] Furthermore, both treaties acknowledge the value of dialogue between citizens, representative associations, civil society, and European institutions.[202][203]Dialogue with religious and non-confessional organisationsArticle 17 of the Treaty on the Functioning of the European Union (TFEU) lays the juridical foundation for an open, transparent dialogue between European institutions and churches, religious associations, and non-confessional and philosophical organisations.[204] In July 2014, in the beginning of the 8th term, then President of the European Parliament Martin Schulz tasked Antonio Tajani, then vice-president, with implementing the dialogue with the religious and confessional organisations included in article 17.[205] In this framework, the European Parliament hosts high-level conferences on inter-religious dialogue, also with focus on current issues and in relation with parliamentary works.[204]",
+        "segmentIndex": 62,
+        "summary": "The treaties underscore the importance of transparency, stating that decisions should be taken as openly and closely as possible to the citizen, and acknowledge the value of dialogue with civil society and representative associations. Article 17 of the Treaty on the Functioning of the European Union (TFEU) provides the juridical foundation for an open dialogue between European institutions and religious and non-confessional organisations. This dialogue was formally implemented in July 2014 when EP President Martin Schulz tasked Vice-President Antonio Tajani with the role, leading the Parliament to host high-level conferences on inter-religious dialogue.",
+        "standaloneFacts": [
+          "Article 17 of the Treaty on the Functioning of the European Union (TFEU) provides the legal foundation for an open, transparent dialogue between European institutions and churches, religious associations, and non-confessional and philosophical organisations.",
+          "In July 2014, European Parliament President Martin Schulz tasked then Vice-President Antonio Tajani with implementing the dialogue with religious and confessional organisations included in Article 17 TFEU.",
+          "The European Parliament hosts high-level conferences on inter-religious dialogue as part of the framework established by Article 17 TFEU."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "a6fcc778-85ca-44a4-8964-7433b1811879",
+        "content": "European Parliament Mediator for International Parental Child AbductionThe chair of European Parliament Mediator for International Parental Child Abduction was established in 1987 by initiative of British MEP Charles Henry Plumb, with the goal of helping minor children of international couples victim of parental abduction. The Mediator finds negotiated solutions in the higher interest of the minor when said minor is abducted by a parent following separation of the couple, regardless whether married or unmarried.[206][207] Since its institution, the chair has been held by Mairead McGuinness (since 2014), Roberta Angelilli (2009–2014), Evelyne Gebhardt (2004–2009), Mary Banotti (1995–2004), and Marie-Claude Vayssade (1987–1994).[207]",
+        "segmentIndex": 63,
+        "summary": "The European Parliament Mediator for International Parental Child Abduction was established in 1987 by British MEP Charles Henry Plumb to assist minor children of international couples who are victims of parental abduction. The Mediator focuses on finding negotiated solutions in the minor's best interest following parental separation, irrespective of the parents' marital status. Since its institution, the chair has been held by several individuals, including Mairead McGuinness since 2014.",
+        "standaloneFacts": [
+          "The chair of European Parliament Mediator for International Parental Child Abduction was established in 1987.",
+          "The European Parliament Mediator for International Parental Child Abduction was established by British MEP Charles Henry Plumb.",
+          "The Mediator for International Parental Child Abduction helps minor children of international couples victim of parental abduction by finding negotiated solutions.",
+          "Mairead McGuinness has held the position of European Parliament Mediator for International Parental Child Abduction since 2014.",
+          "Roberta Angelilli held the position of European Parliament Mediator for International Parental Child Abduction from 2009 to 2014.",
+          "Marie-Claude Vayssade held the position of European Parliament Mediator for International Parental Child Abduction from 1987 to 1994."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "533090ff-0c36-4648-8460-4eb378f347fe",
+        "content": "The Mediator's main task is to assist parents in finding a solution in the minor's best interest through mediation, i.e. a form of controversy resolution alternative to lawsuit. The Mediator is activated by request of a citizen and, after evaluating the request, starts a mediation process aimed at reaching an agreement. Once subscribed by both parties and the Mediator, the agreement is official. The nature of the agreement is that of a private contract between parties.[207] In defining the agreement, the European Parliament offers the parties the juridical support necessary to reach a sound, lawful agreement based on legality and equity. The agreement can be ratified by the competent national courts and can also lay the foundation for consensual separation or divorce.[207]",
+        "segmentIndex": 64,
+        "summary": "The primary role of the Mediator for International Parental Child Abduction is to help parents find solutions through mediation, prioritizing the minor's best interest as an alternative to formal lawsuits. The process is initiated by a citizen's request, culminating in an official agreement signed by all parties, which functions as a private contract. The European Parliament offers juridical support to ensure the agreement is sound and lawful, allowing it to be ratified by national courts or form the basis for separation or divorce.",
+        "standaloneFacts": [
+          "The Mediator's main task is to assist parents in finding a solution in the minor's best interest through mediation, which is a form of controversy resolution alternative to lawsuit.",
+          "The Mediator is activated by request of a citizen.",
+          "The agreement reached through mediation becomes official once subscribed by both parties and the Mediator.",
+          "The nature of the agreement reached through the Mediator is that of a private contract between parties.",
+          "The European Parliament offers juridical support to the parties necessary to reach a sound, lawful agreement.",
+          "The agreement reached through the Mediator can be ratified by the competent national courts.",
+          "The agreement reached through the Mediator can lay the foundation for consensual separation or divorce."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "d06498b8-99a6-4158-a5bb-971441b69c8e",
+        "content": "Liaison Offices (EPLOs)The European Parliament operates Liaison Offices (EPLOs) in all Member States, as well as in the United Kingdom (London and the United States (Washington, D.C.).[208] On 17 September 2025, European Parliament President Roberta Metsola opened the Parliament's antenna office in Kyiv, co-located with the EU delegation in Kyiv.[209]European Parliamentary Research ServiceThe European Parliamentary Research Service (EPRS) is the European Parliament's in-house research department and think tank. It provides Members of the European Parliament – and, where appropriate, parliamentary committees – with independent, objective and authoritative analysis of, and research on, policy issues relating to the European Union, in order to assist them in their parliamentary work. It is also designed to increase Members' and EP committees' capacity to scrutinise and oversee the European Commission and other EU executive bodies.",
+        "segmentIndex": 65,
+        "summary": "The European Parliament operates Liaison Offices (EPLOs) across all Member States, the UK, and the US, and recently opened an antenna office in Kyiv on September 17, 2025. Additionally, the European Parliamentary Research Service (EPRS) functions as the Parliament's in-house research department and think tank, providing independent analysis to Members and committees to assist their work and enhance their scrutiny of EU executive bodies.",
+        "standaloneFacts": [
+          "The European Parliament operates Liaison Offices (EPLOs) in all Member States.",
+          "The European Parliament operates Liaison Offices (EPLOs) in the United Kingdom (London) and the United States (Washington, D.C.).",
+          "On 17 September 2025, European Parliament President Roberta Metsola opened the Parliament's antenna office in Kyiv.",
+          "The Parliament's antenna office in Kyiv is co-located with the EU delegation in Kyiv.",
+          "The European Parliamentary Research Service (EPRS) is the European Parliament's in-house research department and think tank.",
+          "The EPRS provides Members of the European Parliament and parliamentary committees with independent, objective, and authoritative analysis and research on policy issues relating to the European Union.",
+          "The EPRS is designed to increase Members' and EP committees' capacity to scrutinize and oversee the European Commission and other EU executive bodies."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "aa88435e-a2e4-4442-812a-5652ad3b7cae",
+        "content": "EPRS aims to provide a comprehensive range of products and services, backed by specialist internal expertise and knowledge sources in all policy fields, so empowering Members and committees through knowledge and contributing to the Parliament's effectiveness and influence as an institution. In undertaking this work, the EPRS supports and promotes parliamentary outreach to the wider public, including dialogue with relevant stakeholders in the EU's system of multi-level governance. All EPRS publications are publicly available on the EP Think Tank platform.[210][211]",
+        "segmentIndex": 66,
+        "summary": "The European Parliamentary Research Service (EPRS) aims to enhance the Parliament's effectiveness and influence by providing Members and committees with comprehensive, specialist-backed knowledge across all policy fields. In addition to internal support, the EPRS promotes parliamentary outreach and dialogue with stakeholders in the EU's multi-level governance system. All publications produced by the EPRS are made publicly available on the EP Think Tank platform.",
+        "standaloneFacts": [
+          "The European Parliamentary Research Service (EPRS) supports and promotes parliamentary outreach to the wider public.",
+          "The EPRS engages in dialogue with relevant stakeholders within the EU's system of multi-level governance.",
+          "All publications produced by the European Parliamentary Research Service (EPRS) are publicly available.",
+          "EPRS publications are accessible on the EP Think Tank platform."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "a14c5d82-5493-4c44-b676-333e01bcada9",
+        "content": "Eurobarometer of the European ParliamentThe European Parliament periodically commissions opinion polls and studies on public opinion trends in member states to survey perceptions and expectations of citizens about its work and the overall activities of the European Union. Topics include citizens' perception of the European Parliament's role, their knowledge of the institution, their sense of belonging in the European Union, opinions on European elections and European integration, identity, citizenship, political values, but also on current issues such as climate change, current economy and politics, etc. Eurobarometer analyses seek to provide an overall picture of national situations, regional specificities, socio-demographic cleavages, and historical trends.[212][213]",
+        "segmentIndex": 67,
+        "summary": "The European Parliament utilizes the Eurobarometer to periodically commission opinion polls and studies tracking public opinion trends across member states. These surveys assess citizens' perceptions, expectations, and knowledge regarding the Parliament's work, the activities of the European Union, and key topics such as European integration, citizenship, and current issues. The resulting analyses aim to detail national situations, regional specificities, socio-demographic cleavages, and historical trends.",
+        "standaloneFacts": [
+          "The European Parliament periodically commissions opinion polls and studies on public opinion trends in member states using the Eurobarometer.",
+          "The Eurobarometer surveys gauge citizens' perceptions and expectations regarding the European Parliament's work and the overall activities of the European Union.",
+          "Eurobarometer topics include citizens' perception of the European Parliament's role, European elections, European integration, identity, citizenship, and political values.",
+          "Eurobarometer analyses aim to provide an overall picture of national situations, regional specificities, socio-demographic cleavages, and historical trends."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "376d222f-c5ea-469e-84d7-c4c094278b20",
+        "content": "PrizesSakharov PrizeThe ceremony of the Sakharov Prize awarded to Aung San Suu Kyi by Martin Schulz, in 2013With the Sakharov Prize, created in 1988, the European Parliament supports human rights by awarding individuals that contribute to promoting human rights worldwide, thus raising awareness on human rights violations. Priorities include: protection of human rights and fundamental liberties, with particular focus on freedom of expression; protection of minority rights; compliance with international law; and development of democracy and authentic rule of law.[214][215]European Charlemagne Youth PrizeThe European Charlemagne Youth Prize seeks to encourage youth participation in the European integration process. It is awarded by the European Parliament and the Foundation of the International Charlemagne Prize of Aachen to youth projects aimed at nurturing common European identity and European citizenship.[214]European Citizens' PrizeThe European Citizens' Prize is awarded by the European Parliament to activities and actions carried out by citizens and associations to promote integration between the citizens of EU member states and transnational cooperation projects in the EU.[214]",
+        "segmentIndex": 68,
+        "summary": "The European Parliament awards several prizes, most notably the Sakharov Prize, which was created in 1988 to support global human rights advocacy, focusing on protecting fundamental liberties like freedom of expression and minority rights. Additionally, the Parliament co-awards the European Charlemagne Youth Prize to encourage youth participation in European integration and presents the European Citizens' Prize for activities promoting integration and transnational cooperation among EU citizens and associations.",
+        "standaloneFacts": [
+          "The Sakharov Prize, created in 1988, is awarded by the European Parliament to individuals that contribute to promoting human rights worldwide.",
+          "Priorities for the Sakharov Prize include protection of human rights and fundamental liberties, protection of minority rights, compliance with international law, and development of democracy.",
+          "The European Charlemagne Youth Prize is awarded by the European Parliament and the Foundation of the International Charlemagne Prize of Aachen to youth projects.",
+          "The European Charlemagne Youth Prize seeks to encourage youth participation in the European integration process.",
+          "The European Citizens' Prize is awarded by the European Parliament to activities carried out by citizens and associations to promote integration and transnational cooperation in the EU."
+        ]
+      },
+      {
+        "documentId": "txt_wikipedia_parliament",
+        "id": "530d3399-8d39-4ace-be81-9066e1ce00c4",
+        "content": "LUX PrizeSince 2007, the LUX Prize is awarded by the European Parliament to films dealing with current topics of public European interest that encourage reflection on Europe and its future. Over time, the Lux Prize has become a prestigious cinema award which supports European film and production also outside the EU.[216]Daphne Caruana Galizia Journalism PrizeFrom 2021, the Daphne Caruana Galizia Journalism prize shall be awarded by the European Parliament to outstanding journalism that reflect EU values. The prize consists in an award of 20,000 euros. This award is named after the late Maltese journalist, Daphne Caruana Galizia who was assassinated in Malta on 16 October 2017.[217] In October 2021 the prize was first awarded to the Pegasus Project.[218]",
+        "segmentIndex": 69,
+        "summary": "The European Parliament awards two additional prizes: the LUX Prize, established in 2007, and the Daphne Caruana Galizia Journalism Prize, launched in 2021. The LUX Prize is a prestigious cinema award given to films that encourage reflection on Europe and its future by addressing current European topics. The Daphne Caruana Galizia Journalism Prize recognizes outstanding journalism reflecting EU values, provides an award of 20,000 euros, and was first awarded to the Pegasus Project in October 2021.",
+        "standaloneFacts": [
+          "The LUX Prize has been awarded by the European Parliament since 2007.",
+          "The LUX Prize is awarded to films dealing with current topics of public European interest.",
+          "The Daphne Caruana Galizia Journalism Prize is awarded by the European Parliament starting in 2021.",
+          "The Daphne Caruana Galizia Journalism Prize recognizes outstanding journalism that reflects EU values.",
+          "The Daphne Caruana Galizia Journalism Prize includes an award of 20,000 euros.",
+          "The prize is named after the late Maltese journalist, Daphne Caruana Galizia.",
+          "Daphne Caruana Galizia was assassinated in Malta on 16 October 2017.",
+          "The Daphne Caruana Galizia Journalism Prize was first awarded in October 2021 to the Pegasus Project."
+        ]
+      }
+    ],
+    "processingMetadata": {
+      "segmentation": {
+        "segmentCount": 70,
+        "totalCharacters": 76827,
+        "averageSegmentLength": 1091.1571428571428,
+        "minSegmentLength": 570,
+        "maxSegmentLength": 1997,
+        "segmentLengths": [
+          615,
+          1086,
+          807,
+          854,
+          911,
+          731,
+          1224,
+          623,
+          994,
+          1280,
+          844,
+          1661,
+          964,
+          1437,
+          1292,
+          1343,
+          1264,
+          1257,
+          712,
+          1346,
+          1200,
+          859,
+          1178,
+          661,
+          669,
+          960,
+          1044,
+          730,
+          686,
+          573,
+          1132,
+          1185,
+          1070,
+          742,
+          948,
+          1440,
+          1063,
+          1027,
+          1339,
+          1320,
+          1335,
+          1333,
+          1546,
+          1199,
+          700,
+          1256,
+          1273,
+          1392,
+          1695,
+          1303,
+          1745,
+          1816,
+          1997,
+          1029,
+          1095,
+          1058,
+          967,
+          1091,
+          1111,
+          803,
+          1129,
+          1648,
+          1013,
+          741,
+          783,
+          941,
+          570,
+          779,
+          1199,
+          763
+        ],
+        "nLlmCalls": 8,
+        "costs": {
+          "total": 0.046524300000000005,
+          "input": 0.0052442999999999995,
+          "output": 0.041280000000000004
+        },
+        "tokens": {
+          "totalTokens": 81769,
+          "inputTokens": 17481,
+          "outputTokens": 16512
+        },
+        "processingTimeMs": 84160
+      },
+      "analysis": {
+        "nSegments": 70,
+        "nFactsExtracted": 461,
+        "nLlmCalls": 71,
+        "costs": {
+          "total": 0.0700499,
+          "input": 0.019764899999999995,
+          "output": 0.05028499999999998
+        },
+        "tokens": {
+          "totalTokens": 149732,
+          "inputTokens": 65883,
+          "outputTokens": 20114
+        },
+        "processingTimeMs": 120486
+      }
+    }
+  },
+  "llmMetrics": {
+    "processingTimeMs": 204646,
+    "nLlmCalls": 79,
+    "costs": {
+      "total": 0.1165742,
+      "input": 0.025009199999999995,
+      "output": 0.09156499999999998
+    },
+    "tokens": {
+      "totalTokens": 231501,
+      "inputTokens": 83364,
+      "outputTokens": 36626
+    }
+  },
+  "metadata": {
+    "modelsUsed": [
+      "gemini-2.5-flash-preview-09-2025",
+      "gemini-2.5-flash-preview-09-2025"
+    ],
+    "language": "en",
+    "startTime": "2025-12-14T10:44:40.278Z",
+    "endTime": "2025-12-14T10:46:40.764Z"
+  }
+}

@@ -9,7 +9,7 @@ import type { ProcessPdfResult } from '../api.type';
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '..', '.env') });
 
 // Some constants
-const COLLECTION_NAME = 'openvaa-eu-2024-elections';
+const COLLECTION_NAME = 'openvaa-eu-2024-example-chatbot';
 
 /**
  * Embedding script that:

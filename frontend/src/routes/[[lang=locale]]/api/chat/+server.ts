@@ -12,7 +12,7 @@ import type { ChatRequestBody } from '$lib/chatbot';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
-const { vectorStore, queryReformulationProvider, chatProvider } = await getChatbotConfiguration(
+const { vectorStore, chatProvider } = await getChatbotConfiguration(
   constants.LLM_OPENAI_API_KEY
 );
 
@@ -150,7 +150,6 @@ export async function POST({ request, params, getClientAddress }) {
       locale,
       state,
       vectorStore: vectorStore,
-      reformulationProvider: queryReformulationProvider,
       chatProvider,
       rerankConfig: {
         enabled: true,
@@ -161,7 +160,6 @@ export async function POST({ request, params, getClientAddress }) {
     });
 
     // Save updated state to Redis
-    console.info('Conversation state: ' + JSON.stringify(response.state));
     await conversationStore.set(sessionId, response.state);
 
     // Wrap in SSE stream with RAG metadata collector
