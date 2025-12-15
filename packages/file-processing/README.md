@@ -2,6 +2,8 @@
 
 Document processing pipeline for converting PDFs and .txt files into semantically segmented, and holistically analyzed content, summarized and fact-extracted, ready for vector storage. More complex search operations like fact-based search can be easily implemented. 
 
+PLEASE ALSO REFER TO WIP.md for limitations and future improvements.
+
 ## Usage
 
 The package exports two main functions: processPdf and processText. You can either use them standalone or utilize the following batch processing scripts. The scripts are is highly recommended before a file processing UI. 

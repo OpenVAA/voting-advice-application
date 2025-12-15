@@ -3,6 +3,8 @@ import { convertPdfToMarkdown } from './core/pdfConversion';
 import { segmentText } from './core/textSegmentation';
 import type { ProcessPdfOptions, ProcessPdfResult, ProcessTextOptions, ProcessTextResult } from './api.type';
 
+// IMPORTANT: this API is not ready. See WIP.md for more details.
+
 // TODO: create an utility that stores this API boilerplate
 /**
  * Process a document end-to-end: segment and analyze
