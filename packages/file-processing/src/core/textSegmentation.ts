@@ -59,7 +59,9 @@ export async function segmentText(options: SegmentTextOptions): Promise<SegmentT
     maxSegmentLength = 1000,
     charsPerLLMCall = 10000,
   } = options;
-  // Create charsPerLLMCall character parts of the input text to avoid context window issues
+  // Create charsPerLLMCall character parts of the input text to avoid context window issues (heuristic, not tested further. Improve if possible.)
+  // Note: This creates hard boundaries - segments spanning chunk boundaries won't be semantic
+  // See HANDOFF.md for future improvement suggestions
   const inputTextParts: Array<string> = [];
   for (let i = 0; i < text.length; i += charsPerLLMCall) {
     inputTextParts.push(text.slice(i, i + charsPerLLMCall));

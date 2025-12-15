@@ -39,7 +39,7 @@ const segmentAnalysisSchema = z.object({
 export async function extractMetadata(options: ExtractMetadataOptions) {
   const { text, llmProvider } = options;
 
-  // Get the first and last 500 characters of the input text
+  // Get the first and last 500 characters of the input text (heuristic, not tested further.)
   const first500 = text.slice(0, 500);
   const last500 = text.slice(-500);
 
@@ -119,7 +119,7 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
         }
       ] as Array<ModelMessage>,
       schema: segmentAnalysisSchema,
-      temperature: 0.7,
+      temperature: 0, // Some models don't support temperature. This is safer. And we don't really care about temp noise here.
       maxRetries: 3,
       validationRetries: 3
     };
@@ -131,7 +131,7 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
   );
   const responses = await llmProvider.generateObjectParallel({
     requests,
-    maxConcurrent: 4,
+    maxConcurrent: 4, // Arbitrary. Actual usage requires advanced rate limit handling. 
     controller
   });
 
@@ -260,6 +260,12 @@ interface CreateSegmentWithContextOptions {
 
 /**
  * Helper: Create segment with sliding window context and markers
+ * 
+ * Uses sliding window approach because:
+ * 1. LLMs need surrounding context to generate accurate summaries
+ * 2. Edge segments (first/last) get asymmetric context (1500 chars one side)
+ * 3. Middle segments prioritize preceding context (1000) over following (500)
+ *    because prior information is typically more relevant for summarization
  */
 function createSegmentWithContext(options: CreateSegmentWithContextOptions): string {
   const { segments, index } = options;
@@ -270,7 +276,7 @@ function createSegmentWithContext(options: CreateSegmentWithContextOptions): str
     const followingContext = getContextFromSegments({
       segments,
       startIndex: index + 1,
-      minChars: 1500,
+      minChars: 1500, // Heuristic. Not tested further. Improve if possible.
       direction: 'forward'
     });
     segmentWithContext =

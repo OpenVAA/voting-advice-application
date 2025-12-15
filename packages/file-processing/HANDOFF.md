@@ -14,6 +14,7 @@
 - Admin control panel would be helpful, so non-devs can add source documents to DBs and perform human-in-the-loop checks for LLM-automized file processing and analysis
 - Refactor "embed & save" logic in the emdedDocuments.ts script when we have a Supabase DB
 - Actually use extracted facts and summaries for vector search retrieval. It is expected to improve retrieval, but the semantics of what constitutes a searchable element needs to be documented carefully. 
+- A big need for rate limiting to support parallel processing. Current code may use parallel processing automatically. Please see 'documentAnalysis.ts' line
 
 ## Some Quick Wins
 -  Try OpenAI or Claude for segmentation (may respect char limits better than Gemini)
