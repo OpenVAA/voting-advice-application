@@ -1,8 +1,8 @@
 # @openvaa/file-processing
 
-Document processing pipeline for converting PDFs and .txt files into semantically segmented, and holistically analyzed content, summarized and fact-extracted, ready for vector storage. More complex search operations like fact-based search can be easily implemented. 
+Document processing pipeline for converting PDFs and .txt files into semantically segmented, and holistically analyzed content (= summarized and fact-extracted) ready for vector storing. More complex search operations like fact-based search are easy to implement, and should be looked into. 
 
-PLEASE ALSO REFER TO WIP.md for limitations and future improvements.
+See HANDOFF.md for details about architectural decisions, limitations and crucial future improvements needed. 
 
 ## Usage
 
