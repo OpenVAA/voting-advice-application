@@ -3,10 +3,10 @@ import type { SingleSearchResult } from '@openvaa/vector-store/types';
 import type { RAGRetrievalInput, RAGRetrievalResult } from './ragService.type';
 
 // TODO: replace with agentic RAG retrieval
-const RERANK_COST_PER_UNIT = 0.002; // Cohere pricing
-const TOP_K_FROM_VECTOR_SEARCH = 90; // Setting this close to 100 leads to two search units billed from Cohere (not entirely sure why, maybe token counts or something?)
-const N_SEGMENTS_TO_RETURN = 5;
-const MIN_RERANK_SCORE = 0.75; // Usually below this score results become irrelevant
+const RERANK_COST_PER_UNIT = 0.002; // Cohere pricing, see Cohere docs for more details on what a search unit is
+const TOP_K_FROM_VECTOR_SEARCH = 85; // Setting this close to 100 leads to two search units billed from Cohere (not entirely sure why, maybe some segments are counted twice because they are too long, or something like that?)
+const N_SEGMENTS_TO_RETURN = 5; // This is the max number of segments we can return to the LLM. We can also return 0 if no relevant segments are found. Arbitrary const, not tested further. TODO: make dynamic based on query complexity. 
+const MIN_RERANK_SCORE = 0.75; // Usually below this score results become irrelevant. Heuristic.
 
 /**
  * Perform RAG retrieval for a user query

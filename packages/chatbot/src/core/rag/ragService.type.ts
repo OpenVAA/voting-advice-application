@@ -30,10 +30,10 @@ export interface RAGRetrievalResult {
   /** Formatted context string ready for LLM injection */
   formattedContext: string;
 
-  /** Reformulated queries used for retrieval */
+  /** UNUSED: Reformulated queries used for retrieval. TODO: implement query reformulation. */
   reformulatedQueries: Record<string, Array<string>>;
 
-  /** Canonical query (first query from each topic, joined) */
+  /** UNUSED: Canonical query (if there is query reformulation). TODO: implement query reformulation. */
   canonicalQuery: string;
 
   /** Reranking costs if reranking was used */

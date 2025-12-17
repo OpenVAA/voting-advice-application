@@ -13,15 +13,15 @@ But this requires you to first have an instantiated collection in ./chroma-db:
 ```typescript
 import { ChromaVectorStore, OpenAIEmbedder } from '@openvaa/vector-store';
 
-// 1. Create an embedder
-const embedder = new OpenAIEmbedder({
+// 1. Create an Embedder
+const embedder: Embedder = new OpenAIEmbedder({
 model: 'text-embedding-3-small',
 dimensions: 1536,
 apiKey: process.env.OPENAI_API_KEY
 });
 
-// 2. Create and initialize the store
-const store = new ChromaVectorStore({
+// 2. Create and initialize a VectorStore
+const store: VectorStore = new ChromaVectorStore({
 collectionName: 'my-collection',
 embedder,
 chromaPath: 'http://localhost:8000' // optional, defaults to localhost:8000
@@ -35,27 +35,20 @@ segments: [
 id: 'doc1_seg0',
 documentId: 'doc1',
 segmentIndex: 0,
-content: 'The European Parliament has 705 members...',
+content: 'The European Parliament has 720 members...',
 summary: 'Overview of EU Parliament structure',
-standaloneFacts: ['The EU Parliament has 705 members']
+standaloneFacts: ['The EU Parliament has 720 members']
 }
 ],
 metadata: {
-source: 'EU Parliament',
-title: 'Introduction to the European Parliament',
-publishedDate: '2024-01-01'
+  source: 'EU Parliament',
+  title: 'Introduction to the European Parliament',
+  publishedDate: '2024-01-01'
 }
 });
-
-// 4. Now you can search for relevant documents
-const results = await store.search({ query: 'How many MEPs are there?', topK: 10 });
-
-for (const result of results.results) {
-console.log(result.segment.content); // The matched text
-console.log(result.vectorSearchScore); // Similarity score (0-1)
-console.log(result.segment.metadata); // Document metadata
-}
 ```
+
+It is important to note that document metadata is de-normalized (saved to each segment separately) inside `addSegments()`. We want searches return complete context without having to get segment metadata separately, but before we embed segments to the vector store, we don't have to duplicate identical metadata in every segment instance. 
 
 ## Architecture
 
@@ -65,7 +58,7 @@ console.log(result.segment.metadata); // Document metadata
 - Storing segments in ChromaDB with cosine similarity
 - Returning search results as `VectorSearchResult` containing `SingleSearchResult` items
 
-**Segments** are the primary unit of storage—not full documents. Document metadata is de-normalized onto each segment during `addSegments()`, so searches return complete context without additional lookups.
+**Segments** are the primary unit of storage, not full documents. Full document storage is not yet implemented. 
 
 ## Reranking
 

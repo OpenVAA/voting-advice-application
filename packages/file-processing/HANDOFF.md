@@ -2,6 +2,7 @@
 
 ## Most Important
 
+- Refactor to use new llm package
 - No language support except english ('en')
 - Text segmentation is non-deterministic & the limit [minSegmentChars, maxSegmentChars] is empirically unreliable (at least Gemini models seem to prefer semantic boundaries A LOT, even though prompt has instruction for char limits). 
 - PDF conversion via Gemini multimodality is unreliable for complex data, human-in-the-loop recommended
@@ -15,6 +16,7 @@
 - Refactor "embed & save" logic in the emdedDocuments.ts script when we have a Supabase DB
 - Actually use extracted facts and summaries for vector search retrieval. It is expected to improve retrieval, but the semantics of what constitutes a searchable element needs to be documented carefully. 
 - A big need for rate limiting to support parallel processing. Current code may use parallel processing automatically. Please see 'documentAnalysis.ts' line
+- IF THE CHATBOT WILL BE MODIFIED TO SUPPORT STRUCTURED RAG, THIS PACKAGE WILL BECOME RESPONSIBLE FOR METADATA ANNOTATION AND SAVING STRUCTURED DATA IN ADDITION TO SAVING UNSTRUCTURED DATA
 
 ## Some Quick Wins
 -  Try OpenAI or Claude for segmentation (may respect char limits better than Gemini)

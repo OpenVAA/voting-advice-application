@@ -115,4 +115,4 @@ Source segments have 2 different data formats for resource optimization (normali
 Prompts are stored as YAML files in src/prompts/ and loaded dynamically. This allows easy customization without code changes.
 
 ### Controller Pattern
-The Controller parameter allows for cancellation of long-running operations, useful in interactive applications. It is not, as of writing, capable of sending abort calls to cloud providers that provide LLM access. 
+The Controller parameter allows for cancellation of long-running operations, useful in interactive applications. It is not, as of writing, capable of sending abort calls to cloud providers that provide LLM access. Please see the llm package for details on how the abortion logic is implemented. 
