@@ -35,3 +35,7 @@ When implementing this, also consider how to manage saving user messages. Curren
 (5) Improve retrieval reliability
 
 The chatbot is eager to answer "simple" questions using its training data instead of using its search capabilities. I've tried to solve this by making it clear in the system prompt that it should use its RAG tool even for simple questions, just to make sure that its presumptions are correct. For fixing this, consider implementing a RAG agent, which removes the responsibility from the chatbot. It has difficulty behaving both as a researcher and a chatbot. 
+
+(6) Implement robust rate limiting to handle production usage
+
+This is relevant to ALL llm features like question info generation (question-info) and argument condensation (argument-condensation). Creating a centralized rate limiting is essential - using the same API key in multiple locations is currently not tracked. 

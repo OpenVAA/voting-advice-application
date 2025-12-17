@@ -1,3 +1,8 @@
+/** What the chatbot thinks it can do. These should reflect the tools and data it has access to.
+ * Ideally, these would be dynamic according to data, but that is impossible, because the it depends
+ * on the data we have saved in the vector store in addition to tools which provide detailed information
+ * about what kind of data or functionality they can provide. 
+ */
 export const CHATBOT_SKILLS = [
   'find information about the 2024 EU elections',
   'find information about parties in the 2024 EU elections (including which parties are running)',
@@ -11,6 +16,7 @@ export const CHATBOT_SKILLS = [
   'find general voter count'
 ]
 
+/** Define default topics that can be used if user is unsure about what to talk about. */
 export const FALLBACK_TOPICS = [
   'Why your vote matters',
   'Different political topics like immigration, climate change, etc.',

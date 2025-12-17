@@ -4,16 +4,35 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { performRAGRetrieval } from '../rag/ragService';
-import type { AnyQuestionVariantData } from '@openvaa/data';
 import type { VectorStore } from '@openvaa/vector-store/types';
 import type { RAGRetrievalResult } from '../rag/ragService.type';
-import type { ChatDataProvider } from './chatDataProvider.type';
-import type { CandidateInfo } from './chatDataProvider.type';
-import type { Tool } from './tool.type';
 
 // ES module directory path
 const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirPath = dirname(currentFilePath);
+
+// TODO: remove rag dependencies and instead use a ChatDataProvider to get the data
+/**
+ * Get available tools for the chatbot
+ *
+ * @param ragDeps - RAG tool dependencies 
+ * @returns Record of tool name to tool instance
+ */
+export function getTools(ragDeps: RAGDependencies) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tools: Record<string, any> = {
+    getAvailableParties: getAvailableParties(),
+    getPartyInfo: getPartyManifesto()
+  };
+
+  // Add RAG tool if dependencies are provided
+  if (ragDeps) {
+    tools.vectorSearchForElectionInfo = vectorSearchForElectionInfo(ragDeps);
+    console.info('RAG tool added!:', tools.vectorSearchForElectionInfo);
+  }
+
+  return tools;
+}
 
 // Load party information from text files (keep existing detailed files)
 const PARTY_INFO_FILES = {
@@ -115,21 +134,6 @@ export interface RAGDependencies {
  * @returns Record of tool name to tool instance
  */
 
-export function getTools(ragDeps: RAGDependencies) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tools: Record<string, any> = {
-    getAvailableParties: getAvailableParties(),
-    getPartyInfo: getPartyManifesto()
-  };
-
-  // Add RAG tool if dependencies are provided
-  if (ragDeps) {
-    tools.vectorSearchForElectionInfo = vectorSearchForElectionInfo(ragDeps);
-    console.info('RAG tool added!:', tools.vectorSearchForElectionInfo);
-  }
-
-  return tools;
-}
 
 /**
  * Create RAG search context tool
@@ -204,87 +208,3 @@ export function getPartyManifesto() {
     }
   });
 }
-
-export function getCandidateInfo(dataProvider: ChatDataProvider): Tool<{ id: string }, CandidateInfo> {
-  return {
-    description: 'Get information about a candidate by ID.',
-    inputSchema: z.object({
-      id: z.string().describe('The candidate ID')
-    }),
-    execute: (input) => dataProvider.getCandidateInfo(input.id)
-  };
-}
-
-export function findCandidateByName(dataProvider: ChatDataProvider): Tool<{ name: string }, Array<CandidateInfo>> {
-  return {
-    description: 'Find candidates by name.',
-    inputSchema: z.object({
-      name: z.string().describe('The name to search for')
-    }),
-    execute: (input) => dataProvider.findCandidates(input.name)
-  };
-}
-
-export function listCandidatesFor(
-  dataProvider: ChatDataProvider
-): Tool<{ electionId: string; constituencyId?: string }, Array<CandidateInfo>> {
-  return {
-    description: 'List candidates for a specific election and optionally constituency.',
-    inputSchema: z.object({
-      electionId: z.string().describe('The election ID'),
-      constituencyId: z.string().optional().describe('The constituency ID (optional)')
-    }),
-    execute: (input) => dataProvider.listCandidatesFor(input)
-  };
-}
-
-export function getCandidateAnswer(
-  dataProvider: ChatDataProvider
-): Tool<
-  { candidateId: string; questionId: string },
-  { questionId: string; answer?: { value: unknown; info?: string | null } }
-> {
-  return {
-    description: "Get a candidate's answer to a specific question.",
-    inputSchema: z.object({
-      candidateId: z.string().describe('The candidate ID'),
-      questionId: z.string().describe('The question ID')
-    }),
-    execute: (input) => dataProvider.getCandidateAnswer(input.candidateId, input.questionId)
-  };
-}
-
-export function getCandidateAnswers(
-  dataProvider: ChatDataProvider
-): Tool<{ candidateId: string }, Array<{ questionId: string; answer?: { value: unknown; info?: string | null } }>> {
-  return {
-    description: 'Get all answers for a candidate.',
-    inputSchema: z.object({
-      candidateId: z.string().describe('The candidate ID')
-    }),
-    execute: (input) => dataProvider.getCandidateAnswers(input.candidateId)
-  };
-}
-
-export function findQuestions(
-  dataProvider: ChatDataProvider
-): Tool<{ query: string; electionId?: string }, Array<AnyQuestionVariantData>> {
-  return {
-    description: 'Find questions by searching their text content.',
-    inputSchema: z.object({
-      query: z.string().describe('The search query for questions'),
-      electionId: z.string().optional().describe('The election ID to filter by (optional)')
-    }),
-    execute: (input) =>
-      dataProvider.findQuestions(input.query, input.electionId ? { electionId: input.electionId } : undefined)
-  };
-}
-
-export const toolFactories = {
-  getCandidateInfo,
-  findCandidateByName,
-  listCandidatesFor,
-  getCandidateAnswer,
-  getCandidateAnswers,
-  findQuestions
-} as const;

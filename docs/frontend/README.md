@@ -3,6 +3,8 @@
 The documentation for the frontend consists of:
 
 - [Components](components.md)
+- [Chatbot](chatbot.md)
+- [Chatbot handoff](chatbotHandoff.md)
 - [Routing](routing.md)
 - [Styling](styling.md)
 - [Accessing data and state management](data-and-state-management.md)

@@ -2,6 +2,8 @@
 
 Want to understand the system quickly?
 
+flowVisualized.png provides an LLM-generated visualization of the system. It is very helpful to start out with that to grasp the system design E2E. 
+
 You can use the chatbot either through once you have completed the [setup](#set-up):
 - **Questions page** (voter app): `http://localhost:5173/en/questions`
 - **Development UI** (standalone): `http://localhost:5173/en/chatbot/single`
