@@ -4,7 +4,7 @@ The chatbot is an AI assistant that helps voters understand elections, parties, 
 
 See chatbotHandoff.md for essential improvements needed and a description of potential issues.
 
-See chatbot package README.md and HANDOFF.md for a comprehensive description of the system, its configuration and usage & future improvements needed.
+See README.md and HANDOFF.md in the chatbot package for a comprehensive description of the system, its configuration and usage & future improvements needed.
 
 ## Architecture
 
@@ -377,13 +377,11 @@ Customize by editing:
 
 - localStorage enabled in browser
 - Redis running and accessible
-- No CORS issues
 
 ### Slow responses
 
-**Debug** using development view (`/[lang]/chatbot/single`):
+**Debug** using development view (`/[[lang=locale]]/chatbot/single`):
 
-- High TTFT → LLM latency issue
 - High retrieval time → Vector store performance
 - High reranking cost → Cohere API latency
 
@@ -427,6 +425,7 @@ Navigate to `/[lang]/chatbot/single` to inspect:
 
 - [Chatbot Package](../../packages/chatbot/README.md) - Backend implementation
 - [File Processing](../../packages/file-processing/README.md) - Adding RAG content
+- [Vector Store](../../packages/vector-store/README.md) - Vector store logic and local data storage
 - [Contexts](./contexts.md) - Svelte context system
 - [Components](./components.md) - Component conventions
 - [Data API](./data-api.md) - Data loading patterns
