@@ -1,6 +1,5 @@
-import { generateMockDataOnInitialise, generateMockDataOnRestart, loadDataFolder } from './constants';
+import { generateMockDataOnInitialise, generateMockDataOnRestart } from './constants';
 import { generateMockData } from './functions/generateMockData';
-import { loadData } from './functions/loadData';
 import { loadDefaultAppSettings } from './functions/loadDefaultAppSettings';
 import { loadDefaultData } from './functions/loadDefaultData';
 import { loadDynamicTranslations } from './functions/loadDynamicTranslations';
@@ -28,10 +27,7 @@ module.exports = {
   bootstrap(/*{ strapi }*/) {
     // 1. Default, mock or loaded data
     try {
-      // Due to ENV variable handling, we'll bypass some falsy values
-      if (loadDataFolder && !['""', "''", '-', 'false', 'FALSE', '0'].includes(loadDataFolder)) {
-        loadData(loadDataFolder);
-      } else if (generateMockDataOnInitialise || generateMockDataOnRestart) {
+      if (generateMockDataOnInitialise || generateMockDataOnRestart) {
         generateMockData();
       } else {
         loadDefaultAppSettings();

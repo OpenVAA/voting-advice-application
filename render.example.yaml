@@ -99,8 +99,6 @@ services:
         value: 'false'
       - key: GENERATE_MOCK_DATA_ON_INITIALISE
         value: 'false'
-      - key: LOAD_DATA_ON_INITIALISE_FOLDER
-        value: '' # Deprecated
 
       - key: API_TOKEN_SALT
         generateValue: true
