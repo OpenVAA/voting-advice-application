@@ -19,11 +19,6 @@ export const generateMockDataOnInitialise = process.env.GENERATE_MOCK_DATA_ON_IN
 export const generateMockDataOnRestart =
   (process.env.GENERATE_MOCK_DATA_ON_RESTART === 'true' && nodeEnv === 'development') || false;
 
-/**
- * If available, data will be loaded from this folder on initialise, if the database contains no Election objects. This will override mock data generation
- */
-export const loadDataFolder = process.env.LOAD_DATA_ON_INITIALISE_FOLDER ?? '';
-
 export const mailFrom = process.env.MAIL_FROM ?? '';
 export const mailFromName = process.env.MAIL_FROM_NAME ?? '';
 export const mailReplyTo = process.env.MAIL_REPLY_TO ?? '';
