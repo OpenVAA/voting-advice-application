@@ -15,12 +15,19 @@ export function enrichSegmentsWithMetadata({
   segments: Array<SourceSegment>;
   metadata: SourceMetadata;
 }): Array<SegmentWithMetadata> {
+  // Exclude authors array since ChromaDB only accepts scalar values (string, number, boolean)
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const { authors, ...chromaCompatibleMetadata } = metadata;
   const segmentsWithMetadata: Array<SegmentWithMetadata> = segments.map((s) => ({
     id: s.id,
     documentId: s.documentId,
     segmentIndex: s.segmentIndex,
     content: s.content,
-    metadata
+    metadata: {
+      ...chromaCompatibleMetadata,
+      documentId: s.documentId,
+      segmentIndex: s.segmentIndex
+    }
   }));
 
   return segmentsWithMetadata;

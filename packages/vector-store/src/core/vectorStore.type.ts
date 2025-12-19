@@ -14,8 +14,8 @@ import type { Embedder } from './embedder.type';
 export interface VectorStoreConfig {
   collectionName: string;
   embedder: Embedder;
-  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker) 
-   * @default 
+  /** Optional ChromaDB server path (e.g., 'http://host.docker.internal:8000' for Docker)
+   * @default
    * localhost:8000
    */
   chromaPath?: string;
@@ -116,4 +116,13 @@ export abstract class VectorStore {
    * @returns Vector search results
    */
   abstract search({ query, topK }: { query: string; topK?: number }): Promise<VectorSearchResult>;
+
+  /**
+   * List all segments (or up to `limit`) with documents and metadata
+   */
+  abstract listAll(limit?: number): Promise<{
+    segments: Array<SegmentWithMetadata>;
+    nSegments: number;
+    nDocuments: number;
+  }>;
 }

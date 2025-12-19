@@ -20,6 +20,8 @@ Display a question for answering.
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { ChatbotWidget, ChatbotToggleButton } from '$lib/components/chatbot';
+  import { questionToChatbotContext } from '@openvaa/chatbot';
   import { Hero } from '$lib/components/hero';
   import { Loading } from '$lib/components/loading';
   import {
@@ -107,6 +109,15 @@ Display a question for answering.
 
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
+
+  ////////////////////////////////////////////////////////////////////
+  // Chatbot state
+  ////////////////////////////////////////////////////////////////////
+
+  let chatbotOpen = false;
+
+  // Build question context for chatbot
+  $: questionContext = question ? questionToChatbotContext(question) : undefined;
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     disabled = true;
@@ -215,6 +226,14 @@ Display a question for answering.
         }} />
     </svelte:fragment>
   </MainContent>
+
+  <!-- Chatbot toggle button and widget -->
+  <ChatbotToggleButton isOpen={chatbotOpen} on:click={() => (chatbotOpen = !chatbotOpen)} />
+  <ChatbotWidget
+    isOpen={chatbotOpen}
+    questionContext={questionContext}
+    locale={'en'}
+    onClose={() => (chatbotOpen = false)} />
 {:else}
   <Loading class="mt-lg" />
 {/if}

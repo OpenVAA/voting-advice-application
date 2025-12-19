@@ -1,4 +1,4 @@
-import type { CommonLLMParams, LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { CommonLLMParams, LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm';
 import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store/types';
 
 /**

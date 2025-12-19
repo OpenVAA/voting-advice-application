@@ -1,7 +1,7 @@
-import { setPromptVars } from '@openvaa/llm-refactor';
+import { setPromptVars } from '@openvaa/llm';
 import { z } from 'zod';
 import { loadPrompt } from '../utils/promptLoader';
-import type { LLMObjectGenerationOptions } from '@openvaa/llm-refactor';
+import type { LLMObjectGenerationOptions } from '@openvaa/llm';
 import type { SourceMetadata } from '@openvaa/vector-store/types';
 import type { ModelMessage } from 'ai';
 import type { AnalyzeSourceOptions, AnalyzeSourceResult, ExtractMetadataOptions } from './documentAnalysis.type';
@@ -131,7 +131,7 @@ export async function analyzeDocument(options: AnalyzeSourceOptions): Promise<An
   );
   const responses = await llmProvider.generateObjectParallel({
     requests,
-    maxConcurrent: 4, // Arbitrary. Actual usage requires advanced rate limit handling. 
+    maxConcurrent: 4, // Arbitrary. Actual usage requires advanced rate limit handling.
     controller
   });
 
@@ -260,7 +260,7 @@ interface CreateSegmentWithContextOptions {
 
 /**
  * Helper: Create segment with sliding window context and markers
- * 
+ *
  * Uses sliding window approach because:
  * 1. LLMs need surrounding context to generate accurate summaries
  * 2. Edge segments (first/last) get asymmetric context (1500 chars one side)

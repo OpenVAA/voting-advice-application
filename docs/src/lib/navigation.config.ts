@@ -232,7 +232,12 @@ export const navigation: Navigation = [
           {
             title: 'Styling',
             route: '/developers-guide/frontend/styling'
-          }
+          },
+          {
+            title: 'Chatbot',
+            route: '/developers-guide/frontend/chatbot'
+          },
+
         ]
       },
       {

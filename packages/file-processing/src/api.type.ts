@@ -1,4 +1,4 @@
-import type { LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { LLMPipelineMetrics, LLMPipelineResult } from '@openvaa/llm';
 import type { SourceMetadata, SourceSegment } from '@openvaa/vector-store/types';
 import type { SourceAnalysisMetrics } from './core/documentAnalysis.type';
 import type { ConvertPdfOptions } from './core/pdfConversion.type';
