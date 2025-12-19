@@ -1,4 +1,4 @@
-import type { CommonLLMParams, LLMPipelineResult } from '@openvaa/llm-refactor';
+import type { CommonLLMParams, LLMPipelineResult } from '@openvaa/llm';
 
 /**
  * Options for converting PDF to markdown using Gemini API

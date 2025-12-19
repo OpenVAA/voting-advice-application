@@ -5195,6 +5195,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/file-processing@workspace:packages/file-processing":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/file-processing@workspace:packages/file-processing"
+  dependencies:
+    "@openvaa/core": "workspace:^"
+    "@openvaa/llm": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    "@openvaa/vector-store": "workspace:^"
+    ai: "npm:^5.0.0"
+    js-yaml: "npm:^4.1.0"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.7.3"
+    vitest: "npm:^2.1.8"
+    zod: "npm:^4.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/filters@workspace:^, @openvaa/filters@workspace:packages/filters":
   version: 0.0.0-use.local
   resolution: "@openvaa/filters@workspace:packages/filters"
@@ -5406,7 +5423,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/vector-store@workspace:packages/vector-store":
+"@openvaa/vector-store@workspace:^, @openvaa/vector-store@workspace:packages/vector-store":
   version: 0.0.0-use.local
   resolution: "@openvaa/vector-store@workspace:packages/vector-store"
   dependencies:

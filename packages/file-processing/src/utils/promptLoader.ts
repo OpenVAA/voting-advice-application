@@ -1,4 +1,4 @@
-import { extractPromptVars, validatePromptVars } from '@openvaa/llm-refactor';
+import { extractPromptVars, validatePromptVars } from '@openvaa/llm';
 import { readFile } from 'fs/promises';
 import { load as loadYaml } from 'js-yaml';
 import { join } from 'path';
