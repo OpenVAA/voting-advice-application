@@ -1,5 +1,6 @@
 import { AbortError, BaseController } from '@openvaa/core';
 import { loadPrompt } from '@openvaa/llm';
+import crypto from 'crypto';
 import * as path from 'path';
 import { ResponseWithArgumentsSchema } from './responseValidators';
 import { MODEL_DEFAULTS } from '../../defaultValues';
