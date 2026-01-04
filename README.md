@@ -55,14 +55,6 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 ## 🎢 Roadmap
 
-**2025 H2** — Expand documentation and improve developer-friendliness and first release
-
-- Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
-- Create a research-backed methodological guide to supplement the technical documentation
-- Integrate experimental AI features into the codebase (currently in a test branch)
-- Build application manager UI
-  — First production release
-
 **2026** - Added features for developer-friendliness
 
 - Enable plugins or easier customisation of pages and main components
