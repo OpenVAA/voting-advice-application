@@ -36,6 +36,6 @@ export function getFallbackModel(provider: string, model: string): string {
 
   // Use any model as fallback, because the configured fallback safety net failed
   return Object.keys(FALLBACK_MODELS[provider as keyof typeof FALLBACK_MODELS]).find(
-    (mdel) => mdel !== model
+    (modelKey) => modelKey !== model
   ) as string;
 }
