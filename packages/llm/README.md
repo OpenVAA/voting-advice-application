@@ -16,7 +16,7 @@ To reiterate, the package provides:
 - **Prompt logic reusability across locales** - Dynamic, out-of-the-box localization instruction injection
 - **Automatic variable injection** - Load & inject: loadPrompt({ id, variables: { a: 'name', b: 'address' } }),
 
-Internally it uses Vercel AI SDK types and functions (`messages`, `generateObject`, `streamText`, etc.). These utilities are just layered on top for convinience.
+Internally it uses Vercel AI SDK types and functions (`messages`, `generateObject`, `streamText`, etc.). These utilities are just layered on top for convenience.
 
 ## Quick Start
 
