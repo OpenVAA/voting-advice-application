@@ -52,7 +52,7 @@ jobs:
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
 
-            Make sure to check all the items in the [Code Review Checklist](/docs/code-review-checklist.md).
+            Make sure to check all the items in the [Code Review Checklist](/.agents/code-review-checklist.md).
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options

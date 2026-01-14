@@ -309,3 +309,7 @@ Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
 **2025 H2**: Documentation site, AI features, application manager UI, first production release
 
 **2026**: Plugins/customization, multi-tenant model, migration from Strapi to Supabase, Svelte 5 upgrade
+
+## Code Review
+
+When performing code review or developing new features, make sure to check all the items in the [Code Review Checklist](/.agents/code-review-checklist.md).
