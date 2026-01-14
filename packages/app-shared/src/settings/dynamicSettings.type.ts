@@ -59,18 +59,42 @@ export type DynamicSettings = {
     showHelp: boolean;
   };
   /**
-   * Settings related to app header styling
+   * Settings related to app header styling. TODO: Move these to App Customization.
    */
   headerStyle: {
+    /**
+     * Background colors for the header in dark mode.
+     */
     dark: {
+      /**
+       * Default background color of the header.
+       */
       bgColor?: string;
+      /**
+       * Background color of the header when it’s over an image.
+       */
       overImgBgColor?: string;
     };
+    /**
+     * Background colors for the header in light mode.
+     */
     light: {
+      /**
+       * Default background color of the header.
+       */
       bgColor?: string;
+      /**
+       * Background color of the header when it’s over an image.
+       */
       overImgBgColor?: string;
     };
+    /**
+     * The size of the background image in the header. E.g. `cover`, `contain`, or specific sizes like `100% 50%`.
+     */
     imgSize?: string;
+    /**
+     * The positioning of the background image in the header. E.g. `center`, `top`, `bottom`, `left`, `right`, or specific positions like `50% 25%`.
+     */
     imgPosition?: string;
   };
   /**
@@ -100,9 +124,9 @@ export type DynamicSettings = {
      */
     minimumAnswers: number;
     /**
-     * The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Impute: missing party answers are substituted with an anwswer imputed from the party's candidates' answers.
+     * The method with which parties are matched.
      */
-    organizationMatching: 'none' | 'answersOnly' | 'impute';
+    organizationMatching: OrganizationMatchingMethod;
   };
   /**
    * Settings related to the question view.
@@ -165,6 +189,9 @@ export type DynamicSettings = {
        * The additional contents of [ENTITY_TYPE.Candidate] cards. NB. the order of the items has currently no effect.
        */
       [ENTITY_TYPE.Candidate]: Array<
+        /**
+         * Show the matching scores for each question category.
+         */
         | 'submatches'
         /**
          * Show the entity's answer to a specific question. Only applies to the results list.
@@ -175,6 +202,9 @@ export type DynamicSettings = {
        * The additional contents of party cards. NB. the order of the items has currently no effect.
        */
       [ENTITY_TYPE.Organization]: Array<
+        /**
+         * Show the matching scores for each question category.
+         */
         | 'submatches'
         /**
          * List party's the top 3 candidates within it's card. Only applies to the results list.
@@ -208,7 +238,7 @@ export type DynamicSettings = {
      */
     disallowSelection?: boolean;
     /**
-     * Whether to show the election tags along the question text. Only applicable when there are multiple elections.
+     * Whether to show the election tags along the question text.
      */
     showElectionTags: boolean;
     /**
@@ -233,7 +263,7 @@ export type DynamicSettings = {
      */
     adminApp: boolean;
     /**
-     * If `true`, an under maintenance error page will be shown.
+     * If `true`, an under maintenance error page will be shown when attempting to access any part of the app.
      */
     underMaintenance?: boolean;
     /**
@@ -256,6 +286,14 @@ export type DynamicSettings = {
   };
 };
 
+export type OrganizationMatchingMethod =
+  /** No party matching is done */
+  | 'none'
+  /** Matching is only performed on the parties explicit answers. */
+  | 'answersOnly'
+  /** Missing party answers are substituted with an anwswer imputed from the party's candidates' answers. */
+  | 'impute';
+
 /**
  * Used to show the entity's answer to a specific question. Only applies to the results list.
  */
@@ -269,20 +307,42 @@ export type QuestionInCardContent = {
    */
   hideLabel?: boolean;
   /**
-   * How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.
+   * How to format the answer.
    */
-  format?: 'default' | 'tag';
+  format?: QuestionInCardContentFormat;
 };
+
+export type QuestionInCardContentFormat =
+  /**
+   * Use the same format as in EntityDetails.
+   */
+  | 'default'
+  /**
+   * Format the answers as a pill or tag.
+   */
+  | 'tag';
 
 /**
  * The possible content tabs to show for all entities.
  */
-export type EntityDetailsContent = 'info' | 'opinions';
+export type EntityDetailsContent =
+  /**
+   * Basic information.
+   */
+  | 'info'
+  /**
+   * Answers to opinion questions.
+   */
+  | 'opinions';
 
 /**
  * The possible content tabs to show for `Organization`s.
  */
-export type OrganizationDetailsContent = 'candidates';
+export type OrganizationDetailsContent =
+  /**
+   * The party’s candidates.
+   */
+  'candidates';
 
 /**
  * The data for a notification to be shown to users.

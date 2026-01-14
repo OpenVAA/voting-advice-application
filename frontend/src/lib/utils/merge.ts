@@ -4,13 +4,13 @@ export type DeepPartial<TObject> = {
 
 /**
  * Deep merge two plain (non-constructed) objects with settings.
- * NB. For `AppSettings`, use the `mergeAppSettings` function in `$lib/utils/settings.ts` instead.
+ * NB. The function does not support constructed objects (f.e. dates) and arrays containing functions.
+ * For `AppSettings`, use the `mergeAppSettings` function in `$lib/utils/settings.ts` instead.
  *
  * @param target - The target.
  * @param source - The source.
  * @returns A new plain object that contains a deep merge of target and source.
  *
- * @note The function does not support constructed objects (f.e. dates) and arrays containing functions.
  */
 export function mergeSettings<TTarget extends object, TSource extends object>(
   target: TTarget,

@@ -42,7 +42,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Create a candidate with a nomination or nominations and send a registration link.
    * @param email - Email.
    * @param nominations - Nominations.
-   * @access ID token.
+   * Access:  ID token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   preregisterWithIdToken: (opts: {
@@ -64,7 +64,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param identifier - Personal identifier such as a birthdate.
    * @param email - Email.
    * @param nominations - Nominations.
-   * @access API token.
+   * Access:  API token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   preregisterWithApiToken: (

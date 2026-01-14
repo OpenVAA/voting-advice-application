@@ -58,7 +58,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
 ### Tracking events
 
-- `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in [`Video.type.ts`](./Video.type.ts) for a complete description. The event is started and submitted when:
+- `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in `Video.type.ts` for a complete description. The event is started and submitted when:
   - the component is created/destroyed
   - when the video shown is changed with `reload`
   - when the page's visibility changes to `hidden`.

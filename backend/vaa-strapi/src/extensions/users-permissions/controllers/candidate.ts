@@ -105,7 +105,7 @@ async function register(ctx: Context): Promise<{ type: 'success' }> {
 
 /**
  * Preregister a Candidate.
- * @access Authorization: Bearer {BACKEND_API_TOKEN}
+ * Access:  Authorization: Bearer {BACKEND_API_TOKEN}
  * @returns { success: true }
  */
 async function preregister(ctx: Context): Promise<{ type: 'success' }> {
