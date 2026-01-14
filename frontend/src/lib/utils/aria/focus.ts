@@ -2,7 +2,7 @@
 // Partly derived from example code at https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/dialog/ which is licensed according to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
 
 /**
- * @description Set focus on descendant elements until the first focusable element is found.
+ * Set focus on descendant elements until the first focusable element is found.
  * @param el - The element for which to find the first focusable descendant.
  * @returns true if a focusable element is found and focus is set.
  */
@@ -14,7 +14,7 @@ export function focusFirstDescendant(el: Element): boolean {
 }
 
 /**
- * @description Attempt to set focus on the current element.
+ * Attempt to set focus on the current element.
  * @param el - The element to attempt to focus on.
  * @returns true if element is focused
  */

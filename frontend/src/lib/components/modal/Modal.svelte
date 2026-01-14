@@ -1,7 +1,7 @@
 <!--
 @component
 A modal dialog.
-See [`<ModalContainer>` component](./ModalContainer.svelte) for more information.
+See `<ModalContainer>` component for more information.
 
 ### Slots
 
@@ -26,7 +26,7 @@ See [`<ModalContainer>` component](./ModalContainer.svelte) for more information
 
 ### Accessibility
 
-See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation for more information.
+See the `<ModalContainer>` component documentation for more information.
 
 ### Usage
 

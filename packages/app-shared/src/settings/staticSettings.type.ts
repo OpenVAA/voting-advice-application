@@ -120,7 +120,7 @@ export type StaticSettings = {
     readonly trackEvents: boolean;
   };
   /**
-   * Settings related to Candidate App pre-registration.
+   * Settings related to Candidate App pre-registration. If enabled, make sure the set the relevant env variables as well.
    */
   readonly preRegistration: {
     /**

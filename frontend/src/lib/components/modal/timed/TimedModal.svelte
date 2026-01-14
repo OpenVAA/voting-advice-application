@@ -27,7 +27,7 @@ A modal dialog that will automatically close after a set amount of time.
 
 ### Accessibility
 
-See the [`<Modal>` component](../Modal.svelte) documentation for more information.
+See the `<Modal>` component documentation for more information.
 
 ### Usage
 

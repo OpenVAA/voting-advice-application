@@ -18,7 +18,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   - `textarea`: A multi-line text input.
   - `textarea-multilingual`: A multilingual multi-line text input.
 - `label`:  The label to show for the input or group of inputs if `multilingual`.
-- `containerProps`: Any additional props to be passed to the container element of the input. @default {}
+- `containerProps`: Any additional props to be passed to the container element of the input.
 - `id`: The id of the input. If not provided, a unique id will be generated.
 - `info`: Additional info displayed below the input.
 - `disabled`: Works the same way as a normal `input`'s `disabled` attribute.

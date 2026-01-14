@@ -25,7 +25,7 @@ A modal dialog that looks like a drawer.
 
 ### Accessibility
 
-See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation for more information.
+See the `<ModalContainer>` component documentation for more information.
 
 ### Usage
 
