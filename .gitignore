@@ -18,4 +18,3 @@ node_modules
 
 # Generated documentation
 docs/generated/
-typedoc.frontend.json

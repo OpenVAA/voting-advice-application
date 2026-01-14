@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": "..",
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../src/lib/navigation.type.ts", "./utils/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

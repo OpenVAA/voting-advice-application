@@ -21,10 +21,13 @@
     "format:check": "yarn build:app-shared && prettier --check .",
     "lint:fix": "yarn build:app-shared && prettier --write . && eslint --flag unstable_config_lookup_from_file --fix backend/vaa-strapi/src backend/vaa-strapi/tests frontend packages tests",
     "lint:check": "yarn build:app-shared && eslint --flag unstable_config_lookup_from_file backend/vaa-strapi/src backend/vaa-strapi/tests frontend packages tests",
-    "docs:generate": "tsx scripts/generate-docs.ts",
-    "docs:typedoc": "typedoc",
-    "docs:components": "tsx scripts/extract-component-docs.ts",
-    "docs:routes": "tsx scripts/generate-route-map.ts"
+    "docs:prepare": "yarn build:shared && yarn workspace @openvaa/frontend prepare",
+    "docs:generate": "yarn workspace @openvaa/docs generate",
+    "docs:typedoc": "yarn workspace @openvaa/docs generate:typedoc",
+    "docs:typedoc-frontend": "yarn workspace @openvaa/docs generate:typedoc-frontend",
+    "docs:components": "yarn workspace @openvaa/docs generate:components",
+    "docs:routes": "yarn workspace @openvaa/docs generate:routes",
+    "docs:dev": "yarn workspace @openvaa/docs dev"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -44,9 +47,6 @@
     "onchange": "^7.1.0",
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
-    "typedoc": "^0.27.5",
-    "typedoc-plugin-markdown": "^4.3.2",
-    "typedoc-plugin-mermaid": "^1.13.1",
     "vitest": "^2.1.8"
   },
   "engine": {
@@ -59,7 +59,8 @@
     "packages/*",
     "backend/vaa-strapi",
     "backend/vaa-strapi/src/plugins/*",
-    "frontend"
+    "frontend",
+    "docs"
   ],
   "packageManager": "yarn@4.6.0"
 }
