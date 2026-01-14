@@ -1,0 +1,154 @@
+@import 'tailwindcss';
+
+@plugin 'daisyui';
+
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --spacing: calc(1rem / 16);
+  --spacing-px: 1px;
+  --spacing-xs: calc(4rem / 16);
+  --spacing-sm: calc(8rem / 16);
+  --spacing-md: calc(10rem / 16);
+  --spacing-lg: calc(20rem / 16);
+  --spacing-xl: calc(40rem / 16);
+  --spacing-xxl: calc(60rem / 16);
+  --spacing-safel: env(safe-area-inset-left, 0px);
+  --spacing-safer: env(safe-area-inset-right, 0px);
+  --spacing-safet: env(safe-area-inset-top, 0px);
+  --spacing-safeb: env(safe-area-inset-bottom, 0px);
+  --spacing-safemdl: calc(env(safe-area-inset-left, 0px) + 10rem / 16);
+  --spacing-safemdr: calc(env(safe-area-inset-right, 0px) + 10rem / 16);
+  --spacing-safemdt: calc(env(safe-area-inset-top, 0px) + 10rem / 16);
+  --spacing-safemdb: calc(env(safe-area-inset-bottom, 0px) + 10rem / 16);
+  --spacing-safelgl: calc(env(safe-area-inset-left, 0px) + 20rem / 16);
+  --spacing-safelgr: calc(env(safe-area-inset-right, 0px) + 20rem / 16);
+  --spacing-safelgt: calc(env(safe-area-inset-top, 0px) + 20rem / 16);
+  --spacing-safelgb: calc(env(safe-area-inset-bottom, 0px) + 20rem / 16);
+  --spacing-safenavt: calc(env(safe-area-inset-top, 0px) + 16rem / 16);
+  --spacing-headerHeight: 4.5rem;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'light';
+  default: true;
+  prefersdark: false;
+  color-scheme: 'light';
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: #e8f5f6;
+  --color-base-300: #d1ebee;
+  --color-base-content: #333333;
+  --color-primary: #2546a8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #666666;
+  --color-secondary-content: oklch(100% 0 0);
+  --color-accent: #0a716b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #333333;
+  --color-neutral-content: oklch(100% 0 0);
+  --color-info: #0a716b;
+  --color-info-content: #ffffff;
+  --color-success: #2546a8;
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: #a82525;
+  --color-warning-content: oklch(100% 0 0);
+  --color-error: #a82525;
+  --color-error-content: oklch(100% 0 0);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'dark';
+  default: false;
+  prefersdark: true;
+  color-scheme: 'dark';
+  --color-base-100: #000000;
+  --color-base-200: #101212;
+  --color-base-300: #1f2324;
+  --color-base-content: #cccccc;
+  --color-primary: #6887e3;
+  --color-primary-content: #000000;
+  --color-secondary: #8c8c8c;
+  --color-secondary-content: #000000;
+  --color-accent: #11a8a0;
+  --color-accent-content: #000000;
+  --color-neutral: #cccccc;
+  --color-neutral-content: oklch(100% 0 0);
+  --color-info: #11a8a0;
+  --color-info-content: #000000;
+  --color-success: #6887e3;
+  --color-success-content: #000000;
+  --color-warning: #e16060;
+  --color-warning-content: #000000;
+  --color-error: #e16060;
+  --color-error-content: #000000;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@utility prose {
+  blockquote {
+    font-style: normal;
+    /* Disable adding quote marks to block-quotes: https://github.com/tailwindlabs/tailwindcss-typography/issues/66 */
+    p {
+      &:first-of-type::before,
+      &:last-of-type::after {
+        content: none;
+      }
+    }
+  }
+
+  pre[class*='language-'],
+  :not(pre) > code[class*='language-'] {
+    @apply border-1 border-base-300 bg-base-200 text-neutral;
+  }
+}
+
+@layer utilities {
+  .arrow-list {
+    @apply flex flex-col gap-xs;
+  }
+  .arrow-list > li {
+    @apply relative ps-lg before:absolute before:top-0 before:left-0 before:content-['→'];
+  }
+}
+
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+figure > img {
+  @apply mx-auto rounded-md;
+}
+
+figure > figcaption {
+  @apply text-center;
+}
+
+pre {
+  @apply w-full overflow-x-auto;
+}
