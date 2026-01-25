@@ -29,3 +29,6 @@ frontend/tailwind.config.cjs
 # Ignores copied from /tests/.prettierignore
 tests/test-results/
 tests/playwright*/
+# Ignores docs because it must be formatted separately due to different Svelte version
+# TODO[Svelte 5]: Remove this limitation
+docs
