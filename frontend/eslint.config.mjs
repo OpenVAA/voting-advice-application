@@ -42,13 +42,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.jest,
-        // TODO: Remove these when global types deprecated with @openvaa/data
-        ElectionProps: 'writable',
-        PartyProps: 'writable',
-        CandidateProps: 'writable',
-        QuestionProps: 'writable',
-        RankingProps: 'writable'
+        ...globals.jest
       },
 
       parser: tsParser,
