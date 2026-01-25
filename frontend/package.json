@@ -20,7 +20,7 @@
     "@openvaa/shared-config": "workspace:^",
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/adapter-node": "^5.2.11",
-    "@sveltejs/kit": "^2.15.2",
+    "@sveltejs/kit": "^2.49.5",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@types/node": "^20.17.12",
@@ -38,7 +38,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
-    "svelte": "^4.2.19",
+    "svelte": "^4.2.20",
     "svelte-check": "^3.8.6",
     "svelte-eslint-parser": "^0.43.0",
     "svelte-preprocess": "^6.0.3",
@@ -47,9 +47,9 @@
     "tslib": "^2.8.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "vite": "^5.4.11",
+    "vite": "^5.4.21",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.9"
   },
   "engine": {
     "node": "20.18.1",
@@ -76,7 +76,7 @@
     "intl-messageformat": "^10.7.11",
     "isomorphic-dompurify": "^2.19.0",
     "jose": "^5.9.6",
-    "qs": "^6.13.1",
+    "qs": "^6.14.1",
     "sveltekit-i18n": "^2.4.2",
     "zod": "^4.0.0"
   },
