@@ -19,7 +19,7 @@ A non-exhaustive list of the application features.
 
 ### Accessibility
 
-- WGAC 2.1 AA compliant
+- WCAG 2.1 AA compliant
 - Automatic color contrast tuning for user-specified colors
 - Mobile first design
 - Light and dark mode enabled

@@ -34,7 +34,7 @@ You should always review your own PR first before asking someone to review it. B
 - [ ] Test the change thoroughly on your own device, including parts that may have been affected via shared code.
 - [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
 - [ ] Test the changes using the [WAVE extension](https://wave.webaim.org/extension/) for accessibility.
-- [ ] The changes pass the [WGAC A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
+- [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] Test the changes using keyboard navigation and screen-reading.
-- [ ] Documentation is added wherever necessary.
+- [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the Developers’ and Publishers’ Guides.
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](/developers-guide/contributing/contribute/#commit-your-update)
