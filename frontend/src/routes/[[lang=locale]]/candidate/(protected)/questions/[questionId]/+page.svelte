@@ -257,7 +257,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
         <QuestionBasicInfo {info} />
       {/if}
 
-      <div slot="primaryActions" class="gap-lg grid w-full justify-items-center">
+      <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">
         <!-- Question answer proper -->
 
         <OpinionQuestionInput
