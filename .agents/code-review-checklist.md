@@ -14,7 +14,7 @@ When performing code review, double check all of the items below:
 - [ ] Errors are handled properly and logged in the code.
 - [ ] Troubleshoot any failing checks in the PR.
 - [ ] Check that parts of the application that share dependencies with the PR but are not included in it are not unduly affected.
-- [ ] The changes pass the [WGAC A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
+- [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] The changed parts of the app are fully usable with keyboard navigation and screen-reading.
-- [ ] Documentation is added wherever necessary.
+- [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the [Developers’](<docs/src/routes/(content)/developers-guide>) and [Publishers’ Guides](<docs/src/routes/(content)/publishers-guide>).
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](<docs/src/routes/(content)/developers-guide/contributing/contribute/+page.md>)

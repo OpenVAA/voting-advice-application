@@ -13,3 +13,5 @@ This directory contains the configuration system for OpenVAA, including both sta
 - `dynamicSettings.ts` - Runtime-configurable values like election data and feature flags
 
 See the documentation links above for detailed information on how to use and customize these settings.
+
+When editing the settings, make sure to update the documentation.

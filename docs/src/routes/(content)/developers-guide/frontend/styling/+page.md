@@ -32,7 +32,7 @@ For DaisyUI, all the [basic colours](https://daisyui.com/docs/colors/) are defin
 
 #### Color contrast
 
-In order to fulfil the application's accessibility requirements, a [WGAC AA level color contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) has to be reached. The colors have been defined to ensure this as long as:
+In order to fulfil the application's accessibility requirements, a [WCAG AA level color contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) has to be reached. The colors have been defined to ensure this as long as:
 
 - If the background is any of the base colors, e.g. `bg-base-100`, `bg-base-200` or `bg-base-300`, you can use any of the basic text colors on it.
 - If background is any other color, such as `bg-primary`, always use the matching `content` color for text on it, e.g. `text-primary-content`.
