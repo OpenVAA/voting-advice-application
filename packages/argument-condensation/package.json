@@ -21,13 +21,13 @@
     "serve": "^14.2.3",
     "tsc-esm-fix": "^3.1.2",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.9"
   },
   "dependencies": {
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/llm": "workspace:^",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.1"
   }
 }
