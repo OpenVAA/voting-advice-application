@@ -1,6 +1,11 @@
+// Import mocked functions
+import { createOpenAI } from '@ai-sdk/openai';
+import { generateObject, NoObjectGeneratedError as MockNoObjectGeneratedError, streamText } from 'ai';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { LLMProvider } from '../src/llm-providers/llmProvider';
+import { calculateLLMCost, getModelPricing } from '../src/utils/costCalculation';
+import type { AsyncIterableStream, StreamTextResult, ToolSet } from 'ai';
 import type { ProviderConfig } from '../src/llm-providers/provider.types';
 
 // Mock the AI SDK
@@ -43,18 +48,6 @@ vi.mock('../src/utils/costCalculation', () => ({
     cachedInput: 0.0001
   }))
 }));
-
-// Import mocked functions
-import { createOpenAI } from '@ai-sdk/openai';
-import {
-  type AsyncIterableStream,
-  generateObject,
-  NoObjectGeneratedError as MockNoObjectGeneratedError,
-  streamText,
-  type StreamTextResult,
-  type ToolSet
-} from 'ai';
-import { calculateLLMCost, getModelPricing } from '../src/utils/costCalculation';
 
 const mockGenerateObject = vi.mocked(generateObject);
 const mockStreamText = vi.mocked(streamText);

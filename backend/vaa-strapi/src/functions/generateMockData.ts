@@ -6,7 +6,7 @@
  * debugging & developing mock data generation functionality.
  */
 
-import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import { faker, fakerFI, fakerSV } from '@faker-js/faker';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockAdmins from './mockData/mockAdmins.json';
@@ -20,6 +20,7 @@ import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../cons
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
+import type { Faker } from '@faker-js/faker';
 import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 

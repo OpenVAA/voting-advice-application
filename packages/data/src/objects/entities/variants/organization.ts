@@ -1,5 +1,5 @@
-import { type DataAccessor, Entity, OBJECT_TYPE, type OrganizationData, removeDuplicates } from '../../../internal';
-import type { Alliance, Candidate, ENTITY_TYPE, Faction } from '../../../internal';
+import { Entity, OBJECT_TYPE, removeDuplicates } from '../../../internal';
+import type { Alliance, Candidate, DataAccessor, ENTITY_TYPE, Faction, OrganizationData } from '../../../internal';
 
 /**
  * The `Organization` entity represents an organization, such as a party or a constituency association, taking part in an election either by itself or usually by nominating candidates. In most circumstances, the `Organization` is also associated with one or more `OrganizationNomination`s, which represent the lists of candidates nominated by it in `Election`-`Constituency` pairs.

@@ -1,6 +1,7 @@
 import { derived } from 'svelte/store';
 import { page } from '$app/stores';
-import { buildRoute, type RouteOptions } from '$lib/utils/route';
+import { buildRoute } from '$lib/utils/route';
+import type { RouteOptions } from '$lib/utils/route';
 
 /**
  * A store for building routes. It returns a function that takes `RouteOptions` and returns a URL string.

@@ -1,12 +1,13 @@
-import { AbortError, type Id, type Serializable } from '@openvaa/core';
-import { generateQuestionInfo as generateQuestionInfoAPI, type QuestionInfoResult } from '@openvaa/question-info';
-import { type QuestionInfoOperation } from '@openvaa/question-info';
+import { AbortError } from '@openvaa/core';
+import { generateQuestionInfo as generateQuestionInfoAPI } from '@openvaa/question-info';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
 import { getAllMessagesFromJob, getJob, markAborted } from '../jobs/jobStore';
 import { PipelineController } from '../jobs/pipelineController';
+import type { Id, Serializable } from '@openvaa/core';
 import type { AnyQuestionVariant } from '@openvaa/data';
+import type { QuestionInfoOperation, QuestionInfoResult } from '@openvaa/question-info';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
 

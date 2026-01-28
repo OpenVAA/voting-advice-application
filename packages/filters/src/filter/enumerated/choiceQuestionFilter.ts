@@ -1,8 +1,11 @@
-import { type AnyChoice, isMultipleChoiceQuestion } from '@openvaa/data';
+import { isMultipleChoiceQuestion } from '@openvaa/data';
 import { EnumeratedFilter } from './enumeratedFilter';
-import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { type ChoiceQuestion, FILTER_TYPE, type FilterOptions } from '../base';
+import { MISSING_VALUE } from '../../missingValue';
+import { FILTER_TYPE } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
+import type { AnyChoice } from '@openvaa/data';
+import type { MaybeMissing } from '../../missingValue';
+import type { ChoiceQuestion, FilterOptions } from '../base';
 
 /**
  * A filter for single or multiple choice questions

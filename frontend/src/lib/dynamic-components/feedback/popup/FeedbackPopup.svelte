@@ -18,7 +18,8 @@ Show a popup asking for user feedback.
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
-  import { Feedback, type SendingStatus } from '..';
+  import { Feedback } from '..';
+  import type { SendingStatus } from '..';
   import type { FeedbackPopupProps } from './FeedbackPopup.type';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */

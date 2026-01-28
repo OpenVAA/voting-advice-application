@@ -40,19 +40,12 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 -->
 
 <script lang="ts">
-  import {
-    type AnyEntityVariant,
-    type AnyNominationVariant,
-    type AnyQuestionVariant,
-    ENTITY_TYPE,
-    isObjectType,
-    OBJECT_TYPE
-  } from '@openvaa/data';
+  import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { Avatar } from '$lib/components/avatar';
   import { Button } from '$lib/components/button';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
-  import { InfoAnswer, type InfoAnswerProps } from '$lib/components/infoAnswer';
+  import { InfoAnswer } from '$lib/components/infoAnswer';
   import { MatchScore } from '$lib/components/matchScore';
   import { SubMatches } from '$lib/components/subMatches';
   import { getAppContext } from '$lib/contexts/app';
@@ -62,6 +55,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { getCardQuestions } from '$lib/utils/entityCards';
   import { findCandidateNominations } from '$lib/utils/matches';
   import EntityCardAction from './EntityCardAction.svelte';
+  import type { AnyEntityVariant, AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
+  import type { InfoAnswerProps } from '$lib/components/infoAnswer';
   import type { EntityCardProps } from './EntityCard.type';
 
   type $$Props = EntityCardProps;

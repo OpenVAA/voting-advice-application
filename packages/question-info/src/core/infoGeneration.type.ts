@@ -1,7 +1,6 @@
 import type { QuestionInfoSection, TermDefinition } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { CommonLLMParams } from '@openvaa/llm';
-import type { LLMObjectGenerationResult, LLMPipelineResult } from '@openvaa/llm';
+import type { CommonLLMParams, LLMObjectGenerationResult, LLMPipelineResult } from '@openvaa/llm';
 
 // --------------------------------------------------
 // INFO GENERATION OPTIONS (= INPUT-RELATED TYPES)

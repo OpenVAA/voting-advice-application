@@ -30,6 +30,7 @@ Accesses `LayoutContext`.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
   import type { NavItemProps } from './NavItem.type';
+
   type $$Props = NavItemProps;
 
   export let autoCloseNav: $$Props['autoCloseNav'] = true;

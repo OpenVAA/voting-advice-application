@@ -1,6 +1,7 @@
-import { type AnyEntityVariant, isNomination, type NominationVariant } from '@openvaa/data';
+import { isNomination } from '@openvaa/data';
 import { isMatch } from '@openvaa/matching';
 import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { AnyEntityVariant, NominationVariant } from '@openvaa/data';
 import type { Match } from '@openvaa/matching';
 
 /**

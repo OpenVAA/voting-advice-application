@@ -1,9 +1,10 @@
-import { derived, get, type Readable, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { getUUID } from '$lib/utils/components';
 import { logDebugError } from '$lib/utils/logger';
 import { purgeNullish } from '../../../utils/purgeNullish';
 import { sessionStorageWritable } from '../../utils/storageStore';
+import type { Readable } from 'svelte/store';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';

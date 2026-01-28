@@ -1,17 +1,13 @@
-import {
-  type Choice,
-  type ChoiceQuestionData,
-  type ChoiceQuestionType,
-  type DataAccessor,
-  DataProvisionError,
-  ensureString,
-  type Id,
-  MISSING_VALUE,
-  type MissingValue,
-  Question,
-  validateChoices
+import { DataProvisionError, ensureString, MISSING_VALUE, Question, validateChoices } from '../../../internal';
+import type {
+  Choice,
+  ChoiceQuestionData,
+  ChoiceQuestionType,
+  DataAccessor,
+  DataRoot,
+  Id,
+  MissingValue
 } from '../../../internal';
-import type { DataRoot } from '../../../internal';
 
 /**
  * An abstract base class for all questions which have enumerated answering choices. Non-abstract subclasses should inherit from either of the two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.

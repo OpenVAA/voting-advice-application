@@ -1,7 +1,7 @@
-import { type DynamicSettings, dynamicSettings, staticSettings } from '@openvaa/app-shared';
+import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { get, type Writable, writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
@@ -15,6 +15,8 @@ import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
 import { pageDatumStore } from '../utils/pageDatumStore';
 import { localStorageWritable } from '../utils/storageStore';
+import type { DynamicSettings } from '@openvaa/app-shared';
+import type { Writable } from 'svelte/store';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';

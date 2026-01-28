@@ -1,14 +1,16 @@
 import { isLocalizedObject, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
-import parser, { type Config } from '@sveltekit-i18n/parser-icu';
+import parser from '@sveltekit-i18n/parser-icu';
 import { IntlMessageFormat } from 'intl-messageformat';
 import { derived, get } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
 import { ucFirst } from '$lib/utils/text/ucFirst';
-import { DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload } from './translations';
+import { DEFAULT_PAYLOAD_KEYS, staticTranslations } from './translations';
 import { matchLocale } from './utils';
+import type { Config } from '@sveltekit-i18n/parser-icu';
 import type { TranslationKey } from '$types';
+import type { TranslationsPayload } from './translations';
 
 const { supportedLocales } = staticSettings;
 let defaultLocale = '';

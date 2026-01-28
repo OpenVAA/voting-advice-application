@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { json } from '@sveltejs/kit';
-import { CREATE_PATHS, type CreatePath, READ_PATHS, type ReadPath } from './localPaths';
+import { CREATE_PATHS, READ_PATHS } from './localPaths';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
+import type { CreatePath, ReadPath } from './localPaths';
 
 /**
  * A base class for all ApiRoute Data API services, implementing `read` and `create` methods.

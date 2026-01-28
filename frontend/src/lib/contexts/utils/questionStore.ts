@@ -1,14 +1,8 @@
-import {
-  type AnyQuestionVariant,
-  type Constituency,
-  type Election,
-  ENTITY_TYPE,
-  QUESTION_CATEGORY_TYPE,
-  type QuestionCategory
-} from '@openvaa/data';
+import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { parsimoniusDerived } from './parsimoniusDerived';
 import type { CustomData } from '@openvaa/app-shared';
+import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable } from 'svelte/store';
 import type { AppType } from '../app';
 

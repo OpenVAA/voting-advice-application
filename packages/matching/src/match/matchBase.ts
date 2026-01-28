@@ -1,5 +1,6 @@
-import { assertDistance, COORDINATE, type NormalizedDistance } from '@openvaa/core';
+import { assertDistance, COORDINATE } from '@openvaa/core';
 import { MATCH_TYPE } from './matchTypes';
+import type { NormalizedDistance } from '@openvaa/core';
 import type { MatchType } from './matchTypes';
 
 /**

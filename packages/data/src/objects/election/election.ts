@@ -1,20 +1,13 @@
-import {
-  type Collection,
-  type DataAccessor,
-  DataObject,
-  DataTypeError,
-  type ElectionData,
-  ensureDate,
-  ENTITY_TYPE,
-  isMissingValue,
-  OBJECT_TYPE
-} from '../../internal';
+import { DataObject, DataTypeError, ensureDate, ENTITY_TYPE, isMissingValue, OBJECT_TYPE } from '../../internal';
 import type {
   AllianceNomination,
   AnyQuestionVariant,
   CandidateNomination,
+  Collection,
   Constituency,
   ConstituencyGroup,
+  DataAccessor,
+  ElectionData,
   EntityType,
   FactionNomination,
   FilterValue,

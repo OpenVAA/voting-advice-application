@@ -1,15 +1,19 @@
 import {
-  type AnswerValue,
-  type CoordinateOrMissing,
   DataProvisionError,
   isMissingValue,
   MISSING_VALUE,
-  type MissingValue,
   normalizeCoordinate,
   OBJECT_TYPE,
   SingleChoiceQuestion
 } from '../../../internal';
-import type { ChoiceQuestionData, DataRoot, QUESTION_TYPE } from '../../../internal';
+import type {
+  AnswerValue,
+  ChoiceQuestionData,
+  CoordinateOrMissing,
+  DataRoot,
+  MissingValue,
+  QUESTION_TYPE
+} from '../../../internal';
 
 /**
  * Used for all questions which allow choosing a single enumerated answering choice and whose values can be [ordered numerically](https://en.wikipedia.org/wiki/Ordinal_data). This is the most common type of VAA questions and includes Likert questions of any scale.

@@ -1,6 +1,7 @@
-import { type AnswerDict, type HasAnswers, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
+import { MISSING_VALUE } from '@openvaa/core';
 import { MatchingAlgorithm } from '../src/algorithms';
 import { OrdinalQuestion } from '../src/question';
+import type { AnswerDict, HasAnswers, Id, MatchableQuestion } from '@openvaa/core';
 import type { DistanceMetric } from '../src/distance';
 import type { Match } from '../src/match';
 import type { MissingValueMethod } from '../src/missingValue';

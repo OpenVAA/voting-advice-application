@@ -1,4 +1,5 @@
-import { isPersistentSearchParam, isRouteParam, type Params } from './params';
+import { isPersistentSearchParam, isRouteParam } from './params';
+import type { Params } from './params';
 
 /**
  * Filter out any non-persistent search parameters from the given params. Used to remove them from the `current` route when updating the URL.

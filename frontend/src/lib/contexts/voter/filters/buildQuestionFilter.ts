@@ -1,6 +1,7 @@
-import { type AnyQuestionVariant, QUESTION_TYPE } from '@openvaa/data';
+import { QUESTION_TYPE } from '@openvaa/data';
 import { ChoiceQuestionFilter, NumberQuestionFilter, TextQuestionFilter } from '@openvaa/filters';
 import { logDebugError } from '$lib/utils/logger';
+import type { AnyQuestionVariant } from '@openvaa/data';
 import type { Filter } from '@openvaa/filters';
 
 /**

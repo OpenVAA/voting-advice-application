@@ -1,17 +1,17 @@
-import {
-  type AnyEntityVariantData,
-  type AnyNominationVariantPublicData,
-  type CandidateData,
-  ENTITY_TYPE,
-  type OrganizationData,
-  type PublicAllianceNominationData,
-  type PublicCandidateNominationData,
-  type PublicOrganizationNominationData
-} from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { logDebugError } from '$lib/utils/logger';
 import { parseBasics, parseCandidate, parseOrganization, parseRelationIds, parseSingleRelationId } from '../utils';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
+import type {
+  AnyEntityVariantData,
+  AnyNominationVariantPublicData,
+  CandidateData,
+  OrganizationData,
+  PublicAllianceNominationData,
+  PublicCandidateNominationData,
+  PublicOrganizationNominationData
+} from '@openvaa/data';
 import type { StrapiAllianceData, StrapiNominationData } from '../strapiData.type';
 
 /**

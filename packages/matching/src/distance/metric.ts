@@ -1,5 +1,7 @@
-import { COORDINATE, type Coordinate, isMissingValue, type NormalizedDistance } from '@openvaa/core';
-import { flatten, type MatchingSpace, type Position } from '../space';
+import { COORDINATE, isMissingValue } from '@openvaa/core';
+import { flatten } from '../space';
+import type { Coordinate, NormalizedDistance } from '@openvaa/core';
+import type { MatchingSpace, Position } from '../space';
 
 /**
  * References:

@@ -1,10 +1,12 @@
 import qs from 'qs';
 import { resolveRoute } from '$app/paths';
 import { filterPersistent } from './filterPersistent';
-import { isRouteParam, type Params } from './params';
+import { isRouteParam } from './params';
 import { parseParams } from './parseParams';
-import { DEFAULT_PARAMS, ROUTE, type Route } from './route';
+import { DEFAULT_PARAMS, ROUTE } from './route';
 import { removeDuplicates } from '../removeDuplicates';
+import type { Params } from './params';
+import type { Route } from './route';
 
 /**
  * Builds a route using the current route params and those passed to it. Some `Route`s have default parameters that can be omitted.

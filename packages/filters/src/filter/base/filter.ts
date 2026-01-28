@@ -1,7 +1,10 @@
-import { getEntity, hasAnswers, type MaybeWrappedEntity } from '@openvaa/core';
+import { getEntity, hasAnswers } from '@openvaa/core';
 import { castValue } from './castValue';
-import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { copyRules, matchRules, type Rule, ruleIsActive, type Rules } from '../rules';
+import { MISSING_VALUE } from '../../missingValue';
+import { copyRules, matchRules, ruleIsActive } from '../rules';
+import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { MaybeMissing } from '../../missingValue';
+import type { Rule, Rules } from '../rules';
 import type { FilterOptions } from './filter.type';
 import type { FilterType } from './filterTypes';
 

@@ -1,10 +1,4 @@
-import {
-  type AnyQuestionVariantData,
-  type ConstituencyData,
-  type ConstituencyGroupData,
-  ENTITY_TYPE,
-  type QuestionCategoryData
-} from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { translate, translateObject } from '$lib/i18n';
 import { strapiAdapterMixin } from '../strapiAdapter';
@@ -23,6 +17,12 @@ import {
 import { parseEntityType } from '../utils/parseEntityType';
 import { parseQuestionCategoryCustomData } from '../utils/parseQuestionCategoryCustomData';
 import { parseQuestionCustomData } from '../utils/parseQuestionCustomData';
+import type {
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  QuestionCategoryData
+} from '@openvaa/data';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,

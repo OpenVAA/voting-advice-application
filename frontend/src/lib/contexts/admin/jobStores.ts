@@ -1,9 +1,10 @@
 import { writable } from 'svelte/store';
-import { ADMIN_FEATURES, type AdminFeature } from '$lib/admin/features';
+import { ADMIN_FEATURES } from '$lib/admin/features';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { logDebugError } from '$lib/utils/logger';
 import { compareDates } from '$lib/utils/sorting';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
+import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { JobStores } from './jobStores.type';
 

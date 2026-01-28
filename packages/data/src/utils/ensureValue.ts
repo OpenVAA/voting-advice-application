@@ -1,5 +1,5 @@
-import { type Image, MISSING_VALUE, type MissingValue } from '../internal';
-import type { Id } from '../internal';
+import { MISSING_VALUE } from '../internal';
+import type { Id, Image, MissingValue } from '../internal';
 
 /**
  * Contains functions used for ensureing answer value types.

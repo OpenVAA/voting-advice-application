@@ -1,7 +1,8 @@
-import { ENTITY_TYPE, type OrganizationData } from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { parseBasics } from './parseBasics';
 import { parseImage } from './parseImage';
+import type { OrganizationData } from '@openvaa/data';
 import type { StrapiPartyData } from '../strapiData.type';
 
 export function parseOrganization(data: StrapiPartyData, locale: string | null): OrganizationData {

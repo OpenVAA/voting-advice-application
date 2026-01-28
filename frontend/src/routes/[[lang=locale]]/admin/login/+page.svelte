@@ -18,7 +18,7 @@
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { getErrorTranslationKey, type LoginError } from '$lib/admin/utils/loginError';
+  import { getErrorTranslationKey } from '$lib/admin/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -27,6 +27,7 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import MainContent from '../../MainContent.svelte';
+  import type { LoginError } from '$lib/admin/utils/loginError';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

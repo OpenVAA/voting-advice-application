@@ -1,6 +1,7 @@
-import { coordinatesShape, type Shape } from './shape';
+import { coordinatesShape } from './shape';
 import type { CoordinateOrMissing } from '@openvaa/core';
 import type { MatchingSpace } from './matchingSpace';
+import type { Shape } from './shape';
 
 /**
  * The coordinates may be have one level of subdimensions.

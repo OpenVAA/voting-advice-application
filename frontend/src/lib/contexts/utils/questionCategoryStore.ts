@@ -1,13 +1,6 @@
-import {
-  type Constituency,
-  type DataRoot,
-  type Election,
-  type EntityType,
-  type FilterValue,
-  QUESTION_CATEGORY_TYPE,
-  type QuestionCategory
-} from '@openvaa/data';
+import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { parsimoniusDerived } from './parsimoniusDerived';
+import type { Constituency, DataRoot, Election, EntityType, FilterValue, QuestionCategory } from '@openvaa/data';
 import type { Readable } from 'svelte/store';
 
 /**

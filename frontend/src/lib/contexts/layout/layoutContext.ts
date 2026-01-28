@@ -4,11 +4,12 @@ import { cubicOut } from 'svelte/easing';
 import { tweened } from 'svelte/motion';
 import { get, writable } from 'svelte/store';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
-import { type DeepPartial, mergeSettings } from '$lib/utils/merge';
+import { mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
 import { stackedStore } from '../utils/stackedStore';
 import type { VideoContent } from '@openvaa/app-shared';
 import type { OptionalVideoProps } from '$lib/components/video';
+import type { DeepPartial } from '$lib/utils/merge';
 import type {
   LayoutContext,
   Navigation,

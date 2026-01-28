@@ -1,4 +1,5 @@
-import { derived, type Readable } from 'svelte/store';
+import { derived } from 'svelte/store';
+import type { Readable } from 'svelte/store';
 import type { TrackingService } from './tracking';
 
 /**

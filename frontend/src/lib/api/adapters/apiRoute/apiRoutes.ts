@@ -1,6 +1,7 @@
-import { DP_METHOD, type DPDataType } from '$lib/api/base/dataTypes';
+import { DP_METHOD } from '$lib/api/base/dataTypes';
 import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
+import type { DPDataType } from '$lib/api/base/dataTypes';
 
 export const API_GET_ROUTES = Object.fromEntries(
   Object.keys(DP_METHOD).map((collection) => [collection, `${API_ROOT}/data/${collection}`])

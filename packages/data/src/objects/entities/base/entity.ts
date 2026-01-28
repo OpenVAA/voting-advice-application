@@ -1,21 +1,19 @@
-import {
-  type Answer,
-  type Answers,
-  type AnswerValue,
-  type AnyQuestionVariant,
-  type DataAccessor,
-  DataObject,
-  type EntityData,
-  type EntityType,
-  type HasAnswers,
-  type NominationVariant
-} from '../../../internal';
+import { DataObject } from '../../../internal';
 import type {
+  Answer,
   AnswerFormatterParams,
+  Answers,
+  AnswerValue,
+  AnyQuestionVariant,
   ArrayAnswerFormatterOptions,
   Constituency,
   CoreEntity,
-  Election
+  DataAccessor,
+  Election,
+  EntityData,
+  EntityType,
+  HasAnswers,
+  NominationVariant
 } from '../../../internal';
 
 /**

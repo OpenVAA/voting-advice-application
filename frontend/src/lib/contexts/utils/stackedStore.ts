@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { derived, get, type Readable, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
 
 /**
  * Create a simple stacked store which a appends items to an internally stored stack when set. The store can be reverted to any previous state with the `revert(index)` function.

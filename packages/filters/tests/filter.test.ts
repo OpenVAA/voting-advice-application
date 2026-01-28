@@ -1,6 +1,4 @@
-import { type Answer, type AnswerDict, type HasAnswers, type WrappedEntity } from '@openvaa/core';
 import {
-  type Choice,
   DataRoot,
   MultipleChoiceCategoricalQuestion,
   MultipleTextQuestion,
@@ -21,6 +19,8 @@ import {
   TextQuestionFilter
 } from '../src';
 import { copyRules, matchRules, ruleIsActive } from '../src/filter/rules';
+import type { Answer, AnswerDict, HasAnswers, WrappedEntity } from '@openvaa/core';
+import type { Choice } from '@openvaa/data';
 
 const LOCALE = 'en';
 const root = new DataRoot();

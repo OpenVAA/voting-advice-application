@@ -1,9 +1,11 @@
-import { type Id } from '@openvaa/core';
-import { ENTITY_TYPE, type Image } from '@openvaa/data';
-import { derived, get, type Readable, writable } from 'svelte/store';
+import { ENTITY_TYPE } from '@openvaa/data';
+import { derived, get, writable } from 'svelte/store';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import { localStorageWritable } from '../utils/storageStore';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
+import type { Id } from '@openvaa/core';
+import type { Image } from '@openvaa/data';
+import type { Readable } from 'svelte/store';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';

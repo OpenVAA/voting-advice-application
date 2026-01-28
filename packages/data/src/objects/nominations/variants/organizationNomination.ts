@@ -1,18 +1,13 @@
-import {
-  type AllianceNomination,
-  type DataAccessor,
-  DataProvisionError,
-  ENTITY_TYPE,
-  Nomination,
-  OBJECT_TYPE,
-  type OrganizationNominationData
-} from '../../../internal';
+import { DataProvisionError, ENTITY_TYPE, Nomination, OBJECT_TYPE } from '../../../internal';
 import type {
+  AllianceNomination,
   CandidateNomination,
   CandidateNominationData,
+  DataAccessor,
   DataRoot,
   FactionNomination,
   FactionNominationData,
+  OrganizationNominationData,
   WithOptional
 } from '../../../internal';
 

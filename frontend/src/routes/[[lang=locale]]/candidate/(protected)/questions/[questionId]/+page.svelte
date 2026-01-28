@@ -16,8 +16,8 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 -->
 
 <script lang="ts">
-  import { type CustomData, getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
-  import { type AnyQuestionVariant, isEmptyValue } from '@openvaa/data';
+  import { getCustomData } from '@openvaa/app-shared';
+  import { isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
@@ -36,7 +36,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { logDebugError } from '$lib/utils/logger';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../MainContent.svelte';
+  import type { CustomData, LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
+  import type { AnyQuestionVariant } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

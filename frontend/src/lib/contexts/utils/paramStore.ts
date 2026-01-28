@@ -1,7 +1,8 @@
 import { page } from '$app/stores';
-import { type ArrayParam, type Param, parseParams } from '$lib/utils/route';
+import { parseParams } from '$lib/utils/route';
 import { parsimoniusDerived } from './parsimoniusDerived';
 import type { Readable } from 'svelte/store';
+import type { ArrayParam, Param } from '$lib/utils/route';
 
 /**
  * Create a derived store that holds the value of a route or search parameter.

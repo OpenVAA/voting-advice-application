@@ -1,4 +1,5 @@
 import type { AriaRole, SvelteHTMLElements } from 'svelte/elements';
+
 export type HeadingGroupProps = SvelteHTMLElements['hgroup'] & {
   /**
    * The Aria role description of the `<hgroup>` element.

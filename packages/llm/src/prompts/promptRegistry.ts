@@ -2,9 +2,10 @@ import { BaseController } from '@openvaa/core';
 import * as fs from 'fs/promises';
 import * as yaml from 'js-yaml';
 import * as path from 'path';
-import { LOCALIZATION_INSTRUCTIONS, type PromptLanguage, SUPPORTED_PROMPT_LANGUAGES } from './localizationInstructions';
+import { LOCALIZATION_INSTRUCTIONS, SUPPORTED_PROMPT_LANGUAGES } from './localizationInstructions';
 import { setPromptVars, validatePromptVars } from '../utils';
 import type { Controller } from '@openvaa/core';
+import type { PromptLanguage } from './localizationInstructions';
 import type {
   LoadPromptOptions,
   LoadPromptResult,

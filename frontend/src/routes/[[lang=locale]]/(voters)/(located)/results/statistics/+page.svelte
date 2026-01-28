@@ -8,7 +8,7 @@ Usually accessed by direct link only and not meant for the wide public.
 -->
 
 <script lang="ts">
-  import { isSingleChoiceQuestion, type Organization } from '@openvaa/data';
+  import { isSingleChoiceQuestion } from '@openvaa/data';
   import { Expander } from '$lib/components/expander';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
@@ -20,6 +20,7 @@ Usually accessed by direct link only and not meant for the wide public.
   import type {
     Candidate,
     CandidateNomination,
+    Organization,
     SingleChoiceCategoricalQuestion,
     SingleChoiceOrdinalQuestion
   } from '@openvaa/data';

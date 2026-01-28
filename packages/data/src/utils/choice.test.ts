@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { validateChoices } from './choice';
 import type { HasId } from '../internal';
+
 describe('validateChoices', () => {
   test('Should return false when the input array has only less than two items', () => {
     const items = [{ id: '1' }];

@@ -1,12 +1,13 @@
-import { BaseController, type HasAnswers, type Id, isMissingValue } from '@openvaa/core';
-import {
-  type Answer,
-  type BooleanQuestion,
-  QUESTION_TYPE,
-  type SingleChoiceCategoricalQuestion,
-  type SingleChoiceOrdinalQuestion
-} from '@openvaa/data';
+import { BaseController, isMissingValue } from '@openvaa/core';
+import { QUESTION_TYPE } from '@openvaa/data';
 import { COMMENT_PROCESSING } from '../../../defaultValues';
+import type { HasAnswers, Id } from '@openvaa/core';
+import type {
+  Answer,
+  BooleanQuestion,
+  SingleChoiceCategoricalQuestion,
+  SingleChoiceOrdinalQuestion
+} from '@openvaa/data';
 import type { CommentGroup, CommentGroupingOptions } from '../../types/api/commentGroup';
 import type { Comment } from '../../types/condensation/condensationInput';
 import type { SupportedQuestion } from '../../types/condensation/supportedQuestion';

@@ -1,6 +1,7 @@
-import { type ChoiceQuestionData, ENTITY_TYPE, QUESTION_TYPE } from '../internal';
+import { ENTITY_TYPE, QUESTION_TYPE } from '../internal';
 import type {
   CandidateData,
+  ChoiceQuestionData,
   ConstituencyData,
   ElectionData,
   LocalizedObject,

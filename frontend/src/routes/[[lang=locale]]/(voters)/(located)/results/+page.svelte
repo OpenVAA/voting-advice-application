@@ -25,7 +25,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
 -->
 
 <script lang="ts">
-  import { type EntityType } from '@openvaa/data';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { beforeNavigate, pushState } from '$app/navigation';
@@ -33,9 +32,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
-  import { type Tab, Tabs } from '$lib/components/tabs';
+  import { Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { EntityDetailsDrawer, type EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
+  import { EntityDetailsDrawer } from '$lib/dynamic-components/entityDetails';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
   import { logDebugError } from '$lib/utils/logger';
@@ -45,7 +44,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
-  import type { Election } from '@openvaa/data';
+  import type { Election, EntityType } from '@openvaa/data';
+  import type { Tab } from '$lib/components/tabs';
+  import type { EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

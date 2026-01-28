@@ -16,13 +16,14 @@ Render an enumerated filter for entities that displays a list of values to inclu
 -->
 
 <script lang="ts">
-  import { isMissing, type MaybeMissing, MISSING_VALUE } from '@openvaa/filters';
+  import { isMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatProps, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
   import type { AnyChoice, AnyEntityVariant } from '@openvaa/data';
+  import type { MaybeMissing } from '@openvaa/filters';
   import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
 
   type $$Props = EnumeratedEntityFilterProps;

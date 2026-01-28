@@ -1,19 +1,22 @@
 import {
-  type AnswerValue,
-  type CoordinateOrMissing,
-  type DataAccessor,
   DataProvisionError,
   DataTypeError,
   ensureNumber,
   isMissingValue,
   MISSING_VALUE,
-  type MissingValue,
   normalizeCoordinate,
-  type NumberQuestionData,
   OBJECT_TYPE,
   Question
 } from '../../../internal';
-import type { DataRoot, QUESTION_TYPE } from '../../../internal';
+import type {
+  AnswerValue,
+  CoordinateOrMissing,
+  DataAccessor,
+  DataRoot,
+  MissingValue,
+  NumberQuestionData,
+  QUESTION_TYPE
+} from '../../../internal';
 
 /**
  * A possibly matchable simple question whose answer is a number. The question is matchable if it has a defined `min` and `max` range.
