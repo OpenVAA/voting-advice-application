@@ -284,6 +284,24 @@ export type DynamicSettings = {
      */
     voterApp?: NotificationData | null;
   };
+  /**
+   * Settings related to the Candidate App.
+   */
+  candidateApp: {
+    /**
+     * Settings related to the question view in the Candidate App.
+     */
+    questions: {
+      /**
+       * Whether to hide possible video content for questions in the Candidate App.
+       */
+      hideVideo: boolean;
+      /**
+       * Whether to hide possible hero content for questions in the Candidate App.
+       */
+      hideHero: boolean;
+    };
+  };
 };
 
 export type OrganizationMatchingMethod =

@@ -343,7 +343,8 @@ export interface ApiAdminJobAdminJob extends Struct.CollectionTypeSchema {
     author: Schema.Attribute.Email & Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    endStatus: Schema.Attribute.Enumeration<['completed', 'failed']>;
+    electionId: Schema.Attribute.String & Schema.Attribute.Required;
+    endStatus: Schema.Attribute.Enumeration<['completed', 'failed', 'aborted']>;
     endTime: Schema.Attribute.DateTime;
     input: Schema.Attribute.JSON;
     jobId: Schema.Attribute.UID & Schema.Attribute.Required;
@@ -381,7 +382,7 @@ export interface ApiAllianceAlliance extends Struct.CollectionTypeSchema {
     constituencies: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    election: Schema.Attribute.Relation<'oneToOne', 'api::election.election'>;
+    election: Schema.Attribute.Relation<'manyToOne', 'api::election.election'>;
     externalId: Schema.Attribute.String & Schema.Attribute.Private;
     image: Schema.Attribute.Media<'images' | 'files'>;
     info: Schema.Attribute.Blocks;
@@ -442,6 +443,7 @@ export interface ApiAppSettingAppSetting extends Struct.SingleTypeSchema {
   attributes: {
     access: Schema.Attribute.Component<'settings.access', false>;
     allowOverwrite: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    candidateApp: Schema.Attribute.Component<'settings.candidate-app', false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     elections: Schema.Attribute.Component<'settings.elections', false>;
@@ -569,7 +571,7 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    alliance: Schema.Attribute.Relation<'oneToOne', 'api::alliance.alliance'>;
+    alliances: Schema.Attribute.Relation<'oneToMany', 'api::alliance.alliance'>;
     constituencyGroups: Schema.Attribute.Relation<'oneToMany', 'api::constituency-group.constituency-group'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;

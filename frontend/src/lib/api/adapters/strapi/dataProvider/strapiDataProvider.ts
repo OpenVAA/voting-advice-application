@@ -39,6 +39,9 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const params: Params = {
       populate: {
         access: 'true',
+        candidateApp: {
+          populate: '*'
+        },
         elections: 'true',
         entities: { populate: '*' },
         entityDetails: { populate: '*' },

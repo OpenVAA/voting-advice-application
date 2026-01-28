@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_candidate_app_questions",
+  "info": {
+    "displayName": "Candidate App - Questions"
+  },
+  "options": {},
+  "attributes": {
+    "hideHero": {
+      "type": "boolean"
+    },
+    "hideVideo": {
+      "type": "boolean"
+    }
+  }
+}

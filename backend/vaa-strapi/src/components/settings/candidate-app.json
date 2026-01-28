@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_settings_candidate_apps",
+  "info": {
+    "displayName": "Candidate App",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "questions": {
+      "displayName": "Candidate App - Questions",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.candidate-app-questions"
+    }
+  }
+}
