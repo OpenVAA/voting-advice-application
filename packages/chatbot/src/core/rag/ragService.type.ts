@@ -1,5 +1,4 @@
-import type { VectorSearchResult, VectorStore } from '@openvaa/vector-store/types';
-import type { RerankConfig } from '@openvaa/vector-store/types';
+import type { RerankConfig, VectorSearchResult, VectorStore } from '@openvaa/vector-store/types';
 /**
  * Input parameters for RAG retrieval
  */

@@ -4,10 +4,10 @@ import type { ChatbotResponse, HandleQueryInput } from './chatbotController.type
 
 // TODO: solve context management
 // Problem 1: if we set the user message to include the question context, the user will see this message too.
-// Thus, due to a lack of time and resources, we will not be able to implement a smart way to handle this. 
+// Thus, due to a lack of time and resources, we will not be able to implement a smart way to handle this.
 // Problem 2: chatbot state management is not yet implemented
 // It is recommended to have a separate system prompt and conversation management system for different pages, as the chatbot for these pages will have different skills and knowledge.
-// This kind of system requires automatic summarization and context switching via different system prompts and sophisticated context management. 
+// This kind of system requires automatic summarization and context switching via different system prompts and sophisticated context management.
 
 /**
  * Main controller for chatbot query handling
@@ -61,8 +61,9 @@ export class ChatbotController {
           ...lastMessage,
           content: messageWithContext
         };
-      }}
-      
+      }
+    }
+
     // Create LLM stream with unified prompt and tools
     const stream = await ChatEngine.createStream({
       messages: messagesForLLM,
@@ -79,7 +80,6 @@ export class ChatbotController {
       chatProvider: input.chatProvider
     });
 
-  
     // Update state without the question context embedded
     const newState = {
       ...input.state,

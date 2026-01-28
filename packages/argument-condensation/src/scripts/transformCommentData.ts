@@ -1,8 +1,8 @@
 /**
  * Script to transform raw comment data into pure data format.
- * 
- * NOTE: This script unifies two different data formats: rawQuestionsData.json and rawCommentData.json. 
- * Question data is dispersed. 
+ *
+ * NOTE: This script unifies two different data formats: rawQuestionsData.json and rawCommentData.json.
+ * Question data is dispersed.
  *
  * This script:
  * 1. Extracts political questions from rawQuestionsData.json (only opinion questions = questions with "opinion" in externalId, because we don't care about personal questions)
@@ -51,7 +51,7 @@ interface Candidate {
   email: string;
   firstName: string;
   lastName: string;
-  answers: Record<string, RawAnswer>;  
+  answers: Record<string, RawAnswer>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
@@ -169,15 +169,14 @@ async function main() {
 
   // Calculate statistics
   const totalAnswers = pureData.reduce((sum, q) => sum + q.answers.length, 0);
-  const answersWithComments = pureData.reduce(
-    (sum, q) => sum + q.answers.filter((a) => a.comments).length,
-    0
-  );
+  const answersWithComments = pureData.reduce((sum, q) => sum + q.answers.filter((a) => a.comments).length, 0);
   const questionsWithAnswers = pureData.length;
 
   console.info(`Transformed ${questionsWithAnswers} questions with answers`);
   console.info(`Total answers: ${totalAnswers}`);
-  console.info(`Answers with comments: ${answersWithComments} (${((answersWithComments / totalAnswers) * 100).toFixed(1)}%)`);
+  console.info(
+    `Answers with comments: ${answersWithComments} (${((answersWithComments / totalAnswers) * 100).toFixed(1)}%)`
+  );
 
   // Write output
   console.info(`Writing output to ${OUTPUT_FILE}...`);

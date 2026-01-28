@@ -1,5 +1,4 @@
-
-import type { ChatbotQuestionContext } from '@openvaa/chatbot'
+import type { ChatbotQuestionContext } from '@openvaa/chatbot';
 
 export interface ChatbotWidgetProps {
   /**

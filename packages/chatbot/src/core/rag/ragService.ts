@@ -5,7 +5,7 @@ import type { RAGRetrievalInput, RAGRetrievalResult } from './ragService.type';
 // TODO: replace with agentic RAG retrieval
 const RERANK_COST_PER_UNIT = 0.002; // Cohere pricing, see Cohere docs for more details on what a search unit is
 const TOP_K_FROM_VECTOR_SEARCH = 85; // Setting this close to 100 leads to two search units billed from Cohere (not entirely sure why, maybe some segments are counted twice because they are too long, or something like that?)
-const N_SEGMENTS_TO_RETURN = 5; // This is the max number of segments we can return to the LLM. We can also return 0 if no relevant segments are found. Arbitrary const, not tested further. TODO: make dynamic based on query complexity. 
+const N_SEGMENTS_TO_RETURN = 5; // This is the max number of segments we can return to the LLM. We can also return 0 if no relevant segments are found. Arbitrary const, not tested further. TODO: make dynamic based on query complexity.
 const MIN_RERANK_SCORE = 0.75; // Usually below this score results become irrelevant. Heuristic.
 
 /**
@@ -48,19 +48,19 @@ export async function performRAGRetrieval(input: RAGRetrievalInput): Promise<RAG
     // Update searchResult with filtered results
     searchResult = {
       ...searchResult,
-      results: filteredResults 
+      results: filteredResults
     };
 
     // Calculate reranking cost from metadata
     rerankingCosts = {
       cost: (rerankingResult.metadata.searchUnits ?? 0) * RERANK_COST_PER_UNIT // Cohere pricing
     };
-  } else 
-  {
-    // Fallback if no reranking: get top N using vector search score 
+  } else {
+    // Fallback if no reranking: get top N using vector search score
     // TODO: optimize this to use a heap or other data structure
-    searchResult.results = searchResult.results.sort(
-      (a, b) => b.vectorSearchScore - a.vectorSearchScore).slice(0, N_SEGMENTS_TO_RETURN);
+    searchResult.results = searchResult.results
+      .sort((a, b) => b.vectorSearchScore - a.vectorSearchScore)
+      .slice(0, N_SEGMENTS_TO_RETURN);
   }
 
   // STEP 3: Format context for LLM

@@ -236,8 +236,7 @@ export const navigation: Navigation = [
           {
             title: 'Chatbot',
             route: '/developers-guide/frontend/chatbot'
-          },
-
+          }
         ]
       },
       {

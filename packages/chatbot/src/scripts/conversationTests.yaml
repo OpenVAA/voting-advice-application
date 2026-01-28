@@ -12,20 +12,8 @@ defaultTest:
 tests:
   - description: 'TODO'
     vars:
-      messages: [
-        {
-          role: 'user',
-          content: "TODO"
-        },
-        {
-          role: 'assistant',
-          content: "TODO"
-        },
-        {
-          role: 'user',
-          content: "TODO"
-        }
-      ]
+      messages:
+        [{ role: 'user', content: 'TODO' }, { role: 'assistant', content: 'TODO' }, { role: 'user', content: 'TODO' }]
 
     assert:
       # Fast assertions - deterministic checks
@@ -34,12 +22,7 @@ tests:
 
   - description: 'TODO'
     vars:
-      messages: [
-        {
-          role: 'user',
-          content: "TODO"
-        },
-      ]
+      messages: [{ role: 'user', content: 'TODO' }]
 
     assert:
       # Fast assertions - deterministic checks

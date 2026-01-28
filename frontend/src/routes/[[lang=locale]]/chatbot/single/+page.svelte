@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { createChatStore, isTextPart } from '$lib/chatbot';
+  import { createChatStore } from '$lib/chatbot';
   import type { RAGRetrievalResult } from '@openvaa/chatbot';
 
   // Metadata tracking interfaces (dev-specific)
@@ -45,11 +45,11 @@
     locale,
     extendedCallbacks: {
       onRagContexts: (contexts) => {
-        console.log('[Chatbot Dev] Received RAG contexts:', contexts);
+        console.info('[Chatbot Dev] Received RAG contexts:', contexts);
         ragContexts = [...ragContexts, ...contexts];
       },
       onMetadata: (data) => {
-        console.log('[Chatbot Dev] Received metadata info:', data);
+        console.info('[Chatbot Dev] Received metadata info:', data);
 
         // Store cost info
         if (data.cost) {
@@ -223,7 +223,7 @@
     <div class="mb-4 flex-1 space-y-4 overflow-y-auto rounded border border-gray-300 bg-white p-4">
       {#each messages as message}
         <div class="p-3 rounded {message.role === 'user' ? 'ml-8 bg-blue-100' : 'mr-8 bg-gray-100'}">
-          <div class="font-semibold mb-1">
+          <div class="mb-1 font-semibold">
             {#if message.role === 'user'}
               You
             {:else}
@@ -249,7 +249,7 @@
 
       {#if loading}
         <div class="p-3 mr-8 rounded bg-gray-100">
-          <div class="font-semibold mb-1">Assistant</div>
+          <div class="mb-1 font-semibold">Assistant</div>
           <div>Thinking...</div>
         </div>
       {/if}
@@ -288,7 +288,7 @@
                 <div class="text-xs text-gray-500">
                   Search #{ragContexts.length - idx}
                 </div>
-                <div class="font-semibold mt-1 text-blue-700">{ragResult.canonicalQuery}</div>
+                <div class="mt-1 font-semibold text-blue-700">{ragResult.canonicalQuery}</div>
                 <div class="mt-1 text-xs text-gray-600">
                   Found {ragResult.searchResult.results.length} results
                 </div>
@@ -524,7 +524,7 @@
 
       <!-- Detailed History -->
       <div class="border-t border-gray-300 pt-4">
-        <h3 class="font-semibold mb-3 text-sm text-gray-700">Response History</h3>
+        <h3 class="mb-3 font-semibold text-sm text-gray-700">Response History</h3>
         {#if costs.length === 0}
           <div class="text-center text-sm text-gray-500">No responses yet</div>
         {:else}

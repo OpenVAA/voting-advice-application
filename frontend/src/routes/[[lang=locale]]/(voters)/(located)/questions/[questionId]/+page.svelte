@@ -16,12 +16,12 @@ Display a question for answering.
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
+  import { questionToChatbotContext } from '@openvaa/chatbot';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { ChatbotWidget, ChatbotToggleButton } from '$lib/components/chatbot';
-  import { questionToChatbotContext } from '@openvaa/chatbot';
+  import { ChatbotToggleButton, ChatbotWidget } from '$lib/components/chatbot';
   import { Hero } from '$lib/components/hero';
   import { Loading } from '$lib/components/loading';
   import {
@@ -229,11 +229,7 @@ Display a question for answering.
 
   <!-- Chatbot toggle button and widget -->
   <ChatbotToggleButton isOpen={chatbotOpen} on:click={() => (chatbotOpen = !chatbotOpen)} />
-  <ChatbotWidget
-    isOpen={chatbotOpen}
-    questionContext={questionContext}
-    locale={'en'}
-    onClose={() => (chatbotOpen = false)} />
+  <ChatbotWidget isOpen={chatbotOpen} {questionContext} locale={'en'} onClose={() => (chatbotOpen = false)} />
 {:else}
   <Loading class="mt-lg" />
 {/if}

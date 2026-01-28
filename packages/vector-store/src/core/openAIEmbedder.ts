@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
-import { Embedder, type EmbedderOptions, type EmbedderResponse } from './embedder.type';
+import { Embedder } from './embedder.type';
+import type { EmbedderOptions, EmbedderResponse } from './embedder.type';
 
 export class OpenAIEmbedder extends Embedder {
   private client: OpenAI;

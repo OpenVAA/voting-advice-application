@@ -1,4 +1,3 @@
-
 /**
  * Document source metadata extracted by LLM
  * @example
@@ -54,4 +53,4 @@ export interface SourceSegment {
 /** A source segment with its document metadata.  */
 export interface SegmentWithMetadata extends SourceSegment {
   metadata: SourceMetadata;
-};
+}

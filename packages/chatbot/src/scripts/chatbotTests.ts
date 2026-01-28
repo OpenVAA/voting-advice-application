@@ -27,7 +27,9 @@ import type { ProviderResponse } from 'promptfoo';
 const path = join(__dirname, '..', '..', '..', '..', '.env');
 config({ path: path });
 const keyExists = process.env.OPENAI_API_KEY ? true : false;
-console.info('[CHATBOT TESTS]: OPENAI_API_KEY' + (keyExists ? ' was loaded successfully' : ' does not exist in ' + path));
+console.info(
+  '[CHATBOT TESTS]: OPENAI_API_KEY' + (keyExists ? ' was loaded successfully' : ' does not exist in ' + path)
+);
 
 async function runChatbotEvaluation() {
   // Determine which test files to run
@@ -44,7 +46,9 @@ async function runChatbotEvaluation() {
   console.info(`Running tests from ${testFilenames.length} file(s): ${testFilenames.join(', ')}\n`);
 
   // Initialize chatbot configuration once (shared across all test files)
-  const { vectorStore, chatProvider, queryReformulationProvider } = await getChatbotConfiguration(process.env.OPENAI_API_KEY || '');
+  const { vectorStore, chatProvider, queryReformulationProvider } = await getChatbotConfiguration(
+    process.env.OPENAI_API_KEY || ''
+  );
 
   // Track aggregate statistics
   let totalTests = 0;

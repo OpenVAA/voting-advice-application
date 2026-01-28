@@ -12,8 +12,8 @@
  * @param locale - User's locale for potential future i18n
  * @returns Welcome message text
  */
-export function getOnboardingMessage(locale: string = 'en'): string { 
-  // Currently only supports English, but structure allows for i18n expansion. TODO: i18n 
+export function getOnboardingMessage(locale: string = 'en'): string {
+  // Currently only supports English, but structure allows for i18n expansion. TODO: i18n
   if (locale === 'en') {
     return `Hello! I'm your EU 2024 election assistant. I'm still being developed, so I may not be able to answer all your questions.
 
@@ -28,7 +28,7 @@ I unfortunately can't help you with:
 • Specific voting recommendations
 • Questions unrelated to EU elections
 
-What would you like to learn about?`; 
+What would you like to learn about?`;
   }
 
   // Fallback to English if locale not supported

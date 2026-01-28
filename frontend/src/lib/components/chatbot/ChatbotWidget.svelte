@@ -21,7 +21,7 @@ A floating chat widget for helping voters with questions.
 -->
 
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import { createChatStore } from '$lib/chatbot';
   import type { ChatbotWidgetProps } from './ChatbotWidget.type';

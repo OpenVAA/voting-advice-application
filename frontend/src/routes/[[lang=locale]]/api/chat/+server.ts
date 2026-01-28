@@ -1,6 +1,5 @@
 import { getOnboardingMessage } from '@openvaa/chatbot';
-import { ChatbotController } from '@openvaa/chatbot/server';
-import { getChatbotConfiguration } from '@openvaa/chatbot/server';
+import { ChatbotController, getChatbotConfiguration } from '@openvaa/chatbot/server';
 import { createRateLimitResponse } from '$lib/server/api/rateLimitHelpers';
 import { wrapInSSE } from '$lib/server/api/sseHelpers';
 import { constants } from '$lib/server/constants';
@@ -12,9 +11,7 @@ import type { ChatRequestBody } from '$lib/chatbot';
 
 // Get chatbot configuration
 // TODO: move default config to chatbot package and make optional in its api
-const { vectorStore, chatProvider } = await getChatbotConfiguration(
-  constants.LLM_OPENAI_API_KEY
-);
+const { vectorStore, chatProvider } = await getChatbotConfiguration(constants.LLM_OPENAI_API_KEY);
 
 // Initialize Redis store and rate limiters (shared Redis client)
 const redisClient = getRedisClient();

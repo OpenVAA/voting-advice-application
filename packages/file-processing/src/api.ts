@@ -25,16 +25,8 @@ import type { ProcessPdfOptions, ProcessPdfResult, ProcessTextOptions, ProcessTe
  * ```
  */
 export async function processText(options: ProcessTextOptions): Promise<ProcessTextResult> {
-  const {
-    text,
-    llmProvider,
-    runId,
-    documentId,
-    minSegmentLength,
-    maxSegmentLength,
-    charsPerLLMCall,
-    controller
-  } = options;
+  const { text, llmProvider, runId, documentId, minSegmentLength, maxSegmentLength, charsPerLLMCall, controller } =
+    options;
 
   // Step 1: Segment the text
   const segmentationResult = await segmentText({

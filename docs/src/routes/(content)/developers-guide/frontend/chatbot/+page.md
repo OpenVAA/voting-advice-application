@@ -1,6 +1,6 @@
 # Chatbot
 
-The chatbot is an AI assistant that helps voters understand elections, parties, and policies. It provides real-time assistance using RAG (Retrieval-Augmented Generation) and appears as a floating widget on the pages that include VAA questions (only the questions pages are supported due to resource constraints). There is also a [development view](#development-view). 
+The chatbot is an AI assistant that helps voters understand elections, parties, and policies. It provides real-time assistance using RAG (Retrieval-Augmented Generation) and appears as a floating widget on the pages that include VAA questions (only the questions pages are supported due to resource constraints). There is also a [development view](#development-view).
 
 See chatbotHandoff.md for essential improvements needed and a description of potential issues.
 
@@ -33,9 +33,7 @@ Floating action button that opens/closes the chatbot.
   let chatbotOpen = false;
 </script>
 
-<ChatbotToggleButton
-  bind:isOpen={chatbotOpen}
-  on:click={() => chatbotOpen = !chatbotOpen} />
+<ChatbotToggleButton bind:isOpen={chatbotOpen} on:click={() => (chatbotOpen = !chatbotOpen)} />
 ```
 
 ### ChatbotWidget
@@ -65,10 +63,7 @@ Main chat interface with messages, input, and conversation management.
   let chatbotOpen = false;
 </script>
 
-<ChatbotWidget
-  bind:isOpen={chatbotOpen}
-  locale="en"
-  onClose={() => chatbotOpen = false} />
+<ChatbotWidget bind:isOpen={chatbotOpen} locale="en" onClose={() => (chatbotOpen = false)} />
 ```
 
 ### Development View
@@ -309,14 +304,9 @@ const chatStore = createChatStore({
   $: locale = $page.params.lang || 'en';
 </script>
 
-<ChatbotToggleButton
-  isOpen={chatbotOpen}
-  on:click={() => chatbotOpen = !chatbotOpen} />
+<ChatbotToggleButton isOpen={chatbotOpen} on:click={() => (chatbotOpen = !chatbotOpen)} />
 
-<ChatbotWidget
-  bind:isOpen={chatbotOpen}
-  {locale}
-  onClose={() => chatbotOpen = false} />
+<ChatbotWidget bind:isOpen={chatbotOpen} {locale} onClose={() => (chatbotOpen = false)} />
 ```
 
 ### With Question Context
@@ -333,10 +323,7 @@ const chatStore = createChatStore({
   };
 </script>
 
-<ChatbotWidget
-  bind:isOpen={chatbotOpen}
-  {questionContext}
-  locale="en" />
+<ChatbotWidget bind:isOpen={chatbotOpen} {questionContext} locale="en" />
 ```
 
 ## Styling

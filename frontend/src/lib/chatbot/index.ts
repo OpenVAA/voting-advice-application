@@ -2,10 +2,10 @@
  * Chatbot utilities and services
  */
 
-export * from './types';
+export type { ChatState, ChatStore, ChatStoreOptions } from './chatStore';
 export { createChatStore } from './chatStore';
-export type { ChatStore, ChatStoreOptions, ChatState } from './chatStore';
+export * from './types';
 export { convertUIMessagesToModelMessages } from './utils/adHocMessageConvert';
 export { createOnboardingStream, simulateStreamingMessage, startOnboarding } from './utils/onboarding';
-export { SSEClient } from './utils/sseClient';
 export type { SSECallbacks } from './utils/sseClient';
+export { SSEClient } from './utils/sseClient';

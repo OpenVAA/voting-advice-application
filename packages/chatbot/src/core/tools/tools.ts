@@ -15,7 +15,7 @@ const currentDirPath = dirname(currentFilePath);
 /**
  * Get available tools for the chatbot
  *
- * @param ragDeps - RAG tool dependencies 
+ * @param ragDeps - RAG tool dependencies
  * @returns Record of tool name to tool instance
  */
 export function getTools(ragDeps: RAGDependencies) {
@@ -133,7 +133,6 @@ export interface RAGDependencies {
  * @param ragDeps - RAG tool dependencies
  * @returns Record of tool name to tool instance
  */
-
 
 /**
  * Create RAG search context tool

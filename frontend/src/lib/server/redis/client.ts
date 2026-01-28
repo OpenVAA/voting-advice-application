@@ -17,7 +17,7 @@ export function getRedisClient(): Redis {
       tls: constants.REDIS_TLS_ENABLED ? {} : undefined,
       retryStrategy(times) {
         if (times > 3) {
-           // Stop retrying
+          // Stop retrying
           console.error('[Redis] Max retries exhausted');
           return null;
         }

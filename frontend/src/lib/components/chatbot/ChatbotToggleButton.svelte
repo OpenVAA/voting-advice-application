@@ -21,13 +21,8 @@ A small circular floating action button that toggles the chatbot widget.
 
 <button
   on:click
-  class="fixed bottom-10 right-10 z-50 flex h-42 w-42 items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
+  class="h-42 w-42 duration-200 fixed bottom-10 right-10 z-50 flex items-center justify-center rounded-full bg-primary text-primary-content shadow-lg transition-all hover:scale-105 hover:shadow-xl"
   aria-label={isOpen ? 'Close chatbot' : 'Open chatbot'}>
   <!-- Chatbot icon -->
-  <img
-    src="/icons/chatbot_icon.svg"
-    alt=""
-    aria-hidden="true"
-    class="h-60 w-60"
-  />
+  <img src="/icons/chatbot_icon.svg" alt="" aria-hidden="true" class="h-60 w-60" />
 </button>

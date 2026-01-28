@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import { ChromaClient, IncludeEnum, type Metadata } from 'chromadb';
+import { ChromaClient, IncludeEnum } from 'chromadb';
+import type { Metadata } from 'chromadb';
 
 const COLLECTION_NAME = 'eu-2024-election-chatbot';
 

@@ -23,24 +23,24 @@ tests:
     vars:
       messages:
         - role: user
-          content: "hello"
+          content: 'hello'
     assert:
       - type: javascript
         value: output.includes("?") === true
 
-  - description: "[RAG] expect number of electorates to be correct"
+  - description: '[RAG] expect number of electorates to be correct'
     vars:
       messages:
         - role: user
-          content: "how many people are chosen in these elections?"
+          content: 'how many people are chosen in these elections?'
     assert:
       - type: javascript
         value: output.includes("720") === true # 2024 EU elections
-  - description: "[PROMPTING] expect to try to answer ambiguous leadership question"
+  - description: '[PROMPTING] expect to try to answer ambiguous leadership question'
     vars:
       messages:
         - role: user
-          content: "who is the leader of the eu?"
+          content: 'who is the leader of the eu?'
     assert:
       - type: javascript
         value: output.includes("leader") === true

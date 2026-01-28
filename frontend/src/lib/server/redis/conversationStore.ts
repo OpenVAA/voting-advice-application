@@ -1,7 +1,4 @@
-import type {
-  ConversationStateStore,
-  ConversationState
-} from '@openvaa/chatbot/server';
+import type { ConversationState, ConversationStateStore } from '@openvaa/chatbot/server';
 import type Redis from 'ioredis';
 
 /**

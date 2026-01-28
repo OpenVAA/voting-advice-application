@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { generateQuestionInfo } from '../src/api';
 import { QUESTION_INFO_OPERATION } from '../src/types';
 import type { Controller } from '@openvaa/core';
+import type { LLMProvider } from '@openvaa/llm';
 import type { QuestionInfoOptions } from '../src/types';
 
 // No-op controller for tests
@@ -46,7 +47,7 @@ describe('Prompt Population Bug Test', () => {
 
     const mockLLMProvider = {
       generateObjectParallel: generateObjectParallelSpy
-    } as any;
+    } as unknown as LLMProvider;
 
     const options: QuestionInfoOptions = {
       runId: 'test-run',
@@ -66,9 +67,9 @@ describe('Prompt Population Bug Test', () => {
     const firstRequest = callArgs.requests[0];
     const promptContent = firstRequest.messages[0].content;
 
-    console.log('\n=== PROMPT SENT TO LLM ===');
-    console.log(promptContent);
-    console.log('=== END PROMPT ===\n');
+    console.info('\n=== PROMPT SENT TO LLM ===');
+    console.info(promptContent);
+    console.info('=== END PROMPT ===\n');
 
     // These assertions will FAIL if the bug exists
     expect(promptContent).toContain('Should we increase renewable energy investment?');
