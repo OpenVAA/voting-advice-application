@@ -22,12 +22,12 @@
             Subscribe to our newsletter to receive calls for feedback and be among the first to know about our releases.
             💯 no spam.
           </p>
-          <div class="inputAndButton">
+          <div class="flex flex-row flex-wrap content-stretch justify-center max-sm:flex-col">
             <input
               type="email"
               value=""
               name="EMAIL"
-              class="required email input"
+              class="required email input mx-1 max-sm:mx-0 max-sm:not-first:mt-4"
               id="mce-EMAIL"
               required
               placeholder="Your email" />
@@ -36,7 +36,7 @@
               value="Subscribe"
               name="subscribe"
               id="mc-embedded-subscribe"
-              class=" btn btn-primary" />
+              class="btn btn-primary mx-1 max-sm:mx-0 max-sm:not-first:mt-4" />
             <input type="hidden" name="group[53005]" id="mce-group[53005]" value="2" />
           </div>
           <div id="mce-responses" class="clear foot">
@@ -53,29 +53,3 @@
   </div>
   <!--End mc_embed_signup-->
 </div>
-
-<style>
-  .inputAndButton {
-    display: flex;
-    flex-direction: row;
-    align-content: stretch;
-    justify-content: center;
-    flex-wrap: wrap;
-
-    > input,
-    > button {
-      margin: 0 var(--margin-XS);
-    }
-
-    @media screen and (max-width: 600px) {
-      flex-direction: column;
-
-      > input,
-      > button {
-        &:not(:first-child) {
-          margin-top: var(--margin-M);
-        }
-      }
-    }
-  }
-</style>
