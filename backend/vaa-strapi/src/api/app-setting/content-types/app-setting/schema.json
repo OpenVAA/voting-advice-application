@@ -85,6 +85,12 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.notifications"
+    },
+    "candidateApp": {
+      "displayName": "Candidate App",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.candidate-app"
     }
   }
 }

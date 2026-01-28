@@ -145,3 +145,11 @@ Settings related to important notifications shown to users.
   - `content`: The content of the notification.
   - `icon`: The `Icon.name` to display in the notification.
 - `voterApp`: The notification shown to users of the Voter App.
+
+### `candidateApp`
+
+Settings related to the Candidate App.
+
+- `questions`: Settings related to the question view in the Candidate App.
+  - `hideVideo`: Whether to hide possible video content for questions in the Candidate App. Default `false`.
+  - `hideHero`: Whether to hide possible hero content for questions in the Candidate App. Default `false`.

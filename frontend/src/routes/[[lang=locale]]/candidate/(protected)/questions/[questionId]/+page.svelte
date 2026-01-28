@@ -11,6 +11,8 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 ## Settings
 
 - `questions.showCategoryTags`: Whether to show category tags for questions.
+- `candidateApp.questions.hideVideo`: Whether to hide video content for questions.
+- `candidateApp.questions.hideHero`: Whether to hide hero content for questions.
 -->
 
 <script lang="ts">
@@ -40,9 +42,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
+  const { answersLocked, appSettings, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
     getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // State variables
@@ -75,6 +77,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       customData = getCustomData(question);
       nextQuestionId = getNextQuestionId(question);
       status = 'idle';
+      // Load video content if enabled and available
+      if (!$appSettings.candidateApp.questions.hideVideo && customData?.video) {
+        video.load(customData.video);
+      }
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
@@ -240,18 +246,18 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       </svelte:fragment>
 
       <figure role="presentation" slot="hero">
-        {#if customData?.hero}
-          <Hero content={customData?.hero} />
+        {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
+          <Hero content={customData.hero} />
         {/if}
       </figure>
 
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
-      {#if info && info !== ''}
+      {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
         <QuestionBasicInfo {info} />
       {/if}
 
-      <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">
+      <div slot="primaryActions" class="gap-lg grid w-full justify-items-center">
         <!-- Question answer proper -->
 
         <OpinionQuestionInput

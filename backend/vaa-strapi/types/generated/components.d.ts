@@ -51,6 +51,28 @@ export interface SettingsAccess extends Struct.ComponentSchema {
   };
 }
 
+export interface SettingsCandidateApp extends Struct.ComponentSchema {
+  collectionName: 'components_settings_candidate_apps';
+  info: {
+    description: '';
+    displayName: 'Candidate App';
+  };
+  attributes: {
+    questions: Schema.Attribute.Component<'settings.candidate-app-questions', false>;
+  };
+}
+
+export interface SettingsCandidateAppQuestions extends Struct.ComponentSchema {
+  collectionName: 'components_settings_candidate_app_questions';
+  info: {
+    displayName: 'Candidate App - Questions';
+  };
+  attributes: {
+    hideHero: Schema.Attribute.Boolean;
+    hideVideo: Schema.Attribute.Boolean;
+  };
+}
+
 export interface SettingsElections extends Struct.ComponentSchema {
   collectionName: 'components_settings_elections';
   info: {
@@ -346,6 +368,8 @@ declare module '@strapi/strapi' {
       'customization.translation-override': CustomizationTranslationOverride;
       'customization.translation-override-translation': CustomizationTranslationOverrideTranslation;
       'settings.access': SettingsAccess;
+      'settings.candidate-app': SettingsCandidateApp;
+      'settings.candidate-app-questions': SettingsCandidateAppQuestions;
       'settings.elections': SettingsElections;
       'settings.entities': SettingsEntities;
       'settings.entity-details': SettingsEntityDetails;
