@@ -3,13 +3,9 @@ name: Deploy Documentation
 on:
   push:
     branches:
-      - deploy-docs
+      - main
     paths:
-      - 'docs/**'
-      - 'packages/**'
-      - 'frontend/src/lib/**'
-      - 'scripts/generate-docs/**'
-      - '.github/workflows/docs.yml'
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
@@ -31,8 +27,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'yarn'
+          node-version: "20"
+          cache: "yarn"
 
       - name: Install dependencies
         run: |

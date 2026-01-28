@@ -17,7 +17,7 @@
     "test:unit": "vitest",
     "test": "npm run test:unit -- --run && npm run test:e2e",
     "test:e2e": "playwright test",
-    "generate:docs": "tsx scripts/generate-all-docs-and-validate.ts",
+    "generate:docs": "tsx scripts/generate-all-docs-and-validate.ts && yarn format",
     "generate:component-docs": "tsx scripts/extract-component-docs.ts",
     "generate:navigation": "tsx scripts/generate-navigation-config.ts",
     "generate:route-map": "tsx scripts/generate-route-map.ts",
