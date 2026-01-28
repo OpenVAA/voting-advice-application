@@ -1,0 +1,1 @@
+These files are faked data for giving the chatbot information about particular parties. This data should live in the OpenVAA database and should be accessible via an SQL query. The chatbot does not need to send SQL, it can be abstracted. E.g for searching a party manifesto it would simply be a tool "getPartyManifesto(partyName)", not pure SQL.

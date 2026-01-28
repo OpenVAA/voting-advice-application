@@ -1,0 +1,30 @@
+# Promptfoo E2E Chatbot Evaluation Configuration
+# This config tests the full chatbot pipeline with real API calls
+
+defaultTest:
+  options:
+    provider: openai:gpt-4.1-mini
+  assert:
+    - type: llm-rubric
+      value: should either cite the source directly or indicate that the information is not available WITHOUT mentioning its a "retrieved context" explicitly.
+
+# Single test case with mixed fast and slow assertions
+tests:
+  - description: 'TODO'
+    vars:
+      messages:
+        [{ role: 'user', content: 'TODO' }, { role: 'assistant', content: 'TODO' }, { role: 'user', content: 'TODO' }]
+
+    assert:
+      # Fast assertions - deterministic checks
+      - type: javascript
+        value: output.length > 100
+
+  - description: 'TODO'
+    vars:
+      messages: [{ role: 'user', content: 'TODO' }]
+
+    assert:
+      # Fast assertions - deterministic checks
+      - type: javascript
+        value: output.length > 100
