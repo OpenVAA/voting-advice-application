@@ -1,17 +1,16 @@
-import {
-  type AnyNominationVariant,
-  type AnyQuestionVariant,
-  type Constituency,
-  type DataRoot,
-  type Election,
-  ENTITY_TYPE,
-  type EntityType,
-  QUESTION_CATEGORY_TYPE
-} from '@openvaa/data';
-import { type Readable } from 'svelte/store';
+import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { Id } from '@openvaa/core';
-import type { OrganizationNomination } from '@openvaa/data';
+import type {
+  AnyNominationVariant,
+  AnyQuestionVariant,
+  Constituency,
+  DataRoot,
+  Election,
+  EntityType,
+  OrganizationNomination
+} from '@openvaa/data';
+import type { Readable } from 'svelte/store';
 import type { SelectionTree } from './selectionTree.type';
 
 /**

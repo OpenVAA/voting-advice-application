@@ -18,10 +18,11 @@ Used to display an `Entity` as small tag including an icon.
 -->
 
 <script lang="ts">
-  import { Icon, type IconName } from '$lib/components/icon';
+  import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import type { AnyEntityVariant, EntityType } from '@openvaa/data';
+  import type { IconName } from '$lib/components/icon';
   import type { EntityTagProps } from './EntityTag.type';
 
   type $$Props = EntityTagProps;

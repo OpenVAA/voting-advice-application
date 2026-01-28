@@ -1,7 +1,8 @@
-import { type AnyQuestionVariantData, type Choice, QUESTION_TYPE } from '@openvaa/data';
+import { QUESTION_TYPE } from '@openvaa/data';
 import { formatId } from '$lib/api/utils/formatId';
 import { translate } from '$lib/i18n';
 import type { LocalizedChoice, QuestionSettingsDateType } from '@openvaa/app-shared';
+import type { AnyQuestionVariantData, Choice } from '@openvaa/data';
 import type { StrapiQuestionTypeData } from '../strapiData.type';
 
 export function parseQuestionType(

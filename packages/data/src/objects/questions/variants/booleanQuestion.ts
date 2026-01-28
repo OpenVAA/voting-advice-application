@@ -1,15 +1,5 @@
-import {
-  type AnswerValue,
-  COORDINATE,
-  type CoordinateOrMissing,
-  ensureBoolean,
-  isMissingValue,
-  MISSING_VALUE,
-  type MissingValue,
-  OBJECT_TYPE,
-  Question
-} from '../../../internal';
-import type { QUESTION_TYPE } from '../../../internal';
+import { COORDINATE, ensureBoolean, isMissingValue, MISSING_VALUE, OBJECT_TYPE, Question } from '../../../internal';
+import type { AnswerValue, CoordinateOrMissing, MissingValue, QUESTION_TYPE } from '../../../internal';
 
 /**
  * A matchable simple question whose answer is a boolean.

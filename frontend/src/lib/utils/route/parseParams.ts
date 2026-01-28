@@ -1,6 +1,7 @@
 import qs from 'qs';
-import { isArrayParam, type Params } from './params';
+import { isArrayParam } from './params';
 import { logDebugError } from '../logger';
+import type { Params } from './params';
 
 /**
  * Parse params from params and the URL.

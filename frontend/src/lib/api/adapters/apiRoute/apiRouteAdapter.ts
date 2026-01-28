@@ -1,6 +1,7 @@
-import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRouteReturnType } from './apiRoutes';
+import { API_ROUTES } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { ApiRouteAdapter, ApiRouteGetOptions, ApiRoutePostOptions } from './apiRouteAdapter.type';
+import type { ApiGetRoute, ApiPostRoute, ApiRouteReturnType } from './apiRoutes';
 
 /**
  * A mixin for all ApiRoute Data API services, implementing `apiGet` and `apiPost` methods.

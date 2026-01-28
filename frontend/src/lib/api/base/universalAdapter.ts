@@ -3,7 +3,8 @@ import { constants } from '$lib/utils/constants';
 import { addHeader } from '../utils/addHeader';
 import { hasAuthHeaders } from '../utils/authHeaders';
 import { cachifyUrl } from '../utils/cachifyUrl';
-import { type ParsedResponse, parseResponse, type ResponseParser } from '../utils/parseResponse';
+import { parseResponse } from '../utils/parseResponse';
+import type { ParsedResponse, ResponseParser } from '../utils/parseResponse';
 import type { AdapterConfig, FetchOptions, GetOptions, PostOptions, SearchParams } from './universalAdapter.type';
 
 const DEFAULT_PARSER = 'json' as const;

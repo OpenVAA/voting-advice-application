@@ -1,6 +1,7 @@
-import { coordinatesShape, equalShapes, type Shape } from './shape';
+import { coordinatesShape, equalShapes } from './shape';
 import type { Id, MatchableQuestion } from '@openvaa/core';
 import type { Position, PositionCoordinates } from './position';
+import type { Shape } from './shape';
 
 export class MatchingSpace {
   /**

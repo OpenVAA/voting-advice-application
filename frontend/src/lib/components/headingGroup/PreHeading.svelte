@@ -20,6 +20,7 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+
   const { t } = getComponentContext();
 </script>
 

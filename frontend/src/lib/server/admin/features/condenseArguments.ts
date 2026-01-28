@@ -1,6 +1,6 @@
 import { handleQuestion } from '@openvaa/argument-condensation';
-import { AbortError, type Id } from '@openvaa/core';
-import { type AnyQuestionVariant, ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/data';
+import { AbortError } from '@openvaa/core';
+import { ENTITY_TYPE, QUESTION_TYPE } from '@openvaa/data';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getLLMProvider } from '../../llm/llmProvider';
@@ -8,8 +8,8 @@ import { getAllMessagesFromJob, getJob, markAborted } from '../jobs/jobStore';
 import { PipelineController } from '../jobs/pipelineController';
 import type { LocalizedQuestionArguments } from '@openvaa/app-shared';
 import type { CondensationRunResult } from '@openvaa/argument-condensation';
-import type { Serializable } from '@openvaa/core';
-import type { SingleChoiceCategoricalQuestion } from '@openvaa/data';
+import type { Id, Serializable } from '@openvaa/core';
+import type { AnyQuestionVariant, SingleChoiceCategoricalQuestion } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**

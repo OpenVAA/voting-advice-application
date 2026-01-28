@@ -1,7 +1,8 @@
-import { type HasAnswers, noOpController } from '@openvaa/core';
+import { noOpController } from '@openvaa/core';
 import { BooleanQuestion, QUESTION_TYPE } from '@openvaa/data';
 import { describe, expect, test } from 'vitest';
 import { handleQuestion } from '../../src/api';
+import type { HasAnswers } from '@openvaa/core';
 import type { DataRoot } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
 

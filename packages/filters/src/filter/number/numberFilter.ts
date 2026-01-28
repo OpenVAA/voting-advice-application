@@ -1,6 +1,8 @@
-import { isMissing, type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
+import { isMissing, MISSING_VALUE } from '../../missingValue';
+import { Filter } from '../base';
 import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { MaybeMissing } from '../../missingValue';
+import type { FilterOptionsBase, PropertyFilterOptions, QuestionFilterOptions } from '../base';
 
 /**
  * A base class for number filters.

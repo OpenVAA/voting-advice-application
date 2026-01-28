@@ -53,7 +53,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
 <script lang="ts">
   import { isLocalizedString } from '@openvaa/app-shared';
-  import { type Id, isEmptyValue } from '@openvaa/core';
+  import { isEmptyValue } from '@openvaa/core';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
@@ -64,6 +64,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   import { checkUrl } from '$lib/utils/links';
   import { logDebugError } from '$lib/utils/logger';
   import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
+  import type { Id } from '@openvaa/core';
   import type { AnyChoice, Image } from '@openvaa/data';
   import type { TranslationsPayload } from '$lib/i18n/translations';
   import type { TranslationKey } from '$types';

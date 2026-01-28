@@ -1,7 +1,8 @@
-import { type CandidateData, ENTITY_TYPE } from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { formatId } from '$lib/api/utils/formatId';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { parseImage } from './parseImage';
+import type { CandidateData } from '@openvaa/data';
 import type { LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { StrapiCandidateData, StrapiUpdateCandidateReturnData } from '../strapiData.type';
 

@@ -1,10 +1,6 @@
-import {
-  type AnyEntityVariantData,
-  type AnyNominationVariantPublicData,
-  ENTITY_TYPE,
-  type EntityType
-} from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import type { Id } from '@openvaa/core';
+import type { AnyEntityVariantData, AnyNominationVariantPublicData, EntityType } from '@openvaa/data';
 
 /**
  * Filter the entities to those that are included in the possibly nested nominations.

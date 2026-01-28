@@ -6,12 +6,11 @@ import {
   MultipleTextQuestion,
   NumberQuestion,
   QUESTION_TYPE,
-  type QuestionType,
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion,
   TextQuestion
 } from '../../../internal';
-import type { DataRoot } from '../../../internal';
+import type { DataRoot, QuestionType } from '../../../internal';
 
 /**
  * Question variants

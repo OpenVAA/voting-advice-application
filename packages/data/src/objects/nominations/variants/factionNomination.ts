@@ -1,14 +1,12 @@
-import {
-  type DataAccessor,
-  DataNotFoundError,
-  DataProvisionError,
-  ENTITY_TYPE,
-  type FactionNominationData,
-  Nomination,
-  OBJECT_TYPE,
-  type OrganizationNomination
+import { DataNotFoundError, DataProvisionError, ENTITY_TYPE, Nomination, OBJECT_TYPE } from '../../../internal';
+import type {
+  CandidateNomination,
+  DataAccessor,
+  DataRoot,
+  FactionNominationData,
+  OrganizationNomination,
+  WithOptional
 } from '../../../internal';
-import type { CandidateNomination, DataRoot, WithOptional } from '../../../internal';
 
 /**
  * A nomination for a `Faction`. The nomination must part of an `OrganizationNomination`, i.e., a party list.

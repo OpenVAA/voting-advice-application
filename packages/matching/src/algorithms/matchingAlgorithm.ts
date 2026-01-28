@@ -1,7 +1,9 @@
-import { type HasAnswers, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
-import { type DistanceMetric, measureDistance } from '../distance';
+import { MISSING_VALUE } from '@openvaa/core';
+import { measureDistance } from '../distance';
 import { Match, SubMatch } from '../match';
 import { createSubspace, MatchingSpace, Position } from '../space';
+import type { HasAnswers, Id, MatchableQuestion } from '@openvaa/core';
+import type { DistanceMetric } from '../distance';
 import type { MissingValueImputationOptions } from '../missingValue';
 import type { MatchableQuestionGroup } from '../question';
 import type { MatchingAlgorithmOptions, MatchingOptions } from './matchingAlgorithm.type';

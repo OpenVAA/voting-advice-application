@@ -1,6 +1,5 @@
 import { noOpController } from '@openvaa/core';
 import {
-  type Answer,
   BooleanQuestion,
   DataRoot,
   QUESTION_TYPE,
@@ -11,6 +10,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { handleQuestion } from '../../src/api.ts';
 import { CONDENSATION_TYPE } from '../../src/core/types/index.ts';
 import type { HasAnswers } from '@openvaa/core';
+import type { Answer } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
 
 // Mock LLM Provider for new API

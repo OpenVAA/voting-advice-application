@@ -26,14 +26,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import {
-    type AnyEntityVariant,
-    type AnyNominationVariant,
-    ENTITY_TYPE,
-    type EntityType,
-    isObjectType,
-    OBJECT_TYPE
-  } from '@openvaa/data';
+  import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
   import { InfoAnswer } from '$lib/components/infoAnswer';
@@ -42,6 +35,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   import { unwrapEntity } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
+  import type { AnyEntityVariant, AnyNominationVariant, EntityType } from '@openvaa/data';
   import type { EntityInfoProps } from './EntityInfo.type';
 
   type $$Props = EntityInfoProps;

@@ -1,10 +1,10 @@
-import { type AnyNominationVariant, ENTITY_TYPE, type EntityType } from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { imputeParentAnswers, unwrapProxiedMatch } from '$lib/utils/matching';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { countAnswers } from './countAnswers';
 import { Voter } from './voter';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
-import type { FactionNomination, OrganizationNomination } from '@openvaa/data';
+import type { AnyNominationVariant, EntityType, FactionNomination, OrganizationNomination } from '@openvaa/data';
 import type { Match, MatchingAlgorithm } from '@openvaa/matching';
 import type { Readable } from 'svelte/store';
 import type { MatchingProxy } from '$lib/utils/matching';

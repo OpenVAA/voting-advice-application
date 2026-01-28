@@ -1,6 +1,7 @@
-import { type AnyEntityVariantData, type AnyNominationVariantPublicData, ENTITY_TYPE } from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import { describe, expect, test } from 'vitest';
 import { filterEntitiesByNomination, parseEntitiesFromNominations } from './filterEntitiesByNomination';
+import type { AnyEntityVariantData, AnyNominationVariantPublicData } from '@openvaa/data';
 
 const nominations: Array<AnyNominationVariantPublicData> = [
   {

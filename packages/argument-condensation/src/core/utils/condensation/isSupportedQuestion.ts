@@ -1,5 +1,6 @@
-import { type AnyQuestionVariant, QUESTION_TYPE } from '@openvaa/data';
-import { type SupportedQuestion } from '../../types';
+import { QUESTION_TYPE } from '@openvaa/data';
+import type { AnyQuestionVariant } from '@openvaa/data';
+import type { SupportedQuestion } from '../../types';
 
 /**
  * Type guard to check if a question is supported by the condensation system

@@ -1,7 +1,8 @@
-import { type Answer, type Answers } from '@openvaa/data';
-import { deepFreeze, type Frozen } from '$lib/utils/freeze';
+import { deepFreeze } from '$lib/utils/freeze';
 import { logDebugError } from '$lib/utils/logger';
 import { localStorageWritable } from '../utils/storageStore';
+import type { Answer, Answers } from '@openvaa/data';
+import type { Frozen } from '$lib/utils/freeze';
 import type { TrackingService } from '../app/tracking';
 import type { AnswerStore } from './answerStore.type';
 

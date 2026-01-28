@@ -25,6 +25,7 @@ and the main title.
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+
   const { t } = getComponentContext();
 </script>
 

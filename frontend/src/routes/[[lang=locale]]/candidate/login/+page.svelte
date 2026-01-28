@@ -25,7 +25,7 @@
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { type CandidateLoginError, getErrorTranslationKey } from '$candidate/utils/loginError';
+  import { getErrorTranslationKey } from '$candidate/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -35,6 +35,7 @@
   import { Footer } from '$lib/dynamic-components/footer';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../MainContent.svelte';
+  import type { CandidateLoginError } from '$candidate/utils/loginError';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

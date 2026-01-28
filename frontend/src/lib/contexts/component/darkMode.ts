@@ -1,5 +1,6 @@
-import { type Readable, readable } from 'svelte/store';
+import { readable } from 'svelte/store';
 import { browser } from '$app/environment';
+import type { Readable } from 'svelte/store';
 
 /**
  * The value of this store is `true` if the user prefers dark mode. In order for it to work, the `window` object must be available.

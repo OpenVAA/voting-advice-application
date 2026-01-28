@@ -1,8 +1,4 @@
-import { Card } from '@strapi/design-system';
-import { Flex } from '@strapi/design-system';
-import { Main, Typography } from '@strapi/design-system';
-import { Accordion } from '@strapi/design-system';
-import { Box } from '@strapi/design-system';
+import { Accordion, Box, Card, Flex, Main, Typography } from '@strapi/design-system';
 import { CandidateNominatorFileImport } from '../components/CandidateNominatorFileImport';
 import { DeleteData } from '../components/DeleteData';
 import { FindData } from '../components/FindData';

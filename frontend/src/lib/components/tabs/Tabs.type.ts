@@ -1,4 +1,5 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
+
 export type TabsProps = SvelteHTMLElements['ul'] & {
   /**
    * The titles and other data related to the tabs.

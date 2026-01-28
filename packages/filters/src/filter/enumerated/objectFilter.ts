@@ -1,7 +1,9 @@
 import { EnumeratedFilter } from './enumeratedFilter';
-import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { FILTER_TYPE, type PropertyFilterOptions } from '../base';
+import { MISSING_VALUE } from '../../missingValue';
+import { FILTER_TYPE } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
+import type { MaybeMissing } from '../../missingValue';
+import type { PropertyFilterOptions } from '../base';
 
 /**
  * A filter for properties which are objects with a string label and key for filtering, e.g. party objects of candidates.

@@ -1,9 +1,10 @@
 import { staticSettings } from '@openvaa/app-shared';
-import { BaseController, type HasAnswers } from '@openvaa/core';
+import { BaseController } from '@openvaa/core';
 import { QUESTION_TYPE } from '@openvaa/data';
 import { getAndSliceComments, getParallelFactor } from './core/utils';
 import { MODEL_DEFAULTS } from './defaultValues';
 import { handleBooleanQuestion, handleCategoricalQuestion, handleOrdinalQuestion } from './question-handlers';
+import type { HasAnswers } from '@openvaa/core';
 import type { BooleanQuestion, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
 import type {
   CommentGroupingOptions,

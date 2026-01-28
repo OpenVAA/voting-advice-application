@@ -1,5 +1,6 @@
 // Use direct import to avoid loading other modules which depend on `$app/...`
-import { ROUTE, type Route } from '../../../frontend/src/lib/utils/route/route';
+import { ROUTE } from '../../../frontend/src/lib/utils/route/route';
+import type { Route } from '../../../frontend/src/lib/utils/route/route';
 
 /**
  * A limited route builder to use in testing because we cannot use the real `buildRoute` that depends on Svelte kit.

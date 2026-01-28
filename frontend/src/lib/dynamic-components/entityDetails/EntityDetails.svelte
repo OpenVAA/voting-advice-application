@@ -31,8 +31,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 -->
 
 <script lang="ts">
-  import { type AnyQuestionVariant, ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
-  import { type Tab, Tabs } from '$lib/components/tabs';
+  import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { Tabs } from '$lib/components/tabs';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
@@ -42,7 +42,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { sortQuestions } from '$lib/utils/sorting';
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { CustomData, EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
+  import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Readable } from 'svelte/store';
+  import type { Tab } from '$lib/components/tabs';
   import type { AnswerStore } from '$lib/contexts/voter';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
   import type { EntityDetailsProps } from './EntityDetails.type';

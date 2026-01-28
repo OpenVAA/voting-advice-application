@@ -1,10 +1,5 @@
-import {
-  ChoiceQuestion,
-  type ChoiceQuestionData,
-  type Id,
-  type MissingValue,
-  type SingleChoiceQuestionType
-} from '../../../internal';
+import { ChoiceQuestion } from '../../../internal';
+import type { ChoiceQuestionData, Id, MissingValue, SingleChoiceQuestionType } from '../../../internal';
 
 /**
  * An abstract base class for all questions which allow choosing a single enumerated answering choice.

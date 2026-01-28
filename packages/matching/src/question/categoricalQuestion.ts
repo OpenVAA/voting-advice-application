@@ -1,4 +1,5 @@
-import { COORDINATE, type CoordinateOrMissing, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
+import { COORDINATE, MISSING_VALUE } from '@openvaa/core';
+import type { CoordinateOrMissing, Id, MatchableQuestion } from '@openvaa/core';
 
 interface MultipleChoiceValue {
   id: Id;

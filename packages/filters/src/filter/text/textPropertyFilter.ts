@@ -1,6 +1,7 @@
 import { TextFilter } from './textFilter';
-import { FILTER_TYPE, type PropertyFilterOptions } from '../base';
+import { FILTER_TYPE } from '../base';
 import type { Entity, ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
+import type { PropertyFilterOptions } from '../base';
 
 export class TextPropertyFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity> extends TextFilter<TEntity> {
   readonly filterType = FILTER_TYPE.TextPropertyFilter;

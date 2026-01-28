@@ -1,7 +1,8 @@
-import { type Actions, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
+import type { Actions } from '@sveltejs/kit';
 
 /**
  * Handle form submit from the UI to start condensation.

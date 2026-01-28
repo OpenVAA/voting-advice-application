@@ -1,14 +1,5 @@
-import {
-  type AnswerValue,
-  COORDINATE,
-  type CoordinateOrMissing,
-  isMissingValue,
-  MISSING_VALUE,
-  type MissingValue,
-  OBJECT_TYPE,
-  SingleChoiceQuestion
-} from '../../../internal';
-import type { QUESTION_TYPE } from '../../../internal';
+import { COORDINATE, isMissingValue, MISSING_VALUE, OBJECT_TYPE, SingleChoiceQuestion } from '../../../internal';
+import type { AnswerValue, CoordinateOrMissing, MissingValue, QUESTION_TYPE } from '../../../internal';
 
 /**
  * Used for all questions which allow choosing a single enumerated answering choice and whose values [cannot be ordered numerically](https://en.wikipedia.org/wiki/Nominal_category), i.e. the data is categorical or nominal.

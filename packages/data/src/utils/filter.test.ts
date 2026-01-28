@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { match } from './filter';
+
 describe('filter', () => {
   test('Missing filter should return true', () => {
     expect(match({})).toBe(true);

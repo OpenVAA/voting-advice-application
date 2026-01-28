@@ -1,10 +1,11 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import { browser } from '$app/environment';
 import { constants } from '$lib/utils/constants';
-import { STRAPI_API, STRAPI_AUTH_APIS, type StrapiApi, type StrapiApiReturnType } from './strapiApi';
+import { STRAPI_API, STRAPI_AUTH_APIS } from './strapiApi';
 import type { WithAuth, WithTargetEntity } from '$lib/api/base/dataWriter.type';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { StrapiAdapter, StrapiApiGetOptions, StrapiApiPostOptions } from './strapiAdapter.type';
+import type { StrapiApi, StrapiApiReturnType } from './strapiApi';
 import type { StrapiResult } from './strapiData.type';
 
 /**

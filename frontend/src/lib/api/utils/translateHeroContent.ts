@@ -1,5 +1,6 @@
-import { type HeroContent, isEmoji, isImage, isLocalizedObject, type LocalizedHeroContent } from '@openvaa/app-shared';
+import { isEmoji, isImage, isLocalizedObject } from '@openvaa/app-shared';
 import { translateObject } from '$lib/i18n';
+import type { HeroContent, LocalizedHeroContent } from '@openvaa/app-shared';
 
 /**
  * Translate possibly localized hero content object into a `HeroContent` object.

@@ -1,14 +1,10 @@
-import {
-  type Choice,
-  ChoiceQuestion,
-  type DataAccessor,
-  ensureArray,
-  ensureUnique,
-  type Id,
-  isMissingValue,
-  type MultipleChoiceQuestionData,
-  type MultipleChoiceQuestionType,
-  removeDuplicates
+import { ChoiceQuestion, ensureArray, ensureUnique, isMissingValue, removeDuplicates } from '../../../internal';
+import type {
+  Choice,
+  DataAccessor,
+  Id,
+  MultipleChoiceQuestionData,
+  MultipleChoiceQuestionType
 } from '../../../internal';
 
 /**

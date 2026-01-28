@@ -1,5 +1,5 @@
-import { type AllianceData, type DataAccessor, Entity, OBJECT_TYPE, removeDuplicates } from '../../../internal';
-import type { ENTITY_TYPE, Organization } from '../../../internal';
+import { Entity, OBJECT_TYPE, removeDuplicates } from '../../../internal';
+import type { AllianceData, DataAccessor, ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
  * The `Alliance` entity represents the entity behind an `AllianceNomination`. `Alliance`s need rarely be explicitly created because they are often specific to a particular constituency and defined as part of the `AllianceNomination`. In such cases, a generic `Alliance` will still be created.

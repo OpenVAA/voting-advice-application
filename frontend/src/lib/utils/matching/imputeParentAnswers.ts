@@ -1,18 +1,17 @@
-import {
-  type Answer,
-  type AnyNominationVariant,
-  type AnyQuestionVariant,
-  type FactionNomination,
-  isObjectType,
-  OBJECT_TYPE
-} from '@openvaa/data';
+import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
 import { Match } from '@openvaa/matching';
 import { logDebugError } from '$lib/utils/logger';
 import { MatchingProxy } from './imputeParentAnswers.type';
 import { median } from './median';
 import { mode } from './mode';
 import type { AnswerDict, Id } from '@openvaa/core';
-import type { OrganizationNomination } from '@openvaa/data';
+import type {
+  Answer,
+  AnyNominationVariant,
+  AnyQuestionVariant,
+  FactionNomination,
+  OrganizationNomination
+} from '@openvaa/data';
 
 /**
  * Impute the answers for the provided `Nomination`s from their child `Nomination`s.

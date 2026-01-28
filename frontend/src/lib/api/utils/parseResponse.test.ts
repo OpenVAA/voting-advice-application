@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
-import { parseResponse, type ResponseParser } from './parseResponse';
+import { parseResponse } from './parseResponse';
+import type { ResponseParser } from './parseResponse';
 
 describe('parseResponse', () => {
   test('should parse json response', async () => {

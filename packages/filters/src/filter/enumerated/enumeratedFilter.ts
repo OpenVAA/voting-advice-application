@@ -1,7 +1,8 @@
 import { intersect } from './intersect';
-import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
 import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { MaybeMissing } from '../../missingValue';
 
 /**
  * The abstract base class for filters with enumerated values that can be listed, such as questions with enumerated choices.

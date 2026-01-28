@@ -1,12 +1,6 @@
-import {
-  DISTANCE_METRIC,
-  type MatchableQuestionGroup,
-  MatchingAlgorithm,
-  type MatchingOptions,
-  MISSING_VALUE_METHOD,
-  OrdinalQuestion
-} from '..';
+import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuestion } from '..';
 import type { AnswerDict, HasAnswers, MatchableQuestion } from '@openvaa/core';
+import type { MatchableQuestionGroup, MatchingOptions } from '..';
 
 /**
  * Simple example.

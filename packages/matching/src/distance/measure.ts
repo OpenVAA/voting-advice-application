@@ -1,7 +1,6 @@
 import { imputeMissingPosition } from '../missingValue';
-import { type Position } from '../space';
 import type { NormalizedDistance } from '@openvaa/core';
-import type { MatchingSpace } from '../space';
+import type { MatchingSpace, Position } from '../space';
 import type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
 
 export function measureDistance(params: {

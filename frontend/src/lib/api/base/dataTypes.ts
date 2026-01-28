@@ -5,9 +5,9 @@ import type {
   AnyQuestionVariantData,
   ConstituencyData,
   ConstituencyGroupData,
-  ElectionData
+  ElectionData,
+  QuestionCategoryData
 } from '@openvaa/data';
-import type { QuestionCategoryData } from '@openvaa/data';
 import type { AppCustomization } from '$lib/contexts/app';
 import type { DataProvider } from './dataProvider.type';
 

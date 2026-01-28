@@ -24,15 +24,11 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 
 <script lang="ts">
   import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
-  import {
-    DateQuestion,
-    isChoiceQuestion,
-    isMultipleChoiceQuestion,
-    QUESTION_TYPE,
-    type QuestionType
-  } from '@openvaa/data';
+  import { DateQuestion, isChoiceQuestion, isMultipleChoiceQuestion, QUESTION_TYPE } from '@openvaa/data';
   import { logDebugError } from '$lib/utils/logger';
-  import { Input, type InputProps } from '.';
+  import { Input } from '.';
+  import type { QuestionType } from '@openvaa/data';
+  import type { InputProps } from '.';
   import type { QuestionInputProps } from './QuestionInput.type';
 
   type $$Props = QuestionInputProps;

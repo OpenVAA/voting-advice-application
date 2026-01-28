@@ -10,15 +10,14 @@ Shows the candidate's basic information, some of which is editable.
 -->
 
 <script lang="ts">
-  import { getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
-  import { type AnyQuestionVariant, ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
+  import { getCustomData } from '@openvaa/app-shared';
+  import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
-  import { Input, InputGroup, QuestionInput } from '$lib/components/input';
-  import { iconBadgeClass } from '$lib/components/input';
+  import { iconBadgeClass, Input, InputGroup, QuestionInput } from '$lib/components/input';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { Warning } from '$lib/components/warning';
@@ -26,7 +25,8 @@ Shows the candidate's basic information, some of which is editable.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
-  import type { CandidateNomination } from '@openvaa/data';
+  import type { LocalizedAnswer } from '@openvaa/app-shared';
+  import type { AnyQuestionVariant, CandidateNomination } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

@@ -1,6 +1,10 @@
-import { type CandidateNominationData, type DataAccessor, ENTITY_TYPE, OBJECT_TYPE } from '../../../internal';
-import { Nomination } from '../../../internal';
-import type { FactionNomination, OrganizationNomination } from '../../../internal';
+import { ENTITY_TYPE, Nomination, OBJECT_TYPE } from '../../../internal';
+import type {
+  CandidateNominationData,
+  DataAccessor,
+  FactionNomination,
+  OrganizationNomination
+} from '../../../internal';
 
 /**
  * A nomination for a `Candidate`. The nomination may be part of an `OrganizationNomination`, i.e., a party list, or a `FactionNomination`.

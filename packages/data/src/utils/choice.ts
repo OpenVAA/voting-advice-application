@@ -1,4 +1,5 @@
-import { ensureId, type HasId, type Id, isMissingValue } from '../internal';
+import { ensureId, isMissingValue } from '../internal';
+import type { HasId, Id } from '../internal';
 
 /**
  * Checks that the `items` form a valid selection of `Choice`s, i.e. there must be at least two of them and they all have unique `Id`s.

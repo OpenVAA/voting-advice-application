@@ -1,5 +1,6 @@
 import type { Election } from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
+
 export type ElectionTagProps = SvelteHTMLElements['span'] & {
   /**
    * The `Election` object

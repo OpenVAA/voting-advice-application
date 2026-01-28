@@ -1,18 +1,18 @@
 import { staticSettings } from '@openvaa/app-shared';
-import {
-  type AnyEntityVariantData,
-  type AnyQuestionVariantData,
-  type ConstituencyData,
-  type ConstituencyGroupData,
-  type ElectionData,
-  type QuestionCategoryData,
-  translate
-} from '@openvaa/data';
+import { translate } from '@openvaa/data';
 import { json } from '@sveltejs/kit';
 import { filterData } from '$lib/api/utils/filterData';
 import { filterEntitiesByNomination } from '$lib/api/utils/filterEntitiesByNomination';
 import { logDebugError } from '$lib/utils/logger';
 import { LocalServerAdapter } from '../localServerAdapter';
+import type {
+  AnyEntityVariantData,
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  ElectionData,
+  QuestionCategoryData
+} from '@openvaa/data';
 import type { DataProvider } from '$lib/api/base/dataProvider.type';
 import type {
   GetAppCustomizationOptions,

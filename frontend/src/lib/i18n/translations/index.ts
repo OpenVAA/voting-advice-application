@@ -1,4 +1,5 @@
 import type { Translations } from '@sveltekit-i18n/base';
+
 export * from './translations.type';
 
 /**

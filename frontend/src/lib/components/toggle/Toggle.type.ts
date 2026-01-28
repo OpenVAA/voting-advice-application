@@ -1,5 +1,6 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { IconName } from '$lib/components/icon';
+
 export type ToggleProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The aria label for the toggle.

@@ -17,9 +17,10 @@ Show a notification popup to the user.
 <script lang="ts">
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
-  import { type IconName, ICONS } from '$lib/components/icon';
+  import { ICONS } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { IconName } from '$lib/components/icon';
   import type { NotificationProps } from './Notification.type';
 
   type $$Props = NotificationProps;

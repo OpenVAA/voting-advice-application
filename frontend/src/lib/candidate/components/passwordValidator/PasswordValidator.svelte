@@ -38,12 +38,13 @@ When using this component, the `validPassword` property should be bound to a boo
 -->
 
 <script lang="ts">
-  import { minPasswordLength, validatePasswordDetails, type ValidationDetail } from '@openvaa/app-shared';
+  import { minPasswordLength, validatePasswordDetails } from '@openvaa/app-shared';
   import { onMount } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
   import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import type { ValidationDetail } from '@openvaa/app-shared';
   import type { PasswordValidatorProps } from './PasswordValidator.type';
 
   type $$Props = PasswordValidatorProps;
