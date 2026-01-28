@@ -36,7 +36,7 @@
               value="Subscribe"
               name="subscribe"
               id="mc-embedded-subscribe"
-              class="btn btn-primary mx-1 max-sm:mx-0 max-sm:not-first:mt-4" />
+              class="btn mx-1 btn-primary max-sm:mx-0 max-sm:not-first:mt-4" />
             <input type="hidden" name="group[53005]" id="mce-group[53005]" value="2" />
           </div>
           <div id="mce-responses" class="clear foot">
