@@ -74,7 +74,7 @@
 </script>
 
 {#if filteredHeadings.length > 0}
-  <nav class="toc" aria-label="Table of contents">
+  <nav class="toc top-xl" aria-label="Table of contents">
     <h2 class="toc-title">On this page</h2>
     <ul class="toc-list">
       {#each filteredHeadings as heading (heading.id)}
@@ -95,7 +95,6 @@
 <style>
   .toc {
     position: sticky;
-    top: 8rem;
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
     border-left: 2px solid var(--color-base-300);

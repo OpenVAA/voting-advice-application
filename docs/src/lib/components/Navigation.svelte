@@ -1,56 +1,34 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { findActiveSection, hasChildren, isActive } from '../utils/navigation';
+  import { page } from '$app/state';
+  import { findActiveSection } from '../utils/navigation';
+  import { navigation } from '../navigation.config';
+  import NavigationItem from './NavigationItem.svelte';
 
-  $: activeSection = findActiveSection($page.url);
+  type Props = {
+    full?: boolean;
+    onLinkClick?: () => unknown;
+    class?: string;
+  };
+
+  const { full = false, onLinkClick = () => void 0, class: className = '' }: Props = $props();
+
+  const url = $derived(page.url);
+  const activeSection = $derived(findActiveSection(url));
 </script>
 
-{#if activeSection}
-  <nav
-    class="flex max-w-[20rem] min-w-[20rem] flex-col gap-md overflow-y-auto border-r border-base-300 bg-base-100 p-lg">
-    <h3 class="font-bold">{activeSection.title}</h3>
-
+<nav class="flex flex-col gap-md overflow-y-auto {className}">
+  {#if full && navigation.length > 0}
     <ul class="menu-compact menu m-0 -ms-12 p-0">
-      {#each activeSection.children as item}
-        {#if hasChildren(item)}
-          {@const itemActive =
-            isActive(item.route, $page.url) || item.children.some((child) => isActive(child.route, $page.url))}
-          <li>
-            <details open={itemActive}>
-              <summary>
-                {item.title}
-              </summary>
-              <ul>
-                {#each item.children as child}
-                  {@const childActive = isActive(child.route, $page.url)}
-                  <li>
-                    <a href={child.route} class:menu-active={childActive}>
-                      {child.title}
-                    </a>
-                  </li>
-                {/each}
-              </ul>
-            </details>
-          </li>
-        {:else}
-          {@const itemActive = isActive(item.route, $page.url)}
-          <li>
-            <a href={item.route} class:menu-active={itemActive} class:secondary={item.isSecondary}>
-              {item.title}
-            </a>
-          </li>
-        {/if}
+      {#each navigation as section}
+        <NavigationItem item={section} {url} {onLinkClick} />
       {/each}
     </ul>
-  </nav>
-{/if}
-
-<style>
-  .menu-active {
-    background-color: var(--color-base-300);
-    color: var(--color-neutral);
-  }
-  details > summary {
-    cursor: pointer;
-  }
-</style>
+  {:else if !full && activeSection}
+    <h3 class="font-bold">{activeSection.title}</h3>
+    <ul class="menu-compact menu m-0 -ms-12 p-0">
+      {#each activeSection.children as item}
+        <NavigationItem {item} {url} {onLinkClick} />
+      {/each}
+    </ul>
+  {/if}
+</nav>
