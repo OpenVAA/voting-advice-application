@@ -102,9 +102,9 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       {#if $appSettings.survey?.showIn?.includes('navigation')}
         <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
       {/if}
-      {#if $openFeedbackModal}
+      <!-- {#if $openFeedbackModal}
         <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
-      {/if}
+      {/if} -->
     </NavGroup>
   {/if}
   <LanguageSelection />
