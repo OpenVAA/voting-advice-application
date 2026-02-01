@@ -31,5 +31,13 @@
   "title": {
     "browse": "{candidatePlural} a {partyPlural} duerchsichen",
     "results": "Resultater"
+  },
+  "finished": {
+    "intro": "Merci datt Dir un der Wal-Kompass deelgeholl hutt. Ier Dir dës Plattform verléisst (oder weiderhi Är Resultater iwwerpréift), kënnt Dir eis soen:",
+    "question1": "Hutt Dir schonn emol eng ähnlech Zort Test am Kader vun enger Wahlcampagne benotzt?",
+    "question2": "Wann muer eng Wal géif ofgehale ginn, wéi nëtzlech wier dëst Tool fir Iech, op enger Skala vun 1 (iwwerhaapt net nëtzlech) bis 5 (extrem nëtzlech)?",
+    "yes": "Jo",
+    "no": "Nee",
+    "outro": "Dir sidd elo berechtegt fir eis Loterie a kënnt ee vun de Gewënner vun 100 Euro sinn."
   }
 }

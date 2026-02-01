@@ -83,4 +83,7 @@ export type VoterContext = AppContext & {
    * Reset all saved voter data, except privacy preferences and survey status.
    */
   resetVoterData: () => void;
+
+  startFinishedCountdown: () => void;
+  shouldShowFinished: Writable<boolean>;
 };

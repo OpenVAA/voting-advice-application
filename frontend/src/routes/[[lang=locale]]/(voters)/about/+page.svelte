@@ -14,13 +14,12 @@ Displays information about the application.
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  const { appSettings, getRoute, t } = getAppContext();
+  const { getRoute, t } = getAppContext();
 
   const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
@@ -32,9 +31,9 @@ Displays information about the application.
 </script>
 
 <MainContent title={$t('about.title')}>
-  <figure role="presentation" slot="hero">
+  <!-- <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.about.heroEmoji')} />
-  </figure>
+  </figure> -->
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-primary">{$t('dynamic.appName')}</PreHeading>
@@ -43,14 +42,13 @@ Displays information about the application.
 
   {@html sanitizeHtml($t('about.content'))}
 
-  {#if $appSettings.matching.organizationMatching !== 'none'}
-    <h2 class="mb-md mt-xl">{$t('about.organizationMatching.title')}</h2>
+  <!-- {#if $appSettings.matching.organizationMatching !== 'none'}
     {@html sanitizeHtml(
       $t('about.organizationMatching.content', { partyMatchingMethod: $appSettings.matching.organizationMatching })
     )}
-  {/if}
+  {/if} -->
 
-  {#if $appSettings.appVersion.source}
+  <!-- {#if $appSettings.appVersion.source}
     <h2 class="mb-md mt-lg">{$t('about.source.title')}</h2>
     <p>
       {$t('about.source.content')}
@@ -59,7 +57,7 @@ Displays information about the application.
         target="_blank"
         class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm">{$t('about.source.sitename')}</a>
     </p>
-  {/if}
+  {/if} -->
 
   <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
 </MainContent>

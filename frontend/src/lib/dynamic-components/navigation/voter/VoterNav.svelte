@@ -41,7 +41,6 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     getRoute,
     openFeedbackModal,
     resetVoterData,
-    resultsAvailable,
     selectedElections: elections,
     selectedConstituencies: constituencies,
     surveyLink,
@@ -81,11 +80,11 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       href={$getRoute('Questions')}
       icon="opinion"
       text={$t('questions.title')} /> -->
-    <NavItem
+    <!-- <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Results')}
       icon="results"
-      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
+      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} /> -->
   </NavGroup>
   <NavGroup>
     <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
@@ -96,7 +95,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     {#if $appSettings.entities.showAllNominations}
       <NavItem href={$getRoute('Nominations')} icon="search" text={$t('dynamic.nominations.title')} />
     {/if}
-    <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
+    <!-- <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} /> -->
   </NavGroup>
   {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>

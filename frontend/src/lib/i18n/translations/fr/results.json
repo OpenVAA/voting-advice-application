@@ -31,5 +31,13 @@
   "title": {
     "browse": "Parcourir les {candidatePlural} et {partyPlural}",
     "results": "Résultats"
+  },
+  "finished": {
+    "intro": "Merci d'avoir participé à la Boussole Electorale. Avant de quitter cette plate-forme (ou de continuer à consulter vos résultats), pourriez-vous nous indiquer :",
+    "question1": "Avez-vous déjà utilisé un test similaire dans le cadre d'une campagne électorale ?",
+    "question2": "Si des élections avaient lieu demain, dans quelle mesure cet outil vous serait-il utile, sur une échelle allant de 1 (pas du tout utile) à 5 (extrêmement utile)?",
+    "yes": "Oui",
+    "no": "Non",
+    "outro": "Vous êtes maintenant éligible à notre tirage au sort et pouvez gagner 100 euros."
   }
 }

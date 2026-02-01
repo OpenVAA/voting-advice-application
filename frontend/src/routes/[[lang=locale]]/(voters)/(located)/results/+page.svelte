@@ -46,6 +46,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   import type { Election } from '@openvaa/data';
+  import { Input } from '$lib/components/input';
+  import { assertTranslationKey } from '$lib/i18n/utils';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -53,18 +55,15 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   const {
     answers,
-    appSettings,
-    constituenciesSelectable,
     dataRoot,
     entityFilters,
-    getRoute,
     matches,
     resultsAvailable,
-    selectedConstituencies: constituencies,
     selectedElections: elections,
     startEvent,
-    startFeedbackPopupCountdown,
-    startSurveyPopupCountdown,
+    shouldShowFinished,
+    startFinishedCountdown,
+    track,
     t
   } = getVoterContext();
 
@@ -78,10 +77,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
       entityType: activeEntityType,
       numAnswers: Object.keys($answers).length
     });
-    if ($appSettings.results.showFeedbackPopup != null)
-      startFeedbackPopupCountdown($appSettings.results.showFeedbackPopup);
-    if ($appSettings.survey?.showIn && $appSettings.survey.showIn.includes('resultsPopup'))
-      startSurveyPopupCountdown($appSettings.results.showSurveyPopup);
+    // if ($appSettings.results.showFeedbackPopup != null)
+    //   startFeedbackPopupCountdown($appSettings.results.showFeedbackPopup);
+    // if ($appSettings.survey?.showIn && $appSettings.survey.showIn.includes('resultsPopup'))
+    //   startSurveyPopupCountdown($appSettings.results.showSurveyPopup);
+    startFinishedCountdown();
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -157,6 +157,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
     if (to?.route.id !== ROUTE.ResultEntity) return;
     const { entityType, entityId, nominationId } = parseParams(to);
     if (!entityType || !entityId || !nominationId || Array.isArray(nominationId)) return;
+    setTimeout(() => {
+      $shouldShowFinished = true;
+    }, 1000);
     pushState(to.url, {
       resultsShowEntity: {
         entityType: entityType as EntityType,
@@ -196,6 +199,13 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+
+  let answer1: string | undefined;
+  let answer2: string | undefined;
+
+  function saveAnswer(index: number) {
+    track('results_finished_answer', { questionIndex: index, answer: index === 1 ? answer1 : answer2 });
+  }
 </script>
 
 {#if $page.state.resultsShowEntity}
@@ -208,12 +218,48 @@ The nominations applicable to these elections and constituencies are shown. Thes
 {/if}
 
 <MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
-  <figure role="presentation" slot="hero">
+  <!-- <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
-  </figure>
+  </figure> -->
 
   <div class="mb-xl text-center">
-    {#if $resultsAvailable}
+    {#if $shouldShowFinished}
+      <div class="text-lg" transition:slide={{ duration: DELAY.sm }}>
+        <p class="text-success">{$t('results.finished.intro')}</p>
+        <p>{$t('results.finished.question1')}</p>
+        <div class="my-md gap-md flex justify-center">
+          {#each ['yes', 'no'] as option}
+            <label class="label gap-sm text-md flex-col">
+              <input
+                type="radio"
+                class="radio-primary radio"
+                name="finished-question-1"
+                value={option}
+                on:click={() => saveAnswer(1)}
+                bind:group={answer1} />
+              {$t(assertTranslationKey(`results.finished.${option}`))}
+            </label>
+          {/each}
+        </div>
+        <p>{$t('results.finished.question2')}</p>
+        <div class="my-md gap-md flex justify-center">
+          {#each Array.from({ length: 5 }, (_, i) => i + 1) as option}
+            <label class="label text-md gap-sm flex-col">
+              <input
+                type="radio"
+                class="radio-primary radio"
+                name="finished-question-2"
+                value={option}
+                on:click={() => saveAnswer(2)}
+                bind:group={answer2} />
+              {option}
+            </label>
+          {/each}
+        </div>
+        <p>{$t('results.finished.outro')}</p>
+      </div>
+    {/if}
+    <!-- {#if $resultsAvailable}
       <p>{$t('dynamic.results.ingress.results')}</p>
     {:else}
       <p>
@@ -228,7 +274,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {/if}
     {#if $elections.length > 1}
       <p>{$t('dynamic.results.multipleElections')}</p>
-    {/if}
+    {/if} -->
   </div>
 
   <!-- Multi election selector -->
@@ -242,7 +288,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
       class="-mt-md mb-lg" />
 
     {#if activeElection?.info}
-      <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
+      <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
         {activeElection.info}
       </p>
     {/if}
@@ -250,9 +296,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
+  <div slot="fullWidth" class="bg-base-300 flex min-h-[120vh] flex-col items-center">
     {#if activeElectionId}
-      <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+      <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
         <!-- EntityType selector if there are multiple -->
         {#if Object.keys($matches[activeElectionId]).length > 1}
           <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
@@ -263,7 +309,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
         {#if activeEntityType}
           {#if activeMatches}
             {#key activeMatches}
-              <h3 class="mx-10 my-lg text-xl">
+              <!-- <h3 class="my-lg mx-10 text-xl">
                 {$t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
                 {#if $constituenciesSelectable}
                   <span class="font-normal">
@@ -271,26 +317,26 @@ The nominations applicable to these elections and constituencies are shown. Thes
                     {activeElection.getApplicableConstituency($constituencies)?.name || '—'}
                   </span>
                 {/if}
-              </h3>
+              </h3> -->
               <EntityListControls
                 entities={activeMatches}
                 onUpdate={(results) => (filteredEntities = results)}
                 filterGroup={$entityFilters[activeElectionId][activeEntityType]}
                 searchProperty=""
-                class="mx-10 mb-md" />
+                class="mb-md mx-10" />
               <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
             {/key}
           {:else}
             <Loading />
           {/if}
         {:else}
-          <div class="py-lg text-center text-lg text-error">
+          <div class="py-lg text-error text-center text-lg">
             {$t('error.noNominations')}
           </div>
         {/if}
       </div>
     {:else}
-      <p class="mt-[2rem] text-center text-sm text-secondary" transition:slide>{$t('results.selectElectionFirst')}</p>
+      <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{$t('results.selectElectionFirst')}</p>
     {/if}
   </div>
 </MainContent>

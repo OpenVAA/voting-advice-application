@@ -46,4 +46,5 @@ type TrackingEventName =
   | 'testCondition_reset'
   | 'testCondition_set'
   | 'trackingId_set'
-  | 'video';
+  | 'video'
+  | 'results_finished_answer';

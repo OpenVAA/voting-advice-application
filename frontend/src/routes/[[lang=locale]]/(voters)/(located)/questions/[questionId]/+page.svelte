@@ -153,7 +153,7 @@ Display a question for answering.
     let noScroll = false;
     // Go back to the questions are main intro if moving back from the first question
     if (newIndex < 0) {
-      url = $getRoute($appSettings.questions.questionsIntro.show ? 'Questions' : 'Intro');
+      url = $getRoute($appSettings.questions.questionsIntro.show ? 'Questions' : 'Home');
       // Go to results if moving forward from the last question
     } else if (newIndex >= $selectedQuestionBlocks.questions.length) {
       url = $getRoute('Results');
@@ -189,7 +189,7 @@ Display a question for answering.
     {#if $appSettings.questions.resultsPreview?.enabled && $resultsAvailable}
       <!-- Align center but if there are more results that fit, align the to start (left) so that the top ones are shown -->
       <div
-        class="flex w-min max-w-full flex-col items-start place-self-center overflow-hidden pt-md"
+        class="pt-md flex w-min max-w-full flex-col items-start place-self-center overflow-hidden"
         transition:slide={{ axis: 'y', duration: DELAY['sm'] }}>
         <ResultsPreview
           entityType={$appSettings.questions.resultsPreview.entityType}

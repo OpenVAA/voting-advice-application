@@ -31,5 +31,13 @@
   "title": {
     "browse": "Browse {candidatePlural} and {partyPlural}",
     "results": "Results"
+  },
+  "finished": {
+    "intro": "Thank you for participating to the Election Compass. Before leaving this platform (or continuing to inspect your results), could you tell us:",
+    "question1": "Have you ever used a similar kind of test before, in the context of an electoral campaign?",
+    "question2": "If an election were held tomorrow, how useful would this tool be for you, on a scale from 1 not useful at all to 5 extremely useful?",
+    "yes": "Yes",
+    "no": "No",
+    "outro": "You are now eligible for our lottery and may be one of the winners of 100 euros."
   }
 }

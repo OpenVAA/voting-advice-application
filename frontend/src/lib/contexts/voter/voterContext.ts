@@ -1,7 +1,7 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { get } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -241,6 +241,17 @@ export function initVoterContext(): VoterContext {
   // Build context
   ////////////////////////////////////////////////////////////
 
+  let startFinishedCountdownTimeout: NodeJS.Timeout | undefined;
+
+  const shouldShowFinished = writable(false);
+
+  function startFinishedCountdown(delay = 20): void {
+    if (startFinishedCountdownTimeout) return;
+    startFinishedCountdownTimeout = setTimeout(() => {
+      shouldShowFinished.set(true);
+    }, delay * 1000);
+  }
+
   return setContext<VoterContext>(CONTEXT_KEY, {
     ...appContext,
     algorithm,
@@ -260,6 +271,8 @@ export function initVoterContext(): VoterContext {
     selectedConstituencies,
     selectedElections,
     selectedQuestionBlocks,
-    selectedQuestionCategoryIds
+    selectedQuestionCategoryIds,
+    shouldShowFinished,
+    startFinishedCountdown
   });
 }
