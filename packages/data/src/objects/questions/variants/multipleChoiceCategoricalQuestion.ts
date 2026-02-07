@@ -7,12 +7,12 @@ import type { QUESTION_TYPE } from '../../../internal';
  *
  * @example
  * ```ts
- * // National language one speaks
+ * // National languages one speaks
  * const multiCategoricalQuestion = new MultipleChoiceCategoricalQuestion(
  *   {
  *     id: 'q1',
  *     type: 'multipleChoiceCategorical',
- *     name: 'National language you speak',
+ *     name: 'National languages you speak',
  *     ordered: false,
  *     choices: [
  *       { id: 'ct', label: 'Common tongue' },

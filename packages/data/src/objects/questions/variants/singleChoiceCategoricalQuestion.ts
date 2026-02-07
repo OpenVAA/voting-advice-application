@@ -53,7 +53,7 @@ export class SingleChoiceCategoricalQuestion extends SingleChoiceQuestion<
   ): CoordinateOrMissing | Array<CoordinateOrMissing> {
     const choices = this.choices;
     if (isMissingValue(value)) return choices.length === 2 ? MISSING_VALUE : choices.map(() => MISSING_VALUE);
-    // We can be sure the choice exists, because `value` is ensureed before being passed to this method.
+    // We can be sure the choice exists, because `value` is ensured before being passed to this method.
     const index = this.getChoiceIndex(value)!;
     // For 2 choices a single dimension suffices and the question works, in effect, like a `BooleanQuestion`.
     if (choices.length === 2) return index === 0 ? COORDINATE.Min : COORDINATE.Max;

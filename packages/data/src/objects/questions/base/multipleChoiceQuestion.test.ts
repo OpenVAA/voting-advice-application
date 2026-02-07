@@ -13,23 +13,30 @@ if (!objData) throw new Error('Test setup error: Test data does not contain a Mu
 test('Should return choices based on ordered and allowDuplicates properties', () => {
   const obj = root.getQuestion(objData.id) as MultipleChoiceCategoricalQuestion;
   expect(obj).toBeInstanceOf(MultipleChoiceCategoricalQuestion);
+  const choices = obj.choices;
   const choiceIds = obj.choices.map((c) => c.id);
+  const duplicateChoicesInDataOrder = choices.flatMap((c) => [c, c]);
+  const duplicateChoiceIds = [...choiceIds, ...choiceIds];
+  const reversedChoices = [...choices].reverse();
+  const reversedChoiceIds = [...choiceIds].reverse();
 
   obj.data.allowDuplicates = false;
   obj.data.ordered = false;
-  expect(obj.getChoices([...choiceIds].reverse()), 'To return choices in the order supplied').toEqual(
-    obj.choices.reverse()
-  );
-  expect(obj.getChoices([...choiceIds, ...choiceIds]), 'To remove duplicates').toEqual(obj.choices);
 
-  obj.data.ordered = true;
-  expect(obj.getChoices([...choiceIds].reverse()), 'To return choices in the original order').toEqual(obj.choices);
+  expect(obj.getChoices(reversedChoiceIds), 'To return choices in the original order').toEqual(choices);
+  expect(obj.getChoices(duplicateChoiceIds), 'To remove duplicates').toEqual(choices);
 
   obj.data.allowDuplicates = true;
-  expect(obj.allowDuplicates, 'To ordered override allowDuplicates').toBe(false);
+  expect(
+    obj.getChoices(duplicateChoiceIds),
+    'To allow duplicates if allowDuplicates = true and return them in the order they’re in the question data'
+  ).toEqual(duplicateChoicesInDataOrder);
 
-  obj.data.ordered = false;
-  expect(obj.getChoices([...choiceIds, ...choiceIds]), 'To allow duplicates').toEqual([...obj.choices, ...obj.choices]);
+  obj.data.ordered = true;
+  expect(obj.getChoices(duplicateChoiceIds), 'To ordered = true to override allowDuplicates').toEqual(choices);
+  expect(obj.getChoices(reversedChoiceIds), 'To return choices in the order supplied if ordered = true').toEqual(
+    reversedChoices
+  );
 });
 
 test('Should assert value', () => {

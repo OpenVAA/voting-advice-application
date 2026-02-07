@@ -41,9 +41,11 @@ export abstract class MultipleChoiceQuestion<
    * @param ids - The `Id`s of the choices to retrieve.
    */
   getChoices(ids: Array<Id>): Array<Choice<TValue>> {
-    if (this.ordered) return this.data.choices.filter((c) => ids.includes(`${c.id}`));
-    const choices = ids.map((id) => this.getChoice(id)).filter((c) => c != null);
-    return this.allowDuplicates ? choices : removeDuplicates(choices);
+    let choices = ids.map((id) => this.getChoice(id)).filter((c) => c != null);
+    if (!this.allowDuplicates) choices = removeDuplicates(choices);
+    // If not ordered, sort the choices according to the order of the choices in the question data
+    if (!this.ordered) choices.sort((a, b) => this.getChoiceIndex(a.id)! - this.getChoiceIndex(b.id)!);
+    return choices;
   }
 
   protected _ensureValue(value: NonNullable<unknown>) {
