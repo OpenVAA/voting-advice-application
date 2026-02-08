@@ -147,7 +147,7 @@ If not provided, the `video` element will be hidden until these properties are p
   ////////////////////////////////////////////////////////////////////////////////
 
   let hasContent: boolean;
-  $: hasContent = !!title && !!sources?.length && !!captions && !!poster;
+  $: hasContent = !!title && !!sources?.length && !!captions;
 
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
