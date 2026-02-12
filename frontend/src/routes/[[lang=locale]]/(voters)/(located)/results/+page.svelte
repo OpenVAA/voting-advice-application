@@ -226,7 +226,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {#if $shouldShowFinished}
       <div class="text-lg" transition:slide={{ duration: DELAY.sm }}>
         <p class="text-success">{$t('results.finished.intro')}</p>
-        <p>{$t('results.finished.question1')}</p>
+        <!-- <p>{$t('results.finished.question1')}</p>
         <div class="my-md gap-md flex justify-center">
           {#each ['yes', 'no'] as option}
             <label class="label gap-sm text-md flex-col">
@@ -240,11 +240,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
               {$t(assertTranslationKey(`results.finished.${option}`))}
             </label>
           {/each}
-        </div>
+        </div> -->
         <p>{$t('results.finished.question2')}</p>
-        <div class="my-md gap-md flex justify-center">
+        <div class="my-md flex justify-center gap-md">
           {#each Array.from({ length: 5 }, (_, i) => i + 1) as option}
-            <label class="label text-md gap-sm flex-col">
+            <label class="label flex-col gap-sm text-md">
               <input
                 type="radio"
                 class="radio-primary radio"
@@ -258,6 +258,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
         </div>
         <p>{$t('results.finished.outro')}</p>
       </div>
+    {:else}
+      <p>{$t('dynamic.results.ingress.results')}</p>
     {/if}
     <!-- {#if $resultsAvailable}
       <p>{$t('dynamic.results.ingress.results')}</p>
@@ -288,7 +290,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
       class="-mt-md mb-lg" />
 
     {#if activeElection?.info}
-      <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
+      <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
         {activeElection.info}
       </p>
     {/if}
@@ -296,9 +298,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div slot="fullWidth" class="bg-base-300 flex min-h-[120vh] flex-col items-center">
+  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
     {#if activeElectionId}
-      <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
+      <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
         <!-- EntityType selector if there are multiple -->
         {#if Object.keys($matches[activeElectionId]).length > 1}
           <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
@@ -323,20 +325,20 @@ The nominations applicable to these elections and constituencies are shown. Thes
                 onUpdate={(results) => (filteredEntities = results)}
                 filterGroup={$entityFilters[activeElectionId][activeEntityType]}
                 searchProperty=""
-                class="mb-md mx-10" />
+                class="mx-10 mb-md" />
               <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
             {/key}
           {:else}
             <Loading />
           {/if}
         {:else}
-          <div class="py-lg text-error text-center text-lg">
+          <div class="py-lg text-center text-lg text-error">
             {$t('error.noNominations')}
           </div>
         {/if}
       </div>
     {:else}
-      <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{$t('results.selectElectionFirst')}</p>
+      <p class="mt-[2rem] text-center text-sm text-secondary" transition:slide>{$t('results.selectElectionFirst')}</p>
     {/if}
   </div>
 </MainContent>
