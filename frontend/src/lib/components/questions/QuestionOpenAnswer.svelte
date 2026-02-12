@@ -14,7 +14,7 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
@@ -32,12 +32,14 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
   let expanded = false;
   let fullHeight = 'none';
 
-  onMount(() => {
-    if (el) {
-      collapsible = el.clientHeight < el.scrollHeight;
-      fullHeight = `${el.scrollHeight}px`;
-    }
-  });
+  onMount(() =>
+    tick().then(() => {
+      if (el) {
+        collapsible = el.clientHeight < el.scrollHeight;
+        fullHeight = `${el.scrollHeight}px`;
+      }
+    })
+  );
 </script>
 
 {#if content && content.trim() !== ''}
