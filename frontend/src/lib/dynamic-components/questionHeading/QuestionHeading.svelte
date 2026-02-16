@@ -109,10 +109,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
       {/each}
     {/if}
     {#if $appSettings.questions.showCategoryTags}
-      <CategoryTag
-        category={question.category}
-        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
-        {onShadedBg} />
+      <CategoryTag category={question.category} {onShadedBg} />
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}

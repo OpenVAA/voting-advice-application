@@ -17,6 +17,7 @@ The frontpage of the app for voters.
   import { Footer } from '$lib/dynamic-components/footer';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import MainContent from '../MainContent.svelte';
+  import { AppLogo } from '$lib/dynamic-components/appLogo';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -30,14 +31,18 @@ The frontpage of the app for voters.
   ////////////////////////////////////////////////////////////////////
 
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
-      : ($appCustomization.poster?.url ?? '/images/hero.png')
-  });
+  // topBarSettings.push({
+  //   imageSrc: $darkMode
+  //     ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
+  //     : ($appCustomization.poster?.url ?? '/images/hero.png')
+  // });
 </script>
 
 <MainContent title={$t('dynamic.appName')}>
+  <div slot="heading" class="grid place-items-center">
+    <AppLogo class="h-[20rem] max-h-[min(20rem,40dvh)]" />
+  </div>
+
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">

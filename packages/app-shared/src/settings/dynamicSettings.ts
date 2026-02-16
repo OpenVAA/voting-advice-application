@@ -4,7 +4,7 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      organization: ['info', 'candidates', 'opinions']
+      organization: ['info', 'candidates']
     },
     showMissingElectionSymbol: {
       candidate: true,
@@ -16,8 +16,8 @@ export const dynamicSettings: DynamicSettings = {
     }
   },
   header: {
-    showFeedback: true,
-    showHelp: true
+    showFeedback: false,
+    showHelp: false
   },
   headerStyle: {
     dark: {
@@ -35,7 +35,7 @@ export const dynamicSettings: DynamicSettings = {
     hideIfMissingAnswers: {
       candidate: true
     },
-    showAllNominations: true
+    showAllNominations: false
   },
   matching: {
     minimumAnswers: 5,
@@ -44,26 +44,26 @@ export const dynamicSettings: DynamicSettings = {
   questions: {
     categoryIntros: {
       allowSkip: true,
-      show: true
+      show: false
     },
     interactiveInfo: {
       enabled: false
     },
     questionsIntro: {
       allowCategorySelection: true,
-      show: true
+      show: false
     },
     showCategoryTags: true,
-    showResultsLink: true
+    showResultsLink: false
   },
   results: {
     cardContents: {
-      candidate: ['submatches'],
+      candidate: [],
       organization: ['candidates']
     },
-    showFeedbackPopup: 180,
-    showSurveyPopup: 500,
-    sections: ['candidate', 'organization']
+    showFeedbackPopup: undefined,
+    showSurveyPopup: undefined,
+    sections: ['organization', 'candidate']
   },
   elections: {
     disallowSelection: false,

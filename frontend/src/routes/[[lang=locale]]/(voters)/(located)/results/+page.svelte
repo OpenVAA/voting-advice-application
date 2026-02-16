@@ -47,6 +47,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import type { Election, EntityType } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
   import type { EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
+  import insights from './insights.json';
+  import { Drawer } from '$lib/components/modal/drawer';
+  import { sessionStorageWritable } from '$lib/contexts/utils/storageStore';
+  import { on } from 'events';
+  import Hero from '$lib/components/hero/Hero.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -59,7 +64,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
     dataRoot,
     entityFilters,
     getRoute,
+    locale,
     matches,
+    opinionQuestions,
     resultsAvailable,
     selectedConstituencies: constituencies,
     selectedElections: elections,
@@ -197,16 +204,176 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+
+  ////////////////////////////////////////////////////////////////////
+  // Insights
+  ////////////////////////////////////////////////////////////////////
+
+  // Questions are assigned to
+  // “Human and social rights” (questions 1, 2, 6),
+  // “Climate and economy” (3, 7),
+  // “Global openness (4, 5)”
+  // Human and social rights (1, 2, 6, 8)
+  // 🌈 Rights Champion - agree with the questions 1, 2, 3, 6,
+  //   least cuts from healthcare/social services 8
+  // 🤝 Traditionalist - disagree with the questions 1, 2, 3, 6
+  // Climate and economy (3, 7, 8)
+  // 🌍 Climate Guardian - agree with 3, prioritising climate in 7
+  // 💼 Growth Advocate - disagree with 3, prioritising employment 7
+  //    least cuts from economic development 8,
+  // Global openness (4, 5, 8)
+  // 🌏 Open Borders Believer - disagree with 4, disagree with 5
+  // 🛡️ Sovereignty Defender - agree with 4, agree with 5,
+  //    least cuts from defence 8
+
+  let matchInsights: any | undefined;
+
+  let openModal: () => void;
+  let closeModal: () => void;
+  let currentPane = 0;
+
+  const insightsShown = sessionStorageWritable('resultsInsightsShown-1', false);
+
+  const MIN_INSIGHT_SCORE = 2;
+
+  if ($answers && Object.keys($answers).length > 0) {
+    // For each > 0 is the first value, < 0 the second
+    let humanRights = 0;
+    let climate = 0;
+    let openness = 0;
+    for (let i = 0; i < 8; i++) {
+      // 1. Likert
+      // -1 is disagreement, +1 agreement
+      let agreement = 0;
+      const answer = $answers[$opinionQuestions[i].id]?.value;
+      if (i < 6) {
+        if (!answer) continue;
+        const key = parseInt('' + answer);
+        if (!key) continue;
+        agreement = key < 3 ? -1 : 1;
+      }
+      if ([0, 1, 5].includes(i)) humanRights += agreement;
+      if (i === 2) climate += agreement;
+      if ([3, 4].includes(i)) openness -= agreement; // Reversed
+      // 2. Weighting
+      if (i === 6) {
+        if (answer === '22') climate += 1;
+        if (answer === '24') climate -= 1;
+      }
+      // 3. Preference order
+      if (i === 7) {
+        if (answer === '30' || answer === '31') humanRights += 1;
+        if (answer === '33') climate -= 1;
+        if (answer === '34') openness -= 1;
+      }
+    }
+    const selectedInsights = [];
+    if (Math.abs(humanRights) >= MIN_INSIGHT_SCORE) {
+      const value = insights.categories[0].values[humanRights > 0 ? 0 : 1];
+      selectedInsights.push({
+        ...value,
+        category: insights.categories[0].title
+      });
+    }
+    if (Math.abs(climate) >= MIN_INSIGHT_SCORE) {
+      const value = insights.categories[1].values[climate > 0 ? 0 : 1];
+      selectedInsights.push({
+        ...value,
+        category: insights.categories[1].title
+      });
+    }
+    if (Math.abs(openness) >= MIN_INSIGHT_SCORE) {
+      const value = insights.categories[2].values[openness > 0 ? 0 : 1];
+      selectedInsights.push({
+        ...value,
+        category: insights.categories[2].title
+      });
+    }
+    if (selectedInsights.length > 0) {
+      matchInsights = {
+        ingress: insights.ingress,
+        selectedInsights
+      };
+    }
+  }
+
+  function openInsightsModal() {
+    currentPane = 0;
+    openModal?.();
+  }
+
+  onMount(() => {
+    if (matchInsights && !$insightsShown) {
+      openInsightsModal();
+      $insightsShown = true;
+    }
+  });
 </script>
 
 {#if $page.state.resultsShowEntity}
   {@const props = getDrawerProps($page.state.resultsShowEntity)}
   {#key props}
     {#if props}
-      <EntityDetailsDrawer {...props} />
+      <EntityDetailsDrawer isOpen {...props} />
     {/if}
   {/key}
 {/if}
+
+<Drawer
+  showFloatingCloseButton={false}
+  title={matchInsights.ingress[$locale]}
+  bind:openModal
+  bind:closeModal
+  contentClass="!bg-base-300">
+  <div
+    class="grid h-[calc(100dvh-3rem)] max-h-full w-full max-w-full
+   grid-rows-[1fr_auto] gap-lg overflow-hidden
+   p-lg">
+    <div class="grid auto-cols-[100%] grid-flow-col place-items-center overflow-hidden">
+      <div class="text-center" style="transform: translateX(-{currentPane * 100}%); transition: transform 0.3s ease">
+        <div>
+          {#each matchInsights.selectedInsights as insight}
+            <span class="text-[3rem]">{insight.emoji[$locale]}</span>
+          {/each}
+        </div>
+        <h1 class="text-3xl">{matchInsights.ingress[$locale]}</h1>
+      </div>
+      {#each matchInsights.selectedInsights as insight}
+        <div
+          class="grid h-full grid-rows-[auto_1fr] place-items-center gap-lg text-center"
+          style="transform: translateX(-{currentPane * 100}%); transition: transform 0.3s ease">
+          <h4 class="text-primary">{insight.category[$locale]}</h4>
+          <div>
+            <HeroEmoji emoji={insight.emoji[$locale]} />
+            <h1 class="text-3xl">{insight.title[$locale]}</h1>
+            <p class="mt-md hyphens-none text-lg leading-md">{insight.info[$locale]}</p>
+          </div>
+        </div>
+      {/each}
+    </div>
+    <div class="grid grid-cols-2 gap-md">
+      <button
+        class="btn btn-ghost text-secondary"
+        disabled={currentPane === 0}
+        on:click={() => (currentPane = Math.max(0, currentPane - 1))}>
+        {insights.buttons.previous[$locale]}
+      </button>
+      <button
+        class="btn btn-primary"
+        on:click={() => {
+          if (currentPane < matchInsights.selectedInsights.length) {
+            currentPane++;
+          } else {
+            closeModal?.();
+          }
+        }}>
+        {currentPane < matchInsights.selectedInsights.length
+          ? insights.buttons.next[$locale]
+          : insights.buttons.close[$locale]}
+      </button>
+    </div>
+  </div>
+</Drawer>
 
 <MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <figure role="presentation" slot="hero">
@@ -231,6 +398,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
       <p>{$t('dynamic.results.multipleElections')}</p>
     {/if}
   </div>
+
+  {#if matchInsights}
+    <button on:click={() => openInsightsModal()} class="btn btn-secondary mb-lg">
+      {matchInsights.ingress[$locale]}
+    </button>
+  {/if}
 
   <!-- Multi election selector -->
   {#if $dataRoot.elections.length > 1}

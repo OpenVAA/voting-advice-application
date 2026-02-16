@@ -15,7 +15,7 @@ Display a question for answering.
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, type CustomData, type QuestionInfoSection } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
@@ -102,13 +102,17 @@ Display a question for answering.
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Anwering and moving between questions
+  // Answering and moving between questions
   ////////////////////////////////////////////////////////////////////
 
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
+    if (question.customData.specialType) {
+      answers.setAnswer(question.id, value);
+      return;
+    }
     disabled = true;
     answers.setAnswer(question.id, value);
     setTimeout(handleJump, DELAY.md);
@@ -181,11 +185,31 @@ Display a question for answering.
             onSectionCollapse={(title) => startEvent('questionExtendedInfo_collapseSection', { title })}
             onSectionExpand={(title) => startEvent('questionExtendedInfo_expandSection', { title })} />
         </div>
-      {:else if info}
+      {:else if customData.infoSections?.length}
+        {@const sections = customData.infoSections}
+        <div class="flex items-start text-[90%]">
+          <div>
+            <h4 class="mb-sm text-warning">{sections[1].title} 👎</h4>
+            {@html sections[1].content}
+          </div>
+          <div>
+            <h4 class="mb-sm text-success">{sections[2].title} 👍</h4>
+            {@html sections[2].content}
+          </div>
+        </div>
         <QuestionBasicInfo
-          {info}
+          info={sections[0].content}
           onCollapse={() => startEvent('questionInfo_collapse')}
           onExpand={() => startEvent('questionInfo_expand')} />
+      {:else if info}
+        {#if customData.specialType}
+          <p class="text-center text-secondary">{info}</p>
+        {:else}
+          <QuestionBasicInfo
+            {info}
+            onCollapse={() => startEvent('questionInfo_collapse')}
+            onExpand={() => startEvent('questionInfo_expand')} />
+        {/if}
       {/if}
     {/if}
 

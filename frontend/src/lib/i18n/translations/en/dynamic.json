@@ -113,6 +113,20 @@
     "thanks": "Thanks for Filling the Survey!",
     "title": "Take Part in User Survey"
   },
+  "temp": {
+    "weightedChoices": {
+      "pointsRemaining": "Points remaining:",
+      "removePoint": "Remove point from {label}",
+      "addPoint": "Add point to {label}"
+    },
+    "preferenceOrder": {
+      "order": "Order",
+      "pickChoice": "Pick a choice below",
+      "choices": "Choices",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
+    }
+  },
   "voterAppNotAccessible": {
     "content": "The Election Compass has not been released yet. Please return to this address when it becomes available.",
     "title": "Sorry, the Election Compass has not been released yet"

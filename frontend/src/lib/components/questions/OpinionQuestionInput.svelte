@@ -36,6 +36,9 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
   import type { OpinionQuestionInputProps } from './OpinionQuestionInput.type';
+  import { getCustomData } from '@openvaa/app-shared';
+  import PreferenceOrderList from './PreferenceOrderList.svelte';
+  import WeightedChoices from './WeightedChoices.svelte';
 
   type $$Props = OpinionQuestionInputProps;
 
@@ -50,6 +53,8 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   if (mode === 'display' && otherAnswer && !otherLabel)
     logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
 
+  $: customData = getCustomData(question) as { specialType?: string };
+
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
@@ -60,7 +65,13 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 {#if isSingleChoiceQuestion(question)}
   {@const selectedId = question.ensureValue(answer?.value)}
   {@const otherSelected = question.ensureValue(otherAnswer?.value)}
-  <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
+  {#if customData?.specialType === 'PreferenceOrder'}
+    <PreferenceOrderList {question} {...$$restProps} />
+  {:else if customData?.specialType === 'WeightedChoices'}
+    <WeightedChoices {question} {...$$restProps} />
+  {:else}
+    <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
+  {/if}
 {:else}
   <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center" />
 {/if}

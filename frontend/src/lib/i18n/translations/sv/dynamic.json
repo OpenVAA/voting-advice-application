@@ -113,6 +113,20 @@
     "thanks": "Tack för att du fyllde i enkäten!",
     "title": "Ta del i användarundersökningen"
   },
+  "temp": {
+    "weightedChoices": {
+      "pointsRemaining": "Poäng kvar:",
+      "removePoint": "Ta bort poäng från {label}",
+      "addPoint": "Lägg till poäng till {label}"
+    },
+    "preferenceOrder": {
+      "order": "Ordning",
+      "pickChoice": "Välj ett alternativ nedan",
+      "choices": "Alternativ",
+      "moveUp": "Flytta upp",
+      "moveDown": "Flytta ner"
+    }
+  },
   "voterAppNotAccessible": {
     "content": "Väljarnas valkompass har ännu inte publicerats. Återkom till denna adress när den blir tillgänglig.",
     "title": "Tyvärr har valkompassen ännu inte publicerats"

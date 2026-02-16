@@ -10,12 +10,12 @@ export function parseQuestionType(
   locale: string | null
 ): Partial<AnyQuestionVariantData> {
   const s = data.settings;
-  const { type } = s;
+  const { customData, type } = s;
   switch (type) {
     case 'text':
       return {
         type,
-        customData: { notLocalizable: s.notLocalizable }
+        customData: { notLocalizable: s.notLocalizable, ...customData }
       };
     case 'number':
       return {
@@ -44,7 +44,7 @@ export function parseQuestionType(
       return {
         type,
         choices: parseOrdinalChoices(s.choices, locale),
-        customData: { display: s.display }
+        customData: { display: s.display, ...customData }
       };
     case 'singleChoiceCategorical':
     case 'multipleChoiceCategorical':
@@ -52,7 +52,7 @@ export function parseQuestionType(
       return {
         type,
         choices: parseCategoricalChoices(s.choices, locale),
-        customData: { display: s.display }
+        customData: { display: s.display, ...customData }
       };
     default:
       throw new Error(`Unsupported question type: ${type}`);
