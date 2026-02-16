@@ -113,6 +113,20 @@
     "thanks": "Täname küsitlusele vastamise eest!",
     "title": "Osalege kasutajaküsitluses"
   },
+  "temp": {
+    "weightedChoices": {
+      "pointsRemaining": "Punkte jäänud:",
+      "removePoint": "Eemalda punkt valikult {label}",
+      "addPoint": "Lisa punkt valikule {label}"
+    },
+    "preferenceOrder": {
+      "order": "Järjekord",
+      "pickChoice": "Valige allpool valik",
+      "choices": "Valikud",
+      "moveUp": "Liiguta üles",
+      "moveDown": "Liiguta alla"
+    }
+  },
   "voterAppNotAccessible": {
     "content": "Valimiskompassi ei ole veel avaldatud. Palun tulge sellele aadressile tagasi, kui see muutub kättesaadavaks.",
     "title": "Vabandust, valimiskompass ei ole veel kasutusel"

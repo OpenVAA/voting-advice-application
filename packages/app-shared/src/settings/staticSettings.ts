@@ -2,7 +2,7 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@openvaa.org'
+    email: 'info@openvaa.org'
   },
   appVersion: {
     version: 1,
@@ -54,12 +54,12 @@ export const staticSettings: StaticSettings = {
       name: 'Suomi'
     },
     {
-      code: 'sv',
-      name: 'Svenska'
-    },
-    {
       code: 'da',
       name: 'Dansk'
+    },
+    {
+      code: 'ee',
+      name: 'Eesti'
     }
   ],
   analytics: {

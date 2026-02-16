@@ -53,11 +53,12 @@ See the `<ModalContainer>` component documentation for more information.
   export let showFloatingCloseButton: $$Props['showFloatingCloseButton'] = true;
   export let closeModal: $$Props['closeModal'] = undefined;
   export let openModal: $$Props['openModal'] = undefined;
+  export let contentClass = '';
 
   const { t } = getComponentContext();
 
   onMount(() => {
-    openModal?.();
+    if (isOpen) openModal?.();
   });
 </script>
 
@@ -70,7 +71,7 @@ See the `<ModalContainer>` component documentation for more information.
   bind:openModal>
   <div
     class="relative col-span-1 col-start-1 row-span-1 row-start-1 grid h-[calc(100dvh-3rem)] w-full max-w-xl place-items-stretch
-      rounded-t-lg bg-base-100"
+      rounded-t-lg bg-base-100 {contentClass}"
     transition:fly={{ y: '100%', duration: DELAY.xs }}>
     <!-- Enable scrolling for the actual content but keep the close buttons fixed and add bottom padding if floating button is shown so that content behind it can be seen -->
     <div class="overflow-y-auto" class:pb-[4rem]={showFloatingCloseButton}>
@@ -90,7 +91,7 @@ See the `<ModalContainer>` component documentation for more information.
         variant="floating-icon"
         text="close"
         icon="close"
-        on:click={closeModal}
+        on:click={() => closeModal?.()}
         class="!absolute bottom-0 right-0 z-10" />
     {/if}
   </div>

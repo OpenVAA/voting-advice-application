@@ -113,6 +113,20 @@
     "thanks": "Kiitos kyselyyn vastaamisesta!",
     "title": "Osallistu käyttäjäkyselyyn"
   },
+  "temp": {
+    "weightedChoices": {
+      "pointsRemaining": "Pisteitä jäljellä:",
+      "removePoint": "Poista piste vaihtoehdosta {label}",
+      "addPoint": "Lisää piste vaihtoehtoon {label}"
+    },
+    "preferenceOrder": {
+      "order": "Järjestys",
+      "pickChoice": "Valitse vaihtoehto alta",
+      "choices": "Vaihtoehdot",
+      "moveUp": "Siirrä ylös",
+      "moveDown": "Siirrä alas"
+    }
+  },
   "voterAppNotAccessible": {
     "content": "Vaalikonetta ei ole vielä julkaistu. Palaathan tähän osoitteeseen, kun se on käytettävissä.",
     "title": "Pahoittelut, vaalikone ei ole vielä käytössä"

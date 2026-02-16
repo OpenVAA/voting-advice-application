@@ -126,7 +126,7 @@ export type StrapiAppCustomizationData = StrapiObject<{
 export type StrapiQuestionTypeData = StrapiObject<{
   info: string;
   name: string;
-  settings: QuestionTypeSettings;
+  settings: QuestionTypeSettings & { customData?: { specialType?: string } };
 }>;
 
 export type StrapiQuestionCustomData = {

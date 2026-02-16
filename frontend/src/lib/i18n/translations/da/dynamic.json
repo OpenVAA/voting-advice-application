@@ -113,6 +113,20 @@
     "thanks": "Tak for din besvarelse!",
     "title": "Deltag i brugerundersøgelsen"
   },
+  "temp": {
+    "weightedChoices": {
+      "pointsRemaining": "Resterende point:",
+      "removePoint": "Fjern point fra {label}",
+      "addPoint": "Tilføj point til {label}"
+    },
+    "preferenceOrder": {
+      "order": "Rækkefølge",
+      "pickChoice": "Vælg et valg nedenfor",
+      "choices": "Valgmuligheder",
+      "moveUp": "Flyt op",
+      "moveDown": "Flyt ned"
+    }
+  },
   "voterAppNotAccessible": {
     "content": "Valgtesten er endnu ikke blevet offentliggjort. Gå tilbage til denne adresse, når det bliver tilgængeligt.",
     "title": "Beklager, Valgtesten er endnu ikke blevet offentliggjort"
