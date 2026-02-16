@@ -29,6 +29,8 @@
     "faction": "Valgsymbol",
     "organization": "Valgsymbol"
   },
+  "email": "E-mail",
+  "emailPlaceholder": "E-mail",
   "expandOrCollapse": "Udvid eller skjul denne sektion",
   "faction": {
     "plural": "fraktioner",

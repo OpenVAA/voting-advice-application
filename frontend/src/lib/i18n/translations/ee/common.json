@@ -29,6 +29,8 @@
     "faction": "Valimissümbol",
     "organization": "Valimissümbol"
   },
+  "email": "E-post",
+  "emailPlaceholder": "E-post",
   "expandOrCollapse": "Laienda või ahenda see jaotis",
   "faction": {
     "plural": "rühmitused",

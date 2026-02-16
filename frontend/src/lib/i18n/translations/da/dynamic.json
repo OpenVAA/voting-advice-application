@@ -65,10 +65,10 @@
     "ingress": "Denne applikation hjælper dig med at finde de {candidatePlural} og {partyPlural}, der matcher dine holdninger bedst i valget.",
     "list": {
       "constituencies": "Vælg din valgkreds",
+      "details": "Undersøg dem nærmere",
       "elections": "Vælg et valg",
       "opinions": "Angiv dine holdninger",
-      "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst",
-      "details": "Undersøg dem nærmere"
+      "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst"
     },
     "title": "Lad os komme i gang!"
   },

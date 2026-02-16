@@ -2,8 +2,6 @@
   "contactSupport": "Võtke ühendust toega",
   "continueFilling": "Jätka täitmist",
   "editingNotAllowed": "Vastuste muutmine ei ole enam võimalik, kuid saate neid siiski vaadata. Palun võtke toega ühendust, kui andmetes on vigu.",
-  "email": "MISSING",
-  "emailPlaceholder": "MISSING",
   "fullyCompleted": "Õnnitleme! Olete täitnud kõik valimisnõustaja jaoks vajalikud andmed.",
   "greeting": "Tere, {username}!",
   "home": "Algus",

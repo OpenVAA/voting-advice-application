@@ -1,5 +1,6 @@
 {
   "title": "Kontrollipaneeli",
+  "emergencyCleanup": "Lopeta kaikki prosessit",
   "features": {
     "ArgumentCondensation": {
       "title": "Argumenttien tiivistäminen"
@@ -8,7 +9,6 @@
       "title": "Kysymystietojen luominen"
     }
   },
-  "emergencyCleanup": "Lopeta kaikki prosessit",
   "confirmAbortAll": "Oletko varma, että haluat keskeyttää KAIKKI käynnissä olevat prosessit?",
   "authRequired": "Todennus vaaditaan",
   "abortAllFailed": "Prosessien keskeyttäminen epäonnistui. Tarkista logit lisätietoja varten.",
@@ -23,8 +23,8 @@
   "hidePastJobs": "Piilota aiemmat prosessit",
   "showPastJobs": "Näytä aiemmat prosessit",
   "pastJobsDescription": "Aiemmat prosessit",
-  "noPastJobs": "Ei tallennettuja prosesseja",
   "noActiveJobs": "Ei aktiivisia prosesseja",
+  "noPastJobs": "Ei tallennettuja prosesseja",
   "started": "Aloitettu",
   "messages": "Viestit",
   "notAvailable": "Ei saatavilla",

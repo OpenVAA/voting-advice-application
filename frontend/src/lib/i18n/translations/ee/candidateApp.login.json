@@ -3,6 +3,5 @@
   "forgotPassword": "Unustasite salasõna?",
   "title": "Logige sisse",
   "unknownError": "Teie kasutajaandmete päring ebaõnnestus. Palun võtke ühendust toega, kui viga kordub.",
-  "wrongEmailOrPassword": "MISSING",
   "answersLockedInfo": "Registreerumine või vastuste muutmine ei ole enam võimalik, kuid saate siiski sisse logida, et oma andmeid vaadata."
 }

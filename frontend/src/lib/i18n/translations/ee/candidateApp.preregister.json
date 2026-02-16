@@ -8,9 +8,9 @@
     "title": "Millistel valimistel kandideerite?"
   },
   "email": {
-    "html": "<p>Tere {firstName},</p><p>Täname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:</p><p><a href=\\\"{registrationUrl}\\\">{registrationUrl}</a></p><p>Seejärel palutakse teil valida salasõna.</p>",
+    "html": "<p>Tere {firstName},</p><p>Täname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Seejärel palutakse teil valida salasõna.</p>",
     "subject": "Palun kinnitage oma e-posti aadress",
-    "text": "Tere {firstName},\\nTäname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:\\n{registrationUrl}\\nSeejärel palutakse teil valida salasõna."
+    "text": "Tere {firstName},\nTäname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:\n{registrationUrl}\nSeejärel palutakse teil valida salasõna."
   },
   "emailVerification": {
     "content": "<p>Edaspidi toimib teie e-posti aadress kasutajanimena. Palun sisestage see allpool kaks korda, et veenduda selle õigsuses.</p>",
