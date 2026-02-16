@@ -38,6 +38,7 @@ const COL_SEP = '\t';
 const MISSING_VALUE = 'MISSING';
 const TRANSL_FUNCTION = 't';
 const ENCODING = 'utf8';
+const PRIMARY_LOCALE = 'en';
 
 await main();
 
@@ -227,7 +228,9 @@ function exportCurrentTranslations(file: string): void {
     locales.map((l) => [l, Object.fromEntries(flattenKeys(translations[l]))])
   );
   let tsv = ['key', 'new_key', 'new_file', ...locales].map((s) => JSON.stringify(s)).join(COL_SEP) + '\n';
-  for (const key in flatTranslations[locales[0]]) {
+  const primaryLocale = flatTranslations[PRIMARY_LOCALE];
+  if (!primaryLocale) throw new Error(`Primary locale '${PRIMARY_LOCALE}' not found in flatTranslations`);
+  for (const key in primaryLocale) {
     tsv +=
       [key, key, findFilePrefix(key), ...locales.map((l) => flatTranslations[l][key] ?? MISSING_VALUE)]
         .map((s) => JSON.stringify(s))
@@ -255,12 +258,14 @@ function readAllTranslations(): {
   const filePrefixes = new Array<string>();
   const translations: Translations = {};
   const locales = fs.readdirSync(TRANSL_DIR).filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
+  if (!locales.includes(PRIMARY_LOCALE))
+    throw new Error(`Primary locale '${PRIMARY_LOCALE}' not found in translations folder`);
   for (const locale of locales) {
     const localeTranslations: Translations = {};
     const files = fs.readdirSync(path.join(TRANSL_DIR, locale));
     for (const file of files) {
       const prefix = file.replace(/\.json$/, '');
-      if (locale === locales[0]) filePrefixes.push(prefix);
+      if (locale === PRIMARY_LOCALE) filePrefixes.push(prefix);
       localeTranslations[prefix] = readJsonTranslations(locale, file);
     }
     translations[locale] = localeTranslations;
