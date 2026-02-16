@@ -1,0 +1,16 @@
+{
+  "editableInfos": {
+    "description": "See teave kuvatakse teie profiililehel.",
+    "title": "Teie profiil"
+  },
+  "error": {
+    "invalidQuestion": "Küsimuse või vastuse tüüp on vigane küsimuse {questionId} puhul."
+  },
+  "instructions": "Täitke esmalt oma põhiandmed ja soovi korral laadige üles foto. Seejärel küsitakse teilt poliitilisi arvamusi.",
+  "nominations": {
+    "description": "Need on valimisringkonnad, kus olete kandidaat. Kui kandidaatide nimekiri või -number puuduvad, lisatakse need automaatselt, kui valijanimekirjad on kinnitatud.",
+    "title": "Kandidatuurid"
+  },
+  "requiredInfo": "Enne teistele küsimustele vastamist peate täitma selle ikooniga märgitud väljad. Siiski saate oma senised vastused salvestada ja jätkata hiljem.",
+  "title": "Põhiandmed"
+}

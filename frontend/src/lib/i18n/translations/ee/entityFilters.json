@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Sulge filtrid",
+  "error": "Filtrit ei õnnestunud laadida, vabandust!",
+  "filterButtonLabel": "Filtreeri",
+  "filters": "Filtrid",
+  "missingValue": "Vastus puudub",
+  "numeric": {
+    "maxLabel": "Maksimaalselt",
+    "minLabel": "Minimaalselt"
+  },
+  "reset": "Lähtesta filtrid",
+  "selectAll": "Vali kõik",
+  "text": {
+    "ariaLabel": "Otsisõna:",
+    "placeholder": "Otsisõna"
+  },
+  "unselectAll": "Tühista kõik valikud"
+}

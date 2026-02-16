@@ -1,0 +1,28 @@
+{
+  "analytics": {
+    "content": {
+      "umami": "Kasutame analüütikaks Umami teenust. See toimub täiesti anonüümselt ega nõua küpsiste kasutamist. Lisateave: {analyticsLink}."
+    },
+    "title": "Analüütika"
+  },
+  "cookies": {
+    "content": "Rakendus ei kasuta küpsiseid sinu andmete salvestamiseks. Sinu vastused ja eelistused salvestatakse sinu brauseri kohalikku salvestuskohta (local storage) parema kasutuskogemuse tagamiseks. Nendele andmetele pääseb ligi ainult sinu seade, mitte rakenduse avaldaja.",
+    "title": "Küpsised"
+  },
+  "dataCollection": {
+    "platform": {
+      "umami": "Andmete kogumiseks kasutatakse Umami platvormi ja see ei nõua küpsiste kasutamist. Lisateave: {analyticsLink}."
+    }
+  },
+  "dataConsentInfoButton": "Lisateave kasutusandmete kogumise kohta",
+  "dataConsentIntro": {
+    "denied": "Oled keelanud oma andmete kogumise {consentDate, date, ::dMyyyy}. Saad oma valikut allpool muuta.",
+    "granted": "Oled lubanud oma andmete kogumise {consentDate, date, ::dMyyyy}. Saad oma valikut allpool muuta.",
+    "indetermined": "Saad anda nõusoleku andmete kogumiseks või selle keelata, valides ühe allolevatest valikutest."
+  },
+  "dataConsentLabel": {
+    "denied": "Ma ei soovi, et minu andmeid kogutakse",
+    "granted": "Jah, luban andmete kogumise"
+  },
+  "title": "Privaatsus"
+}

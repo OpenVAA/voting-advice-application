@@ -1,0 +1,6 @@
+{
+  "targetLanguage": {
+    "label": "Sihtkeel",
+    "help": "Keel, milles sisu luuakse. Küsimused töödeldakse ja tulemused salvestatakse selles keeles."
+  }
+}

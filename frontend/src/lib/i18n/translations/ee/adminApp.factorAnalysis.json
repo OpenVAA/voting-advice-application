@@ -1,0 +1,20 @@
+{
+  "title": "Faktoranalüüs",
+  "description": "Analüüsi ja halda valimisküsimuste faktoreid.",
+  "compute": {
+    "title": "Arvuta faktorid",
+    "description": "Arvuta latentsed faktorid kandidaatide ja erakondade vastuste põhjal.",
+    "selectElections": "Vali valimised, mille jaoks faktorid arvutatakse.",
+    "button": "Arvuta faktorid",
+    "buttonLoading": "Arvutatakse faktoreid...",
+    "mayTakeTime": "See võib võtta hetke.",
+    "noElections": "Valimisi pole saadaval",
+    "candidates": "kandidaati",
+    "parties": {
+      "some": "ja {count} erakonda",
+      "none": "ega ühtegi erakonda"
+    },
+    "haveAnswered": "on vastanud",
+    "error": "Faktorite arvutamine ebaõnnestus"
+  }
+}

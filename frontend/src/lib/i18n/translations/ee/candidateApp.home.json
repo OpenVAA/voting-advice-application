@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Muutke oma põhiandmeid",
+    "enter": "Täitke oma põhiandmed",
+    "view": "Vaadake oma põhiandmeid"
+  },
+  "ingress": {
+    "notDone": "Valimisnõustajas kuvamiseks peate sisestama mõned põhiandmed enda kohta ja vastama arvamusküsimustele.",
+    "ready": "Olete täitnud kõik valimisnõustaja jaoks vajalikud andmed. Saate siiski oma vastuseid muuta ja logida selleks hiljem sisse."
+  },
+  "preview": "Vaadake oma profiili eelvaadet",
+  "previewTip": "Kui soovite näha, kuidas valijad teie profiili näevad, saate seda eelvaadata.",
+  "questions": {
+    "edit": "Muutke oma arvamusi",
+    "enter": "Avaldage oma arvamused",
+    "view": "Vaadake oma arvamusi"
+  },
+  "ready": "Olete valmis!"
+}

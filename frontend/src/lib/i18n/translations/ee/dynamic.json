@@ -1,0 +1,120 @@
+{
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Valimiskompass",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Isikuandmed",
+      "ingress": "Teie nimi ja mõned muud andmed on eeltäidetud või täiendatakse, kui kandidaatide nimekirjad kinnitatakse. Te ei saa neid andmeid ise muuta, kuid vigade korral pöörduge kandidaaditoe poole.",
+      "emptyPlaceholder": "Vastavalt kandidaatide nimekirjale"
+    }
+  },
+  "candidateAppName": "Kandidaatide valimiskompass",
+  "candidateAppNotAccessible": {
+    "content": "Kandidaatide valimiskompassi ei ole veel avaldatud. Palun tulge sellele aadressile tagasi, kui see muutub kättesaadavaks.",
+    "title": "Vabandust, kandidaatide valimiskompass ei ole veel kasutusel"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "Nõustun oma andmete salvestamise ja kasutamisega vastavalt kasutustingimustele.",
+      "heroEmoji": "🖋️",
+      "ingress": "Enne profiili täitmise jätkamist peate nõustuma kasutustingimustega. Lugege neid hoolikalt ja märkige allolev ruut.",
+      "title": "Kasutustingimused"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Vastutav töötleja</h3><p>DATA_CONTROLLER</p><h3>2. Registri kontaktisik</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Registri nimi</h3><p>{appName} – kandidaatide infosüsteem.</p><h3>4. Õiguslik alus ja isikuandmete töötlemise eesmärk</h3><p>Isikuandmete töötlemise õiguslik alus EL-i isikuandmete kaitse üldmääruse alusel on isiku nõusolek. Isikuandmete töötlemise eesmärk on nende kasutamine valimiskompassis.</p><h3>5. Registri andmesisu</h3><p>Registrisse salvestatavad andmed on: isiku nimi, erakondlik taust, e-posti aadress, sünniaeg, veebilehtede aadressid, sotsiaalmeedia profiilide aadressid, muud vabatahtlikud vastused valimiskompassi küsimustele ning avalikest valijanimekirjadest saadavad andmed.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Teenuse toimimiseks vajalikke küpsiseid töödeldakse õigustatud huvi alusel, muu hulgas turvalisuse tagamiseks.</p><h3>6. Korrapärased andmeallikad</h3><p>Registrisse salvestatavaid andmeid saadakse kandidaatidelt veebivormi kaudu, nende pangaautentimise käigus ning avalikest valijanimekirjadest.</p><h3>7. Andmete korrapärane avalikustamine ja edastamine väljaspool EL-i või EMP-d</h3><p>Andmeid ei avalikustata korrapäraselt teistele osapooltele, kuid pärast valimiskompassi avaldamise lõppu võidakse andmeid kasutada teadustöö eesmärgil ja valimiskompassi arendamiseks.</p><h3>8. Registri kaitsmise põhimõtted</h3><p>Registri töötlemisel järgitakse hoolikust ja infosüsteemide abil töödeldavad andmed on asjakohaselt kaitstud. Kui registriandmeid hoitakse internetiserverites, tagatakse nende riistvara füüsiline ja digitaalne turvalisus. Vastutav töötleja tagab, et salvestatud andmeid ning serverite juurdepääsuõigusi ja muid isikuandmete turvalisuse seisukohast kriitilisi andmeid käsitletakse konfidentsiaalselt ja ainult nende töötajate poolt, kelle tööülesannete hulka see kuulub.</p><h3>9. Õigus tutvuda andmetega ja nõuda nende parandamist</h3><p>Igal registris oleval isikul on õigus kontrollida registrisse salvestatud andmeid ja nõuda võimaliku vigase teabe parandamist või puudulike andmete täiendamist. Kui isik soovib oma salvestatud andmeid kontrollida või nõuda nende parandamist, tuleb saata taotlus e-postiga vastutavale töötlejale. Vastutav töötleja võib vajadusel paluda taotluse esitajal tõendada oma isikusamasust. Vastutav töötleja vastab EL-i isikuandmete kaitse üldmääruses sätestatud aja jooksul.</p><h3>10. Muud isikuandmete töötlemisega seotud õigused</h3><p>Registris oleval isikul on õigus taotleda oma isikuandmete kustutamist registrist („õigus olla unustatud\\\"). Samuti on registreeritutel muud EL-i isikuandmete kaitse üldmääruse kohased õigused, nagu isikuandmete töötlemise piiramine teatud olukordades. Taotlused tuleb saata e-postiga vastutavale töötlejale. Vastutav töötleja võib vajadusel paluda taotluse esitajal tõendada oma isikusamasust. Vastutav töötleja vastab EL-i isikuandmete kaitse üldmääruses sätestatud aja jooksul.</p>",
+      "title": "Registri- ja andmekaitseselgitus"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Muud kasutustingimused"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "Kandidaadid ja erakonnad on jagatud valimisringkondadesse. Valige oma valimisringkond iga valimise jaoks.",
+      "singleElection": "Kandidaadid ja erakonnad on jagatud valimisringkondadesse. Saate hääletada ainult oma valimisringkonna kandidaatide poolt.",
+      "singleGroup": "Kandidaadid ja erakonnad on jagatud valimisringkondadesse. Valige valimisringkond altpoolt."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Valige valimised, mille kandidaate või erakondi soovite leida.",
+      "singleElection": "Teie valitud valimisringkonnas toimub ainult ühed valimised."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Valimiskompassi abil saate otsida kandidaate ja erakondi selle järgi, kui palju nad teiega nõustuvad.",
+    "startButton": "Leidke sobivaimad kandidaadid ja erakonnad!"
+  },
+  "info": {
+    "content": "Sellel lehel on teavet valimiste kohta.",
+    "dateInfo": "Valimispäev on {electionDate, date, ::dMyyyy}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Jätka",
+    "heroEmoji": "🚀",
+    "ingress": "Valimiskompass aitab teil leida nendes valimistes teiega kõige enam nõustuvad {candidatePlural} ja {partyPlural}.",
+    "list": {
+      "constituencies": "Valige oma valimisringkond",
+      "elections": "Valige valimised",
+      "opinions": "Avaldage oma arvamused",
+      "results": "Vaadake teiega kõige enam nõustuvaid {candidatePlural} ja {partyPlural}",
+      "details": "Uurige kandidaate ja erakondi lähemalt"
+    },
+    "title": "Alustame!"
+  },
+  "maintenance": {
+    "content": "<p>Vabandame väga, kuid valimiskompass ei ole hetkel hoolduse tõttu kasutatav. See peaks peagi taas tööle hakkama, seega proovige hiljem uuesti.</p><p>Ärge muretsege, kui olite just küsimustele vastamas. Tagasi tulles saate jätkata sealt, kus pooleli jäite.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Kõik registreeritud kandidaadid",
+    "content": "Sellelt lehelt leiate kõik kandidaadid, kes on valimiskompassi täitnud.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "Allpool on kirjeldatud rakenduse privaatsus- ja andmekogumistavad.",
+    "dataConsentIntro": {
+      "popup": "Kas võiksime koguda teie andmeid täiesti anonüümselt teadustöö ja rakenduse arendamise eesmärgil? Me ei kasuta selleks küpsiseid ega saa andmeid teiega seostada."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "Allpool on nende valimiste {candidatePlural} ja {partyPlural}, järjestatuna valimisnumbri või nime järgi. Saate kasutada filtreid nende kitsendamiseks.",
+      "results": "Allpool on nende valimiste {candidatePlural} ja {partyPlural}. Teiega kõige enam nõustuvad on nimekirjas esimesed. Tulemuste kitsendamiseks saate kasutada ka filtreid."
+    },
+    "multipleElections": "Valige altpoolt esmalt, milliste valimiste {candidatePlural} ja {partyPlural} soovite näha, ja seejärel, kas soovite vaadata kandidaate või erakondi."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Osalege kasutajaküsitluses",
+    "info": "Kas sooviksite aidata valimiskompasside arendamisel? Avage küsitlus uues aknas ja täitke see kohe või siis, kui teil on aega.",
+    "popupInfo": "Küsitlus avaneb uues aknas. Saate selle täita kohe või siis, kui teil on aega.",
+    "popupTitle": "Kas sooviksite aidata valimiskompasside arendamisel?",
+    "thanks": "Täname küsitlusele vastamise eest!",
+    "title": "Osalege kasutajaküsitluses"
+  },
+  "voterAppNotAccessible": {
+    "content": "Valimiskompassi ei ole veel avaldatud. Palun tulge sellele aadressile tagasi, kui see muutub kättesaadavaks.",
+    "title": "Vabandust, valimiskompass ei ole veel kasutusel"
+  }
+}

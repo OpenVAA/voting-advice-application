@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Valimisliite ei ole} =1 {1 valimisliit} other {# valimisliitu}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Kandidaate ei ole} =1 {1 kandidaat} other {# kandidaati}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Rühmitusi ei ole} =1 {1 rühmitus} other {# rühmitust}}"
+  },
+  "inConstituency": "valimisringkonnas",
+  "ingress": {
+    "answerMinQuestions": "Kui soovid leida sinuga kõige enam nõustuvaid {candidatePlural} ja {partyPlural}, {questionsLink} kõigepealt.",
+    "questionsLinkText": "vasta vähemalt {numQuestions, plural, =1 {ühele küsimusele} other {# küsimusele}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Sinu valimisringkonnas pole valimiskompassile vastanud kandidaate ega erakondi",
+      "content": "Soovi korral võid küsimustega tutvuda, kuid tulemusi ei saa kuvada."
+    },
+    "someNominations": {
+      "title": "Mõned valimiste kandidaadid või erakonnad pole valimiskompassile vastanud",
+      "content": "Sinu valimisringkonnas pole kõigi valimiste kohta kandidaatide või erakondade vastuseid. Tulemustes kuvatakse ainult need valimised, mille kohta vastused on olemas."
+    },
+    "noNominationsForElection": "pole saadaval"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Erakondi ei ole} =1 {1 erakond} other {# erakonda}}"
+  },
+  "selectElectionFirst": "Vali kõigepealt valimised",
+  "title": {
+    "browse": "Sirvi kandidaate ja erakondi",
+    "results": "Sinu tulemused"
+  }
+}

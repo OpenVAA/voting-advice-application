@@ -1,0 +1,17 @@
+{
+  "content": "<p>Valimiskompass võrdleb sinu arvamusi nendega, mida {candidatePlural} ja {partyPlural} on samadele küsimustele esitanud. Pärast vastamist arvutatakse sobivustulemus, mis näitab, kui palju te nõustute.</p> <ul> <li>Tulemus 100 tähendab, et olete täielikult nõus küsimustes, millele oled vastanud.</li> <li>Tulemus 0 tähendab, et olete kõigis küsimustes, millele oled vastanud, täiesti eri meelt.</li> <li>Tulemused nende vahel tähendavad, et mõnes küsimuses olete nõus, mõnes mitte.</li> </ul>",
+  "feedback": {
+    "title": "Tagasiside"
+  },
+  "organizationMatching": {
+    "content": "{partyMatchingMethod, select, answersOnly {<p>Erakondade tulemused on arvutatud erakondade antud vastuste põhjal.</p>} imputed {<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste mediaani või moodi põhjal.</p>} other {<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste põhjal.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Pange tähele, et erakonna kandidaadid võivad küsimustes oma erakonnaga eriarvamusel olla, seega ei pruugi nii arvutatud seisukoht vastata erakonna seisukohale.</p>}}",
+    "title": "Erakondade tulemused"
+  },
+  "returnButton": "Tagasi avalehele",
+  "source": {
+    "content": "Valimiskompasii lähtekood on saadaval",
+    "sitename": "GitHubis",
+    "title": "Lähtekood"
+  },
+  "title": "Kuidas valimiskompass töötab?"
+}

@@ -1,0 +1,22 @@
+{
+  "code": "Registreerimiskood",
+  "codePlaceholder": "Nt CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Oled juba registreerunud?",
+  "enterCode": "Sisesta e-postiga saadud registreerimiskood, et lõpetada registreerumine.",
+  "goToLoginLabel": "Mine sisselogimislehele",
+  "loggedInWarning": "Kasutaja on hetkel sisse loginud. Logi välja enne jätkamist.",
+  "passwordValidation": {
+    "commonPatterns": "Sisaldab levinud märgijadasid",
+    "length": "Vähemalt {minPasswordLength} märki",
+    "lowercase": "Väiketäht",
+    "number": "Number",
+    "repetition": "Sisaldab märkide kordumist",
+    "symbol": "Erimärk (nagu !?%#€)",
+    "uppercase": "Suurtäht",
+    "username": "Väldi oma nime kasutamist paroolis"
+  },
+  "register": "Registreeru",
+  "title": "Registreerumine",
+  "titleWithPreregistration": "Kinnita oma e-posti aadress",
+  "wrongRegistrationCode": "Vale registreerimiskood"
+}

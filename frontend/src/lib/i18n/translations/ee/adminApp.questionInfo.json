@@ -1,0 +1,39 @@
+{
+  "title": "Küsimuste teave",
+  "description": "Looge kontekstuaalset teavet valimisnõustaja küsimuste jaoks, sealhulgas terminite definitsioonid ja teabesektsioonid, mis aitavad valijatel küsimusi paremini mõista.",
+  "selectElection": "Vali valimised",
+  "selectQuestions": "Vali küsimused",
+  "noQuestions": "Nende valimiste jaoks ei leitud arvamusküsimusi",
+  "generate": {
+    "button": "Loo küsimuste teave",
+    "buttonLoading": "Loomine...",
+    "allQuestions": "Kõik arvamusküsimused",
+    "selectedQuestions": "Valitud küsimused"
+  },
+  "options": {
+    "heading": "Loomise seaded",
+    "whatToGenerate": "Mida luua:",
+    "terms": "Terminite definitsioonid",
+    "infoSections": "Teabesektsioonid"
+  },
+  "sectionTopics": {
+    "label": "Sektsioonide teemad (valikuline)",
+    "help": "Komadega eraldatud teemade loend teabesektsioonide jaoks. Jätke tühjaks vaikeväärtuste kasutamiseks.",
+    "placeholder": "Taust, Praegune olukord, Peamised osapooled"
+  },
+  "customInstructions": {
+    "label": "Kohandatud juhised (valikuline)",
+    "help": "Lisajuhised LLM-ile sisu loomise kohta.",
+    "placeholder": "Keskendu kohalikule omavalitsusele ja munitsipaalpoliitika aspektidele"
+  },
+  "questionContext": {
+    "label": "Küsimuste kontekst (valikuline)",
+    "help": "Kontekst valimiste või teemavaldkonna kohta, mis aitab LLM-il luua asjakohasemat sisu.",
+    "placeholder": "Eesti kohalikud valimised 2025"
+  },
+  "validation": {
+    "noElection": "Palun valige valimised",
+    "noQuestions": "Palun valige vähemalt üks küsimus",
+    "noOperations": "Palun valige vähemalt üks loomise valik"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "home": "Avaleht",
+  "description": "Kasuta alltoodud tööriistu valimiskompasii haldamiseks.",
+  "notAccessible": {
+    "content": "Ligipääs haldusvaadetele on hetkel keelatud.",
+    "title": "Vabandust, haldusvaade ei ole saadaval"
+  }
+}

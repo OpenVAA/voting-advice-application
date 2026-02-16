@@ -1,0 +1,23 @@
+{
+  "emailDescription": "Kasutame seda e-posti sinuga ühenduse võtmiseks ja parooli lähtestamiseks. Seda ei kuvata sinu avalikus profiilis.",
+  "error": {
+    "changeLanguage": "Keele vahetamine ebaõnnestus.",
+    "changePassword": "Parooli vahetamine ebaõnnestus. Veendu, et sinu praegune parool on õige."
+  },
+  "ingress": "Need seaded mõjutavad ainult seda, kuidas sa seda rakendust kasutad. Siia sisestatud teavet ei kuvata avalikult.",
+  "language": "Rakenduse keel",
+  "languageDescription": "Kasuta seda rakendust selles keeles. Seda ei kuvata sinu avalikus profiilis.",
+  "password": {
+    "areSame": "Uus parool on sama mis praegune parool.",
+    "current": "Praegune parool",
+    "currentDescription": "Sisesta oma konto praegune parool, mida soovid muuta.",
+    "dontMatch": "Paroolid ei kattu",
+    "new": "Uus parool",
+    "newConfirmation": "Uue parooli kinnitus",
+    "notValid": "Parool ei ole kehtiv",
+    "title": "Konto parool",
+    "update": "Uuenda parooli",
+    "updated": "Parool on uuendatud!"
+  },
+  "title": "Seaded"
+}

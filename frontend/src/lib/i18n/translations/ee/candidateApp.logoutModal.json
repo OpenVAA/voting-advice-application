@@ -1,0 +1,7 @@
+{
+  "continue": "Jätka andmete sisestamist",
+  "ingress": "Kas olete kindel, et soovite välja logida? Teid logitakse automaatselt välja {timeLeft} sekundi pärast.",
+  "itemsLeft": "Täita on veel {infoQuestionsLeft, plural, =1 {üks põhiandme} other {# põhiandmet}} ja {opinionQuestionsLeft, plural, =1 {üks arvamus} other {# arvamust}}.",
+  "questionsLeft": "Täita on veel {opinionQuestionsLeft, plural, =1 {üks arvamus} other {# arvamust}}.",
+  "title": "Osa teie andmetest on veel puudu"
+}

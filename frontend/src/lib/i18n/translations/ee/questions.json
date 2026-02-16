@@ -1,0 +1,27 @@
+{
+  "additionalActions": "Rohkem toiminguid selle küsimuse kohta",
+  "answers": {
+    "bothHaventAnswered": "Sina ja {entity} pole sellele küsimusele vastanud",
+    "entityHasntAnswered": "{entity} ei ole sellele küsimusele vastanud",
+    "youHaventAnswered": "Sa ei ole sellele küsimusele vastanud",
+    "yourAnswer": "Sina"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 küsimus} other {# küsimust}}",
+    "skip": "Jäta see teema vahele"
+  },
+  "infoDescription": "Taustainfo selle küsimuse kohta",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. {minQuestions, plural, =0 {} =1 {} other {Vali siiski piisavalt teemasid, et neis oleks vähemalt # küsimust.}}",
+      "withoutCategorySelection": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. {numCategories, plural, =0 {} =1 {} other {Need on jagatud # teemaks.}}"
+    },
+    "start": "Vasta {numQuestions} küsimusele"
+  },
+  "next": "Järgmine",
+  "previous": "Eelmine",
+  "remove": "Kustuta vastus",
+  "skip": "Jäta vahele",
+  "skipToResults": "Hüppa tulemusteni",
+  "title": "Sinu arvamused"
+}

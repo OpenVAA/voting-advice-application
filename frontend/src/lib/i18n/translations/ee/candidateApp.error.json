@@ -1,0 +1,8 @@
+{
+  "candidateNoNomination": "Kandidaadil puudub valimisringkond. Palun võtke ühendust toega.",
+  "loginFailed": "MISSING",
+  "nominationNoElection": "Kandidaadil puuduvad valimised. Palun võtke ühendust toega.",
+  "saveFailed": "Vabandust! Teie vastuste salvestamine ebaõnnestus. Palun proovige uuesti ja kui probleem jätkub, võtke ühendust toega.",
+  "userNoCandidate": "Sisselogitud kasutajaga ei ole seotud kandidaadi andmeid. Palun võtke ühendust toega.",
+  "registrationLocked": "Kahjuks ei ole registreerumine enam võimalik."
+}

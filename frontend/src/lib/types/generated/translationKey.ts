@@ -530,6 +530,7 @@ export type TranslationKey =
   | 'help.title'
   | 'info.title'
   | 'lang.da'
+  | 'lang.ee'
   | 'lang.en'
   | 'lang.fi'
   | 'lang.sv'

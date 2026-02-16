@@ -1,0 +1,89 @@
+{
+  "alliance": {
+    "plural": "valimisliidud",
+    "singular": "valimisliit"
+  },
+  "answer": {
+    "no": "Ei",
+    "yes": "Jah"
+  },
+  "back": "Tagasi",
+  "cancel": "Tühista",
+  "candidate": {
+    "plural": "kandidaadid",
+    "singular": "kandidaat"
+  },
+  "candidatePortrait": "Portree",
+  "clear": "Tühjenda",
+  "close": "Sulge",
+  "closeDialog": "Sulge dialoogiaken",
+  "closeMenu": "Sulge menüü",
+  "confirmed": "Kinnitatud",
+  "constituency": "Valimisringkond",
+  "continue": "Jätka",
+  "election": "Valimised",
+  "electionList": "Valimiste nimekiri",
+  "electionSymbol": {
+    "alliance": "Valimissümbol",
+    "candidate": "Kandidaadinumber",
+    "faction": "Valimissümbol",
+    "organization": "Valimissümbol"
+  },
+  "expandOrCollapse": "Laienda või ahenda see jaotis",
+  "faction": {
+    "plural": "rühmitused",
+    "singular": "rühmitus"
+  },
+  "firstName": "Eesnimi",
+  "home": "Avaleht",
+  "info": "Lisateave",
+  "language": {
+    "select": "Vali keel"
+  },
+  "lastName": "Perekonnanimi",
+  "loading": "Laadimine…",
+  "locked": "Lukustatud",
+  "login": "Logi sisse",
+  "logout": "Logi välja",
+  "madeWithPrefix": "Ehitatud",
+  "madeWithSuffix": "abil",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " •",
+  "nomination": "Kandideerimine",
+  "openCloseMenu": "Ava või sulge menüü",
+  "openMenu": "Ava menüü",
+  "openVAA": "OpenVAA",
+  "or": "Või",
+  "organization": {
+    "plural": "erakonnad",
+    "singular": "erakond"
+  },
+  "password": "Parool",
+  "passwordConfirmation": "Kinnita parool",
+  "pending": "Kinnitamata",
+  "primaryActions": "Esmaseid toiminguid",
+  "privacy": {
+    "dataCollection": {
+      "content": "Soovime koguda kasutusandmeid täiesti anonüümselt uurimistöö ja rakenduse arendamise eesmärgil. Kogutavad andmed hõlmavad muu hulgas teie vastuseid küsimustele, vastamisele kulunud aega ja vaadatud tulemusi, kuid andmeid ei saa teie isikuga seostada.",
+      "title": "Vastuste ja kasutusandmete kogumine"
+    }
+  },
+  "progress": "Edenemine",
+  "publishedBy": "Avaldaja: {publisher}",
+  "question": "Küsimus",
+  "readMore": "Loe lähemalt",
+  "required": "Nõutav",
+  "resetAnswers": "Tühjenda oma vastused",
+  "return": "Tagasi",
+  "returnHome": "Tagasi avalehele",
+  "saveAndContinue": "Salvesta ja jätka",
+  "saveAndReturn": "Salvesta ja pöördu tagasi",
+  "saving": "Salvestamine…",
+  "showFullImage": "Näita täissuuruses pilti",
+  "skipToMain": "Liigu põhisisu juurde",
+  "state": "Olek",
+  "success": "Toiming õnnestus!",
+  "thanksNo": "Ei, tänan",
+  "unaffiliated": "Sõltumatu",
+  "website": "Veebileht"
+}

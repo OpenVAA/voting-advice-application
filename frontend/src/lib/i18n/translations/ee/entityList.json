@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "Filtritega ei leitud ühtegi tulemust. Proovige neid muuta.",
+    "noSearchResults": "Otsinguga ei leitud ühtegi tulemust. Proovi seda muuta.",
+    "searchPlaceholder": "Otsi nime järgi",
+    "showingNumResults": "Näidatakse {numShown, plural, =1 {1 tulemus} other {# tulemust}}"
+  },
+  "showMore": "Näita rohkem"
+}

@@ -1,0 +1,45 @@
+{
+  "title": "Juhtpaneel",
+  "emergencyCleanup": "Lõpeta kõik protsessid",
+  "features": {
+    "ArgumentCondensation": {
+      "title": "Argumentide kokkuvõtmine"
+    },
+    "QuestionInfoGeneration": {
+      "title": "Küsimusteabe loomine"
+    }
+  },
+  "confirmAbortAll": "Kas oled kindel, et soovid KÕIK käimasolevad protsessid katkestada?",
+  "authRequired": "Autentimine on vajalik",
+  "abortAllFailed": "Protsesside katkestamine ebaõnnestus. Kontrolli logisid lisateabe saamiseks.",
+  "systemHealth": "Süsteemi olek",
+  "activeJobs": "Aktiivsed protsessid",
+  "successfulJobs": "Õnnestunud protsessid",
+  "failedJobs": "Ebaõnnestunud protsessid",
+  "abortedJobs": "Katkestatud protsessid",
+  "abortingInfo": "Katkestamist taotletud. Võib minna hetk, kuni protsess turvaliselt peatub.",
+  "abortJob": "Katkesta protsess",
+  "pastJobs": "Varasemad protsessid",
+  "hidePastJobs": "Peida varasemad protsessid",
+  "showPastJobs": "Näita varasemaid protsesse",
+  "pastJobsDescription": "Varasemad protsessid",
+  "noActiveJobs": "Aktiivseid protsesse pole",
+  "noPastJobs": "Salvestatud protsesse pole",
+  "started": "Alustatud",
+  "messages": "Sõnumid",
+  "notAvailable": "Pole saadaval",
+  "confirmAbortJob": "Kas oled kindel, et soovid selle {feature} protsessi katkestada?",
+  "abortJobFailed": "Protsessi katkestamine ebaõnnestus. Kontrolli logisid lisateabe saamiseks.",
+  "alreadyRunning": "Protsess juba käib. Palun oota selle lõpetamist.",
+  "progress": "Edenemine",
+  "warningsAndErrors": "Hoiatused ja vead",
+  "noWarningsOrErrors": "Hoiatusi ega vigu pole",
+  "infoMessages": "Infosõnumid",
+  "noInfoMessages": "Infosõnumeid pole",
+  "author": "Autor",
+  "duration": "Kestus",
+  "aborting": "Katkestatakse…",
+  "hideMessages": "Peida sõnumid",
+  "showMessages": "Näita sõnumeid",
+  "id": "ID"
+}

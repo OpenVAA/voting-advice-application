@@ -1,0 +1,24 @@
+{
+  "answerQuestion": "Vasta sellele küsimusele",
+  "answerQuestionFirst": "Palun vasta esmalt küsimusele",
+  "answerSaveError": "Vastuse salvestamine ebaõnnestus",
+  "editAnswer": "Muuda oma vastust",
+  "enterMissingAnswers": "Vasta puuduvatele küsimustele",
+  "error": {
+    "answerNotFound": "Küsimusele {questionId} vastust ei leitud",
+    "invalidAnswer": "Salvestatud vastus küsimusele {questionId} on vigane",
+    "questionNotFound": "Küsimust {questionId} ei leitud"
+  },
+  "ingress": {
+    "default": "Allpool näed kõiki oma arvamusi ja saad neid soovi korral muuta.",
+    "empty": "Järgmisena küsib rakendus sinu arvamust {numQuestions} väite kohta poliitilistel teemadel ja väärtustel. Kui valijad kasutavad valimiskompassi, vastavad ka nemad samadele väidetele ja näevad, kui hästi nende arvamused sinu omadega kattuvad.",
+    "partial": "Allpool näed kõiki oma arvamusi. Saad neid soovi korral muuta ja vastata neile, millele pole veel vastanud."
+  },
+  "notAnswered": "Sa ei vastanud sellele küsimusele.",
+  "openAnswerPrompt": "Põhjendused",
+  "start": "Avalda oma arvamus",
+  "tip": "Näed kõiki oma vastuseid sellel lehel, kui siia hiljem tagasi tuled.",
+  "title": "Sinu arvamused",
+  "unansweredWarning": "Sul on veel {numUnansweredQuestions, plural, =1 {üks vastamata küsimus} other {# vastamata küsimust}}.",
+  "viewAnswer": "Vaata oma vastust"
+}

@@ -1,0 +1,26 @@
+{
+  "title": "Argumentide kokkuvõtmine",
+  "description": "Kokkuvõta ja halda valimisküsimuste argumente.",
+  "jobs": {
+    "noActiveJobs": "Aktiivseid protsesse pole",
+    "startProcess": "Alusta argumentide kokkuvõtmise protsess, et näha reaalajas jälgimist"
+  },
+  "generate": {
+    "allQuestions": "Loo argumendid kõigile arvamusküsimustele",
+    "button": "Loo argumendid",
+    "buttonLoading": "Luuakse...",
+    "error": "Argumentide loomisel tekkis viga",
+    "mayTakeTime": "See protsess võib kesta mitu minutit",
+    "noElectionsAvailable": "Valimised ei ole hetkel saadaval. Palun kontrolli oma andmete seadistust.",
+    "noElectionSelected": "Palun vali esmalt valimised",
+    "noQuestionsForElection": "Valitud valimiste jaoks ei leitud arvamusküsimusi.",
+    "noQuestionSelected": "Palun vali vähemalt üks küsimus",
+    "selectElection": "Vali valimised",
+    "selectElectionPlaceholder": "Vali valimised...",
+    "selectedQuestions": "Loo argumendid ainult valitud küsimustele",
+    "questionType": "Küsimuste valik",
+    "selectAll": "Vali kõik",
+    "unselectAll": "Tühista kõik valikud",
+    "errorLoadingQuestions": "Viga küsimuste laadimisel: {error}"
+  }
+}

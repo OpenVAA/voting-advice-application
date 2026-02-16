@@ -1,0 +1,21 @@
+{
+  "description": {
+    "label": "Muud kommentaarid",
+    "placeholder": "Muud kommentaarid või ettepanekud"
+  },
+  "emailIntro": "Soovi korral võid meile saata ka e-kirja aadressile",
+  "error": {
+    "emailIntro": "Palume saata oma tagasiside e-kirjaga, klõpsates allolevale nupule. Juba kirjutatud tekst kopeeritakse automaatselt kaasa.",
+    "emailSubject": "Tagasiside",
+    "message": "Vabandust, tagasiside saatmisel tekkis viga."
+  },
+  "popupTitle": "Mida arvad valimiskompassist?",
+  "rating": {
+    "label": "Üldine hinnang rakendusele",
+    "valueLabel": "{rating, plural, =0 {Hinnang puudub} other {Hinnang # maksimumist {ratingMax}}}"
+  },
+  "send": "Anna tagasisidet",
+  "sending": "Saatmine…",
+  "thanks": "Täname tagasiside eest!",
+  "title": "Tagasiside"
+}
