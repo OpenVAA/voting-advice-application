@@ -1,0 +1,164 @@
+# 1. Rename to render.yaml
+#
+# 2. Find and replace placeholders
+#    yv-mockup           e.g. demo-vaa
+#    deploy-young-votes-mockup-vaa         e.g. deploy-vaa
+#    yv-mockup         e.g. vaa.openvaa.org
+#                              If you don't use a dedicated domain, comment out the "domains" part in the frontend service
+#    no-reply@openvaa.org      e.g. no-reply@openvaa.org
+#    info@openvaa.org  e.g. info@openvaa.org
+#    Young Votes e.g. Voting Advice Application
+#
+# 3. Check default values marked with # Check
+#
+# 4. In Render, check whether you want to auto-update the Blueprint service when this file changes. The updates are automated by default.
+#
+# Env variables based on env.example 2025-09-25
+
+version: '1'
+
+services:
+  # Frontend service
+  - type: web
+    name: yv-mockup-frontend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: deploy-young-votes-mockup-vaa
+    plan: starter # Check
+    envVars:
+      - key: PUBLIC_CACHE_ENABLED # Check
+        value: 'false'
+      - key: CACHE_TTL
+        value: 86400000
+      - key: CACHE_LRU_SIZE
+        value: 1000
+      - key: CACHE_EXPIRATION_INTERVAL
+        value: 3600000
+      - key: CACHE_DIR # Must match disk below
+        value: /var/data/cache
+
+      - key: PUBLIC_DEBUG
+        value: 'false'
+
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://yv-mockup-frontend.onrender.com
+      - key: PUBLIC_SERVER_FRONTEND_URL # Check value after deployment
+        value: https://yv-mockup-frontend.onrender.com
+      - key: PUBLIC_BROWSER_BACKEND_URL # Check value after deployment
+        value: https://yv-mockup-backend.onrender.com
+      - key: PUBLIC_SERVER_BACKEND_URL # Check value after deployment
+        value: https://yv-mockup-backend.onrender.com
+
+      # Set this if using local adapter and disable the backend service and database
+      # - key: LOCAL_DATA_DIR
+      #   value: /var/data
+
+      # Uncomment these if using pre-registration
+      # - key: BACKEND_API_TOKEN
+      #   sync: false
+      # - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./frontend/Dockerfile
+    # domains:
+    #   - yv-mockup
+
+    disk: # Check and comment out if not planning on using the cache
+      name: disk
+      mountPath: /var/data/cache
+      sizeGB: 1
+
+    autoDeployTrigger: 'off' # Check
+
+  # Backend service
+  - type: web
+    name: yv-mockup-backend
+    runtime: docker
+    repo: https://github.com/OpenVAA/voting-advice-application
+    branch: deploy-young-votes-mockup-vaa
+    plan: starter # Check
+    envVars:
+      - key: APP_KEYS
+        sync: false
+
+      - key: MAIL_FROM
+        value: 'no-reply@openvaa.org'
+      - key: MAIL_REPLY_TO
+        value: 'info@openvaa.org'
+      - key: MAIL_FROM_NAME
+        value: 'Young Votes'
+
+      - key: STRAPI_PORT
+        value: 1337
+      - key: STRAPI_HOST
+        value: 0.0.0.0
+      - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
+        value: https://yv-mockup-frontend.onrender.com
+      - key: GENERATE_MOCK_DATA_ON_RESTART
+        value: 'false'
+      - key: GENERATE_MOCK_DATA_ON_INITIALISE
+        value: 'false'
+
+      - key: API_TOKEN_SALT
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+
+      - key: DATABASE_HOST # Check value after deployment
+        fromDatabase:
+          name: yv-mockup-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: yv-mockup-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: yv-mockup-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: yv-mockup-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: yv-mockup-db
+          property: password
+      - key: DATABASE_SSL_SELF
+        value: 'false'
+      - key: DATABASE_SCHEMA
+        value: public
+      - key: STATIC_MEDIA_CONTENT_PATH
+        value: public/media/yv-mockup
+
+      - fromGroup: AWS SES SMTP
+      - fromGroup: AWS SES HTTP
+      - fromGroup: AWS S3 MEDIA STORAGE
+
+    region: frankfurt
+    dockerContext: .
+    dockerfilePath: ./backend/vaa-strapi/Dockerfile
+
+    autoDeployTrigger: 'off' # Check
+
+    # domains: # Uncomment and define value if necessary
+    #   - foo-backend.bar.com
+
+databases:
+  - name: yv-mockup-db
+
+    plan: basic-256mb # Check
+    diskSizeGB: 5 # Check
+
+    # If necessary, uncomment and define values
+    # databaseName: yv-mockup-dbname
+    # user: yv-mockup-dbuser
+
+    region: frankfurt
+    postgresMajorVersion: '16'
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
