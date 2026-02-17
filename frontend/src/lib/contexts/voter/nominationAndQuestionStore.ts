@@ -53,7 +53,6 @@ export function nominationAndQuestionStore({
 
         tree[election.id] = Object.fromEntries(
           entityTypes
-            .sort((a) => (a === ENTITY_TYPE.Candidate ? -1 : 0))
             .map((entityType) => {
               let nominations = election.getNominations(entityType, constituency);
               // If there are no nominations for this entityType, we leave the whole leaf undefined
