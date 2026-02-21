@@ -65,10 +65,11 @@
     "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural} näissä vaaleissa.",
     "list": {
       "constituencies": "Valitse oma vaalipiirisi",
-      "details": "Tarkastele ehdokkaita ja puolueita tarkemmin",
       "elections": "Valitse vaalit",
       "opinions": "Kerro mielipiteesi",
-      "results": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}"
+      "questionWeights": "Voit myös valita, miten tärkeitä aiheet ovat sinulle",
+      "results": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}",
+      "details": "Tarkastele ehdokkaita ja puolueita tarkemmin"
     },
     "title": "Aloitetaan!"
   },

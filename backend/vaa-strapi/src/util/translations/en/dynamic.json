@@ -51,8 +51,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "With this application you can compare candidates and parties based on their opinions, parties and other data.",
-    "startButton": "Find the Best Candidates and Parties!"
+    "ingress": "With this application you can compare Luxembourgish parties based on their policy positions.",
+    "startButton": "Find parties that share your opinion!"
   },
   "info": {
     "content": "Read more about the elections below.",
@@ -62,13 +62,14 @@
   "intro": {
     "continue": "Continue",
     "heroEmoji": "🚀",
-    "ingress": "This application will help you find the {candidatePlural} and {partyPlural} that best match your opinions in the elections.",
+    "ingress": "This app helps you find the parties that best match your political preferences.",
     "list": {
       "constituencies": "Select your constituency",
-      "details": "Study them in detail",
       "elections": "Select an election",
-      "opinions": "Enter your opinions",
-      "results": "See the {candidatePlural} and {partyPlural} that best agree with you"
+      "opinions": "Enter your opinions on 20 issues",
+      "questionWeights": "You can also indicate how important each issue is to you",
+      "results": "Discover the parties that match the best with you",
+      "details": "Inspect more detailed results"
     },
     "title": "Let’s start!"
   },
@@ -95,7 +96,7 @@
     "heroEmoji": "🎊",
     "ingress": {
       "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.",
-      "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
+      "results": "Here are your matches with Luxembourgish political parties. The best matches appear first. Click on the party name for more detailed comparisons and to access the political parties' comments on each question."
     },
     "multipleElections": "Select below first which election’s {candidatePlural} and {partyPlural} you want to see and then whether you want to see {candidatePlural} or {partyPlural} ."
   },

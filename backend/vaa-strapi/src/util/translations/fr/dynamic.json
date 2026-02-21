@@ -1,5 +1,121 @@
 {
-  "loading": "Chargement des données dynamiques…",
-  "error": "Erreur lors du chargement du contenu dynamique.",
-  "retry": "Réessayer"
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Boussole électorale",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Informations personnelles",
+      "ingress": "Votre nom et certaines autres informations ont été préremplies ou seront complétées lorsque les listes de candidat·es seront confirmées. Vous ne pouvez pas modifier ces informations vous‑même ; en cas d’erreur, veuillez contacter l’assistance aux candidat·es.",
+      "emptyPlaceholder": "Selon la liste des candidat·es"
+    }
+  },
+  "candidateAppName": "Boussole électorale — Application candidat·es",
+  "candidateAppNotAccessible": {
+    "content": "La Boussole électorale pour les candidat·es n’a pas encore été publiée. Revenez à cette adresse lorsqu’elle sera disponible.",
+    "title": "Désolé, la Boussole électorale pour les candidat·es n’est pas encore disponible"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "J’accepte le stockage et l’utilisation de mes données conformément aux conditions d’utilisation.",
+      "heroEmoji": "🖋️",
+      "ingress": "Vous devez accepter les conditions d’utilisation avant de poursuivre la saisie de votre profil. Veuillez les lire attentivement et cocher la case ci‑dessous.",
+      "title": "Conditions d’utilisation"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Responsable du traitement</h3><p>DATA_CONTROLLER</p><h3>2. Personne de contact pour le registre</h3><p>DATA_CONTACT_PERSON, {adminEmailLink}.</p><h3>3. Nom du registre</h3><p>{appName} – Système d’information des candidat·es.</p><h3>4. Base légale et finalité du traitement des données personnelles</h3><p>La base légale du traitement des données personnelles au titre du RGPD de l’UE est le consentement de la personne concernée. La finalité du traitement est l’utilisation des données dans la boussole électorale.</p><h3>5. Contenu du registre</h3><p>Le registre conserve les données suivantes : nom, appartenance ou parcours politique, adresse e‑mail, date de naissance, URL de sites web, URL de profils de réseaux sociaux, autres réponses volontaires aux questions de la boussole électorale, ainsi que des informations obtenues dans les registres électoraux publics.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Les cookies nécessaires au fonctionnement du service sont traités sur la base de l’intérêt légitime, par exemple pour garantir la sécurité.</p><h3>6. Sources régulières d’information</h3><p>Les données enregistrées dans le registre sont obtenues auprès des candidat·es via un formulaire en ligne, lors de leur authentification bancaire, et à partir des registres électoraux publics.</p><h3>7. Communications régulières de données et transferts en dehors de l’UE ou de l’EEE</h3><p>Les données ne sont pas régulièrement communiquées à des tiers, mais, après la fin de la publication de la boussole électorale, elles peuvent être utilisées à des fins de recherche et pour améliorer la boussole électorale.</p><h3>8. Principes de protection du registre</h3><p>Le traitement du registre est effectué avec soin et les données traitées dans les systèmes d’information sont suffisamment protégées. Lorsque des données du registre sont stockées sur des serveurs Internet, des mesures appropriées sont prises pour assurer la sécurité physique et numérique. Le responsable du traitement veille à ce que les données stockées, les droits d’accès aux serveurs et autres informations critiques relatives à la sécurité des données personnelles soient traités de manière confidentielle et uniquement par des employé·es dont les responsabilités le nécessitent.</p><h3>9. Droit d’accès et droit de rectification</h3><p>Toute personne inscrite au registre a le droit de consulter ses données enregistrées et de demander la rectification de données inexactes ou incomplètes. Pour consulter ses données ou demander des corrections, la personne doit envoyer une demande par e‑mail au responsable du traitement. Le responsable peut demander une vérification d’identité si nécessaire. Il répond dans les délais prévus par le RGPD.</p><h3>10. Autres droits relatifs au traitement des données personnelles</h3><p>Les personnes inscrites au registre ont le droit de demander l’effacement de leurs données personnelles (droit à l’oubli). Elles disposent également d’autres droits au titre du RGPD, comme le droit de limiter le traitement dans certaines situations. Les demandes doivent être envoyées par e‑mail au responsable du traitement. Celui‑ci peut demander une vérification d’identité si nécessaire et répond dans les délais prévus par le RGPD.</p>",
+      "title": "Déclaration de registre et de confidentialité"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Autres conditions d’utilisation"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "Les {candidatePlural} et {partyPlural} sont réparti·es par circonscription. Sélectionnez une circonscription pour chaque élection.",
+      "singleElection": "Les {candidatePlural} et {partyPlural} sont réparti·es par circonscription. Vous ne pouvez voter que pour celles et ceux de votre circonscription.",
+      "singleGroup": "Les {candidatePlural} et {partyPlural} sont réparti·es par circonscription. Sélectionnez une circonscription ci‑dessous."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Sélectionnez les élections pour lesquelles vous souhaitez trouver des {candidatePlural} ou des {partyPlural}.",
+      "singleElection": "Une seule élection a lieu dans la circonscription sélectionnée."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Avec cette application, vous pouvez comparer les {partyPlural} luxebourgeois selon leurs positions politiques.",
+    "startButton": "Trouvez les {partyPlural} qui partagent vos opinions!"
+  },
+  "info": {
+    "content": "En savoir plus sur les élections ci‑dessous.",
+    "dateInfo": "La date de l’élection est le {electionDate, date, ::yyyyMMdd}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Continuer",
+    "heroEmoji": "🚀",
+    "ingress": "Cette application vous aide à trouver les {partyPlural} qui correspondent le mieux à vos préférences politiques.",
+    "list": {
+      "constituencies": "Sélectionner votre circonscription",
+      "elections": "Sélectionner une élection",
+      "opinions": "Exprimez votre opinion sur 20 sujets",
+      "questionWeights": "Vous pouvez également indiquer l'importance que vous accordez à chaque sujet",
+      "results": "Découvrez les {partyPlural}  qui vous correspondent le mieux ",
+      "details": "Consultez des résultats plus détaillés"
+    },
+    "title": "Allons-y!"
+  },
+  "maintenance": {
+    "content": "<p>Nous sommes désolé·es, la Boussole électorale est actuellement indisponible pour cause de maintenance. Elle devrait être de retour très bientôt ; veuillez réessayer plus tard.</p><p>Ne vous inquiétez pas si vous étiez en train de répondre : vous pourrez reprendre là où vous vous êtes arrêté·e quand vous reviendrez.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Tous les candidat·es inscrit·es",
+    "content": "Sur cette page, vous trouverez tou·tes les candidat·es qui ont rempli la Boussole électorale.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "Les informations relatives à la confidentialité et à la collecte de données de l’application sont présentées ci‑dessous.",
+    "dataConsentIntro": {
+      "popup": "Pouvons‑nous collecter vos données de manière totalement anonyme à des fins de recherche et pour améliorer l’application ? Nous n’utilisons pas de cookies et les données ne peuvent pas être rattachées à vous."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "Voici les {candidatePlural} et {partyPlural} qui se présentent à ces élections, classé·es par symbole électoral ou par nom. Vous pouvez affiner avec les filtres.",
+      "results": "Voici vos correspondances avec les {partyPlural} luxembourgeois. Les meilleures correspondances apparaissent en premier. Cliquez sur le nom du parti pour des comparaisons plus précises, et pour accéder aux commentaires des partis politiques sur chaque question."
+    },
+    "multipleElections": "Sélectionnez d’abord ci‑dessous l’élection dont vous voulez voir les {candidatePlural} et {partyPlural}, puis choisissez si vous souhaitez voir les {candidatePlural} ou les {partyPlural}."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Participer à l’enquête utilisateur",
+    "info": "Souhaitez‑vous aider à améliorer les boussoles électorales ? Ouvrez l’enquête dans une nouvelle fenêtre et remplissez‑la maintenant ou quand cela vous convient.",
+    "popupInfo": "L’enquête s’ouvre dans une nouvelle fenêtre. Vous pouvez la remplir immédiatement ou quand cela vous convient.",
+    "popupTitle": "Souhaitez‑vous aider à améliorer les boussoles électorales ?",
+    "thanks": "Merci d’avoir répondu à l’enquête !",
+    "title": "Participer à l’enquête utilisateur"
+  },
+  "voterAppNotAccessible": {
+    "content": "La Boussole électorale n’a pas encore été publiée. Revenez à cette adresse lorsqu’elle sera disponible.",
+    "title": "Désolé, la Boussole électorale n’a pas encore été publiée"
+  }
 }

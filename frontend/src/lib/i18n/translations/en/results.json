@@ -38,6 +38,7 @@
     "question2": "If an election were held tomorrow, how useful would this tool be for you, on a scale from 1 not useful at all to 5 extremely useful?",
     "yes": "Yes",
     "no": "No",
-    "outro": "You are now eligible for our lottery and may be one of the winners of 100 euros."
+    "outro": "You are now eligible for our lottery and may be one of the winners of 100 euros. You can continue looking at your positioning below and close your browser when you are done.",
+    "submit": "Send Answer"
   }
 }

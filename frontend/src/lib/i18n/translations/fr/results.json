@@ -38,6 +38,7 @@
     "question2": "Si des élections avaient lieu demain, dans quelle mesure cet outil vous serait-il utile, sur une échelle allant de 1 (pas du tout utile) à 5 (extrêmement utile)?",
     "yes": "Oui",
     "no": "Non",
-    "outro": "Vous êtes maintenant éligible à notre tirage au sort et pouvez gagner 100 euros."
+    "outro": "Vous êtes maintenant éligible à notre tirage au sort et pouvez gagner 100 euros. Vous pouvez continuer à consulter votre positionnement ci-dessous et fermer votre navigateur lorsque vous avez terminé.",
+    "submit": "Envoyer la réponse"
   }
 }

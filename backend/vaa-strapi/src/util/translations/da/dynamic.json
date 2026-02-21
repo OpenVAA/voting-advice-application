@@ -67,6 +67,7 @@
       "constituencies": "Vælg din valgkreds",
       "elections": "Vælg et valg",
       "opinions": "Angiv dine holdninger",
+      "questionWeights": "Du kan også angive, hvor vigtig hvert spørgsmål er for dig",
       "results": "Se de {candidatePlural} og {partyPlural}, der matcher dig bedst",
       "details": "Undersøg dem nærmere"
     },

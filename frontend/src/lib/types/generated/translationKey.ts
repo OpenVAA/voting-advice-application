@@ -454,6 +454,7 @@ export type TranslationKey =
   | 'results.finished.outro'
   | 'results.finished.question1'
   | 'results.finished.question2'
+  | 'results.finished.submit'
   | 'results.finished.yes'
   | 'results.inConstituency'
   | 'results.ingress.answerMinQuestions'

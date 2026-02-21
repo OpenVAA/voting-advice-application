@@ -200,11 +200,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
 
-  let answer1: string | undefined;
   let answer2: string | undefined;
+  let answerSaved = false;
 
-  function saveAnswer(index: number) {
-    track('results_finished_answer', { questionIndex: index, answer: index === 1 ? answer1 : answer2 });
+  function saveAnswer() {
+    track('results_finished_answer', { questionIndex: 2, answer: answer2 });
+    answerSaved = true;
   }
 </script>
 
@@ -242,21 +243,26 @@ The nominations applicable to these elections and constituencies are shown. Thes
           {/each}
         </div> -->
         <p>{$t('results.finished.question2')}</p>
-        <div class="my-md flex justify-center gap-md">
-          {#each Array.from({ length: 5 }, (_, i) => i + 1) as option}
-            <label class="label flex-col gap-sm text-md">
-              <input
-                type="radio"
-                class="radio-primary radio"
-                name="finished-question-2"
-                value={option}
-                on:click={() => saveAnswer(2)}
-                bind:group={answer2} />
-              {option}
-            </label>
-          {/each}
-        </div>
-        <p>{$t('results.finished.outro')}</p>
+        {#if !answerSaved}
+          <div class="my-md flex justify-center gap-md">
+            {#each Array.from({ length: 5 }, (_, i) => i + 1) as option}
+              <label class="label flex-col gap-sm text-md">
+                <input
+                  type="radio"
+                  class="radio-primary radio"
+                  name="finished-question-2"
+                  value={option}
+                  bind:group={answer2} />
+                {option}
+              </label>
+            {/each}
+          </div>
+          <button class="btn btn-primary" on:click={saveAnswer} disabled={!answer2}>
+            {$t('results.finished.submit')}
+          </button>
+        {:else}
+          <p class="text-primary">{$t('results.finished.outro')}</p>
+        {/if}
       </div>
     {:else}
       <p>{$t('dynamic.results.ingress.results')}</p>
