@@ -55,8 +55,8 @@
     "startButton": "Find de bedste kandidater og partier!"
   },
   "info": {
-    "content": "Læs mere om valgene nedenfor.",
-    "dateInfo": "Valgdatoen er {electionDate, date, ::yyyyMMdd}.",
+    "content": "Dette er en testversion af valgtesten til YoungVotes-projektets workshops. Dataene svarer ikke til rigtige valg, kandidater eller partier.",
+    "dateInfo": "EU-valgdagen var {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {

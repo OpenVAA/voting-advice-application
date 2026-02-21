@@ -55,8 +55,8 @@
     "startButton": "Leidke sobivaimad kandidaadid ja erakonnad!"
   },
   "info": {
-    "content": "Sellel lehel on teavet valimiste kohta.",
-    "dateInfo": "Valimispäev on {electionDate, date, ::dMyyyy}.",
+    "content": "See on valimiskompassi katseversiooni YoungVotes projekti töötubade jaoks. Selle andmed ei vasta tegelikele valimistele, kandidaatidele ega erakondadele.",
+    "dateInfo": "EL-i valimispäev oli {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {

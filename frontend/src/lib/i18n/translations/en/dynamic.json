@@ -55,8 +55,8 @@
     "startButton": "Find the Best Candidates and Parties!"
   },
   "info": {
-    "content": "Read more about the elections below.",
-    "dateInfo": "The election date is {electionDate, date, ::yyyyMMdd}.",
+    "content": "This is a test version of the election compass for YoungVotes project workshops. Its data does not correspond to actual elections, candidates, or parties.",
+    "dateInfo": "The EU election day was {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {

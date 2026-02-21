@@ -55,8 +55,8 @@
     "startButton": "Löydä sopivimmat ehdokkaat ja puolueet!"
   },
   "info": {
-    "content": "Tällä sivulla on tietoa vaaleista.",
-    "dateInfo": "Vaalipäivä on {electionDate, date, ::dMyyyy}.",
+    "content": "Tämä on vaalikoneen koeversio YoungVotes-hankkeen työpajoja varten. Sen tiedot eivät vastaa todellisia vaaleja, ehdokkaita tai puolueita.",
+    "dateInfo": "EU-vaalien vaalipäivä oli {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {
