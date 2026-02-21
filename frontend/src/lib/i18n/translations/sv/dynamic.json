@@ -55,8 +55,8 @@
     "startButton": "Börja!"
   },
   "info": {
-    "content": "Läs mer om valen.",
-    "dateInfo": "Valets datum är {electionDate, date, ::yyyyMMdd}.",
+    "content": "Detta är en testversion av valkompassen för YoungVotes-projektets workshops. Dess uppgifter motsvarar inte verkliga val, kandidater eller partier.",
+    "dateInfo": "EU-valets dag var {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {
