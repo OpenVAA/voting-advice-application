@@ -3,26 +3,26 @@
     "en": "These topics resonated with you the most",
     "fi": "Nämä aiheet resonoivat sinussa eniten",
     "dk": "Disse emner har haft størst ræsonans hos dig",
-    "ee": "Nendest teemadest kõnetasid sind kõige rohkem"
+    "et": "Nendest teemadest kõnetasid sind kõige rohkem"
   },
   "buttons": {
     "previous": {
       "en": "Previous",
       "fi": "Edellinen",
       "dk": "Forrige",
-      "ee": "Eelmine"
+      "et": "Eelmine"
     },
     "next": {
       "en": "Next",
       "fi": "Seuraava",
       "dk": "Næste",
-      "ee": "Järgmine"
+      "et": "Järgmine"
     },
     "close": {
       "en": "Close",
       "fi": "Sulje",
       "dk": "Luk",
-      "ee": "Sulge"
+      "et": "Sulge"
     }
   },
   "categories": [
@@ -31,7 +31,7 @@
         "en": "Human and social rights",
         "fi": "Ihmisoikeudet ja sosiaaliset oikeudet",
         "dk": "Menneske-og sociale rettigheder",
-        "ee": "Inim- ja sotsiaalsed õigused"
+        "et": "Inim- ja sotsiaalsed õigused"
       },
       "values": [
         {
@@ -39,19 +39,19 @@
             "en": "🌈",
             "fi": "🌈",
             "dk": "🌈",
-            "ee": "🌈"
+            "et": "🌈"
           },
           "title": {
             "en": "Equal Rights Champion",
             "fi": "Tasa-arvon puolustaja",
             "dk": "Ligheds minister",
-            "ee": "Õiguste eestkõneleja"
+            "et": "Õiguste eestkõneleja"
           },
           "info": {
             "en": "Questions about mental health, equality and voting rights are your top priorities. You want society to invest in people, not cut back on healthcare and social services.",
             "fi": "Kysymykset mielenterveydestä, tasa-arvosta ja äänioikeudesta ovat sinulle tärkeimpiä. Haluat yhteiskunnan investoivan ihmisiin, ei leikkaavan terveydenhuollosta ja sosiaalipalveluista.",
             "dk": "Dine top prioriteter er spørgsmål om mental sundhed, lighed og stemmerettigheder. Du ønsker at samfundet skal investere i folk, og ikke fortage nedskæringer indenfor velfærd og sociale ydelser.",
-            "ee": "Vaimse tervise, võrdsuse ja valimisõiguse küsimused on sinu peamised prioriteedid. Sa tahad, et ühiskond investeeriks inimestesse, mitte ei kärbiks tervishoiu- ja sotsiaalteenuseid."
+            "et": "Vaimse tervise, võrdsuse ja valimisõiguse küsimused on sinu peamised prioriteedid. Sa tahad, et ühiskond investeeriks inimestesse, mitte ei kärbiks tervishoiu- ja sotsiaalteenuseid."
           }
         },
         {
@@ -59,19 +59,19 @@
             "en": "🤝",
             "fi": "🤝",
             "dk": "🤝",
-            "ee": "🤝"
+            "et": "🤝"
           },
           "title": {
             "en": "Traditionalist",
             "fi": "Perinteisten arvojen vaalija",
             "dk": "Traditionalist",
-            "ee": "Traditsiooniline"
+            "et": "Traditsiooniline"
           },
           "info": {
             "en": "You value stability and established practices. You're cautious about rapid changes, preferring gradual evolution over revolutionary shifts.",
             "fi": "Arvostat vakautta ja vakiintuneita käytäntöjä. Suhtaudut varauksella nopeisiin muutoksiin ja suosit asteittaista kehitystä vallankumouksellisten muutosten sijaan.",
             "dk": "Du værdsætter stabilitet og etablerede praksiser. Du er forbeholden overfor hurtige forandringer, og foretrækker gradvis udvikling frem for revolutionerende skift.",
-            "ee": "Sa väärtustad stabiilsust ja väljakujunenud tavasid. Oled kiirete muutuste suhtes ettevaatlik ning eelistad järkjärgulist arengut järskudele või revolutsioonilistele pööretele."
+            "et": "Sa väärtustad stabiilsust ja väljakujunenud tavasid. Oled kiirete muutuste suhtes ettevaatlik ning eelistad järkjärgulist arengut järskudele või revolutsioonilistele pööretele."
           }
         }
       ]
@@ -81,7 +81,7 @@
         "en": "Climate and economy",
         "fi": "Ilmasto ja talous",
         "dk": "Klima og økonomi",
-        "ee": "Kliima ja majandus"
+        "et": "Kliima ja majandus"
       },
       "values": [
         {
@@ -89,19 +89,19 @@
             "en": "🌍",
             "fi": "🌍",
             "dk": "🌍",
-            "ee": "🌍"
+            "et": "🌍"
           },
           "title": {
             "en": "Climate Guardian",
             "fi": "Ilmastonsuojelija",
             "dk": "Klimaforkæmper",
-            "ee": "Kliimakaitsja"
+            "et": "Kliimakaitsja"
           },
           "info": {
             "en": "Our planet's future drives your choices. You prioritize climate action and believe businesses must be held accountable for environmental and social impacts, even if it means stricter regulations.",
             "fi": "Planeettamme tulevaisuus ohjaa valintojasi. Priorisoit ilmastotoimia ja uskot, että yrityksiä on pidettävä vastuussa ympäristö- ja yhteiskuntavaikutuksista, vaikka se tarkoittaisi tiukempia säädöksiä.",
             "dk": "Vores planets fremtid er med til at påvirke dine valg. Du prioriterer klima handling og tror på, at virksomheder skal stilles til ansvar for deres klimamæssige og sociale påvirkning på omgivelserne, selv hvis det betyder strengere regulering.",
-            "ee": "Meie planeedi tulevik suunab sinu valikuid. Sead kliimategevuse esikohale ja usud, et ettevõtteid tuleb keskkonna- ja sotsiaalse mõju eest vastutusele võtta, isegi kui see tähendab rangemaid regulatsioone."
+            "et": "Meie planeedi tulevik suunab sinu valikuid. Sead kliimategevuse esikohale ja usud, et ettevõtteid tuleb keskkonna- ja sotsiaalse mõju eest vastutusele võtta, isegi kui see tähendab rangemaid regulatsioone."
           }
         },
         {
@@ -109,19 +109,19 @@
             "en": "💼",
             "fi": "💼",
             "dk": "💼",
-            "ee": "💼"
+            "et": "💼"
           },
           "title": {
             "en": "Growth Advocate",
             "fi": "Kasvun kannattaja",
             "dk": "Vækst advokat",
-            "ee": "Majanduskasvu eestkõneleja"
+            "et": "Majanduskasvu eestkõneleja"
           },
           "info": {
             "en": "Economic prosperity and employment are your priorities. You believe a strong economy enables everything else, and you're skeptical of regulations that might hamper business growth and job creation.",
             "fi": "Taloudellinen menestys ja työllisyys ovat prioriteettejasi. Uskot vahvan talouden mahdollistavan kaiken muun, ja suhtaudut kriittisesti säädöksiin, jotka voivat haitata yritysten kasvua ja työpaikkojen luomista.",
             "dk": "Økonomisk velstand og beskæftigelse er dine top prioriteter. Du tror på, at en stærk økonomi muliggører alt andet, og du er skeptisk overfor reguleringer der udfordrer viksomheders vækst og skabelsen af arbejdspladser.",
-            "ee": "Majanduslik heaolu ja tööhõive on sinu prioriteedid. Usud, et tugev majandus loob aluse kõigele muule, ning suhtud skeptiliselt regulatsioonidesse, mis võivad takistada ettevõtluse kasvu ja töökohtade loomist."
+            "et": "Majanduslik heaolu ja tööhõive on sinu prioriteedid. Usud, et tugev majandus loob aluse kõigele muule, ning suhtud skeptiliselt regulatsioonidesse, mis võivad takistada ettevõtluse kasvu ja töökohtade loomist."
           }
         }
       ]
@@ -131,7 +131,7 @@
         "en": "Global Openness",
         "fi": "Globaali avoimuus",
         "dk": "Global åbenhed",
-        "ee": "Globaalne avatus"
+        "et": "Globaalne avatus"
       },
       "values": [
         {
@@ -139,19 +139,19 @@
             "en": "🌏",
             "fi": "🌏",
             "dk": "🌏",
-            "ee": "🌏"
+            "et": "🌏"
           },
           "title": {
             "en": "Open Borders Believer",
             "fi": "Avointen rajojen kannattaja",
             "dk": "Inklusions idealist",
-            "ee": "Avatud piiride pooldaja"
+            "et": "Avatud piiride pooldaja"
           },
           "info": {
             "en": "You see strength in diversity and openness. You support EU expansion and welcoming asylum seekers, believing that cooperation and inclusion make the world stronger and more humane.",
             "fi": "Näet monimuotoisuuden ja avoimuuden vahvuutena. Tuet EU:n laajentumista ja turvapaikanhakijoiden vastaanottamista, uskoen että yhteistyö ja osallisuus tekevät maailmasta vahvemman ja inhimillisemmän.",
             "dk": "Du ser styrke i diversitet og åbenhed. Du støtter udviddelsen af EU og velkommer asylansøgere, fordi du tror på at samarbejde og inklusion gavner verden og gør den mere medmenneskelig.",
-            "ee": "Sa näed tugevust mitmekesisuses ja avatuses. Toetad Euroopa Liidu laienemist ning varjupaigataotlejate vastuvõtmist, uskudes, et koostöö ja kaasatus muudavad maailma tugevamaks ja inimlikumaks."
+            "et": "Sa näed tugevust mitmekesisuses ja avatuses. Toetad Euroopa Liidu laienemist ning varjupaigataotlejate vastuvõtmist, uskudes, et koostöö ja kaasatus muudavad maailma tugevamaks ja inimlikumaks."
           }
         },
         {
@@ -159,19 +159,19 @@
             "en": "🛡️",
             "fi": "🛡️",
             "dk": "🛡️",
-            "ee": "🛡️"
+            "et": "🛡️"
           },
           "title": {
             "en": "Sovereignty Defender",
             "fi": "Itsemääräämisoikeuden puolustaja",
             "dk": "Suverænitetssoldaten",
-            "ee": "Suveräänsuse kaitsja"
+            "et": "Suveräänsuse kaitsja"
           },
           "info": {
             "en": "You prioritize security and controlled borders. You're cautious about EU expansion and immigration, believing that protecting what we have comes before extending ourselves further.",
             "fi": "Priorisoit turvallisuutta ja säädeltyä rajapolitiikkaa. Suhtaudut varauksella EU:n laajentumiseen ja maahanmuuttoon. Uskot, että olemassaolevan suojeleminen on laajentumista tärkeämpää.",
             "dk": "Du prioriterer sikkerhed og grænsekontrol. Du er forsigtig med udviddelsen af EU og øget immigration, fordi du tror på at værne om det vi har frem for at udvidde os selv ydereligere.",
-            "ee": "Peamiseks pead turvalisust ja kontrollitud piire. Oled Euroopa Liidu laienemise ja sisserände suhtes ettevaatlik ning usud, et esmalt tuleb kaitsta olemasolevat, enne kui end rohkem laiendame."
+            "et": "Peamiseks pead turvalisust ja kontrollitud piire. Oled Euroopa Liidu laienemise ja sisserände suhtes ettevaatlik ning usud, et esmalt tuleb kaitsta olemasolevat, enne kui end rohkem laiendame."
           }
         }
       ]

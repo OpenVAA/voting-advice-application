@@ -58,7 +58,7 @@ export const staticSettings: StaticSettings = {
       name: 'Dansk'
     },
     {
-      code: 'ee',
+      code: 'et',
       name: 'Eesti'
     }
   ],
