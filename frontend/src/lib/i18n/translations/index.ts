@@ -60,7 +60,7 @@ export const locales = {
   fi: 'Suomi',
   sv: 'Svenska',
   da: 'Dansk',
-  ee: 'Eesti'
+  et: 'Eesti'
 };
 
 /**
