@@ -22,6 +22,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 - `results_changeElection`
 - `results_changeTab`
 - `results_ranked`
+- `results_showEntity`
 -->
 
 <script lang="ts">
@@ -72,7 +73,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
-    startEvent($resultsAvailable ? 'results_ranked' : 'results_browse', {
+    track($resultsAvailable ? 'results_ranked' : 'results_browse', {
       election: activeElectionId,
       entityType: activeEntityType,
       numAnswers: Object.keys($answers).length
@@ -141,12 +142,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
   function handleElectionChange(details: { option: unknown }): void {
     const { id } = details.option as Election;
     activeElectionId = id;
-    startEvent('results_changeElection', { election: id });
+    track('results_changeElection', { election: id });
   }
 
   function handleEntityTabChange({ tab }: { tab: Tab }): void {
     activeEntityType = (tab as EntityTab).type;
-    startEvent('results_changeTab', { section: activeEntityType });
+    track('results_changeTab', { section: activeEntityType });
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -160,6 +161,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
     setTimeout(() => {
       $shouldShowFinished = true;
     }, 1000);
+    track('results_showEntity', {
+      entityType: entityType as EntityType,
+      entityId,
+      nominationId,
+      entityUrl: `${to.url}`
+    });
     pushState(to.url, {
       resultsShowEntity: {
         entityType: entityType as EntityType,

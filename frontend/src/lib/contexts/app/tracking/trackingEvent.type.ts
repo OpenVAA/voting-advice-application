@@ -42,6 +42,8 @@ type TrackingEventName =
   | 'results_changeTab'
   | 'results_ranked'
   | `results_ranked_${EntityType}`
+  | 'results_ranked'
+  | 'results_showEntity'
   | 'resultsPreview_updated'
   | 'survey_opened'
   | 'testCondition_reset'
