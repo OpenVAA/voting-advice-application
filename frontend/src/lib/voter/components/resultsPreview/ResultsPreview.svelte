@@ -12,6 +12,10 @@ A dynamic component for showing a preview of the current best matches.
 
 - Accesses `VoterContext` for matches.
 
+### Tracking events
+
+- `resultsPreview_updated`: Fired when the matches in the preview are updated. Payload includes a stringified array of arrays of matched entity `shortNames` and their scores (-1 if not available).
+
 ### Usage
 
 ```tsx
@@ -42,7 +46,7 @@ A dynamic component for showing a preview of the current best matches.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { matches, selectedElections, t } = getVoterContext();
+  const { matches, selectedElections, startEvent, t } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////
   // Matches
@@ -63,6 +67,24 @@ A dynamic component for showing a preview of the current best matches.
     duration: (d) => Math.sqrt(d * 100),
     fallback: (node) => fly(node, { x: '100dvw', opacity: 0, easing: cubicInOut })
   });
+
+  ////////////////////////////////////////////////////////////////////
+  // Tracking events
+  ////////////////////////////////////////////////////////////////////
+
+  let lastMatches: string | undefined;
+  $: if (selectedMatches) {
+    const currentMatches = JSON.stringify(
+      selectedMatches.map((m) => {
+        const { entity, match } = unwrapEntity(m);
+        return [entity.shortName, match?.score ?? -1];
+      })
+    );
+    if (currentMatches !== lastMatches) {
+      lastMatches = currentMatches;
+      startEvent('resultsPreview_updated', { matches: currentMatches });
+    }
+  }
 </script>
 
 {#if selectedMatches?.length}
