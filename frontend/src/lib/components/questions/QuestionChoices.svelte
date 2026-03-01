@@ -66,6 +66,7 @@ The same component can also be used to display the answers of the voter and anot
   import type { Id } from '@openvaa/core';
   import type { Choice } from '@openvaa/data';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
+  import { getCustomData } from '@openvaa/app-shared';
 
   type $$Props = QuestionChoicesProps;
 
@@ -104,7 +105,9 @@ The same component can also be used to display the answers of the voter and anot
     if (showLine) doShowLine = showLine;
     else doShowLine = isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion);
     if (variant) vertical = variant === 'vertical';
-    else vertical = isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion);
+    else
+      vertical =
+        isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) || !!getCustomData(question).vertical;
   }
 
   ////////////////////////////////////////////////////////////////////
