@@ -6,6 +6,12 @@
     "youHaventAnswered": "Du har ikke besvaret dette spørgsmål",
     "yourAnswer": "Du"
   },
+  "arguments": {
+    "con": "Imod",
+    "pro": "For",
+    "proCategory": "For {option}",
+    "title": "Argumenter"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 spørgsmål} other {# spørgsmål}}",
     "skip": "Spring denne kategori over"
