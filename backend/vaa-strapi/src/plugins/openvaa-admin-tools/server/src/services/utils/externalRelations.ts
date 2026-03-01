@@ -80,13 +80,16 @@ export async function findOneByExternalId({
   api,
   externalId,
   strapi,
+  populate,
 }: {
   api: UID.ContentType;
   externalId: string;
   strapi;
+  populate?: Array<string>;
 }): Promise<(object & { documentId: string }) | undefined> {
   const results = await strapi.documents(api).findMany({
     filters: { externalId: { $eq: externalId } },
+    populate,
   });
   if (!results.length) return undefined;
   if (results.length > 1)
