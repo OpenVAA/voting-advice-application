@@ -6,6 +6,12 @@
     "youHaventAnswered": "You haven't answered this question",
     "yourAnswer": "You"
   },
+  "arguments": {
+    "con": "Against",
+    "pro": "For",
+    "proCategory": "For {option}",
+    "title": "Arguments"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
     "skip": "Skip This Category"

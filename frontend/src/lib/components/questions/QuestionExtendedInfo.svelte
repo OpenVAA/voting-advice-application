@@ -4,9 +4,8 @@ Display the question's expandable information content.
 
 ### Properties
 
-- `title`: The title for the info, usually the question text.
-- `info`: The info content to show as a plain or HTML string.
-- `infoSections`: An array of objects with `title` and `content` properties to show as expandable sections.
+- `question`: The question to show the info for.
+- `title`: Optional title for the info, by default the question text.
 - Any valid properties of a `<div>` element
 
 ### Callback properties
@@ -17,29 +16,34 @@ Display the question's expandable information content.
 ### Usage
 
 ```tsx
-<QuestionExtendedInfo
-  info={question.info}
-  infoSections={customData.infoSections} />
+<QuestionExtendedInfo {question} />
 ```
 -->
 
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { getCustomData } from '@openvaa/app-shared';
   import { Expander } from '../expander';
   import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { QuestionArguments } from '.';
 
   type $$Props = QuestionExtendedInfoProps;
 
-  export let title: $$Props['title'];
-  export let info: $$Props['info'];
-  export let infoSections: $$Props['infoSections'] = [];
+  export let question: $$Props['question'];
+  export let title: $$Props['title'] = undefined;
   export let onSectionCollapse: $$Props['onSectionCollapse'] = undefined;
   export let onSectionExpand: $$Props['onSectionExpand'] = undefined;
+
+  const { t } = getComponentContext();
+
+  const { info } = question;
+  const { arguments: args, infoSections } = getCustomData(question);
 </script>
 
 <div {...concatClass($$restProps, 'flex flex-col gap-lg justify-stretch')}>
-  <h2 class="text-center">{title}</h2>
+  <h2 class="text-center">{title || question.text}</h2>
   <div class="prose">
     {@html sanitizeHtml(info)}
   </div>
@@ -57,6 +61,17 @@ Display the question's expandable information content.
           </Expander>
         {/if}
       {/each}
+      {#if args}
+        {@const title = $t('questions.arguments.title')}
+        <Expander
+          {title}
+          titleClass="flex justify-between font-bold"
+          contentClass="!text-left"
+          on:collapse={() => onSectionCollapse?.(title)}
+          on:expand={() => onSectionExpand?.(title)}>
+          <QuestionArguments {question} />
+        </Expander>
+      {/if}
     </div>
   {/if}
 </div>
