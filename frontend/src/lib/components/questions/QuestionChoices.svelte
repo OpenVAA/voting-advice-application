@@ -60,13 +60,13 @@ The same component can also be used to display the answers of the voter and anot
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
   import type { Choice } from '@openvaa/data';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
-  import { getCustomData } from '@openvaa/app-shared';
 
   type $$Props = QuestionChoicesProps;
 
