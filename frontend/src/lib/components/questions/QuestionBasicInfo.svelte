@@ -20,6 +20,7 @@ Display the question's expandable information content.
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import QuestionArguments from './QuestionArguments.svelte';
   import type { QuestionBasicInfoProps } from './QuestionBasicInfo.type';
 
   type $$Props = QuestionBasicInfoProps;
@@ -27,6 +28,7 @@ Display the question's expandable information content.
   export let info: $$Props['info'];
   export let onCollapse: $$Props['onCollapse'] = undefined;
   export let onExpand: $$Props['onExpand'] = undefined;
+  export let question: $$Props['question'] = undefined;
 
   const { t } = getComponentContext();
 </script>
@@ -37,4 +39,9 @@ Display the question's expandable information content.
   title={$t('common.readMore')}
   {...$$restProps}>
   {@html sanitizeHtml(info)}
+  {#if question}
+    {#key question}
+      <QuestionArguments {question} class="mt-lg" />
+    {/key}
+  {/if}
 </Expander>

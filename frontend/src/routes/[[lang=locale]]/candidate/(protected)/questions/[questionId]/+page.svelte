@@ -256,7 +256,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
       {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
-        <QuestionBasicInfo {info} />
+        <QuestionBasicInfo {info} {question} />
       {/if}
 
       <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">

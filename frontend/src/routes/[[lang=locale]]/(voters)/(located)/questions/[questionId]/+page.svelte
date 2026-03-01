@@ -184,6 +184,7 @@ Display a question for answering.
       {:else if info}
         <QuestionBasicInfo
           {info}
+          {question}
           onCollapse={() => startEvent('questionInfo_collapse')}
           onExpand={() => startEvent('questionInfo_expand')} />
       {/if}

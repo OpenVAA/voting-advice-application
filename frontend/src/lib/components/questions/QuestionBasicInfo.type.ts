@@ -1,3 +1,4 @@
+import type { AnyQuestionVariant } from '@openvaa/data';
 import type { ExpanderProps } from '$lib/components/expander';
 
 export type QuestionBasicInfoProps = Partial<ExpanderProps> & {
@@ -13,4 +14,8 @@ export type QuestionBasicInfoProps = Partial<ExpanderProps> & {
    * A callback triggered when the info content is expanded.  Mostly used for tracking.
    */
   onExpand?: () => void;
+  /**
+   * The question.
+   */
+  question?: AnyQuestionVariant;
 };
