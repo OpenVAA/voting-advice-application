@@ -6,6 +6,12 @@
     "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
     "yourAnswer": "Sinä"
   },
+  "arguments": {
+    "con": "Puolesta",
+    "pro": "Vastaan",
+    "proCategory": "Puolesta: {option}",
+    "title": "Perustelut"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 kysymys} other {# kysymystä}}",
     "skip": "Ohita tämä teema"
