@@ -6,6 +6,12 @@
     "youHaventAnswered": "Du har inte svarat på denna fråga",
     "yourAnswer": "Du"
   },
+  "arguments": {
+    "con": "Emot",
+    "pro": "För",
+    "proCategory": "För {option}",
+    "title": "Argument"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 fråga} other {# frågor}}",
     "skip": "Hoppa över den här kategorin"
