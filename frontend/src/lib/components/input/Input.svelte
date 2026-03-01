@@ -110,7 +110,7 @@ Multilingual features are only available if the `locales` store contains more th
   const isLabelOutside = multilingual || type.startsWith('textarea');
 
   /*** Extend info */
-  if (multilingual && multilingualInfo != '') {
+  if (multilingual && $locales.length > 1 && multilingualInfo != '') {
     multilingualInfo ??= $t('components.input.multilingualInfo');
     info ??= '';
     info += ` ${multilingualInfo}`;
