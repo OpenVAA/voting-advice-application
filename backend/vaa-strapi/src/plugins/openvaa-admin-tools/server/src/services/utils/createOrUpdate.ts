@@ -5,6 +5,7 @@ import type { ImportableCollection, ImportDatum } from '../data.type';
 /**
  * Create or update existing data based on `externalId` or `documentId` if provided.
  * NB. The `answers` property of `Entities` is always merged by first-level keys and not replaced.
+ * NB. A `Candidate`’s `registrationKey` will not be updated if they already have a `user`.
  * NB. An `answersByExternalId` property can be supplied to update answers by `externalId`.
  * @param collection - The importable collection.
  * @param datum - The data item.
@@ -37,19 +38,22 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
     | (object & {
         documentId: string;
         answers?: object | null;
+        user?: { documentId: string } | null;
       })
     | undefined;
+  // Only populate user for candidates to check registrationKey update condition
+  const populate = collection === 'candidates' ? ['user'] : undefined;
   if (singleType) {
-    existing = await strapi.documents(api).findFirst();
+    existing = await strapi.documents(api).findFirst({ populate });
   } else if (documentId) {
-    existing = await strapi.documents(api).findOne({ documentId });
+    existing = await strapi.documents(api).findOne({ documentId, populate });
   } else if (externalId) {
     if (typeof externalId !== 'string') throw new Error(`Invalid externalId ${externalId}`);
-    existing = await findOneByExternalId({ api, externalId, strapi });
+    existing = await findOneByExternalId({ api, externalId, strapi, populate });
   }
   if (existing) {
-    const { documentId, answers: currentAnswers, ...rest } = existing;
-    const { answers: newAnswers, ...newRest } = parsed;
+    const { documentId, user, answers: currentAnswers, ...rest } = existing;
+    const { registrationKey, answers: newAnswers, ...newRest } = parsed;
     let answers: unknown;
     if (newAnswers && typeof newAnswers === 'object') {
       answers =
@@ -65,6 +69,7 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
         ...rest,
         ...newRest,
         answers,
+        registrationKey: user?.documentId ? undefined : registrationKey,
       },
     });
     return 'updated';
