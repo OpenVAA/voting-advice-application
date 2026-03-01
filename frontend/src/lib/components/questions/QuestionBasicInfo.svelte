@@ -12,7 +12,7 @@ Display the question's expandable information content.
 ### Usage
 
 ```tsx
-<QuestionInfo {info}/>
+<QuestionBasicInfo {info}/>
 ```
 -->
 
