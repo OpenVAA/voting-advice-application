@@ -171,6 +171,7 @@ export type TranslationKey =
   | 'candidateApp.login.answersLockedInfo'
   | 'candidateApp.login.enterEmailAndPassword'
   | 'candidateApp.login.forgotPassword'
+  | 'candidateApp.login.haveRegistrationCode'
   | 'candidateApp.login.title'
   | 'candidateApp.login.unknownError'
   | 'candidateApp.logoutModal.continue'
