@@ -41,9 +41,9 @@ Displays information about the elections in the VAA.
           <h2 class="mb-md mt-lg">{name}</h2>
         {/if}
         <p>{@html sanitizeHtml(info)}</p>
-        {#if date}
+        <!-- {#if date}
           <p>{$t('dynamic.info.dateInfo', { electionDate: date })}</p>
-        {/if}
+        {/if} -->
       {/each}
     </div>
   {/if}
