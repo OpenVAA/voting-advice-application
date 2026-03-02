@@ -1,0 +1,13 @@
+{
+  "da": {
+    "aspectRatio": 0.8,
+    "poster": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/2026/intro-video.jpg",
+    "sources": [
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/2026/intro-video.webm",
+      "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/2026/intro-video.mp4"
+    ],
+    "title": "Hvilken ung kandidat er du mest enig med?",
+    "transcript": "<p>Hvilken ung kandidat er du mest enig med?</p><p>Snart skal vi stemme til Folketingsvalget, og der er heldigvis masser af unge kandidater, du kan stemme på.</p><p>I Dansk Ungdoms Fællesråd har vi lavet Danmarks Unge Valgtest, så du kan finde den unge kandidat, du er mest enig med.</p><p>Unge er nemlig stadig underrepræsenterede i dansk politik, og det er en udfordring for vores demokrati.</p><p>Vi unge er eksperter i, hvordan det er at være ung i dag. Derfor bør vores perspektiver fylde mere, når der træffes politiske beslutninger.</p><p>Derfor synes jeg, du skal overveje at stemme på en ung kandidat.</p><p>Tag Danmarks Unge Valgtest og se, om der er en ung kandidat, du er enig med og har lyst til at sætte dit kryds ved.</p>",
+    "captions": "https://duf-vaa-2025.s3.eu-north-1.amazonaws.com/2026/intro-video.da.srt"
+  }
+}
