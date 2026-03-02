@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@openvaa/shared-config/ts",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo",
+    "rootDir": "./src",
+    "outDir": "./build"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["tests/**/*", "src/scripts/**/*"],
+  "references": [
+    { "path": "../core/tsconfig.json" },
+    { "path": "../llm/tsconfig.json" },
+    { "path": "../vector-store/tsconfig.json" }
+  ]
+}

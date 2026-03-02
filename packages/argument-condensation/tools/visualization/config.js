@@ -61,13 +61,13 @@ export const VISUALIZATION_CONFIG = {
   // Icons
   icons: {
     operations: {
-      MAP: '🗺️',
-      ITERATE_MAP: '🔁',
-      REDUCE: '⚡',
-      REFINE: '✨',
-      GROUND: '🏗️',
-      ROOT: '🌳',
-      EMPTY: '❓'
+      MAP: 'Map',
+      ITERATE_MAP: 'Iterate',
+      REDUCE: 'Reduce',
+      REFINE: 'Refine',
+      GROUND: 'Ground',
+      ROOT: 'Root',
+      EMPTY: '?'
     }
   }
 };

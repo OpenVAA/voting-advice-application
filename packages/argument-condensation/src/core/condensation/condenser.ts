@@ -122,7 +122,7 @@ export class Condenser {
     this.startTime = new Date();
 
     if (input.options.createVisualizationData) {
-      this.treeBuilder = new OperationTreeBuilder(this.runId);
+      this.treeBuilder = new OperationTreeBuilder(this.runId, this.input.question.name, this.input.options.outputType);
     } else {
       this.treeBuilder = new DummyTreeBuilder();
     }
@@ -377,7 +377,7 @@ export class Condenser {
       const llmResult = await this.input.options.llmProvider.generateObject({
         schema: ResponseWithArgumentsSchema,
         messages,
-        temperature: 0.7,
+        temperature: 0.0,
         maxRetries: 3
       });
 
@@ -755,7 +755,7 @@ export class Condenser {
         });
         return {
           messages: [{ role: 'system' as const, content: promptText }],
-          temperature: 0.7
+          temperature: 0.0
         };
       })
     );
