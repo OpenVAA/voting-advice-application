@@ -1,4 +1,5 @@
 import { Accordion, Box, Card, Flex, Main, Typography } from '@strapi/design-system';
+import { CandidateAuth } from '../components/CandidateAuth';
 import { CandidateNominatorFileImport } from '../components/CandidateNominatorFileImport';
 import { DeleteData } from '../components/DeleteData';
 import { FindData } from '../components/FindData';
@@ -59,6 +60,18 @@ export function HomePage() {
               <Accordion.Content>
                 <Box padding={5}>
                   <SendEmail />
+                </Box>
+              </Accordion.Content>
+            </Accordion.Item>
+            <Accordion.Item value="candidateAuth">
+              <Accordion.Header>
+                <Accordion.Trigger>
+                  <h2>Candidate Password Management</h2>
+                </Accordion.Trigger>
+              </Accordion.Header>
+              <Accordion.Content>
+                <Box padding={5}>
+                  <CandidateAuth />
                 </Box>
               </Accordion.Content>
             </Accordion.Item>
