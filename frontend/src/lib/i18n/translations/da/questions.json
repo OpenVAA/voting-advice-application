@@ -7,9 +7,9 @@
     "yourAnswer": "Du"
   },
   "arguments": {
-    "con": "Imod",
-    "pro": "For",
-    "proCategory": "For {option}",
+    "con": "Argument imod",
+    "pro": "Argument for",
+    "proCategory": "Argument for {option}",
     "title": "Argumenter"
   },
   "category": {
@@ -20,7 +20,7 @@
   "intro": {
     "ingress": {
       "withCategorySelection": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. {minQuestions, plural, =0 {} =1 {} other {Vælg dog nok kategorier til at få mindst # spørgsmål i alt.}}",
-      "withoutCategorySelection": "Besvar nu {numQuestions} spørgsmål om politik og værdier. {numCategories, plural, =0 {} =1 {} other {Spørgsmålene er opdelt i # kategorier.}}"
+      "withoutCategorySelection": "Her følger {numQuestions} spørgsmål om dine holdninger til forskellige emner. Du kan springe op til tre spørgsmål over. "
     },
     "start": "Besvar {numQuestions} spørgsmål"
   },

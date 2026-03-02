@@ -17,6 +17,7 @@ See `+page.ts` for possible redirects.
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   import type { Election } from '@openvaa/data';
@@ -88,11 +89,13 @@ See `+page.ts` for possible redirects.
 
   {#if elections.length}
     <p class="text-center">
-      {useSingleGroup
-        ? $t('dynamic.constituencies.ingress.singleGroup')
-        : elections.length > 1
-          ? $t('dynamic.constituencies.ingress.multipleElections')
-          : $t('dynamic.constituencies.ingress.singleElection')}
+      {@html sanitizeHtml(
+        useSingleGroup
+          ? $t('dynamic.constituencies.ingress.singleGroup')
+          : elections.length > 1
+            ? $t('dynamic.constituencies.ingress.multipleElections')
+            : $t('dynamic.constituencies.ingress.singleElection')
+      )}
     </p>
 
     <ConstituencySelector {elections} {useSingleGroup} bind:selected bind:selectionComplete />

@@ -11,7 +11,7 @@
   },
   "ingress": {
     "default": "Du kan se alle dine holdninger nedenfor og redigere dem.",
-    "empty": "Nu bliver du bedt om at give dine holdninger til {numQuestions} politiske udsagn. Når vælgerne bruger valgtesten, svarer de på de samme udsagn og ser, hvor meget deres holdninger stemmer overens med dine.",
+    "empty": "Du skal nu tage stilling til 20 politiske spørgsmål. Når vælgerne besvarer Danmarks Unge Valgtest, svarer de på de samme spørgsmål og kan se, i hvor høj grad deres holdninger matcher dine. Hvert spørgsmål har en faktaboks samt eksempler på argumenter for og imod. Du har mulighed for at tilføje en kommentar til dine svar, som vil blive vist, når vælgeren ser, hvilke kandidater vedkommende er mest enig med.",
     "partial": "Du kan se dine holdninger, redigere dem og besvare de resterende spørgsmål."
   },
   "notAnswered": "Du har ikke besvaret dette spørgsmål.",

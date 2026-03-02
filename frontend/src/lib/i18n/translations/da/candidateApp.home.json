@@ -5,7 +5,7 @@
     "view": "Vis dine grundlæggende oplysninger"
   },
   "ingress": {
-    "notDone": "For at komme med valgtesten skal du indtaste nogle grundlæggende oplysninger om dig selv og svare på politiske holdningsudsagn.",
+    "notDone": "DUF – Dansk Ungdoms Fællesråd står bag Danmarks Unge Valgtest i samarbejde med OpenVAA, som er en finske NGO, der udvikler valgtest. For at komme med i valgtesten skal du indtaste nogle grundlæggende oplysninger om dig selv og svare på politiske holdningsudsagn.",
     "ready": "Du har indtastet alle de oplysninger, der kræves til Valgtesten. Du kan stadig redigere dine svar og logge ind senere."
   },
   "preview": "Forhåndsvis din profil",
