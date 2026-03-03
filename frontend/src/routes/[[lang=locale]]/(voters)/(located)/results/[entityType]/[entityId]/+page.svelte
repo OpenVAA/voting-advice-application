@@ -113,7 +113,7 @@ Used to show an entity's details using the `EntityDetails` component.
   <!-- The card -->
   {#if entity}
     {#key entity}
-      <EntityDetails {entity} />
+      <EntityDetails {entity} data-testid="voter-entity-detail" />
     {/key}
   {:else}
     <Loading showLabel />

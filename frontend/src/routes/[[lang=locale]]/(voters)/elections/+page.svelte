@@ -84,7 +84,7 @@ See `+page.ts` for possible redirects.
         : $t('dynamic.elections.ingress.multipleElections')}
     </p>
 
-    <ElectionSelector {elections} bind:selected />
+    <ElectionSelector {elections} bind:selected data-testid="voter-elections-list" />
   {/if}
 
   <Button
@@ -93,5 +93,6 @@ See `+page.ts` for possible redirects.
     disabled={!canSubmit}
     variant="main"
     icon="next"
-    text={$t('common.continue')} />
+    text={$t('common.continue')}
+    data-testid="voter-elections-continue" />
 </MainContent>

@@ -213,7 +213,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
   </figure>
 
-  <div class="mb-xl text-center">
+  <div class="mb-xl text-center" data-testid="voter-results-ingress">
     {#if $resultsAvailable}
       <p>{$t('dynamic.results.ingress.results')}</p>
     {:else}
@@ -240,7 +240,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
       {activeIndex}
       labelGetter={getName}
       onChange={handleElectionChange}
-      class="-mt-md mb-lg" />
+      class="-mt-md mb-lg"
+      data-testid="voter-results-election-select" />
 
     {#if activeElection?.info}
       <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
@@ -251,12 +252,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
+  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300" data-testid="voter-results-container">
     {#if activeElectionId}
       <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
         <!-- EntityType selector if there are multiple -->
         {#if Object.keys($matches[activeElectionId]).length > 1}
-          <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
+          <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} data-testid="voter-results-entity-tabs" />
         {/if}
 
         <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
@@ -277,8 +278,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
                 entities={activeMatches}
                 onUpdate={(results) => (filteredEntities = results)}
                 filterGroup={$entityFilters[activeElectionId][activeEntityType]}
-                class="mx-10 mb-md" />
-              <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
+                class="mx-10 mb-md"
+                data-testid="voter-results-controls" />
+              <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" data-testid="voter-results-list" />
             {/key}
           {:else}
             <Loading />

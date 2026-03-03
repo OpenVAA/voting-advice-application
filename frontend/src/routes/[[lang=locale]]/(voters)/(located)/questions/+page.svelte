@@ -115,7 +115,7 @@ Display a general intro before starting answering the questions and possibly all
         minQuestions: $appSettings.matching.minimumAnswers
       })}
     </p>
-    <div class="grid gap-sm">
+    <div class="grid gap-sm" data-testid="voter-questions-category-list">
       {#each $opinionQuestionCategories as category}
         <label class="label cursor-pointer justify-start gap-sm !p-0">
           <input
@@ -123,7 +123,8 @@ Display a general intro before starting answering the questions and possibly all
             class="checkbox"
             name="vaa-selectedCategories"
             value={category.id}
-            bind:group={$selectedQuestionCategoryIds} />
+            bind:group={$selectedQuestionCategoryIds}
+            data-testid="voter-questions-category-checkbox" />
           <CategoryTag {category} />
           <span class="text-secondary">{countQuestions(category)}</span>
         </label>
@@ -155,5 +156,6 @@ Display a general intro before starting answering the questions and possibly all
     icon="next"
     text={$t('questions.intro.start', {
       numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
-    })} />
+    })}
+    data-testid="voter-questions-start" />
 </MainContent>

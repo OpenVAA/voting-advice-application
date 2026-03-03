@@ -170,7 +170,7 @@ Display a question for answering.
       {/if}
     </figure>
 
-    <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
+    <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" data-testid="voter-questions-heading" />
 
     {#if !customData.video}
       {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
@@ -190,7 +190,7 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
+      <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} data-testid="voter-questions-input" />
 
       <QuestionActions
         answered={$answers[question.id]?.value != null}
@@ -200,6 +200,7 @@ Display a question for answering.
           : undefined}
         previousLabel={questionBlock.index === 0 ? $t('common.back') : undefined}
         separateSkip={true}
+        data-testid="voter-questions-actions"
         onPrevious={() => {
           startEvent('question_previous', { questionIndex: questionBlock?.index });
           handleJump(-1);

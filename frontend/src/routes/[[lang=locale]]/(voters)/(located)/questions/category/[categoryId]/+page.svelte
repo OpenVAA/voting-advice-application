@@ -96,7 +96,7 @@ Display the intro to a question category and possibly a button with which to ski
     </figure>
 
     <svelte:fragment slot="heading">
-      <HeadingGroup class="relative">
+      <HeadingGroup class="relative" data-testid="voter-questions-category-intro">
         <h1><CategoryTag {category} class="text-xl" /></h1>
         <PreHeading class="text-secondary">
           {$t('questions.category.numQuestions', {
@@ -111,7 +111,7 @@ Display the intro to a question category and possibly a button with which to ski
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      <Button variant="main" href={$getRoute({ route: 'Question', questionId })} text={$t('common.continue')} />
+      <Button variant="main" href={$getRoute({ route: 'Question', questionId })} text={$t('common.continue')} data-testid="voter-questions-category-start" />
       {#if $appSettings.questions.categoryIntros?.allowSkip}
         <Button
           icon="skip"
@@ -120,7 +120,8 @@ Display the intro to a question category and possibly a button with which to ski
             nextCategoryId ? { route: 'QuestionCategory', categoryId: nextCategoryId } : { route: 'Results' }
           )}
           text={nextCategoryId ? $t('questions.category.skip') : $t('questions.skipToResults')}
-          class="justify-center" />
+          class="justify-center"
+          data-testid="voter-questions-category-skip" />
       {/if}
     </svelte:fragment>
   </MainContent>

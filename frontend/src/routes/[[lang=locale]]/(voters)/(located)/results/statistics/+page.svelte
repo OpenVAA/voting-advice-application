@@ -99,7 +99,7 @@ Usually accessed by direct link only and not meant for the wide public.
     <HeroEmoji emoji={$t('dynamic.statistics.heroEmoji')} />
   </figure>
 
-  <div class="grid gap-lg">
+  <div class="grid gap-lg" data-testid="voter-statistics-container">
     {#each $opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
       {@const { id, text, choices } = question}
       {@const voterAnswer = answers ? `${$answers?.[id]?.value}` : undefined}
