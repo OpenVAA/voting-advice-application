@@ -17,7 +17,7 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [ ] **INFRA-06**: Database state resets reliably between test runs via API
 - [ ] **INFRA-07**: Pre-defined JSON test datasets for default configuration
 - [ ] **INFRA-08**: Test helper utilities for common tasks (navigation, authentication, data setup)
-- [ ] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
+- [x] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
 - [ ] **INFRA-10**: Visual regression testing capability with screenshot comparison
 - [ ] **INFRA-11**: Performance benchmarks integrated into test suite
 
@@ -108,64 +108,64 @@ Deferred to future release. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase   | Status  |
-| ----------- | ------- | ------- |
-| INFRA-01    | Phase 1 | Pending |
-| INFRA-02    | Phase 1 | Pending |
-| INFRA-03    | Phase 1 | Pending |
-| INFRA-04    | Phase 1 | Pending |
-| INFRA-05    | Phase 1 | Pending |
-| INFRA-06    | Phase 1 | Pending |
-| INFRA-07    | Phase 1 | Pending |
-| INFRA-08    | Phase 1 | Pending |
-| INFRA-09    | Phase 1 | Pending |
-| INFRA-10    | Phase 7 | Pending |
-| INFRA-11    | Phase 7 | Pending |
-| CAND-01     | Phase 2 | Pending |
-| CAND-02     | Phase 2 | Pending |
-| CAND-03     | Phase 2 | Pending |
-| CAND-04     | Phase 2 | Pending |
-| CAND-05     | Phase 2 | Pending |
-| CAND-06     | Phase 2 | Pending |
-| CAND-07     | Phase 2 | Pending |
-| CAND-08     | Phase 2 | Pending |
-| CAND-09     | Phase 2 | Pending |
-| CAND-10     | Phase 2 | Pending |
-| CAND-11     | Phase 2 | Pending |
-| CAND-12     | Phase 2 | Pending |
-| CAND-13     | Phase 2 | Pending |
-| CAND-14     | Phase 2 | Pending |
-| CAND-15     | Phase 2 | Pending |
-| VOTE-01     | Phase 3 | Pending |
-| VOTE-02     | Phase 3 | Pending |
-| VOTE-03     | Phase 3 | Pending |
-| VOTE-04     | Phase 3 | Pending |
-| VOTE-05     | Phase 3 | Pending |
-| VOTE-06     | Phase 3 | Pending |
-| VOTE-07     | Phase 3 | Pending |
-| VOTE-08     | Phase 3 | Pending |
-| VOTE-09     | Phase 3 | Pending |
-| VOTE-10     | Phase 3 | Pending |
-| VOTE-11     | Phase 3 | Pending |
-| VOTE-12     | Phase 3 | Pending |
-| VOTE-13     | Phase 4 | Pending |
-| VOTE-14     | Phase 4 | Pending |
-| VOTE-15     | Phase 4 | Pending |
-| VOTE-16     | Phase 4 | Pending |
-| VOTE-17     | Phase 4 | Pending |
-| VOTE-18     | Phase 4 | Pending |
-| VOTE-19     | Phase 4 | Pending |
-| CONF-01     | Phase 5 | Pending |
-| CONF-02     | Phase 5 | Pending |
-| CONF-03     | Phase 5 | Pending |
-| CONF-04     | Phase 5 | Pending |
-| CONF-05     | Phase 5 | Pending |
-| CONF-06     | Phase 5 | Pending |
-| CONF-07     | Phase 5 | Pending |
-| CONF-08     | Phase 5 | Pending |
-| CI-01       | Phase 6 | Pending |
-| CI-02       | Phase 6 | Pending |
-| CI-03       | Phase 6 | Pending |
+| Requirement | Phase   | Status   |
+| ----------- | ------- | -------- |
+| INFRA-01    | Phase 1 | Pending  |
+| INFRA-02    | Phase 1 | Pending  |
+| INFRA-03    | Phase 1 | Pending  |
+| INFRA-04    | Phase 1 | Pending  |
+| INFRA-05    | Phase 1 | Pending  |
+| INFRA-06    | Phase 1 | Pending  |
+| INFRA-07    | Phase 1 | Pending  |
+| INFRA-08    | Phase 1 | Pending  |
+| INFRA-09    | Phase 1 | Complete |
+| INFRA-10    | Phase 7 | Pending  |
+| INFRA-11    | Phase 7 | Pending  |
+| CAND-01     | Phase 2 | Pending  |
+| CAND-02     | Phase 2 | Pending  |
+| CAND-03     | Phase 2 | Pending  |
+| CAND-04     | Phase 2 | Pending  |
+| CAND-05     | Phase 2 | Pending  |
+| CAND-06     | Phase 2 | Pending  |
+| CAND-07     | Phase 2 | Pending  |
+| CAND-08     | Phase 2 | Pending  |
+| CAND-09     | Phase 2 | Pending  |
+| CAND-10     | Phase 2 | Pending  |
+| CAND-11     | Phase 2 | Pending  |
+| CAND-12     | Phase 2 | Pending  |
+| CAND-13     | Phase 2 | Pending  |
+| CAND-14     | Phase 2 | Pending  |
+| CAND-15     | Phase 2 | Pending  |
+| VOTE-01     | Phase 3 | Pending  |
+| VOTE-02     | Phase 3 | Pending  |
+| VOTE-03     | Phase 3 | Pending  |
+| VOTE-04     | Phase 3 | Pending  |
+| VOTE-05     | Phase 3 | Pending  |
+| VOTE-06     | Phase 3 | Pending  |
+| VOTE-07     | Phase 3 | Pending  |
+| VOTE-08     | Phase 3 | Pending  |
+| VOTE-09     | Phase 3 | Pending  |
+| VOTE-10     | Phase 3 | Pending  |
+| VOTE-11     | Phase 3 | Pending  |
+| VOTE-12     | Phase 3 | Pending  |
+| VOTE-13     | Phase 4 | Pending  |
+| VOTE-14     | Phase 4 | Pending  |
+| VOTE-15     | Phase 4 | Pending  |
+| VOTE-16     | Phase 4 | Pending  |
+| VOTE-17     | Phase 4 | Pending  |
+| VOTE-18     | Phase 4 | Pending  |
+| VOTE-19     | Phase 4 | Pending  |
+| CONF-01     | Phase 5 | Pending  |
+| CONF-02     | Phase 5 | Pending  |
+| CONF-03     | Phase 5 | Pending  |
+| CONF-04     | Phase 5 | Pending  |
+| CONF-05     | Phase 5 | Pending  |
+| CONF-06     | Phase 5 | Pending  |
+| CONF-07     | Phase 5 | Pending  |
+| CONF-08     | Phase 5 | Pending  |
+| CI-01       | Phase 6 | Pending  |
+| CI-02       | Phase 6 | Pending  |
+| CI-03       | Phase 6 | Pending  |
 
 **Coverage:**
 
