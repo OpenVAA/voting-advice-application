@@ -8,11 +8,22 @@ dotenv.config();
 export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json');
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright configuration with project dependencies pattern.
+ *
+ * Projects execute in dependency order:
+ *   data-setup -> auth-setup -> candidate-app
+ *   data-setup -> voter-app
+ *   (data-teardown runs after all projects complete)
+ *
+ * See https://playwright.dev/docs/test-global-setup-teardown
  */
 export default defineConfig({
   testDir: TESTS_DIR,
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
+
+  /* Per-test timeout */
+  timeout: 30000,
+
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -21,69 +32,58 @@ export default defineConfig({
   retries: process.env.CI ? 3 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    /* Collect trace for all tests. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
 
-    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173',
-    storageState: STORAGE_STATE
+    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
 
-  globalSetup: path.join(TESTS_DIR, './global-setup.ts'),
-
-  // Set global timeout to 100s
-  globalTimeout: 100000,
-
-  /* Configure projects for major browsers */
   projects: [
+    // 1. Data setup - imports test dataset via Admin Tools API
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'data-setup',
+      testMatch: /data\.setup\.ts/,
+      teardown: 'data-teardown'
+    },
+
+    // 2. Data teardown - cleans up after all tests complete
+    {
+      name: 'data-teardown',
+      testMatch: /data\.teardown\.ts/
+    },
+
+    // 3. Auth setup - logs in as candidate, saves storageState (depends on data being loaded)
+    {
+      name: 'auth-setup',
+      testMatch: /auth\.setup\.ts/,
+      dependencies: ['data-setup']
+    },
+
+    // 4. Candidate app tests - depend on auth-setup (logged in session)
+    {
+      name: 'candidate-app',
+      testDir: './tests/specs/candidate',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['auth-setup']
+    },
+
+    // 5. Voter app tests - depend on data-setup only (no auth needed)
+    {
+      name: 'voter-app',
+      testDir: './tests/specs/voter',
+      use: {
+        ...devices['Desktop Chrome']
+      },
+      dependencies: ['data-setup']
     }
-
-    /*
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    */
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ]
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
