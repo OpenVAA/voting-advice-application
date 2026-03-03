@@ -9,7 +9,7 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 ### Test Infrastructure
 
-- [ ] **INFRA-01**: All interactive elements in both voter and candidate apps have `data-testid` attributes
+- [x] **INFRA-01**: All interactive elements in both voter and candidate apps have `data-testid` attributes
 - [ ] **INFRA-02**: Playwright upgraded from 1.49.1 to latest stable (1.58+)
 - [ ] **INFRA-03**: Global setup replaced with Playwright project dependencies pattern
 - [ ] **INFRA-04**: Fixture-extended page object model established for all apps
@@ -110,7 +110,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase   | Status   |
 | ----------- | ------- | -------- |
-| INFRA-01    | Phase 1 | Pending  |
+| INFRA-01    | Phase 1 | Complete |
 | INFRA-02    | Phase 1 | Pending  |
 | INFRA-03    | Phase 1 | Pending  |
 | INFRA-04    | Phase 1 | Pending  |
