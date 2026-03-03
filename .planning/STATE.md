@@ -74,6 +74,7 @@ Recent decisions affecting current work:
 - [Phase 01]: Playwright 1.58.2 with project dependencies replacing globalSetup for trace/report integration
 - [Phase 01]: StrapiAdminClient sends body via JSON.stringify per Admin Tools controller JSON.parse requirement
 - [Phase 01]: testIds as nested as-const object with 53 entries across candidate/voter/shared namespaces
+- [Phase 01]: Wrapper div testIds for components without restProps spread (PasswordSetter, SingleCardContent)
 
 ### Pending Todos
 
@@ -86,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T20:05:01.540Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-03T20:04:01.000Z
+Stopped at: Completed 01-08-PLAN.md
 Resume file: None
