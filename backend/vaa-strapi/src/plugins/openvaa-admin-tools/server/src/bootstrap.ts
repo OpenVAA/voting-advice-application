@@ -20,6 +20,12 @@ async function bootstrap({ strapi }: { strapi: Core.Strapi }) {
       uid: 'manage-candidate-auth',
       pluginName: 'openvaa-admin-tools',
     },
+    {
+      section: 'plugins',
+      displayName: 'Add Candidate',
+      uid: 'add-candidate',
+      pluginName: 'openvaa-admin-tools',
+    },
   ];
   await strapi.admin.services.permission.actionProvider.registerMany(actions);
 }
