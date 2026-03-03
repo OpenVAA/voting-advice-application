@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-04-PLAN.md
-last_updated: '2026-03-03T20:04:29.559Z'
-last_activity: 2026-03-03 — Completed 01-07 shared/dynamic component testIds
+stopped_at: Completed 01-08-PLAN.md
+last_updated: '2026-03-03T20:04:01.000Z'
+last_activity: 2026-03-03 — Completed 01-08 candidate protected pages testIds
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 8
-  completed_plans: 4
-  percent: 13
+  completed_plans: 6
+  percent: 15
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 1 of 7 (Infrastructure Foundation)
-Plan: 4 of 8 in current phase
+Plan: 6 of 8 in current phase
 Status: Executing
-Last activity: 2026-03-03 — Completed 01-07 shared/dynamic component testIds
+Last activity: 2026-03-03 — Completed 01-08 candidate protected pages testIds
 
-Progress: [█░░░░░░░░░] 13%
+Progress: [█░░░░░░░░░] 15%
 
 ## Performance Metrics
 
@@ -54,6 +54,9 @@ Progress: [█░░░░░░░░░] 13%
 _Updated after each plan completion_
 | Phase 01 P06 | 2min | 1 tasks | 3 files |
 | Phase 01 P04 | 4min | 1 tasks | 14 files |
+| Phase 01 P07 | 5min | 1 tasks | 16 files |
+| Phase 01 P01 | 5min | 2 tasks | 7 files |
+| Phase 01 P08 | 5min | 1 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -67,6 +70,10 @@ Recent decisions affecting current work:
 - [Init]: Infrastructure before coverage — Phase 1 must complete before any new spec files are written to avoid recreating the broken foundation
 - [Phase 01]: Set no-raw-locators and no-wait-for-timeout as errors to hard-block Playwright anti-patterns
 - [Phase 01]: Kebab-case testId naming with page-prefix pattern for candidate auth pages (login-submit, register-code, preregister-start)
+- [Phase 01]: Static data-testid attributes on component elements rather than testId props, leveraging existing 22665restProps spread pattern
+- [Phase 01]: Playwright 1.58.2 with project dependencies replacing globalSetup for trace/report integration
+- [Phase 01]: StrapiAdminClient sends body via JSON.stringify per Admin Tools controller JSON.parse requirement
+- [Phase 01]: testIds as nested as-const object with 53 entries across candidate/voter/shared namespaces
 
 ### Pending Todos
 
@@ -79,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T20:04:00.421Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-03-03T20:05:01.540Z
+Stopped at: Completed 01-01-PLAN.md
 Resume file: None
