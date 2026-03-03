@@ -35,16 +35,16 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. Every interactive element in both voter and candidate apps can be selected via `data-testid` attribute without using text content or CSS classes
 4. The Admin Tools API can load and delete a complete test dataset in under 5 seconds, verified by a passing setup/teardown project
 5. The ESLint Playwright plugin flags `waitForTimeout` calls and text-based click targets as errors in CI
-   **Plans**: TBD
+   **Plans:** 6 plans
 
 Plans:
 
-- [ ] 01-01: Playwright version upgrade and project dependencies pattern (replace globalSetup)
-- [ ] 01-02: Test dataset JSON files and Admin Tools API client (strapiAdminClient.ts)
-- [ ] 01-03: Add data-testid attributes to voter app components
-- [ ] 01-04: Add data-testid attributes to candidate app components
-- [ ] 01-05: Fixture layer and page object model stubs (utilities, testIds constants, auth fixture)
-- [ ] 01-06: ESLint Playwright plugin configuration and helper utilities
+- [ ] 01-01-PLAN.md — Playwright upgrade to 1.58.2, project dependencies config, strapiAdminClient.ts, testIds constants
+- [ ] 01-02-PLAN.md — Default test dataset JSON, data setup/teardown projects, auth setup project
+- [ ] 01-03-PLAN.md — Add data-testid attributes to voter app routes and shared components
+- [ ] 01-04-PLAN.md — Add data-testid attributes to candidate app routes and components
+- [ ] 01-05-PLAN.md — Fixture layer (index.ts, auth.fixture.ts) and page object model stubs (LoginPage, HomePage, QuestionsPage)
+- [ ] 01-06-PLAN.md — ESLint Playwright plugin configuration (eslint-plugin-playwright)
 
 ### Phase 2: Candidate App Coverage
 
@@ -166,11 +166,11 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase                                   | Plans Complete | Status      | Completed |
 | --------------------------------------- | -------------- | ----------- | --------- |
-| 1. Infrastructure Foundation            | 0/6            | Not started | -         |
+| 1. Infrastructure Foundation            | 0/6            | Planning    | -         |
 | 2. Candidate App Coverage               | 0/5            | Not started | -         |
 | 3. Voter App Core Journey               | 0/4            | Not started | -         |
 | 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
