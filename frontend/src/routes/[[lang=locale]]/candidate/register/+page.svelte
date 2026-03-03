@@ -103,21 +103,22 @@
         placeholder={$t('candidateApp.register.codePlaceholder')}
         bind:value={registrationKey}
         aria-label={$t('candidateApp.register.code')}
+        data-testid="register-code"
         required />
       {#if status === 'error'}
-        <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" />
+        <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" data-testid="register-error" />
         <div class="flex w-full flex-col gap-lg rounded-lg bg-base-200 p-lg">
           <h3 class="text-center">
             {$t('candidateApp.register.didYouAlreadyRegister')}
           </h3>
-          <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.goToLoginLabel')} variant="main" />
+          <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.goToLoginLabel')} variant="main" data-testid="register-go-to-login" />
         </div>
       {/if}
     {/if}
   </form>
   <svelte:fragment slot="primaryActions">
-    <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} />
-    <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.didYouAlreadyRegister')} />
-    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
+    <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} data-testid="register-submit" />
+    <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.didYouAlreadyRegister')} data-testid="register-login-link" />
+    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} data-testid="register-help-link" />
   </svelte:fragment>
 </MainContent>

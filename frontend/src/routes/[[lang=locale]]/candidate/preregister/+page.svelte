@@ -93,7 +93,8 @@
       type="submit"
       text={$t('common.continue')}
       variant="main"
-      on:click={() => goto($getRoute(nextRoute))} />
+      on:click={() => goto($getRoute(nextRoute))}
+      data-testid="preregister-continue" />
   </MainContent>
 {:else}
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
@@ -112,11 +113,12 @@
       <Button
         text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
         variant="main"
-        on:click={redirectToIdentityProvider} />
+        on:click={redirectToIdentityProvider}
+        data-testid="preregister-start" />
       <p class="small-info my-md text-center">
         {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
       </p>
-      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} />
+      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} data-testid="preregister-return" />
     </svelte:fragment>
   </MainContent>
 {/if}

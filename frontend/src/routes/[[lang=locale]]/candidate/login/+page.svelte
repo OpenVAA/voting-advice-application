@@ -180,7 +180,7 @@
       </div>
     {:else}
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
-        <Button on:click={handleShowLogin} text={$t('common.login')} variant="main" />
+        <Button on:click={handleShowLogin} text={$t('common.login')} variant="main" data-testid="login-show" />
       </div>
     {/if}
 
@@ -190,18 +190,20 @@
         href={$getRoute('CandAppPreregister')}
         text={$t('candidateApp.preregister.identification.start.title')}
         class="transition-opacity {isLoginShown || status === 'loading' ? 'opacity-30' : ''}"
-        variant="main" />
+        variant="main"
+        data-testid="login-preregister" />
     {/if}
 
     <div class="mt-lg">
-      <Button href={$getRoute('CandAppRegister')} text={$t('candidateApp.login.haveRegistrationCode')} />
-      <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
-      <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
+      <Button href={$getRoute('CandAppRegister')} text={$t('candidateApp.login.haveRegistrationCode')} data-testid="login-register-link" />
+      <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} data-testid="login-forgot-password-link" />
+      <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} data-testid="login-help-link" />
       {#if $appSettings.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
-          text={$t('candidateApp.common.voterApp')} />
+          text={$t('candidateApp.common.voterApp')}
+          data-testid="login-voter-app-link" />
       {/if}
     </div>
   </form>

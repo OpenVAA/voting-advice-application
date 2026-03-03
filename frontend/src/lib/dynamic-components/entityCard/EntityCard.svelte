@@ -168,6 +168,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   <article
     aria-labelledby="{baseId}_title {match ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
+    data-testid="entity-card"
     {...concatClass($$restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->

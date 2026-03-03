@@ -57,6 +57,7 @@
       placeholder={$t('common.emailPlaceholder')}
       aria-label={$t('common.emailPlaceholder')}
       bind:value={email1}
+      data-testid="preregister-email-input"
       required />
     <input
       type="email"
@@ -67,6 +68,7 @@
       placeholder={$t('common.emailPlaceholder')}
       aria-label={$t('common.emailPlaceholder')}
       bind:value={email2}
+      data-testid="preregister-email-confirm"
       required />
     <TermsOfUseForm bind:termsAccepted class="mt-md" />
   </form>
@@ -77,5 +79,6 @@
     variant="main"
     disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())}
     loading={status === 'loading'}
-    on:click={handleSubmit} />
+    on:click={handleSubmit}
+    data-testid="preregister-email-submit" />
 </MainContent>

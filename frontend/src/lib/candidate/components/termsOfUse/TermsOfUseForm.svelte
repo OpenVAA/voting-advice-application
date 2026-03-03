@@ -51,7 +51,7 @@ Accesses `CandidateContext`.
     </div>
   </Expander>
   <label class="label mb-md mt-sm cursor-pointer justify-start gap-sm !p-0">
-    <input type="checkbox" class="checkbox" name="termsAccepted" bind:checked={termsAccepted} />
+    <input type="checkbox" class="checkbox" name="termsAccepted" bind:checked={termsAccepted} data-testid="terms-checkbox" />
     <span class="label-text">{$t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
   </label>
 </section>

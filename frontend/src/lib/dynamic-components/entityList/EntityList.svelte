@@ -123,7 +123,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   }
 </script>
 
-<div bind:this={div} {...concatClass($$restProps, 'flex flex-col gap-md')}>
+<div bind:this={div} data-testid="entity-list" {...concatClass($$restProps, 'flex flex-col gap-md')}>
   {#each pages as items, i}
     <!-- Don't render even the show button for pages beyond the next page -->
     {#if i <= currentPage + 1}
@@ -143,6 +143,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
             class="mt-lg self-center {i <= currentPage ? '!sr-only' : ''}"
             disabled={i <= currentPage}
             variant="main"
+            data-testid="entity-list-show-more"
             text={$t('entityList.showMore')} />
         {/if}
       </div>

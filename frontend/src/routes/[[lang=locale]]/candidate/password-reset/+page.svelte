@@ -84,9 +84,9 @@ Shows a form with which to set a new password when it has been reset.
   <div class="flex-nowarp flex flex-col items-center">
     <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
     {#if status === 'error'}
-      <ErrorMessage inline message={$t('candidateApp.resetPassword.failed')} class="mb-lg mt-md" />
+      <ErrorMessage inline message={$t('candidateApp.resetPassword.failed')} class="mb-lg mt-md" data-testid="password-reset-error" />
     {/if}
-    <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} />
-    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} />
+    <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} data-testid="password-reset-submit" />
+    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} data-testid="password-reset-help-link" />
   </div>
 </MainContent>

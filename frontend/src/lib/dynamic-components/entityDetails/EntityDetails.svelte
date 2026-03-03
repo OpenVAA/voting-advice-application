@@ -122,7 +122,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   }
 </script>
 
-<article {...concatClass($$restProps, 'flex flex-col grow')}>
+<article data-testid="entity-details" {...concatClass($$restProps, 'flex flex-col grow')}>
   <!-- Add a border if there's not need for a Tabs component which separates the contents visually from the header -->
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />

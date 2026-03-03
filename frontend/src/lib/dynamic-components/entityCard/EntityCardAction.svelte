@@ -39,6 +39,7 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
   <button
     on:click={action}
     class:hover-shaded={shadeOnHover}
+    data-testid="entity-card-action"
     {...concatClass($$restProps, 'transition-all !text-neutral')}>
     <slot />
   </button>
@@ -47,6 +48,7 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
     href={action}
     data-sveltekit-noscroll
     class:hover-shaded={shadeOnHover}
+    data-testid="entity-card-action"
     {...concatClass($$restProps, 'transition-all !text-neutral')}>
     <slot />
   </a>

@@ -170,7 +170,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 </script>
 
 {#if sections.length}
-  <div {...concatClass($$restProps, 'mb-md grid gap-lg self-stretch')}>
+  <div data-testid="constituency-selector" {...concatClass($$restProps, 'mb-md grid gap-lg self-stretch')}>
     {#each sections as { applicableElections, groups }, sectionIndex}
       <div class="mt-md grid gap-md">
         <!-- Show an number in front of heading if multiple selections need be made -->

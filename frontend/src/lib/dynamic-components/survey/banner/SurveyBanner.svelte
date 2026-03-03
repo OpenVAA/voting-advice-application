@@ -36,6 +36,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
 
 {#if clicked || ($appSettings.survey && $userPreferences.survey?.status !== 'received')}
   <div
+    data-testid="survey-banner"
     {...concatClass(
       $$restProps,
       'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')

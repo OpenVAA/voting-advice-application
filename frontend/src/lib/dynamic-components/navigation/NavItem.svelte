@@ -64,6 +64,7 @@ Accesses `LayoutContext`.
       if (autoCloseNav && navigation.close) navigation.close();
     }}
     disabled={disabled || undefined}
+    data-testid="nav-menu-item"
     {...concatClass($$restProps, classes)}>
     {#if icon}
       <Icon name={icon} />
