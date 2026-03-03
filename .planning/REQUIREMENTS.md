@@ -108,17 +108,74 @@ Deferred to future release. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement                         | Phase | Status |
-| ----------------------------------- | ----- | ------ |
-| (populated during roadmap creation) |       |        |
+| Requirement | Phase   | Status  |
+| ----------- | ------- | ------- |
+| INFRA-01    | Phase 1 | Pending |
+| INFRA-02    | Phase 1 | Pending |
+| INFRA-03    | Phase 1 | Pending |
+| INFRA-04    | Phase 1 | Pending |
+| INFRA-05    | Phase 1 | Pending |
+| INFRA-06    | Phase 1 | Pending |
+| INFRA-07    | Phase 1 | Pending |
+| INFRA-08    | Phase 1 | Pending |
+| INFRA-09    | Phase 1 | Pending |
+| INFRA-10    | Phase 7 | Pending |
+| INFRA-11    | Phase 7 | Pending |
+| CAND-01     | Phase 2 | Pending |
+| CAND-02     | Phase 2 | Pending |
+| CAND-03     | Phase 2 | Pending |
+| CAND-04     | Phase 2 | Pending |
+| CAND-05     | Phase 2 | Pending |
+| CAND-06     | Phase 2 | Pending |
+| CAND-07     | Phase 2 | Pending |
+| CAND-08     | Phase 2 | Pending |
+| CAND-09     | Phase 2 | Pending |
+| CAND-10     | Phase 2 | Pending |
+| CAND-11     | Phase 2 | Pending |
+| CAND-12     | Phase 2 | Pending |
+| CAND-13     | Phase 2 | Pending |
+| CAND-14     | Phase 2 | Pending |
+| CAND-15     | Phase 2 | Pending |
+| VOTE-01     | Phase 3 | Pending |
+| VOTE-02     | Phase 3 | Pending |
+| VOTE-03     | Phase 3 | Pending |
+| VOTE-04     | Phase 3 | Pending |
+| VOTE-05     | Phase 3 | Pending |
+| VOTE-06     | Phase 3 | Pending |
+| VOTE-07     | Phase 3 | Pending |
+| VOTE-08     | Phase 3 | Pending |
+| VOTE-09     | Phase 3 | Pending |
+| VOTE-10     | Phase 3 | Pending |
+| VOTE-11     | Phase 3 | Pending |
+| VOTE-12     | Phase 3 | Pending |
+| VOTE-13     | Phase 4 | Pending |
+| VOTE-14     | Phase 4 | Pending |
+| VOTE-15     | Phase 4 | Pending |
+| VOTE-16     | Phase 4 | Pending |
+| VOTE-17     | Phase 4 | Pending |
+| VOTE-18     | Phase 4 | Pending |
+| VOTE-19     | Phase 4 | Pending |
+| CONF-01     | Phase 5 | Pending |
+| CONF-02     | Phase 5 | Pending |
+| CONF-03     | Phase 5 | Pending |
+| CONF-04     | Phase 5 | Pending |
+| CONF-05     | Phase 5 | Pending |
+| CONF-06     | Phase 5 | Pending |
+| CONF-07     | Phase 5 | Pending |
+| CONF-08     | Phase 5 | Pending |
+| CI-01       | Phase 6 | Pending |
+| CI-02       | Phase 6 | Pending |
+| CI-03       | Phase 6 | Pending |
 
 **Coverage:**
 
-- v1 requirements: 46 total
-- Mapped to phases: 0
-- Unmapped: 46 (pending roadmap)
+- v1 requirements: 56 total
+- Mapped to phases: 56
+- Unmapped: 0
+
+Note: The original count of 46 in this file was incorrect. Actual count is 56 (INFRA: 11, CAND: 15, VOTE: 19, CONF: 8, CI: 3).
 
 ---
 
 _Requirements defined: 2026-03-03_
-_Last updated: 2026-03-03 after initial definition_
+_Last updated: 2026-03-03 after roadmap creation — traceability complete_
