@@ -14,8 +14,8 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **INFRA-03**: Global setup replaced with Playwright project dependencies pattern
 - [x] **INFRA-04**: Fixture-extended page object model established for all apps
 - [x] **INFRA-05**: API-based data management using Admin Tools endpoints (`/import-data`, `/delete-data`)
-- [ ] **INFRA-06**: Database state resets reliably between test runs via API
-- [ ] **INFRA-07**: Pre-defined JSON test datasets for default configuration
+- [x] **INFRA-06**: Database state resets reliably between test runs via API
+- [x] **INFRA-07**: Pre-defined JSON test datasets for default configuration
 - [x] **INFRA-08**: Test helper utilities for common tasks (navigation, authentication, data setup)
 - [x] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
 - [ ] **INFRA-10**: Visual regression testing capability with screenshot comparison
@@ -115,8 +115,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-03    | Phase 1 | Complete |
 | INFRA-04    | Phase 1 | Complete |
 | INFRA-05    | Phase 1 | Complete |
-| INFRA-06    | Phase 1 | Pending  |
-| INFRA-07    | Phase 1 | Pending  |
+| INFRA-06    | Phase 1 | Complete |
+| INFRA-07    | Phase 1 | Complete |
 | INFRA-08    | Phase 1 | Complete |
 | INFRA-09    | Phase 1 | Complete |
 | INFRA-10    | Phase 7 | Pending  |
