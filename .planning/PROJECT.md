@@ -74,6 +74,8 @@ Each major initiative is a separate milestone, executed in order:
 6. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
 7. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 
+For further details about the milestones, see [ROADMAP](../ROADMAP.md).
+
 ## Key Decisions
 
 | Decision                          | Rationale                                                                    | Outcome   |
