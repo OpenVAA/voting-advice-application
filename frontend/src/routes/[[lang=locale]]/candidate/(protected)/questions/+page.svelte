@@ -108,7 +108,8 @@ Shows the opinion questions for the candidate to answer.
         href={$getRoute({ route: 'CandAppQuestion', questionId: $unansweredOpinionQuestions[0]?.id })}
         variant="main"
         icon="next"
-        text={$t('common.continue')} />
+        text={$t('common.continue')}
+        data-testid="candidate-questions-start" />
     </div>
   {:else}
     <!-- Page content when some or all answers have been given -->
@@ -120,7 +121,7 @@ Shows the opinion questions for the candidate to answer.
           : $t('candidateApp.questions.ingress.default')}
       </p>
       {#if completion !== 'full' && !$answersLocked}
-        <div class="text-center text-warning">
+        <div class="text-center text-warning" data-testid="candidate-questions-progress">
           {$t('candidateApp.questions.unansweredWarning', {
             numUnansweredQuestions: $unansweredOpinionQuestions?.length
           })}
@@ -133,11 +134,12 @@ Shows the opinion questions for the candidate to answer.
           href={$getRoute({ route: 'CandAppQuestion', questionId: $unansweredOpinionQuestions[0]?.id })}
           text={$t('candidateApp.questions.enterMissingAnswers')}
           variant="main"
-          icon="next" />
+          icon="next"
+          data-testid="candidate-questions-continue" />
       {/if}
     </div>
 
-    <div class="edgetoedge-x mt-lg grid gap-xs !px-0">
+    <div class="edgetoedge-x mt-lg grid gap-xs !px-0" data-testid="candidate-questions-list">
       {#each $questionBlocks.blocks.filter((b) => b.length) as questions}
         {@const category = questions[0].category}
         <Expander
@@ -181,7 +183,8 @@ Shows the opinion questions for the candidate to answer.
                   icon={$answersLocked ? 'show' : 'create'}
                   variant={answer == null ? 'main' : undefined}
                   iconPos="left"
-                  class="!w-auto place-self-center" />
+                  class="!w-auto place-self-center"
+                  data-testid="candidate-questions-card" />
               </div>
             {/each}
           </div>
@@ -195,7 +198,8 @@ Shows the opinion questions for the candidate to answer.
         variant={completion === 'full' ? 'main' : 'prominent'}
         icon="previous"
         iconPos="left"
-        href={$getRoute('CandAppHome')} />
+        href={$getRoute('CandAppHome')}
+        data-testid="candidate-questions-home" />
     </div>
   {/if}
 </MainContent>

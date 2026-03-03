@@ -87,11 +87,13 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
     {$t('candidateApp.preview.tip')}
   </svelte:fragment>
   <!-- The card -->
-  {#if status === 'success' && entity}
-    <EntityDetails {entity} />
-  {:else if status === 'error'}
-    <ErrorMessage inline message={$t('candidateApp.preview.notFound')} />
-  {:else}
-    <Loading showLabel />
-  {/if}
+  <div data-testid="candidate-preview-container">
+    {#if status === 'success' && entity}
+      <EntityDetails {entity} />
+    {:else if status === 'error'}
+      <ErrorMessage inline message={$t('candidateApp.preview.notFound')} />
+    {:else}
+      <Loading showLabel />
+    {/if}
+  </div>
 </SingleCardContent>
