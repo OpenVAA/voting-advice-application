@@ -44,6 +44,7 @@ type TrackingEventName =
   | 'results_ranked'
   | `results_ranked_${EntityType}`
   | 'results_ranked'
+  | 'results_hideEntity'
   | 'results_showEntity'
   | 'resultsPreview_updated'
   | 'survey_opened'

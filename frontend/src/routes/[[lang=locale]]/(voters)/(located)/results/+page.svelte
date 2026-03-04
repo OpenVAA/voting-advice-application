@@ -45,7 +45,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
-  import type { Id } from '@openvaa/core';
+  import type { Id, WrappedEntity } from '@openvaa/core';
   import type { Election } from '@openvaa/data';
   import { Input } from '$lib/components/input';
   import { assertTranslationKey } from '$lib/i18n/utils';
@@ -184,12 +184,19 @@ The nominations applicable to these elections and constituencies are shown. Thes
     nominationId?: Id;
   }): EntityDetailsDrawerProps | undefined {
     try {
+      const entity = getEntityAndTitle({
+        dataRoot: $dataRoot,
+        matches: $matches,
+        ...opts
+      }).entity;
       return {
-        entity: getEntityAndTitle({
-          dataRoot: $dataRoot,
-          matches: $matches,
-          ...opts
-        }).entity
+        entity,
+        onClose: () =>
+          track('results_hideEntity', {
+            entityType: entity?.type,
+            entityId: entity?.id,
+            nominationId: entity?.nominationId
+          })
       };
     } catch (e) {
       // TODO: Show a notification to the user
