@@ -19,12 +19,7 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  */
 export default defineConfig({
   testDir: TESTS_DIR,
-  testIgnore: [
-    '**/candidateApp-basics.spec.ts',
-    '**/candidateApp-advanced.spec.ts',
-    '**/translations.spec.ts',
-    '**/*.test.ts'
-  ],
+  testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
 
   /* Per-test timeout */
