@@ -49,6 +49,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import type { Election } from '@openvaa/data';
   import { Input } from '$lib/components/input';
   import { assertTranslationKey } from '$lib/i18n/utils';
+  import { unwrapEntity } from '$lib/utils/entities';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -214,6 +215,21 @@ The nominations applicable to these elections and constituencies are shown. Thes
     track('results_finished_answer', { questionIndex: 2, answer: answer2 });
     answerSaved = true;
   }
+
+  $: if ($matches && activeEntityType && activeElectionId) {
+    const currentMatches = JSON.stringify(
+      $matches[activeElectionId][activeEntityType]?.map((m) => {
+        const { entity, match } = unwrapEntity(m);
+        return [entity.shortName, match?.score ?? -1];
+      }) ?? 'No matches'
+    );
+    track('results_matchingResults', {
+      election: activeElectionId,
+      entityType: activeEntityType,
+      numAnswers: Object.keys($answers).length,
+      currentMatches
+    });
+  }
 </script>
 
 {#if $page.state.resultsShowEntity}
@@ -233,24 +249,24 @@ The nominations applicable to these elections and constituencies are shown. Thes
   <div class="mb-xl text-center">
     {#if $shouldShowFinished}
       <div class="text-lg" transition:slide={{ duration: DELAY.sm }}>
-        <p class="text-success">{$t('results.finished.intro')}</p>
-        <!-- <p>{$t('results.finished.question1')}</p>
-        <div class="my-md gap-md flex justify-center">
-          {#each ['yes', 'no'] as option}
-            <label class="label gap-sm text-md flex-col">
-              <input
-                type="radio"
-                class="radio-primary radio"
-                name="finished-question-1"
-                value={option}
-                on:click={() => saveAnswer(1)}
-                bind:group={answer1} />
-              {$t(assertTranslationKey(`results.finished.${option}`))}
-            </label>
-          {/each}
-        </div> -->
-        <p>{$t('results.finished.question2')}</p>
         {#if !answerSaved}
+          <p class="text-success">{$t('results.finished.intro')}</p>
+          <!-- <p>{$t('results.finished.question1')}</p>
+            <div class="my-md gap-md flex justify-center">
+              {#each ['yes', 'no'] as option}
+                <label class="label gap-sm text-md flex-col">
+                  <input
+                    type="radio"
+                    class="radio-primary radio"
+                    name="finished-question-1"
+                    value={option}
+                    on:click={() => saveAnswer(1)}
+                    bind:group={answer1} />
+                  {$t(assertTranslationKey(`results.finished.${option}`))}
+                </label>
+              {/each}
+            </div> -->
+          <p>{$t('results.finished.question2')}</p>
           <div class="my-md flex justify-center gap-md">
             {#each Array.from({ length: 5 }, (_, i) => i + 1) as option}
               <label class="label flex-col gap-sm text-md">

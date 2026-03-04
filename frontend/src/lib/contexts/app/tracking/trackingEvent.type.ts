@@ -40,6 +40,7 @@ type TrackingEventName =
   | `results_browse_${EntityType}`
   | 'results_changeElection'
   | 'results_changeTab'
+  | 'results_matchingResults'
   | 'results_ranked'
   | `results_ranked_${EntityType}`
   | 'results_ranked'
