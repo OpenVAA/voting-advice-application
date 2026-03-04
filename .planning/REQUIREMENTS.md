@@ -23,8 +23,8 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 ### Candidate App
 
-- [ ] **CAND-01**: Login/logout flow tested with new fixture pattern and test IDs
-- [ ] **CAND-02**: Password change flow tested with new pattern
+- [x] **CAND-01**: Login/logout flow tested with new fixture pattern and test IDs
+- [x] **CAND-02**: Password change flow tested with new pattern
 - [x] **CAND-03**: Profile setup tested (image upload, info questions, all field types)
 - [x] **CAND-04**: Opinion question answering tested (all question types, translations, comments)
 - [ ] **CAND-05**: Answer editing and category navigation tested
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-09    | Phase 1 | Complete |
 | INFRA-10    | Phase 7 | Pending  |
 | INFRA-11    | Phase 7 | Pending  |
-| CAND-01     | Phase 2 | Pending  |
-| CAND-02     | Phase 2 | Pending  |
+| CAND-01     | Phase 2 | Complete |
+| CAND-02     | Phase 2 | Complete |
 | CAND-03     | Phase 2 | Complete |
 | CAND-04     | Phase 2 | Complete |
 | CAND-05     | Phase 2 | Pending  |

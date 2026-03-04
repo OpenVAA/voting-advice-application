@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-04T17:38:49Z"
-last_activity: 2026-03-04 — Completed 02-01 foundation utilities (page objects, emailHelper, StrapiAdminClient extensions, dataset)
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-04T17:46:11Z"
+last_activity: 2026-03-04 — Completed 02-02 auth and registration E2E specs
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 15
-  completed_plans: 12
-  percent: 80
+  completed_plans: 13
+  percent: 87
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 2 of 7 (Candidate App Coverage)
-Plan: 1 of 4 in current phase (COMPLETE)
+Plan: 2 of 4 in current phase (COMPLETE)
 Status: In Progress
-Last activity: 2026-03-04 — Completed 02-01 foundation utilities (page objects, emailHelper, StrapiAdminClient extensions, dataset)
+Last activity: 2026-03-04 — Completed 02-02 auth and registration E2E specs (login, logout, password change, registration, password reset)
 
-Progress: [████████░░] 80%
+Progress: [████████▓░] 87%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ _Updated after each plan completion_
 | Phase 01 P10 | 3min | 2 tasks | 9 files |
 | Phase 01 P11 | 2min | 2 tasks | 3 files |
 | Phase 02 P01 | 4min | 2 tasks | 11 files |
+| Phase 02 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Used || instead of ?? for mailparser html field to handle false return type
 - [Phase 02]: Renamed voter questionsPage fixture to voterQuestionsPage for candidate/voter disambiguation
 - [Phase 02]: content-manager admin API receives parsed JSON (data param) while Admin Tools receives JSON.stringify
+- [Phase 02]: Direct getByTestId locators for register/password and password-reset pages due to testId mismatches with page objects
+- [Phase 02]: Logout modal try-catch pattern with role-based button locator fallback for unanswered-questions modal
+- [Phase 02]: PasswordSetter nth() indexing for pages without explicit passwordTestId/confirmPasswordTestId props
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T17:38:49Z
-Stopped at: Completed 02-01-PLAN.md
-Resume file: .planning/phases/02-candidate-app-coverage/02-01-SUMMARY.md
+Last session: 2026-03-04T17:46:11Z
+Stopped at: Completed 02-02-PLAN.md
+Resume file: .planning/phases/02-candidate-app-coverage/02-02-SUMMARY.md
