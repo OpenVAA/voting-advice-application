@@ -22,13 +22,27 @@
 import { expect, test as base } from '@playwright/test';
 import { HomePage } from '../pages/candidate/HomePage';
 import { LoginPage } from '../pages/candidate/LoginPage';
-import { QuestionsPage } from '../pages/voter/QuestionsPage';
+import { ProfilePage } from '../pages/candidate/ProfilePage';
+import { QuestionsPage as CandidateQuestionsPage } from '../pages/candidate/QuestionsPage';
+import { QuestionPage } from '../pages/candidate/QuestionPage';
+import { SettingsPage } from '../pages/candidate/SettingsPage';
+import { PreviewPage } from '../pages/candidate/PreviewPage';
+import { RegisterPage } from '../pages/candidate/RegisterPage';
+import { ForgotPasswordPage } from '../pages/candidate/ForgotPasswordPage';
+import { QuestionsPage as VoterQuestionsPage } from '../pages/voter/QuestionsPage';
 
 // Page fixture types
 type PageFixtures = {
   loginPage: LoginPage;
   homePage: HomePage;
-  questionsPage: QuestionsPage;
+  profilePage: ProfilePage;
+  candidateQuestionsPage: CandidateQuestionsPage;
+  questionPage: QuestionPage;
+  settingsPage: SettingsPage;
+  previewPage: PreviewPage;
+  registerPage: RegisterPage;
+  forgotPasswordPage: ForgotPasswordPage;
+  voterQuestionsPage: VoterQuestionsPage;
 };
 
 // Extend base test with page object fixtures
@@ -39,8 +53,29 @@ export const test = base.extend<PageFixtures>({
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
   },
-  questionsPage: async ({ page }, use) => {
-    await use(new QuestionsPage(page));
+  profilePage: async ({ page }, use) => {
+    await use(new ProfilePage(page));
+  },
+  candidateQuestionsPage: async ({ page }, use) => {
+    await use(new CandidateQuestionsPage(page));
+  },
+  questionPage: async ({ page }, use) => {
+    await use(new QuestionPage(page));
+  },
+  settingsPage: async ({ page }, use) => {
+    await use(new SettingsPage(page));
+  },
+  previewPage: async ({ page }, use) => {
+    await use(new PreviewPage(page));
+  },
+  registerPage: async ({ page }, use) => {
+    await use(new RegisterPage(page));
+  },
+  forgotPasswordPage: async ({ page }, use) => {
+    await use(new ForgotPasswordPage(page));
+  },
+  voterQuestionsPage: async ({ page }, use) => {
+    await use(new VoterQuestionsPage(page));
   }
 });
 
@@ -50,4 +85,11 @@ export { expect };
 // Re-export page objects for direct use if needed
 export { HomePage } from '../pages/candidate/HomePage';
 export { LoginPage } from '../pages/candidate/LoginPage';
-export { QuestionsPage } from '../pages/voter/QuestionsPage';
+export { ProfilePage } from '../pages/candidate/ProfilePage';
+export { QuestionsPage as CandidateQuestionsPage } from '../pages/candidate/QuestionsPage';
+export { QuestionPage } from '../pages/candidate/QuestionPage';
+export { SettingsPage } from '../pages/candidate/SettingsPage';
+export { PreviewPage } from '../pages/candidate/PreviewPage';
+export { RegisterPage } from '../pages/candidate/RegisterPage';
+export { ForgotPasswordPage } from '../pages/candidate/ForgotPasswordPage';
+export { QuestionsPage as VoterQuestionsPage } from '../pages/voter/QuestionsPage';
