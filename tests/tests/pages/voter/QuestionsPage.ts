@@ -3,13 +3,11 @@ import type { Locator, Page } from '@playwright/test';
 
 export class QuestionsPage {
   readonly page: Page;
-  readonly questionCard: Locator;
   readonly nextButton: Locator;
   readonly previousButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.questionCard = page.getByTestId(testIds.voter.questions.card);
     this.nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     this.previousButton = page.getByTestId(testIds.voter.questions.previousButton);
   }
