@@ -41,8 +41,6 @@ export const testIds = {
       container: 'candidate-preview-container'
     },
     nav: {
-      menu: 'candidate-nav-menu',
-      logout: 'candidate-nav-logout',
       home: 'candidate-nav-home',
       profile: 'candidate-nav-profile',
       questions: 'candidate-nav-questions',
@@ -84,7 +82,6 @@ export const testIds = {
     results: {
       list: 'voter-results-list',
       card: 'entity-card',
-      score: 'voter-results-score',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section'
     },

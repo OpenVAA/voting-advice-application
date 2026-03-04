@@ -133,11 +133,17 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   {/if}
 
   {#if contentTabs[activeIndex]?.content === 'info'}
-    <EntityInfo {entity} questions={infoQuestions} />
+    <div data-testid="voter-entity-detail-info">
+      <EntityInfo {entity} questions={infoQuestions} />
+    </div>
   {:else if contentTabs[activeIndex]?.content === 'opinions'}
-    <EntityOpinions {entity} questions={opinionQuestions} {answers} />
+    <div data-testid="voter-entity-detail-opinions">
+      <EntityOpinions {entity} questions={opinionQuestions} {answers} />
+    </div>
   {:else if contentTabs[activeIndex]?.content === 'candidates'}
-    <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+    <div data-testid="voter-entity-detail-submatches">
+      <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+    </div>
   {/if}
 </article>
 

@@ -264,6 +264,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
         {#if activeEntityType}
           {#if activeMatches}
+            <div data-testid={activeEntityType === 'candidate' ? 'voter-results-candidate-section' : activeEntityType === 'organization' ? 'voter-results-party-section' : undefined}>
             {#key activeMatches}
               <h3 class="mx-10 my-lg text-xl">
                 {$t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
@@ -282,6 +283,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
                 data-testid="voter-results-controls" />
               <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" data-testid="voter-results-list" />
             {/key}
+            </div>
           {:else}
             <Loading />
           {/if}
