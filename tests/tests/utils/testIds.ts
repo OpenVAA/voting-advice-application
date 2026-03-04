@@ -21,7 +21,7 @@ export const testIds = {
       imageUpload: 'profile-image-upload'
     },
     home: {
-      readyMessage: 'candidate-home-ready'
+      statusMessage: 'candidate-home-status'
     },
     questions: {
       card: 'candidate-questions-card',
@@ -65,7 +65,7 @@ export const testIds = {
     },
     elections: {
       list: 'voter-elections-list',
-      card: 'voter-elections-card'
+      card: 'election-selector-option'
     },
     constituencies: {
       list: 'voter-constituencies-list',
@@ -76,15 +76,14 @@ export const testIds = {
     },
     questions: {
       card: 'voter-questions-card',
-      answerOption: 'voter-questions-option',
-      skipButton: 'voter-questions-skip',
-      nextButton: 'voter-questions-next',
-      previousButton: 'voter-questions-previous',
+      answerOption: 'question-choice',
+      nextButton: 'question-next',
+      previousButton: 'question-previous',
       categoryIntro: 'voter-questions-category-intro'
     },
     results: {
       list: 'voter-results-list',
-      card: 'voter-results-card',
+      card: 'entity-card',
       score: 'voter-results-score',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section'
@@ -102,6 +101,8 @@ export const testIds = {
   shared: {
     errorMessage: 'error-message',
     loading: 'loading-indicator',
+    questionActions: 'question-actions',
+    questionDelete: 'question-delete',
     navigation: {
       menu: 'nav-menu',
       menuItem: 'nav-menu-item'

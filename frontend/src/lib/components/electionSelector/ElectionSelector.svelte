@@ -55,7 +55,7 @@ If there’s only one option, it is automatically selected and no interactions a
         name={groupName}
         value={id}
         disabled={elections.length === 1}
-        data-testid="election-selector-option-{i}"
+        data-testid="election-selector-option"
         bind:group={selected}
         on:change={handleChange} />
       <span class="label-text">

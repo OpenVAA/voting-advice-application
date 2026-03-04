@@ -261,7 +261,7 @@ The same component can also be used to display the answers of the voter and anot
         name="questionChoices-{question.id}"
         disabled={mode !== 'answer'}
         value={id}
-        data-testid="question-choice-{i}"
+        data-testid="question-choice"
         bind:this={inputs[id]}
         bind:group={selected}
         on:keyup={(e) => handleKeyUp(e, id)} />
