@@ -1,19 +1,15 @@
-import type { QuestionInfoSection } from '@openvaa/app-shared';
+import type { AnyQuestionVariant } from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type QuestionExtendedInfoProps = SvelteHTMLElements['div'] & {
   /**
-   * The title for the info, usually the question text.
+   * The question to show the info for.
    */
-  title: string;
+  question: AnyQuestionVariant;
   /**
-   * The info content to show as a plain or HTML string.
+   * Optional title for the info, by default the question text.
    */
-  info: string;
-  /**
-   * Additional expandable info sections shown as plain or HTML strings.
-   */
-  infoSections?: Array<QuestionInfoSection>;
+  title?: string;
   /**
    * A callback triggered when an info section is collapsed. Mostly used for tracking.
    */

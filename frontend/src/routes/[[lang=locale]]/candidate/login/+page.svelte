@@ -127,8 +127,7 @@
     action="login"
     use:enhance={() => {
       status = 'loading';
-      return async ({ update, result }) => {
-        await update();
+      return async ({ result }) => {
         if (result.type === 'failure') {
           status = 'error';
           errorMessage =
@@ -195,6 +194,7 @@
     {/if}
 
     <div class="mt-lg">
+      <Button href={$getRoute('CandAppRegister')} text={$t('candidateApp.login.haveRegistrationCode')} />
       <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
       <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
       {#if $appSettings.access.voterApp}

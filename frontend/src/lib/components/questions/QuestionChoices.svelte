@@ -60,6 +60,7 @@ The same component can also be used to display the answers of the voter and anot
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
@@ -104,7 +105,9 @@ The same component can also be used to display the answers of the voter and anot
     if (showLine) doShowLine = showLine;
     else doShowLine = isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion);
     if (variant) vertical = variant === 'vertical';
-    else vertical = isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion);
+    else
+      vertical =
+        isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) || !!getCustomData(question).vertical;
   }
 
   ////////////////////////////////////////////////////////////////////

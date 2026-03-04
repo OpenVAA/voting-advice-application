@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit';
 import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
@@ -68,10 +69,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
 
   if (requestedLocale !== servedLocale) {
     debug(`Route: REDIRECT to locale ${servedLocale}`);
-    return new Response(undefined, {
-      headers: { location: `/${servedLocale}${cleanPath}${search}` },
-      status: 301
-    });
+    redirect(301, `/${servedLocale}${cleanPath}${search}`);
   }
 
   //////////////////////////////////////////////////////////////////////////
@@ -83,18 +81,12 @@ export const handle: Handle = (async ({ event, resolve }) => {
 
     if (token && pathname.endsWith('candidate/login')) {
       debug('Route: REDIRECT to home page');
-      return new Response(undefined, {
-        headers: { location: `/${servedLocale}/candidate` },
-        status: 303
-      });
+      redirect(303, `/${servedLocale}/candidate`);
     }
 
     if (!token && route.id.includes('(protected)')) {
       debug('Route: REDIRECT to login page');
-      return new Response(undefined, {
-        headers: { location: `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}` },
-        status: 303
-      });
+      redirect(303, `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}`);
     }
   }
 

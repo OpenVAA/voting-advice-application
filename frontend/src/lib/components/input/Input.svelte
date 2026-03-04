@@ -4,6 +4,8 @@ Display any data input, its associated label and possible info. The HTML element
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
+Multilingual features are only available if the `locales` store contains more than one locale.Button
+
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
@@ -108,7 +110,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   const isLabelOutside = multilingual || type.startsWith('textarea');
 
   /*** Extend info */
-  if (multilingual && multilingualInfo != '') {
+  if (multilingual && $locales.length > 1 && multilingualInfo != '') {
     multilingualInfo ??= $t('components.input.multilingualInfo');
     info ??= '';
     info += ` ${multilingualInfo}`;
@@ -614,14 +616,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   <!-- Optional elements below the form widgets -->
 
-  {#if multilingual || info}
+  {#if (multilingual && $locales.length > 1) || info}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
     <div class="flex gap-md {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
       {#if info}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
         <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
       {/if}
-      {#if multilingual}
+      {#if multilingual && $locales.length > 1}
         <Button
           text={isTranslationsVisible
             ? $t('components.input.hideTranslations')
