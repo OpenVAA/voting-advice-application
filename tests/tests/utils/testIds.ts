@@ -27,9 +27,7 @@ export const testIds = {
       card: 'candidate-questions-card',
       answerInput: 'candidate-questions-answer',
       commentInput: 'candidate-questions-comment',
-      saveButton: 'candidate-questions-save',
-      nextButton: 'candidate-questions-next',
-      previousButton: 'candidate-questions-previous'
+      saveButton: 'candidate-questions-save'
     },
     settings: {
       currentPassword: 'settings-current-password',
@@ -73,7 +71,6 @@ export const testIds = {
       startButton: 'voter-intro-start'
     },
     questions: {
-      card: 'voter-questions-card',
       answerOption: 'question-choice',
       nextButton: 'question-next',
       previousButton: 'question-previous',

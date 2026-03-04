@@ -62,7 +62,7 @@ Used to display a loading spinner with an optionally visible text label.
   }
 </script>
 
-<div {...concatClass($$restProps, classes)}>
+<div data-testid="loading-indicator" {...concatClass($$restProps, classes)}>
   <span class={spinnerClass} />
   <span class="text-center" class:sr-only={!showLabel}>{label ?? $t('common.loading')}</span>
 </div>
