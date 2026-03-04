@@ -201,6 +201,110 @@ export class StrapiAdminClient {
   }
 
   /**
+   * Update app settings via the Strapi content-manager admin API.
+   *
+   * Uses the single-type content-manager endpoint to update app-setting fields.
+   * IMPORTANT: The content-manager admin API expects parsed JSON (not stringified),
+   * unlike the Admin Tools controllers which do `JSON.parse(ctx.request.body)`.
+   *
+   * @param data - Object with app-setting fields to update
+   * @throws Error if the request fails
+   */
+  async updateAppSettings(data: Record<string, unknown>): Promise<void> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.put(
+      '/content-manager/single-types/api::app-setting.app-setting',
+      {
+        headers: this.headers,
+        data
+      }
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Update app settings failed with status ${response.status()}: ${body}`);
+    }
+  }
+
+  /**
+   * Send an email to a candidate via Admin Tools `/send-email` endpoint.
+   *
+   * @param params - Email parameters including candidateId, subject, content, and optional requireRegistrationKey flag
+   * @throws Error if the request fails
+   */
+  async sendEmail(params: {
+    candidateId: string;
+    subject: string;
+    content: string;
+    requireRegistrationKey?: boolean;
+  }): Promise<void> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.post('/openvaa-admin-tools/send-email', {
+      headers: this.headers,
+      data: JSON.stringify(params)
+    });
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Send email failed with status ${response.status()}: ${body}`);
+    }
+  }
+
+  /**
+   * Trigger a forgot-password email for a candidate via Admin Tools.
+   *
+   * NOTE: This method does NOT return the resetUrl. Per user decision, the reset
+   * link must be read from the SES email (via emailHelper), not from the API response.
+   * This method only triggers the email sending.
+   *
+   * @param params - Object containing the candidate's documentId
+   * @throws Error if the request fails
+   */
+  async sendForgotPassword(params: { documentId: string }): Promise<void> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.post(
+      '/openvaa-admin-tools/candidate-auth/forgot-password',
+      {
+        headers: this.headers,
+        data: JSON.stringify(params)
+      }
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Send forgot password failed with status ${response.status()}: ${body}`);
+    }
+  }
+
+  /**
+   * Force-set a candidate's password via Admin Tools.
+   *
+   * Used to restore candidate passwords after password change/reset tests.
+   *
+   * @param params - Object containing the candidate's documentId and new password
+   * @throws Error if the request fails
+   */
+  async setPassword(params: { documentId: string; password: string }): Promise<void> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.post(
+      '/openvaa-admin-tools/candidate-auth/set-password',
+      {
+        headers: this.headers,
+        data: JSON.stringify(params)
+      }
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Set password failed with status ${response.status()}: ${body}`);
+    }
+  }
+
+  /**
    * Dispose the underlying API request context.
    * Always call this when done to free resources.
    */

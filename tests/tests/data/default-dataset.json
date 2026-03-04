@@ -6,11 +6,11 @@
       "settings": {
         "type": "singleChoiceOrdinal",
         "values": [
-          { "key": 1, "label": { "en": "Fully disagree" } },
-          { "key": 2, "label": { "en": "Somewhat disagree" } },
-          { "key": 3, "label": { "en": "Neutral" } },
-          { "key": 4, "label": { "en": "Somewhat agree" } },
-          { "key": 5, "label": { "en": "Fully agree" } }
+          { "key": "1", "label": { "en": "Fully disagree" } },
+          { "key": "2", "label": { "en": "Somewhat disagree" } },
+          { "key": "3", "label": { "en": "Neutral" } },
+          { "key": "4", "label": { "en": "Somewhat agree" } },
+          { "key": "5", "label": { "en": "Fully agree" } }
         ]
       }
     },
@@ -151,6 +151,27 @@
       "category": { "externalId": "test-category-economy" },
       "questionType": { "externalId": "test-qt-number" },
       "order": 10
+    },
+    {
+      "externalId": "test-question-text",
+      "text": { "en": "Test Info Question: What is your campaign slogan?" },
+      "category": { "externalId": "test-category-social" },
+      "questionType": { "externalId": "test-qt-text" },
+      "order": 11
+    },
+    {
+      "externalId": "test-question-boolean",
+      "text": { "en": "Test Info Question: Are you a first-time candidate?" },
+      "category": { "externalId": "test-category-economy" },
+      "questionType": { "externalId": "test-qt-boolean" },
+      "order": 12
+    },
+    {
+      "externalId": "test-question-image",
+      "text": { "en": "Test Info Question: Upload your campaign poster" },
+      "category": { "externalId": "test-category-social" },
+      "questionType": { "externalId": "test-qt-image" },
+      "order": 13
     }
   ],
   "parties": [
@@ -172,14 +193,14 @@
       "lastName": "Alpha",
       "email": "mock.candidate.2@openvaa.org",
       "answersByExternalId": {
-        "test-question-1": { "value": 4 },
-        "test-question-2": { "value": 5 },
-        "test-question-3": { "value": 3 },
-        "test-question-4": { "value": 2 },
-        "test-question-5": { "value": 5 },
-        "test-question-6": { "value": 4 },
-        "test-question-7": { "value": 5 },
-        "test-question-8": { "value": 4 }
+        "test-question-1": { "value": "4", "info": { "en": "I believe progressive taxation helps reduce inequality." } },
+        "test-question-2": { "value": "5" },
+        "test-question-3": { "value": "3", "info": { "en": "The transition must be balanced with economic realities." } },
+        "test-question-4": { "value": "2" },
+        "test-question-5": { "value": "5", "info": { "en": "Healthcare is a fundamental right for everyone." } },
+        "test-question-6": { "value": "4" },
+        "test-question-7": { "value": "5" },
+        "test-question-8": { "value": "4" }
       }
     },
     {
@@ -188,14 +209,14 @@
       "lastName": "Beta",
       "email": "test.beta@openvaa.org",
       "answersByExternalId": {
-        "test-question-1": { "value": 2 },
-        "test-question-2": { "value": 3 },
-        "test-question-3": { "value": 4 },
-        "test-question-4": { "value": 5 },
-        "test-question-5": { "value": 1 },
-        "test-question-6": { "value": 2 },
-        "test-question-7": { "value": 3 },
-        "test-question-8": { "value": 2 }
+        "test-question-1": { "value": "2" },
+        "test-question-2": { "value": "3", "info": { "en": "We need targeted investment, not blanket spending." } },
+        "test-question-3": { "value": "4" },
+        "test-question-4": { "value": "5", "info": { "en": "Lower corporate taxes drive economic growth and job creation." } },
+        "test-question-5": { "value": "1" },
+        "test-question-6": { "value": "2" },
+        "test-question-7": { "value": "3" },
+        "test-question-8": { "value": "2" }
       }
     },
     {
@@ -204,14 +225,14 @@
       "lastName": "Gamma",
       "email": "test.gamma@openvaa.org",
       "answersByExternalId": {
-        "test-question-1": { "value": 3 },
-        "test-question-2": { "value": 4 },
-        "test-question-3": { "value": 5 },
-        "test-question-4": { "value": 3 },
-        "test-question-5": { "value": 4 },
-        "test-question-6": { "value": 3 },
-        "test-question-7": { "value": 4 },
-        "test-question-8": { "value": 5 }
+        "test-question-1": { "value": "3" },
+        "test-question-2": { "value": "4" },
+        "test-question-3": { "value": "5", "info": { "en": "Renewable energy is the future and deserves full support." } },
+        "test-question-4": { "value": "3" },
+        "test-question-5": { "value": "4" },
+        "test-question-6": { "value": "3" },
+        "test-question-7": { "value": "4", "info": { "en": "Education is the foundation of a prosperous society." } },
+        "test-question-8": { "value": "5" }
       }
     },
     {
@@ -220,14 +241,14 @@
       "lastName": "Delta",
       "email": "test.delta@openvaa.org",
       "answersByExternalId": {
-        "test-question-1": { "value": 1 },
-        "test-question-2": { "value": 1 },
-        "test-question-3": { "value": 2 },
-        "test-question-4": { "value": 4 },
-        "test-question-5": { "value": 2 },
-        "test-question-6": { "value": 1 },
-        "test-question-7": { "value": 2 },
-        "test-question-8": { "value": 1 }
+        "test-question-1": { "value": "1" },
+        "test-question-2": { "value": "1" },
+        "test-question-3": { "value": "2" },
+        "test-question-4": { "value": "4" },
+        "test-question-5": { "value": "2" },
+        "test-question-6": { "value": "1", "info": { "en": "Stricter immigration controls protect local workers." } },
+        "test-question-7": { "value": "2" },
+        "test-question-8": { "value": "1" }
       }
     },
     {
@@ -236,15 +257,21 @@
       "lastName": "Epsilon",
       "email": "test.epsilon@openvaa.org",
       "answersByExternalId": {
-        "test-question-1": { "value": 5 },
-        "test-question-2": { "value": 2 },
-        "test-question-3": { "value": 1 },
-        "test-question-4": { "value": 1 },
-        "test-question-5": { "value": 3 },
-        "test-question-6": { "value": 5 },
-        "test-question-7": { "value": 1 },
-        "test-question-8": { "value": 3 }
+        "test-question-1": { "value": "5" },
+        "test-question-2": { "value": "2" },
+        "test-question-3": { "value": "1" },
+        "test-question-4": { "value": "1" },
+        "test-question-5": { "value": "3" },
+        "test-question-6": { "value": "5", "info": { "en": "Open borders enrich our culture and economy." } },
+        "test-question-7": { "value": "1" },
+        "test-question-8": { "value": "3" }
       }
+    },
+    {
+      "externalId": "test-candidate-unregistered",
+      "firstName": "Test Candidate",
+      "lastName": "Unregistered",
+      "email": "test.unregistered@openvaa.org"
     }
   ],
   "nominations": [
@@ -279,6 +306,13 @@
     {
       "externalId": "test-nom-epsilon",
       "candidate": { "externalId": "test-candidate-epsilon" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-unregistered",
+      "candidate": { "externalId": "test-candidate-unregistered" },
       "election": { "externalId": "test-election-1" },
       "constituency": { "externalId": "test-constituency-alpha" },
       "party": { "externalId": "test-party-a" }
