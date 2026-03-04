@@ -13,7 +13,7 @@ This roadmap covers Milestone 1 of the OpenVAA framework evolution: rebuilding t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Infrastructure Foundation** - Playwright upgrade, project dependencies pattern, API data management, testId attributes, fixture layer, ESLint plugin
+- [x] **Phase 1: Infrastructure Foundation** - Playwright upgrade, project dependencies pattern, API data management, testId attributes, fixture layer, ESLint plugin
 - [ ] **Phase 2: Candidate App Coverage** - Restructure existing candidate tests and fill all missing flows using new infrastructure
 - [ ] **Phase 3: Voter App Core Journey** - Cover landing through results for the primary user-facing surface currently at zero coverage
 - [ ] **Phase 4: Voter App Settings and Edge Cases** - Cover configuration-driven voter features, optional pages, and app-mode edge cases
@@ -39,16 +39,16 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 
-- [ ] 01-01-PLAN.md — Playwright upgrade to 1.58.2, project dependencies config, strapiAdminClient.ts, testIds constants
-- [ ] 01-02-PLAN.md — Default test dataset JSON, data setup/teardown projects, auth setup project
-- [ ] 01-03-PLAN.md — Add data-testid attributes to voter app route pages (14 files)
-- [ ] 01-04-PLAN.md — Add data-testid attributes to candidate auth/public pages and candidate-specific components (14 files)
-- [ ] 01-05-PLAN.md — Fixture layer (index.ts, auth.fixture.ts) and page object model stubs (LoginPage, HomePage, QuestionsPage)
-- [ ] 01-06-PLAN.md — ESLint Playwright plugin configuration (eslint-plugin-playwright)
-- [ ] 01-07-PLAN.md — Add data-testid attributes to shared/dynamic components used by voter app (16 files)
-- [ ] 01-08-PLAN.md — Add data-testid attributes to candidate protected pages including profile-submit rename (6 files)
-- [ ] 01-09-PLAN.md — [GAP CLOSURE] Reconcile testIds.ts constants with component values, fix naming mismatches, update page objects
-- [ ] 01-10-PLAN.md — [GAP CLOSURE] Add missing data-testid attributes to results, entity details, navigation, registration, settings, constituency components
+- [x] 01-01-PLAN.md — Playwright upgrade to 1.58.2, project dependencies config, strapiAdminClient.ts, testIds constants
+- [x] 01-02-PLAN.md — Default test dataset JSON, data setup/teardown projects, auth setup project
+- [x] 01-03-PLAN.md — Add data-testid attributes to voter app route pages (14 files)
+- [x] 01-04-PLAN.md — Add data-testid attributes to candidate auth/public pages and candidate-specific components (14 files)
+- [x] 01-05-PLAN.md — Fixture layer (index.ts, auth.fixture.ts) and page object model stubs (LoginPage, HomePage, QuestionsPage)
+- [x] 01-06-PLAN.md — ESLint Playwright plugin configuration (eslint-plugin-playwright)
+- [x] 01-07-PLAN.md — Add data-testid attributes to shared/dynamic components used by voter app (16 files)
+- [x] 01-08-PLAN.md — Add data-testid attributes to candidate protected pages including profile-submit rename (6 files)
+- [x] 01-09-PLAN.md — [GAP CLOSURE] Reconcile testIds.ts constants with component values, fix naming mismatches, update page objects
+- [x] 01-10-PLAN.md — [GAP CLOSURE] Add missing data-testid attributes to results, entity details, navigation, registration, settings, constituency components
 
 ### Phase 2: Candidate App Coverage
 
