@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. Every interactive element in both voter and candidate apps can be selected via `data-testid` attribute without using text content or CSS classes
 4. The Admin Tools API can load and delete a complete test dataset in under 5 seconds, verified by a passing setup/teardown project
 5. The ESLint Playwright plugin flags `waitForTimeout` calls and text-based click targets as errors in CI
-   **Plans:** 10 plans
+   **Plans:** 11 plans
 
 Plans:
 
@@ -49,6 +49,7 @@ Plans:
 - [x] 01-08-PLAN.md — Add data-testid attributes to candidate protected pages including profile-submit rename (6 files)
 - [x] 01-09-PLAN.md — [GAP CLOSURE] Reconcile testIds.ts constants with component values, fix naming mismatches, update page objects
 - [x] 01-10-PLAN.md — [GAP CLOSURE] Add missing data-testid attributes to results, entity details, navigation, registration, settings, constituency components
+- [ ] 01-11-PLAN.md — [GAP CLOSURE] Fix Playwright config testIgnore, remove orphaned testIds, wire Loading.svelte testId
 
 ### Phase 2: Candidate App Coverage
 
@@ -174,7 +175,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase                                   | Plans Complete | Status      | Completed |
 | --------------------------------------- | -------------- | ----------- | --------- |
-| 1. Infrastructure Foundation            | 8/10           | Gap closure | -         |
+| 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/5            | Not started | -         |
 | 3. Voter App Core Journey               | 0/4            | Not started | -         |
 | 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
