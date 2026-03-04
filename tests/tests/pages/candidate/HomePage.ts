@@ -3,14 +3,14 @@ import type { Locator, Page } from '@playwright/test';
 
 export class HomePage {
   readonly page: Page;
-  readonly readyMessage: Locator;
+  readonly statusMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.readyMessage = page.getByTestId(testIds.candidate.home.readyMessage);
+    this.statusMessage = page.getByTestId(testIds.candidate.home.statusMessage);
   }
 
-  async expectReady(): Promise<void> {
-    await this.readyMessage.waitFor({ state: 'visible' });
+  async expectStatus(): Promise<void> {
+    await this.statusMessage.waitFor({ state: 'visible' });
   }
 }

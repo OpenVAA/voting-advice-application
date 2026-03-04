@@ -6,14 +6,12 @@ export class QuestionsPage {
   readonly questionCard: Locator;
   readonly nextButton: Locator;
   readonly previousButton: Locator;
-  readonly skipButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.questionCard = page.getByTestId(testIds.voter.questions.card);
     this.nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     this.previousButton = page.getByTestId(testIds.voter.questions.previousButton);
-    this.skipButton = page.getByTestId(testIds.voter.questions.skipButton);
   }
 
   async answerOption(index: number): Promise<Locator> {
@@ -33,7 +31,11 @@ export class QuestionsPage {
     await this.previousButton.click();
   }
 
+  /**
+   * Skip the current question by clicking the Next button.
+   * In the component, the Next button acts as Skip when no answer is selected.
+   */
   async skip(): Promise<void> {
-    await this.skipButton.click();
+    await this.nextButton.click();
   }
 }
