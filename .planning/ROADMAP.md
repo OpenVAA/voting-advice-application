@@ -63,15 +63,14 @@ Plans:
 3. All candidate question types (opinion questions with all field types, comments, translations) are covered with test IDs as selectors
 4. The candidate preview page is tested and verifies that all entered profile and opinion data displays correctly
 5. App-mode edge cases (answers locked, candidateApp disabled, underMaintenance) all redirect or show correct UI without manual intervention
-   **Plans**: TBD
+   **Plans:** 4 plans
 
 Plans:
 
-- [ ] 02-01: Candidate auth spec (login, logout, password change, password reset)
-- [ ] 02-02: Candidate registration spec (email link, pre-registration, auto-login)
-- [ ] 02-03: Candidate profile spec (image upload, info questions, all field types)
-- [ ] 02-04: Candidate questions spec (all opinion question types, translations, comments, editing)
-- [ ] 02-05: Candidate app-mode and settings specs (locked answers, disabled app, maintenance, notifications, help/privacy, question visibility)
+- [ ] 02-01-PLAN.md — Foundation: emailHelper utility, StrapiAdminClient extensions, dataset extension, 7 page objects, fixture registration
+- [ ] 02-02-PLAN.md — Auth and registration specs (login, logout, password change, email registration, password reset)
+- [ ] 02-03-PLAN.md — Profile and questions specs (image upload, info fields, opinion answering, editing, categories, preview, persistence)
+- [ ] 02-04-PLAN.md — Settings and app modes spec (locked, disabled, maintenance, notifications, help/privacy, visibility) + legacy cleanup
 
 ### Phase 3: Voter App Core Journey
 
@@ -176,7 +175,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | Phase                                   | Plans Complete | Status      | Completed |
 | --------------------------------------- | -------------- | ----------- | --------- |
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
-| 2. Candidate App Coverage               | 0/5            | Not started | -         |
+| 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 0/4            | Not started | -         |
 | 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
