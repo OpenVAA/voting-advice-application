@@ -31,13 +31,13 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [ ] **CAND-06**: Preview page tested (all entered data displays correctly)
 - [x] **CAND-07**: Registration via email link tested (email extraction, password set, auto-login)
 - [x] **CAND-08**: Password reset flow tested (forgot password, email link, reset, validation)
-- [ ] **CAND-09**: Answers locked mode tested (read-only state, edit buttons disabled)
-- [ ] **CAND-10**: App disabled mode tested (access denied/redirect when `candidateApp=false`)
-- [ ] **CAND-11**: Maintenance mode tested (maintenance page shown when `underMaintenance=true`)
+- [x] **CAND-09**: Answers locked mode tested (read-only state, edit buttons disabled)
+- [x] **CAND-10**: App disabled mode tested (access denied/redirect when `candidateApp=false`)
+- [x] **CAND-11**: Maintenance mode tested (maintenance page shown when `underMaintenance=true`)
 - [ ] **CAND-12**: Data persistence tested (data survives page reload/session restart)
-- [ ] **CAND-13**: Candidate notification display tested
-- [ ] **CAND-14**: Help and privacy pages render correctly
-- [ ] **CAND-15**: Question content visibility settings tested (`hideVideo`, `hideHero`)
+- [x] **CAND-13**: Candidate notification display tested
+- [x] **CAND-14**: Help and privacy pages render correctly
+- [x] **CAND-15**: Question content visibility settings tested (`hideVideo`, `hideHero`)
 
 ### Voter App
 
@@ -129,13 +129,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAND-06     | Phase 2 | Pending  |
 | CAND-07     | Phase 2 | Complete |
 | CAND-08     | Phase 2 | Complete |
-| CAND-09     | Phase 2 | Pending  |
-| CAND-10     | Phase 2 | Pending  |
-| CAND-11     | Phase 2 | Pending  |
+| CAND-09     | Phase 2 | Complete |
+| CAND-10     | Phase 2 | Complete |
+| CAND-11     | Phase 2 | Complete |
 | CAND-12     | Phase 2 | Pending  |
-| CAND-13     | Phase 2 | Pending  |
-| CAND-14     | Phase 2 | Pending  |
-| CAND-15     | Phase 2 | Pending  |
+| CAND-13     | Phase 2 | Complete |
+| CAND-14     | Phase 2 | Complete |
+| CAND-15     | Phase 2 | Complete |
 | VOTE-01     | Phase 3 | Pending  |
 | VOTE-02     | Phase 3 | Pending  |
 | VOTE-03     | Phase 3 | Pending  |

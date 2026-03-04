@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-04T17:46:11Z"
-last_activity: 2026-03-04 — Completed 02-02 auth and registration E2E specs
+status: executing
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-03-04T17:50:09.995Z"
+last_activity: 2026-03-04 — Completed 02-04 candidate settings and app mode E2E tests
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 2 of 7 (Candidate App Coverage)
-Plan: 2 of 4 in current phase (COMPLETE)
+Plan: 4 of 4 in current phase (COMPLETE)
 Status: In Progress
-Last activity: 2026-03-04 — Completed 02-02 auth and registration E2E specs (login, logout, password change, registration, password reset)
+Last activity: 2026-03-04 — Completed 02-04 candidate settings and app mode E2E tests
 
-Progress: [████████▓░] 87%
+Progress: [█████████▓] 93%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ _Updated after each plan completion_
 | Phase 01 P11 | 2min | 2 tasks | 3 files |
 | Phase 02 P01 | 4min | 2 tasks | 11 files |
 | Phase 02 P02 | 3min | 2 tasks | 2 files |
+| Phase 02 P04 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Direct getByTestId locators for register/password and password-reset pages due to testId mismatches with page objects
 - [Phase 02]: Logout modal try-catch pattern with role-based button locator fallback for unanswered-questions modal
 - [Phase 02]: PasswordSetter nth() indexing for pages without explicit passwordTestId/confirmPasswordTestId props
+- [Phase 02]: Used role=dialog assertion for notification popup since Alert component renders with role=dialog
+- [Phase 02]: Verified hero visibility via overflow-hidden class inside figure[role=presentation] rather than adding testIds
+- [Phase 02]: Legacy spec migration complete -- deleted 3 files (candidateApp-basics, candidateApp-advanced, translations)
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T17:46:11Z
-Stopped at: Completed 02-02-PLAN.md
-Resume file: .planning/phases/02-candidate-app-coverage/02-02-SUMMARY.md
+Last session: 2026-03-04T17:50:09.992Z
+Stopped at: Completed 02-04-PLAN.md
+Resume file: None
