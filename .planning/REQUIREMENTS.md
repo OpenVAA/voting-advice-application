@@ -25,12 +25,12 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 - [ ] **CAND-01**: Login/logout flow tested with new fixture pattern and test IDs
 - [ ] **CAND-02**: Password change flow tested with new pattern
-- [ ] **CAND-03**: Profile setup tested (image upload, info questions, all field types)
-- [ ] **CAND-04**: Opinion question answering tested (all question types, translations, comments)
+- [x] **CAND-03**: Profile setup tested (image upload, info questions, all field types)
+- [x] **CAND-04**: Opinion question answering tested (all question types, translations, comments)
 - [ ] **CAND-05**: Answer editing and category navigation tested
 - [ ] **CAND-06**: Preview page tested (all entered data displays correctly)
-- [ ] **CAND-07**: Registration via email link tested (email extraction, password set, auto-login)
-- [ ] **CAND-08**: Password reset flow tested (forgot password, email link, reset, validation)
+- [x] **CAND-07**: Registration via email link tested (email extraction, password set, auto-login)
+- [x] **CAND-08**: Password reset flow tested (forgot password, email link, reset, validation)
 - [ ] **CAND-09**: Answers locked mode tested (read-only state, edit buttons disabled)
 - [ ] **CAND-10**: App disabled mode tested (access denied/redirect when `candidateApp=false`)
 - [ ] **CAND-11**: Maintenance mode tested (maintenance page shown when `underMaintenance=true`)
@@ -123,12 +123,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-11    | Phase 7 | Pending  |
 | CAND-01     | Phase 2 | Pending  |
 | CAND-02     | Phase 2 | Pending  |
-| CAND-03     | Phase 2 | Pending  |
-| CAND-04     | Phase 2 | Pending  |
+| CAND-03     | Phase 2 | Complete |
+| CAND-04     | Phase 2 | Complete |
 | CAND-05     | Phase 2 | Pending  |
 | CAND-06     | Phase 2 | Pending  |
-| CAND-07     | Phase 2 | Pending  |
-| CAND-08     | Phase 2 | Pending  |
+| CAND-07     | Phase 2 | Complete |
+| CAND-08     | Phase 2 | Complete |
 | CAND-09     | Phase 2 | Pending  |
 | CAND-10     | Phase 2 | Pending  |
 | CAND-11     | Phase 2 | Pending  |
