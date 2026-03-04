@@ -37,6 +37,8 @@ Contains the dynamic `PasswordValidator` component.
   export let autocomplete: $$Props['autocomplete'] = 'new-password';
   export let errorMessage: $$Props['errorMessage'] = undefined;
   export let valid: $$Props['valid'] = false;
+  export let passwordTestId: $$Props['passwordTestId'] = undefined;
+  export let confirmPasswordTestId: $$Props['confirmPasswordTestId'] = undefined;
   export function reset(): void {
     password = '';
     passwordConfirmation = '';
@@ -66,11 +68,15 @@ Contains the dynamic `PasswordValidator` component.
   </p>
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md mt-md flex w-full flex-col gap-6">
-    <PasswordField bind:password id="password-{id}" label={$t('common.password')} {autocomplete} />
-    <PasswordField
-      bind:password={passwordConfirmation}
-      id="confirmation-{id}"
-      label={$t('common.passwordConfirmation')}
-      {autocomplete} />
+    <div data-testid={passwordTestId}>
+      <PasswordField bind:password id="password-{id}" label={$t('common.password')} {autocomplete} />
+    </div>
+    <div data-testid={confirmPasswordTestId}>
+      <PasswordField
+        bind:password={passwordConfirmation}
+        id="confirmation-{id}"
+        label={$t('common.passwordConfirmation')}
+        {autocomplete} />
+    </div>
   </div>
 </form>

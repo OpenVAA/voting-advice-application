@@ -153,7 +153,7 @@ Shows the candidate's user settings.
       </div>
 
       <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
-        <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset />
+        <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset confirmPasswordTestId="settings-confirm-password" />
 
         {#if status === 'error'}
           <ErrorMessage inline message={$t('candidateApp.settings.error.changePassword')} class="mb-lg mt-md" />

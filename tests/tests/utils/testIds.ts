@@ -67,7 +67,7 @@ export const testIds = {
     },
     constituencies: {
       list: 'voter-constituencies-list',
-      item: 'voter-constituencies-item'
+      selector: 'constituency-selector'
     },
     intro: {
       startButton: 'voter-intro-start'
