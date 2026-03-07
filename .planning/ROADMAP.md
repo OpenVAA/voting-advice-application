@@ -84,14 +84,14 @@ Plans:
 3. Candidate detail and party detail pages display all tabs (info, opinions, submatches) and the voter can navigate between them
 4. The minimum answers threshold is enforced — the results link does not appear until the required number of questions are answered
 5. Election and constituency selection flows are tested for both single and hierarchical selection scenarios
-   **Plans**: TBD
+   **Plans:** 4 plans
 
 Plans:
 
-- [ ] 03-01: Voter dataset and setup project (standard dataset with candidates, questions, parties)
-- [ ] 03-02: Voter journey spec (landing, election/constituency selection, intro, questions flow)
-- [ ] 03-03: Voter results spec (all three results section types, minimum answers threshold, results link)
-- [ ] 03-04: Voter detail pages spec (candidate detail tabs, party detail tabs, submatches)
+- [ ] 03-01-PLAN.md — Voter dataset, candidate addendum, data setup/teardown mods, page objects, voter fixture
+- [ ] 03-02-PLAN.md — Voter journey spec (home, election selection, constituency auto-implication, intro, questions flow)
+- [ ] 03-03-PLAN.md — Voter results and detail specs (candidate/party sections, entity tabs, drawer interaction, detail tabs)
+- [ ] 03-04-PLAN.md — Voter matching spec (independent ranking verification via @openvaa/matching, VOTE-05/VOTE-07 assertions)
 
 ### Phase 4: Voter App Settings and Edge Cases
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | --------------------------------------- | -------------- | ----------- | --------- |
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
-| 3. Voter App Core Journey               | 0/4            | Not started | -         |
+| 3. Voter App Core Journey               | 0/4            | Planned     | -         |
 | 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
