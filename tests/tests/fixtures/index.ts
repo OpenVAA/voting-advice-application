@@ -30,6 +30,10 @@ import { PreviewPage } from '../pages/candidate/PreviewPage';
 import { RegisterPage } from '../pages/candidate/RegisterPage';
 import { ForgotPasswordPage } from '../pages/candidate/ForgotPasswordPage';
 import { QuestionsPage as VoterQuestionsPage } from '../pages/voter/QuestionsPage';
+import { HomePage as VoterHomePage } from '../pages/voter/HomePage';
+import { IntroPage as VoterIntroPage } from '../pages/voter/IntroPage';
+import { ResultsPage as VoterResultsPage } from '../pages/voter/ResultsPage';
+import { EntityDetailPage as VoterEntityDetailPage } from '../pages/voter/EntityDetailPage';
 
 // Page fixture types
 type PageFixtures = {
@@ -43,6 +47,10 @@ type PageFixtures = {
   registerPage: RegisterPage;
   forgotPasswordPage: ForgotPasswordPage;
   voterQuestionsPage: VoterQuestionsPage;
+  voterHomePage: VoterHomePage;
+  voterIntroPage: VoterIntroPage;
+  voterResultsPage: VoterResultsPage;
+  voterEntityDetailPage: VoterEntityDetailPage;
 };
 
 // Extend base test with page object fixtures
@@ -76,6 +84,18 @@ export const test = base.extend<PageFixtures>({
   },
   voterQuestionsPage: async ({ page }, use) => {
     await use(new VoterQuestionsPage(page));
+  },
+  voterHomePage: async ({ page }, use) => {
+    await use(new VoterHomePage(page));
+  },
+  voterIntroPage: async ({ page }, use) => {
+    await use(new VoterIntroPage(page));
+  },
+  voterResultsPage: async ({ page }, use) => {
+    await use(new VoterResultsPage(page));
+  },
+  voterEntityDetailPage: async ({ page }, use) => {
+    await use(new VoterEntityDetailPage(page));
   }
 });
 
@@ -93,3 +113,7 @@ export { PreviewPage } from '../pages/candidate/PreviewPage';
 export { RegisterPage } from '../pages/candidate/RegisterPage';
 export { ForgotPasswordPage } from '../pages/candidate/ForgotPasswordPage';
 export { QuestionsPage as VoterQuestionsPage } from '../pages/voter/QuestionsPage';
+export { HomePage as VoterHomePage } from '../pages/voter/HomePage';
+export { IntroPage as VoterIntroPage } from '../pages/voter/IntroPage';
+export { ResultsPage as VoterResultsPage } from '../pages/voter/ResultsPage';
+export { EntityDetailPage as VoterEntityDetailPage } from '../pages/voter/EntityDetailPage';
