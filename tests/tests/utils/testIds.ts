@@ -80,7 +80,8 @@ export const testIds = {
       list: 'voter-results-list',
       card: 'entity-card',
       candidateSection: 'voter-results-candidate-section',
-      partySection: 'voter-results-party-section'
+      partySection: 'voter-results-party-section',
+      entityTabs: 'voter-results-entity-tabs'
     },
     entityDetail: {
       container: 'voter-entity-detail',
