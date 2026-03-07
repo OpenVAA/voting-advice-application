@@ -31,7 +31,7 @@ import { testIds } from '../utils/testIds';
 import type { Page } from '@playwright/test';
 
 type VoterFixtureOptions = {
-  /** Number of questions to answer. Default: 8 (all) */
+  /** Number of questions to answer. Default: 16 (all opinion questions from combined default + voter datasets) */
   voterAnswerCount: number;
   /** Likert answer value index (0-based: 0=Fully disagree, 4=Fully agree). Default: 4 */
   voterAnswerIndex: number;
@@ -43,7 +43,7 @@ type VoterFixtures = VoterFixtureOptions & {
 };
 
 export const voterTest = base.extend<VoterFixtures>({
-  voterAnswerCount: [8, { option: true }],
+  voterAnswerCount: [16, { option: true }],
   voterAnswerIndex: [4, { option: true }],
 
   answeredVoterPage: async ({ page, voterAnswerCount, voterAnswerIndex }, use) => {
@@ -56,27 +56,34 @@ export const voterTest = base.extend<VoterFixtures>({
     // Should land on the intro page (no election/constituency selection with single of each)
     await page.getByTestId(testIds.voter.intro.startButton).click();
 
-    // Answer questions: each click on a Likert choice auto-advances after a short delay.
-    // After auto-advance, the answer options reset (no selected state), so we wait for
-    // a fresh unselected answer option to confirm we're on the next question.
+    // Answer questions: each click on a Likert choice auto-advances after a 350ms delay.
+    // We track the URL to detect when auto-advance navigates to the next question/results page.
     for (let i = 0; i < voterAnswerCount; i++) {
       // Wait for the answer option to be visible before clicking
       const answerOption = page.getByTestId(testIds.voter.questions.answerOption).nth(voterAnswerIndex);
       await answerOption.waitFor({ state: 'visible' });
+
+      // Record URL before clicking to detect auto-advance navigation
+      const urlBefore = page.url();
       await answerOption.click();
 
+      // Wait for auto-advance: URL changes to the next question or results page
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+
       if (i < voterAnswerCount - 1) {
-        // Wait for auto-advance: the next button becomes visible on the new question page.
-        // After auto-advance the URL changes to the next question, so we wait for
-        // the answer option to be visible again (fresh question, unselected options).
-        await page.getByTestId(testIds.voter.questions.nextButton).waitFor({ state: 'visible' });
+        // Wait for the answer option to be visible on the new question page
+        await page.getByTestId(testIds.voter.questions.answerOption).nth(voterAnswerIndex).waitFor({ state: 'visible' });
       }
     }
 
-    // After answering the last question, the Next button shows "Results" -- click it
-    await page.getByTestId(testIds.voter.questions.nextButton).click();
+    // After the last question, auto-advance navigates to results.
+    // If we're not on results yet (e.g., auto-advance didn't fire), click the next button.
+    if (!page.url().includes('/results')) {
+      await page.getByTestId(testIds.voter.questions.nextButton).click();
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+    }
 
-    // Wait for the results page to load
+    // Wait for the results list to be visible
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
 
     await use(page);
