@@ -57,10 +57,16 @@ setup('import test dataset', async () => {
 
   // Disable category intros and category selection for the simple voter journey path.
   // This ensures Home -> Intro -> Questions -> Results with no category selection pages.
+  // Also disable hideIfMissingAnswers for candidates because the combined default + voter
+  // datasets create 16 opinion questions, and no single candidate answers all of them.
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: true }
+      questionsIntro: { allowCategorySelection: false, show: false }
+    },
+    entities: {
+      hideIfMissingAnswers: { candidate: false },
+      showAllNominations: true
     }
   });
 
