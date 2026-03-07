@@ -41,18 +41,18 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 ### Voter App
 
-- [ ] **VOTE-01**: Home/landing page loads and displays correctly
-- [ ] **VOTE-02**: Election selection flow tested (multi-election scenario)
-- [ ] **VOTE-03**: Constituency selection flow tested (single and hierarchical)
-- [ ] **VOTE-04**: Question intro page tested (shown/hidden based on settings)
-- [ ] **VOTE-05**: Category intro pages tested (shown with skip option based on settings)
-- [ ] **VOTE-06**: Question answering flow tested (all opinion question types)
-- [ ] **VOTE-07**: Minimum answers threshold tested (results available only after N answers)
-- [ ] **VOTE-08**: Results display tested with candidates section
-- [ ] **VOTE-09**: Results display tested with organizations/parties section
-- [ ] **VOTE-10**: Results display tested with hybrid (candidates + parties) section
-- [ ] **VOTE-11**: Candidate detail page tested (info tab, opinions tab, submatches)
-- [ ] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
+- [x] **VOTE-01**: Home/landing page loads and displays correctly
+- [x] **VOTE-02**: Election selection flow tested (multi-election scenario)
+- [x] **VOTE-03**: Constituency selection flow tested (single and hierarchical)
+- [x] **VOTE-04**: Question intro page tested (shown/hidden based on settings)
+- [x] **VOTE-05**: Category intro pages tested (shown with skip option based on settings)
+- [x] **VOTE-06**: Question answering flow tested (all opinion question types)
+- [x] **VOTE-07**: Minimum answers threshold tested (results available only after N answers)
+- [x] **VOTE-08**: Results display tested with candidates section
+- [x] **VOTE-09**: Results display tested with organizations/parties section
+- [x] **VOTE-10**: Results display tested with hybrid (candidates + parties) section
+- [x] **VOTE-11**: Candidate detail page tested (info tab, opinions tab, submatches)
+- [x] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
 - [ ] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
 - [ ] **VOTE-14**: Statistics page tested
 - [ ] **VOTE-15**: Feedback popup tested (displays after configured delay)
@@ -136,18 +136,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAND-13     | Phase 2 | Complete |
 | CAND-14     | Phase 2 | Complete |
 | CAND-15     | Phase 2 | Complete |
-| VOTE-01     | Phase 3 | Pending  |
-| VOTE-02     | Phase 3 | Pending  |
-| VOTE-03     | Phase 3 | Pending  |
-| VOTE-04     | Phase 3 | Pending  |
-| VOTE-05     | Phase 3 | Pending  |
-| VOTE-06     | Phase 3 | Pending  |
-| VOTE-07     | Phase 3 | Pending  |
-| VOTE-08     | Phase 3 | Pending  |
-| VOTE-09     | Phase 3 | Pending  |
-| VOTE-10     | Phase 3 | Pending  |
-| VOTE-11     | Phase 3 | Pending  |
-| VOTE-12     | Phase 3 | Pending  |
+| VOTE-01     | Phase 3 | Complete |
+| VOTE-02     | Phase 3 | Complete |
+| VOTE-03     | Phase 3 | Complete |
+| VOTE-04     | Phase 3 | Complete |
+| VOTE-05     | Phase 3 | Complete |
+| VOTE-06     | Phase 3 | Complete |
+| VOTE-07     | Phase 3 | Complete |
+| VOTE-08     | Phase 3 | Complete |
+| VOTE-09     | Phase 3 | Complete |
+| VOTE-10     | Phase 3 | Complete |
+| VOTE-11     | Phase 3 | Complete |
+| VOTE-12     | Phase 3 | Complete |
 | VOTE-13     | Phase 4 | Pending  |
 | VOTE-14     | Phase 4 | Pending  |
 | VOTE-15     | Phase 4 | Pending  |
