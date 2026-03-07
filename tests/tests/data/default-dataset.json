@@ -5,12 +5,12 @@
       "name": "Likert-5",
       "settings": {
         "type": "singleChoiceOrdinal",
-        "values": [
-          { "key": "1", "label": { "en": "Fully disagree" } },
-          { "key": "2", "label": { "en": "Somewhat disagree" } },
-          { "key": "3", "label": { "en": "Neutral" } },
-          { "key": "4", "label": { "en": "Somewhat agree" } },
-          { "key": "5", "label": { "en": "Fully agree" } }
+        "choices": [
+          { "id": "1", "key": "1", "normalizableValue": "1", "label": { "en": "Fully disagree" } },
+          { "id": "2", "key": "2", "normalizableValue": "2", "label": { "en": "Somewhat disagree" } },
+          { "id": "3", "key": "3", "normalizableValue": "3", "label": { "en": "Neutral" } },
+          { "id": "4", "key": "4", "normalizableValue": "4", "label": { "en": "Somewhat agree" } },
+          { "id": "5", "key": "5", "normalizableValue": "5", "label": { "en": "Fully agree" } }
         ]
       }
     },
@@ -33,49 +33,50 @@
       "externalId": "test-qt-boolean",
       "name": "Boolean",
       "settings": { "type": "boolean" }
-    },
-    {
-      "externalId": "test-qt-image",
-      "name": "Image",
-      "settings": { "type": "image" }
-    }
-  ],
-  "elections": [
-    {
-      "externalId": "test-election-1",
-      "name": { "en": "Test Election 2025" },
-      "date": "2025-06-15",
-      "constituencyGroups": { "externalId": ["test-cg-1"] }
     }
   ],
   "constituencies": [
     {
       "externalId": "test-constituency-alpha",
       "name": { "en": "Test Constituency Alpha" }
-    },
-    {
-      "externalId": "test-constituency-beta",
-      "name": { "en": "Test Constituency Beta" }
     }
   ],
   "constituencyGroups": [
     {
       "externalId": "test-cg-1",
       "name": { "en": "Test Constituency Group" },
-      "constituencies": { "externalId": ["test-constituency-alpha", "test-constituency-beta"] }
+      "constituencies": { "externalId": ["test-constituency-alpha"] }
+    }
+  ],
+  "elections": [
+    {
+      "externalId": "test-election-1",
+      "name": { "en": "Test Election 2025" },
+      "electionDate": "2025-06-15",
+      "electionStartDate": "2025-05-01",
+      "constituencyGroups": { "externalId": ["test-cg-1"] }
     }
   ],
   "questionCategories": [
     {
       "externalId": "test-category-economy",
       "name": { "en": "Test Category: Economy" },
+      "type": "opinion",
       "order": 1,
       "elections": { "externalId": ["test-election-1"] }
     },
     {
       "externalId": "test-category-social",
       "name": { "en": "Test Category: Social" },
+      "type": "opinion",
       "order": 2,
+      "elections": { "externalId": ["test-election-1"] }
+    },
+    {
+      "externalId": "test-category-info",
+      "name": { "en": "Test Category: Background Information" },
+      "type": "info",
+      "order": 3,
       "elections": { "externalId": ["test-election-1"] }
     }
   ],
@@ -140,38 +141,31 @@
     },
     {
       "externalId": "test-question-date",
-      "text": { "en": "Test Info Question: When were you born?" },
-      "category": { "externalId": "test-category-social" },
+      "text": { "en": "Date of birth" },
+      "category": { "externalId": "test-category-info" },
       "questionType": { "externalId": "test-qt-date" },
       "order": 9
     },
     {
       "externalId": "test-question-number",
-      "text": { "en": "Test Info Question: How many years of political experience do you have?" },
-      "category": { "externalId": "test-category-economy" },
+      "text": { "en": "Years of political experience" },
+      "category": { "externalId": "test-category-info" },
       "questionType": { "externalId": "test-qt-number" },
       "order": 10
     },
     {
       "externalId": "test-question-text",
-      "text": { "en": "Test Info Question: What is your campaign slogan?" },
-      "category": { "externalId": "test-category-social" },
+      "text": { "en": "Campaign slogan" },
+      "category": { "externalId": "test-category-info" },
       "questionType": { "externalId": "test-qt-text" },
       "order": 11
     },
     {
       "externalId": "test-question-boolean",
-      "text": { "en": "Test Info Question: Are you a first-time candidate?" },
-      "category": { "externalId": "test-category-economy" },
+      "text": { "en": "First-time candidate" },
+      "category": { "externalId": "test-category-info" },
       "questionType": { "externalId": "test-qt-boolean" },
       "order": 12
-    },
-    {
-      "externalId": "test-question-image",
-      "text": { "en": "Test Info Question: Upload your campaign poster" },
-      "category": { "externalId": "test-category-social" },
-      "questionType": { "externalId": "test-qt-image" },
-      "order": 13
     }
   ],
   "parties": [
@@ -192,15 +186,22 @@
       "firstName": "Test Candidate",
       "lastName": "Alpha",
       "email": "mock.candidate.2@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
-        "test-question-1": { "value": "4", "info": { "en": "I believe progressive taxation helps reduce inequality." } },
-        "test-question-2": { "value": "5" },
-        "test-question-3": { "value": "3", "info": { "en": "The transition must be balanced with economic realities." } },
-        "test-question-4": { "value": "2" },
+        "test-question-1": {
+          "value": "4",
+          "info": { "en": "I believe progressive taxation helps reduce inequality." }
+        },
+        "test-question-3": {
+          "value": "3",
+          "info": { "en": "The transition must be balanced with economic realities." }
+        },
         "test-question-5": { "value": "5", "info": { "en": "Healthcare is a fundamental right for everyone." } },
-        "test-question-6": { "value": "4" },
         "test-question-7": { "value": "5" },
-        "test-question-8": { "value": "4" }
+        "test-question-date": { "value": "1985-03-15" },
+        "test-question-number": { "value": 8 },
+        "test-question-text": { "value": { "en": "Progress for all" } },
+        "test-question-boolean": { "value": false }
       }
     },
     {
@@ -208,11 +209,15 @@
       "firstName": "Test Candidate",
       "lastName": "Beta",
       "email": "test.beta@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
         "test-question-1": { "value": "2" },
         "test-question-2": { "value": "3", "info": { "en": "We need targeted investment, not blanket spending." } },
         "test-question-3": { "value": "4" },
-        "test-question-4": { "value": "5", "info": { "en": "Lower corporate taxes drive economic growth and job creation." } },
+        "test-question-4": {
+          "value": "5",
+          "info": { "en": "Lower corporate taxes drive economic growth and job creation." }
+        },
         "test-question-5": { "value": "1" },
         "test-question-6": { "value": "2" },
         "test-question-7": { "value": "3" },
@@ -224,10 +229,14 @@
       "firstName": "Test Candidate",
       "lastName": "Gamma",
       "email": "test.gamma@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
         "test-question-1": { "value": "3" },
         "test-question-2": { "value": "4" },
-        "test-question-3": { "value": "5", "info": { "en": "Renewable energy is the future and deserves full support." } },
+        "test-question-3": {
+          "value": "5",
+          "info": { "en": "Renewable energy is the future and deserves full support." }
+        },
         "test-question-4": { "value": "3" },
         "test-question-5": { "value": "4" },
         "test-question-6": { "value": "3" },
@@ -240,6 +249,7 @@
       "firstName": "Test Candidate",
       "lastName": "Delta",
       "email": "test.delta@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
         "test-question-1": { "value": "1" },
         "test-question-2": { "value": "1" },
@@ -256,6 +266,7 @@
       "firstName": "Test Candidate",
       "lastName": "Epsilon",
       "email": "test.epsilon@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
         "test-question-1": { "value": "5" },
         "test-question-2": { "value": "2" },
@@ -266,12 +277,6 @@
         "test-question-7": { "value": "1" },
         "test-question-8": { "value": "3" }
       }
-    },
-    {
-      "externalId": "test-candidate-unregistered",
-      "firstName": "Test Candidate",
-      "lastName": "Unregistered",
-      "email": "test.unregistered@openvaa.org"
     }
   ],
   "nominations": [
@@ -293,26 +298,19 @@
       "externalId": "test-nom-gamma",
       "candidate": { "externalId": "test-candidate-gamma" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-constituency-beta" },
+      "constituency": { "externalId": "test-constituency-alpha" },
       "party": { "externalId": "test-party-b" }
     },
     {
       "externalId": "test-nom-delta",
       "candidate": { "externalId": "test-candidate-delta" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-constituency-beta" },
+      "constituency": { "externalId": "test-constituency-alpha" },
       "party": { "externalId": "test-party-b" }
     },
     {
       "externalId": "test-nom-epsilon",
       "candidate": { "externalId": "test-candidate-epsilon" },
-      "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-constituency-alpha" },
-      "party": { "externalId": "test-party-a" }
-    },
-    {
-      "externalId": "test-nom-unregistered",
-      "candidate": { "externalId": "test-candidate-unregistered" },
       "election": { "externalId": "test-election-1" },
       "constituency": { "externalId": "test-constituency-alpha" },
       "party": { "externalId": "test-party-a" }
