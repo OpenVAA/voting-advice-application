@@ -1,7 +1,7 @@
 import { expect,test as setup } from '@playwright/test';
+import candidateAddendum from '../data/candidate-addendum.json' assert { type: 'json' };
 import defaultDataset from '../data/default-dataset.json' assert { type: 'json' };
 import voterDataset from '../data/voter-dataset.json' assert { type: 'json' };
-import candidateAddendum from '../data/candidate-addendum.json' assert { type: 'json' };
 import { StrapiAdminClient } from '../utils/strapiAdminClient';
 
 const TEST_DATA_PREFIX = 'test-';
