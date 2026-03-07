@@ -88,10 +88,10 @@ Plans:
 
 Plans:
 
-- [ ] 03-01-PLAN.md — Voter dataset, candidate addendum, data setup/teardown mods, page objects, voter fixture
-- [ ] 03-02-PLAN.md — Voter journey spec (home, election selection, constituency auto-implication, intro, questions flow)
+- [x] 03-01-PLAN.md — Voter dataset, candidate addendum, data setup/teardown mods, page objects, voter fixture
+- [x] 03-02-PLAN.md — Voter journey spec (home, election selection, constituency auto-implication, intro, questions flow)
 - [ ] 03-03-PLAN.md — Voter results and detail specs (candidate/party sections, entity tabs, drawer interaction, detail tabs)
-- [ ] 03-04-PLAN.md — Voter matching spec (independent ranking verification via @openvaa/matching, VOTE-05/VOTE-07 assertions)
+- [x] 03-04-PLAN.md — Voter matching spec (independent ranking verification via @openvaa/matching, VOTE-05/VOTE-07 assertions)
 
 ### Phase 4: Voter App Settings and Edge Cases
 
@@ -176,7 +176,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | --------------------------------------- | -------------- | ----------- | --------- |
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
-| 3. Voter App Core Journey               | 0/4            | Planned     | -         |
+| 3. Voter App Core Journey               | 3/4            | In Progress | -         |
 | 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
