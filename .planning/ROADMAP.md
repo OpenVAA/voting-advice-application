@@ -90,7 +90,7 @@ Plans:
 
 - [x] 03-01-PLAN.md — Voter dataset, candidate addendum, data setup/teardown mods, page objects, voter fixture
 - [x] 03-02-PLAN.md — Voter journey spec (home, election selection, constituency auto-implication, intro, questions flow)
-- [ ] 03-03-PLAN.md — Voter results and detail specs (candidate/party sections, entity tabs, drawer interaction, detail tabs)
+- [x] 03-03-PLAN.md — Voter results and detail specs (candidate/party sections, entity tabs, drawer interaction, detail tabs)
 - [x] 03-04-PLAN.md — Voter matching spec (independent ranking verification via @openvaa/matching, VOTE-05/VOTE-07 assertions)
 
 ### Phase 4: Voter App Settings and Edge Cases

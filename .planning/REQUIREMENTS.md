@@ -42,12 +42,12 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 ### Voter App
 
 - [x] **VOTE-01**: Home/landing page loads and displays correctly
-- [x] **VOTE-02**: Election selection flow tested (multi-election scenario)
-- [x] **VOTE-03**: Constituency selection flow tested (single and hierarchical)
-- [x] **VOTE-04**: Question intro page tested (shown/hidden based on settings)
-- [x] **VOTE-05**: Category intro pages tested (shown with skip option based on settings)
+- [~] **VOTE-02**: Election selection flow tested (multi-election scenario) *(partial — single/auto-implied tested; multi-election deferred to Phase 5)*
+- [~] **VOTE-03**: Constituency selection flow tested (single and hierarchical) *(partial — auto-implied tested; hierarchical deferred to Phase 5)*
+- [~] **VOTE-04**: Question intro page tested (shown/hidden based on settings) *(partial — hidden tested; shown path deferred to Phase 4)*
+- [~] **VOTE-05**: Category intro pages tested (shown with skip option based on settings) *(partial — category intros deferred to Phase 4)*
 - [x] **VOTE-06**: Question answering flow tested (all opinion question types)
-- [x] **VOTE-07**: Minimum answers threshold tested (results available only after N answers)
+- [~] **VOTE-07**: Minimum answers threshold tested (results available only after N answers) *(partial — above-threshold tested; below-threshold deferred to Phase 4)*
 - [x] **VOTE-08**: Results display tested with candidates section
 - [x] **VOTE-09**: Results display tested with organizations/parties section
 - [x] **VOTE-10**: Results display tested with hybrid (candidates + parties) section
@@ -137,12 +137,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAND-14     | Phase 2 | Complete |
 | CAND-15     | Phase 2 | Complete |
 | VOTE-01     | Phase 3 | Complete |
-| VOTE-02     | Phase 3 | Complete |
-| VOTE-03     | Phase 3 | Complete |
-| VOTE-04     | Phase 3 | Complete |
-| VOTE-05     | Phase 3 | Complete |
+| VOTE-02     | Phase 3 | Partial (multi-election → Phase 5) |
+| VOTE-03     | Phase 3 | Partial (hierarchical → Phase 5) |
+| VOTE-04     | Phase 3 | Partial (shown path → Phase 4) |
+| VOTE-05     | Phase 3 | Partial (category intros → Phase 4) |
 | VOTE-06     | Phase 3 | Complete |
-| VOTE-07     | Phase 3 | Complete |
+| VOTE-07     | Phase 3 | Partial (below-threshold → Phase 4) |
 | VOTE-08     | Phase 3 | Complete |
 | VOTE-09     | Phase 3 | Complete |
 | VOTE-10     | Phase 3 | Complete |
