@@ -55,8 +55,8 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
 - [x] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
 - [x] **VOTE-14**: Statistics page tested
-- [ ] **VOTE-15**: Feedback popup tested (displays after configured delay)
-- [ ] **VOTE-16**: Survey popup tested (displays in results)
+- [x] **VOTE-15**: Feedback popup tested (displays after configured delay)
+- [x] **VOTE-16**: Survey popup tested (displays in results)
 - [x] **VOTE-17**: Results link in header tested (appears after minimum answers)
 - [x] **VOTE-18**: About, help, info, and privacy pages render correctly
 - [x] **VOTE-19**: Nominations page tested (when `showAllNominations=true`)
@@ -150,8 +150,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOTE-12     | Phase 3 | Complete |
 | VOTE-13     | Phase 4 | Complete |
 | VOTE-14     | Phase 4 | Complete |
-| VOTE-15     | Phase 4 | Pending  |
-| VOTE-16     | Phase 4 | Pending  |
+| VOTE-15     | Phase 4 | Complete |
+| VOTE-16     | Phase 4 | Complete |
 | VOTE-17     | Phase 4 | Complete |
 | VOTE-18     | Phase 4 | Complete |
 | VOTE-19     | Phase 4 | Complete |
