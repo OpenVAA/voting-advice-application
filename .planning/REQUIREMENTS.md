@@ -54,12 +54,12 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **VOTE-11**: Candidate detail page tested (info tab, opinions tab, submatches)
 - [x] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
 - [x] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
-- [ ] **VOTE-14**: Statistics page tested
+- [x] **VOTE-14**: Statistics page tested
 - [ ] **VOTE-15**: Feedback popup tested (displays after configured delay)
 - [ ] **VOTE-16**: Survey popup tested (displays in results)
 - [x] **VOTE-17**: Results link in header tested (appears after minimum answers)
-- [ ] **VOTE-18**: About, help, info, and privacy pages render correctly
-- [ ] **VOTE-19**: Nominations page tested (when `showAllNominations=true`)
+- [x] **VOTE-18**: About, help, info, and privacy pages render correctly
+- [x] **VOTE-19**: Nominations page tested (when `showAllNominations=true`)
 
 ### Configuration Variants
 
@@ -149,12 +149,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOTE-11     | Phase 3 | Complete |
 | VOTE-12     | Phase 3 | Complete |
 | VOTE-13     | Phase 4 | Complete |
-| VOTE-14     | Phase 4 | Pending  |
+| VOTE-14     | Phase 4 | Complete |
 | VOTE-15     | Phase 4 | Pending  |
 | VOTE-16     | Phase 4 | Pending  |
 | VOTE-17     | Phase 4 | Complete |
-| VOTE-18     | Phase 4 | Pending  |
-| VOTE-19     | Phase 4 | Pending  |
+| VOTE-18     | Phase 4 | Complete |
+| VOTE-19     | Phase 4 | Complete |
 | CONF-01     | Phase 5 | Pending  |
 | CONF-02     | Phase 5 | Pending  |
 | CONF-03     | Phase 5 | Pending  |
