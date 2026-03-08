@@ -70,7 +70,8 @@ Accesses `AppContext` and optionally `VoterContext`.
       disabled={resultsAvailable == null ? true : !$resultsAvailable}
       variant="responsive-icon"
       icon="results"
-      text={$t('results.title.results')} />
+      text={$t('results.title.results')}
+      data-testid="voter-banner-results" />
   {/if}
 
   {#if $topBarSettings.actions.return === 'show'}

@@ -74,14 +74,20 @@ export const testIds = {
       answerOption: 'question-choice',
       nextButton: 'question-next',
       previousButton: 'question-previous',
-      categoryIntro: 'voter-questions-category-intro'
+      categoryIntro: 'voter-questions-category-intro',
+      categoryList: 'voter-questions-category-list',
+      categoryCheckbox: 'voter-questions-category-checkbox',
+      startButton: 'voter-questions-start',
+      categoryStart: 'voter-questions-category-start',
+      categorySkip: 'voter-questions-category-skip'
     },
     results: {
       list: 'voter-results-list',
       card: 'entity-card',
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section',
-      entityTabs: 'voter-results-entity-tabs'
+      entityTabs: 'voter-results-entity-tabs',
+      ingress: 'voter-results-ingress'
     },
     entityDetail: {
       container: 'voter-entity-detail',
@@ -91,6 +97,26 @@ export const testIds = {
     },
     nav: {
       resultsLink: 'voter-nav-results'
+    },
+    about: {
+      content: 'voter-about-content',
+      returnButton: 'voter-about-return'
+    },
+    info: {
+      content: 'voter-info-content',
+      returnButton: 'voter-info-return'
+    },
+    privacy: {
+      content: 'voter-privacy-content',
+      returnButton: 'voter-privacy-return'
+    },
+    nominations: {
+      container: 'voter-nominations-container',
+      list: 'voter-nominations-list',
+      controls: 'voter-nominations-controls'
+    },
+    banner: {
+      results: 'voter-banner-results'
     }
   },
   shared: {
