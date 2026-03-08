@@ -109,7 +109,7 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md — TestId infrastructure + voter-settings spec (category selection, category/question intros, minimum answers threshold, results link)
+- [x] 04-01-PLAN.md — TestId infrastructure + voter-settings spec (category selection, category/question intros, minimum answers threshold, results link)
 - [ ] 04-02-PLAN.md — Voter popups spec (feedback popup timing, survey popup timing, disabled states, dismissal memory)
 - [ ] 04-03-PLAN.md — Voter static pages spec (about, info, privacy, nominations enabled/disabled)
 
@@ -177,7 +177,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
-| 4. Voter App Settings and Edge Cases    | 0/3            | Planned     | -         |
+| 4. Voter App Settings and Edge Cases    | 1/3            | In Progress | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |

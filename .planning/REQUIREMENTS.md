@@ -44,20 +44,20 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **VOTE-01**: Home/landing page loads and displays correctly
 - [~] **VOTE-02**: Election selection flow tested (multi-election scenario) *(partial — single/auto-implied tested; multi-election deferred to Phase 5)*
 - [~] **VOTE-03**: Constituency selection flow tested (single and hierarchical) *(partial — auto-implied tested; hierarchical deferred to Phase 5)*
-- [~] **VOTE-04**: Question intro page tested (shown/hidden based on settings) *(partial — hidden tested; shown path deferred to Phase 4)*
-- [~] **VOTE-05**: Category intro pages tested (shown with skip option based on settings) *(partial — category intros deferred to Phase 4)*
+- [x] **VOTE-04**: Question intro page tested (shown/hidden based on settings)
+- [x] **VOTE-05**: Category intro pages tested (shown with skip option based on settings)
 - [x] **VOTE-06**: Question answering flow tested (all opinion question types)
-- [~] **VOTE-07**: Minimum answers threshold tested (results available only after N answers) *(partial — above-threshold tested; below-threshold deferred to Phase 4)*
+- [x] **VOTE-07**: Minimum answers threshold tested (results available only after N answers)
 - [x] **VOTE-08**: Results display tested with candidates section
 - [x] **VOTE-09**: Results display tested with organizations/parties section
 - [x] **VOTE-10**: Results display tested with hybrid (candidates + parties) section
 - [x] **VOTE-11**: Candidate detail page tested (info tab, opinions tab, submatches)
 - [x] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
-- [ ] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
+- [x] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
 - [ ] **VOTE-14**: Statistics page tested
 - [ ] **VOTE-15**: Feedback popup tested (displays after configured delay)
 - [ ] **VOTE-16**: Survey popup tested (displays in results)
-- [ ] **VOTE-17**: Results link in header tested (appears after minimum answers)
+- [x] **VOTE-17**: Results link in header tested (appears after minimum answers)
 - [ ] **VOTE-18**: About, help, info, and privacy pages render correctly
 - [ ] **VOTE-19**: Nominations page tested (when `showAllNominations=true`)
 
@@ -139,20 +139,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOTE-01     | Phase 3 | Complete |
 | VOTE-02     | Phase 3 | Partial (multi-election → Phase 5) |
 | VOTE-03     | Phase 3 | Partial (hierarchical → Phase 5) |
-| VOTE-04     | Phase 3 | Partial (shown path → Phase 4) |
-| VOTE-05     | Phase 3 | Partial (category intros → Phase 4) |
+| VOTE-04     | Phase 3, 4 | Complete |
+| VOTE-05     | Phase 3, 4 | Complete |
 | VOTE-06     | Phase 3 | Complete |
-| VOTE-07     | Phase 3 | Partial (below-threshold → Phase 4) |
+| VOTE-07     | Phase 3, 4 | Complete |
 | VOTE-08     | Phase 3 | Complete |
 | VOTE-09     | Phase 3 | Complete |
 | VOTE-10     | Phase 3 | Complete |
 | VOTE-11     | Phase 3 | Complete |
 | VOTE-12     | Phase 3 | Complete |
-| VOTE-13     | Phase 4 | Pending  |
+| VOTE-13     | Phase 4 | Complete |
 | VOTE-14     | Phase 4 | Pending  |
 | VOTE-15     | Phase 4 | Pending  |
 | VOTE-16     | Phase 4 | Pending  |
-| VOTE-17     | Phase 4 | Pending  |
+| VOTE-17     | Phase 4 | Complete |
 | VOTE-18     | Phase 4 | Pending  |
 | VOTE-19     | Phase 4 | Pending  |
 | CONF-01     | Phase 5 | Pending  |
