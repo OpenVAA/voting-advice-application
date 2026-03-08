@@ -105,13 +105,13 @@ Plans:
 3. The nominations page renders with candidate listings when `showAllNominations=true`
 4. The results link in the header appears only after the minimum answers threshold is reached — tested across a session boundary
 5. Static pages (about, help, info, privacy, statistics) all render without errors for an unauthenticated visitor
-   **Plans**: TBD
+   **Plans:** 3 plans
 
 Plans:
 
-- [ ] 04-01: Voter optional features spec (category selection, nominations page)
-- [ ] 04-02: Voter popups and deferred UI spec (feedback popup, survey popup, results link timing)
-- [ ] 04-03: Voter static pages spec (about, help, info, privacy, statistics)
+- [ ] 04-01-PLAN.md — TestId infrastructure + voter-settings spec (category selection, category/question intros, minimum answers threshold, results link)
+- [ ] 04-02-PLAN.md — Voter popups spec (feedback popup timing, survey popup timing, disabled states, dismissal memory)
+- [ ] 04-03-PLAN.md — Voter static pages spec (about, info, privacy, nominations enabled/disabled)
 
 ### Phase 5: Configuration Variants
 
@@ -177,7 +177,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
-| 4. Voter App Settings and Edge Cases    | 0/3            | Not started | -         |
+| 4. Voter App Settings and Edge Cases    | 0/3            | Planned     | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |
