@@ -1,0 +1,128 @@
+{
+  "constituencies": [
+    {
+      "externalId": "test-constituency-e2",
+      "name": { "en": "Test Constituency E2" }
+    }
+  ],
+  "constituencyGroups": [
+    {
+      "externalId": "test-cg-e2",
+      "name": { "en": "Test CG Election 2" },
+      "constituencies": { "externalId": ["test-constituency-e2"] }
+    }
+  ],
+  "elections": [
+    {
+      "externalId": "test-election-2",
+      "name": { "en": "Test Election 2026" },
+      "electionDate": "2026-06-15",
+      "electionStartDate": "2026-05-01",
+      "constituencyGroups": { "externalId": ["test-cg-e2"] }
+    }
+  ],
+  "questionCategories": [
+    {
+      "externalId": "test-cat-e2-policy",
+      "name": { "en": "Test E2 Category: Policy" },
+      "type": "opinion",
+      "order": 20,
+      "elections": { "externalId": ["test-election-2"] }
+    }
+  ],
+  "questions": [
+    {
+      "externalId": "test-e2-q-1",
+      "text": { "en": "E2 Question: Should public housing be expanded?" },
+      "category": { "externalId": "test-cat-e2-policy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 201
+    },
+    {
+      "externalId": "test-e2-q-2",
+      "text": { "en": "E2 Question: Should local taxes be reduced?" },
+      "category": { "externalId": "test-cat-e2-policy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 202
+    }
+  ],
+  "candidates": [
+    {
+      "externalId": "test-e2-cand-1",
+      "firstName": "E2 Candidate",
+      "lastName": "One",
+      "email": "e2.cand1@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-e2-q-1": { "value": "5" },
+        "test-e2-q-2": { "value": "3" }
+      }
+    },
+    {
+      "externalId": "test-e2-cand-2",
+      "firstName": "E2 Candidate",
+      "lastName": "Two",
+      "email": "e2.cand2@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-e2-q-1": { "value": "2" },
+        "test-e2-q-2": { "value": "4" }
+      }
+    },
+    {
+      "externalId": "test-e2-cand-3",
+      "firstName": "E2 Candidate",
+      "lastName": "Three",
+      "email": "e2.cand3@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-e2-q-1": { "value": "3" },
+        "test-e2-q-2": { "value": "1" }
+      }
+    }
+  ],
+  "nominations": [
+    {
+      "externalId": "test-nom-e2-cand1",
+      "candidate": { "externalId": "test-e2-cand-1" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-e2-cand2",
+      "candidate": { "externalId": "test-e2-cand-2" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-b" }
+    },
+    {
+      "externalId": "test-nom-e2-cand3",
+      "candidate": { "externalId": "test-e2-cand-3" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-e2-alpha",
+      "candidate": { "externalId": "test-candidate-alpha" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-e2-beta",
+      "candidate": { "externalId": "test-candidate-beta" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-e2-gamma",
+      "candidate": { "externalId": "test-candidate-gamma" },
+      "election": { "externalId": "test-election-2" },
+      "constituency": { "externalId": "test-constituency-e2" },
+      "party": { "externalId": "test-party-b" }
+    }
+  ]
+}

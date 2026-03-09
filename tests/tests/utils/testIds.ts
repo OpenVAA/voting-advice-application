@@ -61,11 +61,13 @@ export const testIds = {
     },
     elections: {
       list: 'voter-elections-list',
-      card: 'election-selector-option'
+      card: 'election-selector-option',
+      continue: 'voter-elections-continue'
     },
     constituencies: {
       list: 'voter-constituencies-list',
-      selector: 'constituency-selector'
+      selector: 'constituency-selector',
+      continue: 'voter-constituencies-continue'
     },
     intro: {
       startButton: 'voter-intro-start'
@@ -87,7 +89,8 @@ export const testIds = {
       candidateSection: 'voter-results-candidate-section',
       partySection: 'voter-results-party-section',
       entityTabs: 'voter-results-entity-tabs',
-      ingress: 'voter-results-ingress'
+      ingress: 'voter-results-ingress',
+      electionAccordion: 'voter-results-election-select'
     },
     entityDetail: {
       container: 'voter-entity-detail',
