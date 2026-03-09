@@ -16,6 +16,12 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  *   data-setup -> voter-app-settings -> voter-app-popups (settings-mutating specs)
  *   (data-teardown runs after all projects complete)
  *
+ * Configuration variant projects run sequentially AFTER the default suite:
+ *   data-teardown -> data-setup-multi-election -> variant-multi-election -> variant-results-sections
+ *     -> data-setup-constituency -> variant-constituency
+ *     -> data-setup-startfromcg -> variant-startfromcg
+ *   (data-teardown-variants runs after all variant setups complete)
+ *
  * Candidate specs are split into three groups because they mutate shared backend state:
  *   - candidate-app: auth + questions (run in parallel — different mutation targets,
  *     JWT stays valid after password changes)
@@ -155,6 +161,75 @@ export default defineConfig({
         ...devices['Desktop Chrome']
       },
       dependencies: ['voter-app-settings']
+    },
+
+    // === Configuration Variant Projects ===
+    // Variant projects run sequentially AFTER the default suite completes.
+    // Each variant has its own dataset loaded by a dedicated setup project.
+    // All variant setups share a single teardown project.
+
+    // Shared teardown for all variant projects
+    {
+      name: 'data-teardown-variants',
+      testMatch: /variant-data\.teardown\.ts/
+    },
+
+    // Variant: multi-election (CONF-01, CONF-02, CONF-04)
+    {
+      name: 'data-setup-multi-election',
+      testMatch: /variant-multi-election\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['data-teardown']
+    },
+    {
+      name: 'variant-multi-election',
+      testDir: './tests/specs/variants',
+      testMatch: /multi-election\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-multi-election']
+    },
+
+    // Variant: results sections (CONF-05, CONF-06) — uses multi-election dataset
+    {
+      name: 'variant-results-sections',
+      testDir: './tests/specs/variants',
+      testMatch: /results-sections\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['variant-multi-election'] // Runs after multi-election, reuses same data
+    },
+
+    // Variant: constituency (CONF-03)
+    {
+      name: 'data-setup-constituency',
+      testMatch: /variant-constituency\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-results-sections'] // Sequential: wait for previous variant to finish
+    },
+    {
+      name: 'variant-constituency',
+      testDir: './tests/specs/variants',
+      testMatch: /constituency\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-constituency']
+    },
+
+    // Variant: startFromConstituencyGroup
+    {
+      name: 'data-setup-startfromcg',
+      testMatch: /variant-startfromcg\.setup\.ts/,
+      teardown: 'data-teardown-variants',
+      dependencies: ['variant-constituency'] // Sequential: wait for previous variant
+    },
+    {
+      name: 'variant-startfromcg',
+      testDir: './tests/specs/variants',
+      testMatch: /startfromcg\.spec\.ts/,
+      fullyParallel: false,
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['data-setup-startfromcg']
     }
   ]
 });
