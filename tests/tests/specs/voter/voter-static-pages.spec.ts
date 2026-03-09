@@ -74,6 +74,9 @@ test.describe('static pages (VOTE-18)', () => {
 // ---------------------------------------------------------------------------
 
 test.describe('nominations page (VOTE-19)', () => {
+  // "when enabled" must run before "when disabled" to avoid settings interference
+  test.describe.configure({ mode: 'serial' });
+
   test.describe('when enabled', () => {
     const client = new StrapiAdminClient();
 
@@ -85,6 +88,11 @@ test.describe('nominations page (VOTE-19)', () => {
         entities: {
           showAllNominations: true,
           hideIfMissingAnswers: { candidate: false }
+        },
+        questions: {
+          questionsIntro: { show: false, allowCategorySelection: false },
+          categoryIntros: { show: false, allowSkip: true },
+          showResultsLink: true
         }
       });
     });
@@ -95,9 +103,10 @@ test.describe('nominations page (VOTE-19)', () => {
 
     test('should render nominations page with entries', async ({ page }) => {
       await page.goto(buildRoute({ route: 'Nominations', locale: 'en' }));
+      await page.waitForLoadState('networkidle');
 
-      // Verify nominations container is visible
-      await expect(page.getByTestId(testIds.voter.nominations.container)).toBeVisible({ timeout: 10000 });
+      // Wait for nominations container (layout loads data async, shows Loading first)
+      await expect(page.getByTestId(testIds.voter.nominations.container)).toBeVisible({ timeout: 15000 });
 
       // Verify nominations list is visible
       await expect(page.getByTestId(testIds.voter.nominations.list)).toBeVisible();
@@ -120,6 +129,11 @@ test.describe('nominations page (VOTE-19)', () => {
         entities: {
           showAllNominations: false,
           hideIfMissingAnswers: { candidate: false }
+        },
+        questions: {
+          questionsIntro: { show: false, allowCategorySelection: false },
+          categoryIntros: { show: false, allowSkip: true },
+          showResultsLink: true
         }
       });
     });
@@ -130,6 +144,11 @@ test.describe('nominations page (VOTE-19)', () => {
         entities: {
           showAllNominations: true,
           hideIfMissingAnswers: { candidate: false }
+        },
+        questions: {
+          questionsIntro: { show: false, allowCategorySelection: false },
+          categoryIntros: { show: false, allowSkip: true },
+          showResultsLink: true
         }
       });
       await client.dispose();
