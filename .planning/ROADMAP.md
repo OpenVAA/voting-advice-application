@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Candidate App Coverage** - Restructure existing candidate tests and fill all missing flows using new infrastructure
 - [ ] **Phase 3: Voter App Core Journey** - Cover landing through results for the primary user-facing surface currently at zero coverage
 - [x] **Phase 4: Voter App Settings and Edge Cases** - Cover configuration-driven voter features, optional pages, and app-mode edge cases (completed 2026-03-09)
-- [ ] **Phase 5: Configuration Variants** - Multi-dataset Playwright projects covering single vs. multi-election and constituency scenarios
+- [x] **Phase 5: Configuration Variants** - Multi-dataset Playwright projects covering single vs. multi-election and constituency scenarios (completed 2026-03-09)
 - [ ] **Phase 6: CI Integration and Test Organization** - Wire CI pipeline, HTML report artifacts, and test tagging system
 - [ ] **Phase 7: Advanced Test Capabilities** - Visual regression baseline suite and performance benchmark integration
 
@@ -127,7 +127,7 @@ Plans:
 3. The constituency-enabled project exercises the constituency selection step; the constituency-disabled project skips it — both pass independently
 4. Each configuration variant has its own JSON dataset file loaded by a dedicated setup project
 5. Organizations-only and candidates-only results configurations are each verified by a passing test in their respective project
-   **Plans:** 3 plans
+   **Plans:** 3/3 plans complete
 
 Plans:
 
@@ -180,6 +180,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
 | 4. Voter App Settings and Edge Cases    | 5/5 | Complete   | 2026-03-09 |
-| 5. Configuration Variants               | 0/3            | Planned     | -         |
+| 5. Configuration Variants               | 3/3 | Complete   | 2026-03-09 |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |
