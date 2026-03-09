@@ -16,6 +16,11 @@
  *
  * IMPORTANT: Tests that modify shared app settings run serially to prevent
  * race conditions between describe blocks.
+ *
+ * IMPORTANT: Every updateAppSettings call includes ALL sibling settings to
+ * avoid Pitfall 2 (Strapi content-manager PUT replaces entire components,
+ * not just specified fields). Notification and analytics popups are suppressed
+ * to prevent dialog overlays from intercepting test clicks.
  */
 
 import { test, expect } from '../../fixtures';
@@ -26,8 +31,31 @@ import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial' });
 
-// Ensure unauthenticated voter context
-test.use({ storageState: { cookies: [], origins: [] } });
+// Ensure unauthenticated voter context.
+// Disable trace to avoid Playwright 1.58.2 ENOENT trace writer conflicts
+// when serial describe blocks share StrapiAdminClient across beforeAll/afterAll.
+test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
+
+/**
+ * Shared settings that suppress interfering popups (notification + data consent).
+ * Applied in every describe block's beforeAll to prevent dialog overlays from
+ * intercepting test clicks on navigation buttons.
+ */
+const suppressInterferingPopups = {
+  notifications: { voterApp: { show: false } },
+  analytics: { trackEvents: false }
+};
+
+/**
+ * Entity settings that data.setup.ts configures.
+ * Included in every updateAppSettings call to avoid Pitfall 2.
+ */
+const defaultEntitySettings = {
+  entities: {
+    hideIfMissingAnswers: { candidate: false },
+    showAllNominations: true
+  }
+};
 
 /**
  * Default settings to restore in afterAll blocks.
@@ -39,7 +67,9 @@ const defaultQuestionSettings = {
     categoryIntros: { show: false, allowSkip: true },
     questionsIntro: { allowCategorySelection: false, show: false },
     showResultsLink: true
-  }
+  },
+  ...defaultEntitySettings,
+  ...suppressInterferingPopups
 };
 
 // ---------------------------------------------------------------------------
@@ -58,12 +88,18 @@ test.describe('category selection (VOTE-13)', () => {
         questionsIntro: { show: true, allowCategorySelection: true },
         categoryIntros: { show: false, allowSkip: true },
         showResultsLink: true
-      }
+      },
+      matching: { minimumAnswers: 1 },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
     });
   });
 
   test.afterAll(async () => {
-    await client.updateAppSettings(defaultQuestionSettings);
+    await client.updateAppSettings({
+      ...defaultQuestionSettings,
+      matching: { minimumAnswers: 5 }
+    });
     await client.dispose();
   });
 
@@ -197,7 +233,9 @@ test.describe('category intros (VOTE-05)', () => {
         questionsIntro: { show: false, allowCategorySelection: false },
         categoryIntros: { show: true, allowSkip: true },
         showResultsLink: true
-      }
+      },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
     });
   });
 
@@ -321,7 +359,9 @@ test.describe('question intro page (VOTE-04)', () => {
         questionsIntro: { show: true, allowCategorySelection: false },
         categoryIntros: { show: false, allowSkip: true },
         showResultsLink: true
-      }
+      },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
     });
   });
 
@@ -367,7 +407,9 @@ test.describe('minimum answers threshold (VOTE-07)', () => {
         categoryIntros: { show: false, allowSkip: true },
         showResultsLink: true
       },
-      matching: { minimumAnswers: 5 }
+      matching: { minimumAnswers: 5 },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
     });
   });
 
@@ -392,10 +434,12 @@ test.describe('minimum answers threshold (VOTE-07)', () => {
     // Land on first question
     await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 10000 });
 
-    // Verify results link in banner exists but is disabled (0 answers, below threshold of 5)
+    // Verify results link in banner exists but is disabled (0 answers, below threshold of 5).
+    // The Button component renders as an <a> with role="button" and disabled="true" attribute.
+    // Playwright's toBeDisabled() doesn't work on <a> elements, so check the attribute directly.
     const resultsButton = page.getByTestId(testIds.voter.banner.results);
     await expect(resultsButton).toBeVisible();
-    await expect(resultsButton).toBeDisabled();
+    await expect(resultsButton).toHaveAttribute('disabled', 'true');
 
     // Helper: answer current question and wait for auto-advance
     async function answerAndAdvance(): Promise<void> {
@@ -409,15 +453,16 @@ test.describe('minimum answers threshold (VOTE-07)', () => {
     await answerAndAdvance();
 
     // Check results link is still disabled (2 answers < 5 threshold)
-    await expect(resultsButton).toBeDisabled();
+    await expect(resultsButton).toHaveAttribute('disabled', 'true');
 
     // Answer 3 more questions (total 5 = at threshold)
     await answerAndAdvance();
     await answerAndAdvance();
     await answerAndAdvance();
 
-    // Check results link is now enabled (5 answers >= 5 threshold)
-    await expect(resultsButton).toBeEnabled();
+    // Check results link is now enabled (5 answers >= 5 threshold).
+    // When enabled, the disabled attribute is removed entirely.
+    await expect(resultsButton).not.toHaveAttribute('disabled');
   });
 });
 
@@ -435,7 +480,9 @@ test.describe('results link visibility (VOTE-17)', () => {
         questionsIntro: { show: false, allowCategorySelection: false },
         categoryIntros: { show: false, allowSkip: true },
         showResultsLink: false
-      }
+      },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
     });
   });
 
