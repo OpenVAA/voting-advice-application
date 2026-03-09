@@ -145,12 +145,12 @@ Plans:
 1. Opening a pull request automatically triggers the full E2E suite in GitHub Actions and posts a pass/fail status check
 2. After every CI run, an HTML test report artifact is available for download from the Actions run page
 3. Running `playwright test --grep @smoke` executes only smoke-tagged tests in under 2 minutes; `--grep @voter` runs only voter tests; `--grep @candidate` runs only candidate tests
-   **Plans**: TBD
+   **Plans:** 2 plans
 
 Plans:
 
-- [ ] 06-01: GitHub Actions workflow update (existing CI updated for new test structure, HTML report artifact upload)
-- [ ] 06-02: Test tagging system (smoke, voter, candidate tags applied to all spec files)
+- [ ] 06-01-PLAN.md — GitHub Actions workflow update (--with-deps, mock data override, remove sleep, remove stale setup report artifact)
+- [ ] 06-02-PLAN.md — Test tagging system (@smoke, @voter, @candidate, @variant tags on all 16 spec files)
 
 ### Phase 7: Advanced Test Capabilities
 
@@ -162,7 +162,7 @@ Plans:
 1. Running `playwright test --grep @visual` captures or compares screenshots for the voter results page and candidate preview page — a UI diff fails the test
 2. Running `playwright test --grep @perf` asserts that the voter results page loads within a defined time budget (e.g., Time to Interactive < 3s on the standard dataset)
 3. Both visual and performance tests are gated and excluded from the default `yarn test:e2e` run to avoid false positives in development
-   **Plans**: TBD
+   **Plans:** 2 plans
 
 Plans:
 
