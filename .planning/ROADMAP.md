@@ -105,13 +105,15 @@ Plans:
 3. The nominations page renders with candidate listings when `showAllNominations=true`
 4. The results link in the header appears only after the minimum answers threshold is reached — tested across a session boundary
 5. Static pages (about, help, info, privacy, statistics) all render without errors for an unauthenticated visitor
-   **Plans:** 3 plans
+   **Plans:** 5 plans
 
 Plans:
 
 - [x] 04-01-PLAN.md — TestId infrastructure + voter-settings spec (category selection, category/question intros, minimum answers threshold, results link)
-- [ ] 04-02-PLAN.md — Voter popups spec (feedback popup timing, survey popup timing, disabled states, dismissal memory)
-- [ ] 04-03-PLAN.md — Voter static pages spec (about, info, privacy, nominations enabled/disabled)
+- [x] 04-02-PLAN.md — Voter popups spec (feedback popup timing, survey popup timing, disabled states, dismissal memory)
+- [x] 04-03-PLAN.md — Voter static pages spec (about, info, privacy, nominations enabled/disabled)
+- [ ] 04-04-PLAN.md — [GAP CLOSURE] Fix voter-settings and voter-popups specs (settings mutation lifecycle, fixture interaction)
+- [ ] 04-05-PLAN.md — [GAP CLOSURE] Fix nominations test data loading and assertions
 
 ### Phase 5: Configuration Variants
 
@@ -177,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
-| 4. Voter App Settings and Edge Cases    | 1/3            | In Progress | -         |
+| 4. Voter App Settings and Edge Cases    | 3/5            | Gap closure | -         |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |
