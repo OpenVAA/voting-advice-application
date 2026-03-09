@@ -7,8 +7,11 @@
  *
  * Assumes:
  * - Single election + single constituency (auto-implied by data setup)
- * - Category intros disabled (configured in data.setup.ts)
  * - Questions are opinion-type Likert-5 questions
+ *
+ * Handles questions intro / category selection and category intro pages
+ * gracefully, clicking through them if they appear (e.g., when parallel
+ * settings-mutating specs re-enable these features).
  *
  * @example
  * ```typescript
@@ -26,8 +29,8 @@
  * ```
  */
 import { test as base } from '@playwright/test';
-import { buildRoute } from '../utils/buildRoute';
 import { testIds } from '../utils/testIds';
+import { navigateToFirstQuestion, waitForNextQuestion } from '../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 
 type VoterFixtureOptions = {
@@ -47,14 +50,8 @@ export const voterTest = base.extend<VoterFixtures>({
   voterAnswerIndex: [4, { option: true }],
 
   answeredVoterPage: async ({ page, voterAnswerCount, voterAnswerIndex }, use) => {
-    // Navigate to the voter home page
-    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-
-    // Click start on the home page -- auto-implication handles election + constituency
-    await page.getByTestId(testIds.voter.home.startButton).click();
-
-    // Should land on the intro page (no election/constituency selection with single of each)
-    await page.getByTestId(testIds.voter.intro.startButton).click();
+    // Navigate Home -> Intro -> (optional pages) -> First Question
+    await navigateToFirstQuestion(page);
 
     // Answer questions: each click on a Likert choice auto-advances after a 350ms delay.
     // We track the URL to detect when auto-advance navigates to the next question/results page.
@@ -71,8 +68,8 @@ export const voterTest = base.extend<VoterFixtures>({
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
 
       if (i < voterAnswerCount - 1) {
-        // Wait for the answer option to be visible on the new question page
-        await page.getByTestId(testIds.voter.questions.answerOption).nth(voterAnswerIndex).waitFor({ state: 'visible' });
+        // Wait for the next answer option, clicking through any category intro page
+        await waitForNextQuestion(page, voterAnswerIndex);
       }
     }
 

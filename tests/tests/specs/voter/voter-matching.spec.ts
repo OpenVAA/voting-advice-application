@@ -20,8 +20,8 @@ import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuesti
 import { expect, test } from '@playwright/test';
 import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
 import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
-import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
+import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
 import type { HasAnswers } from '@openvaa/core';
 import type { Page } from '@playwright/test';
 
@@ -129,16 +129,12 @@ const opposeCandidate = voterDataset.candidates.find((c) => c.externalId === 'te
 
 /**
  * Navigate the full voter journey: Home -> Intro -> answer all opinion questions -> Results.
- * Handles the auto-advance behavior after each answer click and waits for the
- * results page to fully load.
+ * Uses shared navigation helpers that handle optional intermediate pages
+ * (questions intro, category intros) which may appear due to parallel settings specs.
  */
 async function navigateToResults(page: Page): Promise<void> {
-  // Navigate to voter home
-  await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-  await page.getByTestId(testIds.voter.home.startButton).click();
-
-  // Intro page -- click start
-  await page.getByTestId(testIds.voter.intro.startButton).click();
+  // Navigate Home -> Intro -> (optional pages) -> First Question
+  await navigateToFirstQuestion(page);
 
   // Answer all opinion questions with "Fully agree" (index 4, the 5th option).
   // After clicking an answer, the app auto-advances to the next question after 350ms.
@@ -154,8 +150,8 @@ async function navigateToResults(page: Page): Promise<void> {
     if (i < TOTAL_OPINION_QUESTIONS - 1) {
       // Wait for URL to change (auto-advance navigated to next question)
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
-      // Also wait for the answer option to be visible on the new page
-      await page.getByTestId(testIds.voter.questions.answerOption).nth(VOTER_ANSWER_INDEX).waitFor({ state: 'visible' });
+      // Wait for next question, clicking through any category intro page
+      await waitForNextQuestion(page, VOTER_ANSWER_INDEX);
     }
   }
 

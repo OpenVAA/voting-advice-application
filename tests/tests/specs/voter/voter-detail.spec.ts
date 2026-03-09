@@ -15,7 +15,15 @@
 
 import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
+import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
 import { testIds } from '../../utils/testIds';
+
+// The candidate used for detail content verification (has info answers and open answers)
+const alphaCandidate = defaultDataset.candidates.find((c) => c.externalId === 'test-candidate-alpha')!;
+const alphaAnswers = alphaCandidate.answersByExternalId as Record<
+  string,
+  { value: string | number | boolean | Record<string, string>; info?: Record<string, string> }
+>;
 
 test.describe('voter entity detail', () => {
   test('should open candidate detail drawer when clicking a result card', async ({
@@ -56,6 +64,48 @@ test.describe('voter entity detail', () => {
     await expect(dialog).not.toBeVisible();
   });
 
+  test('should display candidate answers correctly in info and opinions tabs', async ({
+    answeredVoterPage: page
+  }) => {
+    // Open "Test Candidate Alpha" who has:
+    // - Info answers: campaign slogan "Progress for all", years of experience, etc.
+    // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
+    await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.lastName }).click();
+
+    const dialog = page.locator('dialog[open]');
+    await expect(dialog).toBeVisible();
+
+    // --- Info tab: candidate's info question answers are displayed ---
+    const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
+    await expect(infoTab).toBeVisible();
+    // Campaign slogan (text-type info answer) from dataset
+    const sloganAnswer = alphaAnswers['test-question-text'].value as Record<string, string>;
+    await expect(infoTab).toContainText(sloganAnswer.en);
+
+    // --- Opinions tab ---
+    await dialog.getByRole('tab', { name: /opinions/i }).click();
+    const opinionsTab = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
+    await expect(opinionsTab).toBeVisible();
+
+    // Candidate's opinion answer is correctly indicated:
+    // Alpha answered Q1 — the corresponding choice radio has entitySelected class
+    const firstQuestionInput = opinionsTab.getByTestId('opinion-question-input').first();
+    await expect(firstQuestionInput.locator('.entitySelected')).toHaveCount(1);
+
+    // Voter's answer is displayed alongside the candidate's:
+    // The voter's selected radio is checked, and voter label ("You") is shown
+    await expect(firstQuestionInput.locator('input:checked')).toHaveCount(1);
+    await expect(firstQuestionInput.getByText('You')).toBeAttached();
+
+    // Candidate's open answers are displayed where provided (from dataset info fields)
+    const openAnswerKeys = Object.keys(alphaAnswers).filter(
+      (k) => alphaAnswers[k].info && (alphaAnswers[k].info as Record<string, string>).en
+    );
+    for (const key of openAnswerKeys) {
+      await expect(opinionsTab).toContainText((alphaAnswers[key].info as Record<string, string>).en);
+    }
+  });
+
   test('should open party detail drawer with info, candidates, and opinions tabs', async ({
     answeredVoterPage: page
   }) => {
@@ -67,10 +117,12 @@ test.describe('voter entity detail', () => {
     const partySection = page.getByTestId(testIds.voter.results.partySection);
     await expect(partySection).toBeVisible();
 
-    // Click the first party card's header link to open drawer.
-    // Party cards with subcards don't make the whole card clickable -- only the header
-    // area is wrapped in an action link, so we click the heading link inside the card.
-    await partySection.getByTestId(testIds.voter.results.card).first().getByRole('link').first().click();
+    // Click the first party card's action link to open drawer.
+    // The EntityCardAction component renders as <a data-testid="entity-card-action">.
+    // When subcards exist, the link wraps the header inside the card;
+    // when no subcards, the link wraps the entire card from outside.
+    // Using entity-card-action works in both cases.
+    await partySection.getByTestId('entity-card-action').first().click();
 
     // Assert drawer opens with party entity details
     const dialog = page.locator('dialog[open]');
