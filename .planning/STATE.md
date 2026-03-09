@@ -154,6 +154,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Shared answerAllQuestions helper for dynamic question loop with category intro handling in variant specs
 - [Phase 05]: Results-sections spec navigates full journey once in beforeAll then reloads for each settings toggle
 - [Phase 05]: resultsSettings helper function ensures complete sibling settings in every results component update
+- [Phase 05]: Native select interaction for constituency selection (selectOption by label) since SingleGroupConstituencySelector renders select elements
+- [Phase 05]: Orphan municipality test completes full journey to verify no runtime crash, not just initial navigation
+- [Phase 05]: findData query for constituency group database ID (documentId) before setting startFromConstituencyGroup
 
 ### Pending Todos
 
@@ -166,6 +169,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T19:24:54Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-03-09T19:25:00Z
+Stopped at: Completed 05-03-PLAN.md
 Resume file: None

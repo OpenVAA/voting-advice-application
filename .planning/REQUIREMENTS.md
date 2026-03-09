@@ -65,7 +65,7 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 - [x] **CONF-01**: Single election configuration tested end-to-end (no election selection step)
 - [x] **CONF-02**: Multiple elections configuration tested (election selection, per-election results)
-- [ ] **CONF-03**: Constituency enabled configuration tested (constituency step in flow)
+- [x] **CONF-03**: Constituency enabled configuration tested (constituency step in flow)
 - [x] **CONF-04**: Constituency disabled configuration tested (no constituency step)
 - [x] **CONF-05**: Candidates-only results section configuration tested
 - [x] **CONF-06**: Organizations-only results section configuration tested
@@ -157,7 +157,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VOTE-19     | Phase 4 | Complete |
 | CONF-01     | Phase 5 | Complete |
 | CONF-02     | Phase 5 | Complete |
-| CONF-03     | Phase 5 | Pending  |
+| CONF-03     | Phase 5 | Complete |
 | CONF-04     | Phase 5 | Complete |
 | CONF-05     | Phase 5 | Complete |
 | CONF-06     | Phase 5 | Complete |
