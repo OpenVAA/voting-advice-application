@@ -127,13 +127,13 @@ Plans:
 3. The constituency-enabled project exercises the constituency selection step; the constituency-disabled project skips it — both pass independently
 4. Each configuration variant has its own JSON dataset file loaded by a dedicated setup project
 5. Organizations-only and candidates-only results configurations are each verified by a passing test in their respective project
-   **Plans**: TBD
+   **Plans:** 3 plans
 
 Plans:
 
-- [ ] 05-01: Multi-election dataset and Playwright project configuration
-- [ ] 05-02: Constituency variant datasets and projects (enabled and disabled)
-- [ ] 05-03: Results section variant datasets (candidates-only, organizations-only)
+- [ ] 05-01-PLAN.md — Overlay datasets, merge utility, variant setup/teardown projects, Playwright config entries, testIds updates
+- [ ] 05-02-PLAN.md — Multi-election spec (election selection, per-election results, disallowSelection) + results-sections spec (candidates-only, organizations-only)
+- [ ] 05-03-PLAN.md — Constituency spec (constituency selection, hierarchical) + startFromConstituencyGroup spec (reversed flow, orphan edge case)
 
 ### Phase 6: CI Integration and Test Organization
 
@@ -180,6 +180,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
 | 4. Voter App Settings and Edge Cases    | 5/5 | Complete   | 2026-03-09 |
-| 5. Configuration Variants               | 0/3            | Not started | -         |
+| 5. Configuration Variants               | 0/3            | Planned     | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |
