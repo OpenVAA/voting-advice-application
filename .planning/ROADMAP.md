@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Infrastructure Foundation** - Playwright upgrade, project dependencies pattern, API data management, testId attributes, fixture layer, ESLint plugin
 - [ ] **Phase 2: Candidate App Coverage** - Restructure existing candidate tests and fill all missing flows using new infrastructure
 - [ ] **Phase 3: Voter App Core Journey** - Cover landing through results for the primary user-facing surface currently at zero coverage
-- [ ] **Phase 4: Voter App Settings and Edge Cases** - Cover configuration-driven voter features, optional pages, and app-mode edge cases
+- [x] **Phase 4: Voter App Settings and Edge Cases** - Cover configuration-driven voter features, optional pages, and app-mode edge cases (completed 2026-03-09)
 - [ ] **Phase 5: Configuration Variants** - Multi-dataset Playwright projects covering single vs. multi-election and constituency scenarios
 - [ ] **Phase 6: CI Integration and Test Organization** - Wire CI pipeline, HTML report artifacts, and test tagging system
 - [ ] **Phase 7: Advanced Test Capabilities** - Visual regression baseline suite and performance benchmark integration
@@ -105,7 +105,7 @@ Plans:
 3. The nominations page renders with candidate listings when `showAllNominations=true`
 4. The results link in the header appears only after the minimum answers threshold is reached — tested across a session boundary
 5. Static pages (about, help, info, privacy, statistics) all render without errors for an unauthenticated visitor
-   **Plans:** 5 plans
+   **Plans:** 5/5 plans complete
 
 Plans:
 
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Infrastructure Foundation            | 10/11          | Gap closure | -         |
 | 2. Candidate App Coverage               | 0/4            | Planned     | -         |
 | 3. Voter App Core Journey               | 3/4            | In Progress | -         |
-| 4. Voter App Settings and Edge Cases    | 3/5            | Gap closure | -         |
+| 4. Voter App Settings and Edge Cases    | 5/5 | Complete   | 2026-03-09 |
 | 5. Configuration Variants               | 0/3            | Not started | -         |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
 | 7. Advanced Test Capabilities           | 0/2            | Not started | -         |

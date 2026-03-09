@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-05-PLAN.md
-last_updated: "2026-03-09T07:45:11.672Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-03-09T08:13:05.500Z"
 last_activity: 2026-03-09 — Completed 04-05 nominations test fix
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 24
-  completed_plans: 23
+  completed_plans: 24
   percent: 95
 ---
 
@@ -75,6 +75,7 @@ _Updated after each plan completion_
 | Phase 04 P02 | 2min | 1 tasks | 1 files |
 | Phase 04 P03 | 1min | 1 tasks | 1 files |
 | Phase 04 P05 | 23min | 1 tasks | 3 files |
+| Phase 04 P04 | 45min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Entity cards in nominations list located via scoped testIds (nominations list -> entity-card) for precise assertions
 - [Phase 04]: Root cause of nominations test failure was null cardContents crashing EntityCard rendering, not settings mutation or data loading
 - [Phase 04]: Applied null safety (?.includes, ?? []) to all cardContents access sites in EntityCard.svelte and entityCards.ts
+- [Phase 04]: Split voter-app-settings into separate projects (settings + popups) with dependency chain for cross-file serial execution
+- [Phase 04]: Global popup suppression (notifications + analytics) added to data.setup.ts as default for all voter specs
+- [Phase 04]: Describe-level timeout (60s) for answeredVoterPage fixture specs because test.setTimeout runs after fixture setup
 
 ### Pending Todos
 
@@ -153,6 +157,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T07:45:11.670Z
-Stopped at: Completed 04-05-PLAN.md
+Last session: 2026-03-09T08:13:05.498Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
