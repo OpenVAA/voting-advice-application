@@ -13,6 +13,12 @@
  * `notifications.voterApp.show: false` and `analytics.trackEvents: false`
  * to prevent popup queue interference with the target popups.
  *
+ * IMPORTANT: Every updateAppSettings call includes ALL sibling settings
+ * (questions, entities, notifications, analytics) to avoid Pitfall 2 where
+ * Strapi content-manager PUT replaces entire components, not just specified
+ * fields. Without complete siblings, the answeredVoterPage fixture navigation
+ * breaks because questionsIntro.show resets to its Strapi default (true).
+ *
  * Runs within the `voter-app` project which depends only on data-setup
  * (no auth needed for voter tests).
  */
@@ -22,8 +28,13 @@ import { expect } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 
-// Ensure unauthenticated voter context
-test.use({ storageState: { cookies: [], origins: [] } });
+// All describe blocks share global app settings state -- run serially.
+test.describe.configure({ mode: 'serial', timeout: 60000 });
+
+// Ensure unauthenticated voter context.
+// Disable trace to avoid Playwright 1.58.2 ENOENT trace writer conflicts
+// when serial describe blocks share StrapiAdminClient across beforeAll/afterAll.
+test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
 
 /**
  * Shared settings that suppress interfering popups (notification + data consent).
@@ -35,14 +46,33 @@ const suppressInterferingPopups = {
 };
 
 /**
+ * Question and entity settings that data.setup.ts configures.
+ * Included in every updateAppSettings call to preserve the navigation flow
+ * that the answeredVoterPage fixture depends on (Home -> Intro -> Questions -> Results).
+ */
+const preserveNavigationSettings = {
+  questions: {
+    questionsIntro: { show: false, allowCategorySelection: false },
+    categoryIntros: { show: false, allowSkip: true },
+    showResultsLink: true
+  },
+  entities: {
+    hideIfMissingAnswers: { candidate: false },
+    showAllNominations: true
+  }
+};
+
+/**
  * Default settings to restore in afterAll blocks.
  * Resets popup-related settings to their data.setup.ts defaults.
+ * Includes ALL sibling settings to avoid Pitfall 2.
  */
 const defaultPopupSettings = {
   results: { showFeedbackPopup: null, showSurveyPopup: null },
   survey: { showIn: [], linkTemplate: '' },
   notifications: { voterApp: { show: true } },
-  analytics: { trackEvents: false }
+  analytics: { trackEvents: false },
+  ...preserveNavigationSettings
 };
 
 // ---------------------------------------------------------------------------
@@ -59,6 +89,7 @@ test.describe('feedback popup (VOTE-15)', () => {
     await client.updateAppSettings({
       results: { showFeedbackPopup: 2, showSurveyPopup: null },
       survey: { showIn: [], linkTemplate: '' },
+      ...preserveNavigationSettings,
       ...suppressInterferingPopups
     });
   });
@@ -69,6 +100,8 @@ test.describe('feedback popup (VOTE-15)', () => {
   });
 
   test('should show feedback popup after delay on results page', async ({ answeredVoterPage }) => {
+    // Increase timeout: fixture navigates 16 questions + popup has 2s delay
+    test.setTimeout(60000);
     const page = answeredVoterPage;
 
     // Verify results list is visible (confirming we are on the results page)
@@ -84,6 +117,8 @@ test.describe('feedback popup (VOTE-15)', () => {
   });
 
   test('should remember dismissal after page reload', async ({ answeredVoterPage }) => {
+    // Increase timeout: fixture navigates 16 questions + popup timing + reload
+    test.setTimeout(60000);
     const page = answeredVoterPage;
 
     // Wait for the feedback popup to appear
@@ -126,6 +161,7 @@ test.describe('survey popup (VOTE-16)', () => {
     await client.updateAppSettings({
       results: { showFeedbackPopup: null, showSurveyPopup: 2 },
       survey: { showIn: ['resultsPopup'], linkTemplate: 'https://test.survey.com' },
+      ...preserveNavigationSettings,
       ...suppressInterferingPopups
     });
   });
@@ -136,6 +172,8 @@ test.describe('survey popup (VOTE-16)', () => {
   });
 
   test('should show survey popup after delay on results page', async ({ answeredVoterPage }) => {
+    // Increase timeout: fixture navigates 16 questions + popup has 2s delay
+    test.setTimeout(60000);
     const page = answeredVoterPage;
 
     // Verify results list is visible (confirming we are on the results page)
@@ -145,10 +183,10 @@ test.describe('survey popup (VOTE-16)', () => {
     const dialog = page.getByRole('dialog');
     await dialog.waitFor({ state: 'visible', timeout: 7000 });
 
-    // Verify the dialog is visible and contains a link (survey popup has a SurveyButton link)
+    // Verify the dialog is visible and contains the survey action button
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('h3').first()).toBeVisible();
-    await expect(dialog.getByRole('link')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /survey/i })).toBeVisible();
   });
 });
 
@@ -166,6 +204,7 @@ test.describe('popups disabled', () => {
     await client.updateAppSettings({
       results: { showFeedbackPopup: null, showSurveyPopup: null },
       survey: { showIn: [], linkTemplate: '' },
+      ...preserveNavigationSettings,
       ...suppressInterferingPopups
     });
   });
@@ -176,6 +215,8 @@ test.describe('popups disabled', () => {
   });
 
   test('should not show any popup when disabled', async ({ answeredVoterPage }) => {
+    // Increase timeout: fixture navigates 16 questions + wait for no popup
+    test.setTimeout(60000);
     const page = answeredVoterPage;
 
     // Verify results list is visible (confirming we are on the results page)

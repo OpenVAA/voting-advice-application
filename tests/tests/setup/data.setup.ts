@@ -3,6 +3,7 @@ import candidateAddendum from '../data/candidate-addendum.json' assert { type: '
 import defaultDataset from '../data/default-dataset.json' assert { type: 'json' };
 import voterDataset from '../data/voter-dataset.json' assert { type: 'json' };
 import { StrapiAdminClient } from '../utils/strapiAdminClient';
+import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 
 const TEST_DATA_PREFIX = 'test-';
 
@@ -59,15 +60,20 @@ setup('import test dataset', async () => {
   // This ensures Home -> Intro -> Questions -> Results with no category selection pages.
   // Also disable hideIfMissingAnswers for candidates because the combined default + voter
   // datasets create 16 opinion questions, and no single candidate answers all of them.
+  // Suppress notification and data consent popups to prevent dialog overlays from
+  // intercepting test clicks on navigation buttons across all voter specs.
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false }
+      questionsIntro: { allowCategorySelection: false, show: false },
+      showResultsLink: true
     },
     entities: {
       hideIfMissingAnswers: { candidate: false },
       showAllNominations: true
-    }
+    },
+    notifications: { voterApp: { show: false } },
+    analytics: { trackEvents: false }
   });
 
   // Unregister the "unregistered" candidates if a previous test run registered them.
@@ -80,17 +86,16 @@ setup('import test dataset', async () => {
   // The password change or reset test may have left a different password.
   // If setPassword fails (e.g., no linked user), fall back to forceRegister
   // which creates the user and sets the password in one step.
-  const candidatePassword = process.env.DEV_CANDIDATE_PASSWORD ?? 'Password1!';
   const findResult = await client.findData(
     'candidates',
     { externalId: { $eq: 'test-candidate-alpha' } }
   );
   if (findResult.type === 'success' && findResult.data?.length) {
     const documentId = (findResult.data[0] as { documentId: string }).documentId;
-    const setResult = await client.setPassword({ documentId, password: candidatePassword });
+    const setResult = await client.setPassword({ documentId, password: TEST_CANDIDATE_PASSWORD });
     if (setResult.type !== 'success') {
       // Candidate has no linked user — create one via forceRegister
-      const registerResult = await client.forceRegister({ documentId, password: candidatePassword });
+      const registerResult = await client.forceRegister({ documentId, password: TEST_CANDIDATE_PASSWORD });
       expect(
         registerResult.type,
         `Failed to restore candidate auth: setPassword failed (${setResult.cause}), forceRegister failed (${registerResult.cause})`
