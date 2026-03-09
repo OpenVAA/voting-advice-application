@@ -69,8 +69,8 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [ ] **CONF-04**: Constituency disabled configuration tested (no constituency step)
 - [ ] **CONF-05**: Candidates-only results section configuration tested
 - [ ] **CONF-06**: Organizations-only results section configuration tested
-- [ ] **CONF-07**: Separate test datasets created for each configuration variant
-- [ ] **CONF-08**: Playwright projects configured per dataset for multi-configuration testing
+- [x] **CONF-07**: Separate test datasets created for each configuration variant
+- [x] **CONF-08**: Playwright projects configured per dataset for multi-configuration testing
 
 ### CI Pipeline
 
@@ -161,8 +161,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONF-04     | Phase 5 | Pending  |
 | CONF-05     | Phase 5 | Pending  |
 | CONF-06     | Phase 5 | Pending  |
-| CONF-07     | Phase 5 | Pending  |
-| CONF-08     | Phase 5 | Pending  |
+| CONF-07     | Phase 5 | Complete |
+| CONF-08     | Phase 5 | Complete |
 | CI-01       | Phase 6 | Pending  |
 | CI-02       | Phase 6 | Pending  |
 | CI-03       | Phase 6 | Pending  |
