@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-10T09:23:40.848Z"
-last_activity: 2026-03-10 — Completed 06-01 CI workflow update for new test structure
+status: completed
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-10T09:25:06.781Z"
+last_activity: 2026-03-10 — Completed 06-02 spec file tagging for selective test execution
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 29
-  completed_plans: 28
-  percent: 97
+  completed_plans: 29
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 6 of 7 (CI Integration and Test Organization)
-Plan: 1 of 2 in current phase (06-01 COMPLETE)
-Status: Executing phase 6
-Last activity: 2026-03-10 — Completed 06-01 CI workflow update for new test structure
+Plan: 2 of 2 in current phase (06-02 COMPLETE)
+Status: Phase 6 complete
+Last activity: 2026-03-10 — Completed 06-02 spec file tagging for selective test execution
 
-Progress: [██████████] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ _Updated after each plan completion_
 | Phase 05 P02 | 2min | 2 tasks | 2 files |
 | Phase 05 P03 | 2min | 2 tasks | 2 files |
 | Phase 06 P01 | 1min | 2 tasks | 2 files |
+| Phase 06 P02 | 2min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,8 @@ Recent decisions affecting current work:
 - [Phase 05]: findData query for constituency group database ID (documentId) before setting startFromConstituencyGroup
 - [Phase 06]: Removed 30s sleep step since docker compose --wait handles healthchecks and tests import own data
 - [Phase 06]: Used sed override for mock data in CI rather than changing .env.example default to preserve local dev experience
+- [Phase 06]: Tags placed on test.describe() blocks for inheritance to all contained tests
+- [Phase 06]: Smoke suite curated to 3 files: candidate-auth, voter-journey, voter-static-pages
 
 ### Pending Todos
 
@@ -172,6 +175,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T09:23:40.846Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-10T09:25:06.778Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
