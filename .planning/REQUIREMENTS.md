@@ -74,8 +74,8 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 
 ### CI Pipeline
 
-- [ ] **CI-01**: Existing CI pipeline updated to work with new test structure
-- [ ] **CI-02**: HTML test report artifact uploaded from CI runs
+- [x] **CI-01**: Existing CI pipeline updated to work with new test structure
+- [x] **CI-02**: HTML test report artifact uploaded from CI runs
 - [ ] **CI-03**: Test tagging system for selective test runs (smoke, full, per-app)
 
 ## v2 Requirements
@@ -163,8 +163,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONF-06     | Phase 5 | Complete |
 | CONF-07     | Phase 5 | Complete |
 | CONF-08     | Phase 5 | Complete |
-| CI-01       | Phase 6 | Pending  |
-| CI-02       | Phase 6 | Pending  |
+| CI-01       | Phase 6 | Complete |
+| CI-02       | Phase 6 | Complete |
 | CI-03       | Phase 6 | Pending  |
 
 **Coverage:**
