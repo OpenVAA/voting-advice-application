@@ -15,10 +15,13 @@ import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
-test.describe('candidate opinion questions', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
+  test.beforeEach(async ({ page, candidateQuestionsPage }) => {
     // Navigate to questions list page before each test
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    // Expand all category sections so question cards are visible in the DOM.
+    // Categories with all questions answered start collapsed (Expander uses {#if expanded}).
+    await candidateQuestionsPage.expandAllCategories();
   });
 
   test('should display question cards organized by category (CAND-05)', async ({ page, candidateQuestionsPage }) => {
@@ -69,12 +72,15 @@ test.describe('candidate opinion questions', () => {
     // Step 4: Add a comment in the open answer field
     await questionPage.fillComment('Test comment for this Likert question');
 
-    // Step 5: Save the answer
+    // Step 5: Capture current URL before saving
+    const urlBeforeSave = page.url();
+
+    // Step 6: Save the answer
     await questionPage.saveAnswer();
 
-    // Step 6: Verify save succeeded - the page navigates to the next question
-    // or back to the questions list after saving
-    await expect(page).not.toHaveURL(/\/questions\/[^/]+$/, { timeout: 10000 });
+    // Step 7: Verify save succeeded - the page navigates away from the current
+    // question (to the next unanswered question or the questions list)
+    await expect(page).not.toHaveURL(urlBeforeSave, { timeout: 10000 });
   });
 
   test('should navigate between categories (CAND-05)', async ({ page, candidateQuestionsPage }) => {
@@ -92,6 +98,7 @@ test.describe('candidate opinion questions', () => {
 
     // Go back to questions list
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
     await expect(cards.first()).toBeVisible();
 
     // Navigate to a different question (last card to likely be in a different category)
@@ -126,6 +133,7 @@ test.describe('candidate opinion questions', () => {
 
     // Step 5: Navigate back to questions list
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
 
     // Step 6: Re-open the same question and verify it loads (the answer
     // selection is managed by the component state and the saved data)
@@ -160,6 +168,7 @@ test.describe('candidate opinion questions', () => {
     // Step 5: The save navigates away. Go back to the questions list
     // and then into the same question to check persistence.
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
 
     // Step 6: Navigate back to the same question
     await candidateQuestionsPage.navigateToQuestion(1);
@@ -176,7 +185,7 @@ test.describe('candidate opinion questions', () => {
   });
 });
 
-test.describe('candidate preview', () => {
+test.describe('candidate preview', { tag: ['@candidate'] }, () => {
   test('should display entered profile and opinion data on preview page (CAND-06)', async ({ page, previewPage }) => {
     // Navigate to preview page
     await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));

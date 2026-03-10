@@ -12,16 +12,19 @@
 import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
-import { getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
+import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
+import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
+import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 
 // Run all tests in this file without authentication
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('candidate registration via email', () => {
+test.describe('candidate registration via email', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   const client = new StrapiAdminClient();
-  const candidateEmail = 'test.unregistered@openvaa.org';
+  const candidateEmail = candidateAddendum.candidates[0].email;
   let registrationLink: string;
 
   test.beforeAll(async () => {
@@ -33,6 +36,9 @@ test.describe('candidate registration via email', () => {
   });
 
   test('should send registration email and extract link', async () => {
+    // Count existing emails to skip stale ones from previous test runs
+    const emailsBefore = await countEmailsForRecipient(candidateEmail);
+
     // Step 1: Find the unregistered candidate's documentId
     const findResult = await client.findData('candidates', {
       email: { $eq: candidateEmail }
@@ -48,23 +54,26 @@ test.describe('candidate registration via email', () => {
       requireRegistrationKey: true
     });
 
-    // Step 3: Poll for email arrival using expect.poll (never waitForTimeout)
+    // Step 3: Poll for NEW email arrival (skip stale emails from previous runs)
     await expect
-      .poll(async () => await getLatestEmailHtml(candidateEmail), {
+      .poll(async () => await getLatestEmailHtml(candidateEmail, emailsBefore), {
         message: 'Waiting for registration email',
         timeout: 15000,
         intervals: [1000, 2000, 3000]
       })
       .toBeTruthy();
 
-    // Step 4: Extract registration link from the email
-    const emailHtml = await getLatestEmailHtml(candidateEmail);
+    // Step 4: Extract registration link from the NEW email
+    const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
     const link = extractLinkFromHtml(emailHtml!);
     expect(link).toBeTruthy();
     registrationLink = link!;
   });
 
   test('should complete registration via email link', async ({ page }) => {
+    // This test covers registration, login, and ToU acceptance — needs extra time
+    test.setTimeout(60000);
+
     // Step 1: Navigate to the registration link extracted from the email
     await page.goto(registrationLink);
 
@@ -88,19 +97,30 @@ test.describe('candidate registration via email', () => {
     await page.getByTestId('password-field').fill('RegisteredPass1!');
     await page.getByTestId('login-submit').click();
 
-    // Expect navigation away from login to the candidate home
+    // Expect navigation away from login
     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
-    await expect(page.getByTestId('candidate-home-status')).toBeVisible();
+
+    // Step 5: Accept Terms of Use (shown on first login after registration)
+    const touCheckbox = page.getByTestId('terms-checkbox');
+    await expect(touCheckbox).toBeVisible({ timeout: 10000 });
+    await touCheckbox.check();
+    // Wait for the continue button to be enabled (not in loading state)
+    const continueButton = page.getByRole('button', { name: /continue/i });
+    await expect(continueButton).toBeEnabled({ timeout: 10000 });
+    await continueButton.click();
+
+    // Step 6: Verify we reach the candidate home (save may take a moment)
+    await expect(page.getByTestId('candidate-home-status')).toBeVisible({ timeout: 15000 });
   });
 });
 
-test.describe('candidate password reset', () => {
+test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   const client = new StrapiAdminClient();
-  // Use an already-registered candidate
-  const candidateEmail = 'mock.candidate.2@openvaa.org';
-  const originalPassword = 'Password1!';
+  // Use an already-registered candidate from the default dataset
+  const candidateEmail = defaultDataset.candidates[0].email;
+  const originalPassword = TEST_CANDIDATE_PASSWORD;
 
   test.beforeAll(async () => {
     await client.login();
@@ -114,6 +134,9 @@ test.describe('candidate password reset', () => {
     // CAND-08: Per locked decision, password reset reads the reset link from
     // SES email (via emailHelper), NOT from the API response directly.
 
+    // Count existing emails to skip stale ones from previous test runs
+    const emailsBefore = await countEmailsForRecipient(candidateEmail);
+
     // Step 1: Find the candidate's documentId
     const findResult = await client.findData('candidates', {
       email: { $eq: candidateEmail }
@@ -124,17 +147,17 @@ test.describe('candidate password reset', () => {
     // Step 2: Trigger forgot-password via API (sends the reset email)
     await client.sendForgotPassword({ documentId: candidateDocumentId! });
 
-    // Step 3: Poll SES inbox for the password reset email
+    // Step 3: Poll SES inbox for NEW password reset email
     await expect
-      .poll(async () => await getLatestEmailHtml(candidateEmail), {
+      .poll(async () => await getLatestEmailHtml(candidateEmail, emailsBefore), {
         message: 'Waiting for password reset email',
         timeout: 15000,
         intervals: [1000, 2000, 3000]
       })
       .toBeTruthy();
 
-    // Step 4: Extract the reset link from the email HTML
-    const emailHtml = await getLatestEmailHtml(candidateEmail);
+    // Step 4: Extract the reset link from the NEW email
+    const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
     const resetLink = extractLinkFromHtml(emailHtml!);
     expect(resetLink).toBeTruthy();
 
@@ -165,9 +188,10 @@ test.describe('candidate password reset', () => {
 
     // Step 9: RESTORE original password via API using setPassword
     // This is critical for subsequent test runs so auth-setup doesn't break
-    await client.setPassword({
+    const restoreResult = await client.setPassword({
       documentId: candidateDocumentId!,
       password: originalPassword
     });
+    expect(restoreResult.type, `Failed to restore password: ${restoreResult.cause}`).toBe('success');
   });
 });
