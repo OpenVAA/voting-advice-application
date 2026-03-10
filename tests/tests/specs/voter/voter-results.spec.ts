@@ -16,9 +16,17 @@
 
 import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
+import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
+import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
 import { testIds } from '../../utils/testIds';
 
-test.describe('voter results', () => {
+// Compute expected counts from datasets
+const visibleCandidateCount = [...defaultDataset.candidates, ...voterDataset.candidates].filter(
+  (c) => 'termsOfUseAccepted' in c && c.termsOfUseAccepted
+).length;
+const totalPartyCount = defaultDataset.parties.length + voterDataset.parties.length;
+
+test.describe('voter results', { tag: ['@voter'] }, () => {
   test('should display candidates section with result cards', async ({ answeredVoterPage: page }) => {
     // Assert candidate section is visible (VOTE-08)
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
@@ -33,7 +41,7 @@ test.describe('voter results', () => {
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
     // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
     const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(cardCount).toBe(11);
+    expect(cardCount).toBe(visibleCandidateCount);
   });
 
   test('should display entity type tabs for switching between candidates and organizations', async ({
@@ -62,7 +70,7 @@ test.describe('voter results', () => {
     // Note: entity-card testId is shared by party cards AND nested candidate subcards,
     // so we verify the party section heading count instead of counting entity-card elements.
     // Use first() because the section also contains party card h3 headings.
-    await expect(partySection.locator('h3').first()).toContainText('4 parties');
+    await expect(partySection.locator('h3').first()).toContainText(`${totalPartyCount} parties`);
 
     // Switch back to candidates tab
     await entityTabs.getByRole('tab', { name: /candidate/i }).click();

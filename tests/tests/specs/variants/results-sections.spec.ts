@@ -86,11 +86,27 @@ const defaultElectionSettings = {
   }
 };
 
+/**
+ * In multi-election mode, the results page shows an election accordion first.
+ * Selects the first election if the accordion is visible, then waits for the results list.
+ */
+async function waitForResultsList(page: Page): Promise<void> {
+  const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
+  const resultsList = page.getByTestId(testIds.voter.results.list);
+  // Wait for either the accordion or the results list to appear
+  await electionAccordion.or(resultsList).waitFor({ state: 'visible', timeout: 10000 });
+  // If accordion is visible, select the first election to reveal results
+  if (await electionAccordion.isVisible().catch(() => false)) {
+    await electionAccordion.getByRole('option').first().click();
+  }
+  await resultsList.waitFor({ state: 'visible', timeout: 10000 });
+}
+
 // ---------------------------------------------------------------------------
 // Results section variants (CONF-05, CONF-06)
 // ---------------------------------------------------------------------------
 
-test.describe('Results section variants', () => {
+test.describe('Results section variants', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;
@@ -165,8 +181,8 @@ test.describe('Results section variants', () => {
       }
     }
 
-    // Verify we're on the results page
-    await sharedPage.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
+    // Verify we're on the results page (handles multi-election accordion)
+    await waitForResultsList(sharedPage);
   });
 
   test.afterAll(async () => {
@@ -192,9 +208,9 @@ test.describe('Results section variants', () => {
       ...suppressInterferingPopups
     });
 
-    // Reload to pick up settings change
+    // Reload to pick up settings change (handles multi-election accordion)
     await sharedPage.reload();
-    await sharedPage.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
+    await waitForResultsList(sharedPage);
 
     // Verify entity tabs are NOT visible (single section = no tabs needed)
     const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);
@@ -219,9 +235,9 @@ test.describe('Results section variants', () => {
       ...suppressInterferingPopups
     });
 
-    // Reload to pick up settings change
+    // Reload to pick up settings change (handles multi-election accordion)
     await sharedPage.reload();
-    await sharedPage.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
+    await waitForResultsList(sharedPage);
 
     // Verify entity tabs are NOT visible (single section = no tabs)
     const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);
@@ -246,9 +262,9 @@ test.describe('Results section variants', () => {
       ...suppressInterferingPopups
     });
 
-    // Reload to pick up settings change
+    // Reload to pick up settings change (handles multi-election accordion)
     await sharedPage.reload();
-    await sharedPage.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
+    await waitForResultsList(sharedPage);
 
     // Verify entity tabs ARE visible (2 sections = tabs shown)
     const entityTabs = sharedPage.getByTestId(testIds.voter.results.entityTabs);

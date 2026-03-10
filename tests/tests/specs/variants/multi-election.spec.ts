@@ -121,7 +121,7 @@ async function answerAllQuestions(page: Page): Promise<number> {
 // Multi-election voter journey (CONF-01 by contrast, CONF-02, CONF-04)
 // ---------------------------------------------------------------------------
 
-test.describe('Multi-election voter journey', () => {
+test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;
@@ -178,16 +178,24 @@ test.describe('Multi-election voter journey', () => {
     // The combined dataset has 16 default questions + 2 E2-scoped questions = 18 total
     expect(questionCount).toBeGreaterThanOrEqual(16);
 
-    // Verify landing on results page
-    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
-    await expect(resultsList).toBeVisible({ timeout: 10000 });
+    // Verify landing on results page with election accordion (multi-election shows accordion)
+    const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
+    await expect(electionAccordion).toBeVisible({ timeout: 10000 });
   });
 
-  test('should show election accordion in results', async () => {
+  test('should show election accordion and results after selecting election', async () => {
     // On results page, verify election accordion is visible (2 elections = accordion shown)
     // This verifies per-election results display (CONF-02)
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
     await expect(electionAccordion).toBeVisible();
+
+    // Multi-election results require clicking an election before results list appears
+    const electionOption = electionAccordion.getByRole('option').first();
+    await electionOption.click();
+
+    // Now the results list should be visible
+    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
+    await expect(resultsList).toBeVisible({ timeout: 10000 });
   });
 
   test('should display election-specific questions', async () => {
@@ -208,7 +216,7 @@ test.describe('Multi-election voter journey', () => {
 // disallowSelection mode
 // ---------------------------------------------------------------------------
 
-test.describe('disallowSelection mode', () => {
+test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   const client = new StrapiAdminClient();
@@ -280,8 +288,12 @@ test.describe('disallowSelection mode', () => {
     const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
     await expect(electionAccordion).toBeVisible({ timeout: 10000 });
 
-    // Verify results list is visible
+    // Multi-election results require selecting an election before results list appears
+    const electionOption = electionAccordion.getByRole('option').first();
+    await electionOption.click();
+
+    // Verify results list is visible after selecting an election
     const resultsList = page.getByTestId(testIds.voter.results.list);
-    await expect(resultsList).toBeVisible();
+    await expect(resultsList).toBeVisible({ timeout: 10000 });
   });
 });

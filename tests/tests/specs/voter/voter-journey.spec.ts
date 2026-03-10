@@ -26,7 +26,7 @@ import type { Page } from '@playwright/test';
 // a manually created page spans multiple serial tests in one worker.
 test.use({ trace: 'off' });
 
-test.describe('voter journey', () => {
+test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;

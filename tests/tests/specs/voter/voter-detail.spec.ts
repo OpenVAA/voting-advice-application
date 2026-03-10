@@ -25,7 +25,7 @@ const alphaAnswers = alphaCandidate.answersByExternalId as Record<
   { value: string | number | boolean | Record<string, string>; info?: Record<string, string> }
 >;
 
-test.describe('voter entity detail', () => {
+test.describe('voter entity detail', { tag: ['@voter'] }, () => {
   test('should open candidate detail drawer when clicking a result card', async ({
     answeredVoterPage: page
   }) => {

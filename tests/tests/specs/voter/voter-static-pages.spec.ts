@@ -28,7 +28,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 // VOTE-18: Static pages (about, info, privacy)
 // ---------------------------------------------------------------------------
 
-test.describe('static pages (VOTE-18)', () => {
+test.describe('static pages (VOTE-18)', { tag: ['@voter', '@smoke'] }, () => {
   test('about page renders correctly', async ({ page }) => {
     await page.goto(buildRoute({ route: 'About', locale: 'en' }));
 
@@ -73,7 +73,7 @@ test.describe('static pages (VOTE-18)', () => {
 // VOTE-19: Nominations page
 // ---------------------------------------------------------------------------
 
-test.describe('nominations page (VOTE-19)', () => {
+test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
   // "when enabled" must run before "when disabled" to avoid settings interference
   test.describe.configure({ mode: 'serial' });
 

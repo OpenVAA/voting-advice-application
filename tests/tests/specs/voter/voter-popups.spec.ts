@@ -79,7 +79,7 @@ const defaultPopupSettings = {
 // VOTE-15: Feedback popup
 // ---------------------------------------------------------------------------
 
-test.describe('feedback popup (VOTE-15)', () => {
+test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.describe.configure({ mode: 'serial' });
@@ -151,7 +151,7 @@ test.describe('feedback popup (VOTE-15)', () => {
 // VOTE-16: Survey popup
 // ---------------------------------------------------------------------------
 
-test.describe('survey popup (VOTE-16)', () => {
+test.describe('survey popup (VOTE-16)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.describe.configure({ mode: 'serial' });
@@ -194,7 +194,7 @@ test.describe('survey popup (VOTE-16)', () => {
 // Popups disabled
 // ---------------------------------------------------------------------------
 
-test.describe('popups disabled', () => {
+test.describe('popups disabled', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.describe.configure({ mode: 'serial' });

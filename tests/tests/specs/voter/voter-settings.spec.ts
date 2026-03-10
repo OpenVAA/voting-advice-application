@@ -76,7 +76,7 @@ const defaultQuestionSettings = {
 // VOTE-13: Category selection feature
 // ---------------------------------------------------------------------------
 
-test.describe('category selection (VOTE-13)', () => {
+test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.describe.configure({ mode: 'serial' });
@@ -221,7 +221,7 @@ test.describe('category selection (VOTE-13)', () => {
 // VOTE-05: Category intros
 // ---------------------------------------------------------------------------
 
-test.describe('category intros (VOTE-05)', () => {
+test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.describe.configure({ mode: 'serial' });
@@ -349,7 +349,7 @@ test.describe('category intros (VOTE-05)', () => {
 // VOTE-04: Question intro page
 // ---------------------------------------------------------------------------
 
-test.describe('question intro page (VOTE-04)', () => {
+test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.beforeAll(async () => {
@@ -396,7 +396,7 @@ test.describe('question intro page (VOTE-04)', () => {
 // VOTE-07: Minimum answers threshold
 // ---------------------------------------------------------------------------
 
-test.describe('minimum answers threshold (VOTE-07)', () => {
+test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.beforeAll(async () => {
@@ -470,7 +470,7 @@ test.describe('minimum answers threshold (VOTE-07)', () => {
 // VOTE-17: Results link visibility
 // ---------------------------------------------------------------------------
 
-test.describe('results link visibility (VOTE-17)', () => {
+test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
   const client = new StrapiAdminClient();
 
   test.beforeAll(async () => {

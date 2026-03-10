@@ -164,7 +164,7 @@ async function navigateToResults(page: Page): Promise<void> {
 // Tests
 // ---------------------------------------------------------------------------
 
-test.describe('matching algorithm verification', () => {
+test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   test('should display candidates in correct match ranking order', async ({ page }) => {
