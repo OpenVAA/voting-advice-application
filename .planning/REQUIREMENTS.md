@@ -19,7 +19,7 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **INFRA-08**: Test helper utilities for common tasks (navigation, authentication, data setup)
 - [x] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
 - [x] **INFRA-10**: Visual regression testing capability with screenshot comparison
-- [ ] **INFRA-11**: Performance benchmarks integrated into test suite
+- [x] **INFRA-11**: Performance benchmarks integrated into test suite
 
 ### Candidate App
 
@@ -136,7 +136,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-08    | Phase 1 | Complete |
 | INFRA-09    | Phase 1 | Complete |
 | INFRA-10    | Phase 7 | Complete |
-| INFRA-11    | Phase 7 | Pending  |
+| INFRA-11    | Phase 7 | Complete |
 | CAND-01     | Phase 2 | Complete |
 | CAND-02     | Phase 2 | Complete |
 | CAND-03     | Phase 2 | Complete |
