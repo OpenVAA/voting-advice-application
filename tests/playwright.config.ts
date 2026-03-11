@@ -17,8 +17,8 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  *   (data-teardown runs after all projects complete)
  *
  * Configuration variant projects run sequentially AFTER the default suite:
- *   data-teardown -> data-setup-multi-election -> variant-multi-election -> variant-results-sections
- *     -> data-setup-constituency -> variant-constituency
+ *   [candidate-app-settings, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
+ *     -> variant-results-sections -> data-setup-constituency -> variant-constituency
  *     -> data-setup-startfromcg -> variant-startfromcg
  *   (data-teardown-variants runs after all variant setups complete)
  *
@@ -42,6 +42,9 @@ export default defineConfig({
   testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
 
+  /* Screenshot baselines stored alongside specs in a git-trackable directory */
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
+
   /* Per-test timeout */
   timeout: 30000,
 
@@ -56,6 +59,14 @@ export default defineConfig({
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
+
+  /* Default visual comparison thresholds for toHaveScreenshot */
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixelRatio: 0.01
+    }
+  },
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -179,7 +190,7 @@ export default defineConfig({
       name: 'data-setup-multi-election',
       testMatch: /variant-multi-election\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['data-teardown']
+      dependencies: ['candidate-app-settings', 'voter-app-popups']
     },
     {
       name: 'variant-multi-election',
