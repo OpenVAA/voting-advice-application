@@ -247,6 +247,7 @@ export default defineConfig({
     // These projects are gated by environment variables and excluded from
     // the default `yarn test:e2e` run. Enable via:
     //   PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression
+    //   PLAYWRIGHT_PERF=1 npx playwright test -c tests/playwright.config.ts --project=performance
 
     // Visual regression: screenshot comparison for key pages
     ...(process.env.PLAYWRIGHT_VISUAL
@@ -256,6 +257,18 @@ export default defineConfig({
             testDir: './tests/specs/visual',
             use: { ...devices['Desktop Chrome'] },
             dependencies: ['data-setup', 'auth-setup']
+          }
+        ]
+      : []),
+
+    // Performance budgets: page load timing assertions
+    ...(process.env.PLAYWRIGHT_PERF
+      ? [
+          {
+            name: 'performance',
+            testDir: './tests/specs/perf',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
           }
         ]
       : [])
