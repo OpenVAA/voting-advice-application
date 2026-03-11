@@ -196,3 +196,71 @@ jobs:
       - name: "Stop OpenVAA"
         if: always()
         run: yarn dev:down
+
+  e2e-visual-perf:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: "Configure environment"
+        run: |
+          cp .env.example .env
+          sed -i 's/GENERATE_MOCK_DATA_ON_INITIALISE=true/GENERATE_MOCK_DATA_ON_INITIALISE=false/' .env
+
+      - name: Setup Yarn 4.6
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.6
+
+      - name: Setup Node.js 20.18.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.1
+          cache: "yarn"
+
+      - name: "Install yarn dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Install playwright"
+        run: yarn playwright install --with-deps
+
+      - name: "Start OpenVAA"
+        run: yarn dev:start
+
+      - name: "Collect Docker logs on failure"
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          dest: ./logs
+
+      - name: "Tar Docker logs"
+        if: failure()
+        run: tar cvzf ./logs.tgz ./logs
+
+      - name: "Upload Docker logs on failure"
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-visual-perf.tgz
+          path: ./logs.tgz
+          retention-days: 30
+
+      - name: "Run visual and performance tests"
+        run: PLAYWRIGHT_VISUAL=1 PLAYWRIGHT_PERF=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual|@perf"
+
+      - name: "Upload playwright report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-visual-perf
+          path: tests/playwright-report/
+          retention-days: 30
+
+      - name: "Stop OpenVAA"
+        if: always()
+        run: yarn dev:down
