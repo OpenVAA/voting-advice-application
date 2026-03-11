@@ -241,6 +241,23 @@ export default defineConfig({
       fullyParallel: false,
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['data-setup-startfromcg']
-    }
+    },
+
+    // === Opt-in Specialized Projects ===
+    // These projects are gated by environment variables and excluded from
+    // the default `yarn test:e2e` run. Enable via:
+    //   PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression
+
+    // Visual regression: screenshot comparison for key pages
+    ...(process.env.PLAYWRIGHT_VISUAL
+      ? [
+          {
+            name: 'visual-regression',
+            testDir: './tests/specs/visual',
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup', 'auth-setup']
+          }
+        ]
+      : [])
   ]
 });
