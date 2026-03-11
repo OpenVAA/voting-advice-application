@@ -166,8 +166,8 @@ Plans:
 
 Plans:
 
-- [ ] 07-01: Visual regression baseline capture and comparison tests
-- [ ] 07-02: Performance benchmark tests with defined time budgets
+- [ ] 07-01-PLAN.md — Playwright config updates (snapshotPathTemplate, screenshot defaults) + visual regression spec (voter results + candidate preview at desktop and mobile viewports)
+- [ ] 07-02-PLAN.md — Performance budget spec (voter results page load timing with Navigation Timing API) + CI optional visual/perf job
 
 ## Progress
 
@@ -182,4 +182,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Voter App Settings and Edge Cases    | 5/5 | Complete   | 2026-03-09 |
 | 5. Configuration Variants               | 3/3 | Complete   | 2026-03-09 |
 | 6. CI Integration and Test Organization | 0/2            | Not started | -         |
-| 7. Advanced Test Capabilities           | 0/2            | Not started | -         |
+| 7. Advanced Test Capabilities           | 0/2            | Planned     | -         |
