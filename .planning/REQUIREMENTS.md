@@ -18,7 +18,7 @@ Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases
 - [x] **INFRA-07**: Pre-defined JSON test datasets for default configuration
 - [x] **INFRA-08**: Test helper utilities for common tasks (navigation, authentication, data setup)
 - [x] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
-- [ ] **INFRA-10**: Visual regression testing capability with screenshot comparison
+- [x] **INFRA-10**: Visual regression testing capability with screenshot comparison
 - [ ] **INFRA-11**: Performance benchmarks integrated into test suite
 
 ### Candidate App
@@ -93,6 +93,22 @@ Deferred to future release. Tracked but not in current roadmap.
 - **ADV-07**: Email template verification (beyond registration)
 - **ADV-08**: Interactive info feature testing (experimental)
 
+### Question customData Features
+
+- **ADV-09**: Hidden questions (`customData.hidden`) excluded from voter app but visible in candidate app
+- **ADV-10**: Vertical layout (`customData.vertical`) renders multiple-choice options vertically
+- **ADV-11**: Filterable questions (`customData.filterable`) appear as filter options in voter results
+- **ADV-12**: Required questions (`customData.required`) block candidate listing when unanswered
+- **ADV-13**: Locked questions (`customData.locked`) are read-only in candidate app and never required
+- **ADV-14**: Open answers (`customData.allowOpen`) toggle in candidate question input
+- **ADV-15**: Long text (`customData.longText`) renders textarea instead of text input in candidate app
+- **ADV-16**: Max length (`customData.maxlength`) enforces character limit on candidate text inputs
+- **ADV-17**: Disable multilingual (`customData.disableMultilingual`) hides multi-language input for candidate text fields
+- **ADV-18**: Hero content (`customData.hero`) displays emoji or image illustration on question page
+- **ADV-19**: Video content (`customData.video`) displays video player with captions and transcript on question page
+- **ADV-20**: Question info sections (`customData.infoSections`) render expandable info content on question page
+- **ADV-21**: Term definitions (`customData.terms`) display inline term explanations on question page
+
 ## Out of Scope
 
 | Feature                                     | Reason                                                        |
@@ -119,7 +135,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-07    | Phase 1 | Complete |
 | INFRA-08    | Phase 1 | Complete |
 | INFRA-09    | Phase 1 | Complete |
-| INFRA-10    | Phase 7 | Pending  |
+| INFRA-10    | Phase 7 | Complete |
 | INFRA-11    | Phase 7 | Pending  |
 | CAND-01     | Phase 2 | Complete |
 | CAND-02     | Phase 2 | Complete |
