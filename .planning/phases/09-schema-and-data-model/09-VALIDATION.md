@@ -38,19 +38,20 @@ created: 2026-03-12
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 09-01-01 | 01 | 1 | DATA-01 | unit | `cd packages/data && npx vitest run src/objects/questions/template/questionTemplate.test.ts -x` | ❌ W0 | ⬜ pending |
-| 09-01-02 | 01 | 1 | DATA-02 | unit | Same as above | ❌ W0 | ⬜ pending |
-| 09-02-01 | 02 | 1 | SCHM-01 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-02-02 | 02 | 1 | SCHM-02 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-02-03 | 02 | 1 | MTNT-01 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-02-04 | 02 | 1 | MTNT-02 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-02-05 | 02 | 1 | MTNT-03 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-02-06 | 02 | 1 | SCHM-07 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-03-01 | 03 | 2 | SCHM-03 | smoke | SQL test via `supabase db reset` + seed | ✅ | ⬜ pending |
-| 09-03-02 | 03 | 2 | SCHM-04 | lint | `cd apps/supabase && npx supabase db lint` | ✅ | ⬜ pending |
-| 09-03-03 | 03 | 2 | SCHM-05 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
-| 09-03-04 | 03 | 2 | SCHM-06 | smoke | Apply/rollback alternative migrations | ✅ | ⬜ pending |
-| 09-03-05 | 03 | 2 | MTNT-07 | smoke | `cd apps/supabase && npx supabase db reset` (verify seed) | ✅ | ⬜ pending |
+| 09-01-01 | 01 | 1 | SCHM-01 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-01-02 | 01 | 1 | SCHM-02 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-01-03 | 01 | 1 | SCHM-03 | smoke | `cd apps/supabase && npx supabase db reset` (elections_localized view) | ✅ | ⬜ pending |
+| 09-01-04 | 01 | 1 | MTNT-01 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-01-05 | 01 | 1 | MTNT-02 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-01-06 | 01 | 1 | MTNT-03 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-02-01 | 02 | 2 | SCHM-07 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-02-02 | 02 | 2 | SCHM-04 | lint | `cd apps/supabase && npx supabase db lint` | ✅ | ⬜ pending |
+| 09-02-03 | 02 | 2 | SCHM-05 | smoke | `cd apps/supabase && npx supabase db reset` | ✅ | ⬜ pending |
+| 09-02-04 | 02 | 2 | SCHM-06 | smoke | Apply/rollback alternative migrations | ✅ | ⬜ pending |
+| 09-02-05 | 02 | 2 | MTNT-07 | smoke | `cd apps/supabase && npx supabase db reset` (verify seed) | ✅ | ⬜ pending |
+| 09-02-06 | 02 | 2 | SCHM-01 | smoke | `import { COLUMN_MAP } from '@openvaa/supabase-types'` resolves | ✅ | ⬜ pending |
+| 09-03-01 | 03 | 1 | DATA-01 | unit | `cd packages/data && npx vitest run src/objects/questions/template/questionTemplate.test.ts -x` | ❌ W0 | ⬜ pending |
+| 09-03-02 | 03 | 1 | DATA-02 | unit | Same as above | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -70,8 +71,8 @@ created: 2026-03-12
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Tables visible in Supabase Studio with correct columns | SCHM-01, SCHM-02 | Requires Supabase Studio UI inspection | Run `supabase start`, open Studio at localhost:54323, verify table list and column names |
-| camelCase type mapping layer works | SCHM-01 | Type mapping is a TypeScript construct, not DB-testable | Review generated types or run `npx supabase gen types` and verify output |
+| Tables visible in Supabase Studio with correct columns | SCHM-02 | Requires Supabase Studio UI inspection | Run `supabase start`, open Studio at localhost:54323, verify table list and column names |
+| Localized views return resolved text | SCHM-03 | Requires running SQL with session variable | Run `SELECT set_config('app.locale', 'fi', TRUE); SELECT * FROM elections_localized;` and verify text output (not JSONB) |
 
 *All other behaviors have automated verification via `supabase db reset` or `supabase db lint`.*
 
