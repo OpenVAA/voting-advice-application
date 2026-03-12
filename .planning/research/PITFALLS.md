@@ -1,371 +1,552 @@
 # Pitfalls Research
 
-**Domain:** E2E testing framework for a SvelteKit 2 + Strapi v5 monorepo (Voting Advice Application)
-**Researched:** 2026-03-03
-**Confidence:** HIGH
+**Domain:** Strapi v5 to Supabase migration with multi-tenant support for a SvelteKit 2 VAA monorepo
+**Researched:** 2026-03-12
+**Confidence:** HIGH (official Supabase docs, codebase analysis, multiple verified community sources)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Serial Mode Test Dependency Chains
+### Pitfall 1: RLS Policies Missing on New Tables
 
 **What goes wrong:**
-Tests are written with `test.describe.configure({ mode: 'serial' })` and each test depends on the side effects of the previous one. When test 3 of 10 fails, tests 4-10 are all skipped. The CI report shows 8 failures, but 7 of them are false negatives — you have no signal about whether the underlying features actually work. This pattern is already present in the existing tests (`candidateApp-basics.spec.ts` and `candidateApp-advanced.spec.ts` both use serial mode).
+Every new table created via SQL Editor or migration files has RLS disabled by default. The table is fully accessible through Supabase's auto-generated REST API (PostgREST) to anyone with the anon key. In January 2025, 170+ apps built with AI coding tools were found to have exposed databases because developers forgot to enable RLS. 83% of exposed Supabase databases involve RLS misconfigurations. This is the single most common Supabase security failure.
+
+In OpenVAA's context, this means candidate personal data (emails, identifiers, registration keys), answer data, and organization-scoped election data could all be publicly accessible if a single migration forgets `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`.
 
 **Why it happens:**
-Tests that need authenticated state, or that test multi-step flows, reach for serial mode as the path of least resistance. The existing test suite uses serial mode because the global-setup logs in once and shares session state across all tests in a file. When state-mutating tests (e.g., password change) are sequenced this way, isolation becomes impossible without resetting state between tests.
+- Developers create tables iteratively during schema design, adding RLS "later"
+- SQL migrations are written focusing on schema structure, not access control
+- The `storage.objects` table already has RLS enabled by default, but custom tables in the `public` schema do not
+- When copying table definitions from Strapi schemas (which have no RLS concept), the access control translation step is missed entirely
 
 **How to avoid:**
-
-- Replace serial describe blocks with independent tests. For multi-step flows (e.g., the full registration flow in `candidateApp-advanced.spec.ts`), combine the entire flow into a single test using `test.step()`.
-- Use Playwright fixtures to set up per-test state (login, data seeding) rather than relying on execution order.
-- Use `storageState` per test group with Playwright project dependencies (`setup` project) instead of a global pre-authenticated session that bleeds between tests.
+- Adopt a strict convention: every `CREATE TABLE` migration MUST include `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` and at least one policy in the same migration file. Never split table creation and RLS into separate migrations.
+- Create a migration template that includes RLS boilerplate by default:
+  ```sql
+  CREATE TABLE public.my_table (...);
+  ALTER TABLE public.my_table ENABLE ROW LEVEL SECURITY;
+  -- Deny all by default; explicit policies grant access
+  ```
+- Use Supabase's built-in Security Advisor (Splinter linter) to scan for tables with RLS disabled. The advisor checks for three specific conditions: `0007` (policy exists but RLS disabled), `0008` (RLS enabled but no policies), and `0013` (RLS disabled in public schema).
+- Add a CI check that runs `supabase db lint` and fails on any RLS-related warnings before merging migration PRs.
+- After every `supabase db push` or deployment, verify RLS status in the Supabase dashboard under Database > Security Advisor.
 
 **Warning signs:**
+- Migration files that contain `CREATE TABLE` without a corresponding `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
+- Supabase dashboard showing yellow warnings on the Security Advisor page
+- API calls returning data without authentication headers (test with `curl` using only the anon key)
+- Any table that "works fine" during development without explicit policies
 
-- `test.describe.configure({ mode: 'serial' })` in more than one place
-- Test names that include "after previous test" or "then user should"
-- A test that explicitly logs out before logging back in with a different user (currently in `candidateApp-advanced.spec.ts`)
-- CI showing 8+ failures when only 1 test actually broke
-
-**Phase to address:** Phase 1 (E2E Testing Framework foundation — before writing new tests)
+**Phase to address:** Phase 1 (Schema Design) -- establish convention and template before the first table is created
 
 ---
 
-### Pitfall 2: Shared Mutable Database State Without Reset
+### Pitfall 2: RLS Policy Performance Degradation at Scale
 
 **What goes wrong:**
-Tests run against the same database state across the entire suite. One test mutates state (changes a password, creates a candidate, modifies answers), and subsequent tests find unexpected data. The current test suite already handles this ad hoc — `candidateApp-basics.spec.ts` manually resets the password at the end of the password-change test. If the test fails midway, the database is left in an inconsistent state and the next run fails on login, not on the actual code under test.
+RLS policies execute as additional WHERE clauses on every query. Naive policies can cause 100x+ performance degradation on tables with thousands of rows. The most critical performance killers:
+
+1. **Missing indexes on policy columns**: A policy like `auth.uid() = user_id` without an index on `user_id` forces full table scans. Supabase testing showed improvement from 171ms to ~0.1ms just by adding a btree index.
+2. **Per-row function evaluation**: `auth.uid()` and custom functions like `get_tenant_id()` execute once per row evaluated, not once per query. On a table with 10,000 candidate answers, that means 10,000 function calls.
+3. **Inefficient join patterns**: `auth.uid() IN (SELECT user_id FROM team_user WHERE team_user.team_id = table.team_id)` evaluates the subquery for every row. The correct pattern reverses it: `team_id IN (SELECT team_id FROM team_user WHERE user_id = auth.uid())`.
+
+For OpenVAA specifically, the candidate answers table and nominations table will be queried heavily during election periods (potentially thousands of concurrent voters requesting matching results). A slow RLS policy on these tables will bottleneck the entire voter experience.
 
 **Why it happens:**
-Seeding via `GENERATE_MOCK_DATA_ON_RESTART=true` is coarse-grained — it wipes and re-seeds everything, which is too slow for per-test reset. Per-test database reset via the Strapi API or Admin Tools plugin is not implemented, so tests share state.
+- RLS policies are written to be logically correct without considering execution plans
+- Multi-tenant RLS (`organization_id = get_current_org()`) on every table seems simple but multiplies overhead
+- Developers test with small datasets (10 candidates) where performance issues are invisible
+- The load testing phase is scheduled after schema design -- by then, changing RLS policies means changing the security model
 
 **How to avoid:**
-
-- Establish a clear data reset strategy before writing new tests. Options (in order of preference):
-  1. Direct Strapi REST API calls in Playwright fixtures to create/delete test-specific entities (HIGH confidence this is feasible given existing API token mechanism).
-  2. Use the existing Admin Tools "Delete Data" endpoint to reset between test groups, then re-import from a known JSON fixture.
-  3. `GENERATE_MOCK_DATA_ON_RESTART=true` as a last resort — only acceptable for the full CI run, not individual test isolation.
-- Never rely on manual cleanup at the end of a test. If a test fails, cleanup is skipped. Use `afterEach` or Playwright fixture teardown which runs even on failure.
-- When the backend migrates to Supabase, design the reset mechanism against the API abstraction layer (not Strapi-specific endpoints) from day one.
+- Always wrap function calls in SELECT to enable PostgreSQL's initPlan caching: `(SELECT auth.uid())` instead of `auth.uid()`. This caches the result per-statement instead of evaluating per-row.
+- Add btree indexes on every column referenced in an RLS policy. This is non-negotiable.
+- Use `SECURITY DEFINER` functions for complex permission checks that involve joining multiple tables. This lets the function bypass RLS on the joined tables (running as the function creator) while still enforcing RLS on the target table.
+- Add `TO authenticated` (or appropriate role) to every policy to skip evaluation entirely for anonymous/non-matching roles.
+- Structure load tests specifically to measure query performance WITH RLS enabled, not just raw query performance. The load testing phase must test realistic query patterns against realistic data volumes.
+- Use `EXPLAIN ANALYZE` on queries against tables with RLS to verify the execution plan includes index scans, not sequential scans.
 
 **Warning signs:**
+- Queries that take >100ms on tables with fewer than 10,000 rows
+- `EXPLAIN ANALYZE` showing "Seq Scan" on tables with RLS policies
+- Load tests showing dramatically different performance between queries with `service_role` key (bypasses RLS) and `anon` key (evaluates RLS)
+- Policy definitions that reference columns from other tables without wrapping the subquery pattern correctly
 
-- Tests that manually reset state at the end (password change tests restoring the original password)
-- `waitForTimeout(5000)` calls for email delivery — a sign the test is waiting for async side effects it cannot control
-- Commented-out import functionality in tests (the Strapi import was broken and tests were adapted around it)
-- Tests that fail differently on second run than on first
-
-**Phase to address:** Phase 1 (establish reset strategy before first new test is written)
+**Phase to address:** Phase 1 (Schema Design) for index creation alongside policies; Phase 3 (Load Testing) for validation
 
 ---
 
-### Pitfall 3: Text-Content Selectors Embedded in Test Infrastructure
+### Pitfall 3: Multi-Tenant Isolation Leaks with RLS-Based Tenancy
 
 **What goes wrong:**
-The existing test suite uses `getByRole('link', { name: T.en['candidateApp.questions.title'] })` and similar text-based selectors extensively. When i18n strings change, or when the Svelte 5 migration changes component structure, dozens of selectors break simultaneously. The migration to `data-testid` was identified as needed but is incomplete — only a few elements like `login-submit` use test IDs while most navigation and content assertions use translated text.
+OpenVAA is adding multi-tenant support (shared infrastructure, data isolated by organization) where it did not exist before. With the RLS-per-tenant approach (shared tables with `organization_id` column), a single misconfigured policy allows Tenant A to read or modify Tenant B's data. This is not a hypothetical -- it is the primary failure mode of RLS-based multi-tenancy.
+
+Specific leak vectors in OpenVAA's context:
+- A candidate updates their answers, but the mutation does not filter by `organization_id` -- the RLS INSERT policy checks `organization_id` on new rows, but the application passes the wrong org context
+- An admin queries all candidates, and the RLS policy correctly filters by org, but a JOIN to the nominations table (which also needs tenant filtering) returns cross-tenant nominations because the nominations table policy was missed
+- JWT custom claims store `organization_id`, but the claim is stale (user was removed from org, token is valid for up to 1 hour)
 
 **Why it happens:**
-Text-based selectors feel "user-centric" and are the Playwright default for codegen. They also work without modifying the production code. Test IDs require component changes, which creates friction.
+- Adding multi-tenancy to a system that was single-tenant means every existing query pattern needs tenant context added. It is easy to miss one.
+- RLS policies on related tables must all agree on the tenant filter. If `candidates` filters by org but `nominations` does not, a JOIN leaks data.
+- JWT-based tenant identification has a 1-hour cache window -- changes to user-org associations are not reflected until token refresh.
+- The "schema-per-tenant" alternative avoids these leaks but creates different problems: Supabase's PostgREST and Realtime are primarily designed for the `public` schema. Schema changes must be applied to N schemas manually. Cross-schema foreign key constraints should be avoided. There is no built-in way to dynamically expose new schemas when new tenants sign up.
 
 **How to avoid:**
-
-- Adopt a project-wide `data-testid` convention before writing new tests. Naming pattern: `[component-scope]-[action/element]` (e.g., `voter-app-results-list`, `candidate-question-save`). Document it.
-- Use `getByRole()` only for semantic elements where the role is stable (buttons, headings, landmarks). Do NOT use it with `name:` based on translated text.
-- The translation-lookup pattern already in `tests/tests/utils/translations.ts` is sound for verifying text _content_ but should not be used as the primary _selector_ mechanism.
-- Keep `getByText()` for assertions on rendered content (verifying the right text is shown), not for interaction targets.
+- Use RLS-per-tenant with `organization_id` on every tenant-scoped table (the right choice for OpenVAA given the need for both single-tenant and multi-tenant deployment). Do NOT use schema-per-tenant.
+- Store `organization_id` in `auth.users.raw_app_meta_data` (not `user_metadata`, which users can modify). Use a Custom Access Token Hook to include it in the JWT.
+- Create a helper function `get_org_id()` that extracts the organization ID from the JWT: `((SELECT current_setting('request.jwt.claims', true)::json->>'app_metadata')::json->>'organization_id')::uuid`. Wrap in `(SELECT ...)` for caching.
+- Write integration tests that specifically verify tenant isolation: create data as Tenant A, attempt to read as Tenant B, assert zero results. Automate these tests.
+- For single-tenant deployments, set a default organization_id so the same schema works without multi-tenant configuration (the RLS policies still run but always match the single org).
+- Document that organization membership changes take up to 1 hour to propagate due to JWT caching. For immediate revocation, implement a database-level check (lookup table) as a defense-in-depth measure, accepting the performance cost on critical operations.
 
 **Warning signs:**
+- Tables in the schema that do not have an `organization_id` column but contain tenant-specific data
+- RLS policies that reference `auth.uid()` but not `organization_id` on tenant-scoped tables
+- Tests that only verify "user can see their own data" but never verify "user cannot see other tenant's data"
+- Any query pattern that uses `service_role` key to "simplify" multi-tenant logic (bypasses all RLS)
 
-- `getByRole('link', { name: T.en['...'] })` used as a click target
-- `getByLabel(T.en['...'], { exact: true })` used to find form fields that could have test IDs
-- Any selector that imports from the translations utility AND is used for `.click()` or `.fill()`
-
-**Phase to address:** Phase 1 (establish convention) + ongoing enforcement via ESLint `eslint-plugin-playwright`
+**Phase to address:** Phase 1 (Schema Design) for column and policy design; Phase 2 (Auth) for JWT claims setup; Phase 4 (Integration Testing) for isolation verification
 
 ---
 
-### Pitfall 4: Strapi Admin UI Automation as Primary Data Management
+### Pitfall 4: Supabase Auth Cannot Natively Integrate Signicat/Bank OIDC
 
 **What goes wrong:**
-The existing `candidateApp-advanced.spec.ts` navigates the Strapi admin UI to send registration emails. Commented-out code attempted to use Strapi's import UI. Admin UIs are notoriously brittle targets for automation: they change between versions, they have complex async loading states, they use design system components with unstable selectors, and they are not semantically designed for programmatic access.
+OpenVAA currently uses Signicat for bank authentication via a custom OIDC flow (authorization code + PKCE). The frontend exchanges an authorization code for an ID token, stores it in an httpOnly cookie, and uses the ID token claims to verify candidate identity during preregistration. Supabase Auth has a fixed list of built-in OAuth providers (Google, GitHub, Apple, etc.) and does NOT support arbitrary custom OIDC providers in the dashboard as of early 2026. The "generic OIDC provider" feature has been in discussion since 2022 (GitHub Discussion #6547) and Supabase plans to add it, but it is not production-ready.
+
+This means you cannot simply "switch on" Signicat in Supabase Auth settings. The bank authentication flow requires custom implementation.
 
 **Why it happens:**
-The Admin Tools plugin exists precisely because the Strapi API lacks some operations. The natural approach is to automate the admin UI. But the import functionality was already broken and commented out, which is evidence this path is high-maintenance.
+- Developers assume "Supabase Auth supports OIDC" means any OIDC provider works out of the box. It does not -- it supports specific pre-configured providers.
+- Supabase's Third-Party Auth feature allows trusting external JWTs, but this is for Supabase APIs to trust tokens from another auth system, not for Supabase Auth to act as an OIDC client.
+- The existing OpenVAA flow handles the OIDC exchange server-side in SvelteKit (at `/api/oidc/token`) and stores the ID token in a cookie. This is independent of Strapi's auth system and can survive the migration -- but it must be explicitly preserved, not replaced.
 
 **How to avoid:**
-
-- Use direct Strapi REST/GraphQL API calls (via Playwright `request.newContext()`) for data setup and teardown. The existing test already uses this for email checking — extend the pattern to data management.
-- Reserve admin UI automation only for features that are genuinely only accessible via UI and have no API equivalent (e.g., testing the Admin Tools plugin UI itself as a user-facing feature).
-- When the Supabase migration happens, admin UI automation becomes entirely worthless. API-based data management survives the migration (with endpoint changes, not structural changes).
-- Invest in a thin data helper layer (`tests/helpers/data.ts`) that wraps API calls for common operations: create candidate, delete candidate, reset answers. This layer is swappable when backends change.
+- Keep the bank authentication (Signicat OIDC) flow in SvelteKit server routes, exactly as it works today. The `/api/oidc/token` endpoint exchanges the authorization code for an ID token and stores it in a cookie. This is already backend-agnostic.
+- After bank auth verifies candidate identity, use Supabase Auth for session management: create a Supabase user via `supabase.auth.admin.createUser()` or use `signInWithIdToken()` if the Signicat JWT meets Supabase's third-party auth requirements (asymmetric signing with JWKS endpoint -- Signicat does provide this).
+- If using `signInWithIdToken()`, configure Supabase Third-Party Auth to trust Signicat's JWKS endpoint. The JWT must use asymmetric signing (RS256) and include a `kid` header. Verify Signicat's token format meets these requirements before committing to this approach.
+- If `signInWithIdToken()` does not work due to Signicat's encrypted JWTs (the current flow uses JWE with decryption keys), implement a SvelteKit server route that decrypts the Signicat token, verifies claims, and creates/signs in the Supabase user server-side using the admin API.
+- Do NOT attempt to make Supabase Auth "handle" the entire Signicat flow. The decryption step (`IDENTITY_PROVIDER_DECRYPTION_JWKS` in .env) is a custom requirement that no standard OAuth library handles automatically.
 
 **Warning signs:**
+- Plans that say "migrate bank auth to Supabase Auth" without specifying the exact mechanism
+- Removing the `/api/oidc/token` SvelteKit route before the replacement is working
+- Assuming Supabase's built-in providers list will "add generic OIDC support soon"
+- Any approach that requires the service_role key in the browser to create users after bank auth
 
-- Test code navigating to `/admin` and using `getByRole('link', { name: 'Content Manager' })`
-- Commented-out import workflows in test files
-- Tests that take >30s to set up data (UI automation is slow)
-- Any `waitForTimeout` after clicking admin UI buttons
-
-**Phase to address:** Phase 1 (define data management strategy before new tests) + Phase migration when Supabase arrives
+**Phase to address:** Phase 2 (Authentication Migration) -- this is the highest-risk auth migration item
 
 ---
 
-### Pitfall 5: Global Timeout Too Tight for Docker Environment
+### Pitfall 5: JSONB Answer Storage Creating Query and Index Nightmares
 
 **What goes wrong:**
-The current `playwright.config.ts` sets `globalTimeout: 100000` (100 seconds) and no explicit `timeout` per test. The Docker stack (frontend + strapi + postgres + localstack) can take 30-60 seconds to become healthy on first start. If the Docker stack is slow on CI, global setup consumes most of the timeout budget before any test runs, causing opaque failures attributed to "timeout exceeded" rather than the real issue.
+OpenVAA currently stores candidate answers as a JSON column on the candidate table (`"answers": { "type": "json" }`). The same pattern exists for party answers. This works in Strapi because answers are loaded as a blob and processed client-side by the matching algorithm. But in Supabase, if you put answers in a JSONB column:
+
+1. **GIN index limitations**: GIN indexes on JSONB only support Bitmap Index Scans (not Index Scan or Index Only Scan). Complex predicates fall back to sequential scans. The `jsonb_path_ops` operator class supports fewer operators than `jsonb_ops`.
+2. **Write amplification**: Updating a single answer in a JSONB column rewrites the entire JSONB value. GIN indexes on the column must then re-index the entire document, not just the changed key. Frequent updates (candidates answering questions one at a time) create massive write overhead and index bloat.
+3. **RLS + JSONB compound cost**: RLS policies execute per-row. If the policy needs to inspect the JSONB column (e.g., filtering by a value inside the JSON), the cost compounds -- each row evaluation does a JSONB parse.
+4. **Supabase Studio becomes unusable**: Heavy JSONB columns with thousands of rows cause Supabase Studio to freeze (documented issue #28361), making admin operations impossible.
+
+The relational alternative (separate `candidate_answers` table with `candidate_id`, `question_id`, `value` columns) avoids all of these issues and enables proper indexing, partial updates, and clean RLS.
 
 **Why it happens:**
-Timeout values are set locally where Docker starts fast. CI runners have less consistent performance, and Docker layer caches may not always be warm.
+- JSONB feels simpler: one column instead of a join table. The existing Strapi schema uses JSON, so "just keep it" is the path of least resistance.
+- The matching algorithm loads all answers for all candidates at once, making a single JSONB blob seem efficient (one row read vs. many join-table reads).
+- Developers underestimate write frequency during the candidate data collection period, when hundreds of candidates are simultaneously filling in answers.
 
 **How to avoid:**
-
-- Separate Docker startup from test execution in CI. Use health checks with proper wait loops (`wait-for-it.sh` or `docker compose --wait`) before Playwright begins.
-- Set `globalTimeout` to something reasonable for CI (300,000ms = 5 minutes), and set a separate, tighter `timeout` per test (30,000ms default) so slow tests are identified individually.
-- Add `expect.timeout` and `navigationTimeout` separately from action timeout — page navigation in Docker is slower than localhost.
-- Set `retries: process.env.CI ? 2 : 0` (the existing config uses 3 retries, which masks flakiness rather than fixing it).
+- Use the relational approach (`candidate_answers` table) as the default. The load testing phase exists specifically to validate this decision -- but start with relational because it is strictly more flexible.
+- If load testing shows the bulk-read pattern (matching algorithm needs all answers) is significantly faster with JSONB, consider a hybrid: relational `candidate_answers` for writes and individual queries, plus a materialized JSONB column on the candidate table that is refreshed periodically for bulk reads.
+- Never store individual answer updates by rewriting the entire JSONB blob. If you must use JSONB, use `jsonb_set()` for partial updates and ensure the column has a GIN index with `jsonb_path_ops` (smaller, faster than default `jsonb_ops`).
+- Test both approaches under realistic load during Phase 3 (Load Testing) with the actual matching algorithm query patterns, not synthetic benchmarks.
 
 **Warning signs:**
+- Schema design that puts `answers JSONB` on the candidates table "because that is how Strapi had it"
+- No separate candidate_answers table in the migration
+- Write latency increasing as more candidates fill in answers
+- `EXPLAIN ANALYZE` showing sequential scans on the candidate table when filtering or joining by answers
 
-- CI failures with "Timeout of 100000ms exceeded" in global setup
-- Tests that pass locally but fail on first CI run, then pass on retry
-- `waitForTimeout(5000)` as the only mechanism for waiting for email delivery (already present)
+**Phase to address:** Phase 1 (Schema Design) for initial design; Phase 3 (Load Testing) for validation and final decision
 
-**Phase to address:** Phase 1 (CI configuration) — fix before adding more tests that will compound the problem
+---
+
+### Pitfall 6: Service Role Key Leaking to the Browser
+
+**What goes wrong:**
+The Supabase `service_role` key bypasses ALL Row Level Security. If exposed in client-side code, any user can read, modify, or delete any data in the database. A 2025/2026 scan of 20,000+ apps found 11% expose Supabase credentials in their frontend, often because AI coding assistants or tutorials use the service_role key for convenience.
+
+In OpenVAA's context, the service_role key would be needed for:
+- Creating Supabase users during candidate preregistration (admin operation)
+- Sending emails via Supabase's auth hooks
+- Administrative data operations (import/export)
+
+If any of these operations are accidentally triggered from client-side code with the service_role key bundled in, the entire database is compromised.
+
+**Why it happens:**
+- SvelteKit blurs the server/client boundary. A `+page.svelte` file can import from `+page.server.ts` load functions, but environment variables prefixed with `PUBLIC_` are client-accessible while non-prefixed variables are server-only. Mixing up which Supabase client to use (anon vs. service_role) in the wrong context exposes the key.
+- During development, using the service_role key "just works" without needing RLS policies, creating a habit.
+- The preregistration flow (currently using `BACKEND_API_TOKEN` for Strapi) needs an equivalent server-side privileged operation in Supabase -- the temptation is to use the service_role key in a way that leaks.
+
+**How to avoid:**
+- Never store the service_role key in any environment variable prefixed with `PUBLIC_`. In SvelteKit, only `$env/static/private` and `$env/dynamic/private` are safe for the service_role key.
+- Create the service_role Supabase client ONLY in server-side code: `+page.server.ts`, `+server.ts` (API routes), `hooks.server.ts`, or server-side load functions. Never in `+page.svelte`, `+layout.svelte`, or any `$lib` module that could be imported client-side.
+- Use Supabase's new API key model (if available): `sb_publishable_...` for client, `sb_secret_...` for server. Projects created after November 2025 use this model.
+- Audit imports: if `SUPABASE_SERVICE_ROLE_KEY` appears in any file that is not explicitly server-only, it is a security vulnerability.
+
+**Warning signs:**
+- `SUPABASE_SERVICE_ROLE_KEY` or `service_role` appearing in browser network requests (check DevTools)
+- Environment variable named `PUBLIC_SUPABASE_SERVICE_ROLE_KEY` (the `PUBLIC_` prefix exposes it)
+- Service role client created in a shared module (`$lib/supabase.ts`) instead of a server-only module (`$lib/server/supabase.ts`)
+- Operations that "work without RLS policies" during development
+
+**Phase to address:** Phase 1 (Infrastructure Setup) -- establish client initialization patterns before any feature code is written
+
+---
+
+### Pitfall 7: SvelteKit + Supabase SSR Auth Cookie/Hydration Mismatches
+
+**What goes wrong:**
+Supabase SSR auth uses cookies to maintain sessions across server and client. In SvelteKit, this requires careful coordination between `hooks.server.ts`, layout load functions, and client-side auth state. Common failure modes:
+
+1. **Stale session on tab switching**: User logs out in Tab A, Tab B still shows logged-in state because the client-side auth state was not invalidated. The cookie is cleared but the nav bar does not update on client-side navigation.
+2. **getSession() vs getUser() mismatch**: `supabase.auth.getSession()` returns cached session data from cookies, but Supabase logs warnings if you use the `user` object from `getSession()` directly. You must call `supabase.auth.getUser()` to get a validated user object.
+3. **Cookie configuration errors**: The `@supabase/ssr` package requires `getAll` and `setAll` methods on the cookies configuration. Getting these wrong produces silent failures -- auth appears to work but sessions are not persisted.
+4. **Server/client client confusion**: Creating the Supabase client incorrectly (e.g., using `createBrowserClient` on the server or vice versa) causes hydration mismatches where the server renders one state and the client renders another.
+
+**Why it happens:**
+- SvelteKit 2's cookie handling changed from SvelteKit 1, and some Supabase tutorials are outdated
+- The `@supabase/auth-helpers` package is deprecated in favor of `@supabase/ssr`, but old examples still circulate
+- The boundary between server-side rendering and client-side hydration in SvelteKit is subtle, and auth state must be consistent across both
+
+**How to avoid:**
+- Follow the official Supabase SvelteKit SSR guide exactly. Key files to configure:
+  - `src/hooks.server.ts`: Create server client with `createServerClient`, refresh session, pass session to `event.locals`
+  - `src/routes/+layout.server.ts`: Return session from `event.locals.safeGetSession()`
+  - `src/routes/+layout.ts`: Create browser client with `createBrowserClient` or server client for SSR, listen to `onAuthStateChange`
+- Always validate the user with `supabase.auth.getUser()` in server-side code. Use `getSession()` only for checking if a session exists (not for extracting user data).
+- Implement `onAuthStateChange` listener in the root layout to handle cross-tab auth changes and token refresh.
+- Use `@supabase/ssr` (not `@supabase/auth-helpers-sveltekit`) -- the auth-helpers package is deprecated.
+- Test auth flows explicitly: login in one tab, logout in another, verify both tabs reflect the correct state.
+
+**Warning signs:**
+- Console warnings about "Using supabase.auth.getSession() to get user information is not recommended"
+- Auth state that works on initial page load but breaks on client-side navigation
+- Users remaining "logged in" after logout until a full page refresh
+- Different auth states between server-rendered HTML and client-hydrated DOM (visible as a flash of content)
+
+**Phase to address:** Phase 2 (Authentication Migration) -- implement as the first auth task, before candidate or admin auth flows
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 6: Over-Engineering the Test Abstraction Layer
+### Pitfall 8: Supabase Local Dev CLI Migration Ordering and Sync Issues
 
 **What goes wrong:**
-A Page Object Model (POM) hierarchy is built with inheritance chains (BasePage → AuthenticatedPage → CandidateAppPage → CandidateQuestionsPage). The abstraction becomes the hardest part of the test codebase to maintain. When the voter app is added, it doesn't fit the existing hierarchy and forces architectural decisions mid-test-writing. New contributors struggle to know where to put interaction logic.
+Supabase CLI manages migrations as sequentially-applied SQL files with timestamps. Common issues:
+- Migrations created out of timestamp order cause application failures on `supabase db reset`
+- `supabase db reset` has a documented bug where the latest migration can be ignored (CLI issue #3723, reported June 2025)
+- Migration history mismatch between local and remote databases produces "not in sync" errors that block deployment
+- `supabase db pull` from remote may not detect storage RLS policies (CLI issue #3919)
+- Multiple developers creating migrations simultaneously can produce conflicting timestamps
+
+For a team working on the migration, these issues waste significant time during development and risk data loss during deployment.
 
 **Why it happens:**
-POM is the default recommendation in test automation literature. It feels professional. It also delays writing actual tests while you architect the framework.
+- The Supabase CLI is evolving rapidly, with frequent version updates that can change behavior
+- Developers create migrations locally, and when rebasing or merging, timestamp ordering can break
+- The migration history table (`supabase_migrations.schema_migrations`) can drift from the actual filesystem state
 
 **How to avoid:**
-
-- Use Playwright's built-in fixture system for shared setup (authentication, data seeding), not class hierarchies.
-- Use functional helpers (plain functions) rather than page object classes. `fillLoginForm(page, email, password)` is more composable than `new LoginPage(page).login(email, password)`.
-- If page objects are used, keep them flat (no inheritance) and focused on a single page's stable interactions.
-- Start writing actual tests before building the framework. Extract helpers only when duplication appears in 3+ tests.
+- Pin the Supabase CLI version in the project (`package.json` or CI config). Keep all team members on the same version. Update deliberately, not automatically.
+- Use a naming convention for migration files: `YYYYMMDDHHMMSS_descriptive_name.sql`. Never manually rename timestamps.
+- After merging branches that both added migrations, verify migration ordering with `ls -la supabase/migrations/` and ensure timestamps are sequential.
+- Use `supabase migration repair` to fix history mismatches instead of manual database edits.
+- For complete resets during development, `supabase db reset` is the canonical approach. If it misbehaves, use `supabase stop && supabase start` for a fresh local instance.
+- Commit seed data as SQL in `supabase/seed.sql`. Seeds run after all migrations on `supabase start` (first time) and `supabase db reset`. Only include INSERT statements in seeds, never schema changes.
+- Storage bucket RLS policies must be managed separately (create them in migrations explicitly, do not rely on `supabase db pull` to detect them).
 
 **Warning signs:**
+- `supabase db push` failing with "migration history not in sync" errors
+- Different team members getting different local database states
+- Seed data failing because it references tables that do not exist yet (migration ordering issue)
+- `supabase db diff` returning "no schema changes found" when changes were clearly made in the dashboard
 
-- A `BasePage` class that tests extend
-- More lines in helper/fixture code than in actual test code
-- Test setup that requires understanding 4+ files before you can write a new test
-
-**Phase to address:** Phase 1 — establish a "fixture-first, POM-never" convention in the test setup
+**Phase to address:** Phase 1 (Infrastructure Setup) -- establish migration workflow before the first migration is written
 
 ---
 
-### Pitfall 7: Locale-Switching Tests Depending on Browser Language Detection
+### Pitfall 9: Supabase Storage Policy Mismatch with Existing S3 Workflow
 
 **What goes wrong:**
-Tests navigate to locale-specific URLs (`/en/candidate/...`, `/fi/candidate/...`) and check that the UI renders in the correct language. However, SvelteKit's i18n routing also reads the `Accept-Language` header. In some environments or test configurations, the browser locale overrides the URL locale, causing test assertions to check for Finnish text on an English URL.
+OpenVAA currently uses AWS S3 for media uploads (candidate photos, party images) via Strapi's upload plugin. Migrating to Supabase Storage introduces several gotchas:
+
+1. **Public bucket does not mean public uploads**: Setting a Supabase Storage bucket to "public" only allows unauthenticated downloads. Uploads are always blocked without an RLS policy on `storage.objects`.
+2. **RLS already enabled**: Unlike custom tables, `storage.objects` has RLS enabled by default. You do not need `ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY` -- doing so is a no-op but confusing.
+3. **Cannot modify storage schema**: Platform permission changes in April 2025 restricted `ALTER TABLE` on storage tables. You can only create RLS policies and triggers, not modify the table structure.
+4. **Migration detection failures**: Storage RLS policies are not reliably detected by `supabase db pull` or `supabase db diff`, meaning your migration files may be incomplete.
+5. **No S3 versioning**: Supabase Storage does not support object versioning. Deleted objects are permanently removed. If the migration script fails midway, deleted S3 objects cannot be recovered from Supabase.
+6. **File path structure**: Supabase Storage organizes files by bucket/folder/filename. Strapi's S3 uploads may use different path conventions that need mapping.
 
 **Why it happens:**
-Playwright's default browser context uses the OS locale. On Finnish developer machines, Playwright-launched Chromium sends `fi` as the Accept-Language header. The existing tests handle this by hardcoding `LOCALE_EN = 'en'` and using URL routing, but the browser locale interaction is not explicitly controlled.
+- Developers assume Supabase Storage works like S3 with a different API. The access control model is fundamentally different (RLS on a Postgres table vs. S3 bucket policies).
+- Storage migration is often treated as a simple "copy files from S3 to Supabase Storage" task, but the access control migration is where the complexity lies.
 
 **How to avoid:**
-
-- Set `locale: 'en-US'` in the Playwright project config for all test projects to eliminate OS-locale variance:
-  ```typescript
-  use: { locale: 'en-US', timezoneId: 'Europe/Helsinki' }
-  ```
-- Test locale switching as a deliberate test scenario (navigate to `/fi/`, assert Finnish content), not as incidental test behavior.
-- Avoid using `getByText()` for locale-detection assertions — use URL assertions (`toHaveURL`) as the primary locale check.
+- Supabase Storage is S3-compatible, so existing S3 client libraries can interact with it. Use this for the data migration itself (copying files).
+- Create storage RLS policies in migration files explicitly. Do not rely on the dashboard UI for policies -- they need to be version-controlled.
+- For candidate photo uploads: create a policy allowing authenticated users to upload to their own folder (`storage.foldername(name)[1] = auth.uid()::text`), and a public read policy for all images.
+- Test storage policies locally before deploying. Note that `supabase db diff` may not detect storage policy changes -- verify manually.
+- Keep S3 as a backup during migration. Do not delete S3 data until Supabase Storage is verified working in production.
+- For multi-tenant storage, organize buckets or folders by organization_id and add tenant-scoping to storage RLS policies.
 
 **Warning signs:**
+- Candidate photo uploads returning 403 errors despite the user being authenticated
+- Storage policies created in the dashboard but not present in migration files (will be lost on next `supabase db reset`)
+- Migration scripts that copy files but do not set up access control policies
+- `supabase db pull` output that does not include any `storage` schema policies
 
-- Tests that pass on EN-locale CI but fail on FI-locale developer machines
-- Assertions comparing translated strings without fixing the browser locale
-- Tests checking both URL locale AND text content without explicit locale fixture
-
-**Phase to address:** Phase 1 (configure baseline `locale` in playwright.config.ts)
+**Phase to address:** Phase 5 (Storage Integration) -- but plan the access control model during Phase 1 (Schema Design)
 
 ---
 
-### Pitfall 8: Tests Coupled to Mock Data File Internals
+### Pitfall 10: Application Settings Migration Losing Strapi's Component Nesting
 
 **What goes wrong:**
-Test files directly import from `backend/vaa-strapi/src/functions/mockData/mockUsers.json`, `mockCandidateForTesting.json`, `mockQuestionTypes.json`, etc. (this already happens in `candidateApp-advanced.spec.ts` and `global-setup.ts`). When the mock data structure changes, or when the Supabase migration replaces mock data with seed scripts, 5+ import statements across test files need updating. The tests also construct expected values by looking up deeply into mock data structures (e.g., `mockQuestionTypes.find(({ name }) => name === 'Likert-5')?.settings.choices`).
+OpenVAA's `app-setting` content type in Strapi uses deeply nested Strapi components (`settings.header`, `settings.matching`, `settings.survey`, `settings.entity-details`, etc.) to organize application configuration. Each component has its own schema with typed fields. When migrating to Supabase, naively converting this to a single JSONB column loses the validation, typing, and query capability of the nested structure. Conversely, normalizing every component into its own table creates an explosion of small tables with 1:1 relationships that are awkward to query.
 
 **Why it happens:**
-Mock data already exists in the backend. Importing it avoids duplication — the test uses the same data the backend seeded.
+- Strapi's "component" concept has no direct equivalent in raw PostgreSQL
+- The settings are a single-type (singleton), so the instinct is to use a single row with a large JSONB column
+- The nested settings rarely change after initial configuration, making JSONB seem "good enough"
 
 **How to avoid:**
-
-- Create a single test-dedicated constants file (`tests/fixtures/testData.ts`) that re-exports only the values tests actually need (email, password, firstName, likert labels). The source of these values can be the mock JSON files, but the coupling point is centralized.
-- Never import mock data structures directly into test files. Tests should work with simple string/number constants, not JSON tree traversal.
-- When the backend migrates to Supabase, only `testData.ts` needs updating, not every test file.
+- Store application settings as a single JSONB column in a `settings` table, with validation at the application layer (TypeScript types). This is acceptable because:
+  - Settings are a singleton (one row per organization in multi-tenant)
+  - Settings are read-heavy, write-rare (admin changes configuration, voters/candidates read it)
+  - Settings do not need individual field indexing or querying
+  - The existing `DynamicSettings` type in `app-shared` already validates the structure at the application layer
+- Add a JSON Schema constraint on the column for database-level validation if needed (`ALTER TABLE settings ADD CONSTRAINT settings_valid CHECK (jsonb_matches_schema(schema, value))`).
+- For multi-tenant, add `organization_id` to the settings table and an RLS policy filtering by org.
+- Document the settings schema in a TypeScript type that serves as the source of truth, with migration scripts that insert default settings matching the type.
 
 **Warning signs:**
+- Settings table with 20+ columns mirroring every field from the Strapi component structure
+- Settings JSONB column with no TypeScript type or JSON Schema validation
+- Frontend code that expects specific Strapi component structure (`.data.attributes.header.publisherName`) instead of flat field access
 
-- `import mockUsers from '../../backend/vaa-strapi/src/functions/mockData/mockUsers.json'` in test files
-- Test files with `mockQuestionTypes.find(...)` logic
-- More than 3 mock data imports in a single test file
-
-**Phase to address:** Phase 1 (establish test data abstraction before new tests are written)
+**Phase to address:** Phase 4 (Application Settings Migration)
 
 ---
 
-### Pitfall 9: Missing Test Coverage for Voter App
+### Pitfall 11: Email Testing Silently Failing in Local Development
 
 **What goes wrong:**
-The existing test suite covers only the candidate app. The voter app (question answering flow, results/matching, filtering) has zero E2E coverage. When the Svelte 5 migration happens or backend changes occur, regressions in the voter app are invisible until manual testing finds them — too late.
+Supabase local development uses Mailpit (formerly InBucket) to capture emails, accessible at `http://localhost:54324`. Common failures:
+
+1. **Auth confirmation emails not appearing**: If `enable_confirmations` is set to `false` in `config.toml`, no confirmation emails are sent. The user is auto-confirmed, which masks the email flow entirely. When deployed to production with confirmations enabled, the flow breaks.
+2. **Custom SMTP not supported locally**: The Supabase CLI does not support custom SMTP for local development. Auth emails always go through Mailpit, even if you configure an SMTP provider. This means you cannot test real email delivery locally.
+3. **resend() not working**: The `auth.resend()` function has been reported to silently fail to send to Mailpit in certain configurations, with no error on the client or in logs.
+4. **Email templates differ**: Local email templates are configured in `config.toml` (using `content_path`), while production templates are configured in the Supabase dashboard. Template differences between environments cause unexpected behavior.
+5. **Port confusion**: Mailpit runs on port 54324 by default, but this can be changed in `config.toml`. Hardcoding the port in test code or scripts breaks when the configuration changes.
+
+For OpenVAA, email is critical for candidate registration (registration key emails) and password reset flows. If email testing silently fails, these flows are untested until production.
 
 **Why it happens:**
-The candidate app was built first and tests followed. The voter app is more complex to test (requires seeded questions, candidates with answers, correct matching weights) and has more configuration variants (single election vs. multiple, different question types). Nobody got around to it.
+- Email is often the last thing tested and the first thing to break
+- The split between local (Mailpit) and production (real SMTP) configurations means the dev environment is never truly representative
+- Silent failures (no error, just no email) make debugging extremely difficult
 
 **How to avoid:**
-
-- Treat voter app coverage as a first-class deliverable of the E2E milestone, not an optional addition.
-- The voter app test data requirements are higher — plan and implement the data seeding strategy before attempting voter app tests.
-- Start with the happy path: voter answers all questions, sees results, can filter. Add configuration variants later.
+- Enable `enable_confirmations = true` in `config.toml` for local development to match production behavior. Handle the confirmation step in E2E tests by reading from the Mailpit API.
+- Use Mailpit's HTTP API (`http://localhost:54324/api/v1/messages`) in integration tests to verify email delivery programmatically, replacing the existing LocalStack SES polling pattern.
+- Pin all Mailpit-related configuration in `config.toml` (port, enable_confirmations, email templates) and document it.
+- Create a helper function for tests that polls Mailpit for emails and extracts confirmation links, similar to the existing `candidateApp-advanced.spec.ts` pattern but adapted for Supabase.
+- Keep email template files in the repository (referenced by `config.toml` `content_path`) so they are version-controlled and consistent across developer machines.
 
 **Warning signs:**
+- E2E tests that skip email verification steps locally but fail in staging
+- Registration flow tests that "work" because confirmations are disabled locally
+- No Mailpit URL or API calls in any test or development documentation
+- Different email template content between local `config.toml` and production dashboard
 
-- E2E milestone declared "complete" with only `candidateApp-*.spec.ts` files
-- Voter app flows mentioned as "future work" at milestone end
-- No `voterApp-*.spec.ts` file exists
-
-**Phase to address:** Phase 1 (scope definition must include voter app)
+**Phase to address:** Phase 2 (Authentication Migration) for auth emails; Phase 5 (Email Integration) for transactional emails
 
 ---
 
-### Pitfall 10: `waitForTimeout` as a Timing Mechanism
+### Pitfall 12: Candidate Registration Flow Has No Direct Supabase Equivalent
 
 **What goes wrong:**
-The existing tests use `waitForTimeout(500)` multiple times in `candidateApp-advanced.spec.ts` for UI transitions and `waitForTimeout(5000)` for email delivery. Fixed waits make tests slow and still flaky — 500ms is too long on fast machines and too short on slow CI runners. The 5-second email wait is a bet on LocalStack SES latency.
+OpenVAA's current candidate registration is a multi-step flow unique to VAA applications:
+1. Admin pre-registers candidates via API with name, identifier, email, and nominations
+2. System generates a `registrationKey` and sends an email with it
+3. Candidate visits the registration URL with their key
+4. System validates the key, shows the candidate's info
+5. Candidate sets a password, creating a User linked to their Candidate record
+
+This flow has no equivalent in Supabase Auth's built-in flows (magic link, password signup, OAuth). Supabase Auth's `signUp()` creates a user immediately -- there is no concept of "pre-registered candidate waiting for activation with a key."
 
 **Why it happens:**
-The correct wait condition is not obvious (what exactly signals that the UI has updated after clicking "Save and Continue"?). `waitForTimeout` works locally, so it ships.
+- VAA candidate registration is a domain-specific workflow, not a standard auth pattern
+- Supabase Auth is designed for self-service signup, not admin-initiated pre-registration
+- The existing flow is tightly coupled to Strapi's `users-permissions` plugin and custom candidate controller
 
 **How to avoid:**
-
-- Replace `waitForTimeout(500)` with assertions on the resulting state: `await expect(page.getByText(nextQuestion)).toBeVisible()`.
-- For email delivery, poll the LocalStack SES endpoint with `expect.poll()` or a retry loop with proper backoff instead of a fixed wait.
-- Enable the ESLint Playwright plugin (`eslint-plugin-playwright`) with the `no-wait-for-timeout` rule to prevent new instances.
+- Implement the preregistration flow as a Supabase Edge Function or SvelteKit server route (not as a Supabase Auth flow):
+  1. Admin calls server endpoint with candidate data + email template
+  2. Server creates candidate record in `candidates` table (no auth user yet), generates registration key, stores it hashed
+  3. Server sends registration email via Supabase's email service or external SMTP
+  4. Candidate visits registration URL, submits key + password
+  5. Server validates key, calls `supabase.auth.admin.createUser()` with the candidate's email and password, links the auth user ID to the candidate record
+- Store the `registrationKey` hashed (not plaintext) in the candidates table. The current Strapi implementation stores it as a plaintext string field.
+- Use Supabase Auth's `admin.createUser()` (requires service_role key, server-side only) rather than `signUp()` to avoid sending Supabase's default confirmation email (the registration email serves as confirmation).
+- The candidate-user linking (`candidate.auth_user_id = user.id`) replaces Strapi's `candidate.user` relation.
 
 **Warning signs:**
+- Plans to use `supabase.auth.signUp()` for candidate registration (this would send a generic confirmation email, not the custom registration email)
+- Registration keys stored as plaintext in the database
+- Preregistration endpoint that requires the browser to have the service_role key
+- Loss of the multi-step verification flow (key check -> display name -> set password)
 
-- `waitForTimeout` anywhere in test code
-- Comments like "Wait so that UI has time to change"
-- Tests that are significantly slower on CI than locally
-
-**Phase to address:** Phase 1 (fix existing instances before they multiply)
+**Phase to address:** Phase 2 (Authentication Migration) -- design and implement as a custom flow, not a standard Supabase Auth integration
 
 ---
 
 ## Technical Debt Patterns
 
-| Shortcut                                             | Immediate Benefit                                | Long-term Cost                                                                           | When Acceptable                                                      |
-| ---------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `test.describe.configure({ mode: 'serial' })`        | Tests can share state without fixtures           | Cascading failures, no parallel execution, broken CI signals                             | Never — multi-step flows belong in a single test with `.step()`      |
-| Importing mock JSON files directly in tests          | No duplication, always in sync with backend      | Every backend refactor breaks tests, Supabase migration requires touching all test files | Never — centralize in a test data constants file                     |
-| `waitForTimeout()` for timing                        | Works locally, easy to write                     | Flaky on CI, masks the real readiness condition                                          | Never in production tests — acceptable as a temporary debug aid only |
-| Admin UI automation for data setup                   | Reuses existing UI, no API work needed           | Brittle selectors, slow execution, breaks on Strapi version upgrades                     | Only when the feature being tested IS the admin UI behavior          |
-| Global authenticated session shared across all tests | Faster test execution (one login)                | State pollution between tests, password change test breaks subsequent login tests        | Acceptable only if no test mutates auth state — not true today       |
-| Text-based selectors with translation lookup         | "User-centric" feel, no component changes needed | Breaks on any copy change, locale-dependent, slow to update across test suite            | Only for content _assertions_, never for interaction _targets_       |
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| JSONB for all multilingual text fields (`{"en": "...", "fi": "..."}`) | Simple schema, matches current Strapi pattern | Cannot index individual languages, cannot use PostgreSQL full-text search per locale, all languages loaded even when only one is needed | Acceptable for fields that are always loaded in all languages (settings, question text). Not acceptable for searchable content. |
+| Using `service_role` key in Edge Functions for all operations | No need to write RLS policies | Bypasses all security, any Edge Function bug exposes entire database | Only for admin operations (preregistration, data import) that are genuinely privileged. Never for read operations that should respect RLS. |
+| Single seed.sql for all environments | One file to maintain | Dev data in production, or production missing data needed for operation | Never -- use environment-aware seeding (check for existing data before inserting) |
+| Skipping RLS policies during prototyping | Faster iteration | Forgetting to add them before production (the #1 Supabase security failure) | Only if `supabase db lint` runs in CI and blocks deployment without RLS |
+| Storing organization_id in user_metadata instead of app_metadata | Easier to set (client-side accessible) | Users can modify their own user_metadata, potentially changing their organization assignment | Never -- always use app_metadata for authorization-relevant claims |
+| One Supabase client for both server and browser | Less code | Service role key in browser, or browser client on server missing cookie context | Never -- always create separate server and browser clients |
 
 ---
 
 ## Integration Gotchas
 
-| Integration                    | Common Mistake                                                                                                | Correct Approach                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Docker Compose + Playwright    | Starting Playwright before services are healthy, causing race conditions on first test                        | Use `docker compose up --wait` or health check polling before running `playwright test`                      |
-| LocalStack SES (email testing) | Hardcoded `waitForTimeout(5000)` for email delivery                                                           | Poll `/_aws/ses` with `expect.poll()` with 10s timeout and 500ms intervals                                   |
-| Strapi REST API (data setup)   | Using the admin JWT token from the test user session for data management                                      | Create a separate Strapi API token with elevated permissions for test data setup/teardown                    |
-| Strapi Admin UI (data import)  | Using the Strapi import plugin via Playwright browser automation                                              | Use direct REST API calls via `request.newContext()` — faster, more stable, survives upgrades                |
-| SvelteKit SSR + Playwright     | Asserting on content before hydration completes, getting server-rendered vs client-rendered mismatches        | Use `page.waitForLoadState('networkidle')` only if needed, but prefer asserting on specific visible elements |
-| Yarn 4 workspaces + Playwright | The `tests/` workspace has its own `node_modules` — Playwright version mismatch if not kept in sync with root | Keep Playwright version in `tests/package.json` matching or pinned to root                                   |
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| SvelteKit `hooks.server.ts` + Supabase | Creating one global Supabase client | Create a new server client per request using `createServerClient` with the request's cookies |
+| Supabase Auth + RLS policies | Using `auth.uid()` directly in policies (per-row evaluation) | Wrap in `(SELECT auth.uid())` for per-statement caching |
+| Supabase Storage + candidate photos | Assuming "public bucket" = "public uploads" | Public buckets only allow downloads; uploads require explicit RLS policies on `storage.objects` |
+| Supabase Edge Functions + service_role | Using service_role for all database operations | Use the user's JWT for operations that should respect RLS; only use service_role for admin ops |
+| Supabase + existing adapter pattern | Rewriting the entire adapter layer at once | Implement `SupabaseDataProvider` behind the existing `UniversalAdapter` interface, swap in stages |
+| Supabase migrations + storage policies | Relying on `supabase db pull` to capture storage policies | Write storage RLS policies in migration files manually; `db pull` misses them |
+| Supabase Auth + JWT custom claims | Storing tenant ID in `user_metadata` | Use `app_metadata` (admin-only writable) via `auth.admin.updateUserById()` |
+| Mailpit + E2E tests | Hardcoding `localhost:54324` in test code | Read the port from `config.toml` or environment variable |
 
 ---
 
 ## Performance Traps
 
-| Trap                                                       | Symptoms                                                             | Prevention                                                                          | When It Breaks                                      |
-| ---------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Serial test execution on CI                                | Full suite takes 10+ minutes, parallel tests would take 2            | Remove serial mode, enable `fullyParallel: true`, fix data isolation                | With 20+ tests — already a problem at current scale |
-| Admin UI navigation for every data reset                   | Each test takes 30-60 seconds for setup                              | Switch to direct API calls for data setup (< 1 second per call)                     | After 5+ tests that require data setup              |
-| Trace recording set to `'on'` always                       | Large trace files accumulate, CI storage fills, slow artifact upload | Set `trace: 'on-first-retry'` on CI, `'on'` only for local debugging                | After 50+ test runs in CI                           |
-| Running full Docker stack for unit-level integration tests | 60-second startup overhead for tests that only need the API          | Use a test-specific Docker profile that starts only postgres + strapi for API tests | Immediately — every test run pays this cost         |
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| RLS policy without index on filter column | Queries >100ms on tables with >1000 rows | Add btree index on every column in RLS WHERE clauses | At ~5,000 rows (realistic candidate count for national elections) |
+| Per-row `auth.uid()` calls in RLS | Query time scales linearly with table size | Wrap in `(SELECT auth.uid())` for initPlan caching | At ~1,000 rows with multiple policies |
+| JSONB full-document writes for single answer updates | Write latency spikes, GIN index bloat, increasing disk usage | Use relational `candidate_answers` table or `jsonb_set()` for partial updates | At ~100 concurrent candidate writers |
+| Loading all candidates with all answers for matching | Response time >5 seconds, memory pressure on server | Paginate, use database-side filtering, consider materialized views | At ~5,000 candidates with ~50 questions each |
+| Multiple permissive RLS policies on same table | Supabase Security Advisor warning, unexpected data access from policy OR combination | Combine into fewer policies using CASE expressions or helper functions | Immediately -- any two permissive policies are OR'd, not AND'd |
+| Realtime subscriptions without proper filtering | All changes broadcast to all clients, high bandwidth | Use Realtime filters and channel-based subscriptions | At ~100 concurrent users |
 
 ---
 
 ## Security Mistakes
 
-| Mistake                                                                                   | Risk                                                                                                                         | Prevention                                                                                                                        |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Hardcoded Strapi admin credentials in test files (currently `admin/admin`)                | If test files are in a public repo, these are exposed — acceptable for dev defaults but must never be production credentials | Keep default dev credentials as-is (they're already in the mock data), but document that production deployments must rotate these |
-| Storing Playwright auth state (`playwright/.auth/user.json`) with real credentials in git | Tokens in version control                                                                                                    | The `playwright/` directory should be in `.gitignore` — verify this is the case                                                   |
-| Using test API tokens in test code with broad permissions                                 | Test token could be used to access/modify data if leaked                                                                     | Scope test API tokens to minimum required permissions; rotate on each CI run if possible                                          |
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| `service_role` key in `PUBLIC_` env var or client bundle | Complete database compromise -- all RLS bypassed | Store only in `$env/static/private`; audit all imports |
+| `organization_id` in `user_metadata` (client-writable) | Tenant impersonation -- user changes their org assignment | Use `app_metadata` (admin-only writable) |
+| Multiple permissive RLS policies creating unintended OR | Data from one policy "leaking" through another policy's conditions | Audit policies with Security Advisor; use restrictive policies for defense-in-depth |
+| Trusting `getSession()` user object without `getUser()` validation | Session could be tampered with from cookies | Always call `getUser()` for server-side authorization decisions |
+| Registration keys stored as plaintext in candidates table | Key theft from database dump allows unauthorized registration | Hash registration keys before storage; compare hashes during validation |
+| No rate limiting on preregistration endpoint | Enumeration attack to discover valid registration keys | Implement rate limiting on the preregistration and registration API routes |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Test isolation:** Tests appear to pass individually — verify they still pass when run in different order or in parallel (`--workers=4`)
-- [ ] **State reset:** Password change test "resets" the password at the end — verify the reset runs even when the test fails midway (it currently does NOT — it relies on test success to reach the reset steps)
-- [ ] **Voter app coverage:** "E2E coverage complete" milestone — verify at least one voter app test file exists and covers the happy path
-- [ ] **test IDs present:** "Migrated to test IDs" — verify no `getByRole(..., { name: T.en['...'] })` is used as a click/fill target
-- [ ] **CI green:** Tests pass locally — verify they pass on CI with `workers: 1` (current CI config) AND with `workers: 4` (future parallel config)
-- [ ] **Data independence:** Tests use mock data — verify no test fails when `GENERATE_MOCK_DATA_ON_RESTART=true` is set and data is re-seeded (i.e., tests don't depend on specific database IDs)
-- [ ] **Locale control:** i18n tests pass — verify they pass on a Finnish-locale OS, not just English-locale CI
+- [ ] **RLS on all tables:** Every table has `ENABLE ROW LEVEL SECURITY` -- verify with `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public'`
+- [ ] **RLS policies on all tables:** Every table with RLS enabled has at least one policy -- verify with Security Advisor lint `0008`
+- [ ] **Multi-tenant isolation:** Create test data for Org A, authenticate as Org B user, verify zero results from all tenant-scoped tables
+- [ ] **Cookie auth working:** Login, navigate with client-side routing, refresh the page -- auth state persists across all three scenarios
+- [ ] **Service role key server-only:** Search entire frontend codebase for `service_role` or `SUPABASE_SERVICE_ROLE_KEY` -- should only appear in `+server.ts`, `+page.server.ts`, `hooks.server.ts`, or `$lib/server/` files
+- [ ] **Storage upload works:** Authenticated candidate can upload a photo; unauthenticated user can view it; other candidates cannot overwrite it
+- [ ] **Email delivery works:** Registration email appears in Mailpit locally; confirmation links work; password reset email appears
+- [ ] **Seed data is environment-aware:** `supabase db reset` locally produces a working dev environment; production migration does not insert dev data
+- [ ] **Migration ordering:** `supabase db reset` runs all migrations without errors on a fresh local instance
+- [ ] **Bank auth still works:** Signicat OIDC flow completes end-to-end (may require sandbox testing)
 
 ---
 
 ## Recovery Strategies
 
-| Pitfall                                            | Recovery Cost | Recovery Steps                                                                                                                     |
-| -------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Serial mode chains throughout test suite           | HIGH          | Identify all serial blocks, convert multi-step flows to single tests with `.step()`, add fixtures for state setup, run in parallel |
-| Shared database state with no reset mechanism      | HIGH          | Design and implement API-based reset helpers, audit every test for state mutations, add teardown to all mutating tests             |
-| Strapi admin UI automation that breaks on upgrade  | MEDIUM        | Rewrite data management as API calls; the logic is the same, only the mechanism changes                                            |
-| Text selectors that all broke on i18n update       | MEDIUM        | Add test IDs to components in bulk (can be done in a single PR), update selectors in tests to use `getByTestId()`                  |
-| `waitForTimeout` causing flaky CI                  | LOW-MEDIUM    | Identify the intended wait condition for each instance, replace with appropriate assertion                                         |
-| Mock data imports breaking after backend migration | MEDIUM        | Centralize all data references in `tests/fixtures/testData.ts`, update only that file                                              |
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Missing RLS on production table | LOW-MEDIUM | Enable RLS immediately (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`), add policies. Data may have been exposed -- assess impact and notify if needed. |
+| Service role key exposed in client | HIGH | Rotate the key immediately in Supabase dashboard, audit all client code, check access logs for unauthorized operations |
+| Tenant isolation leak | HIGH | Fix the policy, audit cross-tenant data access in logs, notify affected tenants, verify no data modification occurred |
+| JSONB answer performance bottleneck | MEDIUM-HIGH | Migrate to relational table. Requires new migration, data transform script, adapter code changes, and load test re-validation |
+| Migration history out of sync | LOW-MEDIUM | Use `supabase migration repair` to reconcile, or create a baseline migration from current state with `supabase db dump` |
+| Auth cookie/hydration mismatch | LOW | Follow official SvelteKit SSR guide step-by-step, ensure `onAuthStateChange` listener is in root layout |
+| Registration flow broken after migration | MEDIUM | The existing SvelteKit OIDC route is backend-agnostic -- fall back to it while fixing the Supabase-integrated flow |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall                                 | Prevention Phase                                                                              | Verification                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Serial mode dependency chains           | Phase 1 foundation — ban serial mode in ESLint config before first new test                   | Run all tests in random order; no failures                            |
-| Shared mutable database state           | Phase 1 foundation — define and implement reset strategy                                      | Each test passes in isolation when run standalone                     |
-| Text-content selectors for interaction  | Phase 1 foundation — add test IDs to existing components, enforce with ESLint                 | No `getByRole(..., { name: T.en['...'] })` used as interaction target |
-| Admin UI automation for data management | Phase 1 — establish API-based data helpers before writing new tests                           | Data setup completes in under 2 seconds per test                      |
-| Docker timeout misconfiguration         | Phase 1 — update CI config and playwright.config.ts timeouts                                  | CI passes consistently on first run without retries                   |
-| Over-engineered abstraction layer       | Phase 1 — write 3 tests before creating any helper; extract only when duplication is observed | No class inheritance in test code                                     |
-| Locale-switching locale control         | Phase 1 — add `locale: 'en-US'` to playwright.config.ts                                       | Tests pass on Finnish-locale developer machines                       |
-| Mock data coupling to backend files     | Phase 1 — create `tests/fixtures/testData.ts` before importing from backend                   | Zero direct imports from `backend/**` in test files                   |
-| Missing voter app coverage              | Phase 1 — voter app tests are in milestone scope definition                                   | `voterApp-*.spec.ts` exists and covers happy path                     |
-| `waitForTimeout` timing                 | Phase 1 — ESLint no-wait-for-timeout rule; fix existing instances                             | No `waitForTimeout` in any test file                                  |
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Missing RLS on new tables | Phase 1 (Schema Design) | `supabase db lint` returns zero RLS warnings; Security Advisor clean |
+| RLS performance degradation | Phase 1 (Schema) + Phase 3 (Load Test) | Load test with RLS shows <50ms p95 for voter queries |
+| Multi-tenant isolation leaks | Phase 1 (Schema) + Phase 4 (Integration Tests) | Cross-tenant data access tests all return zero results |
+| Signicat OIDC integration | Phase 2 (Auth Migration) | Bank auth flow completes end-to-end in sandbox environment |
+| JSONB answer storage traps | Phase 1 (Schema) + Phase 3 (Load Test) | Load test validates chosen approach under realistic data volume |
+| Service role key exposure | Phase 1 (Infrastructure) | Grep for service_role in non-server files returns zero matches |
+| SSR cookie/hydration mismatches | Phase 2 (Auth Migration) | Login/logout/refresh/multi-tab all maintain correct auth state |
+| CLI migration ordering | Phase 1 (Infrastructure) | `supabase db reset` succeeds from clean state on every CI run |
+| Storage policy mismatches | Phase 5 (Storage) | Candidate photo upload + public read + ownership protection all work |
+| Settings migration structure | Phase 4 (Settings) | Settings load correctly for both single-tenant and multi-tenant |
+| Email testing failures | Phase 2 (Auth) + Phase 5 (Email) | Registration email visible in Mailpit; confirmation link works |
+| Candidate registration flow | Phase 2 (Auth Migration) | Pre-register, receive email, register with key, login -- all work |
 
 ---
 
 ## Sources
 
-- Playwright official best practices: https://playwright.dev/docs/best-practices
-- Playwright test parallelism: https://playwright.dev/docs/test-parallel
-- "17 Playwright Testing Mistakes": https://elaichenkov.github.io/posts/17-playwright-testing-mistakes-you-should-avoid/
-- "How to Avoid Flaky Tests in Playwright" (Semaphore CI): https://semaphore.io/blog/flaky-tests-playwright
-- Mock database in Svelte E2E tests (Mainmatter, 2025): https://mainmatter.com/blog/2025/08/21/mock-database-in-svelte-tests/
-- BrowserStack Playwright best practices: https://www.browserstack.com/guide/playwright-best-practices
-- Test Data Strategies for E2E Tests: https://www.playwright-user-event.org/playwright-tips/test-data-strategies-for-e2e-tests
-- Using translations with Playwright and i18n: https://medium.com/@jeremie.fleurant/using-translations-with-playwright-and-i18n-for-e2e-tests-ba90a667f309
-- Playwright global setup and teardown: https://playwright.dev/docs/test-global-setup-teardown
-- Existing test suite analysis: `tests/tests/candidateApp-basics.spec.ts`, `tests/tests/candidateApp-advanced.spec.ts`, `tests/tests/global-setup.ts`
+- [Supabase RLS Troubleshooting: Performance and Best Practices](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) -- HIGH confidence (official docs)
+- [Supabase Row Level Security Documentation](https://supabase.com/docs/guides/database/postgres/row-level-security) -- HIGH confidence (official docs)
+- [Supabase Performance and Security Advisors](https://supabase.com/docs/guides/database/database-advisors?lint=0006_multiple_permissive_policies) -- HIGH confidence (official docs)
+- [Supabase API Keys Documentation](https://supabase.com/docs/guides/api/api-keys) -- HIGH confidence (official docs)
+- [Supabase SvelteKit SSR Auth Guide](https://supabase.com/docs/guides/auth/server-side/sveltekit) -- HIGH confidence (official docs)
+- [Supabase Third-Party Auth Documentation](https://supabase.com/docs/guides/auth/third-party/overview) -- HIGH confidence (official docs)
+- [Supabase Storage Access Control](https://supabase.com/docs/guides/storage/security/access-control) -- HIGH confidence (official docs)
+- [Supabase Custom Claims and RBAC](https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac) -- HIGH confidence (official docs)
+- [Supabase Local Development Overview](https://supabase.com/docs/guides/local-development/overview) -- HIGH confidence (official docs)
+- [Supabase Seeding Documentation](https://supabase.com/docs/guides/local-development/seeding-your-database) -- HIGH confidence (official docs)
+- [Supabase Managing JSON and Unstructured Data](https://supabase.com/docs/guides/database/json) -- HIGH confidence (official docs)
+- [Supabase Storage Buckets Fundamentals](https://supabase.com/docs/guides/storage/buckets/fundamentals) -- HIGH confidence (official docs)
+- [Supabase Security Flaw: 170+ Apps Exposed](https://byteiota.com/supabase-security-flaw-170-apps-exposed-by-missing-rls/) -- MEDIUM confidence (security report, Jan 2025)
+- [SupaExplorer Cybersecurity Insight Report](https://supaexplorer.com/cybersecurity-insight-report-january-2026) -- MEDIUM confidence (January 2026 scan data)
+- [Multi-Tenant Applications with RLS on Supabase](https://www.antstack.com/blog/multi-tenant-applications-with-rls-on-supabase-postgress/) -- MEDIUM confidence (community article, verified against official patterns)
+- [Efficient Multi-Tenancy with Supabase](https://arda.beyazoglu.com/supabase-multi-tenancy) -- MEDIUM confidence (community article)
+- [Signing in with a Generic OAuth2/OIDC Provider (Discussion #6547)](https://github.com/orgs/supabase/discussions/6547) -- HIGH confidence (official GitHub discussion)
+- [PostgreSQL JSONB Indexing Limitations with B-Tree and GIN](https://dev.to/mongodb/postgresql-jsonb-indexing-limitations-with-b-tree-and-gin-3851) -- MEDIUM confidence (technical article, verified against PostgreSQL docs)
+- [PostgreSQL JSONB GIN Index Performance Analysis](https://pganalyze.com/blog/gin-index) -- HIGH confidence (pganalyze, verified against PostgreSQL docs)
+- [Supabase CLI Migration Repair Discussions](https://github.com/supabase/supabase/issues/15695) -- HIGH confidence (official GitHub issue)
+- [Supabase CLI db reset Issue #3723](https://github.com/supabase/cli/issues/3723) -- HIGH confidence (official GitHub issue, June 2025)
+- [Supabase Storage Policies Not in db pull (CLI Issue #3919)](https://github.com/supabase/cli/issues/3919) -- HIGH confidence (official GitHub issue)
+- [Supabase SSR Auth with SvelteKit (DEV Community)](https://dev.to/kvetoslavnovak/supabase-ssr-auth-48j4) -- MEDIUM confidence (community walkthrough, 2025)
+- [SvelteKit Auth - A Nightmare (Discussion #13835)](https://github.com/orgs/supabase/discussions/13835) -- MEDIUM confidence (real developer pain points)
+- OpenVAA codebase analysis: Strapi schemas, users-permissions extension, OIDC token endpoint, adapter pattern -- HIGH confidence (primary source)
 
 ---
 
-_Pitfalls research for: E2E testing framework — SvelteKit 2 + Strapi v5 monorepo (OpenVAA)_
-_Researched: 2026-03-03_
+*Pitfalls research for: Strapi v5 to Supabase migration with multi-tenant support -- OpenVAA VAA framework*
+*Researched: 2026-03-12*
