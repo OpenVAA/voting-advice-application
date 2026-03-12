@@ -152,7 +152,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   }
 </script>
 
-<form {...concatClass($$restProps, 'grid justify-items-stretch gap-lg')}>
+<form data-testid="feedback-form" {...concatClass($$restProps, 'grid justify-items-stretch gap-lg')}>
   <!-- Rating -->
   <fieldset class="flex justify-center">
     <legend class="mb-md w-full text-center" class:sr-only={variant === 'compact'}>
@@ -177,6 +177,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
           type="radio"
           name="rating"
           disabled={status !== 'default'}
+          data-testid="feedback-rating-{value}"
           class="mask mask-star-2 bg-primary" />
       {/each}
     </div>
@@ -188,6 +189,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     on:focus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
     aria-label={$t('feedback.description.label')}
+    data-testid="feedback-description"
     class="textarea textarea-bordered h-[1rem] w-full resize-none"
     class:resize-y={textareaExpanded}
     class:min-h-[6rem]={textareaExpanded}
@@ -225,6 +227,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         on:click={submit}
         disabled={!canSubmit}
         variant="main"
+        data-testid="feedback-submit"
         text={status === 'sent'
           ? $t('feedback.thanks')
           : status === 'sending'
@@ -236,6 +239,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         on:click={() => dispatch('cancel')}
         disabled={status !== 'default'}
         color="warning"
+        data-testid="feedback-cancel"
         text={$t('common.cancel')} />
     </div>
   {/if}

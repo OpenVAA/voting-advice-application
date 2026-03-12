@@ -114,7 +114,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
+      showSubMatches = $appSettings.results.cardContents[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
         questions = getCardQuestions({
           type,
@@ -129,7 +129,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       variant === 'list' &&
       nomination &&
       isObjectType(nomination, OBJECT_TYPE.OrganizationNomination) &&
-      $appSettings.results.cardContents.organization.includes('candidates')
+      $appSettings.results.cardContents.organization?.includes('candidates')
     ) {
       subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({
         entity: e
@@ -168,6 +168,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   <article
     aria-labelledby="{baseId}_title {match ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
+    data-testid="entity-card"
     {...concatClass($$restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->

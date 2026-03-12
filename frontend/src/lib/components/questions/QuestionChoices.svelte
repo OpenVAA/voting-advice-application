@@ -213,6 +213,7 @@ The same component can also be used to display the answers of the voter and anot
   style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
   style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
   class:vertical
+  data-testid="question-choices"
   {...$$restProps}>
   <!-- Add a label for screen readers -->
   <legend class="sr-only">{text}</legend>
@@ -260,6 +261,7 @@ The same component can also be used to display the answers of the voter and anot
         name="questionChoices-{question.id}"
         disabled={mode !== 'answer'}
         value={id}
+        data-testid="question-choice"
         bind:this={inputs[id]}
         bind:group={selected}
         on:keyup={(e) => handleKeyUp(e, id)} />

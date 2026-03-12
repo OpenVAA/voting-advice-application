@@ -64,4 +64,5 @@ Accesses `AppContext` to set and read the current survey status and link.
   text={clicked ? $t('dynamic.survey.thanks') : $t('dynamic.survey.button')}
   icon="research"
   iconPos="left"
+  data-testid="survey-button"
   {...concatClass($$restProps, 'justify-center')} />

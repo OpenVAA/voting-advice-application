@@ -89,7 +89,8 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Results')}
       icon="results"
-      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
+      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}
+      data-testid="voter-nav-results" />
   </NavGroup>
   <NavGroup>
     <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />

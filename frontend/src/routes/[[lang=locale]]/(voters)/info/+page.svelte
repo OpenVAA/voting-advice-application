@@ -30,7 +30,7 @@ Displays information about the elections in the VAA.
     <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
   </figure>
 
-  <div>
+  <div data-testid="voter-info-content">
     {@html sanitizeHtml($t('dynamic.info.content'))}
   </div>
 
@@ -48,5 +48,5 @@ Displays information about the elections in the VAA.
     </div>
   {/if}
 
-  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} data-testid="voter-info-return" />
 </MainContent>

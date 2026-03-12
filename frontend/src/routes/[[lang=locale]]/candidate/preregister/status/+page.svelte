@@ -26,7 +26,7 @@
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.status.success.content'))}
     </div>
-    <Button slot="primaryActions" text={$t('common.return')} href={$getRoute('CandAppLogin')} variant="main" />
+    <Button slot="primaryActions" text={$t('common.return')} href={$getRoute('CandAppLogin')} variant="main" data-testid="preregister-status-return" />
   </MainContent>
 {:else}
   <MainContent title={$t(getErrorTranslationKey(code).title)}>
@@ -42,8 +42,9 @@
         class="mb-md"
         text={$t('common.return')}
         variant="main"
-        on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
-      <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
+        on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })}
+        data-testid="preregister-status-retry" />
+      <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} data-testid="preregister-status-help-link" />
     </svelte:fragment>
   </MainContent>
 {/if}

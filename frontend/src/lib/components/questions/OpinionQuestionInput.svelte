@@ -57,10 +57,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   const { t } = getComponentContext();
 </script>
 
-{#if isSingleChoiceQuestion(question)}
-  {@const selectedId = question.ensureValue(answer?.value)}
-  {@const otherSelected = question.ensureValue(otherAnswer?.value)}
-  <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
-{:else}
-  <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center" />
-{/if}
+<div data-testid="opinion-question-input">
+  {#if isSingleChoiceQuestion(question)}
+    {@const selectedId = question.ensureValue(answer?.value)}
+    {@const otherSelected = question.ensureValue(otherAnswer?.value)}
+    <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
+  {:else}
+    <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center" />
+  {/if}
+</div>

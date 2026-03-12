@@ -24,12 +24,14 @@
     class="mb-md"
     elections={$preregistrationElections}
     bind:selected={$preregistrationConstituencyIds}
-    bind:selectionComplete />
+    bind:selectionComplete
+    data-testid="preregister-constituencies-list" />
   <Button
     slot="primaryActions"
     type="submit"
     text={$t('common.continue')}
     variant="main"
     on:click={() => goto($getRoute('CandAppPreregisterEmail'))}
-    disabled={!selectionComplete} />
+    disabled={!selectionComplete}
+    data-testid="preregister-constituencies-submit" />
 </MainContent>

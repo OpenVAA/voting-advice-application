@@ -122,7 +122,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   }
 </script>
 
-<article {...concatClass($$restProps, 'flex flex-col grow')}>
+<article data-testid="entity-details" {...concatClass($$restProps, 'flex flex-col grow')}>
   <!-- Add a border if there's not need for a Tabs component which separates the contents visually from the header -->
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />
@@ -133,11 +133,17 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   {/if}
 
   {#if contentTabs[activeIndex]?.content === 'info'}
-    <EntityInfo {entity} questions={infoQuestions} />
+    <div data-testid="voter-entity-detail-info">
+      <EntityInfo {entity} questions={infoQuestions} />
+    </div>
   {:else if contentTabs[activeIndex]?.content === 'opinions'}
-    <EntityOpinions {entity} questions={opinionQuestions} {answers} />
+    <div data-testid="voter-entity-detail-opinions">
+      <EntityOpinions {entity} questions={opinionQuestions} {answers} />
+    </div>
   {:else if contentTabs[activeIndex]?.content === 'candidates'}
-    <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+    <div data-testid="voter-entity-detail-submatches">
+      <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+    </div>
   {/if}
 </article>
 

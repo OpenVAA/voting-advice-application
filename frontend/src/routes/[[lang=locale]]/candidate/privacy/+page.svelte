@@ -33,6 +33,7 @@ Shows a registry and privacy statement
       icon="next"
       variant="main"
       text={$t('common.home')}
-      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')} />
+      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      data-testid="candidate-privacy-home" />
   </svelte:fragment>
 </MainContent>

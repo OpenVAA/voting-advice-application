@@ -80,6 +80,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 <div
   role="group"
   aria-label={$t('questions.additionalActions')}
+  data-testid="question-actions"
   {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
     on:click={handleNext}
@@ -90,6 +91,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     iconPos={variant === 'tight' ? 'right' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-end' : ''}
     icon={answered || !separateSkip ? 'next' : 'skip'}
+    data-testid="question-next"
     text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
   <Button
     on:click={handleDelete}
@@ -100,6 +102,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     variant={variant === 'icon' ? 'icon' : 'secondary'}
     iconPos={variant === 'tight' ? 'left' : 'top'}
     icon="close"
+    data-testid="question-delete"
     text={$t('questions.remove')} />
   <Button
     on:click={handlePrevious}
@@ -110,5 +113,6 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     iconPos={variant === 'tight' ? 'left' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-start' : ''}
     icon="previous"
+    data-testid="question-previous"
     text={previousLabel ?? $t('questions.previous')} />
 </div>

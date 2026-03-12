@@ -41,7 +41,9 @@ Displays information about the application.
     <h1>{$t('about.title')}</h1>
   </HeadingGroup>
 
-  {@html sanitizeHtml($t('about.content'))}
+  <div data-testid="voter-about-content">
+    {@html sanitizeHtml($t('about.content'))}
+  </div>
 
   {#if $appSettings.matching.organizationMatching !== 'none'}
     <h2 class="mb-md mt-xl">{$t('about.organizationMatching.title')}</h2>
@@ -57,9 +59,10 @@ Displays information about the application.
       <a
         href={$appSettings.appVersion.source}
         target="_blank"
-        class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm">{$t('about.source.sitename')}</a>
+        class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm"
+        data-testid="voter-about-source-link">{$t('about.source.sitename')}</a>
     </p>
   {/if}
 
-  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} data-testid="voter-about-return" />
 </MainContent>

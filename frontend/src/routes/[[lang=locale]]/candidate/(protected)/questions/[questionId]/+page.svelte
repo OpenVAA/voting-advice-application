@@ -267,7 +267,8 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           {answer}
           mode={$answersLocked ? 'display' : 'answer'}
           onShadedBg
-          onChange={handleValueChange} />
+          onChange={handleValueChange}
+          data-testid="candidate-questions-answer" />
 
         <!-- Open answer -->
 
@@ -280,7 +281,8 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
             locked={$answersLocked}
             placeholder={canSubmit ? '' : $t('candidateApp.questions.answerQuestionFirst')}
             onShadedBg
-            onChange={handleInfoChange} />
+            onChange={handleInfoChange}
+            data-testid="candidate-questions-comment" />
         {/if}
 
         <!-- Error message -->
@@ -302,10 +304,11 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
               type="submit"
               id="submitButton"
               variant="main"
-              icon="next" />
-            <Button text={cancelLabel} on:click={handleCancel} color="warning" />
+              icon="next"
+              data-testid="candidate-questions-save" />
+            <Button text={cancelLabel} on:click={handleCancel} color="warning" data-testid="candidate-questions-cancel" />
           {:else}
-            <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
+            <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" data-testid="candidate-questions-return" />
           {/if}
         </div>
       </div>

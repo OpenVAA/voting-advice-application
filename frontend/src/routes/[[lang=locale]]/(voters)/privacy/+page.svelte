@@ -43,7 +43,7 @@ Displays information about the privacy policy of the app as well as the possible
     <h1>{$t('privacy.title')}</h1>
   </HeadingGroup>
 
-  <div class="grid">
+  <div class="grid" data-testid="voter-privacy-content">
     <div>
       {@html sanitizeHtml($t('dynamic.privacy.content'))}
     </div>
@@ -65,7 +65,7 @@ Displays information about the privacy policy of the app as well as the possible
     {/if}
   </div>
 
-  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} data-testid="voter-privacy-return" />
 </MainContent>
 
 <style lang="postcss">

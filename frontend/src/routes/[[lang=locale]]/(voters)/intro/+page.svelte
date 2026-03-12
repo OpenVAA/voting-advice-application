@@ -27,7 +27,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   <p class="text-center">
     {$t('dynamic.intro.ingress')}
   </p>
-  <ol class="list-circled w-fit">
+  <ol class="list-circled w-fit" data-testid="voter-intro-steps">
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
     {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <li>{$t('dynamic.intro.list.elections')}</li>
@@ -48,5 +48,6 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
     href={$appSettings.elections?.startFromConstituencyGroup ? $getRoute('Constituencies') : $getRoute('Elections')}
     variant="main"
     icon="next"
-    text={$t('dynamic.intro.continue')} />
+    text={$t('dynamic.intro.continue')}
+    data-testid="voter-intro-start" />
 </MainContent>

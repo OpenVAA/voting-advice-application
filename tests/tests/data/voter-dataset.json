@@ -1,0 +1,255 @@
+{
+  "questionCategories": [
+    {
+      "externalId": "test-voter-cat-economy",
+      "name": { "en": "Test Voter Category: Economy" },
+      "type": "opinion",
+      "order": 10,
+      "elections": { "externalId": ["test-election-1"] }
+    },
+    {
+      "externalId": "test-voter-cat-social",
+      "name": { "en": "Test Voter Category: Social" },
+      "type": "opinion",
+      "order": 11,
+      "elections": { "externalId": ["test-election-1"] }
+    }
+  ],
+  "questions": [
+    {
+      "externalId": "test-voter-q-1",
+      "text": { "en": "Should the government increase taxes on high earners?" },
+      "category": { "externalId": "test-voter-cat-economy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 101
+    },
+    {
+      "externalId": "test-voter-q-2",
+      "text": { "en": "Should public transport be made free for all citizens?" },
+      "category": { "externalId": "test-voter-cat-economy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 102
+    },
+    {
+      "externalId": "test-voter-q-3",
+      "text": { "en": "Should the minimum wage be significantly increased?" },
+      "category": { "externalId": "test-voter-cat-economy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 103
+    },
+    {
+      "externalId": "test-voter-q-4",
+      "text": { "en": "Should the government provide universal basic income?" },
+      "category": { "externalId": "test-voter-cat-economy" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 104
+    },
+    {
+      "externalId": "test-voter-q-5",
+      "text": { "en": "Should healthcare be fully publicly funded?" },
+      "category": { "externalId": "test-voter-cat-social" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 105
+    },
+    {
+      "externalId": "test-voter-q-6",
+      "text": { "en": "Should immigration policy be more open?" },
+      "category": { "externalId": "test-voter-cat-social" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 106
+    },
+    {
+      "externalId": "test-voter-q-7",
+      "text": { "en": "Should education spending be prioritized over military?" },
+      "category": { "externalId": "test-voter-cat-social" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 107
+    },
+    {
+      "externalId": "test-voter-q-8",
+      "text": { "en": "Should same-sex marriage be legally recognized?" },
+      "category": { "externalId": "test-voter-cat-social" },
+      "questionType": { "externalId": "test-qt-likert5" },
+      "order": 108
+    }
+  ],
+  "parties": [
+    {
+      "externalId": "test-voter-party-a",
+      "name": { "en": "Voter Test Party Alpha" },
+      "shortName": { "en": "VTPA" }
+    },
+    {
+      "externalId": "test-voter-party-b",
+      "name": { "en": "Voter Test Party Beta" },
+      "shortName": { "en": "VTPB" }
+    }
+  ],
+  "candidates": [
+    {
+      "externalId": "test-voter-cand-agree",
+      "firstName": "Fully",
+      "lastName": "Agree",
+      "email": "voter.cand.agree@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "5" },
+        "test-voter-q-2": { "value": "5" },
+        "test-voter-q-3": { "value": "5" },
+        "test-voter-q-4": { "value": "5" },
+        "test-voter-q-5": { "value": "5" },
+        "test-voter-q-6": { "value": "5" },
+        "test-voter-q-7": { "value": "5" },
+        "test-voter-q-8": { "value": "5" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-close",
+      "firstName": "Mostly",
+      "lastName": "Close",
+      "email": "voter.cand.close@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "5" },
+        "test-voter-q-2": { "value": "5" },
+        "test-voter-q-3": { "value": "4" },
+        "test-voter-q-4": { "value": "4" },
+        "test-voter-q-5": { "value": "5" },
+        "test-voter-q-6": { "value": "5" },
+        "test-voter-q-7": { "value": "4" },
+        "test-voter-q-8": { "value": "4" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-neutral",
+      "firstName": "Neutral",
+      "lastName": "Middle",
+      "email": "voter.cand.neutral@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "3" },
+        "test-voter-q-2": { "value": "3" },
+        "test-voter-q-3": { "value": "3" },
+        "test-voter-q-4": { "value": "3" },
+        "test-voter-q-5": { "value": "3" },
+        "test-voter-q-6": { "value": "3" },
+        "test-voter-q-7": { "value": "3" },
+        "test-voter-q-8": { "value": "3" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-oppose",
+      "firstName": "Fully",
+      "lastName": "Oppose",
+      "email": "voter.cand.oppose@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "1" },
+        "test-voter-q-2": { "value": "1" },
+        "test-voter-q-3": { "value": "1" },
+        "test-voter-q-4": { "value": "1" },
+        "test-voter-q-5": { "value": "1" },
+        "test-voter-q-6": { "value": "1" },
+        "test-voter-q-7": { "value": "1" },
+        "test-voter-q-8": { "value": "1" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-mixed",
+      "firstName": "Mixed",
+      "lastName": "Views",
+      "email": "voter.cand.mixed@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "5" },
+        "test-voter-q-2": { "value": "1" },
+        "test-voter-q-3": { "value": "5" },
+        "test-voter-q-4": { "value": "1" },
+        "test-voter-q-5": { "value": "5" },
+        "test-voter-q-6": { "value": "1" },
+        "test-voter-q-7": { "value": "5" },
+        "test-voter-q-8": { "value": "1" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-partial",
+      "firstName": "Partial",
+      "lastName": "Answers",
+      "email": "voter.cand.partial@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "5" },
+        "test-voter-q-2": { "value": "5" },
+        "test-voter-q-3": { "value": "5" },
+        "test-voter-q-4": { "value": "5" }
+      }
+    },
+    {
+      "externalId": "test-voter-cand-hidden",
+      "firstName": "Hidden",
+      "lastName": "NoTerms",
+      "email": "voter.cand.hidden@openvaa.org",
+      "answersByExternalId": {
+        "test-voter-q-1": { "value": "5" },
+        "test-voter-q-2": { "value": "5" },
+        "test-voter-q-3": { "value": "5" },
+        "test-voter-q-4": { "value": "5" },
+        "test-voter-q-5": { "value": "5" },
+        "test-voter-q-6": { "value": "5" },
+        "test-voter-q-7": { "value": "5" },
+        "test-voter-q-8": { "value": "5" }
+      }
+    }
+  ],
+  "nominations": [
+    {
+      "externalId": "test-voter-nom-agree",
+      "candidate": { "externalId": "test-voter-cand-agree" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-a" }
+    },
+    {
+      "externalId": "test-voter-nom-close",
+      "candidate": { "externalId": "test-voter-cand-close" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-a" }
+    },
+    {
+      "externalId": "test-voter-nom-neutral",
+      "candidate": { "externalId": "test-voter-cand-neutral" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-a" }
+    },
+    {
+      "externalId": "test-voter-nom-oppose",
+      "candidate": { "externalId": "test-voter-cand-oppose" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-b" }
+    },
+    {
+      "externalId": "test-voter-nom-mixed",
+      "candidate": { "externalId": "test-voter-cand-mixed" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-b" }
+    },
+    {
+      "externalId": "test-voter-nom-partial",
+      "candidate": { "externalId": "test-voter-cand-partial" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-b" }
+    },
+    {
+      "externalId": "test-voter-nom-hidden",
+      "candidate": { "externalId": "test-voter-cand-hidden" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-constituency-alpha" },
+      "party": { "externalId": "test-voter-party-a" }
+    }
+  ]
+}

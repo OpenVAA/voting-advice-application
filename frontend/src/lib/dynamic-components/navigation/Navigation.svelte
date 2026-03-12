@@ -54,6 +54,7 @@ Create navigation menus for the application in a predefined style.
 
 <nav
   use:onKeyboardFocusOut={keyboardFocusOut}
+  data-testid="nav-menu"
   {...concatClass($$restProps, 'min-h-full w-4/5 max-w-sm bg-base-100')}
   class:hidden>
   <slot />

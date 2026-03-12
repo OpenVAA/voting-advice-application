@@ -46,8 +46,8 @@ If there’s only one option, it is automatically selected and no interactions a
   }
 </script>
 
-<div {...concatClass($$restProps, 'grid gap-sm')}>
-  {#each elections as { id, name }}
+<div data-testid="election-selector" {...concatClass($$restProps, 'grid gap-sm')}>
+  {#each elections as { id, name }, i}
     <label class="label cursor-pointer justify-start gap-sm !p-0" class:pointer-events-none={elections.length === 1}>
       <input
         type="checkbox"
@@ -55,6 +55,7 @@ If there’s only one option, it is automatically selected and no interactions a
         name={groupName}
         value={id}
         disabled={elections.length === 1}
+        data-testid="election-selector-option"
         bind:group={selected}
         on:change={handleChange} />
       <span class="label-text">

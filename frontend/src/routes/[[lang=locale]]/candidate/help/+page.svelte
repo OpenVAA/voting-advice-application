@@ -53,13 +53,15 @@ Shows a FAQ and other support content for the candidate application.
     target="_blank"
     icon="feedback"
     text={$t('candidateApp.common.contactSupport')}
-    class="mt-lg" />
+    class="mt-lg"
+    data-testid="candidate-help-contact-support" />
 
   <svelte:fragment slot="primaryActions">
     <Button
       icon="next"
       variant="main"
       text={$t('common.home')}
-      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')} />
+      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      data-testid="candidate-help-home" />
   </svelte:fragment>
 </MainContent>

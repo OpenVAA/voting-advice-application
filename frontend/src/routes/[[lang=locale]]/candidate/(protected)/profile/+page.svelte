@@ -203,8 +203,8 @@ Shows the candidate's basic information, some of which is editable.
     <h2 class={subheadingClass}>{$t('dynamic.candidateAppBasicInfo.immutableData.title')}</h2>
     <p class="mx-md">{$t('dynamic.candidateAppBasicInfo.immutableData.ingress')}</p>
     <InputGroup class="mt-lg">
-      <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked />
-      <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked />
+      <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked data-testid="profile-first-name" />
+      <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked data-testid="profile-last-name" />
 
       <!-- Locked Info questions -->
       {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
@@ -264,7 +264,8 @@ Shows the candidate's basic information, some of which is editable.
         value={$userData?.candidate.image}
         onChange={handleImageInputChange}
         locked={$answersLocked}
-        onShadedBg />
+        onShadedBg
+        data-testid="profile-image-upload" />
 
       <!-- Editable Info questions -->
 
@@ -299,12 +300,12 @@ Shows the candidate's basic information, some of which is editable.
           loading={status === 'loading'}
           loadingText={$t('common.saving')}
           type="submit"
-          data-testid="submitButton"
+          data-testid="profile-submit"
           variant="main"
           icon="next" />
-        <Button text={$t('common.cancel')} disabled={!$hasUnsaved} on:click={handleCancel} color="warning" />
+        <Button text={$t('common.cancel')} disabled={!$hasUnsaved} on:click={handleCancel} color="warning" data-testid="profile-cancel" />
       {:else}
-        <Button text={$t('common.return')} href={$getRoute('CandAppHome')} variant="main" />
+        <Button text={$t('common.return')} href={$getRoute('CandAppHome')} variant="main" data-testid="profile-return" />
       {/if}
     </div>
   </svelte:fragment>

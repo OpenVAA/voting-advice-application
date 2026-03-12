@@ -137,23 +137,24 @@ TODO: Consider moving the tracking events away from the component and just addin
   }
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-col')}>
+<div data-testid="entity-list-controls" {...concatClass($$restProps, 'flex flex-col')}>
   <div class="mb-md flex flex-row-reverse justify-between gap-lg">
     {#if searchFilter}
       <TextEntityFilter
         filter={searchFilter}
         placeholder={$t('entityList.controls.searchPlaceholder')}
         variant="discrete"
-        class="grow" />
+        class="grow"
+        data-testid="entity-list-search" />
     {/if}
-    <!-- 
+    <!--
       Sorting (TBA)
-      <Button 
+      <Button
         on:click={() => console.warn('Not implemented yet')}
         icon="sort"
         iconPos="left"
         class="!w-auto grow"
-        text="Sort results"/> 
+        text="Sort results"/>
     -->
     {#if filterGroup?.filters.length}
       {#if numActiveFilters}
@@ -163,6 +164,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           icon="filter"
           iconPos="left"
           class="!w-auto"
+          data-testid="entity-list-filter"
           text={$t('entityFilters.filterButtonLabel')}>
           <InfoBadge text={numActiveFilters} slot="badge" />
         </Button>
@@ -172,6 +174,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           icon="filter"
           iconPos="left"
           class="!w-auto"
+          data-testid="entity-list-filter"
           text={$t('entityFilters.filterButtonLabel')} />
       {/if}
     {/if}

@@ -114,18 +114,18 @@ Shows a dynamic list of the actions the candidate should take to be included in 
     <HeroEmoji emoji={$profileComplete ? $t('dynamic.success.heroEmoji') : undefined} />
   </figure>
 
-  <p class="text-center">
+  <p class="text-center" data-testid="candidate-home-status">
     {nextAction.explanation}
   </p>
 
   {#if nextAction.tip}
-    <p class="text-center">
+    <p class="text-center" data-testid="candidate-home-tip">
       {nextAction.tip}
     </p>
   {/if}
 
   <div>
-    <Button text={nextAction.buttonTextBasicInfo} icon="profile" iconPos="left" href={$getRoute('CandAppProfile')}>
+    <Button text={nextAction.buttonTextBasicInfo} icon="profile" iconPos="left" href={$getRoute('CandAppProfile')} data-testid="candidate-home-profile">
       <svelte:fragment slot="badge">
         {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
           <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
@@ -137,7 +137,8 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       icon="opinion"
       iconPos="left"
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-      href={$getRoute('CandAppQuestions')}>
+      href={$getRoute('CandAppQuestions')}
+      data-testid="candidate-home-questions">
       <svelte:fragment slot="badge">
         {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
           <InfoBadge
@@ -151,11 +152,12 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       icon="previewProfile"
       iconPos="left"
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-      href={$getRoute('CandAppPreview')} />
+      href={$getRoute('CandAppPreview')}
+      data-testid="candidate-home-preview" />
   </div>
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    <Button variant="main" text={nextAction.buttonTextPrimaryActions} icon="next" href={nextAction.href} />
-    <LogoutButton variant="normal" icon={undefined} />
+    <Button variant="main" text={nextAction.buttonTextPrimaryActions} icon="next" href={nextAction.href} data-testid="candidate-home-continue" />
+    <LogoutButton variant="normal" icon={undefined} data-testid="candidate-home-logout" />
   </div>
 </MainContent>

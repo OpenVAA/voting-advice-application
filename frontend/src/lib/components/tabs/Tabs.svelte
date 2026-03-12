@@ -48,6 +48,7 @@ Show a tab title bar that can be used to switch between different tabs.
       class:bg-base-100={index === activeIndex}
       tabindex="0"
       role="tab"
+      data-testid="tab-{index}"
       on:click={() => activate(index)}
       on:keydown={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {

@@ -90,7 +90,8 @@ Shows the candidate's user settings.
       info={$t('candidateApp.settings.emailDescription')}
       value={$userData?.user.email}
       onShadedBg
-      locked />
+      locked
+      data-testid="settings-email" />
   </section>
 
   <!-- Editable data -->
@@ -138,7 +139,7 @@ Shows the candidate's user settings.
     <div class="flex flex-col gap-md">
       <!-- <p class="mx-md my-0">{$t('candidateApp.settings.password.currentDescription')}</p> -->
 
-      <div class="w-full">
+      <div class="w-full" data-testid="settings-current-password">
         <label for="currentPassword" class="mx-md my-2 px-0">
           {$t('candidateApp.settings.password.current')}
         </label>
@@ -151,8 +152,8 @@ Shows the candidate's user settings.
         </div>
       </div>
 
-      <div class="flex-nowarp flex flex-col items-center">
-        <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset />
+      <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
+        <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset confirmPasswordTestId="settings-confirm-password" />
 
         {#if status === 'error'}
           <ErrorMessage inline message={$t('candidateApp.settings.error.changePassword')} class="mb-lg mt-md" />
@@ -160,12 +161,13 @@ Shows the candidate's user settings.
           <SuccessMessage inline message={$t('candidateApp.settings.password.updated')} class="mb-lg mt-md" />
         {/if}
 
-        <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} />
+        <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} data-testid="settings-update-password" />
 
         <Button
           href={$getRoute('CandAppHelp')}
           text={$t('candidateApp.common.contactSupport')}
-          disabled={status === 'success'} />
+          disabled={status === 'success'}
+          data-testid="settings-contact-support" />
       </div>
     </div>
   </section>
@@ -179,7 +181,8 @@ Shows the candidate's user settings.
         href={$getRoute('CandAppHome')}
         icon="previous"
         iconPos="left"
-        variant="prominent" />
+        variant="prominent"
+        data-testid="settings-return" />
     </div>
   </svelte:fragment>
 </MainContent>

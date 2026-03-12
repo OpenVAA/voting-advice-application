@@ -52,7 +52,7 @@ List all nominations in the application.
     <HeroEmoji emoji={$t('dynamic.nominations.heroEmoji')} />
   </figure>
   <p class="text-center">{@html sanitizeHtml($t('dynamic.nominations.content'))}</p>
-  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
+  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300" data-testid="voter-nominations-container">
     <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
       <h3 class="mx-10 my-lg text-xl">
         {$t('results.candidate.numShown', { numShown: filteredEntities.length })}
@@ -61,10 +61,12 @@ List all nominations in the application.
         entities={nominations}
         {filterGroup}
         onUpdate={(results) => (filteredEntities = results)}
-        class="mx-10 mb-md" />
+        class="mx-10 mb-md"
+        data-testid="voter-nominations-controls" />
       <EntityList
         cards={filteredEntities.map((e) => ({ entity: e, action: false, showElection: true }))}
-        class="mb-lg" />
+        class="mb-lg"
+        data-testid="voter-nominations-list" />
     </div>
   </div>
 </MainContent>

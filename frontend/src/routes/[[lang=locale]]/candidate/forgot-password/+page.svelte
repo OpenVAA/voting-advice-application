@@ -73,24 +73,26 @@ Shows a form with which to request a password reset email.
       class="input mb-md w-full max-w-md"
       placeholder={$t('common.emailPlaceholder')}
       bind:value={email}
+      data-testid="forgot-password-email"
       required />
 
     {#if status === 'error'}
-      <ErrorMessage inline message={$t('candidateApp.resetPassword.error')} class="mb-lg mt-md" />
+      <ErrorMessage inline message={$t('candidateApp.resetPassword.error')} class="mb-lg mt-md" data-testid="forgot-password-error" />
     {:else if status === 'success'}
-      <SuccessMessage inline message={$t('candidateApp.resetPassword.emailSentText')} class="mb-lg mt-md" />
+      <SuccessMessage inline message={$t('candidateApp.resetPassword.emailSentText')} class="mb-lg mt-md" data-testid="forgot-password-success" />
     {/if}
 
     {#if status === 'success'}
-      <Button href={$getRoute('CandAppLogin')} variant="main" text={$t('common.home')} />
+      <Button href={$getRoute('CandAppLogin')} variant="main" text={$t('common.home')} data-testid="forgot-password-home" />
     {:else}
       <Button
         type="submit"
         loading={status === 'loading'}
         variant="main"
         class="btn btn-primary mb-md w-full max-w-md"
-        text={$t('candidateApp.resetPassword.sendLink')} />
-      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} />
+        text={$t('candidateApp.resetPassword.sendLink')}
+        data-testid="forgot-password-submit" />
+      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} data-testid="forgot-password-return" />
     {/if}
   </form>
 </MainContent>

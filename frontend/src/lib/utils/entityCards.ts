@@ -22,7 +22,7 @@ export function getCardQuestions({
   hideLabel?: boolean;
   format?: InfoAnswerProps['format'];
 }> {
-  const questions = appSettings.results.cardContents[type].filter(isQuestion).map((q) => {
+  const questions = (appSettings.results.cardContents[type] ?? []).filter(isQuestion).map((q) => {
     const { question: id, ...rest } = q as QuestionInCardContent;
     const question = dataRoot.getQuestion(id);
     return {

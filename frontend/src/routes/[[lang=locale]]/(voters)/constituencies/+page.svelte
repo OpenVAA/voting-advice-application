@@ -95,7 +95,7 @@ See `+page.ts` for possible redirects.
           : $t('dynamic.constituencies.ingress.singleElection')}
     </p>
 
-    <ConstituencySelector {elections} {useSingleGroup} bind:selected bind:selectionComplete />
+    <ConstituencySelector {elections} {useSingleGroup} bind:selected bind:selectionComplete data-testid="voter-constituencies-list" />
   {/if}
 
   <Button
@@ -104,5 +104,6 @@ See `+page.ts` for possible redirects.
     disabled={!canSubmit}
     variant="main"
     icon="next"
-    text={$t('common.continue')} />
+    text={$t('common.continue')}
+    data-testid="voter-constituencies-continue" />
 </MainContent>

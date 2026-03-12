@@ -87,14 +87,14 @@
     <h1>{$t('candidateApp.common.greeting', { username })}</h1>
   </HeadingGroup>
   <div class="flex-nowarp flex flex-col items-center">
-    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
+    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password passwordTestId="register-password" confirmPasswordTestId="register-confirm-password" />
     {#if status === 'error'}
-      <ErrorMessage inline message={$t('candidateApp.setPassword.registrationError')} class="mb-lg mt-md" />
+      <ErrorMessage inline message={$t('candidateApp.setPassword.registrationError')} class="mb-lg mt-md" data-testid="register-password-error" />
     {/if}
   </div>
 
   <svelte:fragment slot="primaryActions">
-    <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} />
-    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} />
+    <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} data-testid="register-password-submit" />
+    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} data-testid="register-password-help-link" />
   </svelte:fragment>
 </MainContent>

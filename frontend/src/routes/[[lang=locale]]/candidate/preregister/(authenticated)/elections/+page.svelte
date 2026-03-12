@@ -18,12 +18,13 @@
   <div class="mb-md text-center">
     {@html sanitizeHtml($t('candidateApp.preregister.electionSelect.content'))}
   </div>
-  <ElectionSelector class="mb-md" elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
+  <ElectionSelector class="mb-md" elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} data-testid="preregister-elections-list" />
   <Button
     slot="primaryActions"
     type="submit"
     text={$t('common.continue')}
     variant="main"
     disabled={$preregistrationElectionIds.length === 0}
-    on:click={() => goto($getRoute(nextRoute))} />
+    on:click={() => goto($getRoute(nextRoute))}
+    data-testid="preregister-elections-submit" />
 </MainContent>
