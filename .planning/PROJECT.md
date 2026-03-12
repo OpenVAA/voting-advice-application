@@ -19,19 +19,22 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - ✓ Shared data model package — existing
 - ✓ App-shared settings and utilities package — existing
 - ✓ Docker-based development environment — existing
-- ✓ Basic E2E test suite (candidate app) — existing
 - ✓ Internationalization support — existing
 - ✓ Admin tools plugin (import/delete data) — existing
+- ✓ Extensible, modular E2E testing framework with full coverage — v1.0
 
 ### Active
 
-- [ ] Extensible, modular E2E testing framework with full coverage
-- [ ] Claude Code skills for architecture, components, data, matching, filters, and LLM packages
-- [ ] Monorepo version management workflow
-- [ ] Svelte 5 migration with Tailwind, DaisyUI, and i18n updates
-- [ ] Deno compatibility investigation
-- [ ] Strapi to Supabase backend migration
-- [ ] Admin functions migration to frontend Admin App
+- [ ] Supabase schema design with multi-tenant data isolation
+- [ ] Candidate answer storage strategy (JSON vs relational, validated via load tests)
+- [ ] Multilingual content storage pattern for Supabase
+- [ ] Authentication migration (candidate + admin) to Supabase Auth
+- [ ] Email service integration (replacing Strapi SES plugin)
+- [ ] Storage integration (replacing Strapi S3 plugin)
+- [ ] Application settings migration to Supabase
+- [ ] Admin CRUD operations with Row Level Security policies
+- [ ] Working local Supabase Docker development environment
+- [ ] Load testing infrastructure for schema validation
 
 ### Out of Scope
 
@@ -76,6 +79,21 @@ Each major initiative is a separate milestone, executed in order:
 
 For further details about the milestones, see [ROADMAP](../ROADMAP.md).
 
+## Current Milestone: v2.0 Supabase Migration
+
+**Goal:** Migrate the backend from Strapi v5 to Supabase with a working schema, auth, RLS, and supporting services — validated by load tests to resolve key design decisions (answer storage, localization).
+
+**Target features:**
+- Supabase schema with multi-tenant support (shared infrastructure, data isolated by organization)
+- Candidate answer storage evaluated via load tests (JSON vs relational)
+- Multilingual content storage pattern
+- Candidate and admin authentication via Supabase Auth
+- Email and storage service integration (replacing Strapi SES/S3 plugins)
+- Application settings migration
+- Admin CRUD with Row Level Security
+- Local Docker dev environment + cloud-ready configuration
+- Reusable migration artifacts for production use
+
 ## Key Decisions
 
 | Decision                          | Rationale                                                                    | Outcome   |
@@ -88,4 +106,4 @@ For further details about the milestones, see [ROADMAP](../ROADMAP.md).
 
 ---
 
-_Last updated: 2026-03-03 after initialization_
+_Last updated: 2026-03-12 after milestone v2.0 Supabase Migration started_

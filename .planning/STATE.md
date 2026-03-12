@@ -1,36 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: complete
-stopped_at: Completed 07-02-PLAN.md (all plans complete)
-last_updated: "2026-03-11T16:48:00Z"
-last_activity: 2026-03-11 — Completed 07-02 performance budget and CI integration
+milestone: v2.0
+milestone_name: Supabase Migration
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-12T00:00:00Z"
+last_activity: 2026-03-12 — Milestone v2.0 started
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 31
-  completed_plans: 31
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-03)
+See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** All phases complete
+**Current focus:** Supabase Migration — schema design, auth, RLS, load testing
 
 ## Current Position
 
-Phase: 7 of 7 (Advanced Test Capabilities) - COMPLETE
-Plan: 2 of 2 in current phase (07-02 COMPLETE)
-Status: Milestone complete
-Last activity: 2026-03-11 — Completed 07-02 performance budget and CI integration
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-12 — Milestone v2.0 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
