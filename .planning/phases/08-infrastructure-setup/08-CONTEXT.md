@@ -18,7 +18,8 @@ Supabase CLI initialized, local dev stack running, type generation pipeline, lin
 - Supabase CLI commands need `--workdir apps/supabase` or root scripts that cd into it
 
 ### Scripts
-- Supabase scripts added to root package.json: `supabase:start`, `supabase:stop`, `supabase:reset`, `supabase:types`
+- Primary scripts live in `apps/supabase/package.json` (the Supabase workspace owns its own commands)
+- Root package.json has aliases that delegate to the workspace (e.g., `yarn supabase:start` → `yarn workspace @openvaa/supabase start`)
 - Fully separate from existing Strapi commands — no combined dev command needed
 
 ### Cloud and initialization
@@ -71,10 +72,10 @@ Supabase CLI initialized, local dev stack running, type generation pipeline, lin
 ### Established Patterns
 - Yarn 4 workspaces with `workspace:^` dependencies — new `@openvaa/supabase-types` package follows this
 - TypeScript project references between packages — types package needs to be added to consuming tsconfigs
-- Root package.json scripts pattern (e.g., `build:shared`, `test:e2e`) — Supabase scripts follow same convention
+- Root package.json alias pattern — Supabase scripts owned by workspace, root aliases for convenience
 
 ### Integration Points
-- Root package.json — new `supabase:*` scripts
+- Root package.json — alias scripts delegating to `@openvaa/supabase` workspace
 - `packages/supabase-types/` — new workspace package
 - `apps/supabase/` — new Supabase project directory (turborepo layout)
 
