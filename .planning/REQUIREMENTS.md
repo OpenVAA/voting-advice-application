@@ -9,9 +9,9 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Supabase CLI initialized in monorepo with `config.toml` configured for local development
-- [ ] **INFRA-02**: `supabase start` launches all backend services (Postgres, GoTrue, PostgREST, Storage, Mailpit, Studio)
-- [ ] **INFRA-03**: Seed data replaces Strapi's `GENERATE_MOCK_DATA_ON_INITIALISE` mechanism
+- [x] **INFRA-01**: Supabase CLI initialized in monorepo with `config.toml` configured for local development
+- [x] **INFRA-02**: `supabase start` launches all backend services (Postgres, GoTrue, PostgREST, Storage, Mailpit, Studio)
+- [x] **INFRA-03**: Seed data replaces Strapi's `GENERATE_MOCK_DATA_ON_INITIALISE` mechanism
 - [ ] **INFRA-04**: Type generation script produces TypeScript types from Supabase schema
 - [ ] **INFRA-05**: `supabase db lint` configured to block on missing RLS and unindexed columns
 
@@ -114,9 +114,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 8 | Pending |
-| INFRA-02 | Phase 8 | Pending |
-| INFRA-03 | Phase 8 | Pending |
+| INFRA-01 | Phase 8 | Complete |
+| INFRA-02 | Phase 8 | Complete |
+| INFRA-03 | Phase 8 | Complete |
 | INFRA-04 | Phase 8 | Pending |
 | INFRA-05 | Phase 8 | Pending |
 | SCHM-01 | Phase 9 | Pending |
