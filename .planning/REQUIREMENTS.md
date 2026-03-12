@@ -1,197 +1,167 @@
-# Requirements: OpenVAA E2E Testing Framework
+# Requirements: OpenVAA Supabase Migration
 
-**Defined:** 2026-03-03
+**Defined:** 2026-03-12
 **Core Value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-## v1 Requirements
+## v2.0 Requirements
 
-Requirements for Milestone 1: E2E Testing Framework. Each maps to roadmap phases.
+Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
-### Test Infrastructure
+### Infrastructure
 
-- [x] **INFRA-01**: All interactive elements in both voter and candidate apps have `data-testid` attributes
-- [x] **INFRA-02**: Playwright upgraded from 1.49.1 to latest stable (1.58+)
-- [x] **INFRA-03**: Global setup replaced with Playwright project dependencies pattern
-- [x] **INFRA-04**: Fixture-extended page object model established for all apps
-- [x] **INFRA-05**: API-based data management using Admin Tools endpoints (`/import-data`, `/delete-data`)
-- [x] **INFRA-06**: Database state resets reliably between test runs via API
-- [x] **INFRA-07**: Pre-defined JSON test datasets for default configuration
-- [x] **INFRA-08**: Test helper utilities for common tasks (navigation, authentication, data setup)
-- [x] **INFRA-09**: ESLint Playwright plugin configured for test quality enforcement
-- [x] **INFRA-10**: Visual regression testing capability with screenshot comparison
-- [x] **INFRA-11**: Performance benchmarks integrated into test suite
+- [ ] **INFRA-01**: Supabase CLI initialized in monorepo with `config.toml` configured for local development
+- [ ] **INFRA-02**: `supabase start` launches all backend services (Postgres, GoTrue, PostgREST, Storage, Mailpit, Studio)
+- [ ] **INFRA-03**: Seed data replaces Strapi's `GENERATE_MOCK_DATA_ON_INITIALISE` mechanism
+- [ ] **INFRA-04**: Type generation script produces TypeScript types from Supabase schema
+- [ ] **INFRA-05**: `supabase db lint` configured to block on missing RLS and unindexed columns
 
-### Candidate App
+### Schema
 
-- [x] **CAND-01**: Login/logout flow tested with new fixture pattern and test IDs
-- [x] **CAND-02**: Password change flow tested with new pattern
-- [x] **CAND-03**: Profile setup tested (image upload, info questions, all field types)
-- [x] **CAND-04**: Opinion question answering tested (all question types, translations, comments)
-- [x] **CAND-05**: Answer editing and category navigation tested
-- [x] **CAND-06**: Preview page tested (all entered data displays correctly)
-- [x] **CAND-07**: Registration via email link tested (email extraction, password set, auto-login)
-- [x] **CAND-08**: Password reset flow tested (forgot password, email link, reset, validation)
-- [x] **CAND-09**: Answers locked mode tested (read-only state, edit buttons disabled)
-- [x] **CAND-10**: App disabled mode tested (access denied/redirect when `candidateApp=false`)
-- [x] **CAND-11**: Maintenance mode tested (maintenance page shown when `underMaintenance=true`)
-- [x] **CAND-12**: Data persistence tested (data survives page reload/session restart)
-- [x] **CAND-13**: Candidate notification display tested
-- [x] **CAND-14**: Help and privacy pages render correctly
-- [x] **CAND-15**: Question content visibility settings tested (`hideVideo`, `hideHero`)
+- [ ] **SCHM-01**: All content tables use snake_case naming with a type mapping layer for camelCase @openvaa/data alignment
+- [ ] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, question_templates, app_settings
+- [ ] **SCHM-03**: Localization strategy evaluated (JSONB extraction, translation table, or hybrid) with requirement that only requested locale data is returned to frontend
+- [ ] **SCHM-04**: RLS enabled on every table with at least one policy per table
+- [ ] **SCHM-05**: B-tree indexes on all RLS-referenced columns (project_id, user references)
+- [ ] **SCHM-06**: Both JSONB and relational answer storage schemas drafted as alternative migrations
+- [ ] **SCHM-07**: App settings stored as typed table with JSONB columns per section (one row per project)
 
-### Voter App
+### Multi-Tenant
 
-- [x] **VOTE-01**: Home/landing page loads and displays correctly
-- [~] **VOTE-02**: Election selection flow tested (multi-election scenario) *(partial — single/auto-implied tested; multi-election deferred to Phase 5)*
-- [~] **VOTE-03**: Constituency selection flow tested (single and hierarchical) *(partial — auto-implied tested; hierarchical deferred to Phase 5)*
-- [x] **VOTE-04**: Question intro page tested (shown/hidden based on settings)
-- [x] **VOTE-05**: Category intro pages tested (shown with skip option based on settings)
-- [x] **VOTE-06**: Question answering flow tested (all opinion question types)
-- [x] **VOTE-07**: Minimum answers threshold tested (results available only after N answers)
-- [x] **VOTE-08**: Results display tested with candidates section
-- [x] **VOTE-09**: Results display tested with organizations/parties section
-- [x] **VOTE-10**: Results display tested with hybrid (candidates + parties) section
-- [x] **VOTE-11**: Candidate detail page tested (info tab, opinions tab, submatches)
-- [x] **VOTE-12**: Party detail page tested (candidates list, info, opinions tabs)
-- [x] **VOTE-13**: Category selection feature tested (`allowCategorySelection` setting)
-- [x] **VOTE-14**: Statistics page tested
-- [x] **VOTE-15**: Feedback popup tested (displays after configured delay)
-- [x] **VOTE-16**: Survey popup tested (displays in results)
-- [x] **VOTE-17**: Results link in header tested (appears after minimum answers)
-- [x] **VOTE-18**: About, help, info, and privacy pages render correctly
-- [x] **VOTE-19**: Nominations page tested (when `showAllNominations=true`)
+- [ ] **MTNT-01**: `accounts` table representing organizations
+- [ ] **MTNT-02**: `projects` table linked to accounts (one account can have multiple projects/VAA deployments)
+- [ ] **MTNT-03**: All content tables linked to a project via `project_id`
+- [ ] **MTNT-04**: RLS policies enforce project-level data isolation via JWT role claims
+- [ ] **MTNT-05**: Candidate-to-auth-user link explicit in schema (which user owns which candidate record)
+- [ ] **MTNT-06**: Party-to-auth-user link in schema (party admin users)
+- [ ] **MTNT-07**: Single-tenant deployment works as a degenerate case (one account, one project)
 
-### Configuration Variants
+### Authentication
 
-- [x] **CONF-01**: Single election configuration tested end-to-end (no election selection step)
-- [x] **CONF-02**: Multiple elections configuration tested (election selection, per-election results)
-- [x] **CONF-03**: Constituency enabled configuration tested (constituency step in flow)
-- [x] **CONF-04**: Constituency disabled configuration tested (no constituency step)
-- [x] **CONF-05**: Candidates-only results section configuration tested
-- [x] **CONF-06**: Organizations-only results section configuration tested
-- [x] **CONF-07**: Separate test datasets created for each configuration variant
-- [x] **CONF-08**: Playwright projects configured per dataset for multi-configuration testing
+- [ ] **AUTH-01**: Email/password login for candidates via Supabase Auth
+- [ ] **AUTH-02**: Password reset for candidates via email link
+- [ ] **AUTH-03**: Candidate pre-registration invite flow via Edge Function (admin creates candidate, generates link, sends email)
+- [ ] **AUTH-04**: `user_roles` table with scoped role assignments (user_id, role, scope_type, scope_id)
+- [ ] **AUTH-05**: Five role types enforced via RLS: `candidate` (own data), `party` (party data + nomination confirmation), `project_admin` (one project), `account_admin` (one account), `super_admin` (all accounts)
+- [ ] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
+- [ ] **AUTH-07**: SvelteKit `hooks.server.ts` creates per-request Supabase server client via `@supabase/ssr`
+- [ ] **AUTH-08**: Signicat OIDC bank auth integrated with Supabase session management
 
-### CI Pipeline
+### Data Model
 
-- [x] **CI-01**: Existing CI pipeline updated to work with new test structure
-- [x] **CI-02**: HTML test report artifact uploaded from CI runs
-- [x] **CI-03**: Test tagging system for selective test runs (smoke, full, per-app)
+- [ ] **DATA-01**: @openvaa/data extended with `QuestionTemplate` concept (renamed from Strapi's questionType)
+- [ ] **DATA-02**: QuestionTemplate defines default properties, answer type, and configuration for creating questions
 
-## v2 Requirements
+### Services
 
-Deferred to future release. Tracked but not in current roadmap.
+- [ ] **SRVC-01**: Supabase Storage buckets configured for candidate photos, party images, and public assets with RLS
+- [ ] **SRVC-02**: Candidate photo upload and serve works via Supabase Storage API
+- [ ] **SRVC-03**: Mailpit accessible at localhost for dev email with human-readable web UI
+- [ ] **SRVC-04**: Bulk data import via Postgres RPC function with transactional guarantee
+- [ ] **SRVC-05**: Bulk data delete via Postgres RPC function with transactional guarantee
+- [ ] **SRVC-06**: Transactional email for non-auth flows (candidate notifications) via Edge Function
 
-### Advanced Testing
+### Load Testing
 
-- **ADV-01**: Bank authentication (Signicat/OIDC) pre-registration flow tested
-- **ADV-02**: Full locale-specific testing (Finnish, Swedish, Danish)
-- **ADV-03**: All settings permutation matrix tested
-- **ADV-04**: Network failure and error state testing
-- **ADV-05**: Concurrent operation testing
-- **ADV-06**: Session timeout behavior testing
-- **ADV-07**: Email template verification (beyond registration)
-- **ADV-08**: Interactive info feature testing (experimental)
+- [ ] **LOAD-01**: k6 load test scripts comparing JSONB vs relational answer storage at 1K, 5K, and 10K candidates
+- [ ] **LOAD-02**: pgbench scripts measuring bulk-read latency (voter pattern: all candidates with answers)
+- [ ] **LOAD-03**: pgbench scripts measuring write latency (candidate updates one answer) at 100 concurrent writers
+- [ ] **LOAD-04**: Answer storage decision documented with supporting benchmark data
 
-### Question customData Features
+### Quality
 
-- **ADV-09**: Hidden questions (`customData.hidden`) excluded from voter app but visible in candidate app
-- **ADV-10**: Vertical layout (`customData.vertical`) renders multiple-choice options vertically
-- **ADV-11**: Filterable questions (`customData.filterable`) appear as filter options in voter results
-- **ADV-12**: Required questions (`customData.required`) block candidate listing when unanswered
-- **ADV-13**: Locked questions (`customData.locked`) are read-only in candidate app and never required
-- **ADV-14**: Open answers (`customData.allowOpen`) toggle in candidate question input
-- **ADV-15**: Long text (`customData.longText`) renders textarea instead of text input in candidate app
-- **ADV-16**: Max length (`customData.maxlength`) enforces character limit on candidate text inputs
-- **ADV-17**: Disable multilingual (`customData.disableMultilingual`) hides multi-language input for candidate text fields
-- **ADV-18**: Hero content (`customData.hero`) displays emoji or image illustration on question page
-- **ADV-19**: Video content (`customData.video`) displays video player with captions and transcript on question page
-- **ADV-20**: Question info sections (`customData.infoSections`) render expandable info content on question page
-- **ADV-21**: Term definitions (`customData.terms`) display inline term explanations on question page
+- [ ] **QUAL-01**: pgTAP tests verify project-level tenant isolation (Project A cannot read Project B's data)
+- [ ] **QUAL-02**: pgTAP tests verify candidate can only edit own data
+- [ ] **QUAL-03**: pgTAP tests verify public read access for voter-facing data
+
+## v3+ Requirements
+
+Deferred to future milestones. Tracked but not in current roadmap.
+
+### Frontend Adapter
+
+- **ADPT-01**: SupabaseDataProvider implementing all read methods from UniversalDataProvider
+- **ADPT-02**: SupabaseDataWriter implementing all write/auth methods from UniversalDataWriter
+- **ADPT-03**: SupabaseFeedbackWriter implementing feedback submission
+- **ADPT-04**: Feature flag in staticSettings.ts for switching between Strapi and Supabase adapters
+
+### Cleanup
+
+- **CLNP-01**: Strapi workspace removed from monorepo
+- **CLNP-02**: LocalStack configuration removed
+- **CLNP-03**: All Strapi-specific environment variables removed
+- **CLNP-04**: E2E tests updated to work with Supabase backend
+
+### Future Capabilities
+
+- **FUTR-01**: Supabase Realtime for live admin dashboard updates
+- **FUTR-02**: Admin App UI replacing Supabase Studio for election administrators
+- **FUTR-03**: GraphQL via pg_graphql (if frontend patterns shift)
 
 ## Out of Scope
 
-| Feature                                     | Reason                                                        |
-| ------------------------------------------- | ------------------------------------------------------------- |
-| Bank authentication (Signicat/OIDC) testing | Complex external dependency, requires mock IdP setup          |
-| Mobile/responsive testing                   | Web-first, responsive testing deferred                        |
-| Load/stress testing                         | Different tool category, not E2E scope                        |
-| Unit test improvements                      | Separate concern from E2E framework                           |
-| Backend API testing                         | Focus is on user-facing E2E flows                             |
-| Admin app E2E testing                       | Admin app is preliminary, will change with Supabase migration |
+| Feature | Reason |
+|---------|--------|
+| Frontend Supabase adapter | Separate milestone — backend must be validated first |
+| Strapi removal | Only after frontend adapter is verified in production |
+| Supabase Realtime | No current use case in voter or candidate apps |
+| Admin App UI | Separate planned milestone (milestone 7) |
+| Schema-per-tenant isolation | Disproportionate operational overhead for 10-50 tenants |
+| Mobile native apps | Web-first approach unchanged |
 
 ## Traceability
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase   | Status   |
-| ----------- | ------- | -------- |
-| INFRA-01    | Phase 1 | Complete |
-| INFRA-02    | Phase 1 | Complete |
-| INFRA-03    | Phase 1 | Complete |
-| INFRA-04    | Phase 1 | Complete |
-| INFRA-05    | Phase 1 | Complete |
-| INFRA-06    | Phase 1 | Complete |
-| INFRA-07    | Phase 1 | Complete |
-| INFRA-08    | Phase 1 | Complete |
-| INFRA-09    | Phase 1 | Complete |
-| INFRA-10    | Phase 7 | Complete |
-| INFRA-11    | Phase 7 | Complete |
-| CAND-01     | Phase 2 | Complete |
-| CAND-02     | Phase 2 | Complete |
-| CAND-03     | Phase 2 | Complete |
-| CAND-04     | Phase 2 | Complete |
-| CAND-05     | Phase 2 | Complete |
-| CAND-06     | Phase 2 | Complete |
-| CAND-07     | Phase 2 | Complete |
-| CAND-08     | Phase 2 | Complete |
-| CAND-09     | Phase 2 | Complete |
-| CAND-10     | Phase 2 | Complete |
-| CAND-11     | Phase 2 | Complete |
-| CAND-12     | Phase 2 | Complete |
-| CAND-13     | Phase 2 | Complete |
-| CAND-14     | Phase 2 | Complete |
-| CAND-15     | Phase 2 | Complete |
-| VOTE-01     | Phase 3 | Complete |
-| VOTE-02     | Phase 3 | Partial (multi-election → Phase 5) |
-| VOTE-03     | Phase 3 | Partial (hierarchical → Phase 5) |
-| VOTE-04     | Phase 3, 4 | Complete |
-| VOTE-05     | Phase 3, 4 | Complete |
-| VOTE-06     | Phase 3 | Complete |
-| VOTE-07     | Phase 3, 4 | Complete |
-| VOTE-08     | Phase 3 | Complete |
-| VOTE-09     | Phase 3 | Complete |
-| VOTE-10     | Phase 3 | Complete |
-| VOTE-11     | Phase 3 | Complete |
-| VOTE-12     | Phase 3 | Complete |
-| VOTE-13     | Phase 4 | Complete |
-| VOTE-14     | Phase 4 | Complete |
-| VOTE-15     | Phase 4 | Complete |
-| VOTE-16     | Phase 4 | Complete |
-| VOTE-17     | Phase 4 | Complete |
-| VOTE-18     | Phase 4 | Complete |
-| VOTE-19     | Phase 4 | Complete |
-| CONF-01     | Phase 5 | Complete |
-| CONF-02     | Phase 5 | Complete |
-| CONF-03     | Phase 5 | Complete |
-| CONF-04     | Phase 5 | Complete |
-| CONF-05     | Phase 5 | Complete |
-| CONF-06     | Phase 5 | Complete |
-| CONF-07     | Phase 5 | Complete |
-| CONF-08     | Phase 5 | Complete |
-| CI-01       | Phase 6 | Complete |
-| CI-02       | Phase 6 | Complete |
-| CI-03       | Phase 6 | Complete |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| INFRA-01 | — | Pending |
+| INFRA-02 | — | Pending |
+| INFRA-03 | — | Pending |
+| INFRA-04 | — | Pending |
+| INFRA-05 | — | Pending |
+| SCHM-01 | — | Pending |
+| SCHM-02 | — | Pending |
+| SCHM-03 | — | Pending |
+| SCHM-04 | — | Pending |
+| SCHM-05 | — | Pending |
+| SCHM-06 | — | Pending |
+| SCHM-07 | — | Pending |
+| MTNT-01 | — | Pending |
+| MTNT-02 | — | Pending |
+| MTNT-03 | — | Pending |
+| MTNT-04 | — | Pending |
+| MTNT-05 | — | Pending |
+| MTNT-06 | — | Pending |
+| MTNT-07 | — | Pending |
+| AUTH-01 | — | Pending |
+| AUTH-02 | — | Pending |
+| AUTH-03 | — | Pending |
+| AUTH-04 | — | Pending |
+| AUTH-05 | — | Pending |
+| AUTH-06 | — | Pending |
+| AUTH-07 | — | Pending |
+| AUTH-08 | — | Pending |
+| DATA-01 | — | Pending |
+| DATA-02 | — | Pending |
+| SRVC-01 | — | Pending |
+| SRVC-02 | — | Pending |
+| SRVC-03 | — | Pending |
+| SRVC-04 | — | Pending |
+| SRVC-05 | — | Pending |
+| SRVC-06 | — | Pending |
+| LOAD-01 | — | Pending |
+| LOAD-02 | — | Pending |
+| LOAD-03 | — | Pending |
+| LOAD-04 | — | Pending |
+| QUAL-01 | — | Pending |
+| QUAL-02 | — | Pending |
+| QUAL-03 | — | Pending |
 
 **Coverage:**
-
-- v1 requirements: 56 total
-- Mapped to phases: 56
-- Unmapped: 0
-
-Note: The original count of 46 in this file was incorrect. Actual count is 56 (INFRA: 11, CAND: 15, VOTE: 19, CONF: 8, CI: 3).
+- v2.0 requirements: 40 total
+- Mapped to phases: 0
+- Unmapped: 40 (pending roadmap creation)
 
 ---
-
-_Requirements defined: 2026-03-03_
-_Last updated: 2026-03-03 after roadmap creation — traceability complete_
+*Requirements defined: 2026-03-12*
+*Last updated: 2026-03-12 after initial definition*
