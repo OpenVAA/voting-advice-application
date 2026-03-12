@@ -4856,6 +4856,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/supabase-types@workspace:packages/supabase-types":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/supabase-types@workspace:packages/supabase-types"
+  dependencies:
+    "@openvaa/shared-config": "workspace:^"
+    prettier: "npm:^3.4.2"
+    supabase: "npm:^2.78.1"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/supabase@workspace:apps/supabase":
   version: 0.0.0-use.local
   resolution: "@openvaa/supabase@workspace:apps/supabase"
