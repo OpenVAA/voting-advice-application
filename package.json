@@ -32,7 +32,8 @@
     "supabase:stop": "yarn workspace @openvaa/supabase stop",
     "supabase:reset": "yarn workspace @openvaa/supabase reset",
     "supabase:status": "yarn workspace @openvaa/supabase status",
-    "supabase:types": "yarn workspace @openvaa/supabase-types generate"
+    "supabase:types": "yarn workspace @openvaa/supabase-types generate",
+    "supabase:lint": "yarn workspace @openvaa/supabase lint:all"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
