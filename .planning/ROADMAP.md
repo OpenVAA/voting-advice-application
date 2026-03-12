@@ -183,13 +183,13 @@ Plans:
   1. Running `supabase start` from the monorepo root launches Postgres, GoTrue, PostgREST, Storage, Mailpit, and Studio without manual configuration
   2. Running the type generation script produces a TypeScript file reflecting the current database schema that can be imported by frontend code
   3. Running `supabase db lint` reports warnings for tables missing RLS policies or indexes on filtered columns
-  4. Running `supabase db reset` loads seed data that populates the database with a usable test dataset visible in Studio
+  4. Running `supabase db reset` executes seed.sql successfully, validating the seed mechanism (substantive test data added in Phase 9 when schema tables exist)
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Supabase workspace, CLI init, config.toml, seed mechanism, root aliases
-- [ ] 08-02-PLAN.md -- @openvaa/supabase-types package with type generation pipeline
-- [ ] 08-03-PLAN.md -- Custom Splinter-derived lint script for RLS and index checks
+- [x] 08-01-PLAN.md -- Supabase workspace, CLI init, config.toml, seed mechanism, root aliases
+- [x] 08-02-PLAN.md -- @openvaa/supabase-types package with type generation pipeline
+- [x] 08-03-PLAN.md -- Custom Splinter-derived lint script for RLS and index checks
 
 ### Phase 9: Schema and Data Model
 **Goal**: All content tables exist in the database modeled on @openvaa/data entities, with multi-tenant structure, localization strategy, both answer storage alternatives, and the QuestionTemplate concept added to @openvaa/data
@@ -283,7 +283,7 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 5. Configuration Variants | v1.0 | 3/3 | Complete | 2026-03-09 |
 | 6. CI Integration and Test Organization | v1.0 | 0/2 | Not started | - |
 | 7. Advanced Test Capabilities | v1.0 | 1/2 | In Progress | - |
-| 8. Infrastructure Setup | 3/3 | Complete   | 2026-03-12 | - |
+| 8. Infrastructure Setup | v2.0 | 3/3 | Complete | 2026-03-12 |
 | 9. Schema and Data Model | v2.0 | 0/? | Not started | - |
 | 10. Authentication and Roles | v2.0 | 0/? | Not started | - |
 | 11. Load Testing | v2.0 | 0/? | Not started | - |
