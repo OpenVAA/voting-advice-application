@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "@openvaa/supabase",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "supabase start",
+    "stop": "supabase stop",
+    "reset": "supabase db reset",
+    "status": "supabase status"
+  },
+  "devDependencies": {
+    "supabase": "^2.78.1"
+  }
+}

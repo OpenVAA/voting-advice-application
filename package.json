@@ -27,7 +27,11 @@
     "docs:typedoc-frontend": "yarn workspace @openvaa/docs generate:typedoc-frontend",
     "docs:components": "yarn workspace @openvaa/docs generate:components",
     "docs:routes": "yarn workspace @openvaa/docs generate:routes",
-    "docs:dev": "yarn workspace @openvaa/docs dev"
+    "docs:dev": "yarn workspace @openvaa/docs dev",
+    "supabase:start": "yarn workspace @openvaa/supabase start",
+    "supabase:stop": "yarn workspace @openvaa/supabase stop",
+    "supabase:reset": "yarn workspace @openvaa/supabase reset",
+    "supabase:status": "yarn workspace @openvaa/supabase status"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -62,7 +66,8 @@
     "backend/vaa-strapi",
     "backend/vaa-strapi/src/plugins/*",
     "frontend",
-    "docs"
+    "docs",
+    "apps/*"
   ],
   "packageManager": "yarn@4.6.0"
 }
