@@ -201,12 +201,12 @@ Plans:
   3. Both JSONB and relational answer storage schemas exist as alternative migration files that can each be applied and rolled back independently
   4. The localization strategy is implemented and only the requested locale's data is returned when querying with a locale parameter
   5. @openvaa/data exports a QuestionTemplate class that defines default properties, answer type, and configuration for creating questions, with passing unit tests
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
-- [ ] 09-03: TBD
+- [ ] 09-01-PLAN.md -- Multi-tenant tables (accounts, projects), localization functions (get_localized), and all content entity tables
+- [ ] 09-02-PLAN.md -- App settings, answer storage alternatives (JSONB + relational with shared validation), indexes, RLS, seed data
+- [ ] 09-03-PLAN.md -- QuestionTemplate class in @openvaa/data (TDD: type, class, DataRoot integration, unit tests)
 
 ### Phase 10: Authentication and Roles
 **Goal**: Candidates and admins can authenticate via Supabase Auth, with role-based RLS policies enforcing data access at every level
@@ -284,7 +284,7 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 6. CI Integration and Test Organization | v1.0 | 0/2 | Not started | - |
 | 7. Advanced Test Capabilities | v1.0 | 1/2 | In Progress | - |
 | 8. Infrastructure Setup | v2.0 | 3/3 | Complete | 2026-03-12 |
-| 9. Schema and Data Model | v2.0 | 0/? | Not started | - |
+| 9. Schema and Data Model | v2.0 | 0/3 | Planned | - |
 | 10. Authentication and Roles | v2.0 | 0/? | Not started | - |
 | 11. Load Testing | v2.0 | 0/? | Not started | - |
 | 12. Services | v2.0 | 0/? | Not started | - |
