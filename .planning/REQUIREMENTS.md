@@ -114,54 +114,54 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| SCHM-01 | — | Pending |
-| SCHM-02 | — | Pending |
-| SCHM-03 | — | Pending |
-| SCHM-04 | — | Pending |
-| SCHM-05 | — | Pending |
-| SCHM-06 | — | Pending |
-| SCHM-07 | — | Pending |
-| MTNT-01 | — | Pending |
-| MTNT-02 | — | Pending |
-| MTNT-03 | — | Pending |
-| MTNT-04 | — | Pending |
-| MTNT-05 | — | Pending |
-| MTNT-06 | — | Pending |
-| MTNT-07 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| AUTH-05 | — | Pending |
-| AUTH-06 | — | Pending |
-| AUTH-07 | — | Pending |
-| AUTH-08 | — | Pending |
-| DATA-01 | — | Pending |
-| DATA-02 | — | Pending |
-| SRVC-01 | — | Pending |
-| SRVC-02 | — | Pending |
-| SRVC-03 | — | Pending |
-| SRVC-04 | — | Pending |
-| SRVC-05 | — | Pending |
-| SRVC-06 | — | Pending |
-| LOAD-01 | — | Pending |
-| LOAD-02 | — | Pending |
-| LOAD-03 | — | Pending |
-| LOAD-04 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| QUAL-03 | — | Pending |
+| INFRA-01 | Phase 8 | Pending |
+| INFRA-02 | Phase 8 | Pending |
+| INFRA-03 | Phase 8 | Pending |
+| INFRA-04 | Phase 8 | Pending |
+| INFRA-05 | Phase 8 | Pending |
+| SCHM-01 | Phase 9 | Pending |
+| SCHM-02 | Phase 9 | Pending |
+| SCHM-03 | Phase 9 | Pending |
+| SCHM-04 | Phase 9 | Pending |
+| SCHM-05 | Phase 9 | Pending |
+| SCHM-06 | Phase 9 | Pending |
+| SCHM-07 | Phase 9 | Pending |
+| MTNT-01 | Phase 9 | Pending |
+| MTNT-02 | Phase 9 | Pending |
+| MTNT-03 | Phase 9 | Pending |
+| MTNT-04 | Phase 10 | Pending |
+| MTNT-05 | Phase 10 | Pending |
+| MTNT-06 | Phase 10 | Pending |
+| MTNT-07 | Phase 9 | Pending |
+| AUTH-01 | Phase 10 | Pending |
+| AUTH-02 | Phase 10 | Pending |
+| AUTH-03 | Phase 10 | Pending |
+| AUTH-04 | Phase 10 | Pending |
+| AUTH-05 | Phase 10 | Pending |
+| AUTH-06 | Phase 10 | Pending |
+| AUTH-07 | Phase 10 | Pending |
+| AUTH-08 | Phase 10 | Pending |
+| DATA-01 | Phase 9 | Pending |
+| DATA-02 | Phase 9 | Pending |
+| SRVC-01 | Phase 12 | Pending |
+| SRVC-02 | Phase 12 | Pending |
+| SRVC-03 | Phase 12 | Pending |
+| SRVC-04 | Phase 12 | Pending |
+| SRVC-05 | Phase 12 | Pending |
+| SRVC-06 | Phase 12 | Pending |
+| LOAD-01 | Phase 11 | Pending |
+| LOAD-02 | Phase 11 | Pending |
+| LOAD-03 | Phase 11 | Pending |
+| LOAD-04 | Phase 11 | Pending |
+| QUAL-01 | Phase 13 | Pending |
+| QUAL-02 | Phase 13 | Pending |
+| QUAL-03 | Phase 13 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 40 total
-- Mapped to phases: 0
-- Unmapped: 40 (pending roadmap creation)
+- Mapped to phases: 40
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 after initial definition*
+*Last updated: 2026-03-12 after roadmap creation (phases 8-13)*
