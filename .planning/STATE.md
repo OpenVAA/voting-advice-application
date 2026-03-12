@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: executing
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-03-12T18:21:33.463Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-12T18:22:28.346Z"
 last_activity: 2026-03-12 -- Completed 08-03 (Database linting)
 progress:
   total_phases: 13
@@ -51,6 +51,7 @@ Progress: [██████████] 97%
 
 *Updated after each plan completion*
 | Phase 08 P01 | 8min | 1 tasks | 6 files |
+| Phase 08 P02 | 3min | 1 tasks | 6 files |
 | Phase 08 P03 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - [Phase 08]: Used apps/* workspace pattern for Supabase (forward-compatible with turborepo reorg)
 - [Phase 08]: Postgres major version 15, edge runtime oneshot policy for monorepo stability
 - [Phase 08]: Auth site_url set to 127.0.0.1:5173 matching SvelteKit frontend dev port
+- [Phase 08]: Export raw .ts source from supabase-types (no build step; Vite handles TS imports)
+- [Phase 08]: Re-export all Supabase-generated helper types (Tables, TablesInsert, etc.) not just Database
 - [Phase 08]: Used psql stdin for SQL execution to avoid shell escaping issues with multiline queries
 
 ### Pending Todos
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T18:21:33.460Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-03-12T18:22:28.343Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
