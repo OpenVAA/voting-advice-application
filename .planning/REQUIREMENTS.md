@@ -17,9 +17,9 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Schema
 
-- [ ] **SCHM-01**: All content tables use snake_case naming with a type mapping layer for camelCase @openvaa/data alignment
-- [ ] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, question_templates, app_settings
-- [ ] **SCHM-03**: Localization strategy evaluated (JSONB extraction, translation table, or hybrid) with requirement that only requested locale data is returned to frontend
+- [x] **SCHM-01**: All content tables use snake_case naming with a type mapping layer for camelCase @openvaa/data alignment
+- [x] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, question_templates, app_settings
+- [x] **SCHM-03**: Localization strategy evaluated (JSONB extraction, translation table, or hybrid) with requirement that only requested locale data is returned to frontend
 - [ ] **SCHM-04**: RLS enabled on every table with at least one policy per table
 - [ ] **SCHM-05**: B-tree indexes on all RLS-referenced columns (project_id, user references)
 - [ ] **SCHM-06**: Both JSONB and relational answer storage schemas drafted as alternative migrations
@@ -27,9 +27,9 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Multi-Tenant
 
-- [ ] **MTNT-01**: `accounts` table representing organizations
-- [ ] **MTNT-02**: `projects` table linked to accounts (one account can have multiple projects/VAA deployments)
-- [ ] **MTNT-03**: All content tables linked to a project via `project_id`
+- [x] **MTNT-01**: `accounts` table representing organizations
+- [x] **MTNT-02**: `projects` table linked to accounts (one account can have multiple projects/VAA deployments)
+- [x] **MTNT-03**: All content tables linked to a project via `project_id`
 - [ ] **MTNT-04**: RLS policies enforce project-level data isolation via JWT role claims
 - [ ] **MTNT-05**: Candidate-to-auth-user link explicit in schema (which user owns which candidate record)
 - [ ] **MTNT-06**: Party-to-auth-user link in schema (party admin users)
@@ -119,16 +119,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-03 | Phase 8 | Complete |
 | INFRA-04 | Phase 8 | Complete |
 | INFRA-05 | Phase 8 | Complete |
-| SCHM-01 | Phase 9 | Pending |
-| SCHM-02 | Phase 9 | Pending |
-| SCHM-03 | Phase 9 | Pending |
+| SCHM-01 | Phase 9 | Complete |
+| SCHM-02 | Phase 9 | Complete |
+| SCHM-03 | Phase 9 | Complete |
 | SCHM-04 | Phase 9 | Pending |
 | SCHM-05 | Phase 9 | Pending |
 | SCHM-06 | Phase 9 | Pending |
 | SCHM-07 | Phase 9 | Pending |
-| MTNT-01 | Phase 9 | Pending |
-| MTNT-02 | Phase 9 | Pending |
-| MTNT-03 | Phase 9 | Pending |
+| MTNT-01 | Phase 9 | Complete |
+| MTNT-02 | Phase 9 | Complete |
+| MTNT-03 | Phase 9 | Complete |
 | MTNT-04 | Phase 10 | Pending |
 | MTNT-05 | Phase 10 | Pending |
 | MTNT-06 | Phase 10 | Pending |
