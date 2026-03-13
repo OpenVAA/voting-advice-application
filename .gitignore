@@ -4,6 +4,9 @@
 !.env.example
 node_modules
 
+# Supabase local config overrides
+config.local.toml
+
 # Claude Code local settings
 .claude/*.local.json
 

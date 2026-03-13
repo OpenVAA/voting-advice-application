@@ -10,7 +10,6 @@ export const COLUMN_MAP = {
   short_name: 'shortName',
   custom_data: 'customData',
   is_generated: 'isGenerated',
-  color_dark: 'colorDark',
 
   // CandidateData
   first_name: 'firstName',
@@ -33,13 +32,15 @@ export const COLUMN_MAP = {
   category_type: 'categoryType',
 
   // NominationData
-  entity_id: 'entityId',
+  candidate_id: 'candidateId',
+  organization_id_nom: 'organizationId',
+  faction_id: 'factionId',
+  alliance_id: 'allianceId',
   election_id: 'electionId',
   constituency_id: 'constituencyId',
   election_round: 'electionRound',
   election_symbol: 'electionSymbol',
   parent_nomination_id: 'parentNominationId',
-  parent_entity_type: 'parentEntityType',
 
   // ElectionData
   election_date: 'electionDate',
@@ -48,7 +49,7 @@ export const COLUMN_MAP = {
   multiple_rounds: 'multipleRounds',
   current_round: 'currentRound',
 
-  // Multi-tenant (not in @openvaa/data but needed for adapter)
+  // Multi-tenant
   project_id: 'projectId',
   account_id: 'accountId',
   default_locale: 'defaultLocale',
