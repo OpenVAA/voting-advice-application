@@ -39,7 +39,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 - [x] **AUTH-01**: Email/password login for candidates via Supabase Auth
 - [x] **AUTH-02**: Password reset for candidates via email link
-- [ ] **AUTH-03**: Candidate pre-registration invite flow via Edge Function (admin creates candidate, generates link, sends email)
+- [x] **AUTH-03**: Candidate pre-registration invite flow via Edge Function (admin creates candidate, generates link, sends email)
 - [x] **AUTH-04**: `user_roles` table with scoped role assignments (user_id, role, scope_type, scope_id)
 - [x] **AUTH-05**: Five role types enforced via RLS: `candidate` (own data), `party` (party data + nomination confirmation), `project_admin` (one project), `account_admin` (one account), `super_admin` (all accounts)
 - [x] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
@@ -135,7 +135,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MTNT-07 | Phase 9 | Complete |
 | AUTH-01 | Phase 10 | Complete |
 | AUTH-02 | Phase 10 | Complete |
-| AUTH-03 | Phase 10 | Pending |
+| AUTH-03 | Phase 10 | Complete |
 | AUTH-04 | Phase 10 | Complete |
 | AUTH-05 | Phase 10 | Complete |
 | AUTH-06 | Phase 10 | Complete |

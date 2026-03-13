@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: in-progress
-stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-03-13T13:55:00Z"
-last_activity: 2026-03-13 -- SvelteKit @supabase/ssr integration: client factories, hooks, login, password reset
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-03-13T14:04:49.984Z"
+last_activity: 2026-03-13 -- invite-candidate Edge Function for admin-initiated candidate pre-registration
 progress:
   total_phases: 13
   completed_phases: 8
-  total_plans: 37
-  completed_plans: 37
-  percent: 100
+  total_plans: 42
+  completed_plans: 40
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 10 in progress — Plans 01-03 complete, next: Plan 04 (invite-candidate Edge Function)
+**Current focus:** Phase 10 in progress — Plans 01-04 complete, next: Plan 05 (Signicat OIDC)
 
 ## Current Position
 
 Phase: 10 of 13 (Authentication and Roles) — IN PROGRESS
-Plan: 3 of 5 in current phase — completed
-Status: Plans 01-03 complete, continuing to Plan 04
-Last activity: 2026-03-13 -- SvelteKit @supabase/ssr integration: client factories, hooks, login, password reset
+Plan: 4 of 5 in current phase — completed
+Status: Plans 01-04 complete, continuing to Plan 05
+Last activity: 2026-03-13 -- invite-candidate Edge Function for admin-initiated candidate pre-registration
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 10 P01 | 8min | 2 tasks | 8 files |
 | Phase 10 P02 | 8min | 2 tasks | 3 files |
 | Phase 10 P03 | 4min | 3 tasks | 9 files |
+| Phase 10 P04 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,8 @@ Recent decisions affecting current work:
 - [Phase 10]: safeGetSession verifies via getUser() after getSession() to prevent JWT tampering
 - [Phase 10]: Password reset redirectTo URL points to /candidate/update-password (route to be created in future plan)
 - [Phase 10]: Browser Supabase client is a singleton (created once, reused across component lifecycle)
+- [Phase 10]: Dual token verification in Edge Functions: getUser() for server-side validation + JWT decode for role claims
+- [Phase 10]: Edge Function rollback: delete candidate on invite failure, log-only on role assignment failure
 
 ### Pending Todos
 
@@ -111,6 +114,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-13T13:55:00Z
-Stopped at: Completed 10-03-PLAN.md
-Resume file: .planning/phases/10-authentication-and-roles/10-03-SUMMARY.md
+Last session: 2026-03-13T14:04:49.981Z
+Stopped at: Completed 10-04-PLAN.md
+Resume file: .planning/phases/10-authentication-and-roles/10-04-SUMMARY.md

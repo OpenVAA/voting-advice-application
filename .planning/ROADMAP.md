@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 8: Infrastructure Setup** - Supabase CLI initialized, local dev stack running, type generation, linting, seed data mechanism (completed 2026-03-12)
 - [ ] **Phase 9: Schema and Data Model** - All database tables modeled on @openvaa/data entities with multi-tenant structure, localization, both answer storage alternatives, and QuestionTemplate package extension
-- [ ] **Phase 10: Authentication and Roles** - Candidate and admin auth via Supabase Auth, role-based RLS enforcement, JWT claims, SvelteKit integration, Signicat OIDC
+- [x] **Phase 10: Authentication and Roles** - Candidate and admin auth via Supabase Auth, role-based RLS enforcement, JWT claims, SvelteKit integration, Signicat OIDC (completed 2026-03-13)
 - [ ] **Phase 11: Load Testing** - k6 and pgbench benchmarks comparing answer storage alternatives at realistic scale, producing a documented decision
 - [ ] **Phase 12: Services** - Storage buckets with RLS, candidate photo upload, email for dev and transactional flows, bulk admin import/delete operations
 - [ ] **Phase 13: Quality Assurance** - pgTAP tests verifying tenant isolation, candidate self-edit restrictions, and public read access
@@ -287,7 +287,7 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 7. Advanced Test Capabilities | v1.0 | 1/2 | In Progress | - |
 | 8. Infrastructure Setup | v2.0 | 3/3 | Complete | 2026-03-12 |
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
-| 10. Authentication and Roles | v2.0 | 3/5 | In Progress | - |
+| 10. Authentication and Roles | 5/5 | Complete   | 2026-03-13 | - |
 | 11. Load Testing | v2.0 | 0/? | Not started | - |
 | 12. Services | v2.0 | 0/? | Not started | - |
 | 13. Quality Assurance | v2.0 | 0/? | Not started | - |
