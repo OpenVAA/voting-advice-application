@@ -16,6 +16,7 @@
     { "path": "../packages/filters/tsconfig.json" },
     { "path": "../packages/llm/tsconfig.json" },
     { "path": "../packages/matching/tsconfig.json" },
-    { "path": "../packages/question-info/tsconfig.json" }
+    { "path": "../packages/question-info/tsconfig.json" },
+    { "path": "../packages/supabase-types/tsconfig.json" }
   ]
 }
