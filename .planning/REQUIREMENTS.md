@@ -20,10 +20,10 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [x] **SCHM-01**: All content tables use snake_case naming with a type mapping layer for camelCase @openvaa/data alignment
 - [x] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, question_templates, app_settings
 - [x] **SCHM-03**: Localization strategy evaluated (JSONB extraction, translation table, or hybrid) with requirement that only requested locale data is returned to frontend
-- [ ] **SCHM-04**: RLS enabled on every table with at least one policy per table
-- [ ] **SCHM-05**: B-tree indexes on all RLS-referenced columns (project_id, user references)
-- [ ] **SCHM-06**: Both JSONB and relational answer storage schemas drafted as alternative migrations
-- [ ] **SCHM-07**: App settings stored as typed table with JSONB columns per section (one row per project)
+- [x] **SCHM-04**: RLS enabled on every table with at least one policy per table
+- [x] **SCHM-05**: B-tree indexes on all RLS-referenced columns (project_id, user references)
+- [x] **SCHM-06**: Both JSONB and relational answer storage schemas drafted as alternative migrations
+- [x] **SCHM-07**: App settings stored as typed table with JSONB columns per section (one row per project)
 
 ### Multi-Tenant
 
@@ -33,7 +33,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [ ] **MTNT-04**: RLS policies enforce project-level data isolation via JWT role claims
 - [ ] **MTNT-05**: Candidate-to-auth-user link explicit in schema (which user owns which candidate record)
 - [ ] **MTNT-06**: Party-to-auth-user link in schema (party admin users)
-- [ ] **MTNT-07**: Single-tenant deployment works as a degenerate case (one account, one project)
+- [x] **MTNT-07**: Single-tenant deployment works as a degenerate case (one account, one project)
 
 ### Authentication
 
@@ -122,17 +122,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHM-01 | Phase 9 | Complete |
 | SCHM-02 | Phase 9 | Complete |
 | SCHM-03 | Phase 9 | Complete |
-| SCHM-04 | Phase 9 | Pending |
-| SCHM-05 | Phase 9 | Pending |
-| SCHM-06 | Phase 9 | Pending |
-| SCHM-07 | Phase 9 | Pending |
+| SCHM-04 | Phase 9 | Complete |
+| SCHM-05 | Phase 9 | Complete |
+| SCHM-06 | Phase 9 | Complete |
+| SCHM-07 | Phase 9 | Complete |
 | MTNT-01 | Phase 9 | Complete |
 | MTNT-02 | Phase 9 | Complete |
 | MTNT-03 | Phase 9 | Complete |
 | MTNT-04 | Phase 10 | Pending |
 | MTNT-05 | Phase 10 | Pending |
 | MTNT-06 | Phase 10 | Pending |
-| MTNT-07 | Phase 9 | Pending |
+| MTNT-07 | Phase 9 | Complete |
 | AUTH-01 | Phase 10 | Pending |
 | AUTH-02 | Phase 10 | Pending |
 | AUTH-03 | Phase 10 | Pending |

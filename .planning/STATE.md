@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: executing
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-13T06:24:40.932Z"
-last_activity: 2026-03-13 -- Completed 09-01 (Multi-tenant, localization, content tables)
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-13T06:30:51Z"
+last_activity: 2026-03-13 -- Completed 09-02 (App settings, answer storage, indexes, RLS, seed, column-map)
 progress:
   total_phases: 13
   completed_phases: 7
   total_plans: 37
-  completed_plans: 35
+  completed_plans: 36
   percent: 97
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 9 of 13 (Schema and Data Model)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-13 -- Completed 09-01 (Multi-tenant, localization, content tables)
+Last activity: 2026-03-13 -- Completed 09-02 (App settings, answer storage, indexes, RLS, seed, column-map)
 
 Progress: [██████████] 97%
 
@@ -55,6 +55,7 @@ Progress: [██████████] 97%
 | Phase 08 P03 | 3min | 2 tasks | 3 files |
 | Phase 09 P03 | 3min | 1 tasks | 7 files |
 | Phase 09 P01 | 4min | 2 tasks | 3 files |
+| Phase 09 P02 | 4min | 2 tasks | 8 files |
 | Phase 09 P03 | 3min | 1 tasks | 7 files |
 
 ## Accumulated Context
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 09]: Supabase timestamp migration naming with 20260312200000-series prefixes
 - [Phase 09]: QuestionTemplate follows existing DataObject pattern exactly (extends DataObject, OBJECT_TYPE, ObjectTypeMap, RootCollections, DataRoot)
 - [Phase 09]: QuestionTemplate settings defaults to {} and defaultChoices to [] for safe access without null checks
+- [Phase 09]: Both answer migrations include CREATE OR REPLACE for validate_answer_value making either self-contained
+- [Phase 09]: Answer value choice validation accepts both string and number IDs for flexibility
+- [Phase 09]: Deny-all RLS placeholder on all tables; Phase 10 replaces with real role-based policies
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T06:24:25.199Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-03-13T06:30:51Z
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
