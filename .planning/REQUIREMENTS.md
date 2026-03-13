@@ -37,13 +37,13 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Authentication
 
-- [ ] **AUTH-01**: Email/password login for candidates via Supabase Auth
-- [ ] **AUTH-02**: Password reset for candidates via email link
+- [x] **AUTH-01**: Email/password login for candidates via Supabase Auth
+- [x] **AUTH-02**: Password reset for candidates via email link
 - [ ] **AUTH-03**: Candidate pre-registration invite flow via Edge Function (admin creates candidate, generates link, sends email)
 - [x] **AUTH-04**: `user_roles` table with scoped role assignments (user_id, role, scope_type, scope_id)
 - [ ] **AUTH-05**: Five role types enforced via RLS: `candidate` (own data), `party` (party data + nomination confirmation), `project_admin` (one project), `account_admin` (one account), `super_admin` (all accounts)
 - [x] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
-- [ ] **AUTH-07**: SvelteKit `hooks.server.ts` creates per-request Supabase server client via `@supabase/ssr`
+- [x] **AUTH-07**: SvelteKit `hooks.server.ts` creates per-request Supabase server client via `@supabase/ssr`
 - [ ] **AUTH-08**: Signicat OIDC bank auth integrated with Supabase session management
 
 ### Data Model
@@ -133,13 +133,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MTNT-05 | Phase 10 | Complete |
 | MTNT-06 | Phase 10 | Complete |
 | MTNT-07 | Phase 9 | Complete |
-| AUTH-01 | Phase 10 | Pending |
-| AUTH-02 | Phase 10 | Pending |
+| AUTH-01 | Phase 10 | Complete |
+| AUTH-02 | Phase 10 | Complete |
 | AUTH-03 | Phase 10 | Pending |
 | AUTH-04 | Phase 10 | Complete |
 | AUTH-05 | Phase 10 | Pending |
 | AUTH-06 | Phase 10 | Complete |
-| AUTH-07 | Phase 10 | Pending |
+| AUTH-07 | Phase 10 | Complete |
 | AUTH-08 | Phase 10 | Pending |
 | DATA-01 | Phase 9 | Complete |
 | DATA-02 | Phase 9 | Complete |
