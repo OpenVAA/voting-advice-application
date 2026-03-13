@@ -23,6 +23,8 @@ JSONB_FILE="$SCHEMA_DIR/006-answers-jsonb.sql"
 JSONB_BACKUP="$SCHEMA_DIR/006-answers-jsonb.sql.bak"
 RELATIONAL_SRC="$SCHEMA_DIR/alternatives/answers-relational.sql"
 RELATIONAL_FILE="$SCHEMA_DIR/006-answers-relational.sql"
+AUTH_RLS_FILE="$SCHEMA_DIR/013-auth-rls.sql"
+AUTH_RLS_BACKUP="$SCHEMA_DIR/013-auth-rls.sql.bak"
 
 # Concatenation order (per Phase 10 decision: 010-rls.sql comes AFTER 012-auth-hooks.sql)
 SCHEMA_FILES=(
@@ -106,6 +108,12 @@ case "${1:-}" in
       exit 1
     fi
 
+    # Restore 013-auth-rls.sql if backed up (from relational swap)
+    if [[ -f "$AUTH_RLS_BACKUP" ]]; then
+      mv "$AUTH_RLS_BACKUP" "$AUTH_RLS_FILE"
+      echo "Restored 013-auth-rls.sql from backup."
+    fi
+
     regenerate_migration
     reset_db
     echo "JSONB schema active."
@@ -130,6 +138,15 @@ case "${1:-}" in
     cp "$RELATIONAL_SRC" "$RELATIONAL_FILE"
     echo "Relational schema copied to $RELATIONAL_FILE"
 
+    # Patch 013-auth-rls.sql: remove 'answers' column from GRANT statements
+    # (relational schema has no answers column on candidates/organizations)
+    if [[ -f "$AUTH_RLS_FILE" ]] && [[ ! -f "$AUTH_RLS_BACKUP" ]]; then
+      cp "$AUTH_RLS_FILE" "$AUTH_RLS_BACKUP"
+      sed -i '' 's/, answers,/,/' "$AUTH_RLS_FILE"
+      sed -i '' 's/, answers$//' "$AUTH_RLS_FILE"
+      echo "Patched 013-auth-rls.sql (removed answers column from GRANTs)"
+    fi
+
     regenerate_migration
     reset_db
     echo "Relational schema active."
@@ -148,6 +165,12 @@ case "${1:-}" in
     else
       echo "ERROR: No JSONB backup or schema file found."
       exit 1
+    fi
+
+    # Restore 013-auth-rls.sql if backed up
+    if [[ -f "$AUTH_RLS_BACKUP" ]]; then
+      mv "$AUTH_RLS_BACKUP" "$AUTH_RLS_FILE"
+      echo "Restored 013-auth-rls.sql from backup."
     fi
 
     regenerate_migration

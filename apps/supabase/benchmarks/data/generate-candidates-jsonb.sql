@@ -50,33 +50,19 @@ FROM generate_series(1, 5) AS p_num,
 
 --------------------------------------------------------------------------------
 -- Create nominations (link candidates to random constituencies within their project)
+-- Extract project index (1-5) from the project UUID's last character
 --------------------------------------------------------------------------------
 INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id)
 SELECT
   c.project_id,
   c.id,
-  -- Election for this project
+  -- Election for this project (same index as project)
   ('00000000-0000-0000-0004-' || lpad(
-    ((SELECT row_number FROM (
-      SELECT id, row_number() OVER (ORDER BY id) AS row_number FROM projects
-      WHERE id IN (
-        SELECT ('00000000-0000-0000-0001-' || lpad(n::text, 12, '0'))::uuid
-        FROM generate_series(1, 5) AS n
-      )
-    ) sub WHERE sub.id = c.project_id))::text, 12, '0'))::uuid,
+    right(c.project_id::text, 1)::int::text, 12, '0'))::uuid,
   -- Random constituency within the project's 10 constituencies
   ('00000000-0000-0000-0002-' || lpad(
-    (
-      -- Project index (1-5) * 10 - 10 gives offset, + random 1-10 gives constituency
-      (SELECT row_number FROM (
-        SELECT id, row_number() OVER (ORDER BY id) AS row_number FROM projects
-        WHERE id IN (
-          SELECT ('00000000-0000-0000-0001-' || lpad(n::text, 12, '0'))::uuid
-          FROM generate_series(1, 5) AS n
-        )
-      ) sub WHERE sub.id = c.project_id) - 1
-    ) * 10 + (floor(random() * 10) + 1)::int
-  )::text, 12, '0'))::uuid
+    ((right(c.project_id::text, 1)::int - 1) * 10 + (floor(random() * 10) + 1)::int)::text,
+    12, '0'))::uuid
 FROM candidates c
 WHERE c.project_id IN (
   SELECT ('00000000-0000-0000-0001-' || lpad(n::text, 12, '0'))::uuid

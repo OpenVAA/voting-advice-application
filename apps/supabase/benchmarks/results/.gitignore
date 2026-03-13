@@ -1,3 +1,5 @@
-# Ignore raw benchmark output files
+# Ignore raw benchmark output (pgbench logs)
 *
 !.gitignore
+# Keep parsed JSON results
+!*.json

@@ -24,6 +24,29 @@ BEGIN;
 -- Clean up prior benchmark data (idempotent)
 --------------------------------------------------------------------------------
 -- Delete in reverse dependency order. CASCADE on project_id handles most children.
+-- First remove app_settings that may reference seed/benchmark projects (FK constraint).
+DELETE FROM app_settings WHERE project_id IN (
+  SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid
+  FROM generate_series(1, 5) AS n
+);
+DELETE FROM app_settings WHERE project_id IN (
+  SELECT ('00000000-0000-0000-0001-' || lpad(n::text, 12, '0'))::uuid
+  FROM generate_series(1, 5) AS n
+);
+-- Remove seed user_roles and auth.users that reference seed project/candidates
+DELETE FROM user_roles WHERE scope_id IN (
+  SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid
+  FROM generate_series(1, 50) AS n
+);
+DELETE FROM auth.users WHERE id IN (
+  SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid
+  FROM generate_series(1, 50) AS n
+);
+-- Now safe to delete projects (seed project uses 0000- pattern, benchmark uses 0001-)
+DELETE FROM projects WHERE id IN (
+  SELECT ('00000000-0000-0000-0000-' || lpad(n::text, 12, '0'))::uuid
+  FROM generate_series(1, 5) AS n
+);
 DELETE FROM projects WHERE id IN (
   SELECT ('00000000-0000-0000-0001-' || lpad(n::text, 12, '0'))::uuid
   FROM generate_series(1, 5) AS n

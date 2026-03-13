@@ -229,6 +229,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 -- Multi-tenant foundation: accounts and projects
 --
 -- All content tables reference projects via project_id FK with ON DELETE CASCADE.
@@ -256,6 +257,7 @@ CREATE TABLE projects (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Elections, constituency groups, constituencies, and their join tables
 
 CREATE TABLE elections (
@@ -336,6 +338,7 @@ CREATE TABLE election_constituency_groups (
   constituency_group_id uuid NOT NULL REFERENCES constituency_groups(id) ON DELETE CASCADE,
   PRIMARY KEY (election_id, constituency_group_id)
 );
+
 -- Entity tables: organizations, candidates, factions, alliances
 
 CREATE TABLE organizations (
@@ -422,6 +425,7 @@ CREATE TABLE alliances (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON alliances
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Question templates, categories, and questions
 
 CREATE TABLE question_templates (
@@ -502,6 +506,7 @@ CREATE TABLE questions (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON questions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Nominations
 --
 -- Uses separate FK columns for each entity type instead of polymorphic entity_id.
@@ -563,6 +568,7 @@ CREATE TRIGGER set_updated_at
 CREATE TRIGGER validate_nomination_before_insert_or_update
   BEFORE INSERT OR UPDATE ON nominations
   FOR EACH ROW EXECUTE FUNCTION validate_nomination();
+
 -- JSONB answer storage (default)
 --
 -- Stores answers as a JSONB column on candidates and organizations:
@@ -622,6 +628,7 @@ CREATE TRIGGER validate_answers_before_insert_or_update
 CREATE TRIGGER validate_answers_before_insert_or_update
   BEFORE INSERT OR UPDATE ON organizations
   FOR EACH ROW EXECUTE FUNCTION validate_answers_jsonb();
+
 -- App settings: per-project application settings stored as JSONB
 --
 -- One row per project, enforced by UNIQUE constraint on project_id.
@@ -638,6 +645,7 @@ CREATE TABLE app_settings (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON app_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Localized views for voter-facing queries
 --
 -- Resolve JSONB locale columns to plain text strings via get_localized().
@@ -684,6 +692,7 @@ SELECT
   required,
   sort_order
 FROM questions;
+
 -- B-tree indexes on RLS-referenced and commonly filtered columns
 
 --------------------------------------------------------------------------------
@@ -725,6 +734,7 @@ CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON nominations (
 --------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON candidates (auth_user_id);
 CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth_user_id);
+
 -- Auth tables: user_roles, auth_user_id columns, published flags
 --
 -- Depends on: 001-tenancy.sql (accounts, projects)
@@ -799,6 +809,7 @@ CREATE INDEX IF NOT EXISTS idx_candidates_published ON candidates (published) WH
 CREATE INDEX IF NOT EXISTS idx_organizations_published ON organizations (published) WHERE published = true;
 CREATE INDEX IF NOT EXISTS idx_questions_published ON questions (published) WHERE published = true;
 CREATE INDEX IF NOT EXISTS idx_nominations_published ON nominations (published) WHERE published = true;
+
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
 -- Depends on: 011-auth-tables.sql (user_roles table)
@@ -949,6 +960,7 @@ SET search_path = ''
 AS $$
   SELECT row_auth_user_id = (SELECT auth.uid());
 $$;
+
 -- Row Level Security: role-based access control policies
 --
 -- Replaces deny-all placeholders with real per-operation policies.
@@ -1477,6 +1489,7 @@ CREATE POLICY "admin_delete_app_settings" ON app_settings FOR DELETE TO authenti
 --
 -- CREATE POLICY "admin_delete_answers" ON answers FOR DELETE TO authenticated
 --   USING ((SELECT can_access_project(project_id)));
+
 -- Column-level protections for structural fields
 --
 -- Prevents authenticated users (candidates, party admins) from modifying
@@ -1532,3 +1545,4 @@ GRANT UPDATE (
   name, short_name, info, color, image, sort_order, subtype,
   custom_data, answers, created_at, updated_at
 ) ON organizations TO authenticated;
+
