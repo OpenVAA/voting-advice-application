@@ -28,6 +28,7 @@ import type {
   QUESTION_TYPE,
   QuestionCategory,
   QuestionCategoryData,
+  QuestionTemplate,
   QuestionVariant
 } from '../internal';
 
@@ -66,6 +67,7 @@ export type RootCollections = {
   elections: Election;
   // Questions and categories
   questionCategories: QuestionCategory;
+  questionTemplates: QuestionTemplate;
   questions: AnyQuestionVariant;
   // Entities
   alliances: Alliance;
