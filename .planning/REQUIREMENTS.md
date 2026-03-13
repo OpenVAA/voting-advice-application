@@ -62,9 +62,9 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Load Testing
 
-- [ ] **LOAD-01**: k6 load test scripts comparing JSONB vs relational answer storage at 1K, 5K, and 10K candidates
-- [ ] **LOAD-02**: pgbench scripts measuring bulk-read latency (voter pattern: all candidates with answers)
-- [ ] **LOAD-03**: pgbench scripts measuring write latency (candidate updates one answer) at 100 concurrent writers
+- [x] **LOAD-01**: k6 load test scripts comparing JSONB vs relational answer storage at 1K, 5K, and 10K candidates
+- [x] **LOAD-02**: pgbench scripts measuring bulk-read latency (voter pattern: all candidates with answers)
+- [x] **LOAD-03**: pgbench scripts measuring write latency (candidate updates one answer) at 100 concurrent writers
 - [ ] **LOAD-04**: Answer storage decision documented with supporting benchmark data
 
 ### Quality
@@ -149,9 +149,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRVC-04 | Phase 12 | Pending |
 | SRVC-05 | Phase 12 | Pending |
 | SRVC-06 | Phase 12 | Pending |
-| LOAD-01 | Phase 11 | Pending |
-| LOAD-02 | Phase 11 | Pending |
-| LOAD-03 | Phase 11 | Pending |
+| LOAD-01 | Phase 11 | Complete |
+| LOAD-02 | Phase 11 | Complete |
+| LOAD-03 | Phase 11 | Complete |
 | LOAD-04 | Phase 11 | Pending |
 | QUAL-01 | Phase 13 | Pending |
 | QUAL-02 | Phase 13 | Pending |
