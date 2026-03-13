@@ -31,8 +31,8 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [x] **MTNT-02**: `projects` table linked to accounts (one account can have multiple projects/VAA deployments)
 - [x] **MTNT-03**: All content tables linked to a project via `project_id`
 - [ ] **MTNT-04**: RLS policies enforce project-level data isolation via JWT role claims
-- [ ] **MTNT-05**: Candidate-to-auth-user link explicit in schema (which user owns which candidate record)
-- [ ] **MTNT-06**: Party-to-auth-user link in schema (party admin users)
+- [x] **MTNT-05**: Candidate-to-auth-user link explicit in schema (which user owns which candidate record)
+- [x] **MTNT-06**: Party-to-auth-user link in schema (party admin users)
 - [x] **MTNT-07**: Single-tenant deployment works as a degenerate case (one account, one project)
 
 ### Authentication
@@ -40,9 +40,9 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [ ] **AUTH-01**: Email/password login for candidates via Supabase Auth
 - [ ] **AUTH-02**: Password reset for candidates via email link
 - [ ] **AUTH-03**: Candidate pre-registration invite flow via Edge Function (admin creates candidate, generates link, sends email)
-- [ ] **AUTH-04**: `user_roles` table with scoped role assignments (user_id, role, scope_type, scope_id)
+- [x] **AUTH-04**: `user_roles` table with scoped role assignments (user_id, role, scope_type, scope_id)
 - [ ] **AUTH-05**: Five role types enforced via RLS: `candidate` (own data), `party` (party data + nomination confirmation), `project_admin` (one project), `account_admin` (one account), `super_admin` (all accounts)
-- [ ] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
+- [x] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
 - [ ] **AUTH-07**: SvelteKit `hooks.server.ts` creates per-request Supabase server client via `@supabase/ssr`
 - [ ] **AUTH-08**: Signicat OIDC bank auth integrated with Supabase session management
 
@@ -130,15 +130,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MTNT-02 | Phase 9 | Complete |
 | MTNT-03 | Phase 9 | Complete |
 | MTNT-04 | Phase 10 | Pending |
-| MTNT-05 | Phase 10 | Pending |
-| MTNT-06 | Phase 10 | Pending |
+| MTNT-05 | Phase 10 | Complete |
+| MTNT-06 | Phase 10 | Complete |
 | MTNT-07 | Phase 9 | Complete |
 | AUTH-01 | Phase 10 | Pending |
 | AUTH-02 | Phase 10 | Pending |
 | AUTH-03 | Phase 10 | Pending |
-| AUTH-04 | Phase 10 | Pending |
+| AUTH-04 | Phase 10 | Complete |
 | AUTH-05 | Phase 10 | Pending |
-| AUTH-06 | Phase 10 | Pending |
+| AUTH-06 | Phase 10 | Complete |
 | AUTH-07 | Phase 10 | Pending |
 | AUTH-08 | Phase 10 | Pending |
 | DATA-01 | Phase 9 | Complete |
