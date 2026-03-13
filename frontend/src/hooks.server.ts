@@ -3,6 +3,7 @@ import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
+import { createSupabaseServerClient } from '$lib/supabase/server';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
@@ -18,6 +19,23 @@ export const handle: Handle = (async ({ event, resolve }) => {
   const { params, route, url, request, isDataRequest } = event;
   const { pathname, search } = url;
   const requestedLocale = params.lang;
+
+  // Create Supabase server client FIRST (before any other logic)
+  const supabase = createSupabaseServerClient(event);
+
+  // Define safeGetSession -- verifies session against Supabase Auth server
+  const safeGetSession = async () => {
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    if (!session) return { session: null, user: null };
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser();
+    if (error) return { session: null, user: null };
+    return { session, user };
+  };
 
   const supportedLocales = locales.get();
   let cleanPath = requestedLocale ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '') : pathname;
@@ -78,13 +96,15 @@ export const handle: Handle = (async ({ event, resolve }) => {
 
   if (pathname.startsWith(`/${servedLocale}/candidate`)) {
     const token = event.cookies.get(AUTH_TOKEN_KEY);
+    // Check both old Strapi token and new Supabase session cookie
+    const hasAuth = token || event.cookies.getAll().some((c) => c.name.startsWith('sb-'));
 
-    if (token && pathname.endsWith('candidate/login')) {
+    if (hasAuth && pathname.endsWith('candidate/login')) {
       debug('Route: REDIRECT to home page');
       redirect(303, `/${servedLocale}/candidate`);
     }
 
-    if (!token && route.id.includes('(protected)')) {
+    if (!hasAuth && route.id.includes('(protected)')) {
       debug('Route: REDIRECT to login page');
       redirect(303, `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}`);
     }
@@ -99,12 +119,17 @@ export const handle: Handle = (async ({ event, resolve }) => {
     {
       ...event,
       locals: {
+        supabase,
+        safeGetSession,
         currentLocale: servedLocale,
         preferredLocale
       }
     },
     {
-      transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
+      transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`),
+      filterSerializedResponseHeaders(name) {
+        return name === 'content-range' || name === 'x-supabase-api-version';
+      }
     }
   );
 }) satisfies Handle;

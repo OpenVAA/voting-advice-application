@@ -1,5 +1,7 @@
 import type { DPReturnType } from '$lib/api/base/dataProvider.type';
 import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
+import type { Database } from '@openvaa/supabase-types';
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
@@ -7,6 +9,11 @@ import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 declare global {
   namespace App {
     interface Locals {
+      supabase: SupabaseClient<Database>;
+      safeGetSession(): Promise<{
+        session: Session | null;
+        user: User | null;
+      }>;
       currentLocale: string;
       preferredLocale?: string;
     }
@@ -25,6 +32,10 @@ declare global {
       candidateUserData?: CandidateUserData<true>;
       /** The jwt auth token */
       token?: string;
+
+      // Supabase session data
+      session?: Session | null;
+      user?: User | null;
     }
     interface PageState {
       resultsShowEntity?: {
