@@ -1,0 +1,85 @@
+-- Entity tables: organizations, candidates, factions, alliances
+
+CREATE TABLE organizations (
+  id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name         jsonb,
+  short_name   jsonb,
+  info         jsonb,
+  color        jsonb,
+  image        jsonb,
+  sort_order   integer,
+  subtype      text,
+  custom_data  jsonb,
+  is_generated boolean     DEFAULT false,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON organizations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TABLE candidates (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id      uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name            jsonb,
+  short_name      jsonb,
+  info            jsonb,
+  color           jsonb,
+  image           jsonb,
+  sort_order      integer,
+  subtype         text,
+  custom_data     jsonb,
+  is_generated    boolean     DEFAULT false,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  first_name      text        NOT NULL,
+  last_name       text        NOT NULL,
+  organization_id uuid        REFERENCES organizations(id) ON DELETE SET NULL
+  -- Note: auth_user_id added in Phase 10 (Authentication)
+);
+
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON candidates
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TABLE factions (
+  id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name         jsonb,
+  short_name   jsonb,
+  info         jsonb,
+  color        jsonb,
+  image        jsonb,
+  sort_order   integer,
+  subtype      text,
+  custom_data  jsonb,
+  is_generated boolean     DEFAULT false,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON factions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TABLE alliances (
+  id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name         jsonb,
+  short_name   jsonb,
+  info         jsonb,
+  color        jsonb,
+  image        jsonb,
+  sort_order   integer,
+  subtype      text,
+  custom_data  jsonb,
+  is_generated boolean     DEFAULT false,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON alliances
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();

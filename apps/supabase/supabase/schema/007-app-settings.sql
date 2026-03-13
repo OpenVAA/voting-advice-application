@@ -1,7 +1,5 @@
--- Migration: Create app_settings table
--- Phase 9 Plan 02 Task 1
+-- App settings: per-project application settings stored as JSONB
 --
--- app_settings stores per-project application settings as a JSONB blob.
 -- One row per project, enforced by UNIQUE constraint on project_id.
 -- The app layer is responsible for parsing/validating the settings structure.
 
