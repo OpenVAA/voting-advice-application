@@ -1,31 +1,34 @@
 /**
  * # Candidate App login server action
+ *
+ * Uses Supabase Auth signInWithPassword for email/password authentication.
+ * The Supabase server client from event.locals handles cookie management
+ * automatically via the hooks.server.ts cookie handler.
  */
 
 import { fail, redirect } from '@sveltejs/kit';
-import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes.js';
 import { buildRoute } from '$lib/utils/route';
-import type { LoginParams, LoginResult } from '../../api/auth/login/+server';
 
 export const actions = {
-  default: async ({ request, fetch, locals }) => {
+  default: async ({ request, locals }) => {
     const data = await request.formData();
-    const username = data.get('email') as string;
+    const email = data.get('email') as string;
     const password = data.get('password') as string;
     const redirectTo = data.get('redirectTo') as string;
 
-    const response = await fetch(UNIVERSAL_API_ROUTES.login, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password, role: 'candidate' } as LoginParams)
+    const { error } = await locals.supabase.auth.signInWithPassword({
+      email,
+      password
     });
 
-    const result = (await response.json()) as LoginResult;
+    if (error) {
+      // Map Supabase auth errors to HTTP status codes
+      // "Invalid login credentials" -> 400, "Email not confirmed" -> 403
+      const status = error.message.includes('not confirmed') ? 403 : 400;
+      return fail(status);
+    }
 
-    if (result.type !== 'success') return fail(result.status ?? 500);
-
+    // Redirect to the requested page or candidate home
     return redirect(
       303,
       redirectTo

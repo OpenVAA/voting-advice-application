@@ -7,12 +7,14 @@ Shows a form with which to request a password reset email.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { createSupabaseBrowserClient } from '$lib/supabase/browser';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
 
@@ -20,7 +22,7 @@ Shows a form with which to request a password reset email.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, requestForgotPasswordEmail, t } = getCandidateContext();
+  const { getRoute, t } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -32,12 +34,12 @@ Shows a form with which to request a password reset email.
 
   async function handleSubmit() {
     status = 'loading';
-    // Request email to be sent in the backend
-    const result = await requestForgotPasswordEmail({ email }).catch((e) => {
-      logDebugError(`Error requesting password reset email: ${e?.message}`);
-      return undefined;
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/${$page.params.lang ?? 'en'}/candidate/update-password`
     });
-    if (result?.type !== 'success') {
+    if (error) {
+      logDebugError(`Error requesting password reset email: ${error.message}`);
       status = 'error';
       return;
     }
