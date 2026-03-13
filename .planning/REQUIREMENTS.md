@@ -44,7 +44,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [x] **AUTH-05**: Five role types enforced via RLS: `candidate` (own data), `party` (party data + nomination confirmation), `project_admin` (one project), `account_admin` (one account), `super_admin` (all accounts)
 - [x] **AUTH-06**: Custom Access Token Hook injects active roles and scopes into JWT claims
 - [x] **AUTH-07**: SvelteKit `hooks.server.ts` creates per-request Supabase server client via `@supabase/ssr`
-- [ ] **AUTH-08**: Signicat OIDC bank auth integrated with Supabase session management
+- [x] **AUTH-08**: Signicat OIDC bank auth integrated with Supabase session management
 
 ### Data Model
 
@@ -140,7 +140,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-05 | Phase 10 | Complete |
 | AUTH-06 | Phase 10 | Complete |
 | AUTH-07 | Phase 10 | Complete |
-| AUTH-08 | Phase 10 | Pending |
+| AUTH-08 | Phase 10 | Complete |
 | DATA-01 | Phase 9 | Complete |
 | DATA-02 | Phase 9 | Complete |
 | SRVC-01 | Phase 12 | Pending |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: in-progress
-stopped_at: Completed 10-04-PLAN.md
-last_updated: "2026-03-13T14:04:49.984Z"
-last_activity: 2026-03-13 -- invite-candidate Edge Function for admin-initiated candidate pre-registration
+stopped_at: Completed 10-05-PLAN.md
+last_updated: "2026-03-13T14:05:00Z"
+last_activity: 2026-03-13 -- Signicat OIDC bank auth callback Edge Function with JWE/JWT processing
 progress:
   total_phases: 13
   completed_phases: 8
   total_plans: 42
-  completed_plans: 40
-  percent: 95
+  completed_plans: 41
+  percent: 98
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 10 in progress — Plans 01-04 complete, next: Plan 05 (Signicat OIDC)
+**Current focus:** Phase 10 complete — all 5 plans executed. Next: Phase 11
 
 ## Current Position
 
-Phase: 10 of 13 (Authentication and Roles) — IN PROGRESS
-Plan: 4 of 5 in current phase — completed
-Status: Plans 01-04 complete, continuing to Plan 05
-Last activity: 2026-03-13 -- invite-candidate Edge Function for admin-initiated candidate pre-registration
+Phase: 10 of 13 (Authentication and Roles) — COMPLETE
+Plan: 5 of 5 in current phase — completed
+Status: All Phase 10 plans complete, ready for Phase 11
+Last activity: 2026-03-13 -- Signicat OIDC bank auth callback Edge Function with JWE/JWT processing
 
-Progress: [██████████] 95%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [██████████] 95%
 | Phase 10 P02 | 8min | 2 tasks | 3 files |
 | Phase 10 P03 | 4min | 3 tasks | 9 files |
 | Phase 10 P04 | 2min | 1 tasks | 1 files |
+| Phase 10 P05 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [Phase 10]: Browser Supabase client is a singleton (created once, reused across component lifecycle)
 - [Phase 10]: Dual token verification in Edge Functions: getUser() for server-side validation + JWT decode for role claims
 - [Phase 10]: Edge Function rollback: delete candidate on invite failure, log-only on role assignment failure
+- [Phase 10]: Signicat callback supports both JWE (5-part) and plain JWT (3-part) tokens via part count detection
+- [Phase 10]: Bank auth user lookup via paginated listUsers + app_metadata.birthdate_id filter (no custom identity table)
+- [Phase 10]: Placeholder email pattern for magic link generation since bank auth users have no email initially
 
 ### Pending Todos
 
@@ -114,6 +118,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-13T14:04:49.981Z
-Stopped at: Completed 10-04-PLAN.md
-Resume file: .planning/phases/10-authentication-and-roles/10-04-SUMMARY.md
+Last session: 2026-03-13T14:05:00Z
+Stopped at: Completed 10-05-PLAN.md
+Resume file: .planning/phases/10-authentication-and-roles/10-05-SUMMARY.md
