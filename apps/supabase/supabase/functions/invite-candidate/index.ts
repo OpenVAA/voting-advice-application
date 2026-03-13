@@ -22,7 +22,22 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     // 1. Parse and validate request body
     // -------------------------------------------------------------------------
-    const {firstName, lastName, email, projectId, organizationId} = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({error: 'Invalid or missing request body'}),
+        {status: 400, headers: {...corsHeaders, 'Content-Type': 'application/json'}}
+      );
+    }
+    const {firstName, lastName, email, projectId, organizationId} = body as {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      projectId?: string;
+      organizationId?: string;
+    };
 
     if (!firstName || !lastName || !email || !projectId) {
       return new Response(
