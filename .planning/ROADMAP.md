@@ -218,12 +218,14 @@ Plans:
   3. RLS policies enforce that a candidate can only read/write their own data, a project admin can manage all data within their project, and cross-project access is denied -- verified by manual SQL queries as different authenticated users
   4. A Custom Access Token Hook injects active roles and scopes into the JWT, and SvelteKit `hooks.server.ts` creates a per-request Supabase server client that uses these claims
   5. Signicat OIDC bank authentication integrates with Supabase session management so that a bank-authenticated user receives a valid Supabase session
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
-- [ ] 10-03: TBD
+- [ ] 10-01-PLAN.md -- Auth foundation: user_roles table, auth_user_id columns, published flags, Custom Access Token Hook, RLS helpers
+- [ ] 10-02-PLAN.md -- Replace deny-all RLS with real role-based policies, column-level structural field protection
+- [ ] 10-03-PLAN.md -- SvelteKit @supabase/ssr integration: client factories, hooks.server.ts, app.d.ts types
+- [ ] 10-04-PLAN.md -- invite-candidate Edge Function for admin pre-registration flow
+- [ ] 10-05-PLAN.md -- signicat-callback Edge Function for bank auth OIDC integration
 
 ### Phase 11: Load Testing
 **Goal**: The answer storage design decision is resolved with benchmark data comparing JSONB vs relational at realistic candidate volumes
@@ -285,7 +287,7 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 7. Advanced Test Capabilities | v1.0 | 1/2 | In Progress | - |
 | 8. Infrastructure Setup | v2.0 | 3/3 | Complete | 2026-03-12 |
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
-| 10. Authentication and Roles | v2.0 | 0/? | Not started | - |
+| 10. Authentication and Roles | v2.0 | 0/5 | Planned | - |
 | 11. Load Testing | v2.0 | 0/? | Not started | - |
 | 12. Services | v2.0 | 0/? | Not started | - |
 | 13. Quality Assurance | v2.0 | 0/? | Not started | - |
