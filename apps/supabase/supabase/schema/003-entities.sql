@@ -3,6 +3,7 @@
 CREATE TABLE organizations (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  auth_user_id uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
   name         jsonb,
   short_name   jsonb,
   info         jsonb,
@@ -36,8 +37,8 @@ CREATE TABLE candidates (
   updated_at      timestamptz NOT NULL DEFAULT now(),
   first_name      text        NOT NULL,
   last_name       text        NOT NULL,
-  organization_id uuid        REFERENCES organizations(id) ON DELETE SET NULL
-  -- Note: auth_user_id added in Phase 10 (Authentication)
+  organization_id uuid        REFERENCES organizations(id) ON DELETE SET NULL,
+  auth_user_id    uuid        REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
 CREATE TRIGGER set_updated_at

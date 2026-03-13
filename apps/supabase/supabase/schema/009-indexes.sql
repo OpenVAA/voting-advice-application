@@ -33,3 +33,9 @@ CREATE INDEX IF NOT EXISTS idx_nominations_alliance_id ON nominations (alliance_
 CREATE INDEX IF NOT EXISTS idx_nominations_election_id ON nominations (election_id);
 CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON nominations (constituency_id);
 CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON nominations (parent_nomination_id);
+
+--------------------------------------------------------------------------------
+-- auth_user_id indexes (columns defined in 003-entities.sql)
+--------------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON candidates (auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth_user_id);

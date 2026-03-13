@@ -63,7 +63,11 @@ export const COLUMN_MAP = {
 
   // AnswerData (relational alternative)
   open_answer: 'openAnswer',
-  question_id: 'questionId'
+  question_id: 'questionId',
+
+  // Auth columns (Phase 10)
+  auth_user_id: 'authUserId',
+  published: 'published'
 } as const;
 
 /** Database column name (snake_case) */
