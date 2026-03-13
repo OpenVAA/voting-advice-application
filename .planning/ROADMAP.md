@@ -235,11 +235,11 @@ Plans:
   1. k6 load test scripts exist that populate both JSONB and relational schemas with 1K, 5K, and 10K candidates and measure bulk-read latency (voter pattern) and write latency (candidate update pattern)
   2. pgbench scripts measure raw PostgreSQL query performance for bulk reads and concurrent writes (100 writers) on both schemas
   3. A written decision document in the planning directory states which answer storage approach is chosen, with supporting latency numbers at each scale tier and the reasoning for the choice
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
-- [ ] 11-02: TBD
+- [ ] 11-01-PLAN.md -- Benchmark infrastructure: data generation, pgbench scripts (8 patterns), k6 voter-read test, schema swap, orchestration
+- [ ] 11-02-PLAN.md -- Execute benchmarks at all scale tiers, write decision document, human review
 
 ### Phase 12: Services
 **Goal**: Storage, email, and admin bulk operations work end-to-end on the Supabase backend
@@ -287,7 +287,7 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 7. Advanced Test Capabilities | v1.0 | 1/2 | In Progress | - |
 | 8. Infrastructure Setup | v2.0 | 3/3 | Complete | 2026-03-12 |
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
-| 10. Authentication and Roles | 5/5 | Complete    | 2026-03-13 | - |
-| 11. Load Testing | v2.0 | 0/? | Not started | - |
+| 10. Authentication and Roles | v2.0 | 5/5 | Complete | 2026-03-13 |
+| 11. Load Testing | v2.0 | 0/2 | Planned | - |
 | 12. Services | v2.0 | 0/? | Not started | - |
 | 13. Quality Assurance | v2.0 | 0/? | Not started | - |
