@@ -17,7 +17,6 @@ import type {
   Organization,
   OrganizationNomination,
   QuestionCategory,
-  QuestionTemplate,
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion,
   TextQuestion
@@ -46,7 +45,6 @@ export const OBJECT_TYPE = {
   Organization: 'organization',
   OrganizationNomination: 'organizationNomination',
   QuestionCategory: 'questionCategory',
-  QuestionTemplate: 'questionTemplate',
   SingleChoiceCategoricalQuestion: 'singleChoiceCategoricalQuestion',
   SingleChoiceOrdinalQuestion: 'singleChoiceOrdinalQuestion',
   TextQuestion: 'textQuestion'
@@ -80,7 +78,6 @@ export type ObjectTypeMap = {
   [OBJECT_TYPE.Organization]: Organization;
   [OBJECT_TYPE.OrganizationNomination]: OrganizationNomination;
   [OBJECT_TYPE.QuestionCategory]: QuestionCategory;
-  [OBJECT_TYPE.QuestionTemplate]: QuestionTemplate;
   [OBJECT_TYPE.SingleChoiceCategoricalQuestion]: SingleChoiceCategoricalQuestion;
   [OBJECT_TYPE.SingleChoiceOrdinalQuestion]: SingleChoiceOrdinalQuestion;
   [OBJECT_TYPE.TextQuestion]: TextQuestion;

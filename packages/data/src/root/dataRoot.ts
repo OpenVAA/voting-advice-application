@@ -36,7 +36,6 @@ import {
   parseNominationTree,
   QUESTION_TYPE,
   QuestionCategory,
-  QuestionTemplate,
   Updatable
 } from '../internal';
 import type {
@@ -67,7 +66,6 @@ import type {
   NominationVariantTree,
   QuestionCategoryData,
   QuestionCategoryType,
-  QuestionTemplateData,
   QuestionType,
   QuestionVariant,
   RootCollections,
@@ -191,10 +189,6 @@ export class DataRoot extends Updatable {
 
   get questionCategories(): Collection<QuestionCategory> {
     return this.getCollectionAsArray('questionCategories');
-  }
-
-  get questionTemplates(): Collection<QuestionTemplate> {
-    return this.getCollectionAsArray('questionTemplates');
   }
 
   /**
@@ -403,16 +397,6 @@ export class DataRoot extends Updatable {
    */
   getQuestionCategory(id: Id): QuestionCategory {
     return this.getChild('questionCategories', id);
-  }
-
-  /**
-   * Get a specific `QuestionTemplate` by id.
-   * @param id
-   * @returns The `QuestionTemplate` with the given id
-   * @throws If the object is not found.
-   */
-  getQuestionTemplate(id: Id): QuestionTemplate {
-    return this.getChild('questionTemplates', id);
   }
 
   /**
@@ -732,13 +716,6 @@ export class DataRoot extends Updatable {
       this.provideData('questionCategories', categories, (args) => new QuestionCategory(args));
       this.provideData('questions', questions, createQuestion);
     });
-  }
-
-  /**
-   * Provide question template data to the `DataRoot`. Existing data will be reset.
-   */
-  provideQuestionTemplateData(data: Readonly<Array<QuestionTemplateData>>): void {
-    this.provideData('questionTemplates', data, (args) => new QuestionTemplate(args));
   }
 
   /**

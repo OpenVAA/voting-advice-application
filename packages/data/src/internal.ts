@@ -60,8 +60,6 @@ export * from './objects/questions/base/multipleChoiceQuestion.type';
 export * from './objects/questions/base/multipleChoiceQuestion';
 export * from './objects/questions/base/questionTypes';
 export * from './objects/questions/base/singleChoiceQuestion';
-export * from './objects/questions/template/questionTemplate.type';
-export * from './objects/questions/template/questionTemplate';
 export * from './objects/questions/category/questionCategoryTypes';
 export * from './objects/questions/category/questionCategory.type';
 export * from './objects/questions/category/questionCategory';
