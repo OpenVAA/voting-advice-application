@@ -173,7 +173,15 @@ Deno.serve(async (req: Request) => {
 
   try {
     // 1. Parse request body
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
     const { id_token, project_id } = body;
 
     if (!id_token || typeof id_token !== 'string') {
