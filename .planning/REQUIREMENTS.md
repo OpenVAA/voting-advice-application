@@ -58,7 +58,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [x] **SRVC-03**: Mailpit accessible at localhost for dev email with human-readable web UI
 - [x] **SRVC-04**: Bulk data import via Postgres RPC function with transactional guarantee
 - [x] **SRVC-05**: Bulk data delete via Postgres RPC function with transactional guarantee
-- [ ] **SRVC-06**: Transactional email for non-auth flows (candidate notifications) via Edge Function
+- [x] **SRVC-06**: Transactional email for non-auth flows (candidate notifications) via Edge Function
 
 ### Load Testing
 
@@ -148,7 +148,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRVC-03 | Phase 12 | Complete |
 | SRVC-04 | Phase 12 | Complete |
 | SRVC-05 | Phase 12 | Complete |
-| SRVC-06 | Phase 12 | Pending |
+| SRVC-06 | Phase 12 | Complete |
 | LOAD-01 | Phase 11 | Complete |
 | LOAD-02 | Phase 11 | Complete |
 | LOAD-03 | Phase 11 | Complete |

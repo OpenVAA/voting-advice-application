@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: executing
-stopped_at: Completed 12-01-PLAN.md and 12-02-PLAN.md
-last_updated: "2026-03-14T18:24:37Z"
-last_activity: 2026-03-14 -- Phase 12 plans 01 and 02 complete
+stopped_at: Completed 12-03-PLAN.md (Phase 12 complete)
+last_updated: "2026-03-14T18:38:25Z"
+last_activity: 2026-03-14 -- Phase 12 all plans complete
 progress:
   total_phases: 13
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 46
-  completed_plans: 45
-  percent: 97
+  completed_plans: 46
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 12 (Services) in progress, plans 01 and 02 complete
+**Current focus:** Phase 12 (Services) complete, all plans done
 
 ## Current Position
 
-Phase: 12 of 13 (Services) — IN PROGRESS
-Plan: 2 of 3 — executing
-Status: Plans 01 (storage + services) and 02 (external_id + bulk ops) complete
-Last activity: 2026-03-14 -- Phase 12 plans 01 and 02 complete
+Phase: 12 of 13 (Services) — COMPLETE
+Plan: 3 of 3 — complete
+Status: All Phase 12 plans complete (storage, bulk ops, email service)
+Last activity: 2026-03-14 -- Phase 12 plan 03 complete
 
-Progress: [██████████] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [██████████] 97%
 | Phase 11 P02 | 8min | 3 tasks | 43 files |
 | Phase 12 P01 | 12min | 2 tasks | 5 files |
 | Phase 12 P02 | 7min | 2 tasks | 3 files |
+| Phase 12 P03 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,10 @@ Recent decisions affecting current work:
 - [Phase 12]: Relationship resolution via dynamic SQL helper resolve_external_ref() supporting both external_id objects and direct UUIDs
 - [Phase 12]: Collection processing order hardcoded in dependency-safe sequence for bulk_import
 - [Phase 12]: bulk_delete processes in reverse dependency order to avoid FK violations
+- [Phase 12]: resolve_email_variables uses SECURITY DEFINER to read auth.users (not accessible to regular authenticated users)
+- [Phase 12]: Edge Function admin check accepts any admin role without project scope for platform-level email tool
+- [Phase 12]: SMTP transport defaults to Inbucket Docker hostname (inbucket:2500) with configurable env vars for production
+- [Phase 12]: Unresolved template variables left as-is in rendered output (not stripped or errored)
 
 ### Pending Todos
 
@@ -137,6 +142,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T18:24:37Z
-Stopped at: Completed 12-01-PLAN.md and 12-02-PLAN.md
-Resume file: .planning/phases/12-services/12-01-SUMMARY.md
+Last session: 2026-03-14T18:38:25Z
+Stopped at: Completed 12-03-PLAN.md (Phase 12 complete)
+Resume file: .planning/phases/12-services/12-03-SUMMARY.md

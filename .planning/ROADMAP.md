@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 9: Schema and Data Model** - All database tables modeled on @openvaa/data entities with multi-tenant structure, localization, both answer storage alternatives, and QuestionTemplate package extension
 - [x] **Phase 10: Authentication and Roles** - Candidate and admin auth via Supabase Auth, role-based RLS enforcement, JWT claims, SvelteKit integration, Signicat OIDC (completed 2026-03-13)
 - [x] **Phase 11: Load Testing** - k6 and pgbench benchmarks comparing answer storage alternatives at realistic scale, producing a documented decision (completed 2026-03-14)
-- [ ] **Phase 12: Services** - Storage buckets with RLS, candidate photo upload, email for dev and transactional flows, bulk admin import/delete operations
+- [x] **Phase 12: Services** - Storage buckets with RLS, candidate photo upload, email for dev and transactional flows, bulk admin import/delete operations (completed 2026-03-14)
 - [ ] **Phase 13: Quality Assurance** - pgTAP tests verifying tenant isolation, candidate self-edit restrictions, and public read access
 
 ## Phase Details
@@ -290,5 +290,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
 | 10. Authentication and Roles | v2.0 | 5/5 | Complete | 2026-03-13 |
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
-| 12. Services | v2.0 | 2/3 | In Progress | - |
+| 12. Services | 3/3 | Complete   | 2026-03-14 | - |
 | 13. Quality Assurance | v2.0 | 0/? | Not started | - |
