@@ -131,6 +131,39 @@ BEGIN
       IF jsonb_typeof(answer_value) != 'object' THEN
         RAISE EXCEPTION 'Answer for image question must be an object';
       END IF;
+      -- Validate StoredImage structure: {path, pathDark?, alt?, width?, height?, focalPoint?}
+      IF NOT (answer_value ? 'path') THEN
+        RAISE EXCEPTION 'StoredImage must have a "path" property';
+      END IF;
+      IF jsonb_typeof(answer_value -> 'path') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "path" must be a string';
+      END IF;
+      IF answer_value ? 'pathDark' AND jsonb_typeof(answer_value -> 'pathDark') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "pathDark" must be a string';
+      END IF;
+      IF answer_value ? 'alt' AND jsonb_typeof(answer_value -> 'alt') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "alt" must be a string';
+      END IF;
+      IF answer_value ? 'width' AND jsonb_typeof(answer_value -> 'width') != 'number' THEN
+        RAISE EXCEPTION 'StoredImage "width" must be a number';
+      END IF;
+      IF answer_value ? 'height' AND jsonb_typeof(answer_value -> 'height') != 'number' THEN
+        RAISE EXCEPTION 'StoredImage "height" must be a number';
+      END IF;
+      IF answer_value ? 'focalPoint' THEN
+        IF jsonb_typeof(answer_value -> 'focalPoint') != 'object' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint" must be an object';
+        END IF;
+        IF NOT (answer_value -> 'focalPoint' ? 'x') OR NOT (answer_value -> 'focalPoint' ? 'y') THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint" must have "x" and "y" properties';
+        END IF;
+        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'x') != 'number' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint.x" must be a number';
+        END IF;
+        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'y') != 'number' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint.y" must be a number';
+        END IF;
+      END IF;
   END CASE;
 END;
 $$;
@@ -1678,6 +1711,23 @@ GRANT UPDATE (
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 
 --------------------------------------------------------------------------------
+-- storage_config: configuration table for storage cleanup triggers
+--
+-- Stores supabase_url and service_role_key needed by pg_net triggers to call
+-- the Storage API. Seeded in seed.sql with local dev defaults.
+-- In production, update values for the actual Supabase URL and service role key.
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS storage_config (
+  key   text PRIMARY KEY,
+  value text NOT NULL
+);
+
+-- Only service_role and postgres can access storage_config (not exposed via API)
+ALTER TABLE storage_config ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE storage_config FROM anon, authenticated, public;
+GRANT SELECT ON TABLE storage_config TO service_role;
+
+--------------------------------------------------------------------------------
 -- is_storage_entity_published: check if the entity owning a storage path is published
 --
 -- Path format: {project_id}/{entity_type}/{entity_id}/filename.ext
@@ -1987,11 +2037,12 @@ DECLARE
   base_url text;
   service_key text;
 BEGIN
-  base_url := current_setting('app.supabase_url', true);
-  service_key := current_setting('app.service_role_key', true);
+  -- Read configuration from storage_config table
+  SELECT value INTO base_url FROM public.storage_config WHERE key = 'supabase_url';
+  SELECT value INTO service_key FROM public.storage_config WHERE key = 'service_role_key';
 
   IF base_url IS NULL OR service_key IS NULL THEN
-    RAISE WARNING 'Storage cleanup skipped: missing app.supabase_url or app.service_role_key';
+    RAISE WARNING 'Storage cleanup skipped: missing supabase_url or service_role_key in storage_config';
     RETURN;
   END IF;
 
@@ -2178,9 +2229,9 @@ CREATE TRIGGER cleanup_image_on_update
   BEFORE UPDATE ON questions
   FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
 
--- Note: app.supabase_url and app.service_role_key custom settings must be set
--- in seed.sql for local dev. See seed.sql for the default values.
--- In production, use Supabase Vault or environment variables.
+-- Note: supabase_url and service_role_key values must be seeded in the
+-- storage_config table. See seed.sql for the default local dev values.
+-- In production, update the storage_config table with actual values.
 -- External ID columns on all content tables
 --
 -- Adds a nullable external_id column to each content table with a composite

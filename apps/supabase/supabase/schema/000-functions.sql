@@ -131,6 +131,39 @@ BEGIN
       IF jsonb_typeof(answer_value) != 'object' THEN
         RAISE EXCEPTION 'Answer for image question must be an object';
       END IF;
+      -- Validate StoredImage structure: {path, pathDark?, alt?, width?, height?, focalPoint?}
+      IF NOT (answer_value ? 'path') THEN
+        RAISE EXCEPTION 'StoredImage must have a "path" property';
+      END IF;
+      IF jsonb_typeof(answer_value -> 'path') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "path" must be a string';
+      END IF;
+      IF answer_value ? 'pathDark' AND jsonb_typeof(answer_value -> 'pathDark') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "pathDark" must be a string';
+      END IF;
+      IF answer_value ? 'alt' AND jsonb_typeof(answer_value -> 'alt') != 'string' THEN
+        RAISE EXCEPTION 'StoredImage "alt" must be a string';
+      END IF;
+      IF answer_value ? 'width' AND jsonb_typeof(answer_value -> 'width') != 'number' THEN
+        RAISE EXCEPTION 'StoredImage "width" must be a number';
+      END IF;
+      IF answer_value ? 'height' AND jsonb_typeof(answer_value -> 'height') != 'number' THEN
+        RAISE EXCEPTION 'StoredImage "height" must be a number';
+      END IF;
+      IF answer_value ? 'focalPoint' THEN
+        IF jsonb_typeof(answer_value -> 'focalPoint') != 'object' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint" must be an object';
+        END IF;
+        IF NOT (answer_value -> 'focalPoint' ? 'x') OR NOT (answer_value -> 'focalPoint' ? 'y') THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint" must have "x" and "y" properties';
+        END IF;
+        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'x') != 'number' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint.x" must be a number';
+        END IF;
+        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'y') != 'number' THEN
+          RAISE EXCEPTION 'StoredImage "focalPoint.y" must be a number';
+        END IF;
+      END IF;
   END CASE;
 END;
 $$;

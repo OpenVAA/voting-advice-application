@@ -5,6 +5,21 @@
 -- Seed data runs as service_role which bypasses RLS, so deny-all policies
 -- do not block these inserts.
 
+--------------------------------------------------------------------------------
+-- Storage cleanup configuration for pg_net triggers
+-- These settings allow triggers to call the Supabase Storage API for automatic
+-- file cleanup on entity delete and image column update.
+--
+-- Values below are the default Supabase local dev settings (not secrets --
+-- they are identical for every local Supabase instance).
+-- In production, update with actual Supabase URL and service role key.
+--------------------------------------------------------------------------------
+INSERT INTO storage_config (key, value)
+VALUES
+  ('supabase_url', 'http://kong:8000'),
+  ('service_role_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+
 -- Default account for single-tenant deployment
 INSERT INTO accounts (id, name)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Default Account')
