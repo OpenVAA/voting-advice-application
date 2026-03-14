@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: in-progress
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-13T17:01:45.189Z"
-last_activity: 2026-03-13 -- Benchmark infrastructure for JSONB vs relational answer storage comparison
+stopped_at: Phase 11 complete, Phase 12 next
+last_updated: "2026-03-14T12:00:00.000Z"
+last_activity: 2026-03-14 -- Phase 11 closed (JSONB decision), preparing Phase 12 planning
 progress:
   total_phases: 13
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 44
-  completed_plans: 42
-  percent: 95
+  completed_plans: 44
+  percent: 97
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 11 in progress — benchmark infrastructure complete, running benchmarks next
+**Current focus:** Phase 11 complete (JSONB chosen), Phase 12 (Services) next
 
 ## Current Position
 
-Phase: 11 of 13 (Load Testing) — IN PROGRESS
-Plan: 1 of 2 in current phase — completed
-Status: Plan 01 complete (benchmark infrastructure), Plan 02 next (run benchmarks + decision document)
-Last activity: 2026-03-13 -- Benchmark infrastructure for JSONB vs relational answer storage comparison
+Phase: 12 of 13 (Services) — NOT STARTED
+Plan: 0 of ? — planning next
+Status: Phase 11 complete, Phase 12 needs planning
+Last activity: 2026-03-14 -- Phase 11 closed, preparing Phase 12
 
-Progress: [██████████] 95%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [██████████] 95%
 | Phase 10 P04 | 2min | 1 tasks | 1 files |
 | Phase 10 P05 | 2min | 1 tasks | 1 files |
 | Phase 11 P01 | 6min | 3 tasks | 18 files |
+| Phase 11 P02 | 8min | 3 tasks | 43 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,10 @@ Recent decisions affecting current work:
 - [Phase 11]: OFFSET-based random candidate selection in write benchmarks
 - [Phase 11]: PostgREST resource embedding via nominations!inner for k6 voter bulk-read
 - [Phase 11]: Trigger disable/enable for bulk data loading, triggers active during benchmarks
+- [Phase 11]: JSONB chosen over relational for answer storage (HIGH confidence)
+- [Phase 11]: Client-side locale selection — all locales returned, filtered in browser (50 cache entries vs 150)
+- [Phase 11]: Smart JSONB trigger validates only changed keys (44% write improvement, adopted in schema)
+- [Phase 11]: With caching (30-min TTL), DB sees ~50 concurrent queries max — both schemas identical at this level
 
 ### Pending Todos
 
@@ -119,10 +124,10 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 - [Research]: Signicat OIDC JWT format must be verified before Phase 10 implementation -- determines whether `signInWithIdToken()` or server-side decryption is needed
-- [Research]: Answer storage decision thresholds should be defined before Phase 11 load tests run
+- [Resolved]: Answer storage decision — JSONB chosen (see 11-DECISION.md)
 
 ## Session Continuity
 
-Last session: 2026-03-13T17:01:45.186Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-14T12:00:00.000Z
+Stopped at: Phase 11 complete, planning Phase 12
 Resume file: None
