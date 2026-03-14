@@ -250,11 +250,12 @@ Plans:
   2. Emails sent during local development are captured by Mailpit and visible in its web UI at the configured localhost port
   3. An admin can trigger a bulk data import via a Postgres RPC function that either fully succeeds or fully rolls back (transactional guarantee), and similarly for bulk delete
   4. A transactional email for non-auth flows (candidate notification) can be sent via an Edge Function
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md -- Storage buckets (public-assets, private-assets) with RLS policies, StoredImage validation, cleanup triggers via pg_net
+- [ ] 12-02-PLAN.md -- external_id columns on all content tables, bulk_import() and bulk_delete() RPC functions
+- [ ] 12-03-PLAN.md -- send-email Edge Function with template resolution RPC, migration regeneration, type generation
 
 ### Phase 13: Quality Assurance
 **Goal**: Automated pgTAP tests verify that RLS policies correctly enforce tenant isolation, candidate self-edit, and public read access
@@ -289,5 +290,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
 | 10. Authentication and Roles | v2.0 | 5/5 | Complete | 2026-03-13 |
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
-| 12. Services | v2.0 | 0/? | Not started | - |
+| 12. Services | v2.0 | 0/3 | Planned | - |
 | 13. Quality Assurance | v2.0 | 0/? | Not started | - |
