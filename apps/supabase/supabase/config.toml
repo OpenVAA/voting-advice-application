@@ -111,12 +111,16 @@ enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
-# Uncomment to configure local storage buckets
-# [storage.buckets.images]
-# public = false
-# file_size_limit = "50MiB"
-# allowed_mime_types = ["image/png", "image/jpeg"]
-# objects_path = "./images"
+# Entity images, project-level public files (photos, videos, PDFs)
+# Path convention: {project_id}/{entity_type}/{entity_id}/filename.ext
+[storage.buckets.public-assets]
+public = true
+file_size_limit = "500MiB"
+
+# Private files accessible only by authenticated users with appropriate roles
+[storage.buckets.private-assets]
+public = false
+file_size_limit = "500MiB"
 
 # Allow connections via S3 compatible clients
 [storage.s3_protocol]
