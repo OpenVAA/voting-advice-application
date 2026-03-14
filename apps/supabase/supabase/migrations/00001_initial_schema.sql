@@ -229,7 +229,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Multi-tenant foundation: accounts and projects
 --
 -- All content tables reference projects via project_id FK with ON DELETE CASCADE.
@@ -257,7 +256,6 @@ CREATE TABLE projects (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- Elections, constituency groups, constituencies, and their join tables
 
 CREATE TABLE elections (
@@ -338,7 +336,6 @@ CREATE TABLE election_constituency_groups (
   constituency_group_id uuid NOT NULL REFERENCES constituency_groups(id) ON DELETE CASCADE,
   PRIMARY KEY (election_id, constituency_group_id)
 );
-
 -- Entity tables: organizations, candidates, factions, alliances
 
 CREATE TABLE organizations (
@@ -425,7 +422,6 @@ CREATE TABLE alliances (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON alliances
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- Question templates, categories, and questions
 
 CREATE TABLE question_templates (
@@ -506,7 +502,6 @@ CREATE TABLE questions (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON questions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- Nominations
 --
 -- Uses separate FK columns for each entity type instead of polymorphic entity_id.
@@ -568,19 +563,32 @@ CREATE TRIGGER set_updated_at
 CREATE TRIGGER validate_nomination_before_insert_or_update
   BEFORE INSERT OR UPDATE ON nominations
   FOR EACH ROW EXECUTE FUNCTION validate_nomination();
-
 -- JSONB answer storage (default)
 --
 -- Stores answers as a JSONB column on candidates and organizations:
 -- Record<QuestionId, {value: ..., info?: ...}>
 --
+-- Features:
+--   1. Smart validation trigger: validates only changed answer keys on UPDATE
+--   2. Question delete cascade: removes orphaned answer keys when a question is deleted
+--   3. Question type change protection: prevents type changes that would invalidate existing answers
+--
 -- Alternative: see schema/alternatives/answers-relational.sql
+--
+-- TODO: Add an RPC function for atomic single-answer upsert to prevent
+--       client-side read-modify-write race conditions with concurrent jsonb_set().
+--       E.g. upsert_candidate_answer(candidate_id uuid, question_id uuid, value jsonb)
+--       that uses server-side jsonb_set with implicit row lock.
 
 ALTER TABLE candidates ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 ALTER TABLE organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 
 --------------------------------------------------------------------------------
--- JSONB answer validation trigger function
+-- JSONB answer validation trigger function (smart: validates only changed keys)
+--
+-- On INSERT: validates all keys
+-- On UPDATE: validates only new or modified keys (skips unchanged)
+-- Short-circuits if answers column is unchanged or empty
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION validate_answers_jsonb()
 RETURNS TRIGGER AS $$
@@ -588,17 +596,30 @@ DECLARE
   question_id text;
   answer_value jsonb;
   question_record record;
+  old_answers jsonb;
 BEGIN
+  -- Short-circuit: no change to answers column
   IF TG_OP = 'UPDATE' AND NEW.answers IS NOT DISTINCT FROM OLD.answers THEN
     RETURN NEW;
   END IF;
 
+  -- Short-circuit: empty/null answers
   IF NEW.answers IS NULL OR NEW.answers = '{}'::jsonb THEN
     RETURN NEW;
   END IF;
 
+  -- Get old answers for diffing (NULL on INSERT)
+  old_answers := CASE WHEN TG_OP = 'UPDATE' THEN OLD.answers ELSE NULL END;
+
   FOR question_id, answer_value IN SELECT * FROM jsonb_each(NEW.answers)
   LOOP
+    -- Skip unchanged answer keys (only validate new or modified)
+    IF old_answers IS NOT NULL
+       AND old_answers ? question_id
+       AND old_answers -> question_id IS NOT DISTINCT FROM answer_value THEN
+      CONTINUE;
+    END IF;
+
     SELECT q.type, q.template_id, q.choices, qt.default_choices
     INTO question_record
     FROM questions q
@@ -629,6 +650,100 @@ CREATE TRIGGER validate_answers_before_insert_or_update
   BEFORE INSERT OR UPDATE ON organizations
   FOR EACH ROW EXECUTE FUNCTION validate_answers_jsonb();
 
+--------------------------------------------------------------------------------
+-- Question delete cascade: remove orphaned answer keys from JSONB
+--
+-- When a question is deleted, removes its answer key from all candidates
+-- and organizations in the same project. Uses the JSONB `-` operator
+-- which is a no-op if the key doesn't exist.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION cascade_question_delete_to_jsonb_answers()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE candidates
+  SET answers = answers - OLD.id::text
+  WHERE project_id = OLD.project_id
+    AND answers ? OLD.id::text;
+
+  UPDATE organizations
+  SET answers = answers - OLD.id::text
+  WHERE project_id = OLD.project_id
+    AND answers ? OLD.id::text;
+
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER cascade_question_delete_to_answers
+  AFTER DELETE ON questions
+  FOR EACH ROW EXECUTE FUNCTION cascade_question_delete_to_jsonb_answers();
+
+--------------------------------------------------------------------------------
+-- Question type/choices change protection
+--
+-- Prevents changing a question's type or choices if existing answers would
+-- become invalid under the new type. Type changes are allowed if:
+--   1. No answers exist for this question, or
+--   2. All existing answers pass validation against the new type/choices
+--
+-- This mirrors the relational model's inherent constraint: you can't change
+-- a column type if existing data doesn't conform.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION validate_question_type_change()
+RETURNS TRIGGER AS $$
+DECLARE
+  entity_record record;
+  valid_choices jsonb;
+BEGIN
+  -- Only act on type or choices changes
+  IF OLD.type IS NOT DISTINCT FROM NEW.type
+     AND OLD.choices IS NOT DISTINCT FROM NEW.choices THEN
+    RETURN NEW;
+  END IF;
+
+  -- Get effective choices for validation
+  valid_choices := COALESCE(
+    NEW.choices,
+    (SELECT qt.default_choices FROM question_templates qt WHERE qt.id = NEW.template_id)
+  );
+
+  -- Validate all existing candidate answers against the new type
+  FOR entity_record IN
+    SELECT c.id, c.answers -> OLD.id::text AS answer_value
+    FROM candidates c
+    WHERE c.project_id = NEW.project_id
+      AND c.answers ? OLD.id::text
+  LOOP
+    BEGIN
+      PERFORM validate_answer_value(entity_record.answer_value, NEW.type, valid_choices);
+    EXCEPTION WHEN OTHERS THEN
+      RAISE EXCEPTION 'Cannot change question % type/choices: existing answer for candidate % would be invalid: %',
+        NEW.id, entity_record.id, SQLERRM;
+    END;
+  END LOOP;
+
+  -- Validate all existing organization answers against the new type
+  FOR entity_record IN
+    SELECT o.id, o.answers -> OLD.id::text AS answer_value
+    FROM organizations o
+    WHERE o.project_id = NEW.project_id
+      AND o.answers ? OLD.id::text
+  LOOP
+    BEGIN
+      PERFORM validate_answer_value(entity_record.answer_value, NEW.type, valid_choices);
+    EXCEPTION WHEN OTHERS THEN
+      RAISE EXCEPTION 'Cannot change question % type/choices: existing answer for organization % would be invalid: %',
+        NEW.id, entity_record.id, SQLERRM;
+    END;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_question_type_change_trigger
+  BEFORE UPDATE ON questions
+  FOR EACH ROW EXECUTE FUNCTION validate_question_type_change();
 -- App settings: per-project application settings stored as JSONB
 --
 -- One row per project, enforced by UNIQUE constraint on project_id.
@@ -645,7 +760,6 @@ CREATE TABLE app_settings (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON app_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
 -- Localized views for voter-facing queries
 --
 -- Resolve JSONB locale columns to plain text strings via get_localized().
@@ -692,7 +806,6 @@ SELECT
   required,
   sort_order
 FROM questions;
-
 -- B-tree indexes on RLS-referenced and commonly filtered columns
 
 --------------------------------------------------------------------------------
@@ -734,7 +847,6 @@ CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON nominations (
 --------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON candidates (auth_user_id);
 CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth_user_id);
-
 -- Auth tables: user_roles, auth_user_id columns, published flags
 --
 -- Depends on: 001-tenancy.sql (accounts, projects)
@@ -809,7 +921,6 @@ CREATE INDEX IF NOT EXISTS idx_candidates_published ON candidates (published) WH
 CREATE INDEX IF NOT EXISTS idx_organizations_published ON organizations (published) WHERE published = true;
 CREATE INDEX IF NOT EXISTS idx_questions_published ON questions (published) WHERE published = true;
 CREATE INDEX IF NOT EXISTS idx_nominations_published ON nominations (published) WHERE published = true;
-
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
 -- Depends on: 011-auth-tables.sql (user_roles table)
@@ -960,7 +1071,6 @@ SET search_path = ''
 AS $$
   SELECT row_auth_user_id = (SELECT auth.uid());
 $$;
-
 -- Row Level Security: role-based access control policies
 --
 -- Replaces deny-all placeholders with real per-operation policies.
@@ -1489,7 +1599,6 @@ CREATE POLICY "admin_delete_app_settings" ON app_settings FOR DELETE TO authenti
 --
 -- CREATE POLICY "admin_delete_answers" ON answers FOR DELETE TO authenticated
 --   USING ((SELECT can_access_project(project_id)));
-
 -- Column-level protections for structural fields
 --
 -- Prevents authenticated users (candidates, party admins) from modifying
@@ -1545,4 +1654,133 @@ GRANT UPDATE (
   name, short_name, info, color, image, sort_order, subtype,
   custom_data, answers, created_at, updated_at
 ) ON organizations TO authenticated;
+-- External ID columns on all content tables
+--
+-- Adds a nullable external_id column to each content table with a composite
+-- unique index on (project_id, external_id) -- scoped uniqueness per project.
+-- An immutability trigger prevents changing external_id once set (NULL -> value
+-- is allowed; value -> different value is blocked).
+--
+-- Used by bulk_import() for externalId-based upsert matching.
+-- Depends on: 002-elections.sql, 003-entities.sql, 004-questions.sql,
+--             005-nominations.sql, 007-app-settings.sql
 
+--------------------------------------------------------------------------------
+-- external_id columns + composite unique indexes
+--------------------------------------------------------------------------------
+
+ALTER TABLE elections ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_elections_external_id
+  ON elections (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE constituency_groups ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_constituency_groups_external_id
+  ON constituency_groups (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE constituencies ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_constituencies_external_id
+  ON constituencies (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE candidates ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_candidates_external_id
+  ON candidates (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE organizations ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_organizations_external_id
+  ON organizations (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE factions ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_factions_external_id
+  ON factions (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE alliances ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_alliances_external_id
+  ON alliances (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE nominations ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_nominations_external_id
+  ON nominations (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE questions ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_questions_external_id
+  ON questions (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE question_categories ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_question_categories_external_id
+  ON question_categories (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE question_templates ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_question_templates_external_id
+  ON question_templates (project_id, external_id) WHERE external_id IS NOT NULL;
+
+ALTER TABLE app_settings ADD COLUMN external_id text;
+CREATE UNIQUE INDEX idx_app_settings_external_id
+  ON app_settings (project_id, external_id) WHERE external_id IS NOT NULL;
+
+--------------------------------------------------------------------------------
+-- Immutability trigger: prevent changing external_id once set
+--
+-- NULL -> value: allowed (first assignment)
+-- value -> same value: allowed (no-op)
+-- value -> different value: blocked (raises exception)
+-- value -> NULL: blocked (raises exception)
+--------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION enforce_external_id_immutability()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.external_id IS NOT NULL AND OLD.external_id IS DISTINCT FROM NEW.external_id THEN
+    RAISE EXCEPTION 'external_id cannot be changed once set (current: %, attempted: %)',
+      OLD.external_id, NEW.external_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON elections
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON constituency_groups
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON constituencies
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON candidates
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON organizations
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON factions
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON alliances
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON nominations
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON questions
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON question_categories
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON question_templates
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
+
+CREATE TRIGGER enforce_external_id_immutability
+  BEFORE UPDATE ON app_settings
+  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
