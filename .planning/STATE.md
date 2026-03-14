@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-03-14T18:19:19Z"
-last_activity: 2026-03-14 -- Phase 12 plan 02 complete
+stopped_at: Completed 12-01-PLAN.md and 12-02-PLAN.md
+last_updated: "2026-03-14T18:24:37Z"
+last_activity: 2026-03-14 -- Phase 12 plans 01 and 02 complete
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 46
-  completed_plans: 44
+  completed_plans: 45
   percent: 97
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 12 (Services) in progress, plan 02 complete
+**Current focus:** Phase 12 (Services) in progress, plans 01 and 02 complete
 
 ## Current Position
 
 Phase: 12 of 13 (Services) — IN PROGRESS
 Plan: 2 of 3 — executing
-Status: Plan 02 (external_id + bulk operations) complete
-Last activity: 2026-03-14 -- Phase 12 plan 02 complete
+Status: Plans 01 (storage + services) and 02 (external_id + bulk ops) complete
+Last activity: 2026-03-14 -- Phase 12 plans 01 and 02 complete
 
 Progress: [██████████] 97%
 
@@ -64,6 +64,7 @@ Progress: [██████████] 97%
 | Phase 10 P05 | 2min | 1 tasks | 1 files |
 | Phase 11 P01 | 6min | 3 tasks | 18 files |
 | Phase 11 P02 | 8min | 3 tasks | 43 files |
+| Phase 12 P01 | 12min | 2 tasks | 5 files |
 | Phase 12 P02 | 7min | 2 tasks | 3 files |
 
 ## Accumulated Context
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 11]: Client-side locale selection — all locales returned, filtered in browser (50 cache entries vs 150)
 - [Phase 11]: Smart JSONB trigger validates only changed keys (44% write improvement, adopted in schema)
 - [Phase 11]: With caching (30-min TTL), DB sees ~50 concurrent queries max — both schemas identical at this level
+- [Phase 12]: storage_config table for pg_net trigger config (postgres lacks superuser for custom GUC in Supabase local)
+- [Phase 12]: Qualified storage.objects.name in RLS policies (avoids ambiguity with entity table name columns)
+- [Phase 12]: net.http_post to Storage API batch delete endpoint with prefixes array for file cleanup
 - [Phase 12]: external_id immutability enforced via BEFORE UPDATE trigger (NULL to value allowed, value to different value blocked)
 - [Phase 12]: Relationship resolution via dynamic SQL helper resolve_external_ref() supporting both external_id objects and direct UUIDs
 - [Phase 12]: Collection processing order hardcoded in dependency-safe sequence for bulk_import
@@ -133,6 +137,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T18:19:19Z
-Stopped at: Completed 12-02-PLAN.md
-Resume file: .planning/phases/12-services/12-02-SUMMARY.md
+Last session: 2026-03-14T18:24:37Z
+Stopped at: Completed 12-01-PLAN.md and 12-02-PLAN.md
+Resume file: .planning/phases/12-services/12-01-SUMMARY.md
