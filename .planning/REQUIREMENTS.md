@@ -56,8 +56,8 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [ ] **SRVC-01**: Supabase Storage buckets configured for candidate photos, party images, and public assets with RLS
 - [ ] **SRVC-02**: Candidate photo upload and serve works via Supabase Storage API
 - [ ] **SRVC-03**: Mailpit accessible at localhost for dev email with human-readable web UI
-- [ ] **SRVC-04**: Bulk data import via Postgres RPC function with transactional guarantee
-- [ ] **SRVC-05**: Bulk data delete via Postgres RPC function with transactional guarantee
+- [x] **SRVC-04**: Bulk data import via Postgres RPC function with transactional guarantee
+- [x] **SRVC-05**: Bulk data delete via Postgres RPC function with transactional guarantee
 - [ ] **SRVC-06**: Transactional email for non-auth flows (candidate notifications) via Edge Function
 
 ### Load Testing
@@ -146,8 +146,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRVC-01 | Phase 12 | Pending |
 | SRVC-02 | Phase 12 | Pending |
 | SRVC-03 | Phase 12 | Pending |
-| SRVC-04 | Phase 12 | Pending |
-| SRVC-05 | Phase 12 | Pending |
+| SRVC-04 | Phase 12 | Complete |
+| SRVC-05 | Phase 12 | Complete |
 | SRVC-06 | Phase 12 | Pending |
 | LOAD-01 | Phase 11 | Complete |
 | LOAD-02 | Phase 11 | Complete |
