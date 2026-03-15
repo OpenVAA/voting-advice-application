@@ -265,11 +265,12 @@ Plans:
   1. Running `supabase test db` executes pgTAP tests that create data as Project A and verify zero results when querying as Project B -- tenant isolation is enforced
   2. pgTAP tests verify that a candidate user can read and update their own record but cannot read or update another candidate's record
   3. pgTAP tests verify that unauthenticated (anon) access can read voter-facing data (elections, candidates, questions, published answers) but cannot write to any table
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
+- [ ] 13-01-PLAN.md -- Test infrastructure (pgTAP helpers, fixtures, user switching) + tenant isolation + candidate self-edit tests
+- [ ] 13-02-PLAN.md -- Anon read access + admin CRUD + party admin scope tests
+- [ ] 13-03-PLAN.md -- Storage RLS + RPC security + trigger validation + column restriction tests
 
 ## Progress
 
@@ -290,5 +291,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 9. Schema and Data Model | v2.0 | 3/3 | Complete | 2026-03-13 |
 | 10. Authentication and Roles | v2.0 | 5/5 | Complete | 2026-03-13 |
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
-| 12. Services | 3/3 | Complete    | 2026-03-14 | - |
-| 13. Quality Assurance | v2.0 | 0/? | Not started | - |
+| 12. Services | v2.0 | 3/3 | Complete | 2026-03-14 |
+| 13. Quality Assurance | v2.0 | 0/3 | Planned | - |
