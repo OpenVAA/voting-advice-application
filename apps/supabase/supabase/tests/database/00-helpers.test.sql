@@ -1,6 +1,7 @@
 -- 00-helpers.test.sql: Shared test helpers, fixtures, and constants
 --
--- This file runs first (alphabetical ordering) and creates:
+-- This file runs first (alphabetical ordering) and creates persistent
+-- helper functions that subsequent test files depend on:
 --   set_test_user()     - simulate an authenticated or anon user with JWT claims
 --   reset_role()        - switch back to postgres superuser for fixture insertion
 --   test_user_id()      - predictable UUID for a named test user
@@ -8,14 +9,18 @@
 --   test_id()           - predictable UUID for a named test entity
 --   create_test_data()  - create a complete multi-tenant test dataset
 --
--- Each test file calls create_test_data() after BEGIN, then ROLLBACK at end.
+-- Architecture: Function definitions are COMMITted (persisted for other test
+-- files to use). Smoke tests run in a separate BEGIN/ROLLBACK transaction.
+-- The `supabase db reset` between test runs removes these functions.
+--
+-- Each subsequent test file calls create_test_data() after BEGIN, then
+-- ROLLBACK at end, getting a fresh dataset each time.
 
-BEGIN;
+-- ======================================================================
+-- Phase 1: Create persistent helper functions (outside transaction)
+-- ======================================================================
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SET search_path = public, extensions;
-
-SELECT no_plan();
 
 --------------------------------------------------------------------------------
 -- Predictable UUID constants
@@ -260,19 +265,18 @@ $$;
 --
 -- Creates:
 --   2 accounts, 2 projects
---   8 auth.users (admin_a, admin_b, candidate_a, candidate_b, candidate_a2, party_a, super_admin, account_admin_a)
+--   8 auth.users
 --   Corresponding user_roles entries
---   Full entity hierarchy in each project (elections, constituencies, orgs, candidates, etc.)
---   Project A data is published=true, Project B data is published=false
+--   Full entity hierarchy in each project
+--   Project A data: published=true, Project B data: published=false
+--
+-- MUST be called while in the postgres role (the default at test start).
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION create_test_data()
 RETURNS void
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- This function MUST be called while in the postgres role (the default
-  -- at test start). It inserts test data bypassing RLS.
-
   -- ===== Auth users =====
   INSERT INTO auth.users (id, instance_id, email, encrypted_password, aud, role, email_confirmed_at, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
   VALUES
@@ -337,8 +341,8 @@ BEGIN
 
   -- ===== Candidates (no answers to avoid trigger complications) =====
   INSERT INTO candidates (id, project_id, auth_user_id, first_name, last_name, organization_id, published) VALUES
-    (test_id('candidate_a'),  test_id('project_a'), test_user_id('candidate_a'),  'Alice', 'Alpha',  test_id('org_a'), true),
-    (test_id('candidate_b'),  test_id('project_b'), test_user_id('candidate_b'),  'Bob',   'Bravo',  test_id('org_b'), false),
+    (test_id('candidate_a'),  test_id('project_a'), test_user_id('candidate_a'),  'Alice', 'Alpha',   test_id('org_a'), true),
+    (test_id('candidate_b'),  test_id('project_b'), test_user_id('candidate_b'),  'Bob',   'Bravo',   test_id('org_b'), false),
     (test_id('candidate_a2'), test_id('project_a'), test_user_id('candidate_a2'), 'Carol', 'Charlie', test_id('org_a'), true);
 
   -- ===== Factions =====
@@ -367,14 +371,12 @@ BEGIN
     (test_id('question_b'), test_id('project_b'), 'singleChoiceOrdinal', test_id('question_category_b'), test_id('question_template_b'), '{"en":"Question B"}'::jsonb, false);
 
   -- ===== Nominations (org nomination first, then candidate under it) =====
-  -- Project A: org nomination (top-level), then candidate nomination under org
   INSERT INTO nominations (id, project_id, organization_id, election_id, constituency_id, election_round, published) VALUES
     (test_id('nomination_org_a'), test_id('project_a'), test_id('org_a'), test_id('election_a'), test_id('constituency_a'), 1, true);
 
   INSERT INTO nominations (id, project_id, candidate_id, election_id, constituency_id, election_round, parent_nomination_id, published) VALUES
     (test_id('nomination_cand_a'), test_id('project_a'), test_id('candidate_a'), test_id('election_a'), test_id('constituency_a'), 1, test_id('nomination_org_a'), true);
 
-  -- Project B: org nomination, then candidate nomination
   INSERT INTO nominations (id, project_id, organization_id, election_id, constituency_id, election_round, published) VALUES
     (test_id('nomination_org_b'), test_id('project_b'), test_id('org_b'), test_id('election_b'), test_id('constituency_b'), 1, false);
 
@@ -389,9 +391,15 @@ BEGIN
 END;
 $$;
 
---------------------------------------------------------------------------------
--- Smoke tests: verify helpers work
---------------------------------------------------------------------------------
+-- ======================================================================
+-- Phase 2: Smoke tests (in a transaction that rolls back)
+-- ======================================================================
+
+BEGIN;
+
+SET search_path = public, extensions;
+
+SELECT no_plan();
 
 SELECT ok(true, 'pgTAP loaded successfully');
 
