@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Supabase Migration
-status: completed
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-15T17:40:06.967Z"
-last_activity: 2026-03-15 -- Phase 14 plan 01 complete
+milestone: v5.0
+milestone_name: Claude Skills
+status: active
+stopped_at: null
+last_updated: "2026-03-15"
+last_activity: 2026-03-15 — Milestone v5.0 started
 progress:
-  total_phases: 15
-  completed_phases: 13
-  total_plans: 52
-  completed_plans: 50
-  percent: 98
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-12)
+See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 14 (Service and Auth Bug Fixes) complete, all plans done
+**Current focus:** Defining requirements for v5.0 Claude Skills
 
 ## Current Position
 
-Phase: 14 of 15 (Service and Auth Bug Fixes)
-Plan: 1 of 1 -- complete
-Status: Plan 01 complete (ON CONFLICT fix, storage search_path, password reset redirect, Supabase env vars)
-Last activity: 2026-03-15 -- Phase 14 plan 01 complete
-
-Progress: [██████████] 98%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-15 — Milestone v5.0 started
 
 ## Performance Metrics
 

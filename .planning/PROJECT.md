@@ -30,10 +30,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ### Active
 
-- [ ] Frontend Supabase data adapter (SupabaseDataProvider + SupabaseDataWriter)
-- [ ] Strapi workspace removal from monorepo
-- [ ] Admin App UI replacing Supabase Studio for election administrators
-- [ ] Svelte 5 migration with Tailwind/DaisyUI/i18n rewrites
+- [ ] Claude Skills: domain-expert skills for architecture, components, data, matching, filters, LLM
 
 ### Out of Scope
 
@@ -62,6 +59,22 @@ Key technical state after v2.0:
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
 - **Strapi sunset**: Remove after frontend adapter is verified in production
 
+## Current Milestone: v5.0 Claude Skills
+
+**Goal:** Build domain-expert Claude Code skills that deeply understand and assist with each major area of the OpenVAA framework.
+
+**Target skills:**
+- Architect — Whole app + monorepo knowledge, frontend internals (data API, contexts, routes, API routes, server/client separation, voter/candidate/admin apps)
+- Components — Frontend component library
+- Data — `@openvaa/data` package
+- Matching — `@openvaa/matching` package
+- Filters — `@openvaa/filters` package
+- LLM — `@openvaa/llm` package
+
+Each skill covers: extending the target, reviewing changes, helping other agents use it, understanding data models, maintaining conventions, syncing with docs.
+
+Build using skill-builder skill where beneficial.
+
 ## Milestones
 
 Each major initiative is a separate milestone:
@@ -70,6 +83,7 @@ Each major initiative is a separate milestone:
 2. **v2.0 Supabase Migration** — ✅ Shipped 2026-03-15. Backend migration with schema, auth, RLS, storage, services, and 204 pgTAP tests
 3. **v3.0 Frontend Adapter** — Supabase data provider/writer, Strapi removal, admin app UI
 4. **v4.0 Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
+5. **v5.0 Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
 
 For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `.planning/milestones/`.
 
@@ -88,4 +102,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-15 after v2.0 Supabase Migration milestone shipped*
+*Last updated: 2026-03-15 after v5.0 Claude Skills milestone started*
