@@ -284,6 +284,10 @@ Plans:
   2. Entity DELETE triggers successfully clean up storage files (schema-qualified function calls)
   3. Password reset email redirects to existing `/candidate/password-reset` route
   4. `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` present in root `.env.example` and Docker compose
+**Plans**: 1 plan
+
+Plans:
+- [ ] 14-01-PLAN.md -- Fix ON CONFLICT partial index, storage trigger search_path, password reset redirect, Supabase env vars
 
 ### Phase 15: QuestionTemplate & Verification Closure
 **Goal**: Resolve QuestionTemplate requirement gap and close Phase 11 verification gap
@@ -315,6 +319,6 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 10. Authentication and Roles | v2.0 | 5/5 | Complete | 2026-03-13 |
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 12. Services | v2.0 | 3/3 | Complete | 2026-03-14 |
-| 13. Quality Assurance | 3/3 | Complete    | 2026-03-15 | - |
-| 14. Service & Auth Bug Fixes | v2.0 | 0/0 | Not started | - |
+| 13. Quality Assurance | v2.0 | 3/3 | Complete | 2026-03-15 |
+| 14. Service & Auth Bug Fixes | v2.0 | 0/1 | Planned | - |
 | 15. QuestionTemplate & Verification Closure | v2.0 | 0/0 | Not started | - |
