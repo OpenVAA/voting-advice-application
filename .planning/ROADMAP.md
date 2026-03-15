@@ -298,6 +298,10 @@ Plans:
   1. DATA-01/DATA-02 resolved (re-implement QuestionTemplate class or defer requirements to v3+)
   2. Phase 11 has VERIFICATION.md confirming benchmark scripts exist and run
   3. LOAD-04 marked complete in REQUIREMENTS.md
+**Plans**: 1 plan
+
+Plans:
+- [ ] 15-01-PLAN.md -- Restore QuestionTemplate class to @openvaa/data, create Phase 11 VERIFICATION.md, update REQUIREMENTS.md
 
 ## Progress
 
@@ -320,5 +324,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 12. Services | v2.0 | 3/3 | Complete | 2026-03-14 |
 | 13. Quality Assurance | v2.0 | 3/3 | Complete | 2026-03-15 |
-| 14. Service & Auth Bug Fixes | 1/1 | Complete    | 2026-03-15 | - |
-| 15. QuestionTemplate & Verification Closure | v2.0 | 0/0 | Not started | - |
+| 14. Service & Auth Bug Fixes | v2.0 | 1/1 | Complete | 2026-03-15 |
+| 15. QuestionTemplate & Verification Closure | v2.0 | 0/1 | Not started | - |
