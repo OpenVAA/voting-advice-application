@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: completed
-stopped_at: Completed 13-01-PLAN.md
+stopped_at: Completed 13-02-PLAN.md
 last_updated: "2026-03-15T10:39:34.483Z"
-last_activity: 2026-03-15 -- Phase 13 plan 01 complete
+last_activity: 2026-03-15 -- Phase 13 plan 02 complete
 progress:
   total_phases: 13
   completed_phases: 11
   total_plans: 50
-  completed_plans: 47
+  completed_plans: 48
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 13 of 13 (Quality Assurance)
-Plan: 1 of 3 — complete
-Status: Plan 01 complete (test infrastructure, tenant isolation, candidate self-edit)
-Last activity: 2026-03-15 -- Phase 13 plan 01 complete
+Plan: 2 of 3 -- complete
+Status: Plan 02 complete (anon read, admin CRUD, party admin scope tests)
+Last activity: 2026-03-15 -- Phase 13 plan 02 complete
 
 Progress: [██████████] 100%
 
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 12 P02 | 7min | 2 tasks | 3 files |
 | Phase 12 P03 | 4min | 2 tasks | 4 files |
 | Phase 13 P01 | 10min | 2 tasks | 3 files |
+| Phase 13 P02 | 9min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,8 @@ Recent decisions affecting current work:
 - [Phase 13]: Persistent helper functions (committed, not rolled back) for shared pgTAP test infrastructure
 - [Phase 13]: pgTAP __tcache__ reset + plan(N) pattern for counter isolation between test files
 - [Phase 13]: Tenant isolation tested via unpublished cross-project data (published data intentionally visible to all)
+- [Phase 13]: Entity table DELETE tests avoided due to cleanup_entity_storage_files search_path bug; app_settings used instead (same RLS pattern)
+- [Phase 13]: Explicit per-table assertions instead of DO block loops (PERFORM swallows TAP output)
 
 ### Pending Todos
 
@@ -146,6 +149,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T10:39:34.481Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-15T10:50:08Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None

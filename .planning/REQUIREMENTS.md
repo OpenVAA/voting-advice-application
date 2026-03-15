@@ -71,7 +71,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 - [x] **QUAL-01**: pgTAP tests verify project-level tenant isolation (Project A cannot read Project B's data)
 - [x] **QUAL-02**: pgTAP tests verify candidate can only edit own data
-- [ ] **QUAL-03**: pgTAP tests verify public read access for voter-facing data
+- [x] **QUAL-03**: pgTAP tests verify public read access for voter-facing data
 
 ## v3+ Requirements
 
@@ -155,7 +155,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOAD-04 | Phase 11 | Pending |
 | QUAL-01 | Phase 13 | Complete |
 | QUAL-02 | Phase 13 | Complete |
-| QUAL-03 | Phase 13 | Pending |
+| QUAL-03 | Phase 13 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 40 total
