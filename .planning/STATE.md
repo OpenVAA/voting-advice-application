@@ -1,19 +1,3 @@
----
-gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Claude Skills
-status: active
-stopped_at: null
-last_updated: "2026-03-15"
-last_activity: 2026-03-15 — Milestone v5.0 started
-progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
----
-
 # Project State
 
 ## Project Reference
@@ -21,54 +5,41 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Defining requirements for v5.0 Claude Skills
+**Current focus:** Phase 16 — Scaffolding and CLAUDE.md Refactoring
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-15 — Milestone v5.0 started
+Phase: 16 of 21 (Scaffolding and CLAUDE.md Refactoring)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-15 — Roadmap created for v5.0 Claude Skills milestone
+
+Progress: [░░░░░░░░░░] 0% (v5.0 milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6 (v2.0 milestone)
-- Average duration: 4min
-- Total execution time: 0.4 hours
+- Total plans completed: 21 (v2.0)
+- Average duration: 5.9 min
+- Total execution time: ~2.1 hours
 
-**By Phase:**
+**By Phase (v2.0):**
 
 | Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| -     | -     | -     | -        |
+|-------|-------|-------|----------|
+| 8 | 3 | 14min | 4.7min |
+| 9 | 3 | 11min | 3.7min |
+| 10 | 5 | 24min | 4.8min |
+| 11 | 2 | 14min | 7.0min |
+| 12 | 3 | 23min | 7.7min |
+| 13 | 3 | 32min | 10.7min |
+| 14 | 1 | 2min | 2.0min |
 
 **Recent Trend:**
-- Last 5 plans: none yet (v2.0)
-- Trend: -
+- Last 5 plans: 10min, 9min, 13min, 2min (v2.0 tail)
+- Trend: Stable
 
 *Updated after each plan completion*
-| Phase 08 P01 | 8min | 1 tasks | 6 files |
-| Phase 08 P02 | 3min | 1 tasks | 6 files |
-| Phase 08 P03 | 3min | 2 tasks | 3 files |
-| Phase 09 P03 | 3min | 1 tasks | 7 files |
-| Phase 09 P01 | 4min | 2 tasks | 3 files |
-| Phase 09 P02 | 4min | 2 tasks | 8 files |
-| Phase 09 P03 | 3min | 1 tasks | 7 files |
-| Phase 10 P01 | 8min | 2 tasks | 8 files |
-| Phase 10 P02 | 8min | 2 tasks | 3 files |
-| Phase 10 P03 | 4min | 3 tasks | 9 files |
-| Phase 10 P04 | 2min | 1 tasks | 1 files |
-| Phase 10 P05 | 2min | 1 tasks | 1 files |
-| Phase 11 P01 | 6min | 3 tasks | 18 files |
-| Phase 11 P02 | 8min | 3 tasks | 43 files |
-| Phase 12 P01 | 12min | 2 tasks | 5 files |
-| Phase 12 P02 | 7min | 2 tasks | 3 files |
-| Phase 12 P03 | 4min | 2 tasks | 4 files |
-| Phase 13 P01 | 10min | 2 tasks | 3 files |
-| Phase 13 P02 | 9min | 2 tasks | 3 files |
-| Phase 13 P03 | 13min | 2 tasks | 4 files |
-| Phase 14 P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -77,82 +48,22 @@ Last activity: 2026-03-15 — Milestone v5.0 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Roadmap]: 6 phases derived from 40 requirements across 8 categories
-- [Roadmap]: Phase 11 (Load Testing) depends only on Phase 9 (Schema), enabling parallel execution with Phase 10 (Auth)
-- [Roadmap]: Both JSONB and relational answer schemas built in Phase 9, tested in Phase 11, decision documented before any adapter work
-- [Phase 08]: Used apps/* workspace pattern for Supabase (forward-compatible with turborepo reorg)
-- [Phase 08]: Postgres major version 15, edge runtime oneshot policy for monorepo stability
-- [Phase 08]: Auth site_url set to 127.0.0.1:5173 matching SvelteKit frontend dev port
-- [Phase 08]: Export raw .ts source from supabase-types (no build step; Vite handles TS imports)
-- [Phase 08]: Re-export all Supabase-generated helper types (Tables, TablesInsert, etc.) not just Database
-- [Phase 08]: Used psql stdin for SQL execution to avoid shell escaping issues with multiline queries
-- [Phase 09]: Declarative schema in schema/ folder, migrations generated via concatenation or supabase db diff
-- [Phase 09]: QuestionTemplate only in database, removed from @openvaa/data package
-- [Phase 09]: PostgreSQL enums for question_type, entity_type, category_type
-- [Phase 09]: Separate FK columns for nomination entity linking (candidate_id, organization_id, faction_id, alliance_id) with GENERATED entity_type column
-- [Phase 09]: ON DELETE CASCADE on project_id and entity FKs, SET NULL on optional references
-- [Phase 09]: validate_nomination() trigger enforces hierarchy and election/constituency/round consistency
-- [Phase 09]: Colors stored as single `color jsonb` column (merged from color + color_dark)
-- [Phase 09]: Deny-all RLS placeholder on all tables; Phase 10 replaces with real role-based policies
-- [Phase 09]: Both answer storage alternatives (JSONB + relational) available for Phase 11 comparison
-- [Phase 10]: user_roles table with user_role_type enum (candidate, party, project_admin, account_admin, super_admin)
-- [Phase 10]: Custom Access Token Hook injects user_roles array into JWT claims on every token issue
-- [Phase 10]: RLS helpers use SECURITY DEFINER + SET search_path = '' + (SELECT auth.jwt()) pattern
-- [Phase 10]: Published indexes in 011-auth-tables.sql (not 009) due to schema concatenation order
-- [Phase 10]: Migration regenerated by concatenating schema/*.sql files to migrations/00001_initial_schema.sql
-- [Phase 10]: 010-rls.sql placed after 012-auth-hooks.sql in concatenation order (policies reference helper functions)
-- [Phase 10]: Column-level REVOKE + GRANT pattern for structural field protection (table-level REVOKE then column-level GRANT)
-- [Phase 10]: Published column protected from authenticated users (prevents candidate self-publication)
-- [Phase 10]: 79 per-operation RLS policies replacing 16 deny-all placeholders across all content tables
-- [Phase 10]: Dual auth check in hooks.server.ts (Strapi AUTH_TOKEN_KEY cookie OR Supabase sb-* cookie) for backward compatibility during migration
-- [Phase 10]: safeGetSession verifies via getUser() after getSession() to prevent JWT tampering
-- [Phase 10]: Password reset redirectTo URL points to /candidate/update-password (route to be created in future plan)
-- [Phase 10]: Browser Supabase client is a singleton (created once, reused across component lifecycle)
-- [Phase 10]: Dual token verification in Edge Functions: getUser() for server-side validation + JWT decode for role claims
-- [Phase 10]: Edge Function rollback: delete candidate on invite failure, log-only on role assignment failure
-- [Phase 10]: Signicat callback supports both JWE (5-part) and plain JWT (3-part) tokens via part count detection
-- [Phase 10]: Bank auth user lookup via paginated listUsers + app_metadata.birthdate_id filter (no custom identity table)
-- [Phase 10]: Placeholder email pattern for magic link generation since bank auth users have no email initially
-- [Phase 11]: Predictable UUID patterns (00000000-0000-0000-XXXX-*) for pgbench variable binding
-- [Phase 11]: OFFSET-based random candidate selection in write benchmarks
-- [Phase 11]: PostgREST resource embedding via nominations!inner for k6 voter bulk-read
-- [Phase 11]: Trigger disable/enable for bulk data loading, triggers active during benchmarks
-- [Phase 11]: JSONB chosen over relational for answer storage (HIGH confidence)
-- [Phase 11]: Client-side locale selection — all locales returned, filtered in browser (50 cache entries vs 150)
-- [Phase 11]: Smart JSONB trigger validates only changed keys (44% write improvement, adopted in schema)
-- [Phase 11]: With caching (30-min TTL), DB sees ~50 concurrent queries max — both schemas identical at this level
-- [Phase 12]: storage_config table for pg_net trigger config (postgres lacks superuser for custom GUC in Supabase local)
-- [Phase 12]: Qualified storage.objects.name in RLS policies (avoids ambiguity with entity table name columns)
-- [Phase 12]: net.http_post to Storage API batch delete endpoint with prefixes array for file cleanup
-- [Phase 12]: external_id immutability enforced via BEFORE UPDATE trigger (NULL to value allowed, value to different value blocked)
-- [Phase 12]: Relationship resolution via dynamic SQL helper resolve_external_ref() supporting both external_id objects and direct UUIDs
-- [Phase 12]: Collection processing order hardcoded in dependency-safe sequence for bulk_import
-- [Phase 12]: bulk_delete processes in reverse dependency order to avoid FK violations
-- [Phase 12]: resolve_email_variables uses SECURITY DEFINER to read auth.users (not accessible to regular authenticated users)
-- [Phase 12]: Edge Function admin check accepts any admin role without project scope for platform-level email tool
-- [Phase 12]: SMTP transport defaults to Inbucket Docker hostname (inbucket:2500) with configurable env vars for production
-- [Phase 12]: Unresolved template variables left as-is in rendered output (not stripped or errored)
-- [Phase 13]: Persistent helper functions (committed, not rolled back) for shared pgTAP test infrastructure
-- [Phase 13]: pgTAP __tcache__ reset + plan(N) pattern for counter isolation between test files
-- [Phase 13]: Tenant isolation tested via unpublished cross-project data (published data intentionally visible to all)
-- [Phase 13]: Entity table DELETE tests avoided due to cleanup_entity_storage_files search_path bug; app_settings used instead (same RLS pattern)
-- [Phase 13]: Explicit per-table assertions instead of DO block loops (PERFORM swallows TAP output)
-- [Phase 13]: Used pg_proc.prosecdef introspection for SECURITY INVOKER/DEFINER verification on RPC functions
-- [Phase 13]: Tested RLS enforcement via direct SQL instead of bulk_import RPC (ON CONFLICT partial index pre-existing bug)
-- [Phase 13]: Used app_settings for admin DELETE test (avoids delete_storage_object trigger search_path bug)
-- [Phase 14]: ON CONFLICT WHERE predicate must exactly match partial unique index definition for PostgreSQL to use it
+- [Research]: Skills should be reference/knowledge skills (auto-invocable, inline), not action/task skills (forked subagents)
+- [Research]: Architect, Components, and LLM skills deferred to post-Svelte 5 migration
+- [Research]: CLAUDE.md must be trimmed to ~150 lines to avoid context budget waste
+- [Research]: Description field is the single most important factor for skill triggering accuracy
+- [Research]: Keep SKILL.md lean (<500 lines), put detailed reference material in separate files
 
 ### Pending Todos
 
-- Create database tests in supabase/tests (future work)
+None yet.
 
 ### Blockers/Concerns
 
-- [Research]: Signicat OIDC JWT format must be verified before Phase 10 implementation -- determines whether `signInWithIdToken()` or server-side decryption is needed
-- [Resolved]: Answer storage decision — JSONB chosen (see 11-DECISION.md)
+None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T15:13:37.031Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-15
+Stopped at: Roadmap created for v5.0 Claude Skills
 Resume file: None

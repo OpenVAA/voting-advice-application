@@ -73,38 +73,38 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCAF-01 | — | Pending |
-| SCAF-02 | — | Pending |
-| SCAF-03 | — | Pending |
-| DATA-01 | — | Pending |
-| DATA-02 | — | Pending |
-| DATA-03 | — | Pending |
-| DATA-04 | — | Pending |
-| DATA-05 | — | Pending |
-| MATC-01 | — | Pending |
-| MATC-02 | — | Pending |
-| MATC-03 | — | Pending |
-| MATC-04 | — | Pending |
-| MATC-05 | — | Pending |
-| FILT-01 | — | Pending |
-| FILT-02 | — | Pending |
-| FILT-03 | — | Pending |
-| FILT-04 | — | Pending |
-| DB-01 | — | Pending |
-| DB-02 | — | Pending |
-| DB-03 | — | Pending |
-| DB-04 | — | Pending |
-| DB-05 | — | Pending |
-| DB-06 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| QUAL-03 | — | Pending |
+| SCAF-01 | Phase 16 | Pending |
+| SCAF-02 | Phase 16 | Pending |
+| SCAF-03 | Phase 16 | Pending |
+| DATA-01 | Phase 17 | Pending |
+| DATA-02 | Phase 17 | Pending |
+| DATA-03 | Phase 17 | Pending |
+| DATA-04 | Phase 17 | Pending |
+| DATA-05 | Phase 17 | Pending |
+| MATC-01 | Phase 18 | Pending |
+| MATC-02 | Phase 18 | Pending |
+| MATC-03 | Phase 18 | Pending |
+| MATC-04 | Phase 18 | Pending |
+| MATC-05 | Phase 18 | Pending |
+| FILT-01 | Phase 19 | Pending |
+| FILT-02 | Phase 19 | Pending |
+| FILT-03 | Phase 19 | Pending |
+| FILT-04 | Phase 19 | Pending |
+| DB-01 | Phase 20 | Pending |
+| DB-02 | Phase 20 | Pending |
+| DB-03 | Phase 20 | Pending |
+| DB-04 | Phase 20 | Pending |
+| DB-05 | Phase 20 | Pending |
+| DB-06 | Phase 20 | Pending |
+| QUAL-01 | Phase 21 | Pending |
+| QUAL-02 | Phase 21 | Pending |
+| QUAL-03 | Phase 21 | Pending |
 
 **Coverage:**
 - v5.0 requirements: 26 total
-- Mapped to phases: 0
-- Unmapped: 26 ⚠️
+- Mapped to phases: 26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 after roadmap creation*
