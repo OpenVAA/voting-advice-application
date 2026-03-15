@@ -73,11 +73,11 @@ Plans:
   3. Extension patterns exist that guide Claude through adding new entity types and question types step-by-step
   4. A review checklist exists that Claude applies when reviewing data package changes (instanceof avoidance, circular dep prevention, barrel exports)
   5. Reference files contain type hierarchy diagrams and relationship maps that Claude can load on demand
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 17-01: TBD
-- [ ] 17-02: TBD
+- [ ] 17-01-PLAN.md — Write SKILL.md with conventions, review checklist, and source locations
+- [ ] 17-02-PLAN.md — Create object-model.md and extension-patterns.md reference files
 
 ### Phase 18: Matching Skill
 **Goal**: Claude automatically loads deep @openvaa/matching expertise when developers work on the matching package
@@ -162,7 +162,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 14. Service & Auth Bug Fixes | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
-| 17. Data Skill | v5.0 | 0/TBD | Not started | - |
+| 17. Data Skill | v5.0 | 0/2 | Planned | - |
 | 18. Matching Skill | v5.0 | 0/TBD | Not started | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
 | 20. Database Skill | v5.0 | 0/TBD | Not started | - |
