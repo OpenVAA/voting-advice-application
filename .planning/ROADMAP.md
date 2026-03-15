@@ -119,11 +119,11 @@ Plans:
   3. RLS and auth patterns are documented (79 policies, 5 role types, JWT claims, Access Token Hook)
   4. Service patterns are documented (bulk import/delete RPCs, Edge Functions, storage buckets)
   5. pgTAP testing conventions are documented (helpers, tenant isolation patterns, test structure)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 20-01: TBD
-- [ ] 20-02: TBD
+- [ ] 20-01-PLAN.md — Write SKILL.md with schema, RLS, service, and pgTAP conventions
+- [ ] 20-02-PLAN.md — Create schema-reference.md and rls-policy-map.md reference files
 
 ### Phase 21: Quality and Validation
 **Goal**: All skills work correctly together and no content is duplicated between CLAUDE.md and skills
@@ -165,7 +165,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 17. Data Skill | v5.0 | 0/2 | Planned | - |
 | 18. Matching Skill | v5.0 | 0/TBD | Not started | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
-| 20. Database Skill | v5.0 | 0/TBD | Not started | - |
+| 20. Database Skill | v5.0 | 0/2 | Planned | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
 
 ---
