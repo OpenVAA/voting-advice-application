@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: completed
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-03-15T10:39:34.483Z"
-last_activity: 2026-03-15 -- Phase 13 plan 02 complete
+stopped_at: Completed 13-03-PLAN.md
+last_updated: "2026-03-15T10:56:29.602Z"
+last_activity: 2026-03-15 -- Phase 13 plan 03 complete
 progress:
   total_phases: 13
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 50
-  completed_plans: 48
+  completed_plans: 49
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 13 of 13 (Quality Assurance)
-Plan: 2 of 3 -- complete
-Status: Plan 02 complete (anon read, admin CRUD, party admin scope tests)
-Last activity: 2026-03-15 -- Phase 13 plan 02 complete
+Plan: 3 of 3 -- complete
+Status: Plan 03 complete (storage RLS, RPC security, triggers, column restrictions)
+Last activity: 2026-03-15 -- Phase 13 plan 03 complete
 
 Progress: [██████████] 100%
 
@@ -69,6 +69,7 @@ Progress: [██████████] 100%
 | Phase 12 P03 | 4min | 2 tasks | 4 files |
 | Phase 13 P01 | 10min | 2 tasks | 3 files |
 | Phase 13 P02 | 9min | 2 tasks | 3 files |
+| Phase 13 P03 | 13min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,9 @@ Recent decisions affecting current work:
 - [Phase 13]: Tenant isolation tested via unpublished cross-project data (published data intentionally visible to all)
 - [Phase 13]: Entity table DELETE tests avoided due to cleanup_entity_storage_files search_path bug; app_settings used instead (same RLS pattern)
 - [Phase 13]: Explicit per-table assertions instead of DO block loops (PERFORM swallows TAP output)
+- [Phase 13]: Used pg_proc.prosecdef introspection for SECURITY INVOKER/DEFINER verification on RPC functions
+- [Phase 13]: Tested RLS enforcement via direct SQL instead of bulk_import RPC (ON CONFLICT partial index pre-existing bug)
+- [Phase 13]: Used app_settings for admin DELETE test (avoids delete_storage_object trigger search_path bug)
 
 ### Pending Todos
 
@@ -149,6 +153,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T10:50:08Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-03-15T10:56:29.599Z
+Stopped at: Completed 13-03-PLAN.md
 Resume file: None
