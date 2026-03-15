@@ -89,11 +89,11 @@ Plans:
   3. Extension patterns exist that guide Claude through adding new matching algorithms or distance metrics
   4. Mathematical nuances are documented (CategoricalQuestion multi-dimensional model, weight compensation, projection to lower dimensions)
   5. Reference files contain matching paradigm diagrams and Match object structure
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 18-01: TBD
-- [ ] 18-02: TBD
+- [ ] 18-01-PLAN.md — Write SKILL.md with conventions, mathematical nuances, and review checklist
+- [ ] 18-02-PLAN.md — Create algorithm-reference.md and extension-patterns.md reference files
 
 ### Phase 19: Filters Skill
 **Goal**: Claude automatically loads deep @openvaa/filters expertise when developers work on the filters package
@@ -163,7 +163,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
 | 17. Data Skill | v5.0 | 0/2 | Planned | - |
-| 18. Matching Skill | v5.0 | 0/TBD | Not started | - |
+| 18. Matching Skill | v5.0 | 0/2 | Planned | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
 | 20. Database Skill | v5.0 | 0/2 | Planned | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
