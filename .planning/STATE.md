@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Claude Skills
-status: planning
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-15T19:49:17.216Z"
-last_activity: 2026-03-15 — Roadmap created for v5.0 Claude Skills milestone
+status: executing
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-15T20:07:48.665Z"
+last_activity: 2026-03-15 — Completed 16-01 skill directory scaffolding
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 16 of 21 (Scaffolding and CLAUDE.md Refactoring)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-15 — Roadmap created for v5.0 Claude Skills milestone
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-15 — Completed 16-01 skill directory scaffolding
 
-Progress: [░░░░░░░░░░] 0% (v5.0 milestone)
+Progress: [█████░░░░░] 50% (v5.0 milestone)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0% (v5.0 milestone)
 - Trend: Stable
 
 *Updated after each plan completion*
+| Phase 16 P01 | 2min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [Research]: CLAUDE.md must be trimmed to ~150 lines to avoid context budget waste
 - [Research]: Description field is the single most important factor for skill triggering accuracy
 - [Research]: Keep SKILL.md lean (<500 lines), put detailed reference material in separate files
+- [Phase 16]: All 6 skill stubs left auto-invocable (no disable-model-invocation) -- placeholder bodies small enough to not waste context
+- [Phase 16]: BOUNDARIES.md uses 3-table format: directory ownership, concept domains, gray zones
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:49:17.214Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-scaffolding-and-claude-md-refactoring/16-CONTEXT.md
+Last session: 2026-03-15T20:07:48.663Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None
