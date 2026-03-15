@@ -1,10 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this repository. Domain-specific package knowledge is in `.claude/skills/`.
 
 ## Overview
 
-OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a monorepo containing frontend (SvelteKit), backend (Strapi CMS), and shared packages for matching algorithms, filters, and data management.
+OpenVAA is a framework for building Voting Advice Applications (VAAs). Monorepo with SvelteKit frontend, Supabase backend, and shared packages for matching algorithms, filters, and data management.
+
+> Legacy Strapi backend at `backend/vaa-strapi/`. Being sunset after frontend adapter migration (v3.0). See its README for details.
 
 ## Development Commands
 
@@ -70,30 +72,15 @@ yarn test:unit                # Run frontend tests only
 
 ### Monorepo Structure
 
-The project uses Yarn 4 workspaces with these modules:
+The project uses Yarn 4 workspaces:
 
-**Core Logic Packages** (`packages/`):
+**Core Logic** (`packages/`): `core`, `data`, `matching`, `filters`, `app-shared` (builds to ESM + CJS)
 
-- `@openvaa/core` - Shared types, interfaces, and utilities for all modules (Entity, Id, Serializable, matching types)
-- `@openvaa/data` - Universal data model for VAAs (elections, candidates, questions, answers). Provides hierarchical object model with single source of truth
-- `@openvaa/matching` - Generic matching algorithms supporting multiple distance metrics (Manhattan, Euclidean, directional). Maps entities/voters to positions in multidimensional space
-- `@openvaa/filters` - Entity filtering by properties/answers (candidates, parties, etc.)
-- `@openvaa/app-shared` - Shared between frontend and backend (application settings, extended data types, utilities). Builds to both ESM (frontend) and CommonJS (backend)
+**Experimental** (`packages/`): `llm`, `argument-condensation`, `question-info`
 
-**Experimental** (`packages/`):
+**Application**: `frontend` (SvelteKit 2), `strapi` (legacy backend at `backend/vaa-strapi/`)
 
-- `@openvaa/llm` - LLM integrations
-- `@openvaa/argument-condensation` - Argument processing
-- `@openvaa/question-info` - Question metadata
-
-**Application**:
-
-- `@openvaa/strapi` - Strapi v5 backend with Postgres at `backend/vaa-strapi/`. Custom plugins in `backend/vaa-strapi/src/plugins/`
-- `@openvaa/frontend` - SvelteKit 2 frontend at `frontend/`. Uses Tailwind + DaisyUI for styling
-
-**Development**:
-
-- `@openvaa/shared-config` - Shared ESLint, TypeScript, and build configs
+**Development**: `shared-config` (ESLint, TypeScript, build configs)
 
 ### Module Resolution & Dependencies
 
@@ -101,53 +88,16 @@ The project uses Yarn 4 workspaces with these modules:
 
 **Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script watches packages and rebuilds automatically.
 
-**Dependency Flow**: `core` → `data`/`matching`/`filters` → `app-shared` → `frontend`/`strapi`
+**Dependency Flow**: `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`/`strapi`
 
 When adding interdependencies:
 
 1. Add to `package.json`: `"@openvaa/core": "workspace:^"`
 2. Add TypeScript reference: `"references": [{ "path": "../core/tsconfig.json" }]`
 
-### Key Architectural Patterns
+### Settings
 
-**Data Model Philosophy** (`@openvaa/data`):
-
-- Single source of truth - all objects accessed by reference, never copied
-- Smart default values - missing values become empty literals (empty strings, arrays, etc.)
-- `MISSING_VALUE` constant from `@openvaa/core` for explicitly missing matching values
-- Hierarchical model with `root` getter on all objects
-- Questions and Entities implement interfaces required by `@openvaa/matching`
-
-**Matching Algorithm Paradigm** (`@openvaa/matching`):
-
-- Treats voters and candidates as positions in multidimensional space
-- Each question creates 1+ dimensions (e.g., categorical questions create subdimensions)
-- Distance measured and normalized to 0-100% of maximum possible distance
-- Supports projection to lower-dimensional spaces (e.g., 2D political compass)
-- `Match` objects contain entity reference, distance, and optional subMatches for categories
-- Only matches questions the voter has answered
-
-**Instance Checks**: When using `instanceof` with custom classes (especially in `@openvaa/data`, `@openvaa/matching`, `@openvaa/filters`), be aware this was problematic in the past (see commit 87efe19a). Ensure classes are properly exported and imported.
-
-**Frontend Data Flow**:
-
-- Data adapters in `frontend/src/lib/api/adapters/` abstract data source (Strapi vs local JSON)
-- Universal adapter pattern in `frontend/src/lib/api/base/universalAdapter.ts`
-- Server-side and client-side backend URLs differ when using Docker (see `.env`)
-- Route structure uses optional locale param: `frontend/src/routes/[[lang=locale]]/`
-- Separate apps for voters (`frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`frontend/src/routes/[[lang=locale]]/candidate/`)
-
-**Backend Customization** (`@openvaa/strapi`):
-
-- Automatic data loading on init: Question Types, App Settings, Translation overrides
-- Custom permissions via `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
-- Route policies: `restrict-populate` applied to all routes
-- Mock data generation controlled by env vars (dev/test only)
-
-**Settings Architecture**:
-
-- `StaticSettings` - hardcoded in `packages/app-shared/src/settings/staticSettings.ts` (colors, locales, fonts, admin email). Edit these to customize your VAA instance
-- `DynamicSettings` - loaded from backend (election data, feature flags)
+`StaticSettings` in `packages/app-shared/src/settings/staticSettings.ts`, `DynamicSettings` loaded from backend.
 
 ## Docker Development
 
@@ -162,9 +112,7 @@ The stack runs four services:
 
 **Environment variables**: When using Docker, only edit the root `.env` file (not `frontend/.env` or `backend/vaa-strapi/.env`).
 
-**Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed database with fake candidates, questions, etc. Use `GENERATE_MOCK_DATA_ON_RESTART=true` to regenerate on every restart (clears database - dev only).
-
-**Hot reloading**: Frontend hot reloads by default. Backend can hot reload if you mount `./backend/vaa-strapi:/opt` in `backend/vaa-strapi/docker-compose.dev.yml` (slow, not recommended unless actively developing backend).
+**Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed dev data.
 
 ## Frontend (SvelteKit)
 
@@ -181,49 +129,9 @@ The stack runs four services:
 
 **Path aliases** (defined in `frontend/svelte.config.js`):
 
-- `$types` → `frontend/src/lib/types`
-- `$voter` → `frontend/src/lib/voter`
-- `$candidate` → `frontend/src/lib/candidate`
-
-**Key directories**:
-
-- `frontend/src/lib/api/` - Data adapters (Strapi, local JSON)
-- `frontend/src/lib/components/` - Reusable Svelte components
-- `frontend/src/lib/contexts/` - Svelte context providers
-- `frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
-- `frontend/src/lib/utils/` - Helper functions
-- `frontend/src/hooks.server.ts` - SvelteKit hooks (auth, locale handling)
-
-**Build**: `yarn workspace @openvaa/frontend build` (also copies `frontend/data/` folder if present for local adapter)
-
-## Backend (Strapi)
-
-**Version**: Strapi v5 with TypeScript
-
-**Database**: Postgres (required, not SQLite in production)
-
-**Authentication**:
-
-- Public read access to API (configured in permissions)
-- Candidates authenticate via `users-permissions` plugin
-- Pre-registration requires API token with `users-permissions.candidate.preregister` permission
-- Bank authentication via OpenID Connect (Signicat) - see `.env` for IdP settings
-
-**Plugins**:
-
-- AWS S3 for media uploads
-- AWS SES for emails
-- `@openvaa/strapi-admin-tools` (local plugin in `backend/vaa-strapi/src/plugins/openvaa-admin-tools/`)
-
-**Type generation**: Run `yarn workspace @openvaa/strapi generate:types` after schema changes to update `backend/vaa-strapi/types/`.
-
-**Adding new content types**:
-
-1. Add to `CONTENT_API` list in `backend/vaa-strapi/src/util/api.ts`
-2. Update permissions in `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
-3. Add route config with `restrict-populate` policy (see `backend/vaa-strapi/README.md`)
-
-**Email**: Uses AWS SES. Control sender with `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` env vars.
+- `$types` -> `frontend/src/lib/types`
+- `$voter` -> `frontend/src/lib/voter`
+- `$candidate` -> `frontend/src/lib/candidate`
 
 ## Common Workflows
 
@@ -231,8 +139,7 @@ The stack runs four services:
 
 1. `yarn build:app-shared` (if not already built)
 2. Understand the feature scope - read relevant package READMEs
-3. For frontend work: check existing components in `frontend/src/lib/components/`, `frontend/src/lib/dynamic-components` and `frontend/src/lib/candidate/components`
-4. For backend work: check content types and custom API in Strapi admin
+3. Check existing components in `frontend/src/lib/components/` and `frontend/src/lib/candidate/components`
 
 ### Running tests after changes
 
@@ -247,21 +154,10 @@ yarn dev
 yarn test:e2e
 ```
 
-### Debugging matching algorithm
-
-See `packages/matching/examples/example.ts` for usage:
-
-```bash
-cd packages/matching
-tsx examples/example.ts
-```
-
 ### Translation updates
 
-Dynamic translations are synced from frontend to backend:
-
 ```bash
-yarn sync:translations
+yarn sync:translations          # Sync dynamic translations from frontend to backend
 ```
 
 ### Fixing "module not found" errors
@@ -271,26 +167,17 @@ yarn build:app-shared  # Most common fix
 yarn build:shared      # If core/data/matching/filters are involved
 ```
 
-## Important Implementation Notes
+## Implementation Rules
 
 - **Never** commit sensitive data (API keys, tokens, .env files)
 - **Test accessibility** - app must be WCAG 2.1 AA compliant
 - **Use TypeScript strictly** - avoid `any`, prefer explicit types
-- **Matching algorithms** - questions creating subdimensions (like categorical) need special handling
-- **Missing values** - use `MISSING_VALUE` from `@openvaa/core` in matching contexts, `undefined` or empty literals elsewhere
 - **Localization** - all user-facing strings must support multiple locales (see `packages/app-shared/src/settings/staticSettings.ts` for `supportedLocales`)
-- **Always** check that your code against the [Code review checklist](docs/code-review-checklist.md)
+- **Always** check your code against the [Code review checklist](/.agents/code-review-checklist.md)
 
 ## Deployment
 
-Fully containerized with Docker. See `docs/README.md` deployment section for:
-
-- Render + AWS S3/SES setup
-- Environment variable configuration
-- Production build process
-- Domain configuration
-
-Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
+Fully containerized with Docker. See `docs/README.md` for Render setup, environment variables, and domain configuration.
 
 ## Troubleshooting
 
@@ -306,9 +193,7 @@ Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
 
 ## Roadmap
 
-**2025 H2**: Documentation site, AI features, application manager UI, first production release
-
-**2026**: Plugins/customization, multi-tenant model, migration from Strapi to Supabase, Svelte 5 upgrade
+**Current:** v5.0 Claude Skills -- domain-expert skills for each major framework area. **Next:** v3.0 Frontend Adapter Migration (Strapi to Supabase), v4.0 Svelte 5 Upgrade
 
 ## Code Review
 
