@@ -48,8 +48,8 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Data Model
 
-- [x] **DATA-01**: @openvaa/data extended with `QuestionTemplate` concept (renamed from Strapi's questionType)
-- [x] **DATA-02**: QuestionTemplate defines default properties, answer type, and configuration for creating questions
+- [ ] **DATA-01**: @openvaa/data extended with `QuestionTemplate` concept (renamed from Strapi's questionType)
+- [ ] **DATA-02**: QuestionTemplate defines default properties, answer type, and configuration for creating questions
 
 ### Services
 
@@ -141,8 +141,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-06 | Phase 10 | Complete |
 | AUTH-07 | Phase 10 | Complete |
 | AUTH-08 | Phase 10 | Complete |
-| DATA-01 | Phase 9 | Complete |
-| DATA-02 | Phase 9 | Complete |
+| DATA-01 | Phase 15 | Pending |
+| DATA-02 | Phase 15 | Pending |
 | SRVC-01 | Phase 12 | Complete |
 | SRVC-02 | Phase 12 | Complete |
 | SRVC-03 | Phase 12 | Complete |
@@ -152,7 +152,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOAD-01 | Phase 11 | Complete |
 | LOAD-02 | Phase 11 | Complete |
 | LOAD-03 | Phase 11 | Complete |
-| LOAD-04 | Phase 11 | Pending |
+| LOAD-04 | Phase 15 | Pending |
 | QUAL-01 | Phase 13 | Complete |
 | QUAL-02 | Phase 13 | Complete |
 | QUAL-03 | Phase 13 | Complete |

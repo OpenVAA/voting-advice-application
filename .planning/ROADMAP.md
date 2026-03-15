@@ -7,7 +7,7 @@ This roadmap spans two milestones of the OpenVAA framework evolution. Milestone 
 ## Milestones
 
 - [x] **v1.0 E2E Testing Framework** - Phases 1-7
-- [ ] **v2.0 Supabase Migration** - Phases 8-13 (in progress)
+- [ ] **v2.0 Supabase Migration** - Phases 8-15 (in progress)
 
 ## Phases
 
@@ -38,6 +38,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 11: Load Testing** - k6 and pgbench benchmarks comparing answer storage alternatives at realistic scale, producing a documented decision (completed 2026-03-14)
 - [x] **Phase 12: Services** - Storage buckets with RLS, candidate photo upload, email for dev and transactional flows, bulk admin import/delete operations (completed 2026-03-14)
 - [x] **Phase 13: Quality Assurance** - pgTAP tests verifying tenant isolation, candidate self-edit restrictions, and public read access (completed 2026-03-15)
+- [ ] **Phase 14: Service & Auth Bug Fixes** - Fix bulk_import, storage cleanup, password reset redirect, and env config gaps (gap closure)
+- [ ] **Phase 15: QuestionTemplate & Verification Closure** - Resolve DATA-01/DATA-02 and close Phase 11 verification gap (gap closure)
 
 ## Phase Details
 
@@ -272,6 +274,27 @@ Plans:
 - [ ] 13-02-PLAN.md -- Anon read access + admin CRUD + party admin scope tests
 - [ ] 13-03-PLAN.md -- Storage RLS + RPC security + trigger validation + column restriction tests
 
+### Phase 14: Service & Auth Bug Fixes
+**Goal**: Fix schema bugs and integration issues found in milestone audit
+**Depends on**: Phase 10, Phase 12
+**Requirements**: SRVC-01 (fix), SRVC-04 (fix), AUTH-02 (fix), INFRA-02 (fix)
+**Gap Closure**: Closes integration and flow gaps from v2.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `bulk_import` ON CONFLICT works correctly with partial unique indexes (WHERE external_id IS NOT NULL)
+  2. Entity DELETE triggers successfully clean up storage files (schema-qualified function calls)
+  3. Password reset email redirects to existing `/candidate/password-reset` route
+  4. `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` present in root `.env.example` and Docker compose
+
+### Phase 15: QuestionTemplate & Verification Closure
+**Goal**: Resolve QuestionTemplate requirement gap and close Phase 11 verification gap
+**Depends on**: Phase 9, Phase 11
+**Requirements**: DATA-01, DATA-02, LOAD-04
+**Gap Closure**: Closes requirement and verification gaps from v2.0 audit
+**Success Criteria** (what must be TRUE):
+  1. DATA-01/DATA-02 resolved (re-implement QuestionTemplate class or defer requirements to v3+)
+  2. Phase 11 has VERIFICATION.md confirming benchmark scripts exist and run
+  3. LOAD-04 marked complete in REQUIREMENTS.md
+
 ## Progress
 
 **Execution Order:**
@@ -293,3 +316,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 12. Services | v2.0 | 3/3 | Complete | 2026-03-14 |
 | 13. Quality Assurance | 3/3 | Complete    | 2026-03-15 | - |
+| 14. Service & Auth Bug Fixes | v2.0 | 0/0 | Not started | - |
+| 15. QuestionTemplate & Verification Closure | v2.0 | 0/0 | Not started | - |
