@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Supabase Migration
 status: completed
-stopped_at: Completed 13-03-PLAN.md
-last_updated: "2026-03-15T11:00:24.351Z"
-last_activity: 2026-03-15 -- Phase 13 plan 03 complete
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-15T15:13:37.033Z"
+last_activity: 2026-03-15 -- Phase 14 plan 01 complete
 progress:
-  total_phases: 13
-  completed_phases: 12
-  total_plans: 50
-  completed_plans: 49
-  percent: 100
+  total_phases: 15
+  completed_phases: 13
+  total_plans: 51
+  completed_plans: 50
+  percent: 98
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 12 (Services) complete, all plans done
+**Current focus:** Phase 14 (Service and Auth Bug Fixes) complete, all plans done
 
 ## Current Position
 
-Phase: 13 of 13 (Quality Assurance)
-Plan: 3 of 3 -- complete
-Status: Plan 03 complete (storage RLS, RPC security, triggers, column restrictions)
-Last activity: 2026-03-15 -- Phase 13 plan 03 complete
+Phase: 14 of 15 (Service and Auth Bug Fixes)
+Plan: 1 of 1 -- complete
+Status: Plan 01 complete (ON CONFLICT fix, storage search_path, password reset redirect, Supabase env vars)
+Last activity: 2026-03-15 -- Phase 14 plan 01 complete
 
-Progress: [██████████] 100%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [██████████] 100%
 | Phase 13 P01 | 10min | 2 tasks | 3 files |
 | Phase 13 P02 | 9min | 2 tasks | 3 files |
 | Phase 13 P03 | 13min | 2 tasks | 4 files |
+| Phase 14 P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,7 @@ Recent decisions affecting current work:
 - [Phase 13]: Used pg_proc.prosecdef introspection for SECURITY INVOKER/DEFINER verification on RPC functions
 - [Phase 13]: Tested RLS enforcement via direct SQL instead of bulk_import RPC (ON CONFLICT partial index pre-existing bug)
 - [Phase 13]: Used app_settings for admin DELETE test (avoids delete_storage_object trigger search_path bug)
+- [Phase 14]: ON CONFLICT WHERE predicate must exactly match partial unique index definition for PostgreSQL to use it
 
 ### Pending Todos
 
@@ -153,6 +155,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T10:56:29.599Z
-Stopped at: Completed 13-03-PLAN.md
+Last session: 2026-03-15T15:13:37.031Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

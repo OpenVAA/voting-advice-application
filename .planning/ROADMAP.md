@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 11: Load Testing** - k6 and pgbench benchmarks comparing answer storage alternatives at realistic scale, producing a documented decision (completed 2026-03-14)
 - [x] **Phase 12: Services** - Storage buckets with RLS, candidate photo upload, email for dev and transactional flows, bulk admin import/delete operations (completed 2026-03-14)
 - [x] **Phase 13: Quality Assurance** - pgTAP tests verifying tenant isolation, candidate self-edit restrictions, and public read access (completed 2026-03-15)
-- [ ] **Phase 14: Service & Auth Bug Fixes** - Fix bulk_import, storage cleanup, password reset redirect, and env config gaps (gap closure)
+- [x] **Phase 14: Service & Auth Bug Fixes** - Fix bulk_import, storage cleanup, password reset redirect, and env config gaps (gap closure) (completed 2026-03-15)
 - [ ] **Phase 15: QuestionTemplate & Verification Closure** - Resolve DATA-01/DATA-02 and close Phase 11 verification gap (gap closure)
 
 ## Phase Details
@@ -320,5 +320,5 @@ Phases execute in numeric order: 8 -> 9 -> 10 -> 11 -> 12 -> 13
 | 11. Load Testing | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 12. Services | v2.0 | 3/3 | Complete | 2026-03-14 |
 | 13. Quality Assurance | v2.0 | 3/3 | Complete | 2026-03-15 |
-| 14. Service & Auth Bug Fixes | v2.0 | 0/1 | Planned | - |
+| 14. Service & Auth Bug Fixes | 1/1 | Complete   | 2026-03-15 | - |
 | 15. QuestionTemplate & Verification Closure | v2.0 | 0/0 | Not started | - |
