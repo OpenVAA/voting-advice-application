@@ -192,9 +192,9 @@ BEGIN
   END LOOP;
 
   -- Build and execute upsert SQL
-  -- ON CONFLICT uses the composite unique index on (project_id, external_id)
+  -- ON CONFLICT uses the partial unique index on (project_id, external_id) WHERE external_id IS NOT NULL
   sql_text := format(
-    'INSERT INTO %I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
+    'INSERT INTO %I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
     p_table_name,
     array_to_string(col_names, ', '),
     array_to_string(col_values, ', '),

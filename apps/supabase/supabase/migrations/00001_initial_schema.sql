@@ -2087,8 +2087,8 @@ BEGIN
   path_prefix := OLD.project_id || '/' || TG_TABLE_NAME || '/' || OLD.id || '/';
 
   -- Clean up files in both buckets
-  PERFORM delete_storage_object('public-assets', path_prefix);
-  PERFORM delete_storage_object('private-assets', path_prefix);
+  PERFORM public.delete_storage_object('public-assets', path_prefix);
+  PERFORM public.delete_storage_object('private-assets', path_prefix);
 
   RETURN OLD;
 END;
@@ -2168,7 +2168,7 @@ BEGIN
   IF OLD.image IS NOT NULL AND OLD.image ? 'path' THEN
     old_path := OLD.image ->> 'path';
     IF old_path IS NOT NULL AND old_path != '' THEN
-      PERFORM delete_storage_object('public-assets', old_path);
+      PERFORM public.delete_storage_object('public-assets', old_path);
     END IF;
   END IF;
 
@@ -2176,7 +2176,7 @@ BEGIN
   IF OLD.image IS NOT NULL AND OLD.image ? 'pathDark' THEN
     old_path_dark := OLD.image ->> 'pathDark';
     IF old_path_dark IS NOT NULL AND old_path_dark != '' THEN
-      PERFORM delete_storage_object('public-assets', old_path_dark);
+      PERFORM public.delete_storage_object('public-assets', old_path_dark);
     END IF;
   END IF;
 
@@ -2556,9 +2556,9 @@ BEGIN
   END LOOP;
 
   -- Build and execute upsert SQL
-  -- ON CONFLICT uses the composite unique index on (project_id, external_id)
+  -- ON CONFLICT uses the partial unique index on (project_id, external_id) WHERE external_id IS NOT NULL
   sql_text := format(
-    'INSERT INTO %I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
+    'INSERT INTO %I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
     p_table_name,
     array_to_string(col_names, ', '),
     array_to_string(col_values, ', '),
