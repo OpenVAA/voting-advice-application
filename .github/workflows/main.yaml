@@ -24,15 +24,18 @@ on:
 jobs:
   frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
     steps:
       - name: "Checkout Frontend source code"
         uses: actions/checkout@v4
 
-      - name: Setup Yarn 4.6
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
       - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v4
@@ -44,7 +47,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: "Build all shared modules"
-        run: yarn build:shared
+        run: yarn build
 
       - name: "Run Prettier check globally"
         run: yarn format:check
@@ -59,13 +62,16 @@ jobs:
         run: yarn test:unit
 
       - name: "Configure frontend environment using the repo root .env.example file"
-        run: cp .env.example frontend/.env
+        run: cp .env.example apps/frontend/.env
 
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
   backend-validation:
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
     steps:
       - name: "Checkout Backend source code"
@@ -73,10 +79,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Yarn 4.6
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
       - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v4
@@ -90,7 +96,7 @@ jobs:
         env:
           cache-name: cache-node-modules
         with:
-          path: "backend/vaa-strapi/node_modules"
+          path: "apps/strapi/node_modules"
           key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -101,7 +107,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: "Build all shared modules"
-        run: yarn build:shared
+        run: yarn build
 
       - name: "Install Backend yarn dependencies"
         run: yarn workspace @openvaa/strapi install --frozen-lockfile
@@ -131,10 +137,10 @@ jobs:
           cp .env.example .env
           sed -i 's/GENERATE_MOCK_DATA_ON_INITIALISE=true/GENERATE_MOCK_DATA_ON_INITIALISE=false/' .env
 
-      - name: Setup Yarn 4.6
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
       - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v4
@@ -212,10 +218,10 @@ jobs:
           cp .env.example .env
           sed -i 's/GENERATE_MOCK_DATA_ON_INITIALISE=true/GENERATE_MOCK_DATA_ON_INITIALISE=false/' .env
 
-      - name: Setup Yarn 4.6
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
       - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v4

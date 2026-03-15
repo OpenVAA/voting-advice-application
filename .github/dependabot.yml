@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/backend/vaa-strapi" # Location of package manifests
+    directory: "/apps/strapi" # Location of package manifests
     schedule:
       interval: "monthly"
     target-branch: "main"
@@ -16,7 +16,7 @@ updates:
     open-pull-requests-limit: 0
 
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/frontend" # Location of package manifests
+    directory: "/apps/frontend" # Location of package manifests
     schedule:
       interval: "monthly"
     target-branch: "main"

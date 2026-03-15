@@ -1,7 +1,7 @@
 services:
   frontend:
     extends:
-      file: ./frontend/docker-compose.dev.yml
+      file: ./apps/frontend/docker-compose.dev.yml
       service: frontend
     depends_on:
       strapi:
@@ -29,7 +29,7 @@ services:
       LLM_OPENAI_API_KEY: ${LLM_OPENAI_API_KEY}
   awslocal:
     extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
+      file: ./apps/strapi/docker-compose.dev.yml
       service: awslocal
     environment:
       DEBUG: 1
@@ -43,7 +43,7 @@ services:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
   strapi:
     extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
+      file: ./apps/strapi/docker-compose.dev.yml
       service: strapi
     depends_on:
       awslocal:
@@ -83,7 +83,7 @@ services:
       PUBLIC_BROWSER_FRONTEND_URL: ${PUBLIC_BROWSER_FRONTEND_URL}
   postgres:
     extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
+      file: ./apps/strapi/docker-compose.dev.yml
       service: postgres
     environment:
       POSTGRES_DB: ${DATABASE_NAME}

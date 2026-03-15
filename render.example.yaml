@@ -60,7 +60,7 @@ services:
 
     region: frankfurt
     dockerContext: .
-    dockerfilePath: ./frontend/Dockerfile
+    dockerfilePath: ./apps/frontend/Dockerfile
     domains:
       - <INSTANCE_DOMAIN>
 
@@ -140,7 +140,7 @@ services:
 
     region: frankfurt
     dockerContext: .
-    dockerfilePath: ./backend/vaa-strapi/Dockerfile
+    dockerfilePath: ./apps/strapi/Dockerfile
 
     autoDeployTrigger: 'off' # Check
 

@@ -1,8 +1,8 @@
 {
   "*.{html,js,jsx,cjs,mjssvelte,ts,tsx,cts,mts,xml,yaml,yml}": [
-    "yarn build:app-shared",
+    "turbo run build --filter=@openvaa/app-shared...",
     "prettier --write",
     "eslint --fix --flag v10_config_lookup_from_file"
   ],
-  "*.{css,json,md}": ["yarn build:app-shared", "prettier --write"]
+  "*.{css,json,md}": ["turbo run build --filter=@openvaa/app-shared...", "prettier --write"]
 }

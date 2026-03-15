@@ -7,6 +7,9 @@ node_modules
 # Claude Code local settings
 .claude/*.local.json
 
+# Turborepo
+.turbo
+
 # Yarn 4 without Zero-installs
 .pnp.*
 .yarn/*
