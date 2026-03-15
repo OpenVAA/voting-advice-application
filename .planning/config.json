@@ -4,9 +4,11 @@
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
+  "granularity": "fine",
   "workflow": {
     "research": true,
     "plan_check": true,
-    "verifier": true
+    "verifier": true,
+    "_auto_chain_active": false
   }
 }

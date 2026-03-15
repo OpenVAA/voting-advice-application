@@ -1,198 +1,200 @@
 # Project Research Summary
 
-**Project:** E2E Testing Framework for OpenVAA (SvelteKit 2 + Strapi v5 Monorepo)
-**Domain:** End-to-end test infrastructure — existing Playwright suite refactored into a comprehensive, production-grade framework
-**Researched:** 2026-03-03
+**Project:** OpenVAA v1.1 Monorepo Refresh
+**Domain:** Monorepo tooling, versioning, package publishing, and build orchestration for an existing TypeScript monorepo
+**Researched:** 2026-03-12
 **Confidence:** HIGH
 
 ## Executive Summary
 
-OpenVAA already has Playwright installed and three working spec files covering the candidate app. The E2E milestone is not about choosing a test tool — it is about rebuilding the structural foundations of the existing suite to make it reliable, extensible, and complete. Four systemic problems make the current suite fragile: text-based selectors that break on i18n changes, no database state reset so tests accumulate side effects, a globalSetup pattern that hides setup failures from the HTML reporter, and zero voter app coverage despite the voter app being the primary user-facing surface. Fixing these in the wrong order will result in building new tests on top of the same broken foundation.
+The OpenVAA monorepo refresh is a developer infrastructure project -- not a feature project. The codebase is a 9-package Yarn 4 workspace monorepo with a SvelteKit frontend, Strapi v5 backend, and shared TypeScript library packages (core, data, matching, filters). The goal is to modernize build orchestration, establish automated versioning and changelog generation, and prepare four core library packages for npm publishing. Research strongly converges on a two-tool stack: **Turborepo** for build orchestration and caching on top of existing Yarn 4 workspaces, and **Changesets** for version management and automated releases. Both are additive -- they layer onto what already works rather than replacing it.
 
-The recommended approach is to treat Phase 1 entirely as infrastructure: establish test data management via the Admin Tools API, replace globalSetup with Playwright project dependencies, add data-testid attributes to components, configure browser locale and CI timeouts, and write the fixture layer. Only then should new spec files be written. This ordering is critical — writing voter app tests before the data reset mechanism exists will recreate the same cascading failure problem that already plagues the candidate tests. The Admin Tools plugin (`/import-data`, `/delete-data`) is the correct mechanism for all data management; Playwright-driven Strapi admin UI navigation is explicitly an anti-pattern here.
+The recommended approach follows a strict dependency order across five phases: (1) add Turborepo for build orchestration and fix known bugs, (2) restructure directories into `apps/` + `packages/` convention, (3) configure Changesets for versioning with a new release GitHub Action, (4) prepare packages for npm publishing by migrating builds to tsup and adding required metadata, and (5) polish with remote caching and dependency alignment. The directory restructure and Turborepo addition are independent of each other but both must precede publishing. The docs site should remain in the monorepo -- splitting it would break the auto-generation scripts that produce API references and component documentation from source code.
 
-The biggest risk is investing in the wrong abstractions too early. Research from PITFALLS.md strongly warns against building a POM inheritance hierarchy before duplication is observed in actual tests. The right sequence is: utilities and constants first, then setup/teardown projects, then page objects (flat, no inheritance), then fixtures composing page objects, then spec files consuming fixtures. No new npm packages are required. All dependencies already exist in the monorepo. The Playwright version should be bumped from 1.49.1 to 1.58.2 to access project teardown improvements and the latest auto-waiting behavior.
+The highest-risk pitfall is Changesets' default use of `npm publish` instead of `yarn npm publish`, which would ship packages with unresolvable `workspace:^` protocol strings in their dependency fields. This must be caught before the first real publish or version numbers are burned and packages are non-installable. Secondary risks include the fact that all packages are currently `"private": true` (silent publish failure), missing npm package metadata (rejection on publish), and a known typo in the app-shared ESM build script (`packagec.json`). All are preventable with a disciplined pre-publish checklist.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack already contains everything needed. `@playwright/test`, TypeScript, `@faker-js/faker`, `dotenv`, `mailparser`, and `cheerio` are all installed. The only required action is bumping `@playwright/test` from `^1.49.1` to `^1.58.2` and running `yarn playwright install chromium` to update browser binaries. No new packages should be added.
-
-The key architectural change is eliminating `globalSetup` in favor of Playwright project dependencies. Project dependencies (`setup` project with `testMatch: '**/*.setup.ts'`) appear in the HTML reporter, produce traces on failure, and compose cleanly with fixtures — `globalSetup` does none of these. The Strapi admin API is the data management mechanism: `POST /admin/login` for JWT, then `/api/openvaa-admin-tools/import-data` and `/api/openvaa-admin-tools/delete-data` for state management.
+The stack recommendation is narrow and confident. Both Turborepo and Changesets are dominant tools in their respective categories, actively maintained, and verified compatible with Yarn 4 + Node 20.
 
 **Core technologies:**
+- **Turborepo ^2.8:** Build orchestration and caching -- layers on Yarn 4 workspaces without replacing them. Adds parallel task execution, intelligent caching, and dependency-aware task graphs. Single `turbo.json` config file. 10-minute setup.
+- **Changesets ^2.30:** Version management, changelog generation, release coordination -- decouples version intent from commit history. Contributors declare changes via changeset files. CI automates version PRs and publishing. 11.5k GitHub stars, used by Svelte, Astro, Turborepo themselves.
+- **tsup (esbuild-based):** Build tool for publishable packages -- replaces `tsc + tsc-esm-fix` with a faster, cleaner ESM+CJS dual-build pipeline. Recommended by Turborepo's own publishing guide.
+- **Yarn 4.6.0 (keep):** No package manager migration. Switching to pnpm is high-risk for zero gain at this scale.
+- **SvelteKit docs site (keep):** No migration to Starlight/VitePress. The current site works and has deep monorepo integration. Evaluate Starlight only for a future major docs overhaul.
 
-- `@playwright/test ^1.58.2`: Test runner, fixture engine, API request context, project dependencies — already installed, needs version bump only
-- TypeScript (monorepo version): Type-safe page objects and fixtures — already the monorepo language, no setup needed
-- `@faker-js/faker ^8.4.1`: Per-run unique test data to prevent parallel-run collisions — already installed as root devDependency
-
-**Supporting tools:**
-
-- Playwright HTML Reporter: Already configured, needs CI artifact upload step added
-- Playwright VS Code Extension: Install separately for development ergonomics
-- `eslint-plugin-playwright`: Add to enforce `no-wait-for-timeout` and discourage text-based selectors
+**Rejected alternatives:** Nx (too opinionated for 9 packages), Lerna (abandoned/Nx wrapper), semantic-release (poor monorepo support), Monoweave (requires Node >= 22), pnpm migration (high risk, low reward).
 
 ### Expected Features
 
-The feature research draws a clear line between P1 (required for the milestone to deliver value) and P2 (should add after P1 is stable). The dependency graph is strict: test IDs must exist before page objects can be written; dataset management must work before voter tests can be written; fixture layer must exist before spec files should be written.
+**Must have (table stakes):**
+- Task orchestration with caching (Turborepo -- replaces slow sequential `yarn workspaces foreach`)
+- Topological build ordering (declarative via `turbo.json`, not hand-crafted scripts)
+- Changesets for version management (no versioning exists today)
+- Automated changelog generation (per-package CHANGELOG.md)
+- Package publishing readiness for core, data, matching, filters (currently `"private": true`)
+- Directory restructure to `apps/` + `packages/` (clarifies publishable vs deployable)
+- CI pipeline for automated releases (Changesets GitHub Action)
+- Local build caching (Turborepo default -- every `build:shared` currently rebuilds everything)
 
-**Must have (table stakes — P1):**
-
-- Test ID attributes on all interactive elements in both apps — without this, all selector work is fragile
-- Pre-defined JSON test datasets (minimum: `standard`, `multi-election`) — required for reproducible and isolated test runs
-- API-based dataset load/reset helper wrapping Admin Tools endpoints — replaces the broken UI-driven import pattern
-- Authentication fixture replacing manual beforeEach login — eliminates serial mode dependency for auth state
-- Voter app core journey coverage (landing → questions → results → candidate detail) — zero coverage currently is a P1 gap
-- CI GitHub Actions workflow with HTML report artifact upload — tests without CI are not production-grade
-- User story file organization (`candidate-registration.spec.ts`, `voter-journey.spec.ts`, etc.) — replaces `basics`/`advanced` complexity grouping
-
-**Should have (P2 — add after P1 stable):**
-
-- Page Object Model layer — extract after 3+ spec files share the same interaction sequence
-- Multi-configuration Playwright projects (one per dataset/configuration) — add second dataset project once single-dataset suite is stable
-- Test tagging (`@smoke`, `@voter`, `@candidate`) — enable selective CI runs per trigger type
-- Locale-aware test helpers — parameterize critical flows across `en` and `fi` once English coverage is complete
+**Should have (differentiators):**
+- Remote caching via Vercel (free, nearly zero effort to enable later)
+- Changeset bot on PRs (catches forgotten changesets)
+- tsup build pipeline for publishable packages (faster, cleaner output)
+- Yarn catalogs for dependency alignment (eliminates version drift across packages)
+- Per-workspace typecheck and lint in Turborepo
 
 **Defer (v2+):**
-
-- Visual regression baseline suite — defer until after Svelte 5 migration; baselines would need full rebuild
-- Supabase-compatible data layer — design fixture API to be backend-agnostic now, implement swap when migration happens
+- Prerelease/snapshot releases (enable when downstream consumers exist)
+- Docs site migration to Starlight (only if current site becomes a burden)
+- Publishing additional packages beyond core/data/matching/filters
 
 ### Architecture Approach
 
-The test framework is organized as five discrete layers, each with a single responsibility: spec files assert user stories; the fixture layer provides typed pre-initialized page objects and state; the page object layer encapsulates UI interactions per page; the helper/utility layer provides shared functions (route builder, translations, test ID constants, Strapi API client); and the setup/teardown layer manages data and auth state via Playwright projects. These layers have strict dependency direction — spec files depend on fixtures, fixtures depend on page objects, page objects depend on utilities, setup/teardown depends on the Strapi API client.
+The architecture is additive and layered. Turborepo reads the existing Yarn workspace graph and orchestrates `package.json` scripts -- individual packages do not need modification for orchestration to work. The directory restructure moves `frontend/`, `backend/vaa-strapi/`, and `docs/` into `apps/` while `packages/` stays in place. Publishable packages (core, data, matching, filters) switch from `tsc + tsc-esm-fix` to `tsup` for build, outputting to `dist/` with proper conditional `exports` for ESM+CJS consumers. Changesets operates independently of Turborepo -- one handles builds, the other handles versions.
 
 **Major components:**
+1. **`turbo.json` (root)** -- Task graph definition with `dependsOn` for topological ordering, `outputs` for caching, and `inputs` for change detection
+2. **`.changeset/config.json` (root)** -- Versioning config with linked package groups, ignore lists for private packages, and `updateInternalDependencies` for cascade control
+3. **`tsup.config.ts` (per publishable package)** -- Build config replacing `tsc-esm-fix` workaround, producing ESM+CJS dual output with type declarations
+4. **`.github/workflows/release.yml` (new)** -- Changesets GitHub Action for automated version PRs and npm publishing
+5. **`apps/` directory (new)** -- Contains frontend, strapi, and docs as deployable applications separated from library packages
 
-1. `setup/` (Playwright projects) — auth.setup.ts establishes storageState; data.setup.ts imports standard dataset via Admin Tools API; teardown.ts deletes by externalId prefix
-2. `pages/` (Page Object Models) — flat TypeScript classes per page, organized by app (voter/, candidate/, shared/), using TEST_IDS constants as primary selector mechanism
-3. `fixtures/` — Playwright `test.extend()` providing typed page objects and session state; `mergeTests()` combines voter and candidate fixture sets
-4. `data/datasets/` — typed TypeScript definitions (not raw JSON) for test scenarios; factories for dynamic per-test records
-5. `utils/` — `testIds.ts` (centralized data-testid constants), `strapiAdminClient.ts` (HTTP wrapper for Admin API), existing `buildRoute.ts` and `translations.ts` (keep and extend)
-
-The build order for implementation is: utilities and testIds first (unblocks everything), then datasets and factories, then page objects (voter, candidate, shared in parallel), then setup/teardown projects, then fixtures, then spec files, then playwright.config.ts projects.
+**Key patterns:**
+- Turborepo as additive layer (wraps existing scripts, does not replace Yarn)
+- Package-level Turborepo overrides for non-standard builds (e.g., docs site with code generation)
+- Conditional exports for published packages (ESM + CJS with proper `types` conditions)
+- Linked versioning for coupled packages (core + data + matching version together)
 
 ### Critical Pitfalls
 
-1. **Serial mode dependency chains** — The existing tests use `test.describe.configure({ mode: 'serial' })` causing cascading failures where one broken test shows 8+ failures. Avoid by combining multi-step flows into single tests with `test.step()` and using fixtures for state setup. Never use serial mode as a substitute for proper state isolation.
+1. **Changesets publishes with `workspace:^` intact** -- The default `npm publish` command does not resolve Yarn's workspace protocol. Published packages would be non-installable. Prevention: configure `yarn npm publish` as the publish command and add a CI dry-run check that greps packed tarballs for `workspace:` strings.
 
-2. **Shared mutable database state without reset** — Tests currently share the Docker-seeded database. Password changes leave state behind; if the change test fails midway, subsequent tests fail on login. Fix with API-based teardown in fixtures that runs even when tests fail — never rely on manual cleanup steps within a test body.
+2. **All packages are `"private": true`** -- Publishing silently does nothing. Prevention: audit and flip `private` flag for core, data, matching, filters before configuring Changesets. Add `publishConfig: { "access": "public" }` for scoped packages.
 
-3. **Text-content selectors as interaction targets** — The existing suite uses `getByRole('link', { name: T.en['...'] })` for click targets extensively. These break on i18n changes. Use `getByTestId(TEST_IDS.x.y)` for interaction targets; reserve text-based assertions for verifying visible content only.
+3. **Missing npm package metadata** -- Packages lack `description`, `license`, `repository`, `author`, `files`, `engines`. npm will reject or produce ugly package pages. Prevention: create a shared metadata template and apply to all publishable packages before first publish.
 
-4. **Strapi Admin UI automation for data management** — The existing `candidateApp-advanced.spec.ts` navigates the Strapi admin to trigger emails; CSV import was commented out because it broke. Admin UIs are brittle automation targets. Use direct REST API calls via `request.newContext()` for all data setup and teardown.
+4. **Version cascade avalanche** -- A typo fix in `core` could cascade version bumps to 8+ packages. Prevention: use independent versioning (not fixed/lockstep), keep `workspace:^` ranges, and use `updateInternalDependencies: "patch"` not `"always"`.
 
-5. **`waitForTimeout` as a timing mechanism** — The existing tests use `waitForTimeout(500)` and `waitForTimeout(5000)` for UI transitions and email delivery. These are both slow and flaky. Replace with state-based assertions (`expect(locator).toBeVisible()`) and `expect.poll()` for async conditions like email delivery.
+5. **Turborepo `outputs` misconfiguration** -- Different packages use different output directories (`build/`, `dist/`, `.svelte-kit/`). A generic outputs config causes stale cache hits. Prevention: define comprehensive output patterns in `turbo.json` and verify with clean-rebuild-from-cache testing.
 
 ## Implications for Roadmap
 
-Based on combined research, the phase structure must be: infrastructure foundations before any new test writing, then candidate app gap-filling, then voter app coverage, then advanced features. Attempting to write voter app tests before the infrastructure phases are complete will recreate the same problems that exist in the current suite.
+Based on combined research, the work naturally divides into 5 phases with strict ordering constraints. Phases 1-4 are core delivery; Phase 5 is refinement.
 
-### Phase 1: Test Infrastructure Foundation
+### Phase 1: Build Orchestration and Immediate Fixes
+**Rationale:** Highest DX impact, zero risk to existing functionality. Turborepo is purely additive -- it wraps existing scripts. Fix the known app-shared typo here since it affects caching correctness.
+**Delivers:** Cached parallel builds, topological ordering, faster CI, bug fix for app-shared ESM build
+**Addresses:** Task orchestration, topological builds, local caching (table stakes from FEATURES.md)
+**Avoids:** Pitfall #6 (outputs misconfiguration) -- define outputs carefully; Pitfall #9 (Strapi plugin nesting) -- verify build graph with `--dry-run --graph`; Pitfall #5 (app-shared dual build fragility) -- fix `packagec.json` typo before caching
+**Stack:** Turborepo ^2.8, existing Yarn 4
+**Key tasks:** Install turbo, create `turbo.json`, update root scripts to use `turbo run`, add `.turbo/` to `.gitignore`, update CI workflow, verify build graph
 
-**Rationale:** All current test failures trace back to missing infrastructure. Building new tests on the existing broken foundation is actively harmful — it creates more technical debt to unwind later. Every pitfall identified maps to Phase 1. This phase is entirely infrastructure: no new user-story tests are written.
-**Delivers:** A test framework where any single test can run in isolation, any test can run in any order, setup failures appear in the HTML report with traces, and the selector strategy is stable across i18n changes.
-**Addresses:** Test ID attributes on components, API-based dataset reset helper, authentication fixture, global timeout and CI configuration, locale control in playwright.config.ts
-**Avoids:** Serial mode dependency chains (Pitfall 1), shared mutable database state (Pitfall 2), text-content selectors (Pitfall 3), Admin UI data management (Pitfall 4), waitForTimeout timing (Pitfall 5)
-**Research flag:** Standard patterns — Playwright project dependencies, fixture system, and Admin Tools API are all well-documented. Skip research-phase; implement directly from STACK.md patterns.
+### Phase 2: Directory Restructure
+**Rationale:** Must happen before publishing (clear boundary between apps and packages) and is easier to validate with Turborepo already in place. `turbo run build` validates the new layout immediately. Has the most file-move churn of any phase -- isolate it.
+**Delivers:** `apps/` + `packages/` convention, cleaner workspace organization
+**Addresses:** Directory restructure (table stakes from FEATURES.md), docs site decision (keep in monorepo at `apps/docs/`)
+**Avoids:** Pitfall #8 (docs split causes stale documentation) -- keep docs in monorepo; Pitfall #9 (nested Strapi plugin) -- update workspace globs correctly
+**Key tasks:** Move frontend/strapi/docs to `apps/`, update workspace paths in root package.json, update Docker compose volumes and Dockerfiles, update CI paths, update docs scripts, update Husky hooks, verify E2E tests pass, verify Docker dev stack starts
 
-### Phase 2: Candidate App Gap-Fill and Restructure
+### Phase 3: Version Management
+**Rationale:** Independent of Phases 1-2 technically, but better to have build orchestration and directory structure settled first so the version workflow operates on the final layout. Publishing depends on this.
+**Delivers:** Automated versioning, changelog generation, release PR workflow, changeset bot
+**Addresses:** Changesets setup, changelog generation, CI publishing pipeline (table stakes from FEATURES.md); changeset bot (differentiator)
+**Avoids:** Pitfall #4 (version cascade) -- use independent versioning with `linked` only for core+data+matching; Pitfall #15 (Yarn version vs Changesets conflict) -- only install Changesets; Pitfall #10 (0.x SemVer confusion) -- start stable packages at 1.0.0
+**Stack:** Changesets ^2.30, @changesets/changelog-github, changesets/action
+**Key tasks:** Install Changesets CLI, create `.changeset/config.json`, create `.github/workflows/release.yml`, decide initial version numbers (recommend 1.0.0 for core/data/matching/filters), configure linked groups and ignore lists, document changeset workflow in CONTRIBUTING.md
 
-**Rationale:** The candidate app already has partial coverage but is organized by complexity (`basics`, `advanced`) rather than user story, and missing flows (pre-registration, all question types, preview). Restructuring and filling gaps before adding the voter app gives a proven testing pattern to replicate.
-**Delivers:** Complete candidate app coverage organized by user story: auth, registration, questions, profile, settings. Each spec file is independently runnable and isolated.
-**Addresses:** User story file organization, candidate registration flow, all question type coverage, profile and settings coverage
-**Avoids:** Monolithic spec files per app (Architecture Anti-Pattern 5), state carry-over between tests (Architecture Anti-Pattern 2)
-**Research flag:** Standard patterns — no additional research needed. The existing test patterns extended with Phase 1 infrastructure are sufficient.
+### Phase 4: Package Publishing Readiness
+**Rationale:** Depends on all three prior phases -- needs Turborepo for build validation, correct directory layout for metadata paths, and Changesets for version management. This is where most pitfalls concentrate (5 of 15).
+**Delivers:** Publishable npm packages (@openvaa/core, @openvaa/data, @openvaa/matching, @openvaa/filters on npm)
+**Addresses:** Package publishing readiness, tsup migration (table stakes + differentiator from FEATURES.md)
+**Avoids:** Pitfall #1 (workspace: protocol leak) -- configure `yarn npm publish`, add tarball inspection CI step; Pitfall #2 (private: true blocks publish) -- flip flags; Pitfall #3 (missing metadata) -- apply metadata template; Pitfall #7 (moduleResolution: Bundler breaks consumers) -- verify external import works in fresh Node.js project; Pitfall #12 (npm org not registered) -- register @openvaa org first
+**Stack:** tsup, npm registry, @openvaa npm org
+**Key tasks:** Register @openvaa npm org on npmjs.com, migrate core/data/matching/filters builds to tsup (output to `dist/`), update package.json with full metadata (license, description, repository, files, publishConfig, engines), remove `"private": true`, test with `yarn pack` and fresh Node.js project install, wire `yarn npm publish` in Changesets config, execute first real publish
 
-### Phase 3: Voter App Core Coverage
-
-**Rationale:** The voter app is the primary user-facing surface with zero current E2E coverage. It cannot be tested until Phase 1 data infrastructure exists (voter tests require pre-loaded questions and candidates). This phase delivers the highest value per effort after foundations are established.
-**Delivers:** Voter happy path covered: landing → constituency selection (if applicable) → intro → questions (complete flow) → results page → candidate detail. Minimum: `voter-journey.spec.ts`, `voter-results.spec.ts`.
-**Addresses:** Voter app core journey coverage (P1 feature), voter-specific test datasets (`standard` with complete candidate data)
-**Avoids:** Missing test coverage for voter app (Pitfall 9), tests coupled to mock data internals (Pitfall 8)
-**Research flag:** Needs research consideration — the voter app has more configuration variants than the candidate app (single vs. multi-election, constituency selection on/off, different question types affecting matching output). Consider a brief research-phase to identify the minimum viable voter app test scenarios and data requirements before implementation.
-
-### Phase 4: CI Integration and Test Organization Maturity
-
-**Rationale:** Tests without CI are not production-grade. Once both apps have coverage, wiring CI, adding HTML report artifact upload, and introducing test tagging enables selective per-trigger runs. This phase also introduces the Page Object Model layer, which should only be extracted after duplication is observed in actual spec files.
-**Delivers:** GitHub Actions workflow running full suite on PR, `@smoke`/`@voter`/`@candidate` tags enabling selective runs, HTML report uploaded as artifact, Page Object Model layer extracted from repeated interaction patterns.
-**Addresses:** CI GitHub Actions workflow (P1), test tagging (P2), Page Object Model layer (P2)
-**Avoids:** Over-engineering the abstraction layer (Pitfall 6) — POM is only introduced after duplication is observed, not upfront
-**Research flag:** Standard patterns for GitHub Actions + Playwright CI. Use `mcr.microsoft.com/playwright:v1.58.2-noble` Docker image. No additional research needed.
-
-### Phase 5: Multi-Configuration and Locale Coverage
-
-**Rationale:** VAA deployments vary significantly (single vs. multi-election, feature flags, constituency on/off). Once the core suite is stable, adding a second Playwright project with a different dataset covers configuration variants. Finnish locale parameterization catches i18n regressions automatically.
-**Delivers:** Multi-configuration Playwright projects (`multi-election` dataset), locale-aware test helpers running critical flows in both `en` and `fi`.
-**Addresses:** Multi-configuration projects (P2), locale-aware test helpers (P2)
-**Avoids:** Tests only verifying mock-data-default configuration (missed coverage gap)
-**Research flag:** Standard patterns for Playwright multi-project configuration. The locale parameterization builds on the `buildRoute.ts` pattern already in the codebase. No additional research needed.
+### Phase 5: Polish and Optimization
+**Rationale:** Enhancements that are valuable but not blocking. Enable once the core pipeline is proven in production.
+**Delivers:** Faster CI, better dependency alignment, contributor tooling improvements
+**Addresses:** Remote caching, Yarn catalogs, per-workspace lint/typecheck (differentiators from FEATURES.md)
+**Key tasks:** Enable Vercel remote cache (`turbo login` + `turbo link`), upgrade Yarn to 4.10+ for catalogs, migrate shared dependency versions to catalogs, configure per-workspace lint and typecheck tasks in turbo.json, document prerelease mode for future use
 
 ### Phase Ordering Rationale
 
-- Phase 1 must come first because every other phase depends on data isolation. Building voter app tests without data reset creates the same cascading failure problem that already plagues candidate tests.
-- Phase 2 before Phase 3 because the candidate app patterns provide a proven template for voter app tests. Getting the fixture and page object patterns right on familiar ground is lower risk than learning the patterns on the more complex voter app.
-- Phase 4 CI integration is placed after core coverage exists so the CI workflow runs a meaningful test suite from day one rather than running 3 candidate tests.
-- Phase 5 multi-configuration is last because it requires a stable single-configuration suite as a baseline. Multi-config tests that fail intermittently in a flaky single-config suite are impossible to debug.
-- The entire roadmap is structured to respect the Supabase migration planned for 2026. The Admin Tools API wrapper (`strapiAdminClient.ts`) should be designed with a backend-agnostic interface from Phase 1 so only the implementation changes when Strapi is replaced, not the fixture API.
+- **Phase 1 before Phase 2:** Turborepo validates the workspace graph. With Turbo in place, the directory restructure can be verified immediately with `turbo run build`. Without it, validation requires manual checking of every build path.
+- **Phase 2 before Phase 4:** Publishing metadata includes `repository.directory` paths. Get the directory structure right first so metadata is correct from the start. Avoid publishing packages with wrong directory references.
+- **Phase 3 before Phase 4:** Publishing requires version management. Changesets must be configured before the publish pipeline can work. The `changeset publish` command is the mechanism for npm publishing.
+- **Phase 4 is the critical path:** It concentrates the most pitfalls (5 of 15) and has the highest recovery cost if done wrong. All prior phases systematically de-risk it.
+- **Phase 5 is independent:** Can happen any time after Phase 1. Placed last because it is purely incremental improvement with no blocking dependencies on later work.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-
-- **Phase 3 (Voter App Coverage):** The voter app has multiple configuration variants affecting what routes are reachable and what data is required. A brief research-phase to enumerate the minimum viable test scenarios and map data requirements to Admin Tools API capabilities is recommended before spec writing begins.
+- **Phase 2 (Directory Restructure):** Docker compose path updates and E2E test path sensitivity need careful analysis of actual Dockerfiles and test configs. The Docker dev setup has hard-coded paths in volume mounts. Also need to verify the docs site build scripts after path changes -- they reference `../frontend` for component extraction.
+- **Phase 4 (Publishing Readiness):** The Changesets + Yarn 4 `workspace:^` publish interaction needs hands-on testing. The `changeset version` step resolves protocols in package.json, but the `changeset publish` step may not use `yarn npm publish` by default. Must verify with a dry-run before the first real publish. Also need to test that tsup output is compatible with all internal consumers (frontend, backend, app-shared) before switching from tsc.
 
 Phases with standard patterns (skip research-phase):
-
-- **Phase 1 (Infrastructure):** Playwright project dependencies, fixture system, Admin Tools API, testId conventions — all well-documented with verified patterns in STACK.md and ARCHITECTURE.md.
-- **Phase 2 (Candidate Gap-Fill):** Extends existing candidate test patterns; no novel integration problems.
-- **Phase 4 (CI Integration):** GitHub Actions + Playwright CI is a solved problem with official documentation.
-- **Phase 5 (Multi-Config/Locale):** Builds directly on Playwright projects documentation and existing `buildRoute.ts` pattern.
+- **Phase 1 (Build Orchestration):** Turborepo setup on existing Yarn workspaces is extremely well-documented. Official "add to existing repo" guide covers this exact scenario.
+- **Phase 3 (Version Management):** Changesets setup is well-documented with official config examples and a template GitHub Action workflow. No novel integration.
+- **Phase 5 (Polish):** Remote caching, Yarn catalogs, and per-workspace tasks are documented features with minimal config changes.
 
 ## Confidence Assessment
 
-| Area         | Confidence | Notes                                                                                                                                                                                    |
-| ------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stack        | HIGH       | Verified against Playwright official docs; existing codebase audited directly. No new packages required — high confidence the plan is feasible without dependency surprises.             |
-| Features     | HIGH       | P1/P2 prioritization verified against official Playwright best practices. Feature dependencies are internally consistent across FEATURES.md and ARCHITECTURE.md.                         |
-| Architecture | HIGH       | Five-layer architecture follows official Playwright fixture/project patterns. Component boundaries and build order derived from existing codebase analysis plus official documentation.  |
-| Pitfalls     | HIGH       | Pitfalls 1-5 are directly observed in the existing test suite (not theoretical). Prevention strategies are grounded in official Playwright documentation and verified community sources. |
+| Area | Confidence | Notes |
+|------|------------|-------|
+| Stack | HIGH | Turborepo + Changesets are dominant tools with extensive official docs. Compatibility with Yarn 4 + Node 20 verified. All alternatives evaluated and rejected with clear rationale. No new unproven tools. |
+| Features | HIGH | Feature set maps directly to established monorepo patterns. Complexity estimates grounded in actual codebase analysis. Total estimated effort: 13-22 hours across phases. Clear P1/P2/defer prioritization. |
+| Architecture | HIGH | All changes are additive. Turborepo does not replace Yarn, tsup does not replace TypeScript type checking. Each layer has a clear, bounded responsibility. Build order for implementation is well-defined. |
+| Pitfalls | HIGH | Pitfalls verified against actual codebase (package.json files, build scripts, CI workflows, existing bugs). The workspace:^ publish issue is well-documented in Changesets issue tracker (#432, #1454) with known workarounds. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Admin Tools API capability coverage:** Research assumes the `/import-data` and `/delete-data` endpoints support all data types needed for voter app test scenarios (elections with questions, candidates with answers, parties, constituencies). This should be verified against the admin-tools plugin source before Phase 3 data setup is designed. If gaps exist, a Playwright-driven admin UI fallback may be needed for specific data types only.
+- **Changesets + `yarn npm publish` interaction:** The `changeset version` command resolves `workspace:^` in package.json, but the publish step behavior with Yarn 4 needs end-to-end verification. Documented in Changesets issues #432 and #1454 with an unmerged fix PR. Must be tested before first real publish.
 
-- **Voter app route enumeration:** The voter app has 10+ routes (landing, intro, questions per category, results, candidate detail, party detail, constituency selection, nominations). The research identifies the happy path but does not enumerate the minimum viable coverage set. This should be defined explicitly in Phase 3 planning to prevent scope creep.
+- **npm OIDC trusted publishing:** Requires npm CLI >= 11.5.1 and Node >= 22.14.0. OpenVAA is on Node 20, so OIDC is likely unavailable. Fallback: use NPM_TOKEN secret in GitHub Actions. Verify during Phase 4 setup.
 
-- **Playwright 1.58 upgrade side effects:** Playwright 1.57+ switches from Chromium to Chrome for Testing. The bump from 1.49.1 to 1.58.2 should be tested against the existing suite before any new tests are written to catch any browser behavior differences.
+- **Strapi plugin workspace nesting:** The `backend/vaa-strapi/src/plugins/*` workspace glob creates a nested workspace inside another workspace. Turborepo should handle this via the package dependency graph, but needs verification with `turbo build --graph` during Phase 1.
 
-- **ESLint Playwright plugin configuration:** The research recommends `eslint-plugin-playwright` for enforcing `no-wait-for-timeout` and discouraging text-based selectors. The exact rule configuration (errors vs. warnings, which rules to enable) should be decided during Phase 1 setup to avoid churn when the plugin is introduced later.
+- **app-shared CJS necessity:** Strapi v5 supports ESM. If the planned Supabase migration (2026 roadmap) removes Strapi, the CJS build of app-shared becomes dead code. For now, keep the dual build but flag for evaluation during Supabase migration planning.
+
+- **License for published packages:** The codebase uses AGPL-3.0. Need to confirm this is the intended license for published npm packages, as AGPL may deter some potential consumers. This is a project governance decision, not a technical one -- must be resolved before Phase 4.
+
+- **Initial version number decision:** Research recommends starting publishable packages at 1.0.0 (they are production-used with stable APIs). This is a team decision that should be made explicitly during Phase 3 planning.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- Playwright official docs (fixtures, projects, auth, API testing, global setup): https://playwright.dev/docs — comprehensive, directly applicable
-- Playwright release notes v1.49–v1.58: https://playwright.dev/docs/release-notes — verified version compatibility
-- Playwright best practices: https://playwright.dev/docs/best-practices — informed P1/P2 prioritization
-- Playwright POM docs: https://playwright.dev/docs/pom — architecture patterns
-- FakerJS framework guide: https://fakerjs.dev/guide/frameworks — test data patterns
-- Existing codebase audit (`tests/`, admin-tools plugin, frontend components): direct analysis — informed all pitfall identifications
+- [Turborepo: Add to existing repository](https://turborepo.dev/docs/getting-started/add-to-existing-repository)
+- [Turborepo: Configuring tasks](https://turborepo.dev/docs/crafting-your-repository/configuring-tasks)
+- [Turborepo: Structuring a repository](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository)
+- [Turborepo: Publishing libraries guide](https://turborepo.dev/docs/guides/publishing-libraries)
+- [Turborepo 2.7 release (Yarn 4 catalogs)](https://turborepo.dev/blog/turbo-2-7)
+- [Vercel Remote Cache free announcement](https://turborepo.dev/blog/free-vercel-remote-cache)
+- [Changesets repository](https://github.com/changesets/changesets) -- v2.30.0, 11.5k stars
+- [Changesets documentation](https://changesets-docs.vercel.app/)
+- [Changesets GitHub Action](https://github.com/changesets/action)
+- [Changesets workspace protocol issue #432](https://github.com/changesets/changesets/issues/432)
+- [Changesets yarn publish issue #1454](https://github.com/changesets/changesets/issues/1454)
+- [tsup documentation](https://tsup.egoist.dev/)
+- [Yarn workspace protocol docs](https://yarnpkg.com/features/workspaces)
+- [Yarn release workflow](https://yarnpkg.com/features/release-workflow)
+- [Dual ESM/CJS publishing guide](https://mayank.co/blog/dual-packages/)
 
 ### Secondary (MEDIUM confidence)
-
-- DataFactory pattern (playwrightsolutions.com) — dataset and factory pattern validation
-- Database rollback strategies in Playwright (thegreenreport.blog) — data reset strategy options
-- Mock database in Svelte E2E tests (Mainmatter, 2025) — Svelte-specific data management patterns
-- Setting up E2E testing in a monorepo (kyrre.dev) — monorepo project structure patterns
-- BrowserStack Playwright best practices (2026) — CI configuration recommendations
-- "17 Playwright Testing Mistakes" (elaichenkov.github.io) — pitfall cross-validation
-- Strapi auth blog (official Strapi): https://strapi.io/blog — Strapi API token patterns
+- [TypeScript ESM+CJS npm publishing in 2025](https://lirantal.com/blog/typescript-in-2025-with-esm-and-cjs-npm-publishing)
+- [Turborepo vs Nx comparison](https://dev.to/thedavestack/nx-vs-turborepo-integrated-ecosystem-or-high-speed-task-runner-the-key-decision-for-your-monorepo-279)
+- [Changesets vs semantic-release](https://brianschiller.com/blog/2023/09/18/changesets-vs-semantic-release/)
+- [Monorepo tools comparison 2026](https://www.aviator.co/blog/monorepo-tools/)
+- [Monorepo versioning strategies](https://amarchenko.dev/blog/2023-09-26-versioning/)
+- [npm OIDC trusted publishing](https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/)
+- [JSR + Yarn integration (future Deno path)](https://deno.com/blog/add-jsr-with-pnpm-yarn)
+- [SemVer specification](https://semver.org/)
 
 ---
-
-_Research completed: 2026-03-03_
-_Ready for roadmap: yes_
+*Research completed: 2026-03-12*
+*Ready for roadmap: yes*

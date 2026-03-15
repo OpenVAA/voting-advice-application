@@ -1,510 +1,736 @@
-# Architecture Research
+# Architecture Patterns: Monorepo Refresh
 
-**Domain:** E2E testing framework for SvelteKit 2 + Strapi v5 monorepo (VAA)
-**Researched:** 2026-03-03
-**Confidence:** HIGH
+**Domain:** Monorepo tooling, versioning, package publishing, docs site evaluation
+**Researched:** 2026-03-12
+**Confidence:** HIGH (Turborepo + Yarn 4 compatibility verified, Changesets well-documented)
 
-## Standard Architecture
+## Current Architecture Baseline
 
-### System Overview
+Before describing changes, here is what exists today.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          TEST LAYER                                  │
-├──────────────────┬──────────────────┬───────────────────────────────┤
-│  voter-app/      │  candidate-app/  │  strapi-admin/                │
-│  *.spec.ts       │  *.spec.ts       │  *.spec.ts                    │
-│                  │                  │                               │
-│  (voter flows,   │  (registration,  │  (data import, email,         │
-│   questions,     │   login, profile, │   registration triggers)      │
-│   results,       │   questions,     │                               │
-│   filtering)     │   settings)      │                               │
-└────────┬─────────┴────────┬─────────┴─────────────────┬─────────────┘
-         │                  │                            │
-         ▼                  ▼                            ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                        FIXTURE LAYER                                 │
-├─────────────────┬───────────────────┬───────────────────────────────┤
-│  test.ts        │  voterTest.ts     │  candidateTest.ts             │
-│  (base extend)  │  (extend base,    │  (extend base,                │
-│                 │   voter pages,    │   candidate pages,            │
-│                 │   voter state)    │   auth state)                 │
-└────────┬────────┴────────┬──────────┴──────────────────┬────────────┘
-         │                 │                              │
-         ▼                 ▼                              ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      PAGE OBJECT LAYER                               │
-├──────────────────┬──────────────────┬───────────────────────────────┤
-│  voter/          │  candidate/      │  shared/                      │
-│  QuestionsPage   │  LoginPage       │  NavPage                      │
-│  ResultsPage     │  ProfilePage     │  LocaleSwitcher               │
-│  FilterPanel     │  QuestionsPage   │  (common elements)            │
-│  CandidatePage   │  SettingsPage    │                               │
-└────────┬─────────┴────────┬─────────┴──────────────────┬────────────┘
-         │                  │                             │
-         ▼                  ▼                             ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      HELPER / UTILITY LAYER                          │
-├──────────────────┬──────────────────┬───────────────────────────────┤
-│  data/           │  api/            │  utils/                       │
-│  datasets/       │  strapiAdmin.ts  │  buildRoute.ts                │
-│   standard.ts    │  (HTTP client    │  translations.ts              │
-│   multiElection  │   for admin      │  testIds.ts                   │
-│   .ts            │   API calls)     │  wait.ts                      │
-│  factories/      │                  │                               │
-│   candidate.ts   │                  │                               │
-│   voter.ts       │                  │                               │
-└────────┬─────────┴────────┬─────────┴──────────────────┬────────────┘
-         │                  │                             │
-         ▼                  ▼                             ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SETUP / TEARDOWN LAYER                            │
-├──────────────────┬──────────────────┬───────────────────────────────┤
-│  setup/          │  setup/          │  setup/                       │
-│  auth.setup.ts   │  data.setup.ts   │  teardown.ts                  │
-│  (login, store   │  (import test    │  (delete test data            │
-│   session state) │   datasets via   │   by externalId prefix)       │
-│                  │   Strapi API)    │                               │
-└──────────────────┴──────────────────┴───────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    RUNNING SERVICES (Docker)                         │
-│  Frontend :5173  │  Strapi :1337  │  Postgres  │  LocalStack :4566  │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component               | Responsibility                                                       | Communicates With                   |
-| ----------------------- | -------------------------------------------------------------------- | ----------------------------------- |
-| Spec files              | Assert user stories, orchestrate test scenarios                      | Fixtures (via `test()`)             |
-| Fixture layer           | Extend Playwright `test` with pre-initialized page objects and state | Page objects, setup layer           |
-| Page objects            | Encapsulate UI interactions for a single page or component           | Playwright `Page`, shared utilities |
-| Data datasets           | Typed JSON/TS definitions of test data configurations                | Strapi Admin API (via setup)        |
-| Data factories          | Programmatically create test-specific records                        | Strapi Admin API                    |
-| Strapi Admin API client | HTTP wrapper for admin plugin endpoints                              | Strapi backend                      |
-| Setup projects          | Load data, establish auth sessions before tests run                  | Strapi Admin API, auth storage      |
-| Teardown project        | Delete data by `externalId` prefix after tests complete              | Strapi Admin API                    |
-| `buildRoute.ts`         | Generate typed URL paths without SvelteKit runtime                   | Spec files, page objects            |
-| `translations.ts`       | Load i18n strings from source files for assertions                   | Spec files, page objects            |
-| `testIds.ts`            | Centralize `data-testid` constants                                   | Page objects                        |
-
-## Recommended Project Structure
+### Current Directory Layout
 
 ```
-tests/
-├── playwright.config.ts         # Projects, setup/teardown, base config
-├── package.json                 # Playwright + test deps
-│
-├── setup/                       # Setup and teardown projects
-│   ├── auth.setup.ts            # Login voter/candidate, save storageState
-│   ├── data.setup.ts            # Import standard test dataset via Admin API
-│   └── teardown.ts              # Delete test data by externalId prefix
-│
-├── tests/                       # Test specifications
-│   ├── voter/                   # Voter app flows
-│   │   ├── questions.spec.ts    # Question answering flow
-│   │   ├── results.spec.ts      # Results page, matching display
-│   │   ├── filtering.spec.ts    # Candidate/party filtering
-│   │   └── navigation.spec.ts   # Elections, constituencies, locale
-│   ├── candidate/               # Candidate app flows
-│   │   ├── auth.spec.ts         # Login, logout, password reset
-│   │   ├── registration.spec.ts # Email invite → register flow
-│   │   ├── profile.spec.ts      # Basic info, profile picture
-│   │   ├── questions.spec.ts    # Opinion question answering
-│   │   └── settings.spec.ts     # Password change, language
-│   ├── admin/                   # Strapi admin flows
-│   │   ├── import.spec.ts       # Data import via Admin Tools UI
-│   │   └── email.spec.ts        # Registration email sending
-│   └── config/                  # Configuration variant tests
-│       ├── singleElection.spec.ts
-│       └── multiElection.spec.ts
-│
-├── pages/                       # Page Object Models
-│   ├── voter/
-│   │   ├── QuestionsPage.ts
-│   │   ├── ResultsPage.ts
-│   │   ├── FilterPanel.ts
-│   │   └── CandidateCardPage.ts
-│   ├── candidate/
-│   │   ├── LoginPage.ts
-│   │   ├── ProfilePage.ts
-│   │   ├── QuestionsPage.ts
-│   │   └── SettingsPage.ts
-│   ├── admin/
-│   │   └── StrapiAdminPage.ts
-│   └── shared/
-│       ├── NavPage.ts
-│       └── LocaleSwitcherPage.ts
-│
-├── fixtures/                    # Extended test objects
-│   ├── base.ts                  # test.extend() with shared fixtures
-│   ├── voterFixtures.ts         # Voter page objects, voter session
-│   └── candidateFixtures.ts     # Candidate page objects, candidate session
-│
-├── data/                        # Test data
-│   ├── datasets/
-│   │   ├── standard.ts          # Standard single-election data
-│   │   └── multiElection.ts     # Multi-election configuration data
-│   └── factories/
-│       ├── candidateFactory.ts  # Generate candidate records
-│       └── voterFactory.ts      # Generate voter answer sets
-│
-└── utils/                       # Shared utilities
-    ├── buildRoute.ts            # (already exists — keep and extend)
-    ├── translations.ts          # (already exists — keep)
-    ├── testIds.ts               # Centralized data-testid constants
-    ├── strapiAdminClient.ts     # HTTP client for Admin API endpoints
-    └── testsDir.ts              # (already exists — keep)
+voting-advice-application/
+  packages/
+    core/           (@openvaa/core)            - private, ESM only
+    data/           (@openvaa/data)            - private, ESM only
+    matching/       (@openvaa/matching)        - private, ESM only
+    filters/        (@openvaa/filters)         - private, ESM only
+    app-shared/     (@openvaa/app-shared)      - private, dual CJS+ESM
+    shared-config/  (@openvaa/shared-config)   - private, config exports
+    llm/            (@openvaa/llm)             - private, ESM only
+    argument-condensation/                     - private, ESM experimental
+    question-info/                             - private, ESM experimental
+  frontend/         (@openvaa/frontend)        - private, SvelteKit 2
+  backend/vaa-strapi/                          - private, Strapi v5
+    src/plugins/openvaa-admin-tools/           - private, Strapi plugin
+  docs/             (@openvaa/docs)            - private, SvelteKit static
+  tests/                                       - E2E tests (not a workspace)
 ```
 
-### Structure Rationale
-
-- **`setup/`:** Separating setup/teardown into Playwright "projects" (not `globalSetup`) gives traces and HTML report visibility into setup failures — critical for debugging.
-- **`tests/voter/` and `tests/candidate/`:** Separating by app means test files are focused. Voter and candidate apps share no pages and have different auth states.
-- **`tests/config/`:** Configuration variant tests (single vs. multi-election) warrant their own dataset + spec, not bolted onto per-page tests.
-- **`pages/`:** Page Object Model organized by app mirrors the route hierarchy. One file per page (not one file per app) keeps files small and focused.
-- **`fixtures/`:** Fixtures compose page objects into typed test extensions — tests use `test.extend()` not raw `page.goto()`.
-- **`data/`:** Datasets are typed TypeScript definitions (not raw JSON) so they can be validated. Factories create dynamic records when datasets are insufficient.
-- **`utils/`:** Everything that isn't a page object or fixture. Existing utilities (`buildRoute.ts`, `translations.ts`) stay and are extended.
-
-## Architectural Patterns
-
-### Pattern 1: Fixture-Extended Test Objects
-
-**What:** Extend Playwright's `test` base with pre-constructed page objects and auth state, so every spec file gets typed, ready-to-use page objects without manual setup.
-
-**When to use:** For all spec files. Replaces raw `page.goto()` calls in `beforeEach`.
-
-**Trade-offs:** Setup is centralized and reusable; the tradeoff is a layer of indirection. Worth it beyond 3-4 spec files.
-
-**Example:**
-
-```typescript
-// fixtures/candidateFixtures.ts
-import { test as base } from '@playwright/test';
-import { LoginPage } from '../pages/candidate/LoginPage';
-import { ProfilePage } from '../pages/candidate/ProfilePage';
-
-export const candidateTest = base.extend<{
-  loginPage: LoginPage;
-  profilePage: ProfilePage;
-}>({
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
-  profilePage: async ({ page }, use) => {
-    await use(new ProfilePage(page));
-  }
-});
-
-// tests/candidate/profile.spec.ts
-import { candidateTest as test } from '../../fixtures/candidateFixtures';
-
-test('should save basic info', async ({ profilePage }) => {
-  await profilePage.goto();
-  await profilePage.fillGender('Female');
-  await profilePage.submit();
-  await profilePage.expectRedirectToQuestions();
-});
-```
-
-### Pattern 2: Page Object Model with Locator-Based Selectors
-
-**What:** Encapsulate all element interactions in a typed class. Locators use `data-testid` (via `getByTestId`) as the primary strategy, falling back to semantic roles.
-
-**When to use:** For any page tested in more than one spec file, or any interaction repeated more than twice.
-
-**Trade-offs:** More upfront code; dramatically reduces maintenance when UI changes because selectors live in one place.
-
-**Example:**
-
-```typescript
-// pages/candidate/LoginPage.ts
-import type { Page } from '@playwright/test';
-import { expect } from '@playwright/test';
-import { TEST_IDS } from '../../utils/testIds';
-import { buildRoute } from '../../utils/buildRoute';
-
-export class LoginPage {
-  constructor(private readonly page: Page) {}
-
-  async goto(locale = 'en') {
-    await this.page.goto('/' + buildRoute({ route: 'CandAppHome', locale }));
-  }
-
-  async login(email: string, password: string) {
-    await this.page.getByTestId(TEST_IDS.login.email).fill(email);
-    await this.page.getByTestId(TEST_IDS.login.password).fill(password);
-    await this.page.getByTestId(TEST_IDS.login.submit).click();
-  }
-
-  async expectLoginError() {
-    await expect(this.page.getByTestId(TEST_IDS.login.errorMessage)).toBeVisible();
-  }
-}
-
-// utils/testIds.ts
-export const TEST_IDS = {
-  login: {
-    email: 'login-email',
-    password: 'password-field',
-    submit: 'login-submit',
-    errorMessage: 'login-errorMessage'
-  },
-  profile: {
-    submitButton: 'submitButton'
-  }
-} as const;
-```
-
-### Pattern 3: Setup-Project Data Management via Strapi Admin API
-
-**What:** Load test data before tests and delete it after using the existing Admin Tools API (`/import-data`, `/delete-data`). All test records use a prefixed `externalId` (e.g., `test::candidate::alice`) so teardown can delete them without touching production-seeded data.
-
-**When to use:** For all tests that depend on specific data state. Prefer API-based data management over Playwright-driven UI navigation through Strapi admin for setup — it's faster and more reliable.
-
-**Trade-offs:** Requires Strapi admin auth token during setup. The Admin Tools API requires `isAuthenticatedAdmin` policy — use a JWT obtained by logging in as the admin user (same as existing `global-setup.ts` pattern but for the admin, not the candidate).
-
-**Example:**
-
-```typescript
-// setup/data.setup.ts
-import { test as setup } from '@playwright/test';
-import { StrapiAdminClient } from '../utils/strapiAdminClient';
-import { STANDARD_DATASET } from '../data/datasets/standard';
-
-setup('load test data', async () => {
-  const client = await StrapiAdminClient.login();
-  await client.importData(STANDARD_DATASET);
-});
-
-// setup/teardown.ts
-import { test as teardown } from '@playwright/test';
-import { StrapiAdminClient } from '../utils/strapiAdminClient';
-
-teardown('delete test data', async () => {
-  const client = await StrapiAdminClient.login();
-  await client.deleteData({ candidates: 'test::', parties: 'test::' });
-});
-```
-
-### Pattern 4: Playwright Projects for Logical Test Groups
-
-**What:** Use Playwright's `projects` array to define dependencies: a `setup` project runs first, then `voter-tests` and `candidate-tests` run in parallel against the live stack.
-
-**When to use:** Whenever tests require different preconditions (auth state, datasets) or must run in a specific order relative to setup/teardown.
-
-**Trade-offs:** Adds configuration complexity; provides clear failure visibility and trace support for setup failures — a significant operational advantage.
-
-**Example:**
-
-```typescript
-// playwright.config.ts
-export default defineConfig({
-  projects: [
-    // 1. Load data and authenticate
-    { name: 'setup', testMatch: /setup\/(auth|data)\.setup\.ts/ },
-
-    // 2. Voter tests (unauthenticated, uses loaded data)
-    {
-      name: 'voter-tests',
-      testMatch: /tests\/voter\/.+\.spec\.ts/,
-      dependencies: ['setup']
-    },
-
-    // 3. Candidate tests (uses saved auth state)
-    {
-      name: 'candidate-tests',
-      testMatch: /tests\/candidate\/.+\.spec\.ts/,
-      use: { storageState: CANDIDATE_STORAGE_STATE },
-      dependencies: ['setup']
-    },
-
-    // 4. Admin tests (uses separate admin auth state)
-    {
-      name: 'admin-tests',
-      testMatch: /tests\/admin\/.+\.spec\.ts/,
-      use: { storageState: ADMIN_STORAGE_STATE },
-      dependencies: ['setup'],
-      teardown: 'teardown'
-    },
-
-    // 5. Cleanup
-    { name: 'teardown', testMatch: /setup\/teardown\.ts/ }
-  ]
-});
-```
-
-## Data Flow
-
-### Test Data Flow (Setup to Teardown)
+### Current Dependency Graph
 
 ```
-datasets/standard.ts (typed TS definition)
-    │
-    ▼
-setup/data.setup.ts
-    │ POST /api/openvaa-admin-tools/import-data
-    ▼
-Strapi backend (persists to Postgres)
-    │
-    ▼ (data visible to frontend via public API)
-Test specs execute
-    │ (read-only for voter; read-write for candidate)
-    ▼
-setup/teardown.ts
-    │ POST /api/openvaa-admin-tools/delete-data
-    ▼
-Strapi backend (deletes by externalId prefix)
+shared-config (config only, no runtime deps)
+     |
+     v
+   core  (leaf package - no @openvaa deps)
+   / | \
+  v  v  v
+data matching filters
+  |           |
+  v           v
+ data <----- filters (filters depends on core + data)
+  |
+  v
+app-shared (depends on data, dual CJS/ESM build)
+  /    \        \
+ v      v        v
+frontend strapi  strapi-admin-tools
+                      |
+                      v
+                   docs (depends on app-shared)
 ```
 
-### Auth State Flow
+### Current Build Pipeline
 
-```
-setup/auth.setup.ts
-    │ Browser: navigate to login page → fill credentials → click submit
-    ▼
-context.storageState() → playwright/.auth/candidate.json
-                        → playwright/.auth/admin.json
-    │
-    ▼ (candidate-tests project uses storageState: candidate.json)
-Tests start with authenticated session already established
-```
+Root `package.json` orchestrates builds sequentially:
 
-### Test Request Flow (Page Object Pattern)
+1. `build:shared` -- builds all packages via `yarn workspaces foreach -At --include 'packages/*' run build`
+2. `build:app-shared` -- builds `app-shared` and all its transitive dependencies via `-Rt` flag
+3. Frontend and backend build independently after shared packages are built
+4. Docs site builds after shared packages, generating TypeDoc + component docs
 
-```
-Spec file calls: profilePage.fillGender('Female')
-    │
-    ▼
-ProfilePage.fillGender()
-    │ page.getByTestId(TEST_IDS.profile.genderSelect).selectOption('Female')
-    ▼
-Playwright browser interaction
-    │
-    ▼
-SvelteKit frontend (renders updated state)
-    │ (if answer saved: PATCH /api/candidates/:id)
-    ▼
-Strapi API (persists to Postgres)
-```
+**Key problem:** `yarn workspaces foreach` does topological ordering (`-t` flag) but has no caching. Every CI run rebuilds everything. The `watch:shared` script uses `onchange` to detect file changes, which is fragile.
 
-### Configuration Variant Flow (Multi-Election Tests)
+### Current CI Pipeline
 
-```
-datasets/multiElection.ts → data.setup.ts → Strapi
-    │
-    ▼ (separate Playwright project with its own setup)
-tests/config/multiElection.spec.ts
-    │ (navigates through election/constituency selectors)
-    ▼
-teardown deletes multiElection-prefixed records
-```
+GitHub Actions `main.yaml` has 4 jobs running in parallel:
+- `frontend-and-shared-module-validation` -- lint, format, unit tests, frontend build
+- `backend-validation` -- shared build, backend build
+- `e2e-tests` -- Docker stack, Playwright
+- `e2e-visual-perf` -- visual regression + performance (continue-on-error)
 
-## Scaling Considerations
+**Redundancy:** Both `frontend-*` and `backend-*` jobs run `yarn build:shared` independently. No caching between jobs.
 
-| Scale        | Architecture Adjustments                                                                                                                    |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| 20-50 tests  | Current approach is appropriate — one global setup per run, serial within auth-dependent suites                                             |
-| 50-150 tests | Enable `fullyParallel: true` for voter tests (stateless); keep candidate tests serial or use per-test auth isolation                        |
-| 150+ tests   | Consider worker-scoped fixtures for shared auth state; explore dedicated test database with `GENERATE_MOCK_DATA_ON_RESTART=true` per worker |
+### Current Package Build Configuration
 
-### Scaling Priorities
+| Package | Build Tool | Output | CJS | ESM |
+|---------|-----------|--------|-----|-----|
+| core | tsc + tsc-esm-fix | `build/` | No | Yes |
+| data | tsc + tsc-esm-fix | `build/` | No | Yes |
+| matching | tsc + tsc-esm-fix | `build/` | No | Yes |
+| filters | tsc + tsc-esm-fix | `build/` | No | Yes |
+| app-shared | tsc (2x configs) | `build/esm/` + `build/cjs/` | Yes | Yes |
+| shared-config | No build | N/A (config files) | N/A | N/A |
+| llm | tsc + tsc-esm-fix | `build/` | No | Yes |
 
-1. **First bottleneck:** Auth setup time. If each test creates its own session, startup dominates. Fix: use saved `storageState` (already the right pattern).
-2. **Second bottleneck:** Data contamination in parallel candidate tests. Candidate tests mutate data (answers, passwords). Keep them serial (`mode: 'serial'`) or scope mutations to test-specific records using unique `externalId` prefixes per test run.
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Text-Based Selectors for Assertions
-
-**What people do:** `page.getByText('Submit')`, `page.getByRole('button', { name: T.en['common.login'] })`
-
-**Why it's wrong:** Translation strings change. Content editors change labels. The existing tests are brittle because of this — the `translations.ts` utility was created to work around the brittleness, but using `data-testid` eliminates the problem at the root.
-
-**Do this instead:** Add `data-testid` attributes to interactive elements in Svelte components; use `page.getByTestId(TEST_IDS.x.y)` in page objects. Keep translation-based assertions only for verifying visible content (not for locating elements).
-
-### Anti-Pattern 2: State Carry-Over Between Tests
-
-**What people do:** Each test assumes the previous test left the app in a particular state (e.g., questions already answered).
-
-**Why it's wrong:** Tests become order-dependent. A single failure breaks all subsequent tests in the file. The existing candidate tests use `mode: 'serial'` and `test.beforeEach` navigation — tolerable for the current scope but fragile.
-
-**Do this instead:** Each test navigates explicitly to its starting point and works with pre-seeded data rather than relying on prior test actions. Use setup projects to create the data state, not prior tests.
-
-### Anti-Pattern 3: Test Data Defined Inside Test Files
-
-**What people do:** Define user credentials, names, and expected values inline in spec files or import directly from `mockData/*.json`.
-
-**Why it's wrong:** Data is scattered across files; changes require hunting. The `externalId` prefix pattern cannot be enforced if data definitions are spread across files.
-
-**Do this instead:** All test data definitions live in `data/datasets/`. Spec files import typed constants from there. Mock data files in the backend (`backend/vaa-strapi/src/functions/mockData/`) are for backend seeding only — not for test data definitions.
-
-### Anti-Pattern 4: Playwright-Driven UI for Data Setup
-
-**What people do:** Navigate through Strapi admin UI to import CSV data as part of test setup.
-
-**Why it's wrong:** Slow (3-5x slower than direct API calls), fragile (UI changes break setup), produces confusing traces that mix test infrastructure with application testing.
-
-**Do this instead:** Use the Admin Tools REST API (`/import-data`, `/delete-data`) directly from `setup/data.setup.ts`. Keep Playwright-driven Strapi admin navigation only for tests that specifically test the admin UI itself (in `tests/admin/`).
-
-### Anti-Pattern 5: Single Monolithic Spec File Per App
-
-**What people do:** `candidateApp-basics.spec.ts` and `candidateApp-advanced.spec.ts` — everything in two files.
-
-**Why it's wrong:** Serial test suites become slow. Failures in one feature block all other feature tests. Hard to run a single flow in isolation during development.
-
-**Do this instead:** One spec file per user flow (auth, profile, questions, settings). Use Playwright's `--grep` or file-level filters to run individual flows. Parallelism within a flow is limited by state, but parallelism across flows is free.
-
-## Integration Points
-
-### External Services
-
-| Service                  | Integration Pattern                                  | Notes                                                                                     |
-| ------------------------ | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Strapi REST API (public) | Direct HTTP via `request` fixture for GET assertions | No auth needed for public endpoints                                                       |
-| Strapi Admin API         | HTTP via `StrapiAdminClient` wrapper (JWT auth)      | Required for import/delete data; uses same admin creds as `candidateApp-advanced.spec.ts` |
-| LocalStack SES           | HTTP GET to `LOCALSTACK_ENDPOINT/_aws/ses`           | For verifying registration emails in `admin` test suite                                   |
-| Frontend (:5173)         | Playwright browser navigation via `baseURL`          | Must be running before tests start                                                        |
-
-### Internal Boundaries
-
-| Boundary                            | Communication                     | Notes                                                                     |
-| ----------------------------------- | --------------------------------- | ------------------------------------------------------------------------- |
-| Spec files ↔ Page objects          | Direct method calls               | Page objects never import from spec files                                 |
-| Page objects ↔ Playwright          | Playwright `Page` / `Locator` API | Page objects accept `Page` in constructor                                 |
-| Fixtures ↔ Page objects            | Instantiation in fixture setup    | Fixtures own page object lifecycle                                        |
-| Setup ↔ Strapi                     | HTTP (Admin API)                  | Auth via JWT stored in fixture, not `storageState`                        |
-| Tests ↔ `translations.ts`          | Import `TRANSLATIONS` constant    | Read-only; translations utility is a test-only concern                    |
-| Tests ↔ `buildRoute.ts`            | Import `buildRoute()` function    | Route builder avoids SvelteKit runtime dependency; keep extending         |
-| `testIds.ts` ↔ Frontend components | Convention (not import)           | Frontend uses string values; test IDs file centralizes those same strings |
-
-## Build Order for Implementation
-
-The components above have the following dependency order for implementation:
-
-1. **`utils/testIds.ts` + `utils/strapiAdminClient.ts`** — No dependencies on other test components. Unblocks everything.
-2. **`data/datasets/` + `data/factories/`** — Depends only on testIds and type definitions from Strapi.
-3. **`pages/` (page objects)** — Depends on `testIds.ts` and `buildRoute.ts`. Can be built in parallel per app (voter, candidate, admin, shared).
-4. **`setup/` (setup + teardown projects)** — Depends on `strapiAdminClient.ts` and `data/datasets/`. Must work before any spec runs.
-5. **`fixtures/`** — Depends on page objects. Composes them into typed `test.extend()`.
-6. **`tests/` (spec files)** — Depends on fixtures. Write against page objects via fixtures, not raw Playwright.
-7. **`playwright.config.ts` projects** — Wires everything. Finalize after all setup/teardown/fixture patterns are established.
-
-## Sources
-
-- [Page Object Models | Playwright](https://playwright.dev/docs/pom) — HIGH confidence (official docs)
-- [Fixtures | Playwright](https://playwright.dev/docs/test-fixtures) — HIGH confidence (official docs)
-- [Projects | Playwright](https://playwright.dev/docs/test-projects) — HIGH confidence (official docs)
-- [Global Setup and Teardown | Playwright](https://playwright.dev/docs/test-global-setup-teardown) — HIGH confidence (official docs)
-- [Database Rollback Strategies in Playwright | The Green Report](https://www.thegreenreport.blog/articles/database-rollback-strategies-in-playwright/database-rollback-strategies-in-playwright.html) — MEDIUM confidence (verified against official docs pattern)
-- [Mock database in Svelte e2e tests | Mainmatter](https://mainmatter.com/blog/2025/08/21/mock-database-in-svelte-tests/) — MEDIUM confidence (Svelte-specific, 2025)
-- [Setting Up E2E Testing in a Monorepo | Kyrre Gjerstad](https://www.kyrre.dev/blog/end-to-end-testing-setup) — MEDIUM confidence (practical monorepo guidance)
-- Existing codebase analysis — HIGH confidence (direct inspection of `tests/`, `frontend/src/`, `backend/`, admin-tools plugin)
+All publishable-candidate packages (core, data, matching) are currently `"private": true`.
 
 ---
 
-_Architecture research for: E2E testing framework, SvelteKit 2 + Strapi v5 VAA monorepo_
-_Researched: 2026-03-03_
+## Recommended Architecture
+
+### Phase 1: Add Turborepo for Build Orchestration
+
+**Decision:** Add Turborepo on top of existing Yarn 4 workspaces. Do NOT migrate to pnpm.
+
+**Rationale:**
+- Yarn 4 with `nodeLinker: node-modules` (current config) is fully supported by Turborepo
+- Turborepo is an additive layer -- it reads the existing workspace structure and `package.json` scripts
+- Switching package managers (to pnpm) is high-risk, breaks Docker configs, CI, lockfile, and developer muscle memory for no proportional benefit
+- Turborepo gives immediate value: task graph, local caching, parallel execution, and optional remote caching
+
+**What changes:**
+
+New file: `turbo.json` at repo root.
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**", "dist/**", ".svelte-kit/**"],
+      "inputs": ["src/**", "tsconfig*.json", "package.json"]
+    },
+    "test:unit": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**", "**/*.test.ts", "vitest.config.*"]
+    },
+    "lint:check": {
+      "dependsOn": ["@openvaa/app-shared#build"]
+    },
+    "format:check": {
+      "dependsOn": ["@openvaa/app-shared#build"]
+    },
+    "check": {
+      "dependsOn": ["^build"]
+    }
+  }
+}
+```
+
+Modified file: root `package.json` -- add `turbo` devDependency, update script commands.
+
+```json
+{
+  "devDependencies": {
+    "turbo": "^2.x"
+  },
+  "scripts": {
+    "build:shared": "turbo run build --filter='./packages/*'",
+    "build:app-shared": "turbo run build --filter=@openvaa/app-shared...",
+    "test:unit": "turbo run test:unit",
+    "lint:check": "turbo run lint:check",
+    "format:check": "turbo run format:check"
+  }
+}
+```
+
+**What does NOT change:**
+- Individual package `package.json` scripts (Turbo reads them as-is)
+- Yarn workspaces config
+- `.yarnrc.yml`
+- Docker configuration
+- Individual `tsconfig.json` files
+
+### Phase 2: Restructure to apps/ + packages/
+
+**Decision:** Move applications into `apps/` directory, keep library packages in `packages/`.
+
+**Target layout:**
+
+```
+voting-advice-application/
+  apps/
+    frontend/       (@openvaa/frontend)
+    strapi/         (@openvaa/strapi)
+      src/plugins/openvaa-admin-tools/
+    docs/           (@openvaa/docs)
+  packages/
+    core/           (@openvaa/core)
+    data/           (@openvaa/data)
+    matching/       (@openvaa/matching)
+    filters/        (@openvaa/filters)
+    app-shared/     (@openvaa/app-shared)
+    shared-config/  (@openvaa/shared-config)
+    llm/            (@openvaa/llm)
+    argument-condensation/
+    question-info/
+  tests/            (E2E tests, not a workspace)
+```
+
+**What changes:**
+
+| Item | Current Path | New Path |
+|------|-------------|----------|
+| Frontend | `frontend/` | `apps/frontend/` |
+| Strapi | `backend/vaa-strapi/` | `apps/strapi/` |
+| Strapi plugin | `backend/vaa-strapi/src/plugins/openvaa-admin-tools/` | `apps/strapi/src/plugins/openvaa-admin-tools/` |
+| Docs | `docs/` | `apps/docs/` |
+| Packages | `packages/*` | `packages/*` (unchanged) |
+
+Root `package.json` workspaces field:
+```json
+{
+  "workspaces": [
+    "apps/*",
+    "apps/strapi/src/plugins/*",
+    "packages/*"
+  ]
+}
+```
+
+**What needs updating after the move:**
+1. Root `package.json` workspaces paths
+2. Docker compose volume mounts and context paths
+3. Dockerfile paths (`frontend/Dockerfile` becomes `apps/frontend/Dockerfile`)
+4. GitHub Actions workflow paths (build commands, path filters)
+5. Docs site scripts referencing `../frontend` (update `docs-scripts.config.ts` REPO_ROOT calculations)
+6. Root `.env.example` path references
+7. TypeScript project references that use relative paths (these are within `packages/` so most are unaffected)
+8. The `watch:shared` script referencing `packages/*/src/**/*` (unchanged since packages stay put)
+
+**Why this order matters:** Restructuring AFTER Turborepo is added means Turbo's `--filter` flag can validate the new layout immediately. Moving files without Turbo means manually re-verifying the build graph.
+
+### Phase 3: Package Publishing Readiness
+
+**Decision:** Prepare `core`, `data`, and `matching` for npm publishing. Use `tsup` for building publishable packages instead of raw `tsc + tsc-esm-fix`.
+
+**Rationale:**
+- `tsup` (esbuild-based) produces clean ESM+CJS dual packages with proper `exports` fields in one command
+- Eliminates the `tsc-esm-fix` workaround currently used by 5 packages
+- Generates `.d.ts` type declarations alongside bundled output
+- Faster builds (esbuild is 10-100x faster than tsc for emit)
+
+**Package.json for publishable packages (example: core):**
+
+```json
+{
+  "name": "@openvaa/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+```
+
+**tsup.config.ts for publishable packages:**
+
+```typescript
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  outDir: 'dist'
+});
+```
+
+**Migration from `build/` to `dist/`:** Publishable packages switch output directory from `build/` to `dist/` to follow npm convention. Non-publishable packages can stay with `build/` or migrate for consistency.
+
+**Which packages to publish:**
+
+| Package | Publish? | Rationale |
+|---------|----------|-----------|
+| core | YES | Foundation types used by all other packages |
+| data | YES | Universal data model, useful standalone |
+| matching | YES | Matching algorithms, useful standalone |
+| filters | LATER | Depends on data, publish after data is stable |
+| app-shared | NO | OpenVAA-specific settings, not useful standalone |
+| shared-config | NO | Internal tooling config |
+| llm | LATER | Experimental, not stable |
+
+**Dependency implications for publishing:**
+- `data` exports `core` types, so `core` must be published first
+- `matching` depends on `core`, so `core` must be published first
+- Published packages must use version ranges for `@openvaa/*` deps, not `workspace:^`
+- Changesets handles this transformation automatically at publish time
+
+### Phase 4: Changesets for Version Management
+
+**Decision:** Use `@changesets/cli` for automated versioning, changelogs, and publishing.
+
+**What gets added:**
+
+New directory: `.changeset/` at repo root containing config and changeset files.
+
+New file: `.changeset/config.json`:
+
+```json
+{
+  "$schema": "https://github.com/changesets/changesets/blob/main/packages/config/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    ["@openvaa/core", "@openvaa/data", "@openvaa/matching"]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@openvaa/frontend",
+    "@openvaa/strapi",
+    "@openvaa/strapi-admin-tools",
+    "@openvaa/docs",
+    "@openvaa/shared-config",
+    "@openvaa/app-shared"
+  ]
+}
+```
+
+**Key configuration choices:**
+
+- `linked` groups `core`, `data`, `matching` so they version together (a change to core bumps all three). This simplifies the consumer experience.
+- `ignore` excludes private/non-publishable packages from versioning. They stay at internal version numbers.
+- `access: "public"` for scoped packages on npm.
+- `updateInternalDependencies: "patch"` ensures when core bumps, data and matching get their dependency on core updated automatically.
+
+**GitHub Actions release workflow:**
+
+```yaml
+name: Release
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write  # For npm OIDC trusted publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+      - run: yarn install --frozen-lockfile
+      - uses: changesets/action@v1
+        with:
+          publish: yarn changeset publish
+          version: yarn changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Developer workflow:**
+
+1. Make changes to `@openvaa/core`
+2. Run `yarn changeset` -- CLI prompts for affected packages and semver bump type
+3. Commit the generated `.changeset/*.md` file with the PR
+4. Changesets bot comments on PRs missing changesets (optional, via GitHub App)
+5. On merge to main, the release workflow either:
+   a. Creates a "Version Packages" PR aggregating all changesets into version bumps, or
+   b. Publishes directly if already versioned
+
+### Phase 5: Docs Site Evaluation
+
+**Decision:** Keep docs in the monorepo. Do NOT split to a separate repository.
+
+**Rationale:**
+
+Arguments for keeping in monorepo:
+1. Docs generate content from source code (TypeDoc for packages, component extraction from frontend). Splitting would require complex cross-repo build triggers.
+2. The `docs/scripts/docs-scripts.config.ts` references `../frontend` for component docs and route maps. In a separate repo, this becomes a submodule or artifact-download dance.
+3. The docs CI workflow (`docs.yml`) already builds shared packages before generating docs. It needs the full monorepo context.
+4. The docs workspace depends on `@openvaa/app-shared` as a runtime dependency for settings display. This is a real code dependency, not just a doc reference.
+5. The `apps/` restructure gives docs its own clear boundary at `apps/docs/` without needing a separate repo.
+
+Arguments against splitting that clinched the decision:
+1. Docs are already correctly isolated as a workspace -- they don't pollute other packages.
+2. The GitHub Pages deployment workflow already only triggers on `docs/**` path changes.
+3. External contributors rarely touch docs and code simultaneously, so there is no velocity argument for splitting.
+
+**Architecture improvement within monorepo:**
+
+With Turborepo, the docs build can declare explicit dependencies:
+
+```json
+// apps/docs/turbo.json (package-level override)
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["@openvaa/app-shared#build", "generate:docs"],
+      "outputs": ["build/**"]
+    },
+    "generate:docs": {
+      "dependsOn": ["@openvaa/app-shared#build"],
+      "outputs": ["src/routes/(content)/developers-guide/**/generated/**"]
+    }
+  }
+}
+```
+
+This makes the docs build cache-aware -- regeneration only happens when source packages change.
+
+---
+
+## Component Boundaries
+
+### New Components (added by this milestone)
+
+| Component | Location | Responsibility |
+|-----------|----------|---------------|
+| `turbo.json` | Root | Task graph, caching config, pipeline definition |
+| `.changeset/` | Root | Version management config and changeset files |
+| `tsup.config.ts` | Per publishable package | Build config for publishable output |
+| Release workflow | `.github/workflows/release.yml` | Automated version PRs and npm publishing |
+
+### Modified Components
+
+| Component | Change | Reason |
+|-----------|--------|--------|
+| Root `package.json` | Add turbo devDep, update scripts to use `turbo run` | Build orchestration |
+| Root `package.json` | Update workspaces to `["apps/*", "apps/strapi/src/plugins/*", "packages/*"]` | Directory restructure |
+| Package `package.json` (core, data, matching) | Remove `"private": true`, add publishConfig, exports, files | Publishing readiness |
+| Package `package.json` (core, data, matching) | Replace `tsc + tsc-esm-fix` build with `tsup` | Better build output |
+| CI workflow (`main.yaml`) | Add Turborepo caching, update paths for `apps/` | Performance + new layout |
+| Docker compose files | Update volume mount paths for `apps/` layout | Directory restructure |
+| Docs scripts config | Update REPO_ROOT / FRONTEND_ROOT paths | Directory restructure |
+| `.husky/pre-commit` | Update `cd frontend` to `cd apps/frontend` | Directory restructure |
+| `.lintstagedrc` | No change needed (glob patterns are relative) | N/A |
+
+### Unchanged Components
+
+| Component | Why Unchanged |
+|-----------|--------------|
+| `packages/*` directory | Packages stay in packages/ |
+| `tests/` directory | E2E tests stay at root, not a workspace |
+| `@openvaa/shared-config` | Config package, no publish, no build change |
+| `@openvaa/app-shared` | Dual build stays (Strapi needs CJS), but could adopt tsup later |
+| TypeScript project references | Relative paths within packages/ are stable |
+| `vitest.workspace.ts` | Pattern `packages/**/vitest.config.ts` still matches |
+
+---
+
+## Data Flow
+
+### Build Flow (current vs proposed)
+
+**Current:**
+```
+yarn build:shared
+  -> yarn workspaces foreach -At --include 'packages/*' run build
+    -> Topological order, but EVERY package rebuilds EVERY time
+    -> No caching
+    -> Sequential within dependency tiers
+```
+
+**Proposed with Turborepo:**
+```
+turbo run build --filter='./packages/*'
+  -> Reads workspace dependency graph
+  -> Hashes inputs (src/**, tsconfig.json, package.json)
+  -> Skips packages whose inputs have not changed (cache hit)
+  -> Runs uncached builds in parallel where possible
+  -> Stores outputs in .turbo/ cache (local) or remote cache (CI)
+```
+
+### Release Flow (new)
+
+```
+Developer:
+  1. Make code changes
+  2. Run `yarn changeset` -> generates .changeset/random-name.md
+  3. Commit changeset file with PR
+  4. PR merged to main
+
+CI (on push to main):
+  1. Changesets action detects pending changesets
+  2. Creates "Version Packages" PR with:
+     - Updated package.json versions
+     - Updated CHANGELOG.md files
+     - Removed consumed changeset files
+  3. Maintainer merges "Version Packages" PR
+  4. Changesets action runs `changeset publish`
+     - Builds packages (turbo run build)
+     - npm publish with OIDC token (no secrets needed)
+     - Creates git tags (v0.2.0, etc.)
+```
+
+### CI Build Flow (proposed)
+
+```
+main.yaml:
+  ┌─ shared-build (turbo run build --filter='./packages/*')
+  │    -> Cached between runs via actions/cache on .turbo/
+  │
+  ├─> frontend-validation
+  │    turbo run build check test:unit --filter=@openvaa/frontend
+  │
+  ├─> backend-validation
+  │    turbo run build --filter=@openvaa/strapi
+  │
+  ├─> e2e-tests (needs Docker stack, separate job)
+  │
+  └─> e2e-visual-perf (needs Docker stack, continue-on-error)
+
+release.yml (separate workflow):
+  -> changesets/action for version management + publishing
+```
+
+---
+
+## Patterns to Follow
+
+### Pattern 1: Turborepo Additive Layer
+
+**What:** Turborepo sits on top of existing Yarn workspaces without replacing them. Package scripts remain the source of truth.
+
+**When:** Always. Turbo orchestrates, Yarn resolves.
+
+**Example:**
+```json
+// turbo.json
+{
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**", "dist/**"]
+    }
+  }
+}
+```
+
+```json
+// packages/core/package.json (unchanged script name)
+{
+  "scripts": {
+    "build": "tsup"
+  }
+}
+```
+
+Turbo finds `build` script in each package, respects `dependsOn: ["^build"]` to run dependencies first, and caches the declared outputs.
+
+### Pattern 2: Package-Level Turbo Overrides
+
+**What:** Individual packages can override root turbo.json settings via their own `turbo.json`.
+
+**When:** When a package has non-standard build behavior (e.g., docs site with code generation step).
+
+**Example:**
+```json
+// apps/docs/turbo.json
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["generate:docs", "@openvaa/app-shared#build"],
+      "outputs": ["build/**"]
+    }
+  }
+}
+```
+
+### Pattern 3: Conditional Exports for Published Packages
+
+**What:** Use the `exports` field with import/require conditions for packages that will be published to npm.
+
+**When:** For core, data, matching -- any package consumed externally.
+
+**Example:**
+```json
+{
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  }
+}
+```
+
+### Pattern 4: Linked Versioning for Coupled Packages
+
+**What:** Changesets `linked` config ensures packages that form a logical API surface version together.
+
+**When:** When a semver bump to one package should bump all others in the group (core + data + matching).
+
+**Example:** If `@openvaa/core` gets a minor bump, `@openvaa/data` and `@openvaa/matching` also get bumped to the same minor, keeping versions in sync.
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Migrating Package Manager Simultaneously
+
+**What:** Switching from Yarn 4 to pnpm or npm while also adding Turborepo, Changesets, and restructuring directories.
+
+**Why bad:** Each migration touches every lockfile, every CI script, every Docker config, and every developer's local setup. Doing two of these at once creates debugging nightmares where you cannot isolate which change broke what.
+
+**Instead:** Keep Yarn 4. It works. Turborepo supports it. Revisit package manager only if a concrete, measurable problem emerges.
+
+### Anti-Pattern 2: Publishing All Packages
+
+**What:** Making every workspace package publishable to npm.
+
+**Why bad:** `@openvaa/app-shared` contains OpenVAA-specific settings (colors, locales, admin emails). `@openvaa/shared-config` is ESLint/Prettier/TS config for this repo specifically. Publishing these creates maintenance burden with zero external consumers.
+
+**Instead:** Only publish packages with genuine external value: core, data, matching. Keep everything else `"private": true`.
+
+### Anti-Pattern 3: Splitting Docs Before Stabilizing Build Pipeline
+
+**What:** Moving docs to a separate repo while the monorepo build is being restructured.
+
+**Why bad:** Docs depend on monorepo packages for TypeDoc generation and component extraction. Splitting requires building an artifact pipeline (publish packages, install in docs repo, run generation). This is a second migration on top of the first.
+
+**Instead:** Move docs to `apps/docs/` within the monorepo. The Turborepo task graph handles build ordering. Revisit splitting only if docs become a bottleneck (they will not at current project scale).
+
+### Anti-Pattern 4: Remote Caching Before Local Caching is Proven
+
+**What:** Setting up Vercel Remote Cache or self-hosted remote cache on day one.
+
+**Why bad:** Remote caching adds authentication, network dependency, and debugging complexity. Most of the performance win comes from local caching -- skipping rebuilds of unchanged packages on a single machine.
+
+**Instead:** Start with local `.turbo/` cache. Measure CI times. Add remote caching only if CI build times remain a problem after local caching is working.
+
+### Anti-Pattern 5: Changing Output Directories Without Updating All References
+
+**What:** Switching from `build/` to `dist/` in publishable packages without updating TypeScript project references, vitest configs, `.gitignore`, and CI cache patterns.
+
+**Why bad:** Stale references to `build/` will silently use old cached outputs or fail to find modules.
+
+**Instead:** Use a checklist per package: `exports`, `main`, `module`, `types`, `files`, `.gitignore`, turbo.json `outputs`, any consuming package imports. Do all packages in one PR, not incrementally.
+
+---
+
+## Scalability Considerations
+
+| Concern | Now (10 packages) | At 30 packages | At 100 packages |
+|---------|-------------------|----------------|-----------------|
+| Build time | ~30s full, tolerable | Turbo cache essential | Remote cache essential |
+| CI cost | 4 parallel jobs | Turbo filters affected packages | Only changed packages build |
+| Dependency graph complexity | Manual ordering works | Turbo handles automatically | Need strict layering rules |
+| Versioning | Manual | Changesets handles | Changesets + release groups |
+| Publishing | N/A (nothing published) | 3-5 packages, manageable | Need publish pipeline optimization |
+| Developer onboarding | Read CLAUDE.md | Turbo makes build order invisible | Need architecture docs |
+
+---
+
+## Build Order (Recommended Implementation Sequence)
+
+Implementing these changes in the wrong order creates unnecessary churn. This is the recommended sequence:
+
+### Step 1: Add Turborepo (no other changes)
+
+**Touched files:** `package.json` (root), new `turbo.json`, `.gitignore` (add `.turbo/`)
+
+**Validation:** Run `turbo run build --filter='./packages/*'` and verify output matches existing `yarn build:shared`. Run `turbo run test:unit` and verify all tests pass. Compare build times.
+
+### Step 2: Update CI to use Turborepo
+
+**Touched files:** `.github/workflows/main.yaml`
+
+**Validation:** CI passes on all 4 jobs. Shared build job uses Turbo. Cache hits visible in second run.
+
+### Step 3: Restructure directories (apps/ + packages/)
+
+**Touched files:** Move directories, update root `package.json` workspaces, Docker compose, CI paths, docs config, husky hooks.
+
+**Validation:** `turbo run build` succeeds. `yarn dev` starts Docker stack. `yarn test:e2e` passes. Docs site builds.
+
+### Step 4: Add tsup to publishable packages
+
+**Touched files:** `packages/core/`, `packages/data/`, `packages/matching/` -- add `tsup.config.ts`, update `package.json` build script, update exports/main/module/types fields.
+
+**Validation:** `turbo run build --filter=@openvaa/core` produces correct `dist/` output. Frontend and backend still build and run correctly with the new output paths.
+
+### Step 5: Remove `"private": true` from publishable packages
+
+**Touched files:** `packages/core/package.json`, `packages/data/package.json`, `packages/matching/package.json` -- add publishConfig, files, repository, license metadata.
+
+**Validation:** `npm pack --dry-run` in each package shows correct file list. `yarn install` still resolves workspace links.
+
+### Step 6: Add Changesets
+
+**Touched files:** New `.changeset/config.json`, new `.github/workflows/release.yml`, `package.json` (root) add `@changesets/cli` devDep.
+
+**Validation:** `yarn changeset` creates a changeset file. `yarn changeset version` bumps versions correctly. `yarn changeset publish --dry-run` shows correct publish targets.
+
+---
+
+## Integration Points Summary
+
+| New Tooling | Integrates With | How |
+|------------|----------------|-----|
+| Turborepo | Yarn workspaces | Reads `workspaces` field, orchestrates `package.json` scripts |
+| Turborepo | GitHub Actions CI | `turbo run` replaces manual `yarn workspaces foreach` commands |
+| Turborepo | Docker dev | No direct integration -- Docker still uses `yarn build:shared` internally, but that script now calls Turbo |
+| Changesets | GitHub Actions | Automated version PRs and npm publish via `changesets/action` |
+| Changesets | npm registry | OIDC trusted publishing (no tokens needed) |
+| Changesets | Turborepo | `changeset publish` can invoke `turbo run build` before publishing |
+| tsup | Turborepo | Turbo caches tsup output directories |
+| tsup | TypeScript | tsup uses esbuild for emit but tsc for type checking (via `dts: true`) |
+| apps/ restructure | Docker compose | Volume mount paths need updating |
+| apps/ restructure | Docs scripts | `FRONTEND_ROOT` path calculation needs updating |
+
+## Sources
+
+- [Turborepo documentation: Structuring a repository](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository) -- HIGH confidence
+- [Turborepo documentation: Configuring tasks](https://turborepo.dev/docs/crafting-your-repository/configuring-tasks) -- HIGH confidence
+- [Turborepo documentation: Add to existing repository](https://turborepo.dev/docs/getting-started/add-to-existing-repository) -- HIGH confidence
+- [Turborepo + Yarn 4 nodeLinker compatibility](https://github.com/vercel/turborepo/issues/4953) -- HIGH confidence (verified: current project already uses `nodeLinker: node-modules`)
+- [Changesets documentation](https://changesets-docs.vercel.app/) -- HIGH confidence
+- [Changesets GitHub Action](https://github.com/changesets/action) -- HIGH confidence
+- [npm trusted publishing with OIDC](https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/) -- MEDIUM confidence (requires npm CLI >=11.5.1 and Node >=22.14.0; project currently on Node 20, may need fallback to NPM_TOKEN)
+- [tsup documentation](https://tsup.egoist.dev/) -- HIGH confidence
+- [Monorepo tools comparison 2026](https://www.aviator.co/blog/monorepo-tools/) -- MEDIUM confidence
+- [Dual ESM/CJS package publishing](https://mayank.co/blog/dual-packages/) -- HIGH confidence

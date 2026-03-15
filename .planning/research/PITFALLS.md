@@ -1,371 +1,652 @@
-# Pitfalls Research
+# Domain Pitfalls: Monorepo Refresh
 
-**Domain:** E2E testing framework for a SvelteKit 2 + Strapi v5 monorepo (Voting Advice Application)
-**Researched:** 2026-03-03
-**Confidence:** HIGH
+**Domain:** Monorepo tooling, versioning, publishing, and docs site management for an existing Yarn 4 workspace monorepo
+**Project:** OpenVAA v1.1 Monorepo Refresh
+**Researched:** 2026-03-12
+**Confidence:** HIGH (verified against current codebase state, official docs, and community issue trackers)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Serial Mode Test Dependency Chains
-
-**What goes wrong:**
-Tests are written with `test.describe.configure({ mode: 'serial' })` and each test depends on the side effects of the previous one. When test 3 of 10 fails, tests 4-10 are all skipped. The CI report shows 8 failures, but 7 of them are false negatives — you have no signal about whether the underlying features actually work. This pattern is already present in the existing tests (`candidateApp-basics.spec.ts` and `candidateApp-advanced.spec.ts` both use serial mode).
-
-**Why it happens:**
-Tests that need authenticated state, or that test multi-step flows, reach for serial mode as the path of least resistance. The existing test suite uses serial mode because the global-setup logs in once and shares session state across all tests in a file. When state-mutating tests (e.g., password change) are sequenced this way, isolation becomes impossible without resetting state between tests.
-
-**How to avoid:**
-
-- Replace serial describe blocks with independent tests. For multi-step flows (e.g., the full registration flow in `candidateApp-advanced.spec.ts`), combine the entire flow into a single test using `test.step()`.
-- Use Playwright fixtures to set up per-test state (login, data seeding) rather than relying on execution order.
-- Use `storageState` per test group with Playwright project dependencies (`setup` project) instead of a global pre-authenticated session that bleeds between tests.
-
-**Warning signs:**
-
-- `test.describe.configure({ mode: 'serial' })` in more than one place
-- Test names that include "after previous test" or "then user should"
-- A test that explicitly logs out before logging back in with a different user (currently in `candidateApp-advanced.spec.ts`)
-- CI showing 8+ failures when only 1 test actually broke
-
-**Phase to address:** Phase 1 (E2E Testing Framework foundation — before writing new tests)
+Mistakes that cause broken releases, unrevertable state, or require multi-day recovery.
 
 ---
 
-### Pitfall 2: Shared Mutable Database State Without Reset
+### Pitfall 1: Changesets Uses `npm publish` Instead of `yarn npm publish` -- workspace:^ Versions Leak to npm
 
 **What goes wrong:**
-Tests run against the same database state across the entire suite. One test mutates state (changes a password, creates a candidate, modifies answers), and subsequent tests find unexpected data. The current test suite already handles this ad hoc — `candidateApp-basics.spec.ts` manually resets the password at the end of the password-change test. If the test fails midway, the database is left in an inconsistent state and the next run fails on login, not on the actual code under test.
+You add `@changesets/cli`, configure it, run `changeset publish`, and your packages land on npm with `"@openvaa/core": "workspace:^"` in their dependency fields. Every consumer who installs your package gets a resolution error because `workspace:^` is a Yarn-specific protocol that npm, pnpm, and Node cannot resolve. The packages are published, the version numbers are burned, and you must either `npm unpublish` (only possible within 72 hours) or publish a corrected patch release.
 
 **Why it happens:**
-Seeding via `GENERATE_MOCK_DATA_ON_RESTART=true` is coarse-grained — it wipes and re-seeds everything, which is too slow for per-test reset. Per-test database reset via the Strapi API or Admin Tools plugin is not implemented, so tests share state.
+`@changesets/cli` internally uses `npm publish` by default, not `yarn npm publish`. Only `yarn npm publish` performs the workspace protocol replacement that converts `workspace:^` to the actual version number (e.g., `"@openvaa/core": "^0.2.0"`). This is a well-documented issue (changesets/changesets#432, changesets/changesets#1454) that has persisted since 2020 and remains the default behavior.
 
-**How to avoid:**
+OpenVAA is especially vulnerable because ALL 9 packages use `workspace:^` for inter-package dependencies. The dependency chain `core -> data -> app-shared -> frontend/strapi` means a broken publish at the core level cascades to every downstream package.
 
-- Establish a clear data reset strategy before writing new tests. Options (in order of preference):
-  1. Direct Strapi REST API calls in Playwright fixtures to create/delete test-specific entities (HIGH confidence this is feasible given existing API token mechanism).
-  2. Use the existing Admin Tools "Delete Data" endpoint to reset between test groups, then re-import from a known JSON fixture.
-  3. `GENERATE_MOCK_DATA_ON_RESTART=true` as a last resort — only acceptable for the full CI run, not individual test isolation.
-- Never rely on manual cleanup at the end of a test. If a test fails, cleanup is skipped. Use `afterEach` or Playwright fixture teardown which runs even on failure.
-- When the backend migrates to Supabase, design the reset mechanism against the API abstraction layer (not Strapi-specific endpoints) from day one.
+**Consequences:**
+- Published packages are non-installable by external consumers
+- Version numbers are consumed and cannot be reused on npm
+- If consumers already installed broken versions before the fix, they need manual intervention
+- Trust in the package quality is damaged on the first public release
 
-**Warning signs:**
+**Prevention:**
+1. Configure changesets to use `yarn npm publish` by setting the `publishCommand` in `.changeset/config.json`:
+   ```json
+   {
+     "publish": "yarn npm publish"
+   }
+   ```
+   Or use a custom publish script that invokes `yarn npm publish` for each package.
+2. Add a dry-run step to CI that runs `yarn pack` on each publishable package and inspects the tarball's `package.json` for any remaining `workspace:` references before the actual publish.
+3. Add a pre-publish check script:
+   ```bash
+   # Fail if any workspace: protocol remains in packed output
+   yarn pack --dry-run | grep -q "workspace:" && exit 1
+   ```
 
-- Tests that manually reset state at the end (password change tests restoring the original password)
-- `waitForTimeout(5000)` calls for email delivery — a sign the test is waiting for async side effects it cannot control
-- Commented-out import functionality in tests (the Strapi import was broken and tests were adapted around it)
-- Tests that fail differently on second run than on first
+**Detection:**
+- Run `yarn pack` on any package and check `package.json` in the tarball
+- Search published package on npm and check dependency versions
+- CI step that greps packed output for `workspace:` protocol strings
 
-**Phase to address:** Phase 1 (establish reset strategy before first new test is written)
+**Phase to address:** Versioning and publishing setup phase -- must be verified before the first real publish
 
 ---
 
-### Pitfall 3: Text-Content Selectors Embedded in Test Infrastructure
+### Pitfall 2: All Packages Are `"private": true` -- Nothing Can Be Published
 
 **What goes wrong:**
-The existing test suite uses `getByRole('link', { name: T.en['candidateApp.questions.title'] })` and similar text-based selectors extensively. When i18n strings change, or when the Svelte 5 migration changes component structure, dozens of selectors break simultaneously. The migration to `data-testid` was identified as needed but is incomplete — only a few elements like `login-submit` use test IDs while most navigation and content assertions use translated text.
+You configure changesets, write changesets, run `changeset version` (versions bump correctly), run `changeset publish`, and... nothing publishes. No error, no packages on npm. The publish silently skips every package because npm refuses to publish packages with `"private": true` in their `package.json`.
 
 **Why it happens:**
-Text-based selectors feel "user-centric" and are the Playwright default for codegen. They also work without modifying the production code. Test IDs require component changes, which creates friction.
+Every package in OpenVAA currently has `"private": true`:
+- `@openvaa/core` -- private: true
+- `@openvaa/data` -- private: true
+- `@openvaa/matching` -- private: true
+- `@openvaa/filters` -- private: true
+- `@openvaa/app-shared` -- private: true
+- `@openvaa/shared-config` -- private: true
+- All experimental packages -- private: true
 
-**How to avoid:**
+This is the default for workspace packages that were never intended for publishing. Removing `"private": true` from packages that SHOULD be published (core, data, matching) while keeping it for packages that should NOT be published (shared-config, frontend, strapi, docs) requires careful per-package decisions.
 
-- Adopt a project-wide `data-testid` convention before writing new tests. Naming pattern: `[component-scope]-[action/element]` (e.g., `voter-app-results-list`, `candidate-question-save`). Document it.
-- Use `getByRole()` only for semantic elements where the role is stable (buttons, headings, landmarks). Do NOT use it with `name:` based on translated text.
-- The translation-lookup pattern already in `tests/tests/utils/translations.ts` is sound for verifying text _content_ but should not be used as the primary _selector_ mechanism.
-- Keep `getByText()` for assertions on rendered content (verifying the right text is shown), not for interaction targets.
+**Consequences:**
+- Publish pipeline appears to work but publishes nothing
+- Changesets `version` command still bumps versions and writes changelogs, creating a confusing state where versions are bumped in git but nothing is on npm
+- If you don't notice immediately, subsequent changesets stack up against phantom versions
 
-**Warning signs:**
+**Prevention:**
+1. Before adding changesets, audit each package and decide its publish status:
+   - **Remove `"private": true`**: `core`, `data`, `matching`, `filters` (candidate for external consumption)
+   - **Keep `"private": true`**: `shared-config`, `app-shared` (internal-only), `frontend`, `strapi`, `docs`, experimental packages
+   - **Add `publishConfig`** for scoped packages: `"publishConfig": { "access": "public" }` (npm requires explicit opt-in for scoped packages)
+2. Configure changesets `privatePackages` option:
+   ```json
+   {
+     "privatePackages": { "version": true, "tag": false }
+   }
+   ```
+   This lets private packages participate in versioning (important for internal consistency) without attempting to publish.
+3. Add a CI verification that the publish step actually published N packages (check exit status + npm registry).
 
-- `getByRole('link', { name: T.en['...'] })` used as a click target
-- `getByLabel(T.en['...'], { exact: true })` used to find form fields that could have test IDs
-- Any selector that imports from the translations utility AND is used for `.click()` or `.fill()`
+**Detection:**
+- `changeset publish` output says "No unreleased packages found" or lists 0 packages
+- npm registry shows no new versions after a publish run
+- `package.json` still contains `"private": true` on packages meant for publishing
 
-**Phase to address:** Phase 1 (establish convention) + ongoing enforcement via ESLint `eslint-plugin-playwright`
+**Phase to address:** Package publishing readiness phase -- first task before any versioning setup
 
 ---
 
-### Pitfall 4: Strapi Admin UI Automation as Primary Data Management
+### Pitfall 3: Removing `"private": true` Without Adding `package.json` Metadata Causes npm Rejection
 
 **What goes wrong:**
-The existing `candidateApp-advanced.spec.ts` navigates the Strapi admin UI to send registration emails. Commented-out code attempted to use Strapi's import UI. Admin UIs are notoriously brittle targets for automation: they change between versions, they have complex async loading states, they use design system components with unstable selectors, and they are not semantically designed for programmatic access.
+You remove `"private": true` from `@openvaa/core` and run `yarn npm publish`. npm rejects the publish because the package is missing required metadata: no `description`, no `license`, no `repository`, no `author`, and potentially missing or malformed `files` field. For scoped packages (`@openvaa/*`), npm also requires explicit `"publishConfig": { "access": "public" }` for public publishing.
 
 **Why it happens:**
-The Admin Tools plugin exists precisely because the Strapi API lacks some operations. The natural approach is to automate the admin UI. But the import functionality was already broken and commented out, which is evidence this path is high-maintenance.
+When packages were created as private workspace packages, nobody added the metadata npm requires for public packages. The current `@openvaa/core` package.json has:
+```json
+{
+  "private": true,
+  "name": "@openvaa/core",
+  "version": "0.1.0",
+  "scripts": { "build": "..." },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": { "import": "./build/index.js" }
+}
+```
+Missing: `description`, `license`, `repository`, `author`, `keywords`, `files`, `publishConfig`, `engines`, `homepage`, `bugs`.
 
-**How to avoid:**
+**Consequences:**
+- npm publish fails with cryptic validation errors
+- If metadata is incomplete but npm accepts the publish, the package page on npmjs.com looks abandoned (no description, no license, no repository link)
+- Missing `files` field means the entire package directory (including `src/`, `tsconfig.json`, test files) gets published, bloating the package size
+- Missing `license` causes npm warnings for consumers and blocks adoption by organizations with license policies
 
-- Use direct Strapi REST/GraphQL API calls (via Playwright `request.newContext()`) for data setup and teardown. The existing test already uses this for email checking — extend the pattern to data management.
-- Reserve admin UI automation only for features that are genuinely only accessible via UI and have no API equivalent (e.g., testing the Admin Tools plugin UI itself as a user-facing feature).
-- When the Supabase migration happens, admin UI automation becomes entirely worthless. API-based data management survives the migration (with endpoint changes, not structural changes).
-- Invest in a thin data helper layer (`tests/helpers/data.ts`) that wraps API calls for common operations: create candidate, delete candidate, reset answers. This layer is swappable when backends change.
+**Prevention:**
+1. Create a shared metadata template and apply to all publishable packages:
+   ```json
+   {
+     "description": "...",
+     "license": "AGPL-3.0",
+     "repository": {
+       "type": "git",
+       "url": "https://github.com/OpenVAA/voting-advice-application",
+       "directory": "packages/core"
+     },
+     "author": "OpenVAA contributors",
+     "homepage": "https://openvaa.org",
+     "bugs": "https://github.com/OpenVAA/voting-advice-application/issues",
+     "keywords": ["vaa", "voting-advice-application"],
+     "publishConfig": { "access": "public" },
+     "files": ["build/", "README.md", "LICENSE"],
+     "engines": { "node": ">=20" }
+   }
+   ```
+2. Add a lint script that validates package.json completeness for all non-private packages.
+3. Run `yarn pack` + `tar tf` on each publishable package to verify only intended files are included.
 
-**Warning signs:**
+**Detection:**
+- `yarn npm publish --dry-run` fails with metadata errors
+- `yarn pack` produces a tarball larger than expected (source files included)
+- npm package page shows "No description" or "No license"
 
-- Test code navigating to `/admin` and using `getByRole('link', { name: 'Content Manager' })`
-- Commented-out import workflows in test files
-- Tests that take >30s to set up data (UI automation is slow)
-- Any `waitForTimeout` after clicking admin UI buttons
-
-**Phase to address:** Phase 1 (define data management strategy before new tests) + Phase migration when Supabase arrives
+**Phase to address:** Package publishing readiness phase -- metadata audit before versioning setup
 
 ---
 
-### Pitfall 5: Global Timeout Too Tight for Docker Environment
+### Pitfall 4: Version Cascade Avalanche -- Every Change to `core` Bumps 8 Packages
 
 **What goes wrong:**
-The current `playwright.config.ts` sets `globalTimeout: 100000` (100 seconds) and no explicit `timeout` per test. The Docker stack (frontend + strapi + postgres + localstack) can take 30-60 seconds to become healthy on first start. If the Docker stack is slow on CI, global setup consumes most of the timeout budget before any test runs, causing opaque failures attributed to "timeout exceeded" rather than the real issue.
+A developer fixes a typo in `@openvaa/core`. Changesets creates a patch bump for core (0.1.0 -> 0.1.1). Because `data` depends on `core`, changesets bumps `data` too (0.1.0 -> 0.1.1). Because `app-shared` depends on `data`, it bumps too. Because `frontend` depends on `app-shared`, `core`, `data`, `matching`, and `filters`... the cascade results in ALL 8+ packages getting new versions from a single typo fix. Every package gets a changelog entry saying "Updated dependency @openvaa/core to 0.1.1" -- meaningless noise.
 
 **Why it happens:**
-Timeout values are set locally where Docker starts fast. CI runners have less consistent performance, and Docker layer caches may not always be warm.
+The OpenVAA dependency graph is deep and wide:
+```
+core -> data -> app-shared -> frontend, strapi
+core -> matching -> frontend
+core -> data -> filters -> frontend
+core -> data -> question-info -> frontend
+core -> data -> llm -> argument-condensation -> frontend
+```
+Changesets' default behavior (`updateInternalDependents: "out-of-range"`) only bumps dependents when the new version falls outside the declared range. But with `workspace:^`, the resolved range is `^0.1.0`, and a patch bump to `0.1.1` is IN range -- so dependents should NOT need bumping. The problem is that changesets' version replacement at publish time AND the desire for lockstep changelog entries can still create unnecessary releases.
 
-**How to avoid:**
+**Consequences:**
+- Changelog noise: consumers see 8 package updates when only 1 had a real change
+- npm download stats become meaningless (every package shows same update frequency)
+- CI publish pipeline takes longer (building and publishing 8 packages vs 1)
+- Consumers using multiple packages must update all of them every time
 
-- Separate Docker startup from test execution in CI. Use health checks with proper wait loops (`wait-for-it.sh` or `docker compose --wait`) before Playwright begins.
-- Set `globalTimeout` to something reasonable for CI (300,000ms = 5 minutes), and set a separate, tighter `timeout` per test (30,000ms default) so slow tests are identified individually.
-- Add `expect.timeout` and `navigationTimeout` separately from action timeout — page navigation in Docker is slower than localhost.
-- Set `retries: process.env.CI ? 2 : 0` (the existing config uses 3 retries, which masks flakiness rather than fixing it).
+**Prevention:**
+1. Use independent versioning (changesets default) rather than fixed/lockstep versioning. Confirm this in `.changeset/config.json`:
+   ```json
+   {
+     "fixed": [],
+     "linked": []
+   }
+   ```
+2. Do NOT use `updateInternalDependents: "always"`. Use the default `"out-of-range"` which only bumps dependents when the version falls outside the declared range.
+3. Keep `workspace:^` dependencies -- they resolve to `^x.y.z` at publish time, which means patch and minor bumps in dependencies do NOT force dependent package bumps.
+4. Review each changeset PR to ensure only genuinely affected packages are included. Changesets generates a PR -- use that review step.
 
-**Warning signs:**
+**Detection:**
+- A changeset for a single package results in a PR that bumps 5+ package versions
+- Changelog entries consist mostly of "Updated dependency X" boilerplate
+- The `changeset status` output shows more packages to release than expected
 
-- CI failures with "Timeout of 100000ms exceeded" in global setup
-- Tests that pass locally but fail on first CI run, then pass on retry
-- `waitForTimeout(5000)` as the only mechanism for waiting for email delivery (already present)
+**Phase to address:** Versioning configuration phase -- get this right in the initial changesets config
 
-**Phase to address:** Phase 1 (CI configuration) — fix before adding more tests that will compound the problem
+---
+
+### Pitfall 5: Dual CJS/ESM Build in `app-shared` Breaks After Versioning Changes
+
+**What goes wrong:**
+`@openvaa/app-shared` has a unique dual build (`build:cjs` + `build:esm`) that outputs to `build/cjs/` and `build/esm/` with separate `package.json` files declaring `"type": "commonjs"` and `"type": "module"` respectively. When Turborepo or a new build orchestrator is added, the custom build script (`mkdir -p ./build/cjs/ && echo '{ "type": "commonjs" }' > ./build/cjs/package.json`) gets cached or skipped incorrectly, or the synthetic `package.json` files in the build output confuse versioning tools that scan for `package.json` files.
+
+There is also a bug in the current build: the ESM package script writes to `packagec.json` (typo: extra 'c') instead of `package.json`:
+```json
+"package:esm": "mkdir -p ./build/esm/ && echo '{ \"type\": \"module\" }' > ./build/esm/packagec.json"
+```
+
+**Why it happens:**
+The dual build predates any tooling decisions. It exists because Strapi (CJS) and the frontend (ESM) both consume `app-shared`. This is a correct architectural decision, but the implementation with synthetic `package.json` files inside build output is fragile. Build caching tools (Turborepo, Nx) hash inputs and cache outputs -- but the synthetic package.json is generated by a shell command, not by tsc, so caching may miss it.
+
+**Consequences:**
+- Cached builds may be missing the synthetic `package.json` files, causing import resolution failures
+- The existing typo (`packagec.json`) means the ESM build may not work correctly in some environments
+- Versioning tools scanning for `package.json` files may find and modify the synthetic ones
+- Turborepo output caching may not restore the synthetic files correctly
+
+**Prevention:**
+1. Fix the existing typo immediately (`packagec.json` -> `package.json`)
+2. When adding Turborepo/build caching, declare `build/cjs/package.json` and `build/esm/package.json` as explicit outputs in the caching configuration
+3. Consider migrating to a proper dual-build tool like `tsup` or using Node.js conditional exports more cleanly, which eliminates the need for synthetic `package.json` files:
+   ```json
+   "exports": {
+     "import": { "types": "./build/esm/index.d.ts", "default": "./build/esm/index.js" },
+     "require": { "types": "./build/cjs/index.d.ts", "default": "./build/cjs/index.js" }
+   }
+   ```
+4. Evaluate whether the CJS build is still needed. Strapi v5 supports ESM. If the Supabase migration removes Strapi, the CJS build becomes dead code.
+
+**Detection:**
+- `require('@openvaa/app-shared')` fails with "ERR_REQUIRE_ESM" after a cached build
+- `build/esm/` directory contains `packagec.json` instead of `package.json`
+- Turborepo reports cache HIT but the build output is incomplete
+
+**Phase to address:** Package organization/restructure phase -- fix before adding build caching
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 6: Over-Engineering the Test Abstraction Layer
-
-**What goes wrong:**
-A Page Object Model (POM) hierarchy is built with inheritance chains (BasePage → AuthenticatedPage → CandidateAppPage → CandidateQuestionsPage). The abstraction becomes the hardest part of the test codebase to maintain. When the voter app is added, it doesn't fit the existing hierarchy and forces architectural decisions mid-test-writing. New contributors struggle to know where to put interaction logic.
-
-**Why it happens:**
-POM is the default recommendation in test automation literature. It feels professional. It also delays writing actual tests while you architect the framework.
-
-**How to avoid:**
-
-- Use Playwright's built-in fixture system for shared setup (authentication, data seeding), not class hierarchies.
-- Use functional helpers (plain functions) rather than page object classes. `fillLoginForm(page, email, password)` is more composable than `new LoginPage(page).login(email, password)`.
-- If page objects are used, keep them flat (no inheritance) and focused on a single page's stable interactions.
-- Start writing actual tests before building the framework. Extract helpers only when duplication appears in 3+ tests.
-
-**Warning signs:**
-
-- A `BasePage` class that tests extend
-- More lines in helper/fixture code than in actual test code
-- Test setup that requires understanding 4+ files before you can write a new test
-
-**Phase to address:** Phase 1 — establish a "fixture-first, POM-never" convention in the test setup
+Mistakes that cause hours-to-days of debugging or require significant rework of the approach.
 
 ---
 
-### Pitfall 7: Locale-Switching Tests Depending on Browser Language Detection
+### Pitfall 6: Turborepo `outputs` Misconfiguration Causes Silent Cache Corruption
 
 **What goes wrong:**
-Tests navigate to locale-specific URLs (`/en/candidate/...`, `/fi/candidate/...`) and check that the UI renders in the correct language. However, SvelteKit's i18n routing also reads the `Accept-Language` header. In some environments or test configurations, the browser locale overrides the URL locale, causing test assertions to check for Finnish text on an English URL.
+Turborepo is added to speed up builds. The `turbo.json` defines a `build` task but doesn't correctly specify `outputs`. On the first run, everything builds correctly. On the second run, Turborepo reports "FULL TURBO" (cache hit) but the build output directories are empty or stale because Turborepo didn't know which files to cache and restore.
 
 **Why it happens:**
-Playwright's default browser context uses the OS locale. On Finnish developer machines, Playwright-launched Chromium sends `fi` as the Accept-Language header. The existing tests handle this by hardcoding `LOCALE_EN = 'en'` and using URL routing, but the browser locale interaction is not explicitly controlled.
+Each OpenVAA package builds to a different output structure:
+- Most packages: `./build/` (tsc output)
+- `app-shared`: `./build/cjs/` AND `./build/esm/` (dual build)
+- `shared-config`: no build output (just config files)
+- `frontend`: `.svelte-kit/` and `build/`
+- `strapi`: `dist/`
+- `docs`: `build/`
 
-**How to avoid:**
+A generic `"outputs": ["build/**"]` in `turbo.json` misses the frontend's `.svelte-kit/` directory, misses Strapi's `dist/`, and doesn't account for the synthetic `package.json` files in `app-shared`'s build output.
 
-- Set `locale: 'en-US'` in the Playwright project config for all test projects to eliminate OS-locale variance:
-  ```typescript
-  use: { locale: 'en-US', timezoneId: 'Europe/Helsinki' }
-  ```
-- Test locale switching as a deliberate test scenario (navigate to `/fi/`, assert Finnish content), not as incidental test behavior.
-- Avoid using `getByText()` for locale-detection assertions — use URL assertions (`toHaveURL`) as the primary locale check.
+**Prevention:**
+1. Define per-package output overrides in `turbo.json`:
+   ```json
+   {
+     "tasks": {
+       "build": {
+         "dependsOn": ["^build"],
+         "outputs": ["build/**", "dist/**", ".svelte-kit/**"]
+       }
+     }
+   }
+   ```
+2. After adding Turborepo, run a full clean build, then run again and verify the cached build produces identical output:
+   ```bash
+   yarn turbo build --force  # Full build
+   rm -rf packages/*/build   # Remove outputs
+   yarn turbo build           # Should restore from cache
+   diff -r before/ after/     # Compare
+   ```
+3. Add `"cache": false` for tasks that should never be cached (like `dev`, `watch`).
 
-**Warning signs:**
+**Detection:**
+- "FULL TURBO" in CI output but downstream steps fail with missing files
+- Tests pass after clean build but fail after cached build
+- `tsc` reports no errors but `import` fails at runtime
 
-- Tests that pass on EN-locale CI but fail on FI-locale developer machines
-- Assertions comparing translated strings without fixing the browser locale
-- Tests checking both URL locale AND text content without explicit locale fixture
-
-**Phase to address:** Phase 1 (configure baseline `locale` in playwright.config.ts)
+**Phase to address:** Build tooling/package manager evaluation phase
 
 ---
 
-### Pitfall 8: Tests Coupled to Mock Data File Internals
+### Pitfall 7: TypeScript `moduleResolution: "Bundler"` in Published Packages Breaks Consumers
 
 **What goes wrong:**
-Test files directly import from `backend/vaa-strapi/src/functions/mockData/mockUsers.json`, `mockCandidateForTesting.json`, `mockQuestionTypes.json`, etc. (this already happens in `candidateApp-advanced.spec.ts` and `global-setup.ts`). When the mock data structure changes, or when the Supabase migration replaces mock data with seed scripts, 5+ import statements across test files need updating. The tests also construct expected values by looking up deeply into mock data structures (e.g., `mockQuestionTypes.find(({ name }) => name === 'Likert-5')?.settings.choices`).
+The shared TypeScript config (`tsconfig.base.json`) sets `"moduleResolution": "Bundler"`. This works within the monorepo because SvelteKit's Vite-based bundler handles resolution. But when `@openvaa/core` or `@openvaa/matching` are published and consumed by an external project using Node.js directly (not a bundler), module resolution fails because `"Bundler"` resolution allows import paths that Node.js cannot resolve (e.g., imports without file extensions, subpath imports).
 
 **Why it happens:**
-Mock data already exists in the backend. Importing it avoids duplication — the test uses the same data the backend seeded.
+`moduleResolution: "Bundler"` is the correct setting for the monorepo because:
+- Vite (SvelteKit frontend) uses bundler resolution
+- TypeScript 5.x recommends it for projects using modern bundlers
+- It allows cleaner import paths
 
-**How to avoid:**
+But published npm packages are consumed in varied environments -- some use bundlers, some use Node.js directly, some use Deno. The published `.js` files must work with Node.js module resolution.
 
-- Create a single test-dedicated constants file (`tests/fixtures/testData.ts`) that re-exports only the values tests actually need (email, password, firstName, likert labels). The source of these values can be the mock JSON files, but the coupling point is centralized.
-- Never import mock data structures directly into test files. Tests should work with simple string/number constants, not JSON tree traversal.
-- When the backend migrates to Supabase, only `testData.ts` needs updating, not every test file.
+**Consequences:**
+- External consumers get "Cannot find module" errors
+- `tsc-esm-fix` (used by core, data, matching) exists specifically to fix ESM import paths -- if it silently fails or is misconfigured, the published files have broken imports
+- Deno (a stated future target for OpenVAA) has its own resolution algorithm that may not match either setting
 
-**Warning signs:**
+**Prevention:**
+1. Verify that `tsc-esm-fix` is correctly adding `.js` extensions to all import paths in the build output. Inspect the `build/` directory of each publishable package.
+2. Add a CI step that installs the packed tarball in a fresh Node.js project (not a bundler project) and runs a basic import:
+   ```bash
+   npm pack @openvaa/core
+   mkdir /tmp/test && cd /tmp/test && npm init -y && npm install ../openvaa-core-0.2.0.tgz
+   node -e "import('@openvaa/core').then(m => console.log(Object.keys(m)))"
+   ```
+3. Consider switching publishable packages to `"moduleResolution": "NodeNext"` for their build configs, separate from the monorepo-wide bundler setting.
 
-- `import mockUsers from '../../backend/vaa-strapi/src/functions/mockData/mockUsers.json'` in test files
-- Test files with `mockQuestionTypes.find(...)` logic
-- More than 3 mock data imports in a single test file
+**Detection:**
+- External project importing `@openvaa/core` gets "ERR_MODULE_NOT_FOUND"
+- Build output `.js` files contain `import { X } from './types'` without `.js` extension
+- `tsc-esm-fix` exits with non-zero but the build script ignores it (piped with `&&`)
 
-**Phase to address:** Phase 1 (establish test data abstraction before new tests are written)
+**Phase to address:** Package publishing readiness phase -- verify before first publish
 
 ---
 
-### Pitfall 9: Missing Test Coverage for Voter App
+### Pitfall 8: Docs Site Split Creates Stale Documentation
 
 **What goes wrong:**
-The existing test suite covers only the candidate app. The voter app (question answering flow, results/matching, filtering) has zero E2E coverage. When the Svelte 5 migration happens or backend changes occur, regressions in the voter app are invisible until manual testing finds them — too late.
+The docs site is moved to a separate repository (or a separate deployment pipeline). Over time, the documentation diverges from the actual code. API references describe v0.3.0 interfaces while the packages are at v0.5.0. Installation guides reference deprecated configuration options. Contributors update code but forget to update the separate docs repo. The docs site becomes actively misleading.
 
 **Why it happens:**
-The candidate app was built first and tests followed. The voter app is more complex to test (requires seeded questions, candidates with answers, correct matching weights) and has more configuration variants (single election vs. multiple, different question types). Nobody got around to it.
+The OpenVAA docs currently live in `/docs/` within the monorepo and have scripts that generate documentation FROM the codebase:
+- `generate:component-docs` -- extracts component docs
+- `generate:navigation` -- builds nav from route structure
+- `generate:route-map` -- maps routes
+- `validate:links` -- checks internal links
+- TypeDoc integration for API reference from source code
 
-**How to avoid:**
+These scripts assume co-location. They reference `../packages/`, `../frontend/`. Moving docs to a separate repo breaks every generation script and every relative path. Without the auto-generation, docs become manually maintained and drift.
 
-- Treat voter app coverage as a first-class deliverable of the E2E milestone, not an optional addition.
-- The voter app test data requirements are higher — plan and implement the data seeding strategy before attempting voter app tests.
-- Start with the happy path: voter answers all questions, sees results, can filter. Add configuration variants later.
+**Consequences:**
+- Stale docs are worse than no docs -- users follow outdated instructions and blame the framework
+- TypeDoc API references stop being generated from source (or require complex cross-repo builds)
+- Component documentation shows old interfaces
+- Link validation cannot check links to source code
+- Every release requires manual docs-repo update (which will be forgotten)
 
-**Warning signs:**
+**Prevention:**
+1. **Strong recommendation: Keep docs in the monorepo.** The co-location benefits (auto-generation, link validation, atomic commits with code changes) outweigh the separation benefits (independent deployment, different tech stack). Deploy docs separately via CI, but keep the source in the monorepo.
+2. If docs MUST be split:
+   - Generate all auto-generated content as a CI step in the main repo and push to the docs repo via a GitHub Action
+   - Trigger docs repo rebuilds on every main repo release
+   - Keep TypeDoc generation in the main repo and export artifacts
+   - Add a CI check in the main repo that verifies docs repo links still work
+3. Never manually maintain what can be auto-generated. If a generation script breaks after a code change, fix the script -- don't start hand-editing the generated file.
 
-- E2E milestone declared "complete" with only `candidateApp-*.spec.ts` files
-- Voter app flows mentioned as "future work" at milestone end
-- No `voterApp-*.spec.ts` file exists
+**Detection:**
+- Docs repo hasn't been updated in 2+ weeks while main repo has active development
+- API reference shows different function signatures than current source code
+- Installation guide references an old package version
+- "Edit this page" links point to a different repo than where the code lives
 
-**Phase to address:** Phase 1 (scope definition must include voter app)
+**Phase to address:** Docs site evaluation phase -- decide early, implement consistently
 
 ---
 
-### Pitfall 10: `waitForTimeout` as a Timing Mechanism
+### Pitfall 9: Adding Turborepo Without Handling the Strapi Plugin Workspace
 
 **What goes wrong:**
-The existing tests use `waitForTimeout(500)` multiple times in `candidateApp-advanced.spec.ts` for UI transitions and `waitForTimeout(5000)` for email delivery. Fixed waits make tests slow and still flaky — 500ms is too long on fast machines and too short on slow CI runners. The 5-second email wait is a bet on LocalStack SES latency.
+Turborepo is added with a standard `turbo.json`. The `build` task has `"dependsOn": ["^build"]` (build all dependencies first). But the workspace includes `backend/vaa-strapi/src/plugins/*`, which creates a cycle: Strapi's build depends on the plugin being built, but the plugin workspace is part of Strapi's directory tree. Turborepo either refuses to build (cycle detection) or builds in the wrong order.
 
 **Why it happens:**
-The correct wait condition is not obvious (what exactly signals that the UI has updated after clicking "Save and Continue"?). `waitForTimeout` works locally, so it ships.
+The workspace configuration includes nested workspaces:
+```json
+"workspaces": [
+  "packages/*",
+  "backend/vaa-strapi",
+  "backend/vaa-strapi/src/plugins/*",  // Nested under vaa-strapi
+  "frontend",
+  "docs"
+]
+```
+The Strapi plugin `@openvaa/strapi-admin-tools` lives inside the Strapi backend directory but is a separate workspace package that Strapi depends on (`"@openvaa/strapi-admin-tools": "workspace:^"` in Strapi's package.json). This nested structure is a Strapi convention but creates confusion for build orchestrators.
 
-**How to avoid:**
+**Consequences:**
+- Build task fails or executes in wrong order
+- Strapi builds before its plugin is built, causing "module not found" at build time
+- Turborepo's dependency graph visualization shows unexpected connections
+- CI builds that worked with plain `yarn workspaces foreach` break with Turborepo
 
-- Replace `waitForTimeout(500)` with assertions on the resulting state: `await expect(page.getByText(nextQuestion)).toBeVisible()`.
-- For email delivery, poll the LocalStack SES endpoint with `expect.poll()` or a retry loop with proper backoff instead of a fixed wait.
-- Enable the ESLint Playwright plugin (`eslint-plugin-playwright`) with the `no-wait-for-timeout` rule to prevent new instances.
+**Prevention:**
+1. Explicitly configure the Strapi plugin workspace in `turbo.json` with a custom build task:
+   ```json
+   {
+     "tasks": {
+       "build": {
+         "dependsOn": ["^build"],
+         "outputs": ["build/**", "dist/**"]
+       }
+     }
+   }
+   ```
+   Turborepo should handle this via the package.json dependency declaration, but verify the build order explicitly.
+2. Test the dependency graph before relying on it:
+   ```bash
+   npx turbo build --dry-run --graph
+   ```
+3. Consider whether the Strapi plugin should remain a separate workspace or be folded into the Strapi package (reducing workspace complexity), especially given the planned Strapi -> Supabase migration.
 
-**Warning signs:**
+**Detection:**
+- `turbo build` fails with "Circular dependency detected" or builds Strapi before its plugin
+- `turbo build --graph` shows unexpected dependency arrows
+- Strapi build succeeds locally (where all packages are already built) but fails in CI (clean checkout)
 
-- `waitForTimeout` anywhere in test code
-- Comments like "Wait so that UI has time to change"
-- Tests that are significantly slower on CI than locally
-
-**Phase to address:** Phase 1 (fix existing instances before they multiply)
+**Phase to address:** Build tooling evaluation phase -- test graph resolution before committing to Turborepo
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 10: Initial Publish from 0.1.0 Creates SemVer Confusion
 
-| Shortcut                                             | Immediate Benefit                                | Long-term Cost                                                                           | When Acceptable                                                      |
-| ---------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `test.describe.configure({ mode: 'serial' })`        | Tests can share state without fixtures           | Cascading failures, no parallel execution, broken CI signals                             | Never — multi-step flows belong in a single test with `.step()`      |
-| Importing mock JSON files directly in tests          | No duplication, always in sync with backend      | Every backend refactor breaks tests, Supabase migration requires touching all test files | Never — centralize in a test data constants file                     |
-| `waitForTimeout()` for timing                        | Works locally, easy to write                     | Flaky on CI, masks the real readiness condition                                          | Never in production tests — acceptable as a temporary debug aid only |
-| Admin UI automation for data setup                   | Reuses existing UI, no API work needed           | Brittle selectors, slow execution, breaks on Strapi version upgrades                     | Only when the feature being tested IS the admin UI behavior          |
-| Global authenticated session shared across all tests | Faster test execution (one login)                | State pollution between tests, password change test breaks subsequent login tests        | Acceptable only if no test mutates auth state — not true today       |
-| Text-based selectors with translation lookup         | "User-centric" feel, no component changes needed | Breaks on any copy change, locale-dependent, slow to update across test suite            | Only for content _assertions_, never for interaction _targets_       |
+**What goes wrong:**
+All packages are at version `0.1.0`. You add changesets and make a few changes. Changesets creates a patch bump to `0.1.1`. An external consumer starts using `@openvaa/core@0.1.1`. But `0.x.y` versions in SemVer have NO stability guarantees -- breaking changes are allowed in any release. Then you publish `0.1.2` with a breaking change, which is technically correct per SemVer rules for `0.x`, but the consumer's `^0.1.1` range resolves to `0.1.2` and their code breaks.
+
+**Why it happens:**
+SemVer treats `0.x.y` specially: "Major version zero (0.y.z) is for initial development. Anything MAY change at any time. The public API SHOULD NOT be considered stable." In practice, npm's `^` operator treats `^0.1.1` as `>=0.1.1 <0.2.0`, so patch bumps within `0.1.x` ARE automatically installed. This means consumers expect `0.1.x` patch bumps to be non-breaking, but SemVer doesn't guarantee it.
+
+**Consequences:**
+- Consumer code breaks on `npm update` if a "patch" release contains breaking changes
+- Version number becomes meaningless if you try to follow strict SemVer 0.x rules
+- Changesets asks "Is this a major, minor, or patch change?" but all three are fuzzy at 0.x
+
+**Prevention:**
+1. **Before the first publish, decide:** Are these packages ready for `1.0.0`? If the APIs are stable (core, matching, and data are used in production), consider starting at `1.0.0`.
+2. If starting at `0.x`: treat minor bumps (0.1.0 -> 0.2.0) as breaking changes and patch bumps (0.1.0 -> 0.1.1) as non-breaking. Document this convention in CONTRIBUTING.md.
+3. If starting at `1.0.0`: commit to standard SemVer and use changesets' `major`/`minor`/`patch` classifications strictly.
+4. **Recommendation for OpenVAA:** Start at `1.0.0` for `core`, `data`, `matching`, and `filters` since they are production-used with stable APIs. Keep experimental packages at `0.x`.
+
+**Detection:**
+- Changesets asking for bump type on packages that have `0.x.y` versions (the choice is ambiguous)
+- Consumer issue reports about broken `npm update`
+- Internal confusion about what constitutes a "breaking change" at `0.x`
+
+**Phase to address:** Versioning configuration phase -- version strategy decision before first changeset
+
+---
+
+## Minor Pitfalls
+
+Issues that cause hours of debugging but have straightforward fixes.
+
+---
+
+### Pitfall 11: `tsc-esm-fix` Dependency Missing from Published Packages
+
+**What goes wrong:**
+`tsc-esm-fix` is listed as a `devDependency` in core, data, and matching. It runs during the build step (`yarn tsc --build && yarn tsc-esm-fix`). In the monorepo, it works because devDependencies are installed. But the build output (the `.js` files) already has the fixes applied, so this isn't a runtime concern -- it's a build concern. The pitfall occurs if someone forks the repo and runs `yarn install --production` before building, which skips devDependencies and breaks the build.
+
+**Prevention:**
+- Ensure CI always runs `yarn install` (not `--production`) before building
+- Document in CONTRIBUTING.md that building requires all dependencies
+- This is already correctly configured (devDependency) -- just don't change it to an optional dependency
+
+**Phase to address:** Low priority -- document during publishing readiness
+
+---
+
+### Pitfall 12: Forgetting to Register the npm Organization Before First Publish
+
+**What goes wrong:**
+You run `yarn npm publish` for `@openvaa/core` and get a 403 error because the `@openvaa` scope is not registered on npm, or it's registered by someone else.
+
+**Prevention:**
+1. Register the `@openvaa` organization on npmjs.com BEFORE any publishing work
+2. Add all team members who need publish access
+3. Enable 2FA for the organization
+4. Configure the npm automation token for CI (separate from personal tokens)
+
+**Detection:**
+- `yarn npm publish` returns 403 Forbidden
+- `npm org ls openvaa` returns nothing or shows unexpected members
+
+**Phase to address:** Publishing readiness -- first task, before any code changes
+
+---
+
+### Pitfall 13: Git Tags Conflict Between Packages
+
+**What goes wrong:**
+Changesets creates git tags for each release (e.g., `@openvaa/core@1.0.1`). If multiple packages are released simultaneously, the release commit contains many tags. GitHub's releases page becomes cluttered with individual package releases instead of showing a coherent project release.
+
+**Prevention:**
+1. Consider using changesets' `commit` option to configure commit message format
+2. Decide whether to use per-package tags (changesets default) or a single project-level tag for coordinated releases
+3. If using GitHub Releases, create a single release note that aggregates all package changes (the changesets GitHub action supports this)
+
+**Phase to address:** Versioning configuration phase
+
+---
+
+### Pitfall 14: Husky Pre-commit Hooks Conflict with Changesets Workflow
+
+**What goes wrong:**
+The project uses Husky for pre-commit hooks (lint-staged). When changesets' GitHub Action creates a release PR and commits version bumps, the CI commit triggers Husky hooks in CI, which either fail (because CI doesn't have the full dev environment) or slow down the automated workflow.
+
+**Prevention:**
+1. Configure CI to skip Husky hooks: `HUSKY=0 git commit` in the changesets action
+2. Or ensure the CI environment has all tools the hooks need (eslint, prettier)
+3. The changesets GitHub Action runs its own commit -- ensure it's configured to work with or without hooks
+
+**Detection:**
+- Changesets version PR commits fail in CI with lint errors
+- Changesets action takes unusually long due to lint/format checks on automated commits
+
+**Phase to address:** Versioning automation phase -- configure CI workflow
+
+---
+
+### Pitfall 15: Yarn's Built-in Release Workflow vs Changesets -- Choosing Both Causes Conflicts
+
+**What goes wrong:**
+Yarn 4 has its own built-in release workflow (`yarn version check`, `yarn version apply`). Someone also installs `@changesets/cli`. Now two systems compete to manage versions, creating conflicting version files, duplicate git tags, and confusion about which tool to use.
+
+**Why it happens:**
+Yarn's release workflow is less known than changesets but is deeply integrated with Yarn's workspace protocol and `workspace:^` resolution. Changesets is the more popular community standard with better GitHub Action integration. Both are valid choices, but using both simultaneously creates chaos.
+
+**Prevention:**
+1. **Choose one tool and remove the other.** Recommendation: Use changesets because of broader community adoption, better GitHub Action ecosystem, and more documentation. But Yarn's built-in workflow is worth evaluating if you want fewer dependencies.
+2. If choosing changesets: don't use `yarn version check` or `yarn version apply`
+3. If choosing Yarn's workflow: don't install `@changesets/cli`
+4. Document the decision in CONTRIBUTING.md so future contributors know which tool to use
+
+**Phase to address:** Versioning tool selection -- decide before implementing
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Severity | Mitigation |
+|---|---|---|---|
+| Package manager evaluation | Adding Turborepo without understanding workspace graph (nested Strapi plugin) | MEDIUM | Run `turbo build --dry-run --graph` and verify order before committing |
+| Package manager evaluation | Switching from `nodeLinker: node-modules` to PnP breaks Strapi and frontend | HIGH | Do NOT switch to PnP. Strapi v5 requires node_modules. Keep current linker |
+| Package organization | Moving packages to `packages/` and `apps/` subdirectories breaks all imports | MEDIUM | Update all workspace paths in root package.json and all tsconfig references simultaneously |
+| Docs site evaluation | Splitting docs to separate repo breaks all auto-generation scripts | HIGH | Keep docs in monorepo, deploy separately via CI |
+| Versioning setup | All packages at 0.1.0 with `private: true` -- neither ready for versioning nor publishing | HIGH | Audit private flags and version numbers BEFORE adding changesets |
+| Versioning setup | Changesets uses `npm publish` instead of `yarn npm publish` | CRITICAL | Configure custom publish command in changesets config |
+| Publishing readiness | Missing package.json metadata (license, description, files, publishConfig) | HIGH | Create metadata checklist and template, apply to all publishable packages |
+| Publishing readiness | `@openvaa` npm organization not registered | HIGH | Register organization first |
+| Cross-package version sync | Cascade bumps from core changes affect all 8+ packages | MEDIUM | Use independent versioning, keep `workspace:^` ranges |
+| CI/CD pipeline | GitHub Action for changesets needs npm token and correct publish command | MEDIUM | Set up NPM_TOKEN secret, configure `yarn npm publish` |
+| Build caching (Turborepo) | Incorrect `outputs` config causes stale/missing build artifacts from cache | MEDIUM | Define outputs per-package, verify with clean-rebuild test |
+| Dual CJS/ESM build | Existing typo in app-shared ESM build script (`packagec.json`) | LOW | Fix typo before adding any build caching |
 
 ---
 
 ## Integration Gotchas
 
-| Integration                    | Common Mistake                                                                                                | Correct Approach                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Docker Compose + Playwright    | Starting Playwright before services are healthy, causing race conditions on first test                        | Use `docker compose up --wait` or health check polling before running `playwright test`                      |
-| LocalStack SES (email testing) | Hardcoded `waitForTimeout(5000)` for email delivery                                                           | Poll `/_aws/ses` with `expect.poll()` with 10s timeout and 500ms intervals                                   |
-| Strapi REST API (data setup)   | Using the admin JWT token from the test user session for data management                                      | Create a separate Strapi API token with elevated permissions for test data setup/teardown                    |
-| Strapi Admin UI (data import)  | Using the Strapi import plugin via Playwright browser automation                                              | Use direct REST API calls via `request.newContext()` — faster, more stable, survives upgrades                |
-| SvelteKit SSR + Playwright     | Asserting on content before hydration completes, getting server-rendered vs client-rendered mismatches        | Use `page.waitForLoadState('networkidle')` only if needed, but prefer asserting on specific visible elements |
-| Yarn 4 workspaces + Playwright | The `tests/` workspace has its own `node_modules` — Playwright version mismatch if not kept in sync with root | Keep Playwright version in `tests/package.json` matching or pinned to root                                   |
-
----
-
-## Performance Traps
-
-| Trap                                                       | Symptoms                                                             | Prevention                                                                          | When It Breaks                                      |
-| ---------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Serial test execution on CI                                | Full suite takes 10+ minutes, parallel tests would take 2            | Remove serial mode, enable `fullyParallel: true`, fix data isolation                | With 20+ tests — already a problem at current scale |
-| Admin UI navigation for every data reset                   | Each test takes 30-60 seconds for setup                              | Switch to direct API calls for data setup (< 1 second per call)                     | After 5+ tests that require data setup              |
-| Trace recording set to `'on'` always                       | Large trace files accumulate, CI storage fills, slow artifact upload | Set `trace: 'on-first-retry'` on CI, `'on'` only for local debugging                | After 50+ test runs in CI                           |
-| Running full Docker stack for unit-level integration tests | 60-second startup overhead for tests that only need the API          | Use a test-specific Docker profile that starts only postgres + strapi for API tests | Immediately — every test run pays this cost         |
-
----
-
-## Security Mistakes
-
-| Mistake                                                                                   | Risk                                                                                                                         | Prevention                                                                                                                        |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Hardcoded Strapi admin credentials in test files (currently `admin/admin`)                | If test files are in a public repo, these are exposed — acceptable for dev defaults but must never be production credentials | Keep default dev credentials as-is (they're already in the mock data), but document that production deployments must rotate these |
-| Storing Playwright auth state (`playwright/.auth/user.json`) with real credentials in git | Tokens in version control                                                                                                    | The `playwright/` directory should be in `.gitignore` — verify this is the case                                                   |
-| Using test API tokens in test code with broad permissions                                 | Test token could be used to access/modify data if leaked                                                                     | Scope test API tokens to minimum required permissions; rotate on each CI run if possible                                          |
+| Integration | Common Mistake | Correct Approach |
+|---|---|---|
+| Changesets + Yarn 4 | Using default `npm publish` which doesn't resolve `workspace:^` | Configure `yarn npm publish` as the publish command |
+| Changesets + private packages | All packages are `private: true`, nothing publishes | Remove `private` from publishable packages, configure `privatePackages` for internal ones |
+| Turborepo + Yarn 4 | Turborepo's default caching doesn't know about Yarn's `.yarn/cache` or build outputs | Explicitly configure `outputs` for each task in `turbo.json` |
+| Turborepo + Docker | Dev script chains `yarn build:shared && docker compose up` -- Turborepo can't orchestrate Docker | Keep Docker orchestration in npm scripts, use Turborepo only for build/test/lint tasks |
+| TypeDoc + separate docs repo | TypeDoc needs source files co-located to generate API docs | Keep docs in monorepo or generate TypeDoc output in main repo and copy to docs repo |
+| Changesets + GitHub Actions | Automated PRs from changesets action don't trigger other workflows (GITHUB_TOKEN limitation) | Use a Personal Access Token (PAT) for the changesets action |
+| Changesets + Husky | Automated commits from changesets trigger pre-commit hooks in CI | Set `HUSKY=0` in CI environment for changesets action |
+| npm publishing + scoped packages | `@openvaa/*` packages default to restricted access | Add `"publishConfig": { "access": "public" }` to each publishable package |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Test isolation:** Tests appear to pass individually — verify they still pass when run in different order or in parallel (`--workers=4`)
-- [ ] **State reset:** Password change test "resets" the password at the end — verify the reset runs even when the test fails midway (it currently does NOT — it relies on test success to reach the reset steps)
-- [ ] **Voter app coverage:** "E2E coverage complete" milestone — verify at least one voter app test file exists and covers the happy path
-- [ ] **test IDs present:** "Migrated to test IDs" — verify no `getByRole(..., { name: T.en['...'] })` is used as a click/fill target
-- [ ] **CI green:** Tests pass locally — verify they pass on CI with `workers: 1` (current CI config) AND with `workers: 4` (future parallel config)
-- [ ] **Data independence:** Tests use mock data — verify no test fails when `GENERATE_MOCK_DATA_ON_RESTART=true` is set and data is re-seeded (i.e., tests don't depend on specific database IDs)
-- [ ] **Locale control:** i18n tests pass — verify they pass on a Finnish-locale OS, not just English-locale CI
+- [ ] **Publish works:** Run `yarn npm publish --dry-run` on each publishable package and verify it succeeds with correct contents
+- [ ] **workspace: resolved:** Pack each package with `yarn pack` and inspect the tarball's `package.json` for any `workspace:` protocol strings
+- [ ] **Metadata complete:** Every publishable package has description, license, repository, author, files, publishConfig, engines
+- [ ] **Files field correct:** `yarn pack` + `tar tf` shows only intended files (build output, README, LICENSE -- NOT src/, tsconfig.json, tests)
+- [ ] **External install works:** Install the packed tarball in a fresh Node.js project and import the main export successfully
+- [ ] **TypeScript types resolve:** Install the packed tarball and verify that `import { X } from '@openvaa/core'` resolves types in the consumer's IDE
+- [ ] **Build from clean:** `git clean -xdf && yarn install && yarn build:shared` succeeds (no stale cached artifacts)
+- [ ] **Turborepo cache valid:** Full build, delete outputs, rebuild from cache, verify identical output
+- [ ] **CI publishes:** Changesets GitHub Action can publish with the configured npm token
+- [ ] **Docs still generate:** All docs generation scripts still work after any structural changes
+- [ ] **Changelogs meaningful:** Changeset version PR doesn't show cascade bumps for packages with no real changes
+- [ ] **No tool conflicts:** Only ONE version management tool is configured (changesets OR yarn version, not both)
 
 ---
 
 ## Recovery Strategies
 
-| Pitfall                                            | Recovery Cost | Recovery Steps                                                                                                                     |
-| -------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Serial mode chains throughout test suite           | HIGH          | Identify all serial blocks, convert multi-step flows to single tests with `.step()`, add fixtures for state setup, run in parallel |
-| Shared database state with no reset mechanism      | HIGH          | Design and implement API-based reset helpers, audit every test for state mutations, add teardown to all mutating tests             |
-| Strapi admin UI automation that breaks on upgrade  | MEDIUM        | Rewrite data management as API calls; the logic is the same, only the mechanism changes                                            |
-| Text selectors that all broke on i18n update       | MEDIUM        | Add test IDs to components in bulk (can be done in a single PR), update selectors in tests to use `getByTestId()`                  |
-| `waitForTimeout` causing flaky CI                  | LOW-MEDIUM    | Identify the intended wait condition for each instance, replace with appropriate assertion                                         |
-| Mock data imports breaking after backend migration | MEDIUM        | Centralize all data references in `tests/fixtures/testData.ts`, update only that file                                              |
+| Pitfall | Recovery Cost | Recovery Steps |
+|---|---|---|
+| Published packages with `workspace:^` in dependencies | HIGH | `npm unpublish` within 72 hours, or publish corrected patch immediately. Notify users. Add CI guard. |
+| All packages published with wrong/missing metadata | MEDIUM | Publish new patch versions with corrected metadata. npm allows metadata updates via `npm pkg fix`. |
+| Version cascade published 8 packages for 1 real change | LOW | No recovery needed -- versions are correct, just noisy. Adjust changesets config for future releases. |
+| Turborepo cache serving stale builds | LOW | `npx turbo clean` to clear cache. Fix `outputs` config. Re-run full build. |
+| Docs repo diverged from code | MEDIUM | Re-run all generation scripts against current code. Set up CI automation to prevent recurrence. |
+| 0.x version with accidental breaking change in patch | MEDIUM | Publish 0.2.0 (minor bump) to signal the break. Communicate in changelog. Consider moving to 1.0.0. |
+| npm org not registered, someone else claimed `@openvaa` | HIGH | Contact npm support. Consider alternative scope. This is why you register the org FIRST. |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall                                 | Prevention Phase                                                                              | Verification                                                          |
-| --------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Serial mode dependency chains           | Phase 1 foundation — ban serial mode in ESLint config before first new test                   | Run all tests in random order; no failures                            |
-| Shared mutable database state           | Phase 1 foundation — define and implement reset strategy                                      | Each test passes in isolation when run standalone                     |
-| Text-content selectors for interaction  | Phase 1 foundation — add test IDs to existing components, enforce with ESLint                 | No `getByRole(..., { name: T.en['...'] })` used as interaction target |
-| Admin UI automation for data management | Phase 1 — establish API-based data helpers before writing new tests                           | Data setup completes in under 2 seconds per test                      |
-| Docker timeout misconfiguration         | Phase 1 — update CI config and playwright.config.ts timeouts                                  | CI passes consistently on first run without retries                   |
-| Over-engineered abstraction layer       | Phase 1 — write 3 tests before creating any helper; extract only when duplication is observed | No class inheritance in test code                                     |
-| Locale-switching locale control         | Phase 1 — add `locale: 'en-US'` to playwright.config.ts                                       | Tests pass on Finnish-locale developer machines                       |
-| Mock data coupling to backend files     | Phase 1 — create `tests/fixtures/testData.ts` before importing from backend                   | Zero direct imports from `backend/**` in test files                   |
-| Missing voter app coverage              | Phase 1 — voter app tests are in milestone scope definition                                   | `voterApp-*.spec.ts` exists and covers happy path                     |
-| `waitForTimeout` timing                 | Phase 1 — ESLint no-wait-for-timeout rule; fix existing instances                             | No `waitForTimeout` in any test file                                  |
+| Pitfall | Prevention Phase | Verification |
+|---|---|---|
+| Changesets npm publish vs yarn npm publish (#1) | Versioning setup | Dry-run publish in CI, inspect tarball |
+| All packages private: true (#2) | Publishing readiness | `changeset publish --dry-run` shows packages to publish |
+| Missing package.json metadata (#3) | Publishing readiness | Lint script validates all publishable packages |
+| Version cascade avalanche (#4) | Versioning configuration | Single-package changeset doesn't bump unrelated packages |
+| Dual CJS/ESM build fragility (#5) | Package organization | Fix typo, verify both CJS and ESM imports work |
+| Turborepo outputs misconfiguration (#6) | Build tooling evaluation | Clean rebuild matches cached rebuild |
+| moduleResolution: Bundler in published packages (#7) | Publishing readiness | Fresh Node.js project can import published package |
+| Docs site split causes stale docs (#8) | Docs site evaluation | All generation scripts work, docs match current code |
+| Strapi plugin workspace nesting (#9) | Build tooling evaluation | `turbo build --graph` shows correct order |
+| SemVer confusion at 0.x (#10) | Versioning strategy decision | Version convention documented, team aligned |
+| npm org registration (#12) | Publishing readiness (first task) | `npm org ls openvaa` shows correct members |
+| Git tags clutter (#13) | Versioning configuration | GitHub releases page is readable |
+| Husky conflicts in CI (#14) | CI pipeline setup | Changesets action commits without hook failures |
+| Yarn version vs changesets conflict (#15) | Tool selection | Only one version tool installed and configured |
 
 ---
 
 ## Sources
 
-- Playwright official best practices: https://playwright.dev/docs/best-practices
-- Playwright test parallelism: https://playwright.dev/docs/test-parallel
-- "17 Playwright Testing Mistakes": https://elaichenkov.github.io/posts/17-playwright-testing-mistakes-you-should-avoid/
-- "How to Avoid Flaky Tests in Playwright" (Semaphore CI): https://semaphore.io/blog/flaky-tests-playwright
-- Mock database in Svelte E2E tests (Mainmatter, 2025): https://mainmatter.com/blog/2025/08/21/mock-database-in-svelte-tests/
-- BrowserStack Playwright best practices: https://www.browserstack.com/guide/playwright-best-practices
-- Test Data Strategies for E2E Tests: https://www.playwright-user-event.org/playwright-tips/test-data-strategies-for-e2e-tests
-- Using translations with Playwright and i18n: https://medium.com/@jeremie.fleurant/using-translations-with-playwright-and-i18n-for-e2e-tests-ba90a667f309
-- Playwright global setup and teardown: https://playwright.dev/docs/test-global-setup-teardown
-- Existing test suite analysis: `tests/tests/candidateApp-basics.spec.ts`, `tests/tests/candidateApp-advanced.spec.ts`, `tests/tests/global-setup.ts`
+- Changesets workspace protocol issue: https://github.com/changesets/changesets/issues/432
+- Changesets yarn publish issue: https://github.com/changesets/changesets/issues/1454
+- Changesets workspace:* publish issue: https://github.com/changesets/action/issues/246
+- Yarn workspace protocol docs: https://yarnpkg.com/features/workspaces
+- Yarn npm publish docs: https://yarnpkg.com/cli/npm/publish
+- Yarn release workflow: https://yarnpkg.com/features/release-workflow
+- Turborepo task configuration: https://turborepo.dev/docs/crafting-your-repository/configuring-tasks
+- Turborepo pitfalls: https://dev.to/_gdelgado/pitfalls-when-adding-turborepo-to-your-project-4cel
+- Changesets GitHub Action: https://github.com/changesets/action
+- Changesets private packages: https://github.com/changesets/changesets/issues/1702
+- Changesets dependent bumping discussion: https://github.com/changesets/changesets/discussions/920
+- npm scoped packages: https://docs.npmjs.com/cli/v11/configuring-npm/package-json/
+- Dual ESM/CJS publishing: https://lirantal.com/blog/typescript-in-2025-with-esm-and-cjs-npm-publishing
+- TypeScript monorepo patterns: https://nx.dev/blog/managing-ts-packages-in-monorepos
+- Monorepo versioning strategies: https://amarchenko.dev/blog/2023-09-26-versioning/
+- Monorepo tools comparison 2026: https://viadreams.cc/en/blog/monorepo-tools-2026/
+- SemVer specification: https://semver.org/
+- OpenVAA current codebase analysis: all package.json files, tsconfig files, .yarnrc.yml, GitHub workflows
 
 ---
 
-_Pitfalls research for: E2E testing framework — SvelteKit 2 + Strapi v5 monorepo (OpenVAA)_
-_Researched: 2026-03-03_
+_Pitfalls research for: v1.1 Monorepo Refresh -- OpenVAA_
+_Researched: 2026-03-12_

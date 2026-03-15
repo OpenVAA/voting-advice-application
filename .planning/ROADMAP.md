@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (shipped 2026-03-12)
+- ✅ **v1.1 Monorepo Refresh** — Phases 8-13 (shipped 2026-03-15)
 
 ## Phases
 
@@ -19,14 +20,32 @@
 
 </details>
 
+<details>
+<summary>✅ v1.1 Monorepo Refresh (Phases 8-13) — SHIPPED 2026-03-15</summary>
+
+- [x] Phase 8: Build Orchestration (2/2 plans) — Turborepo with cached parallel builds, Deno evaluation
+- [x] Phase 9: Directory Restructure (2/2 plans) — apps/ + packages/ convention, Docker/CI/E2E updates
+- [x] Phase 10: Version Management (2/2 plans) — Changesets for versioning, changelogs, release PRs
+- [x] Phase 11: Package Publishing (3/3 plans) — tsup builds, npm metadata, fresh install verification
+- [x] Phase 12: Polish and Optimization (3/3 plans) — Yarn 4.13, catalogs, remote caching, per-workspace tooling
+- [x] Phase 13: Tech Debt Cleanup (3/3 plans) — 9 audit items resolved (hooks, versions, docs)
+
+</details>
+
 ## Progress
 
-| Phase                                   | Milestone | Plans Complete | Status   | Completed  |
-| --------------------------------------- | --------- | -------------- | -------- | ---------- |
-| 1. Infrastructure Foundation            | v1.0      | 11/11          | Complete | 2026-03-07 |
-| 2. Candidate App Coverage               | v1.0      | 4/4            | Complete | 2026-03-08 |
-| 3. Voter App Core Journey               | v1.0      | 4/4            | Complete | 2026-03-08 |
-| 4. Voter App Settings and Edge Cases    | v1.0      | 5/5            | Complete | 2026-03-09 |
-| 5. Configuration Variants               | v1.0      | 3/3            | Complete | 2026-03-09 |
-| 6. CI Integration and Test Organization | v1.0      | 2/2            | Complete | 2026-03-10 |
-| 7. Advanced Test Capabilities           | v1.0      | 2/2            | Complete | 2026-03-11 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Infrastructure Foundation | v1.0 | 11/11 | Complete | 2026-03-07 |
+| 2. Candidate App Coverage | v1.0 | 4/4 | Complete | 2026-03-08 |
+| 3. Voter App Core Journey | v1.0 | 4/4 | Complete | 2026-03-08 |
+| 4. Voter App Settings and Edge Cases | v1.0 | 5/5 | Complete | 2026-03-09 |
+| 5. Configuration Variants | v1.0 | 3/3 | Complete | 2026-03-09 |
+| 6. CI Integration and Test Organization | v1.0 | 2/2 | Complete | 2026-03-10 |
+| 7. Advanced Test Capabilities | v1.0 | 2/2 | Complete | 2026-03-11 |
+| 8. Build Orchestration | v1.1 | 2/2 | Complete | 2026-03-12 |
+| 9. Directory Restructure | v1.1 | 2/2 | Complete | 2026-03-13 |
+| 10. Version Management | v1.1 | 2/2 | Complete | 2026-03-13 |
+| 11. Package Publishing | v1.1 | 3/3 | Complete | 2026-03-13 |
+| 12. Polish and Optimization | v1.1 | 3/3 | Complete | 2026-03-14 |
+| 13. Tech Debt Cleanup | v1.1 | 3/3 | Complete | 2026-03-15 |

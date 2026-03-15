@@ -2,7 +2,7 @@
 
 ## What This Is
 
-OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, Strapi CMS backend, and shared packages for matching algorithms, filters, and data management. This project covers the next phase of framework evolution: hardening test infrastructure, building Claude development skills, modernizing the frontend stack, and migrating to a new backend.
+OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, Strapi CMS backend, and shared packages for matching algorithms, filters, and data management. The monorepo uses Turborepo for cached builds, Changesets for versioning, and publishes core packages to npm. This project covers framework evolution: modernizing infrastructure, building Claude development skills, upgrading the frontend stack, and migrating to a new backend.
 
 ## Core Value
 
@@ -21,43 +21,53 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - ✓ Docker-based development environment — existing
 - ✓ Internationalization support — existing
 - ✓ Admin tools plugin (import/delete data) — existing
-- ✓ Extensible, modular E2E testing framework with full coverage — v1.0 (56 requirements, 7 phases, 31 plans)
+- ✓ Extensible, modular E2E testing framework with full coverage — v1.0
+- ✓ Turborepo for cached, dependency-aware parallel builds — v1.1
+- ✓ apps/ + packages/ monorepo directory convention — v1.1
+- ✓ Changesets for automated versioning, changelogs, and release PRs — v1.1
+- ✓ npm publishing readiness for core, data, matching, filters (tsup builds, metadata, verified) — v1.1
+- ✓ Yarn 4.13 with dependency catalogs — v1.1
+- ✓ Vercel remote caching in CI — v1.1
+- ✓ Per-workspace lint/typecheck via Turborepo — v1.1
 
 ### Active
 
-- [ ] Claude Code skills for architecture, components, data, matching, filters, and LLM packages
-- [ ] Monorepo version management workflow
-- [ ] Svelte 5 migration with Tailwind, DaisyUI, and i18n updates
-- [ ] Deno compatibility investigation
-- [ ] Strapi to Supabase backend migration
-- [ ] Admin functions migration to frontend Admin App
+- [ ] Claude development skills for architecture, components, data, matching, filters, LLM
+- [ ] Svelte 5 migration (framework upgrade, Tailwind, DaisyUI, i18n)
+- [ ] Deno feasibility study (Node → Deno transition)
+- [ ] Supabase migration (Strapi → Supabase with schema, auth, RLS, storage)
+- [ ] Admin app migration (Strapi plugin → frontend Admin App)
+- [ ] Trusted publishing for npm (OIDC, deferred until after initial manual publish)
+- [ ] Changeset bot for PR reminders (deferred from v1.1)
 
 ### Out of Scope
 
 - Mobile native apps — web-first approach
-- New feature development — this roadmap focuses on infrastructure, testing, and migrations
-- Strapi plugin development — backend is being migrated away from Strapi
+- Package manager migration (pnpm) — high risk, low reward with Turborepo on Yarn 4
+- Nx adoption — overkill for 9-package monorepo
+- Lerna adoption — legacy tool, Nx wrapper
+- semantic-release — poor monorepo support vs explicit-intent Changesets
+- Publishing all packages — only core/data/matching/filters are general-purpose
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v1.0, the codebase has a comprehensive E2E test suite covering both voter and candidate apps with 56 requirements satisfied across infrastructure, candidate flows, voter journeys, configuration variants, CI integration, and advanced capabilities (visual regression + performance benchmarks).
+The project is a mature monorepo used for real election deployments. As of v1.1:
 
-The backend will eventually move from Strapi to Supabase, so backend-heavy investments should be minimal. The frontend may later move from Node to Deno.
+- **Codebase:** ~1,717 files across apps and packages
+- **Tech stack:** SvelteKit 2, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Build system:** Turborepo with content-based caching, tsup for publishable packages
+- **Testing:** Playwright 1.58.2 E2E (56 requirements), Vitest unit tests
+- **CI:** GitHub Actions with Turborepo remote caching, HTML test reports
+- **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
+- **Known issues:** Frontend build has pre-existing ai dependency failure; Strapi has TS errors in mock data generation
 
-Documentation exists in `/docs/src/routes` and package READMEs that can be mined for user stories and Claude skill content.
-
-Key technical details:
-
-- E2E tests use API-based data management via Admin Tools `/import-data` and `/delete-data` endpoints
-- Test datasets use base+overlay composition pattern for configuration variants
-- Playwright 1.58.2 with project dependencies pattern, 17+ projects, ESLint plugin enforcement
-- CI pipeline with GitHub Actions, HTML reports, @smoke/@voter/@candidate/@variant tagging
-- Visual regression and performance tests gated behind env vars (PLAYWRIGHT_VISUAL, PLAYWRIGHT_PERF)
+The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno (Turborepo impact evaluated in Phase 8).
 
 ## Constraints
 
-- **Tech stack (current)**: SvelteKit 2, Svelte 4, Strapi v5, Postgres, Yarn 4 workspaces
+- **Tech stack (current)**: SvelteKit 2, Svelte 4, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8
 - **Tech stack (target)**: Svelte 5, Supabase, potentially Deno
+- **Publishing**: @openvaa/core, data, matching, filters publishable to npm; app-shared retains CJS for Strapi
 - **Testing**: Playwright 1.58.2 for E2E, Vitest for unit tests
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
 - **Backend transition**: Strapi investment should be minimal given planned Supabase migration
@@ -67,14 +77,25 @@ Key technical details:
 Each major initiative is a separate milestone, executed in order:
 
 1. ~~**E2E Testing Framework**~~ — Shipped v1.0 (2026-03-12)
-2. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
-3. **Monorepo Refresh** — Version management workflow, package organization review
+2. ~~**Monorepo Refresh**~~ — Shipped v1.1 (2026-03-15)
+3. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
 4. **Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
 5. **Deno Investigation** — Feasibility study for Node → Deno transition
 6. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
 7. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 
-For further details about the milestones, see [ROADMAP](../ROADMAP.md).
+### Claude Skills — Scope Notes (for milestone #3)
+
+Each skill covers: extending the target, reviewing changes, helping other agents use it, understanding data models, maintaining conventions, syncing with docs.
+
+- **Architect** — Whole app + monorepo knowledge, frontend internals (data API, contexts, routes, API routes, server/client separation, voter/candidate/admin apps)
+- **Components** — Frontend component library
+- **Data** — `@openvaa/data` package
+- **Matching** — `@openvaa/matching` package
+- **Filters** — `@openvaa/filters` package
+- **LLM** — `@openvaa/llm` package
+
+Build using skill-builder skill where beneficial.
 
 ## Key Decisions
 
@@ -88,7 +109,15 @@ For further details about the milestones, see [ROADMAP](../ROADMAP.md).
 | Infrastructure before coverage    | Phase 1 foundations before any spec files written                            | ✓ Good      |
 | Base+overlay dataset composition  | Shared default dataset with variant overlays for multi-config testing        | ✓ Good      |
 | Env-gated visual/perf tests       | PLAYWRIGHT_VISUAL and PLAYWRIGHT_PERF flags to exclude from default runs     | ✓ Good      |
+| Turborepo over alternatives       | Layers on Yarn 4 without replacement; Deno impact evaluated and acceptable   | ✓ Good      |
+| apps/ + packages/ restructure     | Industry convention, cleaner boundaries, required for Turborepo conventions  | ✓ Good      |
+| Changesets over semantic-release   | Explicit intent vs commit-message parsing; better monorepo support           | ✓ Good      |
+| tsup for publishable packages     | Replaces tsc + tsc-esm-fix; clean ESM+CJS output, simpler config            | ✓ Good      |
+| Independent versioning            | Each package versions independently via Changesets (not fixed/locked)        | ✓ Good      |
+| Defer changeset-bot               | User chose to skip; can install later via GitHub App                         | — Pending   |
+| Defer trusted publishing          | Requires initial manual npm publish before OIDC can be configured            | — Pending   |
+| Yarn catalogs for deps            | Single source of truth for shared dependency versions across workspaces      | ✓ Good      |
 
 ---
 
-_Last updated: 2026-03-12 after v1.0 milestone_
+_Last updated: 2026-03-15 after v1.1 milestone_

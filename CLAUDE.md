@@ -20,9 +20,11 @@ yarn dev:stop                   # Stop without removing volumes
 ### Building
 
 ```bash
-yarn build:app-shared          # Build @openvaa/app-shared (required before most dev work)
-yarn build:shared              # Build all packages in /packages
+yarn build                     # Build all packages (Turborepo - cached, parallel)
+yarn build --filter=@openvaa/core  # Build a specific package and its dependencies
 ```
+
+Turborepo handles dependency ordering and caching automatically. Second builds with no changes complete in under 5 seconds.
 
 ### Testing
 
@@ -47,7 +49,6 @@ yarn format                   # Format all files with Prettier
 ```bash
 yarn workspace @openvaa/frontend dev
 yarn workspace @openvaa/strapi dev
-yarn workspace @openvaa/app-shared build
 ```
 
 ### Single Test Development
@@ -62,7 +63,7 @@ yarn test:unit                # Run tests for this package only
 For frontend:
 
 ```bash
-cd frontend
+cd apps/frontend
 yarn test:unit                # Run frontend tests only
 ```
 
@@ -86,10 +87,11 @@ The project uses Yarn 4 workspaces with these modules:
 - `@openvaa/argument-condensation` - Argument processing
 - `@openvaa/question-info` - Question metadata
 
-**Application**:
+**Applications** (`apps/`):
 
-- `@openvaa/strapi` - Strapi v5 backend with Postgres at `backend/vaa-strapi/`. Custom plugins in `backend/vaa-strapi/src/plugins/`
-- `@openvaa/frontend` - SvelteKit 2 frontend at `frontend/`. Uses Tailwind + DaisyUI for styling
+- `@openvaa/strapi` - Strapi v5 backend with Postgres at `apps/strapi/`. Custom plugins in `apps/strapi/src/plugins/`
+- `@openvaa/frontend` - SvelteKit 2 frontend at `apps/frontend/`. Uses Tailwind + DaisyUI for styling
+- `@openvaa/docs` - Documentation site (SvelteKit) at `apps/docs/`
 
 **Development**:
 
@@ -99,7 +101,7 @@ The project uses Yarn 4 workspaces with these modules:
 
 **IDE Resolution**: Uses TypeScript project references in `tsconfig.json` files. You don't need to build dependencies for IDE to resolve imports.
 
-**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script watches packages and rebuilds automatically.
+**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script uses Turborepo's watch mode to automatically rebuild packages on changes.
 
 **Dependency Flow**: `core` → `data`/`matching`/`filters` → `app-shared` → `frontend`/`strapi`
 
@@ -107,6 +109,15 @@ When adding interdependencies:
 
 1. Add to `package.json`: `"@openvaa/core": "workspace:^"`
 2. Add TypeScript reference: `"references": [{ "path": "../core/tsconfig.json" }]`
+
+### Build System
+
+The project uses [Turborepo](https://turbo.build) for build orchestration. Configuration is in `turbo.json` at the project root. Turborepo provides:
+- Dependency-aware builds (packages build in topological order)
+- Local caching (unchanged packages are skipped on rebuild)
+- Parallel execution (independent packages build simultaneously)
+
+The `.turbo/` directory contains the local cache and should not be committed to git.
 
 ### Key Architectural Patterns
 
@@ -131,16 +142,16 @@ When adding interdependencies:
 
 **Frontend Data Flow**:
 
-- Data adapters in `frontend/src/lib/api/adapters/` abstract data source (Strapi vs local JSON)
-- Universal adapter pattern in `frontend/src/lib/api/base/universalAdapter.ts`
+- Data adapters in `apps/frontend/src/lib/api/adapters/` abstract data source (Strapi vs local JSON)
+- Universal adapter pattern in `apps/frontend/src/lib/api/base/universalAdapter.ts`
 - Server-side and client-side backend URLs differ when using Docker (see `.env`)
-- Route structure uses optional locale param: `frontend/src/routes/[[lang=locale]]/`
-- Separate apps for voters (`frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`frontend/src/routes/[[lang=locale]]/candidate/`)
+- Route structure uses optional locale param: `apps/frontend/src/routes/[[lang=locale]]/`
+- Separate apps for voters (`apps/frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`apps/frontend/src/routes/[[lang=locale]]/candidate/`)
 
 **Backend Customization** (`@openvaa/strapi`):
 
 - Automatic data loading on init: Question Types, App Settings, Translation overrides
-- Custom permissions via `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
+- Custom permissions via `apps/strapi/src/extensions/users-permissions/strapi-server.ts`
 - Route policies: `restrict-populate` applied to all routes
 - Mock data generation controlled by env vars (dev/test only)
 
@@ -160,11 +171,11 @@ The stack runs four services:
 
 **Port conflicts**: Ensure 1337, 5173, 5432, 4566 are free. Change in `.env` if needed.
 
-**Environment variables**: When using Docker, only edit the root `.env` file (not `frontend/.env` or `backend/vaa-strapi/.env`).
+**Environment variables**: When using Docker, only edit the root `.env` file (not `apps/frontend/.env` or `apps/strapi/.env`).
 
 **Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed database with fake candidates, questions, etc. Use `GENERATE_MOCK_DATA_ON_RESTART=true` to regenerate on every restart (clears database - dev only).
 
-**Hot reloading**: Frontend hot reloads by default. Backend can hot reload if you mount `./backend/vaa-strapi:/opt` in `backend/vaa-strapi/docker-compose.dev.yml` (slow, not recommended unless actively developing backend).
+**Hot reloading**: Frontend hot reloads by default. Backend can hot reload if you mount `./src:/opt/apps/strapi/src` in `apps/strapi/docker-compose.dev.yml` (slow, not recommended unless actively developing backend).
 
 ## Frontend (SvelteKit)
 
@@ -173,28 +184,28 @@ The stack runs four services:
 **Routing**:
 
 - Optional locale in all routes: `[[lang=locale]]`
-- Voters app: `frontend/src/routes/[[lang=locale]]/(voters)/`
-- Candidate app: `frontend/src/routes/[[lang=locale]]/candidate/`
-- Candidate protected routes: `frontend/src/routes/[[lang=locale]]/candidate/(protected)/`
+- Voters app: `apps/frontend/src/routes/[[lang=locale]]/(voters)/`
+- Candidate app: `apps/frontend/src/routes/[[lang=locale]]/candidate/`
+- Candidate protected routes: `apps/frontend/src/routes/[[lang=locale]]/candidate/(protected)/`
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
 
-**Path aliases** (defined in `frontend/svelte.config.js`):
+**Path aliases** (defined in `apps/frontend/svelte.config.js`):
 
-- `$types` → `frontend/src/lib/types`
-- `$voter` → `frontend/src/lib/voter`
-- `$candidate` → `frontend/src/lib/candidate`
+- `$types` → `apps/frontend/src/lib/types`
+- `$voter` → `apps/frontend/src/lib/voter`
+- `$candidate` → `apps/frontend/src/lib/candidate`
 
 **Key directories**:
 
-- `frontend/src/lib/api/` - Data adapters (Strapi, local JSON)
-- `frontend/src/lib/components/` - Reusable Svelte components
-- `frontend/src/lib/contexts/` - Svelte context providers
-- `frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
-- `frontend/src/lib/utils/` - Helper functions
-- `frontend/src/hooks.server.ts` - SvelteKit hooks (auth, locale handling)
+- `apps/frontend/src/lib/api/` - Data adapters (Strapi, local JSON)
+- `apps/frontend/src/lib/components/` - Reusable Svelte components
+- `apps/frontend/src/lib/contexts/` - Svelte context providers
+- `apps/frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
+- `apps/frontend/src/lib/utils/` - Helper functions
+- `apps/frontend/src/hooks.server.ts` - SvelteKit hooks (auth, locale handling)
 
-**Build**: `yarn workspace @openvaa/frontend build` (also copies `frontend/data/` folder if present for local adapter)
+**Build**: `yarn workspace @openvaa/frontend build` (also copies `apps/frontend/data/` folder if present for local adapter)
 
 ## Backend (Strapi)
 
@@ -213,15 +224,15 @@ The stack runs four services:
 
 - AWS S3 for media uploads
 - AWS SES for emails
-- `@openvaa/strapi-admin-tools` (local plugin in `backend/vaa-strapi/src/plugins/openvaa-admin-tools/`)
+- `@openvaa/strapi-admin-tools` (local plugin in `apps/strapi/src/plugins/openvaa-admin-tools/`)
 
-**Type generation**: Run `yarn workspace @openvaa/strapi generate:types` after schema changes to update `backend/vaa-strapi/types/`.
+**Type generation**: Run `yarn workspace @openvaa/strapi generate:types` after schema changes to update `apps/strapi/types/`.
 
 **Adding new content types**:
 
-1. Add to `CONTENT_API` list in `backend/vaa-strapi/src/util/api.ts`
-2. Update permissions in `backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts`
-3. Add route config with `restrict-populate` policy (see `backend/vaa-strapi/README.md`)
+1. Add to `CONTENT_API` list in `apps/strapi/src/util/api.ts`
+2. Update permissions in `apps/strapi/src/extensions/users-permissions/strapi-server.ts`
+3. Add route config with `restrict-populate` policy (see `apps/strapi/README.md`)
 
 **Email**: Uses AWS SES. Control sender with `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` env vars.
 
@@ -229,9 +240,9 @@ The stack runs four services:
 
 ### Starting a new feature
 
-1. `yarn build:app-shared` (if not already built)
+1. `yarn build` (builds all packages with caching -- fast if already built)
 2. Understand the feature scope - read relevant package READMEs
-3. For frontend work: check existing components in `frontend/src/lib/components/`, `frontend/src/lib/dynamic-components` and `frontend/src/lib/candidate/components`
+3. For frontend work: check existing components in `apps/frontend/src/lib/components/`, `apps/frontend/src/lib/dynamic-components` and `apps/frontend/src/lib/candidate/components`
 4. For backend work: check content types and custom API in Strapi admin
 
 ### Running tests after changes
@@ -267,8 +278,7 @@ yarn sync:translations
 ### Fixing "module not found" errors
 
 ```bash
-yarn build:app-shared  # Most common fix
-yarn build:shared      # If core/data/matching/filters are involved
+yarn build             # Rebuilds all packages (cached -- only changed packages rebuild)
 ```
 
 ## Important Implementation Notes
@@ -283,7 +293,7 @@ yarn build:shared      # If core/data/matching/filters are involved
 
 ## Deployment
 
-Fully containerized with Docker. See `docs/README.md` deployment section for:
+Fully containerized with Docker. See `apps/docs/README.md` deployment section for:
 
 - Render + AWS S3/SES setup
 - Environment variable configuration
@@ -298,7 +308,7 @@ Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
 
 **Port conflicts**: Check ports 1337, 5173, 5432, 4566 are free. Edit `.env` to change.
 
-**TypeScript errors in IDE**: Run `yarn build:shared` to rebuild all packages.
+**TypeScript errors in IDE**: Run `yarn build` to rebuild all packages.
 
 **Mock data not generating**: Check `GENERATE_MOCK_DATA_ON_INITIALISE=true` in root `.env` and ensure database is empty.
 

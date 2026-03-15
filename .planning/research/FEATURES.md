@@ -1,194 +1,148 @@
-# Feature Research
+# Feature Landscape: Monorepo Refresh
 
-**Domain:** E2E Testing Framework for SvelteKit + Strapi Monorepo (VAA)
-**Researched:** 2026-03-03
-**Confidence:** HIGH (Playwright docs + official guidance) / MEDIUM (ecosystem patterns from verified sources)
+**Domain:** Monorepo tooling, versioning, publishing, and organization for an existing TypeScript monorepo
+**Researched:** 2026-03-12
+**Overall confidence:** HIGH (well-established ecosystem patterns, verified against official docs)
 
----
+## Table Stakes
 
-## Context
+Features users (both maintainers and downstream consumers) expect. Missing any of these means the monorepo refresh feels incomplete.
 
-OpenVAA has an existing Playwright E2E suite covering the candidate app only. This research covers what features a _comprehensive, production-grade_ E2E framework needs for a monorepo with two distinct apps (voter app, candidate app), a Strapi backend, Docker-based infrastructure, and a planned migration path away from Strapi.
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|-------------|------------|--------------|-------|
+| Task orchestration with caching | Current `yarn workspaces foreach` is slow, no caching, no parallelism. Any modern monorepo has this. | Low | Yarn 4 (existing) | Turborepo is the standard addition on top of Yarn workspaces. Drop-in, additive. |
+| Topological build ordering | Currently manual (`build:shared` script chains). Should be declarative and automatic. | Low | Turborepo `turbo.json` | `dependsOn: ["^build"]` handles this natively. Replaces hand-crafted `yarn workspaces foreach -Rt`. |
+| Changesets for version management | No version bumping, no changelogs, no coordinated releases exist today. All packages at `0.1.0` with `"private": true`. | Medium | Changesets CLI + config | Industry standard for monorepo versioning. Used by Svelte, Astro, Turborepo themselves. |
+| Changelog generation | Contributors and consumers need to know what changed between releases. Manual changelogs are never maintained. | Low | Changesets (auto-generates from changeset descriptions) | Comes free with Changesets workflow. Per-package CHANGELOG.md files. |
+| Package publishing readiness | `core`, `data`, `matching` are explicitly targeted for npm publishing per PROJECT.md. Currently `"private": true` with incomplete `exports`. | Medium | Package.json metadata, proper `exports` field, build pipeline | Requires removing `"private": true`, adding `"license"`, `"repository"`, `"files"`, proper conditional `exports`. |
+| apps/packages directory restructure | Current flat structure mixes deployable apps (frontend, backend, docs) with library packages. Convention is `apps/` vs `packages/`. | Medium | File moves, workspace config updates, CI updates, Docker path updates | Turborepo convention. Clarifies what is publishable vs deployable. |
+| CI pipeline for publishing | No automated release pipeline exists. Publishing should happen via GitHub Actions on merge. | Medium | Changesets GitHub Action, NPM_TOKEN secret | Standard workflow: changeset bot checks PRs, version PR auto-created, merge triggers publish. |
+| Local build caching | Rebuilding unchanged packages wastes developer time. Every `yarn build:shared` rebuilds everything. | Low | Turborepo (enabled by default) | Turborepo hashes inputs and skips unchanged tasks. Immediate DX win. |
 
-The milestone goal is not a greenfield framework — it is filling specific, identified gaps in an existing suite:
+## Differentiators
 
-- Text-based selectors (fragile across i18n)
-- No pre-defined datasets
-- No database state reset between tests
-- No voter app coverage
-- No multi-configuration test runs
-- No user story-driven organization
+Features that improve the project beyond baseline expectations. Not required for a functional monorepo but provide significant value.
 
----
+| Feature | Value Proposition | Complexity | Dependencies | Notes |
+|---------|-------------------|------------|--------------|-------|
+| Remote caching | Share build cache across CI runs and developers. Vercel Remote Cache is free on all plans, even without hosting on Vercel. | Low | Turborepo + Vercel account (free) | Saves CI minutes. Not strictly needed for 9 packages but nearly free to enable. |
+| Changeset bot on PRs | Automatically comments on PRs missing changesets, prompting contributors to add them before review. | Low | Install changeset-bot GitHub App | Improves contributor workflow, catches forgotten changesets. Zero code changes. |
+| tsup build pipeline (replacing tsc + tsc-esm-fix) | Current build uses raw `tsc` plus `tsc-esm-fix` post-processing workaround. tsup is faster, handles ESM+CJS in one step, produces tree-shakeable output. Recommended by Turborepo's own publishing guide. | Medium | tsup config per publishable package | 4 packages (core, data, matching, filters) currently use `tsc-esm-fix`. tsup is the standard TypeScript library bundler in 2025-2026. |
+| Prerelease/snapshot releases | Allow testing unreleased versions before cutting official releases (e.g., `0.2.0-next.1`). | Low | Changesets prerelease mode (config only) | Useful for downstream consumers testing canary builds. Already supported by Changesets. |
+| Yarn catalogs for dependency alignment | Centralize dependency versions across packages. Supported since Yarn 4.10.0; Turborepo 2.7 added lockfile-aware caching for catalogs. | Low | Yarn upgrade from 4.6.0 to >= 4.10.0 | Eliminates version drift. Currently vitest is `^2.1.8` in most packages but `^4.0.15` in docs. TypeScript is `^5.7.2` in some, `^5.7.3` in others. |
+| Per-workspace typecheck and lint in Turborepo | Run type checking and linting per-workspace with caching, instead of current global lint scripts. | Medium | turbo.json task definitions, per-workspace scripts | Catches errors per-package. Enables caching of lint results. Current `lint:check` runs globally and rebuilds app-shared every time. |
 
-## Feature Landscape
+## Anti-Features
 
-### Table Stakes (Tests Are Unreliable Without These)
+Features to explicitly NOT build. These are tempting but wrong for this project at this stage.
 
-| Feature                                    | Why Expected                                                                                                                                                                                   | Complexity | Notes                                                                                                                                                                                           |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Test ID-based element selection**        | Text selectors break with i18n and content changes; `data-testid` attributes are stable                                                                                                        | MEDIUM     | Existing tests already partially use `getByTestId` (e.g. `login-submit`, `login-email`). Needs systematic coverage of all interactive elements in both apps.                                    |
-| **Database state reset between test runs** | Shared mutable state causes cascading failures; password-change tests in `candidateApp-basics.spec.ts` already attempt manual cleanup and fail if interrupted                                  | HIGH       | Admin Tools plugin has `import` and `delete` API. Direct Strapi API calls are the right path — avoid UI-driven import via Playwright because it adds brittle UI dependency on top of tests.     |
-| **Pre-defined, isolated test datasets**    | Tests currently depend on mock data seeded by `GENERATE_MOCK_DATA_ON_INITIALISE` flag at boot time, which cannot be varied per test                                                            | HIGH       | Need JSON dataset files per test scenario (e.g., `single-election`, `multi-election`, `no-nominations`). Admin Tools `import` service accepts structured JSON — datasets feed directly into it. |
-| **Voter app test coverage**                | Voter app is the primary user-facing surface; currently completely uncovered                                                                                                                   | HIGH       | Voter app has 10+ routes: landing, intro, questions (per question and category), results, candidate detail, party detail, constituency selection, nominations. Each is a distinct flow.         |
-| **Global setup and teardown**              | Authentication state must be established before tests run; current `global-setup.ts` handles candidate login but nothing else                                                                  | LOW        | Extend existing `global-setup.ts` to handle voter app state and dataset loading. Use Playwright's `project dependencies` pattern rather than bare `globalSetup` for better trace visibility.    |
-| **Stable locator strategy policy**         | Team must apply consistent selector hierarchy or tests will diverge: `getByRole` for accessibility-bound elements, `getByTestId` for UI-only elements, never CSS class or structural selectors | LOW        | Document and enforce via ESLint custom rule or code review checklist. No build tooling required.                                                                                                |
-| **Fixture-based test helpers**             | `beforeEach`/`afterEach` in specs is repetitive and error-prone; Playwright fixtures with `test.extend()` provide scoped, typed setup/teardown                                                 | MEDIUM     | Replace ad-hoc `beforeEach` blocks in specs with named fixtures: `authenticatedCandidatePage`, `freshDataset`, `voterPage`.                                                                     |
-| **CI pipeline integration**                | Tests must run on every PR; current setup has no CI configuration                                                                                                                              | MEDIUM     | GitHub Actions workflow: checkout, install Playwright browsers, start Docker stack (or mock), run tests, upload HTML report as artifact with `if: always()` retention.                          |
-| **HTML test reporting**                    | Playwright generates self-contained HTML report with traces per failed test; needed for debugging CI failures                                                                                  | LOW        | Already configured in `playwright.config.ts` via `['html', ...]` reporter. Needs CI artifact upload step.                                                                                       |
-| **Trace collection on failures**           | Without traces, debugging CI failures requires guessing; traces show exact DOM state, network calls, screenshots                                                                               | LOW        | Already configured as `trace: 'on'`. For CI, change to `trace: 'on-first-retry'` to reduce storage while still capturing failures.                                                              |
-
-### Differentiators (Competitive Advantage for This Framework)
-
-| Feature                                            | Value Proposition                                                                                                                                                                                                                                                                  | Complexity | Notes                                                                                                                                                                                                                                      |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Multi-configuration test projects**              | VAA deployments differ: single election vs. multiple elections, different feature flags, constituency selection on/off. Tests must verify behavior across configurations, not just the mock-data default                                                                           | HIGH       | Playwright `projects` array in config — one project per dataset/configuration combination. Each project loads a different JSON dataset via Admin Tools before tests run. Uses project-level `globalSetup` or project dependencies pattern. |
-| **User story-driven test file organization**       | Current files (`candidateApp-basics`, `candidateApp-advanced`) group by complexity, not by user journey. Refactoring to user-story files (`candidate-registration.spec.ts`, `voter-questions.spec.ts`, `voter-results.spec.ts`) makes test intent clear and aligns with PR reviews | LOW        | Organizational change only — no new tooling. High payoff for maintainability.                                                                                                                                                              |
-| **Page Object Model (POM) layer**                  | Candidate app has repeated sequences (log in, navigate, interact) scattered across specs. POMs encapsulate page interactions, so UI changes require updating one file not ten specs                                                                                                | MEDIUM     | Implement `CandidateLoginPage`, `VoterQuestionsPage`, `ResultsPage` etc. as TypeScript classes in `tests/poms/`. Playwright's built-in locator API makes POMs lightweight — no Selenium-style boilerplate needed.                          |
-| **Test tagging by app and scenario type**          | `@voter`, `@candidate`, `@smoke`, `@registration`, `@matching` tags enable selective CI runs (e.g., only `@smoke` on every push, full suite on release branches)                                                                                                                   | LOW        | Tags via Playwright annotations API (`test.describe('...', { tag: ['@voter', '@smoke'] }, ...)`). Zero additional dependencies.                                                                                                            |
-| **API-based data setup (not UI-driven)**           | Setting up test data through the Strapi API is 5-10x faster than navigating the Admin UI via Playwright, and removes a dependency on Strapi Admin UI stability. Admin Tools service already accepts structured JSON                                                                | MEDIUM     | Use Playwright `request` context (already used in `candidateApp-advanced.spec.ts` for email fetching) to call Admin Tools `/import` and `/delete` endpoints. Auth via Strapi API token stored in env vars.                                 |
-| **Locale-aware test helpers**                      | Tests currently hardcode English locale and use `TRANSLATIONS` object. A helper `testAsLocale(locale)` that wraps common flows for both `en` and `fi` would surface i18n regressions automatically                                                                                 | MEDIUM     | Extend `buildRoute.ts` pattern. Create a `withLocale` fixture that parameterizes tests across supported locales. Run locale variants only in full suite (not smoke).                                                                       |
-| **Screenshotter for visual regression baselining** | Capturing baseline screenshots of key pages (voter results page, candidate preview) before migrations (Svelte 5, Supabase) provides a safety net for visual regressions                                                                                                            | MEDIUM     | Playwright `toHaveScreenshot()` with stored snapshots checked into `tests/snapshots/`. Only run in dedicated visual regression project, not in main suite. Requires baseline update discipline.                                            |
-
-### Anti-Features (Explicitly Avoid)
-
-| Feature                                          | Why Requested                  | Why Problematic                                                                                                                                                                                                                            | Alternative                                                                                                                                                                     |
-| ------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Parallel test execution with shared database** | Faster CI times                | Tests mutate shared Postgres state; without transaction-level isolation (unavailable when using the Strapi API layer), parallel runs cause non-deterministic failures. The existing config already sets `workers: 1` on CI for this reason | Keep CI serial (`workers: 1`). Use test tagging to run only smoke tests on every push; full serial suite on PR merge to main.                                                   |
-| **UI-driven data import via Strapi Admin**       | "Tests the import feature too" | Strapi Admin UI is unstable across versions and already has commented-out import tests in `candidateApp-advanced.spec.ts`. Adds fragile dependency on Strapi UI not being the subject under test                                           | Use Admin Tools REST API directly via Playwright `request` context instead.                                                                                                     |
-| **Full visual regression suite**                 | Catches CSS regressions        | Snapshot tests are extremely fragile across OS/browser rendering differences in CI vs. local; produce high false-positive rates; require constant baseline updates. This becomes a maintenance tax, not a safety net                       | Use visual regression only for a small set of critical rendered outputs (e.g., voter results page layout). Keep this as an opt-in project, not part of the main test run.       |
-| **Testing Strapi Admin UI flows**                | "It's part of the system"      | Strapi is being migrated to Supabase. Investment in Strapi Admin UI tests has a short shelf life and actively resists the migration by creating coupling                                                                                   | Limit Strapi testing to API-level calls only. Admin UI flows are not end-user flows for OpenVAA.                                                                                |
-| **Per-test database recreation**                 | Perfect isolation              | Recreating the full Postgres schema + Strapi init per test takes 10-30 seconds per test. With 50+ tests, this becomes a 25-minute suite                                                                                                    | Use pre-seeded fixed datasets loaded once per project via Admin Tools. Tests within a project that mutate state should clean up via `afterEach` API calls, not full recreation. |
-| **Mocking the Strapi API in E2E tests**          | Faster, no Docker needed       | E2E tests exist to verify the real integration between frontend and backend. Mocking the API converts them into integration tests and loses the value of the E2E layer                                                                     | Keep E2E tests against the real running stack. Use unit/integration tests (already using Vitest) for mocking scenarios.                                                         |
-| **End-to-end tests for the matching algorithm**  | "Cover everything"             | The matching algorithm is a pure function with comprehensive unit tests in `packages/matching`. E2E coverage of matching outputs is fragile (depends on exact data) and provides low signal above what unit tests already provide          | Trust unit tests for algorithm correctness. E2E tests verify that the voter sees _a_ results page with _some_ results — not exact match scores.                                 |
-
----
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Migrate from Yarn 4 to pnpm | pnpm has better monorepo DX in isolation, but migration cost is high: Docker configs, CI pipelines, developer muscle memory, and the `onchange` watcher script all assume Yarn. PROJECT.md mentions evaluation but does not mandate a switch. | Keep Yarn 4. Add Turborepo on top (works with any package manager). Revisit only if Yarn becomes a concrete blocker. |
+| Adopt Nx instead of Turborepo | Nx is more powerful (affected detection, generators, plugins) but dramatically more opinionated and invasive. For 9 packages, Nx is overkill. Community reports it "takes over your entire development workflow." | Use Turborepo for simple, additive task orchestration. Nx adds complexity without proportional benefit at this scale. |
+| Migrate docs site from SvelteKit to Astro/Starlight | Tempting because Starlight is purpose-built for docs. But the docs site already works, uses SvelteKit (team expertise), and has substantial custom tooling (typedoc generation, component docs extraction, route map generation, link validation). Migration cost is high for unclear benefit. | Keep SvelteKit docs site. Evaluate Starlight only in a future milestone if docs needs outgrow current tooling. |
+| Split docs to a separate repository | Docs reference internal packages (`@openvaa/app-shared` as a dependency), generate API docs from source code, and share the build pipeline. A separate repo breaks these workflows and adds cross-repo sync burden. | Keep docs in monorepo. Move to `apps/docs/` following Turborepo convention. |
+| Build custom release orchestration | Changesets already solves versioning, changelog generation, cross-package dependency updates, and npm publishing. Custom tooling is maintenance burden for a solved problem. | Use Changesets as-is with the official GitHub Action. |
+| Publish ALL packages to npm | `app-shared` bridges frontend and backend with deployment-specific settings. `shared-config` is ESLint/TS config. `argument-condensation`, `question-info`, `llm` are experimental. Publishing them creates public API surface area with maintenance burden. | Publish only `core`, `data`, `matching`, `filters` (general-purpose packages useful outside OpenVAA). Keep others `"private": true`. |
+| Adopt Lerna | Lerna was the original monorepo tool but is now maintained by Nx (acquired 2022). It adds a layer of abstraction without clear benefit over Turborepo + Changesets. The JavaScript community has moved on. | Use Turborepo + Changesets directly. Simpler, better maintained, more active ecosystem. |
+| Use semantic-release instead of Changesets | semantic-release is commit-message-driven (Conventional Commits). Changesets is explicit-intent-driven. For a project with mixed contributor experience and no existing Conventional Commits convention, explicit changeset files are clearer and more forgiving. | Use Changesets. It separates "what changed" from "how the commit message is formatted." |
+| Adopt Moon (monorepo tool) | Moon is polyglot-focused (Rust, Go, etc.) and uses a custom task runner language. OpenVAA is TypeScript-only. Moon adds unnecessary complexity for a single-language repo. | Turborepo is purpose-built for JavaScript/TypeScript monorepos. |
 
 ## Feature Dependencies
 
 ```
-[Test ID-based selectors]
-    └──enables──> [Locale-aware test helpers]  (selectors stable across locales)
-    └──enables──> [Page Object Model layer]    (POMs use testId selectors as primary)
+Turborepo setup ─────────────> Cached builds (immediate win)
+                ─────────────> Topological ordering (immediate win)
+                ─────────────> Remote caching (optional, trivial to enable later)
+                ─────────────> Per-workspace lint/typecheck (after setup)
 
-[Pre-defined test datasets]
-    └──requires──> [API-based data setup]      (datasets are loaded via Admin Tools API)
-    └──requires──> [Database state reset]      (datasets need clean slate to load into)
-    └──enables──> [Multi-configuration projects] (each project = one dataset)
+Directory restructure ───────> apps/ vs packages/ split
+                      ───────> Workspace glob updates in root package.json
+                      ───────> Docker compose path updates
+                      ───────> CI workflow path updates
+                      ───────> TypeScript project reference updates
 
-[Multi-configuration projects]
-    └──requires──> [Pre-defined test datasets]
-    └──requires──> [Database state reset]
-    └──enables──> [Test tagging by scenario]   (tags select which config to run against)
+Changesets setup ────────────> Version management
+                 ────────────> Changelog generation (automatic)
+                 ────────────> GitHub Action for release PRs
+                 ────────────> Changeset bot on PRs (optional)
 
-[Fixture-based test helpers]
-    └──requires──> [Global setup/teardown]     (fixtures compose on top of global state)
-    └──enables──> [Page Object Model layer]    (POMs are a type of fixture)
-    └──enables──> [Voter app test coverage]    (voter flows need auth/data fixtures)
-
-[CI pipeline integration]
-    └──requires──> [HTML test reporting]
-    └──requires──> [Trace collection on failures]
-    └──enhanced-by──> [Test tagging]           (selective runs per pipeline trigger)
-
-[Voter app test coverage]
-    └──requires──> [Test ID-based selectors]
-    └──requires──> [Pre-defined test datasets]
-    └──requires──> [Fixture-based test helpers]
+Package publishing readiness:
+    Requires: Changesets setup (version management)
+    Requires: tsup build pipeline OR verified tsc output for ESM+CJS
+    Requires: Proper package.json metadata (exports, files, license, repository)
+    Requires: npm org (@openvaa) claimed and tokens configured
+    Enables:  `changeset publish` in CI
 ```
 
-### Dependency Notes
+Key ordering constraint: **Turborepo, directory restructure, and Changesets are independent of each other and can be done in parallel or any order.** However, **publishing readiness requires all three** (proper build output from Turborepo-orchestrated builds, proper metadata, and version management from Changesets).
 
-- **Pre-defined datasets require API-based data setup:** Loading JSON datasets into a running Strapi instance via the Admin Tools REST API is the only mechanism that works without full Docker restart. The Admin Tools `import` and `delete` services exist for exactly this purpose.
-- **Multi-configuration projects require database state reset:** Each Playwright project must start from a known dataset. Without reset, project 2 inherits mutations from project 1.
-- **Voter app coverage requires fixtures:** Voter app has no authentication but does need a specific data state (elections with questions) to be navigable. Without pre-loaded data fixtures, voter tests cannot reach the questions or results flows.
-- **Test IDs enable everything downstream:** Without stable `data-testid` attributes on components, POMs and locale helpers must fall back to text selectors which break across i18n changes. Adding test IDs to the SvelteKit components is the foundational enabler.
+## MVP Recommendation
 
----
+**Phase 1 -- Foundation (do first, highest DX impact):**
+1. Add Turborepo with `turbo.json` -- task orchestration, caching, topological ordering
+2. Restructure to `apps/` + `packages/` convention -- clarity, aligns with ecosystem
 
-## MVP Definition
+**Phase 2 -- Versioning (do second, enables release workflow):**
+3. Install and configure Changesets CLI and `.changeset/config.json`
+4. Set up Changesets GitHub Action + changeset-bot
+5. Upgrade Yarn to 4.10+ and enable catalogs for dependency alignment
 
-### Launch With (v1 — E2E Framework Milestone)
+**Phase 3 -- Publishing (do last, depends on phases 1 and 2):**
+6. Migrate publishable packages from `tsc + tsc-esm-fix` to `tsup`
+7. Update package.json metadata for publishable packages (core, data, matching, filters)
+8. Wire up npm publish workflow via Changesets GitHub Action with NPM_TOKEN
 
-- [ ] **Test ID attributes on all interactive elements in both apps** — Without this, all other selector work is built on sand. Add `data-testid` to login forms, navigation items, submit buttons, question inputs, result cards.
-- [ ] **Pre-defined JSON test datasets (minimum 2: `standard`, `multi-election`)** — Required for reproducible test runs and multi-config testing.
-- [ ] **API-based dataset load/reset helper** — TypeScript module wrapping Admin Tools API calls for import and delete. Used in global setup and per-test fixtures.
-- [ ] **Fixture layer for authentication** — `authenticatedCandidatePage` fixture replacing the manual beforeEach login pattern in current specs.
-- [ ] **Voter app test coverage (core journey)** — Landing → constituency selection (if applicable) → intro → questions (complete flow) → results page → candidate detail.
-- [ ] **Candidate app test coverage (fill gaps)** — Pre-registration flow, registration link follow-through, all question types, preview.
-- [ ] **User story file organization** — Rename and restructure spec files by user story: `candidate-registration.spec.ts`, `candidate-questions.spec.ts`, `voter-journey.spec.ts`, `translations.spec.ts`.
-- [ ] **CI GitHub Actions workflow** — Run full suite on PR, upload HTML report artifact with `if: always()`.
+**Defer to future milestones:**
+- Remote caching: Enable when CI times become painful. Nearly zero effort when ready.
+- Prerelease/snapshot releases: Enable when downstream consumers exist.
+- Per-workspace lint/typecheck: Refine after Turborepo is established.
 
-### Add After Validation (v1.x)
+## Complexity Budget
 
-- [ ] **Page Object Model layer** — Implement after MVP specs are written and patterns emerge. Refactor repeated interactions into POM classes. Trigger: more than 3 spec files share the same interaction sequence.
-- [ ] **Multi-configuration Playwright projects** — Add second configuration project (`multi-election` dataset) once single-dataset suite is stable.
-- [ ] **Test tagging** — Add `@smoke`, `@voter`, `@candidate` tags. Configure CI to run `@smoke` on push, full suite on PR.
-- [ ] **Locale-aware test helpers** — Add Finnish locale parameterization to critical flows once English coverage is complete.
+| Feature | Estimated Effort | Risk Level |
+|---------|-----------------|------------|
+| Turborepo setup | 1-2 hours | Very low -- additive, single config file, no existing code changes |
+| Directory restructure | 3-5 hours | Medium -- many file moves, Docker path updates, import paths, workspace globs |
+| Changesets setup | 1-2 hours | Low -- well-documented, standard config, minimal existing code impact |
+| GitHub Action for releases | 1-2 hours | Low -- template workflow from changesets/action repo |
+| Yarn catalog upgrade | 1 hour | Low -- minor version bump, opt-in feature |
+| tsup migration (4 packages) | 3-5 hours | Medium -- need to verify output compatibility with all consumers |
+| Package.json metadata cleanup | 2-3 hours | Low -- mechanical but needs careful review of each field |
+| npm publish workflow | 1-2 hours | Medium -- requires npm org setup, token management, first publish testing |
 
-### Future Consideration (v2+)
+**Total estimated:** 13-22 hours of focused work, spread across 3 phases.
 
-- [ ] **Visual regression baseline suite** — Defer until after Svelte 5 migration (baselines would need to be rebuilt anyway). Implement as opt-in project.
-- [ ] **Screenshotter integration** — Same rationale as visual regression; defer post-migration.
-- [ ] **Supabase-compatible data layer** — When Strapi is replaced with Supabase, the Admin Tools API calls in test helpers must be replaced. The fixture interface should be stable; only the implementation changes. Design the fixture API to be backend-agnostic from the start.
+## Existing Infrastructure to Preserve
 
----
+The following must continue working through the refresh:
 
-## Feature Prioritization Matrix
-
-| Feature                          | Dev Value | Implementation Cost | Priority |
-| -------------------------------- | --------- | ------------------- | -------- |
-| Test ID attributes on components | HIGH      | MEDIUM              | P1       |
-| Pre-defined test datasets (JSON) | HIGH      | MEDIUM              | P1       |
-| API-based dataset reset helper   | HIGH      | MEDIUM              | P1       |
-| Voter app core journey coverage  | HIGH      | HIGH                | P1       |
-| Authentication fixture           | HIGH      | LOW                 | P1       |
-| CI GitHub Actions workflow       | HIGH      | LOW                 | P1       |
-| User story file organization     | MEDIUM    | LOW                 | P1       |
-| Page Object Model layer          | HIGH      | MEDIUM              | P2       |
-| Multi-configuration projects     | HIGH      | MEDIUM              | P2       |
-| Test tagging                     | MEDIUM    | LOW                 | P2       |
-| Locale-aware test helpers        | MEDIUM    | MEDIUM              | P2       |
-| Visual regression suite          | LOW       | HIGH                | P3       |
-
-**Priority key:**
-
-- P1: Must have for the E2E milestone to deliver value
-- P2: Should have; add after P1 is stable
-- P3: Nice to have; future milestone
-
----
-
-## Competitor / Reference Analysis
-
-| Pattern           | Existing OpenVAA                                                           | Industry Standard                                                         | Recommended Approach                                                                                               |
-| ----------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Element selection | Mix: `getByTestId` for some, `getByLabel`/`getByRole`/`getByText` for most | `getByRole` first (a11y-aligned), `getByTestId` for non-semantic elements | Audit and add testIds to all non-semantic interactive elements; keep `getByRole` for buttons, links, form controls |
-| Test data         | Shared database from Docker boot-time seed                                 | Per-test or per-project isolated datasets loaded via API                  | JSON datasets + Admin Tools API for load/reset                                                                     |
-| Test organization | By complexity (`basics`, `advanced`)                                       | By user story or feature                                                  | By user story (`voter-journey`, `candidate-registration`)                                                          |
-| Auth setup        | UI-driven login in `globalSetup`                                           | Storage state reuse via Playwright `storageState`                         | Keep current storage state approach; add fixture wrapper for clean API                                             |
-| State reset       | Manual cleanup in test (fragile)                                           | API-based cleanup in `afterEach` fixture                                  | Fixture wraps import + delete API calls                                                                            |
-| CI                | Not configured                                                             | GitHub Actions with artifact upload                                       | Standard GitHub Actions workflow                                                                                   |
-| Reporting         | HTML reporter (local)                                                      | HTML + artifact upload on CI                                              | Add upload step                                                                                                    |
-| Multi-browser     | Chromium only                                                              | Chrome for CI; optional Firefox/WebKit                                    | Keep Chromium-only for speed; document adding browsers is straightforward                                          |
-
----
+| What | Current State | Constraint |
+|------|--------------|------------|
+| `yarn dev` Docker workflow | Builds shared packages, starts Docker Compose stack, watches for changes via `onchange` | Turborepo replaces `yarn workspaces foreach` in build step. `onchange` watcher may need path updates if dirs move. |
+| `yarn test:e2e` | Playwright E2E tests (v1.0 milestone, 56 requirements) | Path-sensitive -- if frontend/backend move to `apps/`, test configs need updating. |
+| `yarn test:unit` | Vitest unit tests across packages + frontend + backend | Must still work per-workspace. Turborepo can orchestrate these. |
+| `yarn lint:check` / `yarn format:check` | Global lint and format scripts | Can be migrated to per-workspace Turborepo tasks incrementally. |
+| `yarn build:app-shared` | Critical build step producing ESM + CJS dual output | app-shared stays `"private": true` but build must still produce both formats for Strapi (CJS) and frontend (ESM). |
+| Docker compose configs | Reference `backend/vaa-strapi/` and `frontend/` paths in volumes and build contexts | If apps move to `apps/`, Docker Compose files need path updates. |
+| TypeScript project references | `tsconfig.json` files use relative `"path"` references to sibling packages | Must be updated if package directories move. |
+| Husky + lint-staged | Pre-commit hooks for formatting | Continue working unchanged. |
+| `onchange` watcher | Watches `packages/*/src/**/*` for rebuilds during `yarn dev` | Glob pattern stays valid if packages/ directory is preserved. |
 
 ## Sources
 
-- [Playwright Best Practices](https://playwright.dev/docs/best-practices) — Official, HIGH confidence
-- [Playwright Fixtures](https://playwright.dev/docs/test-fixtures) — Official, HIGH confidence
-- [Playwright Test Annotations / Tags](https://playwright.dev/docs/test-annotations) — Official, HIGH confidence
-- [Playwright Projects Configuration](https://playwright.dev/docs/test-projects) — Official, HIGH confidence
-- [Playwright Global Setup and Teardown](https://playwright.dev/docs/test-global-setup-teardown) — Official, HIGH confidence
-- [Playwright Page Object Models](https://playwright.dev/docs/pom) — Official, HIGH confidence
-- [Database Rollback Strategies in Playwright](https://www.thegreenreport.blog/articles/database-rollback-strategies-in-playwright/database-rollback-strategies-in-playwright.html) — MEDIUM confidence, verified against Playwright docs
-- [E2E Testing Monorepo Setup](https://www.kyrre.dev/blog/end-to-end-testing-setup) — MEDIUM confidence
-- [BrowserStack Playwright Best Practices 2026](https://www.browserstack.com/guide/playwright-best-practices) — MEDIUM confidence
-- [Mainmatter: Mock database in Svelte e2e tests](https://mainmatter.com/blog/2025/08/21/mock-database-in-svelte-tests/) — MEDIUM confidence (Svelte-specific patterns)
-- [17 Playwright Testing Mistakes to Avoid](https://elaichenkov.github.io/posts/17-playwright-testing-mistakes-you-should-avoid/) — MEDIUM confidence
-
----
-
-_Feature research for: E2E Testing Framework — OpenVAA SvelteKit Monorepo_
-_Researched: 2026-03-03_
+- [Turborepo: Structuring a Repository](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository) -- HIGH confidence, official docs
+- [Turborepo: Publishing Libraries](https://turborepo.dev/docs/guides/publishing-libraries) -- HIGH confidence, official docs
+- [Turborepo 2.7 Release (Yarn 4 catalogs support)](https://turborepo.dev/blog/turbo-2-7) -- HIGH confidence, official blog
+- [Vercel Remote Cache is free](https://turborepo.dev/blog/free-vercel-remote-cache) -- HIGH confidence, official blog
+- [Changesets GitHub repository](https://github.com/changesets/changesets) -- HIGH confidence, official source
+- [Changesets GitHub Action](https://github.com/changesets/action) -- HIGH confidence, official source
+- [Changesets documentation](https://changesets-docs.vercel.app/) -- HIGH confidence, official docs
+- [tsup documentation](https://tsup.egoist.dev/) -- HIGH confidence, official docs
+- [TypeScript ESM+CJS npm publishing in 2025](https://lirantal.com/blog/typescript-in-2025-with-esm-and-cjs-npm-publishing) -- MEDIUM confidence, well-regarded security author
+- [Turborepo, Nx, and Lerna: Monorepo Tooling in 2026](https://dev.to/dataformathub/turborepo-nx-and-lerna-the-truth-about-monorepo-tooling-in-2026-71) -- MEDIUM confidence, comparison article
+- [Best Monorepo Tools 2026](https://www.pkgpulse.com/blog/best-monorepo-tools-2026) -- MEDIUM confidence, comparison article
+- [Complete Monorepo Guide: pnpm + Changesets (2025)](https://jsdev.space/complete-monorepo-guide/) -- MEDIUM confidence, tutorial
+- [Monorepos in JavaScript, Anti-Pattern](https://medium.com/@PepsRyuu/monorepos-in-javascript-anti-pattern-917603da59c8) -- MEDIUM confidence, community analysis on unnecessary fragmentation
+- [Building a TypeScript Library in 2025](https://dev.to/arshadyaseen/building-a-typescript-library-in-2025-2h0i) -- MEDIUM confidence, ecosystem overview
+- [Tutorial: publishing ESM-based npm packages with TypeScript](https://2ality.com/2025/02/typescript-esm-packages.html) -- MEDIUM confidence, Dr. Axel Rauschmayer (well-regarded author)
