@@ -5,4 +5,4 @@ export * from './prompts';
 export * from './types/commonLLMParams';
 export * from './types/llmPipelineResult';
 export * from './utils';
-export { LanguageModelUsage as TokenUsage } from 'ai';
+export type { LanguageModelUsage as TokenUsage } from 'ai';

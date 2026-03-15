@@ -1,23 +1,46 @@
 {
-  "private": true,
   "name": "@openvaa/data",
   "version": "0.1.0",
+  "license": "MIT",
+  "description": "Universal data model for elections, candidates, questions, and answers in voting advice applications",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenVAA/voting-advice-application.git",
+    "directory": "packages/data"
+  },
+  "homepage": "https://github.com/OpenVAA/voting-advice-application/tree/main/packages/data",
+  "bugs": {
+    "url": "https://github.com/OpenVAA/voting-advice-application/issues"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
+    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "typecheck": "tsc --noEmit",
     "generate:test-data-json": "tsx tools/generateTestDataJson.ts"
   },
   "type": "module",
-  "module": "./build/index.js",
-  "types": "./build/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./build/index.js"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "tsc-esm-fix": "^3.1.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@openvaa/core": "workspace:^"

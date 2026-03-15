@@ -1,0 +1,30 @@
+services:
+  frontend:
+    build:
+      context: ../../
+      dockerfile: apps/frontend/Dockerfile
+      target: development
+    volumes:
+      # Creating this volumes will make Docker update changes from local automatically
+      - ./:/opt/apps/frontend
+      # Imported packages must be rebuilt to apply changes
+      - ../../packages:/opt/packages:ro
+      # Local data
+      - ./data:/var/data/local
+      # Cache volume
+      - cache:/var/data/cache
+      # Mark these as volumes so they get ignored
+      - /opt/apps/frontend/node_modules
+      - /opt/apps/frontend/.svelte-kit
+      - /opt/apps/frontend/.vite
+      - /opt/apps/frontend/android
+      - /opt/apps/frontend/ios
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:${FRONTEND_PORT}/ || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 15s
+    restart: on-failure

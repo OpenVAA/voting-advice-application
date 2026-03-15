@@ -1,0 +1,86 @@
+import { findOneByExternalId, parseExternalRelations } from './externalRelations';
+import { IMPORTABLE_COLLECTIONS } from './importableCollections';
+import type { ImportableCollection, ImportDatum } from '../data.type';
+
+/**
+ * Create or update existing data based on `externalId` or `documentId` if provided.
+ * NB. The `answers` property of `Entities` is always merged by first-level keys and not replaced.
+ * NB. A `Candidate`’s `registrationKey` will not be updated if they already have a `user`.
+ * NB. An `answersByExternalId` property can be supplied to update answers by `externalId`.
+ * @param collection - The importable collection.
+ * @param datum - The data item.
+ * @returns Either 'created' or 'updated'
+ * @throws Error if both `externalId` and `documentId` are provided or there are problems with `externalId`s, updating or creating.
+ */
+export async function createOrUpdate<TCollection extends ImportableCollection>({
+  collection,
+  datum,
+  strapi,
+}: {
+  collection: TCollection;
+  datum: ImportDatum;
+  strapi;
+}): Promise<'created' | 'updated'> {
+  const { api, externalRelations, singleType } = IMPORTABLE_COLLECTIONS[collection];
+  const parsed = await parseExternalRelations({
+    config: externalRelations,
+    datum,
+    strapi,
+  });
+  const { documentId, externalId } = parsed;
+  if (singleType && (documentId || externalId))
+    throw new Error(`DocumentId or externalId provided for single type ${collection}`);
+  if (documentId && externalId)
+    throw new Error(
+      `Both documentId ${documentId} and externalId ${externalId} provided for ${collection}`
+    );
+  let existing:
+    | (object & {
+        documentId: string;
+        answers?: object | null;
+        user?: { documentId: string } | null;
+      })
+    | undefined;
+  // Only populate user for candidates to check registrationKey update condition
+  const populate = collection === 'candidates' ? ['user'] : undefined;
+  if (singleType) {
+    existing = await strapi.documents(api).findFirst({ populate });
+  } else if (documentId) {
+    existing = await strapi.documents(api).findOne({ documentId, populate });
+  } else if (externalId) {
+    if (typeof externalId !== 'string') throw new Error(`Invalid externalId ${externalId}`);
+    existing = await findOneByExternalId({ api, externalId, strapi, populate });
+  }
+  if (existing) {
+    const { documentId, user, answers: currentAnswers, ...rest } = existing;
+    const { registrationKey, answers: newAnswers, ...newRest } = parsed;
+    let answers: unknown;
+    if (newAnswers === 'DELETE') {
+      // "DELETE" string clears all answers
+      answers = {};
+    } else if (newAnswers && typeof newAnswers === 'object') {
+      const merged =
+        currentAnswers && typeof currentAnswers === 'object'
+          ? { ...currentAnswers, ...newAnswers }
+          : newAnswers;
+      // Filter out individual entries marked with "DELETE"
+      answers = Object.fromEntries(
+        Object.entries(merged as Record<string, unknown>).filter(([, v]) => v !== 'DELETE')
+      );
+    } else {
+      answers = newAnswers ?? currentAnswers;
+    }
+    await strapi.documents(api).update({
+      documentId,
+      data: {
+        ...rest,
+        ...newRest,
+        answers,
+        registrationKey: user?.documentId ? undefined : registrationKey,
+      },
+    });
+    return 'updated';
+  }
+  await strapi.documents(api).create({ data: parsed });
+  return 'created';
+}
