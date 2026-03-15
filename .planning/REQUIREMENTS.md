@@ -10,7 +10,7 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 ### Scaffolding
 
 - [x] **SCAF-01**: Skill directory structure created at `.claude/skills/` with subdirectories per skill
-- [ ] **SCAF-02**: CLAUDE.md refactored to move domain-specific content into skills (target ~150 lines)
+- [x] **SCAF-02**: CLAUDE.md refactored to move domain-specific content into skills (target ~150 lines)
 - [x] **SCAF-03**: Skill boundary definitions documented (which skill owns which files/concepts)
 
 ### Data Skill
@@ -74,7 +74,7 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SCAF-01 | Phase 16 | Complete |
-| SCAF-02 | Phase 16 | Pending |
+| SCAF-02 | Phase 16 | Complete |
 | SCAF-03 | Phase 16 | Complete |
 | DATA-01 | Phase 17 | Pending |
 | DATA-02 | Phase 17 | Pending |

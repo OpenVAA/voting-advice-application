@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Claude Skills
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-15T20:07:48.665Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-15T20:11:58.820Z"
 last_activity: 2026-03-15 — Completed 16-01 skill directory scaffolding
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 50
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 16 of 21 (Scaffolding and CLAUDE.md Refactoring)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-15 — Completed 16-01 skill directory scaffolding
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phase Complete
+Last activity: 2026-03-15 — Completed 16-02 CLAUDE.md refactoring
 
-Progress: [█████░░░░░] 50% (v5.0 milestone)
+Progress: [██████████] 100% (v5.0 milestone — Phase 16 complete)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [█████░░░░░] 50% (v5.0 milestone)
 
 *Updated after each plan completion*
 | Phase 16 P01 | 2min | 2 tasks | 7 files |
+| Phase 16 P02 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Research]: Keep SKILL.md lean (<500 lines), put detailed reference material in separate files
 - [Phase 16]: All 6 skill stubs left auto-invocable (no disable-model-invocation) -- placeholder bodies small enough to not waste context
 - [Phase 16]: BOUNDARIES.md uses 3-table format: directory ownership, concept domains, gray zones
+- [Phase 16]: Settings section kept as 1-line subsection under Architecture
+- [Phase 16]: Localization rule kept in CLAUDE.md Implementation Rules as cross-cutting
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T20:07:48.663Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-03-15T20:11:58.818Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
