@@ -36,7 +36,7 @@ Shows a form with which to request a password reset email.
     status = 'loading';
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/${$page.params.lang ?? 'en'}/candidate/update-password`
+      redirectTo: `${window.location.origin}/${$page.params.lang ?? 'en'}/candidate/password-reset`
     });
     if (error) {
       logDebugError(`Error requesting password reset email: ${error.message}`);
