@@ -53,10 +53,6 @@ ALTER TABLE question_categories ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_question_categories_external_id
   ON question_categories (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE question_templates ADD COLUMN external_id text;
-CREATE UNIQUE INDEX idx_question_templates_external_id
-  ON question_templates (project_id, external_id) WHERE external_id IS NOT NULL;
-
 ALTER TABLE app_settings ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_app_settings_external_id
   ON app_settings (project_id, external_id) WHERE external_id IS NOT NULL;
@@ -119,10 +115,6 @@ CREATE TRIGGER enforce_external_id_immutability
 
 CREATE TRIGGER enforce_external_id_immutability
   BEFORE UPDATE ON question_categories
-  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
-
-CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON question_templates
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability

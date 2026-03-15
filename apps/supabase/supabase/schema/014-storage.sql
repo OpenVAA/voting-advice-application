@@ -5,7 +5,7 @@
 --   011-auth-tables.sql (published columns on entity tables)
 --   003-entities.sql    (candidates, organizations with auth_user_id)
 --   002-elections.sql   (elections, constituency_groups, constituencies)
---   004-questions.sql   (question_templates, question_categories, questions)
+--   004-questions.sql   (question_categories, questions)
 --   005-nominations.sql (nominations)
 --
 -- Provides:
@@ -45,7 +45,6 @@ GRANT SELECT ON TABLE storage_config TO service_role;
 -- entity_type_segment maps directly to the table name.
 -- Special cases:
 --   'project' -> project-level files, always accessible
---   'question_templates' -> no published flag, always accessible
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION is_storage_entity_published(entity_type_segment text, entity_id_segment text)
 RETURNS boolean
@@ -57,11 +56,6 @@ DECLARE
 BEGIN
   -- Project-level files are always accessible
   IF entity_type_segment = 'project' THEN
-    RETURN true;
-  END IF;
-
-  -- question_templates have no published flag (admin-only content)
-  IF entity_type_segment = 'question_templates' THEN
     RETURN true;
   END IF;
 
@@ -439,10 +433,6 @@ CREATE TRIGGER cleanup_storage_on_delete
   FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON question_templates
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
-
-CREATE TRIGGER cleanup_storage_on_delete
   AFTER DELETE ON question_categories
   FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
 
@@ -526,10 +516,6 @@ CREATE TRIGGER cleanup_image_on_update
 
 CREATE TRIGGER cleanup_image_on_update
   BEFORE UPDATE ON nominations
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
-
-CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON question_templates
   FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update

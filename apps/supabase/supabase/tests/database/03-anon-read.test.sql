@@ -16,7 +16,7 @@ SET search_path = public, extensions;
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
-SELECT plan(58);
+SELECT plan(56);
 
 -- Create test fixture data
 -- Project A: published=true, Project B: published=false
@@ -170,13 +170,6 @@ SELECT ok(
 
 SELECT set_test_user('anon');
 
--- question_templates: no anon policy, only authenticated with can_access_project
-SELECT is(
-  (SELECT count(*) FROM question_templates)::integer,
-  0,
-  'anon cannot see question_templates (admin-only, no anon policy)'
-);
-
 -- accounts: no anon policy
 SELECT is(
   (SELECT count(*) FROM accounts)::integer,
@@ -289,14 +282,6 @@ SELECT throws_ok(
   '42501',
   NULL,
   'anon cannot INSERT into alliances'
-);
-
--- question_templates
-SELECT throws_ok(
-  format('INSERT INTO question_templates (id, project_id, type, name) VALUES (gen_random_uuid(), ''%s'', ''text'', ''{"en":"Test"}''::jsonb)', test_id('project_a')),
-  '42501',
-  NULL,
-  'anon cannot INSERT into question_templates'
 );
 
 -- question_categories

@@ -127,8 +127,7 @@ BEGIN
       }'::jsonb;
     WHEN 'questions' THEN
       relationships := '{
-        "category": {"fk": "category_id", "table": "question_categories"},
-        "template": {"fk": "template_id", "table": "question_templates"}
+        "category": {"fk": "category_id", "table": "question_categories"}
       }'::jsonb;
     WHEN 'constituencies' THEN
       relationships := '{"parent": {"fk": "parent_id", "table": "constituencies"}}'::jsonb;
@@ -245,7 +244,7 @@ DECLARE
   processing_order text[] := ARRAY[
     'elections', 'constituency_groups', 'constituencies',
     'organizations', 'alliances', 'factions', 'candidates',
-    'question_templates', 'question_categories', 'questions',
+    'question_categories', 'questions',
     'nominations', 'app_settings'
   ];
   col_name text;
@@ -337,7 +336,7 @@ DECLARE
 
   -- Supported collections in reverse dependency order (delete children first)
   delete_order text[] := ARRAY[
-    'nominations', 'questions', 'question_categories', 'question_templates',
+    'nominations', 'questions', 'question_categories',
     'candidates', 'factions', 'alliances', 'organizations',
     'constituencies', 'constituency_groups', 'elections', 'app_settings'
   ];
@@ -347,7 +346,7 @@ DECLARE
   allowed_collections text[] := ARRAY[
     'elections', 'constituency_groups', 'constituencies',
     'organizations', 'alliances', 'factions', 'candidates',
-    'question_templates', 'question_categories', 'questions',
+    'question_categories', 'questions',
     'nominations', 'app_settings'
   ];
 BEGIN

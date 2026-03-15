@@ -1,27 +1,4 @@
--- Question templates, categories, and questions
-
-CREATE TABLE question_templates (
-  id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  name            jsonb,
-  short_name      jsonb,
-  info            jsonb,
-  color           jsonb,
-  image           jsonb,
-  sort_order      integer,
-  subtype         text,
-  custom_data     jsonb,
-  is_generated    boolean       DEFAULT false,
-  created_at      timestamptz   NOT NULL DEFAULT now(),
-  updated_at      timestamptz   NOT NULL DEFAULT now(),
-  type            question_type NOT NULL,
-  settings        jsonb,
-  default_choices jsonb
-);
-
-CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON question_templates
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+-- Question categories and questions
 
 CREATE TABLE question_categories (
   id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -64,7 +41,6 @@ CREATE TABLE questions (
   updated_at      timestamptz   NOT NULL DEFAULT now(),
   type            question_type NOT NULL,
   category_id     uuid          NOT NULL REFERENCES question_categories(id),
-  template_id     uuid          REFERENCES question_templates(id) ON DELETE SET NULL,
   choices         jsonb,
   settings        jsonb,
   election_ids    jsonb,

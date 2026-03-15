@@ -910,74 +910,6 @@ export type Database = {
           },
         ]
       }
-      question_templates: {
-        Row: {
-          color: Json | null
-          created_at: string
-          custom_data: Json | null
-          default_choices: Json | null
-          external_id: string | null
-          id: string
-          image: Json | null
-          info: Json | null
-          is_generated: boolean | null
-          name: Json | null
-          project_id: string
-          settings: Json | null
-          short_name: Json | null
-          sort_order: number | null
-          subtype: string | null
-          type: Database["public"]["Enums"]["question_type"]
-          updated_at: string
-        }
-        Insert: {
-          color?: Json | null
-          created_at?: string
-          custom_data?: Json | null
-          default_choices?: Json | null
-          external_id?: string | null
-          id?: string
-          image?: Json | null
-          info?: Json | null
-          is_generated?: boolean | null
-          name?: Json | null
-          project_id: string
-          settings?: Json | null
-          short_name?: Json | null
-          sort_order?: number | null
-          subtype?: string | null
-          type: Database["public"]["Enums"]["question_type"]
-          updated_at?: string
-        }
-        Update: {
-          color?: Json | null
-          created_at?: string
-          custom_data?: Json | null
-          default_choices?: Json | null
-          external_id?: string | null
-          id?: string
-          image?: Json | null
-          info?: Json | null
-          is_generated?: boolean | null
-          name?: Json | null
-          project_id?: string
-          settings?: Json | null
-          short_name?: Json | null
-          sort_order?: number | null
-          subtype?: string | null
-          type?: Database["public"]["Enums"]["question_type"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_templates_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questions: {
         Row: {
           allow_open: boolean | null
@@ -1003,7 +935,6 @@ export type Database = {
           short_name: Json | null
           sort_order: number | null
           subtype: string | null
-          template_id: string | null
           type: Database["public"]["Enums"]["question_type"]
           updated_at: string
         }
@@ -1031,7 +962,6 @@ export type Database = {
           short_name?: Json | null
           sort_order?: number | null
           subtype?: string | null
-          template_id?: string | null
           type: Database["public"]["Enums"]["question_type"]
           updated_at?: string
         }
@@ -1059,7 +989,6 @@ export type Database = {
           short_name?: Json | null
           sort_order?: number | null
           subtype?: string | null
-          template_id?: string | null
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
         }
@@ -1076,13 +1005,6 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "question_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1196,7 +1118,6 @@ export type Database = {
           required: boolean | null
           settings: Json | null
           sort_order: number | null
-          template_id: string | null
           type: Database["public"]["Enums"]["question_type"] | null
         }
         Insert: {
@@ -1213,7 +1134,6 @@ export type Database = {
           required?: boolean | null
           settings?: Json | null
           sort_order?: number | null
-          template_id?: string | null
           type?: Database["public"]["Enums"]["question_type"] | null
         }
         Update: {
@@ -1230,7 +1150,6 @@ export type Database = {
           required?: boolean | null
           settings?: Json | null
           sort_order?: number | null
-          template_id?: string | null
           type?: Database["public"]["Enums"]["question_type"] | null
         }
         Relationships: [
@@ -1246,13 +1165,6 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "question_templates"
             referencedColumns: ["id"]
           },
         ]

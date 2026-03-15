@@ -21,7 +21,7 @@ SET search_path = public, extensions;
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
-SELECT plan(15);
+SELECT plan(14);
 
 -- Create test fixture data
 SELECT create_test_data();
@@ -202,13 +202,6 @@ SELECT set_test_user(
   'authenticated',
   test_user_id('party_a'),
   test_user_roles('party_a')
-);
-
--- question_templates: requires can_access_project, party_a does not have that
-SELECT is(
-  (SELECT count(*) FROM question_templates)::integer,
-  0,
-  'party_admin cannot SELECT question_templates (admin-only)'
 );
 
 -- accounts: requires has_role(account_admin) or has_role(super_admin)

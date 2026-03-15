@@ -34,7 +34,6 @@ SELECT
     (SELECT default_locale FROM projects WHERE id = questions.project_id)) AS info,
   type,
   category_id,
-  template_id,
   choices,
   settings,
   election_ids,

@@ -55,8 +55,6 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 -- constituency_group_b:    dddddddd-dddd-dddd-dddd-000000000008
 -- constituency_a:          dddddddd-dddd-dddd-dddd-000000000009
 -- constituency_b:          dddddddd-dddd-dddd-dddd-000000000010
--- question_template_a:     dddddddd-dddd-dddd-dddd-000000000011
--- question_template_b:     dddddddd-dddd-dddd-dddd-000000000012
 -- question_category_a:     dddddddd-dddd-dddd-dddd-000000000013
 -- question_category_b:     dddddddd-dddd-dddd-dddd-000000000014
 -- question_a:              dddddddd-dddd-dddd-dddd-000000000015
@@ -123,9 +121,6 @@ AS $$
     -- Constituencies
     WHEN 'constituency_a'       THEN 'dddddddd-dddd-dddd-dddd-000000000009'::uuid
     WHEN 'constituency_b'       THEN 'dddddddd-dddd-dddd-dddd-000000000010'::uuid
-    -- Question templates
-    WHEN 'question_template_a'  THEN 'dddddddd-dddd-dddd-dddd-000000000011'::uuid
-    WHEN 'question_template_b'  THEN 'dddddddd-dddd-dddd-dddd-000000000012'::uuid
     -- Question categories
     WHEN 'question_category_a'  THEN 'dddddddd-dddd-dddd-dddd-000000000013'::uuid
     WHEN 'question_category_b'  THEN 'dddddddd-dddd-dddd-dddd-000000000014'::uuid
@@ -355,20 +350,15 @@ BEGIN
     (test_id('alliance_a'), test_id('project_a'), '{"en":"Alliance A"}'::jsonb, true),
     (test_id('alliance_b'), test_id('project_b'), '{"en":"Alliance B"}'::jsonb, false);
 
-  -- ===== Question templates =====
-  INSERT INTO question_templates (id, project_id, type, name) VALUES
-    (test_id('question_template_a'), test_id('project_a'), 'singleChoiceOrdinal', '{"en":"Template A"}'::jsonb),
-    (test_id('question_template_b'), test_id('project_b'), 'singleChoiceOrdinal', '{"en":"Template B"}'::jsonb);
-
   -- ===== Question categories =====
   INSERT INTO question_categories (id, project_id, name, published) VALUES
     (test_id('question_category_a'), test_id('project_a'), '{"en":"Category A"}'::jsonb, true),
     (test_id('question_category_b'), test_id('project_b'), '{"en":"Category B"}'::jsonb, false);
 
   -- ===== Questions =====
-  INSERT INTO questions (id, project_id, type, category_id, template_id, name, published) VALUES
-    (test_id('question_a'), test_id('project_a'), 'singleChoiceOrdinal', test_id('question_category_a'), test_id('question_template_a'), '{"en":"Question A"}'::jsonb, true),
-    (test_id('question_b'), test_id('project_b'), 'singleChoiceOrdinal', test_id('question_category_b'), test_id('question_template_b'), '{"en":"Question B"}'::jsonb, false);
+  INSERT INTO questions (id, project_id, type, category_id, name, published) VALUES
+    (test_id('question_a'), test_id('project_a'), 'singleChoiceOrdinal', test_id('question_category_a'), '{"en":"Question A"}'::jsonb, true),
+    (test_id('question_b'), test_id('project_b'), 'singleChoiceOrdinal', test_id('question_category_b'), '{"en":"Question B"}'::jsonb, false);
 
   -- ===== Nominations (org nomination first, then candidate under it) =====
   INSERT INTO nominations (id, project_id, organization_id, election_id, constituency_id, election_round, published) VALUES

@@ -53,11 +53,10 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Look up question and its template within the same project
-  SELECT q.type, q.choices, qt.default_choices
+  -- Look up question within the same project
+  SELECT q.type, q.choices
   INTO question_record
   FROM questions q
-  LEFT JOIN question_templates qt ON q.template_id = qt.id
   WHERE q.id = NEW.question_id
     AND q.project_id = NEW.project_id;
 
@@ -72,7 +71,7 @@ BEGIN
   PERFORM validate_answer_value(
     answer_obj,
     question_record.type,
-    COALESCE(question_record.choices, question_record.default_choices)
+    question_record.choices
   );
 
   RETURN NEW;

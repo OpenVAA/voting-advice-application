@@ -45,11 +45,11 @@ SELECT lives_ok(
 -- =====================================================================
 
 -- Insert additional questions with different types for testing
-INSERT INTO questions (id, project_id, type, category_id, template_id, name, published)
+INSERT INTO questions (id, project_id, type, category_id, name, published)
 VALUES
-  ('eeeeeeee-eeee-eeee-eeee-000000000101'::uuid, test_id('project_a'), 'text',    test_id('question_category_a'), test_id('question_template_a'), '{"en":"Text Q"}'::jsonb, true),
-  ('eeeeeeee-eeee-eeee-eeee-000000000102'::uuid, test_id('project_a'), 'number',  test_id('question_category_a'), test_id('question_template_a'), '{"en":"Number Q"}'::jsonb, true),
-  ('eeeeeeee-eeee-eeee-eeee-000000000103'::uuid, test_id('project_a'), 'boolean', test_id('question_category_a'), test_id('question_template_a'), '{"en":"Boolean Q"}'::jsonb, true);
+  ('eeeeeeee-eeee-eeee-eeee-000000000101'::uuid, test_id('project_a'), 'text',    test_id('question_category_a'), '{"en":"Text Q"}'::jsonb, true),
+  ('eeeeeeee-eeee-eeee-eeee-000000000102'::uuid, test_id('project_a'), 'number',  test_id('question_category_a'), '{"en":"Number Q"}'::jsonb, true),
+  ('eeeeeeee-eeee-eeee-eeee-000000000103'::uuid, test_id('project_a'), 'boolean', test_id('question_category_a'), '{"en":"Boolean Q"}'::jsonb, true);
 
 -- Text question with number value -> raises 'must be a string'
 SELECT throws_ok(

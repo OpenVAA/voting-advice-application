@@ -18,15 +18,11 @@ export const COLUMN_MAP = {
 
   // QuestionData
   category_id: 'categoryId',
-  template_id: 'templateId',
   election_ids: 'electionIds',
   election_rounds: 'electionRounds',
   constituency_ids: 'constituencyIds',
   entity_type: 'entityType',
   allow_open: 'allowOpen',
-
-  // QuestionTemplateData
-  default_choices: 'defaultChoices',
 
   // QuestionCategoryData
   category_type: 'categoryType',

@@ -10,7 +10,6 @@ CREATE INDEX IF NOT EXISTS idx_organizations_project_id ON organizations (projec
 CREATE INDEX IF NOT EXISTS idx_candidates_project_id ON candidates (project_id);
 CREATE INDEX IF NOT EXISTS idx_factions_project_id ON factions (project_id);
 CREATE INDEX IF NOT EXISTS idx_alliances_project_id ON alliances (project_id);
-CREATE INDEX IF NOT EXISTS idx_question_templates_project_id ON question_templates (project_id);
 CREATE INDEX IF NOT EXISTS idx_question_categories_project_id ON question_categories (project_id);
 CREATE INDEX IF NOT EXISTS idx_questions_project_id ON questions (project_id);
 CREATE INDEX IF NOT EXISTS idx_nominations_project_id ON nominations (project_id);
@@ -22,7 +21,6 @@ CREATE INDEX IF NOT EXISTS idx_app_settings_project_id ON app_settings (project_
 CREATE INDEX IF NOT EXISTS idx_projects_account_id ON projects (account_id);
 CREATE INDEX IF NOT EXISTS idx_candidates_organization_id ON candidates (organization_id);
 CREATE INDEX IF NOT EXISTS idx_questions_category_id ON questions (category_id);
-CREATE INDEX IF NOT EXISTS idx_questions_template_id ON questions (template_id);
 CREATE INDEX IF NOT EXISTS idx_constituencies_parent_id ON constituencies (parent_id);
 
 -- Nomination FK indexes

@@ -17,31 +17,14 @@ SET search_path = public, extensions;
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
-SELECT plan(28);
+SELECT plan(26);
 
 -- Create test fixture data
 -- Project A: published=true, Project B: published=false
 SELECT create_test_data();
 
 -- =====================================================================
--- Section 1: Admin B cannot see unpublished Project A data via admin path
--- question_templates has NO published column (admin-only access via can_access_project)
--- =====================================================================
-
-SELECT set_test_user(
-  'authenticated',
-  test_user_id('admin_b'),
-  test_user_roles('admin_b')
-);
-
-SELECT is(
-  (SELECT count(*) FROM question_templates WHERE project_id = test_id('project_a'))::integer,
-  0,
-  'admin_b cannot see Project A question_templates (admin-only, no published flag)'
-);
-
--- =====================================================================
--- Section 2: Published data IS visible cross-project (correct behavior)
+-- Section 1: Published data IS visible cross-project (correct behavior)
 -- This verifies the RLS design: published data is public for authenticated users
 -- =====================================================================
 
@@ -115,12 +98,6 @@ SELECT is(
   (SELECT count(*) FROM alliances WHERE project_id = test_id('project_b'))::integer,
   0,
   'admin_a cannot see unpublished Project B alliances'
-);
-
-SELECT is(
-  (SELECT count(*) FROM question_templates WHERE project_id = test_id('project_b'))::integer,
-  0,
-  'admin_a cannot see Project B question_templates'
 );
 
 SELECT is(

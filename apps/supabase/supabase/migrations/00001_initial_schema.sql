@@ -455,30 +455,7 @@ CREATE TABLE alliances (
 CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON alliances
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
--- Question templates, categories, and questions
-
-CREATE TABLE question_templates (
-  id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  name            jsonb,
-  short_name      jsonb,
-  info            jsonb,
-  color           jsonb,
-  image           jsonb,
-  sort_order      integer,
-  subtype         text,
-  custom_data     jsonb,
-  is_generated    boolean       DEFAULT false,
-  created_at      timestamptz   NOT NULL DEFAULT now(),
-  updated_at      timestamptz   NOT NULL DEFAULT now(),
-  type            question_type NOT NULL,
-  settings        jsonb,
-  default_choices jsonb
-);
-
-CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON question_templates
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+-- Question categories and questions
 
 CREATE TABLE question_categories (
   id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -521,7 +498,6 @@ CREATE TABLE questions (
   updated_at      timestamptz   NOT NULL DEFAULT now(),
   type            question_type NOT NULL,
   category_id     uuid          NOT NULL REFERENCES question_categories(id),
-  template_id     uuid          REFERENCES question_templates(id) ON DELETE SET NULL,
   choices         jsonb,
   settings        jsonb,
   election_ids    jsonb,
@@ -653,10 +629,9 @@ BEGIN
       CONTINUE;
     END IF;
 
-    SELECT q.type, q.template_id, q.choices, qt.default_choices
+    SELECT q.type, q.choices
     INTO question_record
     FROM questions q
-    LEFT JOIN question_templates qt ON q.template_id = qt.id
     WHERE q.id = question_id::uuid
       AND q.project_id = NEW.project_id;
 
@@ -667,7 +642,7 @@ BEGIN
     PERFORM validate_answer_value(
       answer_value,
       question_record.type,
-      COALESCE(question_record.choices, question_record.default_choices)
+      question_record.choices
     );
   END LOOP;
 
@@ -735,10 +710,7 @@ BEGIN
   END IF;
 
   -- Get effective choices for validation
-  valid_choices := COALESCE(
-    NEW.choices,
-    (SELECT qt.default_choices FROM question_templates qt WHERE qt.id = NEW.template_id)
-  );
+  valid_choices := NEW.choices;
 
   -- Validate all existing candidate answers against the new type
   FOR entity_record IN
@@ -829,7 +801,6 @@ SELECT
     (SELECT default_locale FROM projects WHERE id = questions.project_id)) AS info,
   type,
   category_id,
-  template_id,
   choices,
   settings,
   election_ids,
@@ -851,7 +822,6 @@ CREATE INDEX IF NOT EXISTS idx_organizations_project_id ON organizations (projec
 CREATE INDEX IF NOT EXISTS idx_candidates_project_id ON candidates (project_id);
 CREATE INDEX IF NOT EXISTS idx_factions_project_id ON factions (project_id);
 CREATE INDEX IF NOT EXISTS idx_alliances_project_id ON alliances (project_id);
-CREATE INDEX IF NOT EXISTS idx_question_templates_project_id ON question_templates (project_id);
 CREATE INDEX IF NOT EXISTS idx_question_categories_project_id ON question_categories (project_id);
 CREATE INDEX IF NOT EXISTS idx_questions_project_id ON questions (project_id);
 CREATE INDEX IF NOT EXISTS idx_nominations_project_id ON nominations (project_id);
@@ -863,7 +833,6 @@ CREATE INDEX IF NOT EXISTS idx_app_settings_project_id ON app_settings (project_
 CREATE INDEX IF NOT EXISTS idx_projects_account_id ON projects (account_id);
 CREATE INDEX IF NOT EXISTS idx_candidates_organization_id ON candidates (organization_id);
 CREATE INDEX IF NOT EXISTS idx_questions_category_id ON questions (category_id);
-CREATE INDEX IF NOT EXISTS idx_questions_template_id ON questions (template_id);
 CREATE INDEX IF NOT EXISTS idx_constituencies_parent_id ON constituencies (parent_id);
 
 -- Nomination FK indexes
@@ -1451,26 +1420,6 @@ CREATE POLICY "admin_delete_alliances" ON alliances FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
--- question_templates (project_id, NO published flag -- admin-only)
--- =====================================================================
-ALTER TABLE question_templates ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "question_templates_deny_all" ON question_templates;
-
--- No anon access
-CREATE POLICY "authenticated_select_question_templates" ON question_templates FOR SELECT TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_insert_question_templates" ON question_templates FOR INSERT TO authenticated
-  WITH CHECK ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_update_question_templates" ON question_templates FOR UPDATE TO authenticated
-  USING ((SELECT can_access_project(project_id)))
-  WITH CHECK ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_delete_question_templates" ON question_templates FOR DELETE TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
--- =====================================================================
 -- question_categories (project_id, published)
 -- =====================================================================
 ALTER TABLE question_categories ENABLE ROW LEVEL SECURITY;
@@ -1694,7 +1643,7 @@ GRANT UPDATE (
 --   011-auth-tables.sql (published columns on entity tables)
 --   003-entities.sql    (candidates, organizations with auth_user_id)
 --   002-elections.sql   (elections, constituency_groups, constituencies)
---   004-questions.sql   (question_templates, question_categories, questions)
+--   004-questions.sql   (question_categories, questions)
 --   005-nominations.sql (nominations)
 --
 -- Provides:
@@ -1734,7 +1683,6 @@ GRANT SELECT ON TABLE storage_config TO service_role;
 -- entity_type_segment maps directly to the table name.
 -- Special cases:
 --   'project' -> project-level files, always accessible
---   'question_templates' -> no published flag, always accessible
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION is_storage_entity_published(entity_type_segment text, entity_id_segment text)
 RETURNS boolean
@@ -1746,11 +1694,6 @@ DECLARE
 BEGIN
   -- Project-level files are always accessible
   IF entity_type_segment = 'project' THEN
-    RETURN true;
-  END IF;
-
-  -- question_templates have no published flag (admin-only content)
-  IF entity_type_segment = 'question_templates' THEN
     RETURN true;
   END IF;
 
@@ -2128,10 +2071,6 @@ CREATE TRIGGER cleanup_storage_on_delete
   FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON question_templates
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
-
-CREATE TRIGGER cleanup_storage_on_delete
   AFTER DELETE ON question_categories
   FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
 
@@ -2218,10 +2157,6 @@ CREATE TRIGGER cleanup_image_on_update
   FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON question_templates
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
-
-CREATE TRIGGER cleanup_image_on_update
   BEFORE UPDATE ON question_categories
   FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
 
@@ -2287,10 +2222,6 @@ ALTER TABLE question_categories ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_question_categories_external_id
   ON question_categories (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE question_templates ADD COLUMN external_id text;
-CREATE UNIQUE INDEX idx_question_templates_external_id
-  ON question_templates (project_id, external_id) WHERE external_id IS NOT NULL;
-
 ALTER TABLE app_settings ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_app_settings_external_id
   ON app_settings (project_id, external_id) WHERE external_id IS NOT NULL;
@@ -2353,10 +2284,6 @@ CREATE TRIGGER enforce_external_id_immutability
 
 CREATE TRIGGER enforce_external_id_immutability
   BEFORE UPDATE ON question_categories
-  FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
-
-CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON question_templates
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
@@ -2491,8 +2418,7 @@ BEGIN
       }'::jsonb;
     WHEN 'questions' THEN
       relationships := '{
-        "category": {"fk": "category_id", "table": "question_categories"},
-        "template": {"fk": "template_id", "table": "question_templates"}
+        "category": {"fk": "category_id", "table": "question_categories"}
       }'::jsonb;
     WHEN 'constituencies' THEN
       relationships := '{"parent": {"fk": "parent_id", "table": "constituencies"}}'::jsonb;
@@ -2609,7 +2535,7 @@ DECLARE
   processing_order text[] := ARRAY[
     'elections', 'constituency_groups', 'constituencies',
     'organizations', 'alliances', 'factions', 'candidates',
-    'question_templates', 'question_categories', 'questions',
+    'question_categories', 'questions',
     'nominations', 'app_settings'
   ];
   col_name text;
@@ -2701,7 +2627,7 @@ DECLARE
 
   -- Supported collections in reverse dependency order (delete children first)
   delete_order text[] := ARRAY[
-    'nominations', 'questions', 'question_categories', 'question_templates',
+    'nominations', 'questions', 'question_categories',
     'candidates', 'factions', 'alliances', 'organizations',
     'constituencies', 'constituency_groups', 'elections', 'app_settings'
   ];
@@ -2711,7 +2637,7 @@ DECLARE
   allowed_collections text[] := ARRAY[
     'elections', 'constituency_groups', 'constituencies',
     'organizations', 'alliances', 'factions', 'candidates',
-    'question_templates', 'question_categories', 'questions',
+    'question_categories', 'questions',
     'nominations', 'app_settings'
   ];
 BEGIN

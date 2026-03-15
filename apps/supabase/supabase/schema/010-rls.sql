@@ -345,26 +345,6 @@ CREATE POLICY "admin_delete_alliances" ON alliances FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
--- question_templates (project_id, NO published flag -- admin-only)
--- =====================================================================
-ALTER TABLE question_templates ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "question_templates_deny_all" ON question_templates;
-
--- No anon access
-CREATE POLICY "authenticated_select_question_templates" ON question_templates FOR SELECT TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_insert_question_templates" ON question_templates FOR INSERT TO authenticated
-  WITH CHECK ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_update_question_templates" ON question_templates FOR UPDATE TO authenticated
-  USING ((SELECT can_access_project(project_id)))
-  WITH CHECK ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_delete_question_templates" ON question_templates FOR DELETE TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
--- =====================================================================
 -- question_categories (project_id, published)
 -- =====================================================================
 ALTER TABLE question_categories ENABLE ROW LEVEL SECURITY;
