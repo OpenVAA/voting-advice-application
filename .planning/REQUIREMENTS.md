@@ -18,7 +18,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 ### Schema
 
 - [x] **SCHM-01**: All content tables use snake_case naming with a type mapping layer for camelCase @openvaa/data alignment
-- [x] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, question_templates, app_settings
+- [x] **SCHM-02**: Schema models @openvaa/data entities (not Strapi content types) — elections, candidates, questions, answers, parties, constituencies, app_settings
 - [x] **SCHM-03**: Localization strategy evaluated (JSONB extraction, translation table, or hybrid) with requirement that only requested locale data is returned to frontend
 - [x] **SCHM-04**: RLS enabled on every table with at least one policy per table
 - [x] **SCHM-05**: B-tree indexes on all RLS-referenced columns (project_id, user references)
@@ -48,8 +48,8 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 
 ### Data Model
 
-- [ ] **DATA-01**: @openvaa/data extended with `QuestionTemplate` concept (renamed from Strapi's questionType)
-- [ ] **DATA-02**: QuestionTemplate defines default properties, answer type, and configuration for creating questions
+- [x] **DATA-01**: ~~@openvaa/data extended with `QuestionTemplate` concept~~ — Resolved: question_templates removed from schema; admin tooling will handle template functionality at project creation time (decision: 2026-03-15)
+- [x] **DATA-02**: ~~QuestionTemplate defines default properties, answer type, and configuration for creating questions~~ — Resolved: same as DATA-01; choices stored directly on questions, no template indirection
 
 ### Services
 
@@ -65,7 +65,7 @@ Requirements for Milestone 2: Supabase Migration. Each maps to roadmap phases.
 - [x] **LOAD-01**: k6 load test scripts comparing JSONB vs relational answer storage at 1K, 5K, and 10K candidates
 - [x] **LOAD-02**: pgbench scripts measuring bulk-read latency (voter pattern: all candidates with answers)
 - [x] **LOAD-03**: pgbench scripts measuring write latency (candidate updates one answer) at 100 concurrent writers
-- [ ] **LOAD-04**: Answer storage decision documented with supporting benchmark data
+- [x] **LOAD-04**: Answer storage decision documented with supporting benchmark data
 
 ### Quality
 
@@ -141,8 +141,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-06 | Phase 10 | Complete |
 | AUTH-07 | Phase 10 | Complete |
 | AUTH-08 | Phase 10 | Complete |
-| DATA-01 | Phase 15 | Pending |
-| DATA-02 | Phase 15 | Pending |
+| DATA-01 | Phase 15 | Complete (resolved by removal) |
+| DATA-02 | Phase 15 | Complete (resolved by removal) |
 | SRVC-01 | Phase 12 | Complete |
 | SRVC-02 | Phase 12 | Complete |
 | SRVC-03 | Phase 12 | Complete |
@@ -152,7 +152,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOAD-01 | Phase 11 | Complete |
 | LOAD-02 | Phase 11 | Complete |
 | LOAD-03 | Phase 11 | Complete |
-| LOAD-04 | Phase 15 | Pending |
+| LOAD-04 | Phase 15 | Complete |
 | QUAL-01 | Phase 13 | Complete |
 | QUAL-02 | Phase 13 | Complete |
 | QUAL-03 | Phase 13 | Complete |
