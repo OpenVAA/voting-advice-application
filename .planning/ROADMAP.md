@@ -57,11 +57,11 @@
   2. CLAUDE.md is under 200 lines with domain-specific content moved out and replaced by references to skills
   3. A boundary document exists that maps every file path and concept domain to exactly one skill owner
   4. No domain-specific conventions (data model patterns, matching algorithm details, filter system internals, schema details) remain in CLAUDE.md
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
+- [ ] 16-01-PLAN.md — Create skill directories with SKILL.md stubs and boundary document
+- [ ] 16-02-PLAN.md — Refactor CLAUDE.md to remove domain-specific content
 
 ### Phase 17: Data Skill
 **Goal**: Claude automatically loads deep @openvaa/data expertise when developers work on the data package
@@ -161,7 +161,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 13. Quality Assurance | v2.0 | 3/3 | Complete | 2026-03-15 |
 | 14. Service & Auth Bug Fixes | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
-| 16. Scaffolding and CLAUDE.md Refactoring | v5.0 | 0/TBD | Not started | - |
+| 16. Scaffolding and CLAUDE.md Refactoring | v5.0 | 0/2 | Planned | - |
 | 17. Data Skill | v5.0 | 0/TBD | Not started | - |
 | 18. Matching Skill | v5.0 | 0/TBD | Not started | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
