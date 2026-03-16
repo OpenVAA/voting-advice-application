@@ -169,3 +169,92 @@ QUAL-02: Verify that the expected skill description contains the key trigger wor
 **Conclusion:** Deferred stubs target distinct domains (architecture, UI components) from active skills (data model, matching, filters, database). No false activation risk requiring `disable-model-invocation: true`.
 
 **QUAL-02 Result: PASS (16/16 queries passed, 0 false activation risks)**
+
+---
+
+## Content Deduplication Audit
+
+QUAL-03: Verify zero content duplication between CLAUDE.md and skill files. Cross-references (one file pointing to another as the authority) are NOT duplication. Only same instructional content appearing in both is duplication.
+
+### Automated Grep Scan
+
+**Scan 1: Implementation rules vs skill conventions**
+
+| Pattern | CLAUDE.md Matches | Skill File Matches | Classification |
+|---------|------------------|--------------------|----------------|
+| "Never commit" | None (line 172 says "Never commit sensitive data") | None in active skills | OK -- cross-cutting rule only in CLAUDE.md |
+| "WCAG" | Line 173: "WCAG 2.1 AA compliant" | components/SKILL.md description + line 15 (deferred stub) | OK -- CLAUDE.md states the rule; stub lists it as future topic (not instructional content) |
+| "TypeScript strictly" | Line 174: "Use TypeScript strictly" | None in active skills | OK -- cross-cutting rule only in CLAUDE.md |
+| "avoid.*any" | Line 174: "avoid any" | None in active skills | OK |
+| "Localization" | Line 175: localization rule | None in active skill descriptions (data has convention 10 for translate()) | POINTER -- CLAUDE.md states cross-cutting rule; data skill provides domain-specific implementation details |
+
+**Scan 2: Build/test commands**
+
+| Pattern | CLAUDE.md Matches | Skill File Matches | Classification |
+|---------|------------------|--------------------|----------------|
+| "yarn build\|yarn test\|yarn dev" | 15 matches (lines 17-19, 25-26, 32-34, 50-52, 61, 68, 140, 148, 151-152, 154, 166-167) | None in any SKILL.md | OK -- build commands exclusively in CLAUDE.md |
+
+**Scan 3: Architecture descriptions**
+
+| Pattern | CLAUDE.md Matches | Skill File Matches | Classification |
+|---------|------------------|--------------------|----------------|
+| "Monorepo" | Lines 7, 73 | architect/SKILL.md line 13 (deferred stub topic list) | OK -- different domains (CLAUDE.md = project overview; stub = future planned content) |
+| "workspace" | Lines 16, 50-52, 75, 95 | None in active skills | OK |
+| "Yarn 4" | Line 75 | None in skills | OK |
+| "SvelteKit" | Lines 7, 81, 106, 117, 119 | None in active skills | OK |
+| "Supabase" | Lines 7 | database/SKILL.md description + multiple body lines | POINTER -- CLAUDE.md mentions Supabase as project backend; database skill provides domain-specific expertise. Different instructional content. |
+
+**Scan 4: Routing patterns**
+
+| Pattern | CLAUDE.md Matches | Skill File Matches | Classification |
+|---------|------------------|--------------------|----------------|
+| "lang=locale" | Lines 123-126 | None in active skills | OK |
+| "voters" | Line 124 | None in active skills | OK -- "candidate" appears in database skill but refers to DB entity type, not frontend routes |
+
+**Scan 5: Dependency flow**
+
+| Pattern | CLAUDE.md Matches | Skill File Matches | Classification |
+|---------|------------------|--------------------|----------------|
+| "core.*data.*matching.*filters" | Lines 77, 91, 167 | None in any skill | OK -- dependency flow info exclusively in CLAUDE.md |
+| "Dependency Flow" | Line 91 | None | OK |
+
+### Section-by-Section Comparison
+
+| CLAUDE.md Section | Lines | Skill Overlap? | Classification |
+|-------------------|-------|----------------|----------------|
+| Overview | 5-9 | CLAUDE.md says "Monorepo with SvelteKit frontend, Supabase backend"; no skill restates this overview | OK |
+| Development Commands | 11-68 | No skill file repeats any build/test/lint commands; skills have their own verification commands in extension-patterns but those are package-specific (e.g., `cd packages/data && yarn test:unit`) | OK |
+| Architecture (Monorepo Structure) | 73-83 | No active skill describes monorepo structure; architect stub lists it as future topic (not instructional) | OK |
+| Architecture (Module Resolution) | 85-96 | No skill repeats dependency flow or TypeScript project reference instructions | OK |
+| Architecture (Settings) | 98-100 | No skill covers settings | OK |
+| Docker Development | 102-115 | No skill covers Docker configuration | OK |
+| Frontend (SvelteKit) | 117-134 | No active skill covers frontend routing or styling; components stub lists these as future topics | OK |
+| Common Workflows | 136-168 | No skill repeats workflow steps | OK |
+| Implementation Rules | 170-176 | "WCAG" appears in components stub description (not instructional content). "Localization" rule is cross-cutting; data skill convention 10 covers translate() implementation specifics. Different levels of abstraction. | POINTER |
+| Deployment | 178-180 | No skill covers deployment | OK |
+| Troubleshooting | 182-192 | No skill repeats troubleshooting tips | OK |
+| Roadmap | 194-196 | No skill covers roadmap | OK |
+| Code Review | 198-200 | No skill covers code review checklist | OK |
+
+**Classification summary:**
+- OK: 11 sections
+- POINTER: 2 sections (Implementation Rules localization, Architecture Supabase mention)
+- DUPLICATE: 0 sections
+
+### CLAUDE.md Line Count
+
+```
+$ wc -l CLAUDE.md
+200 CLAUDE.md
+```
+
+CLAUDE.md is at 200 lines, within the 150-200 line target.
+
+### QUAL-03 Verdict
+
+**QUAL-03 Result: PASS**
+
+- Zero DUPLICATE findings across all 5 automated grep scans and 13 section comparisons
+- 2 POINTER findings (acceptable cross-cutting/domain-specific splits): localization rule in CLAUDE.md vs translate() convention in data skill; Supabase mention in CLAUDE.md overview vs database skill domain expertise
+- No fixes needed -- all content is correctly placed (cross-cutting in CLAUDE.md, domain-specific in skills)
+- CLAUDE.md at 200 lines, within target range
