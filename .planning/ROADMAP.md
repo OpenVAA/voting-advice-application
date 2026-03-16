@@ -41,7 +41,7 @@
 
 - [x] **Phase 16: Scaffolding and CLAUDE.md Refactoring** - Establish skill directory structure, define boundaries, trim CLAUDE.md (completed 2026-03-15)
 - [x] **Phase 17: Data Skill** - Domain-expert skill for @openvaa/data package (completed 2026-03-16)
-- [ ] **Phase 18: Matching Skill** - Domain-expert skill for @openvaa/matching package
+- [x] **Phase 18: Matching Skill** - Domain-expert skill for @openvaa/matching package (completed 2026-03-16)
 - [ ] **Phase 19: Filters Skill** - Domain-expert skill for @openvaa/filters package
 - [ ] **Phase 20: Database Skill** - Domain-expert skill for Supabase backend
 - [ ] **Phase 21: Quality and Validation** - Cross-cutting testing and deduplication audit
@@ -163,7 +163,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
 | 17. Data Skill | 2/2 | Complete    | 2026-03-16 | - |
-| 18. Matching Skill | 1/2 | In Progress|  | - |
+| 18. Matching Skill | 2/2 | Complete   | 2026-03-16 | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
 | 20. Database Skill | v5.0 | 0/2 | Planned | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
