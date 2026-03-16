@@ -15,10 +15,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 ### Data Skill
 
-- [ ] **DATA-01**: SKILL.md with description that auto-triggers on @openvaa/data work
-- [ ] **DATA-02**: Data model conventions documented (DataRoot, DataObject hierarchy, smart defaults, MISSING_VALUE)
+- [x] **DATA-01**: SKILL.md with description that auto-triggers on @openvaa/data work
+- [x] **DATA-02**: Data model conventions documented (DataRoot, DataObject hierarchy, smart defaults, MISSING_VALUE)
 - [ ] **DATA-03**: Extension patterns for adding new entity types and question types
-- [ ] **DATA-04**: Review checklist for data package changes (internal.ts barrel, instanceof avoidance, circular deps)
+- [x] **DATA-04**: Review checklist for data package changes (internal.ts barrel, instanceof avoidance, circular deps)
 - [ ] **DATA-05**: Reference files for type hierarchies and relationship diagrams
 
 ### Matching Skill
@@ -76,10 +76,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | SCAF-01 | Phase 16 | Complete |
 | SCAF-02 | Phase 16 | Complete |
 | SCAF-03 | Phase 16 | Complete |
-| DATA-01 | Phase 17 | Pending |
-| DATA-02 | Phase 17 | Pending |
+| DATA-01 | Phase 17 | Complete |
+| DATA-02 | Phase 17 | Complete |
 | DATA-03 | Phase 17 | Pending |
-| DATA-04 | Phase 17 | Pending |
+| DATA-04 | Phase 17 | Complete |
 | DATA-05 | Phase 17 | Pending |
 | MATC-01 | Phase 18 | Pending |
 | MATC-02 | Phase 18 | Pending |
