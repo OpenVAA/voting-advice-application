@@ -47,9 +47,9 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 ### Quality
 
-- [ ] **QUAL-01**: All skills tested with cross-cutting scenarios (multi-skill active)
-- [ ] **QUAL-02**: Skill triggering accuracy validated against natural developer queries
-- [ ] **QUAL-03**: No CLAUDE.md/skill content duplication
+- [x] **QUAL-01**: All skills tested with cross-cutting scenarios (multi-skill active)
+- [x] **QUAL-02**: Skill triggering accuracy validated against natural developer queries
+- [x] **QUAL-03**: No CLAUDE.md/skill content duplication
 
 ## Future Requirements
 
@@ -96,9 +96,9 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | DB-04 | Phase 20 | Complete |
 | DB-05 | Phase 20 | Complete |
 | DB-06 | Phase 20 | Complete |
-| QUAL-01 | Phase 21 | Pending |
-| QUAL-02 | Phase 21 | Pending |
-| QUAL-03 | Phase 21 | Pending |
+| QUAL-01 | Phase 21 | Complete |
+| QUAL-02 | Phase 21 | Complete |
+| QUAL-03 | Phase 21 | Complete |
 
 **Coverage:**
 - v5.0 requirements: 26 total
