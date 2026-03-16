@@ -43,7 +43,7 @@
 - [x] **Phase 17: Data Skill** - Domain-expert skill for @openvaa/data package (completed 2026-03-16)
 - [x] **Phase 18: Matching Skill** - Domain-expert skill for @openvaa/matching package (completed 2026-03-16)
 - [ ] **Phase 19: Filters Skill** - Domain-expert skill for @openvaa/filters package
-- [ ] **Phase 20: Database Skill** - Domain-expert skill for Supabase backend
+- [x] **Phase 20: Database Skill** - Domain-expert skill for Supabase backend (completed 2026-03-16)
 - [ ] **Phase 21: Quality and Validation** - Cross-cutting testing and deduplication audit
 
 ## Phase Details
@@ -165,7 +165,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 17. Data Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 18. Matching Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
-| 20. Database Skill | 1/2 | In Progress|  | - |
+| 20. Database Skill | 2/2 | Complete   | 2026-03-16 | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
 
 ---
