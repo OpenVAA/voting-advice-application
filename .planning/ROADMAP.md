@@ -104,10 +104,11 @@ Plans:
   2. Filter system conventions are documented (3 filter categories, extension pattern, relationship to data model entities)
   3. Extension patterns exist that guide Claude through adding new filter types
   4. A review checklist exists that Claude applies when reviewing filter package changes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 19-01: TBD
+- [ ] 19-01-PLAN.md — Rename MISSING_VALUE to MISSING_FILTER_VALUE and write SKILL.md with conventions, review checklist, cross-package interfaces
+- [ ] 19-02-PLAN.md — Create extension-patterns.md reference file with filter type and question-type variant guides
 
 ### Phase 20: Database Skill
 **Goal**: Claude automatically loads deep Supabase/database expertise when developers work on the backend
@@ -164,7 +165,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
 | 17. Data Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 18. Matching Skill | 2/2 | Complete    | 2026-03-16 | - |
-| 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
+| 19. Filters Skill | v5.0 | 0/2 | Planned | - |
 | 20. Database Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
 
