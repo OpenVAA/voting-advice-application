@@ -123,7 +123,7 @@ Plans:
 
 Plans:
 - [ ] 20-01-PLAN.md — Write SKILL.md with schema, RLS, service, and pgTAP conventions
-- [ ] 20-02-PLAN.md — Create schema-reference.md and rls-policy-map.md reference files
+- [ ] 20-02-PLAN.md — Create schema-reference.md, rls-policy-map.md, and extension-patterns.md reference files
 
 ### Phase 21: Quality and Validation
 **Goal**: All skills work correctly together and no content is duplicated between CLAUDE.md and skills
