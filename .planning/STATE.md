@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Claude Skills
-status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-16T06:52:45.703Z"
-last_activity: 2026-03-16 — Completed 17-01 data skill SKILL.md conventions
+status: completed
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-16T06:53:06Z"
+last_activity: 2026-03-16 — Completed 17-02 data skill reference files
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 3
-  percent: 38
+  completed_plans: 4
+  percent: 50
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 17 — Data Skill
+**Current focus:** Phase 17 — Data Skill (Complete)
 
 ## Current Position
 
 Phase: 17 of 21 (Data Skill)
-Plan: 1 of 2 in current phase (COMPLETE)
-Status: In Progress
-Last activity: 2026-03-16 — Completed 17-01 data skill SKILL.md conventions
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phase Complete
+Last activity: 2026-03-16 — Completed 17-02 data skill reference files
 
-Progress: [████░░░░░░] 38% (v5.0 milestone — Phase 17 plan 1 of 2)
+Progress: [█████░░░░░] 50% (v5.0 milestone — Phase 17 complete)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [████░░░░░░] 38% (v5.0 milestone — Phase 17 plan
 | Phase 16 P01 | 2min | 2 tasks | 7 files |
 | Phase 16 P02 | 2min | 1 tasks | 1 files |
 | Phase 17 P01 | 2min | 1 tasks | 1 files |
+| Phase 17 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 16]: Settings section kept as 1-line subsection under Architecture
 - [Phase 16]: Localization rule kept in CLAUDE.md Implementation Rules as cross-cutting
 - [Phase 17]: Expanded conventions to sub-bullet format for readability while staying within 100-180 line target
+- [Phase 17]: DataRoot collection table includes nomination-specific id getters for completeness
+- [Phase 17]: Extension guides use numbered steps with exact file paths relative to packages/data/src/
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T06:52:45.701Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-03-16T06:53:06Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None

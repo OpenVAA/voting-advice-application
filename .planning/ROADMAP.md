@@ -40,7 +40,7 @@
 **Milestone Goal:** Build domain-expert Claude Code skills that deeply understand and assist with each major area of the OpenVAA framework.
 
 - [x] **Phase 16: Scaffolding and CLAUDE.md Refactoring** - Establish skill directory structure, define boundaries, trim CLAUDE.md (completed 2026-03-15)
-- [ ] **Phase 17: Data Skill** - Domain-expert skill for @openvaa/data package
+- [x] **Phase 17: Data Skill** - Domain-expert skill for @openvaa/data package (completed 2026-03-16)
 - [ ] **Phase 18: Matching Skill** - Domain-expert skill for @openvaa/matching package
 - [ ] **Phase 19: Filters Skill** - Domain-expert skill for @openvaa/filters package
 - [ ] **Phase 20: Database Skill** - Domain-expert skill for Supabase backend
@@ -162,7 +162,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 14. Service & Auth Bug Fixes | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
-| 17. Data Skill | 1/2 | In Progress|  | - |
+| 17. Data Skill | 2/2 | Complete   | 2026-03-16 | - |
 | 18. Matching Skill | v5.0 | 0/2 | Planned | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
 | 20. Database Skill | v5.0 | 0/2 | Planned | - |
