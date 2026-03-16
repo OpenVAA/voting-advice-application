@@ -31,10 +31,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 ### Filters Skill
 
-- [ ] **FILT-01**: SKILL.md with description that auto-triggers on @openvaa/filters work
-- [ ] **FILT-02**: Filter system conventions documented (3 filter categories, extension pattern)
+- [x] **FILT-01**: SKILL.md with description that auto-triggers on @openvaa/filters work
+- [x] **FILT-02**: Filter system conventions documented (3 filter categories, extension pattern)
 - [ ] **FILT-03**: Extension patterns for adding new filter types
-- [ ] **FILT-04**: Review checklist for filter package changes
+- [x] **FILT-04**: Review checklist for filter package changes
 
 ### Database Skill
 
@@ -86,10 +86,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | MATC-03 | Phase 18 | Complete |
 | MATC-04 | Phase 18 | Complete |
 | MATC-05 | Phase 18 | Complete |
-| FILT-01 | Phase 19 | Pending |
-| FILT-02 | Phase 19 | Pending |
+| FILT-01 | Phase 19 | Complete |
+| FILT-02 | Phase 19 | Complete |
 | FILT-03 | Phase 19 | Pending |
-| FILT-04 | Phase 19 | Pending |
+| FILT-04 | Phase 19 | Complete |
 | DB-01 | Phase 20 | Complete |
 | DB-02 | Phase 20 | Complete |
 | DB-03 | Phase 20 | Complete |
