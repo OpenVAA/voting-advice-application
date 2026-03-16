@@ -162,7 +162,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 14. Service & Auth Bug Fixes | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. QuestionTemplate & Verification Closure | v2.0 | Complete | Complete | 2026-03-15 |
 | 16. Scaffolding and CLAUDE.md Refactoring | 2/2 | Complete    | 2026-03-15 | - |
-| 17. Data Skill | 2/2 | Complete   | 2026-03-16 | - |
+| 17. Data Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 18. Matching Skill | v5.0 | 0/2 | Planned | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
 | 20. Database Skill | v5.0 | 0/2 | Planned | - |
