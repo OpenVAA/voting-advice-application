@@ -134,10 +134,10 @@ Plans:
   1. Cross-cutting scenarios (e.g., "add a new question type" which touches data + matching + filters) activate the correct combination of skills
   2. Natural developer queries (e.g., "how does matching work?", "add a filter", "write a pgTAP test") trigger the correct skill with high accuracy
   3. Zero content duplication exists between CLAUDE.md and any skill file -- verified by manual audit
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 21-01: TBD
+- [ ] 21-01-PLAN.md — Cross-cutting scenario testing, triggering accuracy validation, and content deduplication audit
 
 ## Progress
 
@@ -167,7 +167,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 18. Matching Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 19. Filters Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 20. Database Skill | 2/2 | Complete    | 2026-03-16 | - |
-| 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
+| 21. Quality and Validation | v5.0 | 0/1 | Not started | - |
 
 ---
 
