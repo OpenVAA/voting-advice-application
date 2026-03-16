@@ -5,7 +5,7 @@
 --
 -- Functions:
 --   update_updated_at()       - trigger for automatic updated_at timestamps
---   get_localized()           - extract locale string from JSONB with fallback
+--   get_localized()           - extract locale string from JSONB (email helpers only)
 --   validate_answer_value()   - validate an answer value against question type
 --   validate_nomination()     - enforce nomination hierarchy rules
 
@@ -39,6 +39,10 @@ $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
 -- get_localized: extract locale string from JSONB with fallback chain
+--
+-- NOTE: Only used by email helpers (017-email-helpers.sql) for server-side
+-- variable resolution. Voter/candidate API responses return all locales as
+-- JSONB; locale selection happens client-side (see 11-DECISION.md).
 --
 -- Fallback order:
 --   1. val->>locale          (requested locale)

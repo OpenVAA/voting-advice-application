@@ -431,13 +431,6 @@ export type Database = {
             referencedRelation: "elections"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "election_constituency_groups_election_id_fkey"
-            columns: ["election_id"]
-            isOneToOne: false
-            referencedRelation: "elections_localized"
-            referencedColumns: ["id"]
-          },
         ]
       }
       elections: {
@@ -691,13 +684,6 @@ export type Database = {
             columns: ["election_id"]
             isOneToOne: false
             referencedRelation: "elections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nominations_election_id_fkey"
-            columns: ["election_id"]
-            isOneToOne: false
-            referencedRelation: "elections_localized"
             referencedColumns: ["id"]
           },
           {
@@ -1053,122 +1039,7 @@ export type Database = {
       }
     }
     Views: {
-      elections_localized: {
-        Row: {
-          current_round: number | null
-          election_date: string | null
-          election_start_date: string | null
-          election_type: string | null
-          id: string | null
-          info: string | null
-          multiple_rounds: boolean | null
-          name: string | null
-          project_id: string | null
-          short_name: string | null
-          sort_order: number | null
-        }
-        Insert: {
-          current_round?: number | null
-          election_date?: string | null
-          election_start_date?: string | null
-          election_type?: string | null
-          id?: string | null
-          info?: never
-          multiple_rounds?: boolean | null
-          name?: never
-          project_id?: string | null
-          short_name?: never
-          sort_order?: number | null
-        }
-        Update: {
-          current_round?: number | null
-          election_date?: string | null
-          election_start_date?: string | null
-          election_type?: string | null
-          id?: string | null
-          info?: never
-          multiple_rounds?: boolean | null
-          name?: never
-          project_id?: string | null
-          short_name?: never
-          sort_order?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "elections_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      questions_localized: {
-        Row: {
-          allow_open: boolean | null
-          category_id: string | null
-          choices: Json | null
-          constituency_ids: Json | null
-          election_ids: Json | null
-          entity_type: Json | null
-          id: string | null
-          info: string | null
-          name: string | null
-          project_id: string | null
-          required: boolean | null
-          settings: Json | null
-          sort_order: number | null
-          type: Database["public"]["Enums"]["question_type"] | null
-        }
-        Insert: {
-          allow_open?: boolean | null
-          category_id?: string | null
-          choices?: Json | null
-          constituency_ids?: Json | null
-          election_ids?: Json | null
-          entity_type?: Json | null
-          id?: string | null
-          info?: never
-          name?: never
-          project_id?: string | null
-          required?: boolean | null
-          settings?: Json | null
-          sort_order?: number | null
-          type?: Database["public"]["Enums"]["question_type"] | null
-        }
-        Update: {
-          allow_open?: boolean | null
-          category_id?: string | null
-          choices?: Json | null
-          constituency_ids?: Json | null
-          election_ids?: Json | null
-          entity_type?: Json | null
-          id?: string | null
-          info?: never
-          name?: never
-          project_id?: string | null
-          required?: boolean | null
-          settings?: Json | null
-          sort_order?: number | null
-          type?: Database["public"]["Enums"]["question_type"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questions_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "question_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questions_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       _bulk_upsert_record: {
