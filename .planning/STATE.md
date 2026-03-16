@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Claude Skills
-status: completed
-stopped_at: Phase 18 context gathered
-last_updated: "2026-03-16T12:06:29.391Z"
-last_activity: 2026-03-16 — Completed 17-02 data skill reference files
+status: executing
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-16T13:34:45.879Z"
+last_activity: 2026-03-16 — Completed 18-01 matching skill SKILL.md
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 8
-  completed_plans: 4
-  percent: 50
+  completed_plans: 5
+  percent: 63
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 17 — Data Skill (Complete)
+**Current focus:** Phase 18 — Matching Skill
 
 ## Current Position
 
-Phase: 17 of 21 (Data Skill)
-Plan: 2 of 2 in current phase (COMPLETE)
-Status: Phase Complete
-Last activity: 2026-03-16 — Completed 17-02 data skill reference files
+Phase: 18 of 21 (Matching Skill)
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-03-16 — Completed 18-01 matching skill SKILL.md
 
-Progress: [█████░░░░░] 50% (v5.0 milestone — Phase 17 complete)
+Progress: [██████░░░░] 63% (v5.0 milestone — Phase 18 plan 1 complete)
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [█████░░░░░] 50% (v5.0 milestone — Phase 17 comp
 | Phase 16 P02 | 2min | 1 tasks | 1 files |
 | Phase 17 P01 | 2min | 1 tasks | 1 files |
 | Phase 17 P02 | 3min | 2 tasks | 2 files |
+| Phase 18 P01 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 17]: Expanded conventions to sub-bullet format for readability while staying within 100-180 line target
 - [Phase 17]: DataRoot collection table includes nomination-specific id getters for completeness
 - [Phase 17]: Extension guides use numbered steps with exact file paths relative to packages/data/src/
+- [Phase 18]: Followed data skill SKILL.md pattern: conventions as numbered imperative rules with sub-bullets
+- [Phase 18]: Kept CategoricalQuestion math inline in SKILL.md -- core knowledge Claude needs immediately
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T12:06:29.389Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-matching-skill/18-CONTEXT.md
+Last session: 2026-03-16T13:34:45.876Z
+Stopped at: Completed 18-01-PLAN.md
+Resume file: None

@@ -23,10 +23,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 ### Matching Skill
 
-- [ ] **MATC-01**: SKILL.md with description that auto-triggers on @openvaa/matching work
-- [ ] **MATC-02**: Algorithm conventions documented (distance metrics, normalization, subdimensions)
+- [x] **MATC-01**: SKILL.md with description that auto-triggers on @openvaa/matching work
+- [x] **MATC-02**: Algorithm conventions documented (distance metrics, normalization, subdimensions)
 - [ ] **MATC-03**: Extension patterns for adding new matching algorithms or distance metrics
-- [ ] **MATC-04**: Mathematical nuances documented (CategoricalQuestion multi-dimensional model, weight compensation)
+- [x] **MATC-04**: Mathematical nuances documented (CategoricalQuestion multi-dimensional model, weight compensation)
 - [ ] **MATC-05**: Reference files for matching paradigm and Match object structure
 
 ### Filters Skill
@@ -81,10 +81,10 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | DATA-03 | Phase 17 | Complete |
 | DATA-04 | Phase 17 | Complete |
 | DATA-05 | Phase 17 | Complete |
-| MATC-01 | Phase 18 | Pending |
-| MATC-02 | Phase 18 | Pending |
+| MATC-01 | Phase 18 | Complete |
+| MATC-02 | Phase 18 | Complete |
 | MATC-03 | Phase 18 | Pending |
-| MATC-04 | Phase 18 | Pending |
+| MATC-04 | Phase 18 | Complete |
 | MATC-05 | Phase 18 | Pending |
 | FILT-01 | Phase 19 | Pending |
 | FILT-02 | Phase 19 | Pending |
