@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Claude Skills
-status: completed
-stopped_at: Phase 20 context gathered
-last_updated: "2026-03-16T14:39:57.095Z"
-last_activity: 2026-03-16 — Completed 18-02 matching skill reference files
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-16T17:39:25.846Z"
+last_activity: 2026-03-16 — Completed 20-01 database skill SKILL.md
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 18 — Matching Skill (Complete)
+**Current focus:** Phase 20 — Database Skill (In Progress)
 
 ## Current Position
 
-Phase: 18 of 21 (Matching Skill)
-Plan: 2 of 2 in current phase (COMPLETE)
-Status: Phase Complete
-Last activity: 2026-03-16 — Completed 18-02 matching skill reference files
+Phase: 20 of 21 (Database Skill)
+Plan: 1 of 2 in current phase (20-01 COMPLETE)
+Status: In Progress
+Last activity: 2026-03-16 — Completed 20-01 database skill SKILL.md
 
-Progress: [███████░░░] 75% (v5.0 milestone — Phase 18 complete)
+Progress: [█████████░] 88% (v5.0 milestone — Phase 20 plan 01 complete)
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [███████░░░] 75% (v5.0 milestone — Phase 18 comp
 | Phase 17 P02 | 3min | 2 tasks | 2 files |
 | Phase 18 P01 | 2min | 1 tasks | 1 files |
 | Phase 18 P02 | 4min | 2 tasks | 2 files |
+| Phase 20 P01 | 3min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 18]: Kept CategoricalQuestion math inline in SKILL.md -- core knowledge Claude needs immediately
 - [Phase 18]: Documented MatchingSpaceProjector with actual interface signature from source, not fuller hypothetical signature
 - [Phase 18]: Extension patterns cross-reference data skill for production question type implementation
+- [Phase 20]: Refined SKILL.md description to include key numbers (17 tables, 97 policies, 204 tests) and trigger paths
+- [Phase 20]: Schema+RLS sections get deeper treatment (~70+65 lines); services+pgTAP get lighter coverage (~50+40 lines)
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T14:39:57.092Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-database-skill/20-CONTEXT.md
+Last session: 2026-03-16T17:39:25.843Z
+Stopped at: Completed 20-01-PLAN.md
+Resume file: None

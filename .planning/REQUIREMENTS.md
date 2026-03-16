@@ -38,11 +38,11 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 
 ### Database Skill
 
-- [ ] **DB-01**: SKILL.md with description that auto-triggers on Supabase/database work
-- [ ] **DB-02**: Schema conventions documented (17 tables, JSONB patterns, enums, localization)
-- [ ] **DB-03**: RLS and auth patterns documented (79 policies, role types, JWT claims, Access Token Hook)
-- [ ] **DB-04**: Service patterns documented (bulk import/delete RPCs, Edge Functions, storage)
-- [ ] **DB-05**: pgTAP testing conventions documented (helpers, tenant isolation, test patterns)
+- [x] **DB-01**: SKILL.md with description that auto-triggers on Supabase/database work
+- [x] **DB-02**: Schema conventions documented (17 tables, JSONB patterns, enums, localization)
+- [x] **DB-03**: RLS and auth patterns documented (79 policies, role types, JWT claims, Access Token Hook)
+- [x] **DB-04**: Service patterns documented (bulk import/delete RPCs, Edge Functions, storage)
+- [x] **DB-05**: pgTAP testing conventions documented (helpers, tenant isolation, test patterns)
 - [ ] **DB-06**: Reference files for schema diagram and RLS policy map
 
 ### Quality
@@ -90,11 +90,11 @@ Requirements for Claude Code domain-expert skills. Each maps to roadmap phases.
 | FILT-02 | Phase 19 | Pending |
 | FILT-03 | Phase 19 | Pending |
 | FILT-04 | Phase 19 | Pending |
-| DB-01 | Phase 20 | Pending |
-| DB-02 | Phase 20 | Pending |
-| DB-03 | Phase 20 | Pending |
-| DB-04 | Phase 20 | Pending |
-| DB-05 | Phase 20 | Pending |
+| DB-01 | Phase 20 | Complete |
+| DB-02 | Phase 20 | Complete |
+| DB-03 | Phase 20 | Complete |
+| DB-04 | Phase 20 | Complete |
+| DB-05 | Phase 20 | Complete |
 | DB-06 | Phase 20 | Pending |
 | QUAL-01 | Phase 21 | Pending |
 | QUAL-02 | Phase 21 | Pending |

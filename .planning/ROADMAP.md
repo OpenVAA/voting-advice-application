@@ -165,7 +165,7 @@ Phases execute in numeric order: 16 → 17 → 18 → 19 → 20 → 21
 | 17. Data Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 18. Matching Skill | 2/2 | Complete    | 2026-03-16 | - |
 | 19. Filters Skill | v5.0 | 0/TBD | Not started | - |
-| 20. Database Skill | v5.0 | 0/2 | Planned | - |
+| 20. Database Skill | 1/2 | In Progress|  | - |
 | 21. Quality and Validation | v5.0 | 0/TBD | Not started | - |
 
 ---
