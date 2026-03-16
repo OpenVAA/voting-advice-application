@@ -12,7 +12,7 @@ import {
   ChoiceQuestionFilter,
   FilterGroup,
   LOGIC_OP,
-  MISSING_VALUE,
+  MISSING_FILTER_VALUE,
   NumberQuestionFilter,
   ObjectFilter,
   TextPropertyFilter,
@@ -332,18 +332,18 @@ test('ChoiceQuestionFilter: missing values', () => {
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.include = ['0'];
   expect(filter.apply(people), 'Do not include missing').toEqual([people[0]]);
-  filter.include = ['1', MISSING_VALUE];
+  filter.include = ['1', MISSING_FILTER_VALUE];
   expect(filter.apply(people), 'Explicitly include missing').toEqual([people[1], people[2], people[4]]);
   filter.reset();
   filter.exclude = ['0', '1'];
   expect(filter.apply(people), 'Exclude does not exluce missing by default').toEqual([people[3], people[4]]);
   filter.reset();
-  filter.exclude = ['0', '1', MISSING_VALUE];
+  filter.exclude = ['0', '1', MISSING_FILTER_VALUE];
   expect(filter.apply(people), 'Explicitly exclude missing').toEqual([people[3]]);
   expect(
     filter.parseValues(people).map((v) => v.value),
     'Value sorting with missing value'
-  ).toEqual(['1', '0', '2', MISSING_VALUE]);
+  ).toEqual(['1', '0', '2', MISSING_FILTER_VALUE]);
   expect(
     filter.parseValues(people).map((v) => v.object),
     'Choice objects in values'

@@ -1,4 +1,4 @@
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import type { Rule, Rules } from './rules.type';
 
 /**
@@ -12,7 +12,7 @@ export function copyRules<TRule extends Rules>(rules: TRule): TRule {
       copy[k] = [...v];
     } else if (v instanceof Set) {
       copy[k] = new Set(v);
-    } else if (typeof v === 'object' && !(v instanceof RegExp) && v !== MISSING_VALUE && v !== null) {
+    } else if (typeof v === 'object' && !(v instanceof RegExp) && v !== MISSING_FILTER_VALUE && v !== null) {
       throw new Error(`Unsupported rule type: ${v.constructor.name}`);
     } else {
       copy[k] = v;

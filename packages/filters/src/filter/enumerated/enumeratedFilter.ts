@@ -1,5 +1,5 @@
 import { intersect } from './intersect';
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -50,11 +50,11 @@ export abstract class EnumeratedFilter<
    */
   sortValues(values: Array<MaybeMissing<TValue>>): Array<MaybeMissing<TValue>> {
     return values.sort((a, b) => {
-      if (a === MISSING_VALUE) {
-        if (b === MISSING_VALUE) return 0;
+      if (a === MISSING_FILTER_VALUE) {
+        if (b === MISSING_FILTER_VALUE) return 0;
         return 1;
       }
-      if (b === MISSING_VALUE) return -1;
+      if (b === MISSING_FILTER_VALUE) return -1;
       return this.compareValues(a as TValue, b as TValue);
     });
   }

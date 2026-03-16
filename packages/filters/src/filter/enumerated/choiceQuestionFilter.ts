@@ -1,6 +1,6 @@
 import { isMultipleChoiceQuestion } from '@openvaa/data';
 import { EnumeratedFilter } from './enumeratedFilter';
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import { FILTER_TYPE } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import type { AnyChoice } from '@openvaa/data';
@@ -68,7 +68,7 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity = MaybeWrap
     return {
       value,
       count,
-      object: value === MISSING_VALUE ? undefined : this.getChoice(value as AnyChoice['id'])
+      object: value === MISSING_FILTER_VALUE ? undefined : this.getChoice(value as AnyChoice['id'])
     };
   }
 

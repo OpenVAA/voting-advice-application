@@ -1,4 +1,4 @@
-import { isMissing, MISSING_VALUE } from '../../missingValue';
+import { isMissing, MISSING_FILTER_VALUE } from '../../missingValue';
 import { Filter } from '../base';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -84,7 +84,7 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
   }
 
   testValue(value: MaybeMissing<number>): boolean {
-    if (value === MISSING_VALUE) return !this._rules.excludeMissing;
+    if (value === MISSING_FILTER_VALUE) return !this._rules.excludeMissing;
     if (this._rules.min != null && (value as number) < this._rules.min) return false;
     if (this._rules.max != null && (value as number) > this._rules.max) return false;
     return true;

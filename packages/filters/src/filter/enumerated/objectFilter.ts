@@ -1,5 +1,5 @@
 import { EnumeratedFilter } from './enumeratedFilter';
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import { FILTER_TYPE } from '../base';
 import type { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -67,7 +67,7 @@ export class ObjectFilter<
     return {
       value,
       count,
-      object: value === MISSING_VALUE ? undefined : this.getObject(value as string)
+      object: value === MISSING_FILTER_VALUE ? undefined : this.getObject(value as string)
     };
   }
 

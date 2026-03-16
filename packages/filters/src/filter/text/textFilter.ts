@@ -1,4 +1,4 @@
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import { Filter, FILTER_TYPE } from '../base';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -57,14 +57,14 @@ export class TextFilter<TEntity extends MaybeWrappedEntity = MaybeWrappedEntity>
 
   testValue(value: MaybeMissing<string>): boolean {
     // Treat missing values as empty strings.
-    if (value === MISSING_VALUE) value = '';
+    if (value === MISSING_FILTER_VALUE) value = '';
     if (this._rules.exclude && this.testText(this._rules.exclude, value as string)) return false;
     if (this._rules.include && !this.testText(this._rules.include, value as string)) return false;
     return true;
   }
 
   testValues(values: Array<MaybeMissing<string>>): boolean {
-    const strings = values.map((v) => (v === MISSING_VALUE ? '' : (v as string)));
+    const strings = values.map((v) => (v === MISSING_FILTER_VALUE ? '' : (v as string)));
     // Return false if any value is excluded
     if (this._rules.exclude && strings.some((v) => this.testText(this._rules.exclude!, v))) return false;
     // Return false if no value is included

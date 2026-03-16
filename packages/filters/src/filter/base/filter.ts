@@ -1,6 +1,6 @@
 import { getEntity, hasAnswers } from '@openvaa/core';
 import { castValue } from './castValue';
-import { MISSING_VALUE } from '../../missingValue';
+import { MISSING_FILTER_VALUE } from '../../missingValue';
 import { copyRules, matchRules, ruleIsActive } from '../rules';
 import type { MaybeWrappedEntity } from '@openvaa/core';
 import type { MaybeMissing } from '../../missingValue';
@@ -56,7 +56,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
   /**
    * Ge the value from an entity.
    * @param target - The target entity.
-   * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
+   * @returns The value to filter on or `MISSING_FILTER_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
   getValue(target: TTarget): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
     const entity = (this.options.entityGetter ?? getEntity)(target);
@@ -73,10 +73,10 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity = MaybeWrappedEn
     }
     return this.options.multipleValues
       ? value == null
-        ? [MISSING_VALUE]
+        ? [MISSING_FILTER_VALUE]
         : castValue<TValue>(value, this.options.type, true)
       : value == null
-        ? MISSING_VALUE
+        ? MISSING_FILTER_VALUE
         : castValue<TValue>(value, this.options.type);
   }
 
