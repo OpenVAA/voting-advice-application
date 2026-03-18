@@ -99,6 +99,58 @@
 
 ---
 
+## Milestone: v1.2 — Svelte 5 Migration (Infrastructure)
+
+**Shipped:** 2026-03-18
+**Phases:** 7 | **Plans:** 14 | **Commits:** 96
+
+### What Was Built
+- Fresh SvelteKit 2 + Svelte 5 scaffold with native TypeScript support and @tailwindcss/vite replacing PostCSS
+- Tailwind 4 CSS-first configuration with DaisyUI 5 and full theme token migration from JS to CSS directives
+- Migrated i18n from unmaintained sveltekit-i18n to Paraglide JS — 740 call sites, compile-time type safety, runtime override wrapper
+- Full monorepo dependency bump with Yarn catalog expansion (13 → 30 entries), Node 22 migration
+- Docker, CI, and 92 E2E tests validated end-to-end after migration
+- OXC toolchain evaluated and consciously deferred (Svelte template linting not supported)
+- Migration cleanup: dead code removal and 7 TypeScript error fixes
+
+### What Worked
+- In-place scaffold replacement: fresh Svelte 5 config files over existing code preserved all component files while modernizing build tooling
+- DaisyUI 5 @plugin directive: auto-registered colors eliminated manual @theme color block, simplifying CSS architecture
+- Paraglide JS with runtime override wrapper: kept backend translationOverrides working while gaining compile-time type safety
+- Phased validation: dedicating Phase 19 entirely to integration validation caught real issues (alwaysNotifyStore, nomination settle detection)
+- Milestone audit → gap closure: Phase 21 was added after audit found dead code and TS errors, closing integration gaps before shipping
+- OXC evaluation as separate phase: quick 4-min evaluation with clear recommendation avoided wasting time on premature migration
+
+### What Was Inefficient
+- Phase 19-02 (Docker/E2E/CI validation) took 55 minutes — longest plan in the milestone — due to debugging Svelte 5 store equality changes and DaisyUI 5 class renames in E2E tests
+- Nyquist validation was incomplete across phases — draft or missing VALIDATION.md files for most phases
+- Some v1.2 decisions accumulated in STATE.md Decisions section (38 entries) — too granular for operational state; better suited for PROJECT.md Key Decisions table only
+- 740 i18n call site migration was mechanical but time-consuming — future migrations of this scale should consider codemods
+
+### Patterns Established
+- CSS-first Tailwind 4 with @theme directives (no JS config files)
+- DaisyUI 5 @plugin directive for color auto-registration
+- Paraglide JS with runtime override wrapper for backend translation overrides
+- alwaysNotifyStore pattern for bypassing Svelte 5 Object.is() equality on mutable stores
+- Subscription-based settle detection for async data (replaces tick+timeout)
+- Double assertion via `unknown` for type-incompatible casts (safer than @ts-ignore)
+
+### Key Lessons
+1. Fresh scaffold over in-place upgrade is strictly better for major framework upgrades — clean config, no legacy remnants
+2. CSS-first config (Tailwind 4) eliminates entire categories of config complexity — JS config, PostCSS plugins, safelist
+3. i18n library migration at scale (740 call sites) is feasible with wrapper functions — Paraglide compile-time safety was worth the effort
+4. Svelte 5 store equality change (Object.is()) can break stores that hold mutable objects — alwaysNotifyStore pattern is needed until runes migration
+5. Dedicated evaluation phases (Phase 20) are cheap and prevent premature migration — 4 minutes to avoid weeks of regret
+6. Gap closure after milestone audit is now a validated 3-milestone pattern — always audit before shipping
+
+### Cost Observations
+- Model mix: primarily opus for execution, sonnet for research/planning agents
+- 96 commits over 3 days (fastest milestone yet)
+- Average plan execution: ~10 minutes; Phase 19-02 was the outlier at 55min
+- 861 files modified — largest codebase impact of any milestone (+29.5k/-6.3k lines)
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -107,6 +159,7 @@
 |-----------|---------|--------|-------|----------|------------|
 | v1.0      | 147     | 7      | 31    | ~15min   | First milestone — established GSD workflow patterns |
 | v1.1      | 87      | 6      | 15    | 7min     | Faster velocity — research-first, smaller phases |
+| v1.2      | 96      | 7      | 14    | ~10min   | Largest codebase impact (861 files) — framework upgrade patterns |
 
 ### Cumulative Quality
 
@@ -114,11 +167,14 @@
 |-----------|-------------|----------|-------|----------|
 | v1.0      | 56/56       | 100%     | 31    | 0        |
 | v1.1      | 23/24       | 96%      | 15    | 1 (VER-04, user choice) |
+| v1.2      | 31/31       | 100%     | 14    | 0 (tech debt tracked, all reqs met) |
 
 ### Top Lessons (Verified Across Milestones)
 
-1. Infrastructure before features — invest in foundations first (v1.0 Phase 1, v1.1 Phase 8)
-2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1)
-3. Milestone audits catch real issues — gap closure phases are a natural and valuable workflow pattern (v1.0 gap closures, v1.1 Phase 13)
-4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0)
+1. Infrastructure before features — invest in foundations first (v1.0 Phase 1, v1.1 Phase 8, v1.2 scaffold-first)
+2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1, v1.2 OXC eval)
+3. Milestone audits catch real issues — gap closure phases are a natural and validated 3-milestone pattern (v1.0, v1.1, v1.2)
+4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0), integration validation phase (v1.2)
 5. Document deferred items with "why" — conscious deferral is fine, silent gaps accumulate
+6. Fresh scaffold over in-place upgrade for major framework migrations — clean config, no legacy remnants (v1.2)
+7. Dedicated evaluation phases are cheap insurance — 4 minutes to avoid premature migration (v1.2 OXC)

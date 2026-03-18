@@ -29,14 +29,19 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - ✓ Yarn 4.13 with dependency catalogs — v1.1
 - ✓ Vercel remote caching in CI — v1.1
 - ✓ Per-workspace lint/typecheck via Turborepo — v1.1
+- ✓ Svelte 5 frontend infrastructure (fresh scaffold, Tailwind 4, DaisyUI 5) — v1.2
+- ✓ Full dependency bump across monorepo (Node 22, Yarn catalog 30 entries) — v1.2
+- ✓ Paraglide JS i18n with compile-time type safety and runtime override wrapper — v1.2
+- ✓ OXC toolchain evaluation (deferred — Svelte template linting not supported) — v1.2
 
 ### Active
 
+- [ ] Svelte 5 content migration (voter app, candidate app, components — runes, snippets, callback props)
 - [ ] Claude development skills for architecture, components, data, matching, filters, LLM
-- [ ] Svelte 5 migration (framework upgrade, Tailwind, DaisyUI, i18n)
 - [ ] Deno feasibility study (Node → Deno transition)
 - [ ] Supabase migration (Strapi → Supabase with schema, auth, RLS, storage)
 - [ ] Admin app migration (Strapi plugin → frontend Admin App)
+- [ ] Automated security and secrets scanning and testing
 - [ ] Trusted publishing for npm (OIDC, deferred until after initial manual publish)
 - [ ] Changeset bot for PR reminders (deferred from v1.1)
 
@@ -48,25 +53,26 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - Lerna adoption — legacy tool, Nx wrapper
 - semantic-release — poor monorepo support vs explicit-intent Changesets
 - Publishing all packages — only core/data/matching/filters are general-purpose
+- oxlint migration — Svelte template linting not supported; re-evaluate when Svelte support ships
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v1.1:
+The project is a mature monorepo used for real election deployments. As of v1.2:
 
-- **Codebase:** ~1,717 files across apps and packages
-- **Tech stack:** SvelteKit 2, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
-- **Build system:** Turborepo with content-based caching, tsup for publishable packages
-- **Testing:** Playwright 1.58.2 E2E (56 requirements), Vitest unit tests
-- **CI:** GitHub Actions with Turborepo remote caching, HTML test reports
+- **Codebase:** ~861 files modified in v1.2 (+29.5k/-6.3k lines)
+- **Tech stack:** SvelteKit 2, Svelte 5, Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite replacing PostCSS
+- **Testing:** Playwright 1.58.2 E2E (92 tests passing), Vitest unit tests
+- **CI:** GitHub Actions with Turborepo remote caching, HTML test reports, Node 22
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Known issues:** Frontend build has pre-existing ai dependency failure; Strapi has TS errors in mock data generation
+- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); 13 TODO[Svelte 5] markers for runes migration; Strapi has TS errors in mock data generation
 
-The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno (Turborepo impact evaluated in Phase 8).
+The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno (Turborepo impact evaluated in Phase 8). Svelte 5 content migration (runes, snippets, callback props) is the next major frontend milestone.
 
 ## Constraints
 
-- **Tech stack (current)**: SvelteKit 2, Svelte 4, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8
-- **Tech stack (target)**: Svelte 5, Supabase, potentially Deno
+- **Tech stack (current)**: SvelteKit 2, Svelte 5, Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8
+- **Tech stack (target)**: Svelte 5 runes (content migration), Supabase, potentially Deno
 - **Publishing**: @openvaa/core, data, matching, filters publishable to npm; app-shared retains CJS for Strapi
 - **Testing**: Playwright 1.58.2 for E2E, Vitest for unit tests
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
@@ -78,13 +84,15 @@ Each major initiative is a separate milestone, executed in order:
 
 1. ~~**E2E Testing Framework**~~ — Shipped v1.0 (2026-03-12)
 2. ~~**Monorepo Refresh**~~ — Shipped v1.1 (2026-03-15)
-3. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
-4. **Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
-5. **Deno Investigation** — Feasibility study for Node → Deno transition
-6. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
-7. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+3. ~~**Svelte 5 Migration (Infrastructure)**~~ — Shipped v1.2 (2026-03-18)
+4. **Svelte 5 Migration (Content)** — Migrate voter/candidate apps, components, contexts to Svelte 5 runes
+5. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
+6. **Deno Investigation** — Feasibility study for Node → Deno transition
+7. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
+8. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+9. **Security Scanning** — Automated security, secrets scanning, and testing
 
-### Claude Skills — Scope Notes (for milestone #3)
+### Claude Skills — Scope Notes (for milestone #5)
 
 Each skill covers: extending the target, reviewing changes, helping other agents use it, understanding data models, maintaining conventions, syncing with docs.
 
@@ -118,6 +126,14 @@ Build using skill-builder skill where beneficial.
 | Defer trusted publishing          | Requires initial manual npm publish before OIDC can be configured            | — Pending   |
 | Yarn catalogs for deps            | Single source of truth for shared dependency versions across workspaces      | ✓ Good      |
 
+| Fresh Svelte 5 scaffold in-place  | Clean install over in-place upgrade — leverage recommended Svelte 5 infra    | ✓ Good      |
+| Svelte 5 infra before content     | Validate scaffold + deps before migrating components and routes              | ✓ Good      |
+| Paraglide JS over sveltekit-i18n  | Compile-time type safety, active maintenance, runtime override wrapper for backend translations | ✓ Good |
+| DaisyUI 5 via @plugin directive   | CSS-first config, auto-registered colors, eliminated manual @theme color block | ✓ Good     |
+| Node 22 monorepo-wide             | Consistent engine across CI, Docker, dev; aligns with LTS schedule           | ✓ Good      |
+| Defer oxlint migration            | Svelte template linting not supported — dealbreaker for monorepo with .svelte files | ✓ Good |
+| Yarn catalog expansion (30 entries) | Single source of truth for shared deps across workspaces                    | ✓ Good      |
+
 ---
 
-_Last updated: 2026-03-15 after v1.1 milestone_
+_Last updated: 2026-03-18 after v1.2 milestone completion_

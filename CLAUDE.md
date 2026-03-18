@@ -113,6 +113,7 @@ When adding interdependencies:
 ### Build System
 
 The project uses [Turborepo](https://turbo.build) for build orchestration. Configuration is in `turbo.json` at the project root. Turborepo provides:
+
 - Dependency-aware builds (packages build in topological order)
 - Local caching (unchanged packages are skipped on rebuild)
 - Parallel execution (independent packages build simultaneously)

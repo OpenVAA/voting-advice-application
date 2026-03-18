@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (shipped 2026-03-12)
 - ✅ **v1.1 Monorepo Refresh** — Phases 8-13 (shipped 2026-03-15)
+- ✅ **v1.2 Svelte 5 Migration (Infrastructure)** — Phases 15-21 (shipped 2026-03-18)
 
 ## Phases
 
@@ -32,6 +33,19 @@
 
 </details>
 
+<details>
+<summary>✅ v1.2 Svelte 5 Migration — Infrastructure (Phases 15-21) — SHIPPED 2026-03-18</summary>
+
+- [x] Phase 15: Scaffold and Build (2/2 plans) — Fresh SvelteKit 2 + Svelte 5 scaffold with native TS, Vite plugin, path aliases
+- [x] Phase 16: CSS Architecture (2/2 plans) — Tailwind 4 CSS-first config + DaisyUI 5 with theme migration
+- [x] Phase 17: Internationalization (4/4 plans) — sveltekit-i18n to Paraglide JS with runtime override wrapper
+- [x] Phase 18: Dependency Modernization (2/2 plans) — Full monorepo dependency bump and cleanup
+- [x] Phase 19: Integration Validation (2/2 plans) — Node 22, Docker, CI, and E2E verification
+- [x] Phase 20: OXC Toolchain Exploration (1/1 plan) — Evaluated and deferred (Svelte template linting not supported)
+- [x] Phase 21: Migration Cleanup (1/1 plan) — Dead code removal and migration TS error fixes
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -49,3 +63,10 @@
 | 11. Package Publishing | v1.1 | 3/3 | Complete | 2026-03-13 |
 | 12. Polish and Optimization | v1.1 | 3/3 | Complete | 2026-03-14 |
 | 13. Tech Debt Cleanup | v1.1 | 3/3 | Complete | 2026-03-15 |
+| 15. Scaffold and Build | v1.2 | 2/2 | Complete | 2026-03-15 |
+| 16. CSS Architecture | v1.2 | 2/2 | Complete | 2026-03-15 |
+| 17. Internationalization | v1.2 | 4/4 | Complete | 2026-03-16 |
+| 18. Dependency Modernization | v1.2 | 2/2 | Complete | 2026-03-16 |
+| 19. Integration Validation | v1.2 | 2/2 | Complete | 2026-03-18 |
+| 20. OXC Toolchain Exploration | v1.2 | 1/1 | Complete | 2026-03-18 |
+| 21. Migration Cleanup | v1.2 | 1/1 | Complete | 2026-03-18 |

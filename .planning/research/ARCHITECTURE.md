@@ -1,736 +1,637 @@
-# Architecture Patterns: Monorepo Refresh
+# Architecture Patterns: Svelte 5 Frontend Migration Infrastructure
 
-**Domain:** Monorepo tooling, versioning, package publishing, docs site evaluation
-**Researched:** 2026-03-12
-**Confidence:** HIGH (Turborepo + Yarn 4 compatibility verified, Changesets well-documented)
+**Domain:** Svelte 5 migration infrastructure for existing SvelteKit 2 monorepo
+**Researched:** 2026-03-15
 
-## Current Architecture Baseline
+## Recommended Architecture: Fresh Scaffold Replacement-in-Place
 
-Before describing changes, here is what exists today.
+The strategy is to replace the `apps/frontend` directory with a fresh SvelteKit 2 + Svelte 5 scaffold, then re-integrate the existing application code on the new infrastructure. This is preferable to in-place upgrade because the configuration surface area between Svelte 4 and Svelte 5 is large enough that a clean starting point avoids accumulating deprecated config.
 
-### Current Directory Layout
-
-```
-voting-advice-application/
-  packages/
-    core/           (@openvaa/core)            - private, ESM only
-    data/           (@openvaa/data)            - private, ESM only
-    matching/       (@openvaa/matching)        - private, ESM only
-    filters/        (@openvaa/filters)         - private, ESM only
-    app-shared/     (@openvaa/app-shared)      - private, dual CJS+ESM
-    shared-config/  (@openvaa/shared-config)   - private, config exports
-    llm/            (@openvaa/llm)             - private, ESM only
-    argument-condensation/                     - private, ESM experimental
-    question-info/                             - private, ESM experimental
-  frontend/         (@openvaa/frontend)        - private, SvelteKit 2
-  backend/vaa-strapi/                          - private, Strapi v5
-    src/plugins/openvaa-admin-tools/           - private, Strapi plugin
-  docs/             (@openvaa/docs)            - private, SvelteKit static
-  tests/                                       - E2E tests (not a workspace)
-```
-
-### Current Dependency Graph
-
-```
-shared-config (config only, no runtime deps)
-     |
-     v
-   core  (leaf package - no @openvaa deps)
-   / | \
-  v  v  v
-data matching filters
-  |           |
-  v           v
- data <----- filters (filters depends on core + data)
-  |
-  v
-app-shared (depends on data, dual CJS/ESM build)
-  /    \        \
- v      v        v
-frontend strapi  strapi-admin-tools
-                      |
-                      v
-                   docs (depends on app-shared)
-```
-
-### Current Build Pipeline
-
-Root `package.json` orchestrates builds sequentially:
-
-1. `build:shared` -- builds all packages via `yarn workspaces foreach -At --include 'packages/*' run build`
-2. `build:app-shared` -- builds `app-shared` and all its transitive dependencies via `-Rt` flag
-3. Frontend and backend build independently after shared packages are built
-4. Docs site builds after shared packages, generating TypeDoc + component docs
-
-**Key problem:** `yarn workspaces foreach` does topological ordering (`-t` flag) but has no caching. Every CI run rebuilds everything. The `watch:shared` script uses `onchange` to detect file changes, which is fragile.
-
-### Current CI Pipeline
-
-GitHub Actions `main.yaml` has 4 jobs running in parallel:
-- `frontend-and-shared-module-validation` -- lint, format, unit tests, frontend build
-- `backend-validation` -- shared build, backend build
-- `e2e-tests` -- Docker stack, Playwright
-- `e2e-visual-perf` -- visual regression + performance (continue-on-error)
-
-**Redundancy:** Both `frontend-*` and `backend-*` jobs run `yarn build:shared` independently. No caching between jobs.
-
-### Current Package Build Configuration
-
-| Package | Build Tool | Output | CJS | ESM |
-|---------|-----------|--------|-----|-----|
-| core | tsc + tsc-esm-fix | `build/` | No | Yes |
-| data | tsc + tsc-esm-fix | `build/` | No | Yes |
-| matching | tsc + tsc-esm-fix | `build/` | No | Yes |
-| filters | tsc + tsc-esm-fix | `build/` | No | Yes |
-| app-shared | tsc (2x configs) | `build/esm/` + `build/cjs/` | Yes | Yes |
-| shared-config | No build | N/A (config files) | N/A | N/A |
-| llm | tsc + tsc-esm-fix | `build/` | No | Yes |
-
-All publishable-candidate packages (core, data, matching) are currently `"private": true`.
+**Confidence:** HIGH (based on official Svelte migration docs, official Tailwind 4 upgrade guide, official DaisyUI 5 install docs)
 
 ---
 
-## Recommended Architecture
+## Component Boundaries: What Changes vs What Stays
 
-### Phase 1: Add Turborepo for Build Orchestration
+### Files That Are REPLACED (new scaffold provides these)
 
-**Decision:** Add Turborepo on top of existing Yarn 4 workspaces. Do NOT migrate to pnpm.
+| File | Svelte 4 (Current) | Svelte 5 (New) | Key Change |
+|------|-------------------|----------------|------------|
+| `svelte.config.js` | `svelte-preprocess` with PostCSS | No preprocessor needed (Svelte 5 handles `lang="ts"` natively) | `preprocess` array removed entirely |
+| `vite.config.ts` | `sveltekit()` + `vite-tsconfig-paths` | `tailwindcss()` from `@tailwindcss/vite` + `sveltekit()` | Add Tailwind Vite plugin, remove `vite-tsconfig-paths` (SvelteKit handles aliases) |
+| `postcss.config.cjs` | `tailwindcss` + `autoprefixer` plugins | **DELETE** -- no longer needed when using `@tailwindcss/vite` | Tailwind 4 uses Vite plugin, not PostCSS |
+| `tailwind.config.mjs` | 283-line JS config with DaisyUI plugin, custom theme, safelist | **DELETE** -- replaced by CSS-first `@theme` in `app.css` | Entire config moves to CSS |
+| `src/app.css` | `@tailwind base/components/utilities` + `@layer` rules | `@import "tailwindcss"` + `@plugin "daisyui"` + `@theme {}` + `@utility` | Complete rewrite of CSS entry point |
+| `package.json` | Svelte 4, vite-plugin-svelte v3, svelte-preprocess, TW 3, DaisyUI 4 | Svelte 5, vite-plugin-svelte v4+, TW 4, DaisyUI 5 | Major version bumps across the board |
+| `vitest.config.ts` | `svelte({ hot: !process.env.VITEST })` | Updated for Svelte 5 testing | Plugin config changes |
 
-**Rationale:**
-- Yarn 4 with `nodeLinker: node-modules` (current config) is fully supported by Turborepo
-- Turborepo is an additive layer -- it reads the existing workspace structure and `package.json` scripts
-- Switching package managers (to pnpm) is high-risk, breaks Docker configs, CI, lockfile, and developer muscle memory for no proportional benefit
-- Turborepo gives immediate value: task graph, local caching, parallel execution, and optional remote caching
+### Files That Are MODIFIED (existing files, updated for Svelte 5 infrastructure)
 
-**What changes:**
+| File | What Changes | Why |
+|------|-------------|-----|
+| `tsconfig.json` | Extends from `.svelte-kit/tsconfig.json` + shared-config (keep existing pattern), but remove `preserveSymlinks` if no longer needed | Svelte 5 generates updated tsconfig types |
+| `src/app.html` | Stays the same (the `%lang%` pattern and DaisyUI theme data attribute are compatible) | No structural changes needed |
+| `src/app.d.ts` | Keep as-is during infrastructure phase; will need Svelte 5 type updates during content migration | Type definitions are unchanged at infrastructure level |
+| `Dockerfile` | No changes needed -- still builds packages then frontend | Docker build process is infra-agnostic |
+| `docker-compose.dev.yml` | No changes needed -- volume mounts and ports stay the same | Dev container mounts the source directory regardless of framework version |
 
-New file: `turbo.json` at repo root.
+### Files That STAY UNCHANGED (no infrastructure impact)
 
-```json
-{
-  "$schema": "https://turbo.build/schema.json",
-  "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["build/**", "dist/**", ".svelte-kit/**"],
-      "inputs": ["src/**", "tsconfig*.json", "package.json"]
+| File/Area | Why No Change |
+|-----------|--------------|
+| `turbo.json` | Turborepo task definitions are framework-agnostic; `build`, `test:unit`, `lint`, `typecheck` tasks stay the same |
+| `docker-compose.dev.yml` (root) | Service definitions, environment variables, health checks are all independent of Svelte version |
+| `.github/workflows/main.yaml` | CI steps (install, build, lint, test) use yarn workspace commands that are framework-agnostic |
+| `tests/playwright.config.ts` | E2E tests hit the browser -- they test the running app, not the build tooling |
+| `packages/*` | All shared packages are consumed as built artifacts; they have no Svelte dependency |
+| `apps/strapi/` | Backend is completely independent of frontend framework version |
+
+---
+
+## Detailed Infrastructure Changes
+
+### 1. svelte.config.js -- From Preprocessor to Minimal
+
+**Current (Svelte 4):**
+```javascript
+import adapter from '@sveltejs/adapter-node';
+import path from 'path';
+import { sveltePreprocess } from 'svelte-preprocess';
+
+const config = {
+  preprocess: [
+    sveltePreprocess({
+      postcss: true
+    })
+  ],
+  kit: {
+    adapter: adapter({}),
+    alias: {
+      $types: path.resolve('./src/lib/types'),
+      $voter: path.resolve('./src/lib/voter'),
+      $candidate: path.resolve('./src/lib/candidate')
     },
-    "test:unit": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**", "**/*.test.ts", "vitest.config.*"]
-    },
-    "lint:check": {
-      "dependsOn": ["@openvaa/app-shared#build"]
-    },
-    "format:check": {
-      "dependsOn": ["@openvaa/app-shared#build"]
-    },
-    "check": {
-      "dependsOn": ["^build"]
+    version: {
+      pollInterval: 5 * 60 * 1000
     }
   }
-}
+};
 ```
 
-Modified file: root `package.json` -- add `turbo` devDependency, update script commands.
+**New (Svelte 5):**
+```javascript
+import adapter from '@sveltejs/adapter-node';
 
-```json
-{
-  "devDependencies": {
-    "turbo": "^2.x"
-  },
-  "scripts": {
-    "build:shared": "turbo run build --filter='./packages/*'",
-    "build:app-shared": "turbo run build --filter=@openvaa/app-shared...",
-    "test:unit": "turbo run test:unit",
-    "lint:check": "turbo run lint:check",
-    "format:check": "turbo run format:check"
-  }
-}
-```
-
-**What does NOT change:**
-- Individual package `package.json` scripts (Turbo reads them as-is)
-- Yarn workspaces config
-- `.yarnrc.yml`
-- Docker configuration
-- Individual `tsconfig.json` files
-
-### Phase 2: Restructure to apps/ + packages/
-
-**Decision:** Move applications into `apps/` directory, keep library packages in `packages/`.
-
-**Target layout:**
-
-```
-voting-advice-application/
-  apps/
-    frontend/       (@openvaa/frontend)
-    strapi/         (@openvaa/strapi)
-      src/plugins/openvaa-admin-tools/
-    docs/           (@openvaa/docs)
-  packages/
-    core/           (@openvaa/core)
-    data/           (@openvaa/data)
-    matching/       (@openvaa/matching)
-    filters/        (@openvaa/filters)
-    app-shared/     (@openvaa/app-shared)
-    shared-config/  (@openvaa/shared-config)
-    llm/            (@openvaa/llm)
-    argument-condensation/
-    question-info/
-  tests/            (E2E tests, not a workspace)
-```
-
-**What changes:**
-
-| Item | Current Path | New Path |
-|------|-------------|----------|
-| Frontend | `frontend/` | `apps/frontend/` |
-| Strapi | `backend/vaa-strapi/` | `apps/strapi/` |
-| Strapi plugin | `backend/vaa-strapi/src/plugins/openvaa-admin-tools/` | `apps/strapi/src/plugins/openvaa-admin-tools/` |
-| Docs | `docs/` | `apps/docs/` |
-| Packages | `packages/*` | `packages/*` (unchanged) |
-
-Root `package.json` workspaces field:
-```json
-{
-  "workspaces": [
-    "apps/*",
-    "apps/strapi/src/plugins/*",
-    "packages/*"
-  ]
-}
-```
-
-**What needs updating after the move:**
-1. Root `package.json` workspaces paths
-2. Docker compose volume mounts and context paths
-3. Dockerfile paths (`frontend/Dockerfile` becomes `apps/frontend/Dockerfile`)
-4. GitHub Actions workflow paths (build commands, path filters)
-5. Docs site scripts referencing `../frontend` (update `docs-scripts.config.ts` REPO_ROOT calculations)
-6. Root `.env.example` path references
-7. TypeScript project references that use relative paths (these are within `packages/` so most are unaffected)
-8. The `watch:shared` script referencing `packages/*/src/**/*` (unchanged since packages stay put)
-
-**Why this order matters:** Restructuring AFTER Turborepo is added means Turbo's `--filter` flag can validate the new layout immediately. Moving files without Turbo means manually re-verifying the build graph.
-
-### Phase 3: Package Publishing Readiness
-
-**Decision:** Prepare `core`, `data`, and `matching` for npm publishing. Use `tsup` for building publishable packages instead of raw `tsc + tsc-esm-fix`.
-
-**Rationale:**
-- `tsup` (esbuild-based) produces clean ESM+CJS dual packages with proper `exports` fields in one command
-- Eliminates the `tsc-esm-fix` workaround currently used by 5 packages
-- Generates `.d.ts` type declarations alongside bundled output
-- Faster builds (esbuild is 10-100x faster than tsc for emit)
-
-**Package.json for publishable packages (example: core):**
-
-```json
-{
-  "name": "@openvaa/core",
-  "version": "0.1.0",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+const config = {
+  kit: {
+    adapter: adapter({}),
+    alias: {
+      $types: 'src/lib/types',
+      $voter: 'src/lib/voter',
+      $candidate: 'src/lib/candidate'
+    },
+    version: {
+      pollInterval: 5 * 60 * 1000
     }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsup"
-  },
-  "publishConfig": {
-    "access": "public"
   }
-}
+};
 ```
 
-**tsup.config.ts for publishable packages:**
+**Key changes:**
+- `svelte-preprocess` removed entirely -- Svelte 5 natively supports `lang="ts"` without a preprocessor
+- `path.resolve()` calls simplified to string paths (SvelteKit resolves aliases relative to project root)
+- `@sveltejs/adapter-node` stays the same -- SSR adapter is unchanged
+- Custom aliases (`$types`, `$voter`, `$candidate`) preserved -- these are SvelteKit features, not Svelte-version-specific
+- `version.pollInterval` preserved -- this is a SvelteKit feature
 
+**Confidence:** HIGH (official Svelte 5 docs confirm preprocessor removal; SvelteKit alias docs confirm string paths)
+
+### 2. vite.config.ts -- Add Tailwind Vite Plugin
+
+**Current:**
 ```typescript
-import { defineConfig } from 'tsup';
+import { sveltekit } from '@sveltejs/kit/vite';
+import viteTsConfigPaths from 'vite-tsconfig-paths';
+import type { UserConfig } from 'vite';
+
+const config: UserConfig = {
+  resolve: { preserveSymlinks: true },
+  plugins: [sveltekit(), viteTsConfigPaths()],
+  server: { port: Number(process.env.FRONTEND_PORT) }
+};
+```
+
+**New:**
+```typescript
+import tailwindcss from '@tailwindcss/vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
-  format: ['esm', 'cjs'],
-  dts: true,
-  sourcemap: true,
-  clean: true,
-  outDir: 'dist'
+  plugins: [tailwindcss(), sveltekit()],
+  server: { port: Number(process.env.FRONTEND_PORT) }
 });
 ```
 
-**Migration from `build/` to `dist/`:** Publishable packages switch output directory from `build/` to `dist/` to follow npm convention. Non-publishable packages can stay with `build/` or migrate for consistency.
+**Key changes:**
+- `@tailwindcss/vite` plugin added (Tailwind 4 recommended approach for Vite-based projects)
+- `vite-tsconfig-paths` removed -- SvelteKit handles path aliases natively via `kit.alias`
+- `preserveSymlinks` removed -- evaluate if still needed (was likely for monorepo workspace resolution, which modern Vite handles)
+- `defineConfig` used instead of raw object (better type inference)
 
-**Which packages to publish:**
+**Confidence:** HIGH (official Tailwind 4 upgrade guide, official DaisyUI SvelteKit install guide)
 
-| Package | Publish? | Rationale |
-|---------|----------|-----------|
-| core | YES | Foundation types used by all other packages |
-| data | YES | Universal data model, useful standalone |
-| matching | YES | Matching algorithms, useful standalone |
-| filters | LATER | Depends on data, publish after data is stable |
-| app-shared | NO | OpenVAA-specific settings, not useful standalone |
-| shared-config | NO | Internal tooling config |
-| llm | LATER | Experimental, not stable |
+### 3. CSS Architecture -- Tailwind 3 to Tailwind 4 + DaisyUI 5
 
-**Dependency implications for publishing:**
-- `data` exports `core` types, so `core` must be published first
-- `matching` depends on `core`, so `core` must be published first
-- Published packages must use version ranges for `@openvaa/*` deps, not `workspace:^`
-- Changesets handles this transformation automatically at publish time
+This is the most complex infrastructure change. The entire Tailwind and DaisyUI configuration moves from JavaScript to CSS.
 
-### Phase 4: Changesets for Version Management
+**Current `app.css` (Tailwind 3):**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-**Decision:** Use `@changesets/cli` for automated versioning, changelogs, and publishing.
+@layer base { ... }
+@layer components { ... }
+@layer utilities { ... }
+```
 
-**What gets added:**
+**New `app.css` (Tailwind 4 + DaisyUI 5):**
+```css
+@import "tailwindcss";
+@plugin "daisyui";
 
-New directory: `.changeset/` at repo root containing config and changeset files.
+/* Custom light theme */
+@plugin "daisyui/theme" {
+  name: "openvaa-light";
+  default: true;
+  color-scheme: light;
+  --color-primary: oklch(...);
+  --color-secondary: oklch(...);
+  /* ... all theme colors ... */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.25rem;
+  --border: 0px;
+}
 
-New file: `.changeset/config.json`:
+/* Custom dark theme */
+@plugin "daisyui/theme" {
+  name: "openvaa-dark";
+  prefersdark: true;
+  color-scheme: dark;
+  --color-primary: oklch(...);
+  /* ... */
+}
 
-```json
-{
-  "$schema": "https://github.com/changesets/changesets/blob/main/packages/config/schema.json",
-  "changelog": "@changesets/cli/changelog",
-  "commit": false,
-  "fixed": [],
-  "linked": [
-    ["@openvaa/core", "@openvaa/data", "@openvaa/matching"]
-  ],
-  "access": "public",
-  "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": [
-    "@openvaa/frontend",
-    "@openvaa/strapi",
-    "@openvaa/strapi-admin-tools",
-    "@openvaa/docs",
-    "@openvaa/shared-config",
-    "@openvaa/app-shared"
-  ]
+/* Custom theme tokens */
+@theme {
+  --font-base: "Inter", system-ui, sans-serif;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  /* ... migrated from tailwind.config.mjs ... */
+}
+
+/* Custom utilities (migrated from @layer) */
+@utility edgetoedge-x {
+  /* ... */
 }
 ```
 
-**Key configuration choices:**
+**What must be migrated from `tailwind.config.mjs`:**
 
-- `linked` groups `core`, `data`, `matching` so they version together (a change to core bumps all three). This simplifies the consumer experience.
-- `ignore` excludes private/non-publishable packages from versioning. They stay at internal version numbers.
-- `access: "public"` for scoped packages on npm.
-- `updateInternalDependencies: "patch"` ensures when core bumps, data and matching get their dependency on core updated automatically.
+| Config Section | Lines | Migration Target | Complexity |
+|---------------|-------|-----------------|------------|
+| Theme colors (DaisyUI themes) | 60+ | `@plugin "daisyui/theme" {}` blocks in CSS | Medium -- need hex-to-oklch conversion |
+| Custom spacing scale | 40+ | `@theme { --spacing-* }` in CSS | Low -- mechanical |
+| Custom font-family | 10 | `@theme { --font-* }` in CSS | Low |
+| Custom fontSize scale | 15 | `@theme { --text-* }` in CSS | Low |
+| Custom borderRadius | 10 | `@theme { --radius-* }` in CSS | Low |
+| Custom borderWidth | 5 | `@theme { --border-* }` in CSS | Low |
+| Custom lineHeight | 5 | `@theme { --leading-* }` in CSS | Low |
+| Custom transitionDuration | 6 | `@theme { --duration-* }` in CSS | Low |
+| Safe area spacing | 12 | `@theme { --spacing-safe* }` in CSS | Low |
+| Safelist (dynamic color classes) | 5 | `@source inline(...)` in CSS | Medium -- verify DaisyUI 5 color handling |
+| DaisyUI CSS variables (`--rounded-*`, `--animation-*`) | 10 | Evaluate if DaisyUI 5 handles differently | Medium -- check DaisyUI 5 variables |
+| `fixedScreenHeight` extend | 5 | `@theme { --height-screen }` or check TW4 defaults | Low -- TW4 may handle dvh natively |
 
-**GitHub Actions release workflow:**
+**DaisyUI 4 to 5 class name changes that affect `app.css`:**
+- `@layer utilities` becomes `@utility` directive
+- `@layer components` custom styles need evaluation -- DaisyUI 5 uses native cascade layers
+- `.btn-ghost` styles may need updating for DaisyUI 5 component changes
 
-```yaml
-name: Release
-on:
-  push:
-    branches: [main]
+**DaisyUI 5 theme variable mapping:**
+| DaisyUI 4 (JS) | DaisyUI 5 (CSS) |
+|----------------|----------------|
+| `primary: '#2546a8'` | `--color-primary: oklch(...)` |
+| `'base-100': '#ffffff'` | `--color-base-100: oklch(...)` |
+| `'--rounded-btn': 'var(--rounded-lg)'` | `--radius-selector: 0.5rem` |
+| `'--animation-btn': 'var(--duration-sm)'` | Evaluate DaisyUI 5 defaults |
+| `'--border-btn': '0px'` | `--border: 0px` |
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write  # For npm OIDC trusted publishing
+**Critical: Dynamic colors from `@openvaa/app-shared`**
 
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: 'https://registry.npmjs.org'
-      - run: yarn install --frozen-lockfile
-      - uses: changesets/action@v1
-        with:
-          publish: yarn changeset publish
-          version: yarn changeset version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-**Developer workflow:**
-
-1. Make changes to `@openvaa/core`
-2. Run `yarn changeset` -- CLI prompts for affected packages and semver bump type
-3. Commit the generated `.changeset/*.md` file with the PR
-4. Changesets bot comments on PRs missing changesets (optional, via GitHub App)
-5. On merge to main, the release workflow either:
-   a. Creates a "Version Packages" PR aggregating all changesets into version bumps, or
-   b. Publishes directly if already versioned
-
-### Phase 5: Docs Site Evaluation
-
-**Decision:** Keep docs in the monorepo. Do NOT split to a separate repository.
-
-**Rationale:**
-
-Arguments for keeping in monorepo:
-1. Docs generate content from source code (TypeDoc for packages, component extraction from frontend). Splitting would require complex cross-repo build triggers.
-2. The `docs/scripts/docs-scripts.config.ts` references `../frontend` for component docs and route maps. In a separate repo, this becomes a submodule or artifact-download dance.
-3. The docs CI workflow (`docs.yml`) already builds shared packages before generating docs. It needs the full monorepo context.
-4. The docs workspace depends on `@openvaa/app-shared` as a runtime dependency for settings display. This is a real code dependency, not just a doc reference.
-5. The `apps/` restructure gives docs its own clear boundary at `apps/docs/` without needing a separate repo.
-
-Arguments against splitting that clinched the decision:
-1. Docs are already correctly isolated as a workspace -- they don't pollute other packages.
-2. The GitHub Pages deployment workflow already only triggers on `docs/**` path changes.
-3. External contributors rarely touch docs and code simultaneously, so there is no velocity argument for splitting.
-
-**Architecture improvement within monorepo:**
-
-With Turborepo, the docs build can declare explicit dependencies:
-
-```json
-// apps/docs/turbo.json (package-level override)
-{
-  "extends": ["//"],
-  "tasks": {
-    "build": {
-      "dependsOn": ["@openvaa/app-shared#build", "generate:docs"],
-      "outputs": ["build/**"]
-    },
-    "generate:docs": {
-      "dependsOn": ["@openvaa/app-shared#build"],
-      "outputs": ["src/routes/(content)/developers-guide/**/generated/**"]
-    }
-  }
+The current `tailwind.config.mjs` reads colors from `staticSettings` at build time:
+```javascript
+import { staticSettings } from '@openvaa/app-shared';
+function getColor(name, defaultValue, theme = 'light') {
+  return staticSettings.colors?.[theme]?.[name] ?? defaultValue;
 }
 ```
 
-This makes the docs build cache-aware -- regeneration only happens when source packages change.
+This pattern is **incompatible with CSS-first configuration**. Options:
 
----
+1. **Build-time CSS generation** -- A build script reads `staticSettings` and generates the `@plugin "daisyui/theme"` CSS block before the build. This preserves the runtime-configurable theme pattern.
+2. **CSS custom properties at runtime** -- Use CSS variables set by a `<style>` tag in `+layout.svelte` that override the defaults. DaisyUI 5 themes are CSS-variable-based, so this is viable.
+3. **Use `@config` directive** -- Tailwind 4 supports `@config "../../tailwind.config.js"` to load a JS config, but this limits the migration benefits and is marked as legacy.
 
-## Component Boundaries
+**Recommendation:** Option 2 -- CSS custom properties at runtime. Define sensible defaults in the CSS theme, then override from `staticSettings` in the root layout. This is the most Svelte-5-native approach and avoids build-time code generation.
 
-### New Components (added by this milestone)
+**Confidence:** MEDIUM -- the dynamic color pattern needs validation during implementation. The `@config` fallback (option 3) exists if option 2 proves insufficient.
 
-| Component | Location | Responsibility |
-|-----------|----------|---------------|
-| `turbo.json` | Root | Task graph, caching config, pipeline definition |
-| `.changeset/` | Root | Version management config and changeset files |
-| `tsup.config.ts` | Per publishable package | Build config for publishable output |
-| Release workflow | `.github/workflows/release.yml` | Automated version PRs and npm publishing |
+### 4. Package Version Matrix
 
-### Modified Components
+| Package | Current Version | Target Version | Breaking? |
+|---------|----------------|---------------|-----------|
+| `svelte` | `^4.2.19` | `^5.x` | YES -- runes, snippets, new component model |
+| `@sveltejs/kit` | `^2.15.2` | `^2.x` (latest) | Minor -- already on SvelteKit 2 |
+| `@sveltejs/adapter-node` | `^5.2.11` | `^5.x` (latest) | No |
+| `@sveltejs/vite-plugin-svelte` | `^3.1.2` | `^4.x` or `^5.x` | YES -- preprocessor changes |
+| `vite` | `^5.4.11` | `^6.x` | YES -- check SvelteKit compatibility |
+| `tailwindcss` | `^3.4.17` | `^4.x` | YES -- CSS-first config |
+| `daisyui` | `^4.12.23` | `^5.x` | YES -- CSS plugin, class renames |
+| `svelte-preprocess` | `^6.0.3` | **REMOVE** | N/A -- no longer needed |
+| `autoprefixer` | `^10.4.20` | **REMOVE** | N/A -- Tailwind 4 handles this |
+| `postcss` | `^8.4.49` | **REMOVE** | N/A -- using Vite plugin instead |
+| `vite-tsconfig-paths` | `^4.3.2` | **REMOVE** | N/A -- SvelteKit handles aliases |
+| `svelte-check` | `^3.8.6` | `^4.x` | Minor -- updated for Svelte 5 |
+| `svelte-eslint-parser` | `^0.43.0` | Latest | Minor -- Svelte 5 syntax support |
+| `eslint-plugin-svelte` | `^2.46.1` | Latest | Minor |
+| `sveltekit-i18n` | `^2.4.2` | Evaluate -- see i18n section | Depends on decision |
+| `@sveltekit-i18n/parser-icu` | `^1.0.8` | Evaluate | Depends on decision |
+| `svelte-visibility-change` | `^0.6.0` | Check Svelte 5 compat | Unknown |
+| `@capacitor/*` | `^5.7.x` | Evaluate removal or update | Likely remove if not used |
+| `ai` | `^5.0.0` | Keep or evaluate | Known pre-existing build failure |
 
-| Component | Change | Reason |
-|-----------|--------|--------|
-| Root `package.json` | Add turbo devDep, update scripts to use `turbo run` | Build orchestration |
-| Root `package.json` | Update workspaces to `["apps/*", "apps/strapi/src/plugins/*", "packages/*"]` | Directory restructure |
-| Package `package.json` (core, data, matching) | Remove `"private": true`, add publishConfig, exports, files | Publishing readiness |
-| Package `package.json` (core, data, matching) | Replace `tsc + tsc-esm-fix` build with `tsup` | Better build output |
-| CI workflow (`main.yaml`) | Add Turborepo caching, update paths for `apps/` | Performance + new layout |
-| Docker compose files | Update volume mount paths for `apps/` layout | Directory restructure |
-| Docs scripts config | Update REPO_ROOT / FRONTEND_ROOT paths | Directory restructure |
-| `.husky/pre-commit` | Update `cd frontend` to `cd apps/frontend` | Directory restructure |
-| `.lintstagedrc` | No change needed (glob patterns are relative) | N/A |
+**Packages to ADD:**
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `@tailwindcss/vite` | `^4.x` | Tailwind 4 Vite integration |
 
-### Unchanged Components
+**Confidence:** HIGH for core Svelte/Kit/Vite/Tailwind versions. MEDIUM for ecosystem packages (`svelte-visibility-change`, `ai`, Capacitor).
 
-| Component | Why Unchanged |
-|-----------|--------------|
-| `packages/*` directory | Packages stay in packages/ |
-| `tests/` directory | E2E tests stay at root, not a workspace |
-| `@openvaa/shared-config` | Config package, no publish, no build change |
-| `@openvaa/app-shared` | Dual build stays (Strapi needs CJS), but could adopt tsup later |
-| TypeScript project references | Relative paths within packages/ are stable |
-| `vitest.workspace.ts` | Pattern `packages/**/vitest.config.ts` still matches |
+### 5. Turborepo -- No Changes Required
 
----
+The `turbo.json` configuration is framework-agnostic:
 
-## Data Flow
-
-### Build Flow (current vs proposed)
-
-**Current:**
-```
-yarn build:shared
-  -> yarn workspaces foreach -At --include 'packages/*' run build
-    -> Topological order, but EVERY package rebuilds EVERY time
-    -> No caching
-    -> Sequential within dependency tiers
-```
-
-**Proposed with Turborepo:**
-```
-turbo run build --filter='./packages/*'
-  -> Reads workspace dependency graph
-  -> Hashes inputs (src/**, tsconfig.json, package.json)
-  -> Skips packages whose inputs have not changed (cache hit)
-  -> Runs uncached builds in parallel where possible
-  -> Stores outputs in .turbo/ cache (local) or remote cache (CI)
-```
-
-### Release Flow (new)
-
-```
-Developer:
-  1. Make code changes
-  2. Run `yarn changeset` -> generates .changeset/random-name.md
-  3. Commit changeset file with PR
-  4. PR merged to main
-
-CI (on push to main):
-  1. Changesets action detects pending changesets
-  2. Creates "Version Packages" PR with:
-     - Updated package.json versions
-     - Updated CHANGELOG.md files
-     - Removed consumed changeset files
-  3. Maintainer merges "Version Packages" PR
-  4. Changesets action runs `changeset publish`
-     - Builds packages (turbo run build)
-     - npm publish with OIDC token (no secrets needed)
-     - Creates git tags (v0.2.0, etc.)
-```
-
-### CI Build Flow (proposed)
-
-```
-main.yaml:
-  ┌─ shared-build (turbo run build --filter='./packages/*')
-  │    -> Cached between runs via actions/cache on .turbo/
-  │
-  ├─> frontend-validation
-  │    turbo run build check test:unit --filter=@openvaa/frontend
-  │
-  ├─> backend-validation
-  │    turbo run build --filter=@openvaa/strapi
-  │
-  ├─> e2e-tests (needs Docker stack, separate job)
-  │
-  └─> e2e-visual-perf (needs Docker stack, continue-on-error)
-
-release.yml (separate workflow):
-  -> changesets/action for version management + publishing
-```
-
----
-
-## Patterns to Follow
-
-### Pattern 1: Turborepo Additive Layer
-
-**What:** Turborepo sits on top of existing Yarn workspaces without replacing them. Package scripts remain the source of truth.
-
-**When:** Always. Turbo orchestrates, Yarn resolves.
-
-**Example:**
 ```json
-// turbo.json
 {
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["build/**", "dist/**"]
+      "outputs": ["build/**", "dist/**"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"]
     }
   }
 }
 ```
 
-```json
-// packages/core/package.json (unchanged script name)
-{
-  "scripts": {
-    "build": "tsup"
-  }
+The frontend's `build` script (`svelte-kit sync && vite build`) runs the same way regardless of Svelte version. The `outputs` pattern (`build/**`) matches SvelteKit's output directory. The `inputs` pattern captures source changes.
+
+**One potential addition:** Add `app.css` to inputs if it contains Tailwind theme configuration that was previously in `tailwind.config.mjs` (already covered by `src/**`).
+
+**Confidence:** HIGH
+
+### 6. Docker -- No Changes Required
+
+The `Dockerfile` multi-stage build is framework-agnostic:
+
+1. `base` stage: installs Node 20, Yarn 4.13, runs `yarn install`
+2. `shared` stage: runs `yarn build` (builds all packages via Turborepo)
+3. `frontend` stage: copies built packages
+4. `development` stage: runs `yarn workspace @openvaa/frontend dev --host`
+5. `production` stage: runs `yarn workspace @openvaa/frontend build`, then `node ./apps/frontend/build/index.js`
+
+None of these steps reference Svelte versions or Tailwind config. The dev command (`vite dev --host`) and production output (`build/index.js`) remain the same.
+
+The `docker-compose.dev.yml` volume mounts are path-based and do not reference any framework-specific files:
+```yaml
+volumes:
+  - ./:/opt/apps/frontend
+  - ../../packages:/opt/packages:ro
+  - /opt/apps/frontend/node_modules
+  - /opt/apps/frontend/.svelte-kit
+  - /opt/apps/frontend/.vite
+```
+
+The `.svelte-kit` and `.vite` exclusions remain valid.
+
+**Confidence:** HIGH
+
+### 7. CI/CD Pipeline -- No Changes Required
+
+The GitHub Actions workflow `main.yaml` runs these steps:
+1. `yarn install --frozen-lockfile`
+2. `yarn build` (Turborepo)
+3. `yarn format:check` / `yarn lint:check`
+4. `yarn test:unit`
+5. `yarn workspace @openvaa/frontend build`
+
+None of these are framework-version-specific. The lint step already uses `eslint --flag v10_config_lookup_from_file` which is ESLint-config-specific, not Svelte-version-specific.
+
+The E2E test pipeline runs `yarn dev:start` (Docker-based) and `yarn test:e2e` (Playwright). Both are framework-agnostic.
+
+**Confidence:** HIGH
+
+### 8. E2E Testing Infrastructure -- Minimal Impact
+
+Playwright tests interact with the running application through the browser. The `playwright.config.ts` references:
+- `testDir: TESTS_DIR` (in `tests/` directory, outside `apps/frontend`)
+- `baseURL: http://localhost:${FRONTEND_PORT}`
+- Various test project definitions with file matchers
+
+None of these are Svelte-version-dependent. Tests use test IDs (`data-testid`) which survive framework migrations.
+
+**Potential issue:** During the infrastructure phase, when no routes or components exist yet, E2E tests will fail. This is expected and acceptable -- they will be re-validated after content migration in the next milestone.
+
+**Confidence:** HIGH
+
+### 9. Path Aliases -- Preserved, Simplified
+
+Current aliases in `svelte.config.js`:
+```javascript
+alias: {
+  $types: path.resolve('./src/lib/types'),
+  $voter: path.resolve('./src/lib/voter'),
+  $candidate: path.resolve('./src/lib/candidate')
 }
 ```
 
-Turbo finds `build` script in each package, respects `dependsOn: ["^build"]` to run dependencies first, and caches the declared outputs.
+These are SvelteKit features, not Svelte-version-specific. They work identically in Svelte 5. The only change is simplifying from `path.resolve()` to string paths:
 
-### Pattern 2: Package-Level Turbo Overrides
-
-**What:** Individual packages can override root turbo.json settings via their own `turbo.json`.
-
-**When:** When a package has non-standard build behavior (e.g., docs site with code generation step).
-
-**Example:**
-```json
-// apps/docs/turbo.json
-{
-  "extends": ["//"],
-  "tasks": {
-    "build": {
-      "dependsOn": ["generate:docs", "@openvaa/app-shared#build"],
-      "outputs": ["build/**"]
-    }
-  }
+```javascript
+alias: {
+  $types: 'src/lib/types',
+  $voter: 'src/lib/voter',
+  $candidate: 'src/lib/candidate'
 }
 ```
 
-### Pattern 3: Conditional Exports for Published Packages
+The `vitest.config.ts` currently imports both `svelte` and `sveltekit` plugins. For Svelte 5, this needs updating to use the Svelte 5-compatible test setup:
 
-**What:** Use the `exports` field with import/require conditions for packages that will be published to npm.
+```typescript
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vitest/config';
 
-**When:** For core, data, matching -- any package consumed externally.
+export default defineConfig({
+  plugins: [sveltekit()],
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  }
+});
+```
 
-**Example:**
+**Confidence:** HIGH
+
+### 10. TypeScript References -- No Changes
+
+The `tsconfig.json` references to workspace packages remain valid:
 ```json
 {
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  }
+  "references": [
+    { "path": "../../packages/app-shared/tsconfig.json" },
+    { "path": "../../packages/core/tsconfig.json" }
+  ]
 }
 ```
 
-### Pattern 4: Linked Versioning for Coupled Packages
+These are monorepo workspace references, not Svelte-version-specific. The `extends` from `@openvaa/shared-config/ts` and `.svelte-kit/tsconfig.json` also remains valid.
 
-**What:** Changesets `linked` config ensures packages that form a logical API surface version together.
-
-**When:** When a semver bump to one package should bump all others in the group (core + data + matching).
-
-**Example:** If `@openvaa/core` gets a minor bump, `@openvaa/data` and `@openvaa/matching` also get bumped to the same minor, keeping versions in sync.
+**Confidence:** HIGH
 
 ---
 
-## Anti-Patterns to Avoid
+## i18n Architecture Decision Point
 
-### Anti-Pattern 1: Migrating Package Manager Simultaneously
+The current i18n uses `sveltekit-i18n` (store-based, runtime key lookup). Two paths forward:
 
-**What:** Switching from Yarn 4 to pnpm or npm while also adding Turborepo, Changesets, and restructuring directories.
+### Option A: Keep sveltekit-i18n (Lower risk, deferred migration)
 
-**Why bad:** Each migration touches every lockfile, every CI script, every Docker config, and every developer's local setup. Doing two of these at once creates debugging nightmares where you cannot isolate which change broke what.
+- `sveltekit-i18n` uses Svelte stores which remain compatible with Svelte 5 (stores are not deprecated)
+- The `$t` store pattern works in Svelte 5 unchanged
+- The `locale.subscribe()` pattern works unchanged
+- No infrastructure changes needed during this milestone
+- ICU message format support retained
+- Dynamic translation loading from backend retained
 
-**Instead:** Keep Yarn 4. It works. Turborepo supports it. Revisit package manager only if a concrete, measurable problem emerges.
+**Risk:** `sveltekit-i18n` may not receive active Svelte 5-specific updates. The library works but uses the legacy store API rather than runes.
 
-### Anti-Pattern 2: Publishing All Packages
+### Option B: Migrate to Paraglide (Higher reward, higher risk)
 
-**What:** Making every workspace package publishable to npm.
+- Compiler-based, tree-shakable, type-safe
+- Official Svelte ecosystem recommendation (`npx sv add paraglide`)
+- Generates functions instead of key-value lookup
+- Smaller bundle sizes (up to 70% reduction)
 
-**Why bad:** `@openvaa/app-shared` contains OpenVAA-specific settings (colors, locales, admin emails). `@openvaa/shared-config` is ESLint/Prettier/TS config for this repo specifically. Publishing these creates maintenance burden with zero external consumers.
+**Risk:** Paraglide is fundamentally different from `sveltekit-i18n`. It uses compiled message functions, not runtime key lookup. The current codebase has:
+- ICU message format with complex interpolation
+- Dynamic translation loading from the backend (`addTranslations`)
+- Runtime locale switching
+- Translation key type generation
+- Default payload injection
 
-**Instead:** Only publish packages with genuine external value: core, data, matching. Keep everything else `"private": true`.
+Migrating to Paraglide would require rethinking the entire i18n architecture, not just swapping libraries.
 
-### Anti-Pattern 3: Splitting Docs Before Stabilizing Build Pipeline
+### Recommendation
 
-**What:** Moving docs to a separate repo while the monorepo build is being restructured.
+**Keep `sveltekit-i18n` for the infrastructure milestone.** Evaluate Paraglide as a separate investigation in the content migration milestone. The i18n architecture is deeply integrated (42+ files import from `svelte/store`, the i18n context system, dynamic backend translations) and should not be disrupted during infrastructure work.
 
-**Why bad:** Docs depend on monorepo packages for TypeDoc generation and component extraction. Splitting requires building an artifact pipeline (publish packages, install in docs repo, run generation). This is a second migration on top of the first.
+**Confidence:** MEDIUM -- `sveltekit-i18n` compatibility with Svelte 5 is based on the fact that Svelte 5 supports stores, but the library's long-term maintenance status is unclear. The evaluation should happen before content migration.
 
-**Instead:** Move docs to `apps/docs/` within the monorepo. The Turborepo task graph handles build ordering. Revisit splitting only if docs become a bottleneck (they will not at current project scale).
+---
 
-### Anti-Pattern 4: Remote Caching Before Local Caching is Proven
+## Data Flow Architecture: Stores vs Runes
 
-**What:** Setting up Vercel Remote Cache or self-hosted remote cache on day one.
+### Infrastructure Phase Impact: NONE
 
-**Why bad:** Remote caching adds authentication, network dependency, and debugging complexity. Most of the performance win comes from local caching -- skipping rebuilds of unchanged packages on a single machine.
+The infrastructure milestone explicitly defers content migration. Stores continue to work in Svelte 5:
+- `writable`, `readable`, `derived` from `svelte/store` are fully supported
+- The `$store` auto-subscription syntax works in Svelte 5
+- Context API (`setContext`/`getContext`) works unchanged
+- `$:` reactive declarations work in Svelte 5 (legacy mode)
 
-**Instead:** Start with local `.turbo/` cache. Measure CI times. Add remote caching only if CI build times remain a problem after local caching is working.
+### Content Migration Phase Impact: SIGNIFICANT
 
-### Anti-Pattern 5: Changing Output Directories Without Updating All References
+For the roadmap, the content migration milestone will need to address:
 
-**What:** Switching from `build/` to `dist/` in publishable packages without updating TypeScript project references, vitest configs, `.gitignore`, and CI cache patterns.
+| Pattern | Count | Svelte 5 Equivalent |
+|---------|-------|-------------------|
+| `export let prop` | 361 occurrences across 100 components | `let { prop } = $props()` |
+| `$:` reactive declarations | ~139 occurrences | `$derived()` or `$effect()` |
+| `<slot>` | 56 occurrences across 41 components | `{@render children()}` snippets |
+| `createEventDispatcher` | 12 occurrences across 6 components | Callback props |
+| `on:event` directives | ~297 occurrences across 102 components | `onevent` props |
+| `svelte/store` imports | 52 occurrences across 42 files | Can stay (stores work) or migrate to `$state` |
 
-**Why bad:** Stale references to `build/` will silently use old cached outputs or fail to find modules.
+**Key architectural decision for content migration:** The context system (`initAppContext`, `initDataContext`, etc.) uses stores extensively. These can remain as stores in Svelte 5 -- there is no urgency to convert them to runes. The migration tool (`npx sv migrate svelte-5`) handles most mechanical changes but the context architecture should be manually planned.
 
-**Instead:** Use a checklist per package: `exports`, `main`, `module`, `types`, `files`, `.gitignore`, turbo.json `outputs`, any consuming package imports. Do all packages in one PR, not incrementally.
+---
+
+## Replacement-in-Place Strategy
+
+### Step-by-Step Approach
+
+**Phase A: Scaffold Preparation**
+
+1. Archive current frontend config files (Git tracks history, but a reference branch helps)
+2. Run `npx sv create` in a temporary directory with options: `--template minimal --types ts`
+3. Extract the generated infrastructure files:
+   - `svelte.config.js` (minimal, no preprocessor)
+   - `vite.config.ts` (with `defineConfig`)
+   - `tsconfig.json` (Svelte 5 types)
+   - `.svelte-kit/` gitignore pattern
+
+**Phase B: Infrastructure Replacement**
+
+1. Delete from `apps/frontend`: `postcss.config.cjs`, `tailwind.config.mjs`
+2. Replace `svelte.config.js` with scaffold version + OpenVAA customizations (aliases, adapter-node, version polling)
+3. Replace `vite.config.ts` with scaffold version + `@tailwindcss/vite` + port config
+4. Update `package.json` dependencies (see version matrix above)
+5. Rewrite `src/app.css` for Tailwind 4 + DaisyUI 5 (CSS-first config)
+6. Update `vitest.config.ts` for Svelte 5
+
+**Phase C: Theme Migration**
+
+1. Convert DaisyUI theme colors from hex to oklch
+2. Create `@plugin "daisyui/theme"` blocks for light and dark themes
+3. Migrate custom spacing/font/border tokens to `@theme {}` block
+4. Migrate safelist to `@source inline()` directive
+5. Migrate custom `@layer` styles to `@utility` directives
+6. Handle dynamic `staticSettings` color integration
+
+**Phase D: Validation**
+
+1. Run `yarn install` to resolve all dependencies
+2. Run `svelte-kit sync` to generate types
+3. Run `yarn workspace @openvaa/frontend build` -- expect compilation to succeed with no routes
+4. Run `yarn workspace @openvaa/frontend dev` -- expect dev server to start
+5. Verify Docker build still works
+6. Verify CI pipeline passes (with empty frontend)
+
+### Build Order Considering Dependencies
+
+```
+1. packages/* (unchanged, build first via Turborepo ^build dependency)
+   |
+2. apps/frontend infrastructure files (svelte.config.js, vite.config.ts, app.css)
+   |
+3. apps/frontend package.json (dependency updates)
+   |
+4. yarn install (resolve new dependency tree)
+   |
+5. svelte-kit sync (generate Svelte 5 types)
+   |
+6. vite build (validate build pipeline)
+   |
+7. Docker build (validate containerized build)
+```
+
+The key insight is that **packages do not depend on the frontend's Svelte version**. They export JavaScript/TypeScript that is consumed at build time. The dependency flows one way: `packages/* -> apps/frontend`. Updating the frontend framework version has zero impact on package builds.
 
 ---
 
 ## Scalability Considerations
 
-| Concern | Now (10 packages) | At 30 packages | At 100 packages |
-|---------|-------------------|----------------|-----------------|
-| Build time | ~30s full, tolerable | Turbo cache essential | Remote cache essential |
-| CI cost | 4 parallel jobs | Turbo filters affected packages | Only changed packages build |
-| Dependency graph complexity | Manual ordering works | Turbo handles automatically | Need strict layering rules |
-| Versioning | Manual | Changesets handles | Changesets + release groups |
-| Publishing | N/A (nothing published) | 3-5 packages, manageable | Need publish pipeline optimization |
-| Developer onboarding | Read CLAUDE.md | Turbo makes build order invisible | Need architecture docs |
+| Concern | Current State | After Svelte 5 Infrastructure | After Content Migration |
+|---------|--------------|-------------------------------|----------------------|
+| Build time | ~45s full build | No change (packages unchanged) | Potentially faster (Svelte 5 compiler improvements) |
+| Bundle size | Baseline | No change (no content yet) | Potentially smaller (tree-shakable runes, TW4 smaller CSS) |
+| Dev server startup | ~5s | No change | Potentially faster (Vite 6 improvements) |
+| Docker image size | Baseline | No change | No change |
+| CI pipeline duration | ~5-8 min | No change | No change |
 
 ---
 
-## Build Order (Recommended Implementation Sequence)
+## Anti-Patterns to Avoid
 
-Implementing these changes in the wrong order creates unnecessary churn. This is the recommended sequence:
+### Anti-Pattern 1: Mixing Scaffold and Upgrade
+**What:** Trying to merge a fresh scaffold with in-place `npx sv migrate` on existing code.
+**Why bad:** Creates conflicting config -- the migration tool assumes existing Svelte 4 infrastructure, the scaffold assumes a clean start.
+**Instead:** Do the scaffold for infrastructure files, defer content migration to the next milestone where `npx sv migrate svelte-5` can be run on the actual component code.
 
-### Step 1: Add Turborepo (no other changes)
+### Anti-Pattern 2: Migrating i18n During Infrastructure Phase
+**What:** Switching from `sveltekit-i18n` to Paraglide while also changing the build tooling.
+**Why bad:** Two major changes at once make debugging impossible. The i18n system touches 42+ files and the context architecture.
+**Instead:** Keep `sveltekit-i18n` during infrastructure. Evaluate Paraglide separately.
 
-**Touched files:** `package.json` (root), new `turbo.json`, `.gitignore` (add `.turbo/`)
+### Anti-Pattern 3: Using `@config` to Keep JS Tailwind Config
+**What:** Adding `@config "../../tailwind.config.mjs"` to `app.css` to avoid migrating to CSS-first.
+**Why bad:** Defeats the purpose of the Tailwind 4 upgrade. The JS config is a legacy compatibility layer, not a long-term strategy. DaisyUI 5 expects CSS-first configuration.
+**Instead:** Fully migrate to CSS-first `@theme` configuration.
 
-**Validation:** Run `turbo run build --filter='./packages/*'` and verify output matches existing `yarn build:shared`. Run `turbo run test:unit` and verify all tests pass. Compare build times.
+### Anti-Pattern 4: Converting All Stores to Runes During Infrastructure
+**What:** Rewriting context stores from `writable`/`derived` to `$state`/`$derived` while replacing build config.
+**Why bad:** Stores work perfectly in Svelte 5. Converting them is content migration work, not infrastructure work.
+**Instead:** Leave stores as-is. Address in the content migration milestone.
 
-### Step 2: Update CI to use Turborepo
-
-**Touched files:** `.github/workflows/main.yaml`
-
-**Validation:** CI passes on all 4 jobs. Shared build job uses Turbo. Cache hits visible in second run.
-
-### Step 3: Restructure directories (apps/ + packages/)
-
-**Touched files:** Move directories, update root `package.json` workspaces, Docker compose, CI paths, docs config, husky hooks.
-
-**Validation:** `turbo run build` succeeds. `yarn dev` starts Docker stack. `yarn test:e2e` passes. Docs site builds.
-
-### Step 4: Add tsup to publishable packages
-
-**Touched files:** `packages/core/`, `packages/data/`, `packages/matching/` -- add `tsup.config.ts`, update `package.json` build script, update exports/main/module/types fields.
-
-**Validation:** `turbo run build --filter=@openvaa/core` produces correct `dist/` output. Frontend and backend still build and run correctly with the new output paths.
-
-### Step 5: Remove `"private": true` from publishable packages
-
-**Touched files:** `packages/core/package.json`, `packages/data/package.json`, `packages/matching/package.json` -- add publishConfig, files, repository, license metadata.
-
-**Validation:** `npm pack --dry-run` in each package shows correct file list. `yarn install` still resolves workspace links.
-
-### Step 6: Add Changesets
-
-**Touched files:** New `.changeset/config.json`, new `.github/workflows/release.yml`, `package.json` (root) add `@changesets/cli` devDep.
-
-**Validation:** `yarn changeset` creates a changeset file. `yarn changeset version` bumps versions correctly. `yarn changeset publish --dry-run` shows correct publish targets.
+### Anti-Pattern 5: Removing `preserveSymlinks` Without Testing
+**What:** Dropping `preserveSymlinks: true` from vite config and tsconfig without verifying monorepo resolution.
+**Why bad:** This setting exists because of workspace package resolution. Removing it without testing can cause "module not found" errors.
+**Instead:** Test without it, but have it ready to add back if workspace resolution breaks.
 
 ---
 
-## Integration Points Summary
+## Files to Create/Delete/Modify Summary
 
-| New Tooling | Integrates With | How |
-|------------|----------------|-----|
-| Turborepo | Yarn workspaces | Reads `workspaces` field, orchestrates `package.json` scripts |
-| Turborepo | GitHub Actions CI | `turbo run` replaces manual `yarn workspaces foreach` commands |
-| Turborepo | Docker dev | No direct integration -- Docker still uses `yarn build:shared` internally, but that script now calls Turbo |
-| Changesets | GitHub Actions | Automated version PRs and npm publish via `changesets/action` |
-| Changesets | npm registry | OIDC trusted publishing (no tokens needed) |
-| Changesets | Turborepo | `changeset publish` can invoke `turbo run build` before publishing |
-| tsup | Turborepo | Turbo caches tsup output directories |
-| tsup | TypeScript | tsup uses esbuild for emit but tsc for type checking (via `dts: true`) |
-| apps/ restructure | Docker compose | Volume mount paths need updating |
-| apps/ restructure | Docs scripts | `FRONTEND_ROOT` path calculation needs updating |
+### CREATE (new files)
+None -- the scaffold files replace existing ones.
+
+### DELETE
+| File | Reason |
+|------|--------|
+| `apps/frontend/postcss.config.cjs` | Tailwind 4 uses Vite plugin, not PostCSS |
+| `apps/frontend/tailwind.config.mjs` | Tailwind 4 uses CSS-first `@theme` in `app.css` |
+
+### MODIFY (significant changes)
+| File | Nature of Change |
+|------|-----------------|
+| `apps/frontend/svelte.config.js` | Remove preprocessor, simplify aliases |
+| `apps/frontend/vite.config.ts` | Add `@tailwindcss/vite`, remove `vite-tsconfig-paths` |
+| `apps/frontend/src/app.css` | Complete rewrite for TW4 + DaisyUI 5 |
+| `apps/frontend/package.json` | Major dependency version updates |
+| `apps/frontend/vitest.config.ts` | Update for Svelte 5 test plugins |
+
+### UNCHANGED (verified no impact)
+| File/Area | Verified |
+|-----------|----------|
+| `turbo.json` | Framework-agnostic task definitions |
+| `docker-compose.dev.yml` | Path-based volume mounts |
+| `apps/frontend/docker-compose.dev.yml` | Service definition unchanged |
+| `apps/frontend/Dockerfile` | Multi-stage build unchanged |
+| `.github/workflows/main.yaml` | Yarn workspace commands unchanged |
+| `tests/playwright.config.ts` | Browser-based testing unchanged |
+| `apps/frontend/tsconfig.json` | Minor updates only (if needed) |
+| `apps/frontend/src/app.html` | Template compatible as-is |
+| `apps/frontend/src/app.d.ts` | Type definitions unchanged at infra level |
+| All `packages/*` | No Svelte dependency |
+| `apps/strapi/*` | Independent of frontend framework |
+
+---
 
 ## Sources
 
-- [Turborepo documentation: Structuring a repository](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository) -- HIGH confidence
-- [Turborepo documentation: Configuring tasks](https://turborepo.dev/docs/crafting-your-repository/configuring-tasks) -- HIGH confidence
-- [Turborepo documentation: Add to existing repository](https://turborepo.dev/docs/getting-started/add-to-existing-repository) -- HIGH confidence
-- [Turborepo + Yarn 4 nodeLinker compatibility](https://github.com/vercel/turborepo/issues/4953) -- HIGH confidence (verified: current project already uses `nodeLinker: node-modules`)
-- [Changesets documentation](https://changesets-docs.vercel.app/) -- HIGH confidence
-- [Changesets GitHub Action](https://github.com/changesets/action) -- HIGH confidence
-- [npm trusted publishing with OIDC](https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/) -- MEDIUM confidence (requires npm CLI >=11.5.1 and Node >=22.14.0; project currently on Node 20, may need fallback to NPM_TOKEN)
-- [tsup documentation](https://tsup.egoist.dev/) -- HIGH confidence
-- [Monorepo tools comparison 2026](https://www.aviator.co/blog/monorepo-tools/) -- MEDIUM confidence
-- [Dual ESM/CJS package publishing](https://mayank.co/blog/dual-packages/) -- HIGH confidence
+- [Svelte 5 migration guide](https://svelte.dev/docs/svelte/v5-migration-guide)
+- [Migrating to SvelteKit v2](https://svelte.dev/docs/kit/migrating-to-sveltekit-2)
+- [sv create documentation](https://svelte.dev/docs/cli/sv-create)
+- [sv migrate documentation](https://svelte.dev/docs/cli/sv-migrate)
+- [Tailwind CSS v4 upgrade guide](https://tailwindcss.com/docs/upgrade-guide)
+- [Install Tailwind CSS with SvelteKit](https://tailwindcss.com/docs/guides/sveltekit)
+- [DaisyUI 5 upgrade guide](https://daisyui.com/docs/upgrade/?lang=en)
+- [DaisyUI 5 SvelteKit installation](https://daisyui.com/docs/install/sveltekit/)
+- [DaisyUI 5 themes documentation](https://daisyui.com/docs/themes/)
+- [DaisyUI 5 release notes](https://daisyui.com/docs/v5/?lang=en)
+- [@sveltejs/vite-plugin-svelte](https://www.npmjs.com/package/@sveltejs/vite-plugin-svelte)
+- [Paraglide for SvelteKit](https://svelte.dev/docs/cli/paraglide)
+- [Refactoring Svelte stores to $state runes](https://www.loopwerk.io/articles/2025/svelte-5-stores/)
+- [Global state in Svelte 5: do's and don'ts](https://mainmatter.com/blog/2025/03/11/global-state-in-svelte-5/)
