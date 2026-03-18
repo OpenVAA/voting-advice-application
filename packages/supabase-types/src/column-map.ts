@@ -63,7 +63,10 @@ export const COLUMN_MAP = {
 
   // Auth columns (Phase 10)
   auth_user_id: 'authUserId',
-  published: 'published'
+  published: 'published',
+
+  // Candidate columns (Phase 22)
+  terms_of_use_accepted: 'termsOfUseAccepted'
 } as const;
 
 /** Database column name (snake_case) */
