@@ -31,7 +31,8 @@
 REVOKE UPDATE ON candidates FROM authenticated;
 GRANT UPDATE (
   name, short_name, info, color, image, sort_order, subtype,
-  custom_data, first_name, last_name, answers, created_at, updated_at
+  custom_data, first_name, last_name, answers, created_at, updated_at,
+  terms_of_use_accepted
 ) ON candidates TO authenticated;
 
 -- =====================================================================
