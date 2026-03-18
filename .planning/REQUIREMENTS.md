@@ -16,10 +16,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### Adapter Foundation
 
-- [ ] **ADPT-01**: supabaseAdapterMixin providing typed Supabase client with init({ fetch }) compatibility
-- [ ] **ADPT-02**: Row mapping utility using COLUMN_MAP/PROPERTY_MAP for snake_case→camelCase transforms
-- [ ] **ADPT-03**: JSONB localization utility implementing 3-tier fallback (requested→default→first key)
-- [ ] **ADPT-04**: staticSettings.dataAdapter.type = 'supabase' support in dynamic import switch
+- [x] **ADPT-01**: supabaseAdapterMixin providing typed Supabase client with init({ fetch }) compatibility
+- [x] **ADPT-02**: Row mapping utility using COLUMN_MAP/PROPERTY_MAP for snake_case→camelCase transforms
+- [x] **ADPT-03**: JSONB localization utility implementing 3-tier fallback (requested→default→first key)
+- [x] **ADPT-04**: staticSettings.dataAdapter.type = 'supabase' support in dynamic import switch
 
 ### Auth Migration
 
@@ -100,10 +100,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | SCHM-02 | Phase 22 | Complete |
 | SCHM-03 | Phase 22 | Complete |
 | SCHM-04 | Phase 22 | Complete |
-| ADPT-01 | Phase 23 | Pending |
-| ADPT-02 | Phase 23 | Pending |
-| ADPT-03 | Phase 23 | Pending |
-| ADPT-04 | Phase 23 | Pending |
+| ADPT-01 | Phase 23 | Complete |
+| ADPT-02 | Phase 23 | Complete |
+| ADPT-03 | Phase 23 | Complete |
+| ADPT-04 | Phase 23 | Complete |
 | AUTH-01 | Phase 24 | Pending |
 | AUTH-02 | Phase 24 | Pending |
 | AUTH-03 | Phase 24 | Pending |
