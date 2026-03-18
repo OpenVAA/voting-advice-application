@@ -52,7 +52,7 @@
 
 **Milestone Goal:** Replace the Strapi frontend adapter with a Supabase adapter, migrate auth, integrate Edge Functions, update E2E tests, and remove all Strapi dependencies.
 
-- [ ] **Phase 22: Schema Migrations** - Add missing schema objects that adapter features depend on
+- [x] **Phase 22: Schema Migrations** - Add missing schema objects that adapter features depend on (completed 2026-03-18)
 - [ ] **Phase 23: Adapter Foundation** - Build the mixin, transforms, and localization utilities that all adapter classes need
 - [ ] **Phase 24: Auth Migration** - Replace Strapi JWT auth with Supabase cookie-based sessions
 - [ ] **Phase 25: DataProvider** - Implement all read operations; voter app works end-to-end on Supabase
@@ -201,7 +201,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 22. Schema Migrations | 3/4 | In Progress|  | - |
+| 22. Schema Migrations | 4/4 | Complete   | 2026-03-18 | - |
 | 23. Adapter Foundation | v3.0 | 0/? | Not started | - |
 | 24. Auth Migration | v3.0 | 0/? | Not started | - |
 | 25. DataProvider | v3.0 | 0/? | Not started | - |
