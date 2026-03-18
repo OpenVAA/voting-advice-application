@@ -96,48 +96,48 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHM-01 | - | Pending |
-| SCHM-02 | - | Pending |
-| SCHM-03 | - | Pending |
-| SCHM-04 | - | Pending |
-| ADPT-01 | - | Pending |
-| ADPT-02 | - | Pending |
-| ADPT-03 | - | Pending |
-| ADPT-04 | - | Pending |
-| AUTH-01 | - | Pending |
-| AUTH-02 | - | Pending |
-| AUTH-03 | - | Pending |
-| AUTH-04 | - | Pending |
-| READ-01 | - | Pending |
-| READ-02 | - | Pending |
-| READ-03 | - | Pending |
-| READ-04 | - | Pending |
-| READ-05 | - | Pending |
-| READ-06 | - | Pending |
-| WRIT-01 | - | Pending |
-| WRIT-02 | - | Pending |
-| WRIT-03 | - | Pending |
-| WRIT-04 | - | Pending |
-| ADMN-01 | - | Pending |
-| ADMN-02 | - | Pending |
-| EDGE-01 | - | Pending |
-| EDGE-02 | - | Pending |
-| EDGE-03 | - | Pending |
-| TEST-01 | - | Pending |
-| TEST-02 | - | Pending |
-| TEST-03 | - | Pending |
-| TEST-04 | - | Pending |
-| ENVR-01 | - | Pending |
-| ENVR-02 | - | Pending |
-| ENVR-03 | - | Pending |
-| ENVR-04 | - | Pending |
-| ENVR-05 | - | Pending |
+| SCHM-01 | Phase 22 | Pending |
+| SCHM-02 | Phase 22 | Pending |
+| SCHM-03 | Phase 22 | Pending |
+| SCHM-04 | Phase 22 | Pending |
+| ADPT-01 | Phase 23 | Pending |
+| ADPT-02 | Phase 23 | Pending |
+| ADPT-03 | Phase 23 | Pending |
+| ADPT-04 | Phase 23 | Pending |
+| AUTH-01 | Phase 24 | Pending |
+| AUTH-02 | Phase 24 | Pending |
+| AUTH-03 | Phase 24 | Pending |
+| AUTH-04 | Phase 24 | Pending |
+| READ-01 | Phase 25 | Pending |
+| READ-02 | Phase 25 | Pending |
+| READ-03 | Phase 25 | Pending |
+| READ-04 | Phase 25 | Pending |
+| READ-05 | Phase 25 | Pending |
+| READ-06 | Phase 25 | Pending |
+| WRIT-01 | Phase 26 | Pending |
+| WRIT-02 | Phase 26 | Pending |
+| WRIT-03 | Phase 26 | Pending |
+| WRIT-04 | Phase 26 | Pending |
+| ADMN-01 | Phase 27 | Pending |
+| ADMN-02 | Phase 27 | Pending |
+| EDGE-01 | Phase 28 | Pending |
+| EDGE-02 | Phase 28 | Pending |
+| EDGE-03 | Phase 28 | Pending |
+| TEST-01 | Phase 29 | Pending |
+| TEST-02 | Phase 29 | Pending |
+| TEST-03 | Phase 29 | Pending |
+| TEST-04 | Phase 29 | Pending |
+| ENVR-01 | Phase 30 | Pending |
+| ENVR-02 | Phase 30 | Pending |
+| ENVR-03 | Phase 30 | Pending |
+| ENVR-04 | Phase 30 | Pending |
+| ENVR-05 | Phase 30 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 36 total
-- Mapped to phases: 0
-- Unmapped: 36
+- Mapped to phases: 36
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after initial definition*
+*Last updated: 2026-03-18 after roadmap creation*
