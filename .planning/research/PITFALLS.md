@@ -1,552 +1,323 @@
-# Pitfalls Research
+# Pitfalls Research: Frontend Adapter Migration (Strapi to Supabase)
 
-**Domain:** Strapi v5 to Supabase migration with multi-tenant support for a SvelteKit 2 VAA monorepo
-**Researched:** 2026-03-12
-**Confidence:** HIGH (official Supabase docs, codebase analysis, multiple verified community sources)
+**Domain:** SvelteKit frontend adapter migration from Strapi REST API to Supabase (PostgREST + GoTrue + Edge Functions)
+**Researched:** 2026-03-18
+**Confidence:** HIGH (codebase analysis, official Supabase docs, verified community patterns)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: RLS Policies Missing on New Tables
+### Pitfall 1: Using getSession() Instead of getUser()/getClaims() for Server-Side Auth Checks
 
 **What goes wrong:**
-Every new table created via SQL Editor or migration files has RLS disabled by default. The table is fully accessible through Supabase's auto-generated REST API (PostgREST) to anyone with the anon key. In January 2025, 170+ apps built with AI coding tools were found to have exposed databases because developers forgot to enable RLS. 83% of exposed Supabase databases involve RLS misconfigurations. This is the single most common Supabase security failure.
+The existing `hooks.server.ts` already calls `supabase.auth.getSession()` then `supabase.auth.getUser()` in `safeGetSession()` -- this is correct. The danger is that new route load functions or API routes use `getSession()` alone for authorization decisions. The session data from `getSession()` comes directly from cookies without verification. A malicious client can craft a cookie with a spoofed user ID, role claims, or session data that `getSession()` will trust.
 
-In OpenVAA's context, this means candidate personal data (emails, identifiers, registration keys), answer data, and organization-scoped election data could all be publicly accessible if a single migration forgets `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`.
+Supabase has introduced `getClaims()` (available in `@supabase/supabase-js` v2.95.0+) which validates the JWT signature locally using the project's public key -- faster than `getUser()` (no network round-trip) and more secure than `getSession()` (signature verification). However, `getClaims()` cannot detect server-side session revocation (logout from another device).
 
 **Why it happens:**
-- Developers create tables iteratively during schema design, adding RLS "later"
-- SQL migrations are written focusing on schema structure, not access control
-- The `storage.objects` table already has RLS enabled by default, but custom tables in the `public` schema do not
-- When copying table definitions from Strapi schemas (which have no RLS concept), the access control translation step is missed entirely
+- Strapi auth was simpler: a JWT `token` cookie was the entire auth state, and the backend validated it on each API call. Developers are used to trusting cookie contents.
+- `getSession()` is faster and returns a familiar `session` object. It feels like the "right" call.
+- The existing codebase has `safeGetSession` in hooks but new code paths may bypass it.
+- The Supabase SSR docs historically recommended `getSession()` + `getUser()` before `getClaims()` existed, so older examples show the pre-`getClaims()` pattern.
 
 **How to avoid:**
-- Adopt a strict convention: every `CREATE TABLE` migration MUST include `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` and at least one policy in the same migration file. Never split table creation and RLS into separate migrations.
-- Create a migration template that includes RLS boilerplate by default:
-  ```sql
-  CREATE TABLE public.my_table (...);
-  ALTER TABLE public.my_table ENABLE ROW LEVEL SECURITY;
-  -- Deny all by default; explicit policies grant access
-  ```
-- Use Supabase's built-in Security Advisor (Splinter linter) to scan for tables with RLS disabled. The advisor checks for three specific conditions: `0007` (policy exists but RLS disabled), `0008` (RLS enabled but no policies), and `0013` (RLS disabled in public schema).
-- Add a CI check that runs `supabase db lint` and fails on any RLS-related warnings before merging migration PRs.
-- After every `supabase db push` or deployment, verify RLS status in the Supabase dashboard under Database > Security Advisor.
+- Establish a rule: server-side code (load functions, API routes, hooks) MUST use `event.locals.safeGetSession()` or `getClaims()`, NEVER raw `getSession()` for authorization.
+- Update the `safeGetSession` helper in `hooks.server.ts` to use `getClaims()` for the common case (role checking from JWT claims) and reserve `getUser()` for operations that need to verify the session is still active server-side (logout detection).
+- The current `app.d.ts` already types `locals.safeGetSession` -- keep this as the single entry point.
+- Add a linting rule or code review checklist item: "No direct calls to `supabase.auth.getSession()` outside of `hooks.server.ts`."
 
 **Warning signs:**
-- Migration files that contain `CREATE TABLE` without a corresponding `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
-- Supabase dashboard showing yellow warnings on the Security Advisor page
-- API calls returning data without authentication headers (test with `curl` using only the anon key)
-- Any table that "works fine" during development without explicit policies
+- Any `.server.ts` file importing `supabase` and calling `.auth.getSession()` directly.
+- Authorization logic that reads `session.user` without going through `safeGetSession`.
+- Supabase console warnings: "Using supabase.auth.getSession() is potentially insecure."
 
-**Phase to address:** Phase 1 (Schema Design) -- establish convention and template before the first table is created
+**Phase to address:** Auth migration phase (first phase of adapter work) -- establish the auth pattern before any data adapter work begins.
 
 ---
 
-### Pitfall 2: RLS Policy Performance Degradation at Scale
+### Pitfall 2: Dual Auth Token State During Migration (JWT Cookie + Supabase Session Cookie)
 
 **What goes wrong:**
-RLS policies execute as additional WHERE clauses on every query. Naive policies can cause 100x+ performance degradation on tables with thousands of rows. The most critical performance killers:
+The current codebase maintains auth via a single `token` cookie containing a Strapi JWT (see `AUTH_TOKEN_KEY = 'token'` in `authToken.ts`). Supabase auth uses `sb-<project-ref>-auth-token` cookies managed by `@supabase/ssr`. During migration, both cookie types may exist simultaneously. The `hooks.server.ts` already checks for both (`token || event.cookies.getAll().some(c => c.name.startsWith('sb-'))`), but the downstream code paths diverge:
 
-1. **Missing indexes on policy columns**: A policy like `auth.uid() = user_id` without an index on `user_id` forces full table scans. Supabase testing showed improvement from 171ms to ~0.1ms just by adding a btree index.
-2. **Per-row function evaluation**: `auth.uid()` and custom functions like `get_tenant_id()` execute once per row evaluated, not once per query. On a table with 10,000 candidate answers, that means 10,000 function calls.
-3. **Inefficient join patterns**: `auth.uid() IN (SELECT user_id FROM team_user WHERE team_user.team_id = table.team_id)` evaluates the subquery for every row. The correct pattern reverses it: `team_id IN (SELECT team_id FROM team_user WHERE user_id = auth.uid())`.
+- The `candidate/+layout.server.ts` reads `cookies.get(AUTH_TOKEN_KEY)` and passes `token` in page data
+- The `authContext.ts` derives `authToken` from `page.data.token`
+- The `candidateContext.ts` passes `authToken` to every DataWriter call
+- The `UniversalDataWriter.WithAuth` type expects `authToken: string`
 
-For OpenVAA specifically, the candidate answers table and nominations table will be queried heavily during election periods (potentially thousands of concurrent voters requesting matching results). A slow RLS policy on these tables will bottleneck the entire voter experience.
+Migrating to Supabase sessions means these flows must change fundamentally: from "pass a JWT string to every API call" to "the Supabase client carries the session via cookies automatically." If both auth mechanisms are partially wired, you get phantom auth states where the user appears logged in (cookie exists) but API calls fail (wrong auth mechanism), or vice versa.
 
 **Why it happens:**
-- RLS policies are written to be logically correct without considering execution plans
-- Multi-tenant RLS (`organization_id = get_current_org()`) on every table seems simple but multiplies overhead
-- Developers test with small datasets (10 candidates) where performance issues are invisible
-- The load testing phase is scheduled after schema design -- by then, changing RLS policies means changing the security model
+- The entire `DataWriter` interface is designed around explicit `authToken` passing (every write method takes `WithAuth` with `authToken: string`).
+- A gradual migration tempts developers to keep the Strapi `token` cookie "for now" while adding Supabase session cookies.
+- The `hooks.server.ts` OR logic (`token || sb-*`) makes both appear to work during development.
 
 **How to avoid:**
-- Always wrap function calls in SELECT to enable PostgreSQL's initPlan caching: `(SELECT auth.uid())` instead of `auth.uid()`. This caches the result per-statement instead of evaluating per-row.
-- Add btree indexes on every column referenced in an RLS policy. This is non-negotiable.
-- Use `SECURITY DEFINER` functions for complex permission checks that involve joining multiple tables. This lets the function bypass RLS on the joined tables (running as the function creator) while still enforcing RLS on the target table.
-- Add `TO authenticated` (or appropriate role) to every policy to skip evaluation entirely for anonymous/non-matching roles.
-- Structure load tests specifically to measure query performance WITH RLS enabled, not just raw query performance. The load testing phase must test realistic query patterns against realistic data volumes.
-- Use `EXPLAIN ANALYZE` on queries against tables with RLS to verify the execution plan includes index scans, not sequential scans.
+- Clean break: the SupabaseDataWriter should NOT accept `authToken` as a parameter. Instead, it should use the Supabase client from `event.locals.supabase` (server-side) or the browser client singleton (client-side), which carry the session automatically.
+- The `WithAuth` type in `dataWriter.type.ts` either needs to become optional/conditional on adapter type, or the Supabase adapter should ignore it and use the implicit session.
+- Remove the `AUTH_TOKEN_KEY` cookie handling entirely when cutting over. Do not maintain a compatibility layer.
+- The `candidate/+layout.server.ts` should pass session/user data from `event.locals.safeGetSession()` instead of a raw token.
 
 **Warning signs:**
-- Queries that take >100ms on tables with fewer than 10,000 rows
-- `EXPLAIN ANALYZE` showing "Seq Scan" on tables with RLS policies
-- Load tests showing dramatically different performance between queries with `service_role` key (bypasses RLS) and `anon` key (evaluates RLS)
-- Policy definitions that reference columns from other tables without wrapping the subquery pattern correctly
+- Both `token` cookie and `sb-*` cookies present in browser dev tools.
+- Login works but data writes fail (or vice versa).
+- `page.data.token` is undefined but `page.data.session` exists (or vice versa).
 
-**Phase to address:** Phase 1 (Schema Design) for index creation alongside policies; Phase 3 (Load Testing) for validation
+**Phase to address:** Auth migration phase -- this is the single most impactful architectural change and must be completed before DataWriter implementation.
 
 ---
 
-### Pitfall 3: Multi-Tenant Isolation Leaks with RLS-Based Tenancy
+### Pitfall 3: RLS Returns Empty Results Instead of Errors -- Silent Data Loss
 
 **What goes wrong:**
-OpenVAA is adding multi-tenant support (shared infrastructure, data isolated by organization) where it did not exist before. With the RLS-per-tenant approach (shared tables with `organization_id` column), a single misconfigured policy allows Tenant A to read or modify Tenant B's data. This is not a hypothetical -- it is the primary failure mode of RLS-based multi-tenancy.
+Strapi returns explicit HTTP errors (401, 403, 404) when queries fail due to authorization or missing data. PostgREST with RLS returns HTTP 200 with an empty array `[]` when RLS policies filter out all rows. The frontend receives a successful response with no data, and error handling code never triggers. Users see blank screens, empty lists, or "no results" states that appear intentional but are actually authorization failures.
 
-Specific leak vectors in OpenVAA's context:
-- A candidate updates their answers, but the mutation does not filter by `organization_id` -- the RLS INSERT policy checks `organization_id` on new rows, but the application passes the wrong org context
-- An admin queries all candidates, and the RLS policy correctly filters by org, but a JOIN to the nominations table (which also needs tenant filtering) returns cross-tenant nominations because the nominations table policy was missed
-- JWT custom claims store `organization_id`, but the claim is stale (user was removed from org, token is valid for up to 1 hour)
+This is particularly dangerous for OpenVAA because:
+- The voter app shows elections, candidates, questions -- empty arrays mean "no election data exists" rather than "you don't have access"
+- The candidate app shows "no nominations" instead of "your session expired"
+- The admin app shows "no data to manage" instead of "your project_id is wrong"
 
 **Why it happens:**
-- Adding multi-tenancy to a system that was single-tenant means every existing query pattern needs tenant context added. It is easy to miss one.
-- RLS policies on related tables must all agree on the tenant filter. If `candidates` filters by org but `nominations` does not, a JOIN leaks data.
-- JWT-based tenant identification has a 1-hour cache window -- changes to user-org associations are not reflected until token refresh.
-- The "schema-per-tenant" alternative avoids these leaks but creates different problems: Supabase's PostgREST and Realtime are primarily designed for the `public` schema. Schema changes must be applied to N schemas manually. Cross-schema foreign key constraints should be avoided. There is no built-in way to dynamically expose new schemas when new tenants sign up.
+- PostgREST by design does not expose RLS failures. This is a security feature (prevents enumeration attacks) but creates terrible DX.
+- The existing Strapi adapter code uses `.length === 0` as "no data" and throws only on HTTP errors. Reusing this pattern with PostgREST means RLS failures become silent.
+- The `published = true` filter in anon RLS policies means development data (unpublished) is invisible to anon queries -- everything looks correct with admin auth but breaks without it.
+- Supabase's error response format (`{ data: [], error: null }`) is indistinguishable from a legitimate empty result.
 
 **How to avoid:**
-- Use RLS-per-tenant with `organization_id` on every tenant-scoped table (the right choice for OpenVAA given the need for both single-tenant and multi-tenant deployment). Do NOT use schema-per-tenant.
-- Store `organization_id` in `auth.users.raw_app_meta_data` (not `user_metadata`, which users can modify). Use a Custom Access Token Hook to include it in the JWT.
-- Create a helper function `get_org_id()` that extracts the organization ID from the JWT: `((SELECT current_setting('request.jwt.claims', true)::json->>'app_metadata')::json->>'organization_id')::uuid`. Wrap in `(SELECT ...)` for caching.
-- Write integration tests that specifically verify tenant isolation: create data as Tenant A, attempt to read as Tenant B, assert zero results. Automate these tests.
-- For single-tenant deployments, set a default organization_id so the same schema works without multi-tenant configuration (the RLS policies still run but always match the single org).
-- Document that organization membership changes take up to 1 hour to propagate due to JWT caching. For immediate revocation, implement a database-level check (lookup table) as a defense-in-depth measure, accepting the performance cost on critical operations.
+- Add explicit "expected non-empty" assertions in the SupabaseDataProvider for queries that MUST return data (e.g., `getElectionData` with no filters should never return empty in a configured project).
+- Implement a diagnostic mode that logs PostgREST response metadata alongside query results during development.
+- For critical queries (elections, app_settings), treat empty results as errors: if `getElectionData()` returns `[]`, throw an error with debugging context (current auth state, project_id, published status).
+- Test with both anon and authenticated clients during development. The voter app uses anon (no auth), so all voter-facing data must have `published = true`.
+- Add a "data health check" endpoint or startup validation that verifies core data is accessible.
 
 **Warning signs:**
-- Tables in the schema that do not have an `organization_id` column but contain tenant-specific data
-- RLS policies that reference `auth.uid()` but not `organization_id` on tenant-scoped tables
-- Tests that only verify "user can see their own data" but never verify "user cannot see other tenant's data"
-- Any query pattern that uses `service_role` key to "simplify" multi-tenant logic (bypasses all RLS)
+- Voter app renders correctly in development but shows empty pages in production (published flag difference).
+- Candidate app loads but shows "no nominations" after session expiry.
+- E2E tests pass locally (service_role bypasses RLS) but fail in CI (anon/authenticated respects RLS).
+- Zero-length arrays in API responses where data is expected.
 
-**Phase to address:** Phase 1 (Schema Design) for column and policy design; Phase 2 (Auth) for JWT claims setup; Phase 4 (Integration Testing) for isolation verification
+**Phase to address:** DataProvider implementation phase -- build defensive empty-result handling into every query method from the start.
 
 ---
 
-### Pitfall 4: Supabase Auth Cannot Natively Integrate Signicat/Bank OIDC
+### Pitfall 4: Forgetting to Handle JSONB Localization Client-Side
 
 **What goes wrong:**
-OpenVAA currently uses Signicat for bank authentication via a custom OIDC flow (authorization code + PKCE). The frontend exchanges an authorization code for an ID token, stores it in an httpOnly cookie, and uses the ID token claims to verify candidate identity during preregistration. Supabase Auth has a fixed list of built-in OAuth providers (Google, GitHub, Apple, etc.) and does NOT support arbitrary custom OIDC providers in the dashboard as of early 2026. The "generic OIDC provider" feature has been in discussion since 2022 (GitHub Discussion #6547) and Supabase plans to add it, but it is not production-ready.
+Strapi returns pre-translated strings -- the Strapi adapter calls `translate()` and `translateObject()` to extract the locale-appropriate string from Strapi's localized fields. The Supabase schema stores all translatable fields as JSONB objects (`{"en": "Election", "fi": "Vaalit", "sv": "Val"}`). The `get_localized()` SQL function exists but is ONLY used server-side by email helpers (as documented in `000-functions.sql`). The API returns raw JSONB for all localized fields.
 
-This means you cannot simply "switch on" Signicat in Supabase Auth settings. The bank authentication flow requires custom implementation.
+If the SupabaseDataProvider returns raw JSONB where the frontend expects strings, you get `[object Object]` rendered in the UI, TypeScript type errors (string vs Record), or crashes when calling `.length` or `.split()` on an object.
 
 **Why it happens:**
-- Developers assume "Supabase Auth supports OIDC" means any OIDC provider works out of the box. It does not -- it supports specific pre-configured providers.
-- Supabase's Third-Party Auth feature allows trusting external JWTs, but this is for Supabase APIs to trust tokens from another auth system, not for Supabase Auth to act as an OIDC client.
-- The existing OpenVAA flow handles the OIDC exchange server-side in SvelteKit (at `/api/oidc/token`) and stores the ID token in a cookie. This is independent of Strapi's auth system and can survive the migration -- but it must be explicitly preserved, not replaced.
+- The Strapi adapter's `parseBasics()`, `parseCandidate()`, etc. do locale extraction inline. Developers may assume Supabase handles this differently.
+- The `@openvaa/data` types expect string values for `name`, `info`, `shortName`, etc. But the database stores JSONB. The type gap is invisible until runtime.
+- The column-map (`COLUMN_MAP`) handles snake_case -> camelCase but does NOT handle JSONB -> string extraction.
+- A decision was already made (see `11-DECISION.md`) to do locale selection client-side, but this means EVERY localized field in EVERY query must be processed.
 
 **How to avoid:**
-- Keep the bank authentication (Signicat OIDC) flow in SvelteKit server routes, exactly as it works today. The `/api/oidc/token` endpoint exchanges the authorization code for an ID token and stores it in a cookie. This is already backend-agnostic.
-- After bank auth verifies candidate identity, use Supabase Auth for session management: create a Supabase user via `supabase.auth.admin.createUser()` or use `signInWithIdToken()` if the Signicat JWT meets Supabase's third-party auth requirements (asymmetric signing with JWKS endpoint -- Signicat does provide this).
-- If using `signInWithIdToken()`, configure Supabase Third-Party Auth to trust Signicat's JWKS endpoint. The JWT must use asymmetric signing (RS256) and include a `kid` header. Verify Signicat's token format meets these requirements before committing to this approach.
-- If `signInWithIdToken()` does not work due to Signicat's encrypted JWTs (the current flow uses JWE with decryption keys), implement a SvelteKit server route that decrypts the Signicat token, verifies claims, and creates/signs in the Supabase user server-side using the admin API.
-- Do NOT attempt to make Supabase Auth "handle" the entire Signicat flow. The decryption step (`IDENTITY_PROVIDER_DECRYPTION_JWKS` in .env) is a custom requirement that no standard OAuth library handles automatically.
+- Create a `localizeRow<T>()` utility that takes a Supabase row and a locale, and extracts string values from all JSONB-localized columns. This replaces the Strapi `translate()` calls.
+- Define which columns are JSONB-localized in a central constant (derived from the schema or COLUMN_MAP). Don't rely on developers remembering which fields need localization.
+- The localization utility must implement the same fallback chain as `get_localized()`: requested locale -> project default locale -> first available key -> null.
+- Write unit tests: given a row with `name: {"en": "Foo", "fi": "Bar"}` and locale `"fi"`, assert the result is `"Bar"`.
+- Consider whether the SupabaseDataProvider should return localized strings (like Strapi does) or raw JSONB (letting the frontend handle it). The existing `DataProvider` return types expect strings, so the provider must localize.
 
 **Warning signs:**
-- Plans that say "migrate bank auth to Supabase Auth" without specifying the exact mechanism
-- Removing the `/api/oidc/token` SvelteKit route before the replacement is working
-- Assuming Supabase's built-in providers list will "add generic OIDC support soon"
-- Any approach that requires the service_role key in the browser to create users after bank auth
+- `[object Object]` appearing in the UI.
+- TypeScript errors about `string` vs `Json` or `Record<string, string>`.
+- Translations working for the default locale but missing for other locales.
+- `name` fields displaying as empty when the JSONB has no key for the requested locale.
 
-**Phase to address:** Phase 2 (Authentication Migration) -- this is the highest-risk auth migration item
+**Phase to address:** DataProvider implementation phase -- the localization utility must be written BEFORE any query method, since every query uses localized fields.
 
 ---
 
-### Pitfall 5: JSONB Answer Storage Creating Query and Index Nightmares
+### Pitfall 5: Missing project_id Scoping in Frontend Queries
 
 **What goes wrong:**
-OpenVAA currently stores candidate answers as a JSON column on the candidate table (`"answers": { "type": "json" }`). The same pattern exists for party answers. This works in Strapi because answers are loaded as a blob and processed client-side by the matching algorithm. But in Supabase, if you put answers in a JSONB column:
+The Supabase schema is multi-tenant with `project_id` on every content table. RLS policies enforce tenant isolation for admin users (`can_access_project(project_id)`). But for anon users (voter app), RLS only checks `published = true` -- it does NOT filter by project_id because anon users don't have project context in their JWT.
 
-1. **GIN index limitations**: GIN indexes on JSONB only support Bitmap Index Scans (not Index Scan or Index Only Scan). Complex predicates fall back to sequential scans. The `jsonb_path_ops` operator class supports fewer operators than `jsonb_ops`.
-2. **Write amplification**: Updating a single answer in a JSONB column rewrites the entire JSONB value. GIN indexes on the column must then re-index the entire document, not just the changed key. Frequent updates (candidates answering questions one at a time) create massive write overhead and index bloat.
-3. **RLS + JSONB compound cost**: RLS policies execute per-row. If the policy needs to inspect the JSONB column (e.g., filtering by a value inside the JSON), the cost compounds -- each row evaluation does a JSONB parse.
-4. **Supabase Studio becomes unusable**: Heavy JSONB columns with thousands of rows cause Supabase Studio to freeze (documented issue #28361), making admin operations impossible.
+This means: if two projects share the same Supabase instance, the voter app sees published data from ALL projects. Elections from Project A and Project B appear together. Candidates from different projects get mixed in results.
 
-The relational alternative (separate `candidate_answers` table with `candidate_id`, `question_id`, `value` columns) avoids all of these issues and enables proper indexing, partial updates, and clean RLS.
+For authenticated users (candidates), RLS allows reading their own record (`auth_user_id = auth.uid()`) plus all published data -- again across all projects.
 
 **Why it happens:**
-- JSONB feels simpler: one column instead of a join table. The existing Strapi schema uses JSON, so "just keep it" is the path of least resistance.
-- The matching algorithm loads all answers for all candidates at once, making a single JSONB blob seem efficient (one row read vs. many join-table reads).
-- Developers underestimate write frequency during the candidate data collection period, when hundreds of candidates are simultaneously filling in answers.
+- Strapi was single-tenant per deployment. There was no project_id concept in the frontend.
+- The RLS policies correctly enforce tenant isolation for admin operations but rely on the frontend to filter by project_id for voter/candidate reads.
+- The `app_settings` table has `anon_select` with `USING (true)` -- all projects' settings are readable.
+- Developers test with a single project and never encounter cross-project data leaks.
 
 **How to avoid:**
-- Use the relational approach (`candidate_answers` table) as the default. The load testing phase exists specifically to validate this decision -- but start with relational because it is strictly more flexible.
-- If load testing shows the bulk-read pattern (matching algorithm needs all answers) is significantly faster with JSONB, consider a hybrid: relational `candidate_answers` for writes and individual queries, plus a materialized JSONB column on the candidate table that is refreshed periodically for bulk reads.
-- Never store individual answer updates by rewriting the entire JSONB blob. If you must use JSONB, use `jsonb_set()` for partial updates and ensure the column has a GIN index with `jsonb_path_ops` (smaller, faster than default `jsonb_ops`).
-- Test both approaches under realistic load during Phase 3 (Load Testing) with the actual matching algorithm query patterns, not synthetic benchmarks.
+- The SupabaseDataProvider MUST add `.eq('project_id', currentProjectId)` to EVERY query that reads content tables (elections, candidates, questions, nominations, constituencies, app_settings, etc.).
+- Define `currentProjectId` as a configuration value (environment variable or app setting) that is set per deployment.
+- Create a base query builder that automatically adds the project_id filter, so individual query methods cannot forget it.
+- Write a pgTAP test or integration test that seeds two projects and verifies the frontend adapter only returns data for the configured project.
+- Consider adding project_id filtering to anon RLS policies as a defense-in-depth measure, using a Supabase "request header" approach (`current_setting('request.headers')::json->>'x-project-id'`).
 
 **Warning signs:**
-- Schema design that puts `answers JSONB` on the candidates table "because that is how Strapi had it"
-- No separate candidate_answers table in the migration
-- Write latency increasing as more candidates fill in answers
-- `EXPLAIN ANALYZE` showing sequential scans on the candidate table when filtering or joining by answers
+- More elections/candidates appearing than expected during development.
+- App settings from a different project being loaded.
+- Data appearing that doesn't match the seed data for the active project.
+- E2E tests passing in single-project setup but failing in shared environments.
 
-**Phase to address:** Phase 1 (Schema Design) for initial design; Phase 3 (Load Testing) for validation and final decision
+**Phase to address:** DataProvider implementation phase -- establish the project_id scoping pattern in the base query builder before implementing any specific query.
 
 ---
 
-### Pitfall 6: Service Role Key Leaking to the Browser
+### Pitfall 6: SSR Hydration Mismatch Between Server and Browser Supabase Clients
 
 **What goes wrong:**
-The Supabase `service_role` key bypasses ALL Row Level Security. If exposed in client-side code, any user can read, modify, or delete any data in the database. A 2025/2026 scan of 20,000+ apps found 11% expose Supabase credentials in their frontend, often because AI coding assistants or tutorials use the service_role key for convenience.
+SvelteKit renders pages on the server using the server Supabase client (from `event.locals.supabase`), then hydrates on the client using the browser Supabase client (singleton from `createSupabaseBrowserClient()`). If the server renders with one auth state (e.g., authenticated session) and the client hydrates with a different state (e.g., expired session, or session not yet restored from cookies), the page content flickers or crashes.
 
-In OpenVAA's context, the service_role key would be needed for:
-- Creating Supabase users during candidate preregistration (admin operation)
-- Sending emails via Supabase's auth hooks
-- Administrative data operations (import/export)
-
-If any of these operations are accidentally triggered from client-side code with the service_role key bundled in, the entire database is compromised.
+Specific scenarios:
+1. Server renders candidate page with full data (server client has valid session). Browser client starts without session, triggers re-render showing login redirect.
+2. Server renders voter page as anon. Browser client has stale auth cookies, sends authenticated request that returns different data (admin sees unpublished data).
+3. Session refresh happens during SSR -- server sets new cookie headers, but the browser client doesn't pick them up until the next navigation.
 
 **Why it happens:**
-- SvelteKit blurs the server/client boundary. A `+page.svelte` file can import from `+page.server.ts` load functions, but environment variables prefixed with `PUBLIC_` are client-accessible while non-prefixed variables are server-only. Mixing up which Supabase client to use (anon vs. service_role) in the wrong context exposes the key.
-- During development, using the service_role key "just works" without needing RLS policies, creating a habit.
-- The preregistration flow (currently using `BACKEND_API_TOKEN` for Strapi) needs an equivalent server-side privileged operation in Supabase -- the temptation is to use the service_role key in a way that leaks.
+- SvelteKit's `load` functions run on both server and client. The server uses `event.locals.supabase` (request-scoped), the client uses the browser singleton.
+- The browser client's session state comes from `localStorage`/cookies AFTER the page has hydrated, creating a window where server and client states diverge.
+- Token refresh happens asynchronously -- the server may use a refreshed token while the client still has the old one.
+- The existing Strapi adapter avoids this because the JWT is a simple cookie read, not a stateful session.
 
 **How to avoid:**
-- Never store the service_role key in any environment variable prefixed with `PUBLIC_`. In SvelteKit, only `$env/static/private` and `$env/dynamic/private` are safe for the service_role key.
-- Create the service_role Supabase client ONLY in server-side code: `+page.server.ts`, `+server.ts` (API routes), `hooks.server.ts`, or server-side load functions. Never in `+page.svelte`, `+layout.svelte`, or any `$lib` module that could be imported client-side.
-- Use Supabase's new API key model (if available): `sb_publishable_...` for client, `sb_secret_...` for server. Projects created after November 2025 use this model.
-- Audit imports: if `SUPABASE_SERVICE_ROLE_KEY` appears in any file that is not explicitly server-only, it is a security vulnerability.
+- Follow the Supabase SvelteKit SSR pattern exactly: pass session data from server load functions to the client via `data`, and initialize the browser client with the server-provided session.
+- Use `depends('supabase:auth')` in load functions and `invalidate('supabase:auth')` on auth state changes to synchronize.
+- In the root `+layout.ts`, pass `data.session` to the browser client initialization to prevent hydration mismatch.
+- Add `filterSerializedResponseHeaders` in hooks to pass `content-range` and `x-supabase-api-version` (already done in hooks.server.ts).
+- Test with slow network simulation to catch race conditions between SSR and client hydration.
 
 **Warning signs:**
-- `SUPABASE_SERVICE_ROLE_KEY` or `service_role` appearing in browser network requests (check DevTools)
-- Environment variable named `PUBLIC_SUPABASE_SERVICE_ROLE_KEY` (the `PUBLIC_` prefix exposes it)
-- Service role client created in a shared module (`$lib/supabase.ts`) instead of a server-only module (`$lib/server/supabase.ts`)
-- Operations that "work without RLS policies" during development
+- Page content "flashes" on load (shows one state, then switches).
+- Console warnings about hydration mismatch.
+- Auth-protected pages briefly show content before redirecting to login.
+- `onAuthStateChange` firing unexpectedly during initial page load.
 
-**Phase to address:** Phase 1 (Infrastructure Setup) -- establish client initialization patterns before any feature code is written
-
----
-
-### Pitfall 7: SvelteKit + Supabase SSR Auth Cookie/Hydration Mismatches
-
-**What goes wrong:**
-Supabase SSR auth uses cookies to maintain sessions across server and client. In SvelteKit, this requires careful coordination between `hooks.server.ts`, layout load functions, and client-side auth state. Common failure modes:
-
-1. **Stale session on tab switching**: User logs out in Tab A, Tab B still shows logged-in state because the client-side auth state was not invalidated. The cookie is cleared but the nav bar does not update on client-side navigation.
-2. **getSession() vs getUser() mismatch**: `supabase.auth.getSession()` returns cached session data from cookies, but Supabase logs warnings if you use the `user` object from `getSession()` directly. You must call `supabase.auth.getUser()` to get a validated user object.
-3. **Cookie configuration errors**: The `@supabase/ssr` package requires `getAll` and `setAll` methods on the cookies configuration. Getting these wrong produces silent failures -- auth appears to work but sessions are not persisted.
-4. **Server/client client confusion**: Creating the Supabase client incorrectly (e.g., using `createBrowserClient` on the server or vice versa) causes hydration mismatches where the server renders one state and the client renders another.
-
-**Why it happens:**
-- SvelteKit 2's cookie handling changed from SvelteKit 1, and some Supabase tutorials are outdated
-- The `@supabase/auth-helpers` package is deprecated in favor of `@supabase/ssr`, but old examples still circulate
-- The boundary between server-side rendering and client-side hydration in SvelteKit is subtle, and auth state must be consistent across both
-
-**How to avoid:**
-- Follow the official Supabase SvelteKit SSR guide exactly. Key files to configure:
-  - `src/hooks.server.ts`: Create server client with `createServerClient`, refresh session, pass session to `event.locals`
-  - `src/routes/+layout.server.ts`: Return session from `event.locals.safeGetSession()`
-  - `src/routes/+layout.ts`: Create browser client with `createBrowserClient` or server client for SSR, listen to `onAuthStateChange`
-- Always validate the user with `supabase.auth.getUser()` in server-side code. Use `getSession()` only for checking if a session exists (not for extracting user data).
-- Implement `onAuthStateChange` listener in the root layout to handle cross-tab auth changes and token refresh.
-- Use `@supabase/ssr` (not `@supabase/auth-helpers-sveltekit`) -- the auth-helpers package is deprecated.
-- Test auth flows explicitly: login in one tab, logout in another, verify both tabs reflect the correct state.
-
-**Warning signs:**
-- Console warnings about "Using supabase.auth.getSession() to get user information is not recommended"
-- Auth state that works on initial page load but breaks on client-side navigation
-- Users remaining "logged in" after logout until a full page refresh
-- Different auth states between server-rendered HTML and client-hydrated DOM (visible as a flash of content)
-
-**Phase to address:** Phase 2 (Authentication Migration) -- implement as the first auth task, before candidate or admin auth flows
-
----
-
-## Moderate Pitfalls
-
-### Pitfall 8: Supabase Local Dev CLI Migration Ordering and Sync Issues
-
-**What goes wrong:**
-Supabase CLI manages migrations as sequentially-applied SQL files with timestamps. Common issues:
-- Migrations created out of timestamp order cause application failures on `supabase db reset`
-- `supabase db reset` has a documented bug where the latest migration can be ignored (CLI issue #3723, reported June 2025)
-- Migration history mismatch between local and remote databases produces "not in sync" errors that block deployment
-- `supabase db pull` from remote may not detect storage RLS policies (CLI issue #3919)
-- Multiple developers creating migrations simultaneously can produce conflicting timestamps
-
-For a team working on the migration, these issues waste significant time during development and risk data loss during deployment.
-
-**Why it happens:**
-- The Supabase CLI is evolving rapidly, with frequent version updates that can change behavior
-- Developers create migrations locally, and when rebasing or merging, timestamp ordering can break
-- The migration history table (`supabase_migrations.schema_migrations`) can drift from the actual filesystem state
-
-**How to avoid:**
-- Pin the Supabase CLI version in the project (`package.json` or CI config). Keep all team members on the same version. Update deliberately, not automatically.
-- Use a naming convention for migration files: `YYYYMMDDHHMMSS_descriptive_name.sql`. Never manually rename timestamps.
-- After merging branches that both added migrations, verify migration ordering with `ls -la supabase/migrations/` and ensure timestamps are sequential.
-- Use `supabase migration repair` to fix history mismatches instead of manual database edits.
-- For complete resets during development, `supabase db reset` is the canonical approach. If it misbehaves, use `supabase stop && supabase start` for a fresh local instance.
-- Commit seed data as SQL in `supabase/seed.sql`. Seeds run after all migrations on `supabase start` (first time) and `supabase db reset`. Only include INSERT statements in seeds, never schema changes.
-- Storage bucket RLS policies must be managed separately (create them in migrations explicitly, do not rely on `supabase db pull` to detect them).
-
-**Warning signs:**
-- `supabase db push` failing with "migration history not in sync" errors
-- Different team members getting different local database states
-- Seed data failing because it references tables that do not exist yet (migration ordering issue)
-- `supabase db diff` returning "no schema changes found" when changes were clearly made in the dashboard
-
-**Phase to address:** Phase 1 (Infrastructure Setup) -- establish migration workflow before the first migration is written
-
----
-
-### Pitfall 9: Supabase Storage Policy Mismatch with Existing S3 Workflow
-
-**What goes wrong:**
-OpenVAA currently uses AWS S3 for media uploads (candidate photos, party images) via Strapi's upload plugin. Migrating to Supabase Storage introduces several gotchas:
-
-1. **Public bucket does not mean public uploads**: Setting a Supabase Storage bucket to "public" only allows unauthenticated downloads. Uploads are always blocked without an RLS policy on `storage.objects`.
-2. **RLS already enabled**: Unlike custom tables, `storage.objects` has RLS enabled by default. You do not need `ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY` -- doing so is a no-op but confusing.
-3. **Cannot modify storage schema**: Platform permission changes in April 2025 restricted `ALTER TABLE` on storage tables. You can only create RLS policies and triggers, not modify the table structure.
-4. **Migration detection failures**: Storage RLS policies are not reliably detected by `supabase db pull` or `supabase db diff`, meaning your migration files may be incomplete.
-5. **No S3 versioning**: Supabase Storage does not support object versioning. Deleted objects are permanently removed. If the migration script fails midway, deleted S3 objects cannot be recovered from Supabase.
-6. **File path structure**: Supabase Storage organizes files by bucket/folder/filename. Strapi's S3 uploads may use different path conventions that need mapping.
-
-**Why it happens:**
-- Developers assume Supabase Storage works like S3 with a different API. The access control model is fundamentally different (RLS on a Postgres table vs. S3 bucket policies).
-- Storage migration is often treated as a simple "copy files from S3 to Supabase Storage" task, but the access control migration is where the complexity lies.
-
-**How to avoid:**
-- Supabase Storage is S3-compatible, so existing S3 client libraries can interact with it. Use this for the data migration itself (copying files).
-- Create storage RLS policies in migration files explicitly. Do not rely on the dashboard UI for policies -- they need to be version-controlled.
-- For candidate photo uploads: create a policy allowing authenticated users to upload to their own folder (`storage.foldername(name)[1] = auth.uid()::text`), and a public read policy for all images.
-- Test storage policies locally before deploying. Note that `supabase db diff` may not detect storage policy changes -- verify manually.
-- Keep S3 as a backup during migration. Do not delete S3 data until Supabase Storage is verified working in production.
-- For multi-tenant storage, organize buckets or folders by organization_id and add tenant-scoping to storage RLS policies.
-
-**Warning signs:**
-- Candidate photo uploads returning 403 errors despite the user being authenticated
-- Storage policies created in the dashboard but not present in migration files (will be lost on next `supabase db reset`)
-- Migration scripts that copy files but do not set up access control policies
-- `supabase db pull` output that does not include any `storage` schema policies
-
-**Phase to address:** Phase 5 (Storage Integration) -- but plan the access control model during Phase 1 (Schema Design)
-
----
-
-### Pitfall 10: Application Settings Migration Losing Strapi's Component Nesting
-
-**What goes wrong:**
-OpenVAA's `app-setting` content type in Strapi uses deeply nested Strapi components (`settings.header`, `settings.matching`, `settings.survey`, `settings.entity-details`, etc.) to organize application configuration. Each component has its own schema with typed fields. When migrating to Supabase, naively converting this to a single JSONB column loses the validation, typing, and query capability of the nested structure. Conversely, normalizing every component into its own table creates an explosion of small tables with 1:1 relationships that are awkward to query.
-
-**Why it happens:**
-- Strapi's "component" concept has no direct equivalent in raw PostgreSQL
-- The settings are a single-type (singleton), so the instinct is to use a single row with a large JSONB column
-- The nested settings rarely change after initial configuration, making JSONB seem "good enough"
-
-**How to avoid:**
-- Store application settings as a single JSONB column in a `settings` table, with validation at the application layer (TypeScript types). This is acceptable because:
-  - Settings are a singleton (one row per organization in multi-tenant)
-  - Settings are read-heavy, write-rare (admin changes configuration, voters/candidates read it)
-  - Settings do not need individual field indexing or querying
-  - The existing `DynamicSettings` type in `app-shared` already validates the structure at the application layer
-- Add a JSON Schema constraint on the column for database-level validation if needed (`ALTER TABLE settings ADD CONSTRAINT settings_valid CHECK (jsonb_matches_schema(schema, value))`).
-- For multi-tenant, add `organization_id` to the settings table and an RLS policy filtering by org.
-- Document the settings schema in a TypeScript type that serves as the source of truth, with migration scripts that insert default settings matching the type.
-
-**Warning signs:**
-- Settings table with 20+ columns mirroring every field from the Strapi component structure
-- Settings JSONB column with no TypeScript type or JSON Schema validation
-- Frontend code that expects specific Strapi component structure (`.data.attributes.header.publisherName`) instead of flat field access
-
-**Phase to address:** Phase 4 (Application Settings Migration)
-
----
-
-### Pitfall 11: Email Testing Silently Failing in Local Development
-
-**What goes wrong:**
-Supabase local development uses Mailpit (formerly InBucket) to capture emails, accessible at `http://localhost:54324`. Common failures:
-
-1. **Auth confirmation emails not appearing**: If `enable_confirmations` is set to `false` in `config.toml`, no confirmation emails are sent. The user is auto-confirmed, which masks the email flow entirely. When deployed to production with confirmations enabled, the flow breaks.
-2. **Custom SMTP not supported locally**: The Supabase CLI does not support custom SMTP for local development. Auth emails always go through Mailpit, even if you configure an SMTP provider. This means you cannot test real email delivery locally.
-3. **resend() not working**: The `auth.resend()` function has been reported to silently fail to send to Mailpit in certain configurations, with no error on the client or in logs.
-4. **Email templates differ**: Local email templates are configured in `config.toml` (using `content_path`), while production templates are configured in the Supabase dashboard. Template differences between environments cause unexpected behavior.
-5. **Port confusion**: Mailpit runs on port 54324 by default, but this can be changed in `config.toml`. Hardcoding the port in test code or scripts breaks when the configuration changes.
-
-For OpenVAA, email is critical for candidate registration (registration key emails) and password reset flows. If email testing silently fails, these flows are untested until production.
-
-**Why it happens:**
-- Email is often the last thing tested and the first thing to break
-- The split between local (Mailpit) and production (real SMTP) configurations means the dev environment is never truly representative
-- Silent failures (no error, just no email) make debugging extremely difficult
-
-**How to avoid:**
-- Enable `enable_confirmations = true` in `config.toml` for local development to match production behavior. Handle the confirmation step in E2E tests by reading from the Mailpit API.
-- Use Mailpit's HTTP API (`http://localhost:54324/api/v1/messages`) in integration tests to verify email delivery programmatically, replacing the existing LocalStack SES polling pattern.
-- Pin all Mailpit-related configuration in `config.toml` (port, enable_confirmations, email templates) and document it.
-- Create a helper function for tests that polls Mailpit for emails and extracts confirmation links, similar to the existing `candidateApp-advanced.spec.ts` pattern but adapted for Supabase.
-- Keep email template files in the repository (referenced by `config.toml` `content_path`) so they are version-controlled and consistent across developer machines.
-
-**Warning signs:**
-- E2E tests that skip email verification steps locally but fail in staging
-- Registration flow tests that "work" because confirmations are disabled locally
-- No Mailpit URL or API calls in any test or development documentation
-- Different email template content between local `config.toml` and production dashboard
-
-**Phase to address:** Phase 2 (Authentication Migration) for auth emails; Phase 5 (Email Integration) for transactional emails
-
----
-
-### Pitfall 12: Candidate Registration Flow Has No Direct Supabase Equivalent
-
-**What goes wrong:**
-OpenVAA's current candidate registration is a multi-step flow unique to VAA applications:
-1. Admin pre-registers candidates via API with name, identifier, email, and nominations
-2. System generates a `registrationKey` and sends an email with it
-3. Candidate visits the registration URL with their key
-4. System validates the key, shows the candidate's info
-5. Candidate sets a password, creating a User linked to their Candidate record
-
-This flow has no equivalent in Supabase Auth's built-in flows (magic link, password signup, OAuth). Supabase Auth's `signUp()` creates a user immediately -- there is no concept of "pre-registered candidate waiting for activation with a key."
-
-**Why it happens:**
-- VAA candidate registration is a domain-specific workflow, not a standard auth pattern
-- Supabase Auth is designed for self-service signup, not admin-initiated pre-registration
-- The existing flow is tightly coupled to Strapi's `users-permissions` plugin and custom candidate controller
-
-**How to avoid:**
-- Implement the preregistration flow as a Supabase Edge Function or SvelteKit server route (not as a Supabase Auth flow):
-  1. Admin calls server endpoint with candidate data + email template
-  2. Server creates candidate record in `candidates` table (no auth user yet), generates registration key, stores it hashed
-  3. Server sends registration email via Supabase's email service or external SMTP
-  4. Candidate visits registration URL, submits key + password
-  5. Server validates key, calls `supabase.auth.admin.createUser()` with the candidate's email and password, links the auth user ID to the candidate record
-- Store the `registrationKey` hashed (not plaintext) in the candidates table. The current Strapi implementation stores it as a plaintext string field.
-- Use Supabase Auth's `admin.createUser()` (requires service_role key, server-side only) rather than `signUp()` to avoid sending Supabase's default confirmation email (the registration email serves as confirmation).
-- The candidate-user linking (`candidate.auth_user_id = user.id`) replaces Strapi's `candidate.user` relation.
-
-**Warning signs:**
-- Plans to use `supabase.auth.signUp()` for candidate registration (this would send a generic confirmation email, not the custom registration email)
-- Registration keys stored as plaintext in the database
-- Preregistration endpoint that requires the browser to have the service_role key
-- Loss of the multi-step verification flow (key check -> display name -> set password)
-
-**Phase to address:** Phase 2 (Authentication Migration) -- design and implement as a custom flow, not a standard Supabase Auth integration
+**Phase to address:** Auth migration phase -- the hydration pattern must be correct before DataProvider/DataWriter work begins, since they depend on consistent auth state.
 
 ---
 
 ## Technical Debt Patterns
 
+Shortcuts that seem reasonable but create long-term problems.
+
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| JSONB for all multilingual text fields (`{"en": "...", "fi": "..."}`) | Simple schema, matches current Strapi pattern | Cannot index individual languages, cannot use PostgreSQL full-text search per locale, all languages loaded even when only one is needed | Acceptable for fields that are always loaded in all languages (settings, question text). Not acceptable for searchable content. |
-| Using `service_role` key in Edge Functions for all operations | No need to write RLS policies | Bypasses all security, any Edge Function bug exposes entire database | Only for admin operations (preregistration, data import) that are genuinely privileged. Never for read operations that should respect RLS. |
-| Single seed.sql for all environments | One file to maintain | Dev data in production, or production missing data needed for operation | Never -- use environment-aware seeding (check for existing data before inserting) |
-| Skipping RLS policies during prototyping | Faster iteration | Forgetting to add them before production (the #1 Supabase security failure) | Only if `supabase db lint` runs in CI and blocks deployment without RLS |
-| Storing organization_id in user_metadata instead of app_metadata | Easier to set (client-side accessible) | Users can modify their own user_metadata, potentially changing their organization assignment | Never -- always use app_metadata for authorization-relevant claims |
-| One Supabase client for both server and browser | Less code | Service role key in browser, or browser client on server missing cookie context | Never -- always create separate server and browser clients |
-
----
+| Keeping `WithAuth` / `authToken` parameter in SupabaseDataWriter | Interface compatibility with existing code | Every call site must extract and pass a token that the Supabase client doesn't need; the adapter fights the framework | Never -- Supabase's cookie-based session is automatic |
+| Using `service_role` key in browser client for development | Bypasses RLS, everything "works" | Masks all RLS issues; deployed code fails silently | Never -- use anon key in browser, service_role only in Edge Functions |
+| Dual adapter support (Strapi + Supabase simultaneously) | Gradual rollout | Doubled maintenance, two auth flows, confusing test matrix | Only during a bounded transition period (max 2 weeks) with a hard cutoff date |
+| Hardcoding project_id in frontend | Quick single-tenant dev | Cannot deploy multi-tenant without code changes | Only if you accept single-tenant deployments permanently |
+| Skipping localization in early DataProvider development | Faster iteration on query shape | JSONB fields leak to UI; fixing requires touching every query method | Never -- build localization into the first query |
 
 ## Integration Gotchas
 
+Common mistakes when connecting to Supabase services from SvelteKit.
+
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| SvelteKit `hooks.server.ts` + Supabase | Creating one global Supabase client | Create a new server client per request using `createServerClient` with the request's cookies |
-| Supabase Auth + RLS policies | Using `auth.uid()` directly in policies (per-row evaluation) | Wrap in `(SELECT auth.uid())` for per-statement caching |
-| Supabase Storage + candidate photos | Assuming "public bucket" = "public uploads" | Public buckets only allow downloads; uploads require explicit RLS policies on `storage.objects` |
-| Supabase Edge Functions + service_role | Using service_role for all database operations | Use the user's JWT for operations that should respect RLS; only use service_role for admin ops |
-| Supabase + existing adapter pattern | Rewriting the entire adapter layer at once | Implement `SupabaseDataProvider` behind the existing `UniversalAdapter` interface, swap in stages |
-| Supabase migrations + storage policies | Relying on `supabase db pull` to capture storage policies | Write storage RLS policies in migration files manually; `db pull` misses them |
-| Supabase Auth + JWT custom claims | Storing tenant ID in `user_metadata` | Use `app_metadata` (admin-only writable) via `auth.admin.updateUserById()` |
-| Mailpit + E2E tests | Hardcoding `localhost:54324` in test code | Read the port from `config.toml` or environment variable |
-
----
+| PostgREST queries | Using `.select('*')` and getting all columns including internal ones (project_id, auth_user_id, is_generated) | Explicitly select needed columns: `.select('id, name, first_name, ...')`. Or use a view that hides internal columns. |
+| Edge Function invocation | Calling `supabase.functions.invoke()` from the browser without CORS handling | Invoke Edge Functions from SvelteKit server routes (API routes or load functions), not directly from browser code. The server-side Supabase client avoids CORS entirely. |
+| Edge Function auth | Passing the anon key as the function auth header | Edge Functions receive the caller's JWT automatically via `supabase.functions.invoke()`. For admin operations, the Edge Function uses `service_role` internally (already implemented in `invite-candidate`). |
+| Storage file uploads | Using the browser client to upload directly to Storage | Route uploads through a SvelteKit API endpoint that uses the server client, ensuring proper auth and bucket policy enforcement. |
+| Supabase Realtime | Subscribing to channels in `+page.svelte` `onMount` without cleanup | Not currently needed (Realtime is out of scope), but if added later: always `unsubscribe()` in `onDestroy`. |
+| snake_case vs camelCase | Manually converting column names in each query | Use the existing `COLUMN_MAP` / `PROPERTY_MAP` from `@openvaa/supabase-types` and build a generic row transformer. |
+| JSONB answer updates | Using `.update({ answers: newAnswers })` which replaces the entire JSONB | Use a PostgreSQL function or `jsonb_set()` for partial answer updates, or do read-modify-write with optimistic locking. The current JSONB answer trigger validates the merged result. |
 
 ## Performance Traps
 
+Patterns that work at small scale but fail as usage grows.
+
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| RLS policy without index on filter column | Queries >100ms on tables with >1000 rows | Add btree index on every column in RLS WHERE clauses | At ~5,000 rows (realistic candidate count for national elections) |
-| Per-row `auth.uid()` calls in RLS | Query time scales linearly with table size | Wrap in `(SELECT auth.uid())` for initPlan caching | At ~1,000 rows with multiple policies |
-| JSONB full-document writes for single answer updates | Write latency spikes, GIN index bloat, increasing disk usage | Use relational `candidate_answers` table or `jsonb_set()` for partial updates | At ~100 concurrent candidate writers |
-| Loading all candidates with all answers for matching | Response time >5 seconds, memory pressure on server | Paginate, use database-side filtering, consider materialized views | At ~5,000 candidates with ~50 questions each |
-| Multiple permissive RLS policies on same table | Supabase Security Advisor warning, unexpected data access from policy OR combination | Combine into fewer policies using CASE expressions or helper functions | Immediately -- any two permissive policies are OR'd, not AND'd |
-| Realtime subscriptions without proper filtering | All changes broadcast to all clients, high bandwidth | Use Realtime filters and channel-based subscriptions | At ~100 concurrent users |
-
----
+| N+1 queries from PostgREST | Fetching nominations, then fetching each candidate separately | Use PostgREST's `select` with foreign table joins: `.select('*, candidates(*)')`. Single round-trip. | >50 candidates -- query count scales linearly |
+| No query result caching | Every page navigation re-fetches all data from PostgREST | The existing `cachifyUrl` pattern in `UniversalAdapter` should be preserved. For Supabase, consider SvelteKit's `depends()`/`invalidate()` pattern for cache invalidation. | >100 concurrent voters -- PostgREST connection pool exhaustion |
+| Fetching all locales when only one is needed | Returning full JSONB `{"en": "...", "fi": "...", "sv": "..."}` for every field | This is by design (client-side locale selection). The overhead is small for 2-4 locales but monitor payload sizes. Consider a PostgREST view that extracts a single locale if payloads exceed 500KB. | >10 locales or >500 questions (unlikely for VAA) |
+| RLS policy evaluation on hot paths | Complex RLS policies re-evaluated on every row for every query | The schema already uses `(SELECT auth.jwt())` pattern for optimizer caching. Monitor via `pg_stat_statements` for slow queries. | >1000 concurrent users -- each query evaluates RLS per row |
+| Loading all nomination data on voter app start | Single query fetches all candidates + organizations + nominations + images | Implement pagination or constituency-based filtering. The Strapi adapter already filters by constituency when available. | >10,000 candidates across all constituencies |
 
 ## Security Mistakes
 
+Domain-specific security issues beyond general web security.
+
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| `service_role` key in `PUBLIC_` env var or client bundle | Complete database compromise -- all RLS bypassed | Store only in `$env/static/private`; audit all imports |
-| `organization_id` in `user_metadata` (client-writable) | Tenant impersonation -- user changes their org assignment | Use `app_metadata` (admin-only writable) |
-| Multiple permissive RLS policies creating unintended OR | Data from one policy "leaking" through another policy's conditions | Audit policies with Security Advisor; use restrictive policies for defense-in-depth |
-| Trusting `getSession()` user object without `getUser()` validation | Session could be tampered with from cookies | Always call `getUser()` for server-side authorization decisions |
-| Registration keys stored as plaintext in candidates table | Key theft from database dump allows unauthorized registration | Hash registration keys before storage; compare hashes during validation |
-| No rate limiting on preregistration endpoint | Enumeration attack to discover valid registration keys | Implement rate limiting on the preregistration and registration API routes |
+| Exposing `service_role` key in browser environment variables | Full database bypass -- attacker can read/write/delete all data | Only use `service_role` in Edge Functions and server-side code. Frontend uses `SUPABASE_ANON_KEY` only. The existing `server.ts` and `browser.ts` correctly use anon key. |
+| Trusting `page.data.session.user` for authorization | Session user object comes from cookies, can be spoofed | Always verify via `safeGetSession()` (which calls `getUser()`) or `getClaims()` for server-side authorization. |
+| Missing column-level restrictions in SupabaseDataWriter | Candidates could update `project_id`, `auth_user_id`, `published`, `organization_id` | Column-level REVOKE is already in place (`013-auth-rls.sql`). The DataWriter should not even attempt to set protected columns. Add a whitelist of updatable columns in the adapter. |
+| Not validating Edge Function input on the server side | Injection via malformed projectId, email, or nomination data | The existing Edge Functions validate inputs (see `invite-candidate`). All new Edge Function integrations must validate before acting. |
+| Frontend bypassing RLS by constructing PostgREST URLs directly | Could access unpublished or cross-project data if URL is manipulated | Never expose raw PostgREST URLs to the browser. All queries go through the Supabase client library which uses the user's session. |
+| Caching responses that contain session tokens | Another user receives cached response with different user's session | The `filterSerializedResponseHeaders` in hooks.server.ts already handles this. Also ensure CDN/reverse proxy does not cache Set-Cookie responses. |
 
----
+## UX Pitfalls
+
+Common user experience mistakes in this domain.
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| Session expires silently during questionnaire | Candidate loses unsaved answers when session expires mid-edit | Implement session refresh monitoring. Warn user before expiry. Auto-save answers to localStorage as backup. |
+| Login redirect loses context | Candidate is on question page, session expires, redirected to login, after re-login lands on home instead of question page | Preserve `redirectTo` parameter (already implemented in hooks.server.ts). Ensure the Supabase auth flow maintains the redirect chain. |
+| Registration flow confusion during auth migration | Candidates who were invited via Strapi see different UI than Supabase-invited candidates | Ensure the invite-candidate Edge Function's `redirectTo` URL matches the SvelteKit route for registration completion. |
+| Loading states during PostgREST queries | Voter sees empty page while data loads, assumes app is broken | The existing data loading pattern catches errors. Ensure Supabase queries have similar loading/error states via `{#await}` blocks. |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **RLS on all tables:** Every table has `ENABLE ROW LEVEL SECURITY` -- verify with `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = 'public'`
-- [ ] **RLS policies on all tables:** Every table with RLS enabled has at least one policy -- verify with Security Advisor lint `0008`
-- [ ] **Multi-tenant isolation:** Create test data for Org A, authenticate as Org B user, verify zero results from all tenant-scoped tables
-- [ ] **Cookie auth working:** Login, navigate with client-side routing, refresh the page -- auth state persists across all three scenarios
-- [ ] **Service role key server-only:** Search entire frontend codebase for `service_role` or `SUPABASE_SERVICE_ROLE_KEY` -- should only appear in `+server.ts`, `+page.server.ts`, `hooks.server.ts`, or `$lib/server/` files
-- [ ] **Storage upload works:** Authenticated candidate can upload a photo; unauthenticated user can view it; other candidates cannot overwrite it
-- [ ] **Email delivery works:** Registration email appears in Mailpit locally; confirmation links work; password reset email appears
-- [ ] **Seed data is environment-aware:** `supabase db reset` locally produces a working dev environment; production migration does not insert dev data
-- [ ] **Migration ordering:** `supabase db reset` runs all migrations without errors on a fresh local instance
-- [ ] **Bank auth still works:** Signicat OIDC flow completes end-to-end (may require sandbox testing)
+Things that appear complete but are missing critical pieces.
 
----
+- [ ] **DataProvider reads work:** Often missing project_id filter -- verify by seeding two projects and checking isolation
+- [ ] **Auth login works:** Often missing session persistence across page navigations -- verify by logging in, navigating to 3+ pages, and checking session survives
+- [ ] **Candidate answer save works:** Often missing JSONB merge logic -- verify partial answer update preserves existing answers for other questions
+- [ ] **Voter app works without auth:** Often missing anon query path -- verify voter app loads with no cookies at all (incognito window)
+- [ ] **Edge Function integration works:** Often missing CORS for browser-initiated calls -- verify from actual browser, not just curl/Postman
+- [ ] **E2E tests pass:** Often missing test data seeding via Supabase (instead of Strapi Admin Tools) -- verify data.setup.ts uses Supabase service_role client
+- [ ] **Logout works completely:** Often missing cookie cleanup -- verify ALL `sb-*` cookies are removed AND the old `token` cookie is removed
+- [ ] **Password reset works:** Often missing Supabase email template configuration -- verify password reset email actually sends and contains correct URL
+- [ ] **Published/unpublished separation works:** Often missing `published = true` filter in provider queries or seed data missing `published` flag -- verify unpublished data is invisible to voters
 
 ## Recovery Strategies
 
+When pitfalls occur despite prevention, how to recover.
+
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Missing RLS on production table | LOW-MEDIUM | Enable RLS immediately (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`), add policies. Data may have been exposed -- assess impact and notify if needed. |
-| Service role key exposed in client | HIGH | Rotate the key immediately in Supabase dashboard, audit all client code, check access logs for unauthorized operations |
-| Tenant isolation leak | HIGH | Fix the policy, audit cross-tenant data access in logs, notify affected tenants, verify no data modification occurred |
-| JSONB answer performance bottleneck | MEDIUM-HIGH | Migrate to relational table. Requires new migration, data transform script, adapter code changes, and load test re-validation |
-| Migration history out of sync | LOW-MEDIUM | Use `supabase migration repair` to reconcile, or create a baseline migration from current state with `supabase db dump` |
-| Auth cookie/hydration mismatch | LOW | Follow official SvelteKit SSR guide step-by-step, ensure `onAuthStateChange` listener is in root layout |
-| Registration flow broken after migration | MEDIUM | The existing SvelteKit OIDC route is backend-agnostic -- fall back to it while fixing the Supabase-integrated flow |
-
----
+| getSession() used for auth decisions | MEDIUM | Audit all .server.ts files for raw getSession() calls. Replace with safeGetSession() or getClaims(). Add lint rule. |
+| Dual auth token state causing phantom logins | HIGH | Full auth flow audit. Remove all AUTH_TOKEN_KEY references. Ensure every auth check uses Supabase session exclusively. May require re-deploying and asking active users to re-login. |
+| Silent empty results from RLS | MEDIUM | Add defensive assertions to DataProvider. Create a diagnostic page that shows raw query results with auth context. Check published flags in seed data. |
+| Missing JSONB localization | LOW | Create localizeRow() utility, apply to all existing queries. Unit test with all supported locales. |
+| Missing project_id scoping | HIGH | Audit every query in SupabaseDataProvider. Add base query builder with automatic scoping. If data has leaked cross-project, investigate impact. |
+| SSR hydration mismatch | MEDIUM | Follow Supabase SvelteKit SSR guide exactly. Pass session from server to client in layout. Add depends()/invalidate() pattern. |
+| E2E tests broken after Strapi removal | HIGH | Replace StrapiAdminClient with a SupabaseAdminClient using service_role. Rewrite data.setup.ts to seed via Supabase. Update auth.setup.ts to use Supabase login flow. |
 
 ## Pitfall-to-Phase Mapping
 
+How roadmap phases should address these pitfalls.
+
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Missing RLS on new tables | Phase 1 (Schema Design) | `supabase db lint` returns zero RLS warnings; Security Advisor clean |
-| RLS performance degradation | Phase 1 (Schema) + Phase 3 (Load Test) | Load test with RLS shows <50ms p95 for voter queries |
-| Multi-tenant isolation leaks | Phase 1 (Schema) + Phase 4 (Integration Tests) | Cross-tenant data access tests all return zero results |
-| Signicat OIDC integration | Phase 2 (Auth Migration) | Bank auth flow completes end-to-end in sandbox environment |
-| JSONB answer storage traps | Phase 1 (Schema) + Phase 3 (Load Test) | Load test validates chosen approach under realistic data volume |
-| Service role key exposure | Phase 1 (Infrastructure) | Grep for service_role in non-server files returns zero matches |
-| SSR cookie/hydration mismatches | Phase 2 (Auth Migration) | Login/logout/refresh/multi-tab all maintain correct auth state |
-| CLI migration ordering | Phase 1 (Infrastructure) | `supabase db reset` succeeds from clean state on every CI run |
-| Storage policy mismatches | Phase 5 (Storage) | Candidate photo upload + public read + ownership protection all work |
-| Settings migration structure | Phase 4 (Settings) | Settings load correctly for both single-tenant and multi-tenant |
-| Email testing failures | Phase 2 (Auth) + Phase 5 (Email) | Registration email visible in Mailpit; confirmation link works |
-| Candidate registration flow | Phase 2 (Auth Migration) | Pre-register, receive email, register with key, login -- all work |
-
----
+| getSession() misuse | Auth migration | Grep for `.auth.getSession()` outside hooks.server.ts. Should find zero results. |
+| Dual auth token state | Auth migration | Browser dev tools show ONLY `sb-*` cookies, no `token` cookie. All AUTH_TOKEN_KEY references removed. |
+| Silent RLS empty results | DataProvider implementation | Unit tests with anon client against unpublished data verify errors thrown, not empty arrays. |
+| Missing JSONB localization | DataProvider implementation | Unit test: query returns `string` type for name/info fields, not `object`. |
+| Missing project_id scoping | DataProvider implementation | Integration test: two projects seeded, provider returns data for configured project only. |
+| SSR hydration mismatch | Auth migration | Playwright test: no "hydration mismatch" console warnings on any page load. |
+| E2E test breakage | E2E migration | Full Playwright suite passes with Supabase backend (no Strapi running). |
+| Edge Function CORS | Edge Function integration | Browser-initiated Edge Function calls succeed without CORS errors in console. Or: all Edge Function calls routed through SvelteKit server routes. |
+| Candidate answer data loss | DataWriter implementation | Test: save answer to Q1, save answer to Q2, verify Q1 answer still present. |
+| Password reset email | Auth migration | E2E test: trigger password reset, verify email is received (or mock verified), verify reset link works. |
 
 ## Sources
 
-- [Supabase RLS Troubleshooting: Performance and Best Practices](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) -- HIGH confidence (official docs)
-- [Supabase Row Level Security Documentation](https://supabase.com/docs/guides/database/postgres/row-level-security) -- HIGH confidence (official docs)
-- [Supabase Performance and Security Advisors](https://supabase.com/docs/guides/database/database-advisors?lint=0006_multiple_permissive_policies) -- HIGH confidence (official docs)
-- [Supabase API Keys Documentation](https://supabase.com/docs/guides/api/api-keys) -- HIGH confidence (official docs)
-- [Supabase SvelteKit SSR Auth Guide](https://supabase.com/docs/guides/auth/server-side/sveltekit) -- HIGH confidence (official docs)
-- [Supabase Third-Party Auth Documentation](https://supabase.com/docs/guides/auth/third-party/overview) -- HIGH confidence (official docs)
-- [Supabase Storage Access Control](https://supabase.com/docs/guides/storage/security/access-control) -- HIGH confidence (official docs)
-- [Supabase Custom Claims and RBAC](https://supabase.com/docs/guides/database/postgres/custom-claims-and-role-based-access-control-rbac) -- HIGH confidence (official docs)
-- [Supabase Local Development Overview](https://supabase.com/docs/guides/local-development/overview) -- HIGH confidence (official docs)
-- [Supabase Seeding Documentation](https://supabase.com/docs/guides/local-development/seeding-your-database) -- HIGH confidence (official docs)
-- [Supabase Managing JSON and Unstructured Data](https://supabase.com/docs/guides/database/json) -- HIGH confidence (official docs)
-- [Supabase Storage Buckets Fundamentals](https://supabase.com/docs/guides/storage/buckets/fundamentals) -- HIGH confidence (official docs)
-- [Supabase Security Flaw: 170+ Apps Exposed](https://byteiota.com/supabase-security-flaw-170-apps-exposed-by-missing-rls/) -- MEDIUM confidence (security report, Jan 2025)
-- [SupaExplorer Cybersecurity Insight Report](https://supaexplorer.com/cybersecurity-insight-report-january-2026) -- MEDIUM confidence (January 2026 scan data)
-- [Multi-Tenant Applications with RLS on Supabase](https://www.antstack.com/blog/multi-tenant-applications-with-rls-on-supabase-postgress/) -- MEDIUM confidence (community article, verified against official patterns)
-- [Efficient Multi-Tenancy with Supabase](https://arda.beyazoglu.com/supabase-multi-tenancy) -- MEDIUM confidence (community article)
-- [Signing in with a Generic OAuth2/OIDC Provider (Discussion #6547)](https://github.com/orgs/supabase/discussions/6547) -- HIGH confidence (official GitHub discussion)
-- [PostgreSQL JSONB Indexing Limitations with B-Tree and GIN](https://dev.to/mongodb/postgresql-jsonb-indexing-limitations-with-b-tree-and-gin-3851) -- MEDIUM confidence (technical article, verified against PostgreSQL docs)
-- [PostgreSQL JSONB GIN Index Performance Analysis](https://pganalyze.com/blog/gin-index) -- HIGH confidence (pganalyze, verified against PostgreSQL docs)
-- [Supabase CLI Migration Repair Discussions](https://github.com/supabase/supabase/issues/15695) -- HIGH confidence (official GitHub issue)
-- [Supabase CLI db reset Issue #3723](https://github.com/supabase/cli/issues/3723) -- HIGH confidence (official GitHub issue, June 2025)
-- [Supabase Storage Policies Not in db pull (CLI Issue #3919)](https://github.com/supabase/cli/issues/3919) -- HIGH confidence (official GitHub issue)
-- [Supabase SSR Auth with SvelteKit (DEV Community)](https://dev.to/kvetoslavnovak/supabase-ssr-auth-48j4) -- MEDIUM confidence (community walkthrough, 2025)
-- [SvelteKit Auth - A Nightmare (Discussion #13835)](https://github.com/orgs/supabase/discussions/13835) -- MEDIUM confidence (real developer pain points)
-- OpenVAA codebase analysis: Strapi schemas, users-permissions extension, OIDC token endpoint, adapter pattern -- HIGH confidence (primary source)
+- [Setting up Server-Side Auth for SvelteKit - Supabase Docs](https://supabase.com/docs/guides/auth/server-side/sveltekit) -- Official SSR auth setup guide
+- [Creating a Supabase client for SSR - Supabase Docs](https://supabase.com/docs/guides/auth/server-side/creating-a-client) -- Server vs browser client patterns
+- [Migrating to the SSR package from Auth Helpers - Supabase Docs](https://supabase.com/docs/guides/auth/auth-helpers/sveltekit) -- Migration from deprecated Auth Helpers
+- [getClaims() API Reference - Supabase Docs](https://supabase.com/docs/reference/javascript/auth-getclaims) -- New JWT verification method
+- [Security issue: getSession vs getUser - GitHub #898](https://github.com/supabase/auth-js/issues/898) -- Security vulnerability discussion
+- [Clarify getClaims vs getUser vs getSession - GitHub #40985](https://github.com/supabase/supabase/issues/40985) -- Official guidance on method selection
+- [Why select returns empty array - Supabase Troubleshooting](https://supabase.com/docs/guides/troubleshooting/why-is-my-select-returning-an-empty-data-array-and-i-have-data-in-the-table-xvOPgx) -- RLS silent failure documentation
+- [RLS Performance Best Practices - Supabase Docs](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv) -- RLS query optimization
+- [CORS for Edge Functions - Supabase Docs](https://supabase.com/docs/guides/functions/cors) -- Edge Function CORS handling
+- [Securing Edge Functions - Supabase Docs](https://supabase.com/docs/guides/functions/auth) -- Auth in Edge Functions
+- [Perfect Local SvelteKit Supabase Setup - DEV Community](https://dev.to/jdgamble555/perfect-local-sveltekit-supabase-setup-in-2025-4adp) -- Local development patterns
+- Codebase analysis: `hooks.server.ts`, `authToken.ts`, `dataWriter.type.ts`, `strapiDataWriter.ts`, `strapiDataProvider.ts`, `010-rls.sql`, `012-auth-hooks.sql`, `013-auth-rls.sql`, `000-functions.sql`, `column-map.ts`, `invite-candidate/index.ts`, `data.setup.ts`, `auth.setup.ts`
 
 ---
-
-*Pitfalls research for: Strapi v5 to Supabase migration with multi-tenant support -- OpenVAA VAA framework*
-*Researched: 2026-03-12*
+*Pitfalls research for: Frontend adapter migration (Strapi to Supabase) in OpenVAA*
+*Researched: 2026-03-18*
