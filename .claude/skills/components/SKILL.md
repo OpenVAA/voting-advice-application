@@ -1,6 +1,7 @@
 ---
 name: components
 description: "Domain expert for the OpenVAA frontend component library. Understands base components (Button, Modal, Input, Icon), dynamic data-aware components (EntityCard, EntityList, Navigation), candidate-specific components, Tailwind/DaisyUI styling conventions, accessibility patterns (WCAG 2.1 AA), Svelte 4 component patterns (export let, $$Props, concatClass), and the slot/variant system. Activate when creating or modifying Svelte components, reviewing component changes, or understanding the component architecture."
+targets: []
 ---
 
 # OpenVAA Component Library Expert

@@ -70,7 +70,7 @@ Each task was committed atomically:
 
 1. **Task 1: Create signicat-callback Edge Function** - `eb12ba640` (feat)
 
-**Plan metadata:** [pending] (docs: complete plan)
+**Plan metadata:** `98945595c` (docs: complete plan)
 
 ## Files Created/Modified
 - `apps/supabase/supabase/functions/signicat-callback/index.ts` - Edge Function for Signicat bank auth OIDC callback with JWE/JWT processing, user provisioning, and session creation

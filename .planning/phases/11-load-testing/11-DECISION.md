@@ -1,12 +1,14 @@
 # Answer Storage Decision: JSONB vs Relational
 
 **Decision:** JSONB
-**Date:** 2026-03-13
+**Date:** 2026-03-14 (updated from 2026-03-13 with caching analysis and concurrency scaling)
 **Confidence:** HIGH
 
 ## Summary
 
-JSONB answer storage is chosen over relational storage based on benchmark data showing 65-76% faster voter bulk-read performance at all scale tiers. The voter bulk-read query is the most latency-sensitive and highest-volume operation in a VAA: every voter page load executes it. While relational storage is faster for single-answer writes and aggregation, these operations are lower-frequency and their absolute latencies remain well within acceptable thresholds in both schemas. JSONB's read performance advantage far exceeds the 20% threshold required to overcome the relational-wins-ties default.
+JSONB answer storage is chosen over relational storage. While initial benchmarks showed JSONB 65-76% faster for single-client voter reads, the decision was refined by modeling a realistic 100K-voter launch scenario with caching analysis. The key finding: with effective caching (30-min TTL), the database handles at most ~50 concurrent queries during cache refresh — a level where both schemas perform nearly identically. The decision therefore rests on **architectural simplicity**, where JSONB wins on every dimension: simpler queries, simpler cache structure, simpler API surface, and inherits entity-level RLS without additional policies.
+
+Locale selection will be performed on the client side — all locales returned in API responses, filtered in the browser. This simplifies caching (50 entries vs 150 per project) and allows locale switching without refetching.
 
 ## Decision Criteria (from Phase 11 Context)
 
@@ -38,7 +40,63 @@ JSONB answer storage is chosen over relational storage based on benchmark data s
 | 10K | JSONB | 25.06ms | 28.30ms | 32.08ms | 23.87ms | -- |
 | 10K | Relational | 102.86ms | 120.08ms | 146.61ms | 104.42ms | **76% faster** |
 
-Both schemas easily meet the p95 < 1000ms threshold at all scales. JSONB is 3-4x faster because answers are co-located with the candidate row, eliminating the correlated subquery + jsonb_object_agg that the relational query requires to reconstruct the same output shape.
+Both schemas easily meet the p95 < 1000ms threshold at all scales. JSONB is 3-4x faster because answers are co-located with the candidate row, eliminating the correlated subquery + jsonb_object_agg that the relational query requires.
+
+### Concurrency Scaling (5K candidates, voter bulk-read)
+
+Tests at 1–1000 concurrent pgbench clients with max_connections=1100:
+
+| Clients | JSONB avg | REL avg | JSONB p95 | REL p95 | Winner | Ratio |
+|---------|-----------|---------|-----------|---------|--------|-------|
+| 1 | 10.5ms | 37.5ms | 14.6ms | 47.1ms | **JSONB** | 3.6x |
+| 50 | 330ms | 303ms | 620ms | 522ms | **REL** | 1.1x |
+| 100 | 650ms | 641ms | 1410ms | 1305ms | ~tied | 1.0x |
+| 200 | 1307ms | 1411ms | 2453ms | 2299ms | ~tied | 1.1x |
+| 500 | 3313ms | 5239ms | 5272ms | 7078ms | **JSONB** | 1.6x |
+| 1000 | 6260ms | 10770ms | 10032ms | 17601ms | **JSONB** | 1.7x |
+
+Throughput (transactions per second):
+
+| Clients | JSONB TPS | REL TPS | Winner |
+|---------|-----------|---------|--------|
+| 1 | 95 | 27 | JSONB |
+| 50 | 151 | 165 | REL |
+| 100 | 154 | 156 | REL |
+| 200 | 153 | 141 | JSONB |
+| 500 | 147 | 95 | JSONB |
+| 1000 | 148 | 98 | JSONB |
+
+**Scaling pattern:**
+- **1-30 clients**: JSONB wins 3.6x (single-table read, no JOIN overhead)
+- **30-150 clients**: Relational marginally better (~10%) (JSONB TOAST CPU decompression competes for cores)
+- **200+ clients**: JSONB wins 1.6-1.7x (relational correlated subqueries create I/O contention)
+- JSONB sustains ~148 TPS regardless of client count; relational peaks at 165 then collapses to 95
+
+### Optimized Relational Read Queries (5K candidates)
+
+Four alternative relational query patterns were benchmarked to test whether the relational read gap could be closed:
+
+| Query Pattern | 1c avg | 50c avg | Notes |
+|---|---|---|---|
+| Original (correlated subquery) | 37.5ms | 291ms | Baseline |
+| CTE + GROUP BY | 43.2ms | 299ms | 15% slower (optimizer can't push predicates) |
+| LATERAL JOIN | 37.7ms | 292ms | Same plan as original |
+| Two-query (no aggregation) | 28.4ms | 530ms | Best 1c but worst at 50c (2x round trips) |
+| RPC function wrapper | 37.1ms | 294ms | Same plan as original |
+
+**Conclusion:** No query optimization closes the relational read gap. The bottleneck is fundamental — fetching and aggregating ~42 answer rows per candidate from a separate table.
+
+### Smart JSONB Validation Trigger (5K candidates)
+
+A trigger that validates only changed answer keys (diff-based, like relational per-row validation) was benchmarked against the original full-scan trigger:
+
+| Trigger | 1c avg | 50c avg | TPS (50c) |
+|---|---|---|---|
+| Original (validates all keys) | 5.25ms | 48.05ms | 1,039 |
+| Smart (validates only changes) | 2.90ms | 26.47ms | 1,886 |
+| **Improvement** | **44%** | **45%** | **82% more TPS** |
+
+The smart trigger is adopted in the schema (see `006-answers-jsonb.sql`).
 
 ### Candidate Single-Answer Write (single client)
 
@@ -48,10 +106,8 @@ Both schemas easily meet the p95 < 1000ms threshold at all scales. JSONB is 3-4x
 | 1K | Relational | 0.43ms | 0.56ms | 0.80ms | 0.44ms | Rel **60% faster** |
 | 5K | JSONB | 1.01ms | 1.38ms | 2.01ms | 0.99ms | -- |
 | 5K | Relational | 0.46ms | 0.70ms | 1.08ms | 0.49ms | Rel **49% faster** |
-| 10K | JSONB | 1.03ms | 1.37ms | 2.00ms | 0.99ms | JSONB **65% faster** |
-| 10K | Relational | 3.03ms | 3.90ms | 5.59ms | 3.20ms | -- |
 
-Both schemas are far below the p95 < 500ms threshold. Relational is faster at 1K-5K because a simple upsert is cheaper than JSONB read-modify-write via jsonb_set. At 10K scale, the relational write slows due to the `ORDER BY id OFFSET` subquery used for random candidate selection in the benchmark (the same pattern is used in both, but the larger table size amplifies index scan cost differently). JSONB write latency is stable across scales (~1ms) because the jsonb_set operation cost is independent of table size once the row is located.
+Both are far below the 500ms threshold. Relational is faster for isolated writes, but writes are infrequent during the voter phase when load matters most.
 
 ### Candidate Single-Answer Write (50 concurrent writers)
 
@@ -61,36 +117,8 @@ Both schemas are far below the p95 < 500ms threshold. Relational is faster at 1K
 | 1K | Relational | 2.12ms | 3.70ms | 5.63ms | 2.32ms | 21,444 | Rel **60% faster** |
 | 5K | JSONB | 4.74ms | 9.07ms | 13.30ms | 5.29ms | 9,422 | -- |
 | 5K | Relational | 2.21ms | 4.05ms | 6.32ms | 2.46ms | 20,217 | Rel **55% faster** |
-| 10K | JSONB | 4.73ms | 9.12ms | 13.33ms | 5.24ms | 9,505 | JSONB **32% faster** |
-| 10K | Relational | 2.38ms | 13.47ms | 21.34ms | 3.81ms | 13,076 | -- |
 
-Relational achieves ~2x throughput at 1K-5K due to fine-grained row-level locks on the answers table (each writer locks only its answer row). JSONB writers lock the entire candidate row, limiting parallelism. At 10K, the relational p95 spikes due to the OFFSET scan cost and increased index contention on the larger answers table. Note: all p95 values are still well under 500ms.
-
-### Candidate Full-Form Save (single client)
-
-| Scale | Schema | p50 | p95 | p99 | Avg | Winner |
-|-------|--------|-----|-----|-----|-----|--------|
-| 1K | JSONB | 1.19ms | 1.64ms | 2.45ms | 1.26ms | JSONB **35% faster** |
-| 1K | Relational | 2.01ms | 2.52ms | 3.66ms | 2.12ms | -- |
-| 5K | JSONB | 1.17ms | 1.55ms | 2.31ms | 1.23ms | JSONB **46% faster** |
-| 5K | Relational | 1.93ms | 2.87ms | 4.43ms | 2.10ms | -- |
-| 10K | JSONB | 1.19ms | 1.61ms | 2.27ms | 1.25ms | JSONB **42% faster** |
-| 10K | Relational | 1.94ms | 2.76ms | 4.35ms | 2.11ms | -- |
-
-JSONB full-form save is consistently ~40% faster because it replaces a single JSONB column in one row. Relational requires a multi-row INSERT...ON CONFLICT for all 50 answers. Both approaches have relaxed latency targets and both perform well.
-
-### Concurrent Voter Reads (50 clients)
-
-| Scale | Schema | p50 | p95 | p99 | Avg | Winner |
-|-------|--------|-----|-----|-----|-----|--------|
-| 1K | JSONB | 56.98ms | 104.43ms | 148.40ms | 73.19ms | -- |
-| 1K | Relational | 53.39ms | 92.69ms | 125.78ms | 63.80ms | Rel **11% faster** |
-| 5K | JSONB | 309.50ms | 621.53ms | 901.59ms | 334.69ms | -- |
-| 5K | Relational | 275.75ms | 547.09ms | 789.73ms | 297.40ms | Rel **12% faster** |
-| 10K | JSONB | 521.23ms | 1538.71ms | 2129.13ms | 654.51ms | -- |
-| 10K | Relational | 411.77ms | 1549.43ms | 2136.88ms | 602.35ms | Within **1%** |
-
-Under concurrent load, the gap narrows significantly. At 10K with 50 readers, both schemas show similar p95 (~1540ms). The relational advantage at lower scales (11-12%) is within the 20% parity zone. At 10K, both exceed the 1s p95 threshold under concurrent load, but recall that production voter reads are constituency-scoped (max ~1K candidates per query), not project-scoped with 10K candidates.
+Relational achieves ~2x write throughput due to fine-grained row-level locking. JSONB writers lock the entire candidate row. The smart trigger reduces JSONB write latency by ~44%, partially closing this gap. All write latencies remain well below the 500ms threshold.
 
 ### Answer Aggregation (single client)
 
@@ -100,66 +128,160 @@ Under concurrent load, the gap narrows significantly. At 10K with 50 readers, bo
 | 1K | Relational | 5.93ms | 7.51ms | 9.05ms | 6.20ms | Rel **47% faster** |
 | 5K | JSONB | 32.52ms | 36.30ms | 43.07ms | 33.13ms | -- |
 | 5K | Relational | 15.34ms | 22.32ms | 29.57ms | 16.72ms | Rel **38% faster** |
-| 10K | JSONB | 42.98ms | 48.67ms | 53.78ms | 43.76ms | -- |
-| 10K | Relational | 32.52ms | 39.03ms | 49.33ms | 32.34ms | Rel **20% faster** |
 
-Relational aggregation is consistently faster because GROUP BY operates directly on indexed answer rows. JSONB aggregation requires jsonb_each to expand each candidate's answers document into rows before grouping. The gap narrows at scale (47% at 1K -> 20% at 10K) as both approaches become dominated by I/O costs.
+Relational aggregation is faster because GROUP BY operates directly on indexed rows. This matters for admin dashboards, not voter-facing operations.
 
-### k6 PostgREST Tests
+## Realistic Scenario: 100K Voters on Launch Day
 
-k6 was not installed on the benchmark machine. The pgbench direct-SQL tests provide accurate latency comparison since PostgREST adds approximately the same overhead to both schema variants (JSON serialization, connection pooling, HTTP framing). The voter-bulk-read PostgREST query was validated manually during Plan 01 development.
+### Traffic Model
+
+100K voters, Pareto-distributed after launch time:
+
+| Time Window | Users | % of Total |
+|---|---|---|
+| Hour 0-1 (launch) | ~30,000 | 30% |
+| Hour 1-2 | ~15,000 | 15% |
+| Hour 2-4 | ~15,000 | 15% |
+| Hour 4-8 | ~15,000 | 15% |
+| Hour 8-24 | ~25,000 | 25% |
+
+Peak 5-minute window: ~3,000-5,000 concurrent users. Average session: ~5-15 minutes (mostly answering questions with no DB load).
+
+### API Call Pattern Per Session
+
+```
+Phase 1 (Initial load) — ALL users, same data:
+  ┌─ app_settings       ← identical for everyone
+  ├─ elections           ← identical for everyone
+  ├─ constituency_groups ← identical for everyone
+  └─ constituencies      ← identical for everyone
+
+Phase 2 (After selection) — per election:
+  ┌─ question_categories ← same per project (5 unique)
+  ├─ questions           ← same per project (5 unique)
+  └─ nomination_counts   ← same per constituency (50 unique)
+
+Phase 3 (Candidate loading) — per constituency:
+  └─ candidates + answers ← same per constituency (50 unique)
+```
+
+With 50 constituencies, there are only **~55 unique query results** across all 100K users.
+
+### Caching Impact
+
+Data changes at most every 30 minutes, enabling aggressive caching:
+
+| Phase | Unique cache entries | Cache hit rate | DB queries per 30 min |
+|---|---|---|---|
+| Phase 1 (global) | 1 | ~100% | 1 |
+| Phase 2 (per project) | 5 | ~100% | 5 |
+| Phase 3 (per constituency) | 50 | ~100% | 50 |
+| **Total** | **56** | | **~1.9 queries/minute** |
+
+**With caching, the database is essentially idle during steady state.**
+
+Worst case — thundering herd after cache invalidation: ~56 concurrent queries (with single-flight protection), which is exactly the concurrency level where JSONB and relational perform identically (~300ms).
+
+### Supabase Cloud Translation
+
+| Compute Tier | CPU | RAM | Max DB Connections | Pooler Clients | Price |
+|---|---|---|---|---|---|
+| Small | 2-core ARM shared | 2GB | 90 | 400 | ~$25/mo |
+| Medium | 2-core ARM shared | 4GB | 120 | 600 | ~$50/mo |
+| Large | 2-core ARM dedicated | 8GB | 160 | 800 | ~$100/mo |
+
+Supavisor (connection pooler) in transaction mode means 500 concurrent users map to ~90 actual database connections. With caching, the database sees at most ~50 concurrent queries during cache refresh — well within even the Small tier.
+
+Estimated cloud latency (Small tier, typical Finnish VAA, ~2K candidates):
+
+| Concurrent Users | JSONB end-to-end | Relational end-to-end |
+|---|---|---|
+| 100 | ~50-80ms | ~100-150ms |
+| 500 | ~100-200ms | ~200-400ms |
+| 5,000 | ~300-600ms | ~500-1,000ms |
+| 50,000 (peak) | ~2-4s (need Medium+) | ~4-8s (need Large+) |
+
+These estimates assume no caching. **With caching, all users after the first ~56 get cached responses regardless of concurrency.**
+
+## Locale Strategy: Client-Side Selection
+
+All locales will be returned in API responses; locale filtering happens in the browser.
+
+| Strategy | Cache entries | Payload per constituency | Pros | Cons |
+|----------|--------------|------------------------|------|------|
+| **All locales (client-side)** | 50 | ~400-500KB | Simple cache, locale switch without refetch | Slightly larger payloads |
+| Server-side filter | 150 (50 × 3 locales) | ~150-200KB | Smaller payloads | 3x cache entries, refetch on locale switch |
+
+**Rationale:**
+- 50 cache entries vs 150 — simpler cache management and faster warming
+- User can switch locale without re-fetching (better UX during session)
+- Payload difference is modest and compresses well (JSONB locale objects have repetitive structure)
+- Zipf/Pareto locale distribution (e.g. 80% Finnish, 15% Swedish, 5% English) means server-side filtering saves bandwidth for the majority, but at the cost of 3x cache complexity — not worth it
 
 ## Analysis
 
-### Read Performance: JSONB Dominant
+### With Caching, Schema Performance is Nearly Irrelevant
 
-JSONB's 65-76% advantage on voter bulk-read is the strongest signal in the data. The reason is structural: JSONB stores answers alongside the candidate row, so fetching candidates with answers is a single-table scan. The relational approach requires a correlated subquery with jsonb_object_agg to reconstruct the same output shape, adding per-row aggregation overhead that scales with the number of answers per candidate.
+The realistic worst-case database load is ~50 concurrent queries during cache refresh. At this concurrency level, JSONB and relational perform within 10% of each other. The decision therefore shifts from raw performance to architectural factors:
 
-This advantage persists across all scale tiers and widens at larger scales. Under concurrent load (50 clients), the gap narrows to ~12% at 1K-5K because both approaches become CPU-bound on query execution rather than I/O-bound. At 10K concurrent reads, both approaches perform similarly.
-
-In production, voter reads are constituency-scoped (~100-300 candidates per query in a typical Finnish election, max ~1K). At this scale, JSONB delivers p95 < 3ms single-client and p95 < 105ms under 50 concurrent readers.
-
-### Write Performance: Relational Faster for Isolated Writes
-
-Relational single-answer upsert is 49-60% faster at 1K-5K (0.5ms vs 1ms) because it inserts/updates a single row in the answers table. JSONB read-modify-write via jsonb_set requires reading the entire answers document, modifying one key, and writing the full document back including TOAST compression.
-
-Under concurrent writes (50 clients), relational achieves 2x throughput at 1K-5K thanks to fine-grained locking (each writer locks only its answer row, different candidates' answers never contend). JSONB writers lock the entire candidate row, serializing concurrent writes to the same candidate.
-
-However, all write latencies are well below the 500ms threshold. Even the slowest concurrent write (JSONB p95 at 10K: 9.12ms) is 55x faster than the requirement.
-
-### Aggregation: Relational Advantage
-
-Relational aggregation is 20-47% faster because simple GROUP BY on indexed columns avoids the jsonb_each expansion step. This matters for analytics/statistics features but is a low-frequency operation (admin dashboards, not voter-facing).
+| Factor | JSONB | Relational | Impact with Caching |
+|--------|-------|------------|-------------------|
+| Read speed | 3.6x faster (1c) | Tied at 50c | **Low** — cache handles reads |
+| Write safety | `jsonb_set()` read-modify-write | Row-level independence | **Low** — writes rare during voter phase |
+| Schema simplicity | Single table, no JOINs | JOIN + aggregation needed | **Medium** — simpler API, cache keys |
+| Cache invalidation | Watch `candidates.updated_at` | Watch `answers` table changes | **Tie** |
+| Payload efficiency | Answers embedded, one fetch | Requires JOIN or 2nd query | **Medium** — simpler API response |
+| Smart trigger | Validates only changed keys (44% faster) | Per-row validation inherent | **Low** — writes rare in voter phase |
+| RLS complexity | Inherits candidates table policies | Needs separate policies with EXISTS | **Medium** — less maintenance |
+| Transaction count per session | 1 query for candidates+answers | 1-2 queries (complex JOIN or two-query) | **Low with caching** |
 
 ### TOAST Considerations
 
-At 50 questions with ~85% completion rate, JSONB answer documents are ~2-3 KB, slightly above the PostgreSQL TOAST threshold. The voter bulk-read latency numbers include TOAST decompression overhead. Despite this, JSONB reads are still 3-4x faster than relational reads, indicating that co-location benefits outweigh TOAST decompression costs.
+At 50 questions with ~85% completion, JSONB answer documents are ~2-3 KB (slightly above the PostgreSQL TOAST threshold). Under high concurrency (50-100 clients), TOAST CPU decompression creates a marginal bottleneck — but this only matters for cache misses, which occur ~56 times per 30-minute window.
 
 ### Race Condition Risk (JSONB)
 
-The JSONB read-modify-write pattern for single-answer updates means concurrent writers to the same candidate can overwrite each other's changes (last-writer-wins). In practice, this risk is low: only the candidate themselves updates their own answers, and the UI sends one answer at a time. If concurrent answer editing becomes a requirement, application-level optimistic locking (version column) would mitigate this for both schemas.
+The JSONB `jsonb_set()` read-modify-write pattern means concurrent writers to the same candidate can overwrite each other's changes. Mitigation: an RPC function that performs atomic single-key updates server-side (see Follow-Up Items). In practice, only the candidate themselves updates their own answers, and the UI sends one answer at a time.
 
-## Qualitative Factors
+## Follow-Up Items
 
-| Factor | JSONB | Relational |
-|--------|-------|------------|
-| Query simplicity | Answers co-located; single SELECT | Requires JOIN or subquery to reconstruct |
-| Query flexibility | Must use jsonb_* functions | Standard SQL, can add indexes on answer values |
-| Schema evolution | Schema-less, no migration for new fields | Can add columns to answers table |
-| Storage efficiency | Fewer rows, TOAST compression | More rows (~42 per candidate), more index overhead |
-| RLS complexity | Inherits candidates table RLS | Needs separate RLS policies with EXISTS subquery |
-| Write atomicity | Full document per row; single UPDATE | Per-answer row; concurrent writes to different answers don't contend |
-| PostgREST integration | Answers returned inline with candidate | Requires resource embedding or separate query |
-| Tooling | Requires jsonb_set, jsonb_each, etc. | Standard INSERT/UPDATE/SELECT |
+### Immediate (applied to schema)
 
-The RLS complexity difference is noteworthy. JSONB answers inherit the candidates table's 7 RLS policies automatically. Relational answers need their own set of policies with EXISTS subqueries back to the candidates table, adding maintenance burden and potentially per-row query overhead under RLS. This was documented in Phase 10 (the relational answers RLS policies are already written but commented out in 010-rls.sql).
+1. **Smart JSONB validation trigger** — validates only changed answer keys on UPDATE (44% write improvement). Applied to `006-answers-jsonb.sql`.
+2. **Question delete cascade** — trigger on `questions` that removes orphaned answer keys from `candidates.answers` and `organizations.answers` when a question is deleted. Applied to `006-answers-jsonb.sql`.
+3. **Question type change protection** — trigger on `questions` that prevents type/choices changes if existing answers would become invalid. Applied to `006-answers-jsonb.sql`.
 
-## Follow-Up Next Steps
+### TODO: Safe Concurrent Answer Upsert (RPC Function)
 
-1. **Keep `schema/006-answers-jsonb.sql` as the default answer storage schema**
-2. **Archive `schema/alternatives/answers-relational.sql`** -- keep in the alternatives directory for reference but do not include in the migration
-3. **No RLS changes needed** -- JSONB answers inherit candidates table RLS policies (already active)
-4. **Regenerate migration** with JSONB schema (already the default concatenation order)
-5. **Update seed.sql** if answer data is needed for development (currently no answer data in seed)
-6. **Consider adding a version column** to candidates if concurrent answer editing becomes a requirement (optimistic locking for jsonb_set race conditions)
-7. **Delete benchmark raw logs** from results/ (only JSON results are committed)
+Create a PostgreSQL RPC function for atomic single-answer upsert that avoids the client-side read-modify-write race condition:
+
+```sql
+-- Example: upsert_candidate_answer(candidate_id, question_id, answer_value)
+-- Uses server-side jsonb_set with row-level lock to prevent concurrent overwrites
+```
+
+This is needed before the Supabase frontend adapter is written (v3+ milestone).
+
+### TODO: Thundering Herd Cache Protection
+
+Implement single-flight cache pattern in the SvelteKit server to prevent cache stampede after invalidation. Options:
+- In-memory single-flight with `Map<string, Promise>` per SvelteKit process
+- Redis/Upstash-based distributed lock for multi-process deployments
+- Supabase Edge Function with KV store
+
+Defer to Svelte 5 migration milestone — current frontend still uses Strapi adapter.
+
+### TODO: Image Question Type ("Avatar" Question)
+
+Replace the `image` JSONB column on entity tables (candidates, organizations, factions, alliances) with a dedicated "Avatar" question type:
+- Add an `avatar` or `photo` question subtype that uses Supabase Storage
+- Remove the `image` column from entity tables (or deprecate)
+- Avatar becomes a regular question answer, inheriting all question infrastructure (categories, templates, validation)
+- Benefits: unified data model, no special-case image handling, consistent with questionnaire-based data collection
+
+### Archive
+
+4. **Keep `schema/006-answers-jsonb.sql`** as the default answer storage schema
+5. **Archive `schema/alternatives/answers-relational.sql`** — keep for reference, do not include in migration
+6. **No RLS changes needed** — JSONB answers inherit candidates table policies
+7. **Delete benchmark raw logs** from results/ (only JSON results committed)

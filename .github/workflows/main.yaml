@@ -22,6 +22,17 @@ on:
       - ".env.example"
 
 jobs:
+  skill-drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Check skill drift"
+        run: .claude/scripts/audit-skill-drift.sh
+
   frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
 

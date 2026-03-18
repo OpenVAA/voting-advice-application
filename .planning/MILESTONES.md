@@ -1,5 +1,27 @@
 # Milestones
 
+## v5.0 Claude Skills (Shipped: 2026-03-18)
+
+**Phases completed:** 6 phases (16-21), 11 plans executed
+**Timeline:** 2026-03-15 → 2026-03-16 (2 days)
+**Requirements:** 26/26 satisfied
+**Deliverables:** 6 skill directories, 15 skill files, ~2,200 LOC reference content
+
+**Key accomplishments:**
+- Domain-expert skills for data, matching, filters, and database packages with auto-triggering descriptions
+- Step-by-step extension patterns for adding entity types, question types, distance metrics, filter types, and database objects
+- Complete schema reference (17 tables), RLS policy map (97 policies), and algorithm reference for the matching package
+- Object model reference with 21 concrete types, DataRoot collection getters, and factory function documentation
+- Quality validation: cross-cutting scenario testing, triggering accuracy validation, content deduplication audit
+- Skill drift audit script (`.claude/scripts/audit-skill-drift.sh`) with CI integration for detecting stale skills
+
+**Deferred skills:**
+- Architect skill (ARCH-01) — deferred to post-Svelte 5 migration (needs stabilized frontend architecture)
+- Components skill (COMP-01) — deferred to post-Svelte 5 migration (component patterns will change)
+- LLM skill (LLM-01) — deferred (lowest priority package)
+
+---
+
 ## v2.0 Supabase Migration (Shipped: 2026-03-15)
 
 **Phases completed:** 8 phases (8-15), 21 plans executed

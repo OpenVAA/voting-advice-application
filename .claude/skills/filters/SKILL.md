@@ -1,6 +1,8 @@
 ---
 name: filters
 description: "Domain expert for the @openvaa/filters package -- entity filtering in Voting Advice Applications. Understands Filter base class with filterType discriminant, EnumeratedFilter/NumberFilter/TextFilter hierarchies with 6 concrete filters, FilterGroup composition with AND/OR logic, the rules system (exclude/include/min/max), MISSING_FILTER_VALUE sentinel, and value extraction from entities and answers. Activate when working in packages/filters/, adding new filter types, reviewing filter changes, or understanding how candidate/party filtering works in the voter app."
+targets:
+  - packages/filters/src/
 ---
 
 # @openvaa/filters Package Expert

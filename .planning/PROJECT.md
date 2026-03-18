@@ -2,7 +2,7 @@
 
 ## What This Is
 
-OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, shared packages for matching algorithms, filters, and data management, and a Supabase backend with multi-tenant PostgreSQL schema, RLS-based access control, and GoTrue authentication. The project covers framework evolution: hardening test infrastructure, modernizing the backend, and preparing for frontend stack upgrades.
+OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, shared packages for matching algorithms, filters, and data management, and a Supabase backend with multi-tenant PostgreSQL schema, RLS-based access control, and GoTrue authentication. The project includes Claude Code skills that provide domain expertise for each major package.
 
 ## Core Value
 
@@ -27,10 +27,11 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - ✓ 204 pgTAP tests covering tenant isolation, access control, and data integrity — v2.0
 - ✓ Bank authentication (Signicat OIDC) via Edge Function — v2.0
 - ✓ Load testing toolkit for schema validation decisions — v2.0
+- ✓ Claude Skills: domain-expert skills for data, matching, filters, and database — v5.0
 
 ### Active
 
-- [ ] Claude Skills: domain-expert skills for architecture, components, data, matching, filters, LLM
+(None — next milestone not yet defined)
 
 ### Out of Scope
 
@@ -43,13 +44,14 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 The project is a mature monorepo used for real election deployments. The Supabase backend is fully functional with authentication, multi-tenant RLS, storage, bulk operations, and comprehensive test coverage. The frontend still uses the Strapi adapter — migrating to Supabase requires building SupabaseDataProvider/DataWriter (v3+ scope).
 
-Key technical state after v2.0:
+Key technical state after v5.0:
 - **Backend:** Supabase (Postgres, GoTrue, PostgREST, Storage, Edge Functions) at `apps/supabase/`
 - **Legacy backend:** Strapi v5 at `backend/vaa-strapi/` — to be removed after frontend adapter migration
 - **Types:** `@openvaa/supabase-types` with generated Database types and COLUMN_MAP/PROPERTY_MAP
 - **Tests:** 204 pgTAP tests + existing Playwright E2E + Vitest unit tests
 - **Auth hooks:** SvelteKit `hooks.server.ts` has Supabase client wired but routes still use Strapi auth
 - **Edge Functions:** invite-candidate, signicat-callback, send-email (all backend-ready, awaiting frontend integration)
+- **Claude Skills:** 4 active domain-expert skills (data, matching, filters, database) + 2 deferred stubs (architect, components) + skill drift CI check
 
 ## Constraints
 
@@ -59,22 +61,6 @@ Key technical state after v2.0:
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
 - **Strapi sunset**: Remove after frontend adapter is verified in production
 
-## Current Milestone: v5.0 Claude Skills
-
-**Goal:** Build domain-expert Claude Code skills that deeply understand and assist with each major area of the OpenVAA framework.
-
-**Target skills:**
-- Architect — Whole app + monorepo knowledge, frontend internals (data API, contexts, routes, API routes, server/client separation, voter/candidate/admin apps)
-- Components — Frontend component library
-- Data — `@openvaa/data` package
-- Matching — `@openvaa/matching` package
-- Filters — `@openvaa/filters` package
-- LLM — `@openvaa/llm` package
-
-Each skill covers: extending the target, reviewing changes, helping other agents use it, understanding data models, maintaining conventions, syncing with docs.
-
-Build using skill-builder skill where beneficial.
-
 ## Milestones
 
 Each major initiative is a separate milestone:
@@ -83,7 +69,7 @@ Each major initiative is a separate milestone:
 2. **v2.0 Supabase Migration** — ✅ Shipped 2026-03-15. Backend migration with schema, auth, RLS, storage, services, and 204 pgTAP tests
 3. **v3.0 Frontend Adapter** — Supabase data provider/writer, Strapi removal, admin app UI
 4. **v4.0 Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
-5. **v5.0 Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
+5. **v5.0 Claude Skills** — ✅ Shipped 2026-03-18. Domain-expert skills for data, matching, filters, database (architect, components, LLM deferred to post-Svelte 5)
 
 For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `.planning/milestones/`.
 
@@ -99,7 +85,10 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 | external_id for bulk import/export | Enables idempotent data sync without exposing internal UUIDs | ✓ Good (v2.0) |
 | Edge Functions for auth flows | Candidate invite + Signicat bank auth run server-side in Deno | ✓ Good (v2.0) |
 | Test IDs over text selectors | More resilient to content/i18n changes | ✓ Good (v1.0) |
+| Inline skills over subagent skills | Domain knowledge loaded in context, not forked; lower latency, better for reference | ✓ Good (v5.0) |
+| Defer architect/components/LLM skills | Frontend architecture will change with Svelte 5; skills would be immediately outdated | ✓ Good (v5.0) |
+| Skill drift CI check | Automated detection of stale skills when source targets change | — Pending (v5.0) |
 
 ---
 
-*Last updated: 2026-03-15 after v5.0 Claude Skills milestone started*
+*Last updated: 2026-03-18 after v5.0 Claude Skills milestone completed*

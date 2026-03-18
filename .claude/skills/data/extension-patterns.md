@@ -2,69 +2,6 @@
 
 Step-by-step guides for the most common data package extensions. All file paths in steps are relative to `packages/data/src/` unless stated otherwise.
 
-## Adding a New Entity Type
-
-Reference implementation: `Candidate` (see `objects/entities/variants/candidate.ts`, `candidate.type.ts`, `candidate.test.ts`).
-
-Follow these steps in order. Each step names the file to create or modify.
-
-1. **Create type file** `objects/entities/variants/{name}.type.ts`
-   - Define `{Name}Data extends EntityData<typeof ENTITY_TYPE.{Name}>` interface
-   - Add entity-specific fields (e.g., `firstName`, `lastName` for Candidate)
-   - Import from `../../../internal`
-   - Pattern: copy `objects/entities/variants/candidate.type.ts`, adapt fields
-
-2. **Create class file** `objects/entities/variants/{name}.ts`
-   - Class: `{Name} extends Entity<typeof ENTITY_TYPE.{Name}, {Name}Data>`
-   - Implement `DataAccessor<{Name}Data>` interface
-   - Add `readonly objectType = OBJECT_TYPE.{Name}`
-   - Add typed property getters with smart defaults (e.g., `return this.data.prop ?? ''`)
-   - Import from `../../../internal`
-   - Pattern: copy `objects/entities/variants/candidate.ts`
-
-3. **Add to ENTITY_TYPE** `objects/entities/base/entityTypes.ts`
-   - Add `{Name}: '{name}'` to the `ENTITY_TYPE` const object
-   - The `EntityType` union type auto-derives from the const via `keyof typeof`
-
-4. **Add to OBJECT_TYPE** `core/objectTypes.ts`
-   - Add `{Name}: '{name}'` to the `OBJECT_TYPE` const object
-   - Add `[OBJECT_TYPE.{Name}]: {Name}` to the `ObjectTypeMap` type
-   - Note the comment in source: "NB! When editing these, be sure to update `/utils/typeGuard.ts` as well."
-
-5. **Update type guards** `utils/typeGuards.ts`
-   - Add `obj.objectType === OBJECT_TYPE.{Name}` to the `isEntity()` function's condition chain
-   - No change needed to `isDataObject()` (uses `Object.values(OBJECT_TYPE).includes()`)
-
-6. **Update EntityVariant** `objects/entities/variants/variants.ts`
-   - Add to `EntityVariantConstructor` type map: `[ENTITY_TYPE.{Name}]: typeof {Name}`
-   - The `EntityVariant`, `EntityVariantData`, and `AnyEntityVariantData` types auto-derive
-   - Update `parseEntityTree` only if the tree format needs new variant handling (usually not needed)
-
-7. **Add exports to internal.ts** `internal.ts`
-   - Add `export * from './objects/entities/variants/{name}.type'` in the entity variants block
-   - Add `export * from './objects/entities/variants/{name}'` immediately after the type export
-   - Position: after the last entity variant (currently alliance), before `variants.ts` re-export
-   - Order matters: type file before class file
-
-8. **Add to index.ts** `index.ts`
-   - Add `{Name}Data` to the type exports block
-   - Add `{Name}` to the class/value exports block
-
-9. **Add DataRoot collection** `root/dataRoot.ts` (only if entity needs its own collection getter)
-   - Add `get {name}s()` collection getter following the pattern of `get candidates()`
-   - Add `get{Name}(id)` id getter following the pattern of `getCandidate(id)`
-   - Update `getEntityCollectionName()` switch to map `ENTITY_TYPE.{Name}` to `'{name}s'`
-   - Update `getNominationCollectionName()` if corresponding nomination exists
-   - Update `provideEntityData()` to filter and construct the new entity type
-   - Add the new collection key to the `RootCollections` type in `root/dataRoot.type.ts`
-
-10. **Create co-located test** `objects/entities/variants/{name}.test.ts`
-    - Import from `../../../internal` and `../../../testUtils`
-    - Use `getTestDataRoot()` and `getTestData()` for test fixtures
-    - Test that all provided data is accessible via getters
-    - Test smart defaults for optional properties
-    - Pattern: copy `objects/entities/variants/candidate.test.ts`
-
 ## Adding a New Question Type
 
 Reference implementations: `SingleChoiceOrdinalQuestion` for matchable (see `objects/questions/variants/singleChoiceOrdinalQuestion.ts`), `TextQuestion` for non-matchable (see `objects/questions/variants/textQuestion.ts`).
@@ -132,6 +69,69 @@ Follow these steps in order.
     - If matchable: test `normalizeValue()` returns correct coordinates for known input values
     - Verify `isMatchable` returns the expected boolean
     - Import from `../../../internal` and `../../../testUtils`
+
+## Adding a New Entity Type
+
+Reference implementation: `Candidate` (see `objects/entities/variants/candidate.ts`, `candidate.type.ts`, `candidate.test.ts`).
+
+Follow these steps in order. Each step names the file to create or modify.
+
+1. **Create type file** `objects/entities/variants/{name}.type.ts`
+   - Define `{Name}Data extends EntityData<typeof ENTITY_TYPE.{Name}>` interface
+   - Add entity-specific fields (e.g., `firstName`, `lastName` for Candidate)
+   - Import from `../../../internal`
+   - Pattern: copy `objects/entities/variants/candidate.type.ts`, adapt fields
+
+2. **Create class file** `objects/entities/variants/{name}.ts`
+   - Class: `{Name} extends Entity<typeof ENTITY_TYPE.{Name}, {Name}Data>`
+   - Implement `DataAccessor<{Name}Data>` interface
+   - Add `readonly objectType = OBJECT_TYPE.{Name}`
+   - Add typed property getters with smart defaults (e.g., `return this.data.prop ?? ''`)
+   - Import from `../../../internal`
+   - Pattern: copy `objects/entities/variants/candidate.ts`
+
+3. **Add to ENTITY_TYPE** `objects/entities/base/entityTypes.ts`
+   - Add `{Name}: '{name}'` to the `ENTITY_TYPE` const object
+   - The `EntityType` union type auto-derives from the const via `keyof typeof`
+
+4. **Add to OBJECT_TYPE** `core/objectTypes.ts`
+   - Add `{Name}: '{name}'` to the `OBJECT_TYPE` const object
+   - Add `[OBJECT_TYPE.{Name}]: {Name}` to the `ObjectTypeMap` type
+   - Note the comment in source: "NB! When editing these, be sure to update `/utils/typeGuard.ts` as well."
+
+5. **Update type guards** `utils/typeGuards.ts`
+   - Add `obj.objectType === OBJECT_TYPE.{Name}` to the `isEntity()` function's condition chain
+   - No change needed to `isDataObject()` (uses `Object.values(OBJECT_TYPE).includes()`)
+
+6. **Update EntityVariant** `objects/entities/variants/variants.ts`
+   - Add to `EntityVariantConstructor` type map: `[ENTITY_TYPE.{Name}]: typeof {Name}`
+   - The `EntityVariant`, `EntityVariantData`, and `AnyEntityVariantData` types auto-derive
+   - Update `parseEntityTree` only if the tree format needs new variant handling (usually not needed)
+
+7. **Add exports to internal.ts** `internal.ts`
+   - Add `export * from './objects/entities/variants/{name}.type'` in the entity variants block
+   - Add `export * from './objects/entities/variants/{name}'` immediately after the type export
+   - Position: after the last entity variant (currently alliance), before `variants.ts` re-export
+   - Order matters: type file before class file
+
+8. **Add to index.ts** `index.ts`
+   - Add `{Name}Data` to the type exports block
+   - Add `{Name}` to the class/value exports block
+
+9. **Add DataRoot collection** `root/dataRoot.ts` (only if entity needs its own collection getter)
+   - Add `get {name}s()` collection getter following the pattern of `get candidates()`
+   - Add `get{Name}(id)` id getter following the pattern of `getCandidate(id)`
+   - Update `getEntityCollectionName()` switch to map `ENTITY_TYPE.{Name}` to `'{name}s'`
+   - Update `getNominationCollectionName()` if corresponding nomination exists
+   - Update `provideEntityData()` to filter and construct the new entity type
+   - Add the new collection key to the `RootCollections` type in `root/dataRoot.type.ts`
+
+10. **Create co-located test** `objects/entities/variants/{name}.test.ts`
+    - Import from `../../../internal` and `../../../testUtils`
+    - Use `getTestDataRoot()` and `getTestData()` for test fixtures
+    - Test that all provided data is accessible via getters
+    - Test smart defaults for optional properties
+    - Pattern: copy `objects/entities/variants/candidate.test.ts`
 
 ## Adding a New Nomination Variant
 

@@ -1,6 +1,8 @@
 ---
 name: matching
 description: "Domain expert for the @openvaa/matching package -- generic matching algorithms for Voting Advice Applications. Understands MatchingAlgorithm, MatchingSpace, distance metrics (Manhattan, Euclidean, directional), position mapping, subdimension handling for categorical questions, missing value imputation, and Match/SubMatch result objects. Activate when working in packages/matching/, implementing distance metrics, debugging match scores, reviewing matching changes, or understanding how voter-candidate matching works."
+targets:
+  - packages/matching/src/
 ---
 
 # @openvaa/matching Package Expert

@@ -66,7 +66,7 @@ Each task was committed atomically:
 
 1. **Task 1: Write SKILL.md with schema, RLS, service, and pgTAP conventions** - `735e89253` (feat)
 
-**Plan metadata:** (pending)
+**Plan metadata:** `73ac3e0bf` (docs: complete plan)
 
 ## Files Created/Modified
 - `.claude/skills/database/SKILL.md` - Complete database skill with 4 domain sections, review checklist, source locations, cross-skill interfaces, and reference file pointers

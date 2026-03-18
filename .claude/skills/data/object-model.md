@@ -140,7 +140,6 @@ Category filtering uses `appliesTo(filters)` on `QuestionAndCategoryBase`, which
 - **FactionNomination -> Faction:** Contains CandidateNominations as children; must be part of an OrganizationNomination.
 - **Question -> QuestionCategory:** Each question belongs to exactly one category.
 - **Entity has Answers:** Record of `Id -> Answer` stored in entity data; accessed via `entity.getAnswer(question)`.
-- **Candidate -> Organization:** Optional `organizationId` linking a candidate to their party/association.
 
 ## Factory Functions
 

@@ -1,6 +1,9 @@
 ---
 name: database
 description: "Domain expert for the OpenVAA Supabase backend: 17-table PostgreSQL schema with JSONB localization, 97 RLS policies across 5 role types (candidate through super_admin), JWT claims via Access Token Hook, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, 204 pgTAP tests, and storage bucket configuration. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer."
+targets:
+  - apps/supabase/
+  - packages/supabase-types/
 ---
 
 # OpenVAA Database Expert
