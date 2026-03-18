@@ -73,10 +73,13 @@
   2. User feedback can be submitted and stored in a dedicated feedback table with appropriate RLS
   3. Candidate terms-of-use acceptance is tracked with a timestamp column on the candidates table
   4. Candidate answers can be atomically upserted via an RPC function that handles both insert and update
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 22-01: TBD
+- [ ] 22-01-PLAN.md — Column additions (SCHM-01/03/04): customization on app_settings, terms_of_use_accepted on candidates, upsert_answers RPC
+- [ ] 22-02-PLAN.md — Feedback table (SCHM-02): table DDL, rate limiting trigger, RLS policies, indexes
+- [ ] 22-03-PLAN.md — pgTAP tests for all four requirements (SCHM-01 through SCHM-04)
+- [ ] 22-04-PLAN.md — Type regeneration: database.ts regenerated, column-map.ts updated with termsOfUseAccepted
 
 ### Phase 23: Adapter Foundation
 **Goal**: The shared utilities and infrastructure that all Supabase adapter classes depend on are built and tested
@@ -198,7 +201,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 22. Schema Migrations | v3.0 | 0/? | Not started | - |
+| 22. Schema Migrations | v3.0 | 0/4 | In progress | - |
 | 23. Adapter Foundation | v3.0 | 0/? | Not started | - |
 | 24. Auth Migration | v3.0 | 0/? | Not started | - |
 | 25. DataProvider | v3.0 | 0/? | Not started | - |
