@@ -2834,3 +2834,72 @@ $$;
 GRANT EXECUTE ON FUNCTION resolve_email_variables(uuid[], text, text) TO authenticated;
 -- Also grant to service_role (used by Edge Functions with service_role key)
 GRANT EXECUTE ON FUNCTION resolve_email_variables(uuid[], text, text) TO service_role;
+
+--------------------------------------------------------------------------------
+-- Phase 22 additions (SCHM-01, SCHM-03, SCHM-04)
+--------------------------------------------------------------------------------
+
+-- SCHM-01: App customization column on app_settings
+-- Image references use {path, pathDark?, alt?, width?, height?} format.
+-- Existing RLS (anon SELECT, admin INSERT/UPDATE/DELETE) covers this column.
+ALTER TABLE app_settings ADD COLUMN customization jsonb DEFAULT '{}'::jsonb;
+
+-- SCHM-03: Terms-of-use acceptance timestamp on candidates
+-- NULL = not yet accepted. Candidates can update their own row (column-level GRANT updated below).
+ALTER TABLE candidates ADD COLUMN terms_of_use_accepted timestamptz;
+
+-- SCHM-03 (cont.): Update column-level GRANT so candidates can update their own terms acceptance
+REVOKE UPDATE ON candidates FROM authenticated;
+GRANT UPDATE (
+  name, short_name, info, color, image, sort_order, subtype,
+  custom_data, first_name, last_name, answers, created_at, updated_at,
+  terms_of_use_accepted
+) ON candidates TO authenticated;
+
+-- SCHM-04: upsert_answers RPC for atomic candidate answer writes
+-- SECURITY INVOKER: RLS (candidate_update_own) enforces row-level access.
+-- validate_answers_jsonb() trigger fires on the underlying UPDATE automatically.
+-- Null-valued keys are stripped after merge to support "remove answer" semantics.
+CREATE OR REPLACE FUNCTION upsert_answers(
+  entity_id uuid,
+  answers   jsonb,
+  overwrite boolean DEFAULT false
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  updated_answers jsonb;
+BEGIN
+  IF overwrite THEN
+    UPDATE candidates
+    SET answers = (
+      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
+      FROM jsonb_each(COALESCE(upsert_answers.answers, '{}'::jsonb)) AS t(k, v)
+      WHERE v IS NOT NULL AND v != 'null'::jsonb
+    )
+    WHERE id = entity_id
+    RETURNING candidates.answers INTO updated_answers;
+  ELSE
+    UPDATE candidates
+    SET answers = (
+      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
+      FROM jsonb_each(
+        COALESCE(candidates.answers, '{}'::jsonb) || COALESCE(upsert_answers.answers, '{}'::jsonb)
+      ) AS t(k, v)
+      WHERE v IS NOT NULL AND v != 'null'::jsonb
+    )
+    WHERE id = entity_id
+    RETURNING candidates.answers INTO updated_answers;
+  END IF;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Entity not found or access denied: %', entity_id;
+  END IF;
+
+  RETURN updated_answers;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION upsert_answers(uuid, jsonb, boolean) TO authenticated;
