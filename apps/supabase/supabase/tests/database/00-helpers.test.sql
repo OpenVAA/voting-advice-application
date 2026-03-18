@@ -70,6 +70,8 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 -- app_settings_a:          dddddddd-dddd-dddd-dddd-000000000025
 -- app_settings_b:          dddddddd-dddd-dddd-dddd-000000000026
 -- cand_a2:                 dddddddd-dddd-dddd-dddd-000000000027
+-- feedback_a:              dddddddd-dddd-dddd-dddd-000000000028
+-- feedback_b:              dddddddd-dddd-dddd-dddd-000000000029
 
 --------------------------------------------------------------------------------
 -- test_user_id: map user name to predictable UUID
@@ -141,6 +143,9 @@ AS $$
     -- App settings
     WHEN 'app_settings_a'       THEN 'dddddddd-dddd-dddd-dddd-000000000025'::uuid
     WHEN 'app_settings_b'       THEN 'dddddddd-dddd-dddd-dddd-000000000026'::uuid
+    -- Feedback
+    WHEN 'feedback_a'           THEN 'dddddddd-dddd-dddd-dddd-000000000028'::uuid
+    WHEN 'feedback_b'           THEN 'dddddddd-dddd-dddd-dddd-000000000029'::uuid
     ELSE NULL
   END;
 $$;
@@ -377,6 +382,12 @@ BEGIN
   INSERT INTO app_settings (id, project_id, settings) VALUES
     (test_id('app_settings_a'), test_id('project_a'), '{"theme":"light"}'::jsonb),
     (test_id('app_settings_b'), test_id('project_b'), '{"theme":"dark"}'::jsonb);
+
+  -- ===== Feedback =====
+  -- Insert as superuser (bypasses RLS and rate limiting trigger context)
+  INSERT INTO feedback (id, project_id, rating, description, date, created_at) VALUES
+    (test_id('feedback_a'), test_id('project_a'), 5, 'Great app!',  now(), now()),
+    (test_id('feedback_b'), test_id('project_b'), 3, 'Decent app.', now(), now());
 
 END;
 $$;
