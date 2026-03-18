@@ -2903,3 +2903,108 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION upsert_answers(uuid, jsonb, boolean) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- Phase 22 additions (SCHM-02: feedback table)
+--------------------------------------------------------------------------------
+
+-- Private schema for rate limiting (not exposed via PostgREST)
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
+  ip_address   text        PRIMARY KEY,
+  count        integer     NOT NULL DEFAULT 1,
+  window_start timestamptz NOT NULL DEFAULT now()
+);
+
+-- Feedback table
+CREATE TABLE feedback (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  rating      integer,
+  description text,
+  date        timestamptz NOT NULL DEFAULT now(),
+  url         text,
+  user_agent  text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT feedback_rating_or_description CHECK (
+    rating IS NOT NULL OR description IS NOT NULL
+  )
+);
+
+-- Rate limiting trigger function (SECURITY DEFINER, writes to private schema)
+CREATE OR REPLACE FUNCTION check_feedback_rate_limit()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  client_ip     text;
+  current_count integer;
+  window_secs   interval := interval '5 minutes';
+  max_requests  integer  := 5;
+BEGIN
+  -- Extract first IP from x-forwarded-for header (handles proxy chains)
+  client_ip := SPLIT_PART(
+    COALESCE(
+      (current_setting('request.headers', true)::json ->> 'x-forwarded-for'),
+      'unknown'
+    ) || ',',
+    ',', 1
+  );
+  client_ip := TRIM(client_ip);
+
+  -- Advisory lock to serialize concurrent inserts from the same IP
+  PERFORM pg_advisory_xact_lock(hashtext('feedback_rate:' || client_ip));
+
+  -- Upsert rate limit counter (reset window if expired)
+  INSERT INTO private.feedback_rate_limits (ip_address, count, window_start)
+  VALUES (client_ip, 1, now())
+  ON CONFLICT (ip_address) DO UPDATE
+    SET count = CASE
+          WHEN private.feedback_rate_limits.window_start + window_secs <= now()
+          THEN 1
+          ELSE private.feedback_rate_limits.count + 1
+        END,
+        window_start = CASE
+          WHEN private.feedback_rate_limits.window_start + window_secs <= now()
+          THEN now()
+          ELSE private.feedback_rate_limits.window_start
+        END;
+
+  SELECT count INTO current_count
+  FROM private.feedback_rate_limits
+  WHERE ip_address = client_ip;
+
+  IF current_count > max_requests THEN
+    RAISE EXCEPTION 'Rate limit exceeded. Please try again later.'
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER check_feedback_rate_limit
+  BEFORE INSERT ON public.feedback
+  FOR EACH ROW EXECUTE FUNCTION check_feedback_rate_limit();
+
+-- Feedback RLS
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "anon_insert_feedback" ON feedback
+  FOR INSERT TO anon
+  WITH CHECK (true);
+
+CREATE POLICY "admin_select_feedback" ON feedback
+  FOR SELECT TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+CREATE POLICY "admin_delete_feedback" ON feedback
+  FOR DELETE TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+-- Feedback indexes
+CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON feedback (project_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON feedback (created_at);
