@@ -37,3 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON nominations (
 --------------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON candidates (auth_user_id);
 CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth_user_id);
+
+-- feedback indexes
+CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON feedback (project_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON feedback (created_at);

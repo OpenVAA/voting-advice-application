@@ -506,3 +506,26 @@ CREATE POLICY "admin_delete_app_settings" ON app_settings FOR DELETE TO authenti
 --
 -- CREATE POLICY "admin_delete_answers" ON answers FOR DELETE TO authenticated
 --   USING ((SELECT can_access_project(project_id)));
+
+-- =====================================================================
+-- feedback (anon insert-only; admin select/delete)
+-- =====================================================================
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+-- Anonymous: insert only (rate limiting trigger handles spam prevention)
+CREATE POLICY "anon_insert_feedback" ON feedback
+  FOR INSERT TO anon
+  WITH CHECK (true);
+
+-- Admin: read feedback for their project
+CREATE POLICY "admin_select_feedback" ON feedback
+  FOR SELECT TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+-- Admin: delete feedback for their project
+CREATE POLICY "admin_delete_feedback" ON feedback
+  FOR DELETE TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+-- No UPDATE policy (feedback is immutable after insert — locked decision)
+-- No anon SELECT policy (voters cannot read their own or others' feedback)
