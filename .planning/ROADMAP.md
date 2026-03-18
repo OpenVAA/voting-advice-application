@@ -90,10 +90,11 @@ Plans:
   2. Row mapping utility transforms Supabase snake_case rows to camelCase domain objects using COLUMN_MAP/PROPERTY_MAP
   3. JSONB localization utility extracts locale-appropriate strings with 3-tier fallback (requested, default, first key) matching the SQL get_localized() behavior
   4. Setting staticSettings.dataAdapter.type to 'supabase' causes the dynamic import switch to load Supabase adapter classes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 23-01: TBD
+- [ ] 23-01-PLAN.md — Types, constants, and utilities (ADPT-01/02/03/04): SupabaseDataAdapter type, env var constants, SupabaseAdapterConfig type, mapRow/mapRowToDb utilities, getLocalized utility, unit tests
+- [ ] 23-02-PLAN.md — Mixin, stubs, and wiring (ADPT-01/04): supabaseAdapterMixin, stub DataProvider/DataWriter/FeedbackWriter classes, dynamic import switch cases
 
 ### Phase 24: Auth Migration
 **Goal**: Users can securely authenticate using Supabase cookie-based sessions with no Strapi auth dependency
@@ -202,7 +203,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 22. Schema Migrations | 4/4 | Complete    | 2026-03-18 | - |
-| 23. Adapter Foundation | v3.0 | 0/? | Not started | - |
+| 23. Adapter Foundation | v3.0 | 0/2 | Not started | - |
 | 24. Auth Migration | v3.0 | 0/? | Not started | - |
 | 25. DataProvider | v3.0 | 0/? | Not started | - |
 | 26. DataWriter | v3.0 | 0/? | Not started | - |
