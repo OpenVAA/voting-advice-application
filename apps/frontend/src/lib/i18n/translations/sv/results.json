@@ -3,7 +3,7 @@
     "numShown": "{numShown, plural, =0 {Inga allianser} =1 {1 alliance} other {# alliances}}"
   },
   "candidate": {
-    "numShown": "{numShown, plural, =0 {Inga {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+    "numShown": "{numShown, plural, =0 {Inga kandidater} =1 {1 kandidat} other {# kandidater}}"
   },
   "faction": {
     "numShown": "{numShown, plural, =0 {Inga fraktioner} =1 {1 fraktion} other {# fraktioner}}"
@@ -25,11 +25,11 @@
     "noNominationsForElection": "inte tillgängligt"
   },
   "organization": {
-    "numShown": "{numShown, plural, =0 {Inga {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
+    "numShown": "{numShown, plural, =0 {Inga partier} =1 {1 parti} other {# partier}}"
   },
   "selectElectionFirst": "Välj val först",
   "title": {
-    "browse": "Bläddra bland {candidatePlural} och {partyPlural}",
+    "browse": "Bläddra bland kandidater och partier",
     "results": "Resultat"
   }
 }

@@ -1,7 +1,7 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { get } from 'svelte/store';
+import { get, readable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -224,7 +224,7 @@ export function initVoterContext(): VoterContext {
   const entityFilters = filterStore({
     nominationsAndQuestions,
     locale,
-    t
+    t: readable(t)
   });
 
   ////////////////////////////////////////////////////////////

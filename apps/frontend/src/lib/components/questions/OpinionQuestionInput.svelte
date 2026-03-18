@@ -25,7 +25,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   mode="display"
   answer={$voterAnswers[question.id]}
   otherAnswer={candidate.getAnswer(question)}
-  otherLabel={$t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```
 -->
 
@@ -63,6 +63,6 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     {@const otherSelected = question.ensureValue(otherAnswer?.value)}
     <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
   {:else}
-    <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center" />
+    <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
   {/if}
 </div>

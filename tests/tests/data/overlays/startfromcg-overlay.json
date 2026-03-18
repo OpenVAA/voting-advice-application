@@ -32,7 +32,9 @@
     {
       "externalId": "test-cg-municipalities",
       "name": { "en": "Municipalities" },
-      "constituencies": { "externalId": ["test-const-muni-north-a", "test-const-muni-south-a", "test-const-muni-orphan"] }
+      "constituencies": {
+        "externalId": ["test-const-muni-north-a", "test-const-muni-south-a", "test-const-muni-orphan"]
+      }
     }
   ],
   "elections": [
@@ -41,7 +43,7 @@
       "name": { "en": "Test Election 2025" },
       "electionDate": "2025-06-15",
       "electionStartDate": "2025-05-01",
-      "constituencyGroups": { "externalId": ["test-cg-regions", "test-cg-municipalities"] }
+      "constituencyGroups": { "externalId": ["test-cg-municipalities", "test-cg-regions"] }
     },
     {
       "externalId": "test-election-2",
@@ -146,14 +148,14 @@
       "externalId": "test-nom-sfcg-north1-e1",
       "candidate": { "externalId": "test-sfcg-cand-north-1" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-north" },
+      "constituency": { "externalId": "test-const-muni-north-a" },
       "party": { "externalId": "test-party-a" }
     },
     {
       "externalId": "test-nom-sfcg-south1-e1",
       "candidate": { "externalId": "test-sfcg-cand-south-1" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-south" },
+      "constituency": { "externalId": "test-const-muni-south-a" },
       "party": { "externalId": "test-party-b" }
     },
     {
@@ -174,14 +176,14 @@
       "externalId": "test-nom-sfcg-alpha-north",
       "candidate": { "externalId": "test-candidate-alpha" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-north" },
+      "constituency": { "externalId": "test-const-muni-north-a" },
       "party": { "externalId": "test-party-a" }
     },
     {
       "externalId": "test-nom-sfcg-beta-south",
       "candidate": { "externalId": "test-candidate-beta" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-south" },
+      "constituency": { "externalId": "test-const-muni-south-a" },
       "party": { "externalId": "test-party-a" }
     }
   ]

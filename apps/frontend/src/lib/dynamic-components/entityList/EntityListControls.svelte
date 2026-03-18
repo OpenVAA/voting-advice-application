@@ -138,11 +138,11 @@ TODO: Consider moving the tracking events away from the component and just addin
 </script>
 
 <div data-testid="entity-list-controls" {...concatClass($$restProps, 'flex flex-col')}>
-  <div class="mb-md flex flex-row-reverse justify-between gap-lg">
+  <div class="mb-md gap-lg flex flex-row-reverse justify-between">
     {#if searchFilter}
       <TextEntityFilter
         filter={searchFilter}
-        placeholder={$t('entityList.controls.searchPlaceholder')}
+        placeholder={t('entityList.controls.searchPlaceholder')}
         variant="discrete"
         class="grow"
         data-testid="entity-list-search" />
@@ -165,7 +165,7 @@ TODO: Consider moving the tracking events away from the component and just addin
           iconPos="left"
           class="!w-auto"
           data-testid="entity-list-filter"
-          text={$t('entityFilters.filterButtonLabel')}>
+          text={t('entityFilters.filterButtonLabel')}>
           <InfoBadge text={numActiveFilters} slot="badge" />
         </Button>
       {:else}
@@ -175,24 +175,24 @@ TODO: Consider moving the tracking events away from the component and just addin
           iconPos="left"
           class="!w-auto"
           data-testid="entity-list-filter"
-          text={$t('entityFilters.filterButtonLabel')} />
+          text={t('entityFilters.filterButtonLabel')} />
       {/if}
     {/if}
   </div>
   {#if entities.length > 0}
     {#if output.length === 0}
       <div
-        class="my-lg flex flex-col items-center text-center text-secondary"
+        class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
         {filterGroup?.filters.length
-          ? $t('entityList.controls.noFilterResults')
-          : $t('entityList.controls.noSearchResults')}
+          ? t('entityList.controls.noFilterResults')
+          : t('entityList.controls.noSearchResults')}
       </div>
     {:else if output.length !== entities.length}
       <div
-        class="my-lg flex flex-col items-center text-center text-secondary"
+        class="my-lg text-secondary flex flex-col items-center text-center"
         transition:slide={{ duration: DELAY.md }}>
-        {$t('entityList.controls.showingNumResults', { numShown: output.length })}
+        {t('entityList.controls.showingNumResults', { numShown: output.length })}
       </div>
     {/if}
   {/if}
@@ -200,15 +200,15 @@ TODO: Consider moving the tracking events away from the component and just addin
 
 {#if filterGroup?.filters.length}
   <Modal
-    title={$t('entityFilters.filters')}
+    title={t('entityFilters.filters')}
     boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
     onClose={trackActiveFilters}
     bind:openModal={openFiltersModal}
     bind:closeModal={closeFiltersModal}>
     <EntityFilters {filterGroup} targets={entities} />
     <div class="flex w-full flex-col items-center" slot="actions">
-      <Button on:click={closeFiltersModal} text={$t('entityFilters.applyAndClose')} variant="main" />
-      <Button on:click={resetFilters} color="warning" disabled={!numActiveFilters} text={$t('entityFilters.reset')} />
+      <Button on:click={closeFiltersModal} text={t('entityFilters.applyAndClose')} variant="main" />
+      <Button on:click={resetFilters} color="warning" disabled={!numActiveFilters} text={t('entityFilters.reset')} />
     </div>
   </Modal>
 {/if}

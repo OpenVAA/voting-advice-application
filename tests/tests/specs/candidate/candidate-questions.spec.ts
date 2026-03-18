@@ -11,7 +11,7 @@
  * storageState via auth-setup (logged in as mock.candidate.2@openvaa.org).
  */
 
-import { test, expect } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
@@ -42,12 +42,7 @@ test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
 
-    // Verify multiple category sections exist by checking for Expander elements
-    // Categories in the dataset: "Economy" and "Social"
-    // Expanders render as details/summary or similar expandable elements
-    const expanders = questionsList.locator('[class*="Expander"], details, [data-expanded]');
-    // Alternative: just verify multiple question cards span across the page
-    // The important thing is that cards are visible and clickable
+    // Verify multiple question cards are present across the page
     expect(count).toBeGreaterThanOrEqual(2);
   });
 
@@ -250,7 +245,7 @@ test.describe('candidate preview', { tag: ['@candidate'] }, () => {
 
     // Verify no error message is displayed
     const errorMessage = previewPage.container.getByTestId(testIds.shared.errorMessage);
-    await expect(errorMessage).not.toBeVisible();
+    await expect(errorMessage).toBeHidden();
   });
 
   test('should show specific candidate data (name or answered question) in preview (CAND-06)', async ({
@@ -283,7 +278,7 @@ test.describe('candidate preview', { tag: ['@candidate'] }, () => {
     let answerVisible = false;
     for (const label of answerLabels) {
       const el = previewPage.container.getByText(label, { exact: false });
-      if (await el.count() > 0) {
+      if ((await el.count()) > 0) {
         answerVisible = true;
         break;
       }

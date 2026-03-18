@@ -93,7 +93,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
     contentTabs = tabs.map((tab) => ({
       content: tab,
-      label: $t(`entityDetails.tabs.${tab}`)
+      label: t(`entityDetails.tabs.${tab}`)
     }));
 
     // Collect questions
@@ -148,8 +148,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </article>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .bottomBorder {
     /* after: is a valid prefix */
-    @apply relative after:absolute after:bottom-0 after:left-lg after:right-lg after:border-b-md after:border-b-[var(--line-color)] after:content-[''];
+    @apply after:left-lg after:right-lg after:border-b-md relative after:absolute after:bottom-0 after:border-b-[var(--line-color)] after:content-[''];
   }
 </style>

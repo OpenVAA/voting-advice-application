@@ -54,9 +54,9 @@ Contains the dynamic `PasswordValidator` component.
 
   $: valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
   $: if (!validPassword) {
-    errorMessage = $t('candidateApp.setPassword.passwordNotValid');
+    errorMessage = t('candidateApp.setPassword.passwordNotValid');
   } else if (password !== passwordConfirmation) {
-    errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
+    errorMessage = t('candidateApp.setPassword.passwordsDontMatch');
   } else {
     errorMessage = undefined;
   }
@@ -64,18 +64,18 @@ Contains the dynamic `PasswordValidator` component.
 
 <form class="m-0 flex w-full flex-col flex-nowrap items-center">
   <p class="mx-md my-0 self-stretch">
-    {$t('candidateApp.setPassword.ingress')}
+    {t('candidateApp.setPassword.ingress')}
   </p>
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md mt-md flex w-full flex-col gap-6">
     <div data-testid={passwordTestId}>
-      <PasswordField bind:password id="password-{id}" label={$t('common.password')} {autocomplete} />
+      <PasswordField bind:password id="password-{id}" label={t('common.password')} {autocomplete} />
     </div>
     <div data-testid={confirmPasswordTestId}>
       <PasswordField
         bind:password={passwordConfirmation}
         id="confirmation-{id}"
-        label={$t('common.passwordConfirmation')}
+        label={t('common.passwordConfirmation')}
         {autocomplete} />
     </div>
   </div>

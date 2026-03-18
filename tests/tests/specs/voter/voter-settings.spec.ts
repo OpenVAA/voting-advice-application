@@ -7,6 +7,8 @@
  * - VOTE-04: Question intro page (questionsIntro.show setting)
  * - VOTE-07: Minimum answers threshold enforcement
  * - VOTE-17: Results link visibility in header banner
+ * - Video content on question pages (customData.video)
+ * - Video content on category intro pages (customData.video)
  *
  * Each describe block creates its own StrapiAdminClient, enables required
  * settings in beforeAll, and restores data.setup.ts defaults in afterAll.
@@ -23,10 +25,10 @@
  * to prevent dialog overlays from intercepting test clicks.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial' });
@@ -503,6 +505,125 @@ test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
 
     // Verify results link in banner is NOT visible when showResultsLink is false
     const resultsButton = page.getByTestId(testIds.voter.banner.results);
-    await expect(resultsButton).not.toBeVisible();
+    await expect(resultsButton).toBeHidden();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Video content on question pages
+// ---------------------------------------------------------------------------
+
+test.describe('video on question page', { tag: ['@voter'] }, () => {
+  test('should show video player when question has video customData', async ({ page }) => {
+    // Navigate Home -> start -> intro -> start -> first question
+    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+    await page.getByTestId(testIds.voter.home.startButton).click();
+    await page.getByTestId(testIds.voter.intro.startButton).waitFor({ state: 'visible' });
+    await page.getByTestId(testIds.voter.intro.startButton).click();
+
+    // Land on first question (test-question-1, no video)
+    await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 10000 });
+
+    // Verify video is NOT visible on question without video customData
+    await expect(page.locator('video')).toBeHidden();
+
+    // Answer first question to advance to test-question-2 (which has video)
+    const urlBefore = page.url();
+    await page.getByTestId(testIds.voter.questions.answerOption).nth(2).click();
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+
+    // Verify video player is visible on test-question-2
+    await expect(page.locator('video')).toBeVisible({ timeout: 10000 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Video content on category intro pages
+// ---------------------------------------------------------------------------
+
+test.describe('video on category intro page', { tag: ['@voter'] }, () => {
+  const client = new StrapiAdminClient();
+
+  test.beforeAll(async () => {
+    await client.login();
+    await client.updateAppSettings({
+      questions: {
+        questionsIntro: { show: false, allowCategorySelection: false },
+        categoryIntros: { show: true, allowSkip: true },
+        showResultsLink: true
+      },
+      ...defaultEntitySettings,
+      ...suppressInterferingPopups
+    });
+  });
+
+  test.afterAll(async () => {
+    await client.updateAppSettings(defaultQuestionSettings);
+    await client.dispose();
+  });
+
+  test('should show video player on category intro with video customData', async ({ page }) => {
+    test.setTimeout(60000);
+
+    // Navigate Home -> Intro
+    await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+    await page.getByTestId(testIds.voter.home.startButton).click();
+    await page.getByTestId(testIds.voter.intro.startButton).waitFor({ state: 'visible' });
+    await page.getByTestId(testIds.voter.intro.startButton).click();
+
+    // With categoryIntros.show: true, first should be Economy category intro (no video)
+    const categoryIntro = page.getByTestId(testIds.voter.questions.categoryIntro);
+    await expect(categoryIntro).toBeVisible({ timeout: 10000 });
+
+    // Verify video is NOT visible on Economy category intro (no video customData)
+    await expect(page.locator('video')).toBeHidden();
+
+    // Click continue to start Economy questions
+    await page.getByTestId(testIds.voter.questions.categoryStart).click();
+
+    // Answer Economy questions until Social category intro appears
+    for (let i = 0; i < 20; i++) {
+      try {
+        await page
+          .getByTestId(testIds.voter.questions.answerOption)
+          .first()
+          .waitFor({ state: 'visible', timeout: 5000 });
+      } catch {
+        break;
+      }
+
+      const urlBefore = page.url();
+      await page.getByTestId(testIds.voter.questions.answerOption).nth(2).click();
+
+      try {
+        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+      } catch {
+        const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+        if (await nextButton.isVisible()) {
+          await nextButton.click();
+          try {
+            await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+          } catch {
+            break;
+          }
+        }
+      }
+
+      // Check if we landed on a category intro page
+      if (await categoryIntro.isVisible().catch(() => false)) {
+        break;
+      }
+
+      // Check if we landed on results
+      if (page.url().includes('/results')) {
+        break;
+      }
+    }
+
+    // Should be on Social category intro (which has video customData)
+    await expect(categoryIntro).toBeVisible();
+
+    // Verify video player is visible on category intro with video
+    await expect(page.locator('video')).toBeVisible({ timeout: 10000 });
   });
 });

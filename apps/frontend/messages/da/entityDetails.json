@@ -1,0 +1,11 @@
+{
+  "entityDetails": {
+    "links": "Links",
+    "memberOfOrganization": "medlem af {organization}",
+    "tabs": {
+      "candidates": "kandidater",
+      "info": "Grundlæggende info",
+      "opinions": "Holdninger"
+    }
+  }
+}

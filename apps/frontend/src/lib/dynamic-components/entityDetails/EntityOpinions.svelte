@@ -50,7 +50,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   }
 </script>
 
-<div class="mt-xl grid gap-xxl px-lg pb-safelgb">
+<div class="mt-xl gap-xxl px-lg pb-safelgb grid">
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
@@ -67,20 +67,20 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
       {#if $appType === 'candidate'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
-            {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
+            {t('questions.answers.entityHasntAnswered', { entity: shortName })}
           </div>
         {/if}
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.answers.bothHaventAnswered', { entity: shortName })}
+          {t('questions.answers.bothHaventAnswered', { entity: shortName })}
         </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.answers.youHaventAnswered')}
+          {t('questions.answers.youHaventAnswered')}
         </div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.answers.entityHasntAnswered', { entity: shortName })}
+          {t('questions.answers.entityHasntAnswered', { entity: shortName })}
         </div>
       {/if}
 

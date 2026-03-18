@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Continuer la saisie",
+    "ingress": "Êtes-vous sûr·e de vouloir vous déconnecter ? Vous serez automatiquement déconnecté·e après {timeLeft} secondes.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Il reste encore un élément d’informations de base et une opinion à remplir.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Il reste encore un élément d’informations de base et {opinionQuestionsLeft} opinions à remplir.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Il reste encore {infoQuestionsLeft} éléments d’informations de base et une opinion à remplir.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Il reste encore {infoQuestionsLeft} éléments d’informations de base et {opinionQuestionsLeft} opinions à remplir."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Il reste encore une opinion à remplir.",
+          "opinionQuestionsLeftPlural=other": "Il reste encore {opinionQuestionsLeft} opinions à remplir."
+        }
+      }
+    ],
+    "title": "Certaines de vos données manquent encore"
+  }
+}

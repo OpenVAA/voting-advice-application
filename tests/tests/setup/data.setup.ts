@@ -1,9 +1,10 @@
-import { expect,test as setup } from '@playwright/test';
-import candidateAddendum from '../data/candidate-addendum.json' assert { type: 'json' };
-import defaultDataset from '../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' assert { type: 'json' };
+import { expect, test as setup } from '@playwright/test';
+import candidateAddendum from '../data/candidate-addendum.json' with { type: 'json' };
+import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
 import { StrapiAdminClient } from '../utils/strapiAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
+import { uploadTestAssets } from '../utils/uploadTestAssets';
 
 const TEST_DATA_PREFIX = 'test-';
 
@@ -16,6 +17,9 @@ const TEST_DATA_PREFIX = 'test-';
  * auth-setup can log in (a previous test run may have changed the password).
  */
 setup('import test dataset', async () => {
+  // Upload test video/image assets to LocalStack S3 so customData.video URLs resolve
+  await uploadTestAssets();
+
   const client = new StrapiAdminClient();
   await client.login();
 
@@ -86,10 +90,7 @@ setup('import test dataset', async () => {
   // The password change or reset test may have left a different password.
   // If setPassword fails (e.g., no linked user), fall back to forceRegister
   // which creates the user and sets the password in one step.
-  const findResult = await client.findData(
-    'candidates',
-    { externalId: { $eq: 'test-candidate-alpha' } }
-  );
+  const findResult = await client.findData('candidates', { externalId: { $eq: 'test-candidate-alpha' } });
   if (findResult.type === 'success' && findResult.data?.length) {
     const documentId = (findResult.data[0] as { documentId: string }).documentId;
     const setResult = await client.setPassword({ documentId, password: TEST_CANDIDATE_PASSWORD });

@@ -13,9 +13,9 @@
  * (no auth needed for voter tests).
  */
 
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import { voterTest as test } from '../../fixtures/voter.fixture';
 import { testIds } from '../../utils/testIds';
 
 // The candidate used for detail content verification (has info answers and open answers)
@@ -26,9 +26,7 @@ const alphaAnswers = alphaCandidate.answersByExternalId as Record<
 >;
 
 test.describe('voter entity detail', { tag: ['@voter'] }, () => {
-  test('should open candidate detail drawer when clicking a result card', async ({
-    answeredVoterPage: page
-  }) => {
+  test('should open candidate detail drawer when clicking a result card', async ({ answeredVoterPage: page }) => {
     // Click the first entity card on the results page (VOTE-11)
     await page.getByTestId(testIds.voter.results.card).first().click();
 
@@ -61,12 +59,10 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await page.keyboard.press('Escape');
 
     // Assert drawer is closed
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeHidden();
   });
 
-  test('should display candidate answers correctly in info and opinions tabs', async ({
-    answeredVoterPage: page
-  }) => {
+  test('should display candidate answers correctly in info and opinions tabs', async ({ answeredVoterPage: page }) => {
     // Open "Test Candidate Alpha" who has:
     // - Info answers: campaign slogan "Progress for all", years of experience, etc.
     // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
@@ -142,6 +138,6 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
 
     // Close the drawer
     await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeHidden();
   });
 });

@@ -177,7 +177,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       shadeOnHover
       class={gridClasses}>
       <header
-        class="grid items-center justify-items-start gap-x-md gap-y-xs"
+        class="gap-x-md gap-y-xs grid items-center justify-items-start"
         style="
           grid-template-columns: auto 1fr auto;
           grid-template-rows: 1fr auto;
@@ -193,7 +193,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           style="grid-area: avatar" />
 
         <!-- Title -->
-        <div class="grid grid-flow-col items-center gap-sm" style="grid-area: title">
+        <div class="gap-sm grid grid-flow-col items-center" style="grid-area: title">
           <svelte:element this={variant === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title">
             {nakedEntity.name}
           </svelte:element>
@@ -203,7 +203,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         </div>
 
         <!-- Subtitle -->
-        <div id="{baseId}_subtitle" class="grid grid-flow-col items-center gap-sm" style="grid-area: subtitle">
+        <div id="{baseId}_subtitle" class="gap-sm grid grid-flow-col items-center" style="grid-area: subtitle">
           {#if variant !== 'subcard'}
             {#if nomination?.parentNomination}
               <EntityTag entity={nomination.parentNomination} variant="short" />
@@ -214,7 +214,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
             {#if showElection && nomination?.election && nomination?.constituency}
               <span>
                 {nomination.election.shortName}
-                {$t('common.multipleAnswerSeparator')}
+                {t('common.multipleAnswerSeparator')}
                 {nomination.constituency.name}
               </span>
             {/if}
@@ -238,12 +238,12 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
       <!-- Featured questions and answers -->
       {#if questions?.length}
-        <div class="grid items-start gap-md" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
+        <div class="gap-md grid items-start" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
           {#each questions as { question, hideLabel, format }}
             {@const answer = nakedEntity.getAnswer(question)}
             <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
             {#if !hideLabel || answer != null}
-              <div class="grid gap-xs">
+              <div class="gap-xs grid">
                 {#if !hideLabel}
                   <div class="small-label text-left">
                     {question.shortName}
@@ -262,20 +262,20 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     <!-- Subentities -->
     {#if subcards?.length}
       <!-- TODO[Svelte 5]: this currently leaves an unseemly empty gap even if there's no content, because the tag will still contain whitespace. With Svelte 5, this is supposed to be automatically fixed. -->
-      <div class="mt-md grid gap-lg empty:mt-0">
+      <div class="mt-md gap-lg grid empty:mt-0">
         {#each subcards.slice(0, showAllSubcards ? undefined : maxSubcards) as ecProps}
           <svelte:self variant="subcard" {...concatClass(ecProps, 'offset-border')} />
         {/each}
         {#if subcards.length > maxSubcards}
-          <div class="offset-border relative -my-md after:!top-0">
+          <div class="offset-border -my-md relative after:!top-0">
             <Button
               on:click={handleSubcardsToggle}
               variant="secondary"
               color="secondary"
               class="max-w-none"
               text={showAllSubcards
-                ? $t('entityCard.hideAllCandidates')
-                : $t('entityCard.showAllCandidates', {
+                ? t('entityCard.hideAllCandidates')
+                : t('entityCard.showAllCandidates', {
                     numCandidates: subcards.length
                   })} />
           </div>
@@ -288,8 +288,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </EntityCardAction>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .offset-border {
     /* after: is a valid prefix */
-    @apply after:absolute after:left-0 after:right-0 after:top-[calc(-10rem/16)] after:border-t-md after:border-base-300 after:content-[''];
+    @apply after:border-t-md after:border-base-300 after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:content-[''];
   }
 </style>

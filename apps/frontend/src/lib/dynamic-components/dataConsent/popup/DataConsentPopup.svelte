@@ -27,10 +27,10 @@ Show a popup with a data consent form, if data consent has not been given yet.
   let closeAlert: () => void;
 </script>
 
-<Alert bind:closeAlert title={$t('common.privacy.dataCollection.title')} icon="privacy" {...$$restProps}>
-  <div class="grid grid-flow-row gap-md">
+<Alert bind:closeAlert title={t('common.privacy.dataCollection.title')} icon="privacy" {...$$restProps}>
+  <div class="gap-md grid grid-flow-row">
     <p class="my-0">
-      {$t('dynamic.privacy.dataConsentIntro.popup')}
+      {t('dynamic.privacy.dataConsentIntro.popup')}
     </p>
     <DataConsentInfoButton class="!inline" />
   </div>

@@ -83,7 +83,7 @@ See the `<Modal>` component documentation for more information.
 <Modal bind:closeModal bind:openModal onClose={handleClose} {title} closeOnBackdropClick={false} {...$$restProps}>
   <slot />
   <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={() => closeModal?.()} text={cancelLabel || $t('common.cancel')} />
-    <Button on:click={handleConfirm} text={confirmLabel || $t('common.continue')} variant="main" />
+    <Button on:click={() => closeModal?.()} text={cancelLabel || t('common.cancel')} />
+    <Button on:click={handleConfirm} text={confirmLabel || t('common.continue')} variant="main" />
   </div>
 </Modal>

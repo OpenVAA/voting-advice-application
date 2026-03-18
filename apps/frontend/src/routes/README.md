@@ -4,10 +4,10 @@
 
 This directory contains the SvelteKit route structure for the OpenVAA frontend application.
 
-All routes support an optional locale parameter: `[[lang=locale]]`
+Locale handling is managed by Paraglide JS via the reroute hook in `src/hooks.ts`. Locale prefixes are added/stripped transparently.
 
-- Voters app routes are in `[[lang=locale]]/(voters)/`
-- Candidate app routes are in `[[lang=locale]]/candidate/`
-- Protected candidate routes are in `[[lang=locale]]/candidate/(protected)/`
+- Voters app routes are in `(voters)/`
+- Candidate app routes are in `candidate/`
+- Protected candidate routes are in `candidate/(protected)/`
 
 See the Routing documentation for detailed information.

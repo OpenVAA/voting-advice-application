@@ -52,14 +52,14 @@ PasswordField is an input box for password that comes with a button to reveal an
 
 <div class="relative">
   {#if !externalLabel}
-    <label for={id} class="sr-only">{label || $t('common.password')}</label>
+    <label for={id} class="sr-only">{label || t('common.password')}</label>
   {/if}
   <input
     {id}
     type="password"
     name="password"
     class="input w-full"
-    placeholder={$t('components.passwordInput.placeholder')}
+    placeholder={t('components.passwordInput.placeholder')}
     data-testid="password-field"
     bind:value={password}
     bind:this={input}
@@ -68,7 +68,7 @@ PasswordField is an input box for password that comes with a button to reveal an
   <Button
     type="button"
     variant="icon"
-    text={passwordRevealed ? $t('components.passwordInput.hidePassword') : $t('components.passwordInput.showPassword')}
+    text={passwordRevealed ? t('components.passwordInput.hidePassword') : t('components.passwordInput.showPassword')}
     class="!absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
     on:click={toggleRevealed}

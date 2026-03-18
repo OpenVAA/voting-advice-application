@@ -102,7 +102,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 </script>
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
-  <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
+  <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
     {#if $appSettings.elections.showElectionTags}
       {#each getElectionsToShow({ question, elections: $elections }) as election}
         <ElectionTag {election} {onShadedBg} />
@@ -115,7 +115,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
         {onShadedBg} />
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
-      {$t('common.question')}
+      {t('common.question')}
       <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
     {/if}
   </PreHeading>

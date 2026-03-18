@@ -36,10 +36,10 @@ DEV_CANDIDATE_EMAIL=mock.candidate.2@openvaa.org
 DEV_CANDIDATE_PASSWORD=Password1!
 ```
 
-| User type      | User role     | Email (default)                | Password (default) | Remarks                           |
-| -------------- | ------------- | ------------------------------ | ------------------ | --------------------------------- |
-| Strapi Admin   | Super Admin   | `mock.admin@openvaa.org`       | `admin`            | Configurable via `DEV_ADMIN_*`    |
-| Test Candidate | Authenticated | `mock.candidate.2@openvaa.org` | `Password1!`       | Configurable via `DEV_CANDIDATE_*`|
+| User type      | User role     | Email (default)                | Password (default) | Remarks                            |
+| -------------- | ------------- | ------------------------------ | ------------------ | ---------------------------------- |
+| Strapi Admin   | Super Admin   | `mock.admin@openvaa.org`       | `admin`            | Configurable via `DEV_ADMIN_*`     |
+| Test Candidate | Authenticated | `mock.candidate.2@openvaa.org` | `Password1!`       | Configurable via `DEV_CANDIDATE_*` |
 
 ### Mock users (with mock data generation)
 

@@ -43,7 +43,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
     'before:content-[""] before:mx-16 before:my-md before:block before:border-t-md before:border-t-[var(--line-color)]'
   )}>
   {#if title}
-    <h4 class="small-label flex items-center py-sm pl-[2.75rem]">{title}</h4>
+    <h4 class="small-label py-sm flex items-center pl-[2.75rem]">{title}</h4>
   {/if}
   <slot />
 </section>

@@ -10,7 +10,7 @@
   },
   "inConstituency": "vaalipiirissä",
   "ingress": {
-    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
+    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat ehdokkaat ja puolueet, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
   "missingNominations": {

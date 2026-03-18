@@ -1,0 +1,99 @@
+{
+  "components": {
+    "accordionSelect": {
+      "collapsedAriaInfo": "Tap to show all options"
+    },
+    "constituencySelector": {
+      "selectPrompt": "Select {constituencyGroup}"
+    },
+    "headingGroup": {
+      "roleDescription": "Heading group"
+    },
+    "input": {
+      "addImage": "Add an image",
+      "allSelected": "All selected",
+      "changeImage": "Change the image",
+      "deleteOption": "Deselect {option}",
+      "error": {
+        "fileLoadingError": "Failed to load the file.",
+        "invalidFile": "The file is invalid.",
+        "invalidUrl": "The URL is not valid.",
+        "oversizeFile": "The file is too large. The maximum size is {maxFilesize} MB."
+      },
+      "hideTranslations": "Hide",
+      "imageInfo": "The maximum size is for the image is {maxFilesize} MB. Please be patient when saving, the image may take a while to load.",
+      "multilingualInfo": "You can enter your answer in all the languages of the application if you wish.",
+      "noImage": "No image",
+      "selectAnother": "Select another",
+      "selectFirst": "Select first",
+      "selectOne": "Select",
+      "showTranslations": "Translations"
+    },
+    "matchScore": {
+      "label": "match",
+      "score": "{score}%"
+    },
+    "passwordInput": {
+      "hidePassword": "Hide password",
+      "password": "Password",
+      "placeholder": "Password",
+      "showPassword": "Reveal password"
+    },
+    "preHeading": {
+      "roleDescription": "Pre-title"
+    },
+    "preventNavigation": {
+      "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"
+    },
+    "select": {
+      "noMatchingOptions": "No matching options found",
+      "placeholder": "Select an option below"
+    },
+    "video": {
+      "captions": "Captions",
+      "error": "Sorry, there seems to be some trouble with the video. You can try to reload the page or use the button below to switch to a text view.",
+      "hideCaptions": "Hide subtitles",
+      "jumpBack": "Jump back",
+      "jumpForward": "Jump forward",
+      "mute": "Mute",
+      "pause": "Pause",
+      "play": "Play",
+      "progessbarLabel": "Time remaining",
+      "replay": "Replay",
+      "showCaptions": "Show subtitles",
+      "showTranscript": "Show video as text",
+      "showVideo": "Show video",
+      "subtitles": "Subtitles",
+      "timeLeft": [
+        {
+          "declarations": [
+            "input minutes",
+            "local minutesPlural = minutes: plural",
+            "input seconds",
+            "local secondsPlural = seconds: plural"
+          ],
+          "selectors": ["minutesPlural", "secondsPlural"],
+          "match": {
+            "minutesPlural=zero secondsPlural=zero": "  left",
+            "minutesPlural=zero secondsPlural=one": " one second left",
+            "minutesPlural=zero secondsPlural=other": " {seconds} seconds left",
+            "minutesPlural=one secondsPlural=zero": "one minutes  left",
+            "minutesPlural=one secondsPlural=one": "one minutes one second left",
+            "minutesPlural=one secondsPlural=other": "one minutes {seconds} seconds left",
+            "minutesPlural=other secondsPlural=zero": "{minutes} minutes  left",
+            "minutesPlural=other secondsPlural=one": "{minutes} minutes one second left",
+            "minutesPlural=other secondsPlural=other": "{minutes} minutes {seconds} seconds left"
+          }
+        }
+      ],
+      "transcript": "Text",
+      "transcriptToggleLabel": "Switch between video and text",
+      "unmute": "Unmute",
+      "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
+      "video": "Video"
+    },
+    "questionExtendedInfo": {
+      "title": "Learn more"
+    }
+  }
+}

@@ -75,10 +75,11 @@ Accesses `LayoutContext`.
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   /* The class prefixes are valid even though linter flags them */
   .nav-item[disabled],
   .nav-item:disabled,
   .nav-item.disabled {
-    @apply pointer-events-none !text-secondary hover:bg-transparent;
+    @apply !text-secondary pointer-events-none hover:bg-transparent;
   }
 </style>

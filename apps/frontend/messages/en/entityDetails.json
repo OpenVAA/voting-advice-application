@@ -1,0 +1,11 @@
+{
+  "entityDetails": {
+    "links": "Links",
+    "memberOfOrganization": "member of {organization}",
+    "tabs": {
+      "candidates": "candidates",
+      "info": "Basic Info",
+      "opinions": "Opinions"
+    }
+  }
+}

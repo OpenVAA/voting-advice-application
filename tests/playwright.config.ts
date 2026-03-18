@@ -146,8 +146,10 @@ export default defineConfig({
     },
 
     // 5b. Voter app: settings (mutates global app settings — must run alone)
-    //     Depends on data-setup only (not voter-app) so that pre-existing failures
-    //     in read-only voter specs don't block settings verification.
+    //     Depends on voter-app so settings mutations only start after all
+    //     read-only voter specs complete. Without this ordering, concurrent
+    //     settings changes (e.g., enabling categoryIntros) interfere with
+    //     voter-app fixtures navigating through the question journey.
     {
       name: 'voter-app-settings',
       testDir: './tests/specs/voter',
@@ -156,7 +158,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome']
       },
-      dependencies: ['data-setup']
+      dependencies: ['voter-app']
     },
 
     // 5c. Voter app: popups (mutates global app settings — must run alone, after settings)

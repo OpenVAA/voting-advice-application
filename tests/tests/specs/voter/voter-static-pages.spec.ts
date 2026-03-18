@@ -16,10 +16,10 @@
  * blocks because they modify shared app settings.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // Ensure unauthenticated visitor context
 test.use({ storageState: { cookies: [], origins: [] } });

@@ -35,28 +35,23 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <NavItem
-    on:click={navigation.close}
-    icon="close"
-    text={$t('common.closeMenu')}
-    class="pt-16"
-    id="drawerCloseButton" />
+  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
 
   {#if $authToken}
     <NavGroup>
       <!-- TODO: i18n the Jobs Monitoring text -->
-      <NavItem href={$getRoute('AdminAppHome')} icon="home" text={$t('adminApp.common.home')} />
+      <NavItem href={$getRoute('AdminAppHome')} icon="home" text={t('adminApp.common.home')} />
       <NavItem href={$getRoute('AdminAppJobs')} icon="list" text="Jobs Monitoring" />
-      <NavItem href={$getRoute('AdminAppFactorAnalysis')} icon="create" text={$t('adminApp.factorAnalysis.title')} />
-      <NavItem href={$getRoute('AdminAppQuestionInfo')} icon="create" text={$t('adminApp.questionInfo.title')} />
+      <NavItem href={$getRoute('AdminAppFactorAnalysis')} icon="create" text={t('adminApp.factorAnalysis.title')} />
+      <NavItem href={$getRoute('AdminAppQuestionInfo')} icon="create" text={t('adminApp.questionInfo.title')} />
       <NavItem
         href={$getRoute('AdminAppArgumentCondensation')}
         icon="create"
-        text={$t('adminApp.argumentCondensation.title')} />
+        text={t('adminApp.argumentCondensation.title')} />
     </NavGroup>
   {:else}
     <NavGroup>
-      <NavItem href={$getRoute('AdminAppLogin')} icon="login" text={$t('common.login')} />
+      <NavItem href={$getRoute('AdminAppLogin')} icon="login" text={t('common.login')} />
     </NavGroup>
   {/if}
 

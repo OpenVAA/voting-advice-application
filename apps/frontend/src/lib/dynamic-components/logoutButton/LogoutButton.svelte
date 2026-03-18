@@ -42,4 +42,4 @@ Accesses `AuthContext` and `AppContext`.
   }
 </script>
 
-<Button on:click={handleLogout} icon="logout" text={$t('common.logout')} color="warning" {...$$restProps} />
+<Button on:click={handleLogout} icon="logout" text={t('common.logout')} color="warning" {...$$restProps} />

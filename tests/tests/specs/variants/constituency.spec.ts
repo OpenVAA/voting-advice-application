@@ -23,8 +23,8 @@
 
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -194,7 +194,9 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
 
     // Verify results page loaded — in multi-election mode, select an election first
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
-    await electionAccordion.or(sharedPage.getByTestId(testIds.voter.results.list)).waitFor({ state: 'visible', timeout: 10000 });
+    await electionAccordion
+      .or(sharedPage.getByTestId(testIds.voter.results.list))
+      .waitFor({ state: 'visible', timeout: 10000 });
     if (await electionAccordion.isVisible().catch(() => false)) {
       await electionAccordion.getByRole('option').first().click();
     }

@@ -2,7 +2,7 @@
   "links": "Links",
   "memberOfOrganization": "medlem af {organization}",
   "tabs": {
-    "candidates": "{candidatePlural}",
+    "candidates": "kandidater",
     "info": "Grundlæggende info",
     "opinions": "Holdninger"
   }

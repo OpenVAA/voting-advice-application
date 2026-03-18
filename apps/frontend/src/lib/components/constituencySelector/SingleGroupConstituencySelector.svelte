@@ -7,7 +7,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ### Properties
 
 - `group`: The `ConstituencyGroup` to be show.
-- `label`: The `aria-label` and placeholder text for the select input. Default `$t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
+- `label`: The `aria-label` and placeholder text for the select input. Default `t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `selected`: Bindable value for the `Id` of the selected `Constituency`.
@@ -49,7 +49,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   // Intialization
   ////////////////////////////////////////////////////////////////////
 
-  $: label ??= $t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name });
+  $: label ??= t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name });
 
   ////////////////////////////////////////////////////////////////////
   // Sort items

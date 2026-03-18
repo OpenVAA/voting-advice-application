@@ -74,7 +74,7 @@ Uses the `term` and `definition` roles.
   <div
     bind:this={definitionDiv}
     id={definitionId}
-    class="duration-200 pointer-events-none absolute bottom-auto left-1/2 right-auto z-10 w-max rounded-md bg-base-200 p-10 text-md font-normal text-neutral opacity-0 shadow-md transition-opacity ease-in-out {forceShow
+    class="bg-base-200 text-md text-neutral pointer-events-none absolute right-auto bottom-auto left-1/2 z-10 w-max rounded-md p-10 font-normal opacity-0 shadow-md transition-opacity duration-200 ease-in-out {forceShow
       ? 'opacity-100'
       : 'opacity-0 group-hover:opacity-100'}"
     style={`transform: translateX(calc(-50% ${leftPadding ? `+ ${leftPadding.toFixed()}px` : `- ${rightPadding.toFixed()}px`})); max-width: min(20rem, calc(100vw - 2rem)); ${

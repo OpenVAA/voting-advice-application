@@ -69,8 +69,8 @@ See the `<ModalContainer>` component documentation for more information.
   bind:closeModal
   bind:openModal>
   <div
-    class="relative col-span-1 col-start-1 row-span-1 row-start-1 grid h-[calc(100dvh-3rem)] w-full max-w-xl place-items-stretch
-      rounded-t-lg bg-base-100"
+    class="bg-base-100 relative col-span-1 col-start-1 row-span-1 row-start-1 grid h-[calc(100dvh-3rem)] w-full max-w-xl
+      place-items-stretch rounded-t-lg"
     transition:fly={{ y: '100%', duration: DELAY.xs }}>
     <!-- Enable scrolling for the actual content but keep the close buttons fixed and add bottom padding if floating button is shown so that content behind it can be seen -->
     <div class="overflow-y-auto" class:pb-[4rem]={showFloatingCloseButton}>
@@ -79,9 +79,9 @@ See the `<ModalContainer>` component documentation for more information.
 
     {#if !showFloatingCloseButton}
       <form method="dialog">
-        <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
           <span aria-hidden="true">✕</span>
-          <span class="sr-only">{$t('common.closeDialog')}</span>
+          <span class="sr-only">{t('common.closeDialog')}</span>
         </button>
       </form>
     {:else}
@@ -91,7 +91,7 @@ See the `<ModalContainer>` component documentation for more information.
         text="close"
         icon="close"
         on:click={closeModal}
-        class="!absolute bottom-0 right-0 z-10" />
+        class="!absolute right-0 bottom-0 z-10" />
     {/if}
   </div>
 </ModalContainer>

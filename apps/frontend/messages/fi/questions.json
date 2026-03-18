@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Lisää toimintoja tähän kysymykseen liittyen",
+    "answers": {
+      "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
+      "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
+      "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
+      "yourAnswer": "Sinä"
+    },
+    "arguments": {
+      "con": "Puolesta",
+      "pro": "Vastaan",
+      "proCategory": "Puolesta: {option}",
+      "title": "Perustelut"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} kysymystä",
+            "numQuestionsPlural=one": "1 kysymys"
+          }
+        }
+      ],
+      "skip": "Ohita tämä teema"
+    },
+    "infoDescription": "Taustatietoja tästä kysymyksestä",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestionsPlural=one": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestionsPlural=other": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. Valitse kuitenkin teemat siten, että niissä on ainakin {minQuestions} kysymystä."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategoriesPlural=one": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategoriesPlural=other": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. Ne on jaettu {numCategories} teemaan."
+            }
+          }
+        ]
+      },
+      "start": "Vastaa {numQuestions} kysymykseen"
+    },
+    "next": "Seuraava",
+    "previous": "Edellinen",
+    "remove": "Poista vastaus",
+    "skip": "Ohita",
+    "skipToResults": "Hyppää tuloksiin",
+    "title": "Mielipiteesi"
+  }
+}

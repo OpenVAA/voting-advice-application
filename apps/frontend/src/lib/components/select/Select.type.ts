@@ -14,7 +14,7 @@ export type SelectProps = SvelteHTMLElements['select'] & {
    */
   name?: string;
   /**
-   * The `aria-label` and placeholder text for the select input. Default `$t('components.select.placeholder')`.
+   * The `aria-label` and placeholder text for the select input. Default `t('components.select.placeholder')`.
    */
   label?: string;
   /**

@@ -16,12 +16,13 @@
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml } from '../../utils/emailHelper';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 import { testIds } from '../../utils/testIds';
+import type { Page } from '@playwright/test';
 
 // Run all tests in this file without pre-existing authentication
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -46,7 +47,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
    * Serial mode does NOT share browser contexts, so each test after
    * registration must authenticate independently.
    */
-  async function loginAsCandidate(page: import('@playwright/test').Page): Promise<void> {
+  async function loginAsCandidate(page: Page): Promise<void> {
     await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
     // The home page redirects to login for unauthenticated users
     await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
@@ -169,8 +170,9 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     // Number field: renders as <input type="number">
     await expect(main.locator('input[type="number"]').first()).toBeVisible();
 
-    // Boolean field: renders as <input type="checkbox"> or a toggle
-    await expect(main.locator('input[type="checkbox"]').first()).toBeVisible();
+    // Boolean field: renders as a DaisyUI toggle (input[type="checkbox"] with toggle class).
+    // The actual <input> may be visually hidden in DaisyUI 5, so use role-based locator.
+    await expect(main.getByRole('checkbox').first()).toBeVisible();
   });
 
   test('should persist a text info field value after page reload (CAND-12)', async ({ page }) => {
@@ -209,8 +211,8 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
       // Profile requires prior fields (date/number) to be filled first.
       // Verify the slogan field is visible and accepts input.
       await expect(sloganInput).toBeVisible();
-      const currentValue = await sloganInput.inputValue();
-      expect(currentValue).toBe(uniqueValue);
+      const currentValue = sloganInput;
+      await expect(currentValue).toHaveValue(uniqueValue);
     }
   });
 

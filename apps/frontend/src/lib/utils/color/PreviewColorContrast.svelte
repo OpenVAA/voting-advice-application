@@ -56,7 +56,7 @@ This is a preview component for trying out the color contrast utility. For use i
 ```
 -->
 
-<div class="m-lg flex max-w-xl flex-col items-stretch gap-lg">
+<div class="m-lg gap-lg flex max-w-xl flex-col items-stretch">
   <h1>Color contrast utility</h1>
   <p>
     Type in a foreground and a background color and see the new color adjusted to reach a minimum contrast of ~4.5 on
@@ -66,14 +66,14 @@ This is a preview component for trying out the color contrast utility. For use i
   <div class="p-lg" style:background-color={bgColor} style:color>Adjusted color</div>
   <label>
     Original color = {parsedColor} • Contrast = {origContrast.toFixed(2)} • Luminance = {origLuminance.toFixed(2)}
-    <input bind:value={origColor} type="text" class="input input-bordered w-full" />
+    <input bind:value={origColor} type="text" class="input w-full" />
   </label>
   <label>
     Adjusted color • Contrast = {contrast.toFixed(2)} • Luminance = {adjLum.toFixed(2)}
-    <input disabled bind:value={color} type="text" class="input input-bordered w-full" />
+    <input disabled bind:value={color} type="text" class="input w-full" />
   </label>
   <label>
     Bg color • Luminance = {bgLum.toFixed(2)}
-    <input bind:value={bgColor} type="text" class="input input-bordered w-full" />
+    <input bind:value={bgColor} type="text" class="input w-full" />
   </label>
 </div>

@@ -35,16 +35,16 @@ Reusable component for selecting target language for language-based features (qu
   let options: LanguageSelectorProps['options'];
   $: options = $locales.map((l) => ({
     id: l,
-    label: $t(assertTranslationKey(`lang.${l}`))
+    label: t(assertTranslationKey(`lang.${l}`))
   }));
 </script>
 
-<div class="form-control w-full">
+<div class="w-full">
   <label for={id} class="label">
-    {$t('adminApp.languageFeatures.targetLanguage.label')}
+    {t('adminApp.languageFeatures.targetLanguage.label')}
   </label>
   <Select {id} {name} bind:selected {options} class="max-w-none" autocomplete="off" />
-  <div class="mt-md text-sm text-secondary">
-    {$t('adminApp.languageFeatures.targetLanguage.help')}
+  <div class="mt-md text-secondary text-sm">
+    {t('adminApp.languageFeatures.targetLanguage.help')}
   </div>
 </div>

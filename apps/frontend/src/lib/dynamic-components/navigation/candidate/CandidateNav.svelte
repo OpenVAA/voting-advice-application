@@ -45,20 +45,23 @@ A template part that outputs the navigation menu for the Candidate App for use i
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <NavItem
-    on:click={navigation.close}
-    icon="close"
-    text={$t('common.closeMenu')}
-    class="pt-16"
-    id="drawerCloseButton" />
+  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   {#if $authToken}
     <NavGroup>
-      <NavItem href={$getRoute('CandAppHome')} icon="home" text={$t('candidateApp.common.home')} data-testid="candidate-nav-home" />
-      <NavItem href={$getRoute('CandAppProfile')} icon="profile" text={$t('candidateApp.basicInfo.title')} data-testid="candidate-nav-profile" />
+      <NavItem
+        href={$getRoute('CandAppHome')}
+        icon="home"
+        text={t('candidateApp.common.home')}
+        data-testid="candidate-nav-home" />
+      <NavItem
+        href={$getRoute('CandAppProfile')}
+        icon="profile"
+        text={t('candidateApp.basicInfo.title')}
+        data-testid="candidate-nav-profile" />
       <NavItem
         href={$getRoute('CandAppQuestions')}
         icon="opinion"
-        text={$t('candidateApp.questions.title')}
+        text={t('candidateApp.questions.title')}
         disabled={$unansweredRequiredInfoQuestions?.length !== 0}
         data-testid="candidate-nav-questions">
         {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
@@ -68,40 +71,48 @@ A template part that outputs the navigation menu for the Candidate App for use i
             classes="-left-8 -top-4" />
         {/if}
       </NavItem>
-      <NavItem href={$getRoute('CandAppPreview')} icon="previewProfile" text={$t('candidateApp.preview.title')} data-testid="candidate-nav-preview" />
-      <NavItem href={$getRoute('CandAppSettings')} icon="settings" text={$t('candidateApp.settings.title')} data-testid="candidate-nav-settings" />
+      <NavItem
+        href={$getRoute('CandAppPreview')}
+        icon="previewProfile"
+        text={t('candidateApp.preview.title')}
+        data-testid="candidate-nav-preview" />
+      <NavItem
+        href={$getRoute('CandAppSettings')}
+        icon="settings"
+        text={t('candidateApp.settings.title')}
+        data-testid="candidate-nav-settings" />
     </NavGroup>
     <NavGroup>
-      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
-      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={$t('candidateApp.privacy.shortTitle')} />
+      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
+      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {:else}
     <NavGroup>
-      <NavItem href={$getRoute('CandAppLogin')} icon="login" text={$t('common.login')} />
+      <NavItem href={$getRoute('CandAppLogin')} icon="login" text={t('common.login')} />
       {#if !$answersLocked}
         {#if $appSettings.preRegistration?.enabled}
           <NavItem
             href={$getRoute('CandAppPreregister')}
             icon="create"
-            text={$t('candidateApp.preregister.identification.start.title')} />
+            text={t('candidateApp.preregister.identification.start.title')} />
         {/if}
         <NavItem
           href={$getRoute('CandAppRegister')}
           icon="check"
           text={$appSettings.preRegistration?.enabled
-            ? $t('candidateApp.register.titleWithPreregistration')
-            : $t('candidateApp.register.title')} />
+            ? t('candidateApp.register.titleWithPreregistration')
+            : t('candidateApp.register.title')} />
       {/if}
     </NavGroup>
     <NavGroup>
-      <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />
-      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
-      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={$t('candidateApp.privacy.shortTitle')} />
+      <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={t('candidateApp.login.forgotPassword')} />
+      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={t('candidateApp.help.title')} />
+      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {/if}
   {#if $openFeedbackModal}
     <NavGroup>
-      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
+      <NavItem on:click={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
     </NavGroup>
   {/if}
   <LanguageSelection />

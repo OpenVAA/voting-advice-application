@@ -12,11 +12,7 @@
     },
     "organizationMatching": {
       "type": "enumeration",
-      "enum": [
-        "none",
-        "answersOnly",
-        "impute"
-      ],
+      "enum": ["none", "answersOnly", "impute"],
       "required": true
     }
   }

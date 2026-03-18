@@ -29,7 +29,7 @@ Preview component displaying all available input types.
   }
 </script>
 
-<div class="mb-[10rem] flex w-[30rem] flex-col gap-md">
+<div class="gap-md mb-[10rem] flex w-[30rem] flex-col">
   <Input type="text" label="Text" placeholder="This is a placeholder" {onChange} {locked} {info} />
 
   <Input

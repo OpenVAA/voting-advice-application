@@ -81,43 +81,43 @@ Accesses `CandidateContext`.
   }
 </script>
 
-<Button on:click={triggerLogout} icon="logout" text={$t('common.logout')} color="warning" {...$$restProps} />
+<Button on:click={triggerLogout} icon="logout" text={t('common.logout')} color="warning" {...$$restProps} />
 
 <TimedModal
   bind:timeLeft
   bind:openModal
   bind:closeModal
   onTimeout={handleLogout}
-  title={$t('candidateApp.logoutModal.title')}
+  title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
   {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
     <p>
-      {$t('candidateApp.logoutModal.questionsLeft', {
+      {t('candidateApp.logoutModal.questionsLeft', {
         opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
-      {$t('candidateApp.logoutModal.itemsLeft', {
+      {t('candidateApp.logoutModal.itemsLeft', {
         infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
         opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
     {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-      <p>{$t('candidateApp.common.willBeHiddenIfMissing')}</p>
+      <p>{t('candidateApp.common.willBeHiddenIfMissing')}</p>
     {/if}
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.ingress', { timeLeft })}
+    {t('candidateApp.logoutModal.ingress', { timeLeft })}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={closeModal} text={$t('candidateApp.logoutModal.continue')} variant="main" />
+    <Button on:click={closeModal} text={t('candidateApp.logoutModal.continue')} variant="main" />
     <Button
       on:click={handleLogout}
-      text={$t('common.logout')}
-      class="w-full hover:bg-warning hover:text-warning-content"
+      text={t('common.logout')}
+      class="hover:bg-warning hover:text-warning-content w-full"
       color="warning" />
   </div>
 </TimedModal>

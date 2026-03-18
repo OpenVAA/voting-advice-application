@@ -9,8 +9,8 @@ Display a question's secondary actions, such as skip.
 - `disablePrevious`:  Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
-- `nextLabel`: The text label for the `next` button. @default `$t('questions.next')` or `$t('questions.skip')`
-- `previousLabel`: The text label for the `previous` button. @default `$t('questions.previous')`
+- `nextLabel`: The text label for the `next` button. @default `t('questions.next')` or `t('questions.skip')`
+- `previousLabel`: The text label for the `previous` button. @default `t('questions.previous')`
 - Any valid properties of a `<div>` element
 
 ### Callbacks
@@ -79,7 +79,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 
 <div
   role="group"
-  aria-label={$t('questions.additionalActions')}
+  aria-label={t('questions.additionalActions')}
   data-testid="question-actions"
   {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
@@ -92,7 +92,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     class={variant === 'icon' || variant === 'tight' ? 'content-end' : ''}
     icon={answered || !separateSkip ? 'next' : 'skip'}
     data-testid="question-next"
-    text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
+    text={nextLabel ?? (answered || !separateSkip ? t('questions.next') : t('questions.skip'))} />
   <Button
     on:click={handleDelete}
     disabled={!disabled && answered ? undefined : true}
@@ -103,7 +103,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     iconPos={variant === 'tight' ? 'left' : 'top'}
     icon="close"
     data-testid="question-delete"
-    text={$t('questions.remove')} />
+    text={t('questions.remove')} />
   <Button
     on:click={handlePrevious}
     disabled={disabled || disablePrevious}
@@ -114,5 +114,5 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     class={variant === 'icon' || variant === 'tight' ? 'content-start' : ''}
     icon="previous"
     data-testid="question-previous"
-    text={previousLabel ?? $t('questions.previous')} />
+    text={previousLabel ?? t('questions.previous')} />
 </div>

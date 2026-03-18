@@ -4,7 +4,7 @@ export type HeadingGroupProps = SvelteHTMLElements['hgroup'] & {
   /**
    * The Aria role description of the `<hgroup>` element.
    *
-   * @default $t('aria.headingGroup')
+   * @default t('aria.headingGroup')
    */
   'aria-roledescription'?: string | null;
   /**

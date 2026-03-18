@@ -111,7 +111,7 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    */
   maxFilesize?: TValue extends Image ? number : never;
   /**
-   * Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+   * Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
    */
   multilingualInfo?: TValue extends LocalizedString ? string : never;
 };

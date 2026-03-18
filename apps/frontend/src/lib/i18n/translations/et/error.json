@@ -2,7 +2,7 @@
   "403": "Sul ei ole kahjuks õigust sellele sisule ligi pääseda.",
   "404": "Lehekülge ei leitud, vabandust!",
   "500": "Serveri viga, vabandust!",
-  "content": "<p>Vabandame väga tekkinud ebamugavuse pärast. Võid proovida tagasi minna ja lehekülje uuesti laadida ning vaadata, kas probleem kordub.</p><p>Kui olukord ei lahene, palume saata e-kiri aadressile {adminEmailLink} ja kirjeldada võimalikult täpselt, mis juhtus. Täname ette!</p>",
+  "content": "<p>Vabandame väga tekkinud ebamugavuse pärast. Võid proovida tagasi minna ja lehekülje uuesti laadida ning vaadata, kas probleem kordub.</p><p>Kui olukord ei lahene, palume saata e-kiri aadressile <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a> ja kirjeldada võimalikult täpselt, mis juhtus. Täname ette!</p>",
   "default": "Midagi läks valesti, vabandust!",
   "general": "Midagi läks valesti, vabandust",
   "loginFailed": "Sisselogimine ebaõnnestus. Kontrolli kasutajanime ja parooli.",

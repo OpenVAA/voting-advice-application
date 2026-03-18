@@ -19,6 +19,7 @@ Accesses `AppContext` to read `appSettings`.
 -->
 
 <script lang="ts">
+  import { staticSettings } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
   import { Modal } from '$lib/components/modal';
   import { getAppContext } from '$lib/contexts/app';
@@ -32,6 +33,13 @@ Accesses `AppContext` to read `appSettings`.
 
   const { appSettings, t } = getAppContext();
 
+  // Construct the analytics link for privacy translations
+  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
+    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
+        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
+      }</a>`
+    : '';
+
   let closeModal: () => void;
   let openModal: () => void;
 </script>
@@ -41,21 +49,23 @@ Accesses `AppContext` to read `appSettings`.
   icon="info"
   iconPos="left"
   on:click={openModal}
-  text={$t('privacy.dataConsentInfoButton')}
+  text={t('privacy.dataConsentInfoButton')}
   {...$$restProps} />
 
-<Modal bind:closeModal bind:openModal title={$t('common.privacy.dataCollection.title')}>
+<Modal bind:closeModal bind:openModal title={t('common.privacy.dataCollection.title')}>
   {#if $appSettings.analytics?.platform?.name}
-    <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
+    <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
     <p>
       {@html sanitizeHtml(
-        $t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`))
+        t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`), {
+          analyticsLink
+        })
       )}
     </p>
   {:else}
     {logDebugError('No analytics platform configured!')}
   {/if}
   <div slot="actions" class="mx-auto flex w-full max-w-md flex-col">
-    <Button on:click={closeModal} text={$t('common.close')} variant="main" />
+    <Button on:click={closeModal} text={t('common.close')} variant="main" />
   </div>
 </Modal>

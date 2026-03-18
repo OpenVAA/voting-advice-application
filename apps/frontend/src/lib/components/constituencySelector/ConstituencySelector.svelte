@@ -172,7 +172,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 {#if sections.length}
   <div data-testid="constituency-selector" {...concatClass($$restProps, 'mb-md grid gap-lg self-stretch')}>
     {#each sections as { applicableElections, groups }, sectionIndex}
-      <div class="mt-md grid gap-md">
+      <div class="mt-md gap-md grid">
         <!-- Show an number in front of heading if multiple selections need be made -->
         {#if sections.length > 1}
           <h3 class="relative pl-[2rem]">
@@ -180,7 +180,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
             {applicableElections
               .toReversed()
               .map((e) => e.name)
-              .join($t('common.multipleAnswerSeparator'))}
+              .join(t('common.multipleAnswerSeparator'))}
           </h3>
         {/if}
 
@@ -188,10 +188,10 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
           <!-- Use a special list layout if the election has multiple constituency groups -->
           <div>
             <p class="text-secondary">
-              {$t('constituencies.multipleGroupsInfo')}
+              {t('constituencies.multipleGroupsInfo')}
             </p>
             {#each groups as group, groupIndex}
-              <div class="mb-lg grid gap-sm">
+              <div class="mb-lg gap-sm grid">
                 {#if group.name}
                   <h4>{group.name}</h4>
                 {/if}
@@ -206,7 +206,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
                   on:change={handleChange} />
               </div>
               {#if groupIndex < groups.length - 1}
-                <div class="divider">{$t('common.or')}</div>
+                <div class="divider">{t('common.or')}</div>
               {/if}
             {/each}
           </div>
@@ -225,7 +225,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
           {#if applicableElections.length > 1}
             <div
-              class="mt-xs grid w-full max-w-md grid-cols-2 items-center gap-x-md gap-y-sm place-self-center transition-opacity"
+              class="mt-xs gap-x-md gap-y-sm grid w-full max-w-md grid-cols-2 items-center place-self-center transition-opacity"
               class:faded={!sections[sectionIndex].selectedId}>
               {#each applicableElections.toReversed() as election}
                 {@const constituencyId = selected[election.id]}

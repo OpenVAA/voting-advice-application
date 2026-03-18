@@ -31,7 +31,7 @@ export type ButtonProps = LinkOrButtonElementProps & {
    */
   loading?: boolean;
   /**
-   * The text shown when `loading` is `true`. @default $t('common.loading')
+   * The text shown when `loading` is `true`. @default t('common.loading')
    */
   loadingText?: string;
 };

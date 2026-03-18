@@ -31,16 +31,16 @@ Reusable component for displaying warning and error messages with scrolling.
   $: allMessages = [...(warnings ?? []), ...(errors ?? [])].slice(-DEFAULT_MAX_MESSAGES).reverse();
 </script>
 
-<div class="p-3 rounded-lg bg-base-200 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">
-  <h3 class="font-semibold mb-2 text-sm text-warning">{$t('adminApp.jobs.warningsAndErrors')}</h3>
+<div class="bg-base-200 rounded-lg p-3 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">
+  <h3 class="text-warning mb-2 text-sm font-semibold">{t('adminApp.jobs.warningsAndErrors')}</h3>
 
   {#if allMessages.length === 0}
-    <div class="py-4 text-center text-xs text-neutral">{$t('adminApp.jobs.noWarningsOrErrors')}</div>
+    <div class="text-neutral py-4 text-center text-xs">{t('adminApp.jobs.noWarningsOrErrors')}</div>
   {:else}
     <div class="space-y-1 text-xs">
       {#each allMessages as message}
-        <div class="flex items-start gap-2 rounded bg-base-100 p-2">
-          <span class="whitespace-nowrap text-xs text-neutral">
+        <div class="bg-base-100 flex items-start gap-2 rounded p-2">
+          <span class="text-neutral text-xs whitespace-nowrap">
             {new Date(message.timestamp).toLocaleTimeString()}
           </span>
           <span class="flex-1 {message.type === 'error' ? 'text-error' : 'text-warning'}">

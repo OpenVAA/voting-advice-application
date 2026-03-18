@@ -1,0 +1,99 @@
+{
+  "components": {
+    "accordionSelect": {
+      "collapsedAriaInfo": "Napauta näyttääksesi kaikki vaihtoehdot"
+    },
+    "constituencySelector": {
+      "selectPrompt": "Valitse {constituencyGroup}"
+    },
+    "headingGroup": {
+      "roleDescription": "Otsikkoryhmä"
+    },
+    "input": {
+      "addImage": "Lisää kuva",
+      "allSelected": "Kaikki valittu",
+      "changeImage": "Vaihda kuva",
+      "deleteOption": "Poista valinta: {option}",
+      "error": {
+        "fileLoadingError": "Tiedoston lataaminen ei onnistunut.",
+        "invalidFile": "Tiedosto on vääränlainen.",
+        "invalidUrl": "Verkko-osoite ei ole kelvollinen.",
+        "oversizeFile": "Tiedosto on liian suuri. Enimmäiskoko on {maxFilesize} Mt."
+      },
+      "hideTranslations": "Piilota",
+      "imageInfo": "Kuvan enimmäiskoko on {maxFilesize} Mt. Olethan kärsivällinen tallennettaessa, sillä kuvan latautuminen voi kestää hetken.",
+      "multilingualInfo": "Voit syöttää vastauksesi halutessasi kaikilla vaalikoneen kielillä.",
+      "noImage": "Ei kuvaa",
+      "selectAnother": "Valitse lisää",
+      "selectFirst": "Valitse ensimmäinen",
+      "selectOne": "Valitse",
+      "showTranslations": "Käännökset"
+    },
+    "matchScore": {
+      "label": "sopivuus",
+      "score": "{score}%"
+    },
+    "passwordInput": {
+      "hidePassword": "Piilota salasana",
+      "password": "Salasana",
+      "placeholder": "Salasana",
+      "showPassword": "Näytä salasana"
+    },
+    "preHeading": {
+      "roleDescription": "Otsikon esirivi"
+    },
+    "preventNavigation": {
+      "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
+    },
+    "select": {
+      "noMatchingOptions": "Ei hakuasi vastaavia vaihtoehtoja",
+      "placeholder": "Valitse vaihtoehto alta"
+    },
+    "video": {
+      "captions": "Kuvailevat tekstitykset",
+      "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",
+      "hideCaptions": "Piilota tekstitykset",
+      "jumpBack": "Hyppää taaksepäin",
+      "jumpForward": "Hyppää eteenpäin",
+      "mute": "Äänet pois",
+      "pause": "Tauota",
+      "play": "Toista",
+      "progessbarLabel": "Aikaa jäljellä",
+      "replay": "Toista uudelleen",
+      "showCaptions": "Näytä tekstitykset",
+      "showTranscript": "Näytä video tekstinä",
+      "showVideo": "Näytä video",
+      "subtitles": "Tekstitykset",
+      "timeLeft": [
+        {
+          "declarations": [
+            "input minutes",
+            "local minutesPlural = minutes: plural",
+            "input seconds",
+            "local secondsPlural = seconds: plural"
+          ],
+          "selectors": ["minutesPlural", "secondsPlural"],
+          "match": {
+            "minutesPlural=zero secondsPlural=zero": "  jäljellä",
+            "minutesPlural=zero secondsPlural=one": " yksi sekunta jäljellä",
+            "minutesPlural=zero secondsPlural=other": " {seconds} sekuntia jäljellä",
+            "minutesPlural=one secondsPlural=zero": "yksi minuutti  jäljellä",
+            "minutesPlural=one secondsPlural=one": "yksi minuutti yksi sekunta jäljellä",
+            "minutesPlural=one secondsPlural=other": "yksi minuutti {seconds} sekuntia jäljellä",
+            "minutesPlural=other secondsPlural=zero": "{minutes} minuuttia  jäljellä",
+            "minutesPlural=other secondsPlural=one": "{minutes} minuuttia yksi sekunta jäljellä",
+            "minutesPlural=other secondsPlural=other": "{minutes} minuuttia {seconds} sekuntia jäljellä"
+          }
+        }
+      ],
+      "transcript": "Teksti",
+      "transcriptToggleLabel": "Vaihda teksti- ja videonäkymän välillä",
+      "unmute": "Äänet päälle",
+      "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
+      "video": "Video"
+    },
+    "questionExtendedInfo": {
+      "title": "Tutustu aiheeseen"
+    }
+  }
+}

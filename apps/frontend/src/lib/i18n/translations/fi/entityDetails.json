@@ -2,7 +2,7 @@
   "links": "Linkit",
   "memberOfOrganization": "puolueen {organization} jäsen",
   "tabs": {
-    "candidates": "{candidatePlural}",
+    "candidates": "ehdokkaat",
     "info": "Perustiedot",
     "opinions": "Mielipiteet"
   }

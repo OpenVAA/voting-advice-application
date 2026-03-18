@@ -94,14 +94,14 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       {@html sanitizeHtml(
         question.formatAnswer({
           answer,
-          separator: $t('common.multipleAnswerSeparator'),
+          separator: t('common.multipleAnswerSeparator'),
           map: formatTagItem
         })
       )}
     </div>
   {:else}
     <span {...$$restProps}>
-      {question.formatAnswer({ answer, separator: $t('common.multipleAnswerSeparator') })}
+      {question.formatAnswer({ answer, separator: t('common.multipleAnswerSeparator') })}
     </span>
   {/if}
   <!-- 

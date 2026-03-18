@@ -55,7 +55,7 @@ The same component can also be used to display the answers of the voter and anot
   mode="display"
   selectedId={$voterAnswers[question.id]}
   otherSelected={candidateAnswer}
-  otherLabel={$t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```
 -->
 
@@ -210,8 +210,8 @@ The same component can also be used to display the answers of the voter and anot
 
 <fieldset
   use:onKeyboardFocusOut={handleGroupFocusOut}
-  style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
-  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
+  style:--radio-bg={onShadedBg ? 'var(--color-base-200)' : 'var(--color-base-100)'}
+  style:--line-bg={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-200)'}
   class:vertical
   data-testid="question-choices"
   {...$$restProps}>
@@ -223,13 +223,13 @@ The same component can also be used to display the answers of the voter and anot
     {#if vertical}
       <div
         aria-hidden="true"
-        class="absolute left-16 w-4 -translate-x-1/2 bg-[oklch(var(--line-bg))]"
+        class="absolute left-16 w-4 -translate-x-1/2 bg-[var(--line-bg)]"
         style="grid-column: 2; height: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
           1}); top: calc(50% / {choices?.length})" />
     {:else}
       <div
         aria-hidden="true"
-        class="absolute top-16 h-4 -translate-y-1/2 bg-[oklch(var(--line-bg))]"
+        class="absolute top-16 h-4 -translate-y-1/2 bg-[var(--line-bg)]"
         style="grid-row: 2; width: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
           1}); left: calc(50% / {choices?.length})" />
     {/if}
@@ -242,10 +242,10 @@ The same component can also be used to display the answers of the voter and anot
       {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
       {#if selectedId == id && otherSelected == id}
         <div class="display-label text-primary" {style}>
-          {$t('questions.answers.yourAnswer')} & {otherLabel}
+          {t('questions.answers.yourAnswer')} & {otherLabel}
         </div>
       {:else if selectedId == id}
-        <div class="display-label text-primary" {style}>{$t('questions.answers.yourAnswer')}</div>
+        <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
       {:else if otherSelected == id}
         <div class="display-label" {style}>{otherLabel}</div>
       {/if}
@@ -256,7 +256,7 @@ The same component can also be used to display the answers of the voter and anot
     <label on:click={(e) => handleClick(e, id)} on:keyup={(e) => handleKeyUp(e, id)}>
       <input
         type="radio"
-        class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
+        class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
         class:entitySelected={otherSelected == id}
         name="questionChoices-{question.id}"
         disabled={mode !== 'answer'}
@@ -277,12 +277,13 @@ The same component can also be used to display the answers of the voter and anot
 </fieldset>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   fieldset {
     @apply relative grid w-full gap-0;
   }
 
   fieldset.vertical {
-    @apply grid-flow-row auto-rows-fr gap-md;
+    @apply gap-md grid-flow-row auto-rows-fr;
     grid-template-columns: fr fr auto;
   }
 
@@ -292,11 +293,11 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   label {
-    @apply grid gap-md;
+    @apply gap-md grid;
   }
 
   fieldset.vertical label {
-    @apply min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start gap-md;
+    @apply gap-md min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start;
     grid-column: 2;
     grid-template-columns: auto;
   }
@@ -307,27 +308,27 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   .display-label {
-    @apply small-label;
+    @apply text-secondary text-xs font-normal uppercase;
   }
 
   fieldset.vertical .display-label {
-    @apply small-label self-center pe-6 text-end;
+    @apply text-secondary self-center pe-6 text-end text-xs font-normal uppercase;
     grid-column: 1;
   }
 
   fieldset:not(.vertical) .display-label {
-    @apply small-label self-end pb-6 text-center;
+    @apply text-secondary self-end pb-6 text-center text-xs font-normal uppercase;
     grid-row: 1;
   }
 
   input[type='radio']:disabled:not(:checked):not(.entitySelected) {
-    @apply m-8 h-16 w-16 border-none bg-[oklch(var(--line-bg))] outline-2;
+    @apply m-8 h-16 w-16 border-none bg-[var(--line-bg)] outline-2;
   }
 
   input.entitySelected:disabled:not(:checked) {
     @apply border-neutral bg-neutral;
     box-shadow:
-      0 0 0 4px oklch(var(--b1)) inset,
-      0 0 0 4px oklch(var(--b1)) inset;
+      0 0 0 4px var(--color-base-100) inset,
+      0 0 0 4px var(--color-base-100) inset;
   }
 </style>

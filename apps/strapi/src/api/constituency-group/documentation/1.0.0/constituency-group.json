@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Constituency-group"
-      ],
+      "tags": ["Constituency-group"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Constituency-group"
-      ],
+      "tags": ["Constituency-group"],
       "parameters": [
         {
           "name": "id",

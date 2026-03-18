@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Question"
-      ],
+      "tags": ["Question"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Question"
-      ],
+      "tags": ["Question"],
       "parameters": [
         {
           "name": "id",

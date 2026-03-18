@@ -1,0 +1,73 @@
+{
+  "candidateApp.preregister": {
+    "constituencySelect": {
+      "content": "<p>Välj valdistriktet du kandiderar i.</p>",
+      "title": "Vilket är ditt valdistrikt?"
+    },
+    "electionSelect": {
+      "content": "<p>Välj de val du tänker ställa upp i.</p>",
+      "title": "Vilka val kommer du att kandidera i?"
+    },
+    "email": {
+      "html": "<p>Hej {firstName},</p><p>Tack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Efter det blir du ombedd att välja ett lösenord.</p>",
+      "subject": "Bekräfta din e-postadress",
+      "text": "Hej {firstName},\nTack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:\n{registrationUrl}\nEfter det blir du ombedd att välja ett lösenord."
+    },
+    "emailVerification": {
+      "content": "<p>Din e-postadress kommer i framtiden att fungera som ditt användarnamn. Ange den nedan två gånger för att bekräfta att den är korrekt.</p>",
+      "title": "Ange e-postadress och godkänna användarvillkoren"
+    },
+    "identification": {
+      "identifyYourselfButton": "Identifiera dig",
+      "identifyYourselHelpText": "Du kommer att omdirigeras till bank-id-tjänsten. När autentiseringen är klar kommer du att omdirigeras tillbaka till denna sida.",
+      "start": {
+        "content": "<p>För att registrera dig som kandidat måste du först verifiera din identitet med ett bank-id. När den officiella kandidatlistan bekräftas kommer vi att publicera din profil om vi kan hitta dig på den listan. Vi kommer att använda ditt fullständiga namn och födelsedatum för att verifiera detta.</p>",
+        "heroEmoji": "🖋️",
+        "step": {
+          "constituencySelect": "Välj ditt valdistrikt",
+          "electionSelect": "Välj valen",
+          "emailVerification": "Bekräfta din e-postadress",
+          "identification": "Identifiera dig med bank-id",
+          "passwordSelect": "Välj ett lösenord"
+        },
+        "title": "Registrera dig som kandidat"
+      },
+      "success": {
+        "content": "<p>Identifieringen lyckades. Tryck på knappen nedan för att fortsätta registreringen.</p>",
+        "heroEmoji": "👍",
+        "title": "Välkommen till valkompassen, {firstName} {lastName}!"
+      }
+    },
+    "isPreregisteredNotification": {
+      "content": "Logga in med din e-postadress och ditt lösenord istället eller kontrollera din e-post för bekräftelselänken.",
+      "title": "Det verkar som att du redan är registrerad"
+    },
+    "status": {
+      "candidateExistsError": {
+        "content": "<p>Det verkar som att du redan är registrerad. Kontrollera din e-post för att bekräfta din registrering. När registreringen är bekräftad kan du logga in med din e-post och ditt lösenord.</p><p>Kontakta support om du tror att det är ett fel.</p>",
+        "title": "Du är redan registrerad som kandidat"
+      },
+      "loggedInError": {
+        "content": "<p>Du är redan registrerad som kandidat. Gå till ditt konto för att fortsätta.</p>",
+        "title": "Du är redan inloggad"
+      },
+      "strongIdentificationError": {
+        "content": "<p>Klicka på knappen nedan för att försöka igen eller kontakta support om problemet kvarstår.</p>",
+        "title": "Det uppstod ett problem med bank-id-autentiseringen"
+      },
+      "success": {
+        "content": "<p>Vi har skickat ett meddelande till din e-post. Klicka på länken i meddelandet för att bekräfta din e-postadress och slutföra registreringen.</p><p>Observera att det kan ta en stund innan e-postmeddelandet kommer fram. Kontrollera även din skräppost om du inte får meddelandet.</p><p>Du kan nu stänga detta fönster.</p>",
+        "heroEmoji": "✉️",
+        "title": "Bekräfta din e-postadress"
+      },
+      "tokenExpiredError": {
+        "content": "<p>Identifiera dig igen för att slutföra registreringen.</p>",
+        "title": "Din session har löpt ut"
+      },
+      "unknownError": {
+        "content": "<p>Klicka på knappen nedan för att försöka igen eller kontakta support om problemet kvarstår.</p>",
+        "title": "Något gick fel"
+      }
+    }
+  }
+}

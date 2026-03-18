@@ -2,7 +2,7 @@
   "links": "Links",
   "memberOfOrganization": "member of {organization}",
   "tabs": {
-    "candidates": "{candidatePlural}",
+    "candidates": "candidates",
     "info": "Basic Info",
     "opinions": "Opinions"
   }

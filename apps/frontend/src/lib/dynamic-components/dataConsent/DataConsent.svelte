@@ -28,6 +28,7 @@ Accesses `AppContext` to set and read `userPreferences`.
 -->
 
 <script lang="ts">
+  import { staticSettings } from '@openvaa/app-shared';
   import { createEventDispatcher } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
@@ -44,6 +45,13 @@ Accesses `AppContext` to set and read `userPreferences`.
 
   const { appSettings, userPreferences, setDataConsent, t } = getAppContext();
 
+  // Construct the analytics link for privacy translations
+  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
+    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
+        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
+      }</a>`
+    : '';
+
   const dispatchEvent = createEventDispatcher<DataConsentEvents>();
 
   function onChange(consent: ConsentStatus) {
@@ -55,15 +63,17 @@ Accesses `AppContext` to set and read `userPreferences`.
 <div {...concatClass($$restProps, 'grid justify-items-center')}>
   {#if description === 'inline' && $appSettings.analytics.platform}
     <div>
-      <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
+      <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
       <p>
         {@html sanitizeHtml(
-          $t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`))
+          t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`), {
+            analyticsLink
+          })
         )}
       </p>
     </div>
     <p class="mt-md text-center font-bold">
-      {$t(
+      {t(
         assertTranslationKey(`privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`),
         { consentDate: new Date($userPreferences.dataCollection?.date ?? '') }
       )}
@@ -75,14 +85,14 @@ Accesses `AppContext` to set and read `userPreferences`.
     iconPos="left"
     disabled={$userPreferences.dataCollection?.consent === 'granted'}
     icon={$userPreferences.dataCollection?.consent === 'granted' ? 'check' : undefined}
-    text={$t('privacy.dataConsentLabel.granted')} />
+    text={t('privacy.dataConsentLabel.granted')} />
   <Button
     on:click={() => onChange('denied')}
     color="warning"
     iconPos="left"
     disabled={$userPreferences.dataCollection?.consent === 'denied'}
     icon={$userPreferences.dataCollection?.consent === 'denied' ? 'check' : undefined}
-    text={$t('privacy.dataConsentLabel.denied')} />
+    text={t('privacy.dataConsentLabel.denied')} />
   <!-- <Button 
     on:click={() => onChange('indetermined')}
     color="secondary"

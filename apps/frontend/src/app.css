@@ -1,11 +1,266 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* DaisyUI 5 native integration */
+@plugin 'daisyui' {
+  themes: false;
+  logs: false;
+}
+
+/* Custom light theme */
+@plugin 'daisyui/theme' {
+  name: 'light';
+  default: true;
+  color-scheme: light;
+  --color-primary: #2546a8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #666666;
+  --color-secondary-content: #ffffff;
+  --color-accent: #0a716b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #333333;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-200: #e8f5f6;
+  --color-base-300: #d1ebee;
+  --color-base-content: #333333;
+  --color-info: #0a716b;
+  --color-info-content: #ffffff;
+  --color-success: #2546a8;
+  --color-success-content: #ffffff;
+  --color-warning: #a82525;
+  --color-warning-content: #ffffff;
+  --color-error: #a82525;
+  --color-error-content: #ffffff;
+  --radius-box: 0.25rem;
+  --radius-field: 0.5rem;
+  --radius-selector: 0.5rem;
+  --border: 0px;
+}
+
+/* Custom dark theme */
+@plugin 'daisyui/theme' {
+  name: 'dark';
+  prefersdark: true;
+  color-scheme: dark;
+  --color-primary: #6887e3;
+  --color-primary-content: #000000;
+  --color-secondary: #8c8c8c;
+  --color-secondary-content: #000000;
+  --color-accent: #11a8a0;
+  --color-accent-content: #000000;
+  --color-neutral: #cccccc;
+  --color-neutral-content: #000000;
+  --color-base-100: #000000;
+  --color-base-200: #101212;
+  --color-base-300: #1f2324;
+  --color-base-content: #cccccc;
+  --color-info: #11a8a0;
+  --color-info-content: #000000;
+  --color-success: #6887e3;
+  --color-success-content: #000000;
+  --color-warning: #e16060;
+  --color-warning-content: #000000;
+  --color-error: #e16060;
+  --color-error-content: #000000;
+  --radius-box: 0.25rem;
+  --radius-field: 0.5rem;
+  --radius-selector: 0.5rem;
+  --border: 0px;
+}
+
+/* Custom non-DaisyUI variables per theme */
+:root,
+[data-theme='light'] {
+  --line-color: #d9d9d9;
+  --progress-color: var(--color-neutral);
+  --progress-label-color: var(--color-neutral);
+}
+[data-theme='dark'] {
+  --line-color: #262626;
+  --progress-color: var(--color-neutral);
+  --progress-label-color: var(--color-neutral);
+}
+
+/* rem-based custom screen breakpoint */
+@custom-variant match-w-xl (@media screen and (min-width: 36rem));
+
+@theme {
+  /* Clear TW4 defaults for restrictive design system */
+  --radius-*: initial;
+  --spacing-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --font-weight-*: initial;
+  --font-*: initial;
+  --transition-duration-*: initial;
+
+  /*
+   * max-width overrides for named container sizes.
+   *
+   * TW4 resolves max-w-* through three namespaces in order:
+   *   1. --max-width-*  2. --spacing-*  3. --container-*
+   *
+   * Our custom spacing scale defines names (xs, sm, md, lg, xl) that
+   * collide with the standard container size names. Without these
+   * overrides, max-w-xl resolves to --spacing-xl (2.5rem / 40px)
+   * instead of the intended container width (36rem / 576px).
+   *
+   * By defining --max-width-* (the highest-priority namespace), we
+   * ensure max-w-sm/md/lg/xl resolve to container widths, not spacing.
+   */
+  --max-width-3xs: 16rem;
+  --max-width-2xs: 18rem;
+  --max-width-xs: 20rem;
+  --max-width-sm: 24rem;
+  --max-width-md: 28rem;
+  --max-width-lg: 32rem;
+  --max-width-xl: 36rem;
+  --max-width-2xl: 42rem;
+  --max-width-3xl: 48rem;
+  --max-width-4xl: 56rem;
+  --max-width-5xl: 64rem;
+  --max-width-6xl: 72rem;
+  --max-width-7xl: 80rem;
+
+  /* Same issue applies to min-w-* (resolves --min-width, --spacing, --container) */
+  --min-width-3xs: 16rem;
+  --min-width-2xs: 18rem;
+  --min-width-xs: 20rem;
+  --min-width-sm: 24rem;
+  --min-width-md: 28rem;
+  --min-width-lg: 32rem;
+  --min-width-xl: 36rem;
+  --min-width-2xl: 42rem;
+  --min-width-3xl: 48rem;
+  --min-width-4xl: 56rem;
+  --min-width-5xl: 64rem;
+  --min-width-6xl: 72rem;
+  --min-width-7xl: 80rem;
+  /* Border radius */
+  --radius-none: 0px;
+  --radius-sm: 0.125rem;
+  --radius-DEFAULT: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-full: 9999px;
+
+  /* Border width */
+  --border-width-0: 0px;
+  --border-width-md: 1px;
+  --border-width-DEFAULT: 1px;
+  --border-width-lg: 2px;
+  --border-width-xl: 4px;
+
+  /* Spacing */
+  --spacing-px: 1px;
+  --spacing-0: 0px;
+  --spacing-2: 0.125rem;
+  --spacing-4: 0.25rem;
+  --spacing-xs: 0.25rem;
+  --spacing-6: 0.375rem;
+  --spacing-8: 0.5rem;
+  --spacing-sm: 0.5rem;
+  --spacing-10: 0.625rem;
+  --spacing-md: 0.625rem;
+  --spacing-12: 0.75rem;
+  --spacing-14: 0.875rem;
+  --spacing-16: 1rem;
+  --spacing-18: 1.125rem;
+  --spacing-20: 1.25rem;
+  --spacing-lg: 1.25rem;
+  --spacing-24: 1.5rem;
+  --spacing-32: 2rem;
+  --spacing-40: 2.5rem;
+  --spacing-xl: 2.5rem;
+  --spacing-44: 2.75rem;
+  --spacing-48: 3rem;
+  --spacing-60: 3.75rem;
+  --spacing-xxl: 3.75rem;
+  --spacing-100: 6.25rem;
+
+  /* Safe area spacing */
+  --spacing-safel: env(safe-area-inset-left, 0px);
+  --spacing-safer: env(safe-area-inset-right, 0px);
+  --spacing-safet: env(safe-area-inset-top, 0px);
+  --spacing-safeb: env(safe-area-inset-bottom, 0px);
+  --spacing-safemdl: calc(env(safe-area-inset-left, 0px) + 0.625rem);
+  --spacing-safemdr: calc(env(safe-area-inset-right, 0px) + 0.625rem);
+  --spacing-safemdt: calc(env(safe-area-inset-top, 0px) + 0.625rem);
+  --spacing-safemdb: calc(env(safe-area-inset-bottom, 0px) + 0.625rem);
+  --spacing-safelgl: calc(env(safe-area-inset-left, 0px) + 1.25rem);
+  --spacing-safelgr: calc(env(safe-area-inset-right, 0px) + 1.25rem);
+  --spacing-safelgt: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+  --spacing-safelgb: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+  --spacing-safenavt: calc(env(safe-area-inset-top, 0px) + 1rem);
+  --spacing-touch: 2.75rem;
+
+  /* Font sizes with associated line-heights */
+  --text-xs: 0.71875rem;
+  --text-xs--line-height: 1.21;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.35;
+  --text-md: 0.9375rem;
+  --text-md--line-height: 1.35;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.35;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.21;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.21;
+  --text-2xl: 1.4375rem;
+  --text-2xl--line-height: 1.21;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 1.21;
+
+  /* Line height */
+  --leading-none: 1;
+  --leading-sm: 1.21;
+  --leading-md: 1.35;
+  --leading-lg: 1.65;
+
+  /* Font weight */
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  /* Font family */
+  --font-base:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  /* Transition duration */
+  --transition-duration-none: 0s;
+  --transition-duration-sm: 225ms;
+  --transition-duration-DEFAULT: 225ms;
+  --transition-duration-md: 350ms;
+  --transition-duration-lg: 500ms;
+  --transition-duration-full: 675ms;
+
+  /* Custom screen breakpoint */
+  --breakpoint-xs: 320px;
+}
+
+/* Safelist: dynamic color utility classes */
+@source inline(
+  'btn-{current,primary,secondary,accent,neutral,base-100,base-200,base-300,info,success,warning,error,base-content,primary-content,secondary-content,accent-content,info-content,success-content,warning-content,error-content,white}'
+);
+@source inline(
+  'bg-{current,primary,secondary,accent,neutral,base-100,base-200,base-300,info,success,warning,error,base-content,primary-content,secondary-content,accent-content,info-content,success-content,warning-content,error-content,white}'
+);
+@source inline(
+  'fill-{current,primary,secondary,accent,neutral,base-100,base-200,base-300,info,success,warning,error,base-content,primary-content,secondary-content,accent-content,info-content,success-content,warning-content,error-content,white}'
+);
+@source inline(
+  'dark:fill-{current,primary,secondary,accent,neutral,base-100,base-200,base-300,info,success,warning,error,base-content,primary-content,secondary-content,accent-content,info-content,success-content,warning-content,error-content,white}'
+);
+@source inline(
+  'text-{current,primary,secondary,accent,neutral,base-100,base-200,base-300,info,success,warning,error,base-content,primary-content,secondary-content,accent-content,info-content,success-content,warning-content,error-content,white}'
+);
 
 @layer base {
   html {
     /* We need to explicitly set this, because we're not using the default `sans` font utility. */
-    @apply hyphens-auto font-base;
+    @apply font-base hyphens-auto;
   }
   /* Disable hyphenation on these elements */
   input,
@@ -43,10 +298,10 @@
     @apply mb-0;
   }
   ol {
-    @apply list-outside list-decimal pl-lg;
+    @apply pl-lg list-outside list-decimal;
   }
   ul {
-    @apply list-outside list-disc pl-lg;
+    @apply pl-lg list-outside list-disc;
   }
   hgroup p {
     @apply my-sm text-center first:mt-0;
@@ -83,18 +338,16 @@
     counter-increment: steps;
     @apply mt-12 first:mt-0;
   }
-  .circled {
-    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full bg-base-300 text-md;
-  }
-  .circled-on-shaded {
-    @apply bg-base-100;
+  .circled,
+  .list-circled li::before {
+    @apply bg-base-300 text-md absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full;
   }
   .list-circled li::before {
     content: counter(steps);
-    @apply circled;
   }
+  .circled-on-shaded,
   .list-circled-on-shaded li::before {
-    @apply circled-on-shaded;
+    @apply bg-base-100;
   }
 
   /**
@@ -129,22 +382,21 @@
    * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
    */
   .small-label {
-    @apply text-xs font-normal uppercase text-secondary;
+    @apply text-secondary text-xs font-normal uppercase;
   }
 
   /**
    * Small info used for, e.g., info displayed under inputs or buttons.
    */
   .small-info {
-    @apply text-sm text-secondary;
+    @apply text-secondary text-sm;
   }
 
   /**
    * Small pilled text
    */
   .tag {
-    /* last: is valid prefix */
-    @apply small-label inline-block rounded-[1rem] bg-base-300 px-md py-sm;
+    @apply text-secondary bg-base-300 px-md py-sm inline-block rounded-[1rem] text-xs font-normal uppercase;
   }
 
   /**
@@ -193,15 +445,15 @@
     @apply bg-base-100;
   }
 
-  /* Drawer 
+  /* Drawer
    * Fix screen height on iOS Safari */
   .drawer {
-    @apply min-h-screen;
+    @apply min-h-dvh;
   }
 
   /* Divider */
   .divider {
-    @apply small-label;
+    @apply text-secondary text-xs font-normal uppercase;
   }
 
   /* Select */
@@ -219,6 +471,6 @@
    * TODO: Create dedicated Tailwind spacing terms for content padding.
    */
   .edgetoedge-x {
-    @apply -ml-safelgl -mr-safelgr w-screen pl-safelgl pr-safelgr match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm;
+    @apply -ml-safelgl -mr-safelgr pl-safelgl pr-safelgr match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm w-screen;
   }
 }

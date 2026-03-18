@@ -83,6 +83,7 @@ Display a short list of options as toggleable text or icon buttons from which on
 </fieldset>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   label:has(input:checked) {
     @apply bg-neutral text-primary-content;
   }

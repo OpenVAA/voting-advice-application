@@ -63,7 +63,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   }
 </script>
 
-<div class="grid p-lg pb-safelgb">
+<div class="p-lg pb-safelgb grid">
   {#if nakedEntity.info}
     <div class="infoGroup" role="group">
       <div>
@@ -76,18 +76,18 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
     {@const { election, electionSymbol, constituency, parentNomination } = nomination}
     <div class="infoGroup" role="group">
       {#if $dataRoot.elections.length > 1}
-        <InfoItem label={$t('common.election')}>
+        <InfoItem label={t('common.election')}>
           {election.name}
         </InfoItem>
       {/if}
       {#if !election.singleConstituency}
-        <InfoItem label={$t('common.constituency')}>
+        <InfoItem label={t('common.constituency')}>
           {constituency.name}
         </InfoItem>
       {/if}
       {#if parentNomination}
         <InfoItem
-          label={entityType === ENTITY_TYPE.Organization ? $t('common.alliance.singular') : $t('common.electionList')}>
+          label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
           <!-- Add a link to the nomination page for parties -->
           {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
             <a
@@ -103,16 +103,16 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
             <EntityTag entity={parentNomination} variant="full" />
           {/if}
           {#if isObjectType(nakedEntity, OBJECT_TYPE.Candidate) && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
-            ({$t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
+            ({t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}
       {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
-        <InfoItem label={$t(`common.electionSymbol.${entityType}`)}>
+        <InfoItem label={t(`common.electionSymbol.${entityType}`)}>
           {#if electionSymbol}
             <ElectionSymbol text={electionSymbol} />
           {:else}
-            {$t('common.missingAnswer')}
+            {t('common.missingAnswer')}
           {/if}
         </InfoItem>
       {/if}
@@ -135,7 +135,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         {/each}
       {/if}
       {#if linkQuestions.length}
-        <InfoItem label={$t('entityDetails.links')}>
+        <InfoItem label={t('entityDetails.links')}>
           {#each linkQuestions as question}
             {@const answer = nakedEntity.getAnswer(question)}
             {#if answer}
@@ -153,8 +153,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .infoGroup {
     /* first: is valid although the linter flags it */
-    @apply mt-16 flex flex-col gap-md border-t-md border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
+    @apply gap-md border-t-md mt-16 flex flex-col border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
   }
 </style>

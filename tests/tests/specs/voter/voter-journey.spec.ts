@@ -59,11 +59,11 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     // Assert election selection page is NOT shown
     const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
-    await expect(electionsList).not.toBeVisible();
+    await expect(electionsList).toBeHidden();
 
     // Assert constituency selection page is NOT shown
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).not.toBeVisible();
+    await expect(constituenciesList).toBeHidden();
 
     // Assert we navigated directly to intro (URL contains /intro)
     await expect(sharedPage).toHaveURL(/\/intro/);
@@ -79,7 +79,7 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     // Assert category intro is NOT visible (disabled via app settings)
     const categoryIntro = sharedPage.getByTestId(testIds.voter.questions.categoryIntro);
-    await expect(categoryIntro).not.toBeVisible();
+    await expect(categoryIntro).toBeHidden();
 
     // Click start button
     await introStartButton.click();

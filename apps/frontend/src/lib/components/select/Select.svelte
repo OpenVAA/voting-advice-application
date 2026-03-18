@@ -73,7 +73,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   let canonicalOptions: Array<{ id: Id; label: string }>;
   $: canonicalOptions = options.map((o) => (typeof o === 'string' ? { id: o, label: o } : o));
 
-  $: label ||= $t('components.select.placeholder');
+  $: label ||= t('components.select.placeholder');
 
   let inputValue = '';
   let isOptionListOpen = false;
@@ -279,7 +279,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
         <ul
           id="menu-{id}"
           role="listbox"
-          class="menu absolute left-0 top-6 z-10 mb-xl w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
+          class="menu mb-xl absolute top-6 left-0 z-10 w-full max-w-md place-self-center rounded-lg border-none {onShadedBg
             ? 'bg-base-100'
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
@@ -294,14 +294,14 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
               on:click={() => handleSelect(option)}>
               <span
                 class={optionIndex === focusIndex
-                  ? 'bg-neutral/10 !outline !outline-2 !outline-offset-0 !outline-neutral'
+                  ? 'bg-neutral/10 !outline-neutral !outline !outline-2 !outline-offset-0'
                   : ''}>
                 {option.label}
               </span>
             </li>
           {:else}
             <li class="pointer-events-none rounded-lg text-secondary">
-              <span>{$t('components.select.noMatchingOptions')}</span>
+              <span>{t('components.select.noMatchingOptions')}</span>
             </li>
           {/each}
         </ul>

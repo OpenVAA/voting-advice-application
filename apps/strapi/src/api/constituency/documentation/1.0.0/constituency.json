@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Constituency"
-      ],
+      "tags": ["Constituency"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Constituency"
-      ],
+      "tags": ["Constituency"],
       "parameters": [
         {
           "name": "id",

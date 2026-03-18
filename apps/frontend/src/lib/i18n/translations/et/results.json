@@ -10,7 +10,7 @@
   },
   "inConstituency": "valimisringkonnas",
   "ingress": {
-    "answerMinQuestions": "Kui soovid leida sinuga kõige enam nõustuvaid {candidatePlural} ja {partyPlural}, {questionsLink} kõigepealt.",
+    "answerMinQuestions": "Kui soovid leida sinuga kõige enam nõustuvaid kandidaadid ja erakonnad, {questionsLink} kõigepealt.",
     "questionsLinkText": "vasta vähemalt {numQuestions, plural, =1 {ühele küsimusele} other {# küsimusele}}"
   },
   "missingNominations": {

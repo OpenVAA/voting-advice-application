@@ -29,16 +29,16 @@ Reusable component for displaying informational messages with scrolling.
   $: displayMessages = messages?.slice(-DEFAULT_MAX_MESSAGES).reverse() ?? [];
 </script>
 
-<div class="p-3 rounded-lg bg-base-200 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">
-  <h3 class="font-semibold mb-2 text-sm text-info">{$t('adminApp.jobs.infoMessages')}</h3>
+<div class="bg-base-200 rounded-lg p-3 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">
+  <h3 class="text-info mb-2 text-sm font-semibold">{t('adminApp.jobs.infoMessages')}</h3>
 
   {#if displayMessages.length === 0}
-    <div class="py-4 text-center text-xs text-neutral">{$t('adminApp.jobs.noInfoMessages')}</div>
+    <div class="text-neutral py-4 text-center text-xs">{t('adminApp.jobs.noInfoMessages')}</div>
   {:else}
     <div class="space-y-1 text-xs">
       {#each displayMessages as message}
-        <div class="flex items-start gap-2 rounded bg-base-100 p-2">
-          <span class="whitespace-nowrap text-xs text-neutral">
+        <div class="bg-base-100 flex items-start gap-2 rounded p-2">
+          <span class="text-neutral text-xs whitespace-nowrap">
             {new Date(message.timestamp).toLocaleTimeString()}
           </span>
           <span class="flex-1">{message.message}</span>

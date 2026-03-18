@@ -10,9 +10,13 @@ export class SettingsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.currentPassword = page.getByTestId(testIds.candidate.settings.currentPassword);
-    this.newPassword = page.getByTestId(testIds.candidate.settings.newPassword);
-    this.confirmPassword = page.getByTestId(testIds.candidate.settings.confirmPassword);
+    // The testIds are on wrapper <div>s, not <input>s.
+    // Target the PasswordField input (data-testid="password-field") within each wrapper.
+    this.currentPassword = page.getByTestId(testIds.candidate.settings.currentPassword).getByTestId('password-field');
+    // settings-new-password wraps PasswordSetter which contains two PasswordField inputs;
+    // the first is the new password, the second is the confirmation.
+    this.newPassword = page.getByTestId(testIds.candidate.settings.newPassword).getByTestId('password-field').first();
+    this.confirmPassword = page.getByTestId(testIds.candidate.settings.confirmPassword).getByTestId('password-field');
     this.updateButton = page.getByTestId(testIds.candidate.settings.updateButton);
   }
 

@@ -5,7 +5,7 @@ Used to display an error message. Also logs the error to the console.
 ### Properties
 
 - `inline`: Whether to show an inline version of the message. By default the message tries to center itself in the available area and displays a large emoji. Default: `false`
-- `message`: The message to display. Default: `$t('error.default')`
+- `message`: The message to display. Default: `t('error.default')`
 - `logMessage`: The message to log in the console in development mode. Default: value of `message`
 - Any valid attributes of a `<div>` element.
 
@@ -32,8 +32,8 @@ Used to display an error message. Also logs the error to the console.
 
   const { t } = getComponentContext();
 
-  message ||= $t('error.default');
-  const emoji = $t('dynamic.error.heroEmoji');
+  message ||= t('error.default');
+  const emoji = t('dynamic.error.heroEmoji');
 
   ////////////////////////////////////////////////////////////////////
   // Log error
@@ -52,14 +52,14 @@ Used to display an error message. Also logs the error to the console.
 
 <div data-testid="error-message" {...concatClass($$restProps, classes)}>
   {#if inline}
-    <span class="text-center text-error">{emoji} {message}</span>
+    <span class="text-error text-center">{emoji} {message}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">
         <HeroEmoji {emoji} />
       </figure>
     {/if}
-    <h2 class="text-center text-error">{message}</h2>
-    <div class="text-center">{@html sanitizeHtml($t('error.content'))}</div>
+    <h2 class="text-error text-center">{message}</h2>
+    <div class="text-center">{@html sanitizeHtml(t('error.content'))}</div>
   {/if}
 </div>

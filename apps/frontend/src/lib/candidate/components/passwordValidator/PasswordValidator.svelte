@@ -69,7 +69,7 @@ When using this component, the `validPassword` property should be bound to a boo
 
       // Localize validation messages
       for (const key in validationDetails) {
-        validationDetails[key].message = $t(assertTranslationKey(validationDetails[key].message), {
+        validationDetails[key].message = t(assertTranslationKey(validationDetails[key].message), {
           minPasswordLength
         });
       }
@@ -116,7 +116,7 @@ When using this component, the `validPassword` property should be bound to a boo
     {#each Object.values(validationRules) as rule}
       <li>
         {#if rule.status}
-          <span class="font-bold text-primary">{rule.message}</span>
+          <span class="text-primary font-bold">{rule.message}</span>
         {:else}
           {rule.message}
         {/if}

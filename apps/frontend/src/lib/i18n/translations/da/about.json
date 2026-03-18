@@ -1,5 +1,5 @@
 {
-  "content": "<p>Valgtesten fungerer ved at sammenligne dine holdninger med dem, som {candidatePlural} og {partyPlural} har angivet. Resultaterne vises som en matchprocent, der angiver, hvor stor en del af dine holdninger matcher deres.</p><ul><li>En score på 100 betyder, at I er helt enige i alle de spørgsmål, du har besvaret.</li><li>En score på 0 betyder, at I er helt uenige i alle spørgsmål.</li><li>En score mellem disse yderpunkter betyder, at I er enige i nogle spørgsmål og uenige i andre.</li></ul>",
+  "content": "<p>Valgtesten fungerer ved at sammenligne dine holdninger med dem, som kandidater og partier har angivet. Resultaterne vises som en matchprocent, der angiver, hvor stor en del af dine holdninger matcher deres.</p><ul><li>En score på 100 betyder, at I er helt enige i alle de spørgsmål, du har besvaret.</li><li>En score på 0 betyder, at I er helt uenige i alle spørgsmål.</li><li>En score mellem disse yderpunkter betyder, at I er enige i nogle spørgsmål og uenige i andre.</li></ul>",
   "feedback": {
     "title": "Feedback"
   },

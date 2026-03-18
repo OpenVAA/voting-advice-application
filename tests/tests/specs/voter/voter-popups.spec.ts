@@ -23,10 +23,10 @@
  * (no auth needed for voter tests).
  */
 
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import { testIds } from '../../utils/testIds';
+import { voterTest as test } from '../../fixtures/voter.fixture';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial', timeout: 60000 });
@@ -143,7 +143,7 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 5000 });
 
     // After waiting, verify the popup did NOT reappear (dismissed status stored in localStorage)
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeHidden();
   });
 });
 
@@ -227,7 +227,7 @@ test.describe('popups disabled', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 3000 });
 
     // After waiting, verify no dialog appeared
-    const dialogCount = await page.getByRole('dialog').count();
-    expect(dialogCount).toBe(0);
+    const dialogCount = page.getByRole('dialog');
+    await expect(dialogCount).toHaveCount(0);
   });
 });

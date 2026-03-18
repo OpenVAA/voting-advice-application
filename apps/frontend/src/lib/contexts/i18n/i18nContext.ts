@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { locale, locales, t, translate } from '$lib/i18n';
+import { readable } from 'svelte/store';
+import { getLocale, locales, t, translate } from '$lib/i18n';
 import type { I18nContext } from './i18nContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -16,5 +17,16 @@ export function getI18nContext() {
  */
 export function initI18nContext(): I18nContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitI18nContext() called for a second time');
-  return setContext<I18nContext>(CONTEXT_KEY, { locale, locales, t, translate });
+
+  // Wrap Paraglide values as readable stores for backward compatibility.
+  // Locale changes trigger full page reloads (via data-sveltekit-reload),
+  // so these values are constant within a page lifecycle.
+  const localeStore = readable(getLocale());
+  const localesStore = readable(locales);
+  return setContext<I18nContext>(CONTEXT_KEY, {
+    locale: localeStore,
+    locales: localesStore,
+    t,
+    translate
+  });
 }

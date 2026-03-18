@@ -16,10 +16,10 @@
  * question visibility) run serially to prevent race conditions.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 
 // All describe blocks in this file share global app state — run serially.
 test.describe.configure({ mode: 'serial' });
@@ -78,7 +78,9 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     // When answers are locked, question cards show "view" action text
     // The questions page renders a Warning component with "editingNotAllowed" text
     // Verify the questions list is still visible (page rendered correctly)
-    await expect(page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))).toBeVisible();
+    await expect(
+      page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))
+    ).toBeVisible();
   });
 });
 
@@ -110,7 +112,7 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
     // The candidate layout shows MaintenancePage when candidateApp is false.
     // MaintenancePage renders a <main> element with a title and content.
     // The normal candidate home content (status message) should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
 
     // The page should show a MaintenancePage with a heading
     // MaintenancePage uses <h1> for the title
@@ -149,7 +151,7 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
     // The root layout shows MaintenancePage when underMaintenance is true.
     // This happens at the root level, before the candidate layout even renders.
     // The normal candidate home content should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
 
     // The page should show a MaintenancePage <main> element
     await expect(page.locator('main')).toBeVisible();
@@ -281,7 +283,7 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     const heroFigure = page.locator('figure[role="presentation"]');
     // The figure element exists (it's the slot container) but should be empty
     // when hideHero is true. The Hero component class contains "overflow-hidden".
-    await expect(heroFigure.locator('.overflow-hidden')).not.toBeVisible();
+    await expect(heroFigure.locator('.overflow-hidden')).toBeHidden();
   });
 
   test('should show hero when hideHero is disabled', async ({ page, candidateQuestionsPage }) => {
@@ -309,24 +311,37 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     expect(await heroFigure.count()).toBeGreaterThanOrEqual(0);
   });
 
-  // CAND-15 gap note: hideVideo is NOT tested with an automated E2E test.
-  //
-  // Reason: The `hideVideo` setting in candidateApp.questions only has a visual
-  // effect when a question's customData contains a video URL (per frontend code:
-  // `if (!$appSettings.candidateApp.questions.hideVideo && customData?.video)`).
-  // The default test dataset does NOT include any questions with video customData.
-  //
-  // An automated test would require adding a question with video customData to the
-  // dataset AND providing a reachable video URL in the test environment. Without
-  // video content, toggling hideVideo produces no observable DOM difference.
-  //
-  // Manual test procedure:
-  //   1. Add video customData to a test question (e.g., customData.video = "http://...").
-  //   2. Set candidateApp.questions.hideVideo = false via StrapiAdminClient.updateAppSettings.
-  //   3. Navigate to that question's detail page.
-  //   4. Verify a video element (or iframe/embed) is visible.
-  //   5. Set hideVideo = true and reload.
-  //   6. Verify the video element is no longer visible.
-  //
-  // Status: MANUAL-ONLY — cannot be automated without video content in the test dataset.
+  test('should show video when hideVideo is disabled', async ({ page, candidateQuestionsPage }) => {
+    await client.updateAppSettings({
+      candidateApp: { questions: { hideVideo: false, hideHero: false } }
+    });
+
+    // Navigate to questions page
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+
+    // Navigate to test-question-2 (2nd card, index 1) which has video customData
+    await page.getByTestId(testIds.candidate.questions.card).nth(1).click();
+    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+
+    // Verify the video player is visible in the layout
+    await expect(page.locator('video')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('should hide video when hideVideo is enabled', async ({ page, candidateQuestionsPage }) => {
+    await client.updateAppSettings({
+      candidateApp: { questions: { hideVideo: true, hideHero: false } }
+    });
+
+    // Navigate to questions page
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+
+    // Navigate to test-question-2 (2nd card, index 1) which has video customData
+    await page.getByTestId(testIds.candidate.questions.card).nth(1).click();
+    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+
+    // Verify the video player is NOT visible when hideVideo is enabled
+    await expect(page.locator('video')).toBeHidden();
+  });
 });

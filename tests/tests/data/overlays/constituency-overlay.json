@@ -17,6 +17,10 @@
       "externalId": "test-const-muni-south-a",
       "name": { "en": "South Municipality A" },
       "parent": { "externalId": "test-const-region-south" }
+    },
+    {
+      "externalId": "test-const-muni-east",
+      "name": { "en": "East Municipality" }
     }
   ],
   "constituencyGroups": [
@@ -28,7 +32,7 @@
     {
       "externalId": "test-cg-municipalities",
       "name": { "en": "Municipalities" },
-      "constituencies": { "externalId": ["test-const-muni-north-a", "test-const-muni-south-a"] }
+      "constituencies": { "externalId": ["test-const-muni-north-a", "test-const-muni-south-a", "test-const-muni-east"] }
     }
   ],
   "elections": [
@@ -37,7 +41,7 @@
       "name": { "en": "Test Election 2025" },
       "electionDate": "2025-06-15",
       "electionStartDate": "2025-05-01",
-      "constituencyGroups": { "externalId": ["test-cg-regions", "test-cg-municipalities"] }
+      "constituencyGroups": { "externalId": ["test-cg-municipalities", "test-cg-regions"] }
     },
     {
       "externalId": "test-election-2",
@@ -50,11 +54,11 @@
   "questionCategories": [
     {
       "externalId": "test-cat-const-north",
-      "name": { "en": "Test Category: North Region Issues" },
+      "name": { "en": "Test Category: North Municipality Issues" },
       "type": "opinion",
       "order": 30,
       "elections": { "externalId": ["test-election-1"] },
-      "constituencies": { "externalId": ["test-const-region-north"] }
+      "constituencies": { "externalId": ["test-const-muni-north-a"] }
     },
     {
       "externalId": "test-cat-e2-local",
@@ -67,11 +71,11 @@
   "questions": [
     {
       "externalId": "test-const-q-north-1",
-      "text": { "en": "North Region: Should the northern highway be expanded?" },
+      "text": { "en": "North Municipality: Should the northern highway be expanded?" },
       "category": { "externalId": "test-cat-const-north" },
       "questionType": { "externalId": "test-qt-likert5" },
       "order": 301,
-      "constituencies": { "externalId": ["test-const-region-north"] }
+      "constituencies": { "externalId": ["test-const-muni-north-a"] }
     },
     {
       "externalId": "test-const-e2-q-1",
@@ -163,6 +167,23 @@
         "test-const-e2-q-1": { "value": "2" },
         "test-const-e2-q-2": { "value": "3" }
       }
+    },
+    {
+      "externalId": "test-const-cand-east-1",
+      "firstName": "Eastern",
+      "lastName": "Candidate One",
+      "email": "const.east1@openvaa.org",
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
+        "test-question-1": { "value": "3" },
+        "test-question-2": { "value": "4" },
+        "test-question-3": { "value": "2" },
+        "test-question-4": { "value": "5" },
+        "test-question-5": { "value": "3" },
+        "test-question-6": { "value": "4" },
+        "test-question-7": { "value": "2" },
+        "test-question-8": { "value": "3" }
+      }
     }
   ],
   "nominations": [
@@ -170,21 +191,21 @@
       "externalId": "test-nom-const-north1-e1",
       "candidate": { "externalId": "test-const-cand-north-1" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-north" },
+      "constituency": { "externalId": "test-const-muni-north-a" },
       "party": { "externalId": "test-party-a" }
     },
     {
       "externalId": "test-nom-const-north2-e1",
       "candidate": { "externalId": "test-const-cand-north-2" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-north" },
+      "constituency": { "externalId": "test-const-muni-north-a" },
       "party": { "externalId": "test-party-b" }
     },
     {
       "externalId": "test-nom-const-south1-e1",
       "candidate": { "externalId": "test-const-cand-south-1" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-south" },
+      "constituency": { "externalId": "test-const-muni-south-a" },
       "party": { "externalId": "test-party-a" }
     },
     {
@@ -205,14 +226,21 @@
       "externalId": "test-nom-const-alpha-north",
       "candidate": { "externalId": "test-candidate-alpha" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-north" },
+      "constituency": { "externalId": "test-const-muni-north-a" },
       "party": { "externalId": "test-party-a" }
     },
     {
       "externalId": "test-nom-const-beta-south",
       "candidate": { "externalId": "test-candidate-beta" },
       "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-const-region-south" },
+      "constituency": { "externalId": "test-const-muni-south-a" },
+      "party": { "externalId": "test-party-a" }
+    },
+    {
+      "externalId": "test-nom-const-east1-e1",
+      "candidate": { "externalId": "test-const-cand-east-1" },
+      "election": { "externalId": "test-election-1" },
+      "constituency": { "externalId": "test-const-muni-east" },
       "party": { "externalId": "test-party-a" }
     }
   ]

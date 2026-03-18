@@ -31,7 +31,7 @@ Multilingual features are only available if the `locales` store contains more th
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
-- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
 
 ### Callbacks
@@ -111,13 +111,13 @@ Multilingual features are only available if the `locales` store contains more th
 
   /*** Extend info */
   if (multilingual && $locales.length > 1 && multilingualInfo != '') {
-    multilingualInfo ??= $t('components.input.multilingualInfo');
+    multilingualInfo ??= t('components.input.multilingualInfo');
     info ??= '';
     info += ` ${multilingualInfo}`;
   }
   if (type === 'image') {
     info ??= '';
-    info += ` ${$t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
+    info += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
   }
 
   let error: string | undefined;
@@ -307,7 +307,7 @@ Multilingual features are only available if the `locales` store contains more th
   ////////////////////////////////////////////////////////////////////
 
   function handleError(key: TranslationKey, payload?: TranslationsPayload): void {
-    error = $t(key, payload);
+    error = t(key, payload);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -350,17 +350,17 @@ Multilingual features are only available if the `locales` store contains more th
 <!-- Add containarProps to the outer container and set styles for it -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
-  style:--inputBgColor={onShadedBg ? 'oklch(var(--b1))' : 'oklch(var(--b3))'}>
+  style:--inputBgColor={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-300)'}>
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
     <div class="{outsideLabelClass} me-8 flex flex-row items-center justify-between">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label id="{id}-label">{label}</label>
       {#if showRequired}
-        <div class="required-badge"><Icon name="required" /><span>{$t('common.required')}</span></div>
+        <div class="required-badge"><Icon name="required" /><span>{t('common.required')}</span></div>
       {/if}
       {#if locked}
-        <div class="locked-badge"><Icon name="locked" /><span>{$t('common.locked')}</span></div>
+        <div class="locked-badge"><Icon name="locked" /><span>{t('common.locked')}</span></div>
       {/if}
     </div>
   {/if}
@@ -377,8 +377,8 @@ Multilingual features are only available if the `locales` store contains more th
               <!-- svelte-ignore a11y-label-has-associated-control -->
               <label
                 id="{id}-label-{locale}"
-                class="small-label absolute left-md top-sm text-secondary transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
+                class="small-label left-md top-sm text-secondary absolute transition-opacity"
+                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea 
                    NB. Join does not work it, so we do it by hand -->
               <textarea
@@ -402,7 +402,7 @@ Multilingual features are only available if the `locales` store contains more th
               <label
                 id="{id}-label-{locale}"
                 class="{inputLabelClass} transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
+                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
                 <input
@@ -418,7 +418,7 @@ Multilingual features are only available if the `locales` store contains more th
               </div>
             </div>
           {:else}
-            <ErrorMessage inline message={$t('error.general')} />
+            <ErrorMessage inline message={t('error.general')} />
           {/if}
         {/if}
       {/each}
@@ -456,24 +456,24 @@ Multilingual features are only available if the `locales` store contains more th
                 >{placeholder ||
                   (selectedOptions.length > 0
                     ? selectedOptions.length === options.length
-                      ? $t('components.input.allSelected')
-                      : $t('components.input.selectAnother')
-                    : $t('components.input.selectFirst'))}</option>
+                      ? t('components.input.allSelected')
+                      : t('components.input.selectAnother')
+                    : t('components.input.selectFirst'))}</option>
               {#each unselectedOptions as option}
                 <option value={option.id}>{option.label}</option>
               {/each}
             </select>
           {:else}
-            <ErrorMessage inline message={$t('error.general')} />
+            <ErrorMessage inline message={t('error.general')} />
           {/if}
           {#if showRequired}
             <div class="required-badge">
-              <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+              <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
             </div>
           {/if}
           {#if locked}
             <div class="locked-badge">
-              <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+              <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
             </div>
           {/if}
         </div>
@@ -481,7 +481,7 @@ Multilingual features are only available if the `locales` store contains more th
 
       <!-- Selected options -->
       {#each selectedOptions as option}
-        {@const buttonLabel = $t('components.input.deleteOption', { option: option.label })}
+        {@const buttonLabel = t('components.input.deleteOption', { option: option.label })}
         <div class="{inputContainerClass} join-item !justify-end">
           <span class={inputLabelClass}>{option.label}</span>
           <div class="{inputAndIconContainerClass} grow-0">
@@ -507,7 +507,7 @@ Multilingual features are only available if the `locales` store contains more th
         <label
           id="{id}-image-label"
           tabindex="0"
-          class="flex h-60 justify-stretch text-primary"
+          class="text-primary flex h-60 justify-stretch"
           class:cursor-pointer={!isDisabled}
           on:click={() => fileInput?.click()}
           on:keydown={handleFileInputLabelKeydown}>
@@ -517,15 +517,15 @@ Multilingual features are only available if the `locales` store contains more th
             <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
               <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-r-lg={!locked} />
             </div>
-            <span class="sr-only">{$t('components.input.changeImage')}</span>
+            <span class="sr-only">{t('components.input.changeImage')}</span>
           {:else if !isDisabled}
-            <div class="flex items-center gap-sm">
-              {$t('components.input.addImage')}
+            <div class="gap-sm flex items-center">
+              {t('components.input.addImage')}
               <Icon name="photo" />
             </div>
           {:else}
-            <div class="me-8 flex items-center text-secondary">
-              {$t('components.input.noImage')}
+            <div class="text-secondary me-8 flex items-center">
+              {t('components.input.noImage')}
             </div>
           {/if}
         </label>
@@ -540,12 +540,12 @@ Multilingual features are only available if the `locales` store contains more th
           accept="image/jpeg, image/png, image/gif" />
         {#if showRequired}
           <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
           </div>
         {/if}
         {#if locked}
           <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
           </div>
         {/if}
       </div>
@@ -571,7 +571,7 @@ Multilingual features are only available if the `locales` store contains more th
         {:else if type === 'select'}
           {#if options?.length}
             <select {id} disabled={isDisabled} {...concatClass($$restProps, selectClass)} on:change={handleChange}>
-              <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
+              <option disabled selected={!value}>{placeholder || t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
                   {label}
@@ -579,7 +579,7 @@ Multilingual features are only available if the `locales` store contains more th
               {/each}
             </select>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage message={t('error.general')} />
           {/if}
 
           <!-- 5.3 All other inputs: date, number, text -->
@@ -596,12 +596,12 @@ Multilingual features are only available if the `locales` store contains more th
 
         {#if showRequired}
           <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
           </div>
         {/if}
         {#if locked}
           <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
           </div>
         {/if}
       </div>
@@ -618,16 +618,14 @@ Multilingual features are only available if the `locales` store contains more th
 
   {#if (multilingual && $locales.length > 1) || info}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
-    <div class="flex gap-md {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
+    <div class="gap-md flex {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
       {#if info}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
         <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
       {/if}
       {#if multilingual && $locales.length > 1}
         <Button
-          text={isTranslationsVisible
-            ? $t('components.input.hideTranslations')
-            : $t('components.input.showTranslations')}
+          text={isTranslationsVisible ? t('components.input.hideTranslations') : t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
           class="!w-auto"
           on:click={handleToggleTranslations} />
@@ -637,6 +635,7 @@ Multilingual features are only available if the `locales` store contains more th
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .locked-badge {
     @apply text-secondary;
   }

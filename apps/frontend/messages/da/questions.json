@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Flere handlinger for dette spørgsmål",
+    "answers": {
+      "bothHaventAnswered": "Hverken du eller {entity} har besvaret dette spørgsmål",
+      "entityHasntAnswered": "{entity} har ikke besvaret dette spørgsmål",
+      "youHaventAnswered": "Du har ikke besvaret dette spørgsmål",
+      "yourAnswer": "Du"
+    },
+    "arguments": {
+      "con": "Imod",
+      "pro": "For",
+      "proCategory": "For {option}",
+      "title": "Argumenter"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} spørgsmål",
+            "numQuestionsPlural=one": "1 spørgsmål"
+          }
+        }
+      ],
+      "skip": "Spring denne kategori over"
+    },
+    "infoDescription": "Baggrundsinformation om spørgsmålet",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. ",
+              "minQuestionsPlural=one": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. ",
+              "minQuestionsPlural=other": "Spørgsmålene er opdelt i {numCategories} kategorier. Du kan besvare dem alle eller vælge dem, du ønsker. Vælg dog nok kategorier til at få mindst {minQuestions} spørgsmål i alt."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Besvar nu {numQuestions} spørgsmål om politik og værdier. ",
+              "numCategoriesPlural=one": "Besvar nu {numQuestions} spørgsmål om politik og værdier. ",
+              "numCategoriesPlural=other": "Besvar nu {numQuestions} spørgsmål om politik og værdier. Spørgsmålene er opdelt i {numCategories} kategorier."
+            }
+          }
+        ]
+      },
+      "start": "Besvar {numQuestions} spørgsmål"
+    },
+    "next": "Næste spørgsmål",
+    "previous": "Forrige",
+    "remove": "Slet svar",
+    "skip": "Spring over",
+    "skipToResults": "Gå direkte til resultater",
+    "title": "Holdninger"
+  }
+}

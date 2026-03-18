@@ -5,7 +5,7 @@ Render a text filter for entities.
 ### Properties
 
 - `filter`: The text filter object.
-- `placeholder`: The placeholder text. Default: `$t('components.entityFilters.text.placeholder')`
+- `placeholder`: The placeholder text. Default: `t('components.entityFilters.text.placeholder')`
 - `variant`: The styling variant for the text field. Default: `'default'`
 - Any valid attributes of a `<div>` element.
 
@@ -71,23 +71,23 @@ Render a text filter for entities.
         labelClass += ' bg-base-200';
         break;
       default:
-        labelClass += ' input-bordered';
+        break;
     }
   }
 </script>
 
 <div {...concatClass($$restProps, '')}>
   <label class={labelClass}>
-    <span class="sr-only">{$t('entityFilters.text.ariaLabel')}</span>
+    <span class="sr-only">{t('entityFilters.text.ariaLabel')}</span>
     <input
       bind:value
       type="text"
       class="w-full grow"
-      placeholder={placeholder ?? $t('entityFilters.text.placeholder')} />
+      placeholder={placeholder ?? t('entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
     {:else}
-      <button on:click={() => (value = '')} aria-label={$t('common.clear')} title={$t('common.clear')}>
+      <button on:click={() => (value = '')} aria-label={t('common.clear')} title={t('common.clear')}>
         <Icon name="close" />
       </button>
     {/if}

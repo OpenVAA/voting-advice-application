@@ -5,10 +5,7 @@
     "rootDir": ".",
     "allowJs": true
   },
-  "include": [
-    "./",
-    "src/**/*.json"
-  ],
+  "include": ["./", "src/**/*.json"],
   "exclude": [
     "node_modules/",
     "build/",

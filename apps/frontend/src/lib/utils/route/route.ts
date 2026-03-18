@@ -1,8 +1,8 @@
-const CANDIDATE = '/[[lang=locale]]/candidate';
+const CANDIDATE = '/candidate';
 const CANDIDATE_PROT = `${CANDIDATE}/(protected)`;
-const VOTER = '/[[lang=locale]]/(voters)';
+const VOTER = '/(voters)';
 const VOTER_LOCATED = `${VOTER}/(located)`;
-const ADMIN = '/[[lang=locale]]/admin';
+const ADMIN = '/admin';
 const ADMIN_PROT = `${ADMIN}/(protected)`;
 
 /**

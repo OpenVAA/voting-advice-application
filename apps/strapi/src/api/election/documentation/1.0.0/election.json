@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Election"
-      ],
+      "tags": ["Election"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Election"
-      ],
+      "tags": ["Election"],
       "parameters": [
         {
           "name": "id",

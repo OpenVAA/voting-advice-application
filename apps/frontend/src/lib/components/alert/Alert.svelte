@@ -103,7 +103,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
     'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem] ' +
       (icon ? '' : 'sm:grid-cols-[minmax(auto,1fr)_auto] ') +
       'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none ' +
-      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--rounded-box,1rem)]'
+      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--radius-box,1rem)]'
   )}
   class:vaa-alert-hidden={!isOpen}>
   {#if icon}
@@ -116,16 +116,17 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
     {#if $$slots.actions}
       <slot name="actions" />
     {:else}
-      <Button on:click={closeAlert} color="warning" text={$t('common.close')} class="-mt-[1rem] sm:mt-0" />
+      <Button on:click={closeAlert} color="warning" text={t('common.close')} class="-mt-[1rem] sm:mt-0" />
     {/if}
   </div>
-  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
     <span aria-hidden="true">✕</span>
-    <span class="sr-only">{$t('common.close')}</span>
+    <span class="sr-only">{t('common.close')}</span>
   </button>
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .vaa-alert-hidden {
     @apply translate-y-[100%] opacity-0;
   }

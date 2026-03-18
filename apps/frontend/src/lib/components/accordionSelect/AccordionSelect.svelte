@@ -68,9 +68,9 @@ If there's only one option, it is automatically selected and no interactions are
   {#each options as option, index}
     {#if expanded || activeIndex === index}
       <button
-        class="join-item relative grid h-touch w-auto place-items-center
-          bg-base-200 px-[3rem] transition-all hover:bg-base-300
-          focus:text-primary"
+        class="join-item h-touch bg-base-200 hover:bg-base-300 focus:text-primary relative
+          grid w-auto place-items-center px-[3rem]
+          transition-all"
         class:bg-base-300={index === activeIndex}
         class:font-bold={index === activeIndex}
         class:pointer-events-none={options.length === 1}
@@ -80,18 +80,18 @@ If there's only one option, it is automatically selected and no interactions are
         transition:slide={{ duration: DELAY.sm }}
         on:click={() => handleSelect(index)}>
         {#if index === activeIndex}
-          <div transition:scale class="absolute left-md">
+          <div transition:scale class="left-md absolute">
             <Icon name="check" />
           </div>
         {/if}
         <span class="uc-first">
           {labelGetter?.(option)}
           {#if !expanded}
-            <span class="sr-only">{$t('components.accordionSelect.collapsedAriaInfo')}</span>
+            <span class="sr-only">{t('components.accordionSelect.collapsedAriaInfo')}</span>
           {/if}
         </span>
         {#if !expanded && options.length > 1 && index === activeIndex}
-          <div transition:scale class="absolute right-md">
+          <div transition:scale class="right-md absolute">
             <Icon name="expand" />
           </div>
         {/if}

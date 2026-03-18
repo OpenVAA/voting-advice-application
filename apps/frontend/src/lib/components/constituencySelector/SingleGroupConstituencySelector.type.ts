@@ -8,7 +8,7 @@ export type SingleGroupConstituencySelectorProps = SvelteHTMLElements['select'] 
    */
   group: ConstituencyGroup;
   /**
-   * The `aria-label` and placeholder text for the select input. Default `$t('components.constituencySelector.selectPrompt')`.
+   * The `aria-label` and placeholder text for the select input. Default `t('components.constituencySelector.selectPrompt')`.
    */
   label?: string;
   /**

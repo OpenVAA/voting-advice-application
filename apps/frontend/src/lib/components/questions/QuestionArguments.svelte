@@ -61,7 +61,7 @@ Display the pros and cons arguments related to a question.
         {@const { choiceId } = argument}
         <div>
           <h5 class="font-bold">
-            {$t(TITLE_KEYS[argument.type], {
+            {t(TITLE_KEYS[argument.type], {
               option: choiceId && isChoiceQuestion(question) ? question.getChoice(choiceId)?.label : ''
             })}
           </h5>

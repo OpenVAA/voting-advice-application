@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Candidate"
-      ],
+      "tags": ["Candidate"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Candidate"
-      ],
+      "tags": ["Candidate"],
       "parameters": [
         {
           "name": "id",
@@ -317,9 +313,7 @@
           }
         }
       },
-      "tags": [
-        "Candidate"
-      ],
+      "tags": ["Candidate"],
       "parameters": [
         {
           "name": "id",

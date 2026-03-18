@@ -4,7 +4,7 @@ Show a modal dialog for sending feedback.
 
 ### Properties
 
-- `title`: Optional title for the modal. Defaults to `{$t('feedback.title')}`
+- `title`: Optional title for the modal. Defaults to `{t('feedback.title')}`
 - Any valid properties of a `<Modal>` component.
 
 ### Usage
@@ -74,7 +74,7 @@ Show a modal dialog for sending feedback.
 </script>
 
 <Modal
-  title={title ?? $t('feedback.title')}
+  title={title ?? t('feedback.title')}
   boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
   bind:openModal
   bind:closeModal

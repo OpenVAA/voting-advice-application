@@ -62,7 +62,7 @@ Display the question's expandable information content.
         {/if}
       {/each}
       {#if args}
-        {@const title = $t('questions.arguments.title')}
+        {@const title = t('questions.arguments.title')}
         <Expander
           {title}
           titleClass="flex justify-between font-bold"

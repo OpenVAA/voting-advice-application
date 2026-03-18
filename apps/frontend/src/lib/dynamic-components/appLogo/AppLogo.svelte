@@ -99,7 +99,7 @@ Logo files for use on a light and a dark background can be defined. If the latte
     {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
       <svelte:component
         this={OpenVAALogo}
-        title={alt ?? $t('common.openVAA')}
+        title={alt ?? t('common.openVAA')}
         {size}
         color={inverse ? 'primary-content' : 'neutral'} />
     {/await}

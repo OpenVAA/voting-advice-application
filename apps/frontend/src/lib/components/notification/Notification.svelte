@@ -42,9 +42,9 @@ Show a notification popup to the user.
 </script>
 
 <Alert bind:closeAlert {title} {icon} {...$$restProps}>
-  <div class="grid grid-flow-row gap-md">
+  <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>
     {@html sanitizeHtml(content)}
   </div>
-  <Button slot="actions" variant="main" text={$t('common.close')} on:click={closeAlert} />
+  <Button slot="actions" variant="main" text={t('common.close')} on:click={closeAlert} />
 </Alert>

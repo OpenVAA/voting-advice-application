@@ -80,19 +80,19 @@ Render a numeric filter for entities.
   <div {...concatClass($$restProps, '')}>
     {#if range.min != null && range.max != null}
       <label class="label gap-xs !px-0">
-        <span class="text-label min-w-[6rem] text-start">{$t('entityFilters.numeric.minLabel')}</span>
+        <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.minLabel')}</span>
         <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{min}</span>
       </label>
       <label class="label gap-xs !px-0">
-        <span class="text-label min-w-[6rem] text-start">{$t('entityFilters.numeric.maxLabel')}</span>
+        <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.maxLabel')}</span>
         <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{max}</span>
       </label>
     {/if}
     {#if range.missingValues}
       <label class="label gap-xs !px-0">
-        <span class="text-label min-w-[6rem] justify-start text-start">{$t('entityFilters.missingValue')}</span>
+        <span class="text-label min-w-[6rem] justify-start text-start">{t('entityFilters.missingValue')}</span>
         <!-- Disable the missing values selection if there are only missing values -->
         <input
           bind:checked={includeMissing}
@@ -103,5 +103,5 @@ Render a numeric filter for entities.
     {/if}
   </div>
 {:else}
-  <div class="w-full text-center text-warning">{$t('entityFilters.error')}</div>
+  <div class="text-warning w-full text-center">{t('entityFilters.error')}</div>
 {/if}

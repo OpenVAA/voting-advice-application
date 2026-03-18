@@ -3,14 +3,14 @@
     "numShown": "{numShown, plural, =0 {No alliances} =1 {1 alliance} other {# alliances}}"
   },
   "candidate": {
-    "numShown": "{numShown, plural, =0 {No {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+    "numShown": "{numShown, plural, =0 {No candidates} =1 {1 candidate} other {# candidates}}"
   },
   "faction": {
     "numShown": "{numShown, plural, =0 {No factions} =1 {1 faction} other {# factions}}"
   },
   "inConstituency": "in constituency",
   "ingress": {
-    "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
+    "answerMinQuestions": "If you want to find the candidates and parties that agree with you the most, {questionsLink} first.",
     "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
   },
   "missingNominations": {
@@ -25,11 +25,11 @@
     "noNominationsForElection": "not available"
   },
   "organization": {
-    "numShown": "{numShown, plural, =0 {No {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
+    "numShown": "{numShown, plural, =0 {No parties} =1 {1 party} other {# parties}}"
   },
   "selectElectionFirst": "Select an election first",
   "title": {
-    "browse": "Browse {candidatePlural} and {partyPlural}",
+    "browse": "Browse candidates and parties",
     "results": "Results"
   }
 }

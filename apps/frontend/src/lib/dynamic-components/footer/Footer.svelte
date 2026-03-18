@@ -30,12 +30,12 @@ A template part that is used to show the application's common footer, shown on s
 
 <footer {...concatClass($$restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center small-info')}>
   {#if $appCustomization.publisherName}
-    {$t('common.publishedBy', { publisher: $appCustomization.publisherName })} •
+    {t('common.publishedBy', { publisher: $appCustomization.publisherName })} •
   {/if}
   <!-- The OpenVAA logo cannot be inserted as translation payload because it contains a Svelte component.
        NB. Make sure not to have any space between the closing </a> tag and the suffix text. -->
-  {$t('common.madeWithPrefix')}
+  {t('common.madeWithPrefix')}
   <a href="https://github.com/OpenVAA/voting-advice-application/" target="_blank"
     ><OpenVAALogo color="secondary" size="xs" /></a
-  >{$t('common.madeWithSuffix')}
+  >{t('common.madeWithSuffix')}
 </footer>

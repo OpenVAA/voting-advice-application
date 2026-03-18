@@ -48,7 +48,7 @@ A button that will display the question's extended information content in a `Dra
 {/if}
 
 <Button
-  text={$t('components.questionExtendedInfo.title')}
+  text={t('components.questionExtendedInfo.title')}
   icon="info"
   iconPos="left"
   on:click={handleClick}

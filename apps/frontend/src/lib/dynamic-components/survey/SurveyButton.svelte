@@ -61,7 +61,7 @@ Accesses `AppContext` to set and read the current survey status and link.
   variant="normal"
   color="accent"
   disabled={clicked}
-  text={clicked ? $t('dynamic.survey.thanks') : $t('dynamic.survey.button')}
+  text={clicked ? t('dynamic.survey.thanks') : t('dynamic.survey.button')}
   icon="research"
   iconPos="left"
   data-testid="survey-button"

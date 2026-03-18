@@ -18,8 +18,8 @@
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "@types/js-yaml": "^4.0.9",
-    "dotenv": "^16.3.1",
+    "@types/js-yaml": "catalog:",
+    "dotenv": "catalog:",
     "serve": "^14.2.3",
     "typescript": "catalog:",
     "vitest": "catalog:"
@@ -29,6 +29,6 @@
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/llm": "workspace:^",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "catalog:"
   }
 }

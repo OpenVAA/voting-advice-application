@@ -127,7 +127,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   {#each pages as items, i}
     <!-- Don't render even the show button for pages beyond the next page -->
     {#if i <= currentPage + 1}
-      <div class="{PAGE_CLASS} flex flex-col gap-md" id="div-{i}">
+      <div class="{PAGE_CLASS} gap-md flex flex-col" id="div-{i}">
         {#if i <= currentPage}
           <!-- Show the contents for the current page and those before it -->
           {#each items as item}
@@ -144,7 +144,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
             disabled={i <= currentPage}
             variant="main"
             data-testid="entity-list-show-more"
-            text={$t('entityList.showMore')} />
+            text={t('entityList.showMore')} />
         {/if}
       </div>
     {/if}

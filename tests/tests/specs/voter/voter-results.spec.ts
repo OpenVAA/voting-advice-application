@@ -14,10 +14,10 @@
  * (no auth needed for voter tests).
  */
 
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
+import { voterTest as test } from '../../fixtures/voter.fixture';
 import { testIds } from '../../utils/testIds';
 
 // Compute expected counts from datasets
@@ -40,8 +40,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // - 5 from default dataset (alpha through epsilon, all registered)
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
     // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
-    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(cardCount).toBe(visibleCandidateCount);
+    const cardCount = page.getByTestId(testIds.voter.results.card);
+    await expect(cardCount).toHaveCount(visibleCandidateCount);
   });
 
   test('should display entity type tabs for switching between candidates and organizations', async ({

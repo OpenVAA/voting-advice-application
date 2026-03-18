@@ -1,4 +1,4 @@
-import { locale } from '$lib/i18n';
+import { getLocale } from '$lib/i18n';
 
 /**
  * Abbreviate a string.
@@ -13,7 +13,7 @@ export function abbreviate(text: string, options: AbbreviationOptions = {}) {
     case 'acronym':
       return text
         .split(/(\s|-)+/)
-        .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(locale.get())))
+        .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(getLocale())))
         .slice(0, length)
         .join('');
     default:

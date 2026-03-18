@@ -1,8 +1,9 @@
-import { expect,test as setup } from '@playwright/test';
+import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { buildRoute } from '../utils/buildRoute';
+import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 import { testIds } from '../utils/testIds';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -26,9 +27,9 @@ setup('authenticate as candidate', async ({ page }) => {
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await page.goto(candidateHome);
 
-  // Fill in login credentials using testId constants
-  await page.getByTestId(testIds.candidate.login.email).fill('mock.candidate.2@openvaa.org');
-  await page.getByTestId(testIds.candidate.login.password).fill('Password1!');
+  // Login credentials matching data.setup.ts (Test Candidate Alpha from default dataset)
+  await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);
+  await page.getByTestId(testIds.candidate.login.password).fill(TEST_CANDIDATE_PASSWORD);
   await page.getByTestId(testIds.candidate.login.submit).click();
 
   // Wait for navigation away from the login page

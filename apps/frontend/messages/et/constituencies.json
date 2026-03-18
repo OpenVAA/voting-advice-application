@@ -1,0 +1,7 @@
+{
+  "constituencies": {
+    "multipleGroupsInfo": "Nendes valimistes on mitut tüüpi valimisringkondi. Valige oma valimisringkond ühest pakutavast rühmast.",
+    "selectPrompt": "Valige valimisringkond",
+    "title": "Valige oma valimisringkond"
+  }
+}

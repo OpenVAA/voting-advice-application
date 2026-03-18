@@ -71,18 +71,48 @@ export class StrapiAdminClient {
    * @param password - Admin password (defaults to mock admin password)
    * @throws Error if login fails (401 for bad credentials, 403 for insufficient permissions)
    */
-  async login(email = 'mock.admin@openvaa.org', password = 'admin'): Promise<void> {
+  async login(
+    email = process.env.DEV_ADMIN_EMAIL ?? 'mock.admin@openvaa.org',
+    password = process.env.DEV_ADMIN_PASSWORD ?? 'admin'
+  ): Promise<void> {
     this.requestContext = await request.newContext({
       baseURL: this.baseUrl
     });
 
-    const response = await this.requestContext.post('/admin/login', {
-      data: { email, password }
-    });
+    const maxRetries = 8;
+    let lastError: Error | undefined;
 
-    if (!response.ok()) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const response = await this.requestContext.post('/admin/login', {
+        data: { email, password }
+      });
+
+      if (response.ok()) {
+        const responseBody = await response.json();
+        this.token = responseBody.data?.token;
+        if (!this.token) {
+          throw new Error(
+            'No token in admin login response. ' + `Response shape: ${JSON.stringify(Object.keys(responseBody))}`
+          );
+        }
+        return;
+      }
+
       const status = response.status();
       const body = await response.text();
+
+      if (status === 429) {
+        // Jittered backoff: 500-1500ms, 1-3s, 2-6s, capped at 5s
+        const base = Math.min(500 * Math.pow(2, attempt), 5000);
+        const delay = base + Math.random() * base;
+        console.warn(
+          `Admin login rate limited (attempt ${attempt + 1}/${maxRetries}), retrying in ${Math.round(delay)}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        lastError = new Error(`Admin login failed with status ${status}: ${body}`);
+        continue;
+      }
+
       if (status === 401) {
         throw new Error(
           `Admin login failed: Invalid credentials for ${email}. ` +
@@ -95,13 +125,7 @@ export class StrapiAdminClient {
       throw new Error(`Admin login failed with status ${status}: ${body}`);
     }
 
-    const responseBody = await response.json();
-    this.token = responseBody.data?.token;
-    if (!this.token) {
-      throw new Error(
-        'No token in admin login response. ' + `Response shape: ${JSON.stringify(Object.keys(responseBody))}`
-      );
-    }
+    throw lastError ?? new Error('Admin login failed after max retries');
   }
 
   /**
@@ -213,13 +237,10 @@ export class StrapiAdminClient {
   async updateAppSettings(data: Record<string, unknown>): Promise<void> {
     this.ensureAuthenticated();
 
-    const response = await this.requestContext!.put(
-      '/content-manager/single-types/api::app-setting.app-setting',
-      {
-        headers: this.headers,
-        data
-      }
-    );
+    const response = await this.requestContext!.put('/content-manager/single-types/api::app-setting.app-setting', {
+      headers: this.headers,
+      data
+    });
 
     if (!response.ok()) {
       const body = await response.text();
@@ -250,6 +271,12 @@ export class StrapiAdminClient {
       const body = await response.text();
       throw new Error(`Send email failed with status ${response.status()}: ${body}`);
     }
+
+    // Also check the response body for application-level failures
+    const body = await response.json();
+    if (body.type === 'failure') {
+      throw new Error(`Send email failed: ${body.cause ?? 'unknown error'}`);
+    }
   }
 
   /**
@@ -265,13 +292,10 @@ export class StrapiAdminClient {
   async sendForgotPassword(params: { documentId: string }): Promise<void> {
     this.ensureAuthenticated();
 
-    const response = await this.requestContext!.post(
-      '/openvaa-admin-tools/candidate-auth/forgot-password',
-      {
-        headers: this.headers,
-        data: JSON.stringify(params)
-      }
-    );
+    const response = await this.requestContext!.post('/openvaa-admin-tools/candidate-auth/forgot-password', {
+      headers: this.headers,
+      data: JSON.stringify(params)
+    });
 
     if (!response.ok()) {
       const body = await response.text();
@@ -283,24 +307,97 @@ export class StrapiAdminClient {
    * Force-set a candidate's password via Admin Tools.
    *
    * Used to restore candidate passwords after password change/reset tests.
+   * Returns the result so callers can detect application-level failures
+   * (e.g., candidate has no linked user).
    *
    * @param params - Object containing the candidate's documentId and new password
-   * @throws Error if the request fails
+   * @returns Result with type 'success' or 'failure'
+   * @throws Error if the HTTP request fails
    */
-  async setPassword(params: { documentId: string; password: string }): Promise<void> {
+  async setPassword(params: { documentId: string; password: string }): Promise<{ type: string; cause?: string }> {
     this.ensureAuthenticated();
 
-    const response = await this.requestContext!.post(
-      '/openvaa-admin-tools/candidate-auth/set-password',
-      {
-        headers: this.headers,
-        data: JSON.stringify(params)
-      }
-    );
+    const response = await this.requestContext!.post('/openvaa-admin-tools/candidate-auth/set-password', {
+      headers: this.headers,
+      data: JSON.stringify(params)
+    });
 
     if (!response.ok()) {
       const body = await response.text();
       throw new Error(`Set password failed with status ${response.status()}: ${body}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Force-register a candidate via Admin Tools.
+   *
+   * Creates a users-permissions user linked to the candidate and sets
+   * the password. Used as a fallback when setPassword fails because
+   * the candidate has no linked user.
+   *
+   * @param params - Object containing the candidate's documentId and password
+   * @returns Result with type 'success' or 'failure'
+   * @throws Error if the HTTP request fails
+   */
+  async forceRegister(params: { documentId: string; password: string }): Promise<{ type: string; cause?: string }> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.post('/openvaa-admin-tools/candidate-auth/force-register', {
+      headers: this.headers,
+      data: JSON.stringify(params)
+    });
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Force register failed with status ${response.status()}: ${body}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Unregister a candidate by deleting their associated users-permissions user
+   * and clearing the user reference on the candidate record.
+   *
+   * This allows the candidate to be re-registered in subsequent test runs.
+   * If the candidate has no linked user, this is a no-op.
+   *
+   * @param email - The candidate's email address
+   */
+  async unregisterCandidate(email: string): Promise<void> {
+    this.ensureAuthenticated();
+
+    // Find the candidate with the user relation populated
+    const findResult = await this.findData('candidates', { email: { $eq: email } }, ['user']);
+    const candidate = findResult.data?.[0];
+    if (!candidate) return;
+
+    const user = candidate.user as { id: number; documentId: string } | null;
+
+    // Delete the users-permissions user if one exists
+    if (user) {
+      const deleteResponse = await this.requestContext!.delete(
+        `/content-manager/collection-types/plugin::users-permissions.user/${user.documentId}`,
+        { headers: this.headers }
+      );
+      if (!deleteResponse.ok()) {
+        const body = await deleteResponse.text();
+        throw new Error(`Failed to delete user for ${email}: ${deleteResponse.status()}: ${body}`);
+      }
+    }
+
+    // Always ensure the candidate has a fresh registrationKey and no user link.
+    // The registrationKey is required for sendEmail with requireRegistrationKey.
+    const freshKey = crypto.randomUUID();
+    const updateResponse = await this.requestContext!.put(
+      `/content-manager/collection-types/api::candidate.candidate/${(candidate as Record<string, unknown>).documentId}`,
+      { headers: this.headers, data: { user: null, registrationKey: freshKey, termsOfUseAccepted: null } }
+    );
+    if (!updateResponse.ok()) {
+      const body = await updateResponse.text();
+      throw new Error(`Failed to reset candidate ${email}: ${updateResponse.status()}: ${body}`);
     }
   }
 

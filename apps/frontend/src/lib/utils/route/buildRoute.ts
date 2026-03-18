@@ -1,5 +1,6 @@
 import qs from 'qs';
 import { resolveRoute } from '$app/paths';
+import { localizeHref } from '$lib/paraglide/runtime';
 import { filterPersistent } from './filterPersistent';
 import { isRouteParam } from './params';
 import { parseParams } from './parseParams';
@@ -12,7 +13,7 @@ import type { Route } from './route';
  * Builds a route using the current route params and those passed to it. Some `Route`s have default parameters that can be omitted.
  * @param options - Either the name of the `Route` or an object with the more properties.
  * @param current - The current route params and url. This is automatically appended by the `getRoute` store.
- * @returns A URL string.
+ * @returns A URL string with locale prefix added by Paraglide.
  */
 export function buildRoute(
   options: RouteOptions,
@@ -32,10 +33,6 @@ export function buildRoute(
     ...(current ? filterPersistent(parseParams(current)) : {}),
     ...params
   };
-
-  // Due to naming discrepancies, we support both `locale` and `lang` for the `land` route param
-  // TODO: Remove when the `[[lang=locale]]` route is changed to `[[locale=locale]]`
-  if (locale) allParams.lang = locale;
 
   // Divide params into route and search params
   const routeParams: Record<string, string | Array<string> | undefined> = {};
@@ -57,9 +54,11 @@ export function buildRoute(
   const routeId = route ? ROUTE[route] : current?.route?.id || ROUTE.Home;
 
   // Build url
-  let url = resolveRoute(routeId, flattenParams(routeParams));
+  let url = resolveRoute(routeId as string, flattenParams(routeParams));
   if (Object.keys(searchParams).length) url += `?${qs.stringify(searchParams, { encodeValuesOnly: true })}`;
-  return url;
+
+  // Add locale prefix via Paraglide
+  return localizeHref(url, locale ? { locale: locale as string } : undefined);
 }
 
 /**
@@ -73,7 +72,7 @@ export type RouteOptions =
        */
       route?: Route;
       /**
-       * `A synonym for `lang`
+       * The locale to use for URL localization. If not provided, uses current locale.
        */
       locale?: string;
     } & Partial<Params>);

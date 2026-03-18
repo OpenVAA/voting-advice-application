@@ -6,7 +6,7 @@ export type LoadingProps = SvelteHTMLElements['div'] & {
    */
   inline?: boolean;
   /**
-   * The label text. @default $t('common.loading')
+   * The label text. @default t('common.loading')
    */
   label?: string;
   /**

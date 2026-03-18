@@ -57,8 +57,9 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 {/if}
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .hover-shaded {
     /* hover: is a valid prefix */
-    @apply rounded-md hover:bg-base-content/20 hover:ring-4 hover:ring-base-content/20;
+    @apply hover:bg-base-content/20 hover:ring-base-content/20 rounded-md hover:ring-4;
   }
 </style>

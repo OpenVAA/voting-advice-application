@@ -56,6 +56,7 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 </fieldset>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   :global(.vaa-input-container > :not(:first-child) .vaa-group-join-item) {
     @apply rounded-t-none;
   }

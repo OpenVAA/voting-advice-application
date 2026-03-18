@@ -1,0 +1,86 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "No alliances",
+            "numShownPlural=one": "1 alliance",
+            "numShownPlural=other": "{numShown} alliances"
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "No candidates",
+            "numShownPlural=one": "1 candidate",
+            "numShownPlural=other": "{numShown} candidates"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "No factions",
+            "numShownPlural=one": "1 faction",
+            "numShownPlural=other": "{numShown} factions"
+          }
+        }
+      ]
+    },
+    "inConstituency": "in constituency",
+    "ingress": {
+      "answerMinQuestions": "If you want to find the candidates and parties that agree with you the most, {questionsLink} first.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=one": "answer at least one question",
+            "numQuestionsPlural=other": "answer at least {numQuestions} questions"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "There are no candidates or parties in your constituency who have responded to the Election Compass",
+        "content": "You can review the questions if you wish, but results cannot be displayed."
+      },
+      "someNominations": {
+        "title": "Some election candidates or parties have not responded to the Election Compass",
+        "content": "There are no candidate or party responses available for all elections in your constituency. The results will only display elections for which responses are available."
+      },
+      "noNominationsForElection": "not available"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "No parties",
+            "numShownPlural=one": "1 party",
+            "numShownPlural=other": "{numShown} parties"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Select an election first",
+    "title": {
+      "browse": "Browse candidates and parties",
+      "results": "Results"
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Further actions for this question",
+    "answers": {
+      "bothHaventAnswered": "Neither you nor {entity} has answered this question",
+      "entityHasntAnswered": "{entity} hasn’t answered this question",
+      "youHaventAnswered": "You haven't answered this question",
+      "yourAnswer": "You"
+    },
+    "arguments": {
+      "con": "Against",
+      "pro": "For",
+      "proCategory": "For {option}",
+      "title": "Arguments"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} questions",
+            "numQuestionsPlural=one": "1 question"
+          }
+        }
+      ],
+      "skip": "Skip This Category"
+    },
+    "infoDescription": "Background information on the question",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestionsPlural=one": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestionsPlural=other": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. However, select enough categories to get at least {minQuestions} questions in total."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategoriesPlural=one": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategoriesPlural=other": "Next, answer {numQuestions} questions regarding politics and values. The questions are divided into {numCategories} categories."
+            }
+          }
+        ]
+      },
+      "start": "Answer {numQuestions} Questions"
+    },
+    "next": "Next question",
+    "previous": "Previous",
+    "remove": "Delete answer",
+    "skip": "Skip",
+    "skipToResults": "Skip to Results",
+    "title": "Opinions"
+  }
+}

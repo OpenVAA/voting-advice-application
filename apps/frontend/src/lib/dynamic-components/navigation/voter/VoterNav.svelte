@@ -20,7 +20,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+  <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
 </VoterNav>
 ```
 -->
@@ -54,62 +54,57 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 </script>
 
 <Navigation on:keyboardFocusOut {...$$restProps}>
-  <NavItem
-    on:click={navigation.close}
-    icon="close"
-    text={$t('common.closeMenu')}
-    class="pt-16"
-    id="drawerCloseButton" />
+  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   <NavGroup>
-    <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+    <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
     {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
-      <NavItem href={$getRoute('Elections')} icon="election" text={$t('elections.title')} />
+      <NavItem href={$getRoute('Elections')} icon="election" text={t('elections.title')} />
     {/if}
     {#if $constituenciesSelectable}
       <NavItem
         disabled={!$appSettings.elections?.startFromConstituencyGroup && !$elections.length}
         href={$getRoute('Constituencies')}
         icon="constituency"
-        text={$t('constituencies.title')} />
+        text={t('constituencies.title')} />
     {/if}
     {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
       <NavItem
         disabled={!$constituencies.length}
         href={$getRoute('Elections')}
         icon="election"
-        text={$t('elections.title')} />
+        text={t('elections.title')} />
     {/if}
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Questions')}
       icon="opinion"
-      text={$t('questions.title')} />
+      text={t('questions.title')} />
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Results')}
       icon="results"
-      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}
+      text={$resultsAvailable ? t('results.title.results') : t('results.title.browse')}
       data-testid="voter-nav-results" />
   </NavGroup>
   <NavGroup>
-    <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
+    <NavItem on:click={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
-    <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
+    <NavItem href={$getRoute('Info')} icon="election" text={t('info.title')} />
+    <NavItem href={$getRoute('About')} icon="info" text={t('about.title')} />
     {#if $appSettings.entities.showAllNominations}
-      <NavItem href={$getRoute('Nominations')} icon="search" text={$t('dynamic.nominations.title')} />
+      <NavItem href={$getRoute('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
     {/if}
-    <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={$getRoute('Privacy')} icon="privacy" text={t('privacy.title')} />
   </NavGroup>
   {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
       {#if $appSettings.survey?.showIn?.includes('navigation')}
-        <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
+        <NavItem href={$surveyLink} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
       {#if $openFeedbackModal}
-        <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
+        <NavItem on:click={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
       {/if}
     </NavGroup>
   {/if}

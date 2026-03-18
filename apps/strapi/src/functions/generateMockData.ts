@@ -234,7 +234,6 @@ export async function generateMockData() {
   }
 }
 
-
 async function createBackendAdmin() {
   if (process.env.NODE_ENV === 'production') {
     console.warn('Skipped - running in production mode.');

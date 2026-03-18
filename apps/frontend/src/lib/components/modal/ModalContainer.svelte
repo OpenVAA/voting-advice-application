@@ -142,7 +142,7 @@ A modal dialog.
   <slot />
   {#if closeOnBackdropClick}
     <div class="modal-backdrop">
-      <button on:click={() => handleClose()} tabindex="-1">{$t('common.closeDialog')}</button>
+      <button on:click={() => handleClose()} tabindex="-1">{t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>

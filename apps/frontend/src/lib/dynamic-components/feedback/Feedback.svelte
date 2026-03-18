@@ -145,7 +145,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
    */
   function getErrorEmail() {
     return getEmailUrl({
-      subject: `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`,
+      subject: `${t('feedback.error.emailSubject')}: ${t('dynamic.appName')}`,
       to: $appSettings.admin.email,
       body: description ?? ''
     });
@@ -156,13 +156,13 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   <!-- Rating -->
   <fieldset class="flex justify-center">
     <legend class="mb-md w-full text-center" class:sr-only={variant === 'compact'}>
-      {$t('feedback.rating.label')}
+      {t('feedback.rating.label')}
     </legend>
     <div class="rating">
       <input
         bind:this={zeroInput}
         on:click={() => (rating = undefined)}
-        aria-label={$t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
+        aria-label={t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
         value={0}
         type="radio"
         name="rating"
@@ -172,7 +172,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
       {#each Array.from({ length: MAX_RATING }, (_, i) => i + 1) as value}
         <input
           on:click={() => (rating = value)}
-          aria-label={$t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
+          aria-label={t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
           {value}
           type="radio"
           name="rating"
@@ -188,33 +188,33 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     bind:value={description}
     on:focus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
-    aria-label={$t('feedback.description.label')}
+    aria-label={t('feedback.description.label')}
     data-testid="feedback-description"
-    class="textarea textarea-bordered h-[1rem] w-full resize-none"
+    class="textarea h-[1rem] w-full resize-none"
     class:resize-y={textareaExpanded}
     class:min-h-[6rem]={textareaExpanded}
-    placeholder={$t('feedback.description.placeholder')}></textarea>
+    placeholder={t('feedback.description.placeholder')}></textarea>
 
   <!-- Email info and error -->
   {#if status !== 'error'}
     {#if variant !== 'compact' && $appSettings.admin.email}
       {@const mailto = getErrorEmail()}
       <p class="text-center">
-        {$t('feedback.emailIntro')}
+        {t('feedback.emailIntro')}
         <a href={mailto} target="_blank">{$appSettings.admin.email}</a>.
       </p>
     {/if}
   {:else}
-    <div class="grid gap-md">
-      <p class="mb-0 text-center text-warning">
-        {$t('feedback.error.message')}
+    <div class="gap-md grid">
+      <p class="text-warning mb-0 text-center">
+        {t('feedback.error.message')}
         {#if $appSettings.admin.email}
-          {$t('feedback.error.emailIntro')}
+          {t('feedback.error.emailIntro')}
         {/if}
       </p>
       {#if $appSettings.admin.email}
         {@const mailto = getErrorEmail()}
-        <a href={mailto} target="_blank" class="justify-self-center rounded-full bg-base-300 px-lg py-md"
+        <a href={mailto} target="_blank" class="bg-base-300 px-lg py-md justify-self-center rounded-full"
           >{$appSettings.admin.email}</a>
       {/if}
     </div>
@@ -229,18 +229,18 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         variant="main"
         data-testid="feedback-submit"
         text={status === 'sent'
-          ? $t('feedback.thanks')
+          ? t('feedback.thanks')
           : status === 'sending'
-            ? $t('feedback.sending')
+            ? t('feedback.sending')
             : status === 'error'
-              ? $t('common.close')
-              : $t('feedback.send')} />
+              ? t('common.close')
+              : t('feedback.send')} />
       <Button
         on:click={() => dispatch('cancel')}
         disabled={status !== 'default'}
         color="warning"
         data-testid="feedback-cancel"
-        text={$t('common.cancel')} />
+        text={t('common.cancel')} />
     </div>
   {/if}
 </form>

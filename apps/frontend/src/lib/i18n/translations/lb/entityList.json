@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "Keng Resultater mat dëse Filteren. Dir kënnt se änneren.",
+    "noSearchResults": "Keng Resultater mat dëser Sich. Dir kënnt se änneren.",
+    "searchPlaceholder": "No Numm sichen",
+    "showingNumResults": "Weist {numShown, plural, =1 {1 Resultat} other {# Resultater}} un"
+  },
+  "showMore": "Méi weisen"
+}

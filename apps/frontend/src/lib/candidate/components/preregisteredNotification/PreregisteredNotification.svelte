@@ -31,8 +31,8 @@ popupQueue.push({
 
   let closeAlert: () => void;
 
-  const title = $t('candidateApp.preregister.isPreregisteredNotification.title');
-  const content = $t('candidateApp.preregister.isPreregisteredNotification.content');
+  const title = t('candidateApp.preregister.isPreregisteredNotification.title');
+  const content = t('candidateApp.preregister.isPreregisteredNotification.content');
 
   function handleClick(route: Route): void {
     closeAlert();
@@ -41,12 +41,12 @@ popupQueue.push({
 </script>
 
 <Alert bind:closeAlert {title} icon="login" {...$$restProps}>
-  <div class="grid grid-flow-row gap-md">
+  <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>
     {@html sanitizeHtml(content)}
   </div>
   <svelte:fragment slot="actions">
-    <Button on:click={() => handleClick('CandAppLogin')} text={$t('common.login')} variant="main" class="mb-md" />
-    <Button on:click={() => handleClick('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
+    <Button on:click={() => handleClick('CandAppLogin')} text={t('common.login')} variant="main" class="mb-md" />
+    <Button on:click={() => handleClick('CandAppForgotPassword')} text={t('candidateApp.login.forgotPassword')} />
   </svelte:fragment>
 </Alert>

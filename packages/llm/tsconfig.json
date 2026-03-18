@@ -10,8 +10,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["tests/**/*"],
-  "references": [
-    { "path": "../core/tsconfig.json" },
-    { "path": "../app-shared/tsconfig.json" }
-  ]
+  "references": [{ "path": "../core/tsconfig.json" }, { "path": "../app-shared/tsconfig.json" }]
 }

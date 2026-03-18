@@ -661,13 +661,13 @@ If not provided, the `video` element will be hidden until these properties are p
       color="white"
       icon="videoOff"
       on:click={() => toggleTranscript(false)}
-      text={$t('components.video.showVideo')}
-      class="!absolute bottom-4 left-sm z-20 rounded-full bg-primary" />
+      text={t('components.video.showVideo')}
+      class="left-sm bg-primary !absolute bottom-4 z-20 rounded-full" />
   {/if}
 
   <!-- Transcript -->
   <div
-    class="video-transcript relative h-full w-full overflow-scroll rounded-md bg-base-300 p-lg leading-lg sm:mt-0 sm:h-full"
+    class="video-transcript bg-base-300 p-lg leading-lg relative h-full w-full overflow-scroll rounded-md sm:mt-0 sm:h-full"
     class:pb-[4rem]={!hideControls?.includes('transcript')}
     class:hidden={!transcriptVisible}>
     <div class="w-full">
@@ -704,19 +704,19 @@ If not provided, the `video` element will be hidden until these properties are p
       {/if}
 
       <track
-        label={$t('components.video.captions')}
+        label={t('components.video.captions')}
         kind="captions"
         srclang={$locale}
         src={captions}
         default={textTracksHidden ? undefined : true} />
 
-      <div class="flex items-center bg-base-100 p-lg text-center text-warning">
-        {$t('components.video.unsupportedWarning')}
+      <div class="bg-base-100 p-lg text-warning flex items-center text-center">
+        {t('components.video.unsupportedWarning')}
       </div>
     </video>
 
     <!-- All controls. Note that we do not want these two overlap -->
-    <div class="absolute bottom-0 left-0 right-0 top-0 flex flex-col">
+    <div class="absolute top-0 right-0 bottom-0 left-0 flex flex-col">
       <!-- Invisible overlay areas -->
       <div class="flex grow flex-row justify-stretch">
         <button
@@ -724,28 +724,28 @@ If not provided, the `video` element will be hidden until these properties are p
           on:click|capture={() => screenJump(-1)}
           aria-hidden="true"
           tabindex="-1"
-          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral active:to-50%"
-          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
+          class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-r active:to-50%"
+          ><span class="sr-only">{t('components.video.jumpBack')}</span></button>
         <button
           on:click|once={tryUnmute}
           on:click|capture={() => screenJump(0)}
           aria-hidden="true"
           tabindex="-1"
-          class="grow-1 w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-transparent active:via-neutral active:via-50%"
-          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
+          class="duration-sm active:via-neutral w-[33.333%] grow-1 opacity-20 transition-colors active:bg-gradient-to-r active:from-transparent active:via-50%"
+          ><span class="sr-only">{t('components.video.jumpBack')}</span></button>
         <button
           on:click|once={tryUnmute}
           on:click|capture={() => screenJump(+1)}
           aria-hidden="true"
           tabindex="-1"
-          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
-          class:hidden={atEnd}><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
+          class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-l active:to-50%"
+          class:hidden={atEnd}><span class="sr-only">{t('components.video.jumpForward')}</span></button>
       </div>
 
       <!-- Icon buttons -->
       <div
-        class="flex items-center justify-between px-sm py-4 {!hideControls || hideControls.length === 0
-          ? "before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-neutral before:from-50% before:opacity-50 before:content-['']"
+        class="px-sm flex items-center justify-between py-4 {!hideControls || hideControls.length === 0
+          ? "before:from-neutral before:absolute before:right-0 before:bottom-0 before:left-0 before:h-[4rem] before:bg-gradient-to-t before:from-50% before:opacity-50 before:content-['']"
           : ''}">
         {#if !hideControls?.includes('transcript')}
           <Button
@@ -753,8 +753,8 @@ If not provided, the `video` element will be hidden until these properties are p
             color="white"
             icon="videoOn"
             on:click={() => toggleTranscript(true)}
-            text={$t('components.video.showTranscript')}
-            class="rounded-full !bg-opacity-30 active:bg-white" />
+            text={t('components.video.showTranscript')}
+            class="rounded-full bg-white/30 active:bg-white" />
         {/if}
         {#if !hideControls?.includes('captions')}
           <Button
@@ -763,8 +763,8 @@ If not provided, the `video` element will be hidden until these properties are p
             icon={textTracksHidden ? 'subtitlesOff' : 'subtitlesOn'}
             on:click|once={tryUnmute}
             on:click={() => toggleCaptions()}
-            text={$t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
-            class="relative rounded-full !bg-opacity-30 active:bg-white" />
+            text={t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
+            class="relative rounded-full bg-white/30 active:bg-white" />
         {/if}
         {#if !hideControls?.includes('skip')}
           <Button
@@ -773,8 +773,8 @@ If not provided, the `video` element will be hidden until these properties are p
             icon="skipPrevious"
             on:click|once={tryUnmute}
             on:click={() => jump(-1)}
-            text={$t('components.video.jumpBack')}
-            class="relative rounded-full !bg-opacity-30 {jumpBackPressed ? 'bg-white' : ''} active:bg-white" />
+            text={t('components.video.jumpBack')}
+            class="relative rounded-full bg-white/30 {jumpBackPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
         {#if !hideControls?.includes('pause')}
           <Button
@@ -783,8 +783,8 @@ If not provided, the `video` element will be hidden until these properties are p
             icon={playButtonAction}
             on:click|once={tryUnmute}
             on:click={() => togglePlay()}
-            text={$t(`components.video.${playButtonAction}`)}
-            class="relative rounded-full !bg-opacity-30 {togglePlayPressed ? 'bg-white' : ''} active:bg-white" />
+            text={t(`components.video.${playButtonAction}`)}
+            class="relative rounded-full bg-white/30 {togglePlayPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
         {#if !hideControls?.includes('skip')}
           <Button
@@ -793,8 +793,8 @@ If not provided, the `video` element will be hidden until these properties are p
             icon="skipNext"
             on:click|once={tryUnmute}
             on:click={() => jump(+1)}
-            text={$t('components.video.jumpForward')}
-            class="relative rounded-full !bg-opacity-30 {jumpForwardPressed ? 'bg-white' : ''}  active:bg-white" />
+            text={t('components.video.jumpForward')}
+            class="relative rounded-full bg-white/30 {jumpForwardPressed ? 'bg-white' : ''}  active:bg-white" />
         {/if}
         {#if !hideControls?.includes('mute')}
           <Button
@@ -802,8 +802,8 @@ If not provided, the `video` element will be hidden until these properties are p
             color="white"
             icon={muted ? 'soundOff' : 'soundOn'}
             on:click={() => toggleSound()}
-            text={$t(`components.video.${muted ? 'unmute' : 'mute'}`)}
-            class="relative rounded-full !bg-opacity-30 active:bg-white" />
+            text={t(`components.video.${muted ? 'unmute' : 'mute'}`)}
+            class="relative rounded-full bg-white/30 active:bg-white" />
         {/if}
       </div>
 
@@ -813,16 +813,16 @@ If not provided, the `video` element will be hidden until these properties are p
         aria-valuemin={0}
         aria-valuemax={duration}
         aria-valuenow={Math.round(currentTime)}
-        aria-label={$t('components.video.progessbarLabel')}
+        aria-label={t('components.video.progessbarLabel')}
         style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
-        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-primary" />
+        class="bg-primary relative h-2 w-[var(--progress)] overflow-hidden rounded-full" />
     </div>
 
     <!-- Loading spinner -->
     <Loading
       inline
       size="md"
-      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm
+      class="duration-sm absolute top-[3.1rem] right-[0.8rem] !text-white transition-all
         {status === 'waiting' || status === 'error-pending' ? '' : 'opacity-0'}" />
 
     <!-- Error message -->
@@ -831,15 +831,15 @@ If not provided, the `video` element will be hidden until these properties are p
         role="status"
         aria-live="polite"
         transition:fade
-        class="absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] grid justify-items-center rounded-md bg-base-100 p-md text-warning">
+        class="bg-base-100 p-md text-warning absolute top-[3.1rem] right-[0.8rem] left-[0.8rem] grid justify-items-center rounded-md">
         <Icon name="warning" />
         <div class="mt-sm text-center">
-          {$t('components.video.error')}
+          {t('components.video.error')}
         </div>
-        <Button on:click={() => toggleTranscript(true)} text={$t('components.video.showTranscript')} />
-        <button on:click={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        <Button on:click={() => toggleTranscript(true)} text={t('components.video.showTranscript')} />
+        <button on:click={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
           <span aria-hidden="true">✕</span>
-          <span class="sr-only">{$t('common.close')}</span>
+          <span class="sr-only">{t('common.close')}</span>
         </button>
       </div>
     {/if}
@@ -847,13 +847,14 @@ If not provided, the `video` element will be hidden until these properties are p
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   :global(video::cue) {
     /* sm: is a valid class prefix even though it's flagged by the linter */
-    @apply font-base text-[0.85rem] sm:text-md;
+    @apply font-base sm:text-md text-[0.85rem];
   }
 
   :global(video::-webkit-media-text-track-display) {
-    @apply box-border rounded-lg p-md;
+    @apply p-md box-border rounded-lg;
   }
 
   :global(video::-webkit-media-text-track-container) {
@@ -862,22 +863,22 @@ If not provided, the `video` element will be hidden until these properties are p
   }
 
   :global(.video-transcript img) {
-    @apply mx-auto my-lg max-h-[100vw] rounded-sm;
+    @apply my-lg mx-auto max-h-[100vw] rounded-sm;
   }
   :global(.video-transcript figure img) {
     @apply mb-sm;
   }
   :global(.video-transcript figure) {
-    @apply small-info mb-lg text-center;
+    @apply text-secondary mb-lg text-center text-sm;
   }
   :global(.video-transcript figcaption) {
-    @apply small-info text-center;
+    @apply text-secondary text-center text-sm;
   }
 
   :global(.video-transcript h1),
   :global(.video-transcript h2),
   :global(.video-transcript h3),
   :global(.video-transcript h4) {
-    @apply mb-sm mt-lg text-start text-md;
+    @apply mb-sm mt-lg text-md text-start;
   }
 </style>

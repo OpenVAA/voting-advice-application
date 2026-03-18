@@ -131,7 +131,7 @@ You should not try to use a variant and customize at the same time.
 </script>
 
 <div {...concatClass($$restProps, collapseClasses)}>
-  <input type="checkbox" aria-label={$t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
+  <input type="checkbox" aria-label={t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
     <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
@@ -146,6 +146,7 @@ You should not try to use a variant and customize at the same time.
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .not-rotated-icon {
     --tw-rotate: 90deg;
     transition: transform 0.2s linear;

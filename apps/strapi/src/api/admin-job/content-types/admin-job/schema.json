@@ -31,11 +31,7 @@
     },
     "endStatus": {
       "type": "enumeration",
-      "enum": [
-        "completed",
-        "failed",
-        "aborted"
-      ]
+      "enum": ["completed", "failed", "aborted"]
     },
     "startTime": {
       "type": "datetime"

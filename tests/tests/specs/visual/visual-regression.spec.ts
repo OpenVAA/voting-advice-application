@@ -13,11 +13,11 @@
  *   npx playwright test --grep @visual --update-snapshots
  */
 
-import { voterTest } from '../../fixtures/voter.fixture';
-import { test, expect } from '../../fixtures';
 import { STORAGE_STATE } from '../../../playwright.config';
-import { testIds } from '../../utils/testIds';
+import { expect, test } from '../../fixtures';
+import { voterTest } from '../../fixtures/voter.fixture';
 import { buildRoute } from '../../utils/buildRoute';
+import { testIds } from '../../utils/testIds';
 
 // ── Voter Results - Desktop ──────────────────────────────────────────
 

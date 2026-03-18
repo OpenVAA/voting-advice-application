@@ -8,10 +8,7 @@
   "attributes": {
     "sections": {
       "type": "customField",
-      "options": [
-        "candidate",
-        "organization"
-      ],
+      "options": ["candidate", "organization"],
       "customField": "plugin::multi-select.multi-select",
       "required": true
     },

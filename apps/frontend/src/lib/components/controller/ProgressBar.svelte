@@ -35,7 +35,7 @@ Reusable progress bar component for displaying task progress.
   // Set defaults
   $: size ||= 'md';
   $: color ||= 'primary';
-  $: label ||= $t('adminApp.jobs.progress');
+  $: label ||= t('adminApp.jobs.progress');
 
   // Normalize progress value
   let normalizedProgress: number;
@@ -68,9 +68,9 @@ Reusable progress bar component for displaying task progress.
     {/if}
   </div>
 
-  <div class="w-full rounded-full bg-base-300 {sizeClasses[size]}">
+  <div class="bg-base-300 w-full rounded-full {sizeClasses[size]}">
     <div
-      class="{colorClasses[color]} duration-300 h-full rounded-full transition-all ease-out"
+      class="{colorClasses[color]} h-full rounded-full transition-all duration-300 ease-out"
       style="width: {percentage}%">
     </div>
   </div>

@@ -21,8 +21,8 @@
 
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -101,7 +101,7 @@ async function answerAllQuestions(page: Page): Promise<number> {
     try {
       await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
       // Check for category intro after URL change
-      if (!page.url().includes('/results') && await categoryStart.isVisible().catch(() => false)) {
+      if (!page.url().includes('/results') && (await categoryStart.isVisible().catch(() => false))) {
         await categoryStart.click();
       }
     } catch {
@@ -156,7 +156,7 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     // CONF-04: No constituency selection page appears because each election
     // has a single constituency (auto-implied). Verify constituency list is NOT visible.
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).not.toBeVisible();
+    await expect(constituenciesList).toBeHidden();
 
     // Click continue to proceed with both elections selected
     await sharedPage.getByTestId(testIds.voter.elections.continue).click();
@@ -276,7 +276,7 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
     await answerOption.first().or(electionsList).waitFor({ state: 'visible', timeout: 10000 });
 
     // Verify election list is NOT visible
-    await expect(electionsList).not.toBeVisible();
+    await expect(electionsList).toBeHidden();
 
     // Should proceed to questions (constituency auto-implied for both elections)
     await expect(answerOption.first()).toBeVisible();

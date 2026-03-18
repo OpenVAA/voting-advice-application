@@ -23,8 +23,8 @@
 
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
-import { testIds } from '../../utils/testIds';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -133,7 +133,7 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
 
     // Election selection should NOT be visible at this point
     const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
-    await expect(electionsList).not.toBeVisible();
+    await expect(electionsList).toBeHidden();
 
     // The constituency selector combobox should be visible, showing only
     // the municipalities group (the specified startFromConstituencyGroup).

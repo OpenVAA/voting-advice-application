@@ -68,10 +68,10 @@ Show a popup asking for user feedback.
   }
 </script>
 
-<Alert bind:closeAlert title={$t('privacy.title')} {...$$restProps}>
+<Alert bind:closeAlert title={t('privacy.title')} {...$$restProps}>
   <div class="justify-self-stretch">
     <h3 class="mb-lg mt-0 text-center">
-      {$t('feedback.popupTitle')}
+      {t('feedback.popupTitle')}
     </h3>
     <Feedback
       on:sent={onSent}
@@ -89,12 +89,12 @@ Show a popup asking for user feedback.
       color={canSubmit ? 'primary' : 'warning'}
       variant={canSubmit ? 'main' : 'normal'}
       text={status === 'sending'
-        ? $t('feedback.sending')
+        ? t('feedback.sending')
         : status === 'sent'
-          ? $t('feedback.thanks')
+          ? t('feedback.thanks')
           : canSubmit
-            ? $t('feedback.send')
-            : $t('common.close')}
+            ? t('feedback.send')
+            : t('common.close')}
       class="min-w-full sm:min-w-[12rem]" />
   </div>
 </Alert>

@@ -18,13 +18,18 @@ export const testIds = {
     },
     profile: {
       submit: 'profile-submit',
-      imageUpload: 'profile-image-upload'
+      imageUpload: 'profile-image-upload',
+      returnButton: 'profile-return'
     },
     home: {
-      statusMessage: 'candidate-home-status'
+      statusMessage: 'candidate-home-status',
+      logout: 'candidate-home-logout',
+      questions: 'candidate-home-questions'
     },
     questions: {
       card: 'candidate-questions-card',
+      list: 'candidate-questions-list',
+      start: 'candidate-questions-start',
       answerInput: 'candidate-questions-answer',
       commentInput: 'candidate-questions-comment',
       saveButton: 'candidate-questions-save'
@@ -52,7 +57,21 @@ export const testIds = {
     register: {
       password: 'register-password',
       confirmPassword: 'register-confirm-password',
-      submit: 'register-submit'
+      submit: 'register-submit',
+      passwordSubmit: 'register-password-submit'
+    },
+    passwordReset: {
+      submit: 'password-reset-submit'
+    },
+    terms: {
+      checkbox: 'terms-checkbox'
+    },
+    help: {
+      home: 'candidate-help-home',
+      contactSupport: 'candidate-help-contact-support'
+    },
+    privacy: {
+      home: 'candidate-privacy-home'
     }
   },
   voter: {

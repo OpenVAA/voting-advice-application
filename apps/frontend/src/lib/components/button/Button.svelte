@@ -23,7 +23,7 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `variant`: Type of the button, which defines it's appearance. Default: `'normal'`
 - `iconPos`: Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon` or `floating-icon`. Note that `top` and `bottom` are not supported if `variant='main'`. Default: `'right'` if `variant='main'`, otherwise `'left'`
 - `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. Default: `false`
-- `loadingText`: The text shown when `loading` is `true`. Default: `$t('common.loading')`
+- `loadingText`: The text shown when `loading` is `true`. Default: `t('common.loading')`
 - `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
@@ -81,7 +81,7 @@ text="Add to list">
   let effectiveText: typeof text;
 
   $: {
-    effectiveText = loading ? loadingText || $t('common.loading') : text;
+    effectiveText = loading ? loadingText || t('common.loading') : text;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -215,8 +215,9 @@ text="Add to list">
 </svelte:element>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   [disabled] .vaa-button-label,
   .disabled .vaa-button-label {
-    @apply text-neutral text-opacity-20;
+    @apply text-neutral/20;
   }
 </style>

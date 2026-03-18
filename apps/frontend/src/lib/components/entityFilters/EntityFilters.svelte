@@ -58,7 +58,7 @@ Show filters for entities. This component and the individual filter components o
           <svelte:component this={EnumeratedEntityFilter} {filter} {targets} />
         {/await}
       {:else}
-        <ErrorMessage message={$t('entityFilters.error')} />
+        <ErrorMessage message={t('entityFilters.error')} />
       {/if}
     </Expander>
   {/each}

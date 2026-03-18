@@ -1,0 +1,11 @@
+{
+  "entityDetails": {
+    "links": "Lingid",
+    "memberOfOrganization": "erakonna {organization} liige",
+    "tabs": {
+      "candidates": "kandidaadid",
+      "info": "Põhiandmed",
+      "opinions": "Arvamused"
+    }
+  }
+}

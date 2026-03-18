@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Feedback"
-      ],
+      "tags": ["Feedback"],
       "parameters": [],
       "operationId": "post/feedbacks",
       "requestBody": {

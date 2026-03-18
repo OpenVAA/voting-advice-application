@@ -9,9 +9,13 @@
  * storageState via auth-setup.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { TEST_CANDIDATE_EMAIL as CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD as CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import {
+  TEST_CANDIDATE_EMAIL as CANDIDATE_EMAIL,
+  TEST_CANDIDATE_PASSWORD as CANDIDATE_PASSWORD
+} from '../../utils/testCredentials';
+import { testIds } from '../../utils/testIds';
 
 test.describe('candidate authentication', { tag: ['@candidate', '@smoke'] }, () => {
   test('should login with valid credentials', async ({ page, loginPage, homePage }) => {
@@ -45,7 +49,7 @@ test.describe('candidate authentication', { tag: ['@candidate', '@smoke'] }, () 
     await homePage.expectStatus();
 
     // Click the logout button on the candidate home page
-    const logoutButton = page.getByTestId('candidate-home-logout');
+    const logoutButton = page.getByTestId(testIds.candidate.home.logout);
     await logoutButton.click();
 
     // The candidate has unanswered questions, so a confirmation dialog appears
@@ -61,7 +65,7 @@ test.describe('candidate authentication', { tag: ['@candidate', '@smoke'] }, () 
     await expect(page).toHaveURL(new RegExp(loginUrl), { timeout: 15000 });
 
     // Verify we are on the login page by checking for the login form
-    await expect(page.getByTestId('login-email')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();
   });
 });
 
@@ -78,14 +82,14 @@ test.describe('candidate password change', { tag: ['@candidate'] }, () => {
 
     // Step 3: Wait for success feedback or at least for the form to process
     // The settings page shows a SuccessMessage on successful password change
-    await expect(page.getByTestId('settings-update-password')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.settings.updateButton)).toBeVisible();
 
     // Step 4: Navigate to login page (this also clears the authenticated session context)
     await page.context().clearCookies();
     await page.goto(buildRoute({ route: 'CandAppLogin', locale: 'en' }));
 
     // Step 5: Verify we're on the login page
-    await expect(page.getByTestId('login-email')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();
 
     // Step 6: Login with the new password
     await loginPage.login(CANDIDATE_EMAIL, newPassword);
@@ -99,6 +103,6 @@ test.describe('candidate password change', { tag: ['@candidate'] }, () => {
     await settingsPage.changePassword(newPassword, originalPassword, originalPassword);
 
     // Wait for the password change to be processed
-    await expect(page.getByTestId('settings-update-password')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.settings.updateButton)).toBeVisible();
   });
 });

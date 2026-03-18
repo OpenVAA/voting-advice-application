@@ -1,7 +1,7 @@
 import { expect, test as setup } from '@playwright/test';
-import defaultDataset from '../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' assert { type: 'json' };
-import overlay from '../data/overlays/multi-election-overlay.json' assert { type: 'json' };
+import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
+import overlay from '../data/overlays/multi-election-overlay.json' with { type: 'json' };
+import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
 import { mergeDatasets } from '../utils/mergeDatasets';
 import { StrapiAdminClient } from '../utils/strapiAdminClient';
 

@@ -1,0 +1,180 @@
+<!--@component
+
+# Located section main layout
+
+Provides the data used by the located – i.e. those requiring the elections and constituencies to be selected – parts of voter app to the `dataRoot`, which are loaded by `+layout.ts`.
+
+Displays a warning if the selected constituency does not have nominations in all of the selected elections.
+
+### Settings
+
+- `header.showHelp`: Whether the help button is shown in the header.
+- `header.showFeedback`: Whether the feedback button is shown in the header.
+- `analytics.platform`: Affects whether the analytics service is loaded.
+- `analytics.trackEvents`: Affects whether the data consent popup is shown.
+-->
+
+<script lang="ts">
+  import { get } from 'svelte/store';
+  import { goto } from '$app/navigation';
+  import { isValidResult } from '$lib/api/utils/isValidResult.js';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Icon } from '$lib/components/icon';
+  import { Loading } from '$lib/components/loading';
+  import { Modal } from '$lib/components/modal';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { sanitizeHtml } from '$lib/utils/sanitize.js';
+  import type { DPDataType } from '$lib/api/base/dataTypes';
+
+  export let data;
+
+  const { dataRoot, getRoute, nominationsAvailable, selectedElections, t } = getVoterContext();
+
+  /**
+   * Maximum time to wait for the `nominationsAvailable` store to settle after
+   * providing data to the `dataRoot`. The reactive chain through multiple
+   * `parsimoniusDerived` levels may need several microtasks to propagate,
+   * especially under Svelte 5's store compatibility layer.
+   */
+  const NOMINATIONS_SETTLE_TIMEOUT = 3000;
+
+  type NominationStatus = 'all' | 'none' | 'some';
+
+  let error: Error | undefined;
+  let closeModal: () => void;
+  let openModal: () => void;
+  let ready: boolean;
+  let hasNominations: NominationStatus;
+  $: {
+    // If data is updated, we want to prevent loading the slot until the promises resolve
+    error = undefined;
+    ready = false;
+    Promise.all([data.questionData, data.nominationData]).then(async (data) => {
+      error = await update(data);
+    });
+  }
+
+  /**
+   * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
+   * @returns `Error` if the data is invalid, `undefined` otherwise.
+   */
+  async function update([questionData, nominationData]: [
+    DPDataType['questions'] | Error,
+    DPDataType['nominations'] | Error
+  ]): Promise<Error | undefined> {
+    if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
+    if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    $dataRoot.update(() => {
+      $dataRoot.provideQuestionData(questionData);
+      $dataRoot.provideEntityData(nominationData.entities);
+      $dataRoot.provideNominationData(nominationData.nominations);
+    });
+    hasNominations = await awaitNominationsSettled();
+    if (hasNominations !== 'all') openModal?.();
+    ready = true;
+  }
+
+  /**
+   * Wait for the `nominationsAvailable` store to settle by subscribing and
+   * watching for changes instead of relying on fixed timeouts. Resolves
+   * immediately if nominations are already available, otherwise waits for the
+   * reactive chain to propagate with a safety timeout.
+   *
+   * TODO[Svelte 5]: Rewrite with Svelte 5 runes ($derived / $effect) once the
+   * legacy store compatibility layer and alwaysNotifyStore workaround in
+   * dataContext.ts are replaced with native reactivity.
+   */
+  function awaitNominationsSettled(): Promise<NominationStatus> {
+    return new Promise((resolve) => {
+      let resolved = false;
+      let debounceTimer: ReturnType<typeof setTimeout>;
+      let unsub: () => void;
+
+      function done(status: NominationStatus) {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(debounceTimer);
+        clearTimeout(safetyTimer);
+        unsub?.();
+        resolve(status);
+      }
+
+      const safetyTimer = setTimeout(
+        () => done(checkNominations(get(nominationsAvailable))),
+        NOMINATIONS_SETTLE_TIMEOUT
+      );
+
+      unsub = nominationsAvailable.subscribe((value) => {
+        const status = checkNominations(value);
+        if (status === 'all') {
+          // All nominations confirmed — defer to next microtask so unsub is assigned
+          queueMicrotask(() => done(status));
+        } else {
+          // Not all nominations yet — debounce to let the chain settle,
+          // then resolve with whatever the final status is
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => done(checkNominations(get(nominationsAvailable))), 100);
+        }
+      });
+    });
+  }
+
+  function checkNominations(available: Record<string, boolean>): NominationStatus {
+    const values = Object.values(available);
+    if (!values.length) return 'none';
+    if (values.every(Boolean)) return 'all';
+    if (values.some(Boolean)) return 'some';
+    return 'none';
+  }
+</script>
+
+{#if error}
+  <ErrorMessage class="bg-base-300" />
+{:else if !ready}
+  <Loading />
+{:else}
+  <slot />
+{/if}
+
+{#if hasNominations !== 'all'}
+  <Modal
+    title={hasNominations === 'none'
+      ? t('results.missingNominations.noNominations.title')
+      : t('results.missingNominations.someNominations.title')}
+    closeOnBackdropClick={false}
+    bind:openModal
+    bind:closeModal>
+    <p>
+      {@html sanitizeHtml(
+        hasNominations === 'none'
+          ? t('results.missingNominations.noNominations.content')
+          : t('results.missingNominations.someNominations.content')
+      )}
+    </p>
+    {#if hasNominations === 'some'}
+      <div class="gap-md mx-auto flex w-max flex-col items-start">
+        {#each $selectedElections as election}
+          {@const available = $nominationsAvailable[election.id]}
+          <div class="gap-sm flex flex-row items-center font-bold {available ? 'text-success' : 'text-warning'}">
+            <Icon name={available ? 'check' : 'close'} />
+            <span>{election.name}</span>
+            {#if !available}
+              <span class="text-secondary font-normal"
+                >({t('results.missingNominations.noNominationsForElection')})</span>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {/if}
+    <div slot="actions" class="mx-auto flex w-full max-w-md flex-col">
+      <Button on:click={closeModal} text={t('common.continue')} variant="main" />
+      <Button
+        on:click={() => {
+          goto($getRoute('Home'));
+          closeModal();
+        }}
+        text={t('common.returnHome')} />
+    </div>
+  </Modal>
+{/if}

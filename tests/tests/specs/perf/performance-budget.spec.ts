@@ -21,8 +21,9 @@
  *   npx playwright test -c tests/playwright.config.ts --grep @perf
  */
 
-import { voterTest } from '../../fixtures/voter.fixture';
+/* eslint-disable playwright/no-standalone-expect -- voterTest extends @playwright/test; expect is inside test body */
 import { expect } from '@playwright/test';
+import { voterTest } from '../../fixtures/voter.fixture';
 
 voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
   // Generous timeout: fixture navigation (~30s) + page reload + measurement
@@ -40,7 +41,7 @@ voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
 
     // Extract Navigation Timing metrics
     const timing = await page.evaluate(() => {
-      const entries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      const entries = performance.getEntriesByType('navigation') as Array<PerformanceNavigationTiming>;
       const nav = entries[0];
       return {
         domContentLoaded: Math.round(nav.domContentLoadedEventEnd),

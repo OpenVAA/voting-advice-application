@@ -18,8 +18,8 @@
 
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuestion } from '@openvaa/matching';
 import { expect, test } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
 import type { HasAnswers } from '@openvaa/core';
@@ -45,9 +45,7 @@ const allOpinionQuestions = [
 const TOTAL_OPINION_QUESTIONS = allOpinionQuestions.length; // 16
 
 // Create OrdinalQuestion objects for matching
-const questions = allOpinionQuestions.map((q) =>
-  OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE })
-);
+const questions = allOpinionQuestions.map((q) => OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE }));
 
 // Create voter answers -- all "Fully agree" (choice_5) for every opinion question
 const voterAnswers: Record<string, { value: string }> = {};
@@ -240,35 +238,33 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await expect(candidateSection).not.toContainText(hiddenName);
   });
 
-  test(
-    'should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
-    async ({ page }) => {
-      // Navigate the full journey and verify no category intro appeared.
-      // Category intros are disabled in data setup via updateAppSettings.
-      //
-      // Full boundary testing (enabling/disabling category intros and verifying
-      // behavior) is explicitly Phase 4 scope.
-      await navigateToResults(page);
+  test('should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)', async ({
+    page
+  }) => {
+    // Navigate the full journey and verify no category intro appeared.
+    // Category intros are disabled in data setup via updateAppSettings.
+    //
+    // Full boundary testing (enabling/disabling category intros and verifying
+    // behavior) is explicitly Phase 4 scope.
+    await navigateToResults(page);
 
-      // Category intro element should not be present on the results page
-      await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toBeHidden();
-    }
-  );
+    // Category intro element should not be present on the results page
+    await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toBeHidden();
+  });
 
-  test(
-    'should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
-    async ({ page }) => {
-      // Navigate and answer all opinion questions (above the default minimum of 5).
-      // This confirms results are accessible when answering all questions above threshold.
-      //
-      // Full boundary testing (answering exactly at threshold, below threshold)
-      // is explicitly Phase 4 scope.
-      await navigateToResults(page);
+  test('should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)', async ({
+    page
+  }) => {
+    // Navigate and answer all opinion questions (above the default minimum of 5).
+    // This confirms results are accessible when answering all questions above threshold.
+    //
+    // Full boundary testing (answering exactly at threshold, below threshold)
+    // is explicitly Phase 4 scope.
+    await navigateToResults(page);
 
-      // Results list should be visible with entity cards present
-      await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
-      const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-      expect(cardCount).toBeGreaterThan(0);
-    }
-  );
+    // Results list should be visible with entity cards present
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
+    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
+    expect(cardCount).toBeGreaterThan(0);
+  });
 });

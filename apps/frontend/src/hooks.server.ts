@@ -1,125 +1,54 @@
+/* eslint-disable func-style -- SvelteKit hooks use typed const exports by convention */
 import { redirect } from '@sveltejs/kit';
 import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { AUTH_TOKEN_KEY } from '$lib/auth';
-import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
-import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
-import { logDebugError } from '$lib/utils/logger';
+import { getLocale } from '$lib/paraglide/runtime';
+import { paraglideMiddleware } from '$lib/paraglide/server';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
-// Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
-
-/** Set to `true` to show debug log in console */
-const DEBUG = false;
-
-/** Normalize starting slashes */
 const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
 
-export const handle: Handle = (async ({ event, resolve }) => {
-  const { params, route, url, request, isDataRequest } = event;
-  const { pathname, search } = url;
-  const requestedLocale = params.lang;
+const paraglideHandle: Handle = ({ event, resolve }) =>
+  paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+    event.request = localizedRequest;
+    return resolve(event, {
+      transformPageChunk: ({ html }) => html.replace('%lang%', locale)
+    });
+  });
 
-  const supportedLocales = locales.get();
-  let cleanPath = requestedLocale ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '') : pathname;
-  if (cleanPath === '') cleanPath = '/';
+const candidateAuthHandle: Handle = async ({ event, resolve }) => {
+  const { url, route, cookies } = event;
+  const locale = getLocale();
+  const pathname = url.pathname;
 
-  debug('Route: START', { params, pathname, isDataRequest, route });
-
-  //////////////////////////////////////////////////////////////////////////
-  // 1. Handle non-route requests
-  //////////////////////////////////////////////////////////////////////////
-
-  // If this request is not a route request, resolve normally
-  // NB. If defining API routes that should return json, test cleanPath here and resolve
-  if (route?.id == null || pathname == null || pathname.startsWith(NORMALIZED_API_ROOT)) {
-    debug('Route: RESOLVE non-route request');
+  // Skip non-route and API requests
+  if (route?.id == null || pathname.startsWith(NORMALIZED_API_ROOT)) {
     return resolve(event);
   }
 
-  //////////////////////////////////////////////////////////////////////////
-  // 2. Figure out which locale to serve
-  //////////////////////////////////////////////////////////////////////////
-
-  let preferredLocale: string | undefined;
-  let servedLocale: string | undefined;
-
-  // Get preferred locale from request headers
-  const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage) {
-    const preferredLocales = parseAcceptedLanguages(acceptLanguage);
-    preferredLocale = matchLocale(preferredLocales, supportedLocales);
-  }
-
-  if (supportedLocales.length === 1) {
-    // No need for locale matching if there's only one locale
-    servedLocale = defaultLocale;
-  } else if (requestedLocale) {
-    // We use soft locale matching for route parameters, so we need to map the param to a supported one
-    servedLocale = matchLocale(requestedLocale, supportedLocales);
-  }
-  // If we still don't have a locale use the preferred one or the default one
-  servedLocale ??= preferredLocale ?? defaultLocale;
-  debug(
-    `Route: LOCALE parsed to ${servedLocale} • PATH to '${cleanPath}' (requested ${requestedLocale}, preferred ${preferredLocale})`
-  );
-
-  //////////////////////////////////////////////////////////////////////////
-  // 3. Redirect if the locale param is not the same as the served locale
-  //////////////////////////////////////////////////////////////////////////
-
-  if (requestedLocale !== servedLocale) {
-    debug(`Route: REDIRECT to locale ${servedLocale}`);
-    redirect(301, `/${servedLocale}${cleanPath}${search}`);
-  }
-
-  //////////////////////////////////////////////////////////////////////////
-  // 4. Handle candidate requests
-  //////////////////////////////////////////////////////////////////////////
-
-  if (pathname.startsWith(`/${servedLocale}/candidate`)) {
-    const token = event.cookies.get(AUTH_TOKEN_KEY);
-
+  // Handle candidate auth redirects
+  if (pathname.includes('/candidate')) {
+    const token = cookies.get(AUTH_TOKEN_KEY);
     if (token && pathname.endsWith('candidate/login')) {
-      debug('Route: REDIRECT to home page');
-      redirect(303, `/${servedLocale}/candidate`);
+      redirect(303, `/${locale}/candidate`);
     }
-
     if (!token && route.id.includes('(protected)')) {
-      debug('Route: REDIRECT to login page');
-      redirect(303, `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}`);
+      const cleanPath = pathname.replace(new RegExp(`^/${locale}`), '');
+      redirect(303, `/${locale}/candidate/login?redirectTo=${cleanPath.substring(1)}`);
     }
   }
 
-  //////////////////////////////////////////////////////////////////////////
-  // 5. Serve content in the requested locale
-  //////////////////////////////////////////////////////////////////////////
+  return resolve(event);
+};
 
-  debug(`Route: SERVE with proper locale ${servedLocale}`);
-  return resolve(
-    {
-      ...event,
-      locals: {
-        currentLocale: servedLocale,
-        preferredLocale
-      }
-    },
-    {
-      transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
-    }
-  );
-}) satisfies Handle;
+export const handle: Handle = async ({ event, resolve }) => {
+  return paraglideHandle({
+    event,
+    resolve: (event) => candidateAuthHandle({ event, resolve })
+  });
+};
 
-export const handleError = (async ({ error, event }) => {
-  const { locals } = event;
-  const currentLocale = locals?.currentLocale;
-  logDebugError('handleError', error);
-  if (currentLocale) await loadTranslations(currentLocale, 'error');
-  return {
-    message: '500'
-  };
-}) satisfies HandleServerError;
-
-/** Show debug message if `DEBUG` is `true` */
-function debug(message: unknown, error?: unknown) {
-  if (DEBUG) logDebugError(message, error);
-}
+export const handleError: HandleServerError = async ({ error }) => {
+  console.error('Server error:', error);
+  return { message: '500' };
+};

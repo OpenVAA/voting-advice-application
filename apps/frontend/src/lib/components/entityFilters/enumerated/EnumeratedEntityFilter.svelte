@@ -117,7 +117,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
    * @param object - party object or choice
    */
   function getLabel(object: AnyEntityVariant | AnyChoice | undefined): string | undefined {
-    if (!object) return $t('entityFilters.missingValue');
+    if (!object) return t('entityFilters.missingValue');
     // Entity
     if ('shortName' in object) return object.shortName;
     // Choice
@@ -135,23 +135,23 @@ Render an enumerated filter for entities that displays a list of values to inclu
   {#each values as { value, object, count }}
     {@const label = getLabel(object)}
     {#if label != null}
-      <label class="label cursor-pointer !items-start gap-sm !p-0">
+      <label class="label gap-sm cursor-pointer !items-start !p-0">
         <!-- Disable the input if there is only one value -->
         <input type="checkbox" class="checkbox" {value} bind:group={selected} {name} disabled={values.length === 1} />
-        <span class="label-text w-full pt-2 text-left">
+        <span class="w-full pt-2 text-left">
           {label} <span class="pl-sm text-secondary">{count}</span>
         </span>
       </label>
     {/if}
   {/each}
   {#if values.length > 3}
-    <div class="col-span-full mt-md">
-      <button on:click={() => toggleSelectAll()} class="label cursor-pointer !items-start gap-sm !p-0 text-primary">
+    <div class="mt-md col-span-full">
+      <button on:click={() => toggleSelectAll()} class="label gap-sm text-primary cursor-pointer !items-start !p-0">
         <div class="w-[1.5rem]">
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>
-        <span class="label-text w-full pt-2 text-left text-primary">
-          {allSelected ? $t('entityFilters.unselectAll') : $t('entityFilters.selectAll')}
+        <span class="text-primary w-full pt-2 text-left">
+          {allSelected ? t('entityFilters.unselectAll') : t('entityFilters.selectAll')}
         </span>
       </button>
     </div>

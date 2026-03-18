@@ -11,7 +11,7 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "catalog:",
     "eslint-plugin-import": "catalog:",
     "eslint-plugin-simple-import-sort": "catalog:",
     "prettier": "catalog:",

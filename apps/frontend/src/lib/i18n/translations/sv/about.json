@@ -1,5 +1,5 @@
 {
-  "content": "<p>Valkompassen fungerar genom att jämföra de åsikter du anger med dem som ges av {candidatePlural} och {partyPlural}. Resultaten ges en matchningspoäng, vilket är procentandelen av hur nära du håller med dem.</p><ul><li>En poäng på 100 innebär att du instämmer helt i alla frågor som du har besvarat.</li><li>En poäng på 0 innebär att du inte håller med om alla frågor.</li><li>En poäng mellan dessa två ytterligheter innebär att du håller med om vissa frågor och inte håller med om andra.</li></ul>",
+  "content": "<p>Valkompassen fungerar genom att jämföra de åsikter du anger med dem som ges av kandidater och partier. Resultaten ges en matchningspoäng, vilket är procentandelen av hur nära du håller med dem.</p><ul><li>En poäng på 100 innebär att du instämmer helt i alla frågor som du har besvarat.</li><li>En poäng på 0 innebär att du inte håller med om alla frågor.</li><li>En poäng mellan dessa två ytterligheter innebär att du håller med om vissa frågor och inte håller med om andra.</li></ul>",
   "feedback": {
     "title": "Respons"
   },

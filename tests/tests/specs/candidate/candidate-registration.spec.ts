@@ -9,13 +9,13 @@
  * are for users who are not yet logged in.
  */
 
-import { test, expect } from '../../fixtures';
-import { buildRoute } from '../../utils/buildRoute';
+import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import { expect, test } from '../../fixtures';
+import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml } from '../../utils/emailHelper';
 import { StrapiAdminClient } from '../../utils/strapiAdminClient';
-import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
-import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { testIds } from '../../utils/testIds';
 
 // Run all tests in this file without authentication
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -80,28 +80,28 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
     // Step 2: Set password on the register/password page
     // The register/password page uses PasswordSetter with passwordTestId="register-password"
     // and confirmPasswordTestId="register-confirm-password", and submit at "register-password-submit"
-    const passwordWrapper = page.getByTestId('register-password');
-    const confirmWrapper = page.getByTestId('register-confirm-password');
-    const submitButton = page.getByTestId('register-password-submit');
+    const passwordWrapper = page.getByTestId(testIds.candidate.register.password);
+    const confirmWrapper = page.getByTestId(testIds.candidate.register.confirmPassword);
+    const submitButton = page.getByTestId(testIds.candidate.register.passwordSubmit);
 
     // Fill the password input within the wrapper div
-    await passwordWrapper.getByTestId('password-field').fill('RegisteredPass1!');
-    await confirmWrapper.getByTestId('password-field').fill('RegisteredPass1!');
+    await passwordWrapper.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
+    await confirmWrapper.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
     await submitButton.click();
 
     // Step 3: After registration, the app redirects to the login page (not auto-login)
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
 
     // Step 4: Verify we can login with the newly set password
-    await page.getByTestId('login-email').fill(candidateEmail);
-    await page.getByTestId('password-field').fill('RegisteredPass1!');
-    await page.getByTestId('login-submit').click();
+    await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
+    await page.getByTestId(testIds.candidate.login.password).fill('RegisteredPass1!');
+    await page.getByTestId(testIds.candidate.login.submit).click();
 
     // Expect navigation away from login
     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
 
     // Step 5: Accept Terms of Use (shown on first login after registration)
-    const touCheckbox = page.getByTestId('terms-checkbox');
+    const touCheckbox = page.getByTestId(testIds.candidate.terms.checkbox);
     await expect(touCheckbox).toBeVisible({ timeout: 10000 });
     await touCheckbox.check();
     // Wait for the continue button to be enabled (not in loading state)
@@ -110,7 +110,7 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
     await continueButton.click();
 
     // Step 6: Verify we reach the candidate home (save may take a moment)
-    await expect(page.getByTestId('candidate-home-status')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
   });
 });
 
@@ -169,22 +169,22 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
     // wrapper divs, so we target the PasswordField inputs directly by their common
     // data-testid="password-field". The first is the new password, second is confirmation.
     const newPassword = 'ResetPass1!';
-    const passwordFields = page.getByTestId('password-field');
+    const passwordFields = page.getByTestId(testIds.candidate.login.password);
     await passwordFields.first().fill(newPassword);
     await passwordFields.nth(1).fill(newPassword);
-    await page.getByTestId('password-reset-submit').click();
+    await page.getByTestId(testIds.candidate.passwordReset.submit).click();
 
     // Step 7: After reset, the app redirects to the login page
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
 
     // Step 8: Verify login with the new password
-    await page.getByTestId('login-email').fill(candidateEmail);
-    await page.getByTestId('password-field').fill(newPassword);
-    await page.getByTestId('login-submit').click();
+    await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
+    await page.getByTestId(testIds.candidate.login.password).fill(newPassword);
+    await page.getByTestId(testIds.candidate.login.submit).click();
 
     // Expect to reach the candidate home page
     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
-    await expect(page.getByTestId('candidate-home-status')).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible();
 
     // Step 9: RESTORE original password via API using setPassword
     // This is critical for subsequent test runs so auth-setup doesn't break

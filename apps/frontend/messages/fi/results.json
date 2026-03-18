@@ -1,0 +1,86 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ei vaaliliittoja",
+            "numShownPlural=one": "1 vaaliliitto",
+            "numShownPlural=other": "{numShown} vaaliliittoa"
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ei ehdokkaita",
+            "numShownPlural=one": "1 ehdokas",
+            "numShownPlural=other": "{numShown} ehdokasta"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ei ryhmittymiä",
+            "numShownPlural=one": "1 ryhmittymä",
+            "numShownPlural=other": "{numShown} ryhmittymää"
+          }
+        }
+      ]
+    },
+    "inConstituency": "vaalipiirissä",
+    "ingress": {
+      "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat ehdokkaat ja puolueet, {questionsLink} ensin.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=one": "vastaa ainakin yhteen kysymykseen",
+            "numQuestionsPlural=other": "vastaa ainakin {numQuestions} kysymykseen"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+        "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
+      },
+      "someNominations": {
+        "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
+        "content": "Vaalipiirissäsi ei ole ehdokkaiden tai puolueiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
+      },
+      "noNominationsForElection": "ei saatavilla"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ei puolueita",
+            "numShownPlural=one": "1 puolue",
+            "numShownPlural=other": "{numShown} puoluetta"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Valitse vaali ensin",
+    "title": {
+      "browse": "Selaa ehdokkaita ja puolueita",
+      "results": "Tuloksesi"
+    }
+  }
+}

@@ -34,7 +34,7 @@ Functional component used to block user nagivation.
 
   beforeNavigate((e) => {
     if (!(active === true || (typeof active === 'function' && active()))) return;
-    if (window.confirm($t('components.preventNavigation.unsavedChanges'))) {
+    if (window.confirm(t('components.preventNavigation.unsavedChanges'))) {
       onConfirm?.();
     } else {
       onCancel?.();

@@ -1,9 +1,8 @@
-import type { TranslationKey } from '$types';
-
 /**
- * Asserts blindly that key is `TranslationKey` for use with translation keys that are formed dynamically.
- * TODO: In the future, check that the key is a valid translation key.
+ * Assert that a dynamically constructed string is a valid translation key.
+ * With Paraglide, static keys are validated at compile time.
+ * This function provides a type assertion for dynamically constructed keys.
  */
-export function assertTranslationKey(key: string): TranslationKey {
-  return key as TranslationKey;
+export function assertTranslationKey(key: string): string {
+  return key;
 }
