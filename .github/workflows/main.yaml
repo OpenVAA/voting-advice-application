@@ -37,10 +37,10 @@ jobs:
         with:
           version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -54,9 +54,6 @@ jobs:
 
       - name: "Run ESlint check on frontend"
         run: yarn lint:check
-
-      - name: "Check that TranslationKey type is up to date"
-        run: yarn workspace @openvaa/frontend generate:translation-key-type && git diff --exit-code
 
       - name: "Run Frontend and shared module tests"
         run: yarn test:unit
@@ -84,10 +81,10 @@ jobs:
         with:
           version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
 
       - name: Cache node modules
@@ -142,10 +139,10 @@ jobs:
         with:
           version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
 
       # - name: Cache node modules
@@ -223,10 +220,10 @@ jobs:
         with:
           version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
 
       - name: "Install yarn dependencies"

@@ -16,19 +16,24 @@ pnpm-lock.yaml
 yarn.lock
 
 # NB! Because of prettier’s limitations, .prettierignore files in subfolders are not respected
-# Ignores copied from /backend/vaa-strapi/.prettierignore
-backend/vaa-strapi/.strapi-updater.json
-backend/vaa-strapi/.cache
-backend/vaa-strapi/**/*.json
-backend/vaa-strapi/**/documentation
-backend/vaa-strapi/temp
-# Ignores copied from /frontend/.prettierignore
-frontend/.svelte-kit
-frontend/package
-frontend/tailwind.config.cjs
+# Ignores for apps/strapi
+apps/strapi/.strapi-updater.json
+apps/strapi/.strapi
+apps/strapi/.cache
+apps/strapi/**/documentation
+apps/strapi/temp
+# Ignores for apps/frontend
+apps/frontend/.svelte-kit
+apps/frontend/package
+# Generated Paraglide message files (auto-generated on build)
+apps/frontend/src/lib/paraglide/
+# Generated Inlang project files (auto-generated, gitignored)
+apps/frontend/project.inlang/
 # Ignores copied from /tests/.prettierignore
 tests/test-results/
 tests/playwright*/
 # Ignores docs because it must be formatted separately due to different Svelte version
 # TODO[Svelte 5]: Remove this limitation
 docs
+# Planning docs are not source code
+.planning/

@@ -4,13 +4,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["build/**", "dist/**"],
-      "inputs": [
-        "src/**",
-        "tsconfig.json",
-        "tsconfig.*.json",
-        "tsup.config.ts",
-        "package.json"
-      ]
+      "inputs": ["src/**", "tsconfig.json", "tsconfig.*.json", "tsup.config.ts", "package.json"]
     },
     "test:unit": {
       "dependsOn": ["build"],
@@ -19,19 +13,12 @@
     "lint": {
       "dependsOn": ["^lint"],
       "outputs": [],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "eslint.config.*"
-      ]
+      "inputs": ["$TURBO_DEFAULT$", "eslint.config.*"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
       "outputs": [],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "tsconfig.json",
-        "tsconfig.*.json"
-      ]
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json", "tsconfig.*.json"]
     }
   }
 }
