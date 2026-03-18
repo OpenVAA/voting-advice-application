@@ -9,10 +9,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### Schema Migrations
 
-- [ ] **SCHM-01**: app_customization storage added to Supabase schema (customization JSONB column or equivalent)
+- [x] **SCHM-01**: app_customization storage added to Supabase schema (customization JSONB column or equivalent)
 - [ ] **SCHM-02**: feedback table added to Supabase schema
-- [ ] **SCHM-03**: terms_of_use_accepted column added to candidates table
-- [ ] **SCHM-04**: Answer upsert RPC for atomic answer writes
+- [x] **SCHM-03**: terms_of_use_accepted column added to candidates table
+- [x] **SCHM-04**: Answer upsert RPC for atomic answer writes
 
 ### Adapter Foundation
 
@@ -96,10 +96,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHM-01 | Phase 22 | Pending |
+| SCHM-01 | Phase 22 | Complete |
 | SCHM-02 | Phase 22 | Pending |
-| SCHM-03 | Phase 22 | Pending |
-| SCHM-04 | Phase 22 | Pending |
+| SCHM-03 | Phase 22 | Complete |
+| SCHM-04 | Phase 22 | Complete |
 | ADPT-01 | Phase 23 | Pending |
 | ADPT-02 | Phase 23 | Pending |
 | ADPT-03 | Phase 23 | Pending |
