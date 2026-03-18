@@ -10,11 +10,6 @@
 --
 -- Alternative: see schema/alternatives/answers-relational.sql
 --
--- TODO: Add an RPC function for atomic single-answer upsert to prevent
---       client-side read-modify-write race conditions with concurrent jsonb_set().
---       E.g. upsert_candidate_answer(candidate_id uuid, question_id uuid, value jsonb)
---       that uses server-side jsonb_set with implicit row lock.
-
 ALTER TABLE candidates ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 ALTER TABLE organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 
@@ -175,3 +170,68 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER validate_question_type_change_trigger
   BEFORE UPDATE ON questions
   FOR EACH ROW EXECUTE FUNCTION validate_question_type_change();
+
+--------------------------------------------------------------------------------
+-- upsert_answers: atomic answer write for a single entity
+--
+-- SECURITY INVOKER: runs with caller's permissions, so RLS policies
+-- (candidate_update_own) enforce that a candidate can only update their own row.
+-- The existing validate_answers_jsonb() BEFORE UPDATE trigger fires automatically
+-- on the underlying UPDATE, providing answer validation at no extra cost.
+--
+-- Parameters:
+--   entity_id  - UUID of the candidate row to update
+--   answers    - JSONB of answers to write (Record<QuestionId, {value, info?}>)
+--   overwrite  - true: replace entire answers JSONB; false: merge (|| operator)
+--
+-- Returns: the updated answers JSONB
+--
+-- Null-value stripping: keys with JSON null values are stripped after merge.
+-- This supports "remove answer" semantics from the frontend adapter.
+--
+-- Error: raises exception if entity_id not found or RLS blocks the UPDATE
+--        (caller gets 'Entity not found or access denied' message).
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION upsert_answers(
+  entity_id uuid,
+  answers   jsonb,
+  overwrite boolean DEFAULT false
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  updated_answers jsonb;
+BEGIN
+  IF overwrite THEN
+    UPDATE candidates
+    SET answers = (
+      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
+      FROM jsonb_each(COALESCE(upsert_answers.answers, '{}'::jsonb)) AS t(k, v)
+      WHERE v IS NOT NULL AND v != 'null'::jsonb
+    )
+    WHERE id = entity_id
+    RETURNING candidates.answers INTO updated_answers;
+  ELSE
+    UPDATE candidates
+    SET answers = (
+      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
+      FROM jsonb_each(
+        COALESCE(candidates.answers, '{}'::jsonb) || COALESCE(upsert_answers.answers, '{}'::jsonb)
+      ) AS t(k, v)
+      WHERE v IS NOT NULL AND v != 'null'::jsonb
+    )
+    WHERE id = entity_id
+    RETURNING candidates.answers INTO updated_answers;
+  END IF;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Entity not found or access denied: %', entity_id;
+  END IF;
+
+  RETURN updated_answers;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION upsert_answers(uuid, jsonb, boolean) TO authenticated;
