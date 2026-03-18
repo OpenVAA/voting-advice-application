@@ -48,13 +48,14 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. The Supabase backend is fully functional with authentication, multi-tenant RLS, storage, bulk operations, and comprehensive test coverage. The frontend still uses the Strapi adapter — migrating to Supabase requires building SupabaseDataProvider/DataWriter (v3+ scope).
+The project is a mature monorepo used for real election deployments. The Supabase backend is fully functional with authentication, multi-tenant RLS, storage, bulk operations, and comprehensive test coverage. Phase 23 (Adapter Foundation) established the shared infrastructure for the Supabase frontend adapter — mixin, row mapping, localization utilities, and stub classes are in place.
 
-Key technical state after v5.0:
+Key technical state after Phase 23:
 - **Backend:** Supabase (Postgres, GoTrue, PostgREST, Storage, Edge Functions) at `apps/supabase/`
 - **Legacy backend:** Strapi v5 at `backend/vaa-strapi/` — to be removed after frontend adapter migration
 - **Types:** `@openvaa/supabase-types` with generated Database types and COLUMN_MAP/PROPERTY_MAP
-- **Tests:** 204 pgTAP tests + existing Playwright E2E + Vitest unit tests
+- **Adapter foundation:** `supabaseAdapterMixin`, `mapRow`/`mapRowToDb`, `getLocalized` utilities, stub DataProvider/DataWriter/FeedbackWriter classes, switch wiring — all at `frontend/src/lib/api/adapters/supabase/`
+- **Tests:** 204 pgTAP tests + existing Playwright E2E + Vitest unit tests + 20 adapter utility tests
 - **Auth hooks:** SvelteKit `hooks.server.ts` has Supabase client wired but routes still use Strapi auth
 - **Edge Functions:** invite-candidate, signicat-callback, send-email (all backend-ready, awaiting frontend integration)
 - **Claude Skills:** 4 active domain-expert skills (data, matching, filters, database) + 2 deferred stubs (architect, components) + skill drift CI check
@@ -111,4 +112,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-18 after v3.0 Frontend Adapter milestone started*
+*Last updated: 2026-03-18 after Phase 23 (Adapter Foundation) complete*
