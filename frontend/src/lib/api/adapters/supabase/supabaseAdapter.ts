@@ -1,0 +1,56 @@
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@openvaa/supabase-types';
+import { constants } from '$lib/utils/constants';
+import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
+import type { SupabaseAdapter, SupabaseAdapterConfig } from './supabaseAdapter.type';
+
+type Constructor<TClass = UniversalAdapter> = abstract new (...args: Array<any>) => TClass;
+
+/**
+ * A mixin for all Supabase Data API services.
+ * Provides a typed SupabaseClient<Database>, locale, and defaultLocale.
+ * Unlike the Strapi mixin's apiGet/apiPost helpers, this exposes the
+ * Supabase client directly -- the PostgREST query builder IS the abstraction.
+ *
+ * @param base - The base class to extend with the mixin.
+ * @returns A class extending both the base and SupabaseAdapter.
+ */
+export function supabaseAdapterMixin<TBase extends Constructor>(
+  base: TBase
+): Constructor<SupabaseAdapter> & TBase {
+  abstract class WithMixin extends base {
+    #supabase: SupabaseClient<Database> | undefined;
+    #locale = '';
+    #defaultLocale = 'en';
+
+    init(config: SupabaseAdapterConfig): this {
+      super.init(config);
+      if (config.serverClient) {
+        this.#supabase = config.serverClient;
+      } else {
+        this.#supabase = createClient<Database>(
+          constants.PUBLIC_SUPABASE_URL,
+          constants.PUBLIC_SUPABASE_ANON_KEY,
+          { global: { fetch: config.fetch! } }
+        );
+      }
+      if (config.locale) this.#locale = config.locale;
+      if (config.defaultLocale) this.#defaultLocale = config.defaultLocale;
+      return this;
+    }
+
+    get supabase(): SupabaseClient<Database> {
+      if (!this.#supabase) throw new Error('Supabase client not initialized. Call init() first.');
+      return this.#supabase;
+    }
+
+    get locale(): string {
+      return this.#locale;
+    }
+
+    get defaultLocale(): string {
+      return this.#defaultLocale;
+    }
+  }
+  return WithMixin;
+}
