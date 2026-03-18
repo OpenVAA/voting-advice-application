@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Claude Skills
-status: archived
-stopped_at: Milestone v5.0 archived
-last_updated: "2026-03-18T08:00:00.000Z"
-last_activity: 2026-03-18 — Milestone v5.0 archived, preparing for next milestone
+milestone: v3.0
+milestone_name: Frontend Adapter
+status: defining_requirements
+stopped_at: Defining requirements
+last_updated: "2026-03-18T09:00:00.000Z"
+last_activity: 2026-03-18 — Milestone v3.0 started
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Planning next milestone
+**Current focus:** v3.0 Frontend Adapter — defining requirements
 
 ## Current Position
 
-Phase: N/A (between milestones)
-Plan: N/A
-Status: Milestone v5.0 archived, awaiting next milestone
-Last activity: 2026-03-18 — v5.0 Claude Skills milestone completed and archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-18 — Milestone v3.0 started
 
-Progress: All milestones through v5.0 complete
+Progress: Defining requirements
 
 ## Accumulated Context
 
@@ -49,5 +49,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Milestone v5.0 archived
+Stopped at: Defining requirements for v3.0
 Resume file: None

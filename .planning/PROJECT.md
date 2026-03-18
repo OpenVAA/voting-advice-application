@@ -31,7 +31,12 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ### Active
 
-(None — next milestone not yet defined)
+- [ ] Supabase frontend adapter: DataProvider, DataWriter, and AdminWriter implementations
+- [ ] Auth migration from Strapi JWT to Supabase session-based auth
+- [ ] Edge Function frontend integration (invite-candidate, signicat-callback, send-email)
+- [ ] Strapi removal (adapter code, backend/vaa-strapi/, Docker service)
+- [ ] E2E test migration from Strapi to Supabase backend
+- [ ] Local dev environment via supabase CLI
 
 ### Out of Scope
 
@@ -39,6 +44,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - GraphQL via pg_graphql — no current frontend need
 - Supabase Realtime — no current use case in voter or candidate apps
 - Schema-per-tenant isolation — disproportionate overhead for 10-50 tenants
+- Admin app UI — deferred to separate milestone after adapter migration
 
 ## Context
 
@@ -52,6 +58,20 @@ Key technical state after v5.0:
 - **Auth hooks:** SvelteKit `hooks.server.ts` has Supabase client wired but routes still use Strapi auth
 - **Edge Functions:** invite-candidate, signicat-callback, send-email (all backend-ready, awaiting frontend integration)
 - **Claude Skills:** 4 active domain-expert skills (data, matching, filters, database) + 2 deferred stubs (architect, components) + skill drift CI check
+
+## Current Milestone: v3.0 Frontend Adapter
+
+**Goal:** Replace the Strapi frontend adapter with a Supabase adapter, migrate auth, integrate Edge Functions, update E2E tests, and remove all Strapi dependencies.
+
+**Target features:**
+- SupabaseDataProvider implementing all read operations (elections, constituencies, nominations, entities, questions, settings)
+- SupabaseDataWriter implementing all write operations (registration, login, answers, profile, password)
+- SupabaseAdminWriter implementing admin operations
+- Auth migration from Strapi JWT tokens to Supabase cookie-based sessions
+- Edge Function integration (candidate invite, bank auth, transactional email)
+- Strapi complete removal (adapter code, backend/vaa-strapi/, Docker services)
+- E2E test suite migrated to Supabase backend
+- Local dev via supabase CLI replacing Docker compose for backend services
 
 ## Constraints
 
@@ -67,7 +87,7 @@ Each major initiative is a separate milestone:
 
 1. ~~**v1.0 E2E Testing Framework**~~ — Modular test infrastructure with full candidate and voter app coverage
 2. **v2.0 Supabase Migration** — ✅ Shipped 2026-03-15. Backend migration with schema, auth, RLS, storage, services, and 204 pgTAP tests
-3. **v3.0 Frontend Adapter** — Supabase data provider/writer, Strapi removal, admin app UI
+3. **v3.0 Frontend Adapter** — Supabase data provider/writer/admin writer, auth migration, Edge Functions, Strapi removal, E2E migration
 4. **v4.0 Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
 5. **v5.0 Claude Skills** — ✅ Shipped 2026-03-18. Domain-expert skills for data, matching, filters, database (architect, components, LLM deferred to post-Svelte 5)
 
@@ -91,4 +111,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-18 after v5.0 Claude Skills milestone completed*
+*Last updated: 2026-03-18 after v3.0 Frontend Adapter milestone started*
