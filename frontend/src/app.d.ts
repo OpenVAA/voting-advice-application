@@ -30,8 +30,6 @@ declare global {
 
       // Candidate App
       candidateUserData?: CandidateUserData<true>;
-      /** The jwt auth token */
-      token?: string;
 
       // Supabase session data
       session?: Session | null;

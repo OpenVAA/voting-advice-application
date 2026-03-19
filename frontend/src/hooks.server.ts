@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 import { API_ROOT } from '$lib/api/base/universalApiRoutes';
-import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
 import { createSupabaseServerClient } from '$lib/supabase/server';
@@ -91,22 +90,26 @@ export const handle: Handle = (async ({ event, resolve }) => {
   }
 
   //////////////////////////////////////////////////////////////////////////
-  // 4. Handle candidate requests
+  // 4. Handle candidate and admin auth redirects
   //////////////////////////////////////////////////////////////////////////
 
-  if (pathname.startsWith(`/${servedLocale}/candidate`)) {
-    const token = event.cookies.get(AUTH_TOKEN_KEY);
-    // Check both old Strapi token and new Supabase session cookie
-    const hasAuth = token || event.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+  if (pathname.startsWith(`/${servedLocale}/candidate`) || pathname.startsWith(`/${servedLocale}/admin`)) {
+    const { session } = await safeGetSession();
+    const hasAuth = !!session;
 
-    if (hasAuth && pathname.endsWith('candidate/login')) {
+    const isLoginPage = pathname.endsWith('/login');
+    const isProtected = route.id?.includes('(protected)');
+    const isCandidate = pathname.startsWith(`/${servedLocale}/candidate`);
+    const appSection = isCandidate ? 'candidate' : 'admin';
+
+    if (hasAuth && isLoginPage) {
       debug('Route: REDIRECT to home page');
-      redirect(303, `/${servedLocale}/candidate`);
+      redirect(303, `/${servedLocale}/${appSection}`);
     }
 
-    if (!hasAuth && route.id.includes('(protected)')) {
+    if (!hasAuth && isProtected) {
       debug('Route: REDIRECT to login page');
-      redirect(303, `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}`);
+      redirect(303, `/${servedLocale}/${appSection}/login?redirectTo=${cleanPath.substring(1)}`);
     }
   }
 
