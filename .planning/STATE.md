@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-03-19T06:55:29.718Z"
+stopped_at: "Completed 24-03-PLAN.md (checkpoint:human-verify pending)"
+last_updated: "2026-03-19T07:05:29.930Z"
 progress:
   total_phases: 9
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 24 (auth-migration) — EXECUTING
-Plan: 3 of 3
+Phase: 24 (auth-migration) — COMPLETE
+Plan: 3 of 3 (all complete)
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Plan: 3 of 3
 | Phase 23 P02 | 2min | 3 tasks | 10 files |
 | Phase 24 P01 | 3min | 2 tasks | 3 files |
 | Phase 24 P02 | 4min | 2 tasks | 9 files |
+| Phase 24 P03 | 6min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,10 @@ Plan: 3 of 3
 - [Phase 24]: AuthContext.isAuthenticated derived via derived(page, (p) => !!p.data.session) -- single source of truth for auth state
 - [Phase 24]: Empty string authToken passed to DataWriter methods -- Supabase adapter ignores it (cookie-based auth)
 - [Phase 24]: Unified candidate/admin route guard in hooks.server.ts section 4 instead of separate blocks
+- [Phase 24]: Login form actions use DataWriter.login() with role verification via getBasicUserData
+- [Phase 24]: candidateUserDataStore takes isAuthenticated: Readable<boolean> instead of authToken: Readable<string|undefined>
+- [Phase 24]: Admin server pages use serverClient: locals.supabase for session-based auth instead of AUTH_TOKEN_KEY cookie
+- [Phase 24]: hasAuthHeaders inlined into universalAdapter.ts; authHeaders.ts deleted per user decision
 
 ### Pending Todos
 
@@ -87,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T06:55:29.716Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-03-19T07:05:29.928Z
+Stopped at: Completed 24-03-PLAN.md (checkpoint:human-verify pending)
 Resume file: None
