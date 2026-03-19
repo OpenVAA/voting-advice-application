@@ -33,7 +33,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 - [x] Supabase frontend adapter: DataProvider, DataWriter, and AdminWriter implementations — v3.0 Phase 22-27
 - [x] Auth migration from Strapi JWT to Supabase session-based auth — v3.0 Phase 24
-- [ ] Edge Function frontend integration (invite-candidate, signicat-callback, send-email)
+- [x] Edge Function frontend integration (invite-candidate, signicat-callback, send-email) — v3.0 Phase 28
 - [ ] Strapi removal (adapter code, backend/vaa-strapi/, Docker service)
 - [ ] E2E test migration from Strapi to Supabase backend
 - [ ] Local dev environment via supabase CLI
@@ -114,4 +114,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-19 after Phase 27 (AdminWriter) complete*
+*Last updated: 2026-03-19 after Phase 28 (Edge Functions) complete*
