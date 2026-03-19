@@ -13,12 +13,14 @@ import type {
   GetDataOptionsBase,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetNominationsOptions,
   GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
 import type { AppCustomization } from '$lib/contexts/app';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type {
   AnyEntityVariantData,
+  AnyNominationVariantPublicData,
   AnyQuestionVariantData,
   ConstituencyData,
   ConstituencyGroupData,
@@ -216,8 +218,98 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     return { groups, constituencies };
   }
 
-  protected _getNominationData() {
-    throw new Error('SupabaseDataProvider._getNominationData not implemented');
+  /**
+   * Fetch nominations via the `get_nominations` RPC which joins nominations with
+   * all 4 entity tables. Deduplicates entities client-side using a Map keyed by entity_id.
+   * Candidate entities include firstName, lastName, organizationId.
+   */
+  protected async _getNominationData(
+    options?: GetNominationsOptions
+  ): Promise<DPDataType['nominations']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    const { data, error } = await this.supabase.rpc('get_nominations', {
+      p_election_id: options?.electionId
+        ? (Array.isArray(options.electionId) ? options.electionId[0] : options.electionId)
+        : null,
+      p_constituency_id: options?.constituencyId
+        ? (Array.isArray(options.constituencyId) ? options.constituencyId[0] : options.constituencyId)
+        : null,
+      p_include_unconfirmed: options?.includeUnconfirmed ?? false
+    });
+    if (error) throw new Error(`getNominationData: ${error.message}`);
+
+    // Deduplicate entities using a Map keyed by entity_id
+    const entityMap = new Map<string, AnyEntityVariantData>();
+    const nominations: AnyNominationVariantPublicData[] = [];
+
+    for (const row of data ?? []) {
+      // Build nomination object from nomination-level columns
+      const nomRow = {
+        id: row.id,
+        name: row.name,
+        short_name: row.short_name,
+        info: row.info,
+        color: row.color,
+        image: row.image,
+        sort_order: row.sort_order,
+        subtype: row.subtype,
+        custom_data: row.custom_data,
+        election_id: row.election_id,
+        constituency_id: row.constituency_id,
+        election_round: row.election_round,
+        election_symbol: row.election_symbol,
+        parent_nomination_id: row.parent_nomination_id
+      };
+      const nomObj = toDataObject(nomRow as Record<string, unknown>, locale, this.defaultLocale);
+
+      nominations.push({
+        ...nomObj,
+        entityType: row.entity_type,
+        entityId: row.entity_id,
+        image: parseStoredImage(row.image as any, supabaseUrl)
+      } as AnyNominationVariantPublicData);
+
+      // Extract and deduplicate entity
+      const entityId = row.entity_id as string;
+      if (entityId && !entityMap.has(entityId)) {
+        const entityRow = {
+          id: entityId,
+          name: row.entity_name,
+          short_name: row.entity_short_name,
+          info: row.entity_info,
+          color: row.entity_color,
+          image: row.entity_image,
+          sort_order: row.entity_sort_order,
+          subtype: row.entity_subtype,
+          custom_data: row.entity_custom_data
+        };
+        const entityObj = toDataObject(entityRow as Record<string, unknown>, locale, this.defaultLocale);
+        const entityType = row.entity_type as string;
+
+        const entity: Record<string, unknown> = {
+          ...entityObj,
+          type: entityType,
+          image: parseStoredImage(row.entity_image as any, supabaseUrl),
+          answers: parseAnswers(row.entity_answers as any, locale)
+        };
+
+        // Candidate-specific fields
+        if (entityType === ENTITY_TYPE.Candidate) {
+          entity.firstName = row.entity_first_name;
+          entity.lastName = row.entity_last_name;
+          entity.organizationId = row.entity_organization_id;
+        }
+
+        entityMap.set(entityId, entity as AnyEntityVariantData);
+      }
+    }
+
+    return {
+      nominations,
+      entities: Array.from(entityMap.values())
+    };
   }
   /**
    * Fetch entity data (candidates and/or organizations) from their respective tables.
