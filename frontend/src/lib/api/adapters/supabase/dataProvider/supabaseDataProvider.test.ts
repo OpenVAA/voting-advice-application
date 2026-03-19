@@ -8,6 +8,21 @@ vi.mock('$env/dynamic/public', () => ({
   }
 }));
 
+// Mock parseAnswers to avoid dependency on svelte/store via $lib/i18n
+vi.mock('$lib/api/utils/parseAnswers', () => ({
+  parseAnswers: vi.fn((answers: Record<string, unknown> | null, _locale: string | null) => {
+    if (!answers) return undefined;
+    // Simplified mock: return answers as-is (value/info structure preserved)
+    const result: Record<string, unknown> = {};
+    for (const [qid, answer] of Object.entries(answers)) {
+      if (answer && typeof answer === 'object') {
+        result[qid] = answer;
+      }
+    }
+    return result;
+  })
+}));
+
 import { SupabaseDataProvider } from './supabaseDataProvider';
 
 /**
@@ -596,6 +611,650 @@ describe('SupabaseDataProvider', () => {
       );
       expect(result.constituencies[0].image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/const/c1/img.png'
+      );
+    });
+  });
+
+  describe('getEntityData', () => {
+    it('fetches candidates with firstName, lastName, organizationId and type=candidate', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane Doe' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: 'org1',
+            answers: { q1: { value: 3, info: { en: 'Because...' } } }
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as any[];
+
+      const candidate = result.find((e: any) => e.id === 'c1');
+      expect(candidate).toBeDefined();
+      expect(candidate.type).toBe('candidate');
+      expect(candidate.firstName).toBe('Jane');
+      expect(candidate.lastName).toBe('Doe');
+      expect(candidate.organizationId).toBe('org1');
+    });
+
+    it('fetches organizations and sets type to organization', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [
+          {
+            id: 'org1',
+            name: { en: 'Party A' },
+            short_name: { en: 'PA' },
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            answers: { q1: { value: 2 } }
+          }
+        ],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as any[];
+
+      const org = result.find((e: any) => e.id === 'org1');
+      expect(org).toBeDefined();
+      expect(org.type).toBe('organization');
+    });
+
+    it('applies entityType filter (queries only the specified entity table)', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+
+      await provider.getEntityData({ entityType: 'candidate' as any });
+
+      // Should only query candidates table, not organizations
+      const calledTables = mockSupabase.from.mock.calls.map((c: any[]) => c[0]);
+      expect(calledTables).toContain('candidates');
+      expect(calledTables).not.toContain('organizations');
+    });
+
+    it('applies id filter with eq for single value', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData({ id: 'c1' });
+
+      const chain = mockSupabase.from.mock.results[0].value;
+      expect(chain.eq).toHaveBeenCalledWith('id', 'c1');
+    });
+
+    it('applies id filter with in for array values', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData({ id: ['c1', 'c2'] });
+
+      const chain = mockSupabase.from.mock.results[0].value;
+      expect(chain.in).toHaveBeenCalledWith('id', ['c1', 'c2']);
+    });
+
+    it('processes answers through parseAnswers for localization', async () => {
+      const { parseAnswers } = await import('$lib/api/utils/parseAnswers');
+
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: { q1: { value: 3, info: { en: 'Reason' } } }
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData();
+
+      expect(parseAnswers).toHaveBeenCalledWith({ q1: { value: 3, info: { en: 'Reason' } } }, 'en');
+    });
+
+    it('converts image field via parseStoredImage', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/cand/c1/photo.jpg' },
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as any[];
+
+      expect(result[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand/c1/photo.jpg'
+      );
+    });
+
+    it('localizes name, short_name, info via toDataObject', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [
+          {
+            id: 'org1',
+            name: { en: 'Party EN', fi: 'Party FI' },
+            short_name: { en: 'P-EN', fi: 'P-FI' },
+            info: { en: 'Info EN', fi: 'Info FI' },
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+
+      const fiProvider = new SupabaseDataProvider();
+      fiProvider.init({
+        fetch: vi.fn(),
+        serverClient: mockSupabase as any,
+        locale: 'fi',
+        defaultLocale: 'en'
+      });
+
+      const result = (await fiProvider.getEntityData()) as any[];
+
+      const org = result.find((e: any) => e.id === 'org1');
+      expect(org.name).toBe('Party FI');
+      expect(org.shortName).toBe('P-FI');
+      expect(org.info).toBe('Info FI');
+    });
+  });
+
+  describe('getQuestionData', () => {
+    it('returns { categories, questions } arrays', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Category 1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          {
+            id: 'q1',
+            name: { en: 'Question 1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: [{ id: 1, label: { en: 'Agree', fi: 'Samaa' } }],
+            settings: null,
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null,
+            allow_open: false,
+            required: true
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories).toHaveLength(1);
+      expect(result.questions).toHaveLength(1);
+    });
+
+    it('maps category_type to type on categories', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Cat' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories[0].type).toBe('opinion');
+    });
+
+    it('localizes name, short_name, info on both categories and questions', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Cat EN', fi: 'Cat FI' },
+            short_name: { en: 'C-EN', fi: 'C-FI' },
+            info: { en: 'Info EN', fi: 'Info FI' },
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          {
+            id: 'q1',
+            name: { en: 'Q EN', fi: 'Q FI' },
+            short_name: { en: 'QS-EN', fi: 'QS-FI' },
+            info: { en: 'QI EN', fi: 'QI FI' },
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: null,
+            settings: null,
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null,
+            allow_open: false,
+            required: true
+          }
+        ],
+        error: null
+      };
+
+      const fiProvider = new SupabaseDataProvider();
+      fiProvider.init({
+        fetch: vi.fn(),
+        serverClient: mockSupabase as any,
+        locale: 'fi',
+        defaultLocale: 'en'
+      });
+
+      const result = await fiProvider.getQuestionData();
+
+      expect(result.categories[0].name).toBe('Cat FI');
+      expect(result.categories[0].shortName).toBe('C-FI');
+      expect(result.categories[0].info).toBe('Info FI');
+      expect(result.questions[0].name).toBe('Q FI');
+      expect(result.questions[0].shortName).toBe('QS-FI');
+      expect(result.questions[0].info).toBe('QI FI');
+    });
+
+    it('localizes choice labels in choice-type questions', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Cat' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: [
+              { id: 1, label: { en: 'Agree', fi: 'Samaa mielta' } },
+              { id: 2, label: { en: 'Disagree', fi: 'Eri mielta' } }
+            ],
+            settings: null,
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null,
+            allow_open: false,
+            required: true
+          }
+        ],
+        error: null
+      };
+
+      const fiProvider = new SupabaseDataProvider();
+      fiProvider.init({
+        fetch: vi.fn(),
+        serverClient: mockSupabase as any,
+        locale: 'fi',
+        defaultLocale: 'en'
+      });
+
+      const result = await fiProvider.getQuestionData();
+
+      const choices = (result.questions[0] as any).choices;
+      expect(choices[0].label).toBe('Samaa mielta');
+      expect(choices[1].label).toBe('Eri mielta');
+    });
+
+    it('passes through settings, electionIds, constituencyIds, entityType', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Cat' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: null,
+            settings: { display: 'likert' },
+            election_ids: ['e1'],
+            election_rounds: [1],
+            constituency_ids: ['co1'],
+            entity_type: ['candidate'],
+            allow_open: true,
+            required: false
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      const q = result.questions[0] as any;
+
+      expect(q.settings).toEqual({ display: 'likert' });
+      expect(q.electionIds).toEqual(['e1']);
+      expect(q.constituencyIds).toEqual(['co1']);
+      expect(q.entityType).toEqual(['candidate']);
+    });
+
+    it('filters categories by electionId (including categories with null/empty electionIds)', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Matching' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: ['e1'],
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          },
+          {
+            id: 'cat2',
+            name: { en: 'Global' },
+            short_name: null,
+            info: null,
+            sort_order: 2,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'info',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          },
+          {
+            id: 'cat3',
+            name: { en: 'Other election' },
+            short_name: null,
+            info: null,
+            sort_order: 3,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: ['e2'],
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [],
+        error: null
+      };
+
+      const result = await provider.getQuestionData({ electionId: 'e1' });
+
+      // cat1 (matches e1) and cat2 (null electionIds = global) should be included
+      // cat3 (only e2) should be excluded
+      expect(result.categories).toHaveLength(2);
+      expect(result.categories.map((c) => c.id)).toContain('cat1');
+      expect(result.categories.map((c) => c.id)).toContain('cat2');
+      expect(result.categories.map((c) => c.id)).not.toContain('cat3');
+    });
+
+    it('converts image fields via parseStoredImage', async () => {
+      mockSupabase._mockResponses['question_categories'] = {
+        data: [
+          {
+            id: 'cat1',
+            name: { en: 'Cat' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/cat/cat1/img.png' },
+            custom_data: null,
+            subtype: null,
+            category_type: 'opinion',
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['questions'] = {
+        data: [
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/q/q1/img.png' },
+            custom_data: null,
+            subtype: null,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: null,
+            settings: null,
+            election_ids: null,
+            election_rounds: null,
+            constituency_ids: null,
+            entity_type: null,
+            allow_open: false,
+            required: true
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cat/cat1/img.png'
+      );
+      expect(result.questions[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/q/q1/img.png'
       );
     });
   });
