@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-03-19T20:41:36.339Z"
+stopped_at: Completed 29-03-PLAN.md
+last_updated: "2026-03-19T20:48:19.995Z"
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 29 (e2e-test-migration) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Plan: 2 of 4
 | Phase 28 P01 | 4min | 2 tasks | 5 files |
 | Phase 29 P02 | 3min | 2 tasks | 7 files |
 | Phase 29 P01 | 5min | 2 tasks | 4 files |
+| Phase 29 P03 | 4min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,8 @@ Plan: 2 of 4
 - [Phase 29]: user_roles has no project_id column; forceRegister uses scope_type=candidate + scope_id=candidate.id
 - [Phase 29]: sendForgotPassword uses auth.resetPasswordForEmail (sends actual email via Inbucket) for E2E test link extraction
 - [Phase 29]: findData adds documentId alias (= id) to each result row for StrapiAdminClient backward compatibility
+- [Phase 29]: Data import follows bulkImport -> importAnswers -> linkJoinTables pipeline per dataset
+- [Phase 29]: bulkDelete includes candidates (safe with Supabase upsert-by-external_id); Playwright workers increased to 6 (no Strapi rate limiting)
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:41:36.336Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-03-19T20:48:19.992Z
+Stopped at: Completed 29-03-PLAN.md
 Resume file: None
