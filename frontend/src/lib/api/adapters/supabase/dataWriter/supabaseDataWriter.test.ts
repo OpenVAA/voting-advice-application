@@ -27,6 +27,9 @@ function createMockSupabaseClient() {
     from: vi.fn(),
     storage: {
       from: vi.fn()
+    },
+    functions: {
+      invoke: vi.fn()
     }
   };
 }
@@ -526,6 +529,136 @@ describe('SupabaseDataWriter', () => {
           locale: 'en'
         })
       ).rejects.toThrow('Failed to load candidate data: Not found');
+    });
+  });
+
+  describe('preregisterWithApiToken (invite-candidate)', () => {
+    it('calls invite-candidate Edge Function with correct params', async () => {
+      // Mock elections table lookup for projectId resolution
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { project_id: 'proj-1' }, error: null })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      mockSupabase.functions.invoke.mockResolvedValue({
+        data: { success: true, candidateId: 'cand-1', userId: 'user-1' },
+        error: null
+      });
+
+      const result = await writer.preregisterWithApiToken({
+        body: {
+          firstName: 'Test',
+          lastName: 'User',
+          identifier: '1990-01-01',
+          email: 'test@example.com',
+          nominations: [{ electionId: 'elec-1', constituencyId: 'const-1' }]
+        },
+        authToken: ''
+      });
+
+      expect(mockSupabase.from).toHaveBeenCalledWith('elections');
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('invite-candidate', {
+        body: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          projectId: 'proj-1'
+        }
+      });
+      expect(result).toEqual({ type: 'success' });
+    });
+
+    it('throws when elections query fails', async () => {
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      await expect(
+        writer.preregisterWithApiToken({
+          body: {
+            firstName: 'Test',
+            lastName: 'User',
+            identifier: '',
+            email: 'test@example.com',
+            nominations: [{ electionId: 'bad-id', constituencyId: 'const-1' }]
+          },
+          authToken: ''
+        })
+      ).rejects.toThrow('Failed to resolve project for election');
+    });
+
+    it('throws when Edge Function returns error', async () => {
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { project_id: 'proj-1' }, error: null })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      mockSupabase.functions.invoke.mockResolvedValue({
+        data: null,
+        error: { message: 'Forbidden' }
+      });
+
+      await expect(
+        writer.preregisterWithApiToken({
+          body: {
+            firstName: 'A',
+            lastName: 'B',
+            identifier: '',
+            email: 'a@b.com',
+            nominations: [{ electionId: 'e1', constituencyId: 'c1' }]
+          },
+          authToken: ''
+        })
+      ).rejects.toThrow('invite-candidate');
+    });
+  });
+
+  describe('sendEmail (send-email)', () => {
+    it('calls send-email Edge Function with correct params', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({
+        data: { success: true, sent: 2, failed: 0, results: [] },
+        error: null
+      });
+
+      const result = await writer.sendEmail({
+        authToken: '',
+        templates: { en: { subject: 'Hello', body: 'World' } },
+        recipientUserIds: ['user-1', 'user-2'],
+        from: 'admin@test.com',
+        dryRun: false
+      });
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('send-email', {
+        body: {
+          templates: { en: { subject: 'Hello', body: 'World' } },
+          recipient_user_ids: ['user-1', 'user-2'],
+          from: 'admin@test.com',
+          dry_run: false
+        }
+      });
+      expect(result).toEqual({ type: 'success', sent: 2, failed: 0, results: [] });
+    });
+
+    it('throws when Edge Function returns error', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({
+        data: null,
+        error: { message: 'Missing Authorization header' }
+      });
+
+      await expect(
+        writer.sendEmail({
+          authToken: '',
+          templates: { en: { subject: 'S', body: 'B' } },
+          recipientUserIds: ['u1']
+        })
+      ).rejects.toThrow('send-email');
     });
   });
 
