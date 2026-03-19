@@ -59,7 +59,7 @@
 - [x] **Phase 26: DataWriter** - Implement candidate write operations; candidate app works end-to-end on Supabase (completed 2026-03-19)
 - [x] **Phase 27: AdminWriter** - Implement admin operations for question and job management (completed 2026-03-19)
 - [x] **Phase 28: Edge Functions** - Integrate candidate invite, bank auth, and email Edge Functions into frontend (completed 2026-03-19)
-- [ ] **Phase 29: E2E Test Migration** - Migrate test infrastructure and data seeding from Strapi to Supabase
+- [x] **Phase 29: E2E Test Migration** - Migrate test infrastructure and data seeding from Strapi to Supabase (completed 2026-03-19)
 - [ ] **Phase 30: Strapi Removal and Dev Environment** - Remove all Strapi code and switch to supabase CLI for local dev
 
 ## Phase Details
@@ -221,7 +221,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | 26. DataWriter | 3/3 | Complete   | 2026-03-19 | - |
 | 27. AdminWriter | 2/2 | Complete    | 2026-03-19 | - |
 | 28. Edge Functions | 2/2 | Complete    | 2026-03-19 | - |
-| 29. E2E Test Migration | 3/4 | In Progress|  | - |
+| 29. E2E Test Migration | 4/4 | Complete   | 2026-03-19 | - |
 | 30. Strapi Removal and Dev Environment | v3.0 | 0/? | Not started | - |
 
 ---
