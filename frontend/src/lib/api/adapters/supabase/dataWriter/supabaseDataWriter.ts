@@ -1,7 +1,15 @@
+import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { DWReturnType, WithAuth } from '$lib/api/base/dataWriter.type';
+import type {
+  DWReturnType,
+  LocalizedAnswers,
+  SetAnswersOptions,
+  SetPropertiesOptions,
+  UpdatedEntityProps,
+  WithAuth
+} from '$lib/api/base/dataWriter.type';
 
 /**
  * Supabase implementation of the DataWriter.
@@ -80,8 +88,58 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   protected _getCandidateUserData() {
     throw new Error('SupabaseDataWriter._getCandidateUserData not implemented');
   }
-  protected _setAnswers() {
-    throw new Error('SupabaseDataWriter._setAnswers not implemented');
+  protected async _setAnswers({
+    target: { type, id },
+    answers,
+    overwrite
+  }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedAnswers> {
+    if (type !== ENTITY_TYPE.Candidate)
+      throw new Error(`Unsupported entity type for setting answers: ${type}`);
+
+    // Process answers: detect File objects and upload to Storage
+    const processedAnswers: Record<string, unknown> = {};
+    let projectId: string | null = null;
+
+    for (const [questionId, answer] of Object.entries(answers)) {
+      if (answer === null) {
+        processedAnswers[questionId] = null;
+        continue;
+      }
+      // Check if answer value contains a File object (SSR-safe guard)
+      if (answer?.value != null && typeof File !== 'undefined' && answer.value instanceof File) {
+        // Lazily fetch project_id for Storage path construction
+        if (!projectId) {
+          const { data: candidateRow, error: fetchError } = await this.supabase
+            .from('candidates')
+            .select('project_id')
+            .eq('id', id)
+            .single();
+          if (fetchError || !candidateRow)
+            throw new Error(`Failed to fetch candidate project_id: ${fetchError?.message ?? 'not found'}`);
+          projectId = candidateRow.project_id;
+        }
+        const file = answer.value as File;
+        const ext = file.name.split('.').pop() ?? 'jpg';
+        const storagePath = `${projectId}/candidates/${id}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await this.supabase.storage
+          .from('public-assets')
+          .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+        // Replace File with StoredImage-compatible path object
+        processedAnswers[questionId] = { ...answer, value: { path: storagePath } };
+      } else {
+        processedAnswers[questionId] = answer;
+      }
+    }
+
+    // Call upsert_answers RPC
+    const { data, error } = await this.supabase.rpc('upsert_answers', {
+      entity_id: id,
+      answers: processedAnswers,
+      overwrite
+    });
+    if (error) throw new Error(`setAnswers: ${error.message}`);
+    return (data as unknown as LocalizedAnswers) ?? {};
   }
   protected _updateEntityProperties() {
     throw new Error('SupabaseDataWriter._updateEntityProperties not implemented');
