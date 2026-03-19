@@ -1,10 +1,12 @@
--- 10-schema-migrations.test.sql: Phase 22 schema migration tests
+-- 10-schema-migrations.test.sql: Phase 22 + Phase 27 schema migration tests
 --
--- Verifies all four SCHM requirements:
+-- Verifies all four SCHM requirements + ADMN requirements:
 --   SCHM-01: customization JSONB column on app_settings
 --   SCHM-02: feedback table with CHECK constraint, RLS, and rate limiting
 --   SCHM-03: terms_of_use_accepted timestamptz column on candidates
 --   SCHM-04: upsert_answers RPC (merge/overwrite modes, null stripping, RLS)
+--   ADMN-01: merge_custom_data RPC for question custom_data JSONB merge
+--   ADMN-02: admin_jobs table with admin-only RLS
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 
@@ -15,7 +17,7 @@ SET search_path = public, extensions;
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
-SELECT plan(40);
+SELECT plan(65);
 
 -- Create test fixture data
 SELECT create_test_data();
@@ -404,6 +406,174 @@ SELECT ok(
     )) ? 'eeeeeeee-eeee-eeee-eeee-000000000301'
   ),
   'upsert_answers strips null values from merged answers'
+);
+
+-- =====================================================================
+-- ADMN-02: admin_jobs table
+-- =====================================================================
+
+SELECT reset_role();
+
+-- 41. Table exists
+SELECT has_table('public', 'admin_jobs', 'admin_jobs table exists');
+
+-- 42-53. Column existence checks
+SELECT has_column('public', 'admin_jobs', 'id',          'admin_jobs has id column');
+SELECT has_column('public', 'admin_jobs', 'project_id',  'admin_jobs has project_id column');
+SELECT has_column('public', 'admin_jobs', 'job_id',      'admin_jobs has job_id column');
+SELECT has_column('public', 'admin_jobs', 'job_type',    'admin_jobs has job_type column');
+SELECT has_column('public', 'admin_jobs', 'election_id', 'admin_jobs has election_id column');
+SELECT has_column('public', 'admin_jobs', 'author',      'admin_jobs has author column');
+SELECT has_column('public', 'admin_jobs', 'end_status',  'admin_jobs has end_status column');
+SELECT has_column('public', 'admin_jobs', 'start_time',  'admin_jobs has start_time column');
+SELECT has_column('public', 'admin_jobs', 'end_time',    'admin_jobs has end_time column');
+SELECT has_column('public', 'admin_jobs', 'input',       'admin_jobs has input column');
+SELECT has_column('public', 'admin_jobs', 'output',      'admin_jobs has output column');
+SELECT has_column('public', 'admin_jobs', 'messages',    'admin_jobs has messages column');
+
+-- 54. Admin_a can SELECT admin_jobs for project_a
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_a'),
+  test_user_roles('admin_a')
+);
+
+SELECT ok(
+  (SELECT count(*) FROM admin_jobs WHERE project_id = test_id('project_a'))::integer >= 1,
+  'admin_a can SELECT admin_jobs for project_a'
+);
+
+-- 55. Admin_b cannot SELECT admin_jobs for project_a (cross-project isolation)
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_b'),
+  test_user_roles('admin_b')
+);
+
+SELECT is(
+  (SELECT count(*) FROM admin_jobs WHERE project_id = test_id('project_a'))::integer,
+  0,
+  'admin_b cannot SELECT admin_jobs for project_a (cross-project isolation)'
+);
+
+-- 56. Candidate cannot SELECT admin_jobs (admin-only)
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('candidate_a'),
+  test_user_roles('candidate_a')
+);
+
+SELECT is(
+  (SELECT count(*) FROM admin_jobs)::integer,
+  0,
+  'candidate_a cannot SELECT admin_jobs (admin-only table)'
+);
+
+-- 57. Anon cannot SELECT admin_jobs
+SELECT set_test_user('anon');
+
+SELECT is(
+  (SELECT count(*) FROM admin_jobs)::integer,
+  0,
+  'anon cannot SELECT admin_jobs'
+);
+
+-- =====================================================================
+-- ADMN-01: merge_custom_data RPC
+-- =====================================================================
+
+SELECT reset_role();
+
+-- 58. Function exists
+SELECT has_function(
+  'public', 'merge_custom_data', ARRAY['uuid', 'jsonb'],
+  'merge_custom_data(uuid, jsonb) function exists'
+);
+
+-- 59. SECURITY INVOKER (not DEFINER)
+SELECT ok(
+  NOT (SELECT prosecdef FROM pg_proc WHERE proname = 'merge_custom_data'),
+  'merge_custom_data is SECURITY INVOKER (not DEFINER)'
+);
+
+-- 60. Admin_a can merge custom_data on question in own project
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_a'),
+  test_user_roles('admin_a')
+);
+
+SELECT ok(
+  (SELECT merge_custom_data(test_id('question_a'), '{"arguments": [{"en": "test"}]}'::jsonb)) IS NOT NULL,
+  'admin_a can call merge_custom_data on own project question'
+);
+
+-- 61. Verify the merge result contains the new key
+SELECT reset_role();
+SELECT ok(
+  (SELECT custom_data ? 'arguments' FROM questions WHERE id = test_id('question_a')),
+  'question_a custom_data now has arguments key after merge'
+);
+
+-- 62. Merge preserves existing keys when adding new ones
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_a'),
+  test_user_roles('admin_a')
+);
+
+SELECT ok(
+  (SELECT merge_custom_data(test_id('question_a'), '{"terms": [{"en": "term1"}]}'::jsonb)) ? 'arguments',
+  'merge_custom_data preserves existing keys (arguments still present after adding terms)'
+);
+
+-- 63. Admin_b cannot call merge_custom_data on project_a question
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_b'),
+  test_user_roles('admin_b')
+);
+
+SELECT throws_ok(
+  format(
+    $$SELECT merge_custom_data('%s', '{"hacked": true}'::jsonb)$$,
+    test_id('question_a')
+  ),
+  NULL,
+  NULL,
+  'admin_b cannot call merge_custom_data on project_a question (throws error)'
+);
+
+-- 64. Candidate cannot call merge_custom_data
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('candidate_a'),
+  test_user_roles('candidate_a')
+);
+
+SELECT throws_ok(
+  format(
+    $$SELECT merge_custom_data('%s', '{"hacked": true}'::jsonb)$$,
+    test_id('question_a')
+  ),
+  NULL,
+  NULL,
+  'candidate_a cannot call merge_custom_data (throws error)'
+);
+
+-- 65. merge_custom_data handles NULL custom_data (COALESCE)
+SELECT reset_role();
+UPDATE questions SET custom_data = NULL WHERE id = test_id('question_a');
+
+SELECT set_test_user(
+  'authenticated',
+  test_user_id('admin_a'),
+  test_user_roles('admin_a')
+);
+
+SELECT ok(
+  (SELECT merge_custom_data(test_id('question_a'), '{"video": {"en": "url"}}'::jsonb)) ? 'video',
+  'merge_custom_data handles NULL custom_data via COALESCE'
 );
 
 -- =====================================================================

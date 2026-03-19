@@ -72,6 +72,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 -- cand_a2:                 dddddddd-dddd-dddd-dddd-000000000027
 -- feedback_a:              dddddddd-dddd-dddd-dddd-000000000028
 -- feedback_b:              dddddddd-dddd-dddd-dddd-000000000029
+-- admin_job_a:             dddddddd-dddd-dddd-dddd-000000000030
 
 --------------------------------------------------------------------------------
 -- test_user_id: map user name to predictable UUID
@@ -146,6 +147,8 @@ AS $$
     -- Feedback
     WHEN 'feedback_a'           THEN 'dddddddd-dddd-dddd-dddd-000000000028'::uuid
     WHEN 'feedback_b'           THEN 'dddddddd-dddd-dddd-dddd-000000000029'::uuid
+    -- Admin jobs
+    WHEN 'admin_job_a'          THEN 'dddddddd-dddd-dddd-dddd-000000000030'::uuid
     ELSE NULL
   END;
 $$;
@@ -388,6 +391,10 @@ BEGIN
   INSERT INTO feedback (id, project_id, rating, description, date, created_at) VALUES
     (test_id('feedback_a'), test_id('project_a'), 5, 'Great app!',  now(), now()),
     (test_id('feedback_b'), test_id('project_b'), 3, 'Decent app.', now(), now());
+
+  -- ===== Admin jobs =====
+  INSERT INTO admin_jobs (id, project_id, job_id, job_type, election_id, author, end_status, start_time, end_time, input, output, messages, metadata) VALUES
+    (test_id('admin_job_a'), test_id('project_a'), 'job-001', 'QuestionInfoGeneration', test_id('election_a'), 'admin_a@test.com', 'completed', now() - interval '10 minutes', now(), '{"param":"value"}'::jsonb, '{"result":"ok"}'::jsonb, '[{"text":"Processing..."}]'::jsonb, '{"questionsProcessed":5}'::jsonb);
 
 END;
 $$;
