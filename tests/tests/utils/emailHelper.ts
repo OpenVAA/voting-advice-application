@@ -1,94 +1,81 @@
 /**
- * Email helper utilities for E2E tests using LocalStack SES.
+ * Email helper utilities for E2E tests using Inbucket REST API.
  *
- * Fetches emails from LocalStack's internal SES mailbox endpoint,
- * parses them with mailparser, and extracts links with cheerio.
+ * Fetches emails from Inbucket's mailbox endpoint (started by `supabase start`),
+ * and extracts links with cheerio. No MIME parsing needed -- Inbucket returns
+ * pre-parsed HTML bodies.
  *
- * Requires LocalStack to be running (via `yarn dev` docker stack).
+ * Requires Supabase local dev stack to be running (Inbucket on port 54324).
  */
 
 import { load } from 'cheerio';
-import { simpleParser } from 'mailparser';
-import { request } from '@playwright/test';
 
 /**
- * Shape of a single email in the LocalStack SES inbox.
+ * URL of the Inbucket REST API.
  */
-export interface SESEmail {
-  Id: string;
-  Region: string;
-  Source: string;
-  RawData: string;
-  Timestamp: string;
+const INBUCKET_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
+
+/**
+ * Extract the mailbox name (local part) from an email address.
+ */
+function getMailboxName(email: string): string {
+  return email.split('@')[0];
 }
 
 /**
- * Shape of the LocalStack SES inbox response.
+ * Shape of a message header in the Inbucket mailbox listing.
  */
-export interface SESMailbox {
-  messages: Array<SESEmail>;
+interface InbucketMessageHeader {
+  mailbox: string;
+  id: string;
+  from: string;
+  subject: string;
+  date: string;
+  size: number;
 }
 
 /**
- * URL of the LocalStack SES internal inbox endpoint.
+ * Shape of a full Inbucket message (with parsed body).
  */
-const SES_INBOX_URL = `${process.env.LOCALSTACK_ENDPOINT ?? 'http://localhost:4566'}/_aws/ses`;
+interface InbucketMessage extends InbucketMessageHeader {
+  body: { text: string; html: string };
+}
 
 /**
- * Fetch all emails from the LocalStack SES inbox.
+ * Fetch all message headers for a recipient's mailbox.
  *
- * @returns Array of SES email messages
+ * @param recipientEmail - The email address whose mailbox to list
+ * @returns Array of message headers, or empty array if mailbox is empty/not found
  */
-export async function fetchEmails(): Promise<Array<SESEmail>> {
-  const context = await request.newContext();
-  try {
-    const response = await context.get(SES_INBOX_URL);
-    const body = (await response.json()) as SESMailbox;
-    return body.messages;
-  } finally {
-    await context.dispose();
-  }
+export async function fetchEmails(recipientEmail: string): Promise<InbucketMessageHeader[]> {
+  const mailbox = getMailboxName(recipientEmail);
+  const response = await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}`);
+  if (!response.ok) return [];
+  return (await response.json()) as InbucketMessageHeader[];
 }
 
 /**
  * Get the HTML content of the latest email sent to a specific recipient.
  *
- * Iterates emails in reverse chronological order, parses each with mailparser,
- * and checks if the recipient matches (case-insensitive).
- *
  * @param recipientEmail - The email address to search for
- * @returns The HTML content of the matching email, or undefined if not found
+ * @param skipCount - Number of most-recent emails to skip (for skipping stale emails from previous runs)
+ * @returns The HTML content of the target email, or undefined if not found
  */
-export async function getLatestEmailHtml(recipientEmail: string): Promise<string | undefined> {
-  const emails = await fetchEmails();
+export async function getLatestEmailHtml(
+  recipientEmail: string,
+  skipCount = 0
+): Promise<string | undefined> {
+  const messages = await fetchEmails(recipientEmail);
+  if (messages.length <= skipCount) return undefined;
 
-  // Iterate in reverse to get the latest email first
-  for (let i = emails.length - 1; i >= 0; i--) {
-    const email = emails[i];
-    const parsed = await simpleParser(email.RawData);
+  // Get the target message: latest minus skip
+  const target = messages[messages.length - 1 - skipCount];
+  const mailbox = getMailboxName(recipientEmail);
+  const response = await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}/${target.id}`);
+  if (!response.ok) return undefined;
 
-    // Check parsed 'to' addresses
-    if (parsed.to) {
-      const toAddresses = Array.isArray(parsed.to) ? parsed.to : [parsed.to];
-      for (const addr of toAddresses) {
-        if ('value' in addr) {
-          const match = addr.value.some(
-            (v) => v.address?.toLowerCase() === recipientEmail.toLowerCase()
-          );
-          if (match) {
-            return parsed.textAsHtml || parsed.html || undefined;
-          }
-        }
-      }
-    }
-
-    // Fallback: check RawData for the recipient string
-    if (email.RawData.toLowerCase().includes(recipientEmail.toLowerCase())) {
-      return parsed.textAsHtml || parsed.html || undefined;
-    }
-  }
-
-  return undefined;
+  const message = (await response.json()) as InbucketMessage;
+  return message.body?.html ?? undefined;
 }
 
 /**
@@ -117,7 +104,7 @@ export async function getRegistrationLink(recipientEmail: string): Promise<strin
   if (!html) {
     throw new Error(
       `No email found for recipient "${recipientEmail}". ` +
-        'Ensure the email was sent and LocalStack SES is running.'
+        'Ensure the email was sent and Inbucket is running (supabase start).'
     );
   }
 
@@ -130,4 +117,25 @@ export async function getRegistrationLink(recipientEmail: string): Promise<strin
   }
 
   return link;
+}
+
+/**
+ * Count the number of emails in a recipient's mailbox.
+ *
+ * @param recipientEmail - The email address to count emails for
+ * @returns Number of emails in the mailbox
+ */
+export async function countEmailsForRecipient(recipientEmail: string): Promise<number> {
+  const messages = await fetchEmails(recipientEmail);
+  return messages.length;
+}
+
+/**
+ * Purge all emails from a recipient's mailbox.
+ *
+ * @param recipientEmail - The email address whose mailbox to purge
+ */
+export async function purgeMailbox(recipientEmail: string): Promise<void> {
+  const mailbox = getMailboxName(recipientEmail);
+  await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}`, { method: 'DELETE' });
 }
