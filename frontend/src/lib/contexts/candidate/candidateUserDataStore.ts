@@ -16,18 +16,18 @@ import type { CandidateUserDataStore } from './candidateUserDataStore.type';
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
  * @param answersLocked - A read-only store that indicates whether answers are locked.
- * @param authToken - The auth token, needed for saving data.
+ * @param isAuthenticated - Whether the user is currently authenticated (has a valid Supabase session).
  * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
  * @param locale - A read-only store that indicates the current locale, used for translating some data when it's fetched.
  */
 export function candidateUserDataStore({
   answersLocked,
-  authToken,
+  isAuthenticated,
   dataWriterPromise,
   locale
 }: {
   answersLocked: Readable<boolean>;
-  authToken: Readable<string | undefined>;
+  isAuthenticated: Readable<boolean>;
   dataWriterPromise: Promise<UniversalDataWriter>;
   locale: Readable<string>;
 }): CandidateUserDataStore {
@@ -169,12 +169,11 @@ export function candidateUserDataStore({
   }
 
   async function reloadCandidateData(): Promise<LocalizedCandidateData> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token provided');
+    if (!get(isAuthenticated)) throw new Error('Not authenticated.');
 
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     const userData = await dataWriter.getCandidateUserData({
-      authToken: token,
+      authToken: '', // Supabase adapter ignores authToken (auth is cookie-based)
       loadNominations: false,
       locale: get(locale)
     });
@@ -188,14 +187,13 @@ export function candidateUserDataStore({
     const saved = get(savedData);
     if (!saved) throw new Error('Save called before user data loaded');
 
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token provided');
+    if (!get(isAuthenticated)) throw new Error('Not authenticated.');
 
     const answers = get(editedAnswers);
     const image = get(editedImage);
     const termsOfUseAccepted = get(editedTermsOfUseAccepted);
     const updateArgs = {
-      authToken: token,
+      authToken: '', // Supabase adapter ignores authToken (auth is cookie-based)
       target: {
         type: ENTITY_TYPE.Candidate,
         id: saved.candidate.id

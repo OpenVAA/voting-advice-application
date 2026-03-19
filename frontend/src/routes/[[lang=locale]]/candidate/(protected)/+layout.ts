@@ -1,7 +1,8 @@
 /**
  * Load the data for a logged-in candidate.
+ * - Verify session-based authentication
  * - Load user data via DataWriter
- * - Load relevant question data based on the candidate’s nominations via DataProvider
+ * - Load relevant question data based on the candidate's nominations via DataProvider
  *
  * Redirects to login with an error message if the user is not logged in.
  */
@@ -20,9 +21,9 @@ export async function load({ fetch, parent, params: { lang } }) {
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
-  // Get authToken
-  const authToken = (await parent()).token;
-  if (!authToken)
+  // Check for valid session
+  const { session } = await parent();
+  if (!session)
     return redirect(
       307,
       buildRoute({
@@ -32,7 +33,7 @@ export async function load({ fetch, parent, params: { lang } }) {
     );
 
   // Get user data
-  const userData = await dataWriter.getCandidateUserData({ authToken, loadNominations: true }).catch((e) => {
+  const userData = await dataWriter.getCandidateUserData({ authToken: '', loadNominations: true }).catch((e) => {
     logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
     return undefined;
   });
@@ -75,7 +76,7 @@ export async function load({ fetch, parent, params: { lang } }) {
    */
   async function handleError(error: CandidateLoginError): Promise<void> {
     await dataWriter
-      .logout({ authToken: authToken ?? '' })
+      .logout({ authToken: '' })
       .catch((e) => logDebugError(`[Candidate App protected layout] Error logging out: ${e?.message ?? '-'}`));
     redirect(
       307,

@@ -45,7 +45,7 @@ export function initCandidateContext(): CandidateContext {
   const { appSettings, dataRoot, getRoute, locale } = appContext;
 
   const authContext = getAuthContext();
-  const { authToken, logout: _logout } = authContext;
+  const { isAuthenticated, logout: _logout } = authContext;
 
   ////////////////////////////////////////////////////////////////////
   // User data, authentication and answersLocked
@@ -55,7 +55,7 @@ export function initCandidateContext(): CandidateContext {
 
   const idTokenClaims = derived(page, (page) => page.data.claims ?? undefined);
 
-  const userData = candidateUserDataStore({ answersLocked, authToken, dataWriterPromise, locale });
+  const userData = candidateUserDataStore({ answersLocked, isAuthenticated, dataWriterPromise, locale });
 
   const newUserEmail = writable<string | undefined>();
 
@@ -252,7 +252,7 @@ export function initCandidateContext(): CandidateContext {
   }
 
   /**
-   * Utility for resetting all data. Note that `authToken` is not reset, becaue it's derived from `page.data.token`
+   * Utility for resetting all data. Note that `isAuthenticated` is not reset, because it's derived from `page.data.session`
    */
   function _reset(): void {
     userData.reset();

@@ -1,7 +1,6 @@
 import qs from 'qs';
 import { constants } from '$lib/utils/constants';
 import { addHeader } from '../utils/addHeader';
-import { hasAuthHeaders } from '../utils/authHeaders';
 import { cachifyUrl } from '../utils/cachifyUrl';
 import { parseResponse } from '../utils/parseResponse';
 import type { ParsedResponse, ResponseParser } from '../utils/parseResponse';
@@ -153,6 +152,15 @@ function mergeParams(url: URL | string, params: SearchParams): URL | string {
   url = url.toString();
   if (url.includes('?')) throw new Error('Params cannot be added to the URL if it already contains query parameters.');
   return `${url}?${qs.stringify(params, { encodeValuesOnly: true })}`;
+}
+
+/** The list of header names in lower-case that may contain authentication credentials. */
+const AUTH_HEADERS = ['authorization', 'proxy-authorization'];
+
+/** Check if the given `HeadersInit` contain any authentication credentials. */
+function hasAuthHeaders(headers: HeadersInit | null | undefined): boolean {
+  // TODO[Node 22]: Remove Array.from(...)
+  return Array.from(new Headers(headers ?? undefined).keys()).some((k) => AUTH_HEADERS.includes(k.toLowerCase()));
 }
 
 function shouldNotStringify(body: JSONData): boolean {

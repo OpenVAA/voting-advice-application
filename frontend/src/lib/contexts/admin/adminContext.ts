@@ -25,7 +25,7 @@ export function initAdminContext(): AdminContext {
 
   const appContext = getAppContext();
   const authContext = getAuthContext();
-  const { authToken } = authContext;
+  const { isAuthenticated } = authContext;
 
   ////////////////////////////////////////////////////////////////////
   // Common contents
@@ -45,11 +45,13 @@ export function initAdminContext(): AdminContext {
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Inject the JWT token into requests.
-   * TODO: Refactor `DataWriter` so that we can cache the `authToken` in the instance.
+   * Inject an empty authToken string for WithAuth type compatibility.
+   * Supabase adapter ignores authToken -- auth is cookie-based.
+   * Throws if user is not authenticated.
    */
   function injectAuthToken<TParams extends { authToken?: string }>(opts: TParams): TParams & WithAuth {
-    return { authToken: get(authToken)!, ...opts };
+    if (!get(isAuthenticated)) throw new Error('Not authenticated.');
+    return { authToken: '', ...opts };
   }
 
   function updateQuestion(

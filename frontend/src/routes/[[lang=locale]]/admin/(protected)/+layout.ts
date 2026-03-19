@@ -1,6 +1,6 @@
 /**
  * Load the data for a logged-in admin user.
- * - Verify user is authenticated
+ * - Verify user is authenticated via session
  * - The admin role check is primarily done in the login handler
  */
 
@@ -35,12 +35,10 @@ export async function load({ fetch, parent, params: { lang } }) {
    * Call logout and redirect to the login page with an error message.
    */
   async function handleError(error: LoginError): Promise<void> {
-    // Init dataWriter
     const dataWriter = await dataWriterPromise;
     dataWriter.init({ fetch });
-    const authToken = (await parent()).token;
     await dataWriter
-      .logout({ authToken: authToken ?? '' })
+      .logout({ authToken: '' })
       .catch((e) => logDebugError(`[Admin App protected layout] Error logging out: ${e?.message ?? '-'}`));
     redirect(
       307,

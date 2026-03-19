@@ -1,7 +1,6 @@
 import { QUESTION_INFO_OPERATION } from '@openvaa/question-info';
 import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { generateQuestionInfo } from '$lib/server/admin/features/generateQuestionInfo';
 import type { Actions } from '@sveltejs/kit';
 
@@ -9,7 +8,7 @@ import type { Actions } from '@sveltejs/kit';
  * Handle form submit from the UI to start question info generation.
  */
 export const actions: Actions = {
-  default: async ({ fetch, request, params: { lang }, cookies }) => {
+  default: async ({ fetch, request, params: { lang }, locals }) => {
     try {
       console.info('[question-info] action start');
       const formData = await request.formData();
@@ -56,21 +55,17 @@ export const actions: Actions = {
         .map((topic) => topic.trim())
         .filter((topic) => topic.length > 0);
 
-      // Get the authentication token from cookies
-      const authToken = cookies.get(AUTH_TOKEN_KEY);
-      if (!authToken) return fail(401, { type: 'error', error: 'Authentication required' });
-
-      // Prepare dataWriter and get user data
+      // Prepare dataWriter with server client for session-based auth
       const dataWriter = await dataWriterPromise;
-      dataWriter.init({ fetch });
+      dataWriter.init({ fetch, serverClient: locals.supabase });
 
-      const { email } = await dataWriter.getBasicUserData({ authToken });
+      const { email } = await dataWriter.getBasicUserData({ authToken: '' });
 
       // Start the job
       const jobInfo = await dataWriter.startJob({
         feature: 'QuestionInfoGeneration',
         author: email,
-        authToken
+        authToken: ''
       });
 
       console.info('[question-info] created job:', jobInfo?.id);
@@ -83,7 +78,7 @@ export const actions: Actions = {
         fetch,
         locale: language,
         jobId: jobInfo.id,
-        authToken,
+        authToken: '',
         operations: operationEnums,
         sectionTopics: sectionTopics.length > 0 ? sectionTopics : undefined,
         customInstructions: customInstructions || undefined,

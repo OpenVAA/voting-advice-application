@@ -1,6 +1,5 @@
 import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import type { Actions } from '@sveltejs/kit';
 
@@ -8,7 +7,7 @@ import type { Actions } from '@sveltejs/kit';
  * Handle form submit from the UI to start condensation.
  */
 export const actions = {
-  default: async ({ fetch, request, params: { lang }, cookies }) => {
+  default: async ({ fetch, request, params: { lang }, locals }) => {
     try {
       console.info('[condense] action start');
       const formData = await request.formData();
@@ -21,21 +20,17 @@ export const actions = {
         return fail(400, { type: 'error', error: 'Missing electionId' });
       }
 
-      // Get the authentication token from cookies
-      const authToken = cookies.get(AUTH_TOKEN_KEY);
-      if (!authToken) return fail(401, { type: 'error', error: 'Authentication required' });
-
-      // Prepare dataWriter and get user data
+      // Prepare dataWriter with server client for session-based auth
       const dataWriter = await dataWriterPromise;
-      dataWriter.init({ fetch });
+      dataWriter.init({ fetch, serverClient: locals.supabase });
 
-      const { email } = await dataWriter.getBasicUserData({ authToken });
+      const { email } = await dataWriter.getBasicUserData({ authToken: '' });
 
       // Start the job
       const jobInfo = await dataWriter.startJob({
         feature: 'ArgumentCondensation',
         author: email,
-        authToken
+        authToken: ''
       });
 
       console.info('[condense] startJob returned:', jobInfo);
@@ -46,7 +41,7 @@ export const actions = {
       // DEBUG: Check if the job was created and is in active state
       const jobData = await dataWriter.getJobProgress({
         jobId: jobInfo.id,
-        authToken
+        authToken: ''
       });
 
       console.info('[condense] job initial state:', {
@@ -63,7 +58,7 @@ export const actions = {
         fetch,
         locale: lang as string,
         jobId: jobInfo.id,
-        authToken
+        authToken: ''
       });
       console.info('[condense] condenseArguments() returned', result);
 
