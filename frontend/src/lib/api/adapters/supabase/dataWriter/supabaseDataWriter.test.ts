@@ -299,4 +299,53 @@ describe('SupabaseDataWriter', () => {
       ).rejects.toThrow('Image upload failed: Bucket full');
     });
   });
+
+  describe('updateEntityProperties', () => {
+    it('updates termsOfUseAccepted via PostgREST', async () => {
+      const timestamp = '2024-01-15T10:00:00.000Z';
+      const updateMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: { terms_of_use_accepted: timestamp },
+              error: null
+            })
+          })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ update: updateMock });
+
+      const result = await writer.updateEntityProperties({
+        authToken: '',
+        target: { type: 'candidate', id: 'entity-1' },
+        properties: { termsOfUseAccepted: timestamp }
+      });
+
+      expect(mockSupabase.from).toHaveBeenCalledWith('candidates');
+      expect(updateMock).toHaveBeenCalledWith({ terms_of_use_accepted: timestamp });
+      expect(result).toEqual({ termsOfUseAccepted: timestamp });
+    });
+
+    it('throws on PostgREST error', async () => {
+      const updateMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'Row not found' }
+            })
+          })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ update: updateMock });
+
+      await expect(
+        writer.updateEntityProperties({
+          authToken: '',
+          target: { type: 'candidate', id: 'bad-id' },
+          properties: { termsOfUseAccepted: 'now' }
+        })
+      ).rejects.toThrow('updateEntityProperties: Row not found');
+    });
+  });
 });
