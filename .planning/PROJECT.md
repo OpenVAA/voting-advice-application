@@ -113,4 +113,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-19 after Phase 25 (DataProvider) complete*
+*Last updated: 2026-03-19 after Phase 26 (DataWriter) complete*
