@@ -31,11 +31,14 @@ import { SupabaseDataProvider } from './supabaseDataProvider';
  *   .from(table).select(columns).order(col)          -> {data, error}
  *   .from(table).select(columns).eq(col, val)        -> {data, error}
  *   .from(table).select(columns).in(col, vals)       -> {data, error}
+ *   .rpc(fnName, params)                              -> {data, error}
  *
  * Configure per-table responses via `mockResponses`.
+ * Configure RPC responses via `mockRpcResponses`.
  */
 function createMockSupabaseClient() {
   const mockResponses: Record<string, { data: unknown; error: unknown }> = {};
+  const mockRpcResponses: Record<string, { data: unknown; error: unknown }> = {};
 
   function createChain(table: string) {
     const chain = {
@@ -59,7 +62,11 @@ function createMockSupabaseClient() {
 
   const client = {
     from: vi.fn((table: string) => createChain(table)),
-    _mockResponses: mockResponses
+    rpc: vi.fn((fnName: string, _params?: Record<string, unknown>) => {
+      return Promise.resolve(mockRpcResponses[fnName] ?? { data: null, error: null });
+    }),
+    _mockResponses: mockResponses,
+    _mockRpcResponses: mockRpcResponses
   };
   return client;
 }
@@ -1256,6 +1263,232 @@ describe('SupabaseDataProvider', () => {
       expect(result.questions[0].image?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/q/q1/img.png'
       );
+    });
+  });
+
+  describe('getNominationData', () => {
+    const baseCandidateNomRow = {
+      id: 'n1',
+      name: { en: 'Nom1' },
+      short_name: null,
+      info: null,
+      color: null,
+      image: null,
+      sort_order: 1,
+      subtype: null,
+      custom_data: null,
+      entity_type: 'candidate',
+      candidate_id: 'c1',
+      organization_id: null,
+      faction_id: null,
+      alliance_id: null,
+      election_id: 'e1',
+      constituency_id: 'co1',
+      election_round: 1,
+      election_symbol: '42',
+      parent_nomination_id: 'n3',
+      entity_id: 'c1',
+      entity_name: { en: 'Jane Doe' },
+      entity_short_name: null,
+      entity_info: null,
+      entity_color: null,
+      entity_image: null,
+      entity_sort_order: 1,
+      entity_subtype: null,
+      entity_custom_data: null,
+      entity_answers: { q1: { value: 3 } },
+      entity_first_name: 'Jane',
+      entity_last_name: 'Doe',
+      entity_organization_id: 'org1'
+    };
+
+    const duplicateCandidateNomRow = {
+      ...baseCandidateNomRow,
+      id: 'n2',
+      name: { en: 'Nom2' },
+      election_symbol: '43',
+      parent_nomination_id: 'n3'
+    };
+
+    const orgNomRow = {
+      id: 'n3',
+      name: { en: 'Org Nom' },
+      short_name: null,
+      info: null,
+      color: null,
+      image: { path: 'proj/nom/n3/img.png' },
+      sort_order: 2,
+      subtype: null,
+      custom_data: null,
+      entity_type: 'organization',
+      candidate_id: null,
+      organization_id: 'org1',
+      faction_id: null,
+      alliance_id: null,
+      election_id: 'e1',
+      constituency_id: 'co1',
+      election_round: 1,
+      election_symbol: null,
+      parent_nomination_id: null,
+      entity_id: 'org1',
+      entity_name: { en: 'Party A' },
+      entity_short_name: { en: 'PA' },
+      entity_info: null,
+      entity_color: null,
+      entity_image: { path: 'proj/org/org1/logo.png' },
+      entity_sort_order: 1,
+      entity_subtype: null,
+      entity_custom_data: null,
+      entity_answers: { q1: { value: 2 } },
+      entity_first_name: null,
+      entity_last_name: null,
+      entity_organization_id: null
+    };
+
+    it('calls this.supabase.rpc with get_nominations and correct parameters', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData({
+        electionId: 'e1',
+        constituencyId: 'co1',
+        includeUnconfirmed: true
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_election_id: 'e1',
+        p_constituency_id: 'co1',
+        p_include_unconfirmed: true
+      });
+    });
+
+    it('returns 3 nominations (no dedup on nominations) and 2 deduplicated entities', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow, duplicateCandidateNomRow, orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+
+      const nominations = result.nominations as any[];
+      const entities = result.entities as any[];
+
+      // 3 nominations (no dedup)
+      expect(nominations).toHaveLength(3);
+
+      // 2 entities (candidate c1 deduped from 2 nominations, org org1)
+      expect(entities).toHaveLength(2);
+    });
+
+    it('candidate entities have firstName, lastName, organizationId, type=candidate', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const entities = result.entities as any[];
+      const candidate = entities.find((e: any) => e.id === 'c1');
+
+      expect(candidate).toBeDefined();
+      expect(candidate.type).toBe('candidate');
+      expect(candidate.firstName).toBe('Jane');
+      expect(candidate.lastName).toBe('Doe');
+      expect(candidate.organizationId).toBe('org1');
+    });
+
+    it('organization entities have type=organization', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const entities = result.entities as any[];
+      const org = entities.find((e: any) => e.id === 'org1');
+
+      expect(org).toBeDefined();
+      expect(org.type).toBe('organization');
+    });
+
+    it('entity answers are processed through parseAnswers', async () => {
+      const { parseAnswers } = await import('$lib/api/utils/parseAnswers');
+
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow],
+        error: null
+      };
+
+      await provider.getNominationData();
+
+      expect(parseAnswers).toHaveBeenCalledWith({ q1: { value: 3 } }, 'en');
+    });
+
+    it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as any[])[0];
+
+      expect(nom.entityType).toBe('candidate');
+      expect(nom.entityId).toBe('c1');
+      expect(nom.electionId).toBe('e1');
+      expect(nom.constituencyId).toBe('co1');
+      expect(nom.electionRound).toBe(1);
+      expect(nom.electionSymbol).toBe('42');
+      expect(nom.parentNominationId).toBe('n3');
+    });
+
+    it('entity and nomination images are converted via parseStoredImage', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as any[])[0];
+      const entity = (result.entities as any[])[0];
+
+      expect(nom.image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png'
+      );
+      expect(entity.image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/org/org1/logo.png'
+      );
+    });
+
+    it('returns { nominations, entities } shape', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+
+      expect(result).toHaveProperty('nominations');
+      expect(result).toHaveProperty('entities');
+      expect(Array.isArray(result.nominations)).toBe(true);
+      expect(Array.isArray(result.entities)).toBe(true);
+    });
+
+    it('passes default values when no filter options provided', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData();
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_election_id: null,
+        p_constituency_id: null,
+        p_include_unconfirmed: false
+      });
     });
   });
 });
