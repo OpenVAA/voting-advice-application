@@ -30,12 +30,12 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### Data Provider (Reads)
 
-- [ ] **READ-01**: getAppSettings and getAppCustomization from Supabase
-- [ ] **READ-02**: getElectionData with constituency groups
-- [ ] **READ-03**: getConstituencyData with parent relationships
+- [x] **READ-01**: getAppSettings and getAppCustomization from Supabase
+- [x] **READ-02**: getElectionData with constituency groups
+- [x] **READ-03**: getConstituencyData with parent relationships
 - [x] **READ-04**: getNominationData with entity resolution (polymorphic nominations table)
-- [ ] **READ-05**: getEntityData for candidates and organizations
-- [ ] **READ-06**: getQuestionData with categories and question types
+- [x] **READ-05**: getEntityData for candidates and organizations
+- [x] **READ-06**: getQuestionData with categories and question types
 
 ### Data Writer (Writes)
 
@@ -108,12 +108,12 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | AUTH-02 | Phase 24 | Complete |
 | AUTH-03 | Phase 24 | Complete |
 | AUTH-04 | Phase 24 | Complete |
-| READ-01 | Phase 25 | Pending |
-| READ-02 | Phase 25 | Pending |
-| READ-03 | Phase 25 | Pending |
+| READ-01 | Phase 25 | Complete |
+| READ-02 | Phase 25 | Complete |
+| READ-03 | Phase 25 | Complete |
 | READ-04 | Phase 25 | Complete |
-| READ-05 | Phase 25 | Pending |
-| READ-06 | Phase 25 | Pending |
+| READ-05 | Phase 25 | Complete |
+| READ-06 | Phase 25 | Complete |
 | WRIT-01 | Phase 26 | Pending |
 | WRIT-02 | Phase 26 | Pending |
 | WRIT-03 | Phase 26 | Pending |
