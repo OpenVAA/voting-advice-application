@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 27-01-PLAN.md
-last_updated: "2026-03-19T16:59:55.423Z"
+stopped_at: Completed 27-02-PLAN.md
+last_updated: "2026-03-19T17:03:15.420Z"
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 27 (adminwriter) — EXECUTING
-Plan: 2 of 2
+Phase: 27 (adminwriter) — COMPLETE
+Plan: 2 of 2 (all complete)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Plan: 2 of 2
 | Phase 26 P02 | 5min | 2 tasks | 4 files |
 | Phase 26 P03 | 3min | 2 tasks | 2 files |
 | Phase 27 P01 | 3min | 2 tasks | 4 files |
+| Phase 27 P02 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Plan: 2 of 2
 - [Phase 27-01]: admin_jobs is immutable (no UPDATE policy) -- job records are write-once
 - [Phase 27-01]: merge_custom_data uses SECURITY INVOKER so admin_update_questions RLS policy enforces access
 - [Phase 27-01]: Shallow JSONB merge via || operator -- callers provide complete replacement values per key
+- [Phase 27-02]: _updateQuestion ignores authToken (cookie-based auth per Phase 24); _insertJobResult resolves project_id from election_id for admin_jobs RLS
 
 ### Pending Todos
 
@@ -125,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:59:55.420Z
-Stopped at: Completed 27-01-PLAN.md
+Last session: 2026-03-19T17:03:15.417Z
+Stopped at: Completed 27-02-PLAN.md
 Resume file: None
