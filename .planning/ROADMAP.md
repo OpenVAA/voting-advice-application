@@ -210,7 +210,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | 22. Schema Migrations | 4/4 | Complete    | 2026-03-18 | - |
 | 23. Adapter Foundation | 2/2 | Complete    | 2026-03-18 | - |
 | 24. Auth Migration | 3/3 | Complete   | 2026-03-19 | - |
-| 25. DataProvider | v3.0 | 0/4 | Planning complete | - |
+| 25. DataProvider | 2/4 | In Progress|  | - |
 | 26. DataWriter | v3.0 | 0/? | Not started | - |
 | 27. AdminWriter | v3.0 | 0/? | Not started | - |
 | 28. Edge Functions | v3.0 | 0/? | Not started | - |

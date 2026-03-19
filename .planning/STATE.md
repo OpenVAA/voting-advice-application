@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 25 context gathered
-last_updated: "2026-03-19T09:08:35.452Z"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-03-19T09:40:46.665Z"
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 13
+  completed_plans: 11
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 24 — auth-migration
+**Current focus:** Phase 25 — dataprovider
 
 ## Current Position
 
-Phase: 24 (auth-migration) — COMPLETE
-Plan: 3 of 3 (all complete)
+Phase: 25 (dataprovider) — EXECUTING
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: 3 of 3 (all complete)
 | Phase 24 P01 | 3min | 2 tasks | 3 files |
 | Phase 24 P02 | 4min | 2 tasks | 9 files |
 | Phase 24 P03 | 6min | 2 tasks | 17 files |
+| Phase 25 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,10 @@ Plan: 3 of 3 (all complete)
 - [Phase 24]: candidateUserDataStore takes isAuthenticated: Readable<boolean> instead of authToken: Readable<string|undefined>
 - [Phase 24]: Admin server pages use serverClient: locals.supabase for session-based auth instead of AUTH_TOKEN_KEY cookie
 - [Phase 24]: hasAuthHeaders inlined into universalAdapter.ts; authHeaders.ts deleted per user decision
+- [Phase 25]: LANGUAGE sql (not plpgsql) for get_nominations RPC -- simpler and inlineable by query planner
+- [Phase 25]: SECURITY INVOKER for get_nominations RPC enforces RLS on nominations and all entity tables
+- [Phase 25]: entity_answers COALESCE from candidates and organizations only (factions/alliances have no answers column)
+- [Phase 25]: DPDataType uses Array | Tree union types to match DataRoot provision methods
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T09:08:35.448Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-dataprovider/25-CONTEXT.md
+Last session: 2026-03-19T09:40:46.663Z
+Stopped at: Completed 25-02-PLAN.md
+Resume file: None
