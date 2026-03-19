@@ -20,7 +20,8 @@ function createMockSupabaseClient() {
       signOut: vi.fn(),
       resetPasswordForEmail: vi.fn(),
       updateUser: vi.fn(),
-      getUser: vi.fn()
+      getUser: vi.fn(),
+      getSession: vi.fn()
     },
     rpc: vi.fn(),
     from: vi.fn(),

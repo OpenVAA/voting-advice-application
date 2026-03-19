@@ -141,8 +141,18 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (error) throw new Error(`setAnswers: ${error.message}`);
     return (data as unknown as LocalizedAnswers) ?? {};
   }
-  protected _updateEntityProperties() {
-    throw new Error('SupabaseDataWriter._updateEntityProperties not implemented');
+  protected async _updateEntityProperties({
+    target: { id },
+    properties: { termsOfUseAccepted }
+  }: SetPropertiesOptions): DWReturnType<UpdatedEntityProps> {
+    const { data, error } = await this.supabase
+      .from('candidates')
+      .update({ terms_of_use_accepted: termsOfUseAccepted })
+      .eq('id', id)
+      .select('terms_of_use_accepted')
+      .single();
+    if (error) throw new Error(`updateEntityProperties: ${error.message}`);
+    return { termsOfUseAccepted: data.terms_of_use_accepted ?? null };
   }
   protected _updateQuestion() {
     throw new Error('SupabaseDataWriter._updateQuestion not implemented');
