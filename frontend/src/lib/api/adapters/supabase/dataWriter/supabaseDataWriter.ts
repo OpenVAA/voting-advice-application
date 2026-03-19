@@ -83,8 +83,39 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   // STUB METHODS (not yet implemented)
   ////////////////////////////////////////////////////////////////////
 
-  protected _preregister() {
-    throw new Error('SupabaseDataWriter._preregister not implemented');
+  protected async _preregister({
+    body
+  }: {
+    body: {
+      firstName: string;
+      lastName: string;
+      identifier: string;
+      email: string;
+      nominations: Array<{ electionId: string; constituencyId: string }>;
+    };
+  } & WithAuth): DWReturnType<DataApiActionResult> {
+    // Resolve projectId from the first nomination's electionId
+    const { data: election, error: electionError } = await this.supabase
+      .from('elections')
+      .select('project_id')
+      .eq('id', body.nominations[0].electionId)
+      .single();
+    if (electionError || !election)
+      throw new Error(`Failed to resolve project for election: ${electionError?.message ?? 'not found'}`);
+
+    // identifier is intentionally ignored -- Supabase uses email-based invite, not personal ID.
+    // authToken is ignored -- the Supabase client automatically includes the session JWT.
+    const { error } = await this.supabase.functions.invoke('invite-candidate', {
+      body: {
+        firstName: body.firstName,
+        lastName: body.lastName,
+        email: body.email,
+        projectId: election.project_id
+      }
+    });
+
+    if (error) throw new Error(`invite-candidate: ${error.message}`);
+    return { type: 'success' as const };
   }
   protected async _register({ password }: { password: string }) {
     // Invite session already established by auth callback's verifyOtp.
@@ -258,8 +289,28 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     return { type: 'success' as const };
   }
 
-  protected _sendEmail(_opts: SendEmailOptions): Promise<SendEmailResult> {
-    throw new Error('SupabaseDataWriter._sendEmail not implemented');
+  protected async _sendEmail({
+    templates,
+    recipientUserIds,
+    from,
+    dryRun
+  }: SendEmailOptions): DWReturnType<SendEmailResult> {
+    const { data, error } = await this.supabase.functions.invoke('send-email', {
+      body: {
+        templates,
+        recipient_user_ids: recipientUserIds,
+        from,
+        dry_run: dryRun
+      }
+    });
+
+    if (error) throw new Error(`send-email: ${error.message}`);
+    return {
+      type: 'success' as const,
+      sent: data.sent,
+      failed: data.failed,
+      results: data.results
+    };
   }
 
   protected async _insertJobResult({ data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
