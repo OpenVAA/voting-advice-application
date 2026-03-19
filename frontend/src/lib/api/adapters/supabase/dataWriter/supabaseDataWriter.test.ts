@@ -301,6 +301,234 @@ describe('SupabaseDataWriter', () => {
     });
   });
 
+  describe('register', () => {
+    it('calls updateUser with password to complete registration', async () => {
+      mockSupabase.auth.updateUser.mockResolvedValue({ data: {}, error: null });
+      const result = await writer.register({ password: 'newpass' });
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({ password: 'newpass' });
+      expect(result).toEqual({ type: 'success' });
+    });
+
+    it('throws on Supabase error', async () => {
+      mockSupabase.auth.updateUser.mockResolvedValue({
+        data: {},
+        error: { message: 'Weak password' }
+      });
+      await expect(writer.register({ password: 'x' })).rejects.toThrow('Weak password');
+    });
+  });
+
+  describe('getBasicUserData', () => {
+    it('extracts user data from session and JWT claims', async () => {
+      const payload = { user_roles: [{ role: 'candidate', scope_type: 'candidate', scope_id: 'uuid1' }] };
+      const mockJwt = `header.${btoa(JSON.stringify(payload))}.signature`;
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-1', email: 'cand@test.com', user_metadata: { language: 'fi' } },
+            access_token: mockJwt
+          }
+        },
+        error: null
+      });
+
+      const result = await writer.getBasicUserData({ authToken: '' });
+      expect(result.id).toBe('user-1');
+      expect(result.email).toBe('cand@test.com');
+      expect(result.username).toBe('cand@test.com');
+      expect(result.role).toBe('candidate');
+      expect(result.settings.language).toBe('fi');
+    });
+
+    it('returns admin role for project_admin', async () => {
+      const payload = { user_roles: [{ role: 'project_admin', scope_type: 'project', scope_id: 'proj1' }] };
+      const mockJwt = `header.${btoa(JSON.stringify(payload))}.signature`;
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-2', email: 'admin@test.com', user_metadata: {} },
+            access_token: mockJwt
+          }
+        },
+        error: null
+      });
+
+      const result = await writer.getBasicUserData({ authToken: '' });
+      expect(result.role).toBe('admin');
+    });
+
+    it('returns null role when no recognized roles', async () => {
+      const payload = { user_roles: [] };
+      const mockJwt = `header.${btoa(JSON.stringify(payload))}.signature`;
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-3', email: 'nobody@test.com', user_metadata: {} },
+            access_token: mockJwt
+          }
+        },
+        error: null
+      });
+
+      const result = await writer.getBasicUserData({ authToken: '' });
+      expect(result.role).toBeNull();
+    });
+
+    it('defaults language to en when not in user_metadata', async () => {
+      const payload = { user_roles: [] };
+      const mockJwt = `header.${btoa(JSON.stringify(payload))}.signature`;
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-4', email: 'test@test.com', user_metadata: {} },
+            access_token: mockJwt
+          }
+        },
+        error: null
+      });
+
+      const result = await writer.getBasicUserData({ authToken: '' });
+      expect(result.settings.language).toBe('en');
+    });
+
+    it('throws when no active session', async () => {
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: null },
+        error: null
+      });
+
+      await expect(writer.getBasicUserData({ authToken: '' })).rejects.toThrow('No active session');
+    });
+  });
+
+  describe('getCandidateUserData', () => {
+    /** Helper to set up a mock session with candidate role JWT. */
+    function setupCandidateSession() {
+      const payload = { user_roles: [{ role: 'candidate', scope_type: 'candidate', scope_id: 'cand-1' }] };
+      const mockJwt = `header.${btoa(JSON.stringify(payload))}.signature`;
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { id: 'user-1', email: 'cand@test.com', user_metadata: { language: 'fi' } },
+            access_token: mockJwt
+          }
+        },
+        error: null
+      });
+    }
+
+    it('calls get_candidate_user_data RPC and returns structured data', async () => {
+      setupCandidateSession();
+
+      const entityRow = {
+        id: 'cand-1',
+        project_id: 'proj-1',
+        name: { en: 'Test Candidate' },
+        short_name: null,
+        info: null,
+        color: null,
+        image: null,
+        sort_order: 1,
+        subtype: null,
+        custom_data: null,
+        answers: { q1: { value: 3 } },
+        terms_of_use_accepted: '2024-01-01T00:00:00Z',
+        first_name: 'Test',
+        last_name: 'Candidate',
+        organization_id: null
+      };
+
+      mockSupabase.rpc.mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: entityRow, error: null })
+      });
+
+      const result = await writer.getCandidateUserData({
+        authToken: '',
+        loadNominations: false,
+        locale: 'en'
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_candidate_user_data', {
+        p_entity_type: 'candidate'
+      });
+      expect(result.user.id).toBe('user-1');
+      expect(result.user.email).toBe('cand@test.com');
+      expect(result.candidate.id).toBe('cand-1');
+      expect(result.candidate.firstName).toBe('Test');
+      expect(result.candidate.lastName).toBe('Candidate');
+      expect(result.candidate.answers).toEqual({ q1: { value: 3 } });
+      expect(result.nominations).toBeUndefined();
+    });
+
+    it('loads nominations when loadNominations=true', async () => {
+      setupCandidateSession();
+
+      const entityRow = {
+        id: 'cand-1',
+        project_id: 'proj-1',
+        name: { en: 'Test Candidate' },
+        short_name: null,
+        info: null,
+        color: null,
+        image: null,
+        sort_order: 1,
+        subtype: null,
+        custom_data: null,
+        answers: {},
+        terms_of_use_accepted: null,
+        first_name: 'Test',
+        last_name: 'Candidate',
+        organization_id: null
+      };
+
+      mockSupabase.rpc.mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: entityRow, error: null })
+      });
+
+      // Mock nominations query
+      const nomData = [
+        {
+          id: 'nom-1',
+          election_id: 'elec-1',
+          constituency_id: 'const-1',
+          election_round: 1,
+          election_symbol: '42',
+          parent_nomination_id: null,
+          entity_type: 'candidate'
+        }
+      ];
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: nomData, error: null })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      const result = await writer.getCandidateUserData({
+        authToken: '',
+        loadNominations: true,
+        locale: 'en'
+      });
+
+      expect(result.nominations).toBeDefined();
+      expect(mockSupabase.from).toHaveBeenCalledWith('nominations');
+    });
+
+    it('throws if RPC returns empty/error', async () => {
+      setupCandidateSession();
+
+      mockSupabase.rpc.mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: null, error: { message: 'Not found' } })
+      });
+
+      await expect(
+        writer.getCandidateUserData({
+          authToken: '',
+          loadNominations: false,
+          locale: 'en'
+        })
+      ).rejects.toThrow('Failed to load candidate data: Not found');
+    });
+  });
+
   describe('updateEntityProperties', () => {
     it('updates termsOfUseAccepted via PostgREST', async () => {
       const timestamp = '2024-01-15T10:00:00.000Z';
