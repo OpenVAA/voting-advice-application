@@ -171,7 +171,7 @@ export class SupabaseAdminClient {
     // Collect all question external_ids referenced across all candidates
     const questionExtIds = new Set<string>();
     for (const candidate of candidates) {
-      const answersByExtId = candidate.answersByExternalId as Record<string, unknown> | undefined;
+      const answersByExtId = candidate.answers_by_external_id as Record<string, unknown> | undefined;
       if (!answersByExtId) continue;
       for (const extId of Object.keys(answersByExtId)) {
         questionExtIds.add(extId);
@@ -200,7 +200,7 @@ export class SupabaseAdminClient {
 
     // For each candidate with answersByExternalId, build UUID-keyed answers and update
     for (const candidate of candidates) {
-      const answersByExtId = candidate.answersByExternalId as Record<string, unknown> | undefined;
+      const answersByExtId = candidate.answers_by_external_id as Record<string, unknown> | undefined;
       if (!answersByExtId) continue;
 
       const candidateExtId = candidate.external_id as string;
