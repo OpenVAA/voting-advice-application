@@ -54,8 +54,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
-  /* Opt out of parallel tests on CI. Limit local workers to avoid Strapi admin rate limiting. */
-  workers: process.env.CI ? 1 : 4,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 1 : 6,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
