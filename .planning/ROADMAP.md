@@ -149,16 +149,17 @@ Plans:
 - [ ] 26-03-PLAN.md — Write operations: _setAnswers with File/Storage upload, _updateEntityProperties for termsOfUseAccepted
 
 ### Phase 27: AdminWriter
-**Goal**: Admin operations for question and job management work through the Supabase adapter
+**Goal**: Admin operations for question custom data and job result persistence work through the Supabase adapter
 **Depends on**: Phase 26 (DataWriter patterns established)
 **Requirements**: ADMN-01, ADMN-02
 **Success Criteria** (what must be TRUE):
-  1. Admin can create, update, and manage questions and entities through the AdminWriter adapter
-  2. Admin can start, abort, and track progress of background jobs through the AdminWriter adapter
-**Plans**: TBD
+  1. Admin can merge question custom_data via the merge_custom_data RPC through the _updateQuestion adapter method
+  2. Admin can persist completed job results to the admin_jobs table through the _insertJobResult adapter method
+**Plans**: 2 plans
 
 Plans:
-- [ ] 27-01: TBD
+- [ ] 27-01-PLAN.md — Database infrastructure: admin_jobs table, RLS policies, merge_custom_data RPC, migration, pgTAP tests
+- [ ] 27-02-PLAN.md — TypeScript adapter: _updateQuestion and _insertJobResult implementations in SupabaseDataWriter
 
 ### Phase 28: Edge Functions
 **Goal**: Frontend integrates with all three Supabase Edge Functions for candidate invite, bank auth, and email
@@ -214,7 +215,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | 24. Auth Migration | 3/3 | Complete   | 2026-03-19 | - |
 | 25. DataProvider | 4/4 | Complete    | 2026-03-19 | - |
 | 26. DataWriter | 3/3 | Complete   | 2026-03-19 | - |
-| 27. AdminWriter | v3.0 | 0/? | Not started | - |
+| 27. AdminWriter | v3.0 | 0/2 | Not started | - |
 | 28. Edge Functions | v3.0 | 0/? | Not started | - |
 | 29. E2E Test Migration | v3.0 | 0/? | Not started | - |
 | 30. Strapi Removal and Dev Environment | v3.0 | 0/? | Not started | - |
