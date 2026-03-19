@@ -42,7 +42,7 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 - [x] **WRIT-01**: Answer updates (partial and overwrite modes) via RPC
 - [x] **WRIT-02**: Entity property updates (profile fields, image upload via Storage)
 - [x] **WRIT-03**: Candidate registration flow (invite link → exchange token → set password)
-- [ ] **WRIT-04**: getCandidateUserData and getBasicUserData from Supabase session
+- [x] **WRIT-04**: getCandidateUserData and getBasicUserData from Supabase session
 
 ### Admin Writer
 
@@ -117,7 +117,7 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | WRIT-01 | Phase 26 | Complete |
 | WRIT-02 | Phase 26 | Complete |
 | WRIT-03 | Phase 26 | Complete |
-| WRIT-04 | Phase 26 | Pending |
+| WRIT-04 | Phase 26 | Complete |
 | ADMN-01 | Phase 27 | Pending |
 | ADMN-02 | Phase 27 | Pending |
 | EDGE-01 | Phase 28 | Pending |

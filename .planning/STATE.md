@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-03-19T15:32:08.335Z"
+stopped_at: Completed 26-02-PLAN.md
+last_updated: "2026-03-19T15:32:00.000Z"
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 26 (datawriter) — EXECUTING
-Plan: 3 of 3
+Phase: 26 (datawriter) — COMPLETED
+Plan: 3 of 3 (all complete)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Plan: 3 of 3
 | Phase 25 P03 | 3min | 2 tasks | 2 files |
 | Phase 25 P04 | 6min | 2 tasks | 2 files |
 | Phase 26 P01 | 10min | 2 tasks | 9 files |
+| Phase 26 P02 | 5min | 2 tasks | 4 files |
 | Phase 26 P03 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
@@ -102,6 +103,9 @@ Plan: 3 of 3
 - [Phase 26-01]: Write methods return narrower types (LocalizedAnswers, UpdatedEntityProps) instead of full LocalizedCandidateData -- enables adapters to return only what RPC provides
 - [Phase 26-01]: candidateUserDataStore.save() uses inline savedData.update() for partial merges instead of full-entity replacement via updateCandidateData
 - [Phase 26-01]: Register page redirects to password page when email param present (invite-based flow) instead of registration key form
+- [Phase 26-02]: _getBasicUserData decodes JWT access_token to extract user_roles -- no DB query for basic user data
+- [Phase 26-02]: Role mapping: candidate/party -> 'candidate', admin roles -> 'admin', else null
+- [Phase 26-02]: Nominations loaded via PostgREST from('nominations') filtered by candidate_id, not via get_nominations RPC
 - [Phase 26]: _setAnswers uses lazy project_id fetch from candidates table (only when File objects detected) to avoid unnecessary DB queries for text-only answers
 - [Phase 26]: _updateEntityProperties does NOT handle image upload -- property updates are text-only (termsOfUseAccepted)
 - [Phase 26]: Storage path uses crypto.randomUUID() for collision-free filenames under {projectId}/candidates/{entityId}/
@@ -117,6 +121,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:32:08.332Z
-Stopped at: Completed 26-03-PLAN.md
+Last session: 2026-03-19T15:32:00Z
+Stopped at: Completed 26-02-PLAN.md (all phase 26 plans complete)
 Resume file: None
