@@ -7,14 +7,12 @@ Shows a form with which to request a password reset email.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { createSupabaseBrowserClient } from '$lib/supabase/browser';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
 
@@ -22,7 +20,7 @@ Shows a form with which to request a password reset email.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, t } = getCandidateContext();
+  const { getRoute, requestForgotPasswordEmail, t } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -34,18 +32,18 @@ Shows a form with which to request a password reset email.
 
   async function handleSubmit() {
     status = 'loading';
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/${$page.params.lang ?? 'en'}/candidate/password-reset`
-    });
-    if (error) {
-      logDebugError(`Error requesting password reset email: ${error.message}`);
+    try {
+      const result = await requestForgotPasswordEmail({ email });
+      if (result.type === 'success') {
+        status = 'success';
+        email = '';
+      } else {
+        status = 'error';
+      }
+    } catch (e) {
+      logDebugError(`Error requesting password reset email: ${e instanceof Error ? e.message : e}`);
       status = 'error';
-      return;
     }
-    status = 'success';
-    // Clear the input field after successful submission
-    email = '';
   }
 
   ///////////////////////////////////////////////////////////////////

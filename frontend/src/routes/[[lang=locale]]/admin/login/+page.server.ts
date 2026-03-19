@@ -1,39 +1,49 @@
 /**
  * # Admin App login server action
+ *
+ * Uses DataWriter adapter for email/password authentication with admin role verification.
  */
 
 import { fail, redirect } from '@sveltejs/kit';
-import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes.js';
+import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { logDebugError } from '$lib/utils/logger';
 import { buildRoute } from '$lib/utils/route';
-import type { LoginParams, LoginResult } from '../../api/auth/login/+server';
 
 export const actions = {
-  default: async ({ request, fetch, locals }) => {
+  default: async ({ request, locals, fetch }) => {
     const data = await request.formData();
     const username = data.get('email') as string;
     const password = data.get('password') as string;
     const redirectTo = data.get('redirectTo') as string;
 
-    const response = await fetch(UNIVERSAL_API_ROUTES.login, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password, role: 'admin' } as LoginParams)
-    });
+    const dataWriter = await dataWriterPromise;
+    dataWriter.init({ fetch, serverClient: locals.supabase, locale: locals.currentLocale });
 
-    const result = (await response.json()) as LoginResult;
+    try {
+      const result = await dataWriter.login({ username, password });
+      if (result.type !== 'success') return fail(400);
+    } catch (e) {
+      logDebugError(`Admin login error: ${e instanceof Error ? e.message : e}`);
+      return fail(400);
+    }
 
-    if (result.type !== 'success') return fail(result.status ?? 500);
+    // Verify the user has admin role
+    try {
+      const userData = await dataWriter.getBasicUserData({ authToken: '' });
+      if (userData.role !== 'admin') {
+        await dataWriter.logout({ authToken: '' }).catch(() => {});
+        return fail(403);
+      }
+    } catch (e) {
+      logDebugError(`Error verifying admin role: ${e instanceof Error ? e.message : e}`);
+      return fail(500);
+    }
 
-    return redirect(
+    redirect(
       303,
       redirectTo
         ? `/${locals.currentLocale}/${redirectTo}`
-        : buildRoute({
-            route: 'AdminAppHome',
-            locale: locals.currentLocale
-          })
+        : buildRoute({ route: 'AdminAppHome', locale: locals.currentLocale })
     );
   }
 };

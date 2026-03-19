@@ -2,11 +2,8 @@
 
 # Candidate app reset password page
 
-Shows a form with which to set a new password when it has been reset.
-
-## Query params
-
-- `code`: The reset code
+Shows a form to set a new password after clicking a password reset email link.
+The auth callback route establishes a recovery session before redirecting here.
 -->
 
 <script lang="ts">
@@ -26,16 +23,17 @@ Shows a form with which to set a new password when it has been reset.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, resetPassword, t } = getCandidateContext();
+  const { getRoute, setPassword, t } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Handle form
   ////////////////////////////////////////////////////////////////////
 
-  // If the reset code is not provided, redirect to home page
-  const code = $page.url.searchParams.get('code');
-  if (!code) goto($getRoute('CandAppLogin'));
+  // Check for active session (recovery session established by auth callback)
+  // If no session, the hooks route guard will redirect to login
+  const hasSession = !!$page.data.session;
+  if (!hasSession) goto($getRoute('CandAppLogin'));
 
   let canSubmit: boolean;
   let isPasswordValid: boolean;
@@ -55,8 +53,8 @@ Shows a form with which to set a new password when it has been reset.
 
     status = 'loading';
 
-    const result = await resetPassword({ code: code!, password }).catch((e) => {
-      logDebugError(`Error with resetPassword: ${e?.message}`);
+    const result = await setPassword({ password }).catch((e) => {
+      logDebugError(`Error with setPassword: ${e?.message}`);
       return undefined;
     });
 
