@@ -9,7 +9,6 @@ import type {
   AbortJobOptions,
   BasicUserData,
   CandidateUserData,
-  CheckRegistrationData,
   DataWriter,
   DWReturnType,
   GetActiveJobsOptions,
@@ -17,11 +16,12 @@ import type {
   GetJobProgressOptions,
   GetPastJobsOptions,
   InsertJobResultOptions,
-  LocalizedCandidateData,
+  LocalizedAnswers,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
   StartJobOptions,
+  UpdatedEntityProps,
   WithAuth
 } from './dataWriter.type';
 
@@ -35,11 +35,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PUBLIC METHODS
   ////////////////////////////////////////////////////////////////////
 
-  checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData> {
-    return this._checkRegistrationKey(opts);
-  }
-
-  register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult> {
+  register(opts: { password: string }): DWReturnType<DataApiActionResult> {
     return this._register(opts);
   }
 
@@ -153,19 +149,17 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._getCandidateUserData(opts);
   }
 
-  updateAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedCandidateData> {
+  updateAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedAnswers> {
     return this._setAnswers({ ...opts, overwrite: false });
   }
 
-  overwriteAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedCandidateData> {
+  overwriteAnswers(opts: SetAnswersOptions): DWReturnType<LocalizedAnswers> {
     return this._setAnswers({ ...opts, overwrite: true });
   }
 
-  updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData> {
-    if (!opts.properties.image?.file && opts.properties.termsOfUseAccepted === undefined)
-      throw new Error(
-        'Either an image file or a value for termsOfUseAccepted is required for updating entity properties'
-      );
+  updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdatedEntityProps> {
+    if (opts.properties.termsOfUseAccepted === undefined)
+      throw new Error('A value for termsOfUseAccepted is required for updating entity properties');
     return this._updateEntityProperties(opts);
   }
 
@@ -244,8 +238,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult>;
-  protected abstract _checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData>;
-  protected abstract _register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult>;
+  protected abstract _register(opts: { password: string }): DWReturnType<DataApiActionResult>;
   protected abstract _login(opts: {
     username: string;
     password: string;
@@ -262,8 +255,8 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   ): DWReturnType<CandidateUserData<TNominations>>;
   protected abstract _setAnswers(
     opts: SetAnswersOptions & { overwrite: boolean }
-  ): DWReturnType<LocalizedCandidateData>;
-  protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
+  ): DWReturnType<LocalizedAnswers>;
+  protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdatedEntityProps>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
   protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;
 }

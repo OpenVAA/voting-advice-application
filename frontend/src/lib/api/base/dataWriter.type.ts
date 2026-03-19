@@ -89,18 +89,11 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Check whether the registration key is valid.
-   * @param registrationKey - The registration key to check.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
-   */
-  checkRegistrationKey: (opts: { registrationKey: string }) => DWReturnType<CheckRegistrationData, TType>;
-  /**
-   * Activate an already registered user with the provided registration key and password.
-   * @param registrationKey - The registration key to check.
+   * Complete registration by setting the user’s password.
    * @param password - The user’s password.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  register: (opts: { registrationKey: string; password: string }) => DWReturnType<DataApiActionResult, TType>;
+  register: (opts: { password: string }) => DWReturnType<DataApiActionResult, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Logging in and out
@@ -184,27 +177,27 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the answers to update.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` object or a `Response` containing one.
    */
-  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedCandidateData, TType>;
+  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Overwrite the whole `answers` property of an entity owned by the user.
    * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the new `answers`.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` object or a `Response` containing one.
    */
-  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedCandidateData, TType>;
+  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Update any editable properties of an entity owned by the user.
    * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param properties - An object containing the properties to update.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @returns A `Promise` resolving the updated `UpdatedEntityProps` object or a `Response` containing one.
    */
-  updateEntityProperties: (opts: SetPropertiesOptions) => DWReturnType<LocalizedCandidateData, TType>;
+  updateEntityProperties: (opts: SetPropertiesOptions) => DWReturnType<UpdatedEntityProps, TType>;
 
   // TODO: Implement
   // /**
@@ -262,12 +255,6 @@ export interface BasicUserData extends WithUserSettings {
 
 export type UserRole = 'candidate' | 'admin';
 
-export type CheckRegistrationData = DataApiActionResult & {
-  email: string;
-  firstName: string;
-  lastName: string;
-};
-
 /**
  * An `Answers` dictionary with `LocalizedAnswer`s.
  */
@@ -282,6 +269,13 @@ export type LocalizedAnswers = {
  */
 export type LocalizedCandidateData = CandidateData & {
   answers?: LocalizedAnswers | null;
+  termsOfUseAccepted?: string | null;
+};
+
+/**
+ * The properties returned after an entity property update.
+ */
+export type UpdatedEntityProps = {
   termsOfUseAccepted?: string | null;
 };
 
@@ -369,7 +363,6 @@ export type WithAnswerData = {
 };
 
 export type EditableEntityProps = {
-  image?: ImageWithFile;
   termsOfUseAccepted?: string | null;
 };
 
