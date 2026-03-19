@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-03-19T17:51:52.969Z"
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-03-19T17:54:27.379Z"
 progress:
   total_phases: 9
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 20
-  completed_plans: 19
+  completed_plans: 20
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Plan: 2 of 2
 | Phase 27 P01 | 3min | 2 tasks | 4 files |
 | Phase 27 P02 | 1min | 1 tasks | 1 files |
 | Phase 28 P02 | 2min | 1 tasks | 1 files |
+| Phase 28 P01 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,10 @@ Plan: 2 of 2
 - [Phase 28]: Supabase path passes raw encrypted id_token to Edge Function (no client-side decryption)
 - [Phase 28]: Session established server-side via verifyOtp using magic link token from Edge Function action_link URL
 - [Phase 28]: id_token cookie cleared after session establishment to prevent replay; SvelteKit HttpError re-thrown via 'status' in e check
+- [Phase 28]: _preregister ignores identifier param -- Supabase uses email-based invite, not personal ID
+- [Phase 28]: _preregister resolves projectId from elections table via first nomination's electionId
+- [Phase 28]: _sendEmail maps camelCase recipientUserIds/dryRun to snake_case for Edge Function API
+- [Phase 28]: sendEmail added to DataWriter interface with throwing stubs in Strapi and Supabase adapters
 
 ### Pending Todos
 
@@ -131,6 +136,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:51:52.965Z
-Stopped at: Completed 28-02-PLAN.md
+Last session: 2026-03-19T17:54:27.377Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
