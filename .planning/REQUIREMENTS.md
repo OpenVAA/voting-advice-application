@@ -57,9 +57,9 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### E2E Test Migration
 
-- [ ] **TEST-01**: Test infrastructure migrated from StrapiAdminClient to Supabase admin client
+- [x] **TEST-01**: Test infrastructure migrated from StrapiAdminClient to Supabase admin client
 - [x] **TEST-02**: Data seeding via SQL/RPCs instead of Strapi API
-- [ ] **TEST-03**: Auth setup using Supabase sessions in Playwright tests
+- [x] **TEST-03**: Auth setup using Supabase sessions in Playwright tests
 - [ ] **TEST-04**: All existing E2E tests passing against Supabase backend
 
 ### Dev Environment & Cleanup
@@ -123,9 +123,9 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | EDGE-01 | Phase 28 | Complete |
 | EDGE-02 | Phase 28 | Complete |
 | EDGE-03 | Phase 28 | Complete |
-| TEST-01 | Phase 29 | Pending |
+| TEST-01 | Phase 29 | Complete |
 | TEST-02 | Phase 29 | Complete |
-| TEST-03 | Phase 29 | Pending |
+| TEST-03 | Phase 29 | Complete |
 | TEST-04 | Phase 29 | Pending |
 | ENVR-01 | Phase 30 | Pending |
 | ENVR-02 | Phase 30 | Pending |
