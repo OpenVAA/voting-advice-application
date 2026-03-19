@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 24-01-PLAN.md
-last_updated: "2026-03-19T06:55:00.582Z"
+stopped_at: Completed 24-02-PLAN.md
+last_updated: "2026-03-19T06:55:29.718Z"
 progress:
   total_phases: 9
   completed_phases: 2
@@ -49,6 +49,7 @@ Plan: 3 of 3
 | Phase 23 P01 | 3min | 3 tasks | 7 files |
 | Phase 23 P02 | 2min | 3 tasks | 10 files |
 | Phase 24 P01 | 3min | 2 tasks | 3 files |
+| Phase 24 P02 | 4min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Plan: 3 of 3
 - [Phase 24]: Public logout override bypasses UniversalDataWriter dual POST+backendLogout (Supabase handles everything via signOut)
 - [Phase 24]: _setPassword and _resetPassword ignore legacy params (currentPassword, authToken, code); Supabase uses session-based auth
 - [Phase 24]: Auth callback redirectTo uses window.location.origin client-side, empty string server-side
+- [Phase 24]: AuthContext.isAuthenticated derived via derived(page, (p) => !!p.data.session) -- single source of truth for auth state
+- [Phase 24]: Empty string authToken passed to DataWriter methods -- Supabase adapter ignores it (cookie-based auth)
+- [Phase 24]: Unified candidate/admin route guard in hooks.server.ts section 4 instead of separate blocks
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T06:54:48.822Z
-Stopped at: Completed 24-01-PLAN.md
+Last session: 2026-03-19T06:55:29.716Z
+Stopped at: Completed 24-02-PLAN.md
 Resume file: None
