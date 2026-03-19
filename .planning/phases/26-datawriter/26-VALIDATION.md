@@ -39,10 +39,11 @@ created: 2026-03-19
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 26-01-01 | 01 | 1 | WRIT-01 | unit | `cd frontend && npx vitest run src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.test.ts` | ✅ (extend) | ⬜ pending |
-| 26-01-02 | 01 | 1 | WRIT-02 | unit | same | ✅ (extend) | ⬜ pending |
-| 26-02-01 | 02 | 1 | WRIT-03 | unit | same | ✅ (extend) | ⬜ pending |
-| 26-03-01 | 03 | 2 | WRIT-04 | unit | same | ✅ (extend) | ⬜ pending |
-| 26-03-02 | 03 | 2 | WRIT-04 | unit | same | ✅ (extend) | ⬜ pending |
+| 26-01-02 | 01 | 1 | WRIT-02, WRIT-03 | unit + tsc | `npx tsc --noEmit --project frontend/tsconfig.json && cd frontend && npx vitest run src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.test.ts` | ✅ (extend) | ⬜ pending |
+| 26-02-01 | 02 | 2 | WRIT-04 | unit | `cd frontend && npx vitest run src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.test.ts` | ✅ (extend) | ⬜ pending |
+| 26-02-02 | 02 | 2 | WRIT-04 | unit | same | ✅ (extend) | ⬜ pending |
+| 26-03-01 | 03 | 2 | WRIT-01 | unit | same | ✅ (extend) | ⬜ pending |
+| 26-03-02 | 03 | 2 | WRIT-02 | unit | same | ✅ (extend) | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
