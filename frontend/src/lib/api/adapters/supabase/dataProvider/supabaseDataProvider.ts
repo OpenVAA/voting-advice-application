@@ -3,17 +3,28 @@ import { supabaseAdapterMixin } from '../supabaseAdapter';
 import { getLocalized } from '../utils/getLocalized';
 import { toDataObject } from '../utils/toDataObject';
 import { parseStoredImage } from '../utils/storageUrl';
+import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { constants } from '$lib/utils/constants';
+import { ENTITY_TYPE } from '@openvaa/data';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
   GetDataOptionsBase,
-  GetElectionsOptions
+  GetElectionsOptions,
+  GetEntitiesOptions,
+  GetQuestionsOptions
 } from '$lib/api/base/getDataOptions.type';
 import type { AppCustomization } from '$lib/contexts/app';
 import type { DynamicSettings } from '@openvaa/app-shared';
-import type { ConstituencyData, ConstituencyGroupData, ElectionData } from '@openvaa/data';
+import type {
+  AnyEntityVariantData,
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  ElectionData,
+  QuestionCategoryData
+} from '@openvaa/data';
 import type { TranslationKey } from '$types';
 
 /**
@@ -208,10 +219,123 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   protected _getNominationData() {
     throw new Error('SupabaseDataProvider._getNominationData not implemented');
   }
-  protected _getEntityData() {
-    throw new Error('SupabaseDataProvider._getEntityData not implemented');
+  /**
+   * Fetch entity data (candidates and/or organizations) from their respective tables.
+   * Sets the `type` field based on entity table, processes answers through parseAnswers,
+   * and converts storage image paths to absolute URLs.
+   */
+  protected async _getEntityData(options?: GetEntitiesOptions): Promise<DPDataType['entities']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // Determine which entity tables to query based on entityType filter
+    const types: Array<{ table: 'candidates' | 'organizations'; entityType: string }> = [];
+    if (!options?.entityType || options.entityType === ENTITY_TYPE.Candidate) {
+      types.push({ table: 'candidates', entityType: ENTITY_TYPE.Candidate });
+    }
+    if (!options?.entityType || options.entityType === ENTITY_TYPE.Organization) {
+      types.push({ table: 'organizations', entityType: ENTITY_TYPE.Organization });
+    }
+
+    const results: AnyEntityVariantData[] = [];
+
+    for (const { table, entityType } of types) {
+      let query = this.supabase.from(table).select('*').order('sort_order');
+      if (options?.id) {
+        query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
+      }
+      const { data, error } = await query;
+      if (error) throw new Error(`getEntityData (${table}): ${error.message}`);
+
+      for (const row of data ?? []) {
+        const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+        results.push({
+          ...obj,
+          type: entityType,
+          image: parseStoredImage(row.image as any, supabaseUrl),
+          answers: parseAnswers(row.answers as any, locale)
+        } as AnyEntityVariantData);
+      }
+    }
+
+    return results;
   }
-  protected _getQuestionData() {
-    throw new Error('SupabaseDataProvider._getQuestionData not implemented');
+
+  /**
+   * Fetch question categories and questions. Localizes choice labels for
+   * choice-type questions, maps category_type to type on categories,
+   * and filters categories by electionId when specified.
+   */
+  protected async _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']> {
+    const locale = options?.locale ?? this.locale;
+    const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
+
+    // 1. Fetch categories
+    const { data: catData, error: catError } = await this.supabase
+      .from('question_categories')
+      .select('*')
+      .order('sort_order');
+    if (catError) throw new Error(`getQuestionData (categories): ${catError.message}`);
+
+    let categories = (catData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      return {
+        ...obj,
+        // QuestionCategoryData uses 'type' not 'categoryType'
+        type: row.category_type ?? 'opinion',
+        image: parseStoredImage(row.image as any, supabaseUrl)
+      } as QuestionCategoryData;
+    });
+
+    // Client-side filter by electionId if specified
+    if (options?.electionId) {
+      const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
+      categories = categories.filter((cat) => {
+        const catElectionIds = (cat as any).electionIds as string[] | null;
+        // Include categories with no electionIds (applicable to all) or matching
+        return (
+          !catElectionIds ||
+          catElectionIds.length === 0 ||
+          catElectionIds.some((eid: string) => filterElectionId.includes(eid))
+        );
+      });
+    }
+
+    // 2. Fetch questions belonging to the filtered categories
+    const categoryIds = categories.map((c) => c.id);
+    let qQuery = this.supabase.from('questions').select('*').order('sort_order');
+    if (categoryIds.length > 0) {
+      qQuery = qQuery.in('category_id', categoryIds);
+    }
+    const { data: qData, error: qError } = await qQuery;
+    if (qError) throw new Error(`getQuestionData (questions): ${qError.message}`);
+
+    const questions = (qData ?? []).map((row) => {
+      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+      // Localize choice labels for choice-type questions
+      let choices = row.choices as Array<{
+        id: number;
+        label: Record<string, string> | string;
+        [k: string]: unknown;
+      }> | null;
+      if (choices && Array.isArray(choices)) {
+        choices = choices.map((choice) => ({
+          ...choice,
+          label:
+            typeof choice.label === 'object' && choice.label !== null
+              ? (getLocalized(choice.label as Record<string, string>, locale, this.defaultLocale) ?? '')
+              : choice.label
+        }));
+      }
+
+      return {
+        ...obj,
+        type: row.type, // question_type enum passes through as-is
+        choices,
+        image: parseStoredImage(row.image as any, supabaseUrl)
+      } as AnyQuestionVariantData;
+    });
+
+    return { categories, questions };
   }
 }
