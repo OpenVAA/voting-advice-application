@@ -12,7 +12,7 @@ Shows the candidate's user settings.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { PasswordSetter } from '$candidate/components/passwordSetter';
-  import { PasswordField } from '$lib/candidate/components/passwordField';
+
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Input } from '$lib/components/input';
@@ -34,7 +34,6 @@ Shows the candidate's user settings.
   ////////////////////////////////////////////////////////////////////
 
   let canSubmit = false;
-  let currentPassword = '';
   let isNewPasswordValid: boolean;
   let password = '';
   let reset: () => void;
@@ -52,7 +51,7 @@ Shows the candidate's user settings.
     }
     status = 'loading';
 
-    const result = await setPassword({ currentPassword, password }).catch((e) => {
+    const result = await setPassword({ password }).catch((e) => {
       logDebugError(`Error with register: ${e?.message}`);
       return undefined;
     });
@@ -63,8 +62,6 @@ Shows the candidate's user settings.
     }
 
     status = 'success';
-    // Clear fields on success
-    currentPassword = '';
     reset();
   }
 
@@ -137,21 +134,6 @@ Shows the candidate's user settings.
     <h2 class={subheadingClass}>{$t('candidateApp.settings.password.update')}</h2>
 
     <div class="flex flex-col gap-md">
-      <!-- <p class="mx-md my-0">{$t('candidateApp.settings.password.currentDescription')}</p> -->
-
-      <div class="w-full" data-testid="settings-current-password">
-        <label for="currentPassword" class="mx-md my-2 px-0">
-          {$t('candidateApp.settings.password.current')}
-        </label>
-        <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-          <PasswordField
-            id="currentPassword"
-            bind:password={currentPassword}
-            externalLabel={true}
-            autocomplete="current-password" />
-        </div>
-      </div>
-
       <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
         <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset confirmPasswordTestId="settings-confirm-password" />
 

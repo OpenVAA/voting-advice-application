@@ -31,7 +31,7 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   type $$Props = AdminNavProps;
 
   const { navigation } = getLayoutContext(onDestroy);
-  const { authToken, t, getRoute } = getAdminContext();
+  const { isAuthenticated, t, getRoute } = getAdminContext();
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
@@ -42,7 +42,7 @@ A template part that outputs the navigation menu for the Admin App for use in `L
     class="pt-16"
     id="drawerCloseButton" />
 
-  {#if $authToken}
+  {#if $isAuthenticated}
     <NavGroup>
       <!-- TODO: i18n the Jobs Monitoring text -->
       <NavItem href={$getRoute('AdminAppHome')} icon="home" text={$t('adminApp.common.home')} />
