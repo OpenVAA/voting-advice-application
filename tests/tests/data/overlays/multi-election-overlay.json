@@ -1,128 +1,330 @@
 {
   "constituencies": [
     {
-      "externalId": "test-constituency-e2",
-      "name": { "en": "Test Constituency E2" }
+      "external_id": "test-constituency-e2",
+      "name": {
+        "en": "Test Constituency E2"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
-  "constituencyGroups": [
+  "constituency_groups": [
     {
-      "externalId": "test-cg-e2",
-      "name": { "en": "Test CG Election 2" },
-      "constituencies": { "externalId": ["test-constituency-e2"] }
+      "external_id": "test-cg-e2",
+      "name": {
+        "en": "Test CG Election 2"
+      },
+      "_constituencies": {
+        "external_id": [
+          "test-constituency-e2"
+        ]
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "elections": [
     {
-      "externalId": "test-election-2",
-      "name": { "en": "Test Election 2026" },
-      "electionDate": "2026-06-15",
-      "electionStartDate": "2026-05-01",
-      "constituencyGroups": { "externalId": ["test-cg-e2"] }
+      "external_id": "test-election-2",
+      "name": {
+        "en": "Test Election 2026"
+      },
+      "election_date": "2026-06-15",
+      "election_start_date": "2026-05-01",
+      "_constituency_groups": {
+        "external_id": [
+          "test-cg-e2"
+        ]
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
-  "questionCategories": [
+  "question_categories": [
     {
-      "externalId": "test-cat-e2-policy",
-      "name": { "en": "Test E2 Category: Policy" },
-      "type": "opinion",
-      "order": 20,
-      "elections": { "externalId": ["test-election-2"] }
+      "external_id": "test-cat-e2-policy",
+      "name": {
+        "en": "Test E2 Category: Policy"
+      },
+      "category_type": "opinion",
+      "sort_order": 20,
+      "_elections": {
+        "external_id": [
+          "test-election-2"
+        ]
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "questions": [
     {
-      "externalId": "test-e2-q-1",
-      "text": { "en": "E2 Question: Should public housing be expanded?" },
-      "category": { "externalId": "test-cat-e2-policy" },
-      "questionType": { "externalId": "test-qt-likert5" },
-      "order": 201
+      "external_id": "test-e2-q-1",
+      "text": {
+        "en": "E2 Question: Should public housing be expanded?"
+      },
+      "category": {
+        "external_id": "test-cat-e2-policy"
+      },
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "sort_order": 201,
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-e2-q-2",
-      "text": { "en": "E2 Question: Should local taxes be reduced?" },
-      "category": { "externalId": "test-cat-e2-policy" },
-      "questionType": { "externalId": "test-qt-likert5" },
-      "order": 202
+      "external_id": "test-e2-q-2",
+      "text": {
+        "en": "E2 Question: Should local taxes be reduced?"
+      },
+      "category": {
+        "external_id": "test-cat-e2-policy"
+      },
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "sort_order": 202,
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "candidates": [
     {
-      "externalId": "test-e2-cand-1",
-      "firstName": "E2 Candidate",
-      "lastName": "One",
+      "external_id": "test-e2-cand-1",
+      "first_name": "E2 Candidate",
+      "last_name": "One",
       "email": "e2.cand1@openvaa.org",
-      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
-      "answersByExternalId": {
-        "test-e2-q-1": { "value": "5" },
-        "test-e2-q-2": { "value": "3" }
-      }
+      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
+      "answers_by_external_id": {
+        "test-e2-q-1": {
+          "value": "5"
+        },
+        "test-e2-q-2": {
+          "value": "3"
+        }
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-e2-cand-2",
-      "firstName": "E2 Candidate",
-      "lastName": "Two",
+      "external_id": "test-e2-cand-2",
+      "first_name": "E2 Candidate",
+      "last_name": "Two",
       "email": "e2.cand2@openvaa.org",
-      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
-      "answersByExternalId": {
-        "test-e2-q-1": { "value": "2" },
-        "test-e2-q-2": { "value": "4" }
-      }
+      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
+      "answers_by_external_id": {
+        "test-e2-q-1": {
+          "value": "2"
+        },
+        "test-e2-q-2": {
+          "value": "4"
+        }
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-e2-cand-3",
-      "firstName": "E2 Candidate",
-      "lastName": "Three",
+      "external_id": "test-e2-cand-3",
+      "first_name": "E2 Candidate",
+      "last_name": "Three",
       "email": "e2.cand3@openvaa.org",
-      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
-      "answersByExternalId": {
-        "test-e2-q-1": { "value": "3" },
-        "test-e2-q-2": { "value": "1" }
-      }
+      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
+      "answers_by_external_id": {
+        "test-e2-q-1": {
+          "value": "3"
+        },
+        "test-e2-q-2": {
+          "value": "1"
+        }
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "nominations": [
     {
-      "externalId": "test-nom-e2-cand1",
-      "candidate": { "externalId": "test-e2-cand-1" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-e2-cand1",
+      "candidate": {
+        "external_id": "test-e2-cand-1"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-e2-cand2",
-      "candidate": { "externalId": "test-e2-cand-2" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-b" }
+      "external_id": "test-nom-e2-cand2",
+      "candidate": {
+        "external_id": "test-e2-cand-2"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-b"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-e2-cand3",
-      "candidate": { "externalId": "test-e2-cand-3" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-e2-cand3",
+      "candidate": {
+        "external_id": "test-e2-cand-3"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-e2-alpha",
-      "candidate": { "externalId": "test-candidate-alpha" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-e2-alpha",
+      "candidate": {
+        "external_id": "test-candidate-alpha"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-e2-beta",
-      "candidate": { "externalId": "test-candidate-beta" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-e2-beta",
+      "candidate": {
+        "external_id": "test-candidate-beta"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-e2-gamma",
-      "candidate": { "externalId": "test-candidate-gamma" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-b" }
+      "external_id": "test-nom-e2-gamma",
+      "candidate": {
+        "external_id": "test-candidate-gamma"
+      },
+      "election": {
+        "external_id": "test-election-2"
+      },
+      "constituency": {
+        "external_id": "test-constituency-e2"
+      },
+      "organization": {
+        "external_id": "test-party-b"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ]
 }

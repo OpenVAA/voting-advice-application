@@ -1,32 +1,56 @@
 {
   "candidates": [
     {
-      "externalId": "test-candidate-unregistered",
-      "firstName": "Test Candidate",
-      "lastName": "Unregistered",
-      "email": "test.unregistered@openvaa.org"
+      "external_id": "test-candidate-unregistered",
+      "first_name": "Test Candidate",
+      "last_name": "Unregistered",
+      "email": "test.unregistered@openvaa.org",
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-candidate-unregistered-2",
-      "firstName": "Test Candidate",
-      "lastName": "Unregistered Two",
-      "email": "test.unregistered2@openvaa.org"
+      "external_id": "test-candidate-unregistered-2",
+      "first_name": "Test Candidate",
+      "last_name": "Unregistered Two",
+      "email": "test.unregistered2@openvaa.org",
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "nominations": [
     {
-      "externalId": "test-nom-unregistered",
-      "candidate": { "externalId": "test-candidate-unregistered" },
-      "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-constituency-alpha" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-unregistered",
+      "candidate": {
+        "external_id": "test-candidate-unregistered"
+      },
+      "election": {
+        "external_id": "test-election-1"
+      },
+      "constituency": {
+        "external_id": "test-constituency-alpha"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
-      "externalId": "test-nom-unregistered-2",
-      "candidate": { "externalId": "test-candidate-unregistered-2" },
-      "election": { "externalId": "test-election-1" },
-      "constituency": { "externalId": "test-constituency-alpha" },
-      "party": { "externalId": "test-party-a" }
+      "external_id": "test-nom-unregistered-2",
+      "candidate": {
+        "external_id": "test-candidate-unregistered-2"
+      },
+      "election": {
+        "external_id": "test-election-1"
+      },
+      "constituency": {
+        "external_id": "test-constituency-alpha"
+      },
+      "organization": {
+        "external_id": "test-party-a"
+      },
+      "project_id": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ]
 }
