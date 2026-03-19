@@ -2,9 +2,16 @@ import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
+import { constants } from '$lib/utils/constants';
+import { toDataObject } from '../utils/toDataObject';
+import { parseStoredImage } from '../utils/storageUrl';
 import type {
+  BasicUserData,
+  CandidateUserData,
   DWReturnType,
+  GetCandidateUserDataOptions,
   LocalizedAnswers,
+  LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
   UpdatedEntityProps,
@@ -82,11 +89,89 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (error) throw new Error(error.message);
     return { type: 'success' as const };
   }
-  protected _getBasicUserData() {
-    throw new Error('SupabaseDataWriter._getBasicUserData not implemented');
+  protected async _getBasicUserData(_opts: WithAuth): DWReturnType<BasicUserData> {
+    const {
+      data: { session },
+      error
+    } = await this.supabase.auth.getSession();
+    if (error || !session) throw new Error('No active session');
+
+    const user = session.user;
+
+    // Decode JWT access token to extract user_roles custom claim
+    const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+    const userRoles: Array<{ role: string; scope_type: string; scope_id: string }> = payload.user_roles ?? [];
+
+    // Determine role from JWT claims
+    let role: 'candidate' | 'admin' | null = null;
+    if (userRoles.some((r) => r.role === 'candidate' || r.role === 'party')) {
+      role = 'candidate';
+    } else if (userRoles.some((r) => ['project_admin', 'account_admin', 'super_admin'].includes(r.role))) {
+      role = 'admin';
+    }
+
+    // Language from user_metadata or default
+    const language = (user.user_metadata?.language as string) ?? 'en';
+
+    return {
+      id: user.id,
+      email: user.email ?? '',
+      username: user.email ?? '',
+      role,
+      settings: { language }
+    };
   }
-  protected _getCandidateUserData() {
-    throw new Error('SupabaseDataWriter._getCandidateUserData not implemented');
+
+  protected async _getCandidateUserData<TNominations extends boolean | undefined>({
+    loadNominations,
+    locale
+  }: GetCandidateUserDataOptions<TNominations>): DWReturnType<CandidateUserData<TNominations>> {
+    // Get basic user data first
+    const user = await this._getBasicUserData({ authToken: '' });
+
+    // Get candidate entity data via RPC
+    const { data: entityRow, error } = await this.supabase
+      .rpc('get_candidate_user_data', { p_entity_type: 'candidate' })
+      .single();
+    if (error || !entityRow) throw new Error(`Failed to load candidate data: ${error?.message ?? 'no data'}`);
+
+    // Transform row to LocalizedCandidateData using established utilities
+    const defaultLocale = 'en';
+    const effectiveLocale = locale ?? defaultLocale;
+    const mapped = toDataObject(entityRow as Record<string, unknown>, effectiveLocale, defaultLocale);
+
+    const candidate: LocalizedCandidateData = {
+      ...mapped,
+      id: entityRow.id,
+      answers: (entityRow.answers as LocalizedAnswers) ?? {},
+      termsOfUseAccepted: entityRow.terms_of_use_accepted ?? null,
+      image: parseStoredImage(entityRow.image as any, constants.PUBLIC_SUPABASE_URL)
+    } as LocalizedCandidateData;
+
+    // Load nominations if requested
+    let nominations: CandidateUserData<TNominations>['nominations'];
+    if (loadNominations) {
+      const { data: nomData, error: nomError } = await this.supabase
+        .from('nominations')
+        .select('election_id, constituency_id, election_round, election_symbol, parent_nomination_id, entity_type, id')
+        .eq('candidate_id', entityRow.id);
+
+      if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
+
+      const nominationsList = (nomData ?? []).map((n: any) => ({
+        electionId: n.election_id,
+        constituencyId: n.constituency_id,
+        electionRound: n.election_round ?? 1,
+        electionSymbol: n.election_symbol ?? '',
+        id: n.id
+      }));
+
+      nominations = { nominations: nominationsList, entities: {} } as CandidateUserData<TNominations>['nominations'];
+    } else {
+      nominations = undefined as CandidateUserData<TNominations>['nominations'];
+    }
+
+    return { user, candidate, nominations } as CandidateUserData<TNominations>;
   }
   protected async _setAnswers({
     target: { type, id },
