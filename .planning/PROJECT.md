@@ -35,7 +35,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - [x] Auth migration from Strapi JWT to Supabase session-based auth — v3.0 Phase 24
 - [x] Edge Function frontend integration (invite-candidate, signicat-callback, send-email) — v3.0 Phase 28
 - [ ] Strapi removal (adapter code, backend/vaa-strapi/, Docker service)
-- [ ] E2E test migration from Strapi to Supabase backend
+- [x] E2E test migration from Strapi to Supabase backend — v3.0 Phase 29
 - [ ] Local dev environment via supabase CLI
 
 ### Out of Scope
@@ -114,4 +114,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-19 after Phase 28 (Edge Functions) complete*
+*Last updated: 2026-03-19 after Phase 29 (E2E Test Migration) complete*
