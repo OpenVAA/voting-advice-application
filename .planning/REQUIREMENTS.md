@@ -52,7 +52,7 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 ### Edge Functions
 
 - [ ] **EDGE-01**: invite-candidate Edge Function integrated into candidate invite flow
-- [ ] **EDGE-02**: signicat-callback Edge Function integrated for bank authentication
+- [x] **EDGE-02**: signicat-callback Edge Function integrated for bank authentication
 - [ ] **EDGE-03**: send-email Edge Function integrated for transactional email
 
 ### E2E Test Migration
@@ -121,7 +121,7 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | ADMN-01 | Phase 27 | Complete |
 | ADMN-02 | Phase 27 | Complete |
 | EDGE-01 | Phase 28 | Pending |
-| EDGE-02 | Phase 28 | Pending |
+| EDGE-02 | Phase 28 | Complete |
 | EDGE-03 | Phase 28 | Pending |
 | TEST-01 | Phase 29 | Pending |
 | TEST-02 | Phase 29 | Pending |

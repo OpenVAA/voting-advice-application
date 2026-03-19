@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 28 context gathered
-last_updated: "2026-03-19T17:32:17.575Z"
+stopped_at: Completed 28-02-PLAN.md
+last_updated: "2026-03-19T17:51:52.969Z"
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 20
+  completed_plans: 19
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 27 — adminwriter
+**Current focus:** Phase 28 — edge-functions
 
 ## Current Position
 
-Phase: 27 (adminwriter) — COMPLETE
-Plan: 2 of 2 (all complete)
+Phase: 28 (edge-functions) — COMPLETE
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Plan: 2 of 2 (all complete)
 | Phase 26 P03 | 3min | 2 tasks | 2 files |
 | Phase 27 P01 | 3min | 2 tasks | 4 files |
 | Phase 27 P02 | 1min | 1 tasks | 1 files |
+| Phase 28 P02 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,9 @@ Plan: 2 of 2 (all complete)
 - [Phase 27-01]: merge_custom_data uses SECURITY INVOKER so admin_update_questions RLS policy enforces access
 - [Phase 27-01]: Shallow JSONB merge via || operator -- callers provide complete replacement values per key
 - [Phase 27-02]: _updateQuestion ignores authToken (cookie-based auth per Phase 24); _insertJobResult resolves project_id from election_id for admin_jobs RLS
+- [Phase 28]: Supabase path passes raw encrypted id_token to Edge Function (no client-side decryption)
+- [Phase 28]: Session established server-side via verifyOtp using magic link token from Edge Function action_link URL
+- [Phase 28]: id_token cookie cleared after session establishment to prevent replay; SvelteKit HttpError re-thrown via 'status' in e check
 
 ### Pending Todos
 
@@ -127,6 +131,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:32:17.571Z
-Stopped at: Phase 28 context gathered
-Resume file: .planning/phases/28-edge-functions/28-CONTEXT.md
+Last session: 2026-03-19T17:51:52.965Z
+Stopped at: Completed 28-02-PLAN.md
+Resume file: None
