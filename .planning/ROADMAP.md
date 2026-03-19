@@ -169,10 +169,11 @@ Plans:
   1. Admin can trigger candidate invitations that send invite emails via the invite-candidate Edge Function
   2. Candidate can authenticate using Finnish bank ID through the Signicat OIDC flow via the signicat-callback Edge Function
   3. Transactional emails (password reset, notifications) are sent via the send-email Edge Function instead of Strapi email
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 28-01: TBD
+- [ ] 28-01-PLAN.md — Invite-candidate + send-email: _preregister and sendEmail implementations in SupabaseDataWriter with interface additions and unit tests (EDGE-01, EDGE-03)
+- [ ] 28-02-PLAN.md — Signicat bank auth: dual-adapter preregister server route calling signicat-callback Edge Function with session establishment via verifyOtp (EDGE-02)
 
 ### Phase 29: E2E Test Migration
 **Goal**: The full E2E test suite runs against the Supabase backend with no Strapi dependency
@@ -216,7 +217,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | 25. DataProvider | 4/4 | Complete    | 2026-03-19 | - |
 | 26. DataWriter | 3/3 | Complete   | 2026-03-19 | - |
 | 27. AdminWriter | 2/2 | Complete    | 2026-03-19 | - |
-| 28. Edge Functions | v3.0 | 0/? | Not started | - |
+| 28. Edge Functions | v3.0 | 0/2 | Not started | - |
 | 29. E2E Test Migration | v3.0 | 0/? | Not started | - |
 | 30. Strapi Removal and Dev Environment | v3.0 | 0/? | Not started | - |
 
