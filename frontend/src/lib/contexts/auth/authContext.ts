@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived, get } from 'svelte/store';
+import { derived } from 'svelte/store';
 import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
@@ -23,11 +23,13 @@ export function getAuthContext(): AuthContext {
 export function initAuthContext(): AuthContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initAuthContext() called for a second time');
 
-  const authToken = derived(page, (page) => page.data.token ?? undefined);
+  const isAuthenticated = derived(page, (p) => !!p.data.session);
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
-  // NB. These automatically handle authentication
+  // NB. These automatically handle authentication via Supabase sessions.
+  // authToken is passed as '' to satisfy the WithAuth type constraint --
+  // the Supabase adapter ignores it (auth is cookie-based).
   ////////////////////////////////////////////////////////////////////
 
   async function requestForgotPasswordEmail(
@@ -45,19 +47,15 @@ export function initAuthContext(): AuthContext {
   }
 
   async function logout(): Promise<void> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.logout({ authToken: token }).catch((e) => {
+    await dataWriter.logout({ authToken: '' }).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
   }
 
-  async function setPassword(opts: { currentPassword: string; password: string }): Promise<DataApiActionResult> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token');
+  async function setPassword(opts: { password: string }): Promise<DataApiActionResult> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    return dataWriter.setPassword({ ...opts, authToken: token });
+    return dataWriter.setPassword({ ...opts, authToken: '', currentPassword: '' });
   }
 
   ////////////////////////////////////////////////////////////
@@ -65,7 +63,7 @@ export function initAuthContext(): AuthContext {
   ////////////////////////////////////////////////////////////
 
   return setContext<AuthContext>(CONTEXT_KEY, {
-    authToken,
+    isAuthenticated,
     logout,
     requestForgotPasswordEmail,
     resetPassword,

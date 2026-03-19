@@ -1,40 +1,42 @@
 import type { Readable } from 'svelte/store';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export type AuthContext = {
   /**
-   * Holds the jwt token. NB. The context’s internal methods use it automatically for authentication.
+   * Whether the user is currently authenticated (has a valid Supabase session).
    */
-  authToken: Readable<string | undefined>;
+  isAuthenticated: Readable<boolean>;
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
-  // NB. These automatically handle authentication
+  // NB. These automatically handle authentication via Supabase sessions.
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Logout the user and redirect to the login page.
-   * @returns A `Promise` resolving when the redirection is complete.
+   * Logout the user.
+   * @returns A Promise resolving when logout is complete.
    */
   logout: () => Promise<void>;
+
   /**
-   * Request that the a password reset email sent to the user.
-   * @param email - The user’s email.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
+   * Request a password reset email.
+   * @param email - The user's email.
    */
   requestForgotPasswordEmail: (opts: { email: string }) => ReturnType<DataWriter['requestForgotPasswordEmail']>;
+
   /**
-   * Check whether the registration key is valid.
-   * @param code - The password reset code.
+   * Reset password using a recovery session (after clicking email link).
+   * The code parameter is ignored by Supabase adapter (session is established via auth callback).
+   * @param code - Legacy Strapi reset code (ignored by Supabase adapter).
    * @param password - The new password.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
   resetPassword: (opts: { code: string; password: string }) => ReturnType<DataWriter['resetPassword']>;
+
   /**
-   * Change a user’s password.
-   * @param currentPassword - The current password.
+   * Change the current user's password.
+   * Only requires the new password -- old password requirement dropped per user decision.
    * @param password - The new password.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
-  setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
+  setPassword: (opts: { password: string }) => Promise<DataApiActionResult>;
 };
