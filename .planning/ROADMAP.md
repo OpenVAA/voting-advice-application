@@ -109,9 +109,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 24-01-PLAN.md -- SupabaseDataWriter auth methods + auth callback route + unit tests (AUTH-01, AUTH-04)
-- [ ] 24-02-PLAN.md -- Session infrastructure: hooks route guard, layout loaders, AuthContext rewrite (AUTH-02, AUTH-03)
-- [ ] 24-03-PLAN.md -- Route refactoring, admin page updates, Strapi auth cleanup (AUTH-01, AUTH-02, AUTH-03, AUTH-04)
+- [x] 24-01-PLAN.md -- SupabaseDataWriter auth methods + auth callback route + unit tests (AUTH-01, AUTH-04)
+- [x] 24-02-PLAN.md -- Session infrastructure: hooks route guard, layout loaders, AuthContext rewrite (AUTH-02, AUTH-03)
+- [x] 24-03-PLAN.md -- Route refactoring, admin page updates, Strapi auth cleanup (AUTH-01, AUTH-02, AUTH-03, AUTH-04)
 
 ### Phase 25: DataProvider
 **Goal**: The voter app loads all data from Supabase and works end-to-end without Strapi
