@@ -19,15 +19,14 @@
 import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 // All describe blocks in this file share global app state — run serially.
 test.describe.configure({ mode: 'serial' });
 
 /**
  * Default access settings to restore after each mode test.
- * Always send the COMPLETE access object to avoid clearing adjacent settings
- * (Pitfall 2 from research).
+ * Ensures consistent test state across describe blocks.
  */
 const defaultAccess = {
   candidateApp: true,
@@ -41,15 +40,10 @@ const defaultAccess = {
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
   test('should show read-only warning when answers are locked', async ({ page, candidateQuestionsPage }) => {
@@ -87,15 +81,10 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
   test('should show maintenance page when candidateApp is disabled', async ({ page }) => {
@@ -126,15 +115,10 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
   test('should show maintenance page when underMaintenance is true', async ({ page }) => {
@@ -164,11 +148,7 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
 // ---------------------------------------------------------------------------
 
 test.describe('candidate notifications (CAND-13)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     // Disable notification to restore defaults
@@ -181,7 +161,6 @@ test.describe('candidate notifications (CAND-13)', { tag: ['@candidate'] }, () =
         }
       }
     });
-    await client.dispose();
   });
 
   test('should display notification popup when enabled', async ({ page }) => {
@@ -245,18 +224,13 @@ test.describe('help and privacy pages (CAND-14)', { tag: ['@candidate'] }, () =>
 // ---------------------------------------------------------------------------
 
 test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     // Restore default visibility (show everything)
     await client.updateAppSettings({
       candidateApp: { questions: { hideVideo: false, hideHero: false } }
     });
-    await client.dispose();
   });
 
   test('should hide hero when hideHero is enabled', async ({ page, candidateQuestionsPage }) => {

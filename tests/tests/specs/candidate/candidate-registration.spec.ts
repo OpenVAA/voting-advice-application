@@ -2,8 +2,8 @@
  * Candidate registration and password reset E2E tests.
  *
  * Covers:
- * - CAND-07: Registration via email link (send email, extract link from SES, set password)
- * - CAND-08: Password reset (trigger forgot-password, read reset link from SES email, reset, verify login, restore)
+ * - CAND-07: Registration via email link (send email, extract link from Inbucket, set password)
+ * - CAND-08: Password reset (trigger forgot-password, read reset link from Inbucket email, reset, verify login, restore)
  *
  * Uses unauthenticated browser context since registration and reset flows
  * are for users who are not yet logged in.
@@ -11,7 +11,7 @@
 
 import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
 import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
 import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
@@ -23,38 +23,23 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test.describe('candidate registration via email', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
   const candidateEmail = candidateAddendum.candidates[0].email;
+  const candidateExternalId = candidateAddendum.candidates[0].external_id;
   let registrationLink: string;
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
-
-  test.afterAll(async () => {
-    await client.dispose();
-  });
 
   test('should send registration email and extract link', async () => {
     // Count existing emails to skip stale ones from previous test runs
     const emailsBefore = await countEmailsForRecipient(candidateEmail);
 
-    // Step 1: Find the unregistered candidate's documentId
-    const findResult = await client.findData('candidates', {
-      email: { $eq: candidateEmail }
-    });
-    const candidateDocumentId = findResult.data?.[0]?.documentId as string | undefined;
-    expect(candidateDocumentId).toBeTruthy();
-
-    // Step 2: Send registration email via Admin Tools
+    // Send registration email via SupabaseAdminClient (uses candidateExternalId)
     await client.sendEmail({
-      candidateId: candidateDocumentId!,
+      candidateExternalId,
       subject: 'Registration',
-      content: 'Click here to register: {LINK}',
-      requireRegistrationKey: true
+      content: 'Click here to register: {LINK}'
     });
 
-    // Step 3: Poll for NEW email arrival (skip stale emails from previous runs)
+    // Step 2: Poll for NEW email arrival (skip stale emails from previous runs)
     await expect
       .poll(async () => await getLatestEmailHtml(candidateEmail, emailsBefore), {
         message: 'Waiting for registration email',
@@ -63,7 +48,7 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
       })
       .toBeTruthy();
 
-    // Step 4: Extract registration link from the NEW email
+    // Step 3: Extract registration link from the NEW email
     const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
     const link = extractLinkFromHtml(emailHtml!);
     expect(link).toBeTruthy();
@@ -117,37 +102,22 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
 test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
   // Use an already-registered candidate from the default dataset
   const candidateEmail = defaultDataset.candidates[0].email;
   const originalPassword = TEST_CANDIDATE_PASSWORD;
 
-  test.beforeAll(async () => {
-    await client.login();
-  });
-
-  test.afterAll(async () => {
-    await client.dispose();
-  });
-
-  test('should complete forgot-password and reset flow via SES email', async ({ page }) => {
+  test('should complete forgot-password and reset flow via Inbucket email', async ({ page }) => {
     // CAND-08: Per locked decision, password reset reads the reset link from
-    // SES email (via emailHelper), NOT from the API response directly.
+    // Inbucket email (via emailHelper), NOT from the API response directly.
 
     // Count existing emails to skip stale ones from previous test runs
     const emailsBefore = await countEmailsForRecipient(candidateEmail);
 
-    // Step 1: Find the candidate's documentId
-    const findResult = await client.findData('candidates', {
-      email: { $eq: candidateEmail }
-    });
-    const candidateDocumentId = findResult.data?.[0]?.documentId as string | undefined;
-    expect(candidateDocumentId).toBeTruthy();
+    // Trigger forgot-password via Supabase auth (sends the reset email via Inbucket)
+    await client.sendForgotPassword(candidateEmail);
 
-    // Step 2: Trigger forgot-password via API (sends the reset email)
-    await client.sendForgotPassword({ documentId: candidateDocumentId! });
-
-    // Step 3: Poll SES inbox for NEW password reset email
+    // Step 2: Poll Inbucket inbox for NEW password reset email
     await expect
       .poll(async () => await getLatestEmailHtml(candidateEmail, emailsBefore), {
         message: 'Waiting for password reset email',
@@ -156,15 +126,15 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
       })
       .toBeTruthy();
 
-    // Step 4: Extract the reset link from the NEW email
+    // Step 3: Extract the reset link from the NEW email
     const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
     const resetLink = extractLinkFromHtml(emailHtml!);
     expect(resetLink).toBeTruthy();
 
-    // Step 5: Navigate to the reset link
+    // Step 4: Navigate to the reset link
     await page.goto(resetLink!);
 
-    // Step 6: Set new password on the password-reset page
+    // Step 5: Set new password on the password-reset page
     // The password-reset page uses PasswordSetter without explicit testIds on the
     // wrapper divs, so we target the PasswordField inputs directly by their common
     // data-testid="password-field". The first is the new password, second is confirmation.
@@ -174,10 +144,10 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
     await passwordFields.nth(1).fill(newPassword);
     await page.getByTestId('password-reset-submit').click();
 
-    // Step 7: After reset, the app redirects to the login page
+    // Step 6: After reset, the app redirects to the login page
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
 
-    // Step 8: Verify login with the new password
+    // Step 7: Verify login with the new password
     await page.getByTestId('login-email').fill(candidateEmail);
     await page.getByTestId('password-field').fill(newPassword);
     await page.getByTestId('login-submit').click();
@@ -188,10 +158,6 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
 
     // Step 9: RESTORE original password via API using setPassword
     // This is critical for subsequent test runs so auth-setup doesn't break
-    const restoreResult = await client.setPassword({
-      documentId: candidateDocumentId!,
-      password: originalPassword
-    });
-    expect(restoreResult.type, `Failed to restore password: ${restoreResult.cause}`).toBe('success');
+    await client.setPassword(candidateEmail, originalPassword);
   });
 });

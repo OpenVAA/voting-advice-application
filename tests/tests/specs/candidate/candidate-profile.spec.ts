@@ -20,7 +20,7 @@ import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml } from '../../utils/emailHelper';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 
 // Run all tests in this file without pre-existing authentication
@@ -29,17 +29,10 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
   const candidateEmail = candidateAddendum.candidates[1].email;
+  const candidateExternalId = candidateAddendum.candidates[1].external_id;
   const candidatePassword = 'ProfileTestPass1!';
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
-
-  test.afterAll(async () => {
-    await client.dispose();
-  });
 
   /**
    * Log in as the freshly registered candidate.
@@ -60,22 +53,14 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     // Count existing emails to skip stale ones from previous test runs
     const emailsBefore = await countEmailsForRecipient(candidateEmail);
 
-    // Step 1: Find the unregistered candidate's documentId
-    const findResult = await client.findData('candidates', {
-      email: { $eq: candidateEmail }
-    });
-    const candidateDocumentId = findResult.data?.[0]?.documentId as string | undefined;
-    expect(candidateDocumentId).toBeTruthy();
-
-    // Step 2: Send registration email via Admin Tools
+    // Step 1: Send registration email via SupabaseAdminClient (uses candidateExternalId)
     await client.sendEmail({
-      candidateId: candidateDocumentId!,
+      candidateExternalId,
       subject: 'Registration',
-      content: 'Click here to register: {LINK}',
-      requireRegistrationKey: true
+      content: 'Click here to register: {LINK}'
     });
 
-    // Step 3: Poll SES for NEW registration email arrival
+    // Step 2: Poll Inbucket for NEW registration email arrival
     await expect
       .poll(async () => await getLatestEmailHtml(candidateEmail, emailsBefore), {
         message: 'Waiting for registration email',
@@ -84,13 +69,13 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
       })
       .toBeTruthy();
 
-    // Step 4: Extract and navigate to registration link from NEW email
+    // Step 3: Extract and navigate to registration link from NEW email
     const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
     const link = extractLinkFromHtml(emailHtml!);
     expect(link).toBeTruthy();
     await page.goto(link!);
 
-    // Step 5: Set password on the register/password page
+    // Step 4: Set password on the register/password page
     // Per Plan 02 findings: use direct getByTestId for register/password page
     const passwordWrapper = page.getByTestId('register-password');
     const confirmWrapper = page.getByTestId('register-confirm-password');
@@ -100,18 +85,18 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await confirmWrapper.getByTestId('password-field').fill(candidatePassword);
     await submitButton.click();
 
-    // Step 6: After registration, the app redirects to login page (not auto-login)
+    // Step 5: After registration, the app redirects to login page (not auto-login)
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
 
-    // Step 7: Login with the newly set password
+    // Step 6: Login with the newly set password
     await page.getByTestId(testIds.candidate.login.email).fill(candidateEmail);
     await page.getByTestId(testIds.candidate.login.password).fill(candidatePassword);
     await page.getByTestId(testIds.candidate.login.submit).click();
 
-    // Step 8: Verify navigation away from login
+    // Step 7: Verify navigation away from login
     await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
 
-    // Step 9: Accept Terms of Use (shown on first login after registration)
+    // Step 8: Accept Terms of Use (shown on first login after registration)
     const touCheckbox = page.getByTestId('terms-checkbox');
     await expect(touCheckbox).toBeVisible({ timeout: 10000 });
     await touCheckbox.check();
@@ -119,7 +104,7 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
     await expect(continueButton).toBeEnabled({ timeout: 10000 });
     await continueButton.click();
 
-    // Step 10: Verify we reach the candidate home (save may take a moment)
+    // Step 9: Verify we reach the candidate home (save may take a moment)
     await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
   });
 
