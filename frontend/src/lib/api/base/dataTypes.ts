@@ -6,6 +6,8 @@ import type {
   ConstituencyData,
   ConstituencyGroupData,
   ElectionData,
+  EntityVariantTree,
+  NominationVariantTree,
   QuestionCategoryData
 } from '@openvaa/data';
 import type { AppCustomization } from '$lib/contexts/app';
@@ -36,10 +38,10 @@ export type DPDataType = {
     constituencies: Array<ConstituencyData>;
   };
   nominations: {
-    nominations: Array<AnyNominationVariantPublicData>;
-    entities: Array<AnyEntityVariantData>;
+    nominations: Array<AnyNominationVariantPublicData> | NominationVariantTree;
+    entities: Array<AnyEntityVariantData> | EntityVariantTree;
   };
-  entities: Array<AnyEntityVariantData>;
+  entities: Array<AnyEntityVariantData> | EntityVariantTree;
   questions: {
     categories: Array<QuestionCategoryData>;
     questions: Array<AnyQuestionVariantData>;
