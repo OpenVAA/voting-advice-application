@@ -230,6 +230,14 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
   abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
   insertJobResult: (opts: InsertJobResultOptions) => DWReturnType<DataApiActionResult, TType>;
+
+  /**
+   * Send transactional or bulk emails via the send-email Edge Function.
+   * Admin-only: the Edge Function validates admin roles from JWT claims.
+   * @param opts - Email options including templates, recipients, and optional sender/dry-run.
+   * @returns A `Promise` resolving to a `SendEmailResult` or a `Response` containing one.
+   */
+  sendEmail: (opts: SendEmailOptions) => DWReturnType<SendEmailResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,3 +420,26 @@ export type AbortJobOptions = WithAuth & {
 export type AbortAllJobsOptions = WithAuth;
 
 export type InsertJobResultOptions = WithAuth & { data: AdminJobRecord };
+
+/**
+ * Options for sending transactional or bulk emails via an Edge Function.
+ */
+export type SendEmailOptions = WithAuth & {
+  /** Locale-keyed templates with subject and body. Template variables use {{variable.path}} syntax. */
+  templates: Record<string, { subject: string; body: string }>;
+  /** Array of Supabase auth user IDs to send to. */
+  recipientUserIds: string[];
+  /** Optional sender address override. */
+  from?: string;
+  /** If true, renders templates without sending. */
+  dryRun?: boolean;
+};
+
+/**
+ * Result of a send-email operation.
+ */
+export type SendEmailResult = DataApiActionResult & {
+  sent?: number;
+  failed?: number;
+  results?: Array<{ user_id: string; email: string; status?: string; error?: string }>;
+};

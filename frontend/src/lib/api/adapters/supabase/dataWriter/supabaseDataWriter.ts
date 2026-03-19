@@ -13,6 +13,8 @@ import type {
   InsertJobResultOptions,
   LocalizedAnswers,
   LocalizedCandidateData,
+  SendEmailOptions,
+  SendEmailResult,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
@@ -254,6 +256,10 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     });
     if (error) throw new Error(`updateQuestion: ${error.message}`);
     return { type: 'success' as const };
+  }
+
+  protected _sendEmail(_opts: SendEmailOptions): Promise<SendEmailResult> {
+    throw new Error('SupabaseDataWriter._sendEmail not implemented');
   }
 
   protected async _insertJobResult({ data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {

@@ -11,6 +11,7 @@ import type {
   GetCandidateUserDataOptions,
   InsertJobResultOptions,
   LocalizedAnswers,
+  SendEmailResult,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
@@ -251,6 +252,10 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       authToken
     });
     return { type: 'success' };
+  }
+
+  protected _sendEmail(): Promise<SendEmailResult> {
+    throw new Error('StrapiDataWriter._sendEmail not implemented');
   }
 
   ////////////////////////////////////////////////////////////////////

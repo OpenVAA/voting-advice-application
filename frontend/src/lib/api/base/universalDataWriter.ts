@@ -17,6 +17,8 @@ import type {
   GetPastJobsOptions,
   InsertJobResultOptions,
   LocalizedAnswers,
+  SendEmailOptions,
+  SendEmailResult,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
@@ -171,6 +173,10 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._insertJobResult(opts);
   }
 
+  sendEmail(opts: SendEmailOptions): DWReturnType<SendEmailResult> {
+    return this._sendEmail(opts);
+  }
+
   /////////////////////////////////////////////////////////////////////
   // Universal job management methods for the Admin App
   /////////////////////////////////////////////////////////////////////
@@ -259,6 +265,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdatedEntityProps>;
   protected abstract _updateQuestion(opts: SetQuestionOptions): DWReturnType<DataApiActionResult>;
   protected abstract _insertJobResult(opts: InsertJobResultOptions): DWReturnType<DataApiActionResult>;
+  protected abstract _sendEmail(opts: SendEmailOptions): DWReturnType<SendEmailResult>;
 }
 
 /**
