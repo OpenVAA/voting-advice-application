@@ -10,10 +10,12 @@ import type {
   CandidateUserData,
   DWReturnType,
   GetCandidateUserDataOptions,
+  InsertJobResultOptions,
   LocalizedAnswers,
   LocalizedCandidateData,
   SetAnswersOptions,
   SetPropertiesOptions,
+  SetQuestionOptions,
   UpdatedEntityProps,
   WithAuth
 } from '$lib/api/base/dataWriter.type';
@@ -239,10 +241,47 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
     return { termsOfUseAccepted: data.terms_of_use_accepted ?? null };
   }
-  protected _updateQuestion() {
-    throw new Error('SupabaseDataWriter._updateQuestion not implemented');
+  protected async _updateQuestion({
+    id,
+    data: { customData }
+  }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
+    if (!customData || typeof customData !== 'object')
+      throw new Error(`Expected a customData object but got type: ${typeof customData}`);
+
+    const { error } = await this.supabase.rpc('merge_custom_data', {
+      question_id: id,
+      patch: customData
+    });
+    if (error) throw new Error(`updateQuestion: ${error.message}`);
+    return { type: 'success' as const };
   }
-  protected _insertJobResult() {
-    throw new Error('SupabaseDataWriter._insertJobResult not implemented');
+
+  protected async _insertJobResult({ data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
+    // Resolve project_id from election_id (AdminJobRecord doesn't include project_id
+    // but the admin_jobs table requires it for RLS)
+    const { data: election, error: electionError } = await this.supabase
+      .from('elections')
+      .select('project_id')
+      .eq('id', data.electionId)
+      .single();
+    if (electionError || !election)
+      throw new Error(`Failed to resolve project for election: ${electionError?.message ?? 'not found'}`);
+
+    const { error } = await this.supabase.from('admin_jobs').insert({
+      project_id: election.project_id,
+      job_id: data.jobId,
+      job_type: data.jobType,
+      election_id: data.electionId,
+      author: data.author,
+      end_status: data.endStatus,
+      start_time: data.startTime ?? null,
+      end_time: data.endTime ?? null,
+      input: data.input ?? null,
+      output: data.output ?? null,
+      messages: data.messages ?? null,
+      metadata: data.metadata ?? null
+    });
+    if (error) throw new Error(`insertJobResult: ${error.message}`);
+    return { type: 'success' as const };
   }
 }
