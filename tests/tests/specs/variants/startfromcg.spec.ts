@@ -24,7 +24,7 @@
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -35,14 +35,13 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;
-  let client: StrapiAdminClient;
+  let client: SupabaseAdminClient;
 
   test.beforeAll(async ({ browser }) => {
     sharedPage = await browser.newPage();
 
     // Query for the municipalities constituency group to get its database ID
-    client = new StrapiAdminClient();
-    await client.login();
+    client = new SupabaseAdminClient();
 
     const findResult = await client.findData('constituencyGroups', {
       externalId: { $eq: 'test-cg-municipalities' }
@@ -109,7 +108,6 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
         notifications: { voterApp: { show: false } },
         analytics: { trackEvents: false }
       });
-      await client.dispose();
     }
     await sharedPage.close();
   });

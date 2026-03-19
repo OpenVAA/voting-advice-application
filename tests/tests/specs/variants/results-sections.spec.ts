@@ -9,19 +9,15 @@
  * Uses the `variant-results-sections` Playwright project which depends on
  * `variant-multi-election` (reuses the same multi-election dataset with 2 elections).
  *
- * Each test modifies `results.sections` via StrapiAdminClient and reloads the
+ * Each test modifies `results.sections` via SupabaseAdminClient and reloads the
  * results page to verify the correct sections are displayed. The afterAll block
  * restores the default settings.
- *
- * IMPORTANT: Every updateAppSettings call includes ALL sibling settings within
- * each component to avoid Pitfall 2 (Strapi content-manager PUT replaces entire
- * components, not just specified fields).
  */
 
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -61,8 +57,7 @@ const defaultQuestionSettings = {
 };
 
 /**
- * Complete results component settings. Used in every updateAppSettings call
- * that modifies results.sections to avoid Pitfall 2.
+ * Complete results component settings for configuring results.sections.
  */
 function resultsSettings(sections: string[]) {
   return {
@@ -110,10 +105,9 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async ({ browser }) => {
-    await client.login();
     sharedPage = await browser.newPage();
 
     // Navigate through the voter journey once to reach results.
@@ -194,7 +188,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
       ...defaultEntitySettings,
       ...suppressInterferingPopups
     });
-    await client.dispose();
+
     await sharedPage.close();
   });
 

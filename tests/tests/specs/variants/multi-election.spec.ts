@@ -22,7 +22,7 @@
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -45,7 +45,7 @@ const suppressInterferingPopups = {
 
 /**
  * Default entity settings that data setup configures.
- * Included in every updateAppSettings call to avoid Pitfall 2.
+ * Included in every updateAppSettings call to ensure consistent test state.
  */
 const defaultEntitySettings = {
   entities: {
@@ -219,10 +219,9 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
 test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       elections: {
         disallowSelection: true,
@@ -254,7 +253,7 @@ test.describe('disallowSelection mode', { tag: ['@variant'] }, () => {
       ...defaultEntitySettings,
       ...suppressInterferingPopups
     });
-    await client.dispose();
+
   });
 
   test('should bypass election selection when disallowSelection is true', async ({ page }) => {

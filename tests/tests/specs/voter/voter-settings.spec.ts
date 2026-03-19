@@ -8,7 +8,7 @@
  * - VOTE-07: Minimum answers threshold enforcement
  * - VOTE-17: Results link visibility in header banner
  *
- * Each describe block creates its own StrapiAdminClient, enables required
+ * Each describe block creates its own SupabaseAdminClient, enables required
  * settings in beforeAll, and restores data.setup.ts defaults in afterAll.
  *
  * Runs within the `voter-app` project which depends only on data-setup
@@ -17,23 +17,21 @@
  * IMPORTANT: Tests that modify shared app settings run serially to prevent
  * race conditions between describe blocks.
  *
- * IMPORTANT: Every updateAppSettings call includes ALL sibling settings to
- * avoid Pitfall 2 (Strapi content-manager PUT replaces entire components,
- * not just specified fields). Notification and analytics popups are suppressed
- * to prevent dialog overlays from intercepting test clicks.
+ * Notification and analytics popups are suppressed to prevent dialog overlays
+ * from intercepting test clicks.
  */
 
 import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial' });
 
 // Ensure unauthenticated voter context.
 // Disable trace to avoid Playwright 1.58.2 ENOENT trace writer conflicts
-// when serial describe blocks share StrapiAdminClient across beforeAll/afterAll.
+// when serial describe blocks share state across beforeAll/afterAll.
 test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
 
 /**
@@ -48,7 +46,7 @@ const suppressInterferingPopups = {
 
 /**
  * Entity settings that data.setup.ts configures.
- * Included in every updateAppSettings call to avoid Pitfall 2.
+ * Included in every updateAppSettings call to ensure consistent test state.
  */
 const defaultEntitySettings = {
   entities: {
@@ -60,7 +58,6 @@ const defaultEntitySettings = {
 /**
  * Default settings to restore in afterAll blocks.
  * Matches the data.setup.ts app settings configuration.
- * Always send COMPLETE sibling settings to avoid Pitfall 2 (overwrite, not merge).
  */
 const defaultQuestionSettings = {
   questions: {
@@ -77,12 +74,11 @@ const defaultQuestionSettings = {
 // ---------------------------------------------------------------------------
 
 test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.describe.configure({ mode: 'serial' });
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       questions: {
         questionsIntro: { show: true, allowCategorySelection: true },
@@ -100,7 +96,7 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
       ...defaultQuestionSettings,
       matching: { minimumAnswers: 5 }
     });
-    await client.dispose();
+
   });
 
   test('should show category checkboxes when allowCategorySelection enabled', async ({ page }) => {
@@ -222,12 +218,11 @@ test.describe('category selection (VOTE-13)', { tag: ['@voter'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.describe.configure({ mode: 'serial' });
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       questions: {
         questionsIntro: { show: false, allowCategorySelection: false },
@@ -241,7 +236,7 @@ test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-    await client.dispose();
+
   });
 
   test('should show category intro page before each category', async ({ page }) => {
@@ -350,10 +345,9 @@ test.describe('category intros (VOTE-05)', { tag: ['@voter'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       questions: {
         questionsIntro: { show: true, allowCategorySelection: false },
@@ -367,7 +361,7 @@ test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-    await client.dispose();
+
   });
 
   test('should show question intro page when questionsIntro.show enabled', async ({ page }) => {
@@ -397,10 +391,9 @@ test.describe('question intro page (VOTE-04)', { tag: ['@voter'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       questions: {
         questionsIntro: { show: false, allowCategorySelection: false },
@@ -418,7 +411,7 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
       ...defaultQuestionSettings,
       matching: { minimumAnswers: 5 }
     });
-    await client.dispose();
+
   });
 
   test('should enforce minimum answers before results available', async ({ page }) => {
@@ -471,10 +464,9 @@ test.describe('minimum answers threshold (VOTE-07)', { tag: ['@voter'] }, () => 
 // ---------------------------------------------------------------------------
 
 test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       questions: {
         questionsIntro: { show: false, allowCategorySelection: false },
@@ -488,7 +480,7 @@ test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultQuestionSettings);
-    await client.dispose();
+
   });
 
   test('should hide results link when showResultsLink is false', async ({ page }) => {
