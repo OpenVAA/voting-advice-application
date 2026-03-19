@@ -50,13 +50,14 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 The project is a mature monorepo used for real election deployments. The Supabase backend is fully functional with authentication, multi-tenant RLS, storage, bulk operations, and comprehensive test coverage. Phase 23 (Adapter Foundation) established the shared infrastructure for the Supabase frontend adapter — mixin, row mapping, localization utilities, and stub classes are in place.
 
-Key technical state after Phase 23:
+Key technical state after Phase 25:
 - **Backend:** Supabase (Postgres, GoTrue, PostgREST, Storage, Edge Functions) at `apps/supabase/`
 - **Legacy backend:** Strapi v5 at `backend/vaa-strapi/` — to be removed after frontend adapter migration
 - **Types:** `@openvaa/supabase-types` with generated Database types and COLUMN_MAP/PROPERTY_MAP
 - **Adapter foundation:** `supabaseAdapterMixin`, `mapRow`/`mapRowToDb`, `getLocalized` utilities, stub DataProvider/DataWriter/FeedbackWriter classes, switch wiring — all at `frontend/src/lib/api/adapters/supabase/`
-- **Tests:** 204 pgTAP tests + existing Playwright E2E + Vitest unit tests + 20 adapter utility tests
-- **Auth hooks:** SvelteKit `hooks.server.ts` has Supabase client wired but routes still use Strapi auth
+- **DataProvider:** All 7 read methods implemented (`_getAppSettings`, `_getAppCustomization`, `_getElectionData`, `_getConstituencyData`, `_getEntityData`, `_getQuestionData`, `_getNominationData`) with `localizeRow`, `toDataObject`, `parseStoredImage` utilities and `get_nominations` RPC — 84 tests passing
+- **Auth:** SvelteKit `hooks.server.ts` has Supabase client wired, cookie-based session auth implemented
+- **Tests:** 204 pgTAP tests + existing Playwright E2E + Vitest unit tests + 84 DataProvider/adapter tests
 - **Edge Functions:** invite-candidate, signicat-callback, send-email (all backend-ready, awaiting frontend integration)
 - **Claude Skills:** 4 active domain-expert skills (data, matching, filters, database) + 2 deferred stubs (architect, components) + skill drift CI check
 
@@ -112,4 +113,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-18 after Phase 23 (Adapter Foundation) complete*
+*Last updated: 2026-03-19 after Phase 25 (DataProvider) complete*
