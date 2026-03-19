@@ -23,10 +23,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### Auth Migration
 
-- [ ] **AUTH-01**: Login/logout server routes using Supabase cookie-based sessions instead of Strapi JWT
+- [x] **AUTH-01**: Login/logout server routes using Supabase cookie-based sessions instead of Strapi JWT
 - [ ] **AUTH-02**: Auth context updated to use Supabase session state
 - [ ] **AUTH-03**: Protected route guards using Supabase session verification
-- [ ] **AUTH-04**: Password reset and change flows via Supabase GoTrue
+- [x] **AUTH-04**: Password reset and change flows via Supabase GoTrue
 
 ### Data Provider (Reads)
 
@@ -104,10 +104,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | ADPT-02 | Phase 23 | Complete |
 | ADPT-03 | Phase 23 | Complete |
 | ADPT-04 | Phase 23 | Complete |
-| AUTH-01 | Phase 24 | Pending |
+| AUTH-01 | Phase 24 | Complete |
 | AUTH-02 | Phase 24 | Pending |
 | AUTH-03 | Phase 24 | Pending |
-| AUTH-04 | Phase 24 | Pending |
+| AUTH-04 | Phase 24 | Complete |
 | READ-01 | Phase 25 | Pending |
 | READ-02 | Phase 25 | Pending |
 | READ-03 | Phase 25 | Pending |

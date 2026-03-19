@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 24 context gathered
-last_updated: "2026-03-18T20:23:00.563Z"
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-03-19T06:55:00.582Z"
 progress:
   total_phases: 9
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 8
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 23 — adapter-foundation
+**Current focus:** Phase 24 — auth-migration
 
 ## Current Position
 
-Phase: 23 (adapter-foundation) — COMPLETE
-Plan: 2 of 2 (DONE)
+Phase: 24 (auth-migration) — EXECUTING
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: 2 of 2 (DONE)
 | Phase 22 P04 | 2min | 2 tasks | 2 files |
 | Phase 23 P01 | 3min | 3 tasks | 7 files |
 | Phase 23 P02 | 2min | 3 tasks | 10 files |
+| Phase 24 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,10 @@ Plan: 2 of 2 (DONE)
 - [Phase 23-01]: mapRow casts COLUMN_MAP/PROPERTY_MAP to Record<string,string> for index signature flexibility
 - [Phase 23]: supabaseAdapterMixin exposes Supabase client directly (no apiGet/apiPost wrappers) -- PostgREST query builder IS the abstraction
 - [Phase 23]: Stub methods throw descriptive errors ('ClassName._methodName not implemented') for clear debugging during incremental development
+- [Phase 24]: Supabase _logout uses signOut({ scope: 'local' }) for current-session-only termination
+- [Phase 24]: Public logout override bypasses UniversalDataWriter dual POST+backendLogout (Supabase handles everything via signOut)
+- [Phase 24]: _setPassword and _resetPassword ignore legacy params (currentPassword, authToken, code); Supabase uses session-based auth
+- [Phase 24]: Auth callback redirectTo uses window.location.origin client-side, empty string server-side
 
 ### Pending Todos
 
@@ -78,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T20:23:00.560Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-auth-migration/24-CONTEXT.md
+Last session: 2026-03-19T06:54:48.822Z
+Stopped at: Completed 24-01-PLAN.md
+Resume file: None
