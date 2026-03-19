@@ -21,6 +21,11 @@ function createMockSupabaseClient() {
       resetPasswordForEmail: vi.fn(),
       updateUser: vi.fn(),
       getUser: vi.fn()
+    },
+    rpc: vi.fn(),
+    from: vi.fn(),
+    storage: {
+      from: vi.fn()
     }
   };
 }
@@ -158,6 +163,140 @@ describe('SupabaseDataWriter', () => {
       });
 
       await expect(writer.resetPassword({ password: 'newpass', code: '' })).rejects.toThrow('Session expired');
+    });
+  });
+
+  describe('updateAnswers (merge mode)', () => {
+    it('calls upsert_answers RPC with overwrite=false', async () => {
+      const mockAnswers = { q1: { value: 3 }, q2: { value: 'text' } };
+      const returnedAnswers = { q1: { value: 3 }, q2: { value: 'text' }, q3: { value: 1 } };
+      mockSupabase.rpc.mockResolvedValue({ data: returnedAnswers, error: null });
+
+      const result = await writer.updateAnswers({
+        authToken: '',
+        target: { type: 'candidate', id: 'entity-1' },
+        answers: mockAnswers
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        entity_id: 'entity-1',
+        answers: mockAnswers,
+        overwrite: false
+      });
+      expect(result).toEqual(returnedAnswers);
+    });
+  });
+
+  describe('overwriteAnswers (overwrite mode)', () => {
+    it('calls upsert_answers RPC with overwrite=true', async () => {
+      const mockAnswers = { q1: { value: 5 } };
+      mockSupabase.rpc.mockResolvedValue({ data: mockAnswers, error: null });
+
+      const result = await writer.overwriteAnswers({
+        authToken: '',
+        target: { type: 'candidate', id: 'entity-1' },
+        answers: mockAnswers
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        entity_id: 'entity-1',
+        answers: mockAnswers,
+        overwrite: true
+      });
+      expect(result).toEqual(mockAnswers);
+    });
+  });
+
+  describe('updateAnswers with File upload', () => {
+    it('uploads File objects to Storage and replaces with path in answers', async () => {
+      const mockFile = new File(['image-data'], 'photo.png', { type: 'image/png' });
+      const mockAnswers = {
+        'q-text': { value: 'hello' },
+        'q-image': { value: mockFile, info: 'My photo' }
+      };
+
+      // Mock candidate project_id lookup
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { project_id: 'proj-1' }, error: null })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      // Mock storage upload
+      const uploadMock = vi.fn().mockResolvedValue({ data: { path: 'uploaded' }, error: null });
+      mockSupabase.storage.from.mockReturnValue({ upload: uploadMock });
+
+      // Mock upsert_answers RPC
+      const expectedAnswers = {
+        'q-text': { value: 'hello' },
+        'q-image': {
+          value: { path: expect.stringMatching(/^proj-1\/candidates\/entity-1\/.*\.png$/) },
+          info: 'My photo'
+        }
+      };
+      mockSupabase.rpc.mockResolvedValue({ data: expectedAnswers, error: null });
+
+      const result = await writer.updateAnswers({
+        authToken: '',
+        target: { type: 'candidate', id: 'entity-1' },
+        answers: mockAnswers
+      });
+
+      // Verify storage upload was called
+      expect(mockSupabase.storage.from).toHaveBeenCalledWith('public-assets');
+      expect(uploadMock).toHaveBeenCalledWith(
+        expect.stringMatching(/^proj-1\/candidates\/entity-1\/.*\.png$/),
+        mockFile,
+        { cacheControl: '3600', upsert: true }
+      );
+
+      // Verify RPC was called with path object instead of File
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        'upsert_answers',
+        expect.objectContaining({
+          entity_id: 'entity-1',
+          overwrite: false
+        })
+      );
+    });
+  });
+
+  describe('updateAnswers error handling', () => {
+    it('throws on RPC error', async () => {
+      mockSupabase.rpc.mockResolvedValue({ data: null, error: { message: 'RPC failed' } });
+
+      await expect(
+        writer.updateAnswers({
+          authToken: '',
+          target: { type: 'candidate', id: 'entity-1' },
+          answers: { q1: { value: 1 } }
+        })
+      ).rejects.toThrow('setAnswers: RPC failed');
+    });
+
+    it('throws on Storage upload error', async () => {
+      const mockFile = new File(['data'], 'img.jpg', { type: 'image/jpeg' });
+
+      // Mock candidate project_id lookup
+      const selectMock = vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { project_id: 'proj-1' }, error: null })
+        })
+      });
+      mockSupabase.from.mockReturnValue({ select: selectMock });
+
+      // Mock storage upload failure
+      const uploadMock = vi.fn().mockResolvedValue({ data: null, error: { message: 'Bucket full' } });
+      mockSupabase.storage.from.mockReturnValue({ upload: uploadMock });
+
+      await expect(
+        writer.updateAnswers({
+          authToken: '',
+          target: { type: 'candidate', id: 'entity-1' },
+          answers: { 'q-img': { value: mockFile } }
+        })
+      ).rejects.toThrow('Image upload failed: Bucket full');
     });
   });
 });
