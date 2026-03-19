@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 29 context gathered
-last_updated: "2026-03-19T20:02:10.048Z"
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-03-19T20:39:07.442Z"
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 24
+  completed_plans: 21
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 28 — edge-functions
+**Current focus:** Phase 29 — e2e-test-migration
 
 ## Current Position
 
-Phase: 28 (edge-functions) — COMPLETE
-Plan: 2 of 2
+Phase: 29 (e2e-test-migration) — EXECUTING
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Plan: 2 of 2
 | Phase 27 P02 | 1min | 1 tasks | 1 files |
 | Phase 28 P02 | 2min | 1 tasks | 1 files |
 | Phase 28 P01 | 4min | 2 tasks | 5 files |
+| Phase 29 P02 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,9 @@ Plan: 2 of 2
 - [Phase 28]: _preregister resolves projectId from elections table via first nomination's electionId
 - [Phase 28]: _sendEmail maps camelCase recipientUserIds/dryRun to snake_case for Edge Function API
 - [Phase 28]: sendEmail added to DataWriter interface with throwing stubs in Strapi and Supabase adapters
+- [Phase 29]: order field mapped to sort_order (matching DB column name)
+- [Phase 29]: question_categories type field mapped to category_type (matching DB enum column)
+- [Phase 29]: Constituency scoping on questions/question_categories stored as _constituencies with underscore prefix
 
 ### Pending Todos
 
@@ -136,6 +140,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T20:02:10.045Z
-Stopped at: Phase 29 context gathered
-Resume file: .planning/phases/29-e2e-test-migration/29-CONTEXT.md
+Last session: 2026-03-19T20:39:07.439Z
+Stopped at: Completed 29-02-PLAN.md
+Resume file: None
