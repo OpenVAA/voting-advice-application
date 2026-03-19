@@ -46,8 +46,8 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 
 ### Admin Writer
 
-- [ ] **ADMN-01**: AdminWriter adapter for question/entity management operations
-- [ ] **ADMN-02**: Job management operations (start, abort, progress)
+- [x] **ADMN-01**: AdminWriter adapter for question/entity management operations
+- [x] **ADMN-02**: Job management operations (start, abort, progress)
 
 ### Edge Functions
 
@@ -118,8 +118,8 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | WRIT-02 | Phase 26 | Complete |
 | WRIT-03 | Phase 26 | Complete |
 | WRIT-04 | Phase 26 | Complete |
-| ADMN-01 | Phase 27 | Pending |
-| ADMN-02 | Phase 27 | Pending |
+| ADMN-01 | Phase 27 | Complete |
+| ADMN-02 | Phase 27 | Complete |
 | EDGE-01 | Phase 28 | Pending |
 | EDGE-02 | Phase 28 | Pending |
 | EDGE-03 | Phase 28 | Pending |

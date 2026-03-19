@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 27 context gathered
-last_updated: "2026-03-19T16:33:13.532Z"
+stopped_at: Completed 27-01-PLAN.md
+last_updated: "2026-03-19T16:59:55.423Z"
 progress:
   total_phases: 9
   completed_phases: 5
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 18
+  completed_plans: 17
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 26 — datawriter
+**Current focus:** Phase 27 — adminwriter
 
 ## Current Position
 
-Phase: 26 (datawriter) — COMPLETED
-Plan: 3 of 3 (all complete)
+Phase: 27 (adminwriter) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: 3 of 3 (all complete)
 | Phase 26 P01 | 10min | 2 tasks | 9 files |
 | Phase 26 P02 | 5min | 2 tasks | 4 files |
 | Phase 26 P03 | 3min | 2 tasks | 2 files |
+| Phase 27 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Plan: 3 of 3 (all complete)
 - [Phase 26]: _setAnswers uses lazy project_id fetch from candidates table (only when File objects detected) to avoid unnecessary DB queries for text-only answers
 - [Phase 26]: _updateEntityProperties does NOT handle image upload -- property updates are text-only (termsOfUseAccepted)
 - [Phase 26]: Storage path uses crypto.randomUUID() for collision-free filenames under {projectId}/candidates/{entityId}/
+- [Phase 27-01]: admin_jobs is immutable (no UPDATE policy) -- job records are write-once
+- [Phase 27-01]: merge_custom_data uses SECURITY INVOKER so admin_update_questions RLS policy enforces access
+- [Phase 27-01]: Shallow JSONB merge via || operator -- callers provide complete replacement values per key
 
 ### Pending Todos
 
@@ -121,6 +125,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T16:33:13.528Z
-Stopped at: Phase 27 context gathered
-Resume file: .planning/phases/27-adminwriter/27-CONTEXT.md
+Last session: 2026-03-19T16:59:55.420Z
+Stopped at: Completed 27-01-PLAN.md
+Resume file: None
