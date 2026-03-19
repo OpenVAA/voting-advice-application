@@ -168,11 +168,6 @@ export function initCandidateContext(): CandidateContext {
 
   // These are exported for convenience so that all relevant methods can be accessed via the context on the client-side.
   // NB. We have to repeat a lot of code bc of typing constraints
-  function checkRegistrationKey(
-    ...args: Parameters<DataWriter['checkRegistrationKey']>
-  ): ReturnType<DataWriter['checkRegistrationKey']> {
-    return prepareDataWriter(dataWriterPromise).then((dw) => dw.checkRegistrationKey(...args));
-  }
   function register(...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> {
     return prepareDataWriter(dataWriterPromise).then((dw) => dw.register(...args));
   }
@@ -303,7 +298,6 @@ export function initCandidateContext(): CandidateContext {
     ...authContext,
     answersLocked,
     preregister,
-    checkRegistrationKey,
     constituenciesSelectable,
     selectedConstituencies,
     selectedElections,

@@ -79,18 +79,11 @@ export type CandidateContext = AppContext &
     ////////////////////////////////////////////////////////////////////
 
     /**
-     * Check whether the registration key is valid.
-     * @param registrationKey - The registration key to check.
+     * Complete registration by setting the user's password.
+     * @param password - The user's password.
      * @returns A `Promise` resolving to an `DataApiActionResult` object.
      */
-    checkRegistrationKey: (opts: { registrationKey: string }) => ReturnType<DataWriter['checkRegistrationKey']>;
-    /**
-     * Activate an already registered user with the provided registration key and password.
-     * @param registrationKey - The registration key to check.
-     * @param password - The user’s password.
-     * @returns A `Promise` resolving to an `DataApiActionResult` object.
-     */
-    register: (opts: { registrationKey: string; password: string }) => ReturnType<DataWriter['register']>;
+    register: (opts: { password: string }) => ReturnType<DataWriter['register']>;
     /**
      * Logout the user and redirect to the login page.
      * @returns A `Promise` resolving when the redirection is complete.
@@ -146,7 +139,7 @@ export type CandidateContext = AppContext &
      */
     idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
     /**
-     * Holds the user’s email so it can be prefilled during password changes.
+     * Holds the user's email so it can be prefilled during password changes.
      */
     newUserEmail: Writable<string | undefined>;
     /**

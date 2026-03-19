@@ -7,14 +7,14 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
   CandidateUserData,
-  CheckRegistrationData,
   DWReturnType,
   GetCandidateUserDataOptions,
   InsertJobResultOptions,
-  LocalizedCandidateData,
+  LocalizedAnswers,
   SetAnswersOptions,
   SetPropertiesOptions,
   SetQuestionOptions,
+  UpdatedEntityProps,
   WithAuth
 } from '$lib/api/base/dataWriter.type';
 import type { Params } from '../strapiAdapter.type';
@@ -49,20 +49,8 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   // Registration
   ////////////////////////////////////////////////////////////////////
 
-  protected _checkRegistrationKey(body: { registrationKey: string }): Promise<CheckRegistrationData> {
-    // Throws if failed
-    return this.apiPost({
-      endpoint: 'checkRegistrationKey',
-      body
-    }).then((data) => ({ type: 'success', ...data }));
-  }
-
-  protected _register(body: { registrationKey: string; password: string }): Promise<DataApiActionResult> {
-    // Throws if failed
-    return this.apiPost({
-      endpoint: 'registerCandidate',
-      body
-    }).then(() => ({ type: 'success' }));
+  protected _register({ password }: { password: string }): Promise<DataApiActionResult> {
+    throw new Error('StrapiDataWriter._register: registration key flow removed from interface');
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -202,7 +190,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     target: { type, id },
     answers,
     overwrite
-  }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedCandidateData> {
+  }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedAnswers> {
     if (type !== ENTITY_TYPE.Candidate) throw new Error(`Unsupported entity type for setting answers: ${type}`);
     const data = await this.apiPost({
       endpoint: overwrite ? 'overwriteAnswers' : 'updateAnswers',
@@ -211,34 +199,28 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       authToken
     });
     if (!data) throw new Error('Expected a CandidateData object, but got none.');
-    return parseCandidate(data, null, { dontTranslateAnswers: true });
+    const parsed = parseCandidate(data, null, { dontTranslateAnswers: true });
+    return parsed.answers ?? {};
   }
 
   protected async _updateEntityProperties({
     authToken,
     target,
-    properties: { image, termsOfUseAccepted }
-  }: SetPropertiesOptions): DWReturnType<LocalizedCandidateData> {
-    let imageId: string | undefined;
-    if (image?.file) {
-      const data = await this.apiUpload({ authToken, target, files: [image.file!] });
-      if (data?.length !== 1 || !data?.[0].documentId)
-        throw new Error('Expected a single image object, but got something else.');
-      imageId = data[0].documentId;
-    }
+    properties: { termsOfUseAccepted }
+  }: SetPropertiesOptions): DWReturnType<UpdatedEntityProps> {
     const candidate = await this.apiPost({
       endpoint: 'setProperties',
       endpointParams: { id: target.id },
       body: {
         data: {
-          image: imageId,
           termsOfUseAccepted
         }
       },
       authToken
     });
     if (!candidate) throw new Error('Expected a CandidateData object, but got none.');
-    return parseCandidate(candidate, null, { dontTranslateAnswers: true });
+    const parsed = parseCandidate(candidate, null, { dontTranslateAnswers: true });
+    return { termsOfUseAccepted: parsed.termsOfUseAccepted };
   }
 
   ////////////////////////////////////////////////////////////////////

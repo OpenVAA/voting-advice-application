@@ -190,7 +190,6 @@ export function candidateUserDataStore({
     if (!get(isAuthenticated)) throw new Error('Not authenticated.');
 
     const answers = get(editedAnswers);
-    const image = get(editedImage);
     const termsOfUseAccepted = get(editedTermsOfUseAccepted);
     const updateArgs = {
       authToken: '', // Supabase adapter ignores authToken (auth is cookie-based)
@@ -202,28 +201,39 @@ export function candidateUserDataStore({
 
     const dataWriter = await prepareDataWriter(dataWriterPromise);
 
-    // Updated data will be returned by the update methods
-    let updated: LocalizedCandidateData | undefined;
-
     if (answers && Object.keys(answers).length > 0) {
-      updated = await dataWriter.updateAnswers({
+      const updatedAnswers = await dataWriter.updateAnswers({
         ...updateArgs,
         answers
       });
-      if (!updated) throw new Error('Failed to update answers');
-    }
-
-    if (image || termsOfUseAccepted) {
-      updated = await dataWriter.updateEntityProperties({
-        ...updateArgs,
-        properties: { image, termsOfUseAccepted }
+      if (!updatedAnswers) throw new Error('Failed to update answers');
+      // Merge returned answers into saved candidate data
+      savedData.update((s) => {
+        if (!s) throw new Error('Cannot update candidate data before loaded');
+        return {
+          ...s,
+          candidate: { ...s.candidate, answers: updatedAnswers }
+        };
       });
-      if (!updated) throw new Error('Failed to update image or termsOfUseAccepted');
     }
 
-    // Update the user data
-    if (updated) updateCandidateData(updated);
-    // Only reset the answers after successful save
+    if (termsOfUseAccepted !== undefined) {
+      const updatedProps = await dataWriter.updateEntityProperties({
+        ...updateArgs,
+        properties: { termsOfUseAccepted }
+      });
+      if (!updatedProps) throw new Error('Failed to update termsOfUseAccepted');
+      // Merge returned properties into saved candidate data
+      savedData.update((s) => {
+        if (!s) throw new Error('Cannot update candidate data before loaded');
+        return {
+          ...s,
+          candidate: { ...s.candidate, termsOfUseAccepted: updatedProps.termsOfUseAccepted }
+        };
+      });
+    }
+
+    // Only reset after successful save
     resetAnswers();
     resetImage();
     resetTermsOfUseAccepted();

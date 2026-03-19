@@ -2,12 +2,10 @@
 
 # Candidate app initial password setting page
 
-- Shows a form in which to insert 
-- Checks on load if the key is in a search param and automatically redirects to password selection if the key is valid.
+- Shows a form for setting the initial password after arriving via an invite link.
 
 ## Params
 
-- `registrationKey`: The registration key
 - `username`: The name with which to greet the user
 - `email`: The email of the user
 -->
@@ -33,11 +31,10 @@
   // Check that user is not logged and all params are provided
   ////////////////////////////////////////////////////////////////////
 
-  const registrationKey = $page.url.searchParams.get('registrationKey') || '';
   const username = $page.url.searchParams.get('username') || '';
   const email = $page.url.searchParams.get('email') || '';
 
-  if (registrationKey === '' || email === '') {
+  if (email === '') {
     goto($getRoute('CandAppRegister'));
   }
 
@@ -66,7 +63,7 @@
 
     status = 'loading';
 
-    const result = await register({ registrationKey, password }).catch((e) => {
+    const result = await register({ password }).catch((e) => {
       logDebugError(`Error with register: ${e?.message}`);
       return undefined;
     });

@@ -67,11 +67,12 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   protected _preregister() {
     throw new Error('SupabaseDataWriter._preregister not implemented');
   }
-  protected _checkRegistrationKey() {
-    throw new Error('SupabaseDataWriter._checkRegistrationKey not implemented');
-  }
-  protected _register() {
-    throw new Error('SupabaseDataWriter._register not implemented');
+  protected async _register({ password }: { password: string }) {
+    // Invite session already established by auth callback's verifyOtp.
+    // Just set the password to complete registration.
+    const { error } = await this.supabase.auth.updateUser({ password });
+    if (error) throw new Error(error.message);
+    return { type: 'success' as const };
   }
   protected _getBasicUserData() {
     throw new Error('SupabaseDataWriter._getBasicUserData not implemented');

@@ -2,12 +2,14 @@
 
 # Candidate app register page
 
-- Shows a form in which to insert a registration key and continue to password selection.
-- Checks on load if the key is in a search param and automatically redirects to password selection if the key is valid.
+- In the invite-based flow (Supabase), users arrive via an invite link that goes through the auth callback.
+- This page redirects to the password-setting page if the user is not logged in.
+- If already logged in, shows a warning with a logout button.
 
 ## Params
 
-- `registrationKey`: The registration key
+- `username`: The name with which to greet the user (optional, from auth callback redirect)
+- `email`: The email of the user (optional, from auth callback redirect)
 -->
 
 <script lang="ts">
@@ -15,66 +17,32 @@
   import { page } from '$app/stores';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
-  import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, checkRegistrationKey, getRoute, t, userData } = getCandidateContext();
+  const { appSettings, getRoute, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Handle checking registration key
+  // Handle invite-based registration flow
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit: boolean;
-  let changedAfterCheck = false;
-  let status: ActionStatus = 'idle';
+  const username = $page.url.searchParams.get('username') || '';
+  const email = $page.url.searchParams.get('email') || '';
 
-  // Get key from search params
-  let registrationKey = $page.url.searchParams.get('registrationKey');
-  if (registrationKey) checkKeyAndContinue(registrationKey);
-
-  $: canSubmit = status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck);
-  $: {
-    // Mark the input field as changed so we re-enable the submit button without hiding the error message
-    changedAfterCheck = true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    registrationKey;
-  }
-
-  /**
-   * Check the registration key and continue to password selection if valid. Otherwise, show an error message.
-   */
-  async function checkKeyAndContinue(registrationKey: string): Promise<void> {
-    status = 'loading';
-    const result = await checkRegistrationKey({ registrationKey }).catch((e) => {
-      logDebugError(`Error checking registration key: ${e?.message}`);
-      return undefined;
-    });
-    if (result?.type !== 'success') {
-      changedAfterCheck = false;
-      status = 'error';
-      return;
-    }
-    const { firstName, email } = result;
-    await goto(
+  // If user is not logged in and we have an email, redirect to password page
+  if (!$userData && email) {
+    goto(
       $getRoute({
         route: 'CandAppSetPassword',
-        registrationKey,
-        username: firstName,
+        username,
         email
       })
     );
-    status = 'success';
-  }
-
-  function handleSubmit() {
-    if (registrationKey) checkKeyAndContinue(registrationKey);
   }
 </script>
 
@@ -85,7 +53,7 @@
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
   </HeadingGroup>
-  <form class="flex flex-col flex-nowrap items-center">
+  <div class="flex flex-col flex-nowrap items-center">
     {#if $userData}
       <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
@@ -95,29 +63,9 @@
       <p class="max-w-md text-center">
         {$t('candidateApp.register.enterCode')}
       </p>
-      <input
-        type="text"
-        name="registration-code"
-        id="registration-code"
-        class="input mb-md w-full max-w-md"
-        placeholder={$t('candidateApp.register.codePlaceholder')}
-        bind:value={registrationKey}
-        aria-label={$t('candidateApp.register.code')}
-        data-testid="register-code"
-        required />
-      {#if status === 'error'}
-        <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" data-testid="register-error" />
-        <div class="flex w-full flex-col gap-lg rounded-lg bg-base-200 p-lg">
-          <h3 class="text-center">
-            {$t('candidateApp.register.didYouAlreadyRegister')}
-          </h3>
-          <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.goToLoginLabel')} variant="main" data-testid="register-go-to-login" />
-        </div>
-      {/if}
     {/if}
-  </form>
+  </div>
   <svelte:fragment slot="primaryActions">
-    <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} data-testid="register-submit" />
     <Button href={$getRoute('CandAppLogin')} text={$t('candidateApp.register.didYouAlreadyRegister')} data-testid="register-login-link" />
     <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} data-testid="register-help-link" />
   </svelte:fragment>
