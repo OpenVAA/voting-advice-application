@@ -75,72 +75,19 @@ jobs:
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
-  backend-validation:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: "Checkout Backend source code"
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup Yarn 4.6
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.6
-
-      - name: Setup Node.js 20.18.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.18.1
-          cache: "yarn"
-
-      - name: Cache node modules
-        id: cache-npm-backend-main
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: "backend/vaa-strapi/node_modules"
-          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: "Install all dependencies"
-        run: yarn install --frozen-lockfile
-
-      - name: "Build all shared modules"
-        run: yarn build:shared
-
-      - name: "Install Backend yarn dependencies"
-        run: yarn workspace @openvaa/strapi install --frozen-lockfile
-
-      # We've already linted and formatted the code globally in the previous job
-
-      # These are currently not used
-      # - name: "Run Backend tests"
-      #   run: |
-      #     npm run test
-
-      - name: "Build backend"
-        run: |
-          yarn workspace @openvaa/strapi build
-
   e2e-tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: "Configure environment"
-        run: |
-          cp .env.example .env
-          sed -i 's/GENERATE_MOCK_DATA_ON_INITIALISE=true/GENERATE_MOCK_DATA_ON_INITIALISE=false/' .env
+        run: cp .env.example .env
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Setup Yarn 4.6
         uses: threeal/setup-yarn-action@v2
@@ -152,19 +99,6 @@ jobs:
         with:
           node-version: 20.18.1
           cache: "yarn"
-
-      # - name: Cache node modules
-      #   id: cache-npm-e2e-main
-      #   uses: actions/cache@v4
-      #   env:
-      #     cache-name: cache-node-modules-e2e
-      #   with:
-      #     path: "node_modules"
-      #     key: ${{ runner.os }}-e2e-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-build-${{ env.cache-name }}-
-      #       ${{ runner.os }}-build-
-      #       ${{ runner.os }}-
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
@@ -172,26 +106,22 @@ jobs:
       - name: "Install playwright"
         run: yarn playwright install --with-deps
 
-      - name: "Start OpenVAA"
-        run: yarn dev:start
+      - name: "Build shared packages"
+        run: yarn build:shared
 
-      - name: "Collect Docker logs on failure"
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: ./logs
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
 
-      - name: "Tar Docker logs"
-        if: failure()
-        run: tar cvzf ./logs.tgz ./logs
+      - name: "Start frontend"
+        run: yarn workspace @openvaa/frontend dev &
 
-      - name: "Upload Docker logs on failure"
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs.tgz
-          path: ./logs.tgz
-          retention-days: 30
+      - name: "Wait for frontend"
+        run: |
+          for i in $(seq 1 60); do
+            curl -s http://localhost:5173 > /dev/null 2>&1 && break
+            sleep 2
+          done
 
       - name: "Run E2E tests"
         run: yarn test:e2e
@@ -204,9 +134,10 @@ jobs:
           path: tests/playwright-report/
           retention-days: 30
 
-      - name: "Stop OpenVAA"
+      - name: "Stop Supabase"
         if: always()
-        run: yarn dev:down
+        working-directory: apps/supabase
+        run: supabase stop
 
   e2e-visual-perf:
     runs-on: ubuntu-latest
@@ -215,13 +146,13 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: "Configure environment"
-        run: |
-          cp .env.example .env
-          sed -i 's/GENERATE_MOCK_DATA_ON_INITIALISE=true/GENERATE_MOCK_DATA_ON_INITIALISE=false/' .env
+        run: cp .env.example .env
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Setup Yarn 4.6
         uses: threeal/setup-yarn-action@v2
@@ -240,26 +171,22 @@ jobs:
       - name: "Install playwright"
         run: yarn playwright install --with-deps
 
-      - name: "Start OpenVAA"
-        run: yarn dev:start
+      - name: "Build shared packages"
+        run: yarn build:shared
 
-      - name: "Collect Docker logs on failure"
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: ./logs
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
 
-      - name: "Tar Docker logs"
-        if: failure()
-        run: tar cvzf ./logs.tgz ./logs
+      - name: "Start frontend"
+        run: yarn workspace @openvaa/frontend dev &
 
-      - name: "Upload Docker logs on failure"
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs-visual-perf.tgz
-          path: ./logs.tgz
-          retention-days: 30
+      - name: "Wait for frontend"
+        run: |
+          for i in $(seq 1 60); do
+            curl -s http://localhost:5173 > /dev/null 2>&1 && break
+            sleep 2
+          done
 
       - name: "Run visual and performance tests"
         run: PLAYWRIGHT_VISUAL=1 PLAYWRIGHT_PERF=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual|@perf"
@@ -272,6 +199,42 @@ jobs:
           path: tests/playwright-report/
           retention-days: 30
 
-      - name: "Stop OpenVAA"
+      - name: "Stop Supabase"
         if: always()
-        run: yarn dev:down
+        working-directory: apps/supabase
+        run: supabase stop
+
+  supabase-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            supabase:
+              - 'apps/supabase/**'
+              - 'packages/supabase-types/**'
+
+      - uses: supabase/setup-cli@v1
+        if: steps.changes.outputs.supabase == 'true'
+        with:
+          version: latest
+
+      - name: "Start Supabase"
+        if: steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase start
+
+      - name: "Run pgTAP tests"
+        if: steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase test db
+
+      - name: "Stop Supabase"
+        if: always() && steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase stop
