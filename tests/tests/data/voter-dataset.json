@@ -34,9 +34,6 @@
   "questions": [
     {
       "external_id": "test-voter-q-1",
-      "text": {
-        "en": "Should the government increase taxes on high earners?"
-      },
       "category": {
         "external_id": "test-voter-cat-economy"
       },
@@ -85,13 +82,13 @@
       ],
       "sort_order": 101,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should the government increase taxes on high earners?"
+      }
     },
     {
       "external_id": "test-voter-q-2",
-      "text": {
-        "en": "Should public transport be made free for all citizens?"
-      },
       "category": {
         "external_id": "test-voter-cat-economy"
       },
@@ -140,13 +137,13 @@
       ],
       "sort_order": 102,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should public transport be made free for all citizens?"
+      }
     },
     {
       "external_id": "test-voter-q-3",
-      "text": {
-        "en": "Should the minimum wage be significantly increased?"
-      },
       "category": {
         "external_id": "test-voter-cat-economy"
       },
@@ -195,13 +192,13 @@
       ],
       "sort_order": 103,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should the minimum wage be significantly increased?"
+      }
     },
     {
       "external_id": "test-voter-q-4",
-      "text": {
-        "en": "Should the government provide universal basic income?"
-      },
       "category": {
         "external_id": "test-voter-cat-economy"
       },
@@ -250,13 +247,13 @@
       ],
       "sort_order": 104,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should the government provide universal basic income?"
+      }
     },
     {
       "external_id": "test-voter-q-5",
-      "text": {
-        "en": "Should healthcare be fully publicly funded?"
-      },
       "category": {
         "external_id": "test-voter-cat-social"
       },
@@ -305,13 +302,13 @@
       ],
       "sort_order": 105,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should healthcare be fully publicly funded?"
+      }
     },
     {
       "external_id": "test-voter-q-6",
-      "text": {
-        "en": "Should immigration policy be more open?"
-      },
       "category": {
         "external_id": "test-voter-cat-social"
       },
@@ -360,13 +357,13 @@
       ],
       "sort_order": 106,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should immigration policy be more open?"
+      }
     },
     {
       "external_id": "test-voter-q-7",
-      "text": {
-        "en": "Should education spending be prioritized over military?"
-      },
       "category": {
         "external_id": "test-voter-cat-social"
       },
@@ -415,13 +412,13 @@
       ],
       "sort_order": 107,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should education spending be prioritized over military?"
+      }
     },
     {
       "external_id": "test-voter-q-8",
-      "text": {
-        "en": "Should same-sex marriage be legally recognized?"
-      },
       "category": {
         "external_id": "test-voter-cat-social"
       },
@@ -470,7 +467,10 @@
       ],
       "sort_order": 108,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Should same-sex marriage be legally recognized?"
+      }
     }
   ],
   "organizations": [

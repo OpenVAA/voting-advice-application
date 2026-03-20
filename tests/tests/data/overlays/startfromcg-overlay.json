@@ -146,9 +146,6 @@
   "questions": [
     {
       "external_id": "test-sfcg-q-1",
-      "text": {
-        "en": "SFCG: Should regional development funds be increased?"
-      },
       "category": {
         "external_id": "test-cat-sfcg-local"
       },
@@ -197,13 +194,13 @@
       ],
       "sort_order": 401,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "SFCG: Should regional development funds be increased?"
+      }
     },
     {
       "external_id": "test-sfcg-e2-q-1",
-      "text": {
-        "en": "SFCG E2: Should municipal mergers be encouraged?"
-      },
       "category": {
         "external_id": "test-cat-sfcg-e2"
       },
@@ -252,7 +249,10 @@
       ],
       "sort_order": 411,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "SFCG E2: Should municipal mergers be encouraged?"
+      }
     }
   ],
   "candidates": [

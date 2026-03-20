@@ -91,9 +91,6 @@
   "questions": [
     {
       "external_id": "test-question-1",
-      "text": {
-        "en": "Test Opinion Question 1: Should taxes on high incomes be increased?"
-      },
       "info": {
         "en": "This question measures attitudes toward progressive taxation."
       },
@@ -145,13 +142,13 @@
       ],
       "sort_order": 1,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 1: Should taxes on high incomes be increased?"
+      }
     },
     {
       "external_id": "test-question-2",
-      "text": {
-        "en": "Test Opinion Question 2: Should public spending on infrastructure be increased?"
-      },
       "category": {
         "external_id": "test-category-economy"
       },
@@ -200,13 +197,13 @@
       ],
       "sort_order": 2,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 2: Should public spending on infrastructure be increased?"
+      }
     },
     {
       "external_id": "test-question-3",
-      "text": {
-        "en": "Test Opinion Question 3: Should the government subsidize renewable energy?"
-      },
       "info": {
         "en": "Renewable energy subsidies affect both the economy and the environment."
       },
@@ -258,13 +255,13 @@
       ],
       "sort_order": 3,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 3: Should the government subsidize renewable energy?"
+      }
     },
     {
       "external_id": "test-question-4",
-      "text": {
-        "en": "Test Opinion Question 4: Should corporate tax rates be lowered?"
-      },
       "category": {
         "external_id": "test-category-economy"
       },
@@ -313,13 +310,13 @@
       ],
       "sort_order": 4,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 4: Should corporate tax rates be lowered?"
+      }
     },
     {
       "external_id": "test-question-5",
-      "text": {
-        "en": "Test Opinion Question 5: Should healthcare be fully publicly funded?"
-      },
       "category": {
         "external_id": "test-category-social"
       },
@@ -368,13 +365,13 @@
       ],
       "sort_order": 5,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 5: Should healthcare be fully publicly funded?"
+      }
     },
     {
       "external_id": "test-question-6",
-      "text": {
-        "en": "Test Opinion Question 6: Should immigration policy be more open?"
-      },
       "category": {
         "external_id": "test-category-social"
       },
@@ -423,13 +420,13 @@
       ],
       "sort_order": 6,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 6: Should immigration policy be more open?"
+      }
     },
     {
       "external_id": "test-question-7",
-      "text": {
-        "en": "Test Opinion Question 7: Should education spending be prioritized?"
-      },
       "category": {
         "external_id": "test-category-social"
       },
@@ -478,13 +475,13 @@
       ],
       "sort_order": 7,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 7: Should education spending be prioritized?"
+      }
     },
     {
       "external_id": "test-question-8",
-      "text": {
-        "en": "Test Opinion Question 8: Should same-sex marriage be legally recognized?"
-      },
       "category": {
         "external_id": "test-category-social"
       },
@@ -533,59 +530,62 @@
       ],
       "sort_order": 8,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 8: Should same-sex marriage be legally recognized?"
+      }
     },
     {
       "external_id": "test-question-date",
-      "text": {
-        "en": "Date of birth"
-      },
       "category": {
         "external_id": "test-category-info"
       },
       "type": "date",
       "sort_order": 9,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Date of birth"
+      }
     },
     {
       "external_id": "test-question-number",
-      "text": {
-        "en": "Years of political experience"
-      },
       "category": {
         "external_id": "test-category-info"
       },
       "type": "number",
       "sort_order": 10,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Years of political experience"
+      }
     },
     {
       "external_id": "test-question-text",
-      "text": {
-        "en": "Campaign slogan"
-      },
       "category": {
         "external_id": "test-category-info"
       },
       "type": "text",
       "sort_order": 11,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "Campaign slogan"
+      }
     },
     {
       "external_id": "test-question-boolean",
-      "text": {
-        "en": "First-time candidate"
-      },
       "category": {
         "external_id": "test-category-info"
       },
       "type": "boolean",
       "sort_order": 12,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "First-time candidate"
+      }
     }
   ],
   "organizations": [

@@ -142,9 +142,6 @@
   "questions": [
     {
       "external_id": "test-const-q-north-1",
-      "text": {
-        "en": "North Region: Should the northern highway be expanded?"
-      },
       "category": {
         "external_id": "test-cat-const-north"
       },
@@ -198,13 +195,13 @@
         ]
       },
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "North Region: Should the northern highway be expanded?"
+      }
     },
     {
       "external_id": "test-const-e2-q-1",
-      "text": {
-        "en": "E2 Local: Should municipal services be consolidated?"
-      },
       "category": {
         "external_id": "test-cat-e2-local"
       },
@@ -253,13 +250,13 @@
       ],
       "sort_order": 311,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "E2 Local: Should municipal services be consolidated?"
+      }
     },
     {
       "external_id": "test-const-e2-q-2",
-      "text": {
-        "en": "E2 Local: Should local parks receive more funding?"
-      },
       "category": {
         "external_id": "test-cat-e2-local"
       },
@@ -308,7 +305,10 @@
       ],
       "sort_order": 312,
       "project_id": "00000000-0000-0000-0000-000000000001",
-      "published": true
+      "published": true,
+      "name": {
+        "en": "E2 Local: Should local parks receive more funding?"
+      }
     }
   ],
   "candidates": [
