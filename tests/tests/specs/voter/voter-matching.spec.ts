@@ -154,6 +154,21 @@ async function navigateToResults(page: Page): Promise<void> {
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
+  // If we're not on results yet, click the next button to proceed.
+  if (!page.url().includes('/results')) {
+    // Try waiting for auto-advance first
+    try {
+      await page.waitForURL(/\/results/, { timeout: 5000 });
+    } catch {
+      // Auto-advance may not have fired; click next button
+      const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+      if (await nextButton.isVisible().catch(() => false)) {
+        await nextButton.click();
+      }
+      await page.waitForURL(/\/results/, { timeout: 10000 });
+    }
+  }
+
   // Wait for the results page to load.
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15000 });
 }
@@ -164,6 +179,9 @@ async function navigateToResults(page: Page): Promise<void> {
 
 test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   test.describe.configure({ mode: 'serial' });
+  // navigateToResults() answers 16 questions (~20-25s).
+  // Increase timeout to 60s for each test.
+  test.setTimeout(60000);
 
   test('should display candidates in correct match ranking order', async ({ page }) => {
     await navigateToResults(page);

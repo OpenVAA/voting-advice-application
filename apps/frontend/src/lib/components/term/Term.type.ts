@@ -1,4 +1,10 @@
+import type { Snippet } from 'svelte';
+
 export type TermProps = {
+  /**
+   * The term content to display.
+   */
+  children?: Snippet;
   /**
    * The text to show in the definition popup.
    */

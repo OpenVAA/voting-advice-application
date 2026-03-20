@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Show a popup with a data consent form, if data consent has not been given yet.
@@ -19,20 +21,19 @@ Show a popup with a data consent form, if data consent has not been given yet.
   import { DataConsent, DataConsentInfoButton } from '../';
   import type { DataConsentPopupProps } from './DataConsentPopup.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = DataConsentPopupProps;
+  let { ...restProps }: DataConsentPopupProps = $props();
 
   const { t } = getComponentContext();
 
-  let closeAlert: () => void;
+  let alertRef: Alert;
 </script>
 
-<Alert bind:closeAlert title={t('common.privacy.dataCollection.title')} icon="privacy" {...$$restProps}>
+<Alert bind:this={alertRef} title={t('common.privacy.dataCollection.title')} icon="privacy" {...restProps}>
   <div class="gap-md grid grid-flow-row">
-    <p class="my-0">
-      {t('dynamic.privacy.dataConsentIntro.popup')}
-    </p>
+    <p class="my-0">{t('dynamic.privacy.dataConsentIntro.popup')}</p>
     <DataConsentInfoButton class="!inline" />
   </div>
-  <DataConsent on:change={closeAlert} description="none" slot="actions" />
+  {#snippet actions()}
+    <DataConsent onChange={() => alertRef?.closeAlert()} description="none" />
+  {/snippet}
 </Alert>

@@ -15,14 +15,13 @@ Preview component displaying all available input types.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Input } from '.';
   import type { PreviewAllInputsProps } from './PreviewAllInputs.type';
 
-  type $$Props = PreviewAllInputsProps;
-
-  export let info: $$Props['info'] = undefined;
-  export let locked: $$Props['locked'] = false;
+  let { info, locked = false, ...restProps }: PreviewAllInputsProps = $props();
 
   function onChange(value: unknown) {
     console.info('New value:', value);

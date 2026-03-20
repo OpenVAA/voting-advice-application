@@ -14,10 +14,9 @@ Accesses `AppContext` to set and read `userPreferences`.
   - `'modal'`: Show a button that opens the description in a modal.
 - Any valid attributes of a `<div>` element.
 
-### Events
+### Callback Props
 
-- `change`: Fired when the user changes their data collection consent. The event `detail` cóntains:
-  - `consent`: the new consent value.
+- `onChange`: Called when the user changes their data collection consent. Receives the new `consent` value.
 
 ### Usage
 
@@ -27,9 +26,10 @@ Accesses `AppContext` to set and read `userPreferences`.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
-  import { createEventDispatcher } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
@@ -37,11 +37,13 @@ Accesses `AppContext` to set and read `userPreferences`.
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { DataConsentInfoButton } from './';
   import type { ConsentStatus } from '$lib/contexts/app/userPreferences.type';
-  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
+  import type { DataConsentProps } from './DataConsent.type';
 
-  type $$Props = DataConsentProps;
-
-  export let description: $$Props['description'] = 'modal';
+  let {
+    description = 'modal',
+    onChange,
+    ...restProps
+  }: DataConsentProps = $props();
 
   const { appSettings, userPreferences, setDataConsent, t } = getAppContext();
 
@@ -52,15 +54,13 @@ Accesses `AppContext` to set and read `userPreferences`.
       }</a>`
     : '';
 
-  const dispatchEvent = createEventDispatcher<DataConsentEvents>();
-
-  function onChange(consent: ConsentStatus) {
+  function handleChange(consent: ConsentStatus) {
     if (consent !== $userPreferences.dataCollection?.consent) setDataConsent(consent);
-    dispatchEvent('change', { consent });
+    onChange?.(consent);
   }
 </script>
 
-<div {...concatClass($$restProps, 'grid justify-items-center')}>
+<div {...concatClass(restProps, 'grid justify-items-center')}>
   {#if description === 'inline' && $appSettings.analytics.platform}
     <div>
       <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
@@ -80,25 +80,19 @@ Accesses `AppContext` to set and read `userPreferences`.
     </p>
   {/if}
   <Button
-    on:click={() => onChange('granted')}
+    onclick={() => handleChange('granted')}
     variant="main"
     iconPos="left"
     disabled={$userPreferences.dataCollection?.consent === 'granted'}
     icon={$userPreferences.dataCollection?.consent === 'granted' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.granted')} />
   <Button
-    on:click={() => onChange('denied')}
+    onclick={() => handleChange('denied')}
     color="warning"
     iconPos="left"
     disabled={$userPreferences.dataCollection?.consent === 'denied'}
     icon={$userPreferences.dataCollection?.consent === 'denied' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.denied')} />
-  <!-- <Button 
-    on:click={() => onChange('indetermined')}
-    color="secondary"
-    iconPos="left"
-    icon={$userPreferences.dataCollection?.consent == null || $userPreferences.dataCollection?.consent === 'indetermined' ? 'check' : undefined}
-    text="ZXXX"/> -->
   {#if description === 'modal'}
     <DataConsentInfoButton color="neutral" variant="normal" />
   {/if}

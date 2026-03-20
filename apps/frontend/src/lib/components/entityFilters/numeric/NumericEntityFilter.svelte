@@ -15,16 +15,15 @@ Render a numeric filter for entities.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
 
-  type $$Props = NumericEntityFilterProps;
-
-  export let filter: $$Props['filter'];
-  export let targets: $$Props['targets'];
+  let { filter, targets, ...restProps }: NumericEntityFilterProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -36,9 +35,9 @@ Render a numeric filter for entities.
   // Filtering
   ////////////////////////////////////////////////////////////////////
 
-  let min: number;
-  let max: number;
-  let includeMissing = true;
+  let min: number = $state(0);
+  let max: number = $state(0);
+  let includeMissing = $state(true);
 
   // Initialize values and possibly saved filter state
   const range = filter.parseValues(targets);
@@ -50,11 +49,11 @@ Render a numeric filter for entities.
   // Cleanup
   onDestroy(() => filter.onChange(updateValues, false));
 
-  $: {
+  $effect(() => {
     filter.min = range?.min == null || range.min === min ? undefined : min;
     filter.max = range?.max == null || range.max === max ? undefined : max;
     filter.excludeMissing = !includeMissing;
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Functions
@@ -77,16 +76,16 @@ Render a numeric filter for entities.
 </script>
 
 {#if (range.min != null && range.max != null) || range.missingValues}
-  <div {...concatClass($$restProps, '')}>
+  <div {...concatClass(restProps, '')}>
     {#if range.min != null && range.max != null}
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.minLabel')}</span>
-        <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
+        <input bind:value={min} onchange={setMin} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{min}</span>
       </label>
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] text-start">{t('entityFilters.numeric.maxLabel')}</span>
-        <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
+        <input bind:value={max} onchange={setMax} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{max}</span>
       </label>
     {/if}

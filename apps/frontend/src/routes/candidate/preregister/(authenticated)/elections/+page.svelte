@@ -23,12 +23,13 @@
     elections={$dataRoot.elections}
     bind:selected={$preregistrationElectionIds}
     data-testid="preregister-elections-list" />
-  <Button
-    slot="primaryActions"
-    type="submit"
-    text={t('common.continue')}
-    variant="main"
-    disabled={$preregistrationElectionIds.length === 0}
-    on:click={() => goto($getRoute(nextRoute))}
-    data-testid="preregister-elections-submit" />
+  {#snippet primaryActions()}
+    <Button
+      type="submit"
+      text={t('common.continue')}
+      variant="main"
+      disabled={$preregistrationElectionIds.length === 0}
+      onclick={() => goto($getRoute(nextRoute))}
+      data-testid="preregister-elections-submit" />
+  {/snippet}
 </MainContent>

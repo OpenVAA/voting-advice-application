@@ -16,25 +16,28 @@ Display the question's expandable information content.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { QuestionBasicInfoProps } from './QuestionBasicInfo.type';
 
-  type $$Props = QuestionBasicInfoProps;
-
-  export let info: $$Props['info'];
-  export let onCollapse: $$Props['onCollapse'] = undefined;
-  export let onExpand: $$Props['onExpand'] = undefined;
+  let {
+    info,
+    onCollapse = undefined,
+    onExpand = undefined,
+    ...restProps
+  }: QuestionBasicInfoProps = $props();
 
   const { t } = getComponentContext();
 </script>
 
 <Expander
-  on:collapse={() => onCollapse?.()}
-  on:expand={() => onExpand?.()}
+  onCollapse={() => onCollapse?.()}
+  onExpand={() => onExpand?.()}
   title={t('common.readMore')}
-  {...$$restProps}>
+  {...restProps}>
   {@html sanitizeHtml(info)}
 </Expander>

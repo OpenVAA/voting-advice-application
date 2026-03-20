@@ -19,6 +19,8 @@ If there's only one option, it is automatically selected and no interactions are
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { scale, slide } from 'svelte/transition';
   import { Icon } from '$lib/components/icon';
@@ -27,12 +29,7 @@ If there's only one option, it is automatically selected and no interactions are
   import { DELAY } from '$lib/utils/timing';
   import type { AccordionSelectProps } from './AccordionSelect.type';
 
-  type $$Props = AccordionSelectProps<unknown>;
-
-  export let options: $$Props['options'] = [];
-  export let activeIndex: $$Props['activeIndex'] = undefined;
-  export let onChange: $$Props['onChange'] = undefined;
-  export let labelGetter: $$Props['labelGetter'] = String;
+  let { options = [], activeIndex = $bindable(), onChange, labelGetter = String, ...restProps }: AccordionSelectProps<unknown> = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -44,9 +41,11 @@ If there's only one option, it is automatically selected and no interactions are
   // Expanding and selecting
   ////////////////////////////////////////////////////////////////////
 
-  let expanded = activeIndex == null || activeIndex < 0;
+  let expanded = $state(activeIndex == null || activeIndex < 0);
 
-  $: if (options.length === 1) activate(0);
+  $effect(() => {
+    if (options.length === 1) activate(0);
+  });
 
   function activate(index: number): void {
     if (activeIndex === index) {
@@ -64,7 +63,7 @@ If there's only one option, it is automatically selected and no interactions are
   }
 </script>
 
-<div {...concatClass($$restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
+<div {...concatClass(restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
   {#each options as option, index}
     {#if expanded || activeIndex === index}
       <button
@@ -78,7 +77,7 @@ If there's only one option, it is automatically selected and no interactions are
         role="option"
         tabindex="0"
         transition:slide={{ duration: DELAY.sm }}
-        on:click={() => handleSelect(index)}>
+        onclick={() => handleSelect(index)}>
         {#if index === activeIndex}
           <div transition:scale class="left-md absolute">
             <Icon name="check" />

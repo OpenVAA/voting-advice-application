@@ -51,23 +51,21 @@ Display a short list of options as toggleable text or icon buttons from which on
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
   import type { ToggleProps } from './Toggle.type';
 
-  type $$Props = ToggleProps;
-
-  export let label: $$Props['label'];
-  export let options: $$Props['options'];
-  export let selected: $$Props['selected'] = undefined;
+  let { label, options, selected = $bindable(), ...restProps }: ToggleProps = $props();
 </script>
 
 <fieldset
   role="radiogroup"
   title={label}
   {...concatClass(
-    $$restProps,
+    restProps,
     'flex flex-row items-center bg-base-100 rounded-full p-2 border-md border-neutral focus-within:ring focus-within:ring-offset-2'
   )}>
   <legend class="sr-only">{label}</legend>

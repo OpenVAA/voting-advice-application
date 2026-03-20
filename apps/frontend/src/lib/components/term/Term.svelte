@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Show a definition popup when hovering over a term.
@@ -28,20 +30,15 @@ Uses the `term` and `definition` roles.
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { TermProps } from './Term.type';
 
-  type $$Props = TermProps;
-
-  export let definition: $$Props['definition'];
-  export let position: $$Props['position'] = 'bottom';
-  export let showUnderline: $$Props['showUnderline'] = true;
-  export let forceShow: $$Props['forceShow'] = false;
+  let { definition, position = 'bottom', showUnderline = true, forceShow = false, children, ...restProps }: TermProps = $props();
 
   const VERTICAL_PADDING = 20;
   const definitionId = getUUID();
 
   let triggerElement: HTMLSpanElement;
   let definitionDiv: HTMLDivElement;
-  let leftPadding = 0;
-  let rightPadding = 0;
+  let leftPadding = $state(0);
+  let rightPadding = $state(0);
 
   onMount(calculatePosition);
 
@@ -62,15 +59,15 @@ Uses the `term` and `definition` roles.
   }
 </script>
 
-<svelte:window on:resize={() => calculatePosition()} />
+<svelte:window onresize={() => calculatePosition()} />
 
 <span class="group relative" bind:this={triggerElement} role="term">
   <span
     {...concatClass(
-      $$restProps,
+      restProps,
       showUnderline ? 'underline underline-offset-[0.2em] decoration-primary decoration-dotted' : ''
     )}
-    aria-details={definitionId}><slot /></span>
+    aria-details={definitionId}>{@render children?.()}</span>
   <div
     bind:this={definitionDiv}
     id={definitionId}

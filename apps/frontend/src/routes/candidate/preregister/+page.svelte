@@ -82,25 +82,30 @@
 
 {#if $idTokenClaims}
   <MainContent title={t('candidateApp.preregister.identification.success.title', $idTokenClaims)}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('candidateApp.preregister.identification.success.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('candidateApp.preregister.identification.success.heroEmoji')} />
+      </figure>
+    {/snippet}
     <div class="mb-md text-center">
       {@html sanitizeHtml(t('candidateApp.preregister.identification.success.content'))}
     </div>
-    <Button
-      slot="primaryActions"
-      type="submit"
-      text={t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute(nextRoute))}
-      data-testid="preregister-continue" />
+    {#snippet primaryActions()}
+      <Button
+        type="submit"
+        text={t('common.continue')}
+        variant="main"
+        onclick={() => goto($getRoute(nextRoute))}
+        data-testid="preregister-continue" />
+    {/snippet}
   </MainContent>
 {:else}
   <MainContent title={t('candidateApp.preregister.identification.start.title')}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('candidateApp.preregister.identification.start.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('candidateApp.preregister.identification.start.heroEmoji')} />
+      </figure>
+    {/snippet}
     <div class="mb-md text-center">
       {@html sanitizeHtml(t('candidateApp.preregister.identification.start.content'))}
     </div>
@@ -109,16 +114,16 @@
         <li>{step}</li>
       {/each}
     </ol>
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button
         text={t('candidateApp.preregister.identification.identifyYourselfButton')}
         variant="main"
-        on:click={redirectToIdentityProvider}
+        onclick={redirectToIdentityProvider}
         data-testid="preregister-start" />
       <p class="small-info my-md text-center">
         {t('candidateApp.preregister.identification.identifyYourselHelpText')}
       </p>
       <Button href={$getRoute('CandAppLogin')} text={t('common.return')} data-testid="preregister-return" />
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {/if}

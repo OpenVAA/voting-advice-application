@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Privacy page
@@ -42,14 +44,18 @@ Displays information about the privacy policy of the app as well as the possible
 </script>
 
 <MainContent title={t('privacy.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.privacy.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.privacy.heroEmoji')} />
+    </figure>
+  {/snippet}
 
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
-    <h1>{t('privacy.title')}</h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
+      <h1>{t('privacy.title')}</h1>
+    </HeadingGroup>
+  {/snippet}
 
   <div class="grid" data-testid="voter-privacy-content">
     <div>
@@ -75,12 +81,13 @@ Displays information about the privacy policy of the app as well as the possible
     {/if}
   </div>
 
-  <Button
-    slot="primaryActions"
-    variant="main"
-    href={$getRoute('Home')}
-    text={t('common.returnHome')}
-    data-testid="voter-privacy-return" />
+  {#snippet primaryActions()}
+    <Button
+      variant="main"
+      href={$getRoute('Home')}
+      text={t('common.returnHome')}
+      data-testid="voter-privacy-return" />
+  {/snippet}
 </MainContent>
 
 <style lang="postcss">

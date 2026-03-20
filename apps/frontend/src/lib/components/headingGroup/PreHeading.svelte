@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used for a pre-title, or kicker, above the main title of a page within a `HeadingGroup`.
@@ -20,10 +22,13 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+  import type { PreHeadingProps } from './PreHeading.type';
+
+  let { children, ...restProps }: PreHeadingProps = $props();
 
   const { t } = getComponentContext();
 </script>
 
-<p aria-roledescription={t('components.preHeading.roleDescription')} {...$$restProps}>
-  <slot />
+<p aria-roledescription={t('components.preHeading.roleDescription')} {...restProps}>
+  {@render children?.()}
 </p>

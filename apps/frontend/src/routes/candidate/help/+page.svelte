@@ -56,12 +56,12 @@ Shows a FAQ and other support content for the candidate application.
     class="mt-lg"
     data-testid="candidate-help-contact-support" />
 
-  <svelte:fragment slot="primaryActions">
+  {#snippet primaryActions()}
     <Button
       icon="next"
       variant="main"
       text={t('common.home')}
       href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
       data-testid="candidate-help-home" />
-  </svelte:fragment>
+  {/snippet}
 </MainContent>

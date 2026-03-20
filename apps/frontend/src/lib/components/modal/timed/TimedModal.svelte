@@ -2,23 +2,23 @@
 @component
 A modal dialog that will automatically close after a set amount of time.
 
-### Slots
+### Snippet Props
 
 - `actions`: The action buttons to display.
-- default: The content of the modal.
+- `children`: The content of the modal.
 
 ### Properties
 
 - `title`: The title of the modal
 - `timerDuration`: Logout timer duration in seconds. @default `30`
-- `timeLeft`: Bind to this to get time left in seconds 
+- `timeLeft`: Bind to this to get time left in seconds
 - Any valid properties of a `<Modal>` component.
 
 ### Callbacks
 
 - `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
 - `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
-- `timeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+- `onTimeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
 
 ### Bindable functions
 
@@ -32,17 +32,25 @@ See the `<Modal>` component documentation for more information.
 ### Usage
 
 ```tsx
-<TimedModal 
-  bind:closeModal
-  title="Timout modal"
+<script lang="ts">
+  let timedModal: TimedModal;
+</script>
+
+<TimedModal
+  bind:this={timedModal}
+  title="Timeout modal"
   onOpen={() => console.info('Opened')}
   onClose={() => console.info('Closed')}
   onTimeout={() => console.info('Timeout!')}>
-  <p>Wait for it…</p>
-  <Button slot="actions" on:click={closeModal} text="Close" variant="main"/>
+  <p>Wait for it...</p>
+  {#snippet actions()}
+    <Button onclick={() => timedModal.closeModal()} text="Close" variant="main"/>
+  {/snippet}
 </TimedModal>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -50,35 +58,50 @@ See the `<Modal>` component documentation for more information.
   import Modal from '../Modal.svelte';
   import type { TimedModalProps } from './TimedModal.type';
 
-  type $$Props = TimedModalProps;
   const DEFAULT_DURATION = 30;
 
-  export let title: $$Props['title'];
-  export let timerDuration: $$Props['timerDuration'] = DEFAULT_DURATION;
-  export let timeLeft: $$Props['timeLeft'] = Math.ceil(timerDuration ?? DEFAULT_DURATION);
-  export let onClose: $$Props['onClose'] = undefined;
-  export let onOpen: $$Props['onOpen'] = undefined;
-  export let onTimeout: $$Props['onTimeout'] = undefined;
+  let {
+    title,
+    timerDuration = DEFAULT_DURATION,
+    timeLeft = $bindable(Math.ceil(timerDuration ?? DEFAULT_DURATION)),
+    onClose = undefined,
+    onOpen = undefined,
+    onTimeout = undefined,
+    actions,
+    children,
+    ...restProps
+  }: TimedModalProps = $props();
 
-  export let closeModal: $$Props['closeModal'] = undefined;
-  export let openModal: $$Props['openModal'] = undefined;
+  let modalRef: Modal | undefined = $state(undefined);
+  let isOpen = $state(false);
 
-  let isOpen: boolean;
+  /** Bind to open the modal dialog */
+  export function openModal(noCallbacks?: boolean) {
+    modalRef?.openModal(noCallbacks);
+  }
+
+  /** Bind to close the modal dialog */
+  export function closeModal(noCallbacks?: boolean) {
+    modalRef?.closeModal(noCallbacks);
+  }
 
   // Used for progress bar animation
   let progressBarTimer = tweened(timerDuration, { duration: 0 });
   // Timeout for triggering onTimeout()
-  let timeout: NodeJS.Timeout | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-  // Update progressBarTimerInt to an integer when progressBarTimer updates
-  $: if ($progressBarTimer) {
-    const t = Math.ceil($progressBarTimer);
-    if (t < (timeLeft ?? 0)) timeLeft = t;
-  }
+  // Update timeLeft to an integer when progressBarTimer updates
+  $effect(() => {
+    const val = $progressBarTimer;
+    if (val) {
+      const t = Math.ceil(val);
+      if (t < (timeLeft ?? 0)) timeLeft = t;
+    }
+  });
 
   // Clean up if the containing document is left
   onDestroy(() => {
-    if (timeout) clearTimeout(timeout);
+    if (timer) clearTimeout(timer);
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -97,17 +120,17 @@ See the `<Modal>` component documentation for more information.
 
   /** Start or reset the timeout and the progress bar */
   function startTimeout() {
-    if (timeout) clearTimeout(timeout);
+    if (timer) clearTimeout(timer);
     progressBarTimer = tweened(timerDuration, {
       duration: (timerDuration ?? DEFAULT_DURATION) * 1000
     });
     timeLeft = timerDuration;
     $progressBarTimer = 0;
-    timeout = setTimeout(
+    timer = setTimeout(
       () => {
         if (isOpen) {
           onTimeout?.();
-          closeModal?.();
+          modalRef?.closeModal();
         }
       },
       (timerDuration ?? DEFAULT_DURATION) * 1000
@@ -116,23 +139,22 @@ See the `<Modal>` component documentation for more information.
 
   /** Stop the timeout and the progress bar */
   function stopTimeout() {
-    if (timeout) clearTimeout(timeout);
-    timeout = undefined;
+    if (timer) clearTimeout(timer);
+    timer = undefined;
     progressBarTimer.set($progressBarTimer, { duration: 0 });
   }
 </script>
 
 <Modal
-  bind:closeModal
-  bind:openModal
+  bind:this={modalRef}
   bind:isOpen
   onOpen={handleOpen}
   onClose={handleClose}
   {title}
+  {actions}
   closeOnBackdropClick={false}
-  {...$$restProps}>
-  <slot name="actions" slot="actions" />
-  <slot />
+  {...restProps}>
+  {@render children?.()}
   <progress
     id="modal-progress"
     class="progress progress-error absolute right-0 bottom-0 left-0"

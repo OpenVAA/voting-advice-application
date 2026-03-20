@@ -21,11 +21,13 @@ Used to show an entity's details using the `EntityDetails` component.
 - `results_browse_${$entityType}`: { id }
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { isMatch } from '@openvaa/matching';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -61,12 +63,12 @@ Used to show an entity's details using the `EntityDetails` component.
   // Get the current match or nomination
   ////////////////////////////////////////////////////////////////////
 
-  let entity: MaybeWrappedEntityVariant | undefined;
-  let title = '';
-  $: {
-    const entityType = $page.params.entityType as EntityType;
-    const entityId = $page.params.entityId;
-    const nominationId = $page.url.searchParams.get('nominationId') ?? undefined;
+  let entity = $state<MaybeWrappedEntityVariant | undefined>();
+  let title = $state('');
+  $effect(() => {
+    const entityType = page.params.entityType as EntityType;
+    const entityId = page.params.entityId!;
+    const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
     try {
       ({ entity, title } = getEntityAndTitle({
         dataRoot: $dataRoot,
@@ -83,7 +85,7 @@ Used to show an entity's details using the `EntityDetails` component.
           : `Entity of type ${entityType} with id ${entityId} and nomination ${nominationId} not found.`
       );
     }
-  }
+  });
 
   /**
    * Log error and return to resuls.
@@ -99,12 +101,12 @@ Used to show an entity's details using the `EntityDetails` component.
 
   function doTrack(): void {
     if (isMatch(entity)) {
-      startEvent(`results_ranked_${$page.params.entityType as EntityType}`, {
-        id: $page.params.entityId,
+      startEvent(`results_ranked_${page.params.entityType as EntityType}`, {
+        id: page.params.entityId,
         score: entity.score
       });
     } else {
-      startEvent(`results_browse_${$page.params.entityType as EntityType}`, { id: $page.params.entityId });
+      startEvent(`results_browse_${page.params.entityType as EntityType}`, { id: page.params.entityId });
     }
   }
 </script>

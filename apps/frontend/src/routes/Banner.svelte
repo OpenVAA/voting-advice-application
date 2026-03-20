@@ -42,7 +42,7 @@ Accesses `AppContext` and optionally `VoterContext`.
 <div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="var(--color-primary)">
   {#if $hasVideo}
     <Button
-      on:click={() => $player?.toggleTranscript()}
+      onclick={() => $player?.toggleTranscript()}
       variant="responsive-icon"
       icon={$videoMode === 'video' ? 'videoOn' : 'videoOff'}
       text={$videoMode === 'video' ? t('components.video.showTranscript') : t('components.video.showVideo')} />
@@ -57,7 +57,7 @@ Accesses `AppContext` and optionally `VoterContext`.
   {/if}
 
   {#if $topBarSettings.actions.feedback === 'show'}
-    <Button on:click={$openFeedbackModal} variant="icon" icon="feedback" text={t('feedback.send')} />
+    <Button onclick={$openFeedbackModal} variant="icon" icon="feedback" text={t('feedback.send')} />
   {/if}
 
   {#if $topBarSettings.actions.help === 'show'}
@@ -80,7 +80,7 @@ Accesses `AppContext` and optionally `VoterContext`.
       variant="icon"
       icon="close"
       text={$topBarSettings.actions.returnButtonLabel || t('common.return')}
-      on:click={$topBarSettings.actions.returnButtonCallback ||
+      onclick={$topBarSettings.actions.returnButtonCallback ||
         (() => goto($appType === 'voter' ? $getRoute('Home') : $getRoute('CandAppHome')))} />
   {/if}
 
@@ -90,7 +90,7 @@ Accesses `AppContext` and optionally `VoterContext`.
       variant="icon"
       icon="close"
       text={$topBarSettings.actions.cancelButtonLabel || t('common.cancel')}
-      on:click={$topBarSettings.actions.cancelButtonCallback} />
+      onclick={$topBarSettings.actions.cancelButtonCallback} />
   {/if}
 </div>
 

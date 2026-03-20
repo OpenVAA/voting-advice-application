@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to show an entity's children in an `EntityDetails` component.
@@ -23,32 +25,12 @@ Used to show an entity's children in an `EntityDetails` component.
   import type { EntityCardProps } from '../entityCard';
   import type { EntityChildrenProps } from './EntityChildren.type';
 
-  type $$Props = EntityChildrenProps;
-
-  export let entities: $$Props['entities'];
-  export let entityType: $$Props['entityType'];
-  export let action: $$Props['action'] = undefined;
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { entities, entityType, action }: EntityChildrenProps = $props();
 
   const { t } = getComponentContext();
 
-  ////////////////////////////////////////////////////////////////////
-  // Filters
-  ////////////////////////////////////////////////////////////////////
+  let filteredEntities = $state(entities);
 
-  // This will hold the filtered entities returned by EntityListControls
-  let filteredEntities = entities;
-
-  ////////////////////////////////////////////////////////////////////
-  // Create card props
-  ////////////////////////////////////////////////////////////////////
-
-  /**
-   * Create `EntityCard` properties for an `Entity`.
-   */
   function getCardProps(entity: MaybeWrappedEntityVariant): EntityCardProps {
     return {
       entity,

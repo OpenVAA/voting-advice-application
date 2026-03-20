@@ -18,6 +18,8 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
@@ -25,16 +27,11 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { InfoAnswerProps } from './InfoAnswer.type';
 
-  type $$Props = InfoAnswerProps;
-
-  export let answer: $$Props['answer'] = undefined;
-  export let question: $$Props['question'];
-  export let format: $$Props['format'] = 'default';
+  let { answer, question, format = 'default', ...restProps }: InfoAnswerProps = $props();
 
   const { t } = getComponentContext();
 
-  let asTag: boolean;
-  $: asTag = format === 'tag';
+  let asTag = $derived(format === 'tag');
 
   ////////////////////////////////////////////////////////////////////
   // Functions
@@ -49,7 +46,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       href="${link}"
       target="_blank"
       rel="noopener noreferrer"
-      class="vaa-tag hyphens-none mb-sm ${$$restProps.class ?? ''}">
+      class="vaa-tag hyphens-none mb-sm ${restProps.class ?? ''}">
       ${text}
     </a>`;
   }
@@ -64,7 +61,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 
 {#if answer == null}
   <!-- `question.formatAnswer` will handle missing answer formatting -->
-  <span {...concatClass($$restProps, 'text-secondary')}>
+  <span {...concatClass(restProps, 'text-secondary')}>
     {question.formatAnswer()}
   </span>
 {:else if question.subtype === 'link'}
@@ -74,7 +71,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       href={question.formatAnswer({ answer })}
       target="_blank"
       rel="noopener noreferrer"
-      {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
+      {...concatClass(restProps, 'vaa-tag hyphens-none')}>
       {question.shortName}
     </a>
   {:else}
@@ -90,7 +87,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       })
     )}
   {:else if asTag}
-    <div {...$$restProps}>
+    <div {...restProps}>
       {@html sanitizeHtml(
         question.formatAnswer({
           answer,
@@ -100,25 +97,25 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       )}
     </div>
   {:else}
-    <span {...$$restProps}>
+    <span {...restProps}>
       {question.formatAnswer({ answer, separator: t('common.multipleAnswerSeparator') })}
     </span>
   {/if}
   <!-- 
   TODO[preferenceOrder]: Check
   {:else if question.type === 'preferenceOrder'}
-    <ol {...$$restProps}>
+    <ol {...restProps}>
       {#each answer as item}
         <li class:vaa-tag={asTag}>{item}</li>
       {/each}
     </ol>
 -->
 {:else if question.type === 'image'}
-  <figure class:vaa-tag={asTag} {...$$restProps}>
+  <figure class:vaa-tag={asTag} {...restProps}>
     {@html sanitizeHtml(question.formatAnswer({ answer }))}
   </figure>
 {:else}
-  <span class:vaa-tag={asTag} {...concatClass($$restProps, 'uc-first')}>
+  <span class:vaa-tag={asTag} {...concatClass(restProps, 'uc-first')}>
     {question.formatAnswer({ answer })}
   </span>
 {/if}

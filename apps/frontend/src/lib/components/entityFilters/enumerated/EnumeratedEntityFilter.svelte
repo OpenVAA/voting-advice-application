@@ -15,6 +15,8 @@ Render an enumerated filter for entities that displays a list of values to inclu
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { isMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
@@ -26,10 +28,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   import type { MaybeMissing } from '@openvaa/filters';
   import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
 
-  type $$Props = EnumeratedEntityFilterProps;
-
-  export let filter: $$Props['filter'];
-  export let targets: $$Props['targets'];
+  let { filter, targets, ...restProps }: EnumeratedEntityFilterProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -49,10 +48,9 @@ Render an enumerated filter for entities that displays a list of values to inclu
 
   // Initialize values and possibly saved filter state
   const values = filter.parseValues(targets);
-  let selected: Array<MaybeMissing<string>>;
+  let selected: Array<MaybeMissing<string>> = $state([]);
   /** Track whether `toggleSelectAll()` will select or deselect all */
-  let allSelected: boolean;
-  $: allSelected = selected.length === values.length;
+  let allSelected = $derived(selected.length === values.length);
 
   updateSelected();
 
@@ -61,7 +59,9 @@ Render an enumerated filter for entities that displays a list of values to inclu
   ////////////////////////////////////////////////////////////////////
 
   // Update filter values when selection changes
-  $: filter.include = parseSelected(selected);
+  $effect(() => {
+    filter.include = parseSelected(selected);
+  });
 
   // Update selection when filter values change
   filter.onChange(updateSelected);
@@ -78,8 +78,6 @@ Render an enumerated filter for entities that displays a list of values to inclu
    */
   function updateSelected() {
     selected = convertMissingForInputs(filter.include?.length ? filter.include : values.map((v) => v.value));
-    // TODO[Svelte 5]: This extra setting may not be needed, but currently it's necessary
-    allSelected = selected.length === values.length;
   }
 
   /**
@@ -128,7 +126,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
 </script>
 
 <div
-  {...concatProps($$restProps, {
+  {...concatProps(restProps, {
     class: 'grid grid-flow-row gap-x-xl gap-y-sm items-start',
     style: 'grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));'
   })}>
@@ -146,7 +144,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   {/each}
   {#if values.length > 3}
     <div class="mt-md col-span-full">
-      <button on:click={() => toggleSelectAll()} class="label gap-sm text-primary cursor-pointer !items-start !p-0">
+      <button onclick={() => toggleSelectAll()} class="label gap-sm text-primary cursor-pointer !items-start !p-0">
         <div class="w-[1.5rem]">
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Display either an image or a initials-based avatar for an entity. The color of the initials background is based on the entity's color or `'base-300'` by default. If the color is specified, it should be dark enough, because the `primary-content` color is used for the text.
@@ -19,17 +21,13 @@ Display either an image or a initials-based avatar for an entity. The color of t
 <script lang="ts">
   import { Image } from '$lib/components/image/';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatProps } from '$lib/utils/components';
+  import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { abbreviate } from '$lib/utils/text/abbreviate';
   import type { Colors, Image as ImageType } from '@openvaa/data';
   import type { AvatarProps } from './Avatar.type';
 
-  type $$Props = AvatarProps;
-
-  export let entity: $$Props['entity'];
-  export let size: $$Props['size'] = 'md';
-  export let linkFullImage: $$Props['linkFullImage'] = false;
+  let { entity, size = 'md', linkFullImage = false, ...restProps }: AvatarProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -41,15 +39,16 @@ Display either an image or a initials-based avatar for an entity. The color of t
   // Parse properties and create styles
   ////////////////////////////////////////////////////////////////////
 
-  let classes: string;
-  let image: ImageType | null;
-  let imageStatus: 'error' | 'loading' | 'loaded' = 'loading';
-  let initials: string | null;
-  let initialsClasses: string;
-  let name: string;
-  let styles: string;
+  let imageStatus: 'error' | 'loading' | 'loaded' = $state('loading');
 
-  $: {
+  let avatarData = $derived.by(() => {
+    let classes: string;
+    let image: ImageType | null;
+    let initials: string | null = null;
+    let initialsClasses: string = '';
+    let name: string;
+    let styles: string;
+
     let color: Colors | null;
     let shortName: string;
     ({
@@ -97,7 +96,9 @@ Display either an image or a initials-based avatar for an entity. The color of t
           initialsClasses += ' text-sm';
       }
     }
-  }
+
+    return { classes, styles, image, initials, initialsClasses, name };
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Functions
@@ -112,33 +113,33 @@ Display either an image or a initials-based avatar for an entity. The color of t
   }
 </script>
 
-<figure {...concatProps($$restProps, { class: classes, style: styles })}>
-  {#if image && imageStatus !== 'error'}
+<figure {...concatClass(restProps, avatarData.classes)} style={avatarData.styles}>
+  {#if avatarData.image && imageStatus !== 'error'}
     {#if linkFullImage}
       <a
-        href={image.url}
+        href={avatarData.image.url}
         target="_blank"
         title={t('common.showFullImage')}
         aria-label={t('common.showFullImage')}
         class="h-full w-full">
         <Image
-          {image}
+          image={avatarData.image}
           format="thumbnail"
           class="border-bg-300 border-md h-full w-full object-cover"
-          alt={name}
-          on:load={handleImgLoad}
-          on:error={handleImgError} />
+          alt={avatarData.name}
+          onload={handleImgLoad}
+          onerror={handleImgError} />
       </a>
     {:else}
       <Image
-        {image}
+        image={avatarData.image}
         format="thumbnail"
         class="border-bg-300 border-md h-full w-full object-cover"
-        alt={name}
-        on:load={handleImgLoad}
-        on:error={handleImgError} />
+        alt={avatarData.name}
+        onload={handleImgLoad}
+        onerror={handleImgError} />
     {/if}
   {:else}
-    <div class={initialsClasses}>{initials}</div>
+    <div class={avatarData.initialsClasses}>{avatarData.initials}</div>
   {/if}
 </figure>

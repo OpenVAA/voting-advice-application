@@ -55,7 +55,7 @@
   let email = '';
   let emailInput: HTMLInputElement | undefined;
   let errorMessage: string | undefined;
-  let focusPassword: () => void | undefined;
+  let passwordFieldRef: { focus: () => void };
   let password = '';
   let showPasswordSetMessage = false;
   let status: ActionStatus = 'idle';
@@ -93,7 +93,7 @@
   );
 
   onMount(() => {
-    if (email) focusPassword();
+    if (email) passwordFieldRef?.focus();
   });
 
   function handleShowLogin(event: { preventDefault: () => unknown }): void {
@@ -115,11 +115,13 @@
 </script>
 
 <MainContent title={t('candidateApp.login.title')}>
-  <HeadingGroup slot="heading">
-    <h1>
-      {showPasswordSetMessage ? t('candidateApp.setPassword.passwordSetSuccesfully') : t('dynamic.candidateAppName')}
-    </h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <h1>
+        {showPasswordSetMessage ? t('candidateApp.setPassword.passwordSetSuccesfully') : t('dynamic.candidateAppName')}
+      </h1>
+    </HeadingGroup>
+  {/snippet}
 
   <form
     class="flex w-full flex-col flex-nowrap items-center"
@@ -163,7 +165,7 @@
           autocomplete="email"
           required />
         <div class="mb-md w-full max-w-md">
-          <PasswordField autocomplete="current-password" id="password" bind:password bind:focus={focusPassword} />
+          <PasswordField autocomplete="current-password" id="password" bind:password bind:this={passwordFieldRef} />
         </div>
         {#if status === 'error'}
           <ErrorMessage inline message={errorMessage} class="mb-md" data-testid="login-errorMessage" />
@@ -178,7 +180,7 @@
       </div>
     {:else}
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
-        <Button on:click={handleShowLogin} text={t('common.login')} variant="main" data-testid="login-show" />
+        <Button onclick={handleShowLogin} text={t('common.login')} variant="main" data-testid="login-show" />
       </div>
     {/if}
 
@@ -205,7 +207,7 @@
       {#if $appSettings.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
-          on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
+          onclick={() => goto($getRoute('Home'), { invalidateAll: true })}
           text={t('candidateApp.common.voterApp')}
           data-testid="login-voter-app-link" />
       {/if}

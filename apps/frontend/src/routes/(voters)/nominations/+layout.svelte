@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # All nominations layout
@@ -10,27 +12,30 @@ Provides the data used by the nominations route.
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getVoterContext } from '$lib/contexts/voter';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
-  export let data;
+  let { data, children }: { data: any; children: Snippet } = $props();
 
   const { dataRoot } = getVoterContext();
 
-  let error: Error | undefined;
-  let ready: boolean;
+  let error = $state<Error | undefined>(undefined);
+  let ready = $state(false);
 
-  $: {
-    // If data is updated, we want to prevent loading the slot until the promises resolve
+  $effect(() => {
+    // Read data synchronously to register as dependency
+    const nominationData = data.nominationData;
+    // Reset state
     error = undefined;
     ready = false;
-    Promise.all([data.nominationData]).then(async (data) => {
-      error = await update(data);
+    Promise.all([nominationData]).then(async (resolved) => {
+      error = await update(resolved);
     });
-  }
+  });
 
   /**
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
@@ -51,5 +56,5 @@ Provides the data used by the nominations route.
 {:else if !ready}
   <Loading />
 {:else}
-  <slot />
-{/if}´
+  {@render children?.()}
+{/if}

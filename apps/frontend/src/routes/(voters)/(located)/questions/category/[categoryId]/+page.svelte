@@ -14,12 +14,14 @@ Display the intro to a question category and possibly a button with which to ski
 - `categoryId`: The `Id` of the category to display.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -45,14 +47,14 @@ Display the intro to a question category and possibly a button with which to ski
   // Get the current category and first question id
   ////////////////////////////////////////////////////////////////////
 
-  let block: { block: QuestionBlock; index: number } | undefined;
-  let category: QuestionCategory;
-  let customData: CustomData['QuestionCategory'];
+  let block = $state<{ block: QuestionBlock; index: number } | undefined>();
+  let category = $state<QuestionCategory>();
+  let customData = $state<CustomData['QuestionCategory']>();
   /** Used for the possible skip button */
-  let nextCategoryId: Id | undefined;
-  let questionId: Id;
-  $: {
-    const categoryId = parseParams($page).categoryId;
+  let nextCategoryId = $state<Id | undefined>();
+  let questionId = $state<Id>();
+  $effect(() => {
+    const categoryId = parseParams(page).categoryId;
     if (!categoryId) error(500, 'No categoryId provided.');
     category = $dataRoot.getQuestionCategory(categoryId);
     block = $selectedQuestionBlocks.getByCategory(category);
@@ -67,7 +69,7 @@ Display the intro to a question category and possibly a button with which to ski
     }
     // Possibly show video
     if (customData?.video) video.load(customData.video);
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Possible redirect
@@ -89,28 +91,30 @@ Display the intro to a question category and possibly a button with which to ski
 
 {#if category}
   <MainContent title={category.name}>
-    <figure role="presentation" slot="hero">
-      {#if customData?.hero}
-        <Hero content={customData?.hero} />
-      {/if}
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        {#if customData?.hero}
+          <Hero content={customData?.hero} />
+        {/if}
+      </figure>
+    {/snippet}
 
-    <svelte:fragment slot="heading">
+    {#snippet heading()}
       <HeadingGroup class="relative" data-testid="voter-questions-category-intro">
-        <h1><CategoryTag {category} class="text-xl" /></h1>
+        <h1><CategoryTag category={category!} class="text-xl" /></h1>
         <PreHeading class="text-secondary">
           {t('questions.category.numQuestions', {
             numQuestions: block?.block.length ?? -1
           })}
         </PreHeading>
       </HeadingGroup>
-    </svelte:fragment>
+    {/snippet}
 
     {#if !customData?.video && category.info}
       <p class="text-center">{category.info}</p>
     {/if}
 
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button
         variant="main"
         href={$getRoute({ route: 'Question', questionId })}
@@ -127,7 +131,7 @@ Display the intro to a question category and possibly a button with which to ski
           class="justify-center"
           data-testid="voter-questions-category-skip" />
       {/if}
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {:else}
   <Loading />

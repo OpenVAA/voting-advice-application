@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 A temporary utility component within which jobs are being polled.

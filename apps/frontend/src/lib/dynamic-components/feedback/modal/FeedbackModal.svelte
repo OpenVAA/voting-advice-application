@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Show a modal dialog for sending feedback.
@@ -14,7 +16,7 @@ Show a modal dialog for sending feedback.
   let openFeedback: () => void;
 </script>
 <FeedbackModal bind:openFeedback>
-<Button on:click={openFeedback} text="Open feedback"/>
+<Button onclick={openFeedback} text="Open feedback"/>
 ```
 -->
 
@@ -25,59 +27,22 @@ Show a modal dialog for sending feedback.
   import { Feedback } from '..';
   import type { FeedbackModalProps } from './FeedbackModal.type';
 
-  type $$Props = FeedbackModalProps;
+  let { title, ...restProps }: FeedbackModalProps = $props();
 
-  export let title: $$Props['title'] = undefined;
-
-  /**
-   * The delay for autoclosing the modal after it's been submitted.
-   */
   const CLOSE_DELAY = 1500;
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
-
   const { t } = getComponentContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Events
-  ////////////////////////////////////////////////////////////////////
-
   let closeTimeout: NodeJS.Timeout | undefined;
+  onDestroy(() => { if (closeTimeout) clearTimeout(closeTimeout); });
 
-  onDestroy(() => {
-    if (closeTimeout) clearTimeout(closeTimeout);
-  });
+  let feedbackRef: { reset: () => void };
+  let modalRef: Modal;
 
-  // Export from Feedback
-  let reset: () => void;
+  export function closeFeedback() { modalRef?.closeModal(); }
+  export function openFeedback() { modalRef?.openModal(); }
 
-  // Exports from Modal
-  let openModal: () => void;
-  let closeModal: () => void;
-
-  export function closeFeedback() {
-    closeModal();
-  }
-
-  export function openFeedback() {
-    openModal();
-  }
-
-  function onSent() {
-    closeTimeout = setTimeout(() => {
-      closeFeedback();
-      reset();
-    }, CLOSE_DELAY);
-  }
+  function onSent() { closeTimeout = setTimeout(() => { closeFeedback(); feedbackRef?.reset(); }, CLOSE_DELAY); }
 </script>
 
-<Modal
-  title={title ?? t('feedback.title')}
-  boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
-  bind:openModal
-  bind:closeModal
-  {...$$restProps}>
-  <Feedback on:cancel={closeFeedback} on:sent={onSent} bind:reset />
+<Modal title={title ?? t('feedback.title')} boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]" bind:this={modalRef} {...restProps}>
+  <Feedback onCancel={closeFeedback} onSent={onSent} bind:this={feedbackRef} />
 </Modal>

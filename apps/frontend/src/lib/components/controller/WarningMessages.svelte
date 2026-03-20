@@ -15,20 +15,19 @@ Reusable component for displaying warning and error messages with scrolling.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from '$lib/admin/components/jobs/shared';
   import { getAdminContext } from '$lib/contexts/admin';
   import type { WarningMessagesProps } from './WarningMessages.type';
 
-  type $$Props = WarningMessagesProps;
-
-  export let warnings: $$Props['warnings'] = [];
-  export let errors: $$Props['errors'] = [];
+  let { warnings = [], errors = [], ...restProps }: WarningMessagesProps = $props();
 
   const { t } = getAdminContext();
 
   // Combine warnings and errors for display, limiting to maxMessages, and reverse order (latest first)
-  $: allMessages = [...(warnings ?? []), ...(errors ?? [])].slice(-DEFAULT_MAX_MESSAGES).reverse();
+  let allMessages = $derived([...(warnings ?? []), ...(errors ?? [])].slice(-DEFAULT_MAX_MESSAGES).reverse());
 </script>
 
 <div class="bg-base-200 rounded-lg p-3 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">

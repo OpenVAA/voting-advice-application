@@ -1,3 +1,4 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type LayoutProps = {
@@ -13,4 +14,12 @@ export type LayoutProps = {
    * Optional properties to be passed to the `<main>` element into which the components default slot is inserted.
    */
   mainProps?: Omit<SvelteHTMLElements['main'], 'id'>;
+  /**
+   * The navigation menu snippet, normally a `VoterNav` or `CandidateNav` component.
+   */
+  menu?: Snippet;
+  /**
+   * The main content of the page, normally a `MainContent` component.
+   */
+  children?: Snippet;
 };

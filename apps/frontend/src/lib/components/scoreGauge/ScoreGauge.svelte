@@ -20,30 +20,22 @@ Show a radial or a linear score gauge for a sub-match.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { parseColors } from '$lib/utils/color/parseColors';
-  import { concatProps, getUUID } from '$lib/utils/components';
+  import { concatClass, getUUID } from '$lib/utils/components';
   import type { ScoreGaugeProps } from './ScoreGauge.type';
 
-  type $$Props = ScoreGaugeProps;
-
-  export let score: $$Props['score'];
-  export let label: $$Props['label'];
-  export let max: $$Props['max'] = 100;
-  export let showScore: $$Props['showScore'] = true;
-  export let unit: $$Props['unit'] = '';
-  export let variant: $$Props['variant'] = 'radial';
-  export let color: $$Props['color'] = undefined;
+  let { score, label, max = 100, showScore = true, unit = '', variant = 'radial', color, ...restProps }: ScoreGaugeProps = $props();
 
   const labelId = getUUID();
 
   // Create styles
-  let classes: string;
-  let styles: string | undefined;
-  $: {
+  let gaugeStyles = $derived.by(() => {
     const { normal, dark } = parseColors(color, 'var(--color-neutral)');
 
-    classes = 'vaa-score-gauge grid gap-4';
+    let classes = 'vaa-score-gauge grid gap-4';
     switch (variant) {
       case 'linear':
         classes += ' grid-rows-[fit-content(100%)_minmax(0,_1fr)] justify-items-start';
@@ -51,18 +43,18 @@ Show a radial or a linear score gauge for a sub-match.
       default:
         classes += ' grid-cols-[fit-content(100%)_minmax(0,_1fr)] items-center';
     }
-    styles = `--meter-color: ${normal}; --meter-color-dark: ${dark ?? normal};`;
+    let styles = `--meter-color: ${normal}; --meter-color-dark: ${dark ?? normal};`;
     // Set the radial size based on the contents
     const radSize = (showScore ? Math.max(`${max}${unit}`.length, 3) : 3) * 0.7;
     styles += `--radial-size: ${radSize.toFixed(3)}rem; --radial-size-lg: ${(radSize * 1.25).toFixed(3)}rem;`;
-  }
+
+    return { classes, styles };
+  });
 </script>
 
 <div
-  {...concatProps($$restProps, {
-    class: classes,
-    style: styles
-  })}>
+  {...concatClass(restProps, gaugeStyles.classes)}
+  style={gaugeStyles.styles}>
   {#if variant === 'linear'}
     <progress
       role="meter"

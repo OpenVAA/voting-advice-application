@@ -48,12 +48,14 @@
   <slot />
 {:else}
   <MainContent title={t('error.noQuestions')}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
+      </figure>
+    {/snippet}
 
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button href={$getRoute('CandAppHome')} text={t('common.return')} variant="main" />
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {/if}

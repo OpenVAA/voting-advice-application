@@ -23,6 +23,8 @@ Accesses `CandidateContext`.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -31,10 +33,7 @@ Accesses `CandidateContext`.
   import { logDebugError } from '$lib/utils/logger';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  type $$Props = LogoutButtonProps;
-
-  export let stayOnPage: $$Props['stayOnPage'] = false;
-  export let logoutModalTimer: $$Props['logoutModalTimer'] = 30;
+  let { stayOnPage = false, logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -54,9 +53,8 @@ Accesses `CandidateContext`.
   // Handle logout and the modal
   ////////////////////////////////////////////////////////////////////
 
-  // exports from TimedModal
-  let openModal: () => void;
-  let closeModal: () => void;
+  // reference to TimedModal
+  let timedModalRef: TimedModal;
   let timeLeft = logoutModalTimer;
 
   async function triggerLogout() {
@@ -64,7 +62,7 @@ Accesses `CandidateContext`.
       !$answersLocked &&
       ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
     ) {
-      openModal();
+      timedModalRef?.openModal();
     } else {
       await logout();
     }
@@ -74,19 +72,18 @@ Accesses `CandidateContext`.
     await logout().catch((e) => {
       logDebugError(`Error logging out: ${e?.message}`);
     });
-    closeModal();
+    timedModalRef?.closeModal();
     if (!stayOnPage) {
       await goto($getRoute('CandAppLogin'), { invalidateAll: true });
     }
   }
 </script>
 
-<Button on:click={triggerLogout} icon="logout" text={t('common.logout')} color="warning" {...$$restProps} />
+<Button onclick={triggerLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />
 
 <TimedModal
+  bind:this={timedModalRef}
   bind:timeLeft
-  bind:openModal
-  bind:closeModal
   onTimeout={handleLogout}
   title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
@@ -112,12 +109,14 @@ Accesses `CandidateContext`.
     {t('candidateApp.logoutModal.ingress', { timeLeft })}
   </p>
   <!-- </div> -->
-  <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={closeModal} text={t('candidateApp.logoutModal.continue')} variant="main" />
-    <Button
-      on:click={handleLogout}
-      text={t('common.logout')}
-      class="hover:bg-warning hover:text-warning-content w-full"
-      color="warning" />
-  </div>
+  {#snippet actions()}
+    <div class="flex w-full flex-col items-center">
+      <Button onclick={() => timedModalRef?.closeModal()} text={t('candidateApp.logoutModal.continue')} variant="main" />
+      <Button
+        onclick={handleLogout}
+        text={t('common.logout')}
+        class="hover:bg-warning hover:text-warning-content w-full"
+        color="warning" />
+    </div>
+  {/snippet}
 </TimedModal>

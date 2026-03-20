@@ -73,7 +73,7 @@ export default defineConfig({
     /* Collect trace for all tests. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
 
-    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
+    baseURL: process.env.FRONTEND_PORT ? `http://127.0.0.1:${process.env.FRONTEND_PORT}` : 'http://127.0.0.1:5173'
   },
 
   projects: [

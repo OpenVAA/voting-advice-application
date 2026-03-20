@@ -1,3 +1,4 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { IconName } from '$lib/components/icon';
 
@@ -5,6 +6,10 @@ import type { IconName } from '$lib/components/icon';
  * The properties of a navigation item.
  */
 export type NavItemProps = LinkOrButtonElementProps & {
+  /**
+   * Additional contents of the navigation item.
+   */
+  children?: Snippet;
   /**
    * The optional name of the icon to use with the navigation item. See the `Icon` component for more details.
    */

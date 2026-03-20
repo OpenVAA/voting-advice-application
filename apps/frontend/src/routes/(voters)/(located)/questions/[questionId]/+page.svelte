@@ -14,12 +14,14 @@ Display a question for answering.
 - `questions.interactiveInfo.enabled`: Whether to display interactive information popup or just a basic info expander.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { Hero } from '$lib/components/hero';
   import { Loading } from '$lib/components/loading';
   import {
@@ -60,40 +62,51 @@ Display a question for answering.
   // Get the current question and update related variables
   ////////////////////////////////////////////////////////////////////
 
-  let question: AnyQuestionVariant;
-  let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
-  $: {
-    // Get question
-    const questionId = parseParams($page).questionId;
+  // Derive question and questionBlock synchronously so they are always
+  // up to date when event handlers read them (e.g., handleJump).
+  // Using $derived instead of $state + $effect avoids a timing gap
+  // where the URL has changed but the state hasn't updated yet.
+  let question = $derived.by<AnyQuestionVariant | undefined>(() => {
+    const questionId = parseParams(page).questionId;
     if (!questionId) error(500, 'No questionId provided.');
     try {
-      question =
-        questionId === FIRST_QUESTION_ID ? $selectedQuestionBlocks.blocks[0]?.[0] : $dataRoot.getQuestion(questionId);
+      return questionId === FIRST_QUESTION_ID
+        ? $selectedQuestionBlocks.blocks[0]?.[0]
+        : $dataRoot.getQuestion(questionId);
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
+  });
 
-    // Get question block and index
-    questionBlock = $selectedQuestionBlocks.getByQuestion(question);
+  let questionBlock = $derived(question ? $selectedQuestionBlocks.getByQuestion(question) : undefined);
+
+  // Handle side effects (progress, video, redirect) in a separate effect
+  $effect(() => {
     if (!questionBlock) {
-      logDebugError(
-        `Question with id ${questionId} not found in selectedQuestionBlocks. Rerouting to category selection.`
-      );
-      goto($getRoute('Questions'));
+      if (question) {
+        const questionId = parseParams(page).questionId;
+        logDebugError(
+          `Question with id ${questionId} not found in selectedQuestionBlocks. Rerouting to category selection.`
+        );
+        goto($getRoute('Questions'));
+      }
     } else {
       progress.current.set(questionBlock.index + 1);
       // Possibly show video
-      const customData = getCustomData(question);
-      if (customData?.video) video.load(customData.video);
+      if (question) {
+        const customData = getCustomData(question);
+        if (customData?.video) video.load(customData.video);
+      }
     }
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Handle `start` query param
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
-    if ($page.url.searchParams.get('start')) {
+    if (!question) return;
+    if (page.url.searchParams.get('start')) {
       // Clear any possible selected categories, although there should under normal circumstances be none
       $selectedQuestionCategoryIds = [];
       $firstQuestionId = question.id;
@@ -106,7 +119,7 @@ Display a question for answering.
   ////////////////////////////////////////////////////////////////////
 
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
-  let disabled = false;
+  let disabled = $state(false);
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     disabled = true;
@@ -164,17 +177,20 @@ Display a question for answering.
   {@const questions = $selectedQuestionBlocks.questions}
 
   <MainContent title={text}>
-    <figure role="presentation" slot="hero">
-      {#if customData?.hero}
-        <Hero content={customData?.hero} />
-      {/if}
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        {#if customData?.hero}
+          <Hero content={customData?.hero} />
+        {/if}
+      </figure>
+    {/snippet}
 
-    <QuestionHeading
-      {question}
-      questionBlocks={$selectedQuestionBlocks}
-      slot="heading"
-      data-testid="voter-questions-heading" />
+    {#snippet heading()}
+      <QuestionHeading
+        question={question!}
+        questionBlocks={$selectedQuestionBlocks}
+        data-testid="voter-questions-heading" />
+    {/snippet}
 
     {#if !customData.video}
       {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
@@ -193,20 +209,20 @@ Display a question for answering.
       {/if}
     {/if}
 
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <OpinionQuestionInput
-        {question}
-        answer={$answers[question.id]}
+        question={question!}
+        answer={$answers[question!.id]}
         onChange={handleAnswer}
         data-testid="voter-questions-input" />
 
       <QuestionActions
-        answered={$answers[question.id]?.value != null}
+        answered={$answers[question!.id]?.value != null}
         {disabled}
-        nextLabel={questionBlock.index === questions.length - 1 && $answers[question.id]?.value != null
+        nextLabel={questionBlock!.index === questions.length - 1 && $answers[question!.id]?.value != null
           ? t('results.title.results')
           : undefined}
-        previousLabel={questionBlock.index === 0 ? t('common.back') : undefined}
+        previousLabel={questionBlock!.index === 0 ? t('common.back') : undefined}
         separateSkip={true}
         data-testid="voter-questions-actions"
         onPrevious={() => {
@@ -222,7 +238,7 @@ Display a question for answering.
           startEvent('question_skip', { questionIndex: questionBlock?.index });
           handleJump(+1);
         }} />
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {:else}
   <Loading class="mt-lg" />

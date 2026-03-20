@@ -19,10 +19,12 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ```tsx
 <SingleGroupConstituencySelector
   group={election.constituencyGroups[0]}
-  bind:selected={selectedId} 
+  bind:selected={selectedId}
   onChange={(id) => console.info('Selected constituency with id', id)} />
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { Select } from '$lib/components/select';
@@ -30,14 +32,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   import type { Constituency } from '@openvaa/data';
   import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
 
-  type $$Props = SingleGroupConstituencySelectorProps;
-
-  export let group: $$Props['group'];
-  export let label: $$Props['label'] = undefined;
-  export let disableSorting: $$Props['disableSorting'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let selected: $$Props['selected'] = '';
-  export let onChange: $$Props['onChange'] = undefined;
+  let { group, label, disableSorting, onShadedBg, selected = $bindable(''), onChange, ...restProps }: SingleGroupConstituencySelectorProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -49,7 +44,8 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   // Intialization
   ////////////////////////////////////////////////////////////////////
 
-  $: label ??= t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name });
+  // Provide a default label if not specified
+  let effectiveLabel = $derived(label ?? t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name }));
 
   ////////////////////////////////////////////////////////////////////
   // Sort items
@@ -61,7 +57,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 </script>
 
 <Select
-  {label}
+  label={effectiveLabel}
   options={sort(group.constituencies).map((c) => ({ id: c.id, label: c.name }))}
   bind:selected
   {onChange}

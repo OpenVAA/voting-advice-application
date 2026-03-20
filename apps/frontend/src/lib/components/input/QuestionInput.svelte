@@ -22,6 +22,8 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
   import { DateQuestion, isChoiceQuestion, isMultipleChoiceQuestion, QUESTION_TYPE } from '@openvaa/data';
@@ -31,12 +33,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   import type { InputProps } from '.';
   import type { QuestionInputProps } from './QuestionInput.type';
 
-  type $$Props = QuestionInputProps;
-
-  export let question: $$Props['question'];
-  export let answer: $$Props['answer'] = undefined;
-  export let disableMultilingual: $$Props['disableMultilingual'] = undefined;
-  export let onChange: $$Props['onChange'] = undefined;
+  let { question, answer, disableMultilingual, onChange, ...restProps }: QuestionInputProps = $props();
 
   // TODO: Implement
   if (question.type === QUESTION_TYPE.MultipleText)
@@ -121,6 +118,9 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   function handleChange(value: unknown): void {
     onChange?.({ value, question });
   }
+
+  // Combine props with type assertion to avoid "union too complex" TS error on the 10-way InputProps union
+  const allProps = { ...inputProps, ...restProps, onChange: handleChange } as InputProps;
 </script>
 
-<Input {...inputProps} {...$$restProps} onChange={handleChange} />
+<Input {...allProps} />

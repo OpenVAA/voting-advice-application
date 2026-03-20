@@ -13,24 +13,24 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
 
-  type $$Props = QuestionOpenAnswerProps;
-
-  export let content: $$Props['content'];
+  let { content, ...restProps }: QuestionOpenAnswerProps = $props();
 
   const { t } = getComponentContext();
 
   const id = getUUID();
 
   let el: HTMLDivElement;
-  let collapsible = false;
-  let expanded = false;
-  let fullHeight = 'none';
+  let collapsible = $state(false);
+  let expanded = $state(false);
+  let fullHeight = $state('none');
 
   onMount(() =>
     tick().then(() => {
@@ -50,10 +50,10 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
     class:collapsible
     class:expanded
     style:--full-height={fullHeight}
-    {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center')}>
+    {...concatClass(restProps, 'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center')}>
     {#if collapsible}
       <button
-        on:click={() => {
+        onclick={() => {
           if (collapsible) expanded = !expanded;
         }}
         aria-controls={id}

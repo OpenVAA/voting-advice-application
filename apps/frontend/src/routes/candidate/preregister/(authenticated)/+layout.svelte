@@ -36,6 +36,6 @@ Contains the parts of the pre-registration process taking part after a successfu
     <Button
       text={t('common.continue')}
       variant="main"
-      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
+      onclick={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
   </MainContent>
 {/if}

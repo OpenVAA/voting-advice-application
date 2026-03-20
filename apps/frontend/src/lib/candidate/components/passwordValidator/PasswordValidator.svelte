@@ -37,9 +37,11 @@ When using this component, the `validPassword` property should be bound to a boo
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { minPasswordLength, validatePasswordDetails } from '@openvaa/app-shared';
-  import { onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
   import { getComponentContext } from '$lib/contexts/component';
@@ -47,23 +49,22 @@ When using this component, the `validPassword` property should be bound to a boo
   import type { ValidationDetail } from '@openvaa/app-shared';
   import type { PasswordValidatorProps } from './PasswordValidator.type';
 
-  type $$Props = PasswordValidatorProps;
-
-  export let password: $$Props['password'] = '';
-  export let username: $$Props['username'] = '';
-  export let validPassword: $$Props['validPassword'] = false;
+  let { password = '', username = '', validPassword = $bindable(false), ...restProps }: PasswordValidatorProps = $props();
 
   const { t } = getComponentContext();
 
   // Perform debounced validation, validation status is updated after a delay when the user stops typing
-  let validationDetails: Record<string, ValidationDetail> = {};
-  let validationProgress = 0;
+  let validationDetails: Record<string, ValidationDetail> = $state({});
+  let validationProgress = $state(0);
   let timeout: NodeJS.Timeout;
 
-  $: {
+  $effect(() => {
+    // Track password and username so the effect re-runs when they change
+    const _password = password;
+    const _username = username;
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      const { details, status } = validatePasswordDetails(password, username);
+      const { details, status } = validatePasswordDetails(_password, _username);
       validationDetails = details;
       validPassword = status;
 
@@ -74,9 +75,9 @@ When using this component, the `validPassword` property should be bound to a boo
         });
       }
     }, 200);
-  }
+  });
 
-  onMount(() => () => {
+  onDestroy(() => {
     clearTimeout(timeout);
   });
 
@@ -98,16 +99,16 @@ When using this component, the `validPassword` property should be bound to a boo
     }
   }
 
-  $: validationRules = filterRules(validationDetails, false, false);
-  $: negativeEnforcedRules = filterRules(validationDetails, true, true);
-  $: negativeNonEnforcedRules = filterRules(validationDetails, true, false);
+  const validationRules = $derived(filterRules(validationDetails, false, false));
+  const negativeEnforcedRules = $derived(filterRules(validationDetails, true, true));
+  const negativeNonEnforcedRules = $derived(filterRules(validationDetails, true, false));
 
   // Update the progress bar based on the number of completed rules
-  $: {
+  $effect(() => {
     const completedRules = validationRules.filter((rule) => rule.status).length;
     validationProgress = completedRules === 0 ? 0 : completedRules / validationRules.length;
     progress.set(validationProgress);
-  }
+  });
 </script>
 
 <div class="m-sm flex w-full flex-col">

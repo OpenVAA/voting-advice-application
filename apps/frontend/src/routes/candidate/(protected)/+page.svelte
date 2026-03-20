@@ -99,7 +99,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 </script>
 
 <MainContent title={nextAction.title}>
-  <svelte:fragment slot="note">
+  {#snippet note()}
     {#if $answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
@@ -108,11 +108,13 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         {/if}
       </Warning>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={$profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={$profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
+    </figure>
+  {/snippet}
 
   <p class="text-center" data-testid="candidate-home-status">
     {nextAction.explanation}
@@ -131,11 +133,11 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       iconPos="left"
       href={$getRoute('CandAppProfile')}
       data-testid="candidate-home-profile">
-      <svelte:fragment slot="badge">
+      {#snippet badge()}
         {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
           <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
         {/if}
-      </svelte:fragment>
+      {/snippet}
     </Button>
     <Button
       text={nextAction.buttonTextQuestion}
@@ -144,13 +146,13 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}
       href={$getRoute('CandAppQuestions')}
       data-testid="candidate-home-questions">
-      <svelte:fragment slot="badge">
+      {#snippet badge()}
         {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
           <InfoBadge
             text={$unansweredOpinionQuestions.length}
             disabled={$unansweredRequiredInfoQuestions?.length !== 0} />
         {/if}
-      </svelte:fragment>
+      {/snippet}
     </Button>
     <Button
       text={t('candidateApp.home.preview')}
@@ -161,13 +163,15 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       data-testid="candidate-home-preview" />
   </div>
 
-  <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    <Button
-      variant="main"
-      text={nextAction.buttonTextPrimaryActions}
-      icon="next"
-      href={nextAction.href}
-      data-testid="candidate-home-continue" />
-    <LogoutButton variant="normal" icon={undefined} data-testid="candidate-home-logout" />
-  </div>
+  {#snippet primaryActions()}
+    <div class="flex w-full flex-col items-center justify-center">
+      <Button
+        variant="main"
+        text={nextAction.buttonTextPrimaryActions}
+        icon="next"
+        href={nextAction.href}
+        data-testid="candidate-home-continue" />
+      <LogoutButton variant="normal" icon={undefined} data-testid="candidate-home-logout" />
+    </div>
+  {/snippet}
 </MainContent>

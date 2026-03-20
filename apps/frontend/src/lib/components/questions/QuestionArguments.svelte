@@ -16,6 +16,8 @@ Display the pros and cons arguments related to a question.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { ARGUMENT_TYPE, getCustomData } from '@openvaa/app-shared';
   import { isChoiceQuestion } from '@openvaa/data';
@@ -26,9 +28,7 @@ Display the pros and cons arguments related to a question.
   import type { TranslationKey } from '$types';
   import type { QuestionArgumentsProps } from './QuestionArguments.type';
 
-  type $$Props = QuestionArgumentsProps;
-
-  export let question: $$Props['question'];
+  let { question, ...restProps }: QuestionArgumentsProps = $props();
 
   const { t } = getComponentContext();
 
@@ -55,7 +55,7 @@ Display the pros and cons arguments related to a question.
 </script>
 
 {#if args?.length}
-  <div {...concatClass($$restProps, `grid gap-lg ${args.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`)}>
+  <div {...concatClass(restProps, `grid gap-lg ${args.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`)}>
     {#each sortArguments(args) as argument}
       {#if argument.arguments?.length}
         {@const { choiceId } = argument}

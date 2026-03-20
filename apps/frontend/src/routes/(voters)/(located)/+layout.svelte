@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Located section main layout
@@ -16,6 +18,7 @@ Displays a warning if the selected constituency does not have nominations in all
 
 <script lang="ts">
   import { get } from 'svelte/store';
+  import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
   import { Button } from '$lib/components/button';
@@ -27,7 +30,7 @@ Displays a warning if the selected constituency does not have nominations in all
   import { sanitizeHtml } from '$lib/utils/sanitize.js';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
-  export let data;
+  let { data, children }: { data: any; children: Snippet } = $props();
 
   const { dataRoot, getRoute, nominationsAvailable, selectedElections, t } = getVoterContext();
 
@@ -41,19 +44,22 @@ Displays a warning if the selected constituency does not have nominations in all
 
   type NominationStatus = 'all' | 'none' | 'some';
 
-  let error: Error | undefined;
-  let closeModal: () => void;
-  let openModal: () => void;
-  let ready: boolean;
-  let hasNominations: NominationStatus;
-  $: {
-    // If data is updated, we want to prevent loading the slot until the promises resolve
+  let error = $state<Error | undefined>(undefined);
+  let modalRef: Modal;
+  let ready = $state(false);
+  let hasNominations = $state<NominationStatus>('none');
+
+  $effect(() => {
+    // Read data synchronously to register as dependency
+    const questionData = data.questionData;
+    const nominationData = data.nominationData;
+    // Reset state
     error = undefined;
     ready = false;
-    Promise.all([data.questionData, data.nominationData]).then(async (data) => {
-      error = await update(data);
+    Promise.all([questionData, nominationData]).then(async (resolved) => {
+      error = await update(resolved);
     });
-  }
+  });
 
   /**
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
@@ -71,7 +77,7 @@ Displays a warning if the selected constituency does not have nominations in all
       $dataRoot.provideNominationData(nominationData.nominations);
     });
     hasNominations = await awaitNominationsSettled();
-    if (hasNominations !== 'all') openModal?.();
+    if (hasNominations !== 'all') modalRef?.openModal();
     ready = true;
   }
 
@@ -134,7 +140,7 @@ Displays a warning if the selected constituency does not have nominations in all
 {:else if !ready}
   <Loading />
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}
 
 {#if hasNominations !== 'all'}
@@ -143,8 +149,7 @@ Displays a warning if the selected constituency does not have nominations in all
       ? t('results.missingNominations.noNominations.title')
       : t('results.missingNominations.someNominations.title')}
     closeOnBackdropClick={false}
-    bind:openModal
-    bind:closeModal>
+    bind:this={modalRef}>
     <p>
       {@html sanitizeHtml(
         hasNominations === 'none'
@@ -167,14 +172,16 @@ Displays a warning if the selected constituency does not have nominations in all
         {/each}
       </div>
     {/if}
-    <div slot="actions" class="mx-auto flex w-full max-w-md flex-col">
-      <Button on:click={closeModal} text={t('common.continue')} variant="main" />
-      <Button
-        on:click={() => {
-          goto($getRoute('Home'));
-          closeModal();
-        }}
-        text={t('common.returnHome')} />
-    </div>
+    {#snippet actions()}
+      <div class="mx-auto flex w-full max-w-md flex-col">
+        <Button onclick={() => modalRef?.closeModal()} text={t('common.continue')} variant="main" />
+        <Button
+          onclick={() => {
+            goto($getRoute('Home'));
+            modalRef?.closeModal();
+          }}
+          text={t('common.returnHome')} />
+      </div>
+    {/snippet}
   </Modal>
 {/if}

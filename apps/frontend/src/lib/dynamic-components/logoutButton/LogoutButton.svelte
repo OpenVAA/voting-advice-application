@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Allows user to log out.
@@ -25,13 +27,7 @@ Accesses `AuthContext` and `AppContext`.
   import { getAuthContext } from '$lib/contexts/auth';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  type $$Props = LogoutButtonProps;
-
-  export let redirectTo: $$Props['redirectTo'] = 'Home';
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { redirectTo = 'Home', ...restProps }: LogoutButtonProps = $props();
 
   const { getRoute, t } = getAppContext();
   const { logout } = getAuthContext();
@@ -42,4 +38,4 @@ Accesses `AuthContext` and `AppContext`.
   }
 </script>
 
-<Button on:click={handleLogout} icon="logout" text={t('common.logout')} color="warning" {...$$restProps} />
+<Button onclick={handleLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />

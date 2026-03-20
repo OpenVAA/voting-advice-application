@@ -20,6 +20,8 @@ Display the question's expandable information content.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { getComponentContext } from '$lib/contexts/component';
@@ -29,12 +31,13 @@ Display the question's expandable information content.
   import { QuestionArguments } from '.';
   import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
 
-  type $$Props = QuestionExtendedInfoProps;
-
-  export let question: $$Props['question'];
-  export let title: $$Props['title'] = undefined;
-  export let onSectionCollapse: $$Props['onSectionCollapse'] = undefined;
-  export let onSectionExpand: $$Props['onSectionExpand'] = undefined;
+  let {
+    question,
+    title = undefined,
+    onSectionCollapse = undefined,
+    onSectionExpand = undefined,
+    ...restProps
+  }: QuestionExtendedInfoProps = $props();
 
   const { t } = getComponentContext();
 
@@ -42,7 +45,7 @@ Display the question's expandable information content.
   const { arguments: args, infoSections } = getCustomData(question);
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-col gap-lg justify-stretch')}>
+<div {...concatClass(restProps, 'flex flex-col gap-lg justify-stretch')}>
   <h2 class="text-center">{title || question.text}</h2>
   <div class="prose">
     {@html sanitizeHtml(info)}
@@ -55,8 +58,8 @@ Display the question's expandable information content.
             {title}
             titleClass="flex justify-between font-bold"
             contentClass="!text-left"
-            on:collapse={() => onSectionCollapse?.(title)}
-            on:expand={() => onSectionExpand?.(title)}>
+            onCollapse={() => onSectionCollapse?.(title)}
+            onExpand={() => onSectionExpand?.(title)}>
             {@html sanitizeHtml(content)}
           </Expander>
         {/if}
@@ -67,8 +70,8 @@ Display the question's expandable information content.
           {title}
           titleClass="flex justify-between font-bold"
           contentClass="!text-left"
-          on:collapse={() => onSectionCollapse?.(title)}
-          on:expand={() => onSectionExpand?.(title)}>
+          onCollapse={() => onSectionCollapse?.(title)}
+          onExpand={() => onSectionExpand?.(title)}>
           <QuestionArguments {question} />
         </Expander>
       {/if}

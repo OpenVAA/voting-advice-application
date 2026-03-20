@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 A simple warning component to be used with BasicPage
@@ -20,15 +22,14 @@ A simple warning component to be used with BasicPage
   import { concatClass } from '$lib/utils/components';
   import type { WarningProps } from './Warning.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = WarningProps;
+  let { children, ...restProps }: WarningProps = $props();
 </script>
 
-<div {...concatClass($$restProps, 'flex items-start gap-6 text-warning')}>
+<div {...concatClass(restProps, 'flex items-start gap-6 text-warning')}>
   <div>
     <Icon name="warning" />
   </div>
   <div class="flex-grow text-left">
-    <slot />
+    {@render children?.()}
   </div>
 </div>

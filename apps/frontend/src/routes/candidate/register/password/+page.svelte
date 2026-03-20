@@ -83,9 +83,11 @@
 </script>
 
 <MainContent title={t('candidateApp.register.title')}>
-  <HeadingGroup slot="heading">
-    <h1>{t('candidateApp.common.greeting', { username })}</h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <h1>{t('candidateApp.common.greeting', { username })}</h1>
+    </HeadingGroup>
+  {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
     <PasswordSetter
       bind:valid={isPasswordValid}
@@ -102,9 +104,9 @@
     {/if}
   </div>
 
-  <svelte:fragment slot="primaryActions">
+  {#snippet primaryActions()}
     <Button
-      on:click={handleSubmit}
+      onclick={handleSubmit}
       disabled={!canSubmit}
       variant="main"
       text={submitLabel}
@@ -113,5 +115,5 @@
       href={$getRoute('CandAppHelp')}
       text={t('candidateApp.common.contactSupport')}
       data-testid="register-password-help-link" />
-  </svelte:fragment>
+  {/snippet}
 </MainContent>

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Small badge component used to display information next to other components.
@@ -18,10 +20,7 @@ Small badge component used to display information next to other components.
 <script lang="ts">
   import type { InfoBadgeProps } from './InfoBadge.type';
 
-  type $$Props = InfoBadgeProps;
-  export let text: $$Props['text'] = '';
-  export let classes: $$Props['classes'] = '';
-  export let disabled: $$Props['disabled'] = false;
+  let { text = '', classes = '', disabled = false }: InfoBadgeProps = $props();
 </script>
 
 <div

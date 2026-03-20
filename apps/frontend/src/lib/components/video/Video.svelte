@@ -1,5 +1,4 @@
-<!-- To enable accessing properties via the component reference in `LayoutContext` -->
-<svelte:options accessors />
+<svelte:options runes />
 
 <!--
 @component
@@ -116,25 +115,28 @@ If not provided, the `video` element will be hidden until these properties are p
   // PUBLIC PROPERTIES
   ////////////////////////////////////////////////////////////////////////////////
 
-  type $$Props = VideoProps;
-
-  export let title: $$Props['title'] = undefined;
-  export let sources: $$Props['sources'] = undefined;
-  export let captions: $$Props['captions'] = undefined;
-  export let poster: $$Props['poster'] = undefined;
-  export let aspectRatio: $$Props['aspectRatio'] = 1;
-  export let transcript: $$Props['transcript'] = '';
-  export let hideControls: $$Props['hideControls'] = undefined;
-  export let autoPlay: $$Props['autoPlay'] = true;
-  export let autoUnmute: $$Props['autoUnmute'] = true;
-  export let showCaptions: $$Props['showCaptions'] = true;
-  export let showTranscript: $$Props['showTranscript'] = false;
-  export let skipByCue: $$Props['skipByCue'] = true;
-  export let skipAmount: $$Props['skipAmount'] = DEFAULT_SKIP_AMOUNT;
-  export let onTrack: $$Props['onTrack'] = undefined;
-  export let onEnded: $$Props['onEnded'] = undefined;
-  export let mode: $$Props['mode'] = undefined;
-  export let atEnd: $$Props['atEnd'] = undefined;
+  // Props that are reassigned in load() need $bindable() to allow internal mutation.
+  // mode is bound by Layout.svelte via bind:mode; atEnd is mutated internally.
+  let {
+    title = $bindable(undefined),
+    sources = $bindable(undefined),
+    captions = $bindable(undefined),
+    poster = $bindable(undefined),
+    aspectRatio = $bindable(1),
+    transcript = $bindable<string | undefined>(''),
+    hideControls = $bindable(undefined),
+    autoPlay = $bindable(true),
+    autoUnmute = $bindable(true),
+    showCaptions = $bindable(true),
+    showTranscript = $bindable(false),
+    skipByCue = $bindable(true),
+    skipAmount = $bindable(DEFAULT_SKIP_AMOUNT),
+    onTrack = undefined,
+    onEnded = undefined,
+    mode = $bindable(undefined),
+    atEnd = $bindable(undefined),
+    ...restProps
+  }: VideoProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -146,8 +148,7 @@ If not provided, the `video` element will be hidden until these properties are p
   // CONTENT AVAILABLE
   ////////////////////////////////////////////////////////////////////////////////
 
-  let hasContent: boolean;
-  $: hasContent = !!title && !!sources?.length && !!captions;
+  let hasContent = $derived(!!title && !!sources?.length && !!captions);
 
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
@@ -156,29 +157,30 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * Whether text tracks are shown
    */
-  let textTracksHidden = $videoPreferences.textTracksHidden ?? !showCaptions;
+  let textTracksHidden = $state($videoPreferences.textTracksHidden ?? !showCaptions);
 
   ////////////////////////////////////////////////////////////////////////////////
   // BOUND PROPS OF <video>
   ////////////////////////////////////////////////////////////////////////////////
 
   let video: HTMLVideoElement | undefined;
-  let currentTime = 0;
-  let duration: number;
-  let boundPaused: boolean;
-  let muted = true;
+  let currentTime = $state(0);
+  let duration = $state<number>(0);
+  let boundPaused = $state<boolean>(false);
+  let muted = $state(true);
 
   /**
    * Bindable: Whether the video is at the end (with a small margin)
    */
-  $: atEnd = isAtEnd(currentTime);
+  $effect(() => {
+    atEnd = isAtEnd(currentTime);
+  });
 
   /**
    * We need a custom `playing` property because the bound one from the video element does not always work.
    * For more criteria, see https://stackoverflow.com/questions/6877403/how-to-tell-if-a-video-element-is-currently-playing
    */
-  let playing: boolean;
-  $: playing = !!video && currentTime > 0 && !boundPaused && !video.ended && video.readyState > 2;
+  let playing = $derived(!!video && currentTime > 0 && !boundPaused && !video.ended && video.readyState > 2);
 
   ////////////////////////////////////////////////////////////////////////////////
   // ERROR DETECTION
@@ -193,19 +195,19 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * The current loading status of the video. The `error-pending` status is used when an error has occurred but we're still waiting for it to be resolved.
    */
-  let status: 'waiting' | 'error' | 'error-pending' | 'normal' = 'normal';
+  let status = $state<'waiting' | 'error' | 'error-pending' | 'normal'>('normal');
   /**
    * Allow the user to hide the error message
    */
-  let hideError = false;
+  let hideError = $state(false);
   /**
    * An interval which checks whether the video is playing at that time and saves the latest timepoint when it was playing.
    */
-  let errorCheckInterval: NodeJS.Timeout | undefined;
+  let errorCheckInterval: NodeJS.Timeout | undefined = undefined;
   /**
    * Whether the video should be playing now
    */
-  let shouldPlay: boolean;
+  let shouldPlay = $state(false);
   /**
    * The last known time and video `currentTime` when the video was playing or the time the component was mounted. We need both to double-check that the video is actually playing, because even our compex `playing` detector fails in some configurations, uh
    */
@@ -270,15 +272,19 @@ If not provided, the `video` element will be hidden until these properties are p
     shouldPlay = false;
   }
 
-  $: if (atEnd) clearErrorChecking();
+  $effect(() => {
+    if (atEnd) clearErrorChecking();
+  });
   onDestroy(clearErrorChecking);
 
   ////////////////////////////////////////////////////////////////////////////////
   // TRANSCRIPT
   ////////////////////////////////////////////////////////////////////////////////
 
-  let transcriptVisible = $videoPreferences.transcriptVisible ?? showTranscript;
-  $: mode = transcriptVisible ? 'text' : 'video';
+  let transcriptVisible = $state($videoPreferences.transcriptVisible ?? showTranscript);
+  $effect(() => {
+    mode = transcriptVisible ? 'text' : 'video';
+  });
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONTROLS
@@ -287,23 +293,22 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * The current action of the combined play/pause/replay button.
    */
-  let playButtonAction: PlayButtonAction = 'play';
-  $: playButtonAction = playing ? 'pause' : atEnd ? 'replay' : 'play';
+  let playButtonAction = $derived<PlayButtonAction>(playing ? 'pause' : atEnd ? 'replay' : 'play');
 
   /**
    * Used to highlight the jump buttons when the corresponding invisible screen area is pressed
    */
-  let jumpBackPressed = false;
+  let jumpBackPressed = $state(false);
 
   /**
    * Used to highlight the jump buttons when the corresponding invisible screen area is pressed
    */
-  let jumpForwardPressed = false;
+  let jumpForwardPressed = $state(false);
 
   /**
    * Used to highlight the toggle play button when the corresponding invisible screen area is pressed
    */
-  let togglePlayPressed = false;
+  let togglePlayPressed = $state(false);
 
   ////////////////////////////////////////////////////////////////////////////////
   // EVENTS
@@ -455,7 +460,7 @@ If not provided, the `video` element will be hidden until these properties are p
     if (!hasContent) return;
     if (show == null) show = !transcriptVisible;
     if (show === transcriptVisible) return;
-    if (show && !transcript) transcript = buildTranscript();
+    if (show && !transcript) transcript = buildTranscript() ?? '';
     transcriptVisible = show;
     setPaused(show || !!atEnd);
     addToEvent((data) => ({
@@ -464,7 +469,7 @@ If not provided, the `video` element will be hidden until these properties are p
     $videoPreferences = { ...$videoPreferences, transcriptVisible };
   }
 
-  let seekTarget: number | undefined;
+  let seekTarget = $state<number | undefined>(undefined);
 
   /**
    * Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
@@ -512,7 +517,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
   /**
    * Change the video contents, i.e. sources, captions, poster and transcript, and optionally other properties.
-   * TODO: Convert this to an init function which is always called, even on first use of the component
+   * TODO: Consider converting to an init function which is always called, even on first use of the component
    * @returns A `Promise` that resolves to `true` if the `video` element was present.
    */
   export function load(props: VideoContent & OptionalVideoProps): Promise<boolean> {
@@ -542,6 +547,7 @@ If not provided, the `video` element will be hidden until these properties are p
         hideControls
       } = {
         // Use the current values as defaults for optional props
+        transcript,
         skipAmount,
         skipByCue,
         showTranscript,
@@ -556,7 +562,7 @@ If not provided, the `video` element will be hidden until these properties are p
       clearErrorChecking();
       setTimeout(() => {
         video?.load();
-        if (transcriptVisible && !transcript) transcript = buildTranscript();
+        if (transcriptVisible && !transcript) transcript = buildTranscript() ?? '';
         if (!transcriptVisible && autoPlay) togglePlay('play');
         if (track && tracksShown) track.mode = 'showing';
         // Start a new video tracking event
@@ -647,7 +653,7 @@ If not provided, the `video` element will be hidden until these properties are p
 <!-- NB. We need select-none and touch-manipulation to avoid distracting functions touch devices -->
 <div
   {...concatClass(
-    $$restProps,
+    restProps,
     'relative select-none touch-manipulation aspect-[var(--video-aspectRatio)] overflow-hidden rounded-b-md sm:rounded-t-md bg-accent'
   )}
   class:hidden={!hasContent}
@@ -660,7 +666,7 @@ If not provided, the `video` element will be hidden until these properties are p
       variant="icon"
       color="white"
       icon="videoOff"
-      on:click={() => toggleTranscript(false)}
+      onclick={() => toggleTranscript(false)}
       text={t('components.video.showVideo')}
       class="left-sm bg-primary !absolute bottom-4 z-20 rounded-full" />
   {/if}
@@ -683,11 +689,11 @@ If not provided, the `video` element will be hidden until these properties are p
       bind:duration
       bind:muted
       bind:paused={boundPaused}
-      on:canplay={() => (status = 'normal')}
-      on:playing={() => (status = 'normal')}
-      on:waiting={() => (status = 'waiting')}
-      on:error={() => (status = 'error-pending')}
-      on:ended={handleEnded}
+      oncanplay={() => (status = 'normal')}
+      onplaying={() => (status = 'normal')}
+      onwaiting={() => (status = 'waiting')}
+      onerror={() => (status = 'error-pending')}
+      onended={handleEnded}
       autoplay={autoPlay && !transcriptVisible}
       {poster}
       crossorigin="anonymous"
@@ -720,22 +726,22 @@ If not provided, the `video` element will be hidden until these properties are p
       <!-- Invisible overlay areas -->
       <div class="flex grow flex-row justify-stretch">
         <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(-1)}
+          onclick={tryUnmute}
+          onclickcapture={() => screenJump(-1)}
           aria-hidden="true"
           tabindex="-1"
           class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-r active:to-50%"
           ><span class="sr-only">{t('components.video.jumpBack')}</span></button>
         <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(0)}
+          onclick={tryUnmute}
+          onclickcapture={() => screenJump(0)}
           aria-hidden="true"
           tabindex="-1"
           class="duration-sm active:via-neutral w-[33.333%] grow-1 opacity-20 transition-colors active:bg-gradient-to-r active:from-transparent active:via-50%"
           ><span class="sr-only">{t('components.video.jumpBack')}</span></button>
         <button
-          on:click|once={tryUnmute}
-          on:click|capture={() => screenJump(+1)}
+          onclick={tryUnmute}
+          onclickcapture={() => screenJump(+1)}
           aria-hidden="true"
           tabindex="-1"
           class="duration-sm active:from-neutral w-[33.333%] opacity-20 transition-colors active:bg-gradient-to-l active:to-50%"
@@ -752,7 +758,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon="videoOn"
-            on:click={() => toggleTranscript(true)}
+            onclick={() => toggleTranscript(true)}
             text={t('components.video.showTranscript')}
             class="rounded-full bg-white/30 active:bg-white" />
         {/if}
@@ -761,8 +767,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon={textTracksHidden ? 'subtitlesOff' : 'subtitlesOn'}
-            on:click|once={tryUnmute}
-            on:click={() => toggleCaptions()}
+            onclick={() => { tryUnmute(); toggleCaptions(); }}
             text={t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
             class="relative rounded-full bg-white/30 active:bg-white" />
         {/if}
@@ -771,8 +776,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon="skipPrevious"
-            on:click|once={tryUnmute}
-            on:click={() => jump(-1)}
+            onclick={() => { tryUnmute(); jump(-1); }}
             text={t('components.video.jumpBack')}
             class="relative rounded-full bg-white/30 {jumpBackPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
@@ -781,8 +785,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon={playButtonAction}
-            on:click|once={tryUnmute}
-            on:click={() => togglePlay()}
+            onclick={() => { tryUnmute(); togglePlay(); }}
             text={t(`components.video.${playButtonAction}`)}
             class="relative rounded-full bg-white/30 {togglePlayPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
@@ -791,8 +794,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon="skipNext"
-            on:click|once={tryUnmute}
-            on:click={() => jump(+1)}
+            onclick={() => { tryUnmute(); jump(+1); }}
             text={t('components.video.jumpForward')}
             class="relative rounded-full bg-white/30 {jumpForwardPressed ? 'bg-white' : ''}  active:bg-white" />
         {/if}
@@ -801,7 +803,7 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon={muted ? 'soundOff' : 'soundOn'}
-            on:click={() => toggleSound()}
+            onclick={() => toggleSound()}
             text={t(`components.video.${muted ? 'unmute' : 'mute'}`)}
             class="relative rounded-full bg-white/30 active:bg-white" />
         {/if}
@@ -836,8 +838,8 @@ If not provided, the `video` element will be hidden until these properties are p
         <div class="mt-sm text-center">
           {t('components.video.error')}
         </div>
-        <Button on:click={() => toggleTranscript(true)} text={t('components.video.showTranscript')} />
-        <button on:click={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
+        <Button onclick={() => toggleTranscript(true)} text={t('components.video.showTranscript')} />
+        <button onclick={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
           <span aria-hidden="true">✕</span>
           <span class="sr-only">{t('common.close')}</span>
         </button>

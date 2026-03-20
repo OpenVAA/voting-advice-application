@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # About (the app) page
@@ -32,14 +34,18 @@ Displays information about the application.
 </script>
 
 <MainContent title={t('about.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.about.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.about.heroEmoji')} />
+    </figure>
+  {/snippet}
 
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
-    <h1>{t('about.title')}</h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
+      <h1>{t('about.title')}</h1>
+    </HeadingGroup>
+  {/snippet}
 
   <div data-testid="voter-about-content">
     {@html sanitizeHtml(t('about.content'))}
@@ -64,10 +70,11 @@ Displays information about the application.
     </p>
   {/if}
 
-  <Button
-    slot="primaryActions"
-    variant="main"
-    href={$getRoute('Home')}
-    text={t('common.returnHome')}
-    data-testid="voter-about-return" />
+  {#snippet primaryActions()}
+    <Button
+      variant="main"
+      href={$getRoute('Home')}
+      text={t('common.returnHome')}
+      data-testid="voter-about-return" />
+  {/snippet}
 </MainContent>

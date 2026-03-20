@@ -47,7 +47,9 @@
     content={t('adminApp.common.notAccessible.content')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
-    <AdminNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
+    {#snippet menu()}
+      <AdminNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />
+    {/snippet}
     <slot />
   </Layout>
 {/if}

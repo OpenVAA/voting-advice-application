@@ -29,6 +29,8 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { isSingleChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
@@ -37,15 +39,15 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
   import type { OpinionQuestionInputProps } from './OpinionQuestionInput.type';
 
-  type $$Props = OpinionQuestionInputProps;
-
-  export let question: $$Props['question'];
-  export let mode: $$Props['mode'] = undefined;
-  export let answer: $$Props['answer'] = undefined;
-  export let otherAnswer: $$Props['otherAnswer'] = undefined;
-  export let otherLabel: $$Props['otherLabel'] = undefined;
-
-  $: mode ??= 'answer';
+  let {
+    question,
+    mode = 'answer',
+    answer = undefined,
+    otherAnswer = undefined,
+    otherLabel = undefined,
+    onChange,
+    ...restProps
+  }: OpinionQuestionInputProps = $props();
 
   if (mode === 'display' && otherAnswer && !otherLabel)
     logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
@@ -61,7 +63,9 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   {#if isSingleChoiceQuestion(question)}
     {@const selectedId = question.ensureValue(answer?.value)}
     {@const otherSelected = question.ensureValue(otherAnswer?.value)}
-    <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
+    <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel}
+      onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined}
+      {...restProps} />
   {:else}
     <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
   {/if}

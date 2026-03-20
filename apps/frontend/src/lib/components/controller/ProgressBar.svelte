@@ -18,42 +18,41 @@ Reusable progress bar component for displaying task progress.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import type { ProgressBarProps } from './ProgressBar.type';
 
-  type $$Props = ProgressBarProps;
-
-  export let progress: $$Props['progress'];
-  export let label: $$Props['label'] = undefined;
-  export let showPercentage: $$Props['showPercentage'] = true;
-  export let color: $$Props['color'] = undefined;
-  export let size: $$Props['size'] = undefined;
+  let {
+    progress,
+    label = undefined,
+    showPercentage = true,
+    color = undefined,
+    size = undefined,
+    ...restProps
+  }: ProgressBarProps = $props();
 
   const { t } = getComponentContext();
 
-  // Set defaults
-  $: size ||= 'md';
-  $: color ||= 'primary';
-  $: label ||= t('adminApp.jobs.progress');
+  // Set defaults via derived
+  let effectiveSize = $derived(size || 'md');
+  let effectiveColor = $derived(color || 'primary');
+  let effectiveLabel = $derived(label || t('adminApp.jobs.progress'));
 
   // Normalize progress value
-  let normalizedProgress: number;
-  let percentage: number;
-
-  // Ensure progress is between 0 and 1
-  $: normalizedProgress = Math.max(0, Math.min(1, progress));
-  $: percentage = Math.round(normalizedProgress * 100);
+  let normalizedProgress = $derived(Math.max(0, Math.min(1, progress)));
+  let percentage = $derived(Math.round(normalizedProgress * 100));
 
   // Size classes
-  $: sizeClasses = {
+  const sizeClasses: Record<string, string> = {
     sm: 'h-1 text-xs',
     md: 'h-2 text-sm',
     lg: 'h-3 text-base'
   };
 
   // Color classes
-  $: colorClasses = {
+  const colorClasses: Record<string, string> = {
     primary: 'bg-primary',
     secondary: 'bg-secondary',
     accent: 'bg-accent'
@@ -62,15 +61,15 @@ Reusable progress bar component for displaying task progress.
 
 <div class="w-full">
   <div class="mb-2 flex justify-between text-sm">
-    <span>{label}</span>
+    <span>{effectiveLabel}</span>
     {#if showPercentage}
       <span>{percentage}%</span>
     {/if}
   </div>
 
-  <div class="bg-base-300 w-full rounded-full {sizeClasses[size]}">
+  <div class="bg-base-300 w-full rounded-full {sizeClasses[effectiveSize]}">
     <div
-      class="{colorClasses[color]} h-full rounded-full transition-all duration-300 ease-out"
+      class="{colorClasses[effectiveColor]} h-full rounded-full transition-all duration-300 ease-out"
       style="width: {percentage}%">
     </div>
   </div>

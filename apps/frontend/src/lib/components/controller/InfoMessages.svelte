@@ -14,19 +14,19 @@ Reusable component for displaying informational messages with scrolling.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from '$lib/admin/components/jobs/shared';
   import { getAdminContext } from '$lib/contexts/admin';
   import type { InfoMessagesProps } from './InfoMessages.type';
 
-  type $$Props = InfoMessagesProps;
-
-  export let messages: $$Props['messages'] = undefined;
+  let { messages = undefined, ...restProps }: InfoMessagesProps = $props();
 
   const { t } = getAdminContext();
 
   // Get the most recent messages and reverse order (latest first)
-  $: displayMessages = messages?.slice(-DEFAULT_MAX_MESSAGES).reverse() ?? [];
+  let displayMessages = $derived(messages?.slice(-DEFAULT_MAX_MESSAGES).reverse() ?? []);
 </script>
 
 <div class="bg-base-200 rounded-lg p-3 {DEFAULT_MESSAGES_HEIGHT} overflow-y-auto">

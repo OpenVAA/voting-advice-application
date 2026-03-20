@@ -117,7 +117,7 @@ Page for controlling the question info generation feature.
       return;
     }
 
-    return async ({ result }: { result: ActionResult }) => {
+    return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
       if (result.type === 'error') {
         status = 'error';
       } else if (result.type === 'failure') {
@@ -127,8 +127,7 @@ Page for controlling the question info generation feature.
       } else if (result.type === 'redirect') {
         status = 'success';
       }
-
-      return { cancel: true };
+      // Don't call update() — prevents default form action behavior (page reload)
     };
   }
 </script>
@@ -323,9 +322,11 @@ Page for controlling the question info generation feature.
   </div>
 
   <!-- Both active and past jobs -->
-  <div slot="fullWidth" class="mt-8 w-full">
-    <div class="mx-auto max-w-4xl px-4">
-      <FeatureJobs class="w-full" feature="QuestionInfoGeneration" showFeatureLink={false} />
+  {#snippet fullWidth()}
+    <div class="mt-8 w-full">
+      <div class="mx-auto max-w-4xl px-4">
+        <FeatureJobs class="w-full" feature="QuestionInfoGeneration" showFeatureLink={false} />
+      </div>
     </div>
-  </div>
+  {/snippet}
 </MainContent>

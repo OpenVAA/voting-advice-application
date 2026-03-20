@@ -1,6 +1,11 @@
+import type { Snippet } from 'svelte';
 import type { ModalProps } from '../Modal.type';
 
-export type ConfirmationModalProps = Omit<ModalProps, 'autofocusId' | 'closeOnBackdropClick' | 'onClose'> & {
+export type ConfirmationModalProps = Omit<ModalProps, 'autofocusId' | 'closeOnBackdropClick' | 'onClose' | 'actions' | 'children'> & {
+  /**
+   * The content of the confirmation modal.
+   */
+  children?: Snippet;
   /**
    * The action to peform when the user confirms.
    */

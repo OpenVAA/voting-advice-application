@@ -79,7 +79,7 @@ Shows the opinion questions for the candidate to answer.
 <MainContent title={completion === 'empty' ? t('candidateApp.questions.start') : t('candidateApp.questions.title')}>
   <!-- Tip or notification -->
 
-  <svelte:fragment slot="note">
+  {#snippet note()}
     {#if completion === 'empty' && !$answersLocked}
       <Icon name="tip" />
       {t('candidateApp.questions.tip')}
@@ -94,7 +94,7 @@ Shows the opinion questions for the candidate to answer.
     {:else if $profileComplete}
       <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
     {/if}
-  </svelte:fragment>
+  {/snippet}
 
   {#if completion === 'empty' && !$answersLocked}
     <!-- Page content when no answers have yet been given -->
@@ -104,7 +104,6 @@ Shows the opinion questions for the candidate to answer.
         {t('candidateApp.questions.ingress.empty', { numQuestions: $opinionQuestions.length })}
       </p>
       <Button
-        slot="primaryActions"
         href={$getRoute({ route: 'CandAppQuestion', questionId: $unansweredOpinionQuestions[0]?.id })}
         variant="main"
         icon="next"

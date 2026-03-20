@@ -39,14 +39,14 @@
     <Button
       text={t('common.continue')}
       variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else if $answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}
       variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else}
   <slot />

@@ -21,42 +21,41 @@ attributes of one.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { OpenVAALogoProps } from './OpenVAALogo.type';
 
-  type $$Props = OpenVAALogoProps;
-  export let title: $$Props['title'] = 'OpenVAA';
-  export let color: $$Props['color'] = 'neutral';
-  export let size: $$Props['size'] = 'md';
+  let { title = 'OpenVAA', color = 'neutral', size = 'md', ...restProps }: OpenVAALogoProps = $props();
 
   // Create class names
-  let classes: string;
-
-  $: {
+  let classes = $derived.by(() => {
+    let c: string;
     // Predefined sizes
     switch (size) {
       case 'xs':
-        classes = 'h-14 pt-1';
+        c = 'h-14 pt-1';
         break;
       case 'sm':
-        classes = 'h-20 pt-2';
+        c = 'h-20 pt-2';
         break;
       case 'lg':
-        classes = 'h-32 pt-6';
+        c = 'h-32 pt-6';
         break;
       default:
-        classes = 'h-24 pt-4';
+        c = 'h-24 pt-4';
     }
 
     // Set fill color
     if (color != null) {
-      classes += ` fill-${color} inline`;
+      c += ` fill-${color} inline`;
     }
-  }
+    return c;
+  });
 </script>
 
-<svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" {...concatClass($$restProps, classes)}>
+<svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" {...concatClass(restProps, classes)}>
   {#if title}
     <title>{title}</title>
   {/if}

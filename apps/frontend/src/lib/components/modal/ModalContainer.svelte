@@ -2,13 +2,9 @@
 @component
 A modal dialog.
 
-### Slots
-
-- default: The modal.
-
 ### Properties
 
-- `title`: The title of the modal 
+- `title`: The title of the modal
 - `autofocusId`: Optional id of the element to autofocus when the dialog has opened. Note that this must be a focusable element. By default, the first focusable descendant will be focused.
 - `closeOnBackdropClick`:  Whether to allow closing the modal by clicking outside of it. @default `true`
 - Any valid properties of a `<dialog>` element.
@@ -33,20 +29,20 @@ A modal dialog.
 
 ```tsx
 <script lang="ts">
-  export let title;
-  export let isOpen;
-  export let closeModal;
-  export let openModal;
+  let title = 'My Modal';
+  let containerRef: ModalContainer;
 </script>
 
-<ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
+<ModalContainer bind:this={containerRef} {title}>
   <div class="modal-box">
     <h2 class="mb-lg text-center">{title}</h2>
-    <slot />
+    Content here
   </div>
 </ModalContainer>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
@@ -55,14 +51,16 @@ A modal dialog.
   import { DELAY } from '$lib/utils/timing';
   import type { ModalContainerProps } from './ModalContainer.type';
 
-  type $$Props = ModalContainerProps;
-
-  export let title: $$Props['title'];
-  export let autofocusId: $$Props['autofocusId'] = undefined;
-  export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
-  export let isOpen: $$Props['isOpen'] = false;
-  export let onClose: $$Props['onClose'] = undefined;
-  export let onOpen: $$Props['onOpen'] = undefined;
+  let {
+    title,
+    autofocusId = undefined,
+    closeOnBackdropClick = true,
+    isOpen = $bindable(false),
+    onClose = undefined,
+    onOpen = undefined,
+    children,
+    ...restProps
+  }: ModalContainerProps = $props();
 
   /** Bind to open the modal dialog */
   export function openModal(noCallbacks?: boolean) {
@@ -85,9 +83,9 @@ A modal dialog.
   ////////////////////////////////////////////////////////////////////
 
   // Used to track the animation when the element is being hidden
-  let inTransition = false;
+  let inTransition = $state(false);
   // Container element for the modal
-  let modalContainer: HTMLDialogElement | undefined;
+  let modalContainer: HTMLDialogElement | undefined = $state(undefined);
 
   /**
    * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
@@ -130,19 +128,19 @@ A modal dialog.
   }
 </script>
 
-<svelte:document on:keydown={handleEscape} />
+<svelte:document onkeydown={handleEscape} />
 
 <dialog
   bind:this={modalContainer}
-  on:transitionend={handleTransitionEnd}
+  ontransitionend={handleTransitionEnd}
   class:hidden={!isOpen && !inTransition}
   aria-modal="true"
   aria-label={title}
-  {...concatClass($$restProps, 'modal backdrop:bg-neutral backdrop:opacity-60')}>
-  <slot />
+  {...concatClass(restProps, 'modal backdrop:bg-neutral backdrop:opacity-60')}>
+  {@render children?.()}
   {#if closeOnBackdropClick}
     <div class="modal-backdrop">
-      <button on:click={() => handleClose()} tabindex="-1">{t('common.closeDialog')}</button>
+      <button onclick={() => handleClose()} tabindex="-1">{t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>

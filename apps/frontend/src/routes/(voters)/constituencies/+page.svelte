@@ -11,6 +11,8 @@ See `+page.ts` for possible redirects.
 - `elections.startFromConstituencyGroup`: If set, only this `ConstituencyGroup` will be displayed for selection. Also affects the route onto which the Continue button directs to.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -32,42 +34,31 @@ See `+page.ts` for possible redirects.
   ////////////////////////////////////////////////////////////////////
 
   /** The selected `constituencyIds` per election */
-  let selected: {
-    [electionId: Id]: Id;
-  } = {};
+  let selected = $state<{ [electionId: Id]: Id }>({});
 
   const useSingleGroup = $appSettings.elections?.startFromConstituencyGroup
     ? $dataRoot.getConstituencyGroup($appSettings.elections.startFromConstituencyGroup)
     : undefined;
 
-  let elections = new Array<Election>();
+  let elections = $derived(useSingleGroup ? $dataRoot.elections : $selectedElections);
 
-  $: {
-    // TODO[Svelte 5]: See if we need this reactivity anymore
-    elections = useSingleGroup ? $dataRoot.elections : $selectedElections;
-    if ($selectedConstituencies.length) setSelected();
-  }
-
-  /**
-   * Separate to prevent excessive reactivity.
-   * TODO[Svelte 5]: Probably unnecessary
-   */
-  function setSelected(): void {
-    for (const election of elections) {
-      const constituency = election.getApplicableConstituency($selectedConstituencies);
-      if (constituency) selected[election.id] = constituency.id;
+  $effect(() => {
+    if ($selectedConstituencies.length) {
+      for (const election of elections) {
+        const constituency = election.getApplicableConstituency($selectedConstituencies);
+        if (constituency) selected[election.id] = constituency.id;
+      }
     }
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Selecting constituencies and submitting
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit = false;
   /** Bound to `ConstituencySelector` */
-  let selectionComplete: boolean;
+  let selectionComplete = $state(false);
 
-  $: canSubmit = selectionComplete;
+  let canSubmit = $derived(selectionComplete);
 
   function handleSubmit(): void {
     if (!canSubmit) return;
@@ -82,9 +73,11 @@ See `+page.ts` for possible redirects.
 </script>
 
 <MainContent title={t('constituencies.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.constituencies.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.constituencies.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   {#if elections.length}
     <p class="text-center">
@@ -103,12 +96,13 @@ See `+page.ts` for possible redirects.
       data-testid="voter-constituencies-list" />
   {/if}
 
-  <Button
-    slot="primaryActions"
-    on:click={handleSubmit}
-    disabled={!canSubmit}
-    variant="main"
-    icon="next"
-    text={t('common.continue')}
-    data-testid="voter-constituencies-continue" />
+  {#snippet primaryActions()}
+    <Button
+      onclick={handleSubmit}
+      disabled={!canSubmit}
+      variant="main"
+      icon="next"
+      text={t('common.continue')}
+      data-testid="voter-constituencies-continue" />
+  {/snippet}
 </MainContent>

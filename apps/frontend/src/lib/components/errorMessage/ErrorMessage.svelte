@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to display an error message. Also logs the error to the console.
@@ -24,11 +26,7 @@ Used to display an error message. Also logs the error to the console.
   import { HeroEmoji } from '../heroEmoji';
   import type { ErrorMessageProps } from './ErrorMessage.type';
 
-  type $$Props = ErrorMessageProps;
-
-  export let inline: $$Props['inline'] = false;
-  export let message: $$Props['message'] = undefined;
-  export let logMessage: $$Props['logMessage'] = undefined;
+  let { inline = false, message, logMessage, ...restProps }: ErrorMessageProps = $props();
 
   const { t } = getComponentContext();
 
@@ -50,7 +48,7 @@ Used to display an error message. Also logs the error to the console.
     : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg';
 </script>
 
-<div data-testid="error-message" {...concatClass($$restProps, classes)}>
+<div data-testid="error-message" {...concatClass(restProps, classes)}>
   {#if inline}
     <span class="text-error text-center">{emoji} {message}</span>
   {:else}

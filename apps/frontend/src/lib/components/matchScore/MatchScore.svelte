@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Display an entity's match score.
@@ -21,16 +23,12 @@ Display an entity's match score.
   import { concatClass } from '$lib/utils/components';
   import type { MatchScoreProps } from './MatchScore.type';
 
-  type $$Props = MatchScoreProps;
-
-  export let score: $$Props['score'];
-  export let label: $$Props['label'] = undefined;
-  export let showLabel: $$Props['showLabel'] = true;
+  let { score, label, showLabel = true, ...restProps }: MatchScoreProps = $props();
 
   const { t } = getComponentContext();
 </script>
 
-<div {...concatClass($$restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
+<div {...concatClass(restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
   <span class="text-lg font-bold">{t('components.matchScore.score', { score })}</span>
   {#if showLabel && label !== ''}
     <span class="text-secondary text-center text-xs">{label ?? t('components.matchScore.label')}</span>

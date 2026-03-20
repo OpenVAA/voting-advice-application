@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Answer statistics - WIP!
@@ -95,9 +97,11 @@ Usually accessed by direct link only and not meant for the wide public.
 </script>
 
 <MainContent title={t('statistics.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.statistics.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.statistics.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   <div class="gap-lg grid" data-testid="voter-statistics-container">
     {#each $opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}

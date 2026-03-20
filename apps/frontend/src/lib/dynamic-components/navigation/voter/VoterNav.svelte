@@ -25,6 +25,8 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -33,8 +35,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   import { LanguageSelection } from '../languages';
   import type { VoterNavProps } from './VoterNav.type';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = VoterNavProps;
+  let { onKeyboardFocusOut, ...restProps }: VoterNavProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
 
@@ -53,8 +54,8 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   } = getVoterContext();
 </script>
 
-<Navigation on:keyboardFocusOut {...$$restProps}>
-  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+<Navigation {onKeyboardFocusOut} {...restProps}>
+  <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   <NavGroup>
     <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
@@ -88,7 +89,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       data-testid="voter-nav-results" />
   </NavGroup>
   <NavGroup>
-    <NavItem on:click={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
+    <NavItem onclick={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={t('info.title')} />
@@ -104,7 +105,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
         <NavItem href={$surveyLink} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
       {#if $openFeedbackModal}
-        <NavItem on:click={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
+        <NavItem onclick={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
       {/if}
     </NavGroup>
   {/if}

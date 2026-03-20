@@ -14,9 +14,9 @@ Accesses `AppContext` to set and read the current survey status and link.
 
 - `clicked`: Whether the button has been clicked.
 
-### Events
+### Callback Props
 
-- `click`: Dispatched when the button is clicked. The event has no details.
+- `onClick`: Called when the button is clicked.
 
 ### Tracking events
 
@@ -25,31 +25,32 @@ Accesses `AppContext` to set and read the current survey status and link.
 ### Usage
 
 ```tsx
-<SurveyButton bind:clicked on:click={() => console.info('Clicked!')}/>
-  <SurveyButton variant="main"/>
-  ```
+<SurveyButton bind:clicked onClick={() => console.info('Clicked!')}/>
+<SurveyButton variant="main"/>
+```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { SurveyButtonProps } from './SurveyButton.type';
 
-  type $$Props = SurveyButtonProps;
-
-  export let clicked: $$Props['clicked'] = false;
+  let {
+    clicked = $bindable(false),
+    onClick = undefined,
+    ...restProps
+  }: SurveyButtonProps = $props();
 
   const { setSurveyStatus, startEvent, surveyLink, t } = getAppContext();
-
-  const dispatch = createEventDispatcher<{ click: null }>();
 
   function handleClick() {
     if (clicked) return;
     clicked = true;
     setSurveyStatus('received');
-    dispatch('click');
+    onClick?.();
     startEvent('survey_opened');
   }
 </script>
@@ -57,7 +58,7 @@ Accesses `AppContext` to set and read the current survey status and link.
 <Button
   href={$surveyLink}
   target="_blank"
-  on:click={handleClick}
+  onclick={handleClick}
   variant="normal"
   color="accent"
   disabled={clicked}
@@ -65,4 +66,4 @@ Accesses `AppContext` to set and read the current survey status and link.
   icon="research"
   iconPos="left"
   data-testid="survey-button"
-  {...concatClass($$restProps, 'justify-center')} />
+  {...concatClass(restProps, 'justify-center')} />

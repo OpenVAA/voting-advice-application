@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to show a label-content pair in a Candidate's basic information.
@@ -24,19 +26,15 @@ Used to show a label-content pair in a Candidate's basic information.
 <script lang="ts">
   import type { InfoItemProps } from './InfoItem.type';
 
-  type $$Props = InfoItemProps;
-
-  export let label: $$Props['label'];
-  export let vertical: $$Props['vertical'] = false;
+  let { label, vertical = false, children }: InfoItemProps = $props();
 </script>
 
 <div class="gap-md grid justify-start {vertical ? 'vertical-grid' : 'horizontal-grid'}">
-  <!-- pt-[0.3rem] matches the baselines of the small label and the content text -->
   <div class="test-label small-label pt-[0.3rem] text-left align-top {vertical ? 'w-auto' : 'min-w-[10rem]'}">
     {label}
   </div>
   <div class="overflow-hidden align-top">
-    <slot />
+    {@render children?.()}
   </div>
 </div>
 
@@ -45,7 +43,6 @@ Used to show a label-content pair in a Candidate's basic information.
   .vertical-grid {
     @apply grid-flow-row grid-rows-[min-content_auto] pb-8;
   }
-
   .horizontal-grid {
     @apply grid-flow-col grid-cols-[min-content_auto];
   }

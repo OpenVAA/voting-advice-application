@@ -1,6 +1,6 @@
 import type { Id } from '@openvaa/core';
 import type { AnyChoice, Image } from '@openvaa/data';
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { HTMLAttributes } from 'svelte/elements';
 
 export type InputProps =
   | ({
@@ -46,8 +46,14 @@ export type InputType = InputProps['type'];
  * @typeParam TValue - The type of value associated with the input.
  * @typeParam TElement - The type of the underlying HTML element for the input. Defaults to 'input'.
  */
-export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = 'input'> = Omit<
-  SvelteHTMLElements[TElement],
+/**
+ * @typeParam TValue - The type of value associated with the input.
+ * @typeParam _TElement - Retained for API compatibility but no longer used to derive the base type.
+ *   Uses `HTMLAttributes<HTMLElement>` instead of `SvelteHTMLElements[TElement]` to avoid
+ *   "union too complex" TypeScript errors in the 10-way `InputProps` union.
+ */
+export type InputPropsBase<TValue, _TElement extends string = 'input'> = Omit<
+  HTMLAttributes<HTMLElement>,
   'disabled' | 'id' | 'label' | 'value'
 > & {
   /**
@@ -63,7 +69,7 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
   /**
    * Any additional props to be passed to the container element of the input. @default {}
    */
-  containerProps?: SvelteHTMLElements['div'];
+  containerProps?: HTMLAttributes<HTMLDivElement>;
   /**
    * The id of the input. If not provided, a unique id will be generated.
    */
@@ -101,7 +107,7 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
   /**
    * The options to show for a `select` or `select-multiple` input.
    */
-  options?: TElement extends 'select' ? Array<AnyChoice> : never;
+  options?: _TElement extends 'select' ? Array<AnyChoice> : never;
   /**
    * If `true`, enables ordering of the values of a `select-multiple` input. @default false
    */

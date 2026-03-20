@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to display an `Entity` as small tag including an icon.
@@ -21,18 +23,16 @@ Used to display an `Entity` as small tag including an icon.
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
-  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
+  import EntityTag from './EntityTag.svelte';
+  import type { EntityType } from '@openvaa/data';
   import type { IconName } from '$lib/components/icon';
   import type { EntityTagProps } from './EntityTag.type';
 
-  type $$Props = EntityTagProps;
+  let { entity, variant = 'default', hideParent, ...restProps }: EntityTagProps = $props();
 
-  export let entity: $$Props['entity'];
-  export let variant: $$Props['variant'] = 'default';
-  export let hideParent: $$Props['hideParent'] = undefined;
-
-  let nakedEntity: AnyEntityVariant;
-  $: ({ entity: nakedEntity, nomination } = unwrapEntity(entity));
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity = $derived(unwrapped.entity);
+  let nomination = $derived(unwrapped.nomination);
 
   const ICONS: Record<EntityType, IconName> = {
     alliance: 'alliance',
@@ -42,7 +42,7 @@ Used to display an `Entity` as small tag including an icon.
   };
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-row items-center gap-xs font-bold')}>
+<div {...concatClass(restProps, 'flex flex-row items-center gap-xs font-bold')}>
   <Icon
     name={ICONS[nakedEntity.type]}
     customColor={nakedEntity.color?.normal}
@@ -57,6 +57,6 @@ Used to display an `Entity` as small tag including an icon.
     {/if}
   </span>
   {#if !hideParent && nomination?.parentNomination}
-    <svelte:self entity={nomination?.parentNomination} variant="short" />
+    <EntityTag entity={nomination?.parentNomination} variant="short" />
   {/if}
 </div>

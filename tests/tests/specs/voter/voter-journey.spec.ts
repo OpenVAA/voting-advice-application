@@ -100,8 +100,24 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
     const previousButton = sharedPage.getByTestId(testIds.voter.questions.previousButton);
 
-    // Helper: answer current question and wait for auto-advance
+    // Wait for the first question's answer options to be visible. The questions
+    // intro page may redirect to the first question via onMount, so we need to
+    // wait for the actual question page to load before recording URLs for
+    // auto-advance detection.
+    await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
+
+    // Also wait for the URL to settle on an actual question page (not the
+    // questions intro at /questions). The intro page's onMount redirect to
+    // /questions/__first__ may still be in flight. Without this wait,
+    // answerAndWaitForAdvance would see the redirect's URL change instead
+    // of the auto-advance navigation.
+    await sharedPage.waitForURL(/\/questions\//, { timeout: 10000 });
+
+    // Helper: answer current question and wait for auto-advance.
+    // Waits for the answer option to be visible before clicking to handle
+    // page transitions between questions.
     async function answerAndWaitForAdvance(optionIndex: number): Promise<void> {
+      await answerOption.nth(optionIndex).waitFor({ state: 'visible', timeout: 10000 });
       const urlBefore = sharedPage.url();
       await answerOption.nth(optionIndex).click();
       await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
@@ -112,6 +128,8 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
       const urlBefore = sharedPage.url();
       await previousButton.click();
       await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
+      // Wait for the question page to load after navigation
+      await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
     }
 
     // Helper: skip current question (click next without answering) and wait
@@ -152,6 +170,7 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     while (!onResultsPage) {
       questionCount++;
+      await answerOption.nth(4).waitFor({ state: 'visible', timeout: 10000 });
       const urlBefore = sharedPage.url();
 
       // Answer the current question

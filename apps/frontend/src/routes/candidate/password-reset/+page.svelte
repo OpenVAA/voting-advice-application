@@ -77,10 +77,12 @@ Shows a form with which to set a new password when it has been reset.
 </script>
 
 <MainContent title={t('candidateApp.resetPassword.createNewPassword')}>
-  <HeadingGroup slot="heading">
-    <PreHeading>{t('dynamic.candidateAppName')}</PreHeading>
-    <h1>{t('candidateApp.resetPassword.createNewPassword')}</h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <PreHeading>{t('dynamic.candidateAppName')}</PreHeading>
+      <h1>{t('candidateApp.resetPassword.createNewPassword')}</h1>
+    </HeadingGroup>
+  {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
     <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
     {#if status === 'error'}
@@ -91,7 +93,7 @@ Shows a form with which to set a new password when it has been reset.
         data-testid="password-reset-error" />
     {/if}
     <Button
-      on:click={handleSubmit}
+      onclick={handleSubmit}
       disabled={!canSubmit}
       variant="main"
       text={submitLabel}

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to show an entity's answers to `opinion` questions and possibly those of the voter, too, in an `EntityDetails` component.
@@ -25,29 +27,13 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   import type { AnyEntityVariant } from '@openvaa/data';
   import type { EntityOpinionsProps } from './EntityOpinions.type';
 
-  type $$Props = EntityOpinionsProps;
-
-  export let entity: $$Props['entity'];
-  export let questions: $$Props['questions'];
-  export let answers: $$Props['answers'] = undefined;
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { entity, questions, answers }: EntityOpinionsProps = $props();
 
   const { appSettings, appType, t } = getAppContext();
 
-  ////////////////////////////////////////////////////////////////////
-  // Parse entity components
-  ////////////////////////////////////////////////////////////////////
-
-  let nakedEntity: AnyEntityVariant;
-  let shortName: string;
-
-  $: {
-    ({ entity: nakedEntity } = unwrapEntity(entity));
-    ({ shortName } = nakedEntity);
-  }
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
+  let shortName: string = $derived(nakedEntity.shortName);
 </script>
 
 <div class="mt-xl gap-xxl px-lg pb-safelgb grid">
@@ -66,33 +52,18 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
       {#if $appType === 'candidate'}
         {#if answer == null}
-          <div class="small-label mb-16 text-center">
-            {t('questions.answers.entityHasntAnswered', { entity: shortName })}
-          </div>
+          <div class="small-label mb-16 text-center">{t('questions.answers.entityHasntAnswered', { entity: shortName })}</div>
         {/if}
       {:else if voterAnswer == null && answer == null}
-        <div class="small-label mb-16 text-center">
-          {t('questions.answers.bothHaventAnswered', { entity: shortName })}
-        </div>
+        <div class="small-label mb-16 text-center">{t('questions.answers.bothHaventAnswered', { entity: shortName })}</div>
       {:else if voterAnswer == null}
-        <div class="small-label mb-16 text-center">
-          {t('questions.answers.youHaventAnswered')}
-        </div>
+        <div class="small-label mb-16 text-center">{t('questions.answers.youHaventAnswered')}</div>
       {:else if answer == null}
-        <div class="small-label mb-16 text-center">
-          {t('questions.answers.entityHasntAnswered', { entity: shortName })}
-        </div>
+        <div class="small-label mb-16 text-center">{t('questions.answers.entityHasntAnswered', { entity: shortName })}</div>
       {/if}
 
-      <!-- Only show the answering choices if either one has answered -->
       {#if voterAnswer != null || answer != null}
-        <OpinionQuestionInput
-          {question}
-          mode="display"
-          answer={voterAnswer}
-          otherAnswer={answer}
-          otherLabel={shortName} />
-
+        <OpinionQuestionInput {question} mode="display" answer={voterAnswer} otherAnswer={answer} otherLabel={shortName} />
         {#if answer?.info}
           <QuestionOpenAnswer content={answer.info} class="mt-md" />
         {/if}

@@ -14,10 +14,12 @@ A template part that outputs the navigation menu for the Candidate App for use i
 
 ```tsx
 <CandidateNav>
-  <NavItem slot="close" on:click={closeMenu} icon="close" text="Close"/>
+  <NavItem onclick={closeMenu} icon="close" text="Close"/>
 </CandidateNav>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -28,8 +30,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   import { LanguageSelection } from '../languages';
   import type { CandidateNavProps } from './CandidateNav.type';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = CandidateNavProps;
+  let { onKeyboardFocusOut, ...restProps }: CandidateNavProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
   const {
@@ -44,8 +45,8 @@ A template part that outputs the navigation menu for the Candidate App for use i
   } = getCandidateContext();
 </script>
 
-<Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+<Navigation {onKeyboardFocusOut} {...restProps}>
+  <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   {#if $authToken}
     <NavGroup>
       <NavItem
@@ -112,7 +113,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   {/if}
   {#if $openFeedbackModal}
     <NavGroup>
-      <NavItem on:click={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
+      <NavItem onclick={$openFeedbackModal} icon="feedback" text={t('feedback.send')} />
     </NavGroup>
   {/if}
   <LanguageSelection />

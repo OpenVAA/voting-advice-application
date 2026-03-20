@@ -19,28 +19,25 @@ PasswordField is an input box for password that comes with a button to reveal an
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { getUUID } from '$lib/utils/components';
   import type { PasswordFieldProps } from './PasswordField.type';
 
-  type $$Props = PasswordFieldProps;
+  let { id: idProp = undefined, password = $bindable(''), autocomplete = '', label = undefined, externalLabel = false, ...restProps }: PasswordFieldProps = $props();
 
-  export let id: $$Props['id'] = undefined;
-  export let password: $$Props['password'] = '';
-  export let autocomplete: $$Props['autocomplete'] = '';
-  export let label: $$Props['label'] = undefined;
-  export let externalLabel: $$Props['externalLabel'] = false;
   export function focus(): void {
     input?.focus();
   }
 
-  id ??= getUUID();
+  const id = idProp ?? getUUID();
 
   const { t } = getComponentContext();
 
-  let passwordRevealed = false;
+  let passwordRevealed = $state(false);
   /** variable used to refer to the input box in code to change its type*/
   let input: HTMLInputElement;
   /** function that hides and reveals the password and changes the icon of the button*/
@@ -63,7 +60,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     data-testid="password-field"
     bind:value={password}
     bind:this={input}
-    {autocomplete}
+    autocomplete={autocomplete as AutoFill}
     required />
   <Button
     type="button"
@@ -71,6 +68,6 @@ PasswordField is an input box for password that comes with a button to reveal an
     text={passwordRevealed ? t('components.passwordInput.hidePassword') : t('components.passwordInput.showPassword')}
     class="!absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
-    on:click={toggleRevealed}
+    onclick={toggleRevealed}
     data-testid="password-field-toggle" />
 </div>

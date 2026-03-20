@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to group the page's main headings, such as a pre-heading (kicker)
@@ -25,10 +27,13 @@ and the main title.
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+  import type { HeadingGroupProps } from './HeadingGroup.type';
+
+  let { children, ...restProps }: HeadingGroupProps = $props();
 
   const { t } = getComponentContext();
 </script>
 
-<hgroup aria-roledescription={t('components.headingGroup.roleDescription')} role="group" {...$$restProps}>
-  <slot />
+<hgroup aria-roledescription={t('components.headingGroup.roleDescription')} role="group" {...restProps}>
+  {@render children?.()}
 </hgroup>

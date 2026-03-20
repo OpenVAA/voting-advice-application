@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to display a message when an action succeeds.
@@ -22,10 +24,7 @@ Used to display a message when an action succeeds.
   import { HeroEmoji } from '../heroEmoji';
   import type { SuccessMessageProps } from './SuccessMessage.type';
 
-  type $$Props = SuccessMessageProps;
-
-  export let inline: $$Props['inline'] = false;
-  export let message: $$Props['message'] = undefined;
+  let { inline = false, message, ...restProps }: SuccessMessageProps = $props();
 
   const { t } = getComponentContext();
 
@@ -41,7 +40,7 @@ Used to display a message when an action succeeds.
     : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg';
 </script>
 
-<div {...concatClass($$restProps, classes)}>
+<div {...concatClass(restProps, classes)}>
   {#if inline}
     <span class="text-success text-center">{emoji} {message}</span>
   {:else}

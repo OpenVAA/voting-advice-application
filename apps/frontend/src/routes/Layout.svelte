@@ -4,9 +4,9 @@
 
 Defines the outer layout for the application, including the header and menu.
 
-### Slots
+### Snippets
 
-- default: `main` content of the page, normally a `MainContent` component.
+- `children`: `main` content of the page, normally a `MainContent` component.
 - `menu`: the navigation menu, normally a `VoterNav` or `CandidateNav` component.
 
 ### Properties
@@ -14,6 +14,8 @@ Defines the outer layout for the application, including the header and menu.
 - `menuId`: the id of the navigation menu in the `menu` slot.
 - `isDrawerOpen`: a bindable boolean indicating whether the drawer is open or not. NB. To close the drawer, use the method in `LayoutContext.navigation`.
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -23,10 +25,7 @@ Defines the outer layout for the application, including the header and menu.
   import Header from './Header.svelte';
   import type { LayoutProps } from './Layout.type';
 
-  type $$Props = LayoutProps;
-
-  export let menuId: $$Props['menuId'];
-  export let isDrawerOpen: $$Props['isDrawerOpen'] = false;
+  let { menuId, isDrawerOpen = $bindable(false), menu, children }: LayoutProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Constants
@@ -78,7 +77,7 @@ Defines the outer layout for the application, including the header and menu.
 
 <!-- Drawer container -->
 <div class="drawer {$pageStyles.drawer.background}">
-  <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the 
+  <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the
     non-hidden labels in aria-labelledby should be okay for screen readers. -->
   <input
     id={drawerToggleId}
@@ -108,13 +107,13 @@ Defines the outer layout for the application, including the header and menu.
       </div>
 
       <!-- Default slot -->
-      <slot />
+      {@render children?.()}
     </main>
   </div>
 
   <!-- Drawer side menu -->
   <div class="drawer-side z-10">
-    <div on:click={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
-    <slot name="menu" />
+    <div onclick={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
+    {@render menu?.()}
   </div>
 </div>

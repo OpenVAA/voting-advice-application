@@ -82,14 +82,16 @@
   title={$appSettings.preRegistration?.enabled
     ? t('candidateApp.register.titleWithPreregistration')
     : t('candidateApp.register.title')}>
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-primary text-2xl font-bold">{t('dynamic.candidateAppName')}</PreHeading>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <PreHeading class="text-primary text-2xl font-bold">{t('dynamic.candidateAppName')}</PreHeading>
+    </HeadingGroup>
+  {/snippet}
   <form class="flex flex-col flex-nowrap items-center">
     {#if $userData}
       <p class="text-warning text-center">{t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
-        <LogoutButton buttonVariant="main" stayOnPage={true} />
+        <LogoutButton variant="main" />
       </div>
     {:else}
       <p class="max-w-md text-center">
@@ -124,17 +126,17 @@
       {/if}
     {/if}
   </form>
-  <svelte:fragment slot="primaryActions">
+  {#snippet primaryActions()}
     <Button
       disabled={!canSubmit}
       text={t('candidateApp.register.register')}
       variant="main"
-      on:click={handleSubmit}
+      onclick={handleSubmit}
       data-testid="register-submit" />
     <Button
       href={$getRoute('CandAppLogin')}
       text={t('candidateApp.register.didYouAlreadyRegister')}
       data-testid="register-login-link" />
     <Button href={$getRoute('CandAppHelp')} text={t('candidateApp.help.title')} data-testid="register-help-link" />
-  </svelte:fragment>
+  {/snippet}
 </MainContent>

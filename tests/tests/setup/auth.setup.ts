@@ -17,15 +17,42 @@ const authFile = path.join(currentDir, '../../playwright/.auth/user.json');
  * in the default dataset.
  */
 setup('authenticate as candidate', async ({ page }) => {
+  // Candidate app data loading can be slow; increase timeout
+  setup.setTimeout(90000);
+
   // Ensure the auth directory exists
   const authDir = path.dirname(authFile);
   if (!fs.existsSync(authDir)) {
     fs.mkdirSync(authDir, { recursive: true });
   }
 
-  // Navigate to candidate app home (which redirects to login for unauthenticated users)
+  // Navigate to candidate app home (which redirects to login for unauthenticated users).
+  // The candidate app loads through the root layout which fetches data promises
+  // and shows <Loading> until they resolve. Strapi can be slow to respond,
+  // especially when running parallel with voter tests.
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
-  await page.goto(candidateHome);
+
+  // Try navigating with a retry: if the login form doesn't appear within 30s,
+  // reload the page once (Strapi may have been cold-starting or rate-limited).
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.goto(candidateHome, { waitUntil: 'domcontentloaded' });
+
+    try {
+      await page.getByTestId(testIds.candidate.login.email).waitFor({ state: 'visible', timeout: 20000 });
+      break; // Login form appeared
+    } catch {
+      if (attempt < 2) {
+        // Reload and retry
+        await page.reload({ waitUntil: 'domcontentloaded' });
+      } else {
+        // Final attempt failed
+        throw new Error(
+          `Login form did not appear after ${attempt + 1} attempts. ` +
+            `The candidate app may be stuck on the loading screen due to Strapi being unresponsive.`
+        );
+      }
+    }
+  }
 
   // Login credentials matching data.setup.ts (Test Candidate Alpha from default dataset)
   await page.getByTestId(testIds.candidate.login.email).fill(TEST_CANDIDATE_EMAIL);

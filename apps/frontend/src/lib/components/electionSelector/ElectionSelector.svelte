@@ -4,7 +4,7 @@
 
 Display constituency selection inputs for elections.
 
-If there’s only one option, it is automatically selected and no interactions are allowed.
+If there's only one option, it is automatically selected and no interactions are allowed.
 
 ### Properties
 
@@ -17,25 +17,23 @@ If there’s only one option, it is automatically selected and no interactions a
 
 ```tsx
 <ElectionSelector
-  elections={$dataRoot.elections} 
-  bind:selected={$selectedElectionIds} 
+  elections={$dataRoot.elections}
+  bind:selected={$selectedElectionIds}
   onChange={(ids) => console.info('Selected', ids)} />
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { ElectionSelectorProps } from './ElectionSelector.type';
 
-  type $$Props = ElectionSelectorProps;
-
-  export let elections: $$Props['elections'];
-  export let selected: NonNullable<$$Props['selected']> = [];
-  export let onChange: $$Props['onChange'] = undefined;
+  let { elections, selected = $bindable([]), onChange, ...restProps }: ElectionSelectorProps = $props();
 
   const groupName = getUUID();
 
-  // If there’s only one option, it is automatically selected
+  // If there's only one option, it is automatically selected
   if (elections.length === 1 && !selected.length) {
     selected = [elections[0].id];
     handleChange();
@@ -46,7 +44,7 @@ If there’s only one option, it is automatically selected and no interactions a
   }
 </script>
 
-<div data-testid="election-selector" {...concatClass($$restProps, 'grid gap-sm')}>
+<div data-testid="election-selector" {...concatClass(restProps, 'grid gap-sm')}>
   {#each elections as { id, name }}
     <label class="label gap-sm cursor-pointer justify-start !p-0" class:pointer-events-none={elections.length === 1}>
       <input
@@ -57,7 +55,7 @@ If there’s only one option, it is automatically selected and no interactions a
         disabled={elections.length === 1}
         data-testid="election-selector-option"
         bind:group={selected}
-        on:change={handleChange} />
+        onchange={handleChange} />
       <span>
         {name}
       </span>

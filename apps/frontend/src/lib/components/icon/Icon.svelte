@@ -1,9 +1,11 @@
+<svelte:options runes />
+
 <!--
 @component
 An icon component, where the `name` property defines which icon to use.
 
 Use the other properties to set the size and color of the icon. The icon
-is `aria-hidden` by default, but that can overriden. You can also pass 
+is `aria-hidden` by default, but that can overriden. You can also pass
 any valid attributes of the `<svg>` element.
 
 ### Properties
@@ -25,23 +27,20 @@ any valid attributes of the `<svg>` element.
 -->
 
 <script lang="ts">
-  import { concatProps } from '$lib/utils/components';
+  import { concatClass } from '$lib/utils/components';
   import { ICONS } from './icons';
   import type { IconProps } from './Icon.type';
 
-  type $$Props = IconProps;
-  export let name: $$Props['name'];
-  export let size: $$Props['size'] = 'md';
-  export let color: $$Props['color'] = 'current';
-  export let customColor: $$Props['customColor'] = undefined;
-  export let customColorDark: $$Props['customColorDark'] = undefined;
+  let { name, size = 'md', color = 'current', customColor, customColorDark, ...restProps }: IconProps = $props();
 
   // Load svg contents
   let svgElement: SVGElement;
-  // Pass svgElement and name explicitly to trigger correct reactivity
-  $: loadSvg(svgElement, name);
+  // Use $effect to load SVG when svgElement or name changes
+  $effect(() => {
+    loadSvg(svgElement, name);
+  });
 
-  function loadSvg(svgElement: SVGElement, name: $$Props['name']) {
+  function loadSvg(svgElement: SVGElement, name: IconProps['name']) {
     if (!svgElement || !name) return;
     // Validate name and split path
     // We need this part-wise approach because of Vite's dynamic import limitations
@@ -51,11 +50,9 @@ any valid attributes of the `<svg>` element.
   }
 
   // Create styles
-  let classes: string;
-  let styles: string;
-  $: {
-    classes = 'inline-block';
-    styles = '';
+  let iconStyles = $derived.by(() => {
+    let classes = 'inline-block';
+    let styles = '';
     // Predefined sizes
     switch (size) {
       case 'sm':
@@ -81,7 +78,9 @@ any valid attributes of the `<svg>` element.
     if (!customColor && !customColorDark) {
       classes += ` fill-${color}`;
     }
-  }
+
+    return { classes, styles };
+  });
 </script>
 
 <svg
@@ -90,7 +89,5 @@ any valid attributes of the `<svg>` element.
   role="img"
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 24 24"
-  {...concatProps($$restProps, {
-    class: classes,
-    style: styles
-  })} />
+  {...concatClass(restProps, iconStyles.classes)}
+  style={iconStyles.styles} />

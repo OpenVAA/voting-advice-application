@@ -1,6 +1,6 @@
 import qs from 'qs';
 import { resolveRoute } from '$app/paths';
-import { localizeHref } from '$lib/paraglide/runtime';
+import { locales as paraglideLocales, localizeHref } from '$lib/paraglide/runtime';
 import { filterPersistent } from './filterPersistent';
 import { isRouteParam } from './params';
 import { parseParams } from './parseParams';
@@ -54,11 +54,12 @@ export function buildRoute(
   const routeId = route ? ROUTE[route] : current?.route?.id || ROUTE.Home;
 
   // Build url
-  let url = resolveRoute(routeId as string, flattenParams(routeParams));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let url = resolveRoute(routeId as any, flattenParams(routeParams) as any);
   if (Object.keys(searchParams).length) url += `?${qs.stringify(searchParams, { encodeValuesOnly: true })}`;
 
   // Add locale prefix via Paraglide
-  return localizeHref(url, locale ? { locale: locale as string } : undefined);
+  return localizeHref(url, locale ? { locale: locale as (typeof paraglideLocales)[number] } : undefined);
 }
 
 /**

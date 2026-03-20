@@ -26,12 +26,13 @@
     bind:selected={$preregistrationConstituencyIds}
     bind:selectionComplete
     data-testid="preregister-constituencies-list" />
-  <Button
-    slot="primaryActions"
-    type="submit"
-    text={t('common.continue')}
-    variant="main"
-    on:click={() => goto($getRoute('CandAppPreregisterEmail'))}
-    disabled={!selectionComplete}
-    data-testid="preregister-constituencies-submit" />
+  {#snippet primaryActions()}
+    <Button
+      type="submit"
+      text={t('common.continue')}
+      variant="main"
+      onclick={() => goto($getRoute('CandAppPreregisterEmail'))}
+      disabled={!selectionComplete}
+      data-testid="preregister-constituencies-submit" />
+  {/snippet}
 </MainContent>

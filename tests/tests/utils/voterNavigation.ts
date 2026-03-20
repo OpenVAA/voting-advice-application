@@ -18,6 +18,12 @@ import type { Page } from '@playwright/test';
  * Navigate from Home through all intermediate pages to the first question.
  *
  * Handles: Home → Intro → (Questions Intro?) → (Category Intro?) → First Question
+ *
+ * After returning, the page is on an actual question page (URL matches
+ * /questions/[id]) with answer options visible. This ensures that the
+ * questions intro page's onMount redirect (from /questions to
+ * /questions/__first__) has completed, preventing URL change race
+ * conditions in subsequent waitForURL calls.
  */
 export async function navigateToFirstQuestion(page: Page): Promise<void> {
   await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
@@ -28,6 +34,12 @@ export async function navigateToFirstQuestion(page: Page): Promise<void> {
   await introStart.click();
 
   await clickThroughIntroPages(page);
+
+  // Wait for the URL to settle on an actual question page. The questions
+  // intro page (/questions) may redirect to /questions/__first__ via
+  // onMount. Without this wait, the caller's waitForURL would detect
+  // the redirect as a URL change instead of the auto-advance navigation.
+  await page.waitForURL(/\/questions\//, { timeout: 10000 });
 }
 
 /**

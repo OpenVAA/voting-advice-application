@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Intro page
@@ -20,9 +22,11 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
 </script>
 
 <MainContent title={t('dynamic.intro.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.intro.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.intro.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   <p class="text-center">
     {t('dynamic.intro.ingress')}
@@ -43,11 +47,12 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
     <li>{t('dynamic.intro.list.details')}</li>
   </ol>
 
-  <Button
-    slot="primaryActions"
-    href={$appSettings.elections?.startFromConstituencyGroup ? $getRoute('Constituencies') : $getRoute('Elections')}
-    variant="main"
-    icon="next"
-    text={t('dynamic.intro.continue')}
-    data-testid="voter-intro-start" />
+  {#snippet primaryActions()}
+    <Button
+      href={$appSettings.elections?.startFromConstituencyGroup ? $getRoute('Constituencies') : $getRoute('Elections')}
+      variant="main"
+      icon="next"
+      text={t('dynamic.intro.continue')}
+      data-testid="voter-intro-start" />
+  {/snippet}
 </MainContent>

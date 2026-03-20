@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to show an entity's basic info and their answers to `info` questions in an `EntityDetails` component.
@@ -38,37 +40,20 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   import type { AnyEntityVariant, AnyNominationVariant, EntityType } from '@openvaa/data';
   import type { EntityInfoProps } from './EntityInfo.type';
 
-  type $$Props = EntityInfoProps;
-
-  export let entity: $$Props['entity'];
-  export let questions: $$Props['questions'];
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { entity, questions }: EntityInfoProps = $props();
 
   const { appSettings, dataRoot, getRoute, t } = getAppContext();
 
-  ////////////////////////////////////////////////////////////////////
-  // Parse entity components
-  ////////////////////////////////////////////////////////////////////
-
-  let entityType: EntityType;
-  let nakedEntity: AnyEntityVariant;
-  let nomination: AnyNominationVariant | undefined;
-
-  $: {
-    ({ entity: nakedEntity, nomination } = unwrapEntity(entity));
-    entityType = nakedEntity.type;
-  }
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
+  let nomination: AnyNominationVariant | undefined = $derived(unwrapped.nomination);
+  let entityType: EntityType = $derived(nakedEntity.type);
 </script>
 
 <div class="p-lg pb-safelgb grid">
   {#if nakedEntity.info}
     <div class="infoGroup" role="group">
-      <div>
-        {@html sanitizeHtml(nakedEntity.info)}
-      </div>
+      <div>{@html sanitizeHtml(nakedEntity.info)}</div>
     </div>
   {/if}
 
@@ -76,27 +61,15 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
     {@const { election, electionSymbol, constituency, parentNomination } = nomination}
     <div class="infoGroup" role="group">
       {#if $dataRoot.elections.length > 1}
-        <InfoItem label={t('common.election')}>
-          {election.name}
-        </InfoItem>
+        <InfoItem label={t('common.election')}>{election.name}</InfoItem>
       {/if}
       {#if !election.singleConstituency}
-        <InfoItem label={t('common.constituency')}>
-          {constituency.name}
-        </InfoItem>
+        <InfoItem label={t('common.constituency')}>{constituency.name}</InfoItem>
       {/if}
       {#if parentNomination}
-        <InfoItem
-          label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
-          <!-- Add a link to the nomination page for parties -->
+        <InfoItem label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
           {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
-            <a
-              href={$getRoute({
-                route: 'ResultEntity',
-                entityType: parentNomination.entityType,
-                entityId: parentNomination.entity.id,
-                nominationId: parentNomination.id
-              })}>
+            <a href={$getRoute({ route: 'ResultEntity', entityType: parentNomination.entityType, entityId: parentNomination.entity.id, nominationId: parentNomination.id })}>
               <EntityTag entity={parentNomination} variant="full" />
             </a>
           {:else}
@@ -109,11 +82,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
       {/if}
       {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
         <InfoItem label={t(`common.electionSymbol.${entityType}`)}>
-          {#if electionSymbol}
-            <ElectionSymbol text={electionSymbol} />
-          {:else}
-            {t('common.missingAnswer')}
-          {/if}
+          {#if electionSymbol}<ElectionSymbol text={electionSymbol} />{:else}{t('common.missingAnswer')}{/if}
         </InfoItem>
       {/if}
     </div>
@@ -128,9 +97,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
           {@const answer = nakedEntity.getAnswer(question)}
           {@const { longText } = getCustomData(question)}
           {#if answer || $appSettings.entityDetails.showMissingAnswers[entityType]}
-            <InfoItem label={question.text} vertical={longText}>
-              <InfoAnswer {answer} {question} />
-            </InfoItem>
+            <InfoItem label={question.text} vertical={longText}><InfoAnswer {answer} {question} /></InfoItem>
           {/if}
         {/each}
       {/if}
@@ -138,9 +105,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         <InfoItem label={t('entityDetails.links')}>
           {#each linkQuestions as question}
             {@const answer = nakedEntity.getAnswer(question)}
-            {#if answer}
-              <InfoAnswer {answer} {question} class="tag mb-sm me-sm last:me-0" />
-            {/if}
+            {#if answer}<InfoAnswer {answer} {question} class="tag mb-sm me-sm last:me-0" />{/if}
           {/each}
         </InfoItem>
       {/if}
@@ -155,7 +120,6 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
   .infoGroup {
-    /* first: is valid although the linter flags it */
     @apply gap-md border-t-md mt-16 flex flex-col border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
   }
 </style>

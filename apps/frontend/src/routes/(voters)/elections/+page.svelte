@@ -11,6 +11,8 @@ See `+page.ts` for possible redirects.
 - `elections.startFromConstituencyGroup`: If set, the elections shown for selection are dependent on the selected constituency. Also affects the route and its parameters onto which the Continue button directs to.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -19,7 +21,6 @@ See `+page.ts` for possible redirects.
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
-  import type { Election } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -31,34 +32,26 @@ See `+page.ts` for possible redirects.
   // Initialize elections and possible implied constituencies
   ////////////////////////////////////////////////////////////////////
 
-  let elections: Array<Election> = [];
-  let selected: Array<Id>;
+  let selected: Array<Id> = $state([]);
 
-  $: {
-    // TODO[Svelte 5]: See if we need this reactivity anymore
-    elections = $dataRoot.elections;
+  let elections = $derived.by(() => {
+    let result = $dataRoot.elections;
     if ($appSettings.elections?.startFromConstituencyGroup) {
       // Only show elections for which a Constituency is available
-      elections = elections.filter((e) => e.getApplicableConstituency($selectedConstituencies));
+      result = result.filter((e) => e.getApplicableConstituency($selectedConstituencies));
     }
-    setSelected();
-  }
+    return result;
+  });
 
-  /**
-   * Separate to prevent excessive reactivity.
-   * TODO[Svelte 5]: Probably unnecessary
-   */
-  function setSelected(): void {
+  $effect(() => {
     selected = ($selectedElections.length ? $selectedElections : elections).map((e) => e.id);
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Selecting elections and submitting
   ////////////////////////////////////////////////////////////////////
 
-  // Submitting
-  let canSubmit = false;
-  $: canSubmit = selected?.length > 0;
+  let canSubmit = $derived(selected?.length > 0);
 
   function handleSubmit(): void {
     if (!canSubmit) return;
@@ -73,9 +66,11 @@ See `+page.ts` for possible redirects.
 </script>
 
 <MainContent title={t('elections.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.elections.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.elections.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   {#if elections.length}
     <p class="text-center">
@@ -87,12 +82,13 @@ See `+page.ts` for possible redirects.
     <ElectionSelector {elections} bind:selected data-testid="voter-elections-list" />
   {/if}
 
-  <Button
-    slot="primaryActions"
-    on:click={handleSubmit}
-    disabled={!canSubmit}
-    variant="main"
-    icon="next"
-    text={t('common.continue')}
-    data-testid="voter-elections-continue" />
+  {#snippet primaryActions()}
+    <Button
+      onclick={handleSubmit}
+      disabled={!canSubmit}
+      variant="main"
+      icon="next"
+      text={t('common.continue')}
+      data-testid="voter-elections-continue" />
+  {/snippet}
 </MainContent>

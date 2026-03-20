@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Display a hero illustration.
@@ -22,12 +24,10 @@ Display a hero illustration.
   import { HeroEmoji } from '../heroEmoji';
   import type { HeroProps } from './Hero.type';
 
-  type $$Props = HeroProps;
-
-  export let content: $$Props['content'];
+  let { content, ...restProps }: HeroProps = $props();
 </script>
 
-<div {...concatClass($$restProps, 'overflow-hidden max-w-full flex items-center justify-center')}>
+<div {...concatClass(restProps, 'overflow-hidden max-w-full flex items-center justify-center')}>
   {#if isEmoji(content)}
     <HeroEmoji emoji={content.emoji} />
   {:else if isImage(content)}

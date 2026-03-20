@@ -53,6 +53,8 @@ Multilingual features are only available if the `locales` store contains more th
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { isLocalizedString } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/core';
@@ -72,25 +74,25 @@ Multilingual features are only available if the `locales` store contains more th
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
-  type $$Props = InputProps;
-
-  export let type: $$Props['type'];
-  export let label: $$Props['label'];
-  // export let variant: $$Props['variant'] = 'default';
-  export let containerProps: $$Props['containerProps'] = undefined;
-  export let id: $$Props['id'] = getUUID();
-  export let info: $$Props['info'] = undefined;
-  export let locked: $$Props['locked'] = undefined;
-  export let required: $$Props['required'] = undefined;
-  export let value: $$Props['value'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let onChange: ((value: $$Props['value']) => void) | undefined = undefined;
-  export let placeholder: $$Props['placeholder'] = undefined;
-  export let options: $$Props['options'] = undefined;
-  export let ordered: $$Props['ordered'] = undefined;
-  export let disabled: $$Props['disabled'] = undefined;
-  export let maxFilesize: $$Props['maxFilesize'] = 20 * 1024 * 1024;
-  export let multilingualInfo: $$Props['multilingualInfo'] = undefined;
+  let {
+    type,
+    label,
+    containerProps,
+    id = getUUID(),
+    info,
+    locked,
+    required,
+    value = $bindable(),
+    onShadedBg,
+    onChange,
+    placeholder,
+    options,
+    ordered,
+    disabled,
+    maxFilesize = 20 * 1024 * 1024,
+    multilingualInfo,
+    ...restProps
+  }: InputProps = $props();
 
   // const SAVE_INTERVAL_MS = 1000;
 
@@ -120,13 +122,12 @@ Multilingual features are only available if the `locales` store contains more th
     info += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
   }
 
-  let error: string | undefined;
-  let isDisabled: boolean;
+  let error: string | undefined = $state(undefined);
+  let isDisabled = $derived(!!(disabled || locked));
   /** For image input */
-  let isLoading = false;
-  let isTranslationsVisible = false;
-  let showRequired = false;
-  $: isDisabled = !!(disabled || locked);
+  let isLoading = $state(false);
+  let isTranslationsVisible = $state(false);
+  let showRequired = $derived(!!required && isEmptyValue(value));
 
   function handleToggleTranslations(): void {
     isTranslationsVisible = !isTranslationsVisible;
@@ -143,15 +144,17 @@ Multilingual features are only available if the `locales` store contains more th
   ensureValue();
 
   // For easier handling of selected options when multiple can be selected
-  let selectedOptions = new Array<AnyChoice>();
-  let unselectedOptions = new Array<AnyChoice>();
-  $: if (type === 'select-multiple' && options) {
-    // If the values can be ordered, we maintain their order in the options array
-    selectedOptions = ordered
-      ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
-      : options.filter((o) => (value as Array<Id>).includes(o.id));
-    unselectedOptions = options.filter((o) => !selectedOptions.includes(o));
-  }
+  let selectedOptions = $state(new Array<AnyChoice>());
+  let unselectedOptions = $state(new Array<AnyChoice>());
+  $effect(() => {
+    if (type === 'select-multiple' && options) {
+      // If the values can be ordered, we maintain their order in the options array
+      selectedOptions = ordered
+        ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
+        : options.filter((o) => (value as Array<Id>).includes(o.id));
+      unselectedOptions = options.filter((o) => !selectedOptions.includes(o));
+    }
+  });
 
   /**
    * Ensure that the value is valid for the given type.
@@ -186,7 +189,7 @@ Multilingual features are only available if the `locales` store contains more th
   /**
    * Gets the url of the image.
    */
-  function getImageUrl(value: $$Props['value']): string {
+  function getImageUrl(value: InputProps['value']): string {
     return value && typeof value === 'object' && 'url' in value ? (value as Image).url : '';
   }
 
@@ -331,10 +334,6 @@ Multilingual features are only available if the `locales` store contains more th
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Show required icon only if the input is empty
-  $: showRequired = !!required && isEmptyValue(value);
-
-  // TODO[Svelte 5]: Use snippets instead of these clunky class variables
   const inputContainerClass =
     'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
   const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
@@ -379,7 +378,7 @@ Multilingual features are only available if the `locales` store contains more th
                 id="{id}-label-{locale}"
                 class="small-label left-md top-sm text-secondary absolute transition-opacity"
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
-              <!-- The actual textarea 
+              <!-- The actual textarea
                    NB. Join does not work it, so we do it by hand -->
               <textarea
                 id="{id}-{locale}"
@@ -387,12 +386,12 @@ Multilingual features are only available if the `locales` store contains more th
                 {placeholder}
                 disabled={isDisabled}
                 rows="4"
-                {...concatClass($$restProps, `${textareaClass} transition-[padding]`)}
+                {...concatClass(restProps, `${textareaClass} transition-[padding]`)}
                 class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
                 class:rounded-b-none={isTranslationsVisible && i !== $locales.length - 1}
                 bind:this={mainInputs[i]}
-                on:change={(e) => handleChange(e, locale)}
+                onchange={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)} />
             </div>
           {:else if type === 'text-multilingual'}
@@ -411,9 +410,9 @@ Multilingual features are only available if the `locales` store contains more th
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
-                  {...concatClass($$restProps, inputClass)}
+                  {...concatClass(restProps, inputClass)}
                   bind:this={mainInputs[i]}
-                  on:change={(e) => handleChange(e, locale)}
+                  onchange={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
               </div>
             </div>
@@ -434,8 +433,8 @@ Multilingual features are only available if the `locales` store contains more th
         {placeholder}
         disabled={isDisabled}
         rows="4"
-        {...concatClass($$restProps, `${textareaClass} vaa-group-join-item`)}
-        on:change={handleChange}
+        {...concatClass(restProps, `${textareaClass} vaa-group-join-item`)}
+        onchange={handleChange}
         value={`${value}`} />
     </div>
 
@@ -449,9 +448,9 @@ Multilingual features are only available if the `locales` store contains more th
             <select
               {id}
               disabled={isDisabled}
-              {...concatClass($$restProps, selectClass)}
+              {...concatClass(restProps, selectClass)}
               bind:this={mainInputs[0]}
-              on:change={handleChange}>
+              onchange={handleChange}>
               <option disabled selected
                 >{placeholder ||
                   (selectedOptions.length > 0
@@ -486,7 +485,7 @@ Multilingual features are only available if the `locales` store contains more th
           <span class={inputLabelClass}>{option.label}</span>
           <div class="{inputAndIconContainerClass} grow-0">
             {#if !locked}
-              <button type="button" title={buttonLabel} on:click={() => handleDeleteOption(option.id)}>
+              <button type="button" title={buttonLabel} onclick={() => handleDeleteOption(option.id)}>
                 <span class="sr-only">{buttonLabel}, {label}</span>
                 <Icon name="close" class={iconBadgeClass} />
               </button>
@@ -509,8 +508,8 @@ Multilingual features are only available if the `locales` store contains more th
           tabindex="0"
           class="text-primary flex h-60 justify-stretch"
           class:cursor-pointer={!isDisabled}
-          on:click={() => fileInput?.click()}
-          on:keydown={handleFileInputLabelKeydown}>
+          onclick={() => fileInput?.click()}
+          onkeydown={handleFileInputLabelKeydown}>
           {#if isLoading}
             <Loading inline />
           {:else if url}
@@ -536,7 +535,7 @@ Multilingual features are only available if the `locales` store contains more th
           disabled={isDisabled}
           class="hidden"
           bind:this={fileInput}
-          on:change={handleChange}
+          onchange={handleChange}
           accept="image/jpeg, image/png, image/gif" />
         {#if showRequired}
           <div class="required-badge">
@@ -563,14 +562,14 @@ Multilingual features are only available if the `locales` store contains more th
             {id}
             disabled={isDisabled}
             {placeholder}
-            {...concatClass($$restProps, 'toggle toggle-primary mr-md')}
+            {...concatClass(restProps, 'toggle toggle-primary mr-md')}
             checked={!!value}
-            on:change={handleChange} />
+            onchange={handleChange} />
 
           <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select {id} disabled={isDisabled} {...concatClass($$restProps, selectClass)} on:change={handleChange}>
+            <select {id} disabled={isDisabled} {...concatClass(restProps, selectClass)} onchange={handleChange}>
               <option disabled selected={!value}>{placeholder || t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
@@ -589,9 +588,9 @@ Multilingual features are only available if the `locales` store contains more th
             {id}
             disabled={isDisabled}
             {placeholder}
-            {...concatClass($$restProps, inputClass)}
+            {...concatClass(restProps, inputClass)}
             {value}
-            on:change={handleChange} />
+            onchange={handleChange} />
         {/if}
 
         {#if showRequired}
@@ -628,7 +627,7 @@ Multilingual features are only available if the `locales` store contains more th
           text={isTranslationsVisible ? t('components.input.hideTranslations') : t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
           class="!w-auto"
-          on:click={handleToggleTranslations} />
+          onclick={handleToggleTranslations} />
       {/if}
     </div>
   {/if}

@@ -73,12 +73,13 @@
     <TermsOfUseForm bind:termsAccepted class="mt-md" />
   </form>
 
-  <Button
-    slot="primaryActions"
-    text={t('common.continue')}
-    variant="main"
-    disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())}
-    loading={status === 'loading'}
-    on:click={handleSubmit}
-    data-testid="preregister-email-submit" />
+  {#snippet primaryActions()}
+    <Button
+      text={t('common.continue')}
+      variant="main"
+      disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())}
+      loading={status === 'loading'}
+      onclick={handleSubmit}
+      data-testid="preregister-email-submit" />
+  {/snippet}
 </MainContent>

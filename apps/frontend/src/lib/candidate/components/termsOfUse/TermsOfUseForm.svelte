@@ -22,6 +22,8 @@ Accesses `CandidateContext`.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
@@ -30,9 +32,7 @@ Accesses `CandidateContext`.
   import { TermsOfUse } from '.';
   import type { TermsOfUseFormProps } from './TermsOfUseForm.type';
 
-  type $$Props = TermsOfUseFormProps;
-
-  export let termsAccepted: $$Props['termsAccepted'] = false;
+  let { termsAccepted = $bindable(false), ...restProps }: TermsOfUseFormProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -41,7 +41,7 @@ Accesses `CandidateContext`.
   const { t } = getComponentContext();
 </script>
 
-<section {...concatClass($$restProps, 'flex flex-col items-center')}>
+<section {...concatClass(restProps, 'flex flex-col items-center')}>
   <div class="mb-lg text-center">
     {@html sanitizeHtml(t('dynamic.candidateAppPrivacy.consent.ingress'))}
   </div>

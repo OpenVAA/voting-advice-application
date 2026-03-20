@@ -1,48 +1,35 @@
 <!--
 @component
-A modal dialog that will automatically close after a set amount of time.
-
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the modal.
+A modal dialog that asks for user confirmation.
 
 ### Properties
 
 - `title`: The title of the modal
-- `timerDuration`: Logout timer duration in seconds. @default `30`
-- `timeLeft`: Bind to this to get time left in seconds 
+- `onConfirm`: The action to perform when the user confirms.
+- `onCancel`: The action to perform when the user cancels.
+- `confirmLabel`: Optional label for the confirm button. @default t('common.continue')
+- `cancelLabel`: Optional label for the cancel button. @default t('common.cancel')
 - Any valid properties of a `<Modal>` component.
-
-### Callbacks
-
-- `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
-- `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
-- `timeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
 
 ### Bindable functions
 
 - `openModal`: Opens the modal
 - `closeModal`: Closes the modal
 
-### Accessibility
-
-See the `<Modal>` component documentation for more information.
-
 ### Usage
 
 ```tsx
-<TimedModal 
-  bind:closeModal
-  title="Timout modal"
-  onOpen={() => console.info('Opened')}
-  onClose={() => console.info('Closed')}
-  onTimeout={() => console.info('Timeout!')}>
-  <p>Wait for it…</p>
-  <Button slot="actions" on:click={closeModal} text="Close" variant="main"/>
-</TimedModal>
+<ConfirmationModal
+  bind:this={confirmModal}
+  title="Are you sure?"
+  onConfirm={() => doSomething()}
+  onCancel={() => console.log('Cancelled')}>
+  <p>This action cannot be undone.</p>
+</ConfirmationModal>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
@@ -50,15 +37,27 @@ See the `<Modal>` component documentation for more information.
   import Modal from '../Modal.svelte';
   import type { ConfirmationModalProps } from './ConfirmationModal.type';
 
-  type $$Props = ConfirmationModalProps;
+  let {
+    title,
+    onConfirm,
+    cancelLabel = undefined,
+    confirmLabel = undefined,
+    onCancel = undefined,
+    children,
+    ...restProps
+  }: ConfirmationModalProps = $props();
 
-  export let title: $$Props['title'];
-  export let onConfirm: $$Props['onConfirm'];
-  export let cancelLabel: $$Props['cancelLabel'] = undefined;
-  export let confirmLabel: $$Props['confirmLabel'] = undefined;
-  export let onCancel: $$Props['onCancel'] = undefined;
-  export let openModal: $$Props['openModal'] = undefined;
-  export let closeModal: $$Props['closeModal'] = undefined;
+  let modalRef: Modal | undefined = $state(undefined);
+
+  /** Bind to open the modal dialog */
+  export function openModal(noCallbacks?: boolean) {
+    modalRef?.openModal(noCallbacks);
+  }
+
+  /** Bind to close the modal dialog */
+  export function closeModal(noCallbacks?: boolean) {
+    modalRef?.closeModal(noCallbacks);
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Contexts
@@ -76,14 +75,16 @@ See the `<Modal>` component documentation for more information.
 
   function handleConfirm() {
     onConfirm?.();
-    closeModal?.(true);
+    modalRef?.closeModal(true);
   }
 </script>
 
-<Modal bind:closeModal bind:openModal onClose={handleClose} {title} closeOnBackdropClick={false} {...$$restProps}>
-  <slot />
-  <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={() => closeModal?.()} text={cancelLabel || t('common.cancel')} />
-    <Button on:click={handleConfirm} text={confirmLabel || t('common.continue')} variant="main" />
-  </div>
+<Modal bind:this={modalRef} onClose={handleClose} {title} closeOnBackdropClick={false} {...restProps}>
+  {@render children?.()}
+  {#snippet actions()}
+    <div class="flex w-full flex-col items-center">
+      <Button onclick={() => modalRef?.closeModal()} text={cancelLabel || t('common.cancel')} />
+      <Button onclick={handleConfirm} text={confirmLabel || t('common.continue')} variant="main" />
+    </div>
+  {/snippet}
 </Modal>

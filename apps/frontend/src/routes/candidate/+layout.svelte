@@ -22,7 +22,6 @@
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
-  import type { PopupComponent } from '$lib/contexts/app/popup';
 
   ////////////////////////////////////////////////////////////////////
   // Get app context
@@ -46,7 +45,7 @@
     // Show possible notification
     if ($appSettings.notifications.candidateApp?.show)
       popupQueue.push({
-        component: Notification as unknown as PopupComponent,
+        component: Notification,
         props: { data: $appSettings.notifications.candidateApp }
       });
   });
@@ -77,7 +76,9 @@
     content={t('dynamic.candidateAppNotAccessible.content')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
-    <CandidateNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
+    {#snippet menu()}
+      <CandidateNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />
+    {/snippet}
     <slot />
   </Layout>
 {/if}

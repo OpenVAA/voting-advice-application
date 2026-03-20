@@ -4,13 +4,13 @@
 
 Displays a select input with optional autocomplete support.
 
-If there’s only one option available, the selected value will be set automatically and a non-interactive 'input' will be displayed.
+If there's only one option available, the selected value will be set automatically and a non-interactive 'input' will be displayed.
 
 ### Properties
 
 - `label`: The `aria-label` and `placeholder` text for the select input.
 - `options`: The list of selectable options. You can provide an array of objects with `id` and `label` properties, or an array of strings in which case the ids will be the same as the labels.
-- `selected`: A bindable value for the id of the selected option. @default the only option if there’s only one, `undefined` otherwise.
+- `selected`: A bindable value for the id of the selected option. @default the only option if there's only one, `undefined` otherwise.
 - `onChange`: A callback function triggered when the selection changes.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`
 - `autocomplete`: Controls autocomplete behavior; supported values: `on` or `off`. @default `off`
@@ -39,6 +39,8 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
@@ -46,15 +48,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   import type { Id } from '@openvaa/core';
   import type { SelectProps } from './Select.type';
 
-  type $$Props = SelectProps;
-
-  export let options: $$Props['options'];
-  export let label: $$Props['label'] = undefined;
-  export let name: $$Props['name'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let selected: $$Props['selected'] = '';
-  export let onChange: $$Props['onChange'] = undefined;
-  export let autocomplete: $$Props['autocomplete'] = undefined;
+  let { options, label, name, onShadedBg, selected = $bindable(''), onChange, autocomplete, ...restProps }: SelectProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -70,14 +64,14 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   const selectedPrefix = '✔︎ ';
   let autocompleteInput: HTMLInputElement | undefined;
 
-  let canonicalOptions: Array<{ id: Id; label: string }>;
-  $: canonicalOptions = options.map((o) => (typeof o === 'string' ? { id: o, label: o } : o));
+  let canonicalOptions = $derived(options.map((o) => (typeof o === 'string' ? { id: o, label: o } : o)));
 
-  $: label ||= t('components.select.placeholder');
+  // Provide a default label
+  let effectiveLabel = $derived(label || t('components.select.placeholder'));
 
-  let inputValue = '';
-  let isOptionListOpen = false;
-  let focusIndex = -1;
+  let inputValue = $state('');
+  let isOptionListOpen = $state(false);
+  let focusIndex = $state(-1);
 
   function normalize(text: string): string {
     return text
@@ -87,17 +81,21 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
       .toLowerCase();
   }
 
-  $: filteredOptions = canonicalOptions.filter(function (option) {
+  let filteredOptions = $derived(canonicalOptions.filter(function (option) {
     return normalize(option.label).includes(normalize(inputValue));
+  }));
+
+  $effect(() => {
+    if (canonicalOptions.length === 1 && !selected) {
+      handleSelect(canonicalOptions[0]);
+    }
   });
 
-  $: if (canonicalOptions.length === 1 && !selected) {
-    handleSelect(canonicalOptions[0]);
-  }
-
-  $: if (!isOptionListOpen || focusIndex > filteredOptions.length - 1) {
-    focusIndex = -1;
-  }
+  $effect(() => {
+    if (!isOptionListOpen || focusIndex > filteredOptions.length - 1) {
+      focusIndex = -1;
+    }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Main change handler
@@ -240,8 +238,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  let inputClass: string;
-  $: inputClass = `w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`;
+  let inputClass = $derived(`w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`);
 </script>
 
 {#if name}
@@ -250,26 +247,26 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
 {#if canonicalOptions.length === 1}
   <div
-    aria-label={label}
+    aria-label={effectiveLabel}
     {...concatClass(
-      $$restProps,
+      restProps,
       'flex items-center h-[3rem] rounded-lg px-[1rem] w-full max-w-md place-self-center text-secondary'
     )}>
     {selectedPrefix}
     {canonicalOptions[0].label}
   </div>
 {:else if autocomplete === 'on'}
-  <div class="w-full max-w-md place-self-center" on:focusout={handleFocusOut}>
+  <div class="w-full max-w-md place-self-center" onfocusout={handleFocusOut}>
     <input
-      {...concatClass($$restProps, `select ${inputClass}`)}
+      {...concatClass(restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
-      placeholder={label}
+      placeholder={effectiveLabel}
       bind:this={autocompleteInput}
       bind:value={inputValue}
-      on:focus={handleFocus}
-      on:keydown={handleKeydown}
+      onfocus={handleFocus}
+      onkeydown={handleKeydown}
       role="combobox"
-      aria-label={label}
+      aria-label={effectiveLabel}
       aria-autocomplete="list"
       aria-controls="menu-{id}"
       aria-expanded={isOptionListOpen}
@@ -284,14 +281,14 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- tabindex is necessary for the parents on:focusout to be able to detect focus held by the li element -->
+            <!-- tabindex is necessary for the parents onfocusout to be able to detect focus held by the li element -->
             <li
               id="option-{optionIndex}-{id}"
               class="cursor-pointer rounded-lg"
               role="option"
               tabindex="0"
               aria-selected={option.id === selected}
-              on:click={() => handleSelect(option)}>
+              onclick={() => handleSelect(option)}>
               <span
                 class={optionIndex === focusIndex
                   ? 'bg-neutral/10 !outline-neutral !outline !outline-2 !outline-offset-0'
@@ -310,14 +307,14 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   </div>
 {:else}
   <select
-    aria-label={label}
-    {...concatClass($$restProps, `select ${inputClass}`)}
+    aria-label={effectiveLabel}
+    {...concatClass(restProps, `select ${inputClass}`)}
     class:text-secondary={selected === ''}
     bind:value={selected}
-    on:click={handleClick}
-    on:change={handleChange}>
+    onclick={handleClick}
+    onchange={handleChange}>
     <option disabled selected value="">
-      {label}
+      {effectiveLabel}
     </option>
     {#each canonicalOptions as { id, label }}
       <option value={id}>

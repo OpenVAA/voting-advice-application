@@ -37,7 +37,7 @@ Shows the candidate's user settings.
   let currentPassword = '';
   let isNewPasswordValid: boolean;
   let password = '';
-  let reset: () => void;
+  let passwordSetterRef: { reset: () => void };
   let status: ActionStatus = 'idle';
   let submitLabel: string;
   let validationError: string | undefined;
@@ -65,7 +65,7 @@ Shows the candidate's user settings.
     status = 'success';
     // Clear fields on success
     currentPassword = '';
-    reset();
+    passwordSetterRef?.reset();
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ Shows the candidate's user settings.
           bind:valid={isNewPasswordValid}
           bind:errorMessage={validationError}
           bind:password
-          bind:reset
+          bind:this={passwordSetterRef}
           confirmPasswordTestId="settings-confirm-password" />
 
         {#if status === 'error'}
@@ -167,7 +167,7 @@ Shows the candidate's user settings.
         {/if}
 
         <Button
-          on:click={handleSubmit}
+          onclick={handleSubmit}
           disabled={!canSubmit}
           variant="main"
           text={submitLabel}
@@ -184,7 +184,7 @@ Shows the candidate's user settings.
 
   <!-- Submit button and error messages -->
 
-  <svelte:fragment slot="primaryActions">
+  {#snippet primaryActions()}
     <div class="grid w-full justify-items-center">
       <Button
         text={t('common.return')}
@@ -194,5 +194,5 @@ Shows the candidate's user settings.
         variant="prominent"
         data-testid="settings-return" />
     </div>
-  </svelte:fragment>
+  {/snippet}
 </MainContent>

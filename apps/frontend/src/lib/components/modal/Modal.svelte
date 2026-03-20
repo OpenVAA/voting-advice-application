@@ -3,16 +3,16 @@
 A modal dialog.
 See `<ModalContainer>` component for more information.
 
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the modal.
-
 ### Properties
 
 - `title`: The title of the modal
 - `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
 - Any valid properties of a `<ModalContainer>` component.
+
+### Snippet Props
+
+- `actions`: The action buttons to display.
+- `children`: The content of the modal.
 
 ### Callbacks
 
@@ -32,34 +32,35 @@ See the `<ModalContainer>` component documentation for more information.
 
 ```tsx
 <script lang="ts">
-  let openModal: () => void;
-  let closeModal: () => void;
-  let answer = '?';
+  let modalRef: Modal;
+  let answer = $state('?');
 
-  // Will only set answer if it's not been set yet, because this will fire even when we close the modal ourselves
   function setAnswer(a: string) {
     if (answer == '?') answer = a;
   }
 </script>
 
-<Button on:click={openModal}>Open modal</Button>
+<Button onclick={() => modalRef?.openModal()}>Open modal</Button>
 
 <h2>Answer: {answer}</h2>
 
-<Modal 
-  bind:closeModal
-  bind:openModal
+<Modal
+  bind:this={modalRef}
   title="What's your answer?"
   onOpen={() => answer = '?'}
   onClose={() => setAnswer('No')}>
   <p>Click below or hit ESC to exit.</p>
-  <div slot="actions" class="flex flex-col w-full max-w-md mx-auto">
-    <Button on:click={() => {setAnswer('Yes'); closeModal();}} text="Yes" variant="main"/>
-    <Button on:click={closeModal} text="No"/>
-  </div>
+  {#snippet actions()}
+    <div class="flex flex-col w-full max-w-md mx-auto">
+      <Button onclick={() => {setAnswer('Yes'); modalRef?.closeModal();}} text="Yes" variant="main"/>
+      <Button onclick={() => modalRef?.closeModal()} text="No"/>
+    </div>
+  {/snippet}
 </Modal>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
@@ -67,32 +68,44 @@ See the `<ModalContainer>` component documentation for more information.
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
 
-  type $$Props = ModalProps;
+  let {
+    title,
+    boxClass = '',
+    isOpen = $bindable(false),
+    actions,
+    children,
+    ...restProps
+  }: ModalProps = $props();
 
-  export let title: $$Props['title'];
-  export let boxClass: $$Props['boxClass'] = '';
-  export let isOpen: $$Props['isOpen'] = false;
-  export let closeModal: $$Props['closeModal'] = undefined;
-  export let openModal: $$Props['openModal'] = undefined;
+  let containerRef: ModalContainer | undefined = $state(undefined);
+
+  /** Bind to open the modal dialog */
+  export function openModal(noCallbacks?: boolean) {
+    containerRef?.openModal(noCallbacks);
+  }
+
+  /** Bind to close the modal dialog */
+  export function closeModal(noCallbacks?: boolean) {
+    containerRef?.closeModal(noCallbacks);
+  }
 
   const { t } = getComponentContext();
 </script>
 
 <ModalContainer
-  {...concatClass($$restProps, 'modal-bottom sm:modal-middle')}
+  bind:this={containerRef}
+  {...concatClass(restProps, 'modal-bottom sm:modal-middle')}
   {title}
-  bind:isOpen
-  bind:closeModal
-  bind:openModal>
+  bind:isOpen>
   <div class="modal-box {boxClass ?? ''}">
     <h2 class="mb-lg text-center">{title}</h2>
-    <slot />
-    {#if $$slots.actions}
+    {@render children?.()}
+    {#if actions}
       <div class="modal-action justify-center">
-        <slot name="actions" />
+        {@render actions()}
       </div>
     {/if}
-    <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2" on:click={() => closeModal?.()}>
+    <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2" onclick={() => closeModal()}>
       <span aria-hidden="true">✕</span>
       <span class="sr-only">{t('common.closeDialog')}</span>
     </button>

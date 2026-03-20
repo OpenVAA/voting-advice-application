@@ -14,6 +14,8 @@ Displays detailed information about a job, including its status, progress, and m
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import ButtonWithConfirmation from '$lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte';
@@ -23,9 +25,7 @@ Displays detailed information about a job, including its status, progress, and m
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import type { JobDetailsProps } from './JobDetails.type';
 
-  type $$Props = JobDetailsProps;
-
-  export let job: $$Props['job'];
+  let { job, ...restProps }: JobDetailsProps = $props();
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -37,14 +37,16 @@ Displays detailed information about a job, including its status, progress, and m
   // Handle messages
   ////////////////////////////////////////////////////////////////////////
 
-  let messagesOpen: boolean | undefined = undefined;
-  let lastJobId: string | undefined = undefined;
+  let messagesOpen: boolean | undefined = $state(undefined);
+  let lastJobId: string | undefined = $state(undefined);
 
   // Toggle messages when job changes
-  $: if (job && job.id !== lastJobId) {
-    messagesOpen = job.status === 'running' || job.status === 'aborting';
-    lastJobId = job.id;
-  }
+  $effect(() => {
+    if (job && job.id !== lastJobId) {
+      messagesOpen = job.status === 'running' || job.status === 'aborting';
+      lastJobId = job.id;
+    }
+  });
 
   function toggleMessages() {
     messagesOpen = !messagesOpen;
@@ -81,7 +83,7 @@ Displays detailed information about a job, including its status, progress, and m
 </script>
 
 <!-- TODO: improve. it's not a pretty sight. . -->
-<article {...concatClass($$restProps, 'card w-full max-w-full bg-base-100 shadow-lg border border-base-300')}>
+<article {...concatClass(restProps, 'card w-full max-w-full bg-base-100 shadow-lg border border-base-300')}>
   <div class="card-body overflow-hidden p-6">
     <!-- Header with status and actions -->
     <div class="mb-4 flex items-start justify-between">
@@ -158,7 +160,7 @@ Displays detailed information about a job, including its status, progress, and m
       <Button
         text={messagesOpen ? t('adminApp.jobs.hideMessages') : t('adminApp.jobs.showMessages')}
         variant="secondary"
-        on:click={toggleMessages} />
+        onclick={toggleMessages} />
     </div>
 
     <!-- Messages section -->

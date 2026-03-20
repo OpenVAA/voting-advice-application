@@ -25,16 +25,19 @@ Logo files for use on a light and a dark background can be defined. If the latte
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { AppLogoProps } from './AppLogo.type';
 
-  type $$Props = AppLogoProps;
-
-  export let alt: $$Props['alt'] = undefined;
-  export let inverse: $$Props['inverse'] = false;
-  export let size: $$Props['size'] = 'md';
+  let {
+    alt,
+    inverse = false,
+    size = 'md',
+    ...restProps
+  }: AppLogoProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -47,59 +50,55 @@ Logo files for use on a light and a dark background can be defined. If the latte
   ////////////////////////////////////////////////////////////////////
 
   // Retrieve app logo from settings
-  let logoSrc: string | undefined;
-  let inverseSrc: string | undefined;
-  $: if ($appCustomization.publisherLogo) {
-    logoSrc = $appCustomization.publisherLogo.url;
-    inverseSrc = $appCustomization.publisherLogo.urlDark ?? $appCustomization.publisherLogo.url;
-    alt ??= $appCustomization.publisherName;
-  }
+  const logoSrc = $derived($appCustomization.publisherLogo?.url);
+  const inverseSrc = $derived($appCustomization.publisherLogo?.urlDark ?? $appCustomization.publisherLogo?.url);
+  const effectiveAlt = $derived(alt ?? $appCustomization.publisherName);
 
   // Check dark mode and select logo file
-  let src: string | undefined;
-  $: if (logoSrc) {
-    if (inverseSrc) {
-      // If we have both the normal and inverseSrc defined, select one of them
-      src = ($darkMode && !inverse) || (!$darkMode && inverse) ? inverseSrc : logoSrc;
-    } else {
-      // If we only have the normalSrc defined, we'll later add a filter
-      src = logoSrc;
+  const src = $derived.by(() => {
+    if (logoSrc) {
+      if (inverseSrc) {
+        // If we have both the normal and inverseSrc defined, select one of them
+        return ($darkMode && !inverse) || (!$darkMode && inverse) ? inverseSrc : logoSrc;
+      } else {
+        // If we only have the normalSrc defined, we'll later add a filter
+        return logoSrc;
+      }
     }
-  } else {
-    src = undefined;
-  }
+    return undefined;
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
   // Create class names
-  let classes: string;
-  $: {
+  const classes = $derived.by(() => {
+    let c: string;
     // Predefined sizes
     switch (size) {
       case 'sm':
-        classes = 'h-20';
+        c = 'h-20';
         break;
       case 'lg':
-        classes = 'h-32';
+        c = 'h-32';
         break;
       default:
-        classes = 'h-24';
+        c = 'h-24';
     }
     // Use invert filter if we have a normal logo file but no inverse one
-    if (logoSrc && !inverseSrc) classes += inverse ? ' invert dark:invert-0' : ' dark:invert';
-  }
+    if (logoSrc && !inverseSrc) c += inverse ? ' invert dark:invert-0' : ' dark:invert';
+    return c;
+  });
 </script>
 
-<div {...concatClass($$restProps, classes)}>
+<div {...concatClass(restProps, classes)}>
   {#if src}
-    <img {src} alt={alt ?? $appCustomization.publisherName ?? ''} class="h-full" />
+    <img {src} alt={effectiveAlt ?? ''} class="h-full" />
   {:else}
     {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
-      <svelte:component
-        this={OpenVAALogo}
-        title={alt ?? t('common.openVAA')}
+      <OpenVAALogo
+        title={effectiveAlt ?? t('common.openVAA')}
         {size}
         color={inverse ? 'primary-content' : 'neutral'} />
     {/await}

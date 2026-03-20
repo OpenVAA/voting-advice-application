@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Info (about the elections) page
@@ -26,9 +28,11 @@ Displays information about the elections in the VAA.
 </script>
 
 <MainContent title={t('info.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.info.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.info.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   <div data-testid="voter-info-content">
     {@html sanitizeHtml(t('dynamic.info.content'))}
@@ -48,10 +52,11 @@ Displays information about the elections in the VAA.
     </div>
   {/if}
 
-  <Button
-    slot="primaryActions"
-    variant="main"
-    href={$getRoute('Home')}
-    text={t('common.returnHome')}
-    data-testid="voter-info-return" />
+  {#snippet primaryActions()}
+    <Button
+      variant="main"
+      href={$getRoute('Home')}
+      text={t('common.returnHome')}
+      data-testid="voter-info-return" />
+  {/snippet}
 </MainContent>

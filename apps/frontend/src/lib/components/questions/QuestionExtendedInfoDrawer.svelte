@@ -19,26 +19,25 @@ A `Drawer` that displays the question's extended information.
   ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
   import { Drawer } from '$lib/components/modal/drawer';
   import { QuestionExtendedInfo } from '$lib/components/questions';
   import type { QuestionExtendedInfoDrawerProps } from './QuestionExtendedInfoDrawer.type';
 
-  type $$Props = QuestionExtendedInfoDrawerProps;
-
-  export let question: $$Props['question'];
-  export let onSectionCollapse: $$Props['onSectionCollapse'] = undefined;
-  export let onSectionExpand: $$Props['onSectionExpand'] = undefined;
-
-  const customData = getCustomData(question);
+  let {
+    question,
+    onSectionCollapse = undefined,
+    onSectionExpand = undefined,
+    ...restProps
+  }: QuestionExtendedInfoDrawerProps = $props();
 </script>
 
-<Drawer title={question.text} autofocusId={false} {...$$restProps}>
+<Drawer title={question.text} autofocusId={false} {...restProps}>
   <QuestionExtendedInfo
+    {question}
     title={question.text}
-    info={question.info}
-    infoSections={customData?.infoSections}
     {onSectionCollapse}
     {onSectionExpand}
     class="p-lg" />

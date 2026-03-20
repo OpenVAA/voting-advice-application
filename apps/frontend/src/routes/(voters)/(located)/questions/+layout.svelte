@@ -6,8 +6,11 @@
 - Set top bar actions and initiate progess.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import type { Snippet } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -21,6 +24,8 @@
   const { appSettings, getRoute, opinionQuestions, selectedQuestionBlocks, t } = getVoterContext();
   const { topBarSettings, progress } = getLayoutContext(onDestroy);
 
+  let { children }: { children: Snippet } = $props();
+
   ////////////////////////////////////////////////////////////////////
   // Edit layout and set progress max
   ////////////////////////////////////////////////////////////////////
@@ -32,20 +37,24 @@
     }
   });
 
-  $: progress.max.set($selectedQuestionBlocks.questions.length + 1);
+  $effect(() => {
+    progress.max.set($selectedQuestionBlocks.questions.length + 1);
+  });
 </script>
 
 {#if $opinionQuestions.length > 0}
-  <slot />
+  {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
+      </figure>
+    {/snippet}
 
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button href={$getRoute('Results')} text={t('results.title.browse')} variant="main" icon="next" />
       <Button href={$getRoute('Home')} text={t('common.returnHome')} />
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {/if}

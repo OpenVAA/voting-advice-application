@@ -14,6 +14,8 @@ Show a notification popup to the user.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
@@ -23,28 +25,23 @@ Show a notification popup to the user.
   import type { IconName } from '$lib/components/icon';
   import type { NotificationProps } from './Notification.type';
 
-  type $$Props = NotificationProps;
-
-  export let data: $$Props['data'];
+  let { data, ...restProps }: NotificationProps = $props();
 
   const { t, translate } = getComponentContext();
 
-  let title: string;
-  let content: string;
-  let icon: IconName;
-  let closeAlert: () => void;
+  let alertRef: Alert;
 
-  $: {
-    title = translate(data.title);
-    content = translate(data.content);
-    icon = (data.icon && data.icon in ICONS ? data.icon : 'important') as IconName;
-  }
+  let title = $derived(translate(data.title));
+  let content = $derived(translate(data.content));
+  let icon: IconName = $derived((data.icon && data.icon in ICONS ? data.icon : 'important') as IconName);
 </script>
 
-<Alert bind:closeAlert {title} {icon} {...$$restProps}>
+<Alert bind:this={alertRef} {title} {icon} {...restProps}>
   <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>
     {@html sanitizeHtml(content)}
   </div>
-  <Button slot="actions" variant="main" text={t('common.close')} on:click={closeAlert} />
+  {#snippet actions()}
+    <Button variant="main" text={t('common.close')} onclick={() => alertRef?.closeAlert()} />
+  {/snippet}
 </Alert>

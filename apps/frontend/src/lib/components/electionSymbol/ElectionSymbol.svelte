@@ -16,24 +16,23 @@ Display an entity's election symbol, which is usually a number but may also be a
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { ElectionSymbolProps } from './ElectionSymbol.type';
 
-  type $$Props = ElectionSymbolProps;
+  let { text, image, ...restProps }: ElectionSymbolProps = $props();
 
-  export let text: $$Props['text'];
-  export let image: $$Props['image'] = undefined;
-
-  let classes: string;
-  $: {
-    classes =
+  let classes = $derived.by(() => {
+    let c =
       'flex items-center justify-center h-[1.6rem] min-w-[1.6rem] border border-sm border-color-[var(--line-color)] rounded-sm ';
-    if (!image) classes += ' px-4 font-bold';
-  }
+    if (!image) c += ' px-4 font-bold';
+    return c;
+  });
 </script>
 
-<span {...concatClass($$restProps, classes)}>
+<span {...concatClass(restProps, classes)}>
   {#if image}
     <img src={image} alt={text} class="h-full w-full object-contain" />
   {:else}

@@ -1,7 +1,7 @@
+<svelte:options runes />
+
 <!--@component
 A simple utility component for possibly wrapping content in an action handler.
-
-TODO[Svelte 5]: Maybe convert into `$snippet`.
 
 ### Properties
 
@@ -11,7 +11,7 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 
 ### Slots
 
-– default: The contents to wrap.
+\u2013 default: The contents to wrap.
 
 ### Usage
 
@@ -27,21 +27,18 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
   import { concatClass } from '$lib/utils/components';
   import type { EntityCardActionProps } from './EntityCardAction.type';
 
-  type $$Props = EntityCardActionProps;
-
-  export let action: $$Props['action'] = undefined;
-  export let shadeOnHover: $$Props['shadeOnHover'] = false;
+  let { action, shadeOnHover = false, children, ...restProps }: EntityCardActionProps = $props();
 </script>
 
 {#if action == null || action === false || action === ''}
-  <slot />
+  {@render children?.()}
 {:else if typeof action === 'function'}
   <button
-    on:click={action}
+    onclick={action}
     class:hover-shaded={shadeOnHover}
     data-testid="entity-card-action"
-    {...concatClass($$restProps, 'transition-all !text-neutral')}>
-    <slot />
+    {...concatClass(restProps, 'transition-all !text-neutral')}>
+    {@render children?.()}
   </button>
 {:else if typeof action === 'string'}
   <a
@@ -49,8 +46,8 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
     data-sveltekit-noscroll
     class:hover-shaded={shadeOnHover}
     data-testid="entity-card-action"
-    {...concatClass($$restProps, 'transition-all !text-neutral')}>
-    <slot />
+    {...concatClass(restProps, 'transition-all !text-neutral')}>
+    {@render children?.()}
   </a>
 {:else}
   {error(500, `Unknown action type: ${typeof action}`)}
@@ -59,7 +56,6 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
   .hover-shaded {
-    /* hover: is a valid prefix */
     @apply hover:bg-base-content/20 hover:ring-base-content/20 rounded-md hover:ring-4;
   }
 </style>

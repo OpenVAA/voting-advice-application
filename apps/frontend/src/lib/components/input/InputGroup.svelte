@@ -1,4 +1,4 @@
-<!-- 
+<!--
 @component
 A componend used to group `Input`-components together.
 
@@ -24,29 +24,28 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import { infoClass, joinGap, outsideLabelClass } from './shared';
   import type { InputGroupProps } from './InputGroup.type';
 
-  type $$Props = InputGroupProps;
-
-  export let title: $$Props['title'] = undefined;
-  export let info: $$Props['info'] = undefined;
+  let { title, info, children, ...restProps }: InputGroupProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 </script>
 
-<fieldset {...concatClass($$restProps, '')}>
+<fieldset {...concatClass(restProps, '')}>
   {#if title}
     <legend class={outsideLabelClass}>
       {title}
     </legend>
   {/if}
   <div class="flex flex-col items-stretch {joinGap} vaa-input-container">
-    <slot />
+    {@render children?.()}
   </div>
   {#if info}
     <div class={infoClass}>

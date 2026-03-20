@@ -1,6 +1,11 @@
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { HTMLAttributes } from 'svelte/elements';
 
-export type SelectProps = SvelteHTMLElements['select'] & {
+/**
+ * The type extends HTMLAttributes<HTMLElement> because restProps are spread onto
+ * different element types (div, input, select) depending on the number of options
+ * and autocomplete mode.
+ */
+export type SelectProps = HTMLAttributes<HTMLElement> & {
   /**
    * The list of selectable options. You can provide an array of objects with `id` and `label` properties, or an array of strings in which case the ids will be the same as the labels. @default []
    */

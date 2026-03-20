@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Functional component used to block user nagivation.
@@ -20,11 +22,7 @@ Functional component used to block user nagivation.
   import { getComponentContext } from '$lib/contexts/component';
   import type { PreventNavigationProps } from './PreventNavigation.type';
 
-  type $$Props = PreventNavigationProps;
-
-  export let active: $$Props['active'];
-  export let onCancel: $$Props['onCancel'] = undefined;
-  export let onConfirm: $$Props['onConfirm'] = undefined;
+  let { active, onCancel, onConfirm }: PreventNavigationProps = $props();
 
   const { t } = getComponentContext();
 

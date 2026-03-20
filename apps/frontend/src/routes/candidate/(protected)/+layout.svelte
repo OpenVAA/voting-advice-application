@@ -95,19 +95,21 @@
   <Loading />
 {:else if showTermsOfUse}
   <MainContent title={t('dynamic.candidateAppPrivacy.consent.title')}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('dynamic.candidateAppPrivacy.consent.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.candidateAppPrivacy.consent.heroEmoji')} />
+      </figure>
+    {/snippet}
     <TermsOfUseForm bind:termsAccepted />
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button
         text={t('common.continue')}
         variant="main"
         disabled={!termsAccepted}
         loading={status === 'loading'}
-        on:click={handleSubmit} />
-      <Button color="warning" text={t('common.logout')} loading={status === 'loading'} on:click={handleCancel} />
-    </svelte:fragment>
+        onclick={handleSubmit} />
+      <Button color="warning" text={t('common.logout')} loading={status === 'loading'} onclick={handleCancel} />
+    {/snippet}
   </MainContent>
 {:else}
   <slot />

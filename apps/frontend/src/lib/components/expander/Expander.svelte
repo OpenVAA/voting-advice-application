@@ -1,4 +1,4 @@
-<!-- 
+<!--
 @component
 A component for expanders that contain a title and some content. Use the
 `variant` prop to specify the expander type.
@@ -36,29 +36,34 @@ You should not try to use a variant and customize at the same time.
   <p>Example content<p/>
 </Expander>
 
-<Expander title="Example title" variant="category"  iconColor="primary" 
+<Expander title="Example title" variant="category"  iconColor="primary"
   titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
   <p>Example content<p/>
 </Expander>
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { ExpanderProps } from './Expander.type';
 
-  type $$Props = ExpanderProps;
-
-  export let title: $$Props['title'];
-  export let variant: $$Props['variant'] = 'read-more';
-  export let iconColor: $$Props['iconColor'] = 'secondary';
-  export let iconPos: $$Props['iconPos'] = 'text';
-  export let titleClass: $$Props['titleClass'] = '';
-  export let contentClass: $$Props['contentClass'] = '';
-  export let defaultExpanded: $$Props['defaultExpanded'] = false;
+  let {
+    title,
+    variant = 'read-more',
+    iconColor = 'secondary',
+    iconPos = 'text',
+    titleClass: customTitleClass = '',
+    contentClass: customContentClass = '',
+    defaultExpanded = false,
+    onExpand = undefined,
+    onCollapse = undefined,
+    children,
+    ...restProps
+  }: ExpanderProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -70,13 +75,15 @@ You should not try to use a variant and customize at the same time.
   // Handle expansion/collapse
   ////////////////////////////////////////////////////////////////////
 
-  const dispatch = createEventDispatcher<{ expand: null; collapse: null }>();
-
-  let expanded = defaultExpanded;
+  let expanded = $state(defaultExpanded);
 
   function toggleExpanded() {
     expanded = !expanded;
-    dispatch(expanded ? 'expand' : 'collapse');
+    if (expanded) {
+      onExpand?.();
+    } else {
+      onCollapse?.();
+    }
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -122,16 +129,16 @@ You should not try to use a variant and customize at the same time.
   }
 
   // 4. Add custom classes
-  if (contentClass) {
-    contentClasses += ` ${contentClass}`;
+  if (customContentClass) {
+    contentClasses += ` ${customContentClass}`;
   }
-  if (titleClass) {
-    titleClasses += ` ${titleClass}`;
+  if (customTitleClass) {
+    titleClasses += ` ${customTitleClass}`;
   }
 </script>
 
-<div {...concatClass($$restProps, collapseClasses)}>
-  <input type="checkbox" aria-label={t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
+<div {...concatClass(restProps, collapseClasses)}>
+  <input type="checkbox" aria-label={t('common.expandOrCollapse')} onclick={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
     <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
@@ -140,7 +147,7 @@ You should not try to use a variant and customize at the same time.
   </div>
   {#if expanded}
     <div class={contentClasses}>
-      <slot />
+      {@render children?.()}
     </div>
   {/if}
 </div>

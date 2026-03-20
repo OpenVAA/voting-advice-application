@@ -59,6 +59,8 @@ The same component can also be used to display the answers of the voter and anot
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
@@ -68,24 +70,24 @@ The same component can also be used to display the answers of the voter and anot
   import type { Choice } from '@openvaa/data';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
 
-  type $$Props = QuestionChoicesProps;
-
-  export let question: $$Props['question'];
-  export let disabled: $$Props['disabled'] = false;
-  export let selectedId: $$Props['selectedId'] = undefined;
-  export let otherSelected: $$Props['otherSelected'] = undefined;
-  export let otherLabel: $$Props['otherLabel'] = '';
-  export let mode: $$Props['mode'] = 'answer';
-  export let onShadedBg: $$Props['onShadedBg'] = false;
-  export let showLine: $$Props['showLine'] = undefined;
-  export let variant: $$Props['variant'] = undefined;
-  export let onReselect: $$Props['onReselect'] = undefined;
-  export let onChange: $$Props['onChange'] = undefined;
+  let {
+    question,
+    disabled = false,
+    selectedId = undefined,
+    otherSelected = undefined,
+    otherLabel = '',
+    mode = 'answer',
+    onShadedBg = false,
+    showLine = undefined,
+    variant = undefined,
+    onReselect = undefined,
+    onChange = undefined,
+    ...restProps
+  }: QuestionChoicesProps = $props();
 
   // For convenience
-  let choices: Array<Choice<undefined>> | Array<Choice<unknown>>;
-  let text: string;
-  $: ({ choices, text } = question);
+  let choices = $derived(question.choices);
+  let text = $derived(question.text);
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -98,30 +100,28 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
 
   // The is to show the line for ordinal questions and not for categorical ones.
-  let doShowLine: boolean;
+  let doShowLine = $derived.by(() => {
+    if (showLine) return showLine;
+    return isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion);
+  });
   // The default layout for ordinal questions is horizontal, and vertical for categorical ones.
-  let vertical: boolean;
-  $: {
-    if (showLine) doShowLine = showLine;
-    else doShowLine = isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion);
-    if (variant) vertical = variant === 'vertical';
-    else
-      vertical =
-        isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) || !!getCustomData(question).vertical;
-  }
+  let vertical = $derived.by(() => {
+    if (variant) return variant === 'vertical';
+    return isObjectType(question, OBJECT_TYPE.SingleChoiceCategoricalQuestion) || !!getCustomData(question).vertical;
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Selecting choices
   ////////////////////////////////////////////////////////////////////
 
   /** Holds the currently selected value and is initialized with the value of `selectedId` */
-  let selected: Id | null | undefined;
+  let selected: Id | null | undefined = $state(undefined);
   const inputs: Record<string, HTMLInputElement> = {};
-  $: {
+  $effect(() => {
     selected = selectedId;
     // We need to explicitly set the selected value, because group binding does not consistently update the input states themeselves
     if (selected && inputs[selected]) inputs[selected].checked = true;
-  }
+  });
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
   //
@@ -214,7 +214,7 @@ The same component can also be used to display the answers of the voter and anot
   style:--line-bg={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-200)'}
   class:vertical
   data-testid="question-choices"
-  {...$$restProps}>
+  {...restProps}>
   <!-- Add a label for screen readers -->
   <legend class="sr-only">{text}</legend>
 
@@ -253,7 +253,7 @@ The same component can also be used to display the answers of the voter and anot
 
     <!-- The button -->
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <label on:click={(e) => handleClick(e, id)} on:keyup={(e) => handleKeyUp(e, id)}>
+    <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
       <input
         type="radio"
         class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
@@ -264,7 +264,7 @@ The same component can also be used to display the answers of the voter and anot
         data-testid="question-choice"
         bind:this={inputs[id]}
         bind:group={selected}
-        on:keyup={(e) => handleKeyUp(e, id)} />
+        onkeyup={(e) => handleKeyUp(e, id)} />
 
       <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. We do show the answer also, when none are selected, because it would look weird otherwise. Due to Aria concerns we always show it to screenreaders. -->
       <div

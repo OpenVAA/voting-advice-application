@@ -82,10 +82,10 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
 </script>
 
 <SingleCardContent title={t('candidateApp.preview.title')}>
-  <svelte:fragment slot="note">
+  {#snippet note()}
     <Icon name="info" />
     {t('candidateApp.preview.tip')}
-  </svelte:fragment>
+  {/snippet}
   <!-- The card -->
   <div data-testid="candidate-preview-container">
     {#if status === 'success' && entity}

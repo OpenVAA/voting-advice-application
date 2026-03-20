@@ -14,10 +14,12 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 
 ```tsx
 <AdminNav>
-  <NavItem slot="close" on:click={closeMenu} icon="close" text="Close"/>
+  <NavItem onclick={closeMenu} icon="close" text="Close"/>
 </AdminNav>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -27,15 +29,14 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   import { LanguageSelection } from '../languages';
   import type { AdminNavProps } from './AdminNav.type';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = AdminNavProps;
+  let { onKeyboardFocusOut, ...restProps }: AdminNavProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
   const { authToken, t, getRoute } = getAdminContext();
 </script>
 
-<Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <NavItem on:click={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+<Navigation {onKeyboardFocusOut} {...restProps}>
+  <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
 
   {#if $authToken}
     <NavGroup>

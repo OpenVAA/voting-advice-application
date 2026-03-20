@@ -24,6 +24,8 @@ Contains the dynamic `PasswordValidator` component.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { PasswordField } from '$candidate/components/passwordField';
   import { PasswordValidator } from '$candidate/components/passwordValidator';
@@ -31,14 +33,8 @@ Contains the dynamic `PasswordValidator` component.
   import { getUUID } from '$lib/utils/components';
   import type { PasswordSetterProps } from './PasswordSetter.type';
 
-  type $$Props = PasswordSetterProps;
+  let { password = $bindable(''), autocomplete = 'new-password', errorMessage = $bindable(undefined), valid = $bindable(false), passwordTestId = undefined, confirmPasswordTestId = undefined, ...restProps }: PasswordSetterProps = $props();
 
-  export let password: $$Props['password'] = '';
-  export let autocomplete: $$Props['autocomplete'] = 'new-password';
-  export let errorMessage: $$Props['errorMessage'] = undefined;
-  export let valid: $$Props['valid'] = false;
-  export let passwordTestId: $$Props['passwordTestId'] = undefined;
-  export let confirmPasswordTestId: $$Props['confirmPasswordTestId'] = undefined;
   export function reset(): void {
     password = '';
     passwordConfirmation = '';
@@ -49,17 +45,21 @@ Contains the dynamic `PasswordValidator` component.
 
   const id = getUUID();
 
-  let passwordConfirmation = '';
-  let validPassword = false;
+  let passwordConfirmation = $state('');
+  let validPassword = $state(false);
 
-  $: valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
-  $: if (!validPassword) {
-    errorMessage = t('candidateApp.setPassword.passwordNotValid');
-  } else if (password !== passwordConfirmation) {
-    errorMessage = t('candidateApp.setPassword.passwordsDontMatch');
-  } else {
-    errorMessage = undefined;
-  }
+  $effect(() => {
+    valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
+  });
+  $effect(() => {
+    if (!validPassword) {
+      errorMessage = t('candidateApp.setPassword.passwordNotValid');
+    } else if (password !== passwordConfirmation) {
+      errorMessage = t('candidateApp.setPassword.passwordsDontMatch');
+    } else {
+      errorMessage = undefined;
+    }
+  });
 </script>
 
 <form class="m-0 flex w-full flex-col flex-nowrap items-center">

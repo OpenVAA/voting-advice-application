@@ -37,25 +37,28 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { QuestionActionsProps } from './QuestionActions.type';
 
-  type $$Props = QuestionActionsProps;
-
-  export let answered: $$Props['answered'] = false;
-  export let disabled: $$Props['disabled'] = false;
-  export let disablePrevious: $$Props['disablePrevious'] = false;
-  export let variant: $$Props['variant'] = 'default';
-  export let separateSkip: $$Props['separateSkip'] = false;
-  export let nextLabel: $$Props['nextLabel'] = undefined;
-  export let previousLabel: $$Props['previousLabel'] = undefined;
-  export let onDelete: $$Props['onDelete'] = undefined;
-  export let onNext: $$Props['onNext'] = undefined;
-  export let onPrevious: $$Props['onPrevious'] = undefined;
-  export let onSkip: $$Props['onSkip'] = undefined;
+  let {
+    answered = false,
+    disabled = false,
+    disablePrevious = false,
+    variant = 'default',
+    separateSkip = false,
+    nextLabel = undefined,
+    previousLabel = undefined,
+    onDelete = undefined,
+    onNext = undefined,
+    onPrevious = undefined,
+    onSkip = undefined,
+    ...restProps
+  }: QuestionActionsProps = $props();
 
   const { t } = getComponentContext();
 
@@ -81,9 +84,9 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
   role="group"
   aria-label={t('questions.additionalActions')}
   data-testid="question-actions"
-  {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
+  {...concatClass(restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
-    on:click={handleNext}
+    onclick={handleNext}
     style="grid-row: 1; grid-column: 3"
     color="secondary"
     {disabled}
@@ -94,7 +97,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     data-testid="question-next"
     text={nextLabel ?? (answered || !separateSkip ? t('questions.next') : t('questions.skip'))} />
   <Button
-    on:click={handleDelete}
+    onclick={handleDelete}
     disabled={!disabled && answered ? undefined : true}
     class="transition-opacity delay-500 disabled:opacity-0"
     style="grid-row: 1; grid-column: 2"
@@ -105,7 +108,7 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     data-testid="question-delete"
     text={t('questions.remove')} />
   <Button
-    on:click={handlePrevious}
+    onclick={handlePrevious}
     disabled={disabled || disablePrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"

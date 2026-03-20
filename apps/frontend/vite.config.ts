@@ -1,16 +1,17 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
-import type { UserConfig } from 'vite';
+import { defineConfig } from 'vite';
 
-const config: UserConfig = {
+export default defineConfig({
   plugins: [
     tailwindcss(),
     paraglideVitePlugin({
       project: './project.inlang',
       outdir: './src/lib/paraglide',
       strategy: ['url', 'cookie', 'baseLocale']
-    }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any,
     sveltekit()
   ],
   resolve: {
@@ -19,6 +20,4 @@ const config: UserConfig = {
   server: {
     port: Number(process.env.FRONTEND_PORT)
   }
-};
-
-export default config;
+});

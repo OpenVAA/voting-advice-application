@@ -7,55 +7,58 @@ Create navigation menus for the application in a predefined style.
 - `hidden`: Set to `true` to whenever the navigation is hidden. Default: `false`
 - Any valid attributes of a `<nav>` element.
 
-### Slots
+### Snippets
 
-- default: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
+- children: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
 
-### Events
+### Callback Props
 
-- `keyboardFocusOut`: Emitted when the component loses a keyboard user's 
-  focus. This can be used   to automatically close a drawer menu this is 
+- `onKeyboardFocusOut`: Called when the component loses a keyboard user's
+  focus. This can be used to automatically close a drawer menu this is
   contained in.
 
 ### Usage
 
 ```tsx
-<Navigation aria-label="Main navigation" on:keyboardFocusOut={closeDrawer}>
+<Navigation aria-label="Main navigation" onKeyboardFocusOut={closeDrawer}>
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Info)} icon="info">Show info</NavItem>
-    <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
+    <NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
+    <NavItem onclick={(e) => foo(e)} text="Do foo"/>
     <div>Some other content</div>
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Help)} icon="help">Show help</NavItem>
+    <NavItem href={$getRoute(ROUTE.Help)} icon="help" text="Show help"/>
   </NavGroup>
 </Navigation>
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { concatClass } from '$lib/utils/components';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { NavigationProps } from './Navigation.type';
 
-  type $$Props = NavigationProps;
+  let {
+    hidden = false,
+    onKeyboardFocusOut: onKeyboardFocusOutCallback = undefined,
+    children,
+    ...restProps
+  }: NavigationProps = $props();
 
-  export let hidden: $$Props['hidden'] = false;
-
-  // Dispatch a `keyboardFocusOut` event when the component loses focus
+  // Call the `onKeyboardFocusOut` callback when the component loses focus
   // This can be used to automatically close a drawer menu this is
   // contained in
-  const dispatch = createEventDispatcher();
   function keyboardFocusOut() {
-    dispatch('keyboardFocusOut');
+    onKeyboardFocusOutCallback?.();
   }
 </script>
 
 <nav
   use:onKeyboardFocusOut={keyboardFocusOut}
   data-testid="nav-menu"
-  {...concatClass($$restProps, 'min-h-full w-4/5 max-w-sm bg-base-100')}
+  {...concatClass(restProps, 'min-h-full w-4/5 max-w-sm bg-base-100')}
   class:hidden>
-  <slot />
+  {@render children?.()}
 </nav>

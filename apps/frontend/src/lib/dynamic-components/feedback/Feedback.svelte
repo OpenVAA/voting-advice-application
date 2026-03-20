@@ -19,15 +19,15 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 - `submit`: Submit the feedback or close the modal if it's already been submitted.
 - `reset`: Reset the form so that if the user opens it again, they can fill new feedback. You should call this when closing any modal containing the feedback.
 
-### Events
+### Callback Props
 
-- `cancel`: Fired when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
-- `error`: Fired when there is an error sending the feedback.
-- `sent`: Fired when the feedback is successfully sent.
+- `onCancel`: Called when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
+- `onError`: Called when there is an error sending the feedback.
+- `onSent`: Called when the feedback is successfully sent.
 
 ### Tracking events
 
-- `feedback_sent`: Feedback is succesfully sent. Contains `rating` and `description` properties.
+- `feedback_sent`: Feedback is successfully sent. Contains `rating` and `description` properties.
 - `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
 
 ### Usage
@@ -40,24 +40,30 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     reset();
   }
 </script>
-<Feedback bind:reset on:cancel={close} on:sent={close}/>
+<Feedback bind:reset onCancel={close} onSent={close}/>
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import { getEmailUrl } from '$lib/utils/email';
   import type { FeedbackProps } from './Feedback.type';
 
-  type $$Props = FeedbackProps;
-
-  export let showActions: $$Props['showActions'] = true;
-  export let status: $$Props['status'] = 'default';
-  export let variant: $$Props['variant'] = 'default';
-  export let canSubmit: $$Props['canSubmit'] = false;
+  let {
+    showActions = true,
+    status = $bindable('default'),
+    variant = 'default',
+    canSubmit = $bindable(false),
+    onCancel = undefined,
+    onError = undefined,
+    onSent = undefined,
+    ...restProps
+  }: FeedbackProps = $props();
 
   /**
    * The delay for autoclosing the modal after it's been submitted.
@@ -78,27 +84,23 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   // Handle feedback submission
   ////////////////////////////////////////////////////////////////////
 
-  const dispatch = createEventDispatcher<{
-    cancel: null;
-    error: null;
-    sent: null;
-  }>();
-
-  let description: string;
+  let description = $state('');
   let errorTimeout: NodeJS.Timeout | undefined;
-  let rating: number | undefined;
-  let textareaExpanded = variant === 'default';
+  let rating: number | undefined = $state(undefined);
+  let textareaExpanded = $state(variant === 'default');
   let zeroInput: HTMLInputElement;
 
   onDestroy(clearErrorTimeout);
 
-  $: canSubmit = status !== 'sending' && (rating != null || !!description);
+  $effect(() => {
+    canSubmit = status !== 'sending' && (rating != null || !!description);
+  });
 
   /**
    * Submit the feedback or close the modal if it's already been submitted.
    */
   export async function submit() {
-    if (status === 'sent' || status === 'error') dispatch('cancel');
+    if (status === 'sent' || status === 'error') onCancel?.();
     // Set the user preference so that we won't ask for feedback again.
     setFeedbackStatus('received');
     status = 'sending';
@@ -106,19 +108,19 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
       if (res?.type !== 'success') {
         startEvent('feedback_error', { rating, description });
         status = 'error';
-        dispatch('error');
+        onError?.();
         return;
       }
       clearErrorTimeout();
       startEvent('feedback_sent', { rating, description });
       status = 'sent';
-      dispatch('sent');
+      onSent?.();
     });
     // Only wait for sending to succeed for `ERROR_TIMEOUT` ms
     errorTimeout = setTimeout(() => {
       if (status !== 'sent') {
         status = 'error';
-        dispatch('error');
+        onError?.();
       }
     }, ERROR_TIMEOUT);
   }
@@ -152,7 +154,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   }
 </script>
 
-<form data-testid="feedback-form" {...concatClass($$restProps, 'grid justify-items-stretch gap-lg')}>
+<form data-testid="feedback-form" {...concatClass(restProps, 'grid justify-items-stretch gap-lg')}>
   <!-- Rating -->
   <fieldset class="flex justify-center">
     <legend class="mb-md w-full text-center" class:sr-only={variant === 'compact'}>
@@ -161,7 +163,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     <div class="rating">
       <input
         bind:this={zeroInput}
-        on:click={() => (rating = undefined)}
+        onclick={() => (rating = undefined)}
         aria-label={t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
         value={0}
         type="radio"
@@ -171,7 +173,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         class="rating-hidden" />
       {#each Array.from({ length: MAX_RATING }, (_, i) => i + 1) as value}
         <input
-          on:click={() => (rating = value)}
+          onclick={() => (rating = value)}
           aria-label={t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
           {value}
           type="radio"
@@ -186,7 +188,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   <!-- Description textarea -->
   <textarea
     bind:value={description}
-    on:focus={() => (textareaExpanded = true)}
+    onfocus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
     aria-label={t('feedback.description.label')}
     data-testid="feedback-description"
@@ -224,7 +226,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   {#if showActions}
     <div class="flex w-full flex-col items-center">
       <Button
-        on:click={submit}
+        onclick={submit}
         disabled={!canSubmit}
         variant="main"
         data-testid="feedback-submit"
@@ -236,7 +238,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
               ? t('common.close')
               : t('feedback.send')} />
       <Button
-        on:click={() => dispatch('cancel')}
+        onclick={() => onCancel?.()}
         disabled={status !== 'default'}
         color="warning"
         data-testid="feedback-cancel"

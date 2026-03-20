@@ -180,7 +180,7 @@ Shows the candidate's basic information, some of which is editable.
   onConfirm={handleNavigationConfirm} />
 
 <MainContent title={t('candidateApp.basicInfo.title')}>
-  <svelte:fragment slot="note">
+  {#snippet note()}
     {#if $answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
@@ -191,7 +191,7 @@ Shows the candidate's basic information, some of which is editable.
     {:else if $profileComplete}
       <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
     {/if}
-  </svelte:fragment>
+  {/snippet}
 
   <p class="text-center">
     {t('candidateApp.basicInfo.instructions')}
@@ -290,7 +290,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Submit button and error messages -->
 
-  <svelte:fragment slot="primaryActions">
+  {#snippet primaryActions()}
     {#if !$answersLocked}
       <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
@@ -307,7 +307,7 @@ Shows the candidate's basic information, some of which is editable.
       {#if !$answersLocked}
         <Button
           text={submitLabel}
-          on:click={handleSubmit}
+          onclick={handleSubmit}
           disabled={!canSubmit}
           loading={status === 'loading'}
           loadingText={t('common.saving')}
@@ -318,14 +318,14 @@ Shows the candidate's basic information, some of which is editable.
         <Button
           text={t('common.cancel')}
           disabled={!$hasUnsaved}
-          on:click={handleCancel}
+          onclick={handleCancel}
           color="warning"
           data-testid="profile-cancel" />
       {:else}
         <Button text={t('common.return')} href={$getRoute('CandAppHome')} variant="main" data-testid="profile-return" />
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </MainContent>
 
 <style lang="postcss">

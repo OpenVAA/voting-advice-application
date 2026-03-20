@@ -12,7 +12,7 @@ A component for buttons that mostly contain text and an icon. Use the `variant` 
 
 Only `main` buttons have a backround color. The other variants use DaisyUI's `btn-ghost` class, i.e. they do not have a background color.
 
-The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `on:click` event handler or other way of making the item interactive.
+The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `onclick` event handler or other way of making the item interactive.
 
 ### Properties
 
@@ -24,12 +24,12 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `iconPos`: Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon` or `floating-icon`. Note that `top` and `bottom` are not supported if `variant='main'`. Default: `'right'` if `variant='main'`, otherwise `'left'`
 - `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. Default: `false`
 - `loadingText`: The text shown when `loading` is `true`. Default: `t('common.loading')`
-- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
+- `href`: The URL to navigate to. If this is not supplied be sure to provide an `onclick` event handler or other way of making the item interactive.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
-### Slots
+### Snippet Props
 
-- `badge`: A slot for adding a badge to the button.
+- `badge`: A snippet for adding a badge to the button.
 
 ### Reactivity
 
@@ -38,16 +38,18 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 ### Usage
 
 ```tsx
-<Button on:click={next} variant="main" icon="next"
+<Button onclick={next} variant="main" icon="next"
 text="Continue"/>
-<Button on:click={skip} icon="skip" iconPos="top" color="secondary"
+<Button onclick={skip} icon="skip" iconPos="top" color="secondary"
 text="Skip this question"/>
-<Button on:click={addToList} variant="icon" icon="addToList" 
+<Button onclick={addToList} variant="icon" icon="addToList"
 text="Add to list">
- <InfoBadge text="5" slot="badge"/>
+ {#snippet badge()}<InfoBadge text="5" />{/snippet}
 </Button>
 ```
 -->
+
+<svelte:options runes />
 
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
@@ -56,17 +58,19 @@ text="Add to list">
   import { Loading } from '../loading';
   import type { ButtonProps } from './Button.type';
 
-  type $$Props = ButtonProps;
-
-  export let text: $$Props['text'];
-  export let variant: $$Props['variant'] = 'normal';
-  export let icon: $$Props['icon'] = null;
-  export let iconPos: $$Props['iconPos'] = 'right';
-  export let color: $$Props['color'] = 'primary';
-  export let href: $$Props['href'] = undefined;
-  export let disabled: $$Props['disabled'] = undefined;
-  export let loading: $$Props['loading'] = undefined;
-  export let loadingText: $$Props['loadingText'] = undefined;
+  let {
+    text,
+    variant = 'normal',
+    icon = null,
+    iconPos = 'right',
+    color = 'primary',
+    href = undefined,
+    disabled = undefined,
+    loading = undefined,
+    loadingText = undefined,
+    badge,
+    ...restProps
+  }: ButtonProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -78,11 +82,7 @@ text="Add to list">
   // Handle loading state
   ////////////////////////////////////////////////////////////////////
 
-  let effectiveText: typeof text;
-
-  $: {
-    effectiveText = loading ? loadingText || t('common.loading') : text;
-  }
+  let effectiveText = $derived(loading ? loadingText || t('common.loading') : text);
 
   ////////////////////////////////////////////////////////////////////
   // Styling
@@ -97,90 +97,93 @@ text="Add to list">
   }
 
   // Build classes reactively so that we can incorporate any changes to `icon` and `color` properties
-  let classes: string;
-  let labelClass: string;
-
-  $: {
+  let classes = $derived.by(() => {
     // 1. Base classes
-    classes = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto items-center gap-y-6 gap-x-6';
-    labelClass = 'vaa-button-label first-letter:uppercase';
+    let c = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto items-center gap-y-6 gap-x-6';
 
     // 2. Variant-defined classes
     switch (variant) {
       case 'icon':
       case 'responsive-icon':
-        classes += ' btn-ghost justify-start';
+        c += ' btn-ghost justify-start';
         break;
       case 'floating-icon':
-        classes += ' justify-center rounded-full m-16';
+        c += ' justify-center rounded-full m-16';
         break;
       case 'main':
       case 'prominent':
-        classes += ' w-full justify-center';
+        c += ' w-full justify-center';
         break;
       default:
-        classes += ` btn-ghost w-full ${icon ? 'justify-start' : 'justify-center'}`;
+        c += ` btn-ghost w-full ${icon ? 'justify-start' : 'justify-center'}`;
     }
 
     // 3. Icon position
     switch (iconPos) {
       case 'top':
-        classes += ' flex-col';
+        c += ' flex-col';
         break;
       case 'bottom':
-        classes += ' flex-col-reverse';
+        c += ' flex-col-reverse';
         break;
       case 'left':
-        classes += ' flex-row';
+        c += ' flex-row';
         break;
       case 'right':
-        classes += ' flex-row-reverse';
+        c += ' flex-row-reverse';
     }
 
     // 4. Set color
     if (color) {
       // For the main button type we can use the btn-primary etc. classes, for the others, we just set the text color
-      classes += ` ${variant === 'main' || variant === 'floating-icon' ? 'btn' : 'text'}-${color}`;
+      c += ` ${variant === 'main' || variant === 'floating-icon' ? 'btn' : 'text'}-${color}`;
     }
 
     // 5. Apply default btn color for the `prominent` variant
-    if (variant === 'prominent') classes += ' btn-base-300';
+    if (variant === 'prominent') c += ' btn-base-300';
 
     // 6. Apply bg color for the `floating-icon` variants
-    if (variant === 'floating-icon') classes += ' bg-primary';
+    if (variant === 'floating-icon') c += ' bg-primary';
+
+    return c;
+  });
+
+  let labelClass = $derived.by(() => {
+    let lc = 'vaa-button-label first-letter:uppercase';
 
     // 7. Finally, define the class for the text label
     switch (variant) {
       case 'main':
       case 'prominent':
-        labelClass += ' flex-grow text-center';
+        lc += ' flex-grow text-center';
         if (icon) {
           // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
-          labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
+          lc += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
         }
         break;
       case 'responsive-icon':
-        labelClass += ` sr-only sm:not-sr-only small-label text-${color}`;
+        lc += ` sr-only sm:not-sr-only small-label text-${color}`;
         break;
       case 'secondary':
-        labelClass += ` small-label text-${color}`;
+        lc += ` small-label text-${color}`;
         break;
     }
-  }
+
+    return lc;
+  });
 </script>
 
 <!-- Note that `disabled` is converted to `undefined` is `false` because DaisyUI's `[disabled]` selector will otherwise match it. -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <svelte:element
   this={href == null ? 'button' : 'a'}
-  on:click
   role="button"
   tabindex={disabled ? -1 : 0}
   href={disabled ? undefined : href}
   aria-label={variant === 'icon' ? effectiveText : undefined}
   title={variant === 'icon' || variant === 'responsive-icon' ? effectiveText : undefined}
   disabled={disabled || loading || undefined}
-  {...concatClass($$restProps, classes)}>
+  {...concatClass(restProps, classes)}>
   {#if loading || icon}
     <div class="relative">
       {#if loading}
@@ -188,9 +191,9 @@ text="Add to list">
       {:else if icon}
         <Icon name={icon} />
       {/if}
-      {#if $$slots.badge && variant !== 'main'}
+      {#if variant !== 'main'}
         <div class="absolute -end-6 -top-8">
-          <slot name="badge" />
+          {@render badge?.()}
         </div>
       {/if}
     </div>
@@ -199,17 +202,17 @@ text="Add to list">
     <div class={labelClass}>
       <span class="uc-first relative">
         {effectiveText}
-        {#if $$slots.badge && !icon && variant !== 'main'}
+        {#if !icon && variant !== 'main'}
           <div class="absolute -end-20 -top-8">
-            <slot name="badge" />
+            {@render badge?.()}
           </div>
         {/if}
       </span>
     </div>
   {/if}
-  {#if $$slots.badge && variant === 'main'}
+  {#if variant === 'main'}
     <div class="absolute -end-6 -top-12">
-      <slot name="badge" />
+      {@render badge?.()}
     </div>
   {/if}
 </svelte:element>

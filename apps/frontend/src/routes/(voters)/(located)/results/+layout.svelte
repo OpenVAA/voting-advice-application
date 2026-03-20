@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Results outer layout
@@ -6,25 +8,30 @@ Shows an error message if there are no nominations yet. This is usually the case
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
   import MainContent from '../../../MainContent.svelte';
 
   const { getRoute, nominationsAvailable, t } = getVoterContext();
+
+  let { children }: { children: Snippet } = $props();
 </script>
 
 {#if Object.values($nominationsAvailable).some(Boolean)}
-  <slot />
+  {@render children?.()}
 {:else}
   <MainContent title={t('error.noNominations')}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
+      </figure>
+    {/snippet}
 
-    <svelte:fragment slot="primaryActions">
+    {#snippet primaryActions()}
       <Button href={$getRoute('Questions')} text={t('questions.title')} variant="main" icon="next" />
       <Button href={$getRoute('Home')} text={t('common.returnHome')} />
-    </svelte:fragment>
+    {/snippet}
   </MainContent>
 {/if}

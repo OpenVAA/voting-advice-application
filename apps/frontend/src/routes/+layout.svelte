@@ -97,6 +97,10 @@
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
+  // Reference to UmamiAnalytics component to access its trackEvent export
+  let umamiRef: { trackEvent?: typeof $sendTrackingEvent };
+  $: if (umamiRef?.trackEvent) $sendTrackingEvent = umamiRef.trackEvent;
+
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
     if ($updated && !willUnload && to?.url) location.href = to.url.href;
@@ -110,6 +114,9 @@
   ////////////////////////////////////////////////////////////////////
   // Other global effects
   ////////////////////////////////////////////////////////////////////
+
+  let feedbackModalRef: { openFeedback: () => void };
+  $: if (feedbackModalRef) $openFeedbackModal = () => feedbackModalRef?.openFeedback();
 
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
@@ -127,7 +134,7 @@
     media="(prefers-color-scheme: dark)" />
   {#if fontUrl.indexOf('fonts.googleapis') !== -1}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
   {/if}
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
@@ -142,7 +149,7 @@
   <slot />
 
   <!-- Feedback modal -->
-  <FeedbackModal bind:openFeedback={$openFeedbackModal} />
+  <FeedbackModal bind:this={feedbackModalRef} />
 
   <!-- Popup service -->
   {#if $popupQueue}
@@ -158,7 +165,7 @@
         <svelte:component
           this={UmamiAnalytics.default}
           websiteId={$appSettings.analytics.platform.code}
-          bind:trackEvent={$sendTrackingEvent} />
+          bind:this={umamiRef} />
       {/await}
     {/if}
     {#await import('svelte-visibility-change') then VisibilityChange}

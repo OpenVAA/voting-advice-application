@@ -66,5 +66,8 @@
     "apps/*",
     "apps/strapi/src/plugins/*"
   ],
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "resolutions": {
+    "isomorphic-dompurify/jsdom": "^26.1.0"
+  }
 }

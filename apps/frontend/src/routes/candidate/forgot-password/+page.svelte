@@ -54,10 +54,12 @@ Shows a form with which to request a password reset email.
 </script>
 
 <MainContent title={t('candidateApp.resetPassword.title')}>
-  <HeadingGroup slot="heading">
-    <PreHeading>{t('dynamic.candidateAppName')}</PreHeading>
-    <h1>{t('candidateApp.resetPassword.title')}</h1>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <PreHeading>{t('dynamic.candidateAppName')}</PreHeading>
+      <h1>{t('candidateApp.resetPassword.title')}</h1>
+    </HeadingGroup>
+  {/snippet}
 
   <!-- If email hasn't been sent yet, show form where user can input their email address. -->
   <form on:submit|preventDefault={handleSubmit} class="flex flex-col items-center">

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used for large emojis acting as decorative illustrations.
@@ -26,14 +28,9 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
   import { concatClass } from '$lib/utils/components';
   import type { HeroEmojiProps } from './HeroEmoji.type';
 
-  type $$Props = HeroEmojiProps;
+  let { emoji, ...restProps }: HeroEmojiProps = $props();
 
-  export let emoji: $$Props['emoji'] = undefined;
-
-  // We cannot currently use this filtering to remove non-emoji glyphs because it breaks the emojis on Safari. See: https://developer.apple.com/forums/thread/729609
-  // $: if (emoji != null && emoji !== '') {
-  //   emoji = emoji.replace(/\P{Extended_Pictographic}/gu, '');
-  // }
+  // NB: Emoji glyph filtering breaks on Safari. See: https://developer.apple.com/forums/thread/729609
 </script>
 
 {#if emoji != null && emoji !== ''}
@@ -42,7 +39,7 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
     role="img"
     style="font-variant-emoji: emoji;"
     {...concatClass(
-      $$restProps,
+      restProps,
       'whitespace-nowrap truncate text-clip text-center font-emoji text-[6.5rem] leading-[1.1]'
     )}>
     {emoji}

@@ -1,7 +1,12 @@
+import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { CardAction } from './EntityCard.type';
 
 export type EntityCardActionProps = HTMLAttributes<HTMLElement> & {
+  /**
+   * The contents to wrap.
+   */
+  children?: Snippet;
   /**
    * The action to take when the part or card is clicked.
    */

@@ -96,7 +96,7 @@ Page for controlling the argument condensation feature.
     // 1. Create a job for tracking progress
     // 2. Run the actual argument condensation
     // 3. Update job progress and messages in real-time
-    return async ({ result }: { result: ActionResult }) => {
+    return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
       if (result.type === 'error') {
         status = 'error';
       } else if (result.type === 'failure') {
@@ -108,9 +108,7 @@ Page for controlling the argument condensation feature.
         // Shouldn't happen here, but log if it does
         status = 'success';
       }
-
-      // Always cancel the form action to prevent page reload
-      return { cancel: true };
+      // Don't call update() — prevents default form action behavior (page reload)
     };
   }
 </script>
@@ -224,9 +222,11 @@ Page for controlling the argument condensation feature.
   </div>
 
   <!-- Both active and past jobs -->
-  <div slot="fullWidth" class="mt-8 w-full">
-    <div class="mx-auto max-w-4xl px-4">
-      <FeatureJobs class="w-full" feature="ArgumentCondensation" showFeatureLink={false} />
+  {#snippet fullWidth()}
+    <div class="mt-8 w-full">
+      <div class="mx-auto max-w-4xl px-4">
+        <FeatureJobs class="w-full" feature="ArgumentCondensation" showFeatureLink={false} />
+      </div>
     </div>
-  </div>
+  {/snippet}
 </MainContent>

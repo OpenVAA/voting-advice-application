@@ -1,4 +1,4 @@
-import type { ComponentType, SvelteComponent } from 'svelte';
+import type { Component, ComponentType, SvelteComponent } from 'svelte';
 
 /**
  * An item that can be added to the popup queue.
@@ -16,8 +16,10 @@ export type PopupQueueItem = {
 
 /**
  * A component that can be added to the popup queue.
+ * Accepts both legacy class-based components and Svelte 5 function components.
  */
-export type PopupComponent = ComponentType<SvelteComponent<PopupComponentProps>>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PopupComponent = ComponentType<SvelteComponent<PopupComponentProps>> | Component<any>;
 
 export interface PopupComponentProps extends Record<string, unknown> {
   /**

@@ -47,7 +47,6 @@
   let email = '';
   let emailInput: HTMLInputElement | undefined;
   let errorMessage: string | undefined;
-  let focusPassword: () => void | undefined;
   let password = '';
   let status: ActionStatus = 'idle';
 
@@ -70,10 +69,12 @@
 </script>
 
 <MainContent title={t('adminApp.login.title')}>
-  <HeadingGroup slot="heading">
-    <h1 class="text-primary">{t('adminApp.login.appTitle')}</h1>
-    <h2 class="text-base-content">{t('adminApp.login.appSubtitle')}</h2>
-  </HeadingGroup>
+  {#snippet heading()}
+    <HeadingGroup>
+      <h1 class="text-primary">{t('adminApp.login.appTitle')}</h1>
+      <h2 class="text-base-content">{t('adminApp.login.appSubtitle')}</h2>
+    </HeadingGroup>
+  {/snippet}
 
   <p class="mt-md">{t('adminApp.login.instructions')}</p>
 
@@ -113,7 +114,7 @@
         autocomplete="email"
         required />
       <div class="mb-md w-full max-w-md">
-        <PasswordField autocomplete="current-password" id="password" bind:password bind:focus={focusPassword} />
+        <PasswordField autocomplete="current-password" id="password" bind:password />
       </div>
       {#if status === 'error'}
         <ErrorMessage inline message={errorMessage} class="mb-md" />
@@ -130,7 +131,7 @@
       {#if $appSettings.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
-          on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
+          onclick={() => goto($getRoute('Home'), { invalidateAll: true })}
           text={t('candidateApp.common.voterApp')} />
       {/if}
     </div>

@@ -24,9 +24,11 @@
 
 <main class="gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg flex flex-grow flex-col items-center">
   <MainContent {title}>
-    <figure role="presentation" slot="hero">
-      <HeroEmoji {emoji} />
-    </figure>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji {emoji} />
+      </figure>
+    {/snippet}
 
     <div class="text-center">{@html sanitizeHtml(description)}</div>
   </MainContent>

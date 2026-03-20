@@ -6,9 +6,9 @@ Defines the layout of the content of the `main` element (following the possible 
 
 The layout varies slightly based on the presence of a video player.
 
-### Slots
+### Snippet Props
 
-- default: main content of the page
+- `children`: main content of the page
 - `note`: optional content for the complementary notification displayed at the top of the page, right below the `<header>`
 - `hero`: an optional hero image
 - `heading`: optional content for the main title block, defaults to a `<h1>` element containing the required `title` property
@@ -26,6 +26,8 @@ The layout varies slightly based on the presence of a video player.
 - Any valid attributes of a `<div>` element.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
@@ -33,14 +35,21 @@ The layout varies slightly based on the presence of a video player.
   import { concatClass } from '$lib/utils/components';
   import type { MainContentProps } from './MainContent.type';
 
-  type $$Props = MainContentProps;
-
-  export let title: $$Props['title'];
-  export let noteClass: $$Props['noteClass'] = 'text-secondary text-center max-w-xl';
-  export let noteRole: $$Props['noteRole'] = 'note';
-  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
-  export let titleClass: $$Props['titleClass'] = '';
-  export let contentClass: $$Props['contentClass'] = '';
+  let {
+    title,
+    noteClass = 'text-secondary text-center max-w-xl',
+    noteRole = 'note',
+    primaryActionsLabel = undefined,
+    titleClass = '',
+    contentClass = '',
+    note,
+    hero,
+    heading,
+    fullWidth,
+    primaryActions,
+    children,
+    ...restProps
+  }: MainContentProps = $props();
 
   const { t } = getComponentContext();
   const {
@@ -53,46 +62,50 @@ The layout varies slightly based on the presence of a video player.
 </svelte:head>
 
 <div
-  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
+  {...concatClass(restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
-  {#if $$slots.note}
+  {#if note}
     <div class={noteClass} role={noteRole}>
-      <slot name="note" />
+      {@render note()}
     </div>
   {/if}
 
   <div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
     <!-- Hero image -->
     {#if !$hasVideo}
-      <slot name="hero" />
+      {#if hero}
+        {@render hero()}
+      {/if}
     {/if}
 
     <!-- Title block -->
     <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!$hasVideo}>
-      <slot name="heading">
+      {#if heading}
+        {@render heading()}
+      {:else}
         <h1>{title}</h1>
-      </slot>
+      {/if}
     </div>
 
     <!-- Default content -->
     <div class="flex w-full max-w-xl flex-col items-center {contentClass}">
-      <slot />
+      {@render children?.()}
     </div>
   </div>
 
   <!-- Full-width content -->
-  {#if $$slots.fullWidth}
+  {#if fullWidth}
     <div class="-mb-safelgb -ml-safelgl -mr-safelgr flex flex-col items-stretch self-stretch">
-      <slot name="fullWidth" />
+      {@render fullWidth()}
     </div>
   {/if}
 
   <!-- Main actions -->
-  {#if $$slots.primaryActions}
+  {#if primaryActions}
     <section
       class="flex w-full max-w-xl flex-col items-center justify-end"
       aria-label={primaryActionsLabel ?? t('common.primaryActions')}>
-      <slot name="primaryActions" />
+      {@render primaryActions()}
     </section>
   {/if}
 </div>

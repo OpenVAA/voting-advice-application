@@ -1,10 +1,12 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
 
 If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constiuency of the nomination.
 
-If `AppContext.$appType` is `voter`, the voter’s possible answers will included in the `opinions` tab.
+If `AppContext.$appType` is `voter`, the voter's possible answers will included in the `opinions` tab.
 
 ### Dynamic component
 
@@ -22,11 +24,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityDetails 
-  entity={matchedCandidate}/>
-<EntityDetails 
-  entity={matchedOrganization}
-  tabs={$appSettings.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedCandidate}/>
+<EntityDetails entity={matchedOrganization} tabs={$appSettings.entityDetails.contents.organization}/>
 ```
 -->
 
@@ -49,13 +48,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  type $$Props = EntityDetailsProps;
-
-  export let entity: $$Props['entity'];
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { entity, ...restProps }: EntityDetailsProps = $props();
 
   const { appSettings, appType, startEvent, t } = getAppContext();
   let answers: AnswerStore | undefined;
@@ -66,91 +59,73 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     matches = context.matches;
   }
 
-  ////////////////////////////////////////////////////////////////////
-  // Define tab contents
-  ////////////////////////////////////////////////////////////////////
-
-  /** For use with the `Tabs` component */
   type ContentTab = { content: EntityDetailsContent | OrganizationDetailsContent; label: string };
 
-  /** The currently active tab */
-  let activeIndex = 0;
-  /** The tab content types */
-  let contentTabs: Array<ContentTab>;
-  // The properties to pass to the different tabs
-  let children: Array<MaybeWrappedEntityVariant>;
-  let infoQuestions: Array<AnyQuestionVariant>;
-  let opinionQuestions: Array<AnyQuestionVariant>;
+  let activeIndex = $state(0);
 
-  $: {
-    const { entity: nakedEntity, nomination } = unwrapEntity(entity);
-
+  let contentTabs: Array<ContentTab> = $derived.by(() => {
+    const { entity: nakedEntity } = unwrapEntity(entity);
     let tabs: Array<EntityDetailsContent | OrganizationDetailsContent> =
       $appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
-    // Use defaults based on entity type if a non-empty array is not found in settings
     if (!tabs?.length)
       tabs = nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
+    return tabs.map((tab) => ({ content: tab, label: t(`entityDetails.tabs.${tab}`) }));
+  });
 
-    contentTabs = tabs.map((tab) => ({
-      content: tab,
-      label: t(`entityDetails.tabs.${tab}`)
-    }));
+  let children: Array<MaybeWrappedEntityVariant> = $derived.by(() => {
+    const { nomination } = unwrapEntity(entity);
+    const tabs = contentTabs.map((ct) => ct.content);
+    if (tabs.includes('candidates') && isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
+      return findCandidateNominations({ matches: matches ? $matches : undefined, nomination });
+    return [];
+  });
 
-    // Collect questions
+  let infoQuestions: Array<AnyQuestionVariant> = $derived.by(() => {
+    const { entity: nakedEntity, nomination } = unwrapEntity(entity);
+    const tabs = contentTabs.map((ct) => ct.content);
     if (tabs.includes('info') || tabs.includes('opinions')) {
-      // If we're showing a nominated entity, we show the questions applicable to the election and constituency, otherwise default to all questions the entity has answered
       let questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
       questions = questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
-      infoQuestions = sortQuestions(questions.filter((q) => q.category.type !== 'opinion'));
-      opinionQuestions = sortQuestions(questions.filter((q) => q.category.type === 'opinion'));
-    } else {
-      infoQuestions = [];
-      opinionQuestions = [];
+      return sortQuestions(questions.filter((q) => q.category.type !== 'opinion'));
     }
+    return [];
+  });
 
-    // Collect child nominations if applicable
-    if (tabs.includes('candidates') && isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
-      children = findCandidateNominations({ matches: matches ? $matches : undefined, nomination });
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // Tracking
-  ////////////////////////////////////////////////////////////////////
+  let opinionQuestions: Array<AnyQuestionVariant> = $derived.by(() => {
+    const { entity: nakedEntity, nomination } = unwrapEntity(entity);
+    const tabs = contentTabs.map((ct) => ct.content);
+    if (tabs.includes('info') || tabs.includes('opinions')) {
+      let questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
+      questions = questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
+      return sortQuestions(questions.filter((q) => q.category.type === 'opinion'));
+    }
+    return [];
+  });
 
   function handleContentTabChange({ tab }: { tab: Tab }): void {
     startEvent('entityDetails_changeTab', { section: (tab as ContentTab).content });
   }
 </script>
 
-<article data-testid="entity-details" {...concatClass($$restProps, 'flex flex-col grow')}>
-  <!-- Add a border if there's not need for a Tabs component which separates the contents visually from the header -->
+<article data-testid="entity-details" {...concatClass(restProps, 'flex flex-col grow')}>
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />
   </header>
-
   {#if contentTabs.length > 1}
     <Tabs tabs={contentTabs} bind:activeIndex onChange={handleContentTabChange} class="px-10" />
   {/if}
-
   {#if contentTabs[activeIndex]?.content === 'info'}
-    <div data-testid="voter-entity-detail-info">
-      <EntityInfo {entity} questions={infoQuestions} />
-    </div>
+    <div data-testid="voter-entity-detail-info"><EntityInfo {entity} questions={infoQuestions} /></div>
   {:else if contentTabs[activeIndex]?.content === 'opinions'}
-    <div data-testid="voter-entity-detail-opinions">
-      <EntityOpinions {entity} questions={opinionQuestions} {answers} />
-    </div>
+    <div data-testid="voter-entity-detail-opinions"><EntityOpinions {entity} questions={opinionQuestions} {answers} /></div>
   {:else if contentTabs[activeIndex]?.content === 'candidates'}
-    <div data-testid="voter-entity-detail-submatches">
-      <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
-    </div>
+    <div data-testid="voter-entity-detail-submatches"><EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} /></div>
   {/if}
 </article>
 
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
   .bottomBorder {
-    /* after: is a valid prefix */
     @apply after:left-lg after:right-lg after:border-b-md relative after:absolute after:bottom-0 after:border-b-[var(--line-color)] after:content-[''];
   }
 </style>

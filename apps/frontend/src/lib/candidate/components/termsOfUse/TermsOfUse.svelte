@@ -9,6 +9,8 @@ A utility component for displaying candidate app terms of use and privacy statem
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
@@ -23,14 +25,8 @@ A utility component for displaying candidate app terms of use and privacy statem
   // Build content
   ////////////////////////////////////////////////////////////////////
 
-  let registryStatement: string;
-  let termsOfUse: string;
-
-  $: {
-    const appName = t('dynamic.appName');
-    registryStatement = t('dynamic.candidateAppPrivacy.registryStatement.content', { appName });
-    termsOfUse = t('dynamic.candidateAppPrivacy.otherTermsOfUse.content', { appName });
-  }
+  const registryStatement = $derived(t('dynamic.candidateAppPrivacy.registryStatement.content', { appName: t('dynamic.appName') }));
+  const termsOfUse = $derived(t('dynamic.candidateAppPrivacy.otherTermsOfUse.content', { appName: t('dynamic.appName') }));
 </script>
 
 {#if t('dynamic.candidateAppPrivacy.registryStatement.title') && registryStatement}

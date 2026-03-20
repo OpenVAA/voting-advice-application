@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
@@ -38,177 +40,65 @@ TODO: Consider moving the tracking events away from the component and just addin
   import { DELAY } from '$lib/utils/timing';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
-  type $$Props = EntityListControlsProps;
-
-  export let entities: $$Props['entities'];
-  export let filterGroup: $$Props['filterGroup'] = undefined;
-  export let searchProperty: $$Props['searchProperty'] = 'name';
-  export let onUpdate: $$Props['onUpdate'];
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
+  let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
 
   const { locale, startEvent, t } = getAppContext();
+  let filtersModalRef: Modal;
+  let filteredContents: EntityListControlsProps['entities'] = $state([]);
+  let output: EntityListControlsProps['entities'] = $state([]);
+  let numActiveFilters = $state(0);
 
-  ////////////////////////////////////////////////////////////////////
-  // Filtering
-  ////////////////////////////////////////////////////////////////////
+  const searchFilter = searchProperty ? new TextPropertyFilter<MaybeWrappedEntityVariant>({ property: searchProperty as keyof MaybeWrappedEntityVariant }, $locale) : undefined;
 
-  // Exports from Modal
-  let openFiltersModal: () => void;
-  let closeFiltersModal: () => void;
-
-  /**
-   * Contents after filtering but before search
-   */
-  let filteredContents: $$Props['entities'];
-
-  /**
-   * Final entities
-   */
-  let output: $$Props['entities'];
-
-  // This is kept in sync by `updateFilters()`
-  let numActiveFilters = 0;
-
-  // Create the text search filter
-  const searchFilter = searchProperty
-    ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
-        { property: searchProperty as keyof MaybeWrappedEntityVariant },
-        $locale
-      )
-    : undefined;
-
-  // Listen to changes in the filters
   filterGroup?.onChange(updateFilters);
   searchFilter?.onChange(updateSearch);
 
-  // Initialize the filters and react to changes in input
-  $: {
-    updateFilters();
-    entities; // eslint-disable-line @typescript-eslint/no-unused-expressions
-  }
+  $effect(() => { entities; updateFilters(); });
 
-  // Clean up
-  onDestroy(() => {
-    filterGroup?.onChange(updateFilters, false);
-    searchFilter?.onChange(updateSearch, false);
-  });
+  onDestroy(() => { filterGroup?.onChange(updateFilters, false); searchFilter?.onChange(updateSearch, false); });
 
-  ////////////////////////////////////////////////////////////////////
-  // Functions
-  ////////////////////////////////////////////////////////////////////
-
-  /** Update all filters */
   function updateFilters() {
     filteredContents = filterGroup ? filterGroup.apply(entities) : [...entities];
     numActiveFilters = filterGroup ? filterGroup.filters.filter((f) => f.active).length : 0;
     updateSearch();
   }
 
-  /** Update text search */
-  function updateSearch() {
-    output = searchFilter ? searchFilter.apply(filteredContents) : [...filteredContents];
-    onUpdate(output);
-  }
-
-  /** Open filters dialog */
-  function openFilters() {
-    openFiltersModal();
-  }
-
-  /** Reset and close the filters dialog */
-  function resetFilters() {
-    filterGroup?.reset();
-    if (filterGroup) startEvent('filters_reset');
-    closeFiltersModal();
-  }
-
-  /**
-   * Create a tracking event for the active filters
-   */
-  function trackActiveFilters() {
-    const activeFilters = filterGroup?.filters
-      .filter((f) => f.active)
-      .map((f) => f.name)
-      .join(',');
-    if (activeFilters) startEvent('filters_active', { activeFilters });
-  }
+  function updateSearch() { output = searchFilter ? searchFilter.apply(filteredContents) : [...filteredContents]; onUpdate(output); }
+  function openFilters() { filtersModalRef?.openModal(); }
+  function resetFilters() { filterGroup?.reset(); if (filterGroup) startEvent('filters_reset'); filtersModalRef?.closeModal(); }
+  function trackActiveFilters() { const af = filterGroup?.filters.filter((f) => f.active).map((f) => f.name).join(','); if (af) startEvent('filters_active', { activeFilters: af }); }
 </script>
 
-<div data-testid="entity-list-controls" {...concatClass($$restProps, 'flex flex-col')}>
+<div data-testid="entity-list-controls" {...concatClass(restProps, 'flex flex-col')}>
   <div class="mb-md gap-lg flex flex-row-reverse justify-between">
     {#if searchFilter}
-      <TextEntityFilter
-        filter={searchFilter}
-        placeholder={t('entityList.controls.searchPlaceholder')}
-        variant="discrete"
-        class="grow"
-        data-testid="entity-list-search" />
+      <TextEntityFilter filter={searchFilter} placeholder={t('entityList.controls.searchPlaceholder')} variant="discrete" class="grow" data-testid="entity-list-search" />
     {/if}
-    <!--
-      Sorting (TBA)
-      <Button
-        on:click={() => console.warn('Not implemented yet')}
-        icon="sort"
-        iconPos="left"
-        class="!w-auto grow"
-        text="Sort results"/>
-    -->
     {#if filterGroup?.filters.length}
       {#if numActiveFilters}
-        <Button
-          on:click={openFilters}
-          color="warning"
-          icon="filter"
-          iconPos="left"
-          class="!w-auto"
-          data-testid="entity-list-filter"
-          text={t('entityFilters.filterButtonLabel')}>
-          <InfoBadge text={numActiveFilters} slot="badge" />
-        </Button>
+        <Button onclick={openFilters} color="warning" icon="filter" iconPos="left" class="!w-auto" data-testid="entity-list-filter" text={t('entityFilters.filterButtonLabel')}>{#snippet badge()}<InfoBadge text={numActiveFilters} />{/snippet}</Button>
       {:else}
-        <Button
-          on:click={openFilters}
-          icon="filter"
-          iconPos="left"
-          class="!w-auto"
-          data-testid="entity-list-filter"
-          text={t('entityFilters.filterButtonLabel')} />
+        <Button onclick={openFilters} icon="filter" iconPos="left" class="!w-auto" data-testid="entity-list-filter" text={t('entityFilters.filterButtonLabel')} />
       {/if}
     {/if}
   </div>
   {#if entities.length > 0}
     {#if output.length === 0}
-      <div
-        class="my-lg text-secondary flex flex-col items-center text-center"
-        transition:slide={{ duration: DELAY.md }}>
-        {filterGroup?.filters.length
-          ? t('entityList.controls.noFilterResults')
-          : t('entityList.controls.noSearchResults')}
-      </div>
+      <div class="my-lg text-secondary flex flex-col items-center text-center" transition:slide={{ duration: DELAY.md }}>{filterGroup?.filters.length ? t('entityList.controls.noFilterResults') : t('entityList.controls.noSearchResults')}</div>
     {:else if output.length !== entities.length}
-      <div
-        class="my-lg text-secondary flex flex-col items-center text-center"
-        transition:slide={{ duration: DELAY.md }}>
-        {t('entityList.controls.showingNumResults', { numShown: output.length })}
-      </div>
+      <div class="my-lg text-secondary flex flex-col items-center text-center" transition:slide={{ duration: DELAY.md }}>{t('entityList.controls.showingNumResults', { numShown: output.length })}</div>
     {/if}
   {/if}
 </div>
 
 {#if filterGroup?.filters.length}
-  <Modal
-    title={t('entityFilters.filters')}
-    boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
-    onClose={trackActiveFilters}
-    bind:openModal={openFiltersModal}
-    bind:closeModal={closeFiltersModal}>
+  <Modal bind:this={filtersModalRef} title={t('entityFilters.filters')} boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]" onClose={trackActiveFilters}>
     <EntityFilters {filterGroup} targets={entities} />
-    <div class="flex w-full flex-col items-center" slot="actions">
-      <Button on:click={closeFiltersModal} text={t('entityFilters.applyAndClose')} variant="main" />
-      <Button on:click={resetFilters} color="warning" disabled={!numActiveFilters} text={t('entityFilters.reset')} />
-    </div>
+    {#snippet actions()}
+      <div class="flex w-full flex-col items-center">
+        <Button onclick={() => filtersModalRef?.closeModal()} text={t('entityFilters.applyAndClose')} variant="main" />
+        <Button onclick={resetFilters} color="warning" disabled={!numActiveFilters} text={t('entityFilters.reset')} />
+      </div>
+    {/snippet}
   </Modal>
 {/if}

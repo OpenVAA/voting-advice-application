@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Used to display a loading spinner with an optionally visible text label.
@@ -24,12 +26,7 @@ Used to display a loading spinner with an optionally visible text label.
   import { concatClass } from '$lib/utils/components';
   import type { LoadingProps } from './Loading.type';
 
-  type $$Props = LoadingProps;
-
-  export let inline: $$Props['inline'] = false;
-  export let label: $$Props['label'] = undefined;
-  export let showLabel: $$Props['showLabel'] = false;
-  export let size: $$Props['size'] = undefined;
+  let { inline = false, label, showLabel = false, size, ...restProps }: LoadingProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -62,7 +59,7 @@ Used to display a loading spinner with an optionally visible text label.
   }
 </script>
 
-<div data-testid="loading-indicator" {...concatClass($$restProps, classes)}>
+<div data-testid="loading-indicator" {...concatClass(restProps, classes)}>
   <span class={spinnerClass} />
   <span class="text-center" class:sr-only={!showLabel}>{label ?? t('common.loading')}</span>
 </div>

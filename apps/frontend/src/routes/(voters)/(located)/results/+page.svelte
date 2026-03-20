@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Matching results or browse nominations page
@@ -25,10 +27,10 @@ The nominations applicable to these elections and constituencies are shown. Thes
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { beforeNavigate, pushState } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
@@ -93,37 +95,47 @@ The nominations applicable to these elections and constituencies are shown. Thes
   type EntityTab = { type: EntityType; label: string };
 
   /** The id of the currently active election */
-  let activeElectionId: Id | undefined;
+  let activeElectionId = $state<Id | undefined>(undefined);
   /** A utility for easier access to the election object */
-  let activeElection: Election;
+  let activeElection = $state<Election>();
   /** The currently active EntityType */
-  let activeEntityType: EntityType | undefined;
+  let activeEntityType = $state<EntityType | undefined>(undefined);
   /** The results currently shown */
-  let activeMatches: Array<MaybeWrappedEntityVariant> | undefined;
+  let activeMatches = $state<Array<MaybeWrappedEntityVariant> | undefined>(undefined);
   /** The tabs for entity selection that are available for the active election */
-  let entityTabs: Array<EntityTab>;
+  let entityTabs = $state<Array<EntityTab>>([]);
   /** The initially selected tab, updated when the election is changed and when the snapshot is restored */
-  let initialEntityTabIndex = 0;
+  let initialEntityTabIndex = $state(0);
 
-  // Pre-select election if there’s only one
+  // Pre-select election if there's only one
   if ($elections.length === 1) activeElectionId = $elections[0].id;
 
-  // React to changes in activeElectionId to updadate entityTabs
-  $: if (activeElectionId) {
-    entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
-      type: type as EntityType,
-      label: ucFirst(t(`common.${type as EntityType}.plural`))
-    }));
-    // Preserve current activeEntityType if it exists in the new tabs, otherwise use the first one available
-    if (!activeEntityType || !(activeEntityType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
-    activeElection = $elections.find((e) => e.id === activeElectionId)!;
-  }
+  // React to changes in activeElectionId to update entityTabs.
+  // Use untrack() for activeEntityType to avoid circular dependency:
+  // without it, setting activeEntityType in handleEntityTabChange would
+  // re-trigger this effect (which reads activeEntityType), causing the
+  // tab content to not update when switching between entity types.
+  $effect(() => {
+    if (activeElectionId) {
+      entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
+        type: type as EntityType,
+        label: ucFirst(t(`common.${type as EntityType}.plural`))
+      }));
+      // Preserve current activeEntityType if it exists in the new tabs, otherwise use the first one available.
+      // Read activeEntityType via untrack to avoid this effect re-triggering on tab changes.
+      const currentType = untrack(() => activeEntityType);
+      if (!currentType || !(currentType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
+      activeElection = $elections.find((e) => e.id === activeElectionId)!;
+    }
+  });
 
   // Update the activeMatches when either the active election or entity type changes. If activeEntityType is undefined, this is due to an error
-  $: if (activeElectionId) {
-    activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
-    setInitialEntityTab();
-  }
+  $effect(() => {
+    if (activeElectionId) {
+      activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
+      setInitialEntityTab();
+    }
+  });
 
   /** Set initial tab based on activeEntityType */
   function setInitialEntityTab(): void {
@@ -196,11 +208,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
-  let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+  let filteredEntities = $state(new Array<MaybeWrappedEntityVariant>());
 </script>
 
-{#if $page.state.resultsShowEntity}
-  {@const props = getDrawerProps($page.state.resultsShowEntity)}
+{#if page.state.resultsShowEntity}
+  {@const props = getDrawerProps(page.state.resultsShowEntity)}
   {#key props}
     {#if props}
       <EntityDetailsDrawer {...props} />
@@ -209,9 +221,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
 {/if}
 
 <MainContent title={$resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.results.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.results.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   <div class="mb-xl text-center" data-testid="voter-results-ingress">
     {#if $resultsAvailable}
@@ -250,66 +264,67 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {/if}
   {/if}
 
-  <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
+  <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div
-    slot="fullWidth"
-    class="bg-base-300 flex min-h-[120vh] flex-col items-center"
-    data-testid="voter-results-container">
-    {#if activeElectionId}
-      <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
-        <!-- EntityType selector if there are multiple -->
-        {#if Object.keys($matches[activeElectionId]).length > 1}
-          <Tabs
-            tabs={entityTabs}
-            activeIndex={initialEntityTabIndex}
-            onChange={handleEntityTabChange}
-            data-testid="voter-results-entity-tabs" />
-        {/if}
-
-        <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
-
-        {#if activeEntityType}
-          {#if activeMatches}
-            <div
-              data-testid={activeEntityType === 'candidate'
-                ? 'voter-results-candidate-section'
-                : activeEntityType === 'organization'
-                  ? 'voter-results-party-section'
-                  : undefined}>
-              {#key activeMatches}
-                <h3 class="my-lg mx-10 text-xl">
-                  {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
-                  {#if $constituenciesSelectable}
-                    <span class="font-normal">
-                      {t('results.inConstituency')}
-                      {activeElection.getApplicableConstituency($constituencies)?.name || '—'}
-                    </span>
-                  {/if}
-                </h3>
-                <EntityListControls
-                  entities={activeMatches}
-                  onUpdate={(results) => (filteredEntities = results)}
-                  filterGroup={$entityFilters[activeElectionId][activeEntityType]}
-                  class="mb-md mx-10"
-                  data-testid="voter-results-controls" />
-                <EntityList
-                  cards={filteredEntities.map((e) => ({ entity: e }))}
-                  class="mb-lg"
-                  data-testid="voter-results-list" />
-              {/key}
-            </div>
-          {:else}
-            <Loading />
+  {#snippet fullWidth()}
+    <div
+      class="bg-base-300 flex min-h-[120vh] flex-col items-center"
+      data-testid="voter-results-container">
+      {#if activeElectionId}
+        <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
+          <!-- EntityType selector if there are multiple -->
+          {#if Object.keys($matches[activeElectionId]).length > 1}
+            <Tabs
+              tabs={entityTabs}
+              activeIndex={initialEntityTabIndex}
+              onChange={handleEntityTabChange}
+              data-testid="voter-results-entity-tabs" />
           {/if}
-        {:else}
-          <div class="py-lg text-error text-center text-lg">
-            {t('error.noNominations')}
-          </div>
-        {/if}
-      </div>
-    {:else}
-      <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{t('results.selectElectionFirst')}</p>
-    {/if}
-  </div>
+
+          <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
+
+          {#if activeEntityType}
+            {#if activeMatches}
+              <div
+                data-testid={activeEntityType === 'candidate'
+                  ? 'voter-results-candidate-section'
+                  : activeEntityType === 'organization'
+                    ? 'voter-results-party-section'
+                    : undefined}>
+                {#key activeMatches}
+                  <h3 class="my-lg mx-10 text-xl">
+                    {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
+                    {#if $constituenciesSelectable}
+                      <span class="font-normal">
+                        {t('results.inConstituency')}
+                        {activeElection?.getApplicableConstituency($constituencies)?.name || '—'}
+                      </span>
+                    {/if}
+                  </h3>
+                  <EntityListControls
+                    entities={activeMatches}
+                    onUpdate={(results) => (filteredEntities = results)}
+                    filterGroup={$entityFilters[activeElectionId][activeEntityType]}
+                    class="mb-md mx-10"
+                    data-testid="voter-results-controls" />
+                  <EntityList
+                    cards={filteredEntities.map((e) => ({ entity: e }))}
+                    class="mb-lg"
+                    data-testid="voter-results-list" />
+                {/key}
+              </div>
+            {:else}
+              <Loading />
+            {/if}
+          {:else}
+            <div class="py-lg text-error text-center text-lg">
+              {t('error.noNominations')}
+            </div>
+          {/if}
+        </div>
+      {:else}
+        <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{t('results.selectElectionFirst')}</p>
+      {/if}
+    </div>
+  {/snippet}
 </MainContent>

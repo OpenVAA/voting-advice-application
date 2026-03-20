@@ -25,7 +25,7 @@
     <Button
       text={t('common.return')}
       variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+      onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else}
   <slot />

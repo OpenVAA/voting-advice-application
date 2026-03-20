@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--
 @component
 Display an `@openvaa/data: Image` object, automatically switching between dark and normal variants if available.
@@ -11,7 +13,7 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
 ### Usage
 
 ```tsx
-<Image image={candidate.image} format="thumbnail" on:load={() => console.info('Loaded!')}/>
+<Image image={candidate.image} format="thumbnail" onload={() => console.info('Loaded!')}/>
 ```
 -->
 
@@ -20,11 +22,7 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
   import { getImageUrl } from '$lib/utils/image';
   import type { ImageProps } from './Image.type';
 
-  type $$Props = ImageProps;
-
-  export let image: $$Props['image'];
-  export let format: $$Props['format'] = undefined;
-  export let alt: $$Props['alt'] = undefined;
+  let { image, format, alt, ...restProps }: ImageProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -34,8 +32,6 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
 </script>
 
 <img
-  {...$$restProps}
+  {...restProps}
   alt={alt || (image.alt ?? '')}
-  src={getImageUrl({ image, format, dark: $darkMode })}
-  on:load
-  on:error />
+  src={getImageUrl({ image, format, dark: $darkMode })} />

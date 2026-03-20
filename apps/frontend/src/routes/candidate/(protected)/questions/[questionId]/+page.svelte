@@ -239,87 +239,93 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       onConfirm={handleNavigationConfirm} />
 
     <MainContent title={text}>
-      <svelte:fragment slot="note">
+      {#snippet note()}
         {#if $answersLocked}
           <Warning>
             {t('candidateApp.common.editingNotAllowed')}
           </Warning>
         {/if}
-      </svelte:fragment>
+      {/snippet}
 
-      <figure role="presentation" slot="hero">
-        {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
-          <Hero content={customData.hero} />
-        {/if}
-      </figure>
+      {#snippet hero()}
+        <figure role="presentation">
+          {#if !$appSettings.candidateApp.questions.hideHero && customData?.hero}
+            <Hero content={customData.hero} />
+          {/if}
+        </figure>
+      {/snippet}
 
-      <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
+      {#snippet heading()}
+        <QuestionHeading {question} questionBlocks={$questionBlocks} onShadedBg />
+      {/snippet}
 
       {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
         <QuestionBasicInfo {info} />
       {/if}
 
-      <div slot="primaryActions" class="gap-lg grid w-full justify-items-center">
-        <!-- Question answer proper -->
+      {#snippet primaryActions()}
+        <div class="gap-lg grid w-full justify-items-center">
+          <!-- Question answer proper -->
 
-        <OpinionQuestionInput
-          {question}
-          {answer}
-          mode={$answersLocked ? 'display' : 'answer'}
-          onShadedBg
-          onChange={handleValueChange}
-          data-testid="candidate-questions-answer" />
-
-        <!-- Open answer -->
-
-        {#if customData.allowOpen}
-          <Input
-            type="textarea-multilingual"
-            label={t('candidateApp.questions.openAnswerPrompt')}
-            value={answer?.info}
-            disabled={!canSubmit}
-            locked={$answersLocked}
-            placeholder={canSubmit ? '' : t('candidateApp.questions.answerQuestionFirst')}
+          <OpinionQuestionInput
+            {question}
+            {answer}
+            mode={$answersLocked ? 'display' : 'answer'}
             onShadedBg
-            onChange={handleInfoChange}
-            data-testid="candidate-questions-comment" />
-        {/if}
+            onChange={handleValueChange}
+            data-testid="candidate-questions-answer" />
 
-        <!-- Error message -->
+          <!-- Open answer -->
 
-        {#if status === 'error'}
-          <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
-        {/if}
-
-        <!-- Submit or cancel -->
-
-        <div class="grid w-full justify-items-center">
-          {#if !$answersLocked}
-            <Button
-              text={submitLabel}
-              on:click={handleSubmit}
+          {#if customData.allowOpen}
+            <Input
+              type="textarea-multilingual"
+              label={t('candidateApp.questions.openAnswerPrompt')}
+              value={answer?.info}
               disabled={!canSubmit}
-              loading={status === 'loading'}
-              loadingText={t('common.saving')}
-              type="submit"
-              id="submitButton"
-              variant="main"
-              icon="next"
-              data-testid="candidate-questions-save" />
-            <Button
-              text={cancelLabel}
-              on:click={handleCancel}
-              color="warning"
-              data-testid="candidate-questions-cancel" />
-          {:else}
-            <Button
-              text={t('common.return')}
-              href={$getRoute('CandAppQuestions')}
-              variant="main"
-              data-testid="candidate-questions-return" />
+              locked={$answersLocked}
+              placeholder={canSubmit ? '' : t('candidateApp.questions.answerQuestionFirst')}
+              onShadedBg
+              onChange={handleInfoChange}
+              data-testid="candidate-questions-comment" />
           {/if}
+
+          <!-- Error message -->
+
+          {#if status === 'error'}
+            <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
+          {/if}
+
+          <!-- Submit or cancel -->
+
+          <div class="grid w-full justify-items-center">
+            {#if !$answersLocked}
+              <Button
+                text={submitLabel}
+                onclick={handleSubmit}
+                disabled={!canSubmit}
+                loading={status === 'loading'}
+                loadingText={t('common.saving')}
+                type="submit"
+                id="submitButton"
+                variant="main"
+                icon="next"
+                data-testid="candidate-questions-save" />
+              <Button
+                text={cancelLabel}
+                onclick={handleCancel}
+                color="warning"
+                data-testid="candidate-questions-cancel" />
+            {:else}
+              <Button
+                text={t('common.return')}
+                href={$getRoute('CandAppQuestions')}
+                variant="main"
+                data-testid="candidate-questions-return" />
+            {/if}
+          </div>
         </div>
-      </div>
+      {/snippet}
     </MainContent>
   {/key}
 {:else}

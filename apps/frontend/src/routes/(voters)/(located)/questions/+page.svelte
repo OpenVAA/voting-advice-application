@@ -10,6 +10,8 @@ Display a general intro before starting answering the questions and possibly all
 - `questions.questionsIntro.show`: If `false`, this page is bypassed.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
@@ -74,11 +76,11 @@ Display a general intro before starting answering the questions and possibly all
   ////////////////////////////////////////////////////////////////////
 
   // To submit, there number of questions in the selected categories must be at least the minimum number set in the app settings or all questions if there are less than the minimum number
-  let canSubmit = false;
-  $: canSubmit =
+  let canSubmit = $derived(
     $selectedQuestionCategoryIds.length > 0 &&
-    $selectedQuestionBlocks.questions.length >=
-      Math.min($opinionQuestions.length, $appSettings.matching.minimumAnswers);
+      $selectedQuestionBlocks.questions.length >=
+        Math.min($opinionQuestions.length, $appSettings.matching.minimumAnswers)
+  );
 
   function handleSubmit(): void {
     if (!canSubmit) return;
@@ -104,9 +106,11 @@ Display a general intro before starting answering the questions and possibly all
 </script>
 
 <MainContent title={t('questions.title')}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={t('dynamic.questions.heroEmoji')} />
-  </figure>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.questions.heroEmoji')} />
+    </figure>
+  {/snippet}
 
   {#if $appSettings.questions.questionsIntro.allowCategorySelection}
     <p class="text-center">
@@ -139,7 +143,7 @@ Display a general intro before starting answering the questions and possibly all
     </p>
     <div
       class="
-        {$opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '} 
+        {$opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '}
         gap-sm justify-center justify-items-center
       ">
       {#each $opinionQuestionCategories as category}
@@ -148,14 +152,15 @@ Display a general intro before starting answering the questions and possibly all
     </div>
   {/if}
 
-  <Button
-    slot="primaryActions"
-    disabled={!canSubmit}
-    on:click={handleSubmit}
-    variant="main"
-    icon="next"
-    text={t('questions.intro.start', {
-      numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
-    })}
-    data-testid="voter-questions-start" />
+  {#snippet primaryActions()}
+    <Button
+      disabled={!canSubmit}
+      onclick={handleSubmit}
+      variant="main"
+      icon="next"
+      text={t('questions.intro.start', {
+        numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
+      })}
+      data-testid="voter-questions-start" />
+  {/snippet}
 </MainContent>

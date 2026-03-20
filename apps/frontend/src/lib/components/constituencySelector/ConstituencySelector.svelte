@@ -25,6 +25,8 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
@@ -35,15 +37,16 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
   import type { Constituency, ConstituencyGroup, Election } from '@openvaa/data';
   import type { ConstituencySelectorProps } from './ConstituencySelector.type';
 
-  type $$Props = ConstituencySelectorProps;
-
-  export let elections: $$Props['elections'];
-  export let disableSorting: $$Props['disableSorting'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let selected: NonNullable<$$Props['selected']> = {};
-  export let useSingleGroup: $$Props['useSingleGroup'] = undefined;
-  export let selectionComplete: $$Props['selectionComplete'] = false;
-  export let onChange: $$Props['onChange'] = undefined;
+  let {
+    elections,
+    disableSorting,
+    onShadedBg,
+    selected = $bindable({}),
+    useSingleGroup,
+    selectionComplete = $bindable(false),
+    onChange,
+    ...restProps
+  }: ConstituencySelectorProps = $props();
 
   if (!elections.length) error(500, 'No elections provided');
 
@@ -64,19 +67,18 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
     applicableElections: Array<Election>;
     groups: Array<ConstituencyGroup>;
     selectedId: Id;
-  }>;
+  }> = $state([]);
 
-  $: {
+  $effect(() => {
     update();
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     elections;
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     useSingleGroup;
-  }
+  });
 
   /**
-   * Wrap in function to prevent excessive reactive updates
-   * TODO[Svelte 5]: Check if necessary
+   * Wrap in function to prevent excessive reactive updates.
    */
   function update(): void {
     // If useSingleGroup is set, we combine all elections into one section
@@ -126,7 +128,9 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
   ////////////////////////////////////////////////////////////////////
 
   // The selection is complete when all sections have a constituency selected.
-  $: selectionComplete = sections.every((s) => s.selectedId);
+  $effect(() => {
+    selectionComplete = sections.every((s) => s.selectedId);
+  });
 
   function handleChange(): void {
     processSectionSelected();
@@ -170,7 +174,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 </script>
 
 {#if sections.length}
-  <div data-testid="constituency-selector" {...concatClass($$restProps, 'mb-md grid gap-lg self-stretch')}>
+  <div data-testid="constituency-selector" {...concatClass(restProps, 'mb-md grid gap-lg self-stretch')}>
     {#each sections as { applicableElections, groups }, sectionIndex}
       <div class="mt-md gap-md grid">
         <!-- Show an number in front of heading if multiple selections need be made -->
@@ -203,7 +207,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
                   {disableSorting}
                   {onShadedBg}
                   bind:selected={sections[sectionIndex].selectedId}
-                  on:change={handleChange} />
+                  onChange={handleChange} />
               </div>
               {#if groupIndex < groups.length - 1}
                 <div class="divider">{t('common.or')}</div>

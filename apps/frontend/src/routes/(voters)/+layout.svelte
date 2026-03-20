@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Voter app main layout
@@ -20,6 +22,7 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import type { Snippet } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
@@ -27,7 +30,6 @@
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
-  import type { PopupComponent } from '$lib/contexts/app/popup';
 
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context
@@ -45,7 +47,7 @@
     // Show possible notification
     if ($appSettings.notifications.voterApp?.show)
       popupQueue.push({
-        component: Notification as unknown as PopupComponent,
+        component: Notification,
         props: { data: $appSettings.notifications.voterApp }
       });
     // Ask for event tracking consent if we have no explicit answer
@@ -70,13 +72,16 @@
   });
 
   const menuId = 'voter-app-menu';
-  let isDrawerOpen: boolean;
+  let { children }: { children: Snippet } = $props();
+  let isDrawerOpen = $state(false);
 </script>
 
 {#if $appSettings.access.voterApp}
   <Layout {menuId} bind:isDrawerOpen>
-    <VoterNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
-    <slot />
+    {#snippet menu()}
+      <VoterNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />
+    {/snippet}
+    {@render children?.()}
   </Layout>
 {:else}
   <MaintenancePage

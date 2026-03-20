@@ -15,6 +15,8 @@ Displays jobs for a specific admin feature, showing active and past job details.
 ```
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { ADMIN_FEATURE } from '$lib/admin/features';
   import { Button } from '$lib/components/button';
@@ -25,10 +27,7 @@ Displays jobs for a specific admin feature, showing active and past job details.
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
   import type { FeatureJobsProps } from './FeatureJobs.type';
 
-  type $$Props = FeatureJobsProps;
-
-  export let feature: $$Props['feature'];
-  export let showFeatureLink: $$Props['showFeatureLink'] = true;
+  let { feature, showFeatureLink = true, ...restProps }: FeatureJobsProps = $props();
 
   ////////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -44,11 +43,8 @@ Displays jobs for a specific admin feature, showing active and past job details.
   // Get jobs for feature
   ////////////////////////////////////////////////////////////////////////
 
-  let activeJob: JobInfo | undefined;
-  let pastJobs: Array<JobInfo>;
-
-  $: activeJob = $activeJobsByFeature.get(feature);
-  $: pastJobs = ($pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime)); // Sorting reversed
+  const activeJob: JobInfo | undefined = $derived($activeJobsByFeature.get(feature));
+  const pastJobs: Array<JobInfo> = $derived(($pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime)));
 
   ////////////////////////////////////////////////////////////////////////
   // Show or hide past jobs
@@ -57,14 +53,14 @@ Displays jobs for a specific admin feature, showing active and past job details.
   /**
    * Control past jobs visibility (default closed)
    */
-  let pastOpen = false;
+  let pastOpen = $state(false);
 
   function togglePast() {
     pastOpen = !pastOpen;
   }
 </script>
 
-<section {...concatClass($$restProps, 'card w-full max-w-full bg-base-100 shadow-lg border border-base-300')}>
+<section {...concatClass(restProps, 'card w-full max-w-full bg-base-100 shadow-lg border border-base-300')}>
   <div class="card-body space-y-8 overflow-hidden p-6">
     <!-- Feature Header -->
     <div class="flex items-center justify-between gap-4">
@@ -119,7 +115,7 @@ Displays jobs for a specific admin feature, showing active and past job details.
               text={pastOpen ? t('adminApp.jobs.hidePastJobs') : t('adminApp.jobs.showPastJobs')}
               variant="secondary"
               class="btn-sm"
-              on:click={togglePast} />
+              onclick={togglePast} />
           </div>
         {/if}
       </div>
