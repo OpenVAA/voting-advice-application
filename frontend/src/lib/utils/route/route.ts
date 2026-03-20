@@ -45,10 +45,8 @@ export const ROUTE = {
   CandAppPreregisterEmail: `${CANDIDATE}/preregister/email`,
   CandAppPreregisterStatus: `${CANDIDATE}/preregister/status`,
   CandAppLogin: `${CANDIDATE}/login`,
-  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/services/email.js */
   CandAppRegister: `${CANDIDATE}/register`,
   CandAppSetPassword: `${CANDIDATE}/register/password`,
-  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
   CandAppResetPassword: `${CANDIDATE}/password-reset`,
   CandAppSettings: `${CANDIDATE_PROT}/settings`,
 

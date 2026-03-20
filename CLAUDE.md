@@ -6,17 +6,17 @@ This file provides guidance to Claude Code when working with this repository. Do
 
 OpenVAA is a framework for building Voting Advice Applications (VAAs). Monorepo with SvelteKit frontend, Supabase backend, and shared packages for matching algorithms, filters, and data management.
 
-> Legacy Strapi backend at `backend/vaa-strapi/`. Being sunset after frontend adapter migration (v3.0). See its README for details.
-
 ## Development Commands
 
 ### Setup
 
 ```bash
 yarn install                    # Install all workspace dependencies
-yarn dev                        # Start full Docker stack (frontend, backend, postgres, localstack)
-yarn dev:down                   # Clean shutdown (removes containers, volumes, images)
-yarn dev:stop                   # Stop without removing volumes
+yarn dev                        # Start Supabase backend + SvelteKit frontend dev server
+yarn dev:down                   # Stop Supabase backend services
+yarn dev:stop                   # Stop Supabase backend services
+yarn dev:reset                  # Reset database and re-seed dev data
+yarn dev:status                 # Show Supabase service status
 ```
 
 ### Building
@@ -48,7 +48,6 @@ yarn format                   # Format all files with Prettier
 
 ```bash
 yarn workspace @openvaa/frontend dev
-yarn workspace @openvaa/strapi dev
 yarn workspace @openvaa/app-shared build
 ```
 
@@ -78,7 +77,9 @@ The project uses Yarn 4 workspaces:
 
 **Experimental** (`packages/`): `llm`, `argument-condensation`, `question-info`
 
-**Application**: `frontend` (SvelteKit 2), `strapi` (legacy backend at `backend/vaa-strapi/`)
+**Application**: `frontend` (SvelteKit 2)
+
+**Backend**: `apps/supabase` (Supabase CLI project with migrations, Edge Functions, seed data)
 
 **Development**: `shared-config` (ESLint, TypeScript, build configs)
 
@@ -88,7 +89,7 @@ The project uses Yarn 4 workspaces:
 
 **Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script watches packages and rebuilds automatically.
 
-**Dependency Flow**: `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`/`strapi`
+**Dependency Flow**: `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`
 
 When adding interdependencies:
 
@@ -99,20 +100,22 @@ When adding interdependencies:
 
 `StaticSettings` in `packages/app-shared/src/settings/staticSettings.ts`, `DynamicSettings` loaded from backend.
 
-## Docker Development
+## Local Development
 
-The stack runs four services:
+The development stack uses Supabase CLI + SvelteKit dev server:
 
-1. `frontend` - SvelteKit on port 5173
-2. `strapi` - Backend on port 1337 (admin at /admin, default admin/admin)
-3. `postgres` - Database on port 5432
-4. `awslocal` - LocalStack for S3/SES on port 4566
+1. `supabase` - Backend services on ports 54321-54324 (API, DB, Inbucket, Studio)
+2. `frontend` - SvelteKit on port 5173
 
-**Port conflicts**: Ensure 1337, 5173, 5432, 4566 are free. Change in `.env` if needed.
+**Starting development**: `yarn dev` (runs `supabase start` then SvelteKit dev server)
 
-**Environment variables**: When using Docker, only edit the root `.env` file (not `frontend/.env` or `backend/vaa-strapi/.env`).
+**Database reset**: `yarn dev:reset` runs `supabase db reset` which applies all migrations and seed data.
 
-**Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed dev data.
+**Email testing**: Inbucket at http://127.0.0.1:54323 captures all emails sent by GoTrue.
+
+**Database Studio**: Supabase Studio at http://127.0.0.1:54324 for visual database management.
+
+**Environment variables**: The `.env.example` file contains Supabase local dev defaults. Copy to `.env` for local development. Supabase service configuration is in `apps/supabase/supabase/config.toml`.
 
 ## Frontend (SvelteKit)
 
@@ -147,8 +150,8 @@ The stack runs four services:
 # Quick check
 yarn test:unit
 
-# Full E2E (requires clean docker stack)
-yarn dev:down
+# Full E2E (requires running dev stack)
+yarn dev:reset
 yarn dev
 # Wait for stack to be healthy
 yarn test:e2e
@@ -177,23 +180,23 @@ yarn build:shared      # If core/data/matching/filters are involved
 
 ## Deployment
 
-Fully containerized with Docker. See `docs/README.md` for Render setup, environment variables, and domain configuration.
+The frontend is containerized with Docker. The backend uses Supabase (cloud-hosted or self-hosted). See `docs/README.md` for setup, environment variables, and domain configuration.
 
 ## Troubleshooting
 
-**Docker issues**: Run `yarn dev:down` to clean everything and start fresh.
+**Supabase issues**: Run `yarn dev:reset` to reset database, or `yarn supabase:stop` then `yarn supabase:start` to restart services.
 
-**Port conflicts**: Check ports 1337, 5173, 5432, 4566 are free. Edit `.env` to change.
+**Port conflicts**: Check ports 5173, 54321-54324 are free. Supabase ports are configured in `apps/supabase/supabase/config.toml`.
 
 **TypeScript errors in IDE**: Run `yarn build:shared` to rebuild all packages.
 
-**Mock data not generating**: Check `GENERATE_MOCK_DATA_ON_INITIALISE=true` in root `.env` and ensure database is empty.
+**Dev data**: Run `yarn dev:reset` to reset and re-seed the database with `apps/supabase/supabase/seed.sql`.
 
-**Frontend can't reach backend**: Verify `PUBLIC_BROWSER_BACKEND_URL` and `PUBLIC_SERVER_BACKEND_URL` in `.env`.
+**Frontend can't reach Supabase**: Verify `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` in `.env` match `supabase status` output.
 
 ## Roadmap
 
-**Current:** v5.0 Claude Skills -- domain-expert skills for each major framework area. **Next:** v3.0 Frontend Adapter Migration (Strapi to Supabase), v4.0 Svelte 5 Upgrade
+**Current:** v3.0 Frontend Adapter Migration (Supabase backend) -- nearing completion. **Next:** v4.0 Svelte 5 Upgrade
 
 ## Code Review
 
