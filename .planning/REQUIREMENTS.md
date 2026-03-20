@@ -65,10 +65,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 ### Dev Environment & Cleanup
 
 - [ ] **ENVR-01**: Local dev via supabase CLI (supabase start) replacing Docker compose for backend
-- [ ] **ENVR-02**: Strapi adapter code removed (frontend/src/lib/api/adapters/strapi/)
-- [ ] **ENVR-03**: backend/vaa-strapi/ directory removed
+- [x] **ENVR-02**: Strapi adapter code removed (frontend/src/lib/api/adapters/strapi/)
+- [x] **ENVR-03**: backend/vaa-strapi/ directory removed
 - [ ] **ENVR-04**: Docker services for Strapi removed from compose files
-- [ ] **ENVR-05**: Strapi-specific packages (qs, etc.) removed if unused elsewhere
+- [x] **ENVR-05**: Strapi-specific packages (qs, etc.) removed if unused elsewhere
 
 ## Future Requirements
 
@@ -128,10 +128,10 @@ Requirements for Supabase frontend adapter migration. Each maps to roadmap phase
 | TEST-03 | Phase 29 | Complete |
 | TEST-04 | Phase 29 | Complete |
 | ENVR-01 | Phase 30 | Pending |
-| ENVR-02 | Phase 30 | Pending |
-| ENVR-03 | Phase 30 | Pending |
+| ENVR-02 | Phase 30 | Complete |
+| ENVR-03 | Phase 30 | Complete |
 | ENVR-04 | Phase 30 | Pending |
-| ENVR-05 | Phase 30 | Pending |
+| ENVR-05 | Phase 30 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 36 total

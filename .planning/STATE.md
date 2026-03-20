@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Phase 30 context gathered
-last_updated: "2026-03-20T07:13:45.616Z"
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-03-20T07:42:14.015Z"
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 24
-  completed_plans: 24
+  total_plans: 28
+  completed_plans: 25
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 29 — e2e-test-migration
+**Current focus:** Phase 30 — strapi-removal-and-dev-environment
 
 ## Current Position
 
-Phase: 29 (e2e-test-migration) — EXECUTING
-Plan: 4 of 4
+Phase: 30 (strapi-removal-and-dev-environment) — EXECUTING
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Plan: 4 of 4
 | Phase 29 P01 | 5min | 2 tasks | 4 files |
 | Phase 29 P03 | 4min | 2 tasks | 9 files |
 | Phase 29 P04 | 8min | 2 tasks | 10 files |
+| Phase 30 P01 | 2min | 2 tasks | 290 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,7 @@ Plan: 4 of 4
 - [Phase 29]: sendEmail uses candidateExternalId from dataset JSON directly (no findData documentId lookup)
 - [Phase 29]: Pitfall 2 workaround comments removed from all spec files (deep merge via merge_jsonb_column RPC)
 - [Phase 29]: trace: 'off' kept in serial specs (Playwright trace writer issue independent of admin client type)
+- [Phase 30]: jose and qs packages retained in frontend/package.json (used outside Strapi adapter, satisfies ENVR-05)
 
 ### Pending Todos
 
@@ -151,6 +153,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:13:45.611Z
-Stopped at: Phase 30 context gathered
-Resume file: .planning/phases/30-strapi-removal-and-dev-environment/30-CONTEXT.md
+Last session: 2026-03-20T07:42:14.012Z
+Stopped at: Completed 30-01-PLAN.md
+Resume file: None
