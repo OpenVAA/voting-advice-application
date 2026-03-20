@@ -8,9 +8,6 @@ const { type } = staticSettings.dataAdapter;
 
 // TODO: The adapter loading logic (switch on type) should be rewritten later.
 switch (type) {
-  case 'strapi':
-    module = import('./adapters/strapi/dataWriter');
-    break;
   case 'supabase':
     module = import('./adapters/supabase/dataWriter');
     break;
