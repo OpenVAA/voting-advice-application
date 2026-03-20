@@ -129,7 +129,11 @@ export class SupabaseAdminClient {
     // - email on candidates (stored in auth.users, not candidates table)
     const NON_COLUMN_FIELDS = new Set(['answers_by_external_id']);
     const COLLECTION_NON_COLUMNS: Record<string, Set<string>> = {
-      candidates: new Set(['email'])
+      candidates: new Set(['email']),
+      // Nominations are polymorphic: only one entity FK allowed (candidate OR organization).
+      // The 'organization' in nomination data refers to the candidate's party,
+      // not the nominated entity. Strip it to avoid check constraint violation.
+      nominations: new Set(['organization'])
     };
     const cleaned: Record<string, unknown[]> = {};
     for (const [collection, records] of Object.entries(data)) {
