@@ -123,14 +123,21 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, unknown[]>): Promise<Record<string, unknown>> {
-    // Strip _ prefixed fields (relationship references handled by linkJoinTables)
-    // and answers_by_external_id (handled by importAnswers) from each record
+    // Strip fields that are not database columns:
+    // - _ prefixed fields (relationship references handled by linkJoinTables)
+    // - answers_by_external_id (handled by importAnswers)
+    // - email on candidates (stored in auth.users, not candidates table)
+    const NON_COLUMN_FIELDS = new Set(['answers_by_external_id']);
+    const COLLECTION_NON_COLUMNS: Record<string, Set<string>> = {
+      candidates: new Set(['email'])
+    };
     const cleaned: Record<string, unknown[]> = {};
     for (const [collection, records] of Object.entries(data)) {
+      const extraStrip = COLLECTION_NON_COLUMNS[collection];
       cleaned[collection] = (records as Array<Record<string, unknown>>).map((record) => {
         const stripped: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(record)) {
-          if (!key.startsWith('_') && key !== 'answers_by_external_id') {
+          if (!key.startsWith('_') && !NON_COLUMN_FIELDS.has(key) && !extraStrip?.has(key)) {
             stripped[key] = value;
           }
         }
