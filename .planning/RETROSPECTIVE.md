@@ -44,6 +44,51 @@
 
 ---
 
+## Milestone: v3.0 — Frontend Adapter
+
+**Shipped:** 2026-03-20
+**Phases:** 9 | **Plans:** 28 | **Timeline:** 3 days
+
+### What Was Built
+- Supabase frontend adapter replacing Strapi across all read/write/admin operations (DataProvider, DataWriter, AdminWriter)
+- Auth migration from Strapi JWT to Supabase cookie-based sessions with PKCE flow
+- Edge Function integration: candidate invite, bank auth (Signicat OIDC), transactional email
+- Full E2E test suite migrated from Strapi to Supabase (admin client, data seeding, auth setup)
+- Complete Strapi removal: 285 files deleted, backend/vaa-strapi/ gone, adapter directory gone
+- Dev environment rewired to `supabase start` + SvelteKit dev server, Docker Compose reduced to production-build test tool
+- CI pipeline updated: backend-validation removed, pgTAP job added, E2E uses supabase CLI
+
+### What Worked
+- Dependency-ordered phases (schema → foundation → auth → reads → writes → admin → edge → tests → cleanup) prevented rework
+- The adapter mixin pattern (supabaseAdapterMixin) provided clean shared infrastructure for all three adapter classes
+- Wave-based parallelization in Phase 30 (plans 02+03 in parallel) was efficient for independent infrastructure changes
+- Phase 29 (E2E migration) proving Supabase-only workflow before Phase 30 (Strapi removal) eliminated risk
+- Research identified that jose and qs packages must be kept — prevented a broken build
+
+### What Was Inefficient
+- Phase 30 documentation task (30-04) was the slowest plan despite being "just docs" — 22 pages to update is significant work
+- Some plan checkboxes in ROADMAP.md were not updated by executors (stayed as `[ ]` instead of `[x]`)
+- SUMMARY.md one_liner fields were not consistently populated, making milestone accomplishment extraction manual
+
+### Patterns Established
+- supabaseAdapterMixin with init({ fetch }) for SSR compatibility across all adapter classes
+- Cookie-based PKCE sessions with httpOnly cookies and safeGetSession (not getSession) for route guards
+- Stub docs pattern: removed Strapi pages replaced with stubs pointing to equivalent Supabase documentation
+- get_candidate_user_data RPC for deriving user context (role, election, constituency, nomination) from session
+
+### Key Lessons
+1. Removal phases are deceptively complex — Strapi had references in 243+ files across code, config, CI, docs, and Docker
+2. Research phase is critical even for "just delete" work — the exhaustive grep caught edge cases (Dockerfile COPY, dead test files)
+3. Keep jose/qs analysis is the kind of nuance that prevents broken builds — always verify package usage before removal
+4. Documentation cleanup should be a separate plan (as it was) — mixing code deletion with doc updates creates overly large commits
+
+### Cost Observations
+- Model mix: ~70% opus (execution), ~20% sonnet (verification, plan checking), ~10% research
+- Notable: 9 phases with 28 plans completed in 3 days — dependency-ordered execution minimized wait time
+- Phase 30 (removal) was fastest conceptually but slowest in docs cleanup
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -51,14 +96,18 @@
 | Milestone | Timeline | Phases | Key Change |
 |-----------|----------|--------|------------|
 | v2.0 | 4 days | 8 | Schema-first backend build with load testing validation |
+| v3.0 | 3 days | 9 | Dependency-ordered adapter migration with E2E proof before cleanup |
 
 ### Cumulative Quality
 
 | Milestone | DB Tests | E2E Tests | Unit Tests |
 |-----------|----------|-----------|------------|
 | v2.0 | 204 pgTAP | (existing) | (existing) |
+| v3.0 | 229 pgTAP | Migrated to Supabase | 84+ adapter tests |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Test infrastructure before feature code — pgTAP tests caught 2 real bugs in schema functions
 2. Load test before committing to storage patterns — avoided potential JSONB→relational rework
+3. Prove new stack works end-to-end (E2E) before removing old stack — eliminates removal risk
+4. Research phase catches edge cases even for "simple" removal work — 243+ Strapi references across codebase
