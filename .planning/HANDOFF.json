@@ -1,19 +1,68 @@
 {
   "version": "1.0",
-  "timestamp": "2026-03-18T20:25:03.634Z",
-  "phase": "24",
-  "phase_name": "Auth Migration",
-  "phase_dir": ".planning/phases/24-auth-migration",
+  "timestamp": "2026-03-20T12:02:08.505Z",
+  "phase": "freeform",
+  "phase_name": "schema-reorganization-and-test-data-rewrite",
+  "phase_dir": null,
   "plan": null,
   "task": null,
-  "total_tasks": 0,
+  "total_tasks": 8,
   "status": "paused",
-  "completed_tasks": [],
-  "remaining_tasks": [],
-  "blockers": [],
+  "completed_tasks": [
+    {"id": 1, "name": "Reorganize schema files (000-900 numbering)", "status": "done"},
+    {"id": 2, "name": "Rename all function parameters to p_ prefix", "status": "done"},
+    {"id": 3, "name": "Add public. prefix to all public schema objects", "status": "done"},
+    {"id": 4, "name": "Update validate_answer_value for localized strings", "status": "done"},
+    {"id": 5, "name": "Add validate_question_choices trigger", "status": "done"},
+    {"id": 6, "name": "Remove alternatives directory", "status": "done"},
+    {"id": 7, "name": "Rewrite test data to camelCase DataObjectData format", "status": "done"},
+    {"id": 8, "name": "Fix E2E tests to pass", "status": "in_progress", "progress": "29/85 pass, 14 fail, 42 skipped"}
+  ],
+  "remaining_tasks": [
+    {"id": 8, "name": "Fix remaining 14 E2E test failures", "status": "in_progress"}
+  ],
+  "blockers": [
+    {
+      "description": "auth-setup test fails: candidate login succeeds but page stays on /login URL",
+      "type": "technical",
+      "workaround": "Cascades to all 8 candidate-app tests. Need to investigate auth flow."
+    },
+    {
+      "description": "5 voter tests fail: voter-detail (party), voter-matching, voter-results (3)",
+      "type": "technical",
+      "workaround": "Other voter tests (journey, static pages, detail candidate) now pass. These specific tests may have entity data rendering issues."
+    },
+    {
+      "description": "GoTrue auth.users NULL column bug causes listUsers failures on fresh db reset",
+      "type": "technical",
+      "workaround": "safeListUsers() returns empty array on failure. Seed.sql has UPDATE fix. ALTER TABLE can't run from seed (permission denied)."
+    }
+  ],
   "human_actions_pending": [],
-  "decisions": [],
-  "uncommitted_files": [],
-  "next_action": "Run /gsd:plan-phase 24 to plan phase 24, then execute with /gsd:execute-phase 24",
-  "context_notes": "Phase 24 planning was just initiated. Init and phase validation completed successfully. CONTEXT.md exists from a prior discuss-phase session. Research had not yet started — the researcher agent spawn was rejected by the user before it ran. No plans exist yet. The user wanted plan + auto-execute but paused before research began."
+  "decisions": [
+    {"decision": "Schema numbering: 000=enums, 010-011=functions, 100-108=tables, 200=indexes, 300-303=auth/rls, 400=storage, 500-504=RPCs, 900=test-helpers", "rationale": "Allows inserting new files between categories", "phase": "freeform"},
+    {"decision": "Test data uses camelCase with supabaseAdminClient converting to snake_case via PROPERTY_MAP/TABLE_MAP", "rationale": "Follows DataObjectData format, single source of truth for conversion", "phase": "freeform"},
+    {"decision": "Added external_id to COLUMN_MAP and relationship ref conversion in bulkImport", "rationale": "External refs in test data use {externalId: ...} which must become {external_id: ...} for SQL RPC", "phase": "freeform"},
+    {"decision": "Added results.cardContents and sections to data.setup.ts", "rationale": "mergeAppSettings does shallow Object.assign - DB results overwrites defaults losing cardContents", "phase": "freeform"},
+    {"decision": "CJS export added to supabase-types package.json", "rationale": "tsx module resolution needs require export for test scripts", "phase": "freeform"}
+  ],
+  "uncommitted_files": [
+    "apps/supabase/supabase/schema/* (24 new files, 22 old deleted + alternatives/)",
+    "apps/supabase/supabase/migrations/00001_initial_schema.sql (regenerated, 3 others deleted)",
+    "apps/supabase/supabase/seed.sql (GoTrue NULL fix)",
+    "frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts (p_ RPC params)",
+    "frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.test.ts (p_ test params)",
+    "packages/data/src/core/dataObject.type.ts (externalId added)",
+    "packages/supabase-types/src/column-map.ts (TABLE_MAP + external_id)",
+    "packages/supabase-types/src/index.ts (TABLE_MAP exports)",
+    "packages/supabase-types/package.json (CJS export)",
+    "tests/tests/data/*.json (6 files: camelCase rewrite)",
+    "tests/tests/utils/supabaseAdminClient.ts (PROPERTY_MAP/TABLE_MAP, p_data, safeListUsers)",
+    "tests/tests/setup/data.setup.ts (results.cardContents fix)",
+    "tests/tests/specs/voter/*.spec.ts (camelCase property refs)",
+    "tests/tests/specs/candidate/*.spec.ts (camelCase property refs)",
+    "tests/tests/utils/mergeDatasets.ts (camelCase property refs)"
+  ],
+  "next_action": "Debug 14 remaining E2E failures. Two root causes: (1) auth-setup fails - candidate login stays on /login URL, investigate get_candidate_user_data or cookie auth; (2) 5 voter tests fail on results/detail/matching - entity data rendering issue.",
+  "context_notes": "Massive 7-point refactoring is 95% complete. All schema, type, and test data changes are done. 29 tests pass including data import, voter journey, static pages, candidate registration/profile, variant tests. The auth-setup failure cascades to all 8 candidate-app tests. The voter failures are concentrated in results/matching/detail (party drawer) pages."
 }
