@@ -14,7 +14,6 @@ ENV HUSKY=0
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 # To be able to use --immutable, we need to copy all the packages in the workspace
-COPY backend backend
 COPY docs docs
 COPY frontend frontend
 COPY packages packages
