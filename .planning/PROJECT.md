@@ -34,9 +34,9 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - [x] Supabase frontend adapter: DataProvider, DataWriter, and AdminWriter implementations — v3.0 Phase 22-27
 - [x] Auth migration from Strapi JWT to Supabase session-based auth — v3.0 Phase 24
 - [x] Edge Function frontend integration (invite-candidate, signicat-callback, send-email) — v3.0 Phase 28
-- [ ] Strapi removal (adapter code, backend/vaa-strapi/, Docker service)
+- [x] Strapi removal (adapter code, backend/vaa-strapi/, Docker service) — v3.0 Phase 30
 - [x] E2E test migration from Strapi to Supabase backend — v3.0 Phase 29
-- [ ] Local dev environment via supabase CLI
+- [x] Local dev environment via supabase CLI — v3.0 Phase 30
 
 ### Out of Scope
 
@@ -50,9 +50,9 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 The project is a mature monorepo used for real election deployments. The Supabase backend is fully functional with authentication, multi-tenant RLS, storage, bulk operations, and comprehensive test coverage. Phase 23 (Adapter Foundation) established the shared infrastructure for the Supabase frontend adapter — mixin, row mapping, localization utilities, and stub classes are in place.
 
-Key technical state after Phase 27:
+Key technical state after Phase 30:
 - **Backend:** Supabase (Postgres, GoTrue, PostgREST, Storage, Edge Functions) at `apps/supabase/`
-- **Legacy backend:** Strapi v5 at `backend/vaa-strapi/` — to be removed after frontend adapter migration
+- **Legacy backend:** Removed — Strapi v5 fully deleted in Phase 30
 - **Types:** `@openvaa/supabase-types` with generated Database types and COLUMN_MAP/PROPERTY_MAP
 - **Adapter foundation:** `supabaseAdapterMixin`, `mapRow`/`mapRowToDb`, `getLocalized` utilities, stub DataProvider/DataWriter/FeedbackWriter classes, switch wiring — all at `frontend/src/lib/api/adapters/supabase/`
 - **DataProvider:** All 7 read methods implemented (`_getAppSettings`, `_getAppCustomization`, `_getElectionData`, `_getConstituencyData`, `_getEntityData`, `_getQuestionData`, `_getNominationData`) with `localizeRow`, `toDataObject`, `parseStoredImage` utilities and `get_nominations` RPC — 84 tests passing
@@ -78,11 +78,11 @@ Key technical state after Phase 27:
 
 ## Constraints
 
-- **Tech stack (current)**: SvelteKit 2, Svelte 4, Supabase + Strapi v5 (dual), Postgres, Yarn 4 workspaces
-- **Tech stack (target)**: Svelte 5, Supabase only, potentially Deno
+- **Tech stack (current)**: SvelteKit 2, Svelte 4, Supabase only, Postgres, Yarn 4 workspaces
+- **Tech stack (target)**: Svelte 5, potentially Deno
 - **Testing**: Playwright for E2E, Vitest for unit tests, pgTAP for database
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
-- **Strapi sunset**: Remove after frontend adapter is verified in production
+- **Dev environment**: `supabase start` + SvelteKit dev server (no Docker Compose for backend)
 
 ## Milestones
 
@@ -114,4 +114,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-19 after Phase 29 (E2E Test Migration) complete*
+*Last updated: 2026-03-20 after Phase 30 (Strapi Removal and Dev Environment) complete — v3.0 Frontend Adapter milestone final phase*
