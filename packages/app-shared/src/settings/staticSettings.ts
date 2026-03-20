@@ -12,7 +12,7 @@ export const staticSettings: StaticSettings = {
   dataAdapter: {
     type: 'supabase',
     supportsCandidateApp: true,
-    supportsAdminApp: true
+    supportsAdminApp: false
   },
   colors: {
     light: {
