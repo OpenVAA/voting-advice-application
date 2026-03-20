@@ -16,8 +16,8 @@
 
 import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
 import { testIds } from '../../utils/testIds';
 
 // Compute expected counts from datasets

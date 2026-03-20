@@ -15,7 +15,7 @@
 
 import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
 import { testIds } from '../../utils/testIds';
 
 // The candidate used for detail content verification (has info answers and open answers)

@@ -18,8 +18,8 @@
 
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuestion } from '@openvaa/matching';
 import { expect, test } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' assert { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
 import type { HasAnswers } from '@openvaa/core';

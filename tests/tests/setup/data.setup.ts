@@ -1,7 +1,7 @@
 import { expect, test as setup } from '@playwright/test';
-import candidateAddendum from '../data/candidate-addendum.json' assert { type: 'json' };
-import defaultDataset from '../data/default-dataset.json' assert { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' assert { type: 'json' };
+import candidateAddendum from '../data/candidate-addendum.json' with { type: 'json' };
+import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
+import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 

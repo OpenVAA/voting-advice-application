@@ -18,7 +18,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
+import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';

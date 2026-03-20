@@ -13,8 +13,8 @@ import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
-import candidateAddendum from '../../data/candidate-addendum.json' assert { type: 'json' };
-import defaultDataset from '../../data/default-dataset.json' assert { type: 'json' };
+import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
+import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 
 // Run all tests in this file without authentication
