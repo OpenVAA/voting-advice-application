@@ -202,10 +202,13 @@ Plans:
   3. The backend/vaa-strapi/ directory no longer exists
   4. Docker Compose files contain no Strapi, legacy Postgres, or LocalStack service definitions
   5. Strapi-specific packages (qs, jose) are removed from frontend/package.json (verified unused elsewhere)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 30-01: TBD
+- [ ] 30-01-PLAN.md — Strapi code removal: adapter switches, StrapiDataAdapter type, adapter directory, test files, backend directory, workspace entries (ENVR-02, ENVR-03, ENVR-05)
+- [ ] 30-02-PLAN.md — Dev environment rewrite: docker-compose as production-build test tool, .env.example stripped, Dockerfile updated, dev scripts rewired to supabase CLI, yarn.lock regenerated (ENVR-01, ENVR-04)
+- [ ] 30-03-PLAN.md — CI/CD pipeline: remove backend-validation job, rewrite E2E jobs for supabase CLI, add pgTAP job, update dependabot and Render blueprint (ENVR-04)
+- [ ] 30-04-PLAN.md — Documentation cleanup: CLAUDE.md rewrite, Strapi docs pages stubbed, navigation config updated, route comments cleaned (ENVR-01, ENVR-04)
 
 ## Progress
 
@@ -222,7 +225,7 @@ Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 �
 | 27. AdminWriter | 2/2 | Complete    | 2026-03-19 | - |
 | 28. Edge Functions | 2/2 | Complete    | 2026-03-19 | - |
 | 29. E2E Test Migration | 4/4 | Complete    | 2026-03-19 | - |
-| 30. Strapi Removal and Dev Environment | v3.0 | 0/? | Not started | - |
+| 30. Strapi Removal and Dev Environment | v3.0 | 0/4 | Not started | - |
 
 ---
 
