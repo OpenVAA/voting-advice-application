@@ -1,11 +1,14 @@
-# Default data loading
+# Default Data Loading
 
-Some data is automatically loaded when Strapi is initialized. The data include:
+> **Migrated to Supabase.** The Strapi backend was removed in v3.0. This page previously documented the Strapi-based default data loading mechanism.
 
-- [Question Types](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultData.ts)
-- [App Settings](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts)
-- [Translation overrides](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDynamicTranslations.ts) (under the `dynamic` key)
+## Supabase Equivalent
 
-API permissions are also set by defaul by [setDefaultApiPermissions.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/setDefaultApiPermissions.ts).
+Default and development data is loaded via `apps/supabase/supabase/seed.sql`, which runs automatically during `supabase db reset`. For programmatic data imports, use the `bulk_import` RPC function.
 
-> Note that some of the defaults are **not** loaded if mock data generations is enabled.
+## References
+
+- Supabase project: `apps/supabase/`
+- Seed data: `apps/supabase/supabase/seed.sql`
+- Bulk import RPC: `apps/supabase/supabase/schema/`
+- Migration commit: Phase 30 of v3.0 Frontend Adapter milestone

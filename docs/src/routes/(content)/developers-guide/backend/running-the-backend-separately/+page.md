@@ -1,7 +1,13 @@
-# Running the backend separately
+# Running the Backend
 
-0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](https://github.com/OpenVAA/voting-advice-application/blob/main/package.json). Use of nvm is encouraged. **Additionally, you need Docker!**
-1. Install dependencies by running `yarn install`.
-2. Copy or rename the `.env.example` to `.env` before running any of the commands.
-3. Run `docker compose -f docker-compose.dev.yml up postgres` to start Postgres container.
-4. Run `yarn dev` or `yarn start` to run the Strapi server directly.
+> **Migrated to Supabase.** The Strapi backend was removed in v3.0. This page previously documented running the Strapi backend separately.
+
+## Supabase Equivalent
+
+Run `supabase start` in the `apps/supabase/` directory to launch all backend services (API, database, auth, storage, Inbucket). Port configuration is in `apps/supabase/supabase/config.toml`.
+
+## References
+
+- Supabase project: `apps/supabase/`
+- Configuration: `apps/supabase/supabase/config.toml`
+- Migration commit: Phase 30 of v3.0 Frontend Adapter milestone

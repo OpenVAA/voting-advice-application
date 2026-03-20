@@ -3,7 +3,7 @@
 The overall model for loading and writing data and managing the application state is as follows.
 
 1. External data is loaded (and written) using the [Data API](/developers-guide/frontend/data-api). The API is accessed by universal `load` functions in `+layout.ts` files, the `Context`s or some API routes.
-   - Depending on [settings](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.type.ts), either a Strapi backend is accessed or data is read from local `json` files.
+   - Depending on [settings](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.type.ts), either the Supabase backend is accessed or data is read from local `json` files.
 2. The loaded data is passed to the `dataRoot` store accessible via the `DataContext` and converted into functional objects using the [`@openvaa/data` model](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/data/).
    - All pages, some other [contexts](/developers-guide/frontend/contexts) and [dynamic components](/developers-guide/frontend/components) can access the `DataContext`.
    - Some data in the Candidate App is contained in a `UserDataStore` instead of the `dataRoot` store.
@@ -84,19 +84,19 @@ DP["DataProvider
 $lib/api/dataProvider.ts
 Imports the correct DataProvider implementation"]
 
-DP_STRAPI["$lib/api/adapters/strapi/provider/strapiDataProvider.ts
-A specific implementation to connect to a Strapi backend"]
+DP_SUPABASE["$lib/api/adapters/supabase/provider/supabaseDataProvider.ts
+A specific implementation to connect to the Supabase backend"]
 
 DP_API["$lib/api/adapters/apiRoute/provider/apiRouteDataProvider.ts
 A generic wrapper for all DataProvider implementations
 that rely on the server and are, thus, accessible via the API routes"]
 
-UDA_STRAPI["UniversalDataProvider.fetch()
+UDA_SUPABASE["UniversalDataProvider.fetch()
 $lib/api/base/universalDataAdapter.ts
 Wraps the fetch method used for requests,
 possibly redirecting requests to the cache."]
 
-CACHE_STRAPI["/routes/api/cache/+server.ts"]:::ssr
+CACHE_SUPABASE["/routes/api/cache/+server.ts"]:::ssr
 
 UDA_API["UniversalDataProvider.fetch()
 $lib/api/base/universalDataAdapter.ts
@@ -149,13 +149,13 @@ getConstituencyData"| DP
 
 subgraph DataProviders
 DP
----|"import depending on appSettings"|DP_STRAPI
----|"_getElectionData"|UDA_STRAPI
----|"fetch()"|STRAPI["Strapi backend"]:::ssr;
+---|"import depending on appSettings"|DP_SUPABASE
+---|"_getElectionData"|UDA_SUPABASE
+---|"fetch()"|SUPABASE["Supabase backend"]:::ssr;
 
-UDA_STRAPI
----|"if cache is enabled"|CACHE_STRAPI
----|"fetch() and cache"|STRAPI["Strapi backend"]:::ssr;
+UDA_SUPABASE
+---|"if cache is enabled"|CACHE_SUPABASE
+---|"fetch() and cache"|SUPABASE["Supabase backend"]:::ssr;
 
 DP
 ---|"import depending on appSettings"|DP_API

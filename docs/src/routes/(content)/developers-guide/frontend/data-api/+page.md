@@ -23,7 +23,7 @@ Note that the cache can be enabled also when the `local` data adapter is used. T
     - [lib/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api) — All universally available Data API implementations.
       - [adapters/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters) — Specific Data API implemenations.
         - [apiRoute/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
-        - [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
+        - [supabase/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/adapters/supabase) - Specific `SupabaseDataProvider`, `SupabaseFeedbackWriter` and `SupabaseDataWriter` implementations for use with the Supabase backend.
       - [base/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
       - [utils/](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/utils) — Utilities related to the Data API.
       - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
@@ -127,28 +127,25 @@ namespace Universal {
     #_postFeedback(data)* Promise~Response~
   }
 
-  class StrapiAdapter:::abstract {
+  class SupabaseAdapter:::abstract {
     <<Abstract/Mixin>>
-    Implements methods for accessing the Strapi API
-    +apiFetch(opts) Promise~Response~
-    +apiGet(opts) Promise~StrapiReturnType['foo']~
-    +apiPost(opts) Promise~Response~
-    +apiPut(opts) Promise~Response~
+    Implements methods for accessing the Supabase API
+    +supabase SupabaseClient
   }
 
-  class StrapiDataProvider {
+  class SupabaseDataProvider {
     Implements the actual _getter methods,
-    which use StrapiAdapter.apiGet and convert
-    the Strapi data into DPReturnType['foo']
+    which use Supabase PostgREST queries and convert
+    the data into DPReturnType['foo']
     #_getFooData(options) Promise~Array~FooData~~
   }
 
-  class StrapiDataWriter {
+  class SupabaseDataWriter {
     Implements the actual _foo methods,
     mandated by UniversalDataWriter
   }
 
-  class StrapiFeedbackWriter {
+  class SupabaseFeedbackWriter {
     Implements the _postFeedback method
     #_postFeedback(data) Promise~Response~
   }
@@ -209,12 +206,12 @@ UniversalAdapter <|-- UniversalDataProvider
 UniversalAdapter <|-- UniversalDataWriter
 UniversalAdapter <|-- UniversalFeedbackWriter
 
-StrapiAdapter <|-- StrapiDataProvider : mixin
-StrapiAdapter <|-- StrapiDataWriter : mixin
-StrapiAdapter <|-- StrapiFeedbackWriter : mixin
-UniversalDataProvider <|-- StrapiDataProvider
-UniversalDataWriter <|-- StrapiDataWriter
-UniversalFeedbackWriter <|-- StrapiFeedbackWriter
+SupabaseAdapter <|-- SupabaseDataProvider : mixin
+SupabaseAdapter <|-- SupabaseDataWriter : mixin
+SupabaseAdapter <|-- SupabaseFeedbackWriter : mixin
+UniversalDataProvider <|-- SupabaseDataProvider
+UniversalDataWriter <|-- SupabaseDataWriter
+UniversalFeedbackWriter <|-- SupabaseFeedbackWriter
 
 ApiRouteAdapter <|-- ApiRouteDataProvider : mixin
 ApiRouteAdapter <|-- ApiRouteFeedbackWriter : mixin

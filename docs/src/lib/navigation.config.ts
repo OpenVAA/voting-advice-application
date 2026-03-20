@@ -152,28 +152,8 @@ export const navigation: Navigation = [
         route: '/developers-guide/backend',
         children: [
           {
-            title: 'Strapi',
+            title: 'Supabase Backend',
             route: '/developers-guide/backend/intro'
-          },
-          {
-            title: 'Customized behaviour',
-            route: '/developers-guide/backend/customized-behaviour'
-          },
-          {
-            title: 'Plugins',
-            route: '/developers-guide/backend/plugins'
-          },
-          {
-            title: 'OpenVAA admin tools plugin for Strapi',
-            route: '/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi'
-          },
-          {
-            title: 'Default data loading',
-            route: '/developers-guide/backend/default-data-loading'
-          },
-          {
-            title: 'Mock data generation',
-            route: '/developers-guide/backend/mock-data-generation'
           },
           {
             title: 'Authentication',
@@ -182,18 +162,6 @@ export const navigation: Navigation = [
           {
             title: 'Security',
             route: '/developers-guide/backend/security'
-          },
-          {
-            title: 'Preparing backend dependencies',
-            route: '/developers-guide/backend/preparing-backend-dependencies'
-          },
-          {
-            title: 'Running the backend separately',
-            route: '/developers-guide/backend/running-the-backend-separately'
-          },
-          {
-            title: 'Re-generating types',
-            route: '/developers-guide/backend/re-generating-types'
           }
         ]
       },
@@ -256,10 +224,6 @@ export const navigation: Navigation = [
             route: '/developers-guide/localization/locale-selection-step-by-step'
           },
           {
-            title: 'Localization in Strapi',
-            route: '/developers-guide/localization/localization-in-strapi'
-          },
-          {
             title: 'Localization in the frontend',
             route: '/developers-guide/localization/localization-in-the-frontend'
           },
@@ -288,10 +252,6 @@ export const navigation: Navigation = [
           {
             title: 'Password Validation',
             route: '/developers-guide/candidate-user-management/password-validation'
-          },
-          {
-            title: 'Registration Process in Strapi',
-            route: '/developers-guide/candidate-user-management/registration-process-in-strapi'
           },
           {
             title: 'Resetting the Password',
