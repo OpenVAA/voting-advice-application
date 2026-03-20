@@ -5,7 +5,7 @@
 - ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (partially shipped)
 - ✅ **v2.0 Supabase Migration** — Phases 8-15 (shipped 2026-03-15)
 - ✅ **v5.0 Claude Skills** — Phases 16-21 (shipped 2026-03-18)
-- 🚧 **v3.0 Frontend Adapter** — Phases 22-30 (in progress)
+- ✅ **v3.0 Frontend Adapter** — Phases 22-30 (shipped 2026-03-20)
 
 ## Phases
 
@@ -48,184 +48,34 @@
 
 </details>
 
-### 🚧 v3.0 Frontend Adapter (In Progress)
+<details>
+<summary>✅ v3.0 Frontend Adapter (Phases 22-30) — SHIPPED 2026-03-20</summary>
 
-**Milestone Goal:** Replace the Strapi frontend adapter with a Supabase adapter, migrate auth, integrate Edge Functions, update E2E tests, and remove all Strapi dependencies.
+- [x] Phase 22: Schema Migrations (4/4 plans) — 2026-03-18
+- [x] Phase 23: Adapter Foundation (2/2 plans) — 2026-03-18
+- [x] Phase 24: Auth Migration (3/3 plans) — 2026-03-19
+- [x] Phase 25: DataProvider (4/4 plans) — 2026-03-19
+- [x] Phase 26: DataWriter (3/3 plans) — 2026-03-19
+- [x] Phase 27: AdminWriter (2/2 plans) — 2026-03-19
+- [x] Phase 28: Edge Functions (2/2 plans) — 2026-03-19
+- [x] Phase 29: E2E Test Migration (4/4 plans) — 2026-03-19
+- [x] Phase 30: Strapi Removal and Dev Environment (4/4 plans) — 2026-03-20
 
-- [x] **Phase 22: Schema Migrations** - Add missing schema objects that adapter features depend on (completed 2026-03-18)
-- [x] **Phase 23: Adapter Foundation** - Build the mixin, transforms, and localization utilities that all adapter classes need (completed 2026-03-18)
-- [x] **Phase 24: Auth Migration** - Replace Strapi JWT auth with Supabase cookie-based sessions (completed 2026-03-19)
-- [x] **Phase 25: DataProvider** - Implement all read operations; voter app works end-to-end on Supabase (completed 2026-03-19)
-- [x] **Phase 26: DataWriter** - Implement candidate write operations; candidate app works end-to-end on Supabase (completed 2026-03-19)
-- [x] **Phase 27: AdminWriter** - Implement admin operations for question and job management (completed 2026-03-19)
-- [x] **Phase 28: Edge Functions** - Integrate candidate invite, bank auth, and email Edge Functions into frontend (completed 2026-03-19)
-- [x] **Phase 29: E2E Test Migration** - Migrate test infrastructure and data seeding from Strapi to Supabase (completed 2026-03-19)
-- [x] **Phase 30: Strapi Removal and Dev Environment** - Remove all Strapi code and switch to supabase CLI for local dev (completed 2026-03-20)
-
-## Phase Details
-
-### Phase 22: Schema Migrations
-**Goal**: All schema objects that adapter features depend on exist in the Supabase database
-**Depends on**: Nothing (first phase of v3.0)
-**Requirements**: SCHM-01, SCHM-02, SCHM-03, SCHM-04
-**Success Criteria** (what must be TRUE):
-  1. App customization data can be stored and retrieved from Supabase (customization JSONB column on app_settings or equivalent)
-  2. User feedback can be submitted and stored in a dedicated feedback table with appropriate RLS
-  3. Candidate terms-of-use acceptance is tracked with a timestamp column on the candidates table
-  4. Candidate answers can be atomically upserted via an RPC function that handles both insert and update
-**Plans**: 4 plans
-
-Plans:
-- [ ] 22-01-PLAN.md — Column additions (SCHM-01/03/04): customization on app_settings, terms_of_use_accepted on candidates, upsert_answers RPC
-- [ ] 22-02-PLAN.md — Feedback table (SCHM-02): table DDL, rate limiting trigger, RLS policies, indexes
-- [ ] 22-03-PLAN.md — pgTAP tests for all four requirements (SCHM-01 through SCHM-04)
-- [ ] 22-04-PLAN.md — Type regeneration: database.ts regenerated, column-map.ts updated with termsOfUseAccepted
-
-### Phase 23: Adapter Foundation
-**Goal**: The shared utilities and infrastructure that all Supabase adapter classes depend on are built and tested
-**Depends on**: Phase 22
-**Requirements**: ADPT-01, ADPT-02, ADPT-03, ADPT-04
-**Success Criteria** (what must be TRUE):
-  1. A supabaseAdapterMixin creates a typed Supabase client from SvelteKit's fetch, and accepts an injected server client via AdapterConfig
-  2. Row mapping utility transforms Supabase snake_case rows to camelCase domain objects using COLUMN_MAP/PROPERTY_MAP
-  3. JSONB localization utility extracts locale-appropriate strings with 3-tier fallback (requested, default, first key) matching the SQL get_localized() behavior
-  4. Setting staticSettings.dataAdapter.type to 'supabase' causes the dynamic import switch to load Supabase adapter classes
-**Plans**: 2 plans
-
-Plans:
-- [ ] 23-01-PLAN.md — Types, constants, and utilities (ADPT-01/02/03/04): SupabaseDataAdapter type, env var constants, SupabaseAdapterConfig type, mapRow/mapRowToDb utilities, getLocalized utility, unit tests
-- [ ] 23-02-PLAN.md — Mixin, stubs, and wiring (ADPT-01/04): supabaseAdapterMixin, stub DataProvider/DataWriter/FeedbackWriter classes, dynamic import switch cases
-
-### Phase 24: Auth Migration
-**Goal**: Users can securely authenticate using Supabase cookie-based sessions with no Strapi auth dependency
-**Depends on**: Phase 23
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
-**Success Criteria** (what must be TRUE):
-  1. Candidate can log in with email/password and their session persists across page reloads via Supabase cookies
-  2. Candidate can log out from any page and their session is fully terminated (no stale cookies)
-  3. Protected candidate routes redirect unauthenticated users to login, using Supabase session verification (safeGetSession, not getSession)
-  4. Candidate can request a password reset email and complete the reset flow via Supabase GoTrue
-  5. No Strapi JWT (AUTH_TOKEN_KEY) cookies are read or written anywhere in the auth flow
-**Plans**: 3 plans
-
-Plans:
-- [x] 24-01-PLAN.md -- SupabaseDataWriter auth methods + auth callback route + unit tests (AUTH-01, AUTH-04)
-- [x] 24-02-PLAN.md -- Session infrastructure: hooks route guard, layout loaders, AuthContext rewrite (AUTH-02, AUTH-03)
-- [x] 24-03-PLAN.md -- Route refactoring, admin page updates, Strapi auth cleanup (AUTH-01, AUTH-02, AUTH-03, AUTH-04)
-
-### Phase 25: DataProvider
-**Goal**: The voter app loads all data from Supabase and works end-to-end without Strapi
-**Depends on**: Phase 23 (adapter foundation), Phase 24 (auth, for authenticated query testing)
-**Requirements**: READ-01, READ-02, READ-03, READ-04, READ-05, READ-06
-**Success Criteria** (what must be TRUE):
-  1. Voter app displays app settings and customization loaded from Supabase
-  2. Voter app displays elections with their constituency groups from Supabase
-  3. Voter app displays constituencies with parent relationships from Supabase
-  4. Voter app displays candidates and organizations with their answers and profile data from Supabase
-  5. Voter app displays questions grouped by categories with correct question types from Supabase
-  6. Voter app displays nomination data with correctly resolved candidate and organization entities from Supabase (polymorphic nominations table)
-**Plans**: 4 plans
-
-Plans:
-- [ ] 25-01-PLAN.md — Shared utilities: localizeRow, toDataObject, storageUrl with unit tests
-- [ ] 25-02-PLAN.md — get_nominations RPC migration + DPDataType extension for tree formats
-- [ ] 25-03-PLAN.md — DataProvider methods: appSettings, appCustomization, elections, constituencies
-- [ ] 25-04-PLAN.md — DataProvider methods: entities, questions, nominations with entity deduplication
-
-### Phase 26: DataWriter
-**Goal**: Candidates can manage their questionnaire answers, profile, and account through the Supabase adapter
-**Depends on**: Phase 24 (auth), Phase 25 (DataProvider patterns established)
-**Requirements**: WRIT-01, WRIT-02, WRIT-03, WRIT-04
-**Success Criteria** (what must be TRUE):
-  1. Candidate can save and update their answers (both partial update and full overwrite modes) via the atomic upsert RPC
-  2. Candidate can update their profile fields and upload a profile image via Supabase Storage
-  3. Candidate registration flow works end-to-end: invite link received, token exchanged, password set, session established
-  4. Candidate user data (role, election, constituency, nomination) is correctly derived from the Supabase session and related tables
-**Plans**: 3 plans
-
-Plans:
-- [ ] 26-01-PLAN.md — Interface cleanup: remove checkRegistrationKey, simplify register, change write return types, update candidateUserDataStore
-- [ ] 26-02-PLAN.md — User data: get_candidate_user_data RPC, _getBasicUserData, _getCandidateUserData with tests
-- [ ] 26-03-PLAN.md — Write operations: _setAnswers with File/Storage upload, _updateEntityProperties for termsOfUseAccepted
-
-### Phase 27: AdminWriter
-**Goal**: Admin operations for question custom data and job result persistence work through the Supabase adapter
-**Depends on**: Phase 26 (DataWriter patterns established)
-**Requirements**: ADMN-01, ADMN-02
-**Success Criteria** (what must be TRUE):
-  1. Admin can merge question custom_data via the merge_custom_data RPC through the _updateQuestion adapter method
-  2. Admin can persist completed job results to the admin_jobs table through the _insertJobResult adapter method
-**Plans**: 2 plans
-
-Plans:
-- [ ] 27-01-PLAN.md — Database infrastructure: admin_jobs table, RLS policies, merge_custom_data RPC, migration, pgTAP tests
-- [ ] 27-02-PLAN.md — TypeScript adapter: _updateQuestion and _insertJobResult implementations in SupabaseDataWriter
-
-### Phase 28: Edge Functions
-**Goal**: Frontend integrates with all three Supabase Edge Functions for candidate invite, bank auth, and email
-**Depends on**: Phase 24 (auth), Phase 26 (registration flow context)
-**Requirements**: EDGE-01, EDGE-02, EDGE-03
-**Success Criteria** (what must be TRUE):
-  1. Admin can trigger candidate invitations that send invite emails via the invite-candidate Edge Function
-  2. Candidate can authenticate using Finnish bank ID through the Signicat OIDC flow via the signicat-callback Edge Function
-  3. Transactional emails (password reset, notifications) are sent via the send-email Edge Function instead of Strapi email
-**Plans**: 2 plans
-
-Plans:
-- [ ] 28-01-PLAN.md — Invite-candidate + send-email: _preregister and sendEmail implementations in SupabaseDataWriter with interface additions and unit tests (EDGE-01, EDGE-03)
-- [ ] 28-02-PLAN.md — Signicat bank auth: dual-adapter preregister server route calling signicat-callback Edge Function with session establishment via verifyOtp (EDGE-02)
-
-### Phase 29: E2E Test Migration
-**Goal**: The full E2E test suite runs against the Supabase backend with no Strapi dependency
-**Depends on**: Phase 25 (DataProvider), Phase 26 (DataWriter), Phase 28 (Edge Functions)
-**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04
-**Success Criteria** (what must be TRUE):
-  1. Test infrastructure uses a Supabase admin client (service_role) instead of StrapiAdminClient for all setup/teardown
-  2. Test data is seeded via SQL or Supabase RPCs, not Strapi API calls
-  3. Auth setup in Playwright tests creates and manages Supabase sessions (not Strapi JWT tokens)
-  4. All existing E2E tests pass against the Supabase backend with equivalent coverage
-**Plans**: 4 plans
-
-Plans:
-- [ ] 29-01-PLAN.md — SupabaseAdminClient + merge_jsonb_column RPC + @supabase/supabase-js dependency (TEST-01, TEST-02, TEST-03)
-- [ ] 29-02-PLAN.md — Dataset conversion to Supabase-native snake_case format + mergeDatasets update (TEST-02)
-- [ ] 29-03-PLAN.md — Email helper rewrite (Inbucket) + setup/teardown migration + Playwright config (TEST-01, TEST-02, TEST-03, TEST-04)
-- [ ] 29-04-PLAN.md — Consumer spec file migration: 10 spec files from StrapiAdminClient to SupabaseAdminClient (TEST-01, TEST-04)
-
-### Phase 30: Strapi Removal and Dev Environment
-**Goal**: All Strapi code is removed and local development uses supabase CLI exclusively
-**Depends on**: Phase 29 (E2E tests passing without Strapi)
-**Requirements**: ENVR-01, ENVR-02, ENVR-03, ENVR-04, ENVR-05
-**Success Criteria** (what must be TRUE):
-  1. Local development starts with `supabase start` + `vite dev` with no Docker Compose needed for backend services
-  2. The Strapi adapter directory (frontend/src/lib/api/adapters/strapi/) no longer exists
-  3. The backend/vaa-strapi/ directory no longer exists
-  4. Docker Compose files contain no Strapi, legacy Postgres, or LocalStack service definitions
-  5. Strapi-specific packages (qs, jose) are removed from frontend/package.json (verified unused elsewhere)
-**Plans**: 4 plans
-
-Plans:
-- [ ] 30-01-PLAN.md — Strapi code removal: adapter switches, StrapiDataAdapter type, adapter directory, test files, backend directory, workspace entries (ENVR-02, ENVR-03, ENVR-05)
-- [ ] 30-02-PLAN.md — Dev environment rewrite: docker-compose as production-build test tool, .env.example stripped, Dockerfile updated, dev scripts rewired to supabase CLI, yarn.lock regenerated (ENVR-01, ENVR-04)
-- [ ] 30-03-PLAN.md — CI/CD pipeline: remove backend-validation job, rewrite E2E jobs for supabase CLI, add pgTAP job, update dependabot and Render blueprint (ENVR-04)
-- [ ] 30-04-PLAN.md — Documentation cleanup: CLAUDE.md rewrite, Strapi docs pages stubbed, navigation config updated, route comments cleaned (ENVR-01, ENVR-04)
+</details>
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 22 → 23 → 24 → 25 → 26 → 27 → 28 → 29 → 30
-
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 22. Schema Migrations | 4/4 | Complete    | 2026-03-18 | - |
-| 23. Adapter Foundation | 2/2 | Complete    | 2026-03-18 | - |
-| 24. Auth Migration | 3/3 | Complete   | 2026-03-19 | - |
-| 25. DataProvider | 4/4 | Complete    | 2026-03-19 | - |
-| 26. DataWriter | 3/3 | Complete   | 2026-03-19 | - |
-| 27. AdminWriter | 2/2 | Complete    | 2026-03-19 | - |
-| 28. Edge Functions | 2/2 | Complete    | 2026-03-19 | - |
-| 29. E2E Test Migration | 4/4 | Complete    | 2026-03-19 | - |
-| 30. Strapi Removal and Dev Environment | 4/4 | Complete    | 2026-03-20 | - |
+| 22. Schema Migrations | v3.0 | 4/4 | Complete | 2026-03-18 |
+| 23. Adapter Foundation | v3.0 | 2/2 | Complete | 2026-03-18 |
+| 24. Auth Migration | v3.0 | 3/3 | Complete | 2026-03-19 |
+| 25. DataProvider | v3.0 | 4/4 | Complete | 2026-03-19 |
+| 26. DataWriter | v3.0 | 3/3 | Complete | 2026-03-19 |
+| 27. AdminWriter | v3.0 | 2/2 | Complete | 2026-03-19 |
+| 28. Edge Functions | v3.0 | 2/2 | Complete | 2026-03-19 |
+| 29. E2E Test Migration | v3.0 | 4/4 | Complete | 2026-03-19 |
+| 30. Strapi Removal and Dev Environment | v3.0 | 4/4 | Complete | 2026-03-20 |
 
 ---
 
