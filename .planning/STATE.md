@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Frontend Adapter
 status: unknown
-stopped_at: Completed 30-03-PLAN.md
-last_updated: "2026-03-20T07:46:00.200Z"
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-03-20T07:46:53.901Z"
 progress:
   total_phases: 9
   completed_phases: 8
@@ -68,6 +68,7 @@ Plan: 3 of 4
 | Phase 29 P04 | 8min | 2 tasks | 10 files |
 | Phase 30 P01 | 2min | 2 tasks | 290 files |
 | Phase 30 P03 | 2min | 2 tasks | 3 files |
+| Phase 30 P02 | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Plan: 3 of 4
 - [Phase 30]: jose and qs packages retained in frontend/package.json (used outside Strapi adapter, satisfies ENVR-05)
 - [Phase 30]: E2E CI jobs use supabase start + yarn workspace dev & with curl readiness loop instead of Docker compose
 - [Phase 30]: Render blueprint removes backend service and databases entirely (Supabase is external/cloud-hosted)
+- [Phase 30]: docker-compose.dev.yml rewritten as production-build test tool (not dev workflow)
+- [Phase 30]: prod script removed (docker-compose.yml does not exist); onchange dep removed (only consumer watch:shared deleted)
 
 ### Pending Todos
 
@@ -156,6 +159,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T07:46:00.198Z
-Stopped at: Completed 30-03-PLAN.md
+Last session: 2026-03-20T07:46:53.898Z
+Stopped at: Completed 30-02-PLAN.md
 Resume file: None
