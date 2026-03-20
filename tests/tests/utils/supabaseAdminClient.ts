@@ -123,8 +123,22 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, unknown[]>): Promise<Record<string, unknown>> {
+    // Strip _ prefixed fields (relationship references handled by linkJoinTables)
+    // and answers_by_external_id (handled by importAnswers) from each record
+    const cleaned: Record<string, unknown[]> = {};
+    for (const [collection, records] of Object.entries(data)) {
+      cleaned[collection] = (records as Array<Record<string, unknown>>).map((record) => {
+        const stripped: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(record)) {
+          if (!key.startsWith('_') && key !== 'answers_by_external_id') {
+            stripped[key] = value;
+          }
+        }
+        return stripped;
+      });
+    }
     const { data: result, error } = await this.client.rpc('bulk_import', {
-      data: data as Record<string, unknown>
+      data: cleaned as Record<string, unknown>
     });
     if (error) throw new Error(`bulkImport failed: ${error.message}`);
     return result as Record<string, unknown>;
@@ -258,6 +272,9 @@ export class SupabaseAdminClient {
     if (elections) {
       for (const election of elections) {
         const cgRefs =
+          (election._constituency_groups as { external_id: string[] } | undefined)?.external_id?.map(
+            (id: string) => ({ external_id: id })
+          ) ??
           (election.constituency_groups as Array<Record<string, string>>) ??
           (election.constituencyGroups as Array<Record<string, string>>);
         if (!cgRefs || !Array.isArray(cgRefs)) continue;
@@ -311,7 +328,11 @@ export class SupabaseAdminClient {
     const cgs = data.constituency_groups as Array<Record<string, unknown>> | undefined;
     if (cgs) {
       for (const cg of cgs) {
-        const constRefs = cg.constituencies as Array<Record<string, string>> | undefined;
+        const constRefs =
+          (cg._constituencies as { external_id: string[] } | undefined)?.external_id?.map(
+            (id: string) => ({ external_id: id })
+          ) ??
+          (cg.constituencies as Array<Record<string, string>> | undefined);
         if (!constRefs || !Array.isArray(constRefs)) continue;
 
         const cgExtId = cg.external_id as string;
@@ -357,6 +378,44 @@ export class SupabaseAdminClient {
               `linkJoinTables: failed to insert constituency_group_constituencies: ${insertError.message}`
             );
           }
+        }
+      }
+    }
+
+    // Link question_categories -> elections (via election_ids JSONB column)
+    const categories = data.question_categories as Array<Record<string, unknown>> | undefined;
+    if (categories) {
+      for (const category of categories) {
+        const electionRefs = category._elections as { external_id: string[] } | undefined;
+        if (!electionRefs?.external_id?.length) continue;
+
+        const catExtId = category.external_id as string;
+        if (!catExtId) continue;
+
+        // Resolve election UUIDs
+        const electionIds: string[] = [];
+        for (const elExtId of electionRefs.external_id) {
+          const { data: elRow, error: elError } = await this.client
+            .from('elections')
+            .select('id')
+            .eq('external_id', elExtId)
+            .eq('project_id', this.projectId)
+            .single();
+          if (elError)
+            throw new Error(`linkJoinTables: failed to find election ${elExtId}: ${elError.message}`);
+          electionIds.push(elRow.id);
+        }
+
+        // Update the question_category with resolved election_ids
+        const { error: updateError } = await this.client
+          .from('question_categories')
+          .update({ election_ids: electionIds })
+          .eq('external_id', catExtId)
+          .eq('project_id', this.projectId);
+        if (updateError) {
+          throw new Error(
+            `linkJoinTables: failed to update question_category ${catExtId} election_ids: ${updateError.message}`
+          );
         }
       }
     }
