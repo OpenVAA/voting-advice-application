@@ -22,9 +22,9 @@ import { testIds } from '../../utils/testIds';
 
 // Compute expected counts from datasets
 const visibleCandidateCount = [...defaultDataset.candidates, ...voterDataset.candidates].filter(
-  (c) => 'termsOfUseAccepted' in c && c.termsOfUseAccepted
+  (c) => 'terms_of_use_accepted' in c && c.terms_of_use_accepted
 ).length;
-const totalPartyCount = defaultDataset.parties.length + voterDataset.parties.length;
+const totalPartyCount = defaultDataset.organizations.length + voterDataset.organizations.length;
 
 test.describe('voter results', { tag: ['@voter'] }, () => {
   test('should display candidates section with result cards', async ({ answeredVoterPage: page }) => {
@@ -39,7 +39,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // Count candidate cards: expect 11 visible candidates
     // - 5 from default dataset (alpha through epsilon, all registered)
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
-    // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
+    // The hidden candidate (no terms_of_use_accepted) should NOT appear (12 total - 1 hidden = 11)
     const cardCount = await page.getByTestId(testIds.voter.results.card).count();
     expect(cardCount).toBe(visibleCandidateCount);
   });

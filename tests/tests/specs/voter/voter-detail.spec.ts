@@ -19,8 +19,8 @@ import defaultDataset from '../../data/default-dataset.json' with { type: 'json'
 import { testIds } from '../../utils/testIds';
 
 // The candidate used for detail content verification (has info answers and open answers)
-const alphaCandidate = defaultDataset.candidates.find((c) => c.externalId === 'test-candidate-alpha')!;
-const alphaAnswers = alphaCandidate.answersByExternalId as Record<
+const alphaCandidate = defaultDataset.candidates.find((c) => c.external_id === 'test-candidate-alpha')!;
+const alphaAnswers = alphaCandidate.answers_by_external_id as Record<
   string,
   { value: string | number | boolean | Record<string, string>; info?: Record<string, string> }
 >;
@@ -70,7 +70,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // Open "Test Candidate Alpha" who has:
     // - Info answers: campaign slogan "Progress for all", years of experience, etc.
     // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
-    await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.lastName }).click();
+    await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.last_name }).click();
 
     const dialog = page.locator('dialog[open]');
     await expect(dialog).toBeVisible();
