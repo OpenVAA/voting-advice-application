@@ -5,6 +5,7 @@
 - ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (shipped 2026-03-12)
 - ✅ **v1.1 Monorepo Refresh** — Phases 8-13 (shipped 2026-03-15)
 - ✅ **v1.2 Svelte 5 Migration (Infrastructure)** — Phases 15-21 (shipped 2026-03-18)
+- ✅ **v1.3 Svelte 5 Migration (Content)** — Phases 22-26 (shipped 2026-03-20)
 
 ## Phases
 
@@ -46,6 +47,17 @@
 
 </details>
 
+<details>
+<summary>✅ v1.3 Svelte 5 Migration — Content (Phases 22-26) — SHIPPED 2026-03-20</summary>
+
+- [x] Phase 22: Leaf Component Migration (7/7 plans) — 98 components to $props(), runes mode, callback props, $bindable()
+- [x] Phase 23: Container Components and Layouts (4/4 plans) — Snippet props, callback props, Layout/MainContent migration
+- [x] Phase 24: Voter Route Migration (4/4 plans) — $: → $derived/$effect, on:event → native attributes, slot → @render
+- [x] Phase 25: Cleanup (1/1 plan) — TODO[Svelte 5] markers resolved, candidate app call sites updated
+- [x] Phase 26: Validation Gate (3/3 plans) — 26 E2E tests passing, zero TS errors, zero legacy patterns
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -70,3 +82,8 @@
 | 19. Integration Validation | v1.2 | 2/2 | Complete | 2026-03-18 |
 | 20. OXC Toolchain Exploration | v1.2 | 1/1 | Complete | 2026-03-18 |
 | 21. Migration Cleanup | v1.2 | 1/1 | Complete | 2026-03-18 |
+| 22. Leaf Component Migration | v1.3 | 7/7 | Complete | 2026-03-18 |
+| 23. Container Components and Layouts | v1.3 | 4/4 | Complete | 2026-03-19 |
+| 24. Voter Route Migration | v1.3 | 4/4 | Complete | 2026-03-19 |
+| 25. Cleanup | v1.3 | 1/1 | Complete | 2026-03-19 |
+| 26. Validation Gate | v1.3 | 3/3 | Complete | 2026-03-20 |

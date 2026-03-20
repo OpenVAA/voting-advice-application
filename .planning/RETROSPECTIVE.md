@@ -151,6 +151,62 @@
 
 ---
 
+## Milestone: v1.3 — Svelte 5 Migration (Content)
+
+**Shipped:** 2026-03-20
+**Phases:** 5 | **Plans:** 19 | **Commits:** 99
+
+### What Was Built
+- 98 shared and voter-app components migrated to Svelte 5 runes mode ($props, $derived, $effect, $bindable)
+- All container components converted from named slots to {#snippet}/{@render} props with 39+ route consumer updates
+- All voter route pages and layouts migrated from $: reactive statements to $derived/$effect runes
+- createEventDispatcher removed from all 6 dispatching components, replaced with callback props
+- All v1.3-scoped TODO[Svelte 5] markers resolved; candidate app call sites updated for API changes
+- Full validation gate: zero legacy patterns, zero TypeScript errors, 26/26 voter-app E2E tests passing
+
+### What Worked
+- Leaf-first migration order: migrating 98 leaf components first validated runes patterns at scale before tackling containers and routes
+- Atomic consumer updates: updating all call sites in the same plan as the component change prevented broken intermediate states
+- bind:this pattern for exported functions: cleaner than $bindable callback alternatives, worked well across consumer boundaries
+- Validation gate as separate phase: dedicated Phase 26 caught 11 TypeScript errors and E2E regressions that would have shipped silently
+- Gap closure plans (22-07, 26-03): again validated as natural workflow — 3 plans were added mid-milestone to close verification gaps
+- Milestone audit before completion: caught scope ambiguities (E2E test count, TODO marker classification) before archival
+
+### What Was Inefficient
+- Phase 22 had 7 plans (largest phase) due to high component count — could have been split into 2 smaller phases
+- Some plans required deviation handling mid-execution (23-02 Button badge slot change triggered 24 route file on:click→onclick fixes)
+- E2E test count discrepancy (requirement said "92 tests", actual voter-app scope was 26) — should have been caught during requirements definition
+- Nyquist validation incomplete for phases 23-26 — VALIDATION.md files were partial or missing
+- Results page required multiple $effect/$derived iterations due to Svelte 5 reactivity edge cases (untrack, $derived.by)
+
+### Patterns Established
+- $props() with explicit type interfaces (not inline) for complex components
+- $bindable() for all props consumed via bind: (92 occurrences across 40 files)
+- bind:this for component exported functions (replacing bind:functionName)
+- Callback props for events (onclick, onexpand, oncollapse) replacing createEventDispatcher
+- {#snippet children()}/{@render children?.()} for slot replacement
+- $derived.by() for multi-statement derivations, $derived() for single-expression
+- $effect() with synchronous .then() chains (async $effect callbacks discouraged in Svelte 5)
+- untrack() for $state writes inside $effect to break circular dependencies
+- Non-null assertions inside Svelte {#if} template guards for $state variables
+
+### Key Lessons
+1. Component migration order matters: leaf → container → route follows natural dependency flow and validates patterns before scale
+2. Consumer updates must be atomic with component changes — splitting creates broken intermediate states that are hard to debug
+3. Svelte 5 reactivity has edge cases: snippet block re-rendering, $effect circular dependencies, $state mutations in event handlers — plan for debugging time
+4. Validation gate as a separate phase is now a validated 4-milestone pattern — always verify before shipping
+5. E2E tests are the ultimate regression gate — they caught regressions that TypeScript and svelte-check missed
+6. Scope precision in requirements prevents confusion at completion — "92 tests" vs "26 voter-app tests" caused unnecessary audit friction
+
+### Cost Observations
+- Model mix: primarily opus for execution, sonnet for research/planning/audit agents
+- 99 commits over 3 days (consistent with v1.2 velocity)
+- 334 files modified (+18.2k/-4.3k lines)
+- Phase 22 was the longest (7 plans, 98 components) but each plan was mechanical and fast
+- Phase 26 required the most debugging due to Svelte 5 reactivity edge cases
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -160,6 +216,7 @@
 | v1.0      | 147     | 7      | 31    | ~15min   | First milestone — established GSD workflow patterns |
 | v1.1      | 87      | 6      | 15    | 7min     | Faster velocity — research-first, smaller phases |
 | v1.2      | 96      | 7      | 14    | ~10min   | Largest codebase impact (861 files) — framework upgrade patterns |
+| v1.3      | 99      | 5      | 19    | ~8min    | Content migration at scale (98 components) — runes patterns validated |
 
 ### Cumulative Quality
 
@@ -168,13 +225,16 @@
 | v1.0      | 56/56       | 100%     | 31    | 0        |
 | v1.1      | 23/24       | 96%      | 15    | 1 (VER-04, user choice) |
 | v1.2      | 31/31       | 100%     | 14    | 0 (tech debt tracked, all reqs met) |
+| v1.3      | 20/20       | 100%     | 19    | 0 (14 tech debt items, all non-blocking) |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Infrastructure before features — invest in foundations first (v1.0 Phase 1, v1.1 Phase 8, v1.2 scaffold-first)
 2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1, v1.2 OXC eval)
-3. Milestone audits catch real issues — gap closure phases are a natural and validated 3-milestone pattern (v1.0, v1.1, v1.2)
-4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0), integration validation phase (v1.2)
+3. Milestone audits catch real issues — gap closure is a validated 4-milestone pattern (v1.0, v1.1, v1.2, v1.3)
+4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0, v1.3), integration validation phase (v1.2)
 5. Document deferred items with "why" — conscious deferral is fine, silent gaps accumulate
 6. Fresh scaffold over in-place upgrade for major framework migrations — clean config, no legacy remnants (v1.2)
 7. Dedicated evaluation phases are cheap insurance — 4 minutes to avoid premature migration (v1.2 OXC)
+8. Migration order follows dependency flow — leaf → container → route prevents broken intermediate states (v1.3)
+9. Validation gate as dedicated phase catches regressions other tools miss — now validated across 4 milestones

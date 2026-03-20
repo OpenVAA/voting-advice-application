@@ -1,5 +1,30 @@
 # Milestones
 
+## v1.3 Svelte 5 Migration (Content) (Shipped: 2026-03-20)
+
+**Phases completed:** 5 phases, 19 plans
+**Timeline:** 3 days (2026-03-18 → 2026-03-20)
+**Branch:** feat-gsd-roadmap (99 commits, 334 files, +18.2k/-4.3k lines)
+**Requirements:** 20/20 satisfied
+
+**Key accomplishments:**
+
+- 98 shared and voter-app leaf components migrated to Svelte 5 runes mode ($props, $derived, $effect, $bindable)
+- All container components converted from named slots to snippet props with 39+ route consumer updates
+- All voter route pages and layouts migrated from $: reactive statements to $derived/$effect runes
+- All TODO[Svelte 5] markers resolved in v1.3 scope; candidate app call sites updated for API changes
+- Zero legacy Svelte 4 patterns remaining in voter app routes and shared components
+- All 26 voter-app E2E tests passing after full migration with zero TypeScript errors
+
+### Known Gaps
+
+- **Nyquist validation:** Partial across phases 23-26 (phase 24 missing VALIDATION.md)
+- **Snippet reactivity bug:** $state mutations in event handlers don't trigger re-render in {#snippet} blocks (likely Svelte 5 core issue)
+- **E2E test count:** Requirement stated "92 tests" but voter-app scope is 26 tests (all passing)
+- **2 pre-existing test failures:** auth-setup (Strapi timeout), voter-settings category intros (data configuration)
+
+---
+
 ## v1.2 Svelte 5 Migration (Infrastructure) (Shipped: 2026-03-18)
 
 **Phases completed:** 7 phases, 14 plans

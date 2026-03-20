@@ -8,6 +8,12 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
+## Current State
+
+v1.3 shipped 2026-03-20. Voter app and shared components are fully Svelte 5 idiomatic.
+
+**Next milestone:** To be defined via `/gsd:new-milestone`
+
 ## Requirements
 
 ### Validated
@@ -33,10 +39,14 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 - ✓ Full dependency bump across monorepo (Node 22, Yarn catalog 30 entries) — v1.2
 - ✓ Paraglide JS i18n with compile-time type safety and runtime override wrapper — v1.2
 - ✓ OXC toolchain evaluation (deferred — Svelte template linting not supported) — v1.2
+- ✓ Svelte 5 content migration — voter app and shared components fully runes-idiomatic — v1.3
+- ✓ All leaf/container/route components use $props(), $derived, $effect, $bindable, snippet props — v1.3
+- ✓ Zero legacy Svelte 4 patterns in voter app (no $:, on:event, <slot>, createEventDispatcher) — v1.3
+- ✓ 26 voter-app E2E tests passing after migration — v1.3
 
 ### Active
 
-- [ ] Svelte 5 content migration (voter app, candidate app, components — runes, snippets, callback props)
+- [ ] Svelte 5 content migration — candidate app (deferred to v1.4)
 - [ ] Claude development skills for architecture, components, data, matching, filters, LLM
 - [ ] Deno feasibility study (Node → Deno transition)
 - [ ] Supabase migration (Strapi → Supabase with schema, auth, RLS, storage)
@@ -57,17 +67,17 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v1.2:
+The project is a mature monorepo used for real election deployments. As of v1.3:
 
-- **Codebase:** ~861 files modified in v1.2 (+29.5k/-6.3k lines)
-- **Tech stack:** SvelteKit 2, Svelte 5, Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
-- **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite replacing PostCSS
-- **Testing:** Playwright 1.58.2 E2E (92 tests passing), Vitest unit tests
+- **Codebase:** 334 files modified in v1.3 (+18.2k/-4.3k lines), cumulative 79 plans across 4 milestones
+- **Tech stack:** SvelteKit 2, Svelte 5 (runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
+- **Testing:** Playwright 1.58.2 E2E (26 voter-app tests, full candidate suite), Vitest unit tests
 - **CI:** GitHub Actions with Turborepo remote caching, HTML test reports, Node 22
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); 13 TODO[Svelte 5] markers for runes migration; Strapi has TS errors in mock data generation
+- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); Strapi has TS errors in mock data generation; Svelte 5 snippet reactivity bug (deferred); 8 TODO[Svelte 5] markers in v1.4 scope (contexts, candidate app)
 
-The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno (Turborepo impact evaluated in Phase 8). Svelte 5 content migration (runes, snippets, callback props) is the next major frontend milestone.
+The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno. Candidate app content migration and context system rewrite are the next frontend milestones.
 
 ## Constraints
 
@@ -85,7 +95,7 @@ Each major initiative is a separate milestone, executed in order:
 1. ~~**E2E Testing Framework**~~ — Shipped v1.0 (2026-03-12)
 2. ~~**Monorepo Refresh**~~ — Shipped v1.1 (2026-03-15)
 3. ~~**Svelte 5 Migration (Infrastructure)**~~ — Shipped v1.2 (2026-03-18)
-4. **Svelte 5 Migration (Content)** — Migrate voter/candidate apps, components, contexts to Svelte 5 runes
+4. ~~**Svelte 5 Migration (Content — Voter App)**~~ — Shipped v1.3 (2026-03-20)
 5. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
 6. **Deno Investigation** — Feasibility study for Node → Deno transition
 7. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
@@ -133,7 +143,16 @@ Build using skill-builder skill where beneficial.
 | Node 22 monorepo-wide             | Consistent engine across CI, Docker, dev; aligns with LTS schedule           | ✓ Good      |
 | Defer oxlint migration            | Svelte template linting not supported — dealbreaker for monorepo with .svelte files | ✓ Good |
 | Yarn catalog expansion (30 entries) | Single source of truth for shared deps across workspaces                    | ✓ Good      |
+| Voter app first for content migration | Scope v1.3 to voter app + shared components; candidate app deferred to v1.4 | ✓ Good      |
+| Zero legacy patterns bar             | No `$:`, `on:event`, `<slot>` — fully idiomatic Svelte 5 after migration    | ✓ Good      |
+| All E2E tests as regression gate      | Migration isn't done until voter-app E2E suite passes (26 tests)            | ✓ Good      |
+
+| Leaf components migrated first    | 98 leaf files before containers — validates runes patterns at scale          | ✓ Good      |
+| bind:this for exported functions  | `bind:functionName` incompatible with runes mode — use `bind:this` refs      | ✓ Good      |
+| HTMLAttributes for Select restProps | `SvelteHTMLElements['select']` too narrow when spread onto div/input        | ✓ Good      |
 
 ---
 
-_Last updated: 2026-03-18 after v1.2 milestone completion_
+---
+
+_Last updated: 2026-03-20 after v1.3 milestone_
