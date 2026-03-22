@@ -111,10 +111,13 @@ export default defineConfig({
 
     // 4b. Candidate app: registration + profile (create users, change passwords —
     //     must run after auth restores the alpha candidate's password)
+    //     fullyParallel: false to prevent race conditions between registration
+    //     and profile specs (both create users and modify Strapi state via admin API)
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
       testMatch: /candidate-(registration|profile)\.spec\.ts/,
+      fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE

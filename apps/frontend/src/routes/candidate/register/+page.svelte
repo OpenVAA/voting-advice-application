@@ -10,9 +10,11 @@
 - `registrationKey`: The registration key
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -31,21 +33,21 @@
   // Handle checking registration key
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit: boolean;
-  let changedAfterCheck = false;
-  let status: ActionStatus = 'idle';
+  let changedAfterCheck = $state(false);
+  let status = $state<ActionStatus>('idle');
 
   // Get key from search params
-  let registrationKey = $page.url.searchParams.get('registrationKey');
+  let registrationKey = $state(page.url.searchParams.get('registrationKey') ?? '');
   if (registrationKey) checkKeyAndContinue(registrationKey);
 
-  $: canSubmit = status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck);
-  $: {
-    // Mark the input field as changed so we re-enable the submit button without hiding the error message
-    changedAfterCheck = true;
+  let canSubmit = $derived(status !== 'loading' && registrationKey !== '' && (status !== 'error' || changedAfterCheck));
+
+  $effect(() => {
+    // Track registrationKey changes to re-enable submit after error
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     registrationKey;
-  }
+    changedAfterCheck = true;
+  });
 
   /**
    * Check the registration key and continue to password selection if valid. Otherwise, show an error message.

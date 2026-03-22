@@ -9,10 +9,12 @@ Shows a form with which to set a new password when it has been reset.
 - `code`: The reset code
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -34,18 +36,16 @@ Shows a form with which to set a new password when it has been reset.
   ////////////////////////////////////////////////////////////////////
 
   // If the reset code is not provided, redirect to home page
-  const code = $page.url.searchParams.get('code');
+  const code = page.url.searchParams.get('code');
   if (!code) goto($getRoute('CandAppLogin'));
 
-  let canSubmit: boolean;
-  let isPasswordValid: boolean;
-  let password = '';
-  let status: ActionStatus = 'idle';
-  let submitLabel: string;
-  let validationError: string | undefined;
+  let isPasswordValid = $state(false);
+  let password = $state('');
+  let status = $state<ActionStatus>('idle');
+  let validationError = $state<string | undefined>(undefined);
 
-  $: canSubmit = status !== 'loading' && isPasswordValid;
-  $: submitLabel = validationError || t('candidateApp.setPassword.setPassword');
+  let canSubmit = $derived(status !== 'loading' && isPasswordValid);
+  let submitLabel = $derived(validationError || t('candidateApp.setPassword.setPassword'));
 
   async function handleSubmit() {
     if (!canSubmit) {

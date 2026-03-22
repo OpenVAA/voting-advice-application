@@ -19,12 +19,14 @@
 
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { slide } from 'svelte/transition';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getErrorTranslationKey } from '$candidate/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
@@ -48,17 +50,16 @@
   // Handle form and error messages
   ////////////////////////////////////////////////////////////////////
 
-  const errorParam = $page.url.searchParams.get('errorMessage') as CandidateLoginError | null;
-  const redirectTo = $page.url.searchParams.get('redirectTo');
+  const errorParam = page.url.searchParams.get('errorMessage') as CandidateLoginError | null;
+  const redirectTo = page.url.searchParams.get('redirectTo');
 
-  let canSubmit: boolean;
-  let email = '';
-  let emailInput: HTMLInputElement | undefined;
-  let errorMessage: string | undefined;
+  let email = $state('');
+  let emailInput = $state<HTMLInputElement | undefined>(undefined);
+  let errorMessage = $state<string | undefined>(undefined);
   let passwordFieldRef: { focus: () => void };
-  let password = '';
-  let showPasswordSetMessage = false;
-  let status: ActionStatus = 'idle';
+  let password = $state('');
+  let showPasswordSetMessage = $state(false);
+  let status = $state<ActionStatus>('idle');
 
   if (errorParam) {
     const errorKey = getErrorTranslationKey(errorParam);
@@ -72,27 +73,22 @@
     $newUserEmail = undefined;
   }
 
-  $: canSubmit = !!(status !== 'loading' && email && password);
+  let canSubmit = $derived(!!(status !== 'loading' && email && password));
 
   ///////////////////////////////////////////////////////////////////
   // Showing the login form and autofocusing inputs
   ////////////////////////////////////////////////////////////////////
 
-  /** Whether to show the login details */
-  let isLoginShown: boolean;
   /** The `showLogin` flag is set by the button to show the login */
-  let showLogin = false;
+  let showLogin = $state(false);
 
   // If preregistration is possible, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
-  $: isLoginShown = !!(
-    email ||
-    showLogin ||
-    $answersLocked ||
-    !$appSettings.preRegistration?.enabled ||
-    status === 'error'
+  /** Whether to show the login details */
+  let isLoginShown = $derived(
+    !!(email || showLogin || $answersLocked || !$appSettings.preRegistration?.enabled || status === 'error')
   );
 
-  onMount(() => {
+  $effect(() => {
     if (email) passwordFieldRef?.focus();
   });
 

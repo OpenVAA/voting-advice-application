@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app forgot password page
@@ -27,10 +29,11 @@ Shows a form with which to request a password reset email.
   // Handle form
   ////////////////////////////////////////////////////////////////////
 
-  let email = '';
-  let status: ActionStatus = 'idle';
+  let email = $state('');
+  let status = $state<ActionStatus>('idle');
 
-  async function handleSubmit() {
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
     status = 'loading';
     // Request email to be sent in the backend
     const result = await requestForgotPasswordEmail({ email }).catch((e) => {
@@ -62,7 +65,7 @@ Shows a form with which to request a password reset email.
   {/snippet}
 
   <!-- If email hasn't been sent yet, show form where user can input their email address. -->
-  <form on:submit|preventDefault={handleSubmit} class="flex flex-col items-center">
+  <form onsubmit={handleSubmit} class="flex flex-col items-center">
     <p class="text-center">
       {t('candidateApp.resetPassword.ingress')}
     </p>

@@ -1,6 +1,8 @@
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getErrorTranslationKey } from '$candidate/utils/preregistrationError';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -13,7 +15,7 @@
   ////////////////////////////////////////////////////////////////////
 
   const { clearIdToken, getRoute, t } = getCandidateContext();
-  $: code = $page.url.searchParams.get('code');
+  let code = $derived(page.url.searchParams.get('code'));
 
   clearIdToken();
 </script>

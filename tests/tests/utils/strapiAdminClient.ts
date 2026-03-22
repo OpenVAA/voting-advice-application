@@ -382,7 +382,8 @@ export class StrapiAdminClient {
         `/content-manager/collection-types/plugin::users-permissions.user/${user.documentId}`,
         { headers: this.headers }
       );
-      if (!deleteResponse.ok()) {
+      // Tolerate 404: user may have already been deleted by another teardown
+      if (!deleteResponse.ok() && deleteResponse.status() !== 404) {
         const body = await deleteResponse.text();
         throw new Error(`Failed to delete user for ${email}: ${deleteResponse.status()}: ${body}`);
       }
@@ -398,6 +399,27 @@ export class StrapiAdminClient {
     if (!updateResponse.ok()) {
       const body = await updateResponse.text();
       throw new Error(`Failed to reset candidate ${email}: ${updateResponse.status()}: ${body}`);
+    }
+  }
+
+  /**
+   * Update a candidate's data via the Strapi content-manager admin API.
+   *
+   * @param documentId - The candidate's document ID
+   * @param data - Object with candidate fields to update
+   * @throws Error if the request fails
+   */
+  async updateCandidate(documentId: string, data: Record<string, unknown>): Promise<void> {
+    this.ensureAuthenticated();
+
+    const response = await this.requestContext!.put(
+      `/content-manager/collection-types/api::candidate.candidate/${documentId}`,
+      { headers: this.headers, data }
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(`Update candidate failed with status ${response.status()}: ${body}`);
     }
   }
 

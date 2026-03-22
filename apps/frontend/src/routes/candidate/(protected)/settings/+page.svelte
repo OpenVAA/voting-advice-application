@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app settings page
@@ -33,17 +35,15 @@ Shows the candidate's user settings.
   // Handle password change
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit = false;
-  let currentPassword = '';
-  let isNewPasswordValid: boolean;
-  let password = '';
+  let currentPassword = $state('');
+  let isNewPasswordValid = $state(false);
+  let password = $state('');
   let passwordSetterRef: { reset: () => void };
-  let status: ActionStatus = 'idle';
-  let submitLabel: string;
-  let validationError: string | undefined;
+  let status = $state<ActionStatus>('idle');
+  let validationError = $state<string | undefined>(undefined);
 
-  $: canSubmit = status !== 'loading' && isNewPasswordValid && !!password;
-  $: submitLabel = validationError || t('candidateApp.settings.password.update');
+  let canSubmit = $derived(status !== 'loading' && isNewPasswordValid && !!password);
+  let submitLabel = $derived(validationError || t('candidateApp.settings.password.update'));
 
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) {
@@ -97,42 +97,6 @@ Shows the candidate's user settings.
   <!-- Editable data -->
 
   <section class="self-stretch">
-    <!-- Stashed language selector -->
-
-    <!-- <div class="mt-16 w-full">
-      <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100 px-4">
-          <label for="language" class={labelClass}>
-            {t('candidateApp.settings.language')}
-          </label>
-          <div class="w-6/12 text-right text-secondary">
-            <select
-              id="language"
-              class="select select-sm w-6/12 text-primary"
-              on:change={handleLanguageSelect}
-              bind:value={appLanguageCode}>
-              {#each $allLanguages ?? [] as option}
-                <option
-                  value={option.attributes.localisationCode}
-                  selected={option.attributes.localisationCode === appLanguageCode}>
-                  {t(assertTranslationKey(`xxx.languages.${option.attributes.name}`))}</option>
-              {/each}
-            </select>
-          </div>
-        </div>
-      </div>
-      <p class={disclaimerClass}>
-        {t('candidateApp.settings.languageDescription')}
-      </p>
-    </div>
-
-    {#if languageErrorMessage}
-      <p class="mb-0 mt-16 text-center text-error">
-        {languageErrorMessage}
-      </p>
-    {/if}
-
-    -->
 
     <h2 class={subheadingClass}>{t('candidateApp.settings.password.update')}</h2>
 

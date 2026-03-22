@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app profile basic info page
@@ -53,21 +55,18 @@ Shows the candidate's basic information, some of which is editable.
 
   const { hasUnsaved } = userData;
 
-  let allRequiredFilled = false;
-  let bypassPreventNavigation = false;
-  let canSubmit: boolean;
-  let nominations: Array<CandidateNomination>;
-  let status: ActionStatus = 'idle';
-  let submitLabel: string;
-  let submitRoute: string;
+  let bypassPreventNavigation = $state(false);
+  let status = $state<ActionStatus>('idle');
 
   ////////////////////////////////////////////////////////////////////
   // Display immutable data
   ////////////////////////////////////////////////////////////////////
 
-  $: nominations = $userData?.candidate
-    ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: $userData.candidate.id })
-    : [];
+  let nominations = $derived(
+    $userData?.candidate
+      ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: $userData.candidate.id })
+      : []
+  );
 
   /**
    * Return the data from a nomination needed for displaying it.
@@ -104,17 +103,24 @@ Shows the candidate's basic information, some of which is editable.
   // Handle saving answers and define submit label and notes
   ////////////////////////////////////////////////////////////////////
 
-  $: canSubmit = status !== 'loading';
+  let canSubmit = $derived(status !== 'loading');
 
-  $: allRequiredFilled = !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value));
+  let allRequiredFilled = $derived(
+    !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value))
+  );
 
-  $: if (allRequiredFilled && $unansweredOpinionQuestions.length && !$answersLocked) {
-    submitLabel = $hasUnsaved ? t('common.saveAndContinue') : t('common.continue');
-    submitRoute = $getRoute('CandAppQuestions');
-  } else {
-    submitRoute = $getRoute('CandAppHome');
-    submitLabel = $answersLocked || !$hasUnsaved ? t('common.return') : t('common.saveAndReturn');
-  }
+  let submitRouting = $derived.by(() => {
+    if (allRequiredFilled && $unansweredOpinionQuestions.length && !$answersLocked) {
+      return {
+        submitRoute: $getRoute('CandAppQuestions'),
+        submitLabel: $hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
+      };
+    }
+    return {
+      submitRoute: $getRoute('CandAppHome'),
+      submitLabel: $answersLocked || !$hasUnsaved ? t('common.return') : t('common.saveAndReturn')
+    };
+  });
 
   function handleImageInputChange(value: unknown): void {
     if (!value) {
@@ -147,7 +153,7 @@ Shows the candidate's basic information, some of which is editable.
       return;
     }
     status = 'success';
-    goto(submitRoute);
+    goto(submitRouting.submitRoute);
   }
 
   /**
@@ -306,7 +312,7 @@ Shows the candidate's basic information, some of which is editable.
     <div class="grid w-full justify-items-center">
       {#if !$answersLocked}
         <Button
-          text={submitLabel}
+          text={submitRouting.submitLabel}
           onclick={handleSubmit}
           disabled={!canSubmit}
           loading={status === 'loading'}

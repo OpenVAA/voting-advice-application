@@ -7,8 +7,10 @@
 - Shows a popup prompting the user to log in instead of preregistering again if they've already preregistered.
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
@@ -33,7 +35,7 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  onMount(() => {
+  $effect(() => {
     // Show possible notification
     if ($isPreregistered && !$idTokenClaims)
       popupQueue.push({

@@ -1,8 +1,10 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app preview own profile page
 
-Used to show a preview of the candidate’s own profile using the `EntityDetails` component.
+Used to show a preview of the candidate's own profile using the `EntityDetails` component.
 
 ## Settings
 
@@ -34,14 +36,14 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
   // Get the candidate object
   ////////////////////////////////////////////////////////////////////
 
-  let status: ActionStatus = 'loading';
-  let entity: Candidate | undefined;
+  let status = $state<ActionStatus>('loading');
+  let entity = $state<Candidate | undefined>(undefined);
 
-  $: {
-    loadCandidate();
+  $effect(() => {
     // React to locale changes
     $locale; // eslint-disable-line @typescript-eslint/no-unused-expressions
-  }
+    loadCandidate();
+  });
 
   /**
    * Reload the candidate data, provide it to `DataRoot` and save the `Candidate` to `entity`

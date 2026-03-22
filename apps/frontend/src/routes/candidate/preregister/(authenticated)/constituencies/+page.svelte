@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -12,7 +14,7 @@
 
   const { getRoute, preregistrationElections, preregistrationConstituencyIds, t } = getCandidateContext();
 
-  let selectionComplete: boolean;
+  let selectionComplete = $state(false);
 </script>
 
 <MainContent title={t('candidateApp.preregister.constituencySelect.title')}>

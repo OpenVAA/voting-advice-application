@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app question page
@@ -21,7 +23,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { error } from '@sveltejs/kit';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Hero } from '$lib/components/hero';
@@ -54,40 +56,40 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
   const { hasUnsaved } = userData;
 
-  let bypassPreventNavigation = false;
-  let cancelLabel: string;
-  let canSubmit: boolean;
-  let customData: CustomData['Question'];
-  let errorMessage: string | undefined;
-  let isLastUnanswered: boolean;
-  let nextQuestionId: Id | undefined;
-  let question: AnyQuestionVariant;
-  let status: ActionStatus = 'loading';
-  let submitLabel: string;
-  let submitRoute: string;
+  let bypassPreventNavigation = $state(false);
+  let errorMessage = $state<string | undefined>(undefined);
+  let status = $state<ActionStatus>('loading');
 
   ////////////////////////////////////////////////////////////////////
   // Get the current and next question
   ////////////////////////////////////////////////////////////////////
 
-  $: {
-    // Get question
-    const questionId = parseParams($page).questionId;
+  let questionData = $derived.by(() => {
+    const questionId = parseParams(page).questionId;
     if (!questionId) error(500, 'No questionId provided.');
     try {
-      question = $dataRoot.getQuestion(questionId);
-      customData = getCustomData(question);
-      nextQuestionId = getNextQuestionId(question);
-      status = 'idle';
-      // Load video content if enabled and available
-      if (!$appSettings.candidateApp.questions.hideVideo && customData?.video) {
-        video.load(customData.video);
-      }
+      const q = $dataRoot.getQuestion(questionId);
+      const cd = getCustomData(q);
+      const nextId = getNextQuestionId(q);
+      const lastUnanswered = getIsLastUnanswered();
+      return { question: q, customData: cd, nextQuestionId: nextId, isLastUnanswered: lastUnanswered };
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
-    isLastUnanswered = getIsLastUnanswered();
-  }
+  });
+
+  let question = $derived(questionData!.question);
+  let customData = $derived(questionData!.customData);
+  let nextQuestionId = $derived(questionData!.nextQuestionId);
+  let isLastUnanswered = $derived(questionData!.isLastUnanswered);
+
+  $effect(() => {
+    const cd = questionData!.customData;
+    status = 'idle';
+    if (!$appSettings.candidateApp.questions.hideVideo && cd?.video) {
+      video.load(cd.video);
+    }
+  });
 
   /**
    * A non-reactive utility set the isLastUnanswered flag, which we use to route to the Home page after answering the last one.
@@ -110,21 +112,28 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Check if the form is dirty or empty and define button labels
   ////////////////////////////////////////////////////////////////////
 
-  $: canSubmit = status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value);
+  let canSubmit = $derived(status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value));
 
-  $: if (nextQuestionId) {
-    submitRoute = $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId });
-    submitLabel = t('common.saveAndContinue');
-  } else if (isLastUnanswered) {
-    submitRoute = $getRoute('CandAppHome');
-    submitLabel = t('common.saveAndContinue');
-  } else {
-    submitRoute = $getRoute('CandAppQuestions');
-    submitLabel = $hasUnsaved ? t('common.saveAndReturn') : t('common.return');
-  }
+  let submitRouting = $derived.by(() => {
+    if (nextQuestionId) {
+      return {
+        submitRoute: $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId }),
+        submitLabel: t('common.saveAndContinue')
+      };
+    } else if (isLastUnanswered) {
+      return {
+        submitRoute: $getRoute('CandAppHome'),
+        submitLabel: t('common.saveAndContinue')
+      };
+    }
+    return {
+      submitRoute: $getRoute('CandAppQuestions'),
+      submitLabel: $hasUnsaved ? t('common.saveAndReturn') : t('common.return')
+    };
+  });
 
   // The label is return when loading, bc saving isn't cancellable anymore
-  $: cancelLabel = status === 'loading' || !$hasUnsaved ? t('common.return') : t('common.cancel');
+  let cancelLabel = $derived(status === 'loading' || !$hasUnsaved ? t('common.return') : t('common.cancel'));
 
   ////////////////////////////////////////////////////////////////////
   // Handle saving answers
@@ -202,7 +211,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       return;
     }
     status = 'success';
-    goto(submitRoute);
+    goto(submitRouting.submitRoute);
   }
 
   /**
@@ -301,7 +310,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           <div class="grid w-full justify-items-center">
             {#if !$answersLocked}
               <Button
-                text={submitLabel}
+                text={submitRouting.submitLabel}
                 onclick={handleSubmit}
                 disabled={!canSubmit}
                 loading={status === 'loading'}

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app questions intro page
@@ -48,13 +50,13 @@ Shows the opinion questions for the candidate to answer.
   // Choose page variant to show
   ////////////////////////////////////////////////////////////////////
 
-  let completion: 'empty' | 'partial' | 'full';
-  $: completion =
+  let completion = $derived<'empty' | 'partial' | 'full'>(
     $unansweredOpinionQuestions.length === 0
       ? 'full'
       : $unansweredOpinionQuestions.length === $opinionQuestions.length
         ? 'empty'
-        : 'partial';
+        : 'partial'
+  );
 
   ////////////////////////////////////////////////////////////////////
   // Handle answers

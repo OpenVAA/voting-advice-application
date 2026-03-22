@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app pre-registration authenticated layout
@@ -9,6 +11,7 @@ Contains the parts of the pre-registration process taking part after a successfu
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -21,13 +24,15 @@ Contains the parts of the pre-registration process taking part after a successfu
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  let { children }: { children: Snippet } = $props();
+
   const { getRoute, idTokenClaims, t } = getCandidateContext();
   const { navigationSettings } = getLayoutContext(onDestroy);
   navigationSettings.push({ hide: true });
 </script>
 
 {#if $idTokenClaims}
-  <slot />
+  {@render children?.()}
 {:else}
   <MainContent title={t('candidateApp.preregister.status.tokenExpiredError.title')}>
     <div class="mb-md text-center">

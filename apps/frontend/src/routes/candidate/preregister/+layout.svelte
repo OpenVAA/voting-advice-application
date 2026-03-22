@@ -1,4 +1,7 @@
+<svelte:options runes />
+
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -10,6 +13,8 @@
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
+
+  let { children }: { children: Snippet } = $props();
 
   const { answersLocked, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
@@ -49,5 +54,5 @@
       onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}

@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <script lang="ts">
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { Button } from '$lib/components/button';
@@ -15,14 +17,14 @@
   // Handle submitting
   ////////////////////////////////////////////////////////////////////
 
-  let form: HTMLFormElement;
-  let email1 = '';
-  let email2 = '';
-  let status: ActionStatus = 'idle';
-  let termsAccepted = false;
+  let form = $state<HTMLFormElement>();
+  let email1 = $state('');
+  let email2 = $state('');
+  let status = $state<ActionStatus>('idle');
+  let termsAccepted = $state(false);
 
   async function handleSubmit() {
-    if (!form.reportValidity() || !termsAccepted) return;
+    if (!form?.reportValidity() || !termsAccepted) return;
     status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,

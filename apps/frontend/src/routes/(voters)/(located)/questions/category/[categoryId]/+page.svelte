@@ -31,10 +31,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../../MainContent.svelte';
-  import type { CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
-  import type { QuestionCategory } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -45,29 +42,25 @@ Display the intro to a question category and possibly a button with which to ski
 
   ////////////////////////////////////////////////////////////////////
   // Get the current category and first question id
+  // Use $derived to avoid effect-writes-state pattern that causes
+  // effect_update_depth_exceeded during SvelteKit navigation
   ////////////////////////////////////////////////////////////////////
 
-  let block = $state<{ block: QuestionBlock; index: number } | undefined>();
-  let category = $state<QuestionCategory>();
-  let customData = $state<CustomData['QuestionCategory']>();
-  /** Used for the possible skip button */
-  let nextCategoryId = $state<Id | undefined>();
-  let questionId = $state<Id>();
-  $effect(() => {
-    const categoryId = parseParams(page).categoryId;
-    if (!categoryId) error(500, 'No categoryId provided.');
-    category = $dataRoot.getQuestionCategory(categoryId);
-    block = $selectedQuestionBlocks.getByCategory(category);
-    if (!block?.block[0]) error(404, `No applicable questions found for category ${categoryId}.`);
-    questionId = block.block[0].id;
-    customData = getCustomData(category);
+  let categoryId = $derived(parseParams(page).categoryId);
+  let category = $derived(categoryId ? $dataRoot.getQuestionCategory(categoryId) : undefined);
+  let block = $derived(category ? $selectedQuestionBlocks.getByCategory(category) : undefined);
+  let questionId = $derived<Id | undefined>(block?.block[0]?.id);
+  let customData = $derived(category ? getCustomData(category) : undefined);
+  let nextCategoryId = $derived.by<Id | undefined>(() => {
+    if (!block) return undefined;
     if (block.index < $selectedQuestionBlocks.blocks.length - 1) {
-      nextCategoryId = $selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
-      if (!nextCategoryId) error(404, `Next category not found after category ${categoryId}.`);
-    } else {
-      nextCategoryId = undefined;
+      return $selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
     }
-    // Possibly show video
+    return undefined;
+  });
+
+  // Side effect: load video content when category has video data
+  $effect(() => {
     if (customData?.video) video.load(customData.video);
   });
 

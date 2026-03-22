@@ -12,7 +12,17 @@ export default ({ env }) => {
         },
         register: {
           allowedFields: ['candidate']
-        }
+        },
+        // Increase auth rate limit for development/test. The default (10 per min)
+        // is quickly exhausted by E2E tests that log in multiple times across
+        // auth-setup, candidate-app, and candidate-app-mutation projects.
+        ...(isDev && {
+          rateLimit: {
+            enabled: true,
+            interval: 60000,
+            max: 100
+          }
+        })
       }
     },
     email: {

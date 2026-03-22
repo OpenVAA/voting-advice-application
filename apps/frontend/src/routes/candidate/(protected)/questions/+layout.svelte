@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app questions layout
@@ -8,6 +10,7 @@
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -15,6 +18,8 @@
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import MainContent from '../../../MainContent.svelte';
+
+  let { children }: { children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -28,9 +33,11 @@
   // Redirect if basic info has not been filled out
   ////////////////////////////////////////////////////////////////////
 
-  $: if ($unansweredRequiredInfoQuestions.length) {
-    goto($getRoute('CandAppProfile'));
-  }
+  $effect(() => {
+    if ($unansweredRequiredInfoQuestions.length) {
+      goto($getRoute('CandAppProfile'));
+    }
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Set progress
@@ -40,12 +47,17 @@
     progress: 'show'
   });
 
-  $: progress.max.set($opinionQuestions.length);
-  $: progress.current.set($opinionQuestions.length - $unansweredOpinionQuestions.length);
+  $effect(() => {
+    progress.max.set($opinionQuestions.length);
+  });
+
+  $effect(() => {
+    progress.current.set($opinionQuestions.length - $unansweredOpinionQuestions.length);
+  });
 </script>
 
 {#if $unansweredRequiredInfoQuestions.length === 0 && $opinionQuestions.length > 0}
-  <slot />
+  {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>
     {#snippet hero()}

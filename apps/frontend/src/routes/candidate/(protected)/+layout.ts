@@ -63,13 +63,18 @@ export async function load({ fetch, parent }) {
   const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
 
+  // Await questionData to avoid SvelteKit streaming issues in dev mode.
+  // Without await, the Promise is streamed to the client, but Vite's dev
+  // server may not complete the stream properly after a form action redirect.
+  const questionData = await dataProvider
+    .getQuestionData({
+      electionId,
+      locale: lang
+    })
+    .catch((e) => e);
+
   return {
-    questionData: dataProvider
-      .getQuestionData({
-        electionId,
-        locale: lang
-      })
-      .catch((e) => e),
+    questionData,
     candidateUserData: userData
   };
 

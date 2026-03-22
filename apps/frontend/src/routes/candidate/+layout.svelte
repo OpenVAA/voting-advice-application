@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app main layout
@@ -14,7 +16,8 @@
 -->
 
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
+  import type { Snippet } from 'svelte';
   import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
@@ -22,6 +25,8 @@
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
+
+  let { children }: { children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get app context
@@ -40,7 +45,7 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  onMount(() => {
+  $effect(() => {
     if (!$appSettings.access.candidateApp || !$appSettings.dataAdapter.supportsCandidateApp) return;
     // Show possible notification
     if ($appSettings.notifications.candidateApp?.show)
@@ -62,7 +67,7 @@
   });
 
   const menuId = 'candidate-app-menu';
-  let isDrawerOpen: boolean;
+  let isDrawerOpen = $state(false);
 </script>
 
 {#if !$appSettings.dataAdapter.supportsCandidateApp}
@@ -79,6 +84,6 @@
     {#snippet menu()}
       <CandidateNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />
     {/snippet}
-    <slot />
+    {@render children?.()}
   </Layout>
 {/if}

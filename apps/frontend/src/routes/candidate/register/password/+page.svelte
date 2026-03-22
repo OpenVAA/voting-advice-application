@@ -2,7 +2,7 @@
 
 # Candidate app initial password setting page
 
-- Shows a form in which to insert 
+- Shows a form in which to insert
 - Checks on load if the key is in a search param and automatically redirects to password selection if the key is valid.
 
 ## Params
@@ -12,9 +12,11 @@
 - `email`: The email of the user
 -->
 
+<svelte:options runes />
+
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -33,9 +35,9 @@
   // Check that user is not logged and all params are provided
   ////////////////////////////////////////////////////////////////////
 
-  const registrationKey = $page.url.searchParams.get('registrationKey') || '';
-  const username = $page.url.searchParams.get('username') || '';
-  const email = $page.url.searchParams.get('email') || '';
+  const registrationKey = page.url.searchParams.get('registrationKey') || '';
+  const username = page.url.searchParams.get('username') || '';
+  const email = page.url.searchParams.get('email') || '';
 
   if (registrationKey === '' || email === '') {
     goto($getRoute('CandAppRegister'));
@@ -48,15 +50,13 @@
   // Handle password change
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit: boolean;
-  let isPasswordValid: boolean;
-  let password = '';
-  let status: ActionStatus = 'idle';
-  let submitLabel: string;
-  let validationError: string | undefined;
+  let isPasswordValid = $state(false);
+  let password = $state('');
+  let status = $state<ActionStatus>('idle');
+  let validationError = $state<string | undefined>(undefined);
 
-  $: canSubmit = status !== 'loading' && isPasswordValid;
-  $: submitLabel = validationError || t('candidateApp.setPassword.setPassword');
+  let canSubmit = $derived(status !== 'loading' && isPasswordValid);
+  let submitLabel = $derived(validationError || t('candidateApp.setPassword.setPassword'));
 
   async function handleSubmit() {
     if (!canSubmit) {

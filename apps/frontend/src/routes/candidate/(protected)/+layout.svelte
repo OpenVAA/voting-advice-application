@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate logged in main layout
@@ -9,6 +11,7 @@
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { Button } from '$lib/components/button';
@@ -21,7 +24,7 @@
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 
-  export let data;
+  let { data, children }: { data: any; children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get context
@@ -33,9 +36,9 @@
   // Accept terms of use
   ////////////////////////////////////////////////////////////////////
 
-  let showTermsOfUse = false;
-  let status: ActionStatus = 'idle';
-  let termsAccepted: boolean | undefined;
+  let showTermsOfUse = $state(false);
+  let status = $state<ActionStatus>('idle');
+  let termsAccepted = $state<boolean | undefined>(undefined);
 
   async function handleSubmit() {
     if (!termsAccepted) return;
@@ -56,17 +59,24 @@
   // Provide data and possibly show terms of use form
   ////////////////////////////////////////////////////////////////////
 
-  let error: Error | undefined;
-  let ready: boolean;
-  $: {
-    // If data is updated, we want to prevent loading the slot until the promises resolve
+  let error = $state<Error | undefined>(undefined);
+  let ready = $state(false);
+
+  $effect(() => {
+    // Read data synchronously to register as dependency
+    const questionData = data.questionData;
+    const candidateUserData = data.candidateUserData;
+    // Reset state
     error = undefined;
     ready = false;
-    Promise.all([data.questionData, data.candidateUserData]).then((data) => {
-      error = update(data);
+    Promise.all([questionData, candidateUserData]).then((resolved) => {
+      error = update(resolved);
     });
-  }
-  $: if (error) logDebugError(error.message);
+  });
+
+  $effect(() => {
+    if (error) logDebugError(error.message);
+  });
 
   /**
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
@@ -112,5 +122,5 @@
     {/snippet}
   </MainContent>
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}

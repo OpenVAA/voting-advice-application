@@ -11,6 +11,7 @@ const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
 const paraglideHandle: Handle = ({ event, resolve }) =>
   paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
     event.request = localizedRequest;
+    event.locals.currentLocale = locale;
     return resolve(event, {
       transformPageChunk: ({ html }) => html.replace('%lang%', locale)
     });

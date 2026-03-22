@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <!--@component
 
 # Candidate app candidate welcome page
@@ -37,21 +39,11 @@ Shows a dynamic list of the actions the candidate should take to be included in 
   // Create action list
   ////////////////////////////////////////////////////////////////////
 
-  let nextAction: {
-    title: string;
-    explanation: string;
-    tip?: string;
-    buttonTextBasicInfo: string;
-    buttonTextQuestion: string;
-    buttonTextPrimaryActions: string;
-    href: string;
-  };
-
   // React to changes in language and stores
-  $: {
+  let nextAction = $derived.by(() => {
     const username = $userData?.candidate.firstName || '?';
     if ($profileComplete) {
-      nextAction = {
+      return {
         title: t('candidateApp.home.ready'),
         explanation: t('candidateApp.home.ingress.ready'),
         tip: t('candidateApp.home.previewTip'),
@@ -65,7 +57,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         href: $getRoute('CandAppPreview')
       };
     } else if ($unansweredRequiredInfoQuestions?.length === 0 && $unansweredOpinionQuestions?.length !== 0) {
-      nextAction = {
+      return {
         title: t('candidateApp.common.greeting', { username }),
         explanation: t('candidateApp.home.ingress.notDone'),
         buttonTextBasicInfo: !$answersLocked
@@ -80,7 +72,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         href: $getRoute('CandAppQuestions')
       };
     } else {
-      nextAction = {
+      return {
         title: t('candidateApp.common.greeting', { username }),
         explanation: t('candidateApp.home.ingress.notDone'),
         buttonTextBasicInfo: !$answersLocked
@@ -95,7 +87,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
         href: $getRoute('CandAppProfile')
       };
     }
-  }
+  });
 </script>
 
 <MainContent title={nextAction.title}>
