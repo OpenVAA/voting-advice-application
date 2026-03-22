@@ -6,16 +6,6 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/apps/strapi" # Location of package manifests
-    schedule:
-      interval: "monthly"
-    target-branch: "main"
-    labels:
-      - "type: dependencies"
-    # Create PRs for security updates only
-    open-pull-requests-limit: 0
-
-  - package-ecosystem: "npm" # See documentation for possible values
     directory: "/apps/frontend" # Location of package manifests
     schedule:
       interval: "monthly"
