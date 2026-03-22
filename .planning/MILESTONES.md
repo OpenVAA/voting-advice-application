@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.4 Svelte 5 Migration (Candidate App) (Shipped: 2026-03-22)
+
+**Phases completed:** 2 phases, 7 plans, 14 tasks
+
+**Key accomplishments:**
+
+- 10 candidate route files migrated to Svelte 5 runes mode: 3 layouts with snippet children, forgot-password with native onsubmit, questions page with $derived, and 5 simple page runes opt-ins
+- 7 candidate auth/preregister pages migrated to Svelte 5 runes with $derived, $effect, $state, and page from $app/state
+- Migrated 4 candidate route files (root layout, home, preview, settings) to Svelte 5 runes with $effect, $derived.by(), $state, and snippet children
+- 4 most complex candidate route files migrated: profile ($derived.by submit routing), questions layout ($effect redirect/progress), [questionId] (D-07 derivation/effect split), protected layout (D-10 async $effect data-loading)
+- Zero legacy Svelte 4 patterns across all 25 candidate route files confirmed; svelte-check reports zero TypeScript errors (120 warnings non-blocking)
+- Diagnosed SES email tests as environment issue (conflicting Vite server), fixed hooks.server.ts locale bug, achieved 18/20 candidate E2E tests passing with 2 remaining Vite dev mode streaming issues
+- Fixed 2 failing candidate E2E registration tests via API-based ToU workaround, cookie domain transfer, and auth rate limit mitigation -- all 20 candidate tests now pass
+
+---
+
 ## v1.3 Svelte 5 Migration (Content) (Shipped: 2026-03-20)
 
 **Phases completed:** 5 phases, 19 plans

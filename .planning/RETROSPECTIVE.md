@@ -207,6 +207,52 @@
 
 ---
 
+## Milestone: v1.4 — Svelte 5 Migration (Candidate App)
+
+**Shipped:** 2026-03-22
+**Phases:** 2 | **Plans:** 7 | **Commits:** 21
+
+### What Was Built
+- All 25 candidate app route files migrated to Svelte 5 runes ($derived, $effect, $state, snippet children, native events)
+- Zero legacy Svelte 4 patterns confirmed across candidate app (no $:, on:event, `<slot>`, createEventDispatcher)
+- Zero TypeScript errors (120 warnings, non-blocking)
+- All 20 candidate-specific E2E tests passing (including registration flow fixes)
+- Fixed E2E test infrastructure: API-based ToU workaround, cookie domain transfer, auth cookie caching, rate limit mitigation
+
+### What Worked
+- Patterns established in v1.3 applied directly: $derived.by(), $state for bind:, callback props, snippet children — zero new pattern discovery needed
+- Small milestone scope (2 phases, 25 files) enabled single-day completion
+- Validation gate phase caught real E2E failures that weren't visible from code analysis alone
+- Gap closure plan (28-03) diagnosed 3 root causes (Vite streaming bug, cookie domain mismatch, rate limiter) that the original plan missed
+- Complexity ordering within Phase 27: minimal → auth → moderate → complex provided natural learning curve
+
+### What Was Inefficient
+- Phase 28 Plan 02 initially misdiagnosed root cause as SES email infrastructure; actual cause was Vite dev-mode streaming bug — wasted one plan on wrong diagnosis
+- E2E test debugging required deep Playwright + SvelteKit + Docker networking knowledge — the gap closure plan took 81 minutes (longest plan in milestone)
+- Phase 28 needed 3 plans for what was originally scoped as 1 validation plan — E2E test debugging expanded scope significantly
+
+### Patterns Established
+- $derived.by() for multi-branch routing logic (nextAction, submitRouting patterns)
+- $state() required for any variable consumed by bind: in runes mode
+- API-based workarounds in E2E tests for Vite dev-mode streaming bugs (admin API instead of UI interactions)
+- Cookie domain transfer pattern for Playwright (localhost → 127.0.0.1) when Docker networking is involved
+- Auth cookie caching in serial E2E test suites to avoid rate limiter exhaustion
+
+### Key Lessons
+1. Well-established patterns make subsequent milestones dramatically faster — v1.4 was 1 day vs v1.3's 3 days for similar work
+2. E2E test debugging can dominate milestone time even when code changes are small — budget for it
+3. Root cause diagnosis matters more than fast fixes — Plan 28-02's misdiagnosis cost an extra plan
+4. Vite dev-mode and SvelteKit use:enhance have non-obvious interactions that only manifest under E2E test conditions
+5. Validation gate phases continue to catch real issues — now validated across 5 milestones
+
+### Cost Observations
+- Model mix: opus for execution, sonnet for verification
+- 21 commits over 1 day (fastest milestone — patterns fully established)
+- 53 files modified (+3.1k/-0.4k lines) — smallest codebase impact, focused on route files
+- Plan 28-03 (gap closure) was the outlier at 81min; code migration plans averaged ~10min
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -217,6 +263,7 @@
 | v1.1      | 87      | 6      | 15    | 7min     | Faster velocity — research-first, smaller phases |
 | v1.2      | 96      | 7      | 14    | ~10min   | Largest codebase impact (861 files) — framework upgrade patterns |
 | v1.3      | 99      | 5      | 19    | ~8min    | Content migration at scale (98 components) — runes patterns validated |
+| v1.4      | 21      | 2      | 7     | ~10min   | Fastest milestone — established patterns, focused scope |
 
 ### Cumulative Quality
 
@@ -226,15 +273,17 @@
 | v1.1      | 23/24       | 96%      | 15    | 1 (VER-04, user choice) |
 | v1.2      | 31/31       | 100%     | 14    | 0 (tech debt tracked, all reqs met) |
 | v1.3      | 20/20       | 100%     | 19    | 0 (14 tech debt items, all non-blocking) |
+| v1.4      | 10/10       | 100%     | 7     | 0 |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Infrastructure before features — invest in foundations first (v1.0 Phase 1, v1.1 Phase 8, v1.2 scaffold-first)
 2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1, v1.2 OXC eval)
-3. Milestone audits catch real issues — gap closure is a validated 4-milestone pattern (v1.0, v1.1, v1.2, v1.3)
-4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0, v1.3), integration validation phase (v1.2)
+3. Milestone audits catch real issues — gap closure is a validated 5-milestone pattern (v1.0, v1.1, v1.2, v1.3, v1.4)
+4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0, v1.3, v1.4), integration validation phase (v1.2)
 5. Document deferred items with "why" — conscious deferral is fine, silent gaps accumulate
 6. Fresh scaffold over in-place upgrade for major framework migrations — clean config, no legacy remnants (v1.2)
 7. Dedicated evaluation phases are cheap insurance — 4 minutes to avoid premature migration (v1.2 OXC)
 8. Migration order follows dependency flow — leaf → container → route prevents broken intermediate states (v1.3)
-9. Validation gate as dedicated phase catches regressions other tools miss — now validated across 4 milestones
+9. Validation gate as dedicated phase catches regressions other tools miss — now validated across 5 milestones
+10. Established patterns compound — each subsequent milestone is faster than the last (v1.4 completed in 1 day vs v1.0's 11 days)

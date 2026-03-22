@@ -10,9 +10,7 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Current State
 
-v1.3 shipped 2026-03-20. Voter app and shared components are fully Svelte 5 idiomatic.
-
-**Next milestone:** To be defined via `/gsd:new-milestone`
+v1.4 shipped 2026-03-22. The entire Svelte 5 migration is complete — both voter app (v1.3) and candidate app (v1.4) are fully runes-idiomatic with zero legacy Svelte 4 patterns. All E2E tests pass. The frontend infrastructure (Tailwind 4, DaisyUI 5, Paraglide JS) was modernized in v1.2. The monorepo (Turborepo, Changesets, npm publishing) was refreshed in v1.1. E2E testing was established in v1.0.
 
 ## Requirements
 
@@ -43,10 +41,13 @@ v1.3 shipped 2026-03-20. Voter app and shared components are fully Svelte 5 idio
 - ✓ All leaf/container/route components use $props(), $derived, $effect, $bindable, snippet props — v1.3
 - ✓ Zero legacy Svelte 4 patterns in voter app (no $:, on:event, <slot>, createEventDispatcher) — v1.3
 - ✓ 26 voter-app E2E tests passing after migration — v1.3
+- ✓ Svelte 5 candidate app migration — all 25 route files runes-idiomatic — v1.4
+- ✓ Zero legacy Svelte 4 patterns in candidate app — v1.4
+- ✓ Zero TypeScript errors in candidate app — v1.4
+- ✓ All candidate-app E2E tests passing (20 tests across 5 files) — v1.4
 
 ### Active
-
-- [ ] Svelte 5 content migration — candidate app (deferred to v1.4)
+- [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
 - [ ] Claude development skills for architecture, components, data, matching, filters, LLM
 - [ ] Deno feasibility study (Node → Deno transition)
 - [ ] Supabase migration (Strapi → Supabase with schema, auth, RLS, storage)
@@ -67,17 +68,17 @@ v1.3 shipped 2026-03-20. Voter app and shared components are fully Svelte 5 idio
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v1.3:
+The project is a mature monorepo used for real election deployments. As of v1.4:
 
-- **Codebase:** 334 files modified in v1.3 (+18.2k/-4.3k lines), cumulative 79 plans across 4 milestones
-- **Tech stack:** SvelteKit 2, Svelte 5 (runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Codebase:** 86 plans completed across 5 milestones (22 days, 2026-03-01 to 2026-03-22)
+- **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic — voter + candidate apps), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
-- **Testing:** Playwright 1.58.2 E2E (26 voter-app tests, full candidate suite), Vitest unit tests
+- **Testing:** Playwright 1.58.2 E2E (26 voter-app tests, 20 candidate-app tests), Vitest unit tests
 - **CI:** GitHub Actions with Turborepo remote caching, HTML test reports, Node 22
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); Strapi has TS errors in mock data generation; Svelte 5 snippet reactivity bug (deferred); 8 TODO[Svelte 5] markers in v1.4 scope (contexts, candidate app)
+- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); Strapi has TS errors in mock data generation; Svelte 5 snippet reactivity bug (deferred); TODO[Svelte 5] markers remain in context system (deferred to future milestone)
 
-The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno. Candidate app content migration and context system rewrite are the next frontend milestones.
+The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno. Context system rewrite and Claude development skills are the next milestones.
 
 ## Constraints
 
@@ -96,11 +97,12 @@ Each major initiative is a separate milestone, executed in order:
 2. ~~**Monorepo Refresh**~~ — Shipped v1.1 (2026-03-15)
 3. ~~**Svelte 5 Migration (Infrastructure)**~~ — Shipped v1.2 (2026-03-18)
 4. ~~**Svelte 5 Migration (Content — Voter App)**~~ — Shipped v1.3 (2026-03-20)
-5. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
-6. **Deno Investigation** — Feasibility study for Node → Deno transition
-7. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
-8. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-9. **Security Scanning** — Automated security, secrets scanning, and testing
+5. ~~**Svelte 5 Migration (Content — Candidate App)**~~ — Shipped v1.4 (2026-03-22)
+6. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
+7. **Deno Investigation** — Feasibility study for Node → Deno transition
+8. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
+9. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+10. **Security Scanning** — Automated security, secrets scanning, and testing
 
 ### Claude Skills — Scope Notes (for milestone #5)
 
@@ -150,9 +152,14 @@ Build using skill-builder skill where beneficial.
 | Leaf components migrated first    | 98 leaf files before containers — validates runes patterns at scale          | ✓ Good      |
 | bind:this for exported functions  | `bind:functionName` incompatible with runes mode — use `bind:this` refs      | ✓ Good      |
 | HTMLAttributes for Select restProps | `SvelteHTMLElements['select']` too narrow when spread onto div/input        | ✓ Good      |
+| $derived.by() for multi-branch logic | Complex nextAction/submitRouting computations in candidate routes           | ✓ Good      |
+| $state() for bind: variables      | Variables used with bind: in runes mode require $state() for reactivity     | ✓ Good      |
+| API-based ToU workaround in E2E   | Vite dev-mode streaming bug blocks client-side ToU acceptance; use admin API | ✓ Good      |
+| Cookie domain transfer in E2E     | SvelteKit use:enhance redirects to localhost; Playwright uses 127.0.0.1     | ✓ Good      |
+| Auth cookie caching in E2E        | Strapi rate limiter (~7/min) exhausted by serial test logins                | ✓ Good      |
 
 ---
 
 ---
 
-_Last updated: 2026-03-20 after v1.3 milestone_
+_Last updated: 2026-03-22 after v1.4 milestone_
