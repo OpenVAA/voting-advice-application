@@ -1,89 +1,12 @@
 {
-  "questionTypes": [
-    {
-      "externalId": "test-qt-likert5",
-      "name": "Likert-5",
-      "settings": {
-        "type": "singleChoiceOrdinal",
-        "choices": [
-          {
-            "id": "1",
-            "key": "1",
-            "normalizableValue": "1",
-            "label": {
-              "en": "Fully disagree"
-            }
-          },
-          {
-            "id": "2",
-            "key": "2",
-            "normalizableValue": "2",
-            "label": {
-              "en": "Somewhat disagree"
-            }
-          },
-          {
-            "id": "3",
-            "key": "3",
-            "normalizableValue": "3",
-            "label": {
-              "en": "Neutral"
-            }
-          },
-          {
-            "id": "4",
-            "key": "4",
-            "normalizableValue": "4",
-            "label": {
-              "en": "Somewhat agree"
-            }
-          },
-          {
-            "id": "5",
-            "key": "5",
-            "normalizableValue": "5",
-            "label": {
-              "en": "Fully agree"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "externalId": "test-qt-date",
-      "name": "Date",
-      "settings": {
-        "type": "date"
-      }
-    },
-    {
-      "externalId": "test-qt-number",
-      "name": "Number",
-      "settings": {
-        "type": "number"
-      }
-    },
-    {
-      "externalId": "test-qt-text",
-      "name": "Text",
-      "settings": {
-        "type": "text"
-      }
-    },
-    {
-      "externalId": "test-qt-boolean",
-      "name": "Boolean",
-      "settings": {
-        "type": "boolean"
-      }
-    }
-  ],
   "constituencies": [
     {
       "externalId": "test-constituency-alpha",
       "name": {
         "en": "Test Constituency Alpha"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "constituencyGroups": [
@@ -92,9 +15,13 @@
       "name": {
         "en": "Test Constituency Group"
       },
-      "constituencies": {
-        "externalId": ["test-constituency-alpha"]
-      }
+      "_constituencies": {
+        "externalId": [
+          "test-constituency-alpha"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "elections": [
@@ -105,9 +32,13 @@
       },
       "electionDate": "2025-06-15",
       "electionStartDate": "2025-05-01",
-      "constituencyGroups": {
-        "externalId": ["test-cg-1"]
-      }
+      "_constituencyGroups": {
+        "externalId": [
+          "test-cg-1"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "questionCategories": [
@@ -116,228 +47,548 @@
       "name": {
         "en": "Test Category: Economy"
       },
-      "type": "opinion",
+      "categoryType": "opinion",
       "order": 1,
-      "elections": {
-        "externalId": ["test-election-1"]
-      }
+      "_elections": {
+        "externalId": [
+          "test-election-1"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-category-social",
       "name": {
         "en": "Test Category: Social"
       },
-      "type": "opinion",
+      "categoryType": "opinion",
       "order": 2,
-      "elections": {
-        "externalId": ["test-election-1"]
+      "_elections": {
+        "externalId": [
+          "test-election-1"
+        ]
       },
-      "customData": {
-        "video": {
-          "en": {
-            "title": "Test video for E2E testing",
-            "sources": [
-              "http://localhost:4566/static.openvaa.org/public/test-assets/test-video.webm",
-              "http://localhost:4566/static.openvaa.org/public/test-assets/test-video.mp4"
-            ],
-            "captions": "http://localhost:4566/static.openvaa.org/public/test-assets/test-captions.vtt",
-            "poster": "http://localhost:4566/static.openvaa.org/public/test-assets/test-poster.jpg",
-            "aspectRatio": 1.333
-          }
-        }
-      }
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-category-info",
       "name": {
         "en": "Test Category: Background Information"
       },
-      "type": "info",
+      "categoryType": "info",
       "order": 3,
-      "elections": {
-        "externalId": ["test-election-1"]
-      }
+      "_elections": {
+        "externalId": [
+          "test-election-1"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "questions": [
     {
       "externalId": "test-question-1",
-      "text": {
-        "en": "Test Opinion Question 1: Should taxes on high incomes be increased?"
-      },
       "info": {
         "en": "This question measures attitudes toward progressive taxation."
       },
       "category": {
         "externalId": "test-category-economy"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 1
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 1,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 1: Should taxes on high incomes be increased?"
+      }
     },
     {
       "externalId": "test-question-2",
-      "text": {
-        "en": "Test Opinion Question 2: Should public spending on infrastructure be increased?"
-      },
       "category": {
         "externalId": "test-category-economy"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 2,
-      "customData": {
-        "video": {
-          "en": {
-            "title": "Test video for E2E testing",
-            "sources": [
-              "http://localhost:4566/static.openvaa.org/public/test-assets/test-video.webm",
-              "http://localhost:4566/static.openvaa.org/public/test-assets/test-video.mp4"
-            ],
-            "captions": "http://localhost:4566/static.openvaa.org/public/test-assets/test-captions.vtt",
-            "poster": "http://localhost:4566/static.openvaa.org/public/test-assets/test-poster.jpg",
-            "aspectRatio": 1.333
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
           }
         }
+      ],
+      "order": 2,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 2: Should public spending on infrastructure be increased?"
       }
     },
     {
       "externalId": "test-question-3",
-      "text": {
-        "en": "Test Opinion Question 3: Should the government subsidize renewable energy?"
-      },
       "info": {
         "en": "Renewable energy subsidies affect both the economy and the environment."
       },
       "category": {
         "externalId": "test-category-economy"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 3
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 3,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 3: Should the government subsidize renewable energy?"
+      }
     },
     {
       "externalId": "test-question-4",
-      "text": {
-        "en": "Test Opinion Question 4: Should corporate tax rates be lowered?"
-      },
       "category": {
         "externalId": "test-category-economy"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 4
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 4,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 4: Should corporate tax rates be lowered?"
+      }
     },
     {
       "externalId": "test-question-5",
-      "text": {
-        "en": "Test Opinion Question 5: Should healthcare be fully publicly funded?"
-      },
       "category": {
         "externalId": "test-category-social"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 5
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 5,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 5: Should healthcare be fully publicly funded?"
+      }
     },
     {
       "externalId": "test-question-6",
-      "text": {
-        "en": "Test Opinion Question 6: Should immigration policy be more open?"
-      },
       "category": {
         "externalId": "test-category-social"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 6
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 6,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 6: Should immigration policy be more open?"
+      }
     },
     {
       "externalId": "test-question-7",
-      "text": {
-        "en": "Test Opinion Question 7: Should education spending be prioritized?"
-      },
       "category": {
         "externalId": "test-category-social"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 7
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 7,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 7: Should education spending be prioritized?"
+      }
     },
     {
       "externalId": "test-question-8",
-      "text": {
-        "en": "Test Opinion Question 8: Should same-sex marriage be legally recognized?"
-      },
       "category": {
         "externalId": "test-category-social"
       },
-      "questionType": {
-        "externalId": "test-qt-likert5"
-      },
-      "order": 8
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 8,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Test Opinion Question 8: Should same-sex marriage be legally recognized?"
+      }
     },
     {
       "externalId": "test-question-date",
-      "text": {
-        "en": "Date of birth"
-      },
       "category": {
         "externalId": "test-category-info"
       },
-      "questionType": {
-        "externalId": "test-qt-date"
-      },
-      "order": 9
+      "type": "date",
+      "order": 9,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Date of birth"
+      }
     },
     {
       "externalId": "test-question-number",
-      "text": {
-        "en": "Years of political experience"
-      },
       "category": {
         "externalId": "test-category-info"
       },
-      "questionType": {
-        "externalId": "test-qt-number"
-      },
-      "order": 10
+      "type": "number",
+      "order": 10,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Years of political experience"
+      }
     },
     {
       "externalId": "test-question-text",
-      "text": {
-        "en": "Campaign slogan"
-      },
       "category": {
         "externalId": "test-category-info"
       },
-      "questionType": {
-        "externalId": "test-qt-text"
-      },
-      "order": 11
+      "type": "text",
+      "order": 11,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "Campaign slogan"
+      }
     },
     {
       "externalId": "test-question-boolean",
-      "text": {
-        "en": "First-time candidate"
-      },
       "category": {
         "externalId": "test-category-info"
       },
-      "questionType": {
-        "externalId": "test-qt-boolean"
-      },
-      "order": 12
+      "type": "boolean",
+      "order": 12,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "First-time candidate"
+      }
     }
   ],
-  "parties": [
+  "organizations": [
     {
       "externalId": "test-party-a",
       "name": {
@@ -345,7 +596,9 @@
       },
       "shortName": {
         "en": "TPA"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-party-b",
@@ -354,7 +607,9 @@
       },
       "shortName": {
         "en": "TPB"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "candidates": [
@@ -400,7 +655,9 @@
         "test-question-boolean": {
           "value": false
         }
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-candidate-beta",
@@ -439,7 +696,9 @@
         "test-question-8": {
           "value": "2"
         }
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-candidate-gamma",
@@ -478,7 +737,9 @@
         "test-question-8": {
           "value": "5"
         }
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-candidate-delta",
@@ -514,7 +775,9 @@
         "test-question-8": {
           "value": "1"
         }
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-candidate-epsilon",
@@ -550,7 +813,9 @@
         "test-question-8": {
           "value": "3"
         }
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "nominations": [
@@ -565,9 +830,11 @@
       "constituency": {
         "externalId": "test-constituency-alpha"
       },
-      "party": {
+      "organization": {
         "externalId": "test-party-a"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-beta",
@@ -580,9 +847,11 @@
       "constituency": {
         "externalId": "test-constituency-alpha"
       },
-      "party": {
+      "organization": {
         "externalId": "test-party-a"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-gamma",
@@ -595,9 +864,11 @@
       "constituency": {
         "externalId": "test-constituency-alpha"
       },
-      "party": {
+      "organization": {
         "externalId": "test-party-b"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-delta",
@@ -610,9 +881,11 @@
       "constituency": {
         "externalId": "test-constituency-alpha"
       },
-      "party": {
+      "organization": {
         "externalId": "test-party-b"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-epsilon",
@@ -625,9 +898,39 @@
       "constituency": {
         "externalId": "test-constituency-alpha"
       },
-      "party": {
+      "organization": {
         "externalId": "test-party-a"
-      }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
+    },
+    {
+      "externalId": "test-nom-org-party-a",
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "election": {
+        "externalId": "test-election-1"
+      },
+      "constituency": {
+        "externalId": "test-constituency-alpha"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
+    },
+    {
+      "externalId": "test-nom-org-party-b",
+      "organization": {
+        "externalId": "test-party-b"
+      },
+      "election": {
+        "externalId": "test-election-1"
+      },
+      "constituency": {
+        "externalId": "test-constituency-alpha"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ]
 }

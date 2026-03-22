@@ -2,32 +2,32 @@ import defaultDataset from './tests/data/default-dataset.json' with { type: 'jso
 import overlay from './tests/data/overlays/multi-election-overlay.json' with { type: 'json' };
 import voterDataset from './tests/data/voter-dataset.json' with { type: 'json' };
 import { mergeDatasets } from './tests/utils/mergeDatasets';
-import { StrapiAdminClient } from './tests/utils/strapiAdminClient';
+import { SupabaseAdminClient } from './tests/utils/supabaseAdminClient';
 
 const TEST_DATA_PREFIX = 'test-';
 
 (async () => {
-  const client = new StrapiAdminClient();
-  await client.login();
+  const client = new SupabaseAdminClient();
 
   // Delete existing test data
-  const deleteResult = await client.deleteData({
-    nominations: TEST_DATA_PREFIX,
-    alliances: TEST_DATA_PREFIX,
-    parties: TEST_DATA_PREFIX,
-    questions: TEST_DATA_PREFIX,
-    questionCategories: TEST_DATA_PREFIX,
-    constituencyGroups: TEST_DATA_PREFIX,
-    constituencies: TEST_DATA_PREFIX,
-    elections: TEST_DATA_PREFIX,
-    questionTypes: TEST_DATA_PREFIX
+  const deleteResult = await client.bulkDelete({
+    nominations: { prefix: TEST_DATA_PREFIX },
+    candidates: { prefix: TEST_DATA_PREFIX },
+    questions: { prefix: TEST_DATA_PREFIX },
+    question_categories: { prefix: TEST_DATA_PREFIX },
+    organizations: { prefix: TEST_DATA_PREFIX },
+    constituency_groups: { prefix: TEST_DATA_PREFIX },
+    constituencies: { prefix: TEST_DATA_PREFIX },
+    elections: { prefix: TEST_DATA_PREFIX }
   });
-  console.log('Delete result:', deleteResult.type);
+  console.log('Delete result:', deleteResult);
 
   // Merge and import
   const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-  const importResult = await client.importData(merged as Record<string, Array<unknown>>);
-  console.log('Import result:', importResult.type);
+  await client.bulkImport(merged as Record<string, unknown[]>);
+  await client.importAnswers(merged as Record<string, unknown[]>);
+  await client.linkJoinTables(merged as Record<string, unknown[]>);
+  console.log('Import complete');
 
   // Configure app settings
   await client.updateAppSettings({
@@ -45,6 +45,5 @@ const TEST_DATA_PREFIX = 'test-';
   });
   console.log('Settings configured');
 
-  await client.dispose();
   console.log('Done!');
 })();

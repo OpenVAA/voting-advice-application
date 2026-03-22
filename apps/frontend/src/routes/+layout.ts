@@ -5,6 +5,10 @@
  * - `AppCustomization`
  * - `ElectionData`
  * - `ConstituencyData`
+ *
+ * All data is awaited before returning to ensure SvelteKit serializes it
+ * for the client (instead of streaming promises which can cause hydration
+ * issues in Svelte 5 legacy mode).
  */
 import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
 import { setOverrides } from '$lib/i18n/overrides';
@@ -16,19 +20,25 @@ export async function load({ fetch }) {
   dataProvider.init({ fetch });
 
   // Load app customization first, because it may contain translation overrides
-  const appCustomizationData = dataProvider.getAppCustomization({ locale: lang }).catch((e) => e);
-  const appCustomizationSync = await appCustomizationData;
+  const appCustomizationData = await dataProvider.getAppCustomization({ locale: lang }).catch((e) => e);
 
   // Apply backend translation overrides
-  if (appCustomizationSync && !(appCustomizationSync instanceof Error)) {
-    const overrides = appCustomizationSync.translationOverrides;
+  if (appCustomizationData && !(appCustomizationData instanceof Error)) {
+    const overrides = appCustomizationData.translationOverrides;
     if (overrides) setOverrides(lang, overrides);
   }
 
+  // Await all remaining data in parallel
+  const [appSettingsData, electionData, constituencyData] = await Promise.all([
+    dataProvider.getAppSettings().catch((e) => e),
+    dataProvider.getElectionData({ locale: lang }).catch((e) => e),
+    dataProvider.getConstituencyData({ locale: lang }).catch((e) => e)
+  ]);
+
   return {
     appCustomizationData,
-    appSettingsData: dataProvider.getAppSettings().catch((e) => e),
-    electionData: dataProvider.getElectionData({ locale: lang }).catch((e) => e),
-    constituencyData: dataProvider.getConstituencyData({ locale: lang }).catch((e) => e)
+    appSettingsData,
+    electionData,
+    constituencyData
   };
 }

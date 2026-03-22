@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Default data loading
 
 Some data is automatically loaded when Strapi is initialized. The data include:

@@ -38,14 +38,16 @@ const VOTER_ANSWER_INDEX = 4; // 0-based index for "Fully agree" (5th option)
 // The voter dataset has 8 opinion questions. All use test-qt-likert5 question type.
 // Only include opinion (Likert-5) questions for matching.
 const allOpinionQuestions = [
-  ...defaultDataset.questions.filter((q) => q.questionType.externalId === 'test-qt-likert5'),
+  ...defaultDataset.questions.filter((q) => q.type === 'singleChoiceOrdinal'),
   ...voterDataset.questions
 ];
 
 const TOTAL_OPINION_QUESTIONS = allOpinionQuestions.length; // 16
 
 // Create OrdinalQuestion objects for matching
-const questions = allOpinionQuestions.map((q) => OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE }));
+const questions = allOpinionQuestions.map((q) =>
+  OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE })
+);
 
 // Create voter answers -- all "Fully agree" (choice_5) for every opinion question
 const voterAnswers: Record<string, { value: string }> = {};
@@ -154,21 +156,6 @@ async function navigateToResults(page: Page): Promise<void> {
   }
 
   // After answering the last question, the auto-advance timer navigates to results.
-  // If we're not on results yet, click the next button to proceed.
-  if (!page.url().includes('/results')) {
-    // Try waiting for auto-advance first
-    try {
-      await page.waitForURL(/\/results/, { timeout: 5000 });
-    } catch {
-      // Auto-advance may not have fired; click next button
-      const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
-      if (await nextButton.isVisible().catch(() => false)) {
-        await nextButton.click();
-      }
-      await page.waitForURL(/\/results/, { timeout: 10000 });
-    }
-  }
-
   // Wait for the results page to load.
   await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15000 });
 }
@@ -179,9 +166,6 @@ async function navigateToResults(page: Page): Promise<void> {
 
 test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
   test.describe.configure({ mode: 'serial' });
-  // navigateToResults() answers 16 questions (~20-25s).
-  // Increase timeout to 60s for each test.
-  test.setTimeout(60000);
 
   test('should display candidates in correct match ranking order', async ({ page }) => {
     await navigateToResults(page);
@@ -256,33 +240,35 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await expect(candidateSection).not.toContainText(hiddenName);
   });
 
-  test('should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)', async ({
-    page
-  }) => {
-    // Navigate the full journey and verify no category intro appeared.
-    // Category intros are disabled in data setup via updateAppSettings.
-    //
-    // Full boundary testing (enabling/disabling category intros and verifying
-    // behavior) is explicitly Phase 4 scope.
-    await navigateToResults(page);
+  test(
+    'should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)',
+    async ({ page }) => {
+      // Navigate the full journey and verify no category intro appeared.
+      // Category intros are disabled in data setup via updateAppSettings.
+      //
+      // Full boundary testing (enabling/disabling category intros and verifying
+      // behavior) is explicitly Phase 4 scope.
+      await navigateToResults(page);
 
-    // Category intro element should not be present on the results page
-    await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toBeHidden();
-  });
+      // Category intro element should not be present on the results page
+      await expect(page.getByTestId(testIds.voter.questions.categoryIntro)).toBeHidden();
+    }
+  );
 
-  test('should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)', async ({
-    page
-  }) => {
-    // Navigate and answer all opinion questions (above the default minimum of 5).
-    // This confirms results are accessible when answering all questions above threshold.
-    //
-    // Full boundary testing (answering exactly at threshold, below threshold)
-    // is explicitly Phase 4 scope.
-    await navigateToResults(page);
+  test(
+    'should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)',
+    async ({ page }) => {
+      // Navigate and answer all opinion questions (above the default minimum of 5).
+      // This confirms results are accessible when answering all questions above threshold.
+      //
+      // Full boundary testing (answering exactly at threshold, below threshold)
+      // is explicitly Phase 4 scope.
+      await navigateToResults(page);
 
-    // Results list should be visible with entity cards present
-    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
-    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(cardCount).toBeGreaterThan(0);
-  });
+      // Results list should be visible with entity cards present
+      await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible();
+      const cardCount = await page.getByTestId(testIds.voter.results.card).count();
+      expect(cardCount).toBeGreaterThan(0);
+    }
+  );
 });

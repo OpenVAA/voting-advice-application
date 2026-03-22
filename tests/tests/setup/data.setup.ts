@@ -2,63 +2,49 @@ import { expect, test as setup } from '@playwright/test';
 import candidateAddendum from '../data/candidate-addendum.json' with { type: 'json' };
 import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
 import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
-import { StrapiAdminClient } from '../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
-import { uploadTestAssets } from '../utils/uploadTestAssets';
 
 const TEST_DATA_PREFIX = 'test-';
 
 /**
- * Data setup project: imports the default test dataset via Admin Tools API.
+ * Data setup project: imports the default test dataset via Supabase Admin Client.
  *
  * Runs before all test projects. First deletes any existing test data
- * (by externalId prefix) to ensure a clean state, then imports the
- * full default dataset. Finally resets the candidate password to ensure
- * auth-setup can log in (a previous test run may have changed the password).
+ * (by external_id prefix) to ensure a clean state, then imports the
+ * full default dataset with answers and join table links. Finally resets
+ * the candidate password to ensure auth-setup can log in.
  */
 setup('import test dataset', async () => {
-  // Upload test video/image assets to LocalStack S3 so customData.video URLs resolve
-  await uploadTestAssets();
-
-  const client = new StrapiAdminClient();
-  await client.login();
+  const client = new SupabaseAdminClient();
 
   // Clean up any existing test data first (reverse import order to avoid FK issues).
-  // Note: candidates are intentionally NOT deleted here because the bootstrap
-  // creates a users-permissions user linked to the test candidate. Deleting and
-  // re-creating the candidate would break that link. The import step uses
-  // createOrUpdate which updates existing candidates by externalId.
-  const deleteResult = await client.deleteData({
-    nominations: TEST_DATA_PREFIX,
-    alliances: TEST_DATA_PREFIX,
-    parties: TEST_DATA_PREFIX,
-    questions: TEST_DATA_PREFIX,
-    questionCategories: TEST_DATA_PREFIX,
-    constituencyGroups: TEST_DATA_PREFIX,
-    constituencies: TEST_DATA_PREFIX,
-    elections: TEST_DATA_PREFIX,
-    questionTypes: TEST_DATA_PREFIX
+  const deleteResult = await client.bulkDelete({
+    nominations: { prefix: TEST_DATA_PREFIX },
+    candidates: { prefix: TEST_DATA_PREFIX },
+    questions: { prefix: TEST_DATA_PREFIX },
+    question_categories: { prefix: TEST_DATA_PREFIX },
+    organizations: { prefix: TEST_DATA_PREFIX },
+    constituency_groups: { prefix: TEST_DATA_PREFIX },
+    constituencies: { prefix: TEST_DATA_PREFIX },
+    elections: { prefix: TEST_DATA_PREFIX }
   });
-  expect(deleteResult.type, `Failed to delete existing test data: ${deleteResult.cause ?? 'unknown error'}`).toBe(
-    'success'
-  );
+  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
 
-  // Import the default test dataset (shared foundations: election, constituency, question types, questions, parties)
-  const importResult = await client.importData(defaultDataset as Record<string, Array<unknown>>);
-  expect(importResult.type, `Failed to import test dataset: ${importResult.cause ?? 'unknown error'}`).toBe('success');
+  // Import the default test dataset (shared foundations: election, constituency, questions, organizations)
+  await client.bulkImport(defaultDataset as Record<string, unknown[]>);
+  await client.importAnswers(defaultDataset as Record<string, unknown[]>);
+  await client.linkJoinTables(defaultDataset as Record<string, unknown[]>);
 
   // Import voter-specific test data (voter questions, candidates with deterministic answers, nominations)
-  const voterImportResult = await client.importData(voterDataset as Record<string, Array<unknown>>);
-  expect(voterImportResult.type, `Failed to import voter dataset: ${voterImportResult.cause ?? 'unknown error'}`).toBe(
-    'success'
-  );
+  await client.bulkImport(voterDataset as Record<string, unknown[]>);
+  await client.importAnswers(voterDataset as Record<string, unknown[]>);
+  await client.linkJoinTables(voterDataset as Record<string, unknown[]>);
 
   // Import candidate-app-specific addendum (unregistered candidates and their nominations)
-  const addendumImportResult = await client.importData(candidateAddendum as Record<string, Array<unknown>>);
-  expect(
-    addendumImportResult.type,
-    `Failed to import candidate addendum: ${addendumImportResult.cause ?? 'unknown error'}`
-  ).toBe('success');
+  await client.bulkImport(candidateAddendum as Record<string, unknown[]>);
+  await client.linkJoinTables(candidateAddendum as Record<string, unknown[]>);
+  // No importAnswers for addendum (unregistered candidates have no answers)
 
   // Disable category intros and category selection for the simple voter journey path.
   // This ensures Home -> Intro -> Questions -> Results with no category selection pages.
@@ -72,6 +58,13 @@ setup('import test dataset', async () => {
       questionsIntro: { allowCategorySelection: false, show: false },
       showResultsLink: true
     },
+    results: {
+      cardContents: {
+        candidate: ['submatches'],
+        organization: ['candidates']
+      },
+      sections: ['candidate', 'organization']
+    },
     entities: {
       hideIfMissingAnswers: { candidate: false },
       showAllNominations: true
@@ -81,28 +74,15 @@ setup('import test dataset', async () => {
   });
 
   // Unregister the "unregistered" candidates if a previous test run registered them.
-  // This deletes the linked users-permissions user and clears the user reference,
+  // This removes the auth user, role assignment, and candidate link,
   // allowing the registration tests to re-register them cleanly.
   await client.unregisterCandidate('test.unregistered@openvaa.org');
   await client.unregisterCandidate('test.unregistered2@openvaa.org');
 
-  // Reset the candidate's password to ensure auth-setup can log in.
-  // The password change or reset test may have left a different password.
-  // If setPassword fails (e.g., no linked user), fall back to forceRegister
-  // which creates the user and sets the password in one step.
-  const findResult = await client.findData('candidates', { externalId: { $eq: 'test-candidate-alpha' } });
-  if (findResult.type === 'success' && findResult.data?.length) {
-    const documentId = (findResult.data[0] as { documentId: string }).documentId;
-    const setResult = await client.setPassword({ documentId, password: TEST_CANDIDATE_PASSWORD });
-    if (setResult.type !== 'success') {
-      // Candidate has no linked user — create one via forceRegister
-      const registerResult = await client.forceRegister({ documentId, password: TEST_CANDIDATE_PASSWORD });
-      expect(
-        registerResult.type,
-        `Failed to restore candidate auth: setPassword failed (${setResult.cause}), forceRegister failed (${registerResult.cause})`
-      ).toBe('success');
-    }
-  }
-
-  await client.dispose();
+  // Ensure the test candidate auth user exists, is linked, and has the right password.
+  // After data-teardown + data-setup, the candidate entity is fresh (no auth_user_id)
+  // but the auth user may persist. forceRegister handles create + link + role assignment.
+  // If the user already exists, unregister first to allow forceRegister to re-create cleanly.
+  await client.unregisterCandidate('mock.candidate.2@openvaa.org');
+  await client.forceRegister('test-candidate-alpha', 'mock.candidate.2@openvaa.org', TEST_CANDIDATE_PASSWORD);
 });

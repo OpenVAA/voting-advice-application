@@ -7,6 +7,6 @@ This directory contains the Data API implementation for the OpenVAA frontend, in
 - Data providers for reading public data
 - Feedback writers for submitting feedback
 - Data writers for authenticated data operations
-- Multiple implementations (Strapi, API routes, local server)
+- Supabase adapter for all data access (local adapter available for static data)
 
 See the documentation for detailed information on how the Data API works and how to use it.

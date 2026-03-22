@@ -6,34 +6,28 @@
  * - VOTE-16: Survey popup timing with multi-setting configuration
  * - Both popup types verified to NOT appear when disabled
  *
- * Each describe block creates its own StrapiAdminClient, enables required
+ * Each describe block creates its own SupabaseAdminClient, enables required
  * settings in beforeAll, and restores defaults in afterAll.
  *
- * IMPORTANT: Notification and data consent popups are disabled via
+ * Notification and data consent popups are disabled via
  * `notifications.voterApp.show: false` and `analytics.trackEvents: false`
  * to prevent popup queue interference with the target popups.
- *
- * IMPORTANT: Every updateAppSettings call includes ALL sibling settings
- * (questions, entities, notifications, analytics) to avoid Pitfall 2 where
- * Strapi content-manager PUT replaces entire components, not just specified
- * fields. Without complete siblings, the answeredVoterPage fixture navigation
- * breaks because questionsIntro.show resets to its Strapi default (true).
  *
  * Runs within the `voter-app` project which depends only on data-setup
  * (no auth needed for voter tests).
  */
 
-import { expect } from '@playwright/test';
 import { voterTest as test } from '../../fixtures/voter.fixture';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
+import { expect } from '@playwright/test';
 import { testIds } from '../../utils/testIds';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 // All describe blocks share global app settings state -- run serially.
 test.describe.configure({ mode: 'serial', timeout: 60000 });
 
 // Ensure unauthenticated voter context.
 // Disable trace to avoid Playwright 1.58.2 ENOENT trace writer conflicts
-// when serial describe blocks share StrapiAdminClient across beforeAll/afterAll.
+// when serial describe blocks share state across beforeAll/afterAll.
 test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
 
 /**
@@ -65,7 +59,6 @@ const preserveNavigationSettings = {
 /**
  * Default settings to restore in afterAll blocks.
  * Resets popup-related settings to their data.setup.ts defaults.
- * Includes ALL sibling settings to avoid Pitfall 2.
  */
 const defaultPopupSettings = {
   results: { showFeedbackPopup: null, showSurveyPopup: null },
@@ -80,12 +73,11 @@ const defaultPopupSettings = {
 // ---------------------------------------------------------------------------
 
 test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.describe.configure({ mode: 'serial' });
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       results: { showFeedbackPopup: 2, showSurveyPopup: null },
       survey: { showIn: [], linkTemplate: '' },
@@ -96,7 +88,7 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultPopupSettings);
-    await client.dispose();
+
   });
 
   test('should show feedback popup after delay on results page', async ({ answeredVoterPage }) => {
@@ -143,7 +135,7 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 5000 });
 
     // After waiting, verify the popup did NOT reappear (dismissed status stored in localStorage)
-    await expect(dialog).toBeHidden();
+    await expect(dialog).not.toBeVisible();
   });
 });
 
@@ -152,12 +144,11 @@ test.describe('feedback popup (VOTE-15)', { tag: ['@voter'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('survey popup (VOTE-16)', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.describe.configure({ mode: 'serial' });
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       results: { showFeedbackPopup: null, showSurveyPopup: 2 },
       survey: { showIn: ['resultsPopup'], linkTemplate: 'https://test.survey.com' },
@@ -168,7 +159,7 @@ test.describe('survey popup (VOTE-16)', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultPopupSettings);
-    await client.dispose();
+
   });
 
   test('should show survey popup after delay on results page', async ({ answeredVoterPage }) => {
@@ -195,12 +186,11 @@ test.describe('survey popup (VOTE-16)', { tag: ['@voter'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('popups disabled', { tag: ['@voter'] }, () => {
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.describe.configure({ mode: 'serial' });
 
   test.beforeAll(async () => {
-    await client.login();
     await client.updateAppSettings({
       results: { showFeedbackPopup: null, showSurveyPopup: null },
       survey: { showIn: [], linkTemplate: '' },
@@ -211,7 +201,7 @@ test.describe('popups disabled', { tag: ['@voter'] }, () => {
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultPopupSettings);
-    await client.dispose();
+
   });
 
   test('should not show any popup when disabled', async ({ answeredVoterPage }) => {
@@ -227,7 +217,7 @@ test.describe('popups disabled', { tag: ['@voter'] }, () => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 3000 });
 
     // After waiting, verify no dialog appeared
-    const dialogCount = page.getByRole('dialog');
-    await expect(dialogCount).toHaveCount(0);
+    const dialogCount = await page.getByRole('dialog').count();
+    expect(dialogCount).toBe(0);
   });
 });

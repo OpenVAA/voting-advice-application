@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Registration Process in Strapi
 
 The user registration process is primarily handled by the `users-permissions` plugin bundled by Strapi so that we can rely on Strapi's existing security mechanisms (rate-limiting and being battle-tested). The only exception is that the plugin is extended with registration code support (POST /api/auth/local/register endpoint) that is implemented in the [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/extensions/users-permissions/controllers/candidate.ts) file. The user is also not logged in automatically by this endpoint to prevent bypassing 2FA in case we want to implement it in the future, in scenarios where the user already exists but is not explicitly linked to a candidate yet.

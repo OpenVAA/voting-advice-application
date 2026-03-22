@@ -16,18 +16,15 @@ import type { CandidateUserDataStore } from './candidateUserDataStore.type';
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
  * @param answersLocked - A read-only store that indicates whether answers are locked.
- * @param authToken - The auth token, needed for saving data.
  * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
  * @param locale - A read-only store that indicates the current locale, used for translating some data when it's fetched.
  */
 export function candidateUserDataStore({
   answersLocked,
-  authToken,
   dataWriterPromise,
   locale
 }: {
   answersLocked: Readable<boolean>;
-  authToken: Readable<string | undefined>;
   dataWriterPromise: Promise<UniversalDataWriter>;
   locale: Readable<string>;
 }): CandidateUserDataStore {
@@ -169,12 +166,9 @@ export function candidateUserDataStore({
   }
 
   async function reloadCandidateData(): Promise<LocalizedCandidateData> {
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token provided');
-
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     const userData = await dataWriter.getCandidateUserData({
-      authToken: token,
+      authToken: '',
       loadNominations: false,
       locale: get(locale)
     });
@@ -188,14 +182,11 @@ export function candidateUserDataStore({
     const saved = get(savedData);
     if (!saved) throw new Error('Save called before user data loaded');
 
-    const token = get(authToken);
-    if (!token) throw new Error('No authentication token provided');
-
     const answers = get(editedAnswers);
     const image = get(editedImage);
     const termsOfUseAccepted = get(editedTermsOfUseAccepted);
     const updateArgs = {
-      authToken: token,
+      authToken: '',
       target: {
         type: ENTITY_TYPE.Candidate,
         id: saved.candidate.id

@@ -3,28 +3,28 @@ import defaultDataset from './tests/data/default-dataset.json' with { type: 'jso
 import overlay from './tests/data/overlays/multi-election-overlay.json' with { type: 'json' };
 import voterDataset from './tests/data/voter-dataset.json' with { type: 'json' };
 import { mergeDatasets } from './tests/utils/mergeDatasets';
-import { StrapiAdminClient } from './tests/utils/strapiAdminClient';
+import { SupabaseAdminClient } from './tests/utils/supabaseAdminClient';
 import { testIds } from './tests/utils/testIds';
 
 const TEST_DATA_PREFIX = 'test-';
 
 (async () => {
   // Setup data first
-  const client = new StrapiAdminClient();
-  await client.login();
-  await client.deleteData({
-    nominations: TEST_DATA_PREFIX,
-    alliances: TEST_DATA_PREFIX,
-    parties: TEST_DATA_PREFIX,
-    questions: TEST_DATA_PREFIX,
-    questionCategories: TEST_DATA_PREFIX,
-    constituencyGroups: TEST_DATA_PREFIX,
-    constituencies: TEST_DATA_PREFIX,
-    elections: TEST_DATA_PREFIX,
-    questionTypes: TEST_DATA_PREFIX
+  const client = new SupabaseAdminClient();
+  await client.bulkDelete({
+    nominations: { prefix: TEST_DATA_PREFIX },
+    candidates: { prefix: TEST_DATA_PREFIX },
+    questions: { prefix: TEST_DATA_PREFIX },
+    question_categories: { prefix: TEST_DATA_PREFIX },
+    organizations: { prefix: TEST_DATA_PREFIX },
+    constituency_groups: { prefix: TEST_DATA_PREFIX },
+    constituencies: { prefix: TEST_DATA_PREFIX },
+    elections: { prefix: TEST_DATA_PREFIX }
   });
   const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-  await client.importData(merged as Record<string, Array<unknown>>);
+  await client.bulkImport(merged as Record<string, unknown[]>);
+  await client.importAnswers(merged as Record<string, unknown[]>);
+  await client.linkJoinTables(merged as Record<string, unknown[]>);
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
@@ -35,7 +35,6 @@ const TEST_DATA_PREFIX = 'test-';
     notifications: { voterApp: { show: false } },
     analytics: { trackEvents: false }
   });
-  await client.dispose();
   console.log('Data setup done');
 
   const browser = await chromium.launch({ headless: true });

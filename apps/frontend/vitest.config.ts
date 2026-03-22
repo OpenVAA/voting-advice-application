@@ -29,6 +29,10 @@ export default defineConfig({
       {
         find: '$app/environment',
         replacement: path.resolve(__dirname, 'src/lib/i18n/tests/__mocks__/app-environment.ts')
+      },
+      {
+        find: '$app/paths',
+        replacement: path.resolve(__dirname, 'src/lib/i18n/tests/__mocks__/app-paths.ts')
       }
     ]
   },

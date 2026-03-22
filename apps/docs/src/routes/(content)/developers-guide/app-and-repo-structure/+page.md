@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # App and repo structure
 
 The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module). See the READMEs in each for more information.

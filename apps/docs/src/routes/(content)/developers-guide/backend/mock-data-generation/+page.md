@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Mock data generation
 
 > NB! This feature must only be used for local development and testing (not on production)

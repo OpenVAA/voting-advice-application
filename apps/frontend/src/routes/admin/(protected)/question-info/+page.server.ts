@@ -1,7 +1,6 @@
 import { QUESTION_INFO_OPERATION } from '@openvaa/question-info';
 import { fail } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { getLocale } from '$lib/paraglide/runtime';
 import { generateQuestionInfo } from '$lib/server/admin/features/generateQuestionInfo';
 import type { Actions } from '@sveltejs/kit';
@@ -10,7 +9,7 @@ import type { Actions } from '@sveltejs/kit';
  * Handle form submit from the UI to start question info generation.
  */
 export const actions: Actions = {
-  default: async ({ fetch, request, cookies }) => {
+  default: async ({ fetch, request, locals }) => {
     try {
       const lang = getLocale();
       console.info('[question-info] action start');
@@ -58,21 +57,21 @@ export const actions: Actions = {
         .map((topic) => topic.trim())
         .filter((topic) => topic.length > 0);
 
-      // Get the authentication token from cookies
-      const authToken = cookies.get(AUTH_TOKEN_KEY);
-      if (!authToken) return fail(401, { type: 'error', error: 'Authentication required' });
+      // Verify Supabase session
+      const { session } = await locals.safeGetSession();
+      if (!session) return fail(401, { type: 'error', error: 'Authentication required' });
 
       // Prepare dataWriter and get user data
       const dataWriter = await dataWriterPromise;
       dataWriter.init({ fetch });
 
-      const { email } = await dataWriter.getBasicUserData({ authToken });
+      const { email } = await dataWriter.getBasicUserData({ authToken: '' });
 
       // Start the job
       const jobInfo = await dataWriter.startJob({
         feature: 'QuestionInfoGeneration',
         author: email,
-        authToken
+        authToken: ''
       });
 
       console.info('[question-info] created job:', jobInfo?.id);
@@ -85,7 +84,7 @@ export const actions: Actions = {
         fetch,
         locale: language,
         jobId: jobInfo.id,
-        authToken,
+        authToken: '',
         operations: operationEnums,
         sectionTopics: sectionTopics.length > 0 ? sectionTopics : undefined,
         customInstructions: customInstructions || undefined,

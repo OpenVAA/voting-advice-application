@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Troubleshooting
 
 If you can't find an answer to your problem below, feel free to reach us via Github [Discussions](https://github.com/OpenVAA/voting-advice-application/discussions).

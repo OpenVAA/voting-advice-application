@@ -386,7 +386,7 @@ export type WithUserSettings = {
 };
 
 /**
- * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only those `customData` properties that are not stored as their own fields in Strapi.
+ * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only `customData` properties.
  */
 export type TemporarySetQuestionData = {
   customData: {

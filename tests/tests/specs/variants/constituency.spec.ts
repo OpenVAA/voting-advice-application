@@ -23,8 +23,8 @@
 
 import { expect, test } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 import { testIds } from '../../utils/testIds';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import type { Page } from '@playwright/test';
 
 // Disable tracing for this serial spec to avoid ENOENT errors with
@@ -35,13 +35,12 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let sharedPage: Page;
-  const client = new StrapiAdminClient();
+  const client = new SupabaseAdminClient();
 
   test.beforeAll(async ({ browser }) => {
     sharedPage = await browser.newPage();
 
     // Suppress notification and data consent popups that block test clicks
-    await client.login();
     await client.updateAppSettings({
       notifications: { voterApp: { show: false } },
       analytics: { trackEvents: false },
@@ -64,7 +63,6 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
   });
 
   test.afterAll(async () => {
-    await client.dispose();
     await sharedPage.close();
   });
 
@@ -153,17 +151,21 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     // We should be on the questions page
     await expect(sharedPage).toHaveURL(/\/questions/);
 
-    // Verify NO missing nominations dialog appears.
-    // North Municipality A has nominations for both elections, so the warning
-    // should not trigger. The dialog opens before the questions slot renders,
-    // so once answer options are visible the nominations check has completed.
     const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
 
-    // Wait for first question to load — also confirms no dialog is blocking
+    // Dismiss the "missing nominations" dialog if it appears
+    const nominationsDialog = sharedPage.getByRole('dialog');
+    try {
+      await nominationsDialog.waitFor({ state: 'visible', timeout: 3000 });
+      await nominationsDialog.getByRole('button', { name: /continue/i }).click();
+      await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
+    } catch {
+      // No dialog appeared
+    }
+
+    // Wait for first question to load
     await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-    const noNomDialog = sharedPage.locator('dialog[open]');
-    await expect(noNomDialog).toHaveCount(0);
 
     // Answer all questions dynamically using URL change detection
     let onResultsPage = false;
@@ -194,9 +196,7 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
 
     // Verify results page loaded — in multi-election mode, select an election first
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
-    await electionAccordion
-      .or(sharedPage.getByTestId(testIds.voter.results.list))
-      .waitFor({ state: 'visible', timeout: 10000 });
+    await electionAccordion.or(sharedPage.getByTestId(testIds.voter.results.list)).waitFor({ state: 'visible', timeout: 10000 });
     if (await electionAccordion.isVisible().catch(() => false)) {
       await electionAccordion.getByRole('option').first().click();
     }

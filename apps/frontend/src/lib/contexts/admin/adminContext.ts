@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { get, writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { jobStores } from './jobStores';
 import { getAppContext } from '../app';
@@ -25,7 +25,7 @@ export function initAdminContext(): AdminContext {
 
   const appContext = getAppContext();
   const authContext = getAuthContext();
-  const { authToken } = authContext;
+  const { isAuthenticated } = authContext;
 
   ////////////////////////////////////////////////////////////////////
   // Common contents
@@ -45,11 +45,11 @@ export function initAdminContext(): AdminContext {
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Inject the JWT token into requests.
-   * TODO: Refactor `DataWriter` so that we can cache the `authToken` in the instance.
+   * Inject authToken into requests. With Supabase, auth is cookie-based so
+   * authToken is passed as '' to satisfy the WithAuth type constraint.
    */
   function injectAuthToken<TParams extends { authToken?: string }>(opts: TParams): TParams & WithAuth {
-    return { authToken: get(authToken)!, ...opts };
+    return { authToken: '', ...opts };
   }
 
   function updateQuestion(

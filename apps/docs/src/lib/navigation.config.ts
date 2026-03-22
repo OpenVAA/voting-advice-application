@@ -152,7 +152,7 @@ export const navigation: Navigation = [
         route: '/developers-guide/backend',
         children: [
           {
-            title: 'Strapi',
+            title: 'Backend (Legacy Strapi docs)',
             route: '/developers-guide/backend/intro'
           },
           {
@@ -256,7 +256,7 @@ export const navigation: Navigation = [
             route: '/developers-guide/localization/locale-selection-step-by-step'
           },
           {
-            title: 'Localization in Strapi',
+            title: 'Localization in Strapi (Legacy)',
             route: '/developers-guide/localization/localization-in-strapi'
           },
           {
@@ -290,7 +290,7 @@ export const navigation: Navigation = [
             route: '/developers-guide/candidate-user-management/password-validation'
           },
           {
-            title: 'Registration Process in Strapi',
+            title: 'Registration Process in Strapi (Legacy)',
             route: '/developers-guide/candidate-user-management/registration-process-in-strapi'
           },
           {

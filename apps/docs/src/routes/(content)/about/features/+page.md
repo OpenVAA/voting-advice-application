@@ -37,10 +37,10 @@ A non-exhaustive list of the application features.
 
 ### Data Input
 
-- Using Strapi Admin UI
+- Using Supabase Studio
 - Using a json import tool
 - Using a custom Admin UI (to be added in [`0.2 Akita`](/about/roadmap))
-- Support for a local version without Strapi
+- Support for a local version with static data
   - Data provided as flat json files
   - Does not support the Candidate App
 

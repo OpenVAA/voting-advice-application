@@ -41,9 +41,8 @@ export async function load({ fetch, parent }) {
     // Init dataWriter
     const dataWriter = await dataWriterPromise;
     dataWriter.init({ fetch });
-    const authToken = (await parent()).token;
     await dataWriter
-      .logout({ authToken: authToken ?? '' })
+      .logout({ authToken: '' })
       .catch((e) => logDebugError(`[Admin App protected layout] Error logging out: ${e?.message ?? '-'}`));
     redirect(
       307,

@@ -2,48 +2,172 @@
   "constituencies": [
     {
       "externalId": "test-constituency-e2",
-      "name": { "en": "Test Constituency E2" }
+      "name": {
+        "en": "Test Constituency E2"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "constituencyGroups": [
     {
       "externalId": "test-cg-e2",
-      "name": { "en": "Test CG Election 2" },
-      "constituencies": { "externalId": ["test-constituency-e2"] }
+      "name": {
+        "en": "Test CG Election 2"
+      },
+      "_constituencies": {
+        "externalId": [
+          "test-constituency-e2"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "elections": [
     {
       "externalId": "test-election-2",
-      "name": { "en": "Test Election 2026" },
+      "name": {
+        "en": "Test Election 2026"
+      },
       "electionDate": "2026-06-15",
       "electionStartDate": "2026-05-01",
-      "constituencyGroups": { "externalId": ["test-cg-e2"] }
+      "_constituencyGroups": {
+        "externalId": [
+          "test-cg-e2"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "questionCategories": [
     {
       "externalId": "test-cat-e2-policy",
-      "name": { "en": "Test E2 Category: Policy" },
-      "type": "opinion",
+      "name": {
+        "en": "Test E2 Category: Policy"
+      },
+      "categoryType": "opinion",
       "order": 20,
-      "elections": { "externalId": ["test-election-2"] }
+      "_elections": {
+        "externalId": [
+          "test-election-2"
+        ]
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "questions": [
     {
       "externalId": "test-e2-q-1",
-      "text": { "en": "E2 Question: Should public housing be expanded?" },
-      "category": { "externalId": "test-cat-e2-policy" },
-      "questionType": { "externalId": "test-qt-likert5" },
-      "order": 201
+      "category": {
+        "externalId": "test-cat-e2-policy"
+      },
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 201,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "E2 Question: Should public housing be expanded?"
+      }
     },
     {
       "externalId": "test-e2-q-2",
-      "text": { "en": "E2 Question: Should local taxes be reduced?" },
-      "category": { "externalId": "test-cat-e2-policy" },
-      "questionType": { "externalId": "test-qt-likert5" },
-      "order": 202
+      "category": {
+        "externalId": "test-cat-e2-policy"
+      },
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "key": "1",
+          "normalizableValue": "1",
+          "label": {
+            "en": "Fully disagree"
+          }
+        },
+        {
+          "id": "2",
+          "key": "2",
+          "normalizableValue": "2",
+          "label": {
+            "en": "Somewhat disagree"
+          }
+        },
+        {
+          "id": "3",
+          "key": "3",
+          "normalizableValue": "3",
+          "label": {
+            "en": "Neutral"
+          }
+        },
+        {
+          "id": "4",
+          "key": "4",
+          "normalizableValue": "4",
+          "label": {
+            "en": "Somewhat agree"
+          }
+        },
+        {
+          "id": "5",
+          "key": "5",
+          "normalizableValue": "5",
+          "label": {
+            "en": "Fully agree"
+          }
+        }
+      ],
+      "order": 202,
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true,
+      "name": {
+        "en": "E2 Question: Should local taxes be reduced?"
+      }
     }
   ],
   "candidates": [
@@ -54,9 +178,15 @@
       "email": "e2.cand1@openvaa.org",
       "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
-        "test-e2-q-1": { "value": "5" },
-        "test-e2-q-2": { "value": "3" }
-      }
+        "test-e2-q-1": {
+          "value": "5"
+        },
+        "test-e2-q-2": {
+          "value": "3"
+        }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-e2-cand-2",
@@ -65,9 +195,15 @@
       "email": "e2.cand2@openvaa.org",
       "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
-        "test-e2-q-1": { "value": "2" },
-        "test-e2-q-2": { "value": "4" }
-      }
+        "test-e2-q-1": {
+          "value": "2"
+        },
+        "test-e2-q-2": {
+          "value": "4"
+        }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-e2-cand-3",
@@ -76,53 +212,119 @@
       "email": "e2.cand3@openvaa.org",
       "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
       "answersByExternalId": {
-        "test-e2-q-1": { "value": "3" },
-        "test-e2-q-2": { "value": "1" }
-      }
+        "test-e2-q-1": {
+          "value": "3"
+        },
+        "test-e2-q-2": {
+          "value": "1"
+        }
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "nominations": [
     {
       "externalId": "test-nom-e2-cand1",
-      "candidate": { "externalId": "test-e2-cand-1" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "candidate": {
+        "externalId": "test-e2-cand-1"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-e2-cand2",
-      "candidate": { "externalId": "test-e2-cand-2" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-b" }
+      "candidate": {
+        "externalId": "test-e2-cand-2"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-b"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-e2-cand3",
-      "candidate": { "externalId": "test-e2-cand-3" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "candidate": {
+        "externalId": "test-e2-cand-3"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-e2-alpha",
-      "candidate": { "externalId": "test-candidate-alpha" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "candidate": {
+        "externalId": "test-candidate-alpha"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-e2-beta",
-      "candidate": { "externalId": "test-candidate-beta" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-a" }
+      "candidate": {
+        "externalId": "test-candidate-beta"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     },
     {
       "externalId": "test-nom-e2-gamma",
-      "candidate": { "externalId": "test-candidate-gamma" },
-      "election": { "externalId": "test-election-2" },
-      "constituency": { "externalId": "test-constituency-e2" },
-      "party": { "externalId": "test-party-b" }
+      "candidate": {
+        "externalId": "test-candidate-gamma"
+      },
+      "election": {
+        "externalId": "test-election-2"
+      },
+      "constituency": {
+        "externalId": "test-constituency-e2"
+      },
+      "organization": {
+        "externalId": "test-party-b"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ]
 }

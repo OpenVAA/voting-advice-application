@@ -14,23 +14,20 @@
  * (no auth needed for voter tests).
  */
 
+import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
 import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
 import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { testIds } from '../../utils/testIds';
 
-// Compute expected counts from datasets
+// Compute expected counts from datasets.
+// Addendum candidates have unconfirmed nominations and are excluded from voter results.
 const visibleCandidateCount = [...defaultDataset.candidates, ...voterDataset.candidates].filter(
   (c) => 'termsOfUseAccepted' in c && c.termsOfUseAccepted
 ).length;
-const totalPartyCount = defaultDataset.parties.length + voterDataset.parties.length;
+const totalPartyCount = defaultDataset.organizations.length + voterDataset.organizations.length;
 
 test.describe('voter results', { tag: ['@voter'] }, () => {
-  // The answeredVoterPage fixture navigates 16 questions (~20-25s).
-  // Increase timeout to 60s so the test body has sufficient time.
-  test.setTimeout(60000);
-
   test('should display candidates section with result cards', async ({ answeredVoterPage: page }) => {
     // Assert candidate section is visible (VOTE-08)
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
@@ -44,8 +41,9 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // - 5 from default dataset (alpha through epsilon, all registered)
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
     // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
-    const cardCount = page.getByTestId(testIds.voter.results.card);
-    await expect(cardCount).toHaveCount(visibleCandidateCount);
+    // Addendum candidates have unconfirmed nominations and are also excluded
+    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
+    expect(cardCount).toBe(visibleCandidateCount);
   });
 
   test('should display entity type tabs for switching between candidates and organizations', async ({
@@ -66,26 +64,20 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     const entityTabs = page.getByTestId(testIds.voter.results.entityTabs);
     await entityTabs.getByRole('tab', { name: /parties/i }).click();
 
-    // NOTE: There is a known Svelte 5 reactivity issue where $state changes
-    // inside {#snippet} blocks don't propagate to the template rendering.
-    // The tab click correctly updates activeEntityType in JavaScript (confirmed
-    // via console.log), but the DOM does not re-render with the new data-testid
-    // or heading text. This is tracked as a deferred issue for Svelte 5 core.
-    //
-    // As a workaround, we verify the tab UI itself switches correctly (the Tabs
-    // component manages its own internal state) and that both entity types exist
-    // in the data by checking the candidate section is still rendered (since
-    // the reactivity doesn't update, the DOM keeps showing candidates).
-    //
-    // Verify the Parties tab is now visually selected
-    const partiesTab = entityTabs.getByRole('tab', { name: /parties/i });
-    // The active tab has bg-base-100 class (from Tabs.svelte)
-    await expect(partiesTab).toHaveClass(/bg-base-100/);
+    // Assert party section is visible
+    const partySection = page.getByTestId(testIds.voter.results.partySection);
+    await expect(partySection).toBeVisible();
+
+    // Assert party section shows results -- verify the heading mentions "parties"
+    // Note: entity-card testId is shared by party cards AND nested candidate subcards,
+    // so we verify the party section heading count instead of counting entity-card elements.
+    // Use first() because the section also contains party card h3 headings.
+    await expect(partySection.locator('h3').first()).toContainText(`${totalPartyCount} parties`);
 
     // Switch back to candidates tab
     await entityTabs.getByRole('tab', { name: /candidate/i }).click();
 
-    // Assert candidate section is still visible
+    // Assert candidate section is visible again
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
     await expect(candidateSection).toBeVisible();
   });

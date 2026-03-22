@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { apiFail } from '$lib/api/utils/fail';
-import { AUTH_TOKEN_KEY } from '$lib/auth';
 import { logDebugError } from '$lib/utils/logger';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { BasicUserData, UserRole } from '$lib/api/base/dataWriter.type';
@@ -9,23 +8,27 @@ import type { BasicUserData, UserRole } from '$lib/api/base/dataWriter.type';
 /**
  * # Login api route. Call this from page actions.
  *
- * On succesfull login saves the jwt token into the cookie.
+ * On successful login, the Supabase server client automatically manages
+ * session cookies via createServerClient's cookie handler in hooks.server.ts.
+ * No manual cookie setting is needed.
  *
  * @params params - `LoginParams`
  * @returns A json `Response` with a `DataApiActionResult` and `BasicUserData`.
  */
 
-export async function POST({ cookies, request, locals, fetch }) {
+export async function POST({ request, locals, fetch }) {
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
   const { username, password, role } = (await request.json()) as LoginParams;
 
   const loginResponse = await dataWriter.login({ username, password }).catch(() => undefined);
-  if (!loginResponse?.authToken) return apiFail(400);
-  const { authToken } = loginResponse;
+  if (loginResponse?.type !== 'success') return apiFail(400);
 
-  const userData = await dataWriter.getBasicUserData({ authToken }).catch((e) => {
+  // Supabase manages sessions via cookies automatically — no authToken needed.
+  // The signInWithPassword call in the adapter sets session cookies via the
+  // server client's cookie handler.
+  const userData = await dataWriter.getBasicUserData({ authToken: '' }).catch((e) => {
     logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
     return undefined;
   });
@@ -34,21 +37,13 @@ export async function POST({ cookies, request, locals, fetch }) {
 
   if (role != null && ![role].flat().includes(userData.role!)) {
     await dataWriter
-      .backendLogout({ authToken })
+      .backendLogout({ authToken: '' })
       .catch((e) =>
         logDebugError(`Error handling backendLogout for unauthorized user: ${e?.message ?? 'No error message'}`)
       );
     console.error('Unauthorized user tried to access restricted resource');
     return apiFail(403);
   }
-
-  // Only set the auth token if we also got the basic user data and the role matched
-  cookies.set(AUTH_TOKEN_KEY, authToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    path: '/'
-  });
 
   const language = userData.settings?.language;
   if (language) {

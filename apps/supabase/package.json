@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "@openvaa/supabase",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "supabase start",
+    "stop": "supabase stop",
+    "reset": "supabase db reset",
+    "diff": "supabase db diff",
+    "status": "supabase status",
+    "lint": "supabase db lint --schema public --fail-on warning",
+    "lint:schema": "node scripts/lint-schema.mjs",
+    "lint:all": "yarn lint && yarn lint:schema"
+  },
+  "devDependencies": {
+    "supabase": "catalog:"
+  }
+}

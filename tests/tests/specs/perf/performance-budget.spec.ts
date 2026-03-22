@@ -2,8 +2,8 @@
  * Performance budget tests for the voter results page.
  *
  * These budgets are calibrated to the Docker dev-mode environment used
- * by the E2E suite (SvelteKit dev server + Strapi dev + Postgres in
- * Docker Compose). They are NOT representative of production build
+ * by the E2E suite (SvelteKit dev server + Supabase local dev).
+ * They are NOT representative of production build
  * performance and should not be compared to production baselines.
  *
  * Purpose: Detect performance regressions. If the results page suddenly

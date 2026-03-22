@@ -59,11 +59,11 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     // Assert election selection page is NOT shown
     const electionsList = sharedPage.getByTestId(testIds.voter.elections.list);
-    await expect(electionsList).toBeHidden();
+    await expect(electionsList).not.toBeVisible();
 
     // Assert constituency selection page is NOT shown
     const constituenciesList = sharedPage.getByTestId(testIds.voter.constituencies.list);
-    await expect(constituenciesList).toBeHidden();
+    await expect(constituenciesList).not.toBeVisible();
 
     // Assert we navigated directly to intro (URL contains /intro)
     await expect(sharedPage).toHaveURL(/\/intro/);
@@ -79,7 +79,7 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     // Assert category intro is NOT visible (disabled via app settings)
     const categoryIntro = sharedPage.getByTestId(testIds.voter.questions.categoryIntro);
-    await expect(categoryIntro).toBeHidden();
+    await expect(categoryIntro).not.toBeVisible();
 
     // Click start button
     await introStartButton.click();
@@ -100,24 +100,8 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
     const previousButton = sharedPage.getByTestId(testIds.voter.questions.previousButton);
 
-    // Wait for the first question's answer options to be visible. The questions
-    // intro page may redirect to the first question via onMount, so we need to
-    // wait for the actual question page to load before recording URLs for
-    // auto-advance detection.
-    await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-
-    // Also wait for the URL to settle on an actual question page (not the
-    // questions intro at /questions). The intro page's onMount redirect to
-    // /questions/__first__ may still be in flight. Without this wait,
-    // answerAndWaitForAdvance would see the redirect's URL change instead
-    // of the auto-advance navigation.
-    await sharedPage.waitForURL(/\/questions\//, { timeout: 10000 });
-
-    // Helper: answer current question and wait for auto-advance.
-    // Waits for the answer option to be visible before clicking to handle
-    // page transitions between questions.
+    // Helper: answer current question and wait for auto-advance
     async function answerAndWaitForAdvance(optionIndex: number): Promise<void> {
-      await answerOption.nth(optionIndex).waitFor({ state: 'visible', timeout: 10000 });
       const urlBefore = sharedPage.url();
       await answerOption.nth(optionIndex).click();
       await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
@@ -128,8 +112,6 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
       const urlBefore = sharedPage.url();
       await previousButton.click();
       await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
-      // Wait for the question page to load after navigation
-      await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
     }
 
     // Helper: skip current question (click next without answering) and wait
@@ -170,7 +152,6 @@ test.describe('voter journey', { tag: ['@voter', '@smoke'] }, () => {
 
     while (!onResultsPage) {
       questionCount++;
-      await answerOption.nth(4).waitFor({ state: 'visible', timeout: 10000 });
       const urlBefore = sharedPage.url();
 
       // Answer the current question

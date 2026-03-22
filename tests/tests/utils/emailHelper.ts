@@ -1,116 +1,76 @@
 /**
- * Email helper utilities for E2E tests using LocalStack SES.
+ * Email helper utilities for E2E tests using Mailpit REST API.
  *
- * Fetches emails from LocalStack's internal SES mailbox endpoint,
- * parses them with mailparser, and extracts links with cheerio.
+ * Fetches emails from Mailpit (started by `supabase start` on port 54324),
+ * and extracts links with cheerio.
  *
- * Requires LocalStack to be running (via `yarn dev` docker stack).
+ * Requires Supabase local dev stack to be running (Mailpit on port 54324).
  */
 
-import { request } from '@playwright/test';
 import { load } from 'cheerio';
-import { simpleParser } from 'mailparser';
 
 /**
- * Shape of a single email in the LocalStack SES inbox.
+ * URL of the Mailpit REST API.
  */
-export interface SESEmail {
-  Id: string;
-  Region: string;
-  Source: string;
-  RawData: string;
-  Timestamp: string;
+const MAILPIT_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
+
+/**
+ * Shape of a message in the Mailpit search/list response.
+ */
+interface MailpitMessageSummary {
+  ID: string;
+  MessageID: string;
+  From: { Name: string; Address: string };
+  To: Array<{ Name: string; Address: string }>;
+  Subject: string;
+  Created: string;
+  Size: number;
+  Read: boolean;
 }
 
 /**
- * Shape of the LocalStack SES inbox response.
+ * Shape of a full Mailpit message.
  */
-export interface SESMailbox {
-  messages: Array<SESEmail>;
+interface MailpitMessage extends MailpitMessageSummary {
+  HTML: string;
+  Text: string;
 }
 
 /**
- * URL of the LocalStack SES internal inbox endpoint.
- */
-const SES_INBOX_URL = `${process.env.LOCALSTACK_ENDPOINT ?? 'http://localhost:4566'}/_aws/ses`;
-
-/**
- * Clear all emails from the LocalStack SES inbox.
+ * Fetch all message summaries for a recipient.
  *
- * WARNING: This clears ALL emails for ALL recipients. Only call this
- * when no other tests are running that depend on SES emails.
+ * @param recipientEmail - The email address to search for
+ * @returns Array of message summaries, sorted by Created date (newest first)
  */
-export async function clearEmails(): Promise<void> {
-  const context = await request.newContext();
-  try {
-    await context.delete(SES_INBOX_URL);
-  } finally {
-    await context.dispose();
-  }
-}
-
-/**
- * Count how many emails exist for a specific recipient.
- *
- * Use this before sending an email, then poll with `getLatestEmailHtml`
- * using `afterIndex` to wait for the NEW email and skip stale ones.
- *
- * @param recipientEmail - The email address to count for
- * @returns Number of existing emails for this recipient
- */
-export async function countEmailsForRecipient(recipientEmail: string): Promise<number> {
-  const emails = await fetchEmails();
-  const lowerRecipient = recipientEmail.toLowerCase();
-  return emails.filter((e) => e.RawData.toLowerCase().includes(lowerRecipient)).length;
-}
-
-/**
- * Fetch all emails from the LocalStack SES inbox.
- *
- * @returns Array of SES email messages
- */
-export async function fetchEmails(): Promise<Array<SESEmail>> {
-  const context = await request.newContext();
-  try {
-    const response = await context.get(SES_INBOX_URL);
-    const body = (await response.json()) as SESMailbox;
-    return body.messages;
-  } finally {
-    await context.dispose();
-  }
+export async function fetchEmails(recipientEmail: string): Promise<MailpitMessageSummary[]> {
+  const response = await fetch(`${MAILPIT_URL}/api/v1/search?query=to:${encodeURIComponent(recipientEmail)}`);
+  if (!response.ok) return [];
+  const data = (await response.json()) as { total: number; messages: MailpitMessageSummary[] };
+  return data.messages ?? [];
 }
 
 /**
  * Get the HTML content of the latest email sent to a specific recipient.
  *
- * Iterates emails in reverse chronological order, parses each with mailparser,
- * and checks if the recipient matches (case-insensitive).
- *
  * @param recipientEmail - The email address to search for
- * @param skipCount - Number of existing emails for this recipient to skip
- *   (from oldest). Use with `countEmailsForRecipient` to only match NEW emails.
- * @returns The HTML content of the matching email, or undefined if not found
+ * @param skipCount - Number of most-recent emails to skip (for skipping stale emails from previous runs)
+ * @returns The HTML content of the target email, or undefined if not found
  */
-export async function getLatestEmailHtml(recipientEmail: string, skipCount = 0): Promise<string | undefined> {
-  const emails = await fetchEmails();
-  const lowerRecipient = recipientEmail.toLowerCase();
+export async function getLatestEmailHtml(
+  recipientEmail: string,
+  skipCount = 0
+): Promise<string | undefined> {
+  const messages = await fetchEmails(recipientEmail);
+  if (messages.length <= skipCount) return undefined;
 
-  // Collect matching emails in chronological order, then skip the old ones
-  const matchingEmails: Array<SESEmail> = [];
-  for (const email of emails) {
-    if (email.RawData.toLowerCase().includes(lowerRecipient)) {
-      matchingEmails.push(email);
-    }
-  }
+  // Mailpit returns messages newest-first. The newest email that wasn't
+  // in the mailbox before (i.e., not in the skipCount batch) is at index 0.
+  const target = messages[0];
+  const response = await fetch(`${MAILPIT_URL}/api/v1/message/${target.ID}`);
+  if (!response.ok) return undefined;
 
-  // Only consider emails after skipCount (i.e., new ones)
-  const newEmails = matchingEmails.slice(skipCount);
-  if (newEmails.length === 0) return undefined;
-
-  // Return the latest (last) new email
-  const latest = newEmails[newEmails.length - 1];
-  const parsed = await simpleParser(latest.RawData);
-  return parsed.textAsHtml || parsed.html || undefined;
+  const message = (await response.json()) as MailpitMessage;
+  return message.HTML || undefined;
 }
 
 /**
@@ -138,16 +98,59 @@ export async function getRegistrationLink(recipientEmail: string): Promise<strin
   const html = await getLatestEmailHtml(recipientEmail);
   if (!html) {
     throw new Error(
-      `No email found for recipient "${recipientEmail}". ` + 'Ensure the email was sent and LocalStack SES is running.'
+      `No email found for recipient "${recipientEmail}". ` +
+        'Ensure the email was sent and Mailpit is running (supabase start).'
     );
   }
 
   const link = extractLinkFromHtml(html);
   if (!link) {
     throw new Error(
-      `No link found in email for "${recipientEmail}". ` + `Email HTML content: ${html.substring(0, 200)}...`
+      `No link found in email for "${recipientEmail}". ` +
+        `Email HTML content: ${html.substring(0, 200)}...`
     );
   }
 
   return link;
+}
+
+/**
+ * Transform a Supabase Auth verify link into a direct auth callback URL.
+ *
+ * The Supabase invite/recovery email contains a link to the Auth verify endpoint
+ * which then redirects to the frontend. This function extracts the token from
+ * the verify link and constructs a direct URL to the frontend's auth callback,
+ * bypassing the Supabase redirect (which may not have the correct redirect_to).
+ *
+ * @param verifyLink - The link from the Supabase email (e.g., http://...54321/auth/v1/verify?token=...&type=invite)
+ * @param callbackPath - The frontend auth callback path (default: /en/candidate/auth/callback)
+ * @returns A URL pointing directly to the frontend callback with token_hash and type params
+ */
+export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/auth/callback'): string {
+  const url = new URL(verifyLink.replace(/&amp;/g, '&'));
+  const token = url.searchParams.get('token');
+  const type = url.searchParams.get('type') ?? 'invite';
+  const frontendUrl = 'http://localhost:5173';
+  return `${frontendUrl}${callbackPath}?token_hash=${token}&type=${type}`;
+}
+
+/**
+ * Count the number of emails in a recipient's mailbox.
+ *
+ * @param recipientEmail - The email address to count emails for
+ * @returns Number of emails in the mailbox
+ */
+export async function countEmailsForRecipient(recipientEmail: string): Promise<number> {
+  const messages = await fetchEmails(recipientEmail);
+  return messages.length;
+}
+
+/**
+ * Purge all emails from a recipient's mailbox.
+ * Note: Mailpit doesn't support per-mailbox purging — this deletes all messages.
+ *
+ * @param recipientEmail - The email address whose mailbox to purge (unused — deletes all)
+ */
+export async function purgeMailbox(_recipientEmail: string): Promise<void> {
+  await fetch(`${MAILPIT_URL}/api/v1/messages`, { method: 'DELETE' });
 }

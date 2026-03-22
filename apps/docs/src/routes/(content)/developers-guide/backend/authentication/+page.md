@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Authentication
 
 Standard read calls require no authentication and are included in the default permissions, which are customized in the [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/extensions/users-permissions/strapi-server.ts).

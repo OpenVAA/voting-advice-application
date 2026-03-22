@@ -11,24 +11,26 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  * Playwright configuration with project dependencies pattern.
  *
  * Projects execute in dependency order:
- *   data-setup -> auth-setup -> candidate-app -> candidate-app-mutation -> candidate-app-settings
+ *   data-setup -> auth-setup -> candidate-app -> candidate-app-mutation -> re-auth-setup
+ *     -> candidate-app-settings -> candidate-app-password
  *   data-setup -> voter-app (read-only specs)
  *   data-setup -> voter-app-settings -> voter-app-popups (settings-mutating specs)
  *   (data-teardown runs after all projects complete)
  *
  * Configuration variant projects run sequentially AFTER the default suite:
- *   [candidate-app-settings, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
+ *   [candidate-app-password, voter-app-popups] -> data-setup-multi-election -> variant-multi-election
  *     -> variant-results-sections -> data-setup-constituency -> variant-constituency
  *     -> data-setup-startfromcg -> variant-startfromcg
  *   (data-teardown-variants runs after all variant setups complete)
  *
- * Candidate specs are split into three groups because they mutate shared backend state:
- *   - candidate-app: auth + questions (run in parallel — different mutation targets,
- *     JWT stays valid after password changes)
- *   - candidate-app-mutation: registration + profile (create users, change passwords —
- *     must run after auth spec restores the alpha candidate's password)
+ * Candidate specs are split into four groups:
+ *   - candidate-app: auth + questions (sequential — fullyParallel:false prevents
+ *     concurrent server requests that race on the Supabase session layer)
+ *   - candidate-app-mutation: registration + profile (create users via invite)
  *   - candidate-app-settings: settings (mutates global app settings like disabled/maintenance —
  *     must run alone)
+ *   - candidate-app-password: logout + password change (session-destructive —
+ *     runs LAST because updateUser({password}) revokes refresh tokens)
  *
  * Voter specs are split into three groups:
  *   - voter-app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
@@ -54,8 +56,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
-  /* Opt out of parallel tests on CI. Limit local workers to avoid Strapi admin rate limiting. */
-  workers: process.env.CI ? 1 : 4,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 1 : 6,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
@@ -73,11 +75,11 @@ export default defineConfig({
     /* Collect trace for all tests. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
 
-    baseURL: process.env.FRONTEND_PORT ? `http://127.0.0.1:${process.env.FRONTEND_PORT}` : 'http://127.0.0.1:5173'
+    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
 
   projects: [
-    // 1. Data setup - imports test dataset via Admin Tools API
+    // 1. Data setup - imports test dataset via Supabase Admin Client
     {
       name: 'data-setup',
       testMatch: /data\.setup\.ts/,
@@ -97,11 +99,13 @@ export default defineConfig({
       dependencies: ['data-setup']
     },
 
-    // 4a. Candidate app: auth + questions (parallel-safe — different mutation targets)
+    // 4a. Candidate app: auth + questions (sequential to prevent concurrent
+    //     server requests that race on Supabase session/DataWriter singletons)
     {
       name: 'candidate-app',
       testDir: './tests/specs/candidate',
       testMatch: /candidate-(auth|questions)\.spec\.ts/,
+      fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
@@ -109,15 +113,11 @@ export default defineConfig({
       dependencies: ['auth-setup']
     },
 
-    // 4b. Candidate app: registration + profile (create users, change passwords —
-    //     must run after auth restores the alpha candidate's password)
-    //     fullyParallel: false to prevent race conditions between registration
-    //     and profile specs (both create users and modify Strapi state via admin API)
+    // 4b. Candidate app: registration + profile (create users via invite)
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
       testMatch: /candidate-(registration|profile)\.spec\.ts/,
-      fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
@@ -125,7 +125,16 @@ export default defineConfig({
       dependencies: ['candidate-app']
     },
 
+    // 4b2. Re-auth: mutation tests (password reset) invalidate the alpha
+    //      candidate's refresh token, so re-authenticate before settings/password tests
+    {
+      name: 're-auth-setup',
+      testMatch: /re-auth\.setup\.ts/,
+      dependencies: ['candidate-app-mutation']
+    },
+
     // 4c. Candidate app: settings (mutates global app settings — must run alone)
+    //     Runs before password tests since those revoke the session token again
     {
       name: 'candidate-app-settings',
       testDir: './tests/specs/candidate',
@@ -134,7 +143,20 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
       },
-      dependencies: ['candidate-app-mutation']
+      dependencies: ['re-auth-setup']
+    },
+
+    // 4d. Candidate app: logout + password change (session-destructive —
+    //     runs LAST because updateUser({password}) revokes refresh tokens)
+    {
+      name: 'candidate-app-password',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-password\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app-settings']
     },
 
     // 5a. Voter app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
@@ -149,10 +171,8 @@ export default defineConfig({
     },
 
     // 5b. Voter app: settings (mutates global app settings — must run alone)
-    //     Depends on voter-app so settings mutations only start after all
-    //     read-only voter specs complete. Without this ordering, concurrent
-    //     settings changes (e.g., enabling categoryIntros) interfere with
-    //     voter-app fixtures navigating through the question journey.
+    //     Depends on data-setup only (not voter-app) so that pre-existing failures
+    //     in read-only voter specs don't block settings verification.
     {
       name: 'voter-app-settings',
       testDir: './tests/specs/voter',
@@ -161,7 +181,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome']
       },
-      dependencies: ['voter-app']
+      dependencies: ['data-setup']
     },
 
     // 5c. Voter app: popups (mutates global app settings — must run alone, after settings)
@@ -195,7 +215,7 @@ export default defineConfig({
       name: 'data-setup-multi-election',
       testMatch: /variant-multi-election\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['candidate-app-settings', 'voter-app-popups']
+      dependencies: ['candidate-app-password', 'voter-app-popups']
     },
     {
       name: 'variant-multi-election',

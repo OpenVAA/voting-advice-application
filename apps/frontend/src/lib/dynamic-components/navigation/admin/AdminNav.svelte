@@ -32,13 +32,13 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   let { onKeyboardFocusOut, ...restProps }: AdminNavProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
-  const { authToken, t, getRoute } = getAdminContext();
+  const { isAuthenticated, t, getRoute } = getAdminContext();
 </script>
 
 <Navigation {onKeyboardFocusOut} {...restProps}>
   <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
 
-  {#if $authToken}
+  {#if $isAuthenticated}
     <NavGroup>
       <!-- TODO: i18n the Jobs Monitoring text -->
       <NavItem href={$getRoute('AdminAppHome')} icon="home" text={t('adminApp.common.home')} />

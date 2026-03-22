@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Accessing data and state management
 
 The overall model for loading and writing data and managing the application state is as follows.

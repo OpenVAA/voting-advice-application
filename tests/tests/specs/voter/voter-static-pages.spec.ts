@@ -16,10 +16,10 @@
  * blocks because they modify shared app settings.
  */
 
-import { expect, test } from '../../fixtures';
+import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 import { testIds } from '../../utils/testIds';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 // Ensure unauthenticated visitor context
 test.use({ storageState: { cookies: [], origins: [] } });
@@ -78,12 +78,10 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   test.describe('when enabled', () => {
-    const client = new StrapiAdminClient();
+    const client = new SupabaseAdminClient();
 
     test.beforeAll(async () => {
-      await client.login();
       // Explicitly ensure showAllNominations is true (data.setup.ts default).
-      // Always send complete sibling settings to avoid Pitfall 2 (overwrite, not merge).
       await client.updateAppSettings({
         entities: {
           showAllNominations: true,
@@ -95,10 +93,6 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
           showResultsLink: true
         }
       });
-    });
-
-    test.afterAll(async () => {
-      await client.dispose();
     });
 
     test('should render nominations page with entries', async ({ page }) => {
@@ -121,10 +115,9 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
   });
 
   test.describe('when disabled', () => {
-    const client = new StrapiAdminClient();
+    const client = new SupabaseAdminClient();
 
     test.beforeAll(async () => {
-      await client.login();
       await client.updateAppSettings({
         entities: {
           showAllNominations: false,
@@ -151,7 +144,6 @@ test.describe('nominations page (VOTE-19)', { tag: ['@voter'] }, () => {
           showResultsLink: true
         }
       });
-      await client.dispose();
     });
 
     test('should redirect to home when showAllNominations is false', async ({ page }) => {

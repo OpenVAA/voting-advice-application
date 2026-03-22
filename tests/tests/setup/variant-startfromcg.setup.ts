@@ -1,9 +1,9 @@
 import { expect, test as setup } from '@playwright/test';
 import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
-import overlay from '../data/overlays/startfromcg-overlay.json' with { type: 'json' };
 import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
+import overlay from '../data/overlays/startfromcg-overlay.json' with { type: 'json' };
 import { mergeDatasets } from '../utils/mergeDatasets';
-import { StrapiAdminClient } from '../utils/strapiAdminClient';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
 
 const TEST_DATA_PREFIX = 'test-';
 
@@ -20,34 +20,28 @@ const TEST_DATA_PREFIX = 'test-';
  * spec file must query for the group first, then set the setting.
  */
 setup('import startfromcg dataset', async () => {
-  const client = new StrapiAdminClient();
-  await client.login();
+  const client = new SupabaseAdminClient();
 
   // Delete existing test data in reverse import order to avoid FK issues.
-  // Note: candidates are intentionally NOT deleted (same reason as data.setup.ts).
-  const deleteResult = await client.deleteData({
-    nominations: TEST_DATA_PREFIX,
-    alliances: TEST_DATA_PREFIX,
-    parties: TEST_DATA_PREFIX,
-    questions: TEST_DATA_PREFIX,
-    questionCategories: TEST_DATA_PREFIX,
-    constituencyGroups: TEST_DATA_PREFIX,
-    constituencies: TEST_DATA_PREFIX,
-    elections: TEST_DATA_PREFIX,
-    questionTypes: TEST_DATA_PREFIX
+  const deleteResult = await client.bulkDelete({
+    nominations: { prefix: TEST_DATA_PREFIX },
+    candidates: { prefix: TEST_DATA_PREFIX },
+    questions: { prefix: TEST_DATA_PREFIX },
+    question_categories: { prefix: TEST_DATA_PREFIX },
+    organizations: { prefix: TEST_DATA_PREFIX },
+    constituency_groups: { prefix: TEST_DATA_PREFIX },
+    constituencies: { prefix: TEST_DATA_PREFIX },
+    elections: { prefix: TEST_DATA_PREFIX }
   });
-  expect(deleteResult.type, `Failed to delete existing test data: ${deleteResult.cause ?? 'unknown error'}`).toBe(
-    'success'
-  );
+  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
 
   // Merge base datasets with startfromcg overlay
   const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
 
   // Import the merged dataset
-  const importResult = await client.importData(merged as Record<string, Array<unknown>>);
-  expect(importResult.type, `Failed to import startfromcg dataset: ${importResult.cause ?? 'unknown error'}`).toBe(
-    'success'
-  );
+  await client.bulkImport(merged as Record<string, unknown[]>);
+  await client.importAnswers(merged as Record<string, unknown[]>);
+  await client.linkJoinTables(merged as Record<string, unknown[]>);
 
   // Configure app settings with popup suppression and standard defaults.
   // The startFromConstituencyGroup setting will be applied in the spec file
@@ -65,6 +59,4 @@ setup('import startfromcg dataset', async () => {
     notifications: { voterApp: { show: false } },
     analytics: { trackEvents: false }
   });
-
-  await client.dispose();
 });

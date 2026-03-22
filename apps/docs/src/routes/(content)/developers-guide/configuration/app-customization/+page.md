@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # App Customization
 
 App customization includes settings that do not affect the functionality of the app, such as, publisher logo, front page image, translation overrides and frequently asked questions of the candidate app. App customization has been currently implemented only in Strapi.

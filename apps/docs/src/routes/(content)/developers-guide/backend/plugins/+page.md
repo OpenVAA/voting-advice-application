@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Plugins
 
 - Email uses AWS SES, see [Candidate App documentation](/developers-guide/candidate-user-management/resetting-the-password)

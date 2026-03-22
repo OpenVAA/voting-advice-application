@@ -3,7 +3,7 @@
 ### Release `0.2 Akita` (2026/H1)
 
 - Update to Svelte 5
-- Migrate backend from Strapi to Supabase
+- Backend migrated from Strapi to Supabase (completed)
 - Update monorepo structure
 
 ### Future releases

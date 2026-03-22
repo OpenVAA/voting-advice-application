@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Application settings and features
 
 > This section deals with configuring App Settings. For adding new ones, see [Adding new settings](/developers-guide/configuration/app-settings).

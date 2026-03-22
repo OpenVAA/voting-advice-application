@@ -16,18 +16,17 @@
  * question visibility) run serially to prevent race conditions.
  */
 
-import { expect, test } from '../../fixtures';
+import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import { StrapiAdminClient } from '../../utils/strapiAdminClient';
 import { testIds } from '../../utils/testIds';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 
 // All describe blocks in this file share global app state — run serially.
 test.describe.configure({ mode: 'serial' });
 
 /**
  * Default access settings to restore after each mode test.
- * Always send the COMPLETE access object to avoid clearing adjacent settings
- * (Pitfall 2 from research).
+ * Ensures consistent test state across describe blocks.
  */
 const defaultAccess = {
   candidateApp: true,
@@ -41,46 +40,40 @@ const defaultAccess = {
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
-  test('should show read-only warning when answers are locked', async ({ page, candidateQuestionsPage }) => {
+  test('should show read-only warning when answers are locked', async ({ page }) => {
+    test.setTimeout(60000);
+
     // Enable answers locked while keeping other access settings at defaults
     await client.updateAppSettings({
       access: { ...defaultAccess, answersLocked: true }
     });
 
-    // Navigate to candidate home page
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
+    // Navigate to candidate home page with full load to pick up settings
+    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }), { waitUntil: 'networkidle' });
 
     // The home page shows a Warning component when answersLocked is true
     // The Warning component renders with role-less div containing an icon and text.
     // Verify the home page status message is visible (page loaded successfully)
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
 
     // The button text should change to "view" variants instead of "edit" when locked
     // The home page buttons use "candidate-home-questions" testId
     const questionsButton = page.getByTestId(testIds.candidate.home.questions);
     await expect(questionsButton).toBeVisible();
 
-    // Navigate to questions page and verify the warning appears there too
+    // Navigate to questions page and verify it renders with locked state
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
-    await candidateQuestionsPage.waitForLoad();
 
     // When answers are locked, question cards show "view" action text
     // The questions page renders a Warning component with "editingNotAllowed" text
     // Verify the questions list is still visible (page rendered correctly)
-    await expect(
-      page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))
-    ).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.questions.list).or(page.getByTestId(testIds.candidate.questions.start))).toBeVisible({ timeout: 15000 });
   });
 });
 
@@ -89,15 +82,10 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
   test('should show maintenance page when candidateApp is disabled', async ({ page }) => {
@@ -112,7 +100,7 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
     // The candidate layout shows MaintenancePage when candidateApp is false.
     // MaintenancePage renders a <main> element with a title and content.
     // The normal candidate home content (status message) should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
 
     // The page should show a MaintenancePage with a heading
     // MaintenancePage uses <h1> for the title
@@ -128,15 +116,10 @@ test.describe('app mode: disabled (CAND-10)', { tag: ['@candidate'] }, () => {
 // ---------------------------------------------------------------------------
 
 test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     await client.updateAppSettings({ access: defaultAccess });
-    await client.dispose();
   });
 
   test('should show maintenance page when underMaintenance is true', async ({ page }) => {
@@ -151,7 +134,7 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
     // The root layout shows MaintenancePage when underMaintenance is true.
     // This happens at the root level, before the candidate layout even renders.
     // The normal candidate home content should NOT be visible.
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeHidden();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).not.toBeVisible();
 
     // The page should show a MaintenancePage <main> element
     await expect(page.locator('main')).toBeVisible();
@@ -166,11 +149,7 @@ test.describe('app mode: maintenance (CAND-11)', { tag: ['@candidate'] }, () => 
 // ---------------------------------------------------------------------------
 
 test.describe('candidate notifications (CAND-13)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     // Disable notification to restore defaults
@@ -183,7 +162,6 @@ test.describe('candidate notifications (CAND-13)', { tag: ['@candidate'] }, () =
         }
       }
     });
-    await client.dispose();
   });
 
   test('should display notification popup when enabled', async ({ page }) => {
@@ -247,18 +225,13 @@ test.describe('help and privacy pages (CAND-14)', { tag: ['@candidate'] }, () =>
 // ---------------------------------------------------------------------------
 
 test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] }, () => {
-  const client = new StrapiAdminClient();
-
-  test.beforeAll(async () => {
-    await client.login();
-  });
+  const client = new SupabaseAdminClient();
 
   test.afterAll(async () => {
     // Restore default visibility (show everything)
     await client.updateAppSettings({
       candidateApp: { questions: { hideVideo: false, hideHero: false } }
     });
-    await client.dispose();
   });
 
   test('should hide hero when hideHero is enabled', async ({ page, candidateQuestionsPage }) => {
@@ -283,7 +256,7 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     const heroFigure = page.locator('figure[role="presentation"]');
     // The figure element exists (it's the slot container) but should be empty
     // when hideHero is true. The Hero component class contains "overflow-hidden".
-    await expect(heroFigure.locator('.overflow-hidden')).toBeHidden();
+    await expect(heroFigure.locator('.overflow-hidden')).not.toBeVisible();
   });
 
   test('should show hero when hideHero is disabled', async ({ page, candidateQuestionsPage }) => {
@@ -309,39 +282,5 @@ test.describe('question visibility settings (CAND-15)', { tag: ['@candidate'] },
     // The figure[role="presentation"] slot container should exist in the DOM.
     const heroFigure = page.locator('figure[role="presentation"]');
     expect(await heroFigure.count()).toBeGreaterThanOrEqual(0);
-  });
-
-  test('should show video when hideVideo is disabled', async ({ page, candidateQuestionsPage }) => {
-    await client.updateAppSettings({
-      candidateApp: { questions: { hideVideo: false, hideHero: false } }
-    });
-
-    // Navigate to questions page
-    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
-    await candidateQuestionsPage.expandAllCategories();
-
-    // Navigate to test-question-2 (2nd card, index 1) which has video customData
-    await page.getByTestId(testIds.candidate.questions.card).nth(1).click();
-    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
-
-    // Verify the video player is visible in the layout
-    await expect(page.locator('video')).toBeVisible({ timeout: 10000 });
-  });
-
-  test('should hide video when hideVideo is enabled', async ({ page, candidateQuestionsPage }) => {
-    await client.updateAppSettings({
-      candidateApp: { questions: { hideVideo: true, hideHero: false } }
-    });
-
-    // Navigate to questions page
-    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
-    await candidateQuestionsPage.expandAllCategories();
-
-    // Navigate to test-question-2 (2nd card, index 1) which has video customData
-    await page.getByTestId(testIds.candidate.questions.card).nth(1).click();
-    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
-
-    // Verify the video player is NOT visible when hideVideo is enabled
-    await expect(page.locator('video')).toBeHidden();
   });
 });

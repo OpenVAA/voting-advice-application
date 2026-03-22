@@ -36,7 +36,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   const {
     answersLocked,
     appSettings,
-    authToken,
+    isAuthenticated,
     getRoute,
     openFeedbackModal,
     t,
@@ -47,7 +47,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
 
 <Navigation {onKeyboardFocusOut} {...restProps}>
   <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
-  {#if $authToken}
+  {#if $isAuthenticated}
     <NavGroup>
       <NavItem
         href={$getRoute('CandAppHome')}

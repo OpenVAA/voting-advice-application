@@ -195,7 +195,7 @@ export async function condenseArguments({
 
     controller.complete();
 
-    // Save job record to Strapi
+    // Save job record
     const job = getJob(jobId);
     if (job) {
       await dataWriter.insertJobResult({
@@ -216,7 +216,7 @@ export async function condenseArguments({
     if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
       markAborted(jobId);
 
-      // Save aborted job record to Strapi
+      // Save aborted job record
       if (job) {
         await dataWriter.insertJobResult({
           authToken,
@@ -233,7 +233,7 @@ export async function condenseArguments({
         error && typeof error === 'object' && 'message' in error ? String(error.message) : JSON.stringify(error);
       controller.fail(`Argument condensation failed: ${message}`);
 
-      // Save failed job record to Strapi
+      // Save failed job record
       if (job) {
         await dataWriter.insertJobResult({
           authToken,
