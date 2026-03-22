@@ -8,6 +8,12 @@ export interface DataObjectData extends HasId {
   // - id: Id;
 
   /**
+   * Optional external identifier for import/export and cross-system references.
+   * Used by bulk import operations; not exposed as internal UUIDs.
+   */
+  externalId?: string | null;
+
+  /**
    * A set of colors associated with the object, such as a theme color for a question category or a party’s brand color. @defaultValue null
    */
   color?: Colors | null;

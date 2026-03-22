@@ -58,6 +58,13 @@ setup('import test dataset', async () => {
       questionsIntro: { allowCategorySelection: false, show: false },
       showResultsLink: true
     },
+    results: {
+      cardContents: {
+        candidate: ['submatches'],
+        organization: ['candidates']
+      },
+      sections: ['candidate', 'organization']
+    },
     entities: {
       hideIfMissingAnswers: { candidate: false },
       showAllNominations: true
@@ -72,13 +79,10 @@ setup('import test dataset', async () => {
   await client.unregisterCandidate('test.unregistered@openvaa.org');
   await client.unregisterCandidate('test.unregistered2@openvaa.org');
 
-  // Reset the candidate's password to ensure auth-setup can log in.
-  // The password change or reset test may have left a different password.
-  // If setPassword fails (e.g., no linked user), fall back to forceRegister
-  // which creates the user and sets the password in one step.
-  try {
-    await client.setPassword('mock.candidate.2@openvaa.org', TEST_CANDIDATE_PASSWORD);
-  } catch {
-    await client.forceRegister('test-candidate-alpha', 'mock.candidate.2@openvaa.org', TEST_CANDIDATE_PASSWORD);
-  }
+  // Ensure the test candidate auth user exists, is linked, and has the right password.
+  // After data-teardown + data-setup, the candidate entity is fresh (no auth_user_id)
+  // but the auth user may persist. forceRegister handles create + link + role assignment.
+  // If the user already exists, unregister first to allow forceRegister to re-create cleanly.
+  await client.unregisterCandidate('mock.candidate.2@openvaa.org');
+  await client.forceRegister('test-candidate-alpha', 'mock.candidate.2@openvaa.org', TEST_CANDIDATE_PASSWORD);
 });

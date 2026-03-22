@@ -63,7 +63,7 @@
   });
 
   const menuId = 'candidate-app-menu';
-  let isDrawerOpen: boolean;
+  let isDrawerOpen = false;
 </script>
 
 {#if !$appSettings.dataAdapter.supportsCandidateApp}

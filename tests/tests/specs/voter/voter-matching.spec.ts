@@ -46,7 +46,7 @@ const TOTAL_OPINION_QUESTIONS = allOpinionQuestions.length; // 16
 
 // Create OrdinalQuestion objects for matching
 const questions = allOpinionQuestions.map((q) =>
-  OrdinalQuestion.fromLikert({ id: q.external_id, scale: LIKERT_SCALE })
+  OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE })
 );
 
 // Create voter answers -- all "Fully agree" (choice_5) for every opinion question
@@ -57,34 +57,34 @@ for (const q of questions) {
 const voterEntity: HasAnswers = { answers: voterAnswers };
 
 // Collect ALL visible candidates from both datasets.
-// Visible = has terms_of_use_accepted set.
+// Visible = has termsOfUseAccepted set.
 const allCandidates = [
   ...defaultDataset.candidates.map((c) => ({
     ...c,
-    answers_by_external_id: c.answers_by_external_id as Record<string, { value: string }> | undefined
+    answersByExternalId: c.answersByExternalId as Record<string, { value: string }> | undefined
   })),
   ...voterDataset.candidates.map((c) => ({
     ...c,
-    answers_by_external_id: c.answers_by_external_id as Record<string, { value: string }> | undefined
+    answersByExternalId: c.answersByExternalId as Record<string, { value: string }> | undefined
   }))
 ];
-const visibleCandidates = allCandidates.filter((c) => c.terms_of_use_accepted);
+const visibleCandidates = allCandidates.filter((c) => c.termsOfUseAccepted);
 
 // Build HasAnswers-compatible objects for each candidate.
 // Dataset answer values are raw numeric strings ("5", "1", etc.) which map
 // to OrdinalQuestion.fromLikert choice IDs ("choice_5", "choice_1", etc.).
 const candidateEntities = visibleCandidates.map((c) => {
   const answers: Record<string, { value: string }> = {};
-  if (c.answers_by_external_id) {
-    for (const [qId, ans] of Object.entries(c.answers_by_external_id)) {
+  if (c.answersByExternalId) {
+    for (const [qId, ans] of Object.entries(c.answersByExternalId)) {
       if (questions.some((q) => q.id === qId) && ans.value) {
         answers[qId] = { value: `choice_${ans.value}` };
       }
     }
   }
   return {
-    name: `${c.first_name} ${c.last_name}`,
-    external_id: c.external_id,
+    name: `${c.firstName} ${c.lastName}`,
+    externalId: c.externalId,
     answers
   };
 });
@@ -118,10 +118,10 @@ for (const match of computedMatches) {
 const expectedRanking = computedMatches.map((m) => (m.target as (typeof candidateEntities)[0]).name);
 
 // Lookup helpers for specific candidates in the voter dataset
-const hiddenCandidate = voterDataset.candidates.find((c) => !c.terms_of_use_accepted)!;
-const partialCandidate = voterDataset.candidates.find((c) => c.external_id === 'test-voter-cand-partial')!;
-const agreeCandidate = voterDataset.candidates.find((c) => c.external_id === 'test-voter-cand-agree')!;
-const opposeCandidate = voterDataset.candidates.find((c) => c.external_id === 'test-voter-cand-oppose')!;
+const hiddenCandidate = voterDataset.candidates.find((c) => !c.termsOfUseAccepted)!;
+const partialCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-partial')!;
+const agreeCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-agree')!;
+const opposeCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-oppose')!;
 
 // ---------------------------------------------------------------------------
 // Helper: navigate the voter through all questions to reach results
@@ -199,7 +199,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await navigateToResults(page);
 
     const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const agreeName = `${agreeCandidate.first_name} ${agreeCandidate.last_name}`;
+    const agreeName = `${agreeCandidate.firstName} ${agreeCandidate.lastName}`;
 
     await expect(firstCard).toContainText(agreeName);
   });
@@ -209,7 +209,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
 
     const cards = page.getByTestId(testIds.voter.results.card);
     const lastCard = cards.last();
-    const opposeName = `${opposeCandidate.first_name} ${opposeCandidate.last_name}`;
+    const opposeName = `${opposeCandidate.firstName} ${opposeCandidate.lastName}`;
 
     await expect(lastCard).toContainText(opposeName);
   });
@@ -218,7 +218,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await navigateToResults(page);
 
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-    const partialName = `${partialCandidate.first_name} ${partialCandidate.last_name}`;
+    const partialName = `${partialCandidate.firstName} ${partialCandidate.lastName}`;
 
     // Partial candidate should appear in results
     await expect(candidateSection).toContainText(partialName);
@@ -231,11 +231,11 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await expect(lastCard).not.toContainText(partialName);
   });
 
-  test('should NOT show hidden candidate (no terms_of_use_accepted)', async ({ page }) => {
+  test('should NOT show hidden candidate (no termsOfUseAccepted)', async ({ page }) => {
     await navigateToResults(page);
 
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-    const hiddenName = `${hiddenCandidate.first_name} ${hiddenCandidate.last_name}`;
+    const hiddenName = `${hiddenCandidate.firstName} ${hiddenCandidate.lastName}`;
 
     await expect(candidateSection).not.toContainText(hiddenName);
   });

@@ -1,57 +1,52 @@
 /**
- * Email helper utilities for E2E tests using Inbucket REST API.
+ * Email helper utilities for E2E tests using Mailpit REST API.
  *
- * Fetches emails from Inbucket's mailbox endpoint (started by `supabase start`),
- * and extracts links with cheerio. No MIME parsing needed -- Inbucket returns
- * pre-parsed HTML bodies.
+ * Fetches emails from Mailpit (started by `supabase start` on port 54324),
+ * and extracts links with cheerio.
  *
- * Requires Supabase local dev stack to be running (Inbucket on port 54324).
+ * Requires Supabase local dev stack to be running (Mailpit on port 54324).
  */
 
 import { load } from 'cheerio';
 
 /**
- * URL of the Inbucket REST API.
+ * URL of the Mailpit REST API.
  */
-const INBUCKET_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
+const MAILPIT_URL = process.env.INBUCKET_URL ?? 'http://localhost:54324';
 
 /**
- * Extract the mailbox name (local part) from an email address.
+ * Shape of a message in the Mailpit search/list response.
  */
-function getMailboxName(email: string): string {
-  return email.split('@')[0];
+interface MailpitMessageSummary {
+  ID: string;
+  MessageID: string;
+  From: { Name: string; Address: string };
+  To: Array<{ Name: string; Address: string }>;
+  Subject: string;
+  Created: string;
+  Size: number;
+  Read: boolean;
 }
 
 /**
- * Shape of a message header in the Inbucket mailbox listing.
+ * Shape of a full Mailpit message.
  */
-interface InbucketMessageHeader {
-  mailbox: string;
-  id: string;
-  from: string;
-  subject: string;
-  date: string;
-  size: number;
+interface MailpitMessage extends MailpitMessageSummary {
+  HTML: string;
+  Text: string;
 }
 
 /**
- * Shape of a full Inbucket message (with parsed body).
- */
-interface InbucketMessage extends InbucketMessageHeader {
-  body: { text: string; html: string };
-}
-
-/**
- * Fetch all message headers for a recipient's mailbox.
+ * Fetch all message summaries for a recipient.
  *
- * @param recipientEmail - The email address whose mailbox to list
- * @returns Array of message headers, or empty array if mailbox is empty/not found
+ * @param recipientEmail - The email address to search for
+ * @returns Array of message summaries, sorted by Created date (newest first)
  */
-export async function fetchEmails(recipientEmail: string): Promise<InbucketMessageHeader[]> {
-  const mailbox = getMailboxName(recipientEmail);
-  const response = await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}`);
+export async function fetchEmails(recipientEmail: string): Promise<MailpitMessageSummary[]> {
+  const response = await fetch(`${MAILPIT_URL}/api/v1/search?query=to:${encodeURIComponent(recipientEmail)}`);
   if (!response.ok) return [];
-  return (await response.json()) as InbucketMessageHeader[];
+  const data = (await response.json()) as { total: number; messages: MailpitMessageSummary[] };
+  return data.messages ?? [];
 }
 
 /**
@@ -68,14 +63,14 @@ export async function getLatestEmailHtml(
   const messages = await fetchEmails(recipientEmail);
   if (messages.length <= skipCount) return undefined;
 
-  // Get the target message: latest minus skip
-  const target = messages[messages.length - 1 - skipCount];
-  const mailbox = getMailboxName(recipientEmail);
-  const response = await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}/${target.id}`);
+  // Mailpit returns messages newest-first. The newest email that wasn't
+  // in the mailbox before (i.e., not in the skipCount batch) is at index 0.
+  const target = messages[0];
+  const response = await fetch(`${MAILPIT_URL}/api/v1/message/${target.ID}`);
   if (!response.ok) return undefined;
 
-  const message = (await response.json()) as InbucketMessage;
-  return message.body?.html ?? undefined;
+  const message = (await response.json()) as MailpitMessage;
+  return message.HTML || undefined;
 }
 
 /**
@@ -104,7 +99,7 @@ export async function getRegistrationLink(recipientEmail: string): Promise<strin
   if (!html) {
     throw new Error(
       `No email found for recipient "${recipientEmail}". ` +
-        'Ensure the email was sent and Inbucket is running (supabase start).'
+        'Ensure the email was sent and Mailpit is running (supabase start).'
     );
   }
 
@@ -120,6 +115,26 @@ export async function getRegistrationLink(recipientEmail: string): Promise<strin
 }
 
 /**
+ * Transform a Supabase Auth verify link into a direct auth callback URL.
+ *
+ * The Supabase invite/recovery email contains a link to the Auth verify endpoint
+ * which then redirects to the frontend. This function extracts the token from
+ * the verify link and constructs a direct URL to the frontend's auth callback,
+ * bypassing the Supabase redirect (which may not have the correct redirect_to).
+ *
+ * @param verifyLink - The link from the Supabase email (e.g., http://...54321/auth/v1/verify?token=...&type=invite)
+ * @param callbackPath - The frontend auth callback path (default: /en/candidate/auth/callback)
+ * @returns A URL pointing directly to the frontend callback with token_hash and type params
+ */
+export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/auth/callback'): string {
+  const url = new URL(verifyLink.replace(/&amp;/g, '&'));
+  const token = url.searchParams.get('token');
+  const type = url.searchParams.get('type') ?? 'invite';
+  const frontendUrl = 'http://localhost:5173';
+  return `${frontendUrl}${callbackPath}?token_hash=${token}&type=${type}`;
+}
+
+/**
  * Count the number of emails in a recipient's mailbox.
  *
  * @param recipientEmail - The email address to count emails for
@@ -132,10 +147,10 @@ export async function countEmailsForRecipient(recipientEmail: string): Promise<n
 
 /**
  * Purge all emails from a recipient's mailbox.
+ * Note: Mailpit doesn't support per-mailbox purging — this deletes all messages.
  *
- * @param recipientEmail - The email address whose mailbox to purge
+ * @param recipientEmail - The email address whose mailbox to purge (unused — deletes all)
  */
-export async function purgeMailbox(recipientEmail: string): Promise<void> {
-  const mailbox = getMailboxName(recipientEmail);
-  await fetch(`${INBUCKET_URL}/api/v1/mailbox/${mailbox}`, { method: 'DELETE' });
+export async function purgeMailbox(_recipientEmail: string): Promise<void> {
+  await fetch(`${MAILPIT_URL}/api/v1/messages`, { method: 'DELETE' });
 }

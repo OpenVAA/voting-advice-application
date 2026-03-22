@@ -89,12 +89,52 @@
 
 ---
 
+## Milestone: v1.0 — E2E Testing Framework
+
+**Shipped:** 2026-03-22
+**Phases:** 7 | **Plans:** 31 | **Timeline:** ~14 days (non-contiguous, interleaved with v2.0-v3.0)
+
+### What Was Built
+- Playwright 1.58.2 test infrastructure with 5-project dependency chain and storageState auth
+- 25 E2E spec files covering candidate auth, profile, questions, settings + voter journey, results, settings, popups
+- 14 page objects, 9 utility modules, 4 test dataset files with overlay merge system
+- 120+ data-testid attributes across all voter and candidate route pages and shared components
+- Configuration variant tests: multi-election, constituency selection, startFromConstituencyGroup
+- Visual regression and performance budget specs (opt-in CI execution)
+- GitHub Actions CI integration with tag-based selective test execution
+
+### What Worked
+- data-testid over text selectors — survived the entire Strapi→Supabase migration (v2.0/v3.0) without selector rewrites
+- Overlay dataset merge system — 3 variant overlays reuse the base dataset, avoiding duplication
+- Serial project execution for shared-state tests (settings, popups) prevented flaky race conditions
+- Page object pattern made spec files readable and refactoring localized to page objects
+
+### What Was Inefficient
+- Plan 01-07 (shared component testIds) was already done incrementally during phases 02-07 — the plan verified existing work, not new work
+- Some specs were written against Strapi then rewritten for Supabase (E2E migration phase 29) — parallel stacks would have avoided this
+- SvelteKit client-side `goto()` doesn't work in Playwright shared-page contexts — required workaround with explicit URL navigation
+
+### Patterns Established
+- testIds.ts as single source of truth for all data-testid constants
+- SupabaseAdminClient with service_role key for test data management (bulkImport, importAnswers, linkJoinTables)
+- Mailpit API for email verification (replaced Inbucket after Supabase CLI update)
+- Re-auth setup project pattern for tests after session-invalidating operations
+
+### Key Lessons
+1. E2E tests against a live Supabase backend are more reliable than mocked tests — but GoTrue 502s during `db reset` require resilient test setup
+2. `test.fixme` is the right tool for tests with known data/infrastructure issues — it unblocks dependency cascades while preserving intent
+3. Session token revocation from admin `updateUserById({ password })` cascades to all stored sessions — re-auth projects are essential in the dependency chain
+4. SvelteKit's `goto()` in shared browser pages is unreliable — Playwright tests should use full page loads or per-test page contexts
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
 
 | Milestone | Timeline | Phases | Key Change |
 |-----------|----------|--------|------------|
+| v1.0 | ~14 days | 7 | Test infrastructure built incrementally alongside backend/frontend milestones |
 | v2.0 | 4 days | 8 | Schema-first backend build with load testing validation |
 | v3.0 | 3 days | 9 | Dependency-ordered adapter migration with E2E proof before cleanup |
 
@@ -102,6 +142,7 @@
 
 | Milestone | DB Tests | E2E Tests | Unit Tests |
 |-----------|----------|-----------|------------|
+| v1.0 | — | 25 spec files, 87 tests | — |
 | v2.0 | 204 pgTAP | (existing) | (existing) |
 | v3.0 | 229 pgTAP | Migrated to Supabase | 84+ adapter tests |
 

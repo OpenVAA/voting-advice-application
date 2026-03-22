@@ -18,4 +18,18 @@ export class QuestionsPage {
   async navigateToQuestion(index: number): Promise<void> {
     await this.questionCard.nth(index).click();
   }
+
+  /**
+   * Expand all collapsed category sections so question cards are visible.
+   * The Expander component uses a checkbox input to toggle visibility.
+   */
+  async expandAllCategories(): Promise<void> {
+    const questionsContainer = this.page.getByTestId(testIds.candidate.questions.list);
+    await questionsContainer.waitFor({ state: 'visible', timeout: 10000 });
+    const unchecked = questionsContainer.locator('input[type="checkbox"]:not(:checked)');
+    const count = await unchecked.count();
+    for (let i = 0; i < count; i++) {
+      await unchecked.nth(0).click();
+    }
+  }
 }

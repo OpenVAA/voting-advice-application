@@ -1,4 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { browser } from '$app/environment';
 import type { Database } from '@openvaa/supabase-types';
 import { constants } from '$lib/utils/constants';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
@@ -27,7 +29,18 @@ export function supabaseAdapterMixin<TBase extends Constructor>(
       super.init(config);
       if (config.serverClient) {
         this.#supabase = config.serverClient;
+      } else if (browser) {
+        // In the browser, use createBrowserClient from @supabase/ssr to sync
+        // with session cookies set by createServerClient in hooks.server.ts.
+        // Plain createClient uses localStorage which can't see those cookies.
+        this.#supabase = createBrowserClient<Database>(
+          constants.PUBLIC_SUPABASE_URL,
+          constants.PUBLIC_SUPABASE_ANON_KEY,
+          { global: { fetch: config.fetch! } }
+        );
       } else {
+        // On the server (universal load functions without serverClient),
+        // use plain createClient. The fetch from SvelteKit includes cookies.
         this.#supabase = createClient<Database>(
           constants.PUBLIC_SUPABASE_URL,
           constants.PUBLIC_SUPABASE_ANON_KEY,

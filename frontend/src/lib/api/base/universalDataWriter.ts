@@ -160,8 +160,8 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   }
 
   updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdatedEntityProps> {
-    if (opts.properties.termsOfUseAccepted === undefined)
-      throw new Error('A value for termsOfUseAccepted is required for updating entity properties');
+    if (opts.properties.termsOfUseAccepted === undefined && opts.properties.image === undefined)
+      throw new Error('At least one property (termsOfUseAccepted or image) is required for updating entity properties');
     return this._updateEntityProperties(opts);
   }
 

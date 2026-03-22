@@ -18,8 +18,11 @@ export class ProfilePage {
    * @param filePath - Absolute path to the image file to upload
    */
   async uploadImage(filePath: string): Promise<void> {
+    // The image Input component wraps a hidden <input type="file"> inside a label.
+    // Click the label to trigger the native file chooser, then set the files.
     const fileChooserPromise = this.page.waitForEvent('filechooser');
-    await this.imageUpload.click();
+    // Click the label text "Add an image" which triggers the file input
+    await this.imageUpload.getByText(/add an image/i).click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(filePath);
   }

@@ -20,9 +20,10 @@ import defaultDataset from '../../data/default-dataset.json' with { type: 'json'
 import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
 import { testIds } from '../../utils/testIds';
 
-// Compute expected counts from datasets
+// Compute expected counts from datasets.
+// Addendum candidates have unconfirmed nominations and are excluded from voter results.
 const visibleCandidateCount = [...defaultDataset.candidates, ...voterDataset.candidates].filter(
-  (c) => 'terms_of_use_accepted' in c && c.terms_of_use_accepted
+  (c) => 'termsOfUseAccepted' in c && c.termsOfUseAccepted
 ).length;
 const totalPartyCount = defaultDataset.organizations.length + voterDataset.organizations.length;
 
@@ -39,7 +40,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // Count candidate cards: expect 11 visible candidates
     // - 5 from default dataset (alpha through epsilon, all registered)
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
-    // The hidden candidate (no terms_of_use_accepted) should NOT appear (12 total - 1 hidden = 11)
+    // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
+    // Addendum candidates have unconfirmed nominations and are also excluded
     const cardCount = await page.getByTestId(testIds.voter.results.card).count();
     expect(cardCount).toBe(visibleCandidateCount);
   });

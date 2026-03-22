@@ -29,9 +29,15 @@ export const GET: RequestHandler = async ({ url, locals }) => {
         case 'recovery':
           redirect(303, `/${lang}/candidate/password-reset`);
           break;
-        case 'invite':
-          redirect(303, `/${lang}/candidate/register`);
+        case 'invite': {
+          // Get the user's email from the newly established session
+          const {
+            data: { user }
+          } = await locals.supabase.auth.getUser();
+          const email = encodeURIComponent(user?.email ?? '');
+          redirect(303, `/${lang}/candidate/register/password?email=${email}`);
           break;
+        }
         case 'email':
         case 'signup':
           redirect(303, next ? `/${lang}/${next.replace(/^\//, '')}` : `/${lang}/candidate`);

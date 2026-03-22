@@ -1,6 +1,6 @@
 import { QUESTION_INFO_OPERATION } from '@openvaa/question-info';
 import { fail } from '@sveltejs/kit';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { SupabaseDataWriter } from '$lib/api/adapters/supabase/dataWriter/supabaseDataWriter';
 import { generateQuestionInfo } from '$lib/server/admin/features/generateQuestionInfo';
 import type { Actions } from '@sveltejs/kit';
 
@@ -55,8 +55,7 @@ export const actions: Actions = {
         .map((topic) => topic.trim())
         .filter((topic) => topic.length > 0);
 
-      // Prepare dataWriter with server client for session-based auth
-      const dataWriter = await dataWriterPromise;
+      const dataWriter = new SupabaseDataWriter();
       dataWriter.init({ fetch, serverClient: locals.supabase });
 
       const { email } = await dataWriter.getBasicUserData({ authToken: '' });

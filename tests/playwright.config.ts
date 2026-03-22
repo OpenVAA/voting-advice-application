@@ -22,9 +22,9 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
  *     -> data-setup-startfromcg -> variant-startfromcg
  *   (data-teardown-variants runs after all variant setups complete)
  *
- * Candidate specs are split into three groups because they mutate shared backend state:
- *   - candidate-app: auth + questions (run in parallel — different mutation targets,
- *     JWT stays valid after password changes)
+ * Candidate specs are split into three groups:
+ *   - candidate-app: auth + questions (sequential — fullyParallel:false prevents
+ *     concurrent server requests that race on the Supabase session layer)
  *   - candidate-app-mutation: registration + profile (create users, change passwords —
  *     must run after auth spec restores the alpha candidate's password)
  *   - candidate-app-settings: settings (mutates global app settings like disabled/maintenance —
@@ -97,11 +97,13 @@ export default defineConfig({
       dependencies: ['data-setup']
     },
 
-    // 4a. Candidate app: auth + questions (parallel-safe — different mutation targets)
+    // 4a. Candidate app: auth + questions (sequential to prevent concurrent
+    //     server requests that race on Supabase session/DataWriter singletons)
     {
       name: 'candidate-app',
       testDir: './tests/specs/candidate',
       testMatch: /candidate-(auth|questions)\.spec\.ts/,
+      fullyParallel: false,
       use: {
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
@@ -109,8 +111,7 @@ export default defineConfig({
       dependencies: ['auth-setup']
     },
 
-    // 4b. Candidate app: registration + profile (create users, change passwords —
-    //     must run after auth restores the alpha candidate's password)
+    // 4b. Candidate app: registration + profile (create users via invite)
     {
       name: 'candidate-app-mutation',
       testDir: './tests/specs/candidate',
@@ -122,7 +123,16 @@ export default defineConfig({
       dependencies: ['candidate-app']
     },
 
+    // 4b2. Re-auth: mutation tests (password reset) invalidate the alpha
+    //      candidate's refresh token, so re-authenticate before settings/password tests
+    {
+      name: 're-auth-setup',
+      testMatch: /re-auth\.setup\.ts/,
+      dependencies: ['candidate-app-mutation']
+    },
+
     // 4c. Candidate app: settings (mutates global app settings — must run alone)
+    //     Runs before password tests since those revoke the session token again
     {
       name: 'candidate-app-settings',
       testDir: './tests/specs/candidate',
@@ -131,7 +141,20 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: STORAGE_STATE
       },
-      dependencies: ['candidate-app-mutation']
+      dependencies: ['re-auth-setup']
+    },
+
+    // 4d. Candidate app: logout + password change (session-destructive —
+    //     runs LAST because updateUser({password}) revokes refresh tokens)
+    {
+      name: 'candidate-app-password',
+      testDir: './tests/specs/candidate',
+      testMatch: /candidate-password\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE
+      },
+      dependencies: ['candidate-app-settings']
     },
 
     // 5a. Voter app: core journey, results, detail, static-pages (parallel-safe — read-only settings)
@@ -190,7 +213,7 @@ export default defineConfig({
       name: 'data-setup-multi-election',
       testMatch: /variant-multi-election\.setup\.ts/,
       teardown: 'data-teardown-variants',
-      dependencies: ['candidate-app-settings', 'voter-app-popups']
+      dependencies: ['candidate-app-password', 'voter-app-popups']
     },
     {
       name: 'variant-multi-election',

@@ -5,7 +5,7 @@
  */
 
 import { fail, redirect } from '@sveltejs/kit';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { SupabaseDataWriter } from '$lib/api/adapters/supabase/dataWriter/supabaseDataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { buildRoute } from '$lib/utils/route';
 
@@ -16,7 +16,7 @@ export const actions = {
     const password = data.get('password') as string;
     const redirectTo = data.get('redirectTo') as string;
 
-    const dataWriter = await dataWriterPromise;
+    const dataWriter = new SupabaseDataWriter();
     dataWriter.init({ fetch, serverClient: locals.supabase, locale: locals.currentLocale });
 
     try {

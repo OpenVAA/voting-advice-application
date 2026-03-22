@@ -74,7 +74,7 @@ Key technical state after v3.0:
 
 Each major initiative is a separate milestone:
 
-1. ~~**v1.0 E2E Testing Framework**~~ — Modular test infrastructure with full candidate and voter app coverage
+1. **v1.0 E2E Testing Framework** — ✅ Shipped 2026-03-22. Modular test infrastructure with full candidate and voter app coverage
 2. **v2.0 Supabase Migration** — ✅ Shipped 2026-03-15. Backend migration with schema, auth, RLS, storage, services, and 204 pgTAP tests
 3. **v3.0 Frontend Adapter** — ✅ Shipped 2026-03-20. Supabase adapter, auth migration, Edge Functions, E2E migration, Strapi removal
 4. **v4.0 Svelte 5 Migration** — Framework upgrade including Tailwind, DaisyUI, i18n rewrites
@@ -104,4 +104,4 @@ For details see [MILESTONES](.planning/MILESTONES.md) and archived roadmaps in `
 
 ---
 
-*Last updated: 2026-03-20 after v3.0 Frontend Adapter milestone shipped*
+*Last updated: 2026-03-22 after v1.0 E2E Testing Framework milestone completed*

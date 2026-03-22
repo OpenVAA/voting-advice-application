@@ -1,101 +1,101 @@
 {
   "constituencies": [
     {
-      "external_id": "test-constituency-alpha",
+      "externalId": "test-constituency-alpha",
       "name": {
         "en": "Test Constituency Alpha"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
-  "constituency_groups": [
+  "constituencyGroups": [
     {
-      "external_id": "test-cg-1",
+      "externalId": "test-cg-1",
       "name": {
         "en": "Test Constituency Group"
       },
       "_constituencies": {
-        "external_id": [
+        "externalId": [
           "test-constituency-alpha"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "elections": [
     {
-      "external_id": "test-election-1",
+      "externalId": "test-election-1",
       "name": {
         "en": "Test Election 2025"
       },
-      "election_date": "2025-06-15",
-      "election_start_date": "2025-05-01",
-      "_constituency_groups": {
-        "external_id": [
+      "electionDate": "2025-06-15",
+      "electionStartDate": "2025-05-01",
+      "_constituencyGroups": {
+        "externalId": [
           "test-cg-1"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
-  "question_categories": [
+  "questionCategories": [
     {
-      "external_id": "test-category-economy",
+      "externalId": "test-category-economy",
       "name": {
         "en": "Test Category: Economy"
       },
-      "category_type": "opinion",
-      "sort_order": 1,
+      "categoryType": "opinion",
+      "order": 1,
       "_elections": {
-        "external_id": [
+        "externalId": [
           "test-election-1"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-category-social",
+      "externalId": "test-category-social",
       "name": {
         "en": "Test Category: Social"
       },
-      "category_type": "opinion",
-      "sort_order": 2,
+      "categoryType": "opinion",
+      "order": 2,
       "_elections": {
-        "external_id": [
+        "externalId": [
           "test-election-1"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-category-info",
+      "externalId": "test-category-info",
       "name": {
         "en": "Test Category: Background Information"
       },
-      "category_type": "info",
-      "sort_order": 3,
+      "categoryType": "info",
+      "order": 3,
       "_elections": {
-        "external_id": [
+        "externalId": [
           "test-election-1"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "questions": [
     {
-      "external_id": "test-question-1",
+      "externalId": "test-question-1",
       "info": {
         "en": "This question measures attitudes toward progressive taxation."
       },
       "category": {
-        "external_id": "test-category-economy"
+        "externalId": "test-category-economy"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -140,17 +140,17 @@
           }
         }
       ],
-      "sort_order": 1,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 1,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 1: Should taxes on high incomes be increased?"
       }
     },
     {
-      "external_id": "test-question-2",
+      "externalId": "test-question-2",
       "category": {
-        "external_id": "test-category-economy"
+        "externalId": "test-category-economy"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -195,20 +195,20 @@
           }
         }
       ],
-      "sort_order": 2,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 2,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 2: Should public spending on infrastructure be increased?"
       }
     },
     {
-      "external_id": "test-question-3",
+      "externalId": "test-question-3",
       "info": {
         "en": "Renewable energy subsidies affect both the economy and the environment."
       },
       "category": {
-        "external_id": "test-category-economy"
+        "externalId": "test-category-economy"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -253,17 +253,17 @@
           }
         }
       ],
-      "sort_order": 3,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 3,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 3: Should the government subsidize renewable energy?"
       }
     },
     {
-      "external_id": "test-question-4",
+      "externalId": "test-question-4",
       "category": {
-        "external_id": "test-category-economy"
+        "externalId": "test-category-economy"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -308,17 +308,17 @@
           }
         }
       ],
-      "sort_order": 4,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 4,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 4: Should corporate tax rates be lowered?"
       }
     },
     {
-      "external_id": "test-question-5",
+      "externalId": "test-question-5",
       "category": {
-        "external_id": "test-category-social"
+        "externalId": "test-category-social"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -363,17 +363,17 @@
           }
         }
       ],
-      "sort_order": 5,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 5,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 5: Should healthcare be fully publicly funded?"
       }
     },
     {
-      "external_id": "test-question-6",
+      "externalId": "test-question-6",
       "category": {
-        "external_id": "test-category-social"
+        "externalId": "test-category-social"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -418,17 +418,17 @@
           }
         }
       ],
-      "sort_order": 6,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 6,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 6: Should immigration policy be more open?"
       }
     },
     {
-      "external_id": "test-question-7",
+      "externalId": "test-question-7",
       "category": {
-        "external_id": "test-category-social"
+        "externalId": "test-category-social"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -473,17 +473,17 @@
           }
         }
       ],
-      "sort_order": 7,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 7,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 7: Should education spending be prioritized?"
       }
     },
     {
-      "external_id": "test-question-8",
+      "externalId": "test-question-8",
       "category": {
-        "external_id": "test-category-social"
+        "externalId": "test-category-social"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -528,60 +528,60 @@
           }
         }
       ],
-      "sort_order": 8,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 8,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Test Opinion Question 8: Should same-sex marriage be legally recognized?"
       }
     },
     {
-      "external_id": "test-question-date",
+      "externalId": "test-question-date",
       "category": {
-        "external_id": "test-category-info"
+        "externalId": "test-category-info"
       },
       "type": "date",
-      "sort_order": 9,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 9,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Date of birth"
       }
     },
     {
-      "external_id": "test-question-number",
+      "externalId": "test-question-number",
       "category": {
-        "external_id": "test-category-info"
+        "externalId": "test-category-info"
       },
       "type": "number",
-      "sort_order": 10,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 10,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Years of political experience"
       }
     },
     {
-      "external_id": "test-question-text",
+      "externalId": "test-question-text",
       "category": {
-        "external_id": "test-category-info"
+        "externalId": "test-category-info"
       },
       "type": "text",
-      "sort_order": 11,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 11,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "Campaign slogan"
       }
     },
     {
-      "external_id": "test-question-boolean",
+      "externalId": "test-question-boolean",
       "category": {
-        "external_id": "test-category-info"
+        "externalId": "test-category-info"
       },
       "type": "boolean",
-      "sort_order": 12,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 12,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "First-time candidate"
@@ -590,36 +590,36 @@
   ],
   "organizations": [
     {
-      "external_id": "test-party-a",
+      "externalId": "test-party-a",
       "name": {
         "en": "Test Party A"
       },
-      "short_name": {
+      "shortName": {
         "en": "TPA"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-party-b",
+      "externalId": "test-party-b",
       "name": {
         "en": "Test Party B"
       },
-      "short_name": {
+      "shortName": {
         "en": "TPB"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "candidates": [
     {
-      "external_id": "test-candidate-alpha",
-      "first_name": "Test Candidate",
-      "last_name": "Alpha",
+      "externalId": "test-candidate-alpha",
+      "firstName": "Test Candidate",
+      "lastName": "Alpha",
       "email": "mock.candidate.2@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "4",
           "info": {
@@ -656,16 +656,16 @@
           "value": false
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-candidate-beta",
-      "first_name": "Test Candidate",
-      "last_name": "Beta",
+      "externalId": "test-candidate-beta",
+      "firstName": "Test Candidate",
+      "lastName": "Beta",
       "email": "test.beta@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "2"
         },
@@ -697,16 +697,16 @@
           "value": "2"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-candidate-gamma",
-      "first_name": "Test Candidate",
-      "last_name": "Gamma",
+      "externalId": "test-candidate-gamma",
+      "firstName": "Test Candidate",
+      "lastName": "Gamma",
       "email": "test.gamma@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "3"
         },
@@ -738,16 +738,16 @@
           "value": "5"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-candidate-delta",
-      "first_name": "Test Candidate",
-      "last_name": "Delta",
+      "externalId": "test-candidate-delta",
+      "firstName": "Test Candidate",
+      "lastName": "Delta",
       "email": "test.delta@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "1"
         },
@@ -776,16 +776,16 @@
           "value": "1"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-candidate-epsilon",
-      "first_name": "Test Candidate",
-      "last_name": "Epsilon",
+      "externalId": "test-candidate-epsilon",
+      "firstName": "Test Candidate",
+      "lastName": "Epsilon",
       "email": "test.epsilon@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "5"
         },
@@ -814,94 +814,122 @@
           "value": "3"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "nominations": [
     {
-      "external_id": "test-nom-alpha",
+      "externalId": "test-nom-alpha",
       "candidate": {
-        "external_id": "test-candidate-alpha"
+        "externalId": "test-candidate-alpha"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-constituency-alpha"
+        "externalId": "test-constituency-alpha"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-beta",
+      "externalId": "test-nom-beta",
       "candidate": {
-        "external_id": "test-candidate-beta"
+        "externalId": "test-candidate-beta"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-constituency-alpha"
+        "externalId": "test-constituency-alpha"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-gamma",
+      "externalId": "test-nom-gamma",
       "candidate": {
-        "external_id": "test-candidate-gamma"
+        "externalId": "test-candidate-gamma"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-constituency-alpha"
+        "externalId": "test-constituency-alpha"
       },
       "organization": {
-        "external_id": "test-party-b"
+        "externalId": "test-party-b"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-delta",
+      "externalId": "test-nom-delta",
       "candidate": {
-        "external_id": "test-candidate-delta"
+        "externalId": "test-candidate-delta"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-constituency-alpha"
+        "externalId": "test-constituency-alpha"
       },
       "organization": {
-        "external_id": "test-party-b"
+        "externalId": "test-party-b"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-epsilon",
+      "externalId": "test-nom-epsilon",
       "candidate": {
-        "external_id": "test-candidate-epsilon"
+        "externalId": "test-candidate-epsilon"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-constituency-alpha"
+        "externalId": "test-constituency-alpha"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
+    },
+    {
+      "externalId": "test-nom-org-party-a",
+      "organization": {
+        "externalId": "test-party-a"
+      },
+      "election": {
+        "externalId": "test-election-1"
+      },
+      "constituency": {
+        "externalId": "test-constituency-alpha"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
+    },
+    {
+      "externalId": "test-nom-org-party-b",
+      "organization": {
+        "externalId": "test-party-b"
+      },
+      "election": {
+        "externalId": "test-election-1"
+      },
+      "constituency": {
+        "externalId": "test-constituency-alpha"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ]

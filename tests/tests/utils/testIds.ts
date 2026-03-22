@@ -24,6 +24,7 @@ export const testIds = {
       statusMessage: 'candidate-home-status'
     },
     questions: {
+      list: 'candidate-questions-list',
       card: 'candidate-questions-card',
       answerInput: 'candidate-questions-answer',
       commentInput: 'candidate-questions-comment',

@@ -12,7 +12,7 @@
 import { test, expect } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml } from '../../utils/emailHelper';
+import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml, toCallbackUrl } from '../../utils/emailHelper';
 import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
 import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
@@ -25,16 +25,17 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
 
   const client = new SupabaseAdminClient();
   const candidateEmail = candidateAddendum.candidates[0].email;
-  const candidateExternalId = candidateAddendum.candidates[0].external_id;
+  const candidateExternalId = candidateAddendum.candidates[0].externalId;
   let registrationLink: string;
 
   test('should send registration email and extract link', async () => {
     // Count existing emails to skip stale ones from previous test runs
     const emailsBefore = await countEmailsForRecipient(candidateEmail);
 
-    // Send registration email via SupabaseAdminClient (uses candidateExternalId)
+    // Send registration email via SupabaseAdminClient (uses inviteUserByEmail for unregistered candidates)
     await client.sendEmail({
       candidateExternalId,
+      email: candidateEmail,
       subject: 'Registration',
       content: 'Click here to register: {LINK}'
     });
@@ -48,11 +49,15 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
       })
       .toBeTruthy();
 
-    // Step 3: Extract registration link from the NEW email
+    // Step 3: Extract registration link and transform to auth callback URL.
+    // The email link points to Supabase Auth verify endpoint which redirects
+    // via hash fragment (implicit flow). We bypass this by calling the
+    // auth callback directly with the token_hash for server-side verifyOtp.
     const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
-    const link = extractLinkFromHtml(emailHtml!);
-    expect(link).toBeTruthy();
-    registrationLink = link!;
+    const rawLink = extractLinkFromHtml(emailHtml!);
+    expect(rawLink).toBeTruthy();
+    registrationLink = toCallbackUrl(rawLink!);
+    console.log('[REG] Callback URL:', registrationLink);
   });
 
   test('should complete registration via email link', async ({ page }) => {
@@ -63,27 +68,18 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
     await page.goto(registrationLink);
 
     // Step 2: Set password on the register/password page
-    // The register/password page uses PasswordSetter with passwordTestId="register-password"
-    // and confirmPasswordTestId="register-confirm-password", and submit at "register-password-submit"
     const passwordWrapper = page.getByTestId('register-password');
     const confirmWrapper = page.getByTestId('register-confirm-password');
     const submitButton = page.getByTestId('register-password-submit');
 
-    // Fill the password input within the wrapper div
     await passwordWrapper.getByTestId('password-field').fill('RegisteredPass1!');
     await confirmWrapper.getByTestId('password-field').fill('RegisteredPass1!');
     await submitButton.click();
 
-    // Step 3: After registration, the app redirects to the login page (not auto-login)
-    await expect(page).toHaveURL(/login/, { timeout: 10000 });
-
-    // Step 4: Verify we can login with the newly set password
-    await page.getByTestId('login-email').fill(candidateEmail);
-    await page.getByTestId('password-field').fill('RegisteredPass1!');
-    await page.getByTestId('login-submit').click();
-
-    // Expect navigation away from login
-    await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
+    // Step 3: After registration with Supabase invite flow, the user is already
+    // authenticated (session established by verifyOtp). The app redirects to the
+    // candidate home page, not the login page.
+    await expect(page).toHaveURL(/\/candidate(?!.*login)/, { timeout: 10000 });
 
     // Step 5: Accept Terms of Use (shown on first login after registration)
     const touCheckbox = page.getByTestId('terms-checkbox');
@@ -126,13 +122,13 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
       })
       .toBeTruthy();
 
-    // Step 3: Extract the reset link from the NEW email
+    // Step 3: Extract reset link and transform to auth callback URL
     const emailHtml = await getLatestEmailHtml(candidateEmail, emailsBefore);
-    const resetLink = extractLinkFromHtml(emailHtml!);
-    expect(resetLink).toBeTruthy();
+    const rawResetLink = extractLinkFromHtml(emailHtml!);
+    expect(rawResetLink).toBeTruthy();
 
-    // Step 4: Navigate to the reset link
-    await page.goto(resetLink!);
+    // Step 4: Navigate to auth callback (verifyOtp + redirect to password-reset page)
+    await page.goto(toCallbackUrl(rawResetLink!));
 
     // Step 5: Set new password on the password-reset page
     // The password-reset page uses PasswordSetter without explicit testIds on the
@@ -144,16 +140,10 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
     await passwordFields.nth(1).fill(newPassword);
     await page.getByTestId('password-reset-submit').click();
 
-    // Step 6: After reset, the app redirects to the login page
-    await expect(page).toHaveURL(/login/, { timeout: 10000 });
-
-    // Step 7: Verify login with the new password
-    await page.getByTestId('login-email').fill(candidateEmail);
-    await page.getByTestId('password-field').fill(newPassword);
-    await page.getByTestId('login-submit').click();
-
-    // Expect to reach the candidate home page
-    await expect(page).not.toHaveURL(/login/, { timeout: 10000 });
+    // Step 6: After password reset with Supabase recovery flow, the user is already
+    // authenticated (session established by verifyOtp). The app redirects to the
+    // candidate home page, not the login page.
+    await expect(page).toHaveURL(/\/candidate(?!.*login|.*password)/, { timeout: 10000 });
     await expect(page.getByTestId('candidate-home-status')).toBeVisible();
 
     // Step 9: RESTORE original password via API using setPassword

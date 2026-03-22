@@ -42,6 +42,13 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   }
 
   protected async _logout() {
+    // In the browser, call the server-side logout endpoint to clear httpOnly cookies.
+    // Client-side signOut alone cannot remove httpOnly cookies set by createServerClient.
+    if (typeof window !== 'undefined') {
+      // Extract the locale prefix from the current URL path (e.g., "/en/candidate/..." → "en")
+      const locale = window.location.pathname.split('/')[1] || 'en';
+      await fetch(`/${locale}/candidate/auth/logout`, { method: 'POST' });
+    }
     const { error } = await this.supabase.auth.signOut({ scope: 'local' });
     if (error) throw new Error(error.message);
     return { type: 'success' as const };
@@ -177,6 +184,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
     const candidate: LocalizedCandidateData = {
       ...mapped,
+      type: ENTITY_TYPE.Candidate,
       id: entityRow.id,
       answers: (entityRow.answers as LocalizedAnswers) ?? {},
       termsOfUseAccepted: entityRow.terms_of_use_accepted ?? null,
@@ -254,25 +262,67 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
     // Call upsert_answers RPC
     const { data, error } = await this.supabase.rpc('upsert_answers', {
-      entity_id: id,
-      answers: processedAnswers,
-      overwrite
+      p_entity_id: id,
+      p_answers: processedAnswers,
+      p_overwrite: overwrite
     });
     if (error) throw new Error(`setAnswers: ${error.message}`);
     return (data as unknown as LocalizedAnswers) ?? {};
   }
   protected async _updateEntityProperties({
     target: { id },
-    properties: { termsOfUseAccepted }
+    properties: { termsOfUseAccepted, image }
   }: SetPropertiesOptions): DWReturnType<UpdatedEntityProps> {
+    const updateFields: Record<string, unknown> = {};
+    if (termsOfUseAccepted !== undefined) {
+      updateFields.terms_of_use_accepted = termsOfUseAccepted;
+    }
+
+    // Handle image upload to Supabase Storage
+    if (image !== undefined) {
+      if (image === null) {
+        updateFields.image = null;
+      } else {
+        const imageWithFile = image as ImageWithFile;
+        if (imageWithFile.file && typeof File !== 'undefined' && imageWithFile.file instanceof File) {
+          // Upload image file to Storage
+          const { data: candidateRow, error: fetchError } = await this.supabase
+            .from('candidates')
+            .select('project_id')
+            .eq('id', id)
+            .single();
+          if (fetchError || !candidateRow)
+            throw new Error(`Failed to fetch candidate project_id: ${fetchError?.message ?? 'not found'}`);
+          const file = imageWithFile.file;
+          const ext = file.name.split('.').pop() ?? 'jpg';
+          const storagePath = `${candidateRow.project_id}/candidates/${id}/${crypto.randomUUID()}.${ext}`;
+          const { error: uploadError } = await this.supabase.storage
+            .from('public-assets')
+            .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+          if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+          updateFields.image = { path: storagePath };
+        } else if (image.url) {
+          // Image already has a URL (no file to upload), keep as-is
+          updateFields.image = image;
+        }
+      }
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return { termsOfUseAccepted: undefined };
+    }
+
     const { data, error } = await this.supabase
       .from('candidates')
-      .update({ terms_of_use_accepted: termsOfUseAccepted })
+      .update(updateFields)
       .eq('id', id)
-      .select('terms_of_use_accepted')
+      .select('terms_of_use_accepted, image')
       .single();
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
-    return { termsOfUseAccepted: data.terms_of_use_accepted ?? null };
+    return {
+      termsOfUseAccepted: data.terms_of_use_accepted ?? null,
+      image: parseStoredImage(data.image as any, constants.PUBLIC_SUPABASE_URL)
+    };
   }
   protected async _updateQuestion({
     id,
@@ -282,8 +332,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       throw new Error(`Expected a customData object but got type: ${typeof customData}`);
 
     const { error } = await this.supabase.rpc('merge_custom_data', {
-      question_id: id,
-      patch: customData
+      p_question_id: id,
+      p_patch: customData
     });
     if (error) throw new Error(`updateQuestion: ${error.message}`);
     return { type: 'success' as const };

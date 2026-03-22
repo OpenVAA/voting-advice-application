@@ -22,11 +22,24 @@ export class QuestionPage {
   }
 
   /**
-   * Fill in the comment/reasoning field.
+   * Fill in the comment/reasoning field if it exists.
+   * The comment field only renders when the question has `customData.allowOpen = true`.
+   * Expands the "Read More" section first if needed.
    *
    * @param text - The comment text to enter
+   * @returns true if the comment field was found and filled, false otherwise
    */
-  async fillComment(text: string): Promise<void> {
-    await this.commentInput.fill(text);
+  async fillComment(text: string): Promise<boolean> {
+    // Try expanding the "Read More" section in case the field is inside it
+    const expander = this.page.locator('input[type="checkbox"]').first();
+    if (await expander.isVisible()) {
+      await expander.click();
+    }
+    // The comment field only exists when question has allowOpen
+    if (await this.commentInput.isVisible().catch(() => false)) {
+      await this.commentInput.fill(text);
+      return true;
+    }
+    return false;
   }
 }

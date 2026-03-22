@@ -2,7 +2,7 @@
 
 ## Milestones
 
-- ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (partially shipped)
+- ✅ **v1.0 E2E Testing Framework** — Phases 1-7 (shipped 2026-03-22)
 - ✅ **v2.0 Supabase Migration** — Phases 8-15 (shipped 2026-03-15)
 - ✅ **v5.0 Claude Skills** — Phases 16-21 (shipped 2026-03-18)
 - ✅ **v3.0 Frontend Adapter** — Phases 22-30 (shipped 2026-03-20)
@@ -12,7 +12,7 @@
 <details>
 <summary>✅ v1.0 E2E Testing Framework (Phases 1-7)</summary>
 
-- [x] Phase 1: Infrastructure Foundation (10/11 plans)
+- [x] Phase 1: Infrastructure Foundation (11/11 plans) — 2026-03-22
 - [ ] Phase 2: Candidate App Coverage (0/4 plans)
 - [ ] Phase 3: Voter App Core Journey (3/4 plans)
 - [x] Phase 4: Voter App Settings and Edge Cases (5/5 plans) — 2026-03-09

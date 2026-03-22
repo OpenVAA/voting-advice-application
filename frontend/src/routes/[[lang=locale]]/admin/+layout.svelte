@@ -33,7 +33,7 @@
   });
 
   const menuId = 'admin-app-menu';
-  let isDrawerOpen: boolean;
+  let isDrawerOpen = false;
 </script>
 
 {#if !$appSettings.dataAdapter.supportsAdminApp}

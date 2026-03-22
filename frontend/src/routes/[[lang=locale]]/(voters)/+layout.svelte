@@ -70,7 +70,7 @@
   });
 
   const menuId = 'voter-app-menu';
-  let isDrawerOpen: boolean;
+  let isDrawerOpen = false;
 </script>
 
 {#if $appSettings.access.voterApp}

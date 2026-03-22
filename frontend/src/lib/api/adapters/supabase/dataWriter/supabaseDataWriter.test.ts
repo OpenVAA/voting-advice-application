@@ -183,9 +183,9 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
-        entity_id: 'entity-1',
-        answers: mockAnswers,
-        overwrite: false
+        p_entity_id: 'entity-1',
+        p_answers: mockAnswers,
+        p_overwrite: false
       });
       expect(result).toEqual(returnedAnswers);
     });
@@ -203,9 +203,9 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
-        entity_id: 'entity-1',
+        p_entity_id: 'entity-1',
         answers: mockAnswers,
-        overwrite: true
+        p_overwrite: true
       });
       expect(result).toEqual(mockAnswers);
     });
@@ -259,8 +259,8 @@ describe('SupabaseDataWriter', () => {
       expect(mockSupabase.rpc).toHaveBeenCalledWith(
         'upsert_answers',
         expect.objectContaining({
-          entity_id: 'entity-1',
-          overwrite: false
+          p_entity_id: 'entity-1',
+          p_overwrite: false
         })
       );
     });

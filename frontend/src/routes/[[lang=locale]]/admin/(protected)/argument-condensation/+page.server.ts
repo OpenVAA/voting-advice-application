@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { SupabaseDataWriter } from '$lib/api/adapters/supabase/dataWriter/supabaseDataWriter';
 import { condenseArguments } from '$lib/server/admin/features/condenseArguments';
 import type { Actions } from '@sveltejs/kit';
 
@@ -20,8 +20,7 @@ export const actions = {
         return fail(400, { type: 'error', error: 'Missing electionId' });
       }
 
-      // Prepare dataWriter with server client for session-based auth
-      const dataWriter = await dataWriterPromise;
+      const dataWriter = new SupabaseDataWriter();
       dataWriter.init({ fetch, serverClient: locals.supabase });
 
       const { email } = await dataWriter.getBasicUserData({ authToken: '' });

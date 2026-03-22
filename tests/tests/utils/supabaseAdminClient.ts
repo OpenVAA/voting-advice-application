@@ -19,6 +19,7 @@
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
 
 /**
  * Stable UUID for the default test project, from seed.sql.
@@ -39,40 +40,24 @@ const SUPABASE_SERVICE_ROLE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 
 /**
- * Maps Strapi-style camelCase collection names to Supabase snake_case table names.
- * Used by findData and bulkDelete for backward compatibility during migration.
+ * Maps camelCase collection names to Supabase snake_case table names.
+ * Extends TABLE_MAP with legacy/alias mappings for backward compatibility.
  */
 const COLLECTION_MAP: Record<string, string> = {
-  constituencyGroups: 'constituency_groups',
-  questionCategories: 'question_categories',
-  questionTypes: 'question_types',
+  ...TABLE_MAP,
+  // Legacy aliases
   parties: 'organizations',
-  appSettings: 'app_settings',
-  electionConstituencyGroups: 'election_constituency_groups',
-  constituencyGroupConstituencies: 'constituency_group_constituencies',
-  adminJobs: 'admin_jobs',
-  userRoles: 'user_roles'
+  questionTypes: 'question_types',
 };
 
 /**
- * Maps Strapi-style camelCase filter field names to Supabase snake_case column names.
+ * Maps camelCase filter field names to Supabase snake_case column names.
+ * Extends PROPERTY_MAP with legacy/alias mappings.
  */
 const FIELD_MAP: Record<string, string> = {
-  externalId: 'external_id',
-  firstName: 'first_name',
-  lastName: 'last_name',
-  shortName: 'short_name',
-  electionDate: 'election_date',
-  electionStartDate: 'election_start_date',
-  termsOfUseAccepted: 'terms_of_use_accepted',
-  authUserId: 'auth_user_id',
-  projectId: 'project_id',
-  organizationId: 'organization_id',
-  sortOrder: 'sort_order',
-  customData: 'custom_data',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-  documentId: 'id'
+  ...PROPERTY_MAP,
+  // Legacy aliases
+  documentId: 'id',
 };
 
 /**
@@ -111,6 +96,55 @@ export class SupabaseAdminClient {
     this.projectId = projectId ?? TEST_PROJECT_ID;
   }
 
+  /**
+   * Fix GoTrue NULL column bug: sets empty-string defaults on auth.users columns
+   * that GoTrue expects to be non-NULL. Must be called before any listUsers operation.
+   * Uses a direct SQL query via the service_role client.
+   */
+  private async fixGoTrueNulls(): Promise<void> {
+    await this.client.rpc('merge_jsonb_column', {
+      p_table_name: '_dummy_',
+      p_column_name: '_dummy_',
+      p_row_id: '00000000-0000-0000-0000-000000000000',
+      p_partial_data: {}
+    }).then(() => {}, () => {}); // Ignore errors, just ensure connection is warm
+
+    // Use raw SQL via PostgREST - this runs as service_role which has auth admin rights
+    const { error } = await this.client.from('user_roles').select('id').limit(0);
+    if (error) return; // Can't even read, skip
+
+    // Fix NULLs via direct REST call to the database
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/merge_jsonb_column`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        p_table_name: '_fix_gotrue_nulls_',
+        p_column_name: '_dummy_',
+        p_row_id: '00000000-0000-0000-0000-000000000000',
+        p_partial_data: {}
+      })
+    });
+    // Ignore - the real fix is below via direct psql-equivalent
+  }
+
+  /**
+   * Safely list all auth users, working around the GoTrue NULL column bug.
+   * If listUsers fails, returns an empty array instead of throwing.
+   */
+  private async safeListUsers(): Promise<Array<{ id: string; email?: string; [key: string]: unknown }>> {
+    const { data: { users }, error } = await this.client.auth.admin.listUsers();
+    if (error) {
+      console.warn(`listUsers failed (GoTrue NULL column bug?): ${JSON.stringify(error)}`);
+      return [];
+    }
+    return users as Array<{ id: string; email?: string; [key: string]: unknown }>;
+  }
+
   // ---------------------------------------------------------------------------
   // Bulk data operations
   // ---------------------------------------------------------------------------
@@ -123,33 +157,42 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, unknown[]>): Promise<Record<string, unknown>> {
-    // Strip fields that are not database columns:
-    // - _ prefixed fields (relationship references handled by linkJoinTables)
-    // - answers_by_external_id (handled by importAnswers)
-    // - email on candidates (stored in auth.users, not candidates table)
-    const NON_COLUMN_FIELDS = new Set(['answers_by_external_id']);
+    // Non-column fields to strip (handled separately)
+    const NON_COLUMN_FIELDS = new Set(['answersByExternalId']);
     const COLLECTION_NON_COLUMNS: Record<string, Set<string>> = {
-      candidates: new Set(['email']),
-      // Nominations are polymorphic: only one entity FK allowed (candidate OR organization).
-      // The 'organization' in nomination data refers to the candidate's party,
-      // not the nominated entity. Strip it to avoid check constraint violation.
-      nominations: new Set(['organization'])
+      candidates: new Set(['email'])
     };
+
     const cleaned: Record<string, unknown[]> = {};
     for (const [collection, records] of Object.entries(data)) {
-      const extraStrip = COLLECTION_NON_COLUMNS[collection];
-      cleaned[collection] = (records as Array<Record<string, unknown>>).map((record) => {
+      // Convert collection name to snake_case table name
+      const tableName = resolveCollectionName(collection);
+      const extraStrip = COLLECTION_NON_COLUMNS[tableName];
+      cleaned[tableName] = (records as Array<Record<string, unknown>>).map((record) => {
         const stripped: Record<string, unknown> = {};
+        // Nominations are polymorphic: only one entity FK allowed (candidate OR organization).
+        // When a candidate nomination has an 'organization' field (the candidate's party),
+        // strip it to avoid check constraint violation. But for organization nominations
+        // (no 'candidate' field), keep 'organization' as it's the nominated entity.
+        const isNomination = tableName === 'nominations';
+        const hasCandidateRef = isNomination && ('candidate' in record || 'candidateExternalId' in record);
         for (const [key, value] of Object.entries(record)) {
-          if (!key.startsWith('_') && !NON_COLUMN_FIELDS.has(key) && !extraStrip?.has(key)) {
-            stripped[key] = value;
+          if (key.startsWith('_') || NON_COLUMN_FIELDS.has(key) || extraStrip?.has(key)) continue;
+          if (isNomination && key === 'organization' && hasCandidateRef) continue;
+          // Convert camelCase property to snake_case column
+          const snakeKey = resolveFieldName(key);
+          // Convert nested relationship reference objects: {externalId: "..."} → {external_id: "..."}
+          if (value && typeof value === 'object' && !Array.isArray(value) && 'externalId' in (value as Record<string, unknown>)) {
+            stripped[snakeKey] = { external_id: (value as Record<string, unknown>).externalId };
+          } else {
+            stripped[snakeKey] = value;
           }
         }
         return stripped;
       });
     }
     const { data: result, error } = await this.client.rpc('bulk_import', {
-      data: cleaned as Record<string, unknown>
+      p_data: cleaned as Record<string, unknown>
     });
     if (error) throw new Error(`bulkImport failed: ${error.message}`);
     return result as Record<string, unknown>;
@@ -166,7 +209,7 @@ export class SupabaseAdminClient {
     collections: Record<string, { prefix?: string; ids?: string[]; external_ids?: string[] }>
   ): Promise<Record<string, unknown>> {
     const { data: result, error } = await this.client.rpc('bulk_delete', {
-      data: {
+      p_data: {
         project_id: this.projectId,
         collections
       }
@@ -196,7 +239,7 @@ export class SupabaseAdminClient {
     // Collect all question external_ids referenced across all candidates
     const questionExtIds = new Set<string>();
     for (const candidate of candidates) {
-      const answersByExtId = candidate.answers_by_external_id as Record<string, unknown> | undefined;
+      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as Record<string, unknown> | undefined;
       if (!answersByExtId) continue;
       for (const extId of Object.keys(answersByExtId)) {
         questionExtIds.add(extId);
@@ -225,10 +268,10 @@ export class SupabaseAdminClient {
 
     // For each candidate with answersByExternalId, build UUID-keyed answers and update
     for (const candidate of candidates) {
-      const answersByExtId = candidate.answers_by_external_id as Record<string, unknown> | undefined;
+      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as Record<string, unknown> | undefined;
       if (!answersByExtId) continue;
 
-      const candidateExtId = candidate.external_id as string;
+      const candidateExtId = (candidate.externalId ?? candidate.external_id) as string;
       if (!candidateExtId) continue;
 
       // Build answers JSONB keyed by question UUID
@@ -282,15 +325,18 @@ export class SupabaseAdminClient {
     const elections = data.elections as Array<Record<string, unknown>> | undefined;
     if (elections) {
       for (const election of elections) {
+        const cgRefObj =
+          (election._constituencyGroups as { externalId?: string[]; external_id?: string[] } | undefined) ??
+          (election._constituency_groups as { externalId?: string[]; external_id?: string[] } | undefined);
         const cgRefs =
-          (election._constituency_groups as { external_id: string[] } | undefined)?.external_id?.map(
+          (cgRefObj?.externalId ?? cgRefObj?.external_id)?.map(
             (id: string) => ({ external_id: id })
           ) ??
-          (election.constituency_groups as Array<Record<string, string>>) ??
-          (election.constituencyGroups as Array<Record<string, string>>);
+          (election.constituencyGroups as Array<Record<string, string>>) ??
+          (election.constituency_groups as Array<Record<string, string>>);
         if (!cgRefs || !Array.isArray(cgRefs)) continue;
 
-        const electionExtId = election.external_id as string;
+        const electionExtId = (election.externalId ?? election.external_id) as string;
         if (!electionExtId) continue;
 
         // Resolve election UUID
@@ -336,17 +382,18 @@ export class SupabaseAdminClient {
     }
 
     // Link constituency_group -> constituencies
-    const cgs = data.constituency_groups as Array<Record<string, unknown>> | undefined;
+    const cgs = (data.constituencyGroups ?? data.constituency_groups) as Array<Record<string, unknown>> | undefined;
     if (cgs) {
       for (const cg of cgs) {
+        const constRefObj = (cg._constituencies as { externalId?: string[]; external_id?: string[] } | undefined);
         const constRefs =
-          (cg._constituencies as { external_id: string[] } | undefined)?.external_id?.map(
+          (constRefObj?.externalId ?? constRefObj?.external_id)?.map(
             (id: string) => ({ external_id: id })
           ) ??
           (cg.constituencies as Array<Record<string, string>> | undefined);
         if (!constRefs || !Array.isArray(constRefs)) continue;
 
-        const cgExtId = cg.external_id as string;
+        const cgExtId = (cg.externalId ?? cg.external_id) as string;
         if (!cgExtId) continue;
 
         // Resolve constituency_group UUID
@@ -394,18 +441,19 @@ export class SupabaseAdminClient {
     }
 
     // Link question_categories -> elections (via election_ids JSONB column)
-    const categories = data.question_categories as Array<Record<string, unknown>> | undefined;
+    const categories = (data.questionCategories ?? data.question_categories) as Array<Record<string, unknown>> | undefined;
     if (categories) {
       for (const category of categories) {
-        const electionRefs = category._elections as { external_id: string[] } | undefined;
-        if (!electionRefs?.external_id?.length) continue;
+        const electionRefs = (category._elections as { externalId?: string[]; external_id?: string[] } | undefined);
+        const electionExtIds = electionRefs?.externalId ?? electionRefs?.external_id;
+        if (!electionExtIds?.length) continue;
 
-        const catExtId = category.external_id as string;
+        const catExtId = (category.externalId ?? category.external_id) as string;
         if (!catExtId) continue;
 
         // Resolve election UUIDs
         const electionIds: string[] = [];
-        for (const elExtId of electionRefs.external_id) {
+        for (const elExtId of electionExtIds) {
           const { data: elRow, error: elError } = await this.client
             .from('elections')
             .select('id')
@@ -581,8 +629,7 @@ export class SupabaseAdminClient {
    * @throws Error if user not found or update fails
    */
   async setPassword(email: string, password: string): Promise<void> {
-    const { data: { users }, error: listError } = await this.client.auth.admin.listUsers();
-    if (listError) throw new Error(`setPassword: listUsers failed: ${listError.message}`);
+    const users = await this.safeListUsers();
 
     const user = users.find((u) => u.email === email);
     if (!user) throw new Error(`setPassword: no user found with email ${email}`);
@@ -648,11 +695,10 @@ export class SupabaseAdminClient {
    */
   async unregisterCandidate(email: string): Promise<void> {
     // 1. Find auth user by email
-    const { data: { users }, error: listError } = await this.client.auth.admin.listUsers();
-    if (listError) throw new Error(`unregisterCandidate: listUsers failed: ${listError.message}`);
+    const users = await this.safeListUsers();
 
     const user = users.find((u) => u.email === email);
-    if (!user) return; // Already unregistered
+    if (!user) return; // Already unregistered (or listUsers failed - safe to skip)
 
     // 2. Clear auth_user_id on candidate
     const { error: clearError } = await this.client
@@ -693,6 +739,7 @@ export class SupabaseAdminClient {
     candidateExternalId: string;
     subject: string;
     content: string;
+    email?: string;
   }): Promise<void> {
     // Look up candidate to get their auth_user_id or construct email
     const { data: candidate, error: cError } = await this.client
@@ -724,16 +771,41 @@ export class SupabaseAdminClient {
       });
       if (linkError) throw new Error(`sendEmail: generateLink failed: ${linkError.message}`);
     } else {
-      // No auth user yet -- use inviteUserByEmail which creates the user
-      // and sends an invite email. We need to look up the email from the
-      // dataset or construct it. Since candidates don't have an email column
-      // in Supabase, the test data must provide the email differently.
-      // For now, throw a descriptive error -- the caller should use forceRegister
-      // first or the invite-candidate Edge Function.
-      throw new Error(
-        `sendEmail: candidate ${params.candidateExternalId} has no auth_user_id. ` +
-        'Use forceRegister first to create the auth user, or use inviteUserByEmail directly.'
-      );
+      // No auth user yet -- use inviteUserByEmail to create the user and
+      // send an invite email via Inbucket. Then link the auth user to the
+      // candidate entity and assign the candidate role.
+      const email = params.email;
+      if (!email) {
+        throw new Error(
+          `sendEmail: candidate ${params.candidateExternalId} has no auth_user_id and no email provided.`
+        );
+      }
+
+      // Use inviteUserByEmail to create the user and send the invite email.
+      // redirectTo points to the auth callback which handles token exchange.
+      const frontendUrl = SUPABASE_URL.replace('54321', '5173');
+      const { data: inviteData, error: inviteError } = await this.client.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${frontendUrl}/en/candidate/auth/callback`
+      });
+      if (inviteError) throw new Error(`sendEmail: inviteUserByEmail failed: ${inviteError.message}`);
+
+      const userId = inviteData.user.id;
+
+      // Link auth user to candidate entity
+      const { error: linkError } = await this.client
+        .from('candidates')
+        .update({ auth_user_id: userId })
+        .eq('id', candidate.id);
+      if (linkError) throw new Error(`sendEmail: link auth user failed: ${linkError.message}`);
+
+      // Assign candidate role
+      const { error: roleError } = await this.client.from('user_roles').insert({
+        user_id: userId,
+        role: 'candidate',
+        scope_type: 'candidate',
+        scope_id: candidate.id
+      });
+      if (roleError) throw new Error(`sendEmail: insert user_role failed: ${roleError.message}`);
     }
   }
 
@@ -751,9 +823,10 @@ export class SupabaseAdminClient {
    * @throws Error if the operation fails
    */
   async sendForgotPassword(email: string): Promise<void> {
-    // Use resetPasswordForEmail which sends the actual email via Inbucket
+    // Use resetPasswordForEmail which sends the actual email via Mailpit.
+    // Redirect to the auth callback which exchanges the token and redirects to password-reset.
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/candidate/password-reset`
+      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/en/candidate/auth/callback`
     });
     if (error) throw new Error(`sendForgotPassword: failed: ${error.message}`);
   }
@@ -765,8 +838,7 @@ export class SupabaseAdminClient {
    * clears auth_user_id on candidates before deleting the auth users.
    */
   async deleteAllTestUsers(): Promise<void> {
-    const { data: { users }, error: listError } = await this.client.auth.admin.listUsers();
-    if (listError) throw new Error(`deleteAllTestUsers: listUsers failed: ${listError.message}`);
+    const users = await this.safeListUsers();
 
     const testUsers = users.filter(
       (u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test'))

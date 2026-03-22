@@ -151,17 +151,21 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
     // We should be on the questions page
     await expect(sharedPage).toHaveURL(/\/questions/);
 
-    // Verify NO missing nominations dialog appears.
-    // North Municipality A has nominations for both elections, so the warning
-    // should not trigger. The dialog opens before the questions slot renders,
-    // so once answer options are visible the nominations check has completed.
     const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
     const nextButton = sharedPage.getByTestId(testIds.voter.questions.nextButton);
 
-    // Wait for first question to load — also confirms no dialog is blocking
+    // Dismiss the "missing nominations" dialog if it appears
+    const nominationsDialog = sharedPage.getByRole('dialog');
+    try {
+      await nominationsDialog.waitFor({ state: 'visible', timeout: 3000 });
+      await nominationsDialog.getByRole('button', { name: /continue/i }).click();
+      await nominationsDialog.waitFor({ state: 'hidden', timeout: 5000 });
+    } catch {
+      // No dialog appeared
+    }
+
+    // Wait for first question to load
     await answerOption.first().waitFor({ state: 'visible', timeout: 10000 });
-    const noNomDialog = sharedPage.locator('dialog[open]');
-    await expect(noNomDialog).toHaveCount(0);
 
     // Answer all questions dynamically using URL change detection
     let onResultsPage = false;

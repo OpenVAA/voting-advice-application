@@ -265,7 +265,7 @@ Shows the candidate's basic information, some of which is editable.
         onChange={handleImageInputChange}
         locked={$answersLocked}
         onShadedBg
-        data-testid="profile-image-upload" />
+        containerProps={{ 'data-testid': 'profile-image-upload' }} />
 
       <!-- Editable Info questions -->
 

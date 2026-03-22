@@ -16,6 +16,9 @@ import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
 test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
+  // Run serially: the server-side protected layout uses a singleton dataWriter
+  // that can race when multiple requests call init() concurrently.
+  test.describe.configure({ mode: 'serial' });
   test.beforeEach(async ({ page, candidateQuestionsPage }) => {
     // Navigate to questions list page before each test
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));

@@ -1,153 +1,153 @@
 {
   "constituencies": [
     {
-      "external_id": "test-const-region-north",
+      "externalId": "test-const-region-north",
       "name": {
         "en": "North Region"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-const-region-south",
+      "externalId": "test-const-region-south",
       "name": {
         "en": "South Region"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-const-muni-north-a",
+      "externalId": "test-const-muni-north-a",
       "name": {
         "en": "North Municipality A"
       },
       "parent": {
-        "external_id": "test-const-region-north"
+        "externalId": "test-const-region-north"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-const-muni-south-a",
+      "externalId": "test-const-muni-south-a",
       "name": {
         "en": "South Municipality A"
       },
       "parent": {
-        "external_id": "test-const-region-south"
+        "externalId": "test-const-region-south"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-const-muni-orphan",
+      "externalId": "test-const-muni-orphan",
       "name": {
         "en": "Orphan Municipality"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
-  "constituency_groups": [
+  "constituencyGroups": [
     {
-      "external_id": "test-cg-regions",
+      "externalId": "test-cg-regions",
       "name": {
         "en": "Regions"
       },
       "_constituencies": {
-        "external_id": [
+        "externalId": [
           "test-const-region-north",
           "test-const-region-south"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-cg-municipalities",
+      "externalId": "test-cg-municipalities",
       "name": {
         "en": "Municipalities"
       },
       "_constituencies": {
-        "external_id": [
+        "externalId": [
           "test-const-muni-north-a",
           "test-const-muni-south-a",
           "test-const-muni-orphan"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "elections": [
     {
-      "external_id": "test-election-1",
+      "externalId": "test-election-1",
       "name": {
         "en": "Test Election 2025"
       },
-      "election_date": "2025-06-15",
-      "election_start_date": "2025-05-01",
-      "_constituency_groups": {
-        "external_id": [
+      "electionDate": "2025-06-15",
+      "electionStartDate": "2025-05-01",
+      "_constituencyGroups": {
+        "externalId": [
           "test-cg-regions",
           "test-cg-municipalities"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-election-2",
+      "externalId": "test-election-2",
       "name": {
         "en": "Test Election 2026"
       },
-      "election_date": "2026-06-15",
-      "election_start_date": "2026-05-01",
-      "_constituency_groups": {
-        "external_id": [
+      "electionDate": "2026-06-15",
+      "electionStartDate": "2026-05-01",
+      "_constituencyGroups": {
+        "externalId": [
           "test-cg-municipalities"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
-  "question_categories": [
+  "questionCategories": [
     {
-      "external_id": "test-cat-sfcg-local",
+      "externalId": "test-cat-sfcg-local",
       "name": {
         "en": "Test SFCG Category: Local Issues"
       },
-      "category_type": "opinion",
-      "sort_order": 40,
+      "categoryType": "opinion",
+      "order": 40,
       "_elections": {
-        "external_id": [
+        "externalId": [
           "test-election-1"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-cat-sfcg-e2",
+      "externalId": "test-cat-sfcg-e2",
       "name": {
         "en": "Test SFCG E2 Category: Municipal Issues"
       },
-      "category_type": "opinion",
-      "sort_order": 41,
+      "categoryType": "opinion",
+      "order": 41,
       "_elections": {
-        "external_id": [
+        "externalId": [
           "test-election-2"
         ]
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "questions": [
     {
-      "external_id": "test-sfcg-q-1",
+      "externalId": "test-sfcg-q-1",
       "category": {
-        "external_id": "test-cat-sfcg-local"
+        "externalId": "test-cat-sfcg-local"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -192,17 +192,17 @@
           }
         }
       ],
-      "sort_order": 401,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 401,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "SFCG: Should regional development funds be increased?"
       }
     },
     {
-      "external_id": "test-sfcg-e2-q-1",
+      "externalId": "test-sfcg-e2-q-1",
       "category": {
-        "external_id": "test-cat-sfcg-e2"
+        "externalId": "test-cat-sfcg-e2"
       },
       "type": "singleChoiceOrdinal",
       "choices": [
@@ -247,8 +247,8 @@
           }
         }
       ],
-      "sort_order": 411,
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "order": 411,
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true,
       "name": {
         "en": "SFCG E2: Should municipal mergers be encouraged?"
@@ -257,12 +257,12 @@
   ],
   "candidates": [
     {
-      "external_id": "test-sfcg-cand-north-1",
-      "first_name": "SFCG Northern",
-      "last_name": "Candidate",
+      "externalId": "test-sfcg-cand-north-1",
+      "firstName": "SFCG Northern",
+      "lastName": "Candidate",
       "email": "sfcg.north1@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "4"
         },
@@ -291,16 +291,16 @@
           "value": "5"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-sfcg-cand-south-1",
-      "first_name": "SFCG Southern",
-      "last_name": "Candidate",
+      "externalId": "test-sfcg-cand-south-1",
+      "firstName": "SFCG Southern",
+      "lastName": "Candidate",
       "email": "sfcg.south1@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-question-1": {
           "value": "2"
         },
@@ -329,139 +329,139 @@
           "value": "2"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-sfcg-cand-orphan-1",
-      "first_name": "SFCG Orphan",
-      "last_name": "Candidate",
+      "externalId": "test-sfcg-cand-orphan-1",
+      "firstName": "SFCG Orphan",
+      "lastName": "Candidate",
       "email": "sfcg.orphan1@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-sfcg-e2-q-1": {
           "value": "4"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-sfcg-cand-muni-1",
-      "first_name": "SFCG Municipal",
-      "last_name": "Candidate",
+      "externalId": "test-sfcg-cand-muni-1",
+      "firstName": "SFCG Municipal",
+      "lastName": "Candidate",
       "email": "sfcg.muni1@openvaa.org",
-      "terms_of_use_accepted": "2025-01-01T00:00:00.000Z",
-      "answers_by_external_id": {
+      "termsOfUseAccepted": "2025-01-01T00:00:00.000Z",
+      "answersByExternalId": {
         "test-sfcg-e2-q-1": {
           "value": "3"
         }
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ],
   "nominations": [
     {
-      "external_id": "test-nom-sfcg-north1-e1",
+      "externalId": "test-nom-sfcg-north1-e1",
       "candidate": {
-        "external_id": "test-sfcg-cand-north-1"
+        "externalId": "test-sfcg-cand-north-1"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-const-region-north"
+        "externalId": "test-const-region-north"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-sfcg-south1-e1",
+      "externalId": "test-nom-sfcg-south1-e1",
       "candidate": {
-        "external_id": "test-sfcg-cand-south-1"
+        "externalId": "test-sfcg-cand-south-1"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-const-region-south"
+        "externalId": "test-const-region-south"
       },
       "organization": {
-        "external_id": "test-party-b"
+        "externalId": "test-party-b"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-sfcg-orphan1-e2",
+      "externalId": "test-nom-sfcg-orphan1-e2",
       "candidate": {
-        "external_id": "test-sfcg-cand-orphan-1"
+        "externalId": "test-sfcg-cand-orphan-1"
       },
       "election": {
-        "external_id": "test-election-2"
+        "externalId": "test-election-2"
       },
       "constituency": {
-        "external_id": "test-const-muni-orphan"
+        "externalId": "test-const-muni-orphan"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-sfcg-muni1-e2-north",
+      "externalId": "test-nom-sfcg-muni1-e2-north",
       "candidate": {
-        "external_id": "test-sfcg-cand-muni-1"
+        "externalId": "test-sfcg-cand-muni-1"
       },
       "election": {
-        "external_id": "test-election-2"
+        "externalId": "test-election-2"
       },
       "constituency": {
-        "external_id": "test-const-muni-north-a"
+        "externalId": "test-const-muni-north-a"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-sfcg-alpha-north",
+      "externalId": "test-nom-sfcg-alpha-north",
       "candidate": {
-        "external_id": "test-candidate-alpha"
+        "externalId": "test-candidate-alpha"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-const-region-north"
+        "externalId": "test-const-region-north"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     },
     {
-      "external_id": "test-nom-sfcg-beta-south",
+      "externalId": "test-nom-sfcg-beta-south",
       "candidate": {
-        "external_id": "test-candidate-beta"
+        "externalId": "test-candidate-beta"
       },
       "election": {
-        "external_id": "test-election-1"
+        "externalId": "test-election-1"
       },
       "constituency": {
-        "external_id": "test-const-region-south"
+        "externalId": "test-const-region-south"
       },
       "organization": {
-        "external_id": "test-party-a"
+        "externalId": "test-party-a"
       },
-      "project_id": "00000000-0000-0000-0000-000000000001",
+      "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
     }
   ]

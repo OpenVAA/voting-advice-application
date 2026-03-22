@@ -1,35 +1,39 @@
--- Enums, utility functions, and nomination validation
+-- Enum type definitions
 --
--- Enums:
---   question_type, entity_type, category_type
+-- All enum types used across the schema:
+--   question_type   - question answer value types
+--   entity_type     - nomination entity discriminator
+--   category_type   - question category classification
+--   user_role_type  - auth role assignments
+
+CREATE TYPE public.question_type AS ENUM (
+    'text', 'number', 'boolean', 'image', 'date', 'multipleText',
+    'singleChoiceOrdinal',
+    'singleChoiceCategorical',
+    'multipleChoiceCategorical'
+);
+
+CREATE TYPE public.entity_type AS ENUM (
+    'candidate', 'organization', 'faction', 'alliance'
+);
+
+CREATE TYPE public.category_type AS ENUM (
+    'info', 'opinion', 'default'
+);
+
+CREATE TYPE public.user_role_type AS ENUM (
+    'candidate', 'party', 'project_admin', 'account_admin', 'super_admin'
+);
+-- Utility functions
 --
 -- Functions:
---   update_updated_at()       - trigger for automatic updated_at timestamps
---   get_localized()           - extract locale string from JSONB with fallback
---   validate_answer_value()   - validate an answer value against question type
---   validate_nomination()     - enforce nomination hierarchy rules
-
---------------------------------------------------------------------------------
--- Enums
---------------------------------------------------------------------------------
-
-CREATE TYPE question_type AS ENUM (
-  'text', 'number', 'boolean', 'image', 'date', 'multipleText',
-  'singleChoiceOrdinal', 'singleChoiceCategorical', 'multipleChoiceCategorical'
-);
-
-CREATE TYPE entity_type AS ENUM (
-  'candidate', 'organization', 'faction', 'alliance'
-);
-
-CREATE TYPE category_type AS ENUM (
-  'info', 'opinion', 'default'
-);
+--   update_updated_at()  - trigger for automatic updated_at timestamps
+--   get_localized()      - extract locale string from JSONB (email helpers only)
 
 --------------------------------------------------------------------------------
 -- update_updated_at
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION update_updated_at()
+CREATE OR REPLACE FUNCTION public.update_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
@@ -40,127 +44,237 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- get_localized: extract locale string from JSONB with fallback chain
 --
+-- NOTE: Only used by email helpers (502-email-helpers.sql) for server-side
+-- variable resolution. Voter/candidate API responses return all locales as
+-- JSONB; locale selection happens client-side (see 11-DECISION.md).
+--
 -- Fallback order:
---   1. val->>locale          (requested locale)
---   2. val->>default_locale  (project default)
---   3. first available key   (any content is better than NULL)
---   4. NULL                  (val is NULL or empty)
+--   1. p_val->>p_locale          (requested locale)
+--   2. p_val->>p_default_locale  (project default)
+--   3. first available key       (any content is better than NULL)
+--   4. NULL                      (p_val is NULL or empty)
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION get_localized(
-  val            jsonb,
-  locale         text,
-  default_locale text DEFAULT 'en'
+CREATE OR REPLACE FUNCTION public.get_localized(
+    p_val JSONB,
+    p_locale TEXT,
+    p_default_locale TEXT DEFAULT 'en'
 )
-RETURNS text
+RETURNS TEXT
 LANGUAGE plpgsql IMMUTABLE
 AS $$
 BEGIN
-  IF val IS NULL THEN
+  IF p_val IS NULL THEN
     RETURN NULL;
   END IF;
 
-  IF val ? locale THEN
-    RETURN val ->> locale;
+  IF p_val ? p_locale THEN
+    RETURN p_val ->> p_locale;
   END IF;
 
-  IF val ? default_locale THEN
-    RETURN val ->> default_locale;
+  IF p_val ? p_default_locale THEN
+    RETURN p_val ->> p_default_locale;
   END IF;
 
-  RETURN (SELECT val ->> k FROM jsonb_object_keys(val) AS k LIMIT 1);
+  RETURN (SELECT p_val ->> k FROM jsonb_object_keys(p_val) AS k LIMIT 1);
+END;
+$$;
+-- Validation functions
+--
+-- Functions:
+--   is_localized_string()    - check if JSONB is a localized string object
+--   is_valid_choice_id()     - check if a value is a valid choice ID
+--   validate_answer_value()  - validate an answer value against question type
+--   validate_nomination()    - enforce nomination hierarchy rules
+
+--------------------------------------------------------------------------------
+-- is_localized_string: check if a JSONB value is a localized string object
+--
+-- A localized string is a JSONB object where all values are strings.
+-- Examples: {"en": "Hello", "fi": "Hei"}, {"en": "text"}
+-- Returns false for: null, "plain string", 42, [], {"key": 42}
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_localized_string(p_val JSONB)
+RETURNS BOOLEAN
+LANGUAGE plpgsql IMMUTABLE
+AS $$
+DECLARE
+  p_key TEXT;
+  p_value JSONB;
+BEGIN
+  IF p_val IS NULL OR jsonb_typeof(p_val) != 'object' THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Empty object is not a valid localized string
+  IF p_val = '{}'::jsonb THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Every value must be a string
+  FOR p_key, p_value IN SELECT * FROM jsonb_each(p_val)
+  LOOP
+    IF jsonb_typeof(p_value) != 'string' THEN
+      RETURN FALSE;
+    END IF;
+  END LOOP;
+
+  RETURN TRUE;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- is_valid_choice_id: check if a value is present in a choices array
+--
+-- Choices format: [{"id": "1", ...}, {"id": "2", ...}]
+-- Returns true if p_value matches any choice id.
+-- Returns true if p_valid_choices is NULL (no choices to validate against).
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_valid_choice_id(
+    p_value JSONB,
+    p_valid_choices JSONB
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql IMMUTABLE
+AS $$
+DECLARE
+  p_choice_ids JSONB;
+BEGIN
+  IF p_valid_choices IS NULL THEN
+    RETURN TRUE;
+  END IF;
+
+  SELECT jsonb_agg(c -> 'id') INTO p_choice_ids
+  FROM jsonb_array_elements(p_valid_choices) AS c;
+
+  IF p_choice_ids IS NULL THEN
+    RETURN TRUE;
+  END IF;
+
+  RETURN p_choice_ids @> jsonb_build_array(p_value);
 END;
 $$;
 
 --------------------------------------------------------------------------------
 -- validate_answer_value: validate an answer against its question type
+--
+-- Answer format: {"value": ..., "info": ...}
+-- The "info" field is optional and can be a plain string or localized string.
+--
+-- Text answers: value can be a plain string or a localized string object.
+-- MultipleText answers: value must be an array of strings or localized strings.
+-- Choice answers: value must be a valid choice ID from the choices array.
+-- MultipleChoice answers: all array items must be valid choice IDs.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION validate_answer_value(
-  answer_val jsonb,
-  q_type question_type,
-  valid_choices jsonb DEFAULT NULL
+CREATE OR REPLACE FUNCTION public.validate_answer_value(
+    p_answer_val JSONB,
+    p_q_type public.question_type,
+    p_valid_choices JSONB DEFAULT NULL
 )
-RETURNS void
+RETURNS VOID
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  answer_value jsonb;
-  choice_ids jsonb;
+  p_answer_value JSONB;
+  p_answer_info JSONB;
+  p_item JSONB;
 BEGIN
-  answer_value := answer_val -> 'value';
+  p_answer_value := p_answer_val -> 'value';
 
-  IF answer_value IS NULL OR answer_value = 'null'::jsonb THEN
+  IF p_answer_value IS NULL OR p_answer_value = 'null'::jsonb THEN
     RETURN;
   END IF;
 
-  CASE q_type
+  -- Validate optional info field: must be string or localized string
+  p_answer_info := p_answer_val -> 'info';
+  IF p_answer_info IS NOT NULL AND p_answer_info != 'null'::jsonb THEN
+    IF jsonb_typeof(p_answer_info) != 'string' AND NOT public.is_localized_string(p_answer_info) THEN
+      RAISE EXCEPTION 'Answer info must be a string or localized string object';
+    END IF;
+  END IF;
+
+  CASE p_q_type
     WHEN 'text' THEN
-      IF jsonb_typeof(answer_value) != 'string' THEN
-        RAISE EXCEPTION 'Answer for text question must be a string';
+      -- Text answers accept plain strings or localized string objects
+      IF jsonb_typeof(p_answer_value) != 'string' AND NOT public.is_localized_string(p_answer_value) THEN
+        RAISE EXCEPTION 'Answer for text question must be a string or localized string object';
       END IF;
     WHEN 'number' THEN
-      IF jsonb_typeof(answer_value) != 'number' THEN
+      IF jsonb_typeof(p_answer_value) != 'number' THEN
         RAISE EXCEPTION 'Answer for number question must be a number';
       END IF;
     WHEN 'boolean' THEN
-      IF jsonb_typeof(answer_value) != 'boolean' THEN
+      IF jsonb_typeof(p_answer_value) != 'boolean' THEN
         RAISE EXCEPTION 'Answer for boolean question must be a boolean';
       END IF;
     WHEN 'date' THEN
-      IF jsonb_typeof(answer_value) != 'string' THEN
+      IF jsonb_typeof(p_answer_value) != 'string' THEN
         RAISE EXCEPTION 'Answer for date question must be a date string';
       END IF;
     WHEN 'singleChoiceOrdinal', 'singleChoiceCategorical' THEN
-      IF jsonb_typeof(answer_value) != 'string' AND jsonb_typeof(answer_value) != 'number' THEN
+      IF jsonb_typeof(p_answer_value) != 'string' AND jsonb_typeof(p_answer_value) != 'number' THEN
         RAISE EXCEPTION 'Answer for choice question must be a choice ID (string or number)';
       END IF;
-      IF valid_choices IS NOT NULL THEN
-        SELECT jsonb_agg(c -> 'id') INTO choice_ids FROM jsonb_array_elements(valid_choices) AS c;
-        IF choice_ids IS NOT NULL AND NOT choice_ids @> jsonb_build_array(answer_value) THEN
-          RAISE EXCEPTION 'Answer choice ID not in valid choices';
-        END IF;
+      IF NOT public.is_valid_choice_id(p_answer_value, p_valid_choices) THEN
+        RAISE EXCEPTION 'Answer choice ID not in valid choices';
       END IF;
     WHEN 'multipleChoiceCategorical' THEN
-      IF jsonb_typeof(answer_value) != 'array' THEN
+      IF jsonb_typeof(p_answer_value) != 'array' THEN
         RAISE EXCEPTION 'Answer for multiple choice question must be an array';
       END IF;
+      -- Validate each item is a valid choice ID
+      IF p_valid_choices IS NOT NULL THEN
+        FOR p_item IN SELECT * FROM jsonb_array_elements(p_answer_value)
+        LOOP
+          IF NOT public.is_valid_choice_id(p_item, p_valid_choices) THEN
+            RAISE EXCEPTION 'Answer choice ID % not in valid choices', p_item;
+          END IF;
+        END LOOP;
+      END IF;
     WHEN 'multipleText' THEN
-      IF jsonb_typeof(answer_value) != 'array' THEN
+      IF jsonb_typeof(p_answer_value) != 'array' THEN
         RAISE EXCEPTION 'Answer for multipleText question must be an array';
       END IF;
+      -- Each array item must be a string or localized string
+      FOR p_item IN SELECT * FROM jsonb_array_elements(p_answer_value)
+      LOOP
+        IF jsonb_typeof(p_item) != 'string' AND NOT public.is_localized_string(p_item) THEN
+          RAISE EXCEPTION 'Each item in multipleText answer must be a string or localized string object';
+        END IF;
+      END LOOP;
     WHEN 'image' THEN
-      IF jsonb_typeof(answer_value) != 'object' THEN
+      IF jsonb_typeof(p_answer_value) != 'object' THEN
         RAISE EXCEPTION 'Answer for image question must be an object';
       END IF;
       -- Validate StoredImage structure: {path, pathDark?, alt?, width?, height?, focalPoint?}
-      IF NOT (answer_value ? 'path') THEN
+      IF NOT (p_answer_value ? 'path') THEN
         RAISE EXCEPTION 'StoredImage must have a "path" property';
       END IF;
-      IF jsonb_typeof(answer_value -> 'path') != 'string' THEN
+      IF jsonb_typeof(p_answer_value -> 'path') != 'string' THEN
         RAISE EXCEPTION 'StoredImage "path" must be a string';
       END IF;
-      IF answer_value ? 'pathDark' AND jsonb_typeof(answer_value -> 'pathDark') != 'string' THEN
+      IF p_answer_value ? 'pathDark' AND jsonb_typeof(p_answer_value -> 'pathDark') != 'string' THEN
         RAISE EXCEPTION 'StoredImage "pathDark" must be a string';
       END IF;
-      IF answer_value ? 'alt' AND jsonb_typeof(answer_value -> 'alt') != 'string' THEN
+      IF p_answer_value ? 'alt' AND jsonb_typeof(p_answer_value -> 'alt') != 'string' THEN
         RAISE EXCEPTION 'StoredImage "alt" must be a string';
       END IF;
-      IF answer_value ? 'width' AND jsonb_typeof(answer_value -> 'width') != 'number' THEN
+      IF p_answer_value ? 'width' AND jsonb_typeof(p_answer_value -> 'width') != 'number' THEN
         RAISE EXCEPTION 'StoredImage "width" must be a number';
       END IF;
-      IF answer_value ? 'height' AND jsonb_typeof(answer_value -> 'height') != 'number' THEN
+      IF p_answer_value ? 'height' AND jsonb_typeof(p_answer_value -> 'height') != 'number' THEN
         RAISE EXCEPTION 'StoredImage "height" must be a number';
       END IF;
-      IF answer_value ? 'focalPoint' THEN
-        IF jsonb_typeof(answer_value -> 'focalPoint') != 'object' THEN
+      IF p_answer_value ? 'focalPoint' THEN
+        IF jsonb_typeof(p_answer_value -> 'focalPoint') != 'object' THEN
           RAISE EXCEPTION 'StoredImage "focalPoint" must be an object';
         END IF;
-        IF NOT (answer_value -> 'focalPoint' ? 'x') OR NOT (answer_value -> 'focalPoint' ? 'y') THEN
+        IF NOT (p_answer_value -> 'focalPoint' ? 'x') OR NOT (p_answer_value -> 'focalPoint' ? 'y') THEN
           RAISE EXCEPTION 'StoredImage "focalPoint" must have "x" and "y" properties';
         END IF;
-        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'x') != 'number' THEN
+        IF jsonb_typeof(p_answer_value -> 'focalPoint' -> 'x') != 'number' THEN
           RAISE EXCEPTION 'StoredImage "focalPoint.x" must be a number';
         END IF;
-        IF jsonb_typeof(answer_value -> 'focalPoint' -> 'y') != 'number' THEN
+        IF jsonb_typeof(p_answer_value -> 'focalPoint' -> 'y') != 'number' THEN
           RAISE EXCEPTION 'StoredImage "focalPoint.y" must be a number';
         END IF;
       END IF;
@@ -172,35 +286,35 @@ $$;
 -- validate_nomination: enforce hierarchy and election/constituency consistency
 --
 -- Hierarchy rules:
---   alliance    → no parent allowed
---   organization → parent must be alliance (or none for standalone)
---   faction     → parent MUST be organization
---   candidate   → parent must be organization or faction (or none for standalone)
+--   alliance    -> no parent allowed
+--   organization -> parent must be alliance (or none for standalone)
+--   faction     -> parent MUST be organization
+--   candidate   -> parent must be organization or faction (or none for standalone)
 --
 -- Consistency rules:
 --   If parent_nomination_id is set, election_id, constituency_id, and
 --   election_round must match the parent nomination.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION validate_nomination()
+CREATE OR REPLACE FUNCTION public.validate_nomination()
 RETURNS TRIGGER AS $$
 DECLARE
-  parent_type entity_type;
-  parent_election_id uuid;
-  parent_constituency_id uuid;
-  parent_election_round integer;
-  child_type entity_type;
+  p_parent_type public.entity_type;
+  p_parent_election_id uuid;
+  p_parent_constituency_id uuid;
+  p_parent_election_round integer;
+  p_child_type public.entity_type;
 BEGIN
   -- Derive entity_type from the FK columns
-  child_type := CASE
-    WHEN NEW.candidate_id IS NOT NULL THEN 'candidate'::entity_type
-    WHEN NEW.organization_id IS NOT NULL THEN 'organization'::entity_type
-    WHEN NEW.faction_id IS NOT NULL THEN 'faction'::entity_type
-    WHEN NEW.alliance_id IS NOT NULL THEN 'alliance'::entity_type
+  p_child_type := CASE
+    WHEN NEW.candidate_id IS NOT NULL THEN 'candidate'::public.entity_type
+    WHEN NEW.organization_id IS NOT NULL THEN 'organization'::public.entity_type
+    WHEN NEW.faction_id IS NOT NULL THEN 'faction'::public.entity_type
+    WHEN NEW.alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
   END;
 
   IF NEW.parent_nomination_id IS NULL THEN
     -- Top-level: faction must have a parent
-    IF child_type = 'faction' THEN
+    IF p_child_type = 'faction' THEN
       RAISE EXCEPTION 'Faction nominations must have a parent organization nomination';
     END IF;
     RETURN NEW;
@@ -209,16 +323,16 @@ BEGIN
   -- Look up parent nomination
   SELECT
     CASE
-      WHEN p.candidate_id IS NOT NULL THEN 'candidate'::entity_type
-      WHEN p.organization_id IS NOT NULL THEN 'organization'::entity_type
-      WHEN p.faction_id IS NOT NULL THEN 'faction'::entity_type
-      WHEN p.alliance_id IS NOT NULL THEN 'alliance'::entity_type
+      WHEN p.candidate_id IS NOT NULL THEN 'candidate'::public.entity_type
+      WHEN p.organization_id IS NOT NULL THEN 'organization'::public.entity_type
+      WHEN p.faction_id IS NOT NULL THEN 'faction'::public.entity_type
+      WHEN p.alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
     END,
     p.election_id,
     p.constituency_id,
     p.election_round
-  INTO parent_type, parent_election_id, parent_constituency_id, parent_election_round
-  FROM nominations p
+  INTO p_parent_type, p_parent_election_id, p_parent_constituency_id, p_parent_election_round
+  FROM public.nominations p
   WHERE p.id = NEW.parent_nomination_id;
 
   IF NOT FOUND THEN
@@ -226,37 +340,37 @@ BEGIN
   END IF;
 
   -- Validate parent-child entity type combination
-  CASE child_type
+  CASE p_child_type
     WHEN 'alliance' THEN
       RAISE EXCEPTION 'Alliance nominations cannot have a parent';
     WHEN 'organization' THEN
-      IF parent_type != 'alliance' THEN
-        RAISE EXCEPTION 'Organization nomination parent must be an alliance nomination, got %', parent_type;
+      IF p_parent_type != 'alliance' THEN
+        RAISE EXCEPTION 'Organization nomination parent must be an alliance nomination, got %', p_parent_type;
       END IF;
     WHEN 'faction' THEN
-      IF parent_type != 'organization' THEN
-        RAISE EXCEPTION 'Faction nomination parent must be an organization nomination, got %', parent_type;
+      IF p_parent_type != 'organization' THEN
+        RAISE EXCEPTION 'Faction nomination parent must be an organization nomination, got %', p_parent_type;
       END IF;
     WHEN 'candidate' THEN
-      IF parent_type NOT IN ('organization', 'faction') THEN
-        RAISE EXCEPTION 'Candidate nomination parent must be an organization or faction nomination, got %', parent_type;
+      IF p_parent_type NOT IN ('organization', 'faction') THEN
+        RAISE EXCEPTION 'Candidate nomination parent must be an organization or faction nomination, got %', p_parent_type;
       END IF;
   END CASE;
 
   -- Validate election/constituency/round consistency with parent
-  IF NEW.election_id != parent_election_id THEN
+  IF NEW.election_id != p_parent_election_id THEN
     RAISE EXCEPTION 'Nomination election_id must match parent (expected %, got %)',
-      parent_election_id, NEW.election_id;
+      p_parent_election_id, NEW.election_id;
   END IF;
 
-  IF NEW.constituency_id != parent_constituency_id THEN
+  IF NEW.constituency_id != p_parent_constituency_id THEN
     RAISE EXCEPTION 'Nomination constituency_id must match parent (expected %, got %)',
-      parent_constituency_id, NEW.constituency_id;
+      p_parent_constituency_id, NEW.constituency_id;
   END IF;
 
-  IF NEW.election_round IS DISTINCT FROM parent_election_round THEN
+  IF NEW.election_round IS DISTINCT FROM p_parent_election_round THEN
     RAISE EXCEPTION 'Nomination election_round must match parent (expected %, got %)',
-      parent_election_round, NEW.election_round;
+      p_parent_election_round, NEW.election_round;
   END IF;
 
   RETURN NEW;
@@ -266,7 +380,7 @@ $$ LANGUAGE plpgsql;
 --
 -- All content tables reference projects via project_id FK with ON DELETE CASCADE.
 
-CREATE TABLE accounts (
+CREATE TABLE public.accounts (
   id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   name       text        NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -274,12 +388,12 @@ CREATE TABLE accounts (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON accounts
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.accounts
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE projects (
+CREATE TABLE public.projects (
   id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  account_id     uuid        NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  account_id     uuid        NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
   name           text        NOT NULL,
   default_locale text        NOT NULL DEFAULT 'en',
   created_at     timestamptz NOT NULL DEFAULT now(),
@@ -287,13 +401,13 @@ CREATE TABLE projects (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON projects
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.projects
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 -- Elections, constituency groups, constituencies, and their join tables
 
-CREATE TABLE elections (
+CREATE TABLE public.elections (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id      uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name            jsonb,
   short_name      jsonb,
   info            jsonb,
@@ -313,12 +427,12 @@ CREATE TABLE elections (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON elections
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.elections
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE constituency_groups (
+CREATE TABLE public.constituency_groups (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id   uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name         jsonb,
   short_name   jsonb,
   info         jsonb,
@@ -333,12 +447,12 @@ CREATE TABLE constituency_groups (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON constituency_groups
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.constituency_groups
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE constituencies (
+CREATE TABLE public.constituencies (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id   uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name         jsonb,
   short_name   jsonb,
   info         jsonb,
@@ -351,29 +465,29 @@ CREATE TABLE constituencies (
   created_at   timestamptz NOT NULL DEFAULT now(),
   updated_at   timestamptz NOT NULL DEFAULT now(),
   keywords     jsonb,
-  parent_id    uuid        REFERENCES constituencies(id) ON DELETE SET NULL
+  parent_id    uuid        REFERENCES public.constituencies(id) ON DELETE SET NULL
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON constituencies
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.constituencies
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE constituency_group_constituencies (
-  constituency_group_id uuid NOT NULL REFERENCES constituency_groups(id) ON DELETE CASCADE,
-  constituency_id       uuid NOT NULL REFERENCES constituencies(id) ON DELETE CASCADE,
+CREATE TABLE public.constituency_group_constituencies (
+  constituency_group_id uuid NOT NULL REFERENCES public.constituency_groups(id) ON DELETE CASCADE,
+  constituency_id       uuid NOT NULL REFERENCES public.constituencies(id) ON DELETE CASCADE,
   PRIMARY KEY (constituency_group_id, constituency_id)
 );
 
-CREATE TABLE election_constituency_groups (
-  election_id           uuid NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
-  constituency_group_id uuid NOT NULL REFERENCES constituency_groups(id) ON DELETE CASCADE,
+CREATE TABLE public.election_constituency_groups (
+  election_id           uuid NOT NULL REFERENCES public.elections(id) ON DELETE CASCADE,
+  constituency_group_id uuid NOT NULL REFERENCES public.constituency_groups(id) ON DELETE CASCADE,
   PRIMARY KEY (election_id, constituency_group_id)
 );
 -- Entity tables: organizations, candidates, factions, alliances
 
-CREATE TABLE organizations (
+CREATE TABLE public.organizations (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id   uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   auth_user_id uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
   name         jsonb,
   short_name   jsonb,
@@ -389,12 +503,12 @@ CREATE TABLE organizations (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON organizations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.organizations
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE candidates (
+CREATE TABLE public.candidates (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id      uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name            jsonb,
   short_name      jsonb,
   info            jsonb,
@@ -408,17 +522,21 @@ CREATE TABLE candidates (
   updated_at      timestamptz NOT NULL DEFAULT now(),
   first_name      text        NOT NULL,
   last_name       text        NOT NULL,
-  organization_id uuid        REFERENCES organizations(id) ON DELETE SET NULL,
+  organization_id uuid        REFERENCES public.organizations(id) ON DELETE SET NULL,
   auth_user_id    uuid        REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON candidates
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.candidates
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE factions (
+-- Terms-of-use acceptance tracking: nullable timestamptz
+-- NULL = not yet accepted. Set by candidate when accepting ToU.
+ALTER TABLE public.candidates ADD COLUMN terms_of_use_accepted timestamptz;
+
+CREATE TABLE public.factions (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id   uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name         jsonb,
   short_name   jsonb,
   info         jsonb,
@@ -433,12 +551,12 @@ CREATE TABLE factions (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON factions
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.factions
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE alliances (
+CREATE TABLE public.alliances (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id   uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name         jsonb,
   short_name   jsonb,
   info         jsonb,
@@ -453,13 +571,15 @@ CREATE TABLE alliances (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON alliances
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.alliances
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 -- Question categories and questions
+--
+-- Includes validation trigger: choice-type questions must have valid choices array.
 
-CREATE TABLE question_categories (
+CREATE TABLE public.question_categories (
   id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id      uuid          NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name            jsonb,
   short_name      jsonb,
   info            jsonb,
@@ -471,7 +591,7 @@ CREATE TABLE question_categories (
   is_generated    boolean       DEFAULT false,
   created_at      timestamptz   NOT NULL DEFAULT now(),
   updated_at      timestamptz   NOT NULL DEFAULT now(),
-  category_type   category_type DEFAULT 'opinion',
+  category_type   public.category_type DEFAULT 'opinion',
   election_ids    jsonb,
   election_rounds jsonb,
   constituency_ids jsonb,
@@ -479,12 +599,12 @@ CREATE TABLE question_categories (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON question_categories
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.question_categories
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
-CREATE TABLE questions (
+CREATE TABLE public.questions (
   id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id      uuid          NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name            jsonb,
   short_name      jsonb,
   info            jsonb,
@@ -496,8 +616,8 @@ CREATE TABLE questions (
   is_generated    boolean       DEFAULT false,
   created_at      timestamptz   NOT NULL DEFAULT now(),
   updated_at      timestamptz   NOT NULL DEFAULT now(),
-  type            question_type NOT NULL,
-  category_id     uuid          NOT NULL REFERENCES question_categories(id),
+  type            public.question_type NOT NULL,
+  category_id     uuid          NOT NULL REFERENCES public.question_categories(id),
   choices         jsonb,
   settings        jsonb,
   election_ids    jsonb,
@@ -509,25 +629,81 @@ CREATE TABLE questions (
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON questions
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.questions
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+--------------------------------------------------------------------------------
+-- validate_question_choices: enforce valid choices for choice-type questions
+--
+-- For singleChoiceOrdinal, singleChoiceCategorical, multipleChoiceCategorical:
+--   - choices must be a non-null JSON array
+--   - choices must contain at least 2 elements
+--   - each choice must be an object with an "id" key
+--
+-- Uses is_valid_choice_id helper from 011-validation-functions.sql.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_question_choices()
+RETURNS TRIGGER AS $$
+DECLARE
+  p_choice JSONB;
+  p_choice_count INTEGER;
+BEGIN
+  -- Only validate choice-type questions
+  IF NEW.type NOT IN ('singleChoiceOrdinal', 'singleChoiceCategorical', 'multipleChoiceCategorical') THEN
+    RETURN NEW;
+  END IF;
+
+  -- Choices must be present and non-null
+  IF NEW.choices IS NULL OR NEW.choices = 'null'::jsonb THEN
+    RAISE EXCEPTION 'Choice-type question must have a choices array (type: %)', NEW.type;
+  END IF;
+
+  -- Choices must be an array
+  IF jsonb_typeof(NEW.choices) != 'array' THEN
+    RAISE EXCEPTION 'Question choices must be a JSON array, got %', jsonb_typeof(NEW.choices);
+  END IF;
+
+  -- Must have at least 2 choices
+  p_choice_count := jsonb_array_length(NEW.choices);
+  IF p_choice_count < 2 THEN
+    RAISE EXCEPTION 'Choice-type question must have at least 2 choices, got %', p_choice_count;
+  END IF;
+
+  -- Each choice must be an object with an "id" key
+  FOR p_choice IN SELECT * FROM jsonb_array_elements(NEW.choices)
+  LOOP
+    IF jsonb_typeof(p_choice) != 'object' THEN
+      RAISE EXCEPTION 'Each choice must be a JSON object';
+    END IF;
+    IF NOT (p_choice ? 'id') THEN
+      RAISE EXCEPTION 'Each choice must have an "id" property';
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_question_choices_before_insert_or_update
+  BEFORE INSERT OR UPDATE ON public.questions
+  FOR EACH ROW EXECUTE FUNCTION public.validate_question_choices();
 -- Nominations
 --
 -- Uses separate FK columns for each entity type instead of polymorphic entity_id.
 -- entity_type is a generated column derived from which FK is set.
 --
 -- Hierarchy (enforced by validate_nomination trigger):
---   alliance    → no parent
---   organization → parent: alliance (or standalone)
---   faction     → parent: organization (required)
---   candidate   → parent: organization or faction (or standalone)
+--   alliance    -> no parent
+--   organization -> parent: alliance (or standalone)
+--   faction     -> parent: organization (required)
+--   candidate   -> parent: organization or faction (or standalone)
 --
 -- Parent-child nominations must share election_id, constituency_id, and
 -- election_round (also enforced by trigger).
 
-CREATE TABLE nominations (
+CREATE TABLE public.nominations (
   id                   uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id           uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id           uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   name                 jsonb,
   short_name           jsonb,
   info                 jsonb,
@@ -540,39 +716,39 @@ CREATE TABLE nominations (
   created_at           timestamptz NOT NULL DEFAULT now(),
   updated_at           timestamptz NOT NULL DEFAULT now(),
   -- Entity FK columns: exactly one must be set
-  candidate_id         uuid        REFERENCES candidates(id) ON DELETE CASCADE,
-  organization_id      uuid        REFERENCES organizations(id) ON DELETE CASCADE,
-  faction_id           uuid        REFERENCES factions(id) ON DELETE CASCADE,
-  alliance_id          uuid        REFERENCES alliances(id) ON DELETE CASCADE,
+  candidate_id         uuid        REFERENCES public.candidates(id) ON DELETE CASCADE,
+  organization_id      uuid        REFERENCES public.organizations(id) ON DELETE CASCADE,
+  faction_id           uuid        REFERENCES public.factions(id) ON DELETE CASCADE,
+  alliance_id          uuid        REFERENCES public.alliances(id) ON DELETE CASCADE,
   -- Generated entity_type from FK columns
-  entity_type          entity_type NOT NULL GENERATED ALWAYS AS (
+  entity_type          public.entity_type NOT NULL GENERATED ALWAYS AS (
     CASE
-      WHEN candidate_id IS NOT NULL THEN 'candidate'::entity_type
-      WHEN organization_id IS NOT NULL THEN 'organization'::entity_type
-      WHEN faction_id IS NOT NULL THEN 'faction'::entity_type
-      WHEN alliance_id IS NOT NULL THEN 'alliance'::entity_type
+      WHEN candidate_id IS NOT NULL THEN 'candidate'::public.entity_type
+      WHEN organization_id IS NOT NULL THEN 'organization'::public.entity_type
+      WHEN faction_id IS NOT NULL THEN 'faction'::public.entity_type
+      WHEN alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
     END
   ) STORED,
   -- Election context
-  election_id          uuid        NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
-  constituency_id      uuid        NOT NULL REFERENCES constituencies(id) ON DELETE CASCADE,
+  election_id          uuid        NOT NULL REFERENCES public.elections(id) ON DELETE CASCADE,
+  constituency_id      uuid        NOT NULL REFERENCES public.constituencies(id) ON DELETE CASCADE,
   election_round       integer     DEFAULT 1,
   election_symbol      text,
   -- Nesting
-  parent_nomination_id uuid        REFERENCES nominations(id) ON DELETE CASCADE,
+  parent_nomination_id uuid        REFERENCES public.nominations(id) ON DELETE CASCADE,
   unconfirmed          boolean     DEFAULT false,
   -- Exactly one entity FK must be set
   CHECK (num_nonnulls(candidate_id, organization_id, faction_id, alliance_id) = 1)
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON nominations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.nominations
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
 CREATE TRIGGER validate_nomination_before_insert_or_update
-  BEFORE INSERT OR UPDATE ON nominations
-  FOR EACH ROW EXECUTE FUNCTION validate_nomination();
--- JSONB answer storage (default)
+  BEFORE INSERT OR UPDATE ON public.nominations
+  FOR EACH ROW EXECUTE FUNCTION public.validate_nomination();
+-- JSONB answer storage
 --
 -- Stores answers as a JSONB column on candidates and organizations:
 -- Record<QuestionId, {value: ..., info?: ...}>
@@ -581,16 +757,9 @@ CREATE TRIGGER validate_nomination_before_insert_or_update
 --   1. Smart validation trigger: validates only changed answer keys on UPDATE
 --   2. Question delete cascade: removes orphaned answer keys when a question is deleted
 --   3. Question type change protection: prevents type changes that would invalidate existing answers
---
--- Alternative: see schema/alternatives/answers-relational.sql
---
--- TODO: Add an RPC function for atomic single-answer upsert to prevent
---       client-side read-modify-write race conditions with concurrent jsonb_set().
---       E.g. upsert_candidate_answer(candidate_id uuid, question_id uuid, value jsonb)
---       that uses server-side jsonb_set with implicit row lock.
 
-ALTER TABLE candidates ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
-ALTER TABLE organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.candidates ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 
 --------------------------------------------------------------------------------
 -- JSONB answer validation trigger function (smart: validates only changed keys)
@@ -599,13 +768,13 @@ ALTER TABLE organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
 -- On UPDATE: validates only new or modified keys (skips unchanged)
 -- Short-circuits if answers column is unchanged or empty
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION validate_answers_jsonb()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.validate_answers_jsonb()
+RETURNS trigger AS $$
 DECLARE
-  question_id text;
-  answer_value jsonb;
-  question_record record;
-  old_answers jsonb;
+  p_question_id text;
+  p_answer_value jsonb;
+  p_question_record record;
+  p_old_answers jsonb;
 BEGIN
   -- Short-circuit: no change to answers column
   IF TG_OP = 'UPDATE' AND NEW.answers IS NOT DISTINCT FROM OLD.answers THEN
@@ -618,31 +787,31 @@ BEGIN
   END IF;
 
   -- Get old answers for diffing (NULL on INSERT)
-  old_answers := CASE WHEN TG_OP = 'UPDATE' THEN OLD.answers ELSE NULL END;
+  p_old_answers := CASE WHEN TG_OP = 'UPDATE' THEN OLD.answers ELSE NULL END;
 
-  FOR question_id, answer_value IN SELECT * FROM jsonb_each(NEW.answers)
+  FOR p_question_id, p_answer_value IN SELECT * FROM jsonb_each(NEW.answers)
   LOOP
     -- Skip unchanged answer keys (only validate new or modified)
-    IF old_answers IS NOT NULL
-       AND old_answers ? question_id
-       AND old_answers -> question_id IS NOT DISTINCT FROM answer_value THEN
+    IF p_old_answers IS NOT NULL
+       AND p_old_answers ? p_question_id
+       AND p_old_answers -> p_question_id IS NOT DISTINCT FROM p_answer_value THEN
       CONTINUE;
     END IF;
 
     SELECT q.type, q.choices
-    INTO question_record
-    FROM questions q
-    WHERE q.id = question_id::uuid
+    INTO p_question_record
+    FROM public.questions q
+    WHERE q.id = p_question_id::uuid
       AND q.project_id = NEW.project_id;
 
     IF NOT FOUND THEN
-      RAISE EXCEPTION 'Question % not found in project', question_id;
+      RAISE EXCEPTION 'Question % not found in project', p_question_id;
     END IF;
 
-    PERFORM validate_answer_value(
-      answer_value,
-      question_record.type,
-      question_record.choices
+    PERFORM public.validate_answer_value(
+      p_answer_value,
+      p_question_record.type,
+      p_question_record.choices
     );
   END LOOP;
 
@@ -651,29 +820,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER validate_answers_before_insert_or_update
-  BEFORE INSERT OR UPDATE ON candidates
-  FOR EACH ROW EXECUTE FUNCTION validate_answers_jsonb();
+BEFORE INSERT OR UPDATE ON public.candidates
+FOR EACH ROW EXECUTE FUNCTION public.validate_answers_jsonb();
 
 CREATE TRIGGER validate_answers_before_insert_or_update
-  BEFORE INSERT OR UPDATE ON organizations
-  FOR EACH ROW EXECUTE FUNCTION validate_answers_jsonb();
+BEFORE INSERT OR UPDATE ON public.organizations
+FOR EACH ROW EXECUTE FUNCTION public.validate_answers_jsonb();
 
 --------------------------------------------------------------------------------
 -- Question delete cascade: remove orphaned answer keys from JSONB
---
--- When a question is deleted, removes its answer key from all candidates
--- and organizations in the same project. Uses the JSONB `-` operator
--- which is a no-op if the key doesn't exist.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION cascade_question_delete_to_jsonb_answers()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.cascade_question_delete_to_jsonb_answers()
+RETURNS trigger AS $$
 BEGIN
-  UPDATE candidates
+  UPDATE public.candidates
   SET answers = answers - OLD.id::text
   WHERE project_id = OLD.project_id
     AND answers ? OLD.id::text;
 
-  UPDATE organizations
+  UPDATE public.organizations
   SET answers = answers - OLD.id::text
   WHERE project_id = OLD.project_id
     AND answers ? OLD.id::text;
@@ -683,25 +848,17 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cascade_question_delete_to_answers
-  AFTER DELETE ON questions
-  FOR EACH ROW EXECUTE FUNCTION cascade_question_delete_to_jsonb_answers();
+AFTER DELETE ON public.questions
+FOR EACH ROW EXECUTE FUNCTION public.cascade_question_delete_to_jsonb_answers();
 
 --------------------------------------------------------------------------------
 -- Question type/choices change protection
---
--- Prevents changing a question's type or choices if existing answers would
--- become invalid under the new type. Type changes are allowed if:
---   1. No answers exist for this question, or
---   2. All existing answers pass validation against the new type/choices
---
--- This mirrors the relational model's inherent constraint: you can't change
--- a column type if existing data doesn't conform.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION validate_question_type_change()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.validate_question_type_change()
+RETURNS trigger AS $$
 DECLARE
-  entity_record record;
-  valid_choices jsonb;
+  p_entity_record record;
+  p_valid_choices jsonb;
 BEGIN
   -- Only act on type or choices changes
   IF OLD.type IS NOT DISTINCT FROM NEW.type
@@ -710,35 +867,35 @@ BEGIN
   END IF;
 
   -- Get effective choices for validation
-  valid_choices := NEW.choices;
+  p_valid_choices := NEW.choices;
 
   -- Validate all existing candidate answers against the new type
-  FOR entity_record IN
+  FOR p_entity_record IN
     SELECT c.id, c.answers -> OLD.id::text AS answer_value
-    FROM candidates c
+    FROM public.candidates c
     WHERE c.project_id = NEW.project_id
       AND c.answers ? OLD.id::text
   LOOP
     BEGIN
-      PERFORM validate_answer_value(entity_record.answer_value, NEW.type, valid_choices);
+      PERFORM public.validate_answer_value(p_entity_record.answer_value, NEW.type, p_valid_choices);
     EXCEPTION WHEN OTHERS THEN
       RAISE EXCEPTION 'Cannot change question % type/choices: existing answer for candidate % would be invalid: %',
-        NEW.id, entity_record.id, SQLERRM;
+        NEW.id, p_entity_record.id, SQLERRM;
     END;
   END LOOP;
 
   -- Validate all existing organization answers against the new type
-  FOR entity_record IN
+  FOR p_entity_record IN
     SELECT o.id, o.answers -> OLD.id::text AS answer_value
-    FROM organizations o
+    FROM public.organizations o
     WHERE o.project_id = NEW.project_id
       AND o.answers ? OLD.id::text
   LOOP
     BEGIN
-      PERFORM validate_answer_value(entity_record.answer_value, NEW.type, valid_choices);
+      PERFORM public.validate_answer_value(p_entity_record.answer_value, NEW.type, p_valid_choices);
     EXCEPTION WHEN OTHERS THEN
       RAISE EXCEPTION 'Cannot change question % type/choices: existing answer for organization % would be invalid: %',
-        NEW.id, entity_record.id, SQLERRM;
+        NEW.id, p_entity_record.id, SQLERRM;
     END;
   END LOOP;
 
@@ -747,63 +904,196 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER validate_question_type_change_trigger
-  BEFORE UPDATE ON questions
-  FOR EACH ROW EXECUTE FUNCTION validate_question_type_change();
+BEFORE UPDATE ON public.questions
+FOR EACH ROW EXECUTE FUNCTION public.validate_question_type_change();
 -- App settings: per-project application settings stored as JSONB
 --
 -- One row per project, enforced by UNIQUE constraint on project_id.
 -- The app layer is responsible for parsing/validating the settings structure.
 
-CREATE TABLE app_settings (
+CREATE TABLE public.app_settings (
   id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid        NOT NULL UNIQUE REFERENCES projects(id),
+  project_id uuid        NOT NULL UNIQUE REFERENCES public.projects(id),
   settings   jsonb       NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON app_settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  BEFORE UPDATE ON public.app_settings
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+-- App customization: per-project customization settings stored as JSONB
+ALTER TABLE public.app_settings ADD COLUMN customization jsonb DEFAULT '{}'::jsonb;
+-- Feedback table: anonymous voter feedback submissions
+--
+-- At least one of rating or description must be present (CHECK constraint).
+-- No UPDATE policy -- feedback is immutable after insert.
+-- RLS policies are in 302-rls.sql.
+-- Rate limiting trigger prevents spam (5 requests per 5 minutes per IP).
+
+--------------------------------------------------------------------------------
+-- Private schema for rate limiting (not exposed via PostgREST)
+--------------------------------------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
+  ip_address   text        PRIMARY KEY,
+  count        integer     NOT NULL DEFAULT 1,
+  window_start timestamptz NOT NULL DEFAULT now()
+);
+
+--------------------------------------------------------------------------------
+-- Feedback table
+--------------------------------------------------------------------------------
+CREATE TABLE public.feedback (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  uuid        NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  rating      integer,
+  description text,
+  date        timestamptz NOT NULL DEFAULT now(),
+  url         text,
+  user_agent  text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT feedback_rating_or_description CHECK (
+    rating IS NOT NULL OR description IS NOT NULL
+  )
+);
+
+--------------------------------------------------------------------------------
+-- Rate limiting: 5 requests per 5-minute window per client IP
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.check_feedback_rate_limit()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  p_client_ip     text;
+  p_current_count integer;
+  p_window_secs   interval := interval '5 minutes';
+  p_max_requests  integer  := 5;
+BEGIN
+  -- Extract first IP from x-forwarded-for header (handles proxy chains)
+  p_client_ip := SPLIT_PART(
+    COALESCE(
+      (current_setting('request.headers', true)::json ->> 'x-forwarded-for'),
+      'unknown'
+    ) || ',',
+    ',', 1
+  );
+  p_client_ip := TRIM(p_client_ip);
+
+  -- Advisory lock to serialize concurrent inserts from the same IP
+  PERFORM pg_advisory_xact_lock(hashtext('feedback_rate:' || p_client_ip));
+
+  -- Upsert rate limit counter (reset window if expired)
+  INSERT INTO private.feedback_rate_limits (ip_address, count, window_start)
+  VALUES (p_client_ip, 1, now())
+  ON CONFLICT (ip_address) DO UPDATE
+    SET count = CASE
+          WHEN private.feedback_rate_limits.window_start + p_window_secs <= now()
+          THEN 1
+          ELSE private.feedback_rate_limits.count + 1
+        END,
+        window_start = CASE
+          WHEN private.feedback_rate_limits.window_start + p_window_secs <= now()
+          THEN now()
+          ELSE private.feedback_rate_limits.window_start
+        END;
+
+  SELECT count INTO p_current_count
+  FROM private.feedback_rate_limits
+  WHERE ip_address = p_client_ip;
+
+  IF p_current_count > p_max_requests THEN
+    RAISE EXCEPTION 'Rate limit exceeded. Please try again later.'
+      USING ERRCODE = 'P0001';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER check_feedback_rate_limit
+  BEFORE INSERT ON public.feedback
+  FOR EACH ROW EXECUTE FUNCTION public.check_feedback_rate_limit();
+-- Admin jobs: job result persistence for admin features
+--
+-- Stores results of admin operations (e.g., QuestionInfoGeneration, ArgumentGeneration).
+-- Records are immutable -- no UPDATE policy. Admins can INSERT new results and
+-- SELECT/DELETE existing ones for their project.
+
+CREATE TABLE public.admin_jobs (
+  id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id      uuid          NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  job_id          text          NOT NULL,
+  job_type        text          NOT NULL,
+  election_id     uuid          REFERENCES public.elections(id) ON DELETE SET NULL,
+  author          text          NOT NULL,
+  end_status      text          NOT NULL CHECK (end_status IN ('completed', 'failed', 'aborted')),
+  start_time      timestamptz,
+  end_time        timestamptz,
+  input           jsonb,
+  output          jsonb,
+  messages        jsonb,
+  metadata        jsonb,
+  created_at      timestamptz   NOT NULL DEFAULT now(),
+  updated_at      timestamptz   NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER set_updated_at
+  BEFORE UPDATE ON public.admin_jobs
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 -- B-tree indexes on RLS-referenced and commonly filtered columns
 
 --------------------------------------------------------------------------------
 -- project_id indexes (every content table)
 --------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_elections_project_id ON elections (project_id);
-CREATE INDEX IF NOT EXISTS idx_constituency_groups_project_id ON constituency_groups (project_id);
-CREATE INDEX IF NOT EXISTS idx_constituencies_project_id ON constituencies (project_id);
-CREATE INDEX IF NOT EXISTS idx_organizations_project_id ON organizations (project_id);
-CREATE INDEX IF NOT EXISTS idx_candidates_project_id ON candidates (project_id);
-CREATE INDEX IF NOT EXISTS idx_factions_project_id ON factions (project_id);
-CREATE INDEX IF NOT EXISTS idx_alliances_project_id ON alliances (project_id);
-CREATE INDEX IF NOT EXISTS idx_question_categories_project_id ON question_categories (project_id);
-CREATE INDEX IF NOT EXISTS idx_questions_project_id ON questions (project_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_project_id ON nominations (project_id);
-CREATE INDEX IF NOT EXISTS idx_app_settings_project_id ON app_settings (project_id);
+CREATE INDEX IF NOT EXISTS idx_elections_project_id ON public.elections (project_id);
+CREATE INDEX IF NOT EXISTS idx_constituency_groups_project_id ON public.constituency_groups (project_id);
+CREATE INDEX IF NOT EXISTS idx_constituencies_project_id ON public.constituencies (project_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_project_id ON public.organizations (project_id);
+CREATE INDEX IF NOT EXISTS idx_candidates_project_id ON public.candidates (project_id);
+CREATE INDEX IF NOT EXISTS idx_factions_project_id ON public.factions (project_id);
+CREATE INDEX IF NOT EXISTS idx_alliances_project_id ON public.alliances (project_id);
+CREATE INDEX IF NOT EXISTS idx_question_categories_project_id ON public.question_categories (project_id);
+CREATE INDEX IF NOT EXISTS idx_questions_project_id ON public.questions (project_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_project_id ON public.nominations (project_id);
+CREATE INDEX IF NOT EXISTS idx_app_settings_project_id ON public.app_settings (project_id);
 
 --------------------------------------------------------------------------------
 -- FK reference column indexes
 --------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_projects_account_id ON projects (account_id);
-CREATE INDEX IF NOT EXISTS idx_candidates_organization_id ON candidates (organization_id);
-CREATE INDEX IF NOT EXISTS idx_questions_category_id ON questions (category_id);
-CREATE INDEX IF NOT EXISTS idx_constituencies_parent_id ON constituencies (parent_id);
+CREATE INDEX IF NOT EXISTS idx_projects_account_id ON public.projects (account_id);
+CREATE INDEX IF NOT EXISTS idx_candidates_organization_id ON public.candidates (organization_id);
+CREATE INDEX IF NOT EXISTS idx_questions_category_id ON public.questions (category_id);
+CREATE INDEX IF NOT EXISTS idx_constituencies_parent_id ON public.constituencies (parent_id);
 
 -- Nomination FK indexes
-CREATE INDEX IF NOT EXISTS idx_nominations_candidate_id ON nominations (candidate_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_organization_id ON nominations (organization_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_faction_id ON nominations (faction_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_alliance_id ON nominations (alliance_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_election_id ON nominations (election_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON nominations (constituency_id);
-CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON nominations (parent_nomination_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_candidate_id ON public.nominations (candidate_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_organization_id ON public.nominations (organization_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_faction_id ON public.nominations (faction_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_alliance_id ON public.nominations (alliance_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_election_id ON public.nominations (election_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON public.nominations (constituency_id);
+CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON public.nominations (parent_nomination_id);
 
 --------------------------------------------------------------------------------
 -- auth_user_id indexes (columns defined in 003-entities.sql)
 --------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON candidates (auth_user_id);
-CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON public.candidates (auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON public.organizations (auth_user_id);
+
+-- feedback indexes
+CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON public.feedback (project_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON public.feedback (created_at);
+
+-- admin_jobs indexes
+CREATE INDEX IF NOT EXISTS idx_admin_jobs_project_id ON public.admin_jobs (project_id);
+CREATE INDEX IF NOT EXISTS idx_admin_jobs_election_id ON public.admin_jobs (election_id);
+CREATE INDEX IF NOT EXISTS idx_admin_jobs_job_type ON public.admin_jobs (job_type);
 -- Auth tables: user_roles, auth_user_id columns, published flags
 --
 -- Depends on: 001-tenancy.sql (accounts, projects)
@@ -811,16 +1101,9 @@ CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON organizations (auth
 --             All voter-facing content tables
 
 --------------------------------------------------------------------------------
--- user_role_type enum
---------------------------------------------------------------------------------
-CREATE TYPE user_role_type AS ENUM (
-  'candidate', 'party', 'project_admin', 'account_admin', 'super_admin'
-);
-
---------------------------------------------------------------------------------
 -- user_roles table
 --------------------------------------------------------------------------------
-CREATE TABLE user_roles (
+CREATE TABLE public.user_roles (
   id         uuid           PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    uuid           NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role       user_role_type NOT NULL,
@@ -830,24 +1113,24 @@ CREATE TABLE user_roles (
   UNIQUE (user_id, role, scope_type, scope_id)
 );
 
-CREATE INDEX idx_user_roles_user_id ON user_roles (user_id);
+CREATE INDEX idx_user_roles_user_id ON public.user_roles (user_id);
 
 --------------------------------------------------------------------------------
 -- RLS on user_roles — critical to prevent circular RLS with the auth hook
 --------------------------------------------------------------------------------
-ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 -- Auth admin must read roles (used by Custom Access Token Hook)
 GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 GRANT ALL ON TABLE public.user_roles TO supabase_auth_admin;
 CREATE POLICY "auth_admin_read_user_roles"
-  ON user_roles FOR SELECT
+  ON public.user_roles FOR SELECT
   TO supabase_auth_admin
   USING (true);
 
 -- Service role (Edge Functions) can manage roles
 CREATE POLICY "service_role_manage_user_roles"
-  ON user_roles FOR ALL
+  ON public.user_roles FOR ALL
   TO service_role
   USING (true) WITH CHECK (true);
 
@@ -858,26 +1141,26 @@ REVOKE ALL ON TABLE public.user_roles FROM authenticated, anon, public;
 -- Published columns on voter-facing tables
 -- (Using ALTER TABLE since the base tables are defined in earlier schema files)
 --------------------------------------------------------------------------------
-ALTER TABLE elections ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE candidates ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE organizations ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE questions ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE question_categories ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE nominations ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE constituencies ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE constituency_groups ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE factions ADD COLUMN published boolean NOT NULL DEFAULT false;
-ALTER TABLE alliances ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.elections ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.candidates ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.organizations ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.questions ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.question_categories ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.nominations ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.constituencies ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.constituency_groups ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.factions ADD COLUMN published boolean NOT NULL DEFAULT false;
+ALTER TABLE public.alliances ADD COLUMN published boolean NOT NULL DEFAULT false;
 
 --------------------------------------------------------------------------------
 -- Partial indexes on published for efficient anon RLS
 -- (Must be in this file, after the columns are added above)
 --------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_elections_published ON elections (published) WHERE published = true;
-CREATE INDEX IF NOT EXISTS idx_candidates_published ON candidates (published) WHERE published = true;
-CREATE INDEX IF NOT EXISTS idx_organizations_published ON organizations (published) WHERE published = true;
-CREATE INDEX IF NOT EXISTS idx_questions_published ON questions (published) WHERE published = true;
-CREATE INDEX IF NOT EXISTS idx_nominations_published ON nominations (published) WHERE published = true;
+CREATE INDEX IF NOT EXISTS idx_elections_published ON public.elections (published) WHERE published = true;
+CREATE INDEX IF NOT EXISTS idx_candidates_published ON public.candidates (published) WHERE published = true;
+CREATE INDEX IF NOT EXISTS idx_organizations_published ON public.organizations (published) WHERE published = true;
+CREATE INDEX IF NOT EXISTS idx_questions_published ON public.questions (published) WHERE published = true;
+CREATE INDEX IF NOT EXISTS idx_nominations_published ON public.nominations (published) WHERE published = true;
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
 -- Depends on: 011-auth-tables.sql (user_roles table)
@@ -894,7 +1177,7 @@ CREATE INDEX IF NOT EXISTS idx_nominations_published ON nominations (published) 
 -- Called by Supabase Auth on every token refresh/issue.
 -- Reads user_roles and injects them into the JWT claims.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(p_event jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
 STABLE
@@ -903,7 +1186,7 @@ DECLARE
   claims jsonb;
   user_roles_claim jsonb;
 BEGIN
-  claims := event->'claims';
+  claims := p_event->'claims';
 
   SELECT COALESCE(jsonb_agg(
     jsonb_build_object(
@@ -914,10 +1197,10 @@ BEGIN
   ), '[]'::jsonb)
   INTO user_roles_claim
   FROM public.user_roles ur
-  WHERE ur.user_id = (event->>'user_id')::uuid;
+  WHERE ur.user_id = (p_event->>'user_id')::uuid;
 
   claims := jsonb_set(claims, '{user_roles}', user_roles_claim);
-  RETURN jsonb_set(event, '{claims}', claims);
+  RETURN jsonb_set(p_event, '{claims}', claims);
 END;
 $$;
 
@@ -936,9 +1219,9 @@ GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin
 -- Uses (SELECT auth.jwt()) to ensure a single evaluation per query.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.has_role(
-  check_role text,
-  check_scope_type text DEFAULT NULL,
-  check_scope_id uuid DEFAULT NULL
+  p_check_role text,
+  p_check_scope_type text DEFAULT NULL,
+  p_check_scope_id uuid DEFAULT NULL
 )
 RETURNS boolean
 LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -953,14 +1236,14 @@ BEGIN
 
   FOR role_entry IN SELECT * FROM jsonb_array_elements(user_roles)
   LOOP
-    IF role_entry->>'role' = check_role THEN
+    IF role_entry->>'role' = p_check_role THEN
       -- super_admin has global access, no scope check needed
-      IF check_role = 'super_admin' THEN RETURN true; END IF;
+      IF p_check_role = 'super_admin' THEN RETURN true; END IF;
       -- If no scope filter requested, any matching role suffices
-      IF check_scope_type IS NULL THEN RETURN true; END IF;
+      IF p_check_scope_type IS NULL THEN RETURN true; END IF;
       -- Check exact scope match
-      IF role_entry->>'scope_type' = check_scope_type
-         AND role_entry->>'scope_id' = check_scope_id::text THEN
+      IF role_entry->>'scope_type' = p_check_scope_type
+         AND role_entry->>'scope_id' = p_check_scope_id::text THEN
         RETURN true;
       END IF;
     END IF;
@@ -1021,12 +1304,12 @@ $$;
 --
 -- Usage: is_candidate_self(candidates.auth_user_id) in RLS policies
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.is_candidate_self(row_auth_user_id uuid)
+CREATE OR REPLACE FUNCTION public.is_candidate_self(p_row_auth_user_id uuid)
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = ''
 AS $$
-  SELECT row_auth_user_id = (SELECT auth.uid());
+  SELECT p_row_auth_user_id = (SELECT auth.uid());
 $$;
 -- Row Level Security: role-based access control policies
 --
@@ -1047,37 +1330,37 @@ $$;
 -- =====================================================================
 -- accounts (no project_id, no published flag)
 -- =====================================================================
-ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "accounts_deny_all" ON accounts;
+ALTER TABLE public.accounts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "accounts_deny_all" ON public.accounts;
 
 -- Authenticated: account_admin for their account or super_admin
-CREATE POLICY "authenticated_select_accounts" ON accounts FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_accounts" ON public.accounts FOR SELECT TO authenticated
   USING (
     (SELECT has_role('account_admin', 'account', id))
     OR (SELECT has_role('super_admin'))
   );
 
 -- Super admin only: insert
-CREATE POLICY "admin_insert_accounts" ON accounts FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_accounts" ON public.accounts FOR INSERT TO authenticated
   WITH CHECK ((SELECT has_role('super_admin')));
 
 -- Super admin only: update
-CREATE POLICY "admin_update_accounts" ON accounts FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_accounts" ON public.accounts FOR UPDATE TO authenticated
   USING ((SELECT has_role('super_admin')))
   WITH CHECK ((SELECT has_role('super_admin')));
 
 -- Super admin only: delete
-CREATE POLICY "admin_delete_accounts" ON accounts FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_accounts" ON public.accounts FOR DELETE TO authenticated
   USING ((SELECT has_role('super_admin')));
 
 -- =====================================================================
 -- projects (has account_id, no published flag)
 -- =====================================================================
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "projects_deny_all" ON projects;
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "projects_deny_all" ON public.projects;
 
 -- Authenticated: project access or account_admin or super_admin
-CREATE POLICY "authenticated_select_projects" ON projects FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_projects" ON public.projects FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(id))
     OR (SELECT has_role('account_admin', 'account', account_id))
@@ -1085,125 +1368,125 @@ CREATE POLICY "authenticated_select_projects" ON projects FOR SELECT TO authenti
   );
 
 -- Insert: account_admin for the account or super_admin
-CREATE POLICY "admin_insert_projects" ON projects FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_projects" ON public.projects FOR INSERT TO authenticated
   WITH CHECK (
     (SELECT has_role('account_admin', 'account', account_id))
     OR (SELECT has_role('super_admin'))
   );
 
 -- Update: project access (project_admin, account_admin, super_admin)
-CREATE POLICY "admin_update_projects" ON projects FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_projects" ON public.projects FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(id)))
   WITH CHECK ((SELECT can_access_project(id)));
 
 -- Delete: project access (project_admin, account_admin, super_admin)
-CREATE POLICY "admin_delete_projects" ON projects FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_projects" ON public.projects FOR DELETE TO authenticated
   USING ((SELECT can_access_project(id)));
 
 -- =====================================================================
 -- elections (project_id, published)
 -- =====================================================================
-ALTER TABLE elections ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "elections_deny_all" ON elections;
+ALTER TABLE public.elections ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "elections_deny_all" ON public.elections;
 
-CREATE POLICY "anon_select_elections" ON elections FOR SELECT TO anon
+CREATE POLICY "anon_select_elections" ON public.elections FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_elections" ON elections FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_elections" ON public.elections FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_elections" ON elections FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_elections" ON public.elections FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_elections" ON elections FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_elections" ON public.elections FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_elections" ON elections FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_elections" ON public.elections FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- constituency_groups (project_id, published)
 -- =====================================================================
-ALTER TABLE constituency_groups ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "constituency_groups_deny_all" ON constituency_groups;
+ALTER TABLE public.constituency_groups ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "constituency_groups_deny_all" ON public.constituency_groups;
 
-CREATE POLICY "anon_select_constituency_groups" ON constituency_groups FOR SELECT TO anon
+CREATE POLICY "anon_select_constituency_groups" ON public.constituency_groups FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_constituency_groups" ON constituency_groups FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_constituency_groups" ON public.constituency_groups FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_constituency_groups" ON constituency_groups FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_constituency_groups" ON public.constituency_groups FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_constituency_groups" ON constituency_groups FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_constituency_groups" ON public.constituency_groups FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_constituency_groups" ON constituency_groups FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_constituency_groups" ON public.constituency_groups FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- constituencies (project_id, published)
 -- =====================================================================
-ALTER TABLE constituencies ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "constituencies_deny_all" ON constituencies;
+ALTER TABLE public.constituencies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "constituencies_deny_all" ON public.constituencies;
 
-CREATE POLICY "anon_select_constituencies" ON constituencies FOR SELECT TO anon
+CREATE POLICY "anon_select_constituencies" ON public.constituencies FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_constituencies" ON constituencies FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_constituencies" ON public.constituencies FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_constituencies" ON constituencies FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_constituencies" ON public.constituencies FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_constituencies" ON constituencies FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_constituencies" ON public.constituencies FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_constituencies" ON constituencies FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_constituencies" ON public.constituencies FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- constituency_group_constituencies (join table, no project_id)
 -- =====================================================================
-ALTER TABLE constituency_group_constituencies ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "constituency_group_constituencies_deny_all" ON constituency_group_constituencies;
+ALTER TABLE public.constituency_group_constituencies ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "constituency_group_constituencies_deny_all" ON public.constituency_group_constituencies;
 
 -- Anon: structural data, always readable
-CREATE POLICY "anon_select_constituency_group_constituencies" ON constituency_group_constituencies FOR SELECT TO anon
+CREATE POLICY "anon_select_constituency_group_constituencies" ON public.constituency_group_constituencies FOR SELECT TO anon
   USING (true);
 
 -- Authenticated: always readable
-CREATE POLICY "authenticated_select_constituency_group_constituencies" ON constituency_group_constituencies FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_constituency_group_constituencies" ON public.constituency_group_constituencies FOR SELECT TO authenticated
   USING (true);
 
 -- Admin insert: check access via parent constituency_group
-CREATE POLICY "admin_insert_constituency_group_constituencies" ON constituency_group_constituencies FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_constituency_group_constituencies" ON public.constituency_group_constituencies FOR INSERT TO authenticated
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM constituency_groups cg
+      SELECT 1 FROM public.constituency_groups cg
       WHERE cg.id = constituency_group_id
         AND (SELECT can_access_project(cg.project_id))
     )
   );
 
 -- Admin delete: check access via parent constituency_group
-CREATE POLICY "admin_delete_constituency_group_constituencies" ON constituency_group_constituencies FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_constituency_group_constituencies" ON public.constituency_group_constituencies FOR DELETE TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM constituency_groups cg
+      SELECT 1 FROM public.constituency_groups cg
       WHERE cg.id = constituency_group_id
         AND (SELECT can_access_project(cg.project_id))
     )
@@ -1212,32 +1495,32 @@ CREATE POLICY "admin_delete_constituency_group_constituencies" ON constituency_g
 -- =====================================================================
 -- election_constituency_groups (join table, no project_id)
 -- =====================================================================
-ALTER TABLE election_constituency_groups ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "election_constituency_groups_deny_all" ON election_constituency_groups;
+ALTER TABLE public.election_constituency_groups ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "election_constituency_groups_deny_all" ON public.election_constituency_groups;
 
 -- Anon: structural data, always readable
-CREATE POLICY "anon_select_election_constituency_groups" ON election_constituency_groups FOR SELECT TO anon
+CREATE POLICY "anon_select_election_constituency_groups" ON public.election_constituency_groups FOR SELECT TO anon
   USING (true);
 
 -- Authenticated: always readable
-CREATE POLICY "authenticated_select_election_constituency_groups" ON election_constituency_groups FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_election_constituency_groups" ON public.election_constituency_groups FOR SELECT TO authenticated
   USING (true);
 
 -- Admin insert: check access via parent election
-CREATE POLICY "admin_insert_election_constituency_groups" ON election_constituency_groups FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_election_constituency_groups" ON public.election_constituency_groups FOR INSERT TO authenticated
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM elections e
+      SELECT 1 FROM public.elections e
       WHERE e.id = election_id
         AND (SELECT can_access_project(e.project_id))
     )
   );
 
 -- Admin delete: check access via parent election
-CREATE POLICY "admin_delete_election_constituency_groups" ON election_constituency_groups FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_constituency_groups FOR DELETE TO authenticated
   USING (
     EXISTS (
-      SELECT 1 FROM elections e
+      SELECT 1 FROM public.elections e
       WHERE e.id = election_id
         AND (SELECT can_access_project(e.project_id))
     )
@@ -1246,14 +1529,14 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON election_constituen
 -- =====================================================================
 -- organizations (project_id, published, auth_user_id)
 -- =====================================================================
-ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "organizations_deny_all" ON organizations;
+ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "organizations_deny_all" ON public.organizations;
 
-CREATE POLICY "anon_select_organizations" ON organizations FOR SELECT TO anon
+CREATE POLICY "anon_select_organizations" ON public.organizations FOR SELECT TO anon
   USING (published = true);
 
 -- Authenticated: project access, own record, or published
-CREATE POLICY "authenticated_select_organizations" ON organizations FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_organizations" ON public.organizations FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR auth_user_id = (SELECT auth.uid())
@@ -1262,11 +1545,11 @@ CREATE POLICY "authenticated_select_organizations" ON organizations FOR SELECT T
   );
 
 -- Admin insert
-CREATE POLICY "admin_insert_organizations" ON organizations FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_organizations" ON public.organizations FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
 -- Party admin self-update: party role holder can update their party
-CREATE POLICY "party_update_own_organizations" ON organizations FOR UPDATE TO authenticated
+CREATE POLICY "party_update_own_organizations" ON public.organizations FOR UPDATE TO authenticated
   USING (
     auth_user_id = (SELECT auth.uid())
     OR (SELECT has_role('party', 'party', id))
@@ -1277,26 +1560,26 @@ CREATE POLICY "party_update_own_organizations" ON organizations FOR UPDATE TO au
   );
 
 -- Admin update
-CREATE POLICY "admin_update_organizations" ON organizations FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_organizations" ON public.organizations FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
 -- Admin delete
-CREATE POLICY "admin_delete_organizations" ON organizations FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_organizations" ON public.organizations FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- candidates (project_id, published, auth_user_id)
 -- Answers stored as JSONB column -- covered by these policies.
 -- =====================================================================
-ALTER TABLE candidates ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "candidates_deny_all" ON candidates;
+ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "candidates_deny_all" ON public.candidates;
 
-CREATE POLICY "anon_select_candidates" ON candidates FOR SELECT TO anon
+CREATE POLICY "anon_select_candidates" ON public.candidates FOR SELECT TO anon
   USING (published = true);
 
 -- Authenticated: project access, own record, party admin for their party's candidates, or published
-CREATE POLICY "authenticated_select_candidates" ON candidates FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_candidates" ON public.candidates FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR auth_user_id = (SELECT auth.uid())
@@ -1305,237 +1588,214 @@ CREATE POLICY "authenticated_select_candidates" ON candidates FOR SELECT TO auth
   );
 
 -- Admin insert
-CREATE POLICY "admin_insert_candidates" ON candidates FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_candidates" ON public.candidates FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
 -- Candidate self-update: can update own record
 -- Structural field protection (project_id, auth_user_id, organization_id) enforced
 -- via column-level REVOKE in 013-auth-rls.sql
-CREATE POLICY "candidate_update_own" ON candidates FOR UPDATE TO authenticated
+CREATE POLICY "candidate_update_own" ON public.candidates FOR UPDATE TO authenticated
   USING (auth_user_id = (SELECT auth.uid()))
   WITH CHECK (auth_user_id = (SELECT auth.uid()));
 
 -- Admin update
-CREATE POLICY "admin_update_candidates" ON candidates FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_candidates" ON public.candidates FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
 -- Admin delete
-CREATE POLICY "admin_delete_candidates" ON candidates FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_candidates" ON public.candidates FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- factions (project_id, published)
 -- =====================================================================
-ALTER TABLE factions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "factions_deny_all" ON factions;
+ALTER TABLE public.factions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "factions_deny_all" ON public.factions;
 
-CREATE POLICY "anon_select_factions" ON factions FOR SELECT TO anon
+CREATE POLICY "anon_select_factions" ON public.factions FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_factions" ON factions FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_factions" ON public.factions FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_factions" ON factions FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_factions" ON public.factions FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_factions" ON factions FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_factions" ON public.factions FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_factions" ON factions FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_factions" ON public.factions FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- alliances (project_id, published)
 -- =====================================================================
-ALTER TABLE alliances ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "alliances_deny_all" ON alliances;
+ALTER TABLE public.alliances ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "alliances_deny_all" ON public.alliances;
 
-CREATE POLICY "anon_select_alliances" ON alliances FOR SELECT TO anon
+CREATE POLICY "anon_select_alliances" ON public.alliances FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_alliances" ON alliances FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_alliances" ON public.alliances FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_alliances" ON alliances FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_alliances" ON public.alliances FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_alliances" ON alliances FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_alliances" ON public.alliances FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_alliances" ON alliances FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_alliances" ON public.alliances FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- question_categories (project_id, published)
 -- =====================================================================
-ALTER TABLE question_categories ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "question_categories_deny_all" ON question_categories;
+ALTER TABLE public.question_categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "question_categories_deny_all" ON public.question_categories;
 
-CREATE POLICY "anon_select_question_categories" ON question_categories FOR SELECT TO anon
+CREATE POLICY "anon_select_question_categories" ON public.question_categories FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_question_categories" ON question_categories FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_question_categories" ON public.question_categories FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_question_categories" ON question_categories FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_question_categories" ON public.question_categories FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_question_categories" ON question_categories FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_question_categories" ON public.question_categories FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_question_categories" ON question_categories FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_question_categories" ON public.question_categories FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- questions (project_id, published)
 -- =====================================================================
-ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "questions_deny_all" ON questions;
+ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "questions_deny_all" ON public.questions;
 
-CREATE POLICY "anon_select_questions" ON questions FOR SELECT TO anon
+CREATE POLICY "anon_select_questions" ON public.questions FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_questions" ON questions FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_questions" ON public.questions FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_questions" ON questions FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_questions" ON public.questions FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_questions" ON questions FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_questions" ON public.questions FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_questions" ON questions FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_questions" ON public.questions FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- nominations (project_id, published)
 -- =====================================================================
-ALTER TABLE nominations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "nominations_deny_all" ON nominations;
+ALTER TABLE public.nominations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "nominations_deny_all" ON public.nominations;
 
-CREATE POLICY "anon_select_nominations" ON nominations FOR SELECT TO anon
+CREATE POLICY "anon_select_nominations" ON public.nominations FOR SELECT TO anon
   USING (published = true);
 
-CREATE POLICY "authenticated_select_nominations" ON nominations FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_nominations" ON public.nominations FOR SELECT TO authenticated
   USING (
     (SELECT can_access_project(project_id))
     OR published = true
   );
 
-CREATE POLICY "admin_insert_nominations" ON nominations FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_nominations" ON public.nominations FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_nominations" ON nominations FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_nominations" ON public.nominations FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_nominations" ON nominations FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_nominations" ON public.nominations FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
 -- app_settings (project_id, no published flag -- anon needs read for voter app)
 -- =====================================================================
-ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "app_settings_deny_all" ON app_settings;
+ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "app_settings_deny_all" ON public.app_settings;
 
 -- Anon: always readable (voter app needs settings)
-CREATE POLICY "anon_select_app_settings" ON app_settings FOR SELECT TO anon
+CREATE POLICY "anon_select_app_settings" ON public.app_settings FOR SELECT TO anon
   USING (true);
 
 -- Authenticated: always readable
-CREATE POLICY "authenticated_select_app_settings" ON app_settings FOR SELECT TO authenticated
+CREATE POLICY "authenticated_select_app_settings" ON public.app_settings FOR SELECT TO authenticated
   USING (true);
 
 -- Admin CRUD
-CREATE POLICY "admin_insert_app_settings" ON app_settings FOR INSERT TO authenticated
+CREATE POLICY "admin_insert_app_settings" ON public.app_settings FOR INSERT TO authenticated
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_update_app_settings" ON app_settings FOR UPDATE TO authenticated
+CREATE POLICY "admin_update_app_settings" ON public.app_settings FOR UPDATE TO authenticated
   USING ((SELECT can_access_project(project_id)))
   WITH CHECK ((SELECT can_access_project(project_id)));
 
-CREATE POLICY "admin_delete_app_settings" ON app_settings FOR DELETE TO authenticated
+CREATE POLICY "admin_delete_app_settings" ON public.app_settings FOR DELETE TO authenticated
   USING ((SELECT can_access_project(project_id)));
 
 -- =====================================================================
--- RELATIONAL ANSWERS TABLE (uncomment if using alternatives/answers-relational.sql)
+-- feedback (anon insert-only; admin select/delete)
 -- =====================================================================
--- If using the relational answer storage approach instead of JSONB columns on
--- candidates/organizations, uncomment the following policies. The relational
--- answers table has project_id and entity_id columns.
---
--- ALTER TABLE answers ENABLE ROW LEVEL SECURITY;
--- DROP POLICY IF EXISTS "answers_deny_all" ON answers;
---
--- -- Anon: read answers for published entities
--- CREATE POLICY "anon_select_answers" ON answers FOR SELECT TO anon
---   USING (
---     EXISTS (
---       SELECT 1 FROM candidates c
---       WHERE c.id = answers.entity_id AND c.published = true AND answers.entity_type = 'candidate'
---     ) OR EXISTS (
---       SELECT 1 FROM organizations o
---       WHERE o.id = answers.entity_id AND o.published = true AND answers.entity_type = 'organization'
---     )
---   );
---
--- -- Authenticated: read own project answers or own answers
--- CREATE POLICY "authenticated_select_answers" ON answers FOR SELECT TO authenticated
---   USING (
---     (SELECT can_access_project(project_id))
---     OR (entity_type = 'candidate' AND EXISTS (
---       SELECT 1 FROM candidates c WHERE c.id = answers.entity_id AND c.auth_user_id = (SELECT auth.uid())
---     ))
---   );
---
--- -- Candidate: insert own answers
--- CREATE POLICY "candidate_insert_own_answers" ON answers FOR INSERT TO authenticated
---   WITH CHECK (
---     entity_type = 'candidate' AND EXISTS (
---       SELECT 1 FROM candidates c WHERE c.id = answers.entity_id AND c.auth_user_id = (SELECT auth.uid())
---     )
---   );
---
--- -- Candidate: update own answers
--- CREATE POLICY "candidate_update_own_answers" ON answers FOR UPDATE TO authenticated
---   USING (
---     entity_type = 'candidate' AND EXISTS (
---       SELECT 1 FROM candidates c WHERE c.id = answers.entity_id AND c.auth_user_id = (SELECT auth.uid())
---     )
---   )
---   WITH CHECK (
---     entity_type = 'candidate' AND EXISTS (
---       SELECT 1 FROM candidates c WHERE c.id = answers.entity_id AND c.auth_user_id = (SELECT auth.uid())
---     )
---   );
---
--- -- Admin: full CRUD
--- CREATE POLICY "admin_insert_answers" ON answers FOR INSERT TO authenticated
---   WITH CHECK ((SELECT can_access_project(project_id)));
---
--- CREATE POLICY "admin_update_answers" ON answers FOR UPDATE TO authenticated
---   USING ((SELECT can_access_project(project_id)))
---   WITH CHECK ((SELECT can_access_project(project_id)));
---
--- CREATE POLICY "admin_delete_answers" ON answers FOR DELETE TO authenticated
---   USING ((SELECT can_access_project(project_id)));
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+
+-- Anonymous: insert only (rate limiting trigger handles spam prevention)
+CREATE POLICY "anon_insert_feedback" ON public.feedback
+  FOR INSERT TO anon
+  WITH CHECK (true);
+
+-- Admin: read feedback for their project
+CREATE POLICY "admin_select_feedback" ON public.feedback
+  FOR SELECT TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+-- Admin: delete feedback for their project
+CREATE POLICY "admin_delete_feedback" ON public.feedback
+  FOR DELETE TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+-- No UPDATE policy (feedback is immutable after insert -- locked decision)
+-- No anon SELECT policy (voters cannot read their own or others' feedback)
+
+-- =====================================================================
+-- admin_jobs (project_id, no published flag -- admin-only)
+-- =====================================================================
+ALTER TABLE public.admin_jobs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "admin_select_admin_jobs" ON public.admin_jobs
+  FOR SELECT TO authenticated
+  USING ((SELECT can_access_project(project_id)));
+
+CREATE POLICY "admin_insert_admin_jobs" ON public.admin_jobs
+  FOR INSERT TO authenticated
+  WITH CHECK ((SELECT can_access_project(project_id)));
+
+CREATE POLICY "admin_delete_admin_jobs" ON public.admin_jobs
+  FOR DELETE TO authenticated
+  USING ((SELECT can_access_project(project_id)));
 -- Column-level protections for structural fields
 --
 -- Prevents authenticated users (candidates, party admins) from modifying
@@ -1566,11 +1826,12 @@ CREATE POLICY "admin_delete_app_settings" ON app_settings FOR DELETE TO authenti
 --   name, short_name, info, color, image, sort_order, subtype,
 --   custom_data, first_name, last_name, answers, created_at, updated_at
 
-REVOKE UPDATE ON candidates FROM authenticated;
+REVOKE UPDATE ON public.candidates FROM authenticated;
 GRANT UPDATE (
   name, short_name, info, color, image, sort_order, subtype,
-  custom_data, first_name, last_name, answers, created_at, updated_at
-) ON candidates TO authenticated;
+  custom_data, first_name, last_name, answers, created_at, updated_at,
+  terms_of_use_accepted
+) ON public.candidates TO authenticated;
 
 -- =====================================================================
 -- organizations: restrict updatable columns
@@ -1586,11 +1847,11 @@ GRANT UPDATE (
 --   name, short_name, info, color, image, sort_order, subtype,
 --   custom_data, answers, created_at, updated_at
 
-REVOKE UPDATE ON organizations FROM authenticated;
+REVOKE UPDATE ON public.organizations FROM authenticated;
 GRANT UPDATE (
   name, short_name, info, color, image, sort_order, subtype,
   custom_data, answers, created_at, updated_at
-) ON organizations TO authenticated;
+) ON public.organizations TO authenticated;
 -- Storage RLS policies, cleanup triggers, and helper functions
 --
 -- Depends on:
@@ -1621,15 +1882,15 @@ CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 -- the Storage API. Seeded in seed.sql with local dev defaults.
 -- In production, update values for the actual Supabase URL and service role key.
 --------------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS storage_config (
+CREATE TABLE IF NOT EXISTS public.storage_config (
   key   text PRIMARY KEY,
   value text NOT NULL
 );
 
 -- Only service_role and postgres can access storage_config (not exposed via API)
-ALTER TABLE storage_config ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE storage_config FROM anon, authenticated, public;
-GRANT SELECT ON TABLE storage_config TO service_role;
+ALTER TABLE public.storage_config ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.storage_config FROM anon, authenticated, public;
+GRANT SELECT ON TABLE public.storage_config TO service_role;
 
 --------------------------------------------------------------------------------
 -- is_storage_entity_published: check if the entity owning a storage path is published
@@ -1639,7 +1900,7 @@ GRANT SELECT ON TABLE storage_config TO service_role;
 -- Special cases:
 --   'project' -> project-level files, always accessible
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION is_storage_entity_published(entity_type_segment text, entity_id_segment text)
+CREATE OR REPLACE FUNCTION public.is_storage_entity_published(p_entity_type_segment text, p_entity_id_segment text)
 RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
@@ -1648,15 +1909,15 @@ DECLARE
   is_published boolean;
 BEGIN
   -- Project-level files are always accessible
-  IF entity_type_segment = 'project' THEN
+  IF p_entity_type_segment = 'project' THEN
     RETURN true;
   END IF;
 
   -- For all other entity types, check published = true on the owning entity
   EXECUTE format(
     'SELECT published FROM public.%I WHERE id = $1',
-    entity_type_segment
-  ) INTO is_published USING entity_id_segment::uuid;
+    p_entity_type_segment
+  ) INTO is_published USING p_entity_id_segment::uuid;
 
   -- If entity not found, deny access
   RETURN COALESCE(is_published, false);
@@ -1926,7 +2187,7 @@ CREATE POLICY "admin_delete_private_assets" ON storage.objects FOR DELETE TO aut
 -- Gracefully degrades (logs WARNING) if settings are not configured.
 -- Accepts either a single file path or a directory prefix (ending with /).
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION delete_storage_object(bucket text, file_path text)
+CREATE OR REPLACE FUNCTION public.delete_storage_object(p_bucket text, p_file_path text)
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
@@ -1947,8 +2208,8 @@ BEGIN
   -- Use pg_net async HTTP POST to the Storage API batch delete endpoint
   -- The endpoint accepts a JSON body with a "prefixes" array
   PERFORM net.http_post(
-    url := base_url || '/storage/v1/object/' || bucket,
-    body := jsonb_build_object('prefixes', jsonb_build_array(file_path)),
+    url := base_url || '/storage/v1/object/' || p_bucket,
+    body := jsonb_build_object('prefixes', jsonb_build_array(p_file_path)),
     headers := jsonb_build_object(
       'Authorization', 'Bearer ' || service_key,
       'Content-Type', 'application/json'
@@ -1956,7 +2217,7 @@ BEGIN
   );
 EXCEPTION
   WHEN OTHERS THEN
-    RAISE WARNING 'Storage cleanup failed for %/%: %', bucket, file_path, SQLERRM;
+    RAISE WARNING 'Storage cleanup failed for %/%: %', p_bucket, p_file_path, SQLERRM;
 END;
 $$;
 
@@ -1972,7 +2233,7 @@ $$;
 -- Uses pg_net (via delete_storage_object) for async, non-blocking cleanup.
 -- pg_net requests only fire after the transaction commits.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION cleanup_entity_storage_files()
+CREATE OR REPLACE FUNCTION public.cleanup_entity_storage_files()
 RETURNS TRIGGER
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
@@ -1994,44 +2255,44 @@ $$;
 
 -- Attach entity deletion cleanup trigger to all entity tables with project_id
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON candidates
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.candidates
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON organizations
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.organizations
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON factions
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.factions
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON alliances
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.alliances
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON elections
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.elections
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON constituencies
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.constituencies
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON constituency_groups
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.constituency_groups
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON nominations
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.nominations
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON question_categories
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.question_categories
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 CREATE TRIGGER cleanup_storage_on_delete
-  AFTER DELETE ON questions
-  FOR EACH ROW EXECUTE FUNCTION cleanup_entity_storage_files();
+  AFTER DELETE ON public.questions
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_entity_storage_files();
 
 -- =====================================================================
 -- Image column update cleanup trigger
@@ -2044,7 +2305,7 @@ CREATE TRIGGER cleanup_storage_on_delete
 -- from storage. Checks both 'path' and 'pathDark' keys in the old image.
 -- Only fires if the image column actually changed.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION cleanup_old_image_file()
+CREATE OR REPLACE FUNCTION public.cleanup_old_image_file()
 RETURNS TRIGGER
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
@@ -2080,44 +2341,44 @@ $$;
 
 -- Attach image cleanup trigger to all entity tables with an image column
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON candidates
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.candidates
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON organizations
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.organizations
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON factions
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.factions
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON alliances
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.alliances
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON elections
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.elections
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON constituencies
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.constituencies
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON constituency_groups
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.constituency_groups
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON nominations
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.nominations
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON question_categories
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.question_categories
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 CREATE TRIGGER cleanup_image_on_update
-  BEFORE UPDATE ON questions
-  FOR EACH ROW EXECUTE FUNCTION cleanup_old_image_file();
+  BEFORE UPDATE ON public.questions
+  FOR EACH ROW EXECUTE FUNCTION public.cleanup_old_image_file();
 
 -- Note: supabase_url and service_role_key values must be seeded in the
 -- storage_config table. See seed.sql for the default local dev values.
@@ -2137,49 +2398,49 @@ CREATE TRIGGER cleanup_image_on_update
 -- external_id columns + composite unique indexes
 --------------------------------------------------------------------------------
 
-ALTER TABLE elections ADD COLUMN external_id text;
+ALTER TABLE public.elections ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_elections_external_id
-  ON elections (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.elections (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE constituency_groups ADD COLUMN external_id text;
+ALTER TABLE public.constituency_groups ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_constituency_groups_external_id
-  ON constituency_groups (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.constituency_groups (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE constituencies ADD COLUMN external_id text;
+ALTER TABLE public.constituencies ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_constituencies_external_id
-  ON constituencies (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.constituencies (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE candidates ADD COLUMN external_id text;
+ALTER TABLE public.candidates ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_candidates_external_id
-  ON candidates (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.candidates (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE organizations ADD COLUMN external_id text;
+ALTER TABLE public.organizations ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_organizations_external_id
-  ON organizations (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.organizations (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE factions ADD COLUMN external_id text;
+ALTER TABLE public.factions ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_factions_external_id
-  ON factions (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.factions (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE alliances ADD COLUMN external_id text;
+ALTER TABLE public.alliances ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_alliances_external_id
-  ON alliances (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.alliances (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE nominations ADD COLUMN external_id text;
+ALTER TABLE public.nominations ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_nominations_external_id
-  ON nominations (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.nominations (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE questions ADD COLUMN external_id text;
+ALTER TABLE public.questions ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_questions_external_id
-  ON questions (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.questions (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE question_categories ADD COLUMN external_id text;
+ALTER TABLE public.question_categories ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_question_categories_external_id
-  ON question_categories (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.question_categories (project_id, external_id) WHERE external_id IS NOT NULL;
 
-ALTER TABLE app_settings ADD COLUMN external_id text;
+ALTER TABLE public.app_settings ADD COLUMN external_id text;
 CREATE UNIQUE INDEX idx_app_settings_external_id
-  ON app_settings (project_id, external_id) WHERE external_id IS NOT NULL;
+  ON public.app_settings (project_id, external_id) WHERE external_id IS NOT NULL;
 
 --------------------------------------------------------------------------------
 -- Immutability trigger: prevent changing external_id once set
@@ -2202,47 +2463,47 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON elections
+  BEFORE UPDATE ON public.elections
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON constituency_groups
+  BEFORE UPDATE ON public.constituency_groups
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON constituencies
+  BEFORE UPDATE ON public.constituencies
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON candidates
+  BEFORE UPDATE ON public.candidates
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON organizations
+  BEFORE UPDATE ON public.organizations
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON factions
+  BEFORE UPDATE ON public.factions
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON alliances
+  BEFORE UPDATE ON public.alliances
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON nominations
+  BEFORE UPDATE ON public.nominations
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON questions
+  BEFORE UPDATE ON public.questions
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON question_categories
+  BEFORE UPDATE ON public.question_categories
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 
 CREATE TRIGGER enforce_external_id_immutability
-  BEFORE UPDATE ON app_settings
+  BEFORE UPDATE ON public.app_settings
   FOR EACH ROW EXECUTE FUNCTION enforce_external_id_immutability();
 -- Bulk import and delete RPC functions
 --
@@ -2267,9 +2528,9 @@ CREATE TRIGGER enforce_external_id_immutability
 --
 -- Raises exception if external_id not found in target table.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION resolve_external_ref(
-  ref jsonb,
-  target_table text,
+CREATE OR REPLACE FUNCTION public.resolve_external_ref(
+  p_ref jsonb,
+  p_target_table text,
   p_project_id uuid
 )
 RETURNS uuid
@@ -2279,37 +2540,37 @@ DECLARE
   resolved_id uuid;
   ext_id text;
 BEGIN
-  IF ref IS NULL OR ref = 'null'::jsonb THEN
+  IF p_ref IS NULL OR p_ref = 'null'::jsonb THEN
     RETURN NULL;
   END IF;
 
   -- If ref is a JSON object with external_id key, resolve it
-  IF jsonb_typeof(ref) = 'object' AND ref ? 'external_id' THEN
-    ext_id := ref ->> 'external_id';
+  IF jsonb_typeof(p_ref) = 'object' AND p_ref ? 'external_id' THEN
+    ext_id := p_ref ->> 'external_id';
     IF ext_id IS NULL THEN
       RETURN NULL;
     END IF;
 
     EXECUTE format(
-      'SELECT id FROM %I WHERE project_id = $1 AND external_id = $2',
-      target_table
+      'SELECT id FROM public.%I WHERE project_id = $1 AND external_id = $2',
+      p_target_table
     ) INTO resolved_id USING p_project_id, ext_id;
 
     IF resolved_id IS NULL THEN
       RAISE EXCEPTION 'External reference not found: external_id "%" in table "%"',
-        ext_id, target_table;
+        ext_id, p_target_table;
     END IF;
 
     RETURN resolved_id;
   END IF;
 
   -- If ref is a string, treat as direct UUID
-  IF jsonb_typeof(ref) = 'string' THEN
-    RETURN (ref #>> '{}')::uuid;
+  IF jsonb_typeof(p_ref) = 'string' THEN
+    RETURN (p_ref #>> '{}')::uuid;
   END IF;
 
   RAISE EXCEPTION 'Invalid reference format: expected object with external_id or UUID string, got %',
-    jsonb_typeof(ref);
+    jsonb_typeof(p_ref);
 END;
 $$;
 
@@ -2323,7 +2584,7 @@ $$;
 -- Relationship mapping defines which JSON keys map to FK columns and
 -- which target tables they reference.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION _bulk_upsert_record(
+CREATE OR REPLACE FUNCTION public._bulk_upsert_record(
   p_table_name text,
   p_item jsonb,
   p_project_id uuid
@@ -2401,7 +2662,7 @@ BEGIN
       rel_target := relationships -> item_key ->> 'table';
 
       -- Resolve the external reference to a UUID
-      resolved_uuid := resolve_external_ref(item_value, rel_target, p_project_id);
+      resolved_uuid := public.resolve_external_ref(item_value, rel_target, p_project_id);
 
       col_names := array_append(col_names, rel_fk_col);
       IF resolved_uuid IS NULL THEN
@@ -2439,7 +2700,7 @@ BEGIN
   -- Build and execute upsert SQL
   -- ON CONFLICT uses the partial unique index on (project_id, external_id) WHERE external_id IS NOT NULL
   sql_text := format(
-    'INSERT INTO %I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
+    'INSERT INTO public.%I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
     p_table_name,
     array_to_string(col_names, ', '),
     array_to_string(col_values, ', '),
@@ -2471,7 +2732,7 @@ $$;
 --
 -- Returns: {"elections": {"created": N, "updated": M}, ...}
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION bulk_import(data jsonb)
+CREATE OR REPLACE FUNCTION public.bulk_import(p_data jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY INVOKER
@@ -2496,7 +2757,7 @@ DECLARE
   col_name text;
 BEGIN
   -- Validate no unknown collections were passed
-  FOR collection_name IN SELECT * FROM jsonb_object_keys(data)
+  FOR collection_name IN SELECT * FROM jsonb_object_keys(p_data)
   LOOP
     IF NOT collection_name = ANY(processing_order) THEN
       RAISE EXCEPTION 'Unknown collection: %', collection_name;
@@ -2506,8 +2767,8 @@ BEGIN
   -- Process collections in dependency order
   FOREACH col_name IN ARRAY processing_order
   LOOP
-    IF NOT data ? col_name THEN CONTINUE; END IF;
-    collection_data := data -> col_name;
+    IF NOT p_data ? col_name THEN CONTINUE; END IF;
+    collection_data := p_data -> col_name;
 
     IF jsonb_typeof(collection_data) != 'array' THEN
       RAISE EXCEPTION 'Collection "%" must be a JSON array', col_name;
@@ -2526,7 +2787,7 @@ BEGIN
       item_project_id := (item ->> 'project_id')::uuid;
 
       -- Upsert the record
-      was_inserted := _bulk_upsert_record(col_name, item, item_project_id);
+      was_inserted := public._bulk_upsert_record(col_name, item, item_project_id);
 
       IF was_inserted THEN
         created_count := created_count + 1;
@@ -2565,7 +2826,7 @@ $$;
 -- Processes in reverse dependency order to avoid FK violations.
 -- Returns: {"elections": {"deleted": N}, ...}
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION bulk_delete(data jsonb)
+CREATE OR REPLACE FUNCTION public.bulk_delete(p_data jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY INVOKER
@@ -2597,16 +2858,16 @@ DECLARE
   ];
 BEGIN
   -- Extract project_id (required, top-level)
-  IF NOT data ? 'project_id' THEN
+  IF NOT p_data ? 'project_id' THEN
     RAISE EXCEPTION 'project_id is required at the top level of bulk_delete data';
   END IF;
-  p_project_id := (data ->> 'project_id')::uuid;
+  p_project_id := (p_data ->> 'project_id')::uuid;
 
   -- Extract collections
-  IF NOT data ? 'collections' THEN
+  IF NOT p_data ? 'collections' THEN
     RAISE EXCEPTION '"collections" object is required in bulk_delete data';
   END IF;
-  collections := data -> 'collections';
+  collections := p_data -> 'collections';
 
   -- Validate collection names
   FOR collection_name IN SELECT * FROM jsonb_object_keys(collections)
@@ -2626,7 +2887,7 @@ BEGIN
       -- Prefix-based deletion: external_id LIKE prefix%
       prefix_val := collection_spec ->> 'prefix';
       sql_text := format(
-        'DELETE FROM %I WHERE project_id = $1 AND external_id LIKE $2',
+        'DELETE FROM public.%I WHERE project_id = $1 AND external_id LIKE $2',
         col_name
       );
       EXECUTE sql_text USING p_project_id, prefix_val || '%';
@@ -2635,7 +2896,7 @@ BEGIN
     ELSIF collection_spec ? 'ids' THEN
       -- UUID list deletion
       sql_text := format(
-        'DELETE FROM %I WHERE project_id = $1 AND id = ANY(
+        'DELETE FROM public.%I WHERE project_id = $1 AND id = ANY(
           SELECT value::uuid FROM jsonb_array_elements_text($2)
         )',
         col_name
@@ -2646,7 +2907,7 @@ BEGIN
     ELSIF collection_spec ? 'external_ids' THEN
       -- External ID list deletion
       sql_text := format(
-        'DELETE FROM %I WHERE project_id = $1 AND external_id = ANY(
+        'DELETE FROM public.%I WHERE project_id = $1 AND external_id = ANY(
           SELECT value FROM jsonb_array_elements_text($2)
         )',
         col_name
@@ -2674,9 +2935,9 @@ $$;
 -- the authenticated role can call them. Only users with can_access_project()
 -- (admins) will be able to successfully import/delete data.
 --------------------------------------------------------------------------------
-GRANT EXECUTE ON FUNCTION bulk_import(jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION bulk_delete(jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION resolve_external_ref(jsonb, text, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.bulk_import(jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.bulk_delete(jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.resolve_external_ref(jsonb, text, uuid) TO authenticated;
 -- Email helper functions for transactional email template variable resolution
 --
 -- Depends on: 003-entities.sql (candidates, organizations)
@@ -2698,10 +2959,10 @@ GRANT EXECUTE ON FUNCTION resolve_external_ref(jsonb, text, uuid) TO authenticat
 -- SECURITY DEFINER: needs to read auth.users which is not accessible to
 -- regular authenticated users.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION resolve_email_variables(
-  user_ids uuid[],
-  template_body text DEFAULT '',
-  template_subject text DEFAULT ''
+CREATE OR REPLACE FUNCTION public.resolve_email_variables(
+  p_user_ids uuid[],
+  p_template_body text DEFAULT '',
+  p_template_subject text DEFAULT ''
 )
 RETURNS TABLE (
   user_id uuid,
@@ -2730,7 +2991,7 @@ DECLARE
   nom_constituency_name text;
   nom_election_name text;
 BEGIN
-  FOREACH uid IN ARRAY user_ids
+  FOREACH uid IN ARRAY p_user_ids
   LOOP
     -- Get user email and preferred locale from auth.users
     SELECT
@@ -2831,180 +3092,299 @@ $$;
 
 -- Grant execute to authenticated (admin-only in practice since the Edge
 -- Function verifies admin role before calling this RPC)
-GRANT EXECUTE ON FUNCTION resolve_email_variables(uuid[], text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.resolve_email_variables(uuid[], text, text) TO authenticated;
 -- Also grant to service_role (used by Edge Functions with service_role key)
-GRANT EXECUTE ON FUNCTION resolve_email_variables(uuid[], text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.resolve_email_variables(uuid[], text, text) TO service_role;
+-- Entity RPC functions
+--
+-- Functions:
+--   get_nominations()         - return nominations with entity data
+--   get_candidate_user_data() - return entity row for authenticated user
+--   upsert_answers()          - atomic answer write for a single entity
 
 --------------------------------------------------------------------------------
--- Phase 22 additions (SCHM-01, SCHM-03, SCHM-04)
+-- get_nominations RPC: returns nominations with entity data in a single round trip
 --------------------------------------------------------------------------------
-
--- SCHM-01: App customization column on app_settings
--- Image references use {path, pathDark?, alt?, width?, height?} format.
--- Existing RLS (anon SELECT, admin INSERT/UPDATE/DELETE) covers this column.
-ALTER TABLE app_settings ADD COLUMN customization jsonb DEFAULT '{}'::jsonb;
-
--- SCHM-03: Terms-of-use acceptance timestamp on candidates
--- NULL = not yet accepted. Candidates can update their own row (column-level GRANT updated below).
-ALTER TABLE candidates ADD COLUMN terms_of_use_accepted timestamptz;
-
--- SCHM-03 (cont.): Update column-level GRANT so candidates can update their own terms acceptance
-REVOKE UPDATE ON candidates FROM authenticated;
-GRANT UPDATE (
-  name, short_name, info, color, image, sort_order, subtype,
-  custom_data, first_name, last_name, answers, created_at, updated_at,
-  terms_of_use_accepted
-) ON candidates TO authenticated;
-
--- SCHM-04: upsert_answers RPC for atomic candidate answer writes
--- SECURITY INVOKER: RLS (candidate_update_own) enforces row-level access.
--- validate_answers_jsonb() trigger fires on the underlying UPDATE automatically.
--- Null-valued keys are stripped after merge to support "remove answer" semantics.
-CREATE OR REPLACE FUNCTION upsert_answers(
+CREATE OR REPLACE FUNCTION public.get_nominations(
+  p_election_id uuid DEFAULT NULL,
+  p_constituency_id uuid DEFAULT NULL,
+  p_include_unconfirmed boolean DEFAULT false
+)
+RETURNS TABLE (
+  id uuid,
+  name jsonb,
+  short_name jsonb,
+  info jsonb,
+  color jsonb,
+  image jsonb,
+  sort_order integer,
+  subtype text,
+  custom_data jsonb,
+  entity_type public.entity_type,
+  candidate_id uuid,
+  organization_id uuid,
+  faction_id uuid,
+  alliance_id uuid,
+  election_id uuid,
+  constituency_id uuid,
+  election_round integer,
+  election_symbol text,
+  parent_nomination_id uuid,
   entity_id uuid,
-  answers   jsonb,
-  overwrite boolean DEFAULT false
+  entity_name jsonb,
+  entity_short_name jsonb,
+  entity_info jsonb,
+  entity_color jsonb,
+  entity_image jsonb,
+  entity_sort_order integer,
+  entity_subtype text,
+  entity_custom_data jsonb,
+  entity_answers jsonb,
+  entity_first_name text,
+  entity_last_name text,
+  entity_organization_id uuid
+)
+LANGUAGE sql
+STABLE
+SECURITY INVOKER
+AS $$
+  SELECT
+    n.id, n.name, n.short_name, n.info, n.color, n.image,
+    n.sort_order, n.subtype, n.custom_data,
+    n.entity_type,
+    n.candidate_id, n.organization_id, n.faction_id, n.alliance_id,
+    n.election_id, n.constituency_id, n.election_round, n.election_symbol,
+    n.parent_nomination_id,
+    COALESCE(n.candidate_id, n.organization_id, n.faction_id, n.alliance_id) AS entity_id,
+    COALESCE(c.name, o.name, f.name, a.name) AS entity_name,
+    COALESCE(c.short_name, o.short_name, f.short_name, a.short_name) AS entity_short_name,
+    COALESCE(c.info, o.info, f.info, a.info) AS entity_info,
+    COALESCE(c.color, o.color, f.color, a.color) AS entity_color,
+    COALESCE(c.image, o.image, f.image, a.image) AS entity_image,
+    COALESCE(c.sort_order, o.sort_order, f.sort_order, a.sort_order) AS entity_sort_order,
+    COALESCE(c.subtype, o.subtype, f.subtype, a.subtype) AS entity_subtype,
+    COALESCE(c.custom_data, o.custom_data, f.custom_data, a.custom_data) AS entity_custom_data,
+    COALESCE(c.answers, o.answers) AS entity_answers,
+    c.first_name AS entity_first_name,
+    c.last_name AS entity_last_name,
+    c.organization_id AS entity_organization_id
+  FROM public.nominations n
+  LEFT JOIN public.candidates c ON n.candidate_id = c.id
+  LEFT JOIN public.organizations o ON n.organization_id = o.id
+  LEFT JOIN public.factions f ON n.faction_id = f.id
+  LEFT JOIN public.alliances a ON n.alliance_id = a.id
+  WHERE (p_election_id IS NULL OR n.election_id = p_election_id)
+    AND (p_constituency_id IS NULL OR n.constituency_id = p_constituency_id)
+    AND (p_include_unconfirmed OR NOT COALESCE(n.unconfirmed, false))
+  ORDER BY n.sort_order NULLS LAST, n.id;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_nominations(uuid, uuid, boolean) TO anon, authenticated;
+
+--------------------------------------------------------------------------------
+-- get_candidate_user_data: returns the entity row for the authenticated user
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_candidate_user_data(
+  p_entity_type public.entity_type DEFAULT 'candidate'
+)
+RETURNS TABLE (
+  id uuid,
+  project_id uuid,
+  name jsonb,
+  short_name jsonb,
+  info jsonb,
+  color jsonb,
+  image jsonb,
+  sort_order integer,
+  subtype text,
+  custom_data jsonb,
+  answers jsonb,
+  terms_of_use_accepted timestamptz,
+  first_name text,
+  last_name text,
+  organization_id uuid
+)
+LANGUAGE sql
+STABLE
+SECURITY INVOKER
+AS $$
+  SELECT c.id, c.project_id, c.name, c.short_name, c.info,
+         c.color, c.image, c.sort_order, c.subtype,
+         c.custom_data, c.answers, c.terms_of_use_accepted,
+         c.first_name, c.last_name, c.organization_id
+  FROM public.candidates c
+  WHERE c.auth_user_id = (SELECT auth.uid())
+    AND p_entity_type = 'candidate'
+  UNION ALL
+  SELECT o.id, o.project_id, o.name, o.short_name, o.info,
+         o.color, o.image, o.sort_order, o.subtype,
+         o.custom_data, o.answers, NULL::timestamptz,
+         NULL::text, NULL::text, NULL::uuid
+  FROM public.organizations o
+  WHERE o.auth_user_id = (SELECT auth.uid())
+    AND p_entity_type = 'organization'
+  LIMIT 1;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_candidate_user_data(public.entity_type) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- upsert_answers: atomic answer write for a single entity
+--
+-- SECURITY INVOKER: runs with caller's permissions, so RLS policies enforce
+-- that a candidate can only update their own row.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.upsert_answers(
+    p_entity_id uuid,
+    p_answers jsonb,
+    p_overwrite boolean DEFAULT false
 )
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY INVOKER
 AS $$
 DECLARE
-  updated_answers jsonb;
+  p_updated_answers jsonb;
 BEGIN
-  IF overwrite THEN
-    UPDATE candidates
+  IF p_overwrite THEN
+    UPDATE public.candidates
     SET answers = (
       SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
-      FROM jsonb_each(COALESCE(upsert_answers.answers, '{}'::jsonb)) AS t(k, v)
+      FROM jsonb_each(COALESCE(p_answers, '{}'::jsonb)) AS t(k, v)
       WHERE v IS NOT NULL AND v != 'null'::jsonb
     )
-    WHERE id = entity_id
-    RETURNING candidates.answers INTO updated_answers;
+    WHERE id = p_entity_id
+    RETURNING public.candidates.answers INTO p_updated_answers;
   ELSE
-    UPDATE candidates
+    UPDATE public.candidates
     SET answers = (
       SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
       FROM jsonb_each(
-        COALESCE(candidates.answers, '{}'::jsonb) || COALESCE(upsert_answers.answers, '{}'::jsonb)
+        COALESCE(public.candidates.answers, '{}'::jsonb) || COALESCE(p_answers, '{}'::jsonb)
       ) AS t(k, v)
       WHERE v IS NOT NULL AND v != 'null'::jsonb
     )
-    WHERE id = entity_id
-    RETURNING candidates.answers INTO updated_answers;
+    WHERE id = p_entity_id
+    RETURNING public.candidates.answers INTO p_updated_answers;
   END IF;
 
   IF NOT FOUND THEN
-    RAISE EXCEPTION 'Entity not found or access denied: %', entity_id;
+    RAISE EXCEPTION 'Entity not found or access denied: %', p_entity_id;
   END IF;
 
-  RETURN updated_answers;
+  RETURN p_updated_answers;
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION upsert_answers(uuid, jsonb, boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.upsert_answers(uuid, jsonb, boolean) TO authenticated;
+-- Admin RPC functions
+--
+-- Functions:
+--   merge_custom_data() - shallow JSONB merge on questions.custom_data
 
 --------------------------------------------------------------------------------
--- Phase 22 additions (SCHM-02: feedback table)
+-- merge_custom_data: shallow JSONB merge on questions.custom_data
+--
+-- SECURITY INVOKER: the existing admin_update_questions RLS policy enforces
+-- that only admins with can_access_project() can update questions.
 --------------------------------------------------------------------------------
-
--- Private schema for rate limiting (not exposed via PostgREST)
-CREATE SCHEMA IF NOT EXISTS private;
-
-CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
-  ip_address   text        PRIMARY KEY,
-  count        integer     NOT NULL DEFAULT 1,
-  window_start timestamptz NOT NULL DEFAULT now()
-);
-
--- Feedback table
-CREATE TABLE feedback (
-  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  uuid        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  rating      integer,
-  description text,
-  date        timestamptz NOT NULL DEFAULT now(),
-  url         text,
-  user_agent  text,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT feedback_rating_or_description CHECK (
-    rating IS NOT NULL OR description IS NOT NULL
-  )
-);
-
--- Rate limiting trigger function (SECURITY DEFINER, writes to private schema)
-CREATE OR REPLACE FUNCTION check_feedback_rate_limit()
-RETURNS TRIGGER
+CREATE OR REPLACE FUNCTION public.merge_custom_data(
+  p_question_id uuid,
+  p_patch       jsonb
+)
+RETURNS jsonb
 LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = ''
+SECURITY INVOKER
 AS $$
 DECLARE
-  client_ip     text;
-  current_count integer;
-  window_secs   interval := interval '5 minutes';
-  max_requests  integer  := 5;
+  p_updated_data jsonb;
 BEGIN
-  -- Extract first IP from x-forwarded-for header (handles proxy chains)
-  client_ip := SPLIT_PART(
-    COALESCE(
-      (current_setting('request.headers', true)::json ->> 'x-forwarded-for'),
-      'unknown'
-    ) || ',',
-    ',', 1
-  );
-  client_ip := TRIM(client_ip);
+  UPDATE public.questions
+  SET custom_data = COALESCE(custom_data, '{}'::jsonb) || p_patch
+  WHERE id = p_question_id
+  RETURNING public.questions.custom_data INTO p_updated_data;
 
-  -- Advisory lock to serialize concurrent inserts from the same IP
-  PERFORM pg_advisory_xact_lock(hashtext('feedback_rate:' || client_ip));
-
-  -- Upsert rate limit counter (reset window if expired)
-  INSERT INTO private.feedback_rate_limits (ip_address, count, window_start)
-  VALUES (client_ip, 1, now())
-  ON CONFLICT (ip_address) DO UPDATE
-    SET count = CASE
-          WHEN private.feedback_rate_limits.window_start + window_secs <= now()
-          THEN 1
-          ELSE private.feedback_rate_limits.count + 1
-        END,
-        window_start = CASE
-          WHEN private.feedback_rate_limits.window_start + window_secs <= now()
-          THEN now()
-          ELSE private.feedback_rate_limits.window_start
-        END;
-
-  SELECT count INTO current_count
-  FROM private.feedback_rate_limits
-  WHERE ip_address = client_ip;
-
-  IF current_count > max_requests THEN
-    RAISE EXCEPTION 'Rate limit exceeded. Please try again later.'
-      USING ERRCODE = 'P0001';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Question not found or access denied: %', p_question_id;
   END IF;
 
-  RETURN NEW;
+  RETURN p_updated_data;
 END;
 $$;
 
-CREATE TRIGGER check_feedback_rate_limit
-  BEFORE INSERT ON public.feedback
-  FOR EACH ROW EXECUTE FUNCTION check_feedback_rate_limit();
+GRANT EXECUTE ON FUNCTION public.merge_custom_data(uuid, jsonb) TO authenticated;
+-- Test helpers: generic JSONB deep-merge RPC for test infrastructure
+--
+-- jsonb_recursive_merge: recursively merges two JSONB objects. When both
+-- sides are objects, keys are merged recursively. Otherwise, the patch
+-- value wins.
+--
+-- merge_jsonb_column: generic RPC for deep-merging a partial JSONB payload
+-- into any JSONB column of any table. Used by SupabaseAdminClient to update
+-- app_settings.settings without replacing sibling keys.
+--
+-- SECURITY INVOKER: runs with caller's permissions so that RLS policies on
+-- the target table are enforced.
 
--- Feedback RLS
-ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+--------------------------------------------------------------------------------
+-- jsonb_recursive_merge: recursive deep merge of two JSONB values
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.jsonb_recursive_merge(p_base jsonb, p_patch jsonb)
+RETURNS jsonb
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT CASE
+    WHEN jsonb_typeof(p_base) = 'object' AND jsonb_typeof(p_patch) = 'object' THEN
+      (SELECT jsonb_object_agg(
+        COALESCE(k, pk),
+        CASE
+          WHEN k IS NOT NULL AND pk IS NOT NULL THEN public.jsonb_recursive_merge(p_base -> k, p_patch -> pk)
+          WHEN pk IS NOT NULL THEN p_patch -> pk
+          ELSE p_base -> k
+        END
+      )
+      FROM (
+        SELECT DISTINCT COALESCE(k, pk) AS key, k, pk
+        FROM jsonb_object_keys(p_base) k
+        FULL OUTER JOIN jsonb_object_keys(p_patch) pk ON k = pk
+      ) keys)
+    ELSE p_patch
+  END;
+$$;
 
-CREATE POLICY "anon_insert_feedback" ON feedback
-  FOR INSERT TO anon
-  WITH CHECK (true);
+--------------------------------------------------------------------------------
+-- merge_jsonb_column: generic deep-merge into any table's JSONB column
+--
+-- Parameters:
+--   p_table_name   - name of the target table
+--   p_column_name  - name of the JSONB column to merge into
+--   p_row_id       - UUID primary key of the row to update
+--   p_partial_data - JSONB object to deep-merge into the existing value
+--
+-- SECURITY INVOKER: the caller's RLS policies apply to the UPDATE
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.merge_jsonb_column(
+  p_table_name text,
+  p_column_name text,
+  p_row_id uuid,
+  p_partial_data jsonb
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+BEGIN
+  EXECUTE format(
+    'UPDATE public.%I SET %I = public.jsonb_recursive_merge(%I, $1) WHERE id = $2',
+    p_table_name, p_column_name, p_column_name
+  ) USING p_partial_data, p_row_id;
+END;
+$$;
 
-CREATE POLICY "admin_select_feedback" ON feedback
-  FOR SELECT TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
-CREATE POLICY "admin_delete_feedback" ON feedback
-  FOR DELETE TO authenticated
-  USING ((SELECT can_access_project(project_id)));
-
--- Feedback indexes
-CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON feedback (project_id);
-CREATE INDEX IF NOT EXISTS idx_feedback_created_at ON feedback (created_at);
+--------------------------------------------------------------------------------
+-- Grants: service_role and authenticated can call these functions
+--------------------------------------------------------------------------------
+GRANT EXECUTE ON FUNCTION public.jsonb_recursive_merge(jsonb, jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.merge_jsonb_column(text, text, uuid, jsonb) TO service_role;
+GRANT EXECUTE ON FUNCTION public.merge_jsonb_column(text, text, uuid, jsonb) TO authenticated;

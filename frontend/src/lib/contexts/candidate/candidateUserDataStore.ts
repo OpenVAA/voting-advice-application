@@ -191,6 +191,7 @@ export function candidateUserDataStore({
 
     const answers = get(editedAnswers);
     const termsOfUseAccepted = get(editedTermsOfUseAccepted);
+    const image = get(editedImage);
     const updateArgs = {
       authToken: '', // Supabase adapter ignores authToken (auth is cookie-based)
       target: {
@@ -217,18 +218,24 @@ export function candidateUserDataStore({
       });
     }
 
-    if (termsOfUseAccepted !== undefined) {
+    if (termsOfUseAccepted !== undefined || image !== undefined) {
+      const properties: Record<string, unknown> = {};
+      if (termsOfUseAccepted !== undefined) properties.termsOfUseAccepted = termsOfUseAccepted;
+      if (image !== undefined) properties.image = image;
       const updatedProps = await dataWriter.updateEntityProperties({
         ...updateArgs,
-        properties: { termsOfUseAccepted }
+        properties
       });
-      if (!updatedProps) throw new Error('Failed to update termsOfUseAccepted');
+      if (!updatedProps) throw new Error('Failed to update entity properties');
       // Merge returned properties into saved candidate data
       savedData.update((s) => {
         if (!s) throw new Error('Cannot update candidate data before loaded');
+        const updates: Partial<LocalizedCandidateData> = {};
+        if (termsOfUseAccepted !== undefined) updates.termsOfUseAccepted = updatedProps.termsOfUseAccepted;
+        if (image !== undefined) updates.image = updatedProps.image ?? null;
         return {
           ...s,
-          candidate: { ...s.candidate, termsOfUseAccepted: updatedProps.termsOfUseAccepted }
+          candidate: { ...s.candidate, ...updates }
         };
       });
     }

@@ -66,7 +66,10 @@ export const COLUMN_MAP = {
   published: 'published',
 
   // Candidate columns (Phase 22)
-  terms_of_use_accepted: 'termsOfUseAccepted'
+  terms_of_use_accepted: 'termsOfUseAccepted',
+
+  // External ID (used across all content tables)
+  external_id: 'externalId'
 } as const;
 
 /** Database column name (snake_case) */
@@ -79,3 +82,30 @@ export type PropertyName = (typeof COLUMN_MAP)[ColumnName];
 export const PROPERTY_MAP = Object.fromEntries(
   Object.entries(COLUMN_MAP).map(([k, v]) => [v, k])
 ) as {[K in PropertyName]: ColumnName};
+
+/**
+ * Mapping between camelCase collection names and snake_case database table names.
+ * Used by data import/seeding tools to convert between TypeScript and DB conventions.
+ *
+ * Only includes collections where the names differ (elections, candidates, etc. are identical).
+ */
+export const TABLE_MAP = {
+  constituencyGroups: 'constituency_groups',
+  questionCategories: 'question_categories',
+  appSettings: 'app_settings',
+  adminJobs: 'admin_jobs',
+  electionConstituencyGroups: 'election_constituency_groups',
+  constituencyGroupConstituencies: 'constituency_group_constituencies',
+  userRoles: 'user_roles',
+} as const;
+
+/** camelCase collection name */
+export type CollectionName = keyof typeof TABLE_MAP;
+
+/** snake_case table name */
+export type TableName = (typeof TABLE_MAP)[CollectionName];
+
+/** Reverse mapping: snake_case table name -> camelCase collection name */
+export const COLLECTION_NAME_MAP = Object.fromEntries(
+  Object.entries(TABLE_MAP).map(([k, v]) => [v, k])
+) as {[K in TableName]: CollectionName};

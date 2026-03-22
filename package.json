@@ -65,5 +65,8 @@
     "docs",
     "apps/*"
   ],
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.6.0",
+  "resolutions": {
+    "playwright": "1.58.2"
+  }
 }

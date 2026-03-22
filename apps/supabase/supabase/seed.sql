@@ -50,7 +50,9 @@ ON CONFLICT (project_id) DO NOTHING;
 INSERT INTO auth.users (
   id, instance_id, email, encrypted_password, email_confirmed_at,
   aud, role, raw_app_meta_data, raw_user_meta_data,
-  created_at, updated_at, confirmation_token, recovery_token
+  created_at, updated_at, confirmation_token, recovery_token,
+  email_change, email_change_token_new, email_change_token_current,
+  phone_change, phone_change_token, reauthentication_token
 )
 VALUES (
   '00000000-0000-0000-0000-000000000010',
@@ -62,7 +64,8 @@ VALUES (
   'authenticated',
   '{"provider": "email", "providers": ["email"]}'::jsonb,
   '{}'::jsonb,
-  now(), now(), '', ''
+  now(), now(), '', '',
+  '', '', '', '', '', ''
 )
 ON CONFLICT (id) DO NOTHING;
 
@@ -70,7 +73,9 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO auth.users (
   id, instance_id, email, encrypted_password, email_confirmed_at,
   aud, role, raw_app_meta_data, raw_user_meta_data,
-  created_at, updated_at, confirmation_token, recovery_token
+  created_at, updated_at, confirmation_token, recovery_token,
+  email_change, email_change_token_new, email_change_token_current,
+  phone_change, phone_change_token, reauthentication_token
 )
 VALUES (
   '00000000-0000-0000-0000-000000000011',
@@ -82,7 +87,8 @@ VALUES (
   'authenticated',
   '{"provider": "email", "providers": ["email"]}'::jsonb,
   '{}'::jsonb,
-  now(), now(), '', ''
+  now(), now(), '', '',
+  '', '', '', '', '', ''
 )
 ON CONFLICT (id) DO NOTHING;
 
@@ -119,5 +125,18 @@ VALUES
     '00000000-0000-0000-0000-000000000020'
   )
 ON CONFLICT (id) DO NOTHING;
+
+--------------------------------------------------------------------------------
+-- GoTrue auth.users NULL column fix
+-- Supabase CLI local GoTrue has a bug where NULL varchar columns in auth.users
+-- cause scan errors on listUsers. Fix any existing NULLs to empty strings.
+--------------------------------------------------------------------------------
+UPDATE auth.users SET
+  email_change = COALESCE(email_change, ''),
+  email_change_token_new = COALESCE(email_change_token_new, ''),
+  email_change_token_current = COALESCE(email_change_token_current, ''),
+  phone_change = COALESCE(phone_change, ''),
+  phone_change_token = COALESCE(phone_change_token, ''),
+  reauthentication_token = COALESCE(reauthentication_token, '');
 
 DO $$ BEGIN RAISE NOTICE 'OpenVAA seed data executed successfully'; END $$;

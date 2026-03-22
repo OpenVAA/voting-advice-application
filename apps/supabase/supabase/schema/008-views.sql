@@ -1,7 +1,0 @@
--- Views
---
--- Localized views (elections_localized, questions_localized) were removed.
--- Per the v2.0 load testing decision (11-DECISION.md § Locale Strategy),
--- all locales are returned in API responses and locale selection happens
--- client-side. This simplifies caching and allows locale switching without
--- refetching.

@@ -6,7 +6,7 @@ import type {
   LocalizedVideoContent
 } from '@openvaa/app-shared';
 import type { Id, Serializable } from '@openvaa/core';
-import type { CandidateData, EntityType } from '@openvaa/data';
+import type { CandidateData, EntityType, Image } from '@openvaa/data';
 import type { AdminFeature } from '$lib/admin/features';
 import type {
   ActiveJobQueryParams,
@@ -285,6 +285,7 @@ export type LocalizedCandidateData = CandidateData & {
  */
 export type UpdatedEntityProps = {
   termsOfUseAccepted?: string | null;
+  image?: Image | null;
 };
 
 /**
@@ -372,6 +373,7 @@ export type WithAnswerData = {
 
 export type EditableEntityProps = {
   termsOfUseAccepted?: string | null;
+  image?: Image | null;
 };
 
 export type WithEditableEntityProps = {

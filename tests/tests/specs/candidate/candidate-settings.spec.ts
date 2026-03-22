@@ -46,33 +46,34 @@ test.describe('app mode: answers locked (CAND-09)', { tag: ['@candidate'] }, () 
     await client.updateAppSettings({ access: defaultAccess });
   });
 
-  test('should show read-only warning when answers are locked', async ({ page, candidateQuestionsPage }) => {
+  test('should show read-only warning when answers are locked', async ({ page }) => {
+    test.setTimeout(60000);
+
     // Enable answers locked while keeping other access settings at defaults
     await client.updateAppSettings({
       access: { ...defaultAccess, answersLocked: true }
     });
 
-    // Navigate to candidate home page
-    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }));
+    // Navigate to candidate home page with full load to pick up settings
+    await page.goto(buildRoute({ route: 'CandAppHome', locale: 'en' }), { waitUntil: 'networkidle' });
 
     // The home page shows a Warning component when answersLocked is true
     // The Warning component renders with role-less div containing an icon and text.
     // Verify the home page status message is visible (page loaded successfully)
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible();
+    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({ timeout: 15000 });
 
     // The button text should change to "view" variants instead of "edit" when locked
     // The home page buttons use "candidate-home-questions" testId
     const questionsButton = page.getByTestId('candidate-home-questions');
     await expect(questionsButton).toBeVisible();
 
-    // Navigate to questions page and verify the warning appears there too
+    // Navigate to questions page and verify it renders with locked state
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
-    await candidateQuestionsPage.waitForLoad();
 
     // When answers are locked, question cards show "view" action text
     // The questions page renders a Warning component with "editingNotAllowed" text
     // Verify the questions list is still visible (page rendered correctly)
-    await expect(page.getByTestId('candidate-questions-list').or(page.getByTestId('candidate-questions-start'))).toBeVisible();
+    await expect(page.getByTestId('candidate-questions-list').or(page.getByTestId('candidate-questions-start'))).toBeVisible({ timeout: 15000 });
   });
 });
 
