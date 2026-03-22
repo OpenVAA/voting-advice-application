@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Svelte 5 Migration (Candidate App)
-status: milestone_complete
-stopped_at: v1.4 milestone completed and archived
-last_updated: "2026-03-22T09:35:00.000Z"
+milestone: v2.0
+milestone_name: Branch Integration
+status: unknown
+stopped_at: Roadmap created for v2.0 milestone
+last_updated: "2026-03-22T19:56:42.316Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_phases: 11
+  completed_phases: 10
+  total_plans: 42
+  completed_plans: 41
 ---
 
 # Project State
@@ -19,11 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Planning next milestone
+**Current focus:** Phase 39 — ci-cd-and-documentation
 
 ## Current Position
 
-Milestone v1.4 complete. Ready for next milestone.
+Phase: 39
+Plan: Not started
 
 ## Performance Metrics
 
@@ -42,11 +43,21 @@ Full decision log in PROJECT.md Key Decisions table.
 ### Blockers/Concerns
 
 - NPM_TOKEN GitHub secret needs to be configured before first publish (carried from v1.2)
-- 2 pre-existing E2E test failures: auth-setup (Strapi timeout), voter-settings category intros (data configuration)
-- 1 voter-app E2E test flaky: voter-popups feedback test timeout on results page
+- Parallel branch HANDOFF.json has 14 E2E failures remaining in schema reorganization
+- GoTrue auth.users NULL column bug on fresh db reset (workaround: safeListUsers + seed.sql UPDATE)
+- Parallel branch auth-setup failure cascades to 8 candidate-app tests
+- 5 voter tests fail on parallel branch: detail (party), matching, results (3)
+
+### Integration Source
+
+- **Branch:** feat-gsd-supabase-migration
+- **Divergence point:** 6a6df7db5 (during v1.0 E2E phase 7)
+- **Commits since divergence:** 371
+- **Milestones shipped on source:** v1.0 E2E, v2.0 Supabase, v3.0 Frontend Adapter, v5.0 Claude Skills
+- **Approach:** Cherry-pick intent — understand each change, reimplement in Svelte 5 / apps/ paths
 
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: v1.4 milestone completed
+Stopped at: Roadmap created for v2.0 milestone
 Resume file: None

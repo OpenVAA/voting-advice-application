@@ -15,12 +15,9 @@ Rewrite the current E2E (in tests) tests to follow an extensible, modular paradi
 
 Create helper utilities for common tasks, so that these are easy to replace when the app changes.
 
-For 2 and 3, we can currently use (via Strapi UI), the existing Admin Tools:
+For 2 and 3, we can use the Supabase admin client to import and delete test data.
 
-- Import Data
-- Delete Data
-
-For 4, we can either use the Strapi UI: Content Manager > App Settings; or perhaps preferable just change the dynamicSettings.ts file and rebuild the web app. Perhaps we can run it in dev mode so that changes are automatically reflected?
+For 4, we can change the dynamicSettings.ts file and rebuild the web app, or update app_settings in the database. In dev mode, changes are automatically reflected.
 
 For 5–6, first write user stories for the candidate app based on the current e2e tests. Then mine the documentation in /docs for user stories for the voter app, with regard to how different settings are supposed to function.
 
@@ -36,7 +33,7 @@ Use the /skill-creator skill for building the skills.
 
 The architect will know the different packages and how the frontend architecture, including data loading and contexts work.
 It will know about the api routes, candidate, voter and (preliminary) admin apps.
-It will know a bit about the backend but bear in mind that it will be swapped to supabase soon.
+It will know about the Supabase backend (schema, Edge Functions, auth).
 It will know about /packages/app-shared and /packages/core and /packages/shared-config
 
 Figure out if we need different skills for:
@@ -114,18 +111,7 @@ Check if the current test logic needs to be rewritten.
 
 Check support and possible pitfalls for other users of the repo.
 
-## Migrate from Strapi to supabase
+## Migrate admin functions to the frontend Admin App
 
-Plan the db schema based on the canonical data model.
-Plan supabase setup so that we get as much out of the box as possible:
-
-- auth
-- RLS if needed
-- emails
-- storage
-- cloud db for OpenVAAs own VAA instances, option for users of the codebase for self-hosting
-
-## Migrate admin functions from Strapi openvaa-admin-tools to the frontend Admin App
-
-All basic admin functions should be moved to the Admin App but some direct db editing can be left as links to supabase.
-If there are some ready-made components for embedding editable supabase tables in the Svelte app, it would be great.
+All basic admin functions should be moved to the Admin App but some direct db editing can be left as links to the Supabase dashboard.
+If there are some ready-made components for embedding editable Supabase tables in the Svelte app, it would be great.

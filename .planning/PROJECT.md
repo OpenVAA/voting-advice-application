@@ -10,7 +10,11 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Current State
 
-v1.4 shipped 2026-03-22. The entire Svelte 5 migration is complete — both voter app (v1.3) and candidate app (v1.4) are fully runes-idiomatic with zero legacy Svelte 4 patterns. All E2E tests pass. The frontend infrastructure (Tailwind 4, DaisyUI 5, Paraglide JS) was modernized in v1.2. The monorepo (Turborepo, Changesets, npm publishing) was refreshed in v1.1. E2E testing was established in v1.0.
+v2.0 shipped 2026-03-22. The Supabase backend integration is complete — Strapi has been fully removed and replaced with Supabase (17 tables, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions). The frontend uses Supabase adapters for all data access, and auth uses cookie-based PKCE sessions. CI runs pgTAP tests and E2E tests against supabase CLI. Claude Skills for data, matching, filters, and database domains are integrated.
+
+The entire codebase is Svelte 5 runes-idiomatic with Supabase as the sole backend. 10 E2E tests are skipped due to a Svelte 5 `pushState` reactivity bug (framework-level issue). The context system still uses Svelte 4 store patterns (deferred to CTX-01).
+
+v2.0 integration complete: Phase 29 (Skills + Planning), Phase 30 (Supabase Backend Foundation), Phase 31 (Schema Reorganization), Phase 32 (Auth Infrastructure), and Phase 34 (Adapter Foundation) completed. Supabase adapter infrastructure is in place: mixin, 5 utility functions (mapRow, getLocalized, localizeRow, toDataObject, storageUrl) with 40 tests, dynamic adapter switch wired for 'supabase' type. Default remains 'strapi' until Phase 38 cleanup. Phase 35 builds DataProvider/DataWriter/FeedbackWriter on this foundation.
 
 ## Requirements
 
@@ -45,16 +49,32 @@ v1.4 shipped 2026-03-22. The entire Svelte 5 migration is complete — both vote
 - ✓ Zero legacy Svelte 4 patterns in candidate app — v1.4
 - ✓ Zero TypeScript errors in candidate app — v1.4
 - ✓ All candidate-app E2E tests passing (20 tests across 5 files) — v1.4
+- ✓ Supabase backend integrated (17 tables, 269 pgTAP tests, 3 Edge Functions) — v2.0
+- ✓ Frontend Supabase adapter (DataProvider, DataWriter, AdminWriter, FeedbackWriter) — v2.0
+- ✓ Auth migrated to Supabase cookie-based PKCE sessions — v2.0
+- ✓ E2E tests migrated to SupabaseAdminClient and Mailpit — v2.0
+- ✓ Schema reorganization verified (numbered files, p_ prefixes, public. qualifiers) — v2.0
+- ✓ Strapi fully removed (262 files, 47,524 lines) — v2.0
+- ✓ CI/CD updated (pgTAP, skill-drift-check, Supabase CLI E2E) — v2.0
+- ✓ Claude Skills integrated (data, matching, filters, database) — v2.0
+- ✓ Planning documents merged from parallel branch — v2.0
 
 ### Active
+- [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug workaround needed)
 - [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
-- [ ] Claude development skills for architecture, components, data, matching, filters, LLM
+- [ ] AdminWriter rename (naming cleanup)
+
+### Future
+- [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
 - [ ] Deno feasibility study (Node → Deno transition)
-- [ ] Supabase migration (Strapi → Supabase with schema, auth, RLS, storage)
-- [ ] Admin app migration (Strapi plugin → frontend Admin App)
+- [ ] Admin app migration (frontend Admin App)
+- [ ] Merge app_settings and app_customization tables
+- [ ] WithAuth interface refactoring
+- [ ] TSConfig-based importable adapter loading
 - [ ] Automated security and secrets scanning and testing
 - [ ] Trusted publishing for npm (OIDC, deferred until after initial manual publish)
 - [ ] Changeset bot for PR reminders (deferred from v1.1)
+- [ ] SQL linting and formatting tooling
 
 ### Out of Scope
 
@@ -68,26 +88,24 @@ v1.4 shipped 2026-03-22. The entire Svelte 5 migration is complete — both vote
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v1.4:
+The project is a mature monorepo used for real election deployments. As of v2.0:
 
-- **Codebase:** 86 plans completed across 5 milestones (22 days, 2026-03-01 to 2026-03-22)
-- **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic — voter + candidate apps), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Codebase:** 128 plans completed across 6 milestones (22 days, 2026-03-01 to 2026-03-22)
+- **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
+- **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
-- **Testing:** Playwright 1.58.2 E2E (26 voter-app tests, 20 candidate-app tests), Vitest unit tests
-- **CI:** GitHub Actions with Turborepo remote caching, HTML test reports, Node 22
+- **Testing:** Playwright E2E (542 unit tests, 46 E2E specs), Vitest unit tests, pgTAP database tests
+- **CI:** GitHub Actions with pgTAP, E2E via supabase CLI, skill-drift-check, Turborepo remote caching
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Known issues:** Strapi vitest pinned to ^2.1.8 (CJS/ESM incompatibility); Strapi has TS errors in mock data generation; Svelte 5 snippet reactivity bug (deferred); TODO[Svelte 5] markers remain in context system (deferred to future milestone)
-
-The backend will eventually move from Strapi to Supabase. The frontend may later move from Node to Deno. Context system rewrite and Claude development skills are the next milestones.
+- **Known issues:** Svelte 5 pushState reactivity bug (10 E2E tests skipped); context system uses Svelte 4 store patterns (CTX-01 deferred)
 
 ## Constraints
 
-- **Tech stack (current)**: SvelteKit 2, Svelte 5, Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Strapi v5, Postgres, Yarn 4.13, Turborepo 2.8
-- **Tech stack (target)**: Svelte 5 runes (content migration), Supabase, potentially Deno
-- **Publishing**: @openvaa/core, data, matching, filters publishable to npm; app-shared retains CJS for Strapi
-- **Testing**: Playwright 1.58.2 for E2E, Vitest for unit tests
+- **Tech stack**: SvelteKit 2, Svelte 5, Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8
+- **Publishing**: @openvaa/core, data, matching, filters publishable to npm
+- **Testing**: Playwright 1.58.2 for E2E, Vitest for unit tests, pgTAP for Supabase database
 - **Backward compatibility**: Framework is used by external deployers — changes must not break deployment patterns
-- **Backend transition**: Strapi investment should be minimal given planned Supabase migration
+- **Strapi removed**: Backend is Supabase-only as of v2.0
 
 ## Milestones
 
@@ -98,24 +116,11 @@ Each major initiative is a separate milestone, executed in order:
 3. ~~**Svelte 5 Migration (Infrastructure)**~~ — Shipped v1.2 (2026-03-18)
 4. ~~**Svelte 5 Migration (Content — Voter App)**~~ — Shipped v1.3 (2026-03-20)
 5. ~~**Svelte 5 Migration (Content — Candidate App)**~~ — Shipped v1.4 (2026-03-22)
-6. **Claude Skills** — Domain-expert skills for architecture, components, data, matching, filters, LLM
-7. **Deno Investigation** — Feasibility study for Node → Deno transition
-8. **Supabase Migration** — Backend migration from Strapi with schema planning, auth, RLS, storage
+6. ~~**Branch Integration**~~ — Shipped v2.0 (2026-03-22)
+7. **Claude Skills (remaining)** — Architect, components, LLM skills (deferred from parallel branch)
+8. **Deno Investigation** — Feasibility study for Node → Deno transition
 9. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 10. **Security Scanning** — Automated security, secrets scanning, and testing
-
-### Claude Skills — Scope Notes (for milestone #5)
-
-Each skill covers: extending the target, reviewing changes, helping other agents use it, understanding data models, maintaining conventions, syncing with docs.
-
-- **Architect** — Whole app + monorepo knowledge, frontend internals (data API, contexts, routes, API routes, server/client separation, voter/candidate/admin apps)
-- **Components** — Frontend component library
-- **Data** — `@openvaa/data` package
-- **Matching** — `@openvaa/matching` package
-- **Filters** — `@openvaa/filters` package
-- **LLM** — `@openvaa/llm` package
-
-Build using skill-builder skill where beneficial.
 
 ## Key Decisions
 
@@ -158,8 +163,38 @@ Build using skill-builder skill where beneficial.
 | Cookie domain transfer in E2E     | SvelteKit use:enhance redirects to localhost; Playwright uses 127.0.0.1     | ✓ Good      |
 | Auth cookie caching in E2E        | Strapi rate limiter (~7/min) exhausted by serial test logins                | ✓ Good      |
 
----
+| JSONB answer storage over relational | 2-10x faster reads at all scales; simpler schema; concurrent writes adequate | ✓ Good (sb-v2.0) |
+| JSONB localization with get_localized() | 3-tier fallback (requested→default→first key); avoids translation table joins | ✓ Good (sb-v2.0) |
+| Custom Access Token Hook for JWT roles | Roles injected at auth time; no per-query role lookups | ✓ Good (sb-v2.0) |
+| 79 per-operation RLS policies | Granular control; pgTAP-testable; clear security boundaries | ✓ Good (sb-v2.0) |
+| Remove question_templates table | Admin tooling will handle templates at project creation; avoids runtime merge complexity | ✓ Good (sb-v2.0) |
+| external_id for bulk import/export | Enables idempotent data sync without exposing internal UUIDs | ✓ Good (sb-v2.0) |
+| Edge Functions for auth flows | Candidate invite + Signicat bank auth run server-side in Deno | ✓ Good (sb-v2.0) |
+| Inline skills over subagent skills | Domain knowledge loaded in context, not forked; lower latency, better for reference | ✓ Good (sb-v5.0) |
+| Defer architect/components/LLM skills | Frontend architecture will change with Svelte 5; skills would be immediately outdated | ✓ Good (sb-v5.0) |
+| Skill drift CI check | Automated detection of stale skills when source targets change | — Pending (sb-v5.0) |
+| Supabase adapter mixin pattern | Shared typed client across DataProvider/DataWriter/AdminWriter; init({ fetch }) for SSR | ✓ Good (sb-v3.0) |
+| Cookie-based sessions over JWT tokens | Supabase PKCE flow with httpOnly cookies; no client-side token management | ✓ Good (sb-v3.0) |
+| Keep jose and qs packages | Verified used outside Strapi adapter (identity provider, route utils) | ✓ Good (sb-v3.0) |
+| Docker Compose as production test tool | Rewritten from 4-service dev stack to single-service frontend build verifier | ✓ Good (sb-v3.0) |
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
 
-_Last updated: 2026-03-22 after v1.4 milestone_
+\_Last updated: 2026-03-22 after Phase 39 (CI/CD and Documentation) completed — v2.0 milestone complete_

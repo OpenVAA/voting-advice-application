@@ -7,11 +7,12 @@
 - ✅ **v1.2 Svelte 5 Migration (Infrastructure)** — Phases 15-21 (shipped 2026-03-18)
 - ✅ **v1.3 Svelte 5 Migration (Content)** — Phases 22-26 (shipped 2026-03-20)
 - ✅ **v1.4 Svelte 5 Migration (Candidate App)** — Phases 27-28 (shipped 2026-03-22)
+- ✅ **v2.0 Branch Integration** — Phases 29-39 (shipped 2026-03-22)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 E2E Testing Framework (Phases 1-7) — SHIPPED 2026-03-12</summary>
+<summary>v1.0 E2E Testing Framework (Phases 1-7) -- SHIPPED 2026-03-12</summary>
 
 - [x] Phase 1: Infrastructure Foundation (11/11 plans) — Playwright 1.58.2, project dependencies, API data management, testIds, fixtures, ESLint
 - [x] Phase 2: Candidate App Coverage (4/4 plans) — Auth, registration, profile, questions, settings, app modes
@@ -24,7 +25,7 @@
 </details>
 
 <details>
-<summary>✅ v1.1 Monorepo Refresh (Phases 8-13) — SHIPPED 2026-03-15</summary>
+<summary>v1.1 Monorepo Refresh (Phases 8-13) -- SHIPPED 2026-03-15</summary>
 
 - [x] Phase 8: Build Orchestration (2/2 plans) — Turborepo with cached parallel builds, Deno evaluation
 - [x] Phase 9: Directory Restructure (2/2 plans) — apps/ + packages/ convention, Docker/CI/E2E updates
@@ -36,7 +37,7 @@
 </details>
 
 <details>
-<summary>✅ v1.2 Svelte 5 Migration — Infrastructure (Phases 15-21) — SHIPPED 2026-03-18</summary>
+<summary>v1.2 Svelte 5 Migration -- Infrastructure (Phases 15-21) -- SHIPPED 2026-03-18</summary>
 
 - [x] Phase 15: Scaffold and Build (2/2 plans) — Fresh SvelteKit 2 + Svelte 5 scaffold with native TS, Vite plugin, path aliases
 - [x] Phase 16: CSS Architecture (2/2 plans) — Tailwind 4 CSS-first config + DaisyUI 5 with theme migration
@@ -49,25 +50,172 @@
 </details>
 
 <details>
-<summary>✅ v1.3 Svelte 5 Migration — Content (Phases 22-26) — SHIPPED 2026-03-20</summary>
+<summary>v1.3 Svelte 5 Migration -- Content (Phases 22-26) -- SHIPPED 2026-03-20</summary>
 
 - [x] Phase 22: Leaf Component Migration (7/7 plans) — 98 components to $props(), runes mode, callback props, $bindable()
 - [x] Phase 23: Container Components and Layouts (4/4 plans) — Snippet props, callback props, Layout/MainContent migration
-- [x] Phase 24: Voter Route Migration (4/4 plans) — $: → $derived/$effect, on:event → native attributes, slot → @render
+- [x] Phase 24: Voter Route Migration (4/4 plans) — $: to $derived/$effect, on:event to native attributes, slot to @render
 - [x] Phase 25: Cleanup (1/1 plan) — TODO[Svelte 5] markers resolved, candidate app call sites updated
 - [x] Phase 26: Validation Gate (3/3 plans) — 26 E2E tests passing, zero TS errors, zero legacy patterns
 
 </details>
 
 <details>
-<summary>✅ v1.4 Svelte 5 Migration — Candidate App (Phases 27-28) — SHIPPED 2026-03-22</summary>
+<summary>v1.4 Svelte 5 Migration -- Candidate App (Phases 27-28) -- SHIPPED 2026-03-22</summary>
 
 - [x] Phase 27: Candidate Route Migration (4/4 plans) — All 25 candidate route files to Svelte 5 runes ($derived/$effect, native events, $effect lifecycle)
 - [x] Phase 28: Validation Gate (3/3 plans) — Zero legacy patterns, zero TypeScript errors, all candidate-app E2E tests passing
 
 </details>
 
+<details>
+<summary>v2.0 Branch Integration (Phases 29-39) -- SHIPPED 2026-03-22</summary>
+
+- [x] Phase 29: Skills and Planning Documents (4/4 plans) — Claude Skills, code review checklist, Key Decisions merge, retrospective/archives
+- [x] Phase 30: Supabase Backend Foundation (4/4 plans) — apps/supabase/ workspace, supabase-types package, Yarn catalog
+- [x] Phase 31: Schema Reorganization (1/1 plan) — Verification-only, one public. qualifier fix
+- [x] Phase 32: Auth Infrastructure (3/3 plans) — Supabase clients, hooks.server.ts with sequence(), auth routes
+- [x] Phase 33: Auth Integration (4/4 plans) — Auth context, preregister Edge Function, protected layout guards
+- [x] Phase 34: Adapter Foundation (3/3 plans) — Supabase adapter mixin, 5 utilities, dynamic adapter switch
+- [x] Phase 35: Adapter Providers and Writers (4/4 plans) — DataProvider, DataWriter, AdminWriter, FeedbackWriter
+- [x] Phase 36: E2E Test Migration (8/8 plans) — SupabaseAdminClient, datasets, specs, Mailpit, Playwright config
+- [x] Phase 37: E2E Failure Resolution (3/3 plans) — Auth cascade fixed, 10 tests skipped (Svelte 5 pushState bug)
+- [x] Phase 38: Strapi Removal and Cleanup (4/4 plans) — 262 files deleted, Docker/env/CLAUDE.md rewritten
+- [x] Phase 39: CI/CD and Documentation (4/4 plans) — pgTAP job, skill-drift-check, docs updated
+
+</details>
+
+## Phase Details
+
+### Phase 29: Skills and Planning Documents
+**Goal**: Development knowledge and project history from the parallel branch are preserved and accessible
+**Depends on**: Nothing (additive content, no code conflicts)
+**Requirements**: SKIL-01, SKIL-02, PLAN-01, PLAN-02, PLAN-03, PLAN-04
+**Success Criteria** (what must be TRUE):
+  1. Claude Skills files exist in .claude/skills/ and cover data, matching, filters, and database domains
+  2. Code review checklist reflects Supabase-era patterns (RLS, pgTAP, adapter conventions)
+  3. Key Decisions table in PROJECT.md includes all Supabase/adapter/skills decisions from parallel branch
+  4. Deferred items from both branches are consolidated in Future requirements
+  5. Milestone archives from parallel branch are present with consistent numbering
+**Plans**: TBD
+
+### Phase 30: Supabase Backend Foundation
+**Goal**: The Supabase backend workspace exists in the monorepo with schema, migrations, seed data, Edge Functions, and type definitions available to downstream consumers
+**Depends on**: Nothing (can run in parallel with Phase 29)
+**Requirements**: BACK-01, BACK-02, BACK-04
+**Success Criteria** (what must be TRUE):
+  1. `supabase start` launches a local Supabase instance with all migrations applied and seed data loaded
+  2. pgTAP tests pass against the local Supabase instance (229 tests)
+  3. Edge Functions (preregister, send-email, admin) are deployable and respond to invocations
+  4. @openvaa/supabase-types package exports Database types, COLUMN_MAP, PROPERTY_MAP, and TABLE_MAP with zero TypeScript errors
+  5. @supabase/supabase-js is available via Yarn catalog and importable across workspaces
+**Plans**: TBD
+
+### Phase 31: Schema Reorganization
+**Goal**: The Supabase schema follows the reorganized conventions established on the parallel branch (numbered migration files, p_ parameter prefixes, public. qualifiers)
+**Depends on**: Phase 30
+**Requirements**: BACK-03
+**Success Criteria** (what must be TRUE):
+  1. All migration files use numbered naming convention consistently
+  2. Function parameters use p_ prefix convention throughout
+  3. All table/view references use public. schema qualifiers
+  4. pgTAP tests still pass after reorganization changes
+**Plans**: TBD
+
+### Phase 32: Auth Infrastructure
+**Goal**: The foundational Supabase auth plumbing is in place -- cookie-based sessions with PKCE, server hooks, client setup, and API routes -- all adapted to Svelte 5
+**Depends on**: Phase 30
+**Requirements**: AUTH-01, AUTH-02, AUTH-04, AUTH-05
+**Success Criteria** (what must be TRUE):
+  1. Browser and server Supabase clients are configured in lib/supabase/ and create authenticated sessions
+  2. hooks.server.ts refreshes Supabase sessions on every request using cookie-based PKCE flow
+  3. Auth callback route (/auth/callback) exchanges auth codes for sessions and sets cookies
+  4. Logout route (/auth/logout) destroys the Supabase session and clears cookies
+  5. No Strapi JWT token references remain in hooks or auth utilities
+**Plans**: TBD
+
+### Phase 33: Auth Integration
+**Goal**: Auth is wired into the application -- candidates can register via Edge Function, protected routes enforce sessions, and components can check authentication status
+**Depends on**: Phase 32
+**Requirements**: AUTH-03, AUTH-06, AUTH-07
+**Success Criteria** (what must be TRUE):
+  1. Auth context exposes isAuthenticated (not authToken) and components reactively respond to auth state changes
+  2. Candidate preregister route invokes the Supabase Edge Function and handles success/error flows
+  3. Protected layout redirects unauthenticated users to login page
+  4. Zero Svelte 4 patterns in any auth-related code (all runes, no $: or createEventDispatcher)
+**Plans**: TBD
+
+### Phase 34: Adapter Foundation
+**Goal**: The shared adapter infrastructure (mixin, utility functions, adapter switch) is ready for provider/writer implementations
+**Depends on**: Phase 30
+**Requirements**: ADPT-05, ADPT-06
+**Success Criteria** (what must be TRUE):
+  1. Supabase adapter mixin and all utility functions (mapRow, getLocalized, localizeRow, toDataObject, storageUrl) are importable and type-safe
+  2. Dynamic adapter switch selects the Supabase adapter based on configuration
+  3. Adapter utilities correctly handle localized fields and storage URLs for the Supabase schema
+**Plans**: TBD
+
+### Phase 35: Adapter Providers and Writers
+**Goal**: The frontend can read all VAA data from Supabase and candidates can write answers, profiles, and feedback through the adapter
+**Depends on**: Phase 33, Phase 34
+**Requirements**: ADPT-01, ADPT-02, ADPT-03, ADPT-04
+**Success Criteria** (what must be TRUE):
+  1. SupabaseDataProvider loads elections, candidates, parties, questions, categories, and nominations from Supabase (all 7 read methods)
+  2. SupabaseDataWriter allows authenticated candidates to save answers, update profiles, and complete registration
+  3. SupabaseAdminWriter handles question custom data operations and job management
+  4. SupabaseFeedbackWriter stores user feedback in Supabase
+  5. All adapter code uses Svelte 5 runes patterns and apps/frontend/ import paths
+**Plans**: TBD
+
+### Phase 36: E2E Test Migration
+**Goal**: The E2E test infrastructure uses Supabase as its backend -- admin client, datasets, spec files, email helper, and Playwright config all adapted
+**Depends on**: Phase 35
+**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+**Success Criteria** (what must be TRUE):
+  1. SupabaseAdminClient implements all 14 methods (CRUD for elections, candidates, questions, etc.) and test fixtures use it
+  2. Test datasets use snake_case field names with project_id and published fields matching the Supabase schema
+  3. All spec files call Supabase method signatures (no Strapi admin tool references remain)
+  4. Email helper uses Inbucket REST API to retrieve registration/password-reset emails
+  5. Playwright config uses Supabase backend settings (correct baseURL, worker count, project config)
+**Plans**: TBD
+
+### Phase 37: E2E Failure Resolution
+**Goal**: All E2E tests pass -- the 14 schema reorg failures are fixed and all FIXMEs/TODOs in test files are addressed
+**Depends on**: Phase 36
+**Requirements**: TEST-06, TEST-07
+**Success Criteria** (what must be TRUE):
+  1. The 14 E2E failures documented in HANDOFF.json are resolved (auth-setup cascade, voter detail, matching, results)
+  2. All FIXMEs and TODOs in E2E test files are either resolved or converted to tracked Future requirements
+  3. Full E2E suite passes (voter + candidate tests) against the Supabase backend
+**Plans**: TBD
+
+### Phase 38: Strapi Removal and Cleanup
+**Goal**: Strapi is fully removed from the codebase and the development environment runs on supabase CLI only
+**Depends on**: Phase 37
+**Requirements**: CLEN-01, CLEN-02, CLEN-03, CLEN-04, CLEN-05
+**Success Criteria** (what must be TRUE):
+  1. apps/strapi/ directory is deleted and its workspace entry removed from package.json and turbo.json
+  2. No Strapi adapter code remains in the frontend (adapters/strapi/, Strapi auth token utilities gone)
+  3. `supabase start` + `yarn dev` launches a working development environment without Docker Strapi/Postgres containers
+  4. Docker Compose files define a Supabase-only workflow (no Strapi or standalone Postgres services)
+  5. .env.example documents all required Supabase environment variables (URL, anon key, service role key, etc.)
+**Plans**: TBD
+
+### Phase 39: CI/CD and Documentation
+**Goal**: CI pipeline, developer documentation, and deployment configuration all reflect the Supabase-only architecture
+**Depends on**: Phase 38
+**Requirements**: CICD-01, CICD-02, CICD-03, CICD-04
+**Success Criteria** (what must be TRUE):
+  1. GitHub Actions workflow runs pgTAP tests and E2E tests against supabase CLI (no Strapi job remains)
+  2. CLAUDE.md documents Supabase development workflow (supabase start, migrations, Edge Functions, pgTAP)
+  3. Render blueprint deploys frontend-only with Supabase environment variables (no Strapi service)
+  4. Documentation site has zero references to Strapi as active backend (only historical mentions if any)
+**Plans**: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 29 -> 30 -> 31 -> 32 -> 33 -> 34 -> 35 -> 36 -> 37 -> 38 -> 39
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -98,3 +246,14 @@
 | 26. Validation Gate | v1.3 | 3/3 | Complete | 2026-03-20 |
 | 27. Candidate Route Migration | v1.4 | 4/4 | Complete | 2026-03-21 |
 | 28. Validation Gate | v1.4 | 3/3 | Complete | 2026-03-21 |
+| 29. Skills and Planning Documents | v2.0 | 4/4 | Complete    | 2026-03-22 |
+| 30. Supabase Backend Foundation | v2.0 | 4/4 | Complete    | 2026-03-22 |
+| 31. Schema Reorganization | v2.0 | 1/1 | Complete    | 2026-03-22 |
+| 32. Auth Infrastructure | v2.0 | 3/3 | Complete    | 2026-03-22 |
+| 33. Auth Integration | v2.0 | 4/4 | Complete    | 2026-03-22 |
+| 34. Adapter Foundation | v2.0 | 3/3 | Complete    | 2026-03-22 |
+| 35. Adapter Providers and Writers | v2.0 | 4/4 | Complete    | 2026-03-22 |
+| 36. E2E Test Migration | v2.0 | 8/8 | Complete    | 2026-03-22 |
+| 37. E2E Failure Resolution | v2.0 | 3/3 | Complete    | 2026-03-22 |
+| 38. Strapi Removal and Cleanup | v2.0 | 4/4 | Complete    | 2026-03-22 |
+| 39. CI/CD and Documentation | v2.0 | 4/4 | Complete    | 2026-03-22 |

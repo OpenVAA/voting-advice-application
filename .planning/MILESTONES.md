@@ -1,5 +1,28 @@
 # Milestones
 
+## v2.0 Branch Integration (Shipped: 2026-03-22)
+
+**Phases completed:** 11 phases, 42 plans
+**Timeline:** 1 day (2026-03-22)
+
+**Key accomplishments:**
+
+- Integrated Supabase backend (17 tables, 269 pgTAP tests, 3 Edge Functions) from parallel branch
+- Built frontend Supabase adapter (DataProvider, DataWriter, AdminWriter, FeedbackWriter) with 85 unit tests
+- Migrated auth from Strapi JWT to Supabase cookie-based PKCE sessions with Paraglide i18n preserved
+- Migrated E2E test infrastructure (SupabaseAdminClient, Mailpit email, Supabase-format datasets)
+- Removed Strapi entirely (262 files, 47,524 lines deleted) with thorough codebase cleanup
+- Updated CI pipeline (pgTAP job, skill-drift-check, Supabase CLI E2E) and documentation
+- Integrated 15 Claude Skills files and merged planning artifacts from parallel branch
+
+### Known Gaps
+
+- 10 E2E tests skipped due to Svelte 5 `pushState` reactivity bug (framework-level issue)
+- Phase 37 Plan 03 (FIXME/TODO audit) not formally executed
+- `candidate-questions` test dataset lacks `customData.allowOpen = true`
+
+---
+
 ## v1.4 Svelte 5 Migration (Candidate App) (Shipped: 2026-03-22)
 
 **Phases completed:** 2 phases, 7 plans, 14 tasks

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a monorepo containing frontend (SvelteKit), backend (Strapi CMS), and shared packages for matching algorithms, filters, and data management.
+OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a monorepo containing frontend (SvelteKit), backend (Supabase), and shared packages for matching algorithms, filters, and data management.
 
 ## Development Commands
 
@@ -12,9 +12,11 @@ OpenVAA is a framework for building Voting Advice Applications (VAAs). It's a mo
 
 ```bash
 yarn install                    # Install all workspace dependencies
-yarn dev                        # Start full Docker stack (frontend, backend, postgres, localstack)
-yarn dev:down                   # Clean shutdown (removes containers, volumes, images)
-yarn dev:stop                   # Stop without removing volumes
+yarn dev                        # Start Supabase + Vite dev server
+yarn dev:down                   # Stop Supabase services
+yarn dev:stop                   # Stop Supabase services
+yarn dev:reset                  # Reset database (drops and recreates)
+yarn dev:status                 # Show Supabase service status
 ```
 
 ### Building
@@ -48,7 +50,17 @@ yarn format                   # Format all files with Prettier
 
 ```bash
 yarn workspace @openvaa/frontend dev
-yarn workspace @openvaa/strapi dev
+```
+
+### Supabase Commands
+
+```bash
+yarn supabase:start           # Start local Supabase instance
+yarn supabase:stop            # Stop local Supabase instance
+yarn supabase:reset           # Reset database (drops and recreates)
+yarn supabase:status          # Show service status
+yarn supabase:types           # Regenerate TypeScript types from schema
+yarn supabase:lint            # Run SQL linter on all migrations
 ```
 
 ### Single Test Development
@@ -89,7 +101,7 @@ The project uses Yarn 4 workspaces with these modules:
 
 **Applications** (`apps/`):
 
-- `@openvaa/strapi` - Strapi v5 backend with Postgres at `apps/strapi/`. Custom plugins in `apps/strapi/src/plugins/`
+- `@openvaa/supabase` - Supabase backend at `apps/supabase/`. Schema, migrations, Edge Functions, pgTAP tests. Local dev via `supabase start`
 - `@openvaa/frontend` - SvelteKit 2 frontend at `apps/frontend/`. Uses Tailwind + DaisyUI for styling
 - `@openvaa/docs` - Documentation site (SvelteKit) at `apps/docs/`
 
@@ -101,9 +113,9 @@ The project uses Yarn 4 workspaces with these modules:
 
 **IDE Resolution**: Uses TypeScript project references in `tsconfig.json` files. You don't need to build dependencies for IDE to resolve imports.
 
-**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script uses Turborepo's watch mode to automatically rebuild packages on changes.
+**Runtime Resolution**: NPM/Node requires built `.js` files. Always build dependee packages before running dependent packages. The `yarn dev` script builds packages before starting the dev server.
 
-**Dependency Flow**: `core` → `data`/`matching`/`filters` → `app-shared` → `frontend`/`strapi`
+**Dependency Flow**: `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`/`supabase`
 
 When adding interdependencies:
 
@@ -143,40 +155,33 @@ The `.turbo/` directory contains the local cache and should not be committed to 
 
 **Frontend Data Flow**:
 
-- Data adapters in `apps/frontend/src/lib/api/adapters/` abstract data source (Strapi vs local JSON)
+- Supabase adapter in `apps/frontend/src/lib/api/adapters/supabase/` provides all data access
+- No adapter switch -- Supabase is the only production adapter (local adapter available for static data)
 - Universal adapter pattern in `apps/frontend/src/lib/api/base/universalAdapter.ts`
-- Server-side and client-side backend URLs differ when using Docker (see `.env`)
 - Route structure uses optional locale param: `apps/frontend/src/routes/[[lang=locale]]/`
 - Separate apps for voters (`apps/frontend/src/routes/[[lang=locale]]/(voters)/`) and candidates (`apps/frontend/src/routes/[[lang=locale]]/candidate/`)
-
-**Backend Customization** (`@openvaa/strapi`):
-
-- Automatic data loading on init: Question Types, App Settings, Translation overrides
-- Custom permissions via `apps/strapi/src/extensions/users-permissions/strapi-server.ts`
-- Route policies: `restrict-populate` applied to all routes
-- Mock data generation controlled by env vars (dev/test only)
 
 **Settings Architecture**:
 
 - `StaticSettings` - hardcoded in `packages/app-shared/src/settings/staticSettings.ts` (colors, locales, fonts, admin email). Edit these to customize your VAA instance
 - `DynamicSettings` - loaded from backend (election data, feature flags)
 
-## Docker Development
+## Development Environment
 
-The stack runs four services:
+The development stack uses Supabase CLI for backend services:
 
-1. `frontend` - SvelteKit on port 5173
-2. `strapi` - Backend on port 1337 (admin at /admin, default admin/admin)
-3. `postgres` - Database on port 5432
-4. `awslocal` - LocalStack for S3/SES on port 4566
+1. `supabase start` - Launches local Supabase (Postgres, Auth, Storage, Edge Functions, Inbucket email)
+2. `yarn dev` - Starts Vite dev server for the frontend (port 5173)
 
-**Port conflicts**: Ensure 1337, 5173, 5432, 4566 are free. Change in `.env` if needed.
+**Supabase Dashboard**: http://127.0.0.1:54323 (local admin UI)
+**Inbucket**: http://127.0.0.1:54324 (email testing)
+**Supabase API**: http://127.0.0.1:54321
 
-**Environment variables**: When using Docker, only edit the root `.env` file (not `apps/frontend/.env` or `apps/strapi/.env`).
+**Docker Compose** (`docker-compose.dev.yml`) is only used for production build testing, not development.
 
-**Mock data**: Set `GENERATE_MOCK_DATA_ON_INITIALISE=true` in `.env` to seed database with fake candidates, questions, etc. Use `GENERATE_MOCK_DATA_ON_RESTART=true` to regenerate on every restart (clears database - dev only).
+**Environment variables**: Edit the root `.env` file (copied from `.env.example`).
 
-**Hot reloading**: Frontend hot reloads by default. Backend can hot reload if you mount `./src:/opt/apps/strapi/src` in `apps/strapi/docker-compose.dev.yml` (slow, not recommended unless actively developing backend).
+**Seed data**: The database is seeded automatically on `supabase start` via `apps/supabase/seed.sql`.
 
 ## Frontend (SvelteKit)
 
@@ -193,49 +198,39 @@ The stack runs four services:
 
 **Path aliases** (defined in `apps/frontend/svelte.config.js`):
 
-- `$types` → `apps/frontend/src/lib/types`
-- `$voter` → `apps/frontend/src/lib/voter`
-- `$candidate` → `apps/frontend/src/lib/candidate`
+- `$types` -> `apps/frontend/src/lib/types`
+- `$voter` -> `apps/frontend/src/lib/voter`
+- `$candidate` -> `apps/frontend/src/lib/candidate`
 
 **Key directories**:
 
-- `apps/frontend/src/lib/api/` - Data adapters (Strapi, local JSON)
+- `apps/frontend/src/lib/api/` - Data adapters (Supabase, local)
 - `apps/frontend/src/lib/components/` - Reusable Svelte components
 - `apps/frontend/src/lib/contexts/` - Svelte context providers
 - `apps/frontend/src/lib/i18n/` - Internationalization (sveltekit-i18n)
 - `apps/frontend/src/lib/utils/` - Helper functions
-- `apps/frontend/src/hooks.server.ts` - SvelteKit hooks (auth, locale handling)
+- `apps/frontend/src/hooks.server.ts` - SvelteKit hooks (Supabase session, locale handling)
 
 **Build**: `yarn workspace @openvaa/frontend build` (also copies `apps/frontend/data/` folder if present for local adapter)
 
-## Backend (Strapi)
+## Backend (Supabase)
 
-**Version**: Strapi v5 with TypeScript
-
-**Database**: Postgres (required, not SQLite in production)
+**Database**: PostgreSQL managed by Supabase (local via `supabase start`, production via Supabase Cloud)
 
 **Authentication**:
 
-- Public read access to API (configured in permissions)
-- Candidates authenticate via `users-permissions` plugin
-- Pre-registration requires API token with `users-permissions.candidate.preregister` permission
+- Cookie-based sessions with PKCE
+- Candidates authenticate via Supabase Auth
+- Pre-registration via Supabase Edge Function
 - Bank authentication via OpenID Connect (Signicat) - see `.env` for IdP settings
 
-**Plugins**:
+**Schema**: See `apps/supabase/migrations/` for the database schema
 
-- AWS S3 for media uploads
-- AWS SES for emails
-- `@openvaa/strapi-admin-tools` (local plugin in `apps/strapi/src/plugins/openvaa-admin-tools/`)
+**Edge Functions**: See `apps/supabase/functions/` for serverless functions (preregister, send-email, admin)
 
-**Type generation**: Run `yarn workspace @openvaa/strapi generate:types` after schema changes to update `apps/strapi/types/`.
+**Tests**: pgTAP tests in `apps/supabase/tests/`
 
-**Adding new content types**:
-
-1. Add to `CONTENT_API` list in `apps/strapi/src/util/api.ts`
-2. Update permissions in `apps/strapi/src/extensions/users-permissions/strapi-server.ts`
-3. Add route config with `restrict-populate` policy (see `apps/strapi/README.md`)
-
-**Email**: Uses AWS SES. Control sender with `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_REPLY_TO` env vars.
+**Type generation**: Run `yarn supabase:types` after schema changes to update `packages/supabase-types/`
 
 ## Common Workflows
 
@@ -244,7 +239,7 @@ The stack runs four services:
 1. `yarn build` (builds all packages with caching -- fast if already built)
 2. Understand the feature scope - read relevant package READMEs
 3. For frontend work: check existing components in `apps/frontend/src/lib/components/`, `apps/frontend/src/lib/dynamic-components` and `apps/frontend/src/lib/candidate/components`
-4. For backend work: check content types and custom API in Strapi admin
+4. For backend work: check schema in `apps/supabase/migrations/` and Edge Functions in `apps/supabase/functions/`
 
 ### Running tests after changes
 
@@ -252,10 +247,10 @@ The stack runs four services:
 # Quick check
 yarn test:unit
 
-# Full E2E (requires clean docker stack)
-yarn dev:down
+# Full E2E (requires Supabase running)
+yarn dev:reset
 yarn dev
-# Wait for stack to be healthy
+# Wait for services to be healthy
 yarn test:e2e
 ```
 
@@ -266,14 +261,6 @@ See `packages/matching/examples/example.ts` for usage:
 ```bash
 cd packages/matching
 tsx examples/example.ts
-```
-
-### Translation updates
-
-Dynamic translations are synced from frontend to backend:
-
-```bash
-yarn sync:translations
 ```
 
 ### Fixing "module not found" errors
@@ -294,32 +281,29 @@ yarn build             # Rebuilds all packages (cached -- only changed packages 
 
 ## Deployment
 
-Fully containerized with Docker. See `apps/docs/README.md` deployment section for:
+Frontend is deployed as a Docker container. Backend uses Supabase Cloud.
 
-- Render + AWS S3/SES setup
-- Environment variable configuration
-- Production build process
-- Domain configuration
+See `render.example.yaml` for Render deployment configuration:
 
-Recent costs (2024-2025): $80-350/month depending on traffic and instance sizes.
+- Frontend service with Supabase environment variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`)
+- No backend service needed on Render -- Supabase Cloud handles the database and auth
+- Domain and cache disk configuration
 
 ## Troubleshooting
 
-**Docker issues**: Run `yarn dev:down` to clean everything and start fresh.
+**Database issues**: Run `yarn dev:reset` to reset the database (drops and recreates all tables with fresh seed data).
 
-**Port conflicts**: Check ports 1337, 5173, 5432, 4566 are free. Edit `.env` to change.
+**Port conflicts**: Check ports 54321 (Supabase API), 54323 (Supabase Studio), 5173 (frontend) are free.
 
 **TypeScript errors in IDE**: Run `yarn build` to rebuild all packages.
 
-**Mock data not generating**: Check `GENERATE_MOCK_DATA_ON_INITIALISE=true` in root `.env` and ensure database is empty.
-
-**Frontend can't reach backend**: Verify `PUBLIC_BROWSER_BACKEND_URL` and `PUBLIC_SERVER_BACKEND_URL` in `.env`.
+**Frontend can't reach backend**: Verify `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` in `.env`.
 
 ## Roadmap
 
 **2025 H2**: Documentation site, AI features, application manager UI, first production release
 
-**2026**: Plugins/customization, multi-tenant model, migration from Strapi to Supabase, Svelte 5 upgrade
+**2026**: Plugins/customization, multi-tenant model, Svelte 5 upgrade
 
 ## Code Review
 
