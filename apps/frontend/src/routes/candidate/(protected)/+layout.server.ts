@@ -39,7 +39,7 @@ export async function load({ fetch, locals }) {
 
   // Get user data -- authToken is '' because Supabase uses cookie-based sessions
   const userData = await dataWriter.getCandidateUserData({ authToken: '', loadNominations: true }).catch((e) => {
-    logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
+    logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`, e);
     return undefined;
   });
   if (!userData) return await handleError('loginFailed');

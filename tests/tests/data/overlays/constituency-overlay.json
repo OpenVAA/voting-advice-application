@@ -37,6 +37,14 @@
       },
       "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true
+    },
+    {
+      "externalId": "test-const-muni-east",
+      "name": {
+        "en": "East Municipality"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
     }
   ],
   "constituencyGroups": [
@@ -62,7 +70,8 @@
       "_constituencies": {
         "externalId": [
           "test-const-muni-north-a",
-          "test-const-muni-south-a"
+          "test-const-muni-south-a",
+          "test-const-muni-east"
         ]
       },
       "projectId": "00000000-0000-0000-0000-000000000001",
@@ -574,6 +583,23 @@
       },
       "organization": {
         "externalId": "test-party-a"
+      },
+      "projectId": "00000000-0000-0000-0000-000000000001",
+      "published": true
+    },
+    {
+      "externalId": "test-nom-const-gamma-east",
+      "candidate": {
+        "externalId": "test-candidate-gamma"
+      },
+      "election": {
+        "externalId": "test-election-1"
+      },
+      "constituency": {
+        "externalId": "test-const-muni-east"
+      },
+      "organization": {
+        "externalId": "test-party-b"
       },
       "projectId": "00000000-0000-0000-0000-000000000001",
       "published": true

@@ -28,16 +28,19 @@ Shows a form with which to set a new password when it has been reset.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, resetPassword, t } = getCandidateContext();
+  const { getRoute, isAuthenticated, resetPassword, setPassword, t } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Handle form
   ////////////////////////////////////////////////////////////////////
 
-  // If the reset code is not provided, redirect to home page
   const code = page.url.searchParams.get('code');
-  if (!code) goto($getRoute('CandAppLogin'));
+  // Session-based flow: user arrived via auth callback with verifyOtp (recovery type)
+  const isSessionFlow = $isAuthenticated && !code;
+
+  // Redirect to login only if neither code nor session is available
+  if (!code && !isSessionFlow) goto($getRoute('CandAppLogin'));
 
   let isPasswordValid = $state(false);
   let password = $state('');
@@ -55,18 +58,37 @@ Shows a form with which to set a new password when it has been reset.
 
     status = 'loading';
 
-    const result = await resetPassword({ code: code!, password }).catch((e) => {
-      logDebugError(`Error with resetPassword: ${e?.message}`);
-      return undefined;
-    });
+    if (isSessionFlow) {
+      // Session-based flow: user already has a session from verifyOtp, just set the password
+      const result = await setPassword({ password }).catch((e) => {
+        logDebugError(`Error with setPassword: ${e?.message}`);
+        return undefined;
+      });
 
-    if (result?.type !== 'success') {
-      status = 'error';
-      return;
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      status = 'success';
+      // User is already authenticated — navigate to candidate home via full page load
+      // to ensure session cookies are sent to the server-side loader.
+      window.location.href = $getRoute('CandAppHome');
+    } else {
+      // Code-based flow: use resetPassword with the code
+      const result = await resetPassword({ code: code!, password }).catch((e) => {
+        logDebugError(`Error with resetPassword: ${e?.message}`);
+        return undefined;
+      });
+
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      status = 'success';
+      await goto($getRoute('CandAppLogin'));
     }
-
-    status = 'success';
-    await goto($getRoute('CandAppLogin'));
   }
 
   ///////////////////////////////////////////////////////////////////

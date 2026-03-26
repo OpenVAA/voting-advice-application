@@ -36,16 +36,15 @@
   // Accept terms of use
   ////////////////////////////////////////////////////////////////////
 
-  let showTermsOfUse = $state(false);
   let status = $state<ActionStatus>('idle');
-  let termsAccepted = $state<boolean | undefined>(undefined);
+  let termsAccepted = $state(false);
 
   async function handleSubmit() {
     if (!termsAccepted) return;
     status = 'loading';
     userData.setTermsOfUseAccepted(new Date().toJSON());
     await userData.save();
-    showTermsOfUse = false;
+    layoutState = 'ready';
     status = 'success';
   }
 
@@ -59,51 +58,57 @@
   // Provide data and possibly show terms of use form
   ////////////////////////////////////////////////////////////////////
 
-  let error = $state<Error | undefined>(undefined);
-  let ready = $state(false);
+  /**
+   * Single state variable for layout rendering. Consolidates `ready`, `error`, and
+   * `showTermsOfUse` into one write to work around a Svelte 5 hydration issue where
+   * writing to multiple `$state` variables inside `.then()` from `$effect` doesn't
+   * trigger DOM re-renders after SSR+hydration.
+   */
+  let layoutState = $state<'loading' | 'error' | 'terms' | 'ready'>('loading');
 
   $effect(() => {
     // Read data synchronously to register as dependency
     const questionData = data.questionData;
     const candidateUserData = data.candidateUserData;
     // Reset state
-    error = undefined;
-    ready = false;
+    layoutState = 'loading';
     Promise.all([questionData, candidateUserData]).then((resolved) => {
-      error = update(resolved);
+      update(resolved);
     });
   });
 
-  $effect(() => {
-    if (error) logDebugError(error.message);
-  });
-
   /**
-   * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
-   * @returns `Error` if the data is invalid, `undefined` otherwise.
+   * Process loaded data. Sets `layoutState` as a single write — the only `$state`
+   * mutation inside the `.then()` callback.
    */
   function update([questionData, candidateUserData]: [
     DPDataType['questions'] | Error,
     CandidateUserData<true> | undefined
-  ]): Error | undefined {
-    if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
-    if (!candidateUserData?.nominations || !candidateUserData?.candidate)
-      return new Error('Error loading candidate data');
+  ]): void {
+    if (!isValidResult(questionData, { allowEmpty: true })) {
+      logDebugError('Error loading question data');
+      layoutState = 'error';
+      return;
+    }
+    if (!candidateUserData?.nominations || !candidateUserData?.candidate) {
+      logDebugError('Error loading candidate data');
+      layoutState = 'error';
+      return;
+    }
     const { entities, nominations } = candidateUserData.nominations;
     $dataRoot.provideQuestionData(questionData);
     $dataRoot.provideEntityData(entities);
     $dataRoot.provideNominationData(nominations);
     userData.init(candidateUserData);
-    if (!candidateUserData.candidate.termsOfUseAccepted) showTermsOfUse = true;
-    ready = true;
+    layoutState = !candidateUserData.candidate.termsOfUseAccepted ? 'terms' : 'ready';
   }
 </script>
 
-{#if error}
+{#if layoutState === 'error'}
   <ErrorMessage class="bg-base-300" />
-{:else if !ready}
+{:else if layoutState === 'loading'}
   <Loading />
-{:else if showTermsOfUse}
+{:else if layoutState === 'terms'}
   <MainContent title={t('dynamic.candidateAppPrivacy.consent.title')}>
     {#snippet hero()}
       <figure role="presentation">

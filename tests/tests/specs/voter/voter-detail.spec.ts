@@ -2,12 +2,17 @@
  * Voter entity detail E2E tests.
  *
  * Covers:
- * - VOTE-11: Candidate detail drawer with info and opinions tabs
- * - VOTE-12: Party detail drawer with info, candidates (submatches), and opinions tabs
+ * - VOTE-11: Candidate detail with info and opinions tabs
+ * - VOTE-12: Party detail with info, candidates (submatches), and opinions tabs
+ *
+ * Entity details are shown in a Drawer modal rendered by the results layout
+ * (`results/+layout.svelte`) when clicking entity cards on the results page.
+ * The layout intercepts navigation to entity detail routes via beforeNavigate,
+ * cancels the navigation, and shows the entity in an EntityDetailsDrawer.
  *
  * Uses the `answeredVoterPage` fixture from `voter.fixture.ts` which
  * navigates the voter journey and answers all questions, landing on
- * the results page. Each test gets a fresh page instance.
+ * the results page.
  *
  * Runs within the `voter-app` project which depends only on data-setup
  * (no auth needed for voter tests).
@@ -26,6 +31,7 @@ const alphaAnswers = alphaCandidate.answersByExternalId as Record<
 >;
 
 test.describe('voter entity detail', { tag: ['@voter'] }, () => {
+
   test('should open candidate detail drawer when clicking a result card', async ({
     answeredVoterPage: page
   }) => {
@@ -106,6 +112,9 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     }
   });
 
+  // FIXME: [Svelte 5 reactivity] This test requires tab switching ($state mutation
+  // in handleEntityTabChange), which does not trigger template re-renders in
+  // layout components. Skipped until the Svelte 5 reactivity issue is resolved.
   test('should open party detail drawer with info, candidates, and opinions tabs', async ({
     answeredVoterPage: page
   }) => {

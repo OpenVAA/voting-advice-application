@@ -28,6 +28,7 @@
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
+  import { PopupRenderer } from '$lib/components/popupRenderer';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
   import MaintenancePage from './MaintenancePage.svelte';
@@ -118,6 +119,8 @@
   let feedbackModalRef: { openFeedback: () => void };
   $: if (feedbackModalRef) $openFeedbackModal = () => feedbackModalRef?.openFeedback();
 
+  // popupItem reactivity is handled by the PopupRenderer runes-mode component
+
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
 </script>
@@ -151,13 +154,6 @@
   <!-- Feedback modal -->
   <FeedbackModal bind:this={feedbackModalRef} />
 
-  <!-- Popup service -->
-  {#if $popupQueue}
-    {#key $popupQueue}
-      <svelte:component this={$popupQueue.component} onClose={popupQueue.shift} {...$popupQueue.props} />
-    {/key}
-  {/if}
-
   <!-- Handle analytics loading -->
   {#if $appSettings.analytics?.platform}
     {#if $appSettings.analytics?.platform?.name === 'umami'}
@@ -174,3 +170,6 @@
     {/await}
   {/if}
 {/if}
+
+<!-- Popup service: rendered by runes-mode component for Svelte 5 reactivity -->
+<PopupRenderer {popupQueue} />

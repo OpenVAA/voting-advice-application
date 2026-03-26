@@ -52,6 +52,10 @@ setup('import multi-election dataset', async () => {
       showAllNominations: true
     },
     notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false }
+    analytics: { trackEvents: false },
+    results: {
+      showFeedbackPopup: 0,
+      showSurveyPopup: 0
+    }
   });
 });

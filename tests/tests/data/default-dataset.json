@@ -94,6 +94,9 @@
       "info": {
         "en": "This question measures attitudes toward progressive taxation."
       },
+      "customData": {
+        "allowOpen": true
+      },
       "category": {
         "externalId": "test-category-economy"
       },
@@ -149,6 +152,9 @@
     },
     {
       "externalId": "test-question-2",
+      "customData": {
+        "allowOpen": true
+      },
       "category": {
         "externalId": "test-category-economy"
       },
@@ -206,6 +212,9 @@
       "externalId": "test-question-3",
       "info": {
         "en": "Renewable energy subsidies affect both the economy and the environment."
+      },
+      "customData": {
+        "allowOpen": true
       },
       "category": {
         "externalId": "test-category-economy"

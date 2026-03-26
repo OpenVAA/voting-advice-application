@@ -109,7 +109,8 @@ export function initAppContext(): AppContext {
   let feedbackTimeout: NodeJS.Timeout | undefined;
 
   function startFeedbackPopupCountdown(delay = 3 * 60): void {
-    if (feedbackTimeout) return;
+    if (feedbackTimeout) clearTimeout(feedbackTimeout);
+    if (delay <= 0) return;
     feedbackTimeout = setTimeout(() => {
       if (get(userPreferences).feedback?.status !== 'received') popupQueue.push({ component: FeedbackPopup });
     }, delay * 1000);
@@ -118,7 +119,8 @@ export function initAppContext(): AppContext {
   let surveyTimeout: NodeJS.Timeout | undefined;
 
   function startSurveyPopupCountdown(delay = 5 * 60): void {
-    if (surveyTimeout) return;
+    if (surveyTimeout) clearTimeout(surveyTimeout);
+    if (delay <= 0) return;
     surveyTimeout = setTimeout(() => {
       if (get(userPreferences).survey?.status !== 'received') popupQueue.push({ component: SurveyPopup });
     }, delay * 1000);

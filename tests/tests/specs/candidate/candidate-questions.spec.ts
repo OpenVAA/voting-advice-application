@@ -64,7 +64,8 @@ test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
     await expect(choices.first()).toBeVisible();
     await choices.nth(3).click();
 
-    // Step 4: Add a comment in the open answer field
+    // Step 4: Fill the comment field (available because test-question-1 has
+    // customData.allowOpen = true in the test dataset)
     await questionPage.fillComment('Test comment for this Likert question');
 
     // Step 5: Capture current URL before saving

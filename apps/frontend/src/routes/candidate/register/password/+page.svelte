@@ -29,22 +29,28 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, newUserEmail, register, t, userData } = getCandidateContext();
+  const { getRoute, isAuthenticated, newUserEmail, register, setPassword, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Check that user is not logged and all params are provided
+  // Check flow type and params
   ////////////////////////////////////////////////////////////////////
 
   const registrationKey = page.url.searchParams.get('registrationKey') || '';
   const username = page.url.searchParams.get('username') || '';
   const email = page.url.searchParams.get('email') || '';
 
-  if (registrationKey === '' || email === '') {
-    goto($getRoute('CandAppRegister'));
-  }
+  // Invite flow: user has a session from auth callback verifyOtp, email is provided but no registrationKey
+  const isInviteFlow = $isAuthenticated && email !== '' && registrationKey === '';
 
-  // Redirect if logged in, that page will prompt the user to logout
-  if ($userData) goto($getRoute('CandAppRegister'));
+  if (!isInviteFlow) {
+    // Registration key flow: both registrationKey and email are required
+    if (registrationKey === '' || email === '') {
+      goto($getRoute('CandAppRegister'));
+    }
+
+    // Redirect if logged in (only for registration key flow), that page will prompt the user to logout
+    if ($userData) goto($getRoute('CandAppRegister'));
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Handle password change
@@ -66,19 +72,39 @@
 
     status = 'loading';
 
-    const result = await register({ registrationKey, password }).catch((e) => {
-      logDebugError(`Error with register: ${e?.message}`);
-      return undefined;
-    });
+    if (isInviteFlow) {
+      // Invite flow: user already has a session, set the password and redirect to login.
+      // The session from verifyOtp may not reliably persist through client-side navigation
+      // to the protected route, so we redirect to login for a clean auth flow.
+      const result = await setPassword({ password }).catch((e) => {
+        logDebugError(`Error with setPassword (invite flow): ${e?.message}`);
+        return undefined;
+      });
 
-    if (result?.type !== 'success') {
-      status = 'error';
-      return;
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      $newUserEmail = email;
+      status = 'success';
+      await goto($getRoute('CandAppLogin'));
+    } else {
+      // Registration key flow: activate the user with the key and password
+      const result = await register({ registrationKey, password }).catch((e) => {
+        logDebugError(`Error with register: ${e?.message}`);
+        return undefined;
+      });
+
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      $newUserEmail = email;
+      status = 'success';
+      await goto($getRoute('CandAppLogin'));
     }
-
-    $newUserEmail = email;
-    status = 'success';
-    await goto($getRoute('CandAppLogin'));
   }
 </script>
 

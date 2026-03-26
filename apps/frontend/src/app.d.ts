@@ -31,13 +31,8 @@ declare global {
       // Candidate App
       candidateUserData?: CandidateUserData<true>;
     }
-    interface PageState {
-      resultsShowEntity?: {
-        entityType: EntityType;
-        entityId: Id;
-        nominationId?: Id;
-      };
-    }
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    interface PageState {}
     interface Error {
       message: string;
       description?: string;

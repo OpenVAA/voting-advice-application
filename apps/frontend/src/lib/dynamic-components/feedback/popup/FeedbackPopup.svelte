@@ -31,8 +31,8 @@ Show a popup asking for user feedback.
   let closeTimeout: NodeJS.Timeout | undefined;
   onDestroy(() => { if (closeTimeout) clearTimeout(closeTimeout); });
 
-  let canSubmit: boolean;
-  let status: SendingStatus;
+  let canSubmit = $state(false);
+  let status = $state<SendingStatus>('idle');
   let alertRef: Alert;
   let feedbackRef: { reset: () => void; submit: () => Promise<void> };
 
