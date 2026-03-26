@@ -2,19 +2,23 @@
 
 ## What This Is
 
-OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, Strapi CMS backend, and shared packages for matching algorithms, filters, and data management. The monorepo uses Turborepo for cached builds, Changesets for versioning, and publishes core packages to npm. This project covers framework evolution: modernizing infrastructure, building Claude development skills, upgrading the frontend stack, and migrating to a new backend.
+OpenVAA is an open-source framework for building Voting Advice Applications (VAAs). It's a monorepo with a SvelteKit frontend, Supabase backend, and shared packages for matching algorithms, filters, and data management. The monorepo uses Turborepo for cached builds, Changesets for versioning, and publishes core packages to npm. This project covers framework evolution: modernizing infrastructure, building Claude development skills, upgrading the frontend stack, and stabilizing the Supabase backend.
 
 ## Core Value
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
+## Current Milestone: Planning next milestone
+
+**Previous:** v2.1 E2E Test Stabilization shipped 2026-03-26.
+
 ## Current State
 
-v2.0 shipped 2026-03-22. The Supabase backend integration is complete — Strapi has been fully removed and replaced with Supabase (17 tables, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions). The frontend uses Supabase adapters for all data access, and auth uses cookie-based PKCE sessions. CI runs pgTAP tests and E2E tests against supabase CLI. Claude Skills for data, matching, filters, and database domains are integrated.
+v2.1 shipped 2026-03-26. All E2E tests now pass (previously 4 failures). The Supabase backend integration is complete with all auth flows working end-to-end. The entire codebase is Svelte 5 runes-idiomatic with Supabase as the sole backend.
 
-The entire codebase is Svelte 5 runes-idiomatic with Supabase as the sole backend. 10 E2E tests are skipped due to a Svelte 5 `pushState` reactivity bug (framework-level issue). The context system still uses Svelte 4 store patterns (deferred to CTX-01).
+Key v2.1 fixes: protected layout hydration (two interacting Svelte 5 bugs), candidate registration invite flow, password reset session-based flow, feedback popup timing with PopupRenderer runes-mode wrapper.
 
-v2.0 integration complete: Phase 29 (Skills + Planning), Phase 30 (Supabase Backend Foundation), Phase 31 (Schema Reorganization), Phase 32 (Auth Infrastructure), and Phase 34 (Adapter Foundation) completed. Supabase adapter infrastructure is in place: mixin, 5 utility functions (mapRow, getLocalized, localizeRow, toDataObject, storageUrl) with 40 tests, dynamic adapter switch wired for 'supabase' type. Default remains 'strapi' until Phase 38 cleanup. Phase 35 builds DataProvider/DataWriter/FeedbackWriter on this foundation.
+Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
 ## Requirements
 
@@ -58,11 +62,16 @@ v2.0 integration complete: Phase 29 (Skills + Planning), Phase 30 (Supabase Back
 - ✓ CI/CD updated (pgTAP, skill-drift-check, Supabase CLI E2E) — v2.0
 - ✓ Claude Skills integrated (data, matching, filters, database) — v2.0
 - ✓ Planning documents merged from parallel branch — v2.0
+- ✓ Candidate registration email flow end-to-end (invite, Mailpit, session) — v2.1
+- ✓ Candidate password reset email flow end-to-end (request, Mailpit, new password) — v2.1
+- ✓ Fresh candidate registration with protected route access — v2.1
+- ✓ Feedback popup reliable timing on results page — v2.1
 
 ### Active
 - [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug workaround needed)
 - [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
 - [ ] AdminWriter rename (naming cleanup)
+- [ ] Idura FTN auth handler (alternative to Signicat — plan in .planning/idura-ftn-auth-plan.md)
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -88,16 +97,16 @@ v2.0 integration complete: Phase 29 (Skills + Planning), Phase 30 (Supabase Back
 
 ## Context
 
-The project is a mature monorepo used for real election deployments. As of v2.0:
+The project is a mature monorepo used for real election deployments. As of v2.1:
 
-- **Codebase:** 128 plans completed across 6 milestones (22 days, 2026-03-01 to 2026-03-22)
+- **Codebase:** 128 plans + 6 tasks completed across 7 milestones (26 days, 2026-03-01 to 2026-03-26)
 - **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
 - **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
-- **Testing:** Playwright E2E (542 unit tests, 46 E2E specs), Vitest unit tests, pgTAP database tests
+- **Testing:** Playwright E2E (542 unit tests, 50 E2E specs — all passing), Vitest unit tests, pgTAP database tests
 - **CI:** GitHub Actions with pgTAP, E2E via supabase CLI, skill-drift-check, Turborepo remote caching
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
-- **Known issues:** Svelte 5 pushState reactivity bug (10 E2E tests skipped); context system uses Svelte 4 store patterns (CTX-01 deferred)
+- **Known issues:** Svelte 5 pushState reactivity bug (10 E2E tests skipped); context system uses Svelte 4 store patterns (CTX-01 deferred); local imgproxy crashes intermittently
 
 ## Constraints
 
@@ -117,10 +126,12 @@ Each major initiative is a separate milestone, executed in order:
 4. ~~**Svelte 5 Migration (Content — Voter App)**~~ — Shipped v1.3 (2026-03-20)
 5. ~~**Svelte 5 Migration (Content — Candidate App)**~~ — Shipped v1.4 (2026-03-22)
 6. ~~**Branch Integration**~~ — Shipped v2.0 (2026-03-22)
-7. **Claude Skills (remaining)** — Architect, components, LLM skills (deferred from parallel branch)
+7. ~~**E2E Test Stabilization**~~ — Shipped v2.1 (2026-03-26)
 8. **Deno Investigation** — Feasibility study for Node → Deno transition
-9. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-10. **Security Scanning** — Automated security, secrets scanning, and testing
+9. **Idura FTN Auth** — Alternative auth handler (replaces Signicat)
+10. **Claude Skills (remaining)** — Architect, components, LLM skills
+11. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+12. **Security Scanning** — Automated security, secrets scanning, and testing
 
 ## Key Decisions
 
@@ -177,6 +188,10 @@ Each major initiative is a separate milestone, executed in order:
 | Cookie-based sessions over JWT tokens | Supabase PKCE flow with httpOnly cookies; no client-side token management | ✓ Good (sb-v3.0) |
 | Keep jose and qs packages | Verified used outside Strapi adapter (identity provider, route utils) | ✓ Good (sb-v3.0) |
 | Docker Compose as production test tool | Rewritten from 4-service dev stack to single-service frontend build verifier | ✓ Good (sb-v3.0) |
+| Single layoutState enum over separate $state vars | Svelte 5 hydration bug: multiple $state writes in .then() from $effect don't trigger re-renders | ✓ Good (v2.1) |
+| PopupRenderer runes-mode wrapper | Svelte 5 legacy-mode root layout can't detect store changes from async callbacks | ✓ Good (v2.1) |
+| Invite flow redirects to login page | Session from verifyOtp doesn't reliably persist through client-side navigation | ✓ Good (v2.1) |
+| Session-based password reset (no code param) | Auth callback verifyOtp establishes session; code param was Strapi-era legacy | ✓ Good (v2.1) |
 
 ## Evolution
 
@@ -197,4 +212,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-\_Last updated: 2026-03-22 after Phase 39 (CI/CD and Documentation) completed — v2.0 milestone complete_
+\_Last updated: 2026-03-26 after v2.1 E2E Test Stabilization milestone complete_

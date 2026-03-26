@@ -1,5 +1,21 @@
 # Milestones
 
+## v2.1 E2E Test Stabilization (Shipped: 2026-03-26)
+
+**Phases completed:** 1 combined phase (40-41), 6 tasks
+**Timeline:** 4 days (2026-03-23 → 2026-03-26)
+**Requirements:** 4/4 satisfied
+
+**Key accomplishments:**
+
+- Fixed protected layout hydration — root-caused two interacting Svelte 5 bugs (multiple $state writes in $effect .then() + $bindable props_invalid_value on undefined)
+- Fixed candidate registration invite flow — session-based redirect to login after password set
+- Fixed password reset — session-based flow without legacy Strapi-era code param
+- Fixed feedback popup timing — PopupRenderer runes-mode wrapper component with countdown restart logic
+- Fixed E2E test reliability — fresh login over stale storageState, constituency test data, popup setting isolation
+
+---
+
 ## v2.0 Branch Integration (Shipped: 2026-03-22)
 
 **Phases completed:** 11 phases, 42 plans
