@@ -1,220 +1,275 @@
-# Technology Stack: Svelte 5 Content Migration (Voter App)
+# Technology Stack: Deno 2.x Feasibility Assessment
 
-**Project:** OpenVAA v1.3 -- Svelte 5 Content Migration
-**Researched:** 2026-03-18
+**Project:** OpenVAA v2.2 -- Deno Feasibility Study
+**Researched:** 2026-03-26
+**Deno Version Evaluated:** 2.7.7 (latest as of research date)
 
-## Stack Baseline (Already In Place -- DO NOT Change)
+## Executive Summary
 
-These were validated in v1.2. No version bumps or additions needed for content migration.
+Deno 2.7.7 can run the SvelteKit frontend with adapter-node, execute TypeScript natively, and use most npm packages. However, replacing the full Node.js monorepo toolchain is **not currently feasible** due to hard blockers in workspace orchestration (no Turborepo equivalent with caching), package manager integration (Yarn 4 not supported), and critical gaps in Svelte-specific tooling. A hybrid approach -- Deno as runtime for specific workloads while keeping Node.js toolchain for builds -- is the realistic path.
 
-| Technology | Version | Status |
-|------------|---------|--------|
-| Svelte | ^5.53.12 | Installed, catalog-managed |
-| SvelteKit | ^2.55.0 | Installed, catalog-managed |
-| @sveltejs/vite-plugin-svelte | ^5.1.1 | Installed |
-| Tailwind CSS 4 | ^4.2.1 | Installed, catalog-managed |
-| DaisyUI 5 | ^5.5.14 | Installed, catalog-managed |
-| Paraglide JS | ^2.15.0 | Installed (replaced sveltekit-i18n in v1.2) |
-| Node.js | 22 | Engine requirement |
-| Yarn | 4.13 | Package manager |
-| Turborepo | 2.8 | Build orchestration |
-| Vite | ^6.4.1 | Build tool |
-| Vitest | ^3.2.4 | Unit tests |
-| Playwright | ^1.58.2 | E2E tests (92 tests, regression gate) |
-| svelte-check | ^4.4.5 | Type checking |
+## Compatibility Matrix: Existing Stack vs Deno 2.7
 
-## Migration Tooling
+| Component | Current | Deno Status | Verdict |
+|-----------|---------|-------------|---------|
+| **Runtime** | Node 22 | Deno 2.7.7 | WORKS -- native TS, faster startup |
+| **Package Manager** | Yarn 4.13 | Not supported | BLOCKER -- Deno supports npm workspaces only, not Yarn |
+| **Build Orchestration** | Turborepo 2.8 | No equivalent | BLOCKER -- no task caching, no topology sorting |
+| **Package Bundling** | tsup 8.5 (esbuild) | Not needed for Deno-first; still need for npm | SOLVABLE -- tsup must stay for npm publishing |
+| **Frontend Framework** | SvelteKit 2.55 | Works with adapter-node | WORKS -- use adapter-node, Deno as runtime |
+| **Svelte** | Svelte 5.53 | Works | WORKS -- Svelte 5 runes-mode confirmed working |
+| **Vite** | 6.4.1 | Works with nodeModulesDir | WORKS -- requires `nodeModulesDir: "auto"` |
+| **Tailwind 4** | @tailwindcss/vite 4.2.1 | Works with config | SOLVABLE -- needs nodeModulesDir for PostCSS |
+| **DaisyUI 5** | 5.5.14 | Works (npm package) | WORKS -- standard npm dependency |
+| **Unit Tests** | Vitest 3.2.4 | Partial compatibility | GAP -- runs but workspace integration has edge cases |
+| **E2E Tests** | Playwright 1.58.2 | Partial compatibility | GAP -- known regressions in specific Deno versions |
+| **Linting** | ESLint 9.39 + eslint-plugin-svelte 2.46 | ESLint works via npm; deno lint lacks Svelte | GAP -- no Svelte template linting in deno lint |
+| **Formatting** | Prettier 3.7 + svelte/tailwind plugins | deno fmt has unstable Svelte support | GAP -- `unstable: ["fmt-component"]` needed |
+| **i18n** | Paraglide JS 2.15 | Known FsWatcher issue | GAP -- Vite plugin file watcher breaks; workaround exists |
+| **Versioning** | Changesets 2.30 | Untested on Deno | UNKNOWN -- Node.js CLI tool, likely works via npx |
+| **Pre-commit** | Husky 9 + lint-staged 16 | Not designed for Deno | SOLVABLE -- continue via npx or use deno_hooks |
+| **Supabase Client** | @supabase/supabase-js 2.99 | Works | WORKS -- well-tested on Deno |
+| **Supabase SSR** | @supabase/ssr 0.9 | Works | WORKS -- standard npm package |
+| **Edge Functions** | Already Deno (2.1.4) | Native | SYNERGY -- already run on Deno |
+| **CI** | GitHub Actions (setup-node) | setup-deno available | WORKS -- denoland/setup-deno installs v2.x by default |
+| **Docker** | Node 22 Alpine | Deno Alpine (~53MB) | WORKS -- comparable image sizes |
 
-### Primary: `sv migrate` CLI
+## Hard Blockers
 
-| Tool | Command | Purpose | Confidence |
-|------|---------|---------|------------|
-| `sv migrate svelte-5` | `npx sv migrate svelte-5` | Automated Svelte 4 to Svelte 5 syntax transforms | HIGH |
-| `sv migrate app-state` | `npx sv migrate app-state` | Convert `$app/stores` to `$app/state` in .svelte files | HIGH |
+### 1. Yarn 4 Workspaces -- NOT SUPPORTED
+**Confidence:** HIGH (verified via official docs and GitHub issues)
 
-**What `sv migrate svelte-5` automates:**
-- `let x = 0` to `let x = $state(0)` (reactive top-level variables)
-- `export let prop` to `let { prop } = $props()` with destructuring
-- `$:` reactive declarations to `$derived()` or `$effect()` (heuristic-based)
-- `on:click` to `onclick` (DOM event attributes)
-- `<slot />` to `{@render children?.()}` with `children` prop
-- `<div slot="name">` to `{#snippet name()}<div>...</div>{/snippet}`
-- Named slots to snippet props
+Deno supports npm workspaces (package.json `"workspaces"` field) but not Yarn workspaces. Yarn 4's `workspace:^` protocol, dependency catalogs (30 entries in `.yarnrc.yml`), and Yarn-specific lockfile are all incompatible. Deno does not understand Yarn's PnP resolution or catalog system.
 
-**What `sv migrate svelte-5` does NOT automate (manual work required):**
-- `createEventDispatcher` to callback props -- too risky to auto-convert because it changes the component's public API
-- `beforeUpdate`/`afterUpdate` to `$effect.pre`/`$effect` -- intent cannot be reliably determined
-- Complex `$:` blocks with mixed derivation+effects -- may produce `run()` from `svelte/legacy` as a stopgap
-- Store-based context patterns to runes-based patterns -- no automated path exists
-- `$app/stores` usage in `.ts` files -- `sv migrate app-state` only handles `.svelte` files
+**Impact:** Migrating requires either:
+- (a) Dropping Yarn entirely for Deno native workspaces (deno.json-based), or
+- (b) Switching to npm workspaces as an intermediate step, or
+- (c) Running Deno as runtime only, keeping Yarn for package management (recommended)
 
-**Important:** The migration script inserts `@migration` comment annotations in places needing manual review. Search for these after running.
+There is also an open issue (#28157) reporting that npm workspace integration with Deno has "hard breaking issues" -- workspace specifier resolution fails, manual import map entries are needed.
 
-### Secondary: VS Code Extension
+**Sources:** [Deno Workspaces Docs](https://docs.deno.com/runtime/fundamentals/workspaces/), [GitHub #26346](https://github.com/denoland/deno/issues/26346), [GitHub #28157](https://github.com/denoland/deno/issues/28157)
 
-The Svelte VS Code extension offers a "Migrate Component to Svelte 5 Syntax" command palette action for per-component migration. Useful for incremental work but not needed if running `sv migrate svelte-5` on the full project.
+### 2. Turborepo Replacement -- NO EQUIVALENT IN DENO
+**Confidence:** HIGH (verified via Turborepo discussions and Deno task docs)
 
-### NOT Needed -- No External Migration Libraries
+Turborepo provides three critical features the monorepo relies on:
+1. **Content-based task caching** -- skip rebuilds when inputs unchanged (sub-5s no-change builds)
+2. **Topological task ordering** -- build dependencies before dependents (`^build` in turbo.json)
+3. **Remote caching** -- Vercel remote cache in CI
 
-Do NOT add any migration helper libraries. The migration is a one-time code transformation, not an ongoing runtime dependency. Svelte's built-in compatibility layer handles mixed old/new syntax during the transition.
+Deno's task runner (as of 2.7) has:
+- Task dependencies with parallel execution (since 2.1) -- YES
+- `--recursive` and `--filter` flags for workspace tasks (since 2.1) -- YES
+- **Task output caching** -- NO (on roadmap, not implemented)
+- **Topological sorting across packages** -- NO (on roadmap, not implemented)
+- **Remote caching** -- NO
 
-## Key API Changes for Content Migration
+Turborepo maintainers have explicitly said Deno support is not prioritized because Deno's URL-based dependency model differs fundamentally from how Turborepo operates.
 
-### Runes (replace implicit reactivity)
+**Sources:** [deno task docs](https://docs.deno.com/runtime/reference/cli/task/), [Turborepo Discussion #7454](https://github.com/vercel/turborepo/discussions/7454), [Deno workspace features roadmap](https://github.com/denoland/deno/issues/24991)
 
-| Old Pattern | New Pattern | Files Affected | Notes |
-|-------------|-------------|----------------|-------|
-| `let x = 0` (reactive) | `let x = $state(0)` | All .svelte components | Only top-level variables that are read in templates |
-| `export let prop` | `let { prop } = $props()` | All components with props | Destructured; rest props via `...rest` |
-| `export let prop = default` | `let { prop = default } = $props()` | Components with defaults | Same syntax |
-| `$: derived = expr` | `let derived = $derived(expr)` | ~52 occurrences across 30 files | Pure derivations only |
-| `$: { sideEffect() }` | `$effect(() => { sideEffect() })` | ~52 occurrences across 30 files | Side effects, DOM reads |
-| `$: if (cond) { ... }` | `$effect(() => { if (cond) { ... } })` | Mixed in above count | Conditional effects |
-| `$$restProps` | `let { ...rest } = $props()` | Components forwarding attrs | Use spread: `{...rest}` |
-| `$$props` | `let { ...allProps } = $props()` | Rare | Avoid; prefer named props |
+### 3. npm Publishing Workflow -- REQUIRES TSUP
+**Confidence:** HIGH
 
-### Event Handlers (replace directive syntax)
+Four packages (@openvaa/core, data, matching, filters) publish ESM JavaScript with `.d.ts` declaration files to npm. Deno's philosophy is "ship TypeScript directly" via JSR, but npm consumers expect compiled JavaScript. The current `tsup && tsc --emitDeclarationOnly` workflow must persist for npm publishing regardless of runtime.
 
-| Old Pattern | New Pattern | Files Affected |
-|-------------|-------------|----------------|
-| `on:click={handler}` | `onclick={handler}` | ~46 occurrences across 30 files |
-| `on:click\|preventDefault` | `onclick={e => { e.preventDefault(); handler(e) }}` | Check each usage |
-| `on:click\|stopPropagation` | `onclick={e => { e.stopPropagation(); handler(e) }}` | Check each usage |
-| `createEventDispatcher()` | Callback props: `let { onclick } = $props()` | 6 files, 12 occurrences |
-| `dispatch('eventName', data)` | `oneventname?.(data)` | 6 files |
+Additionally, `@openvaa/app-shared` produces both ESM and CJS output (`format: ['esm', 'cjs']` in tsup.config.ts). Deno does not generate CJS.
 
-### Slots to Snippets
+**Impact:** tsup cannot be eliminated for any packages that publish to npm.
 
-| Old Pattern | New Pattern | Files Affected |
-|-------------|-------------|----------------|
-| `<slot />` | `let { children } = $props(); {@render children?.()}` | 41 files with `<slot` |
-| `<slot name="x" />` | `let { x } = $props(); {@render x?.()}` | Named slots in ~15 files |
-| `<slot let:data>` | Snippet with params: `{#snippet item(data)}...{/snippet}` | EntityCard and others |
-| `<Component><div slot="x">` | `<Component>{#snippet x()}<div>...</div>{/snippet}</Component>` | Consumer side |
+## Solvable Gaps
 
-### Lifecycle Hooks
+### 4. SvelteKit + Vite -- WORKS WITH adapter-node
+**Confidence:** HIGH (official Deno tutorial, multiple community confirmations)
 
-| Old Pattern | New Pattern | Status | Files |
-|-------------|-------------|--------|-------|
-| `onMount(() => {})` | `onMount(() => {})` | **NOT deprecated** -- keep as-is | ~30 files |
-| `onDestroy(() => {})` | Return cleanup from `$effect` | Migrate where it pairs with `$effect` | ~30 files |
-| `beforeUpdate(() => {})` | `$effect.pre(() => {})` | **Deprecated** -- must migrate | Check usage |
-| `afterUpdate(() => {})` | `$effect(() => {})` | **Deprecated** -- must migrate | Check usage |
+**Correction to prior research:** adapter-node is NOT broken on Deno. Both Deno and Svelte teams now recommend using the standard `@sveltejs/adapter-node` with Deno as the runtime. Custom Deno adapters are no longer recommended because they require custom code for every plugin and extension.
 
-**Important nuance:** `onMount` and `onDestroy` are NOT deprecated in Svelte 5. They remain valid and recommended for component lifecycle. Only `beforeUpdate` and `afterUpdate` are deprecated. Do not blindly convert all `onMount` to `$effect`.
-
-### SvelteKit `$app/stores` to `$app/state`
-
-| Old Pattern | New Pattern | Files Affected |
-|-------------|-------------|----------------|
-| `import { page } from '$app/stores'` | `import { page } from '$app/state'` | 21 files |
-| `$page.data` | `page.data` | 21 files (remove `$` prefix) |
-| `import { updated } from '$app/stores'` | `import { updated } from '$app/state'` | 1 file |
-
-`$app/stores` is deprecated and will be removed in SvelteKit 3. The `sv migrate app-state` command handles `.svelte` files automatically, but **2 `.ts` context files** (`paramStore.ts`, `authContext.ts`) and **1 utility** (`pageDatumStore.ts`) import from `$app/stores` and must be migrated manually.
-
-### Context API
-
-| Old Pattern | New Pattern | When |
-|-------------|-------------|------|
-| `setContext(SYMBOL, value)` | `setContext(SYMBOL, value)` | **No change needed** -- same API |
-| `getContext<T>(SYMBOL)` | `getContext<T>(SYMBOL)` | **No change needed** |
-| Store-valued contexts | `$state`-valued contexts | Aspirational, deferred (see below) |
-
-**`createContext<T>()`** -- available since Svelte 5.40 (project has 5.53.12) -- provides typed context without manual key management. Returns `[get, set]` tuple. Evaluate for adoption during migration but do NOT treat as a blocker.
-
-## Store-to-Runes Strategy
-
-This is the hardest part of the migration. The codebase has 22 files importing from `svelte/store`, 9 context modules using `setContext`/`getContext`, and deep store chains (`parsimoniusDerived`, `stackedStore`, `paramStore`, etc.).
-
-### What NOT to do
-
-Do NOT attempt a big-bang store-to-runes rewrite of context modules. The store-based architecture is deeply interconnected:
-
-```
-dataContext (alwaysNotifyStore) --> appContext (writable, pageDatumStore)
-    --> voterContext (parsimoniusDerived chains, paramStore, sessionStorageWritable)
-        --> ~15 voter route components subscribing via $storeName
+Required deno.json configuration:
+```json
+{
+  "nodeModulesDir": "auto",
+  "unstable": ["fmt-component"]
+}
 ```
 
-### Recommended Strategy: Incremental, Inside-Out
+The `nodeModulesDir: "auto"` setting is critical because Vite, Tailwind CSS 4's PostCSS plugin, and other Node-ecosystem tools expect a `node_modules` directory.
 
-**Phase 1 -- Components (automated):** Run `sv migrate svelte-5` on all `.svelte` files. This converts `$:`, `on:`, `<slot>`, `export let` to runes. Store subscriptions via `$storeName` auto-syntax continue to work because Svelte 5's store compatibility layer handles them.
+Minimum Deno version: 2.1.10 or later for SvelteKit.
 
-**Phase 2 -- `$app/stores` to `$app/state`:** Run `sv migrate app-state`. Manually fix the 3 `.ts` utility files that import `$app/stores`.
+**Sources:** [Deno SvelteKit Tutorial](https://docs.deno.com/examples/sveltekit_tutorial/), [amun.pl blog](https://amun.pl/blog/post/running-svelte-5-projects-using-deno-in-2024)
 
-**Phase 3 -- Event dispatchers:** Manually convert 6 files using `createEventDispatcher` to callback props.
+### 5. Paraglide JS -- WORKAROUND NEEDED
+**Confidence:** MEDIUM (community-reported, not officially resolved)
 
-**Phase 4 -- Context store internals (aspirational):** Convert `alwaysNotifyStore` in `dataContext.ts` to use `$state` directly. This eliminates the core workaround documented in the TODO. Requires `.svelte.ts` file extension for runes support in non-component files.
+Paraglide JS 2.x uses a Vite plugin with file watching. On Deno, the FsWatcher implementation causes "Input watch path is neither a file nor a directory" errors during development.
 
-### Stores Are NOT Deprecated
+**Workaround:** Create a custom Vite plugin wrapper that uses `Deno.Command` to invoke the Paraglide compiler with watch mode instead of the standard file watcher.
 
-`svelte/store` (writable, readable, derived, get) is explicitly **not deprecated** in Svelte 5. The Svelte team has confirmed stores are not going away. They remain valid for:
-- Cross-component shared state
-- Integration with imperative APIs (like DataRoot's `onUpdate` callback)
-- Load function return values
-- Anywhere runes cannot be used (plain `.ts` files without `.svelte.ts` extension)
+**Source:** [Deno Questions Forum](https://questions.deno.com/m/1328508724410843136)
 
-Stores and runes can coexist. The `$storeName` auto-subscription syntax works in runes-mode components. Do not force-migrate stores where they work correctly.
+### 6. Vitest -- MOSTLY WORKS, KEEP IT
+**Confidence:** MEDIUM
 
-### When to Use .svelte.ts Files
+Vitest runs under Deno for most test scenarios. Known limitations:
+- Module/package mocking is less robust than under Node.js
+- Workspace integration has reported edge cases with module resolution
+- The 542 existing unit tests would need individual validation
 
-Runes (`$state`, `$derived`, `$effect`) only work in `.svelte` and `.svelte.ts`/`.svelte.js` files. To use runes in utility/context modules:
-- Rename `foo.ts` to `foo.svelte.ts`
-- The Svelte compiler will then process these files for runes support
+Deno's built-in test runner (`Deno.test()`) is NOT a practical replacement -- it lacks `test.each()`, Vitest's module mocking, and Vite-powered watch mode. Migrating 542 tests to `Deno.test()` would be a rewrite for minimal gain.
 
-**Caution with .svelte.ts for shared state:** In SSR contexts, module-level `$state()` in `.svelte.ts` files creates shared state between requests. Always use `setContext` to scope state per-request, not module-level exports. Context-based patterns (which this codebase already uses) are SSR-safe.
+**Recommendation:** Keep Vitest, run it under Deno runtime.
 
-## Packages to Add
+**Sources:** [Vitest on Deno](https://questions.deno.com/m/1364243812532228157), [Deno Testing Docs](https://docs.deno.com/runtime/fundamentals/testing/)
 
-**None.** The content migration requires zero new dependencies. All tooling is already in the Svelte ecosystem:
-- `sv migrate` ships with `svelte` (via `svelte-migrate` package, invoked through `npx sv migrate`)
-- Runes, snippets, and `$app/state` are built into the installed Svelte 5.53.12 and SvelteKit 2.55.0
+### 7. Playwright -- WORKS WITH CAUTION
+**Confidence:** MEDIUM (documented issues exist, workarounds confirmed)
 
-## Packages to Remove (During Migration)
+Playwright works with Deno but has had version-specific regressions. Deno 2.1.5 introduced BadResource errors. The `webServer` option in playwright.config.ts needs adjustment.
 
-| Package | When | Reason |
-|---------|------|--------|
-| None during v1.3 | -- | All removals were handled in v1.2 infrastructure phase |
+Deno 2.7.x appears stable for Playwright usage.
 
-## Packages to Evaluate for Future Removal (Post-Migration)
+**Sources:** [Deno 2 and Playwright](https://honman.dev/posts/deno-2-and-playwright), [Deno Issue #27623](https://github.com/denoland/deno/issues/27623)
 
-| Package | Question | When |
-|---------|----------|------|
-| `svelte-visibility-change@^0.6.0` | Svelte 5 compatible? Still needed? | During v1.3 if voter app uses it |
+### 8. Linting -- HYBRID APPROACH REQUIRED
+**Confidence:** HIGH
 
-## Anti-Recommendations: What NOT to Add
+`deno lint` is extremely fast (~21ms for 50 files vs ~2,369ms for ESLint) and now has ESLint-compatible plugin API (Deno 2.2+). However:
+- **No Svelte template linting** -- same blocker that caused oxlint deferral in v1.2
+- Plugin API is unstable and not 100% ESLint-compatible
+- No existing Svelte plugin for deno lint
 
-| Package/Tool | Why NOT |
-|-------------|---------|
-| `svelte-migrate` (direct install) | Invoked via `npx sv migrate`; no need to install |
-| `svelte-5-ui-lib` or similar | Migration is about idiom conversion, not adding UI libraries |
-| Store-replacement libraries | Runes ARE the replacement; no wrapper needed |
-| `@sveltejs/svelte-scma` or codemods | `sv migrate` IS the official codemod |
-| State management libraries (zustand, jotai, etc.) | Svelte 5 runes handle all state management natively |
-| `.svelte.ts` for all files | Only rename when actually using runes in that file |
+**Recommendation:** Keep ESLint + eslint-plugin-svelte for Svelte files. Could use deno lint for pure TS/JS packages in a partial migration.
 
-## Confidence Assessment
+**Sources:** [Deno Linting Docs](https://docs.deno.com/runtime/fundamentals/linting_and_formatting/), [Deno 2.2 Blog](https://deno.com/blog/v2.2)
 
-| Area | Confidence | Reason |
-|------|------------|--------|
-| sv migrate capabilities | HIGH | Official Svelte docs, verified against installed version |
-| Runes API patterns | HIGH | Official docs, multiple verified sources |
-| Store compatibility status | HIGH | Svelte team statements, official migration guide |
-| createContext availability | HIGH | Svelte 5.40+ feature, project has 5.53.12 |
-| $app/state migration | HIGH | SvelteKit official docs, automated tool exists |
-| Store-to-runes conversion strategy | MEDIUM | Pattern is documented but no official automated tool; project-specific complexity with DataRoot |
-| createEventDispatcher migration | HIGH | Official docs; 6 files clearly identified |
+### 9. Formatting -- PARTIAL REPLACEMENT
+**Confidence:** MEDIUM
+
+`deno fmt` uses dprint (Rust-based, very fast). Svelte component formatting requires unstable flag: `"unstable": ["fmt-component"]`. Does not handle Tailwind class sorting (currently via `prettier-plugin-tailwindcss`).
+
+**Recommendation:** Keep Prettier for Svelte files with Tailwind plugin.
+
+## Supabase Edge Functions Synergy
+
+**Confidence:** HIGH
+
+The monorepo already has 3 Edge Functions running on Deno (invite-candidate, send-email, signicat-callback) using `Deno.serve()` and `Deno.env.get()`. Supabase Edge Functions now run Deno 2.1.4 in all regions.
+
+**Current pattern** (Edge Functions import from esm.sh):
+```typescript
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+```
+
+**Potential improvement:** With Deno workspaces, Edge Functions could import shared workspace packages directly, enabling type-safe shared code between frontend and Edge Functions.
+
+**Limitation:** Supabase CLI uses its own Edge Runtime for local development (not standard Deno CLI). Each function should have its own `deno.json` for deployment isolation. A shared `_shared` folder is the recommended pattern for code reuse between functions.
+
+**Sources:** [Supabase Edge Functions Docs](https://supabase.com/docs/guides/functions/dependencies), [Supabase Deno 2 Discussion](https://github.com/orgs/supabase/discussions/37941)
+
+## Migration Strategies
+
+### Strategy A: Full Deno Replacement (NOT RECOMMENDED)
+Replace Node + Yarn + Turborepo entirely with Deno.
+
+| Replace | With | Risk |
+|---------|------|------|
+| Yarn 4.13 | deno.json workspaces | HIGH -- lose catalogs, lockfile migration, #28157 bugs |
+| Turborepo 2.8 | deno task --recursive | HIGH -- lose caching, topology sorting |
+| tsup | Remove for internal, keep for npm | MEDIUM |
+| Vitest | deno test | HIGH -- 542 tests to rewrite |
+| ESLint | deno lint | HIGH -- no Svelte template linting |
+| Prettier | deno fmt | MEDIUM -- Svelte unstable, no Tailwind sort |
+| Husky | deno_hooks | LOW |
+| Changesets | deno_changesets or keep via npx | MEDIUM |
+
+**Verdict:** Too many simultaneous regressions. Destroys proven toolchain for immature alternatives.
+
+### Strategy B: Deno as Runtime Only (RECOMMENDED FOR PoC)
+Keep Node.js toolchain (Yarn, Turborepo, tsup, ESLint, Prettier). Use Deno as the runtime for execution.
+
+| Component | Change | Risk |
+|-----------|--------|------|
+| Yarn 4.13 | Keep | NONE |
+| Turborepo 2.8 | Keep | NONE |
+| tsup | Keep | NONE |
+| Runtime | Node 22 -> Deno 2.7 | LOW |
+| Docker | node:22-alpine -> denoland/deno:alpine | LOW |
+| CI | setup-node -> setup-deno | LOW |
+| SvelteKit | adapter-node on Deno | LOW |
+
+**Verdict:** Minimal disruption. Validates Deno runtime benefits (startup, security, TS native) without touching the proven build toolchain.
+
+### Strategy C: Gradual Deno-First (LONG-TERM, CONDITIONAL)
+Start with Strategy B, then incrementally:
+1. Migrate pure TS packages (core, matching, filters) to deno.json alongside package.json
+2. Monitor Deno task caching development -- adopt when shipped
+3. Monitor deno lint Svelte plugin ecosystem -- adopt when available
+4. Re-evaluate full migration when Deno workspaces mature and #28157 is resolved
+
+**Verdict:** Pragmatic long-term path, but timeline depends on Deno team's roadmap delivery.
+
+## Performance Comparison
+
+| Metric | Node 22 | Deno 2.7 | Delta |
+|--------|---------|----------|-------|
+| Cold start (JS) | 60-120ms | 40-60ms | ~50% faster |
+| Cold start (TS) | ~400ms | ~80ms | ~5x faster |
+| HTTP throughput | ~42K req/s | ~47K req/s | ~12% faster |
+| Docker image (Alpine) | ~38MB compressed | ~53MB on-disk | Comparable |
+| Lint (50 files) | ~2,369ms (ESLint) | ~21ms (deno lint) | ~100x faster |
+
+Performance gains are real but modest for a web application. The value is primarily DX (native TS, security model, built-in tooling convergence) rather than raw throughput.
+
+**Sources:** [Runtime Benchmarks 2026](https://dev.to/pockit_tools/deno-2-vs-nodejs-vs-bun-in-2026-the-complete-javascript-runtime-comparison-1elm)
+
+## Deployment Options
+
+### Option 1: adapter-node on Deno (Recommended)
+```dockerfile
+FROM denoland/deno:alpine-2.7.7
+WORKDIR /app
+COPY build/ ./build/
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "build/index.js"]
+```
+
+### Option 2: deno compile (NOT production-ready for SvelteKit)
+`deno compile` with SvelteKit has a known bug: "Module not found runtime/control.js" ([Issue #26155](https://github.com/denoland/deno/issues/26155)). Do not use for SvelteKit production.
+
+### Option 3: Keep Node.js for production, Deno for dev only
+Most conservative. Zero production risk. Validates Deno in development without deployment changes.
+
+## Recommended PoC Scope
+
+For the feasibility study proof of concept, validate Strategy B:
+
+1. **One pure TS package** (`@openvaa/core`) -- run its unit tests with Vitest on Deno runtime
+2. **SvelteKit dev server** -- run `vite dev` under Deno with adapter-node
+3. **Subset of E2E tests** -- run 5-10 Playwright specs under Deno
+4. **Benchmark** -- startup time and test execution time vs Node.js baseline
+5. **Edge Function sharing** -- import a shared type from workspace into an Edge Function
+
+This validates the runtime story without touching the build toolchain.
 
 ## Sources
 
-- [Svelte 5 migration guide](https://svelte.dev/docs/svelte/v5-migration-guide) -- comprehensive runes/snippets/events migration patterns
-- [sv migrate CLI docs](https://svelte.dev/docs/cli/sv-migrate) -- available migrations and automated transforms
-- [$app/state docs](https://svelte.dev/docs/kit/$app-state) -- SvelteKit page/navigating/updated state objects
-- [Svelte 5 context API](https://svelte.dev/docs/svelte/context) -- createContext, setContext, getContext patterns
-- [Svelte lifecycle hooks](https://svelte.dev/docs/svelte/lifecycle-hooks) -- onMount/onDestroy NOT deprecated, beforeUpdate/afterUpdate deprecated
-- [Refactoring Svelte stores to $state runes (Loopwerk)](https://www.loopwerk.io/articles/2025/svelte-5-stores/) -- writable store limitations with $state
-- [Global state in Svelte 5 (Mainmatter)](https://mainmatter.com/blog/2025/03/11/global-state-in-svelte-5/) -- SSR safety, context vs module state
-- [$app/stores deprecation](https://svelte.dev/docs/kit/$app-stores) -- deprecated, subject to removal in SvelteKit 3
-- [Svelte legacy overview](https://svelte.dev/docs/svelte/legacy-overview) -- deprecated vs supported features
-- [Snippet docs](https://svelte.dev/docs/svelte/snippet) -- snippet syntax and patterns
+- [Deno Workspaces Documentation](https://docs.deno.com/runtime/fundamentals/workspaces/)
+- [Deno Node.js Compatibility](https://docs.deno.com/runtime/fundamentals/node/)
+- [Deno Task Runner Reference](https://docs.deno.com/runtime/reference/cli/task/)
+- [Deno Testing](https://docs.deno.com/runtime/fundamentals/testing/)
+- [Deno Linting and Formatting](https://docs.deno.com/runtime/fundamentals/linting_and_formatting/)
+- [Deno Lint Plugins (2.2)](https://docs.deno.com/runtime/reference/lint_plugins/)
+- [Building SvelteKit with Deno](https://docs.deno.com/examples/sveltekit_tutorial/)
+- [Deno Docker Reference](https://docs.deno.com/runtime/reference/docker/)
+- [Deno CI/GitHub Actions](https://docs.deno.com/runtime/reference/continuous_integration/)
+- [Turborepo Deno Discussion #7454](https://github.com/vercel/turborepo/discussions/7454)
+- [Deno npm Workspace Compat Issue #28157](https://github.com/denoland/deno/issues/28157)
+- [Supabase Edge Functions Deno 2 Regions](https://github.com/orgs/supabase/discussions/37941)
+- [Supabase Edge Function Dependencies](https://supabase.com/docs/guides/functions/dependencies)
+- [Deno 2 + Playwright](https://honman.dev/posts/deno-2-and-playwright)
+- [Paraglide + Deno FsWatcher Issue](https://questions.deno.com/m/1328508724410843136)
+- [Deno 2.7 Releases](https://github.com/denoland/deno/releases)
+- [Deno 2.6 Blog (tsgo integration)](https://deno.com/blog/v2.6)
+- [Deno 2.2 Blog (Lint Plugins, OpenTelemetry)](https://deno.com/blog/v2.2)
+- [Runtime Benchmarks 2026](https://dev.to/pockit_tools/deno-2-vs-nodejs-vs-bun-in-2026-the-complete-javascript-runtime-comparison-1elm)
+- [Deno Announcing v2.0](https://deno.com/blog/v2.0)

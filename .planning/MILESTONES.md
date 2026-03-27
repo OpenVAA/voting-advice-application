@@ -1,5 +1,31 @@
 # Milestones
 
+## v2.2 Deno Feasibility Study (Paused: 2026-03-27)
+
+**Phases completed:** 1 of 3 phases (Phase 42), 2 plans, 5 tasks
+**Timeline:** 1 day (2026-03-26)
+**Requirements:** 8/14 satisfied (6 EVAL/RPT deferred)
+
+**Key accomplishments:**
+
+- Deno 2.7.8 validated as runtime for full OpenVAA monorepo (SvelteKit, Supabase auth, E2E tests)
+- SvelteKit production build serves under Deno with zero code changes and zero Deno-specific failures
+- 54/67 E2E tests pass against Deno-served frontend; Supabase PKCE auth works end-to-end
+- Hybrid deno.json+package.json workspace coexists with Turborepo/Changesets/tsup
+- @openvaa/core 17 tests pass via deno test with vitest compatibility shim
+- Code rolled back to avoid maintenance burden; research artifacts preserved
+
+### Known Gaps
+
+- EVAL-01: Toolchain comparison not completed (Phase 43 paused)
+- EVAL-02: Build performance benchmarks not completed (Phase 43 paused)
+- EVAL-03: Security model assessment not completed (Phase 43 paused)
+- RPT-01: Go/no-go recommendation not produced (Phase 44 paused)
+- RPT-02: Migration/cherry-pick plan not produced (Phase 44 paused)
+- RPT-03: Performance benchmarks not produced (Phase 44 paused)
+
+---
+
 ## v2.1 E2E Test Stabilization (Shipped: 2026-03-26)
 
 **Phases completed:** 1 combined phase (40-41), 6 tasks

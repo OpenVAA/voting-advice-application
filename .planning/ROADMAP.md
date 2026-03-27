@@ -9,6 +9,7 @@
 - ✅ **v1.4 Svelte 5 Migration (Candidate App)** — Phases 27-28 (shipped 2026-03-22)
 - ✅ **v2.0 Branch Integration** — Phases 29-39 (shipped 2026-03-22)
 - ✅ **v2.1 E2E Test Stabilization** — Phases 40-41 (shipped 2026-03-26)
+- ⏸️ **v2.2 Deno Feasibility Study** — Phases 42-44 (paused 2026-03-27 — feasibility validated, code rolled back, research preserved)
 
 ## Phases
 
@@ -93,46 +94,26 @@
 
 </details>
 
+<details>
+<summary>v2.2 Deno Feasibility Study (Phases 42-44) -- PAUSED 2026-03-27</summary>
+
+- [x] Phase 42: Runtime Validation and PoC (2/2 plans) — Deno 2.7.8 validated: SvelteKit serves, 54/67 E2E pass, Supabase auth works, code rolled back
+- [ ] Phase 43: Evaluation and Benchmarking (paused) — Toolchain comparison, benchmarks, security model
+- [ ] Phase 44: Findings Report (paused) — Go/no-go recommendation with migration plan
+
+Key findings: SvelteKit adapter-node runs on Deno with zero code changes, Turborepo/Changesets/tsup unaffected, vitest shim enables dual-runtime tests. See `milestones/v2.2-ROADMAP.md` for full details.
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | v1.0 | 11/11 | Complete | 2026-03-07 |
-| 2. Candidate App Coverage | v1.0 | 4/4 | Complete | 2026-03-08 |
-| 3. Voter App Core Journey | v1.0 | 4/4 | Complete | 2026-03-08 |
-| 4. Voter App Settings and Edge Cases | v1.0 | 5/5 | Complete | 2026-03-09 |
-| 5. Configuration Variants | v1.0 | 3/3 | Complete | 2026-03-09 |
-| 6. CI Integration and Test Organization | v1.0 | 2/2 | Complete | 2026-03-10 |
-| 7. Advanced Test Capabilities | v1.0 | 2/2 | Complete | 2026-03-11 |
-| 8. Build Orchestration | v1.1 | 2/2 | Complete | 2026-03-12 |
-| 9. Directory Restructure | v1.1 | 2/2 | Complete | 2026-03-13 |
-| 10. Version Management | v1.1 | 2/2 | Complete | 2026-03-13 |
-| 11. Package Publishing | v1.1 | 3/3 | Complete | 2026-03-13 |
-| 12. Polish and Optimization | v1.1 | 3/3 | Complete | 2026-03-14 |
-| 13. Tech Debt Cleanup | v1.1 | 3/3 | Complete | 2026-03-15 |
-| 15. Scaffold and Build | v1.2 | 2/2 | Complete | 2026-03-15 |
-| 16. CSS Architecture | v1.2 | 2/2 | Complete | 2026-03-15 |
-| 17. Internationalization | v1.2 | 4/4 | Complete | 2026-03-16 |
-| 18. Dependency Modernization | v1.2 | 2/2 | Complete | 2026-03-16 |
-| 19. Integration Validation | v1.2 | 2/2 | Complete | 2026-03-18 |
-| 20. OXC Toolchain Exploration | v1.2 | 1/1 | Complete | 2026-03-18 |
-| 21. Migration Cleanup | v1.2 | 1/1 | Complete | 2026-03-18 |
-| 22. Leaf Component Migration | v1.3 | 7/7 | Complete | 2026-03-18 |
-| 23. Container Components and Layouts | v1.3 | 4/4 | Complete | 2026-03-19 |
-| 24. Voter Route Migration | v1.3 | 4/4 | Complete | 2026-03-19 |
-| 25. Cleanup | v1.3 | 1/1 | Complete | 2026-03-19 |
-| 26. Validation Gate | v1.3 | 3/3 | Complete | 2026-03-20 |
-| 27. Candidate Route Migration | v1.4 | 4/4 | Complete | 2026-03-21 |
-| 28. Validation Gate | v1.4 | 3/3 | Complete | 2026-03-21 |
-| 29. Skills and Planning Documents | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 30. Supabase Backend Foundation | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 31. Schema Reorganization | v2.0 | 1/1 | Complete | 2026-03-22 |
-| 32. Auth Infrastructure | v2.0 | 3/3 | Complete | 2026-03-22 |
-| 33. Auth Integration | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 34. Adapter Foundation | v2.0 | 3/3 | Complete | 2026-03-22 |
-| 35. Adapter Providers and Writers | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 36. E2E Test Migration | v2.0 | 8/8 | Complete | 2026-03-22 |
-| 37. E2E Failure Resolution | v2.0 | 3/3 | Complete | 2026-03-22 |
-| 38. Strapi Removal and Cleanup | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 39. CI/CD and Documentation | v2.0 | 4/4 | Complete | 2026-03-22 |
-| 40-41. E2E Test Stabilization | v2.1 | 6 tasks | Complete | 2026-03-26 |
+| 1-7 | v1.0 | 31/31 | Complete | 2026-03-12 |
+| 8-13 | v1.1 | 15/15 | Complete | 2026-03-15 |
+| 15-21 | v1.2 | 14/14 | Complete | 2026-03-18 |
+| 22-26 | v1.3 | 19/19 | Complete | 2026-03-20 |
+| 27-28 | v1.4 | 7/7 | Complete | 2026-03-22 |
+| 29-39 | v2.0 | 42/42 | Complete | 2026-03-22 |
+| 40-41 | v2.1 | 6 tasks | Complete | 2026-03-26 |
+| 42-44 | v2.2 | 2/2 + 2 paused | Paused | 2026-03-27 |

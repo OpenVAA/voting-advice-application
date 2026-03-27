@@ -344,6 +344,49 @@
 
 ---
 
+## Milestone: v2.2 — Deno Feasibility Study (Paused)
+
+**Paused:** 2026-03-27
+**Phases:** 1 of 3 (Phase 42 complete, 43-44 paused) | **Plans:** 2 | **Commits:** 20
+
+### What Was Built
+- Deno 2.7.8 validated as runtime for the full OpenVAA monorepo (SvelteKit production build, Supabase PKCE auth, 54/67 E2E tests)
+- Hybrid deno.json+package.json workspace coexisting with Turborepo/Changesets/tsup
+- 17 @openvaa/core tests ported to deno test with vitest compatibility shim
+- Reusable smoke test script for SvelteKit under Deno with documented permission set
+
+### What Worked
+- Research-first approach: thorough ecosystem research identified "Deno as runtime only" strategy before any code was written — prevented wasted effort on full toolchain replacement
+- Fast PoC validation: Phase 42 completed in 38 minutes total (6min plan 01 + 32min plan 02) with all 8 requirements validated
+- Early pause decision: recognized that maintaining Deno configs without CI enforcement or production deployment would create drift — better to roll back and preserve research
+- Vitest compatibility shim: enabled existing tests to run on both runtimes without code duplication
+
+### What Was Inefficient
+- Phase 42 code was rolled back immediately after validation — the work produced research artifacts but no permanent code changes
+- Could have scoped v2.2 as a single-phase "feasibility spike" rather than a 3-phase milestone with full requirements, since the pause decision was likely from the start
+- The 6 EVAL/RPT requirements were defined but never addressed — overhead for requirements that may never be executed
+
+### Patterns Established
+- Hybrid deno.json+package.json workspace pattern for gradual Deno adoption
+- `--unstable-bare-node-builtins` as standard flag for Paraglide JS compatibility on Deno
+- ORIGIN env var required by SvelteKit adapter-node for CSRF protection (applies to both Node and Deno)
+- "Validate then rollback" pattern for feasibility studies — preserve research, avoid maintenance burden
+
+### Key Lessons
+1. Feasibility studies should be scoped as spikes, not full milestones — a single phase with clear go/no-go criteria is sufficient
+2. "Validate then rollback" is a valid outcome — not all milestones need to ship code changes
+3. Deno runtime compatibility is excellent for Node.js projects — zero code changes needed for SvelteKit serving
+4. Toolchain replacement is a different (harder) problem than runtime replacement — Yarn, Turborepo, ESLint have no Deno equivalents
+5. Research artifacts have lasting value even when code is rolled back — the findings will inform future Deno decisions
+
+### Cost Observations
+- Model mix: opus for execution, sonnet for research agents
+- 20 commits over 1 day (including rollback)
+- 18 files modified (+2,646/-1,406 lines), net zero after rollback
+- Fastest execution: 38 minutes for 2 plans — research phase was the real time investment
+
+---
+
 ## Cross-Milestone Trends
 
 *Note: Parallel branch milestones (sb-v2.0, sb-v3.0) are documented above but not included in cumulative quality metrics — those milestones will be re-executed on this branch during v2.0 integration.*
@@ -357,6 +400,7 @@
 | v1.2      | 96      | 7      | 14    | ~10min   | Largest codebase impact (861 files) — framework upgrade patterns |
 | v1.3      | 99      | 5      | 19    | ~8min    | Content migration at scale (98 components) — runes patterns validated |
 | v1.4      | 21      | 2      | 7     | ~10min   | Fastest milestone — established patterns, focused scope |
+| v2.2      | 20      | 1/3    | 2     | ~19min   | First paused milestone — feasibility spike with rollback |
 
 ### Cumulative Quality
 
@@ -367,11 +411,12 @@
 | v1.2      | 31/31       | 100%     | 14    | 0 (tech debt tracked, all reqs met) |
 | v1.3      | 20/20       | 100%     | 19    | 0 (14 tech debt items, all non-blocking) |
 | v1.4      | 10/10       | 100%     | 7     | 0 |
+| v2.2      | 8/14        | 57%      | 2     | 6 (EVAL/RPT — milestone paused) |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Infrastructure before features — invest in foundations first (v1.0 Phase 1, v1.1 Phase 8, v1.2 scaffold-first)
-2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1, v1.2 OXC eval)
+2. Research-first approach prevents backtracking — thorough upfront evaluation leads to confident decisions (v1.1, v1.2 OXC eval, v2.2 Deno)
 3. Milestone audits catch real issues — gap closure is a validated 5-milestone pattern (v1.0, v1.1, v1.2, v1.3, v1.4)
 4. End-to-end verification reveals what unit checks miss — fresh install tests (v1.1), E2E tests (v1.0, v1.3, v1.4), integration validation phase (v1.2)
 5. Document deferred items with "why" — conscious deferral is fine, silent gaps accumulate
@@ -380,3 +425,4 @@
 8. Migration order follows dependency flow — leaf → container → route prevents broken intermediate states (v1.3)
 9. Validation gate as dedicated phase catches regressions other tools miss — now validated across 5 milestones
 10. Established patterns compound — each subsequent milestone is faster than the last (v1.4 completed in 1 day vs v1.0's 11 days)
+11. Feasibility studies should be scoped as spikes — validate fast, rollback if no forcing function, preserve research (v2.2)

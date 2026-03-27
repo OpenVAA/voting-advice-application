@@ -8,15 +8,13 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-## Current Milestone: Planning next milestone
-
-**Previous:** v2.1 E2E Test Stabilization shipped 2026-03-26.
-
 ## Current State
 
-v2.1 shipped 2026-03-26. All E2E tests now pass (previously 4 failures). The Supabase backend integration is complete with all auth flows working end-to-end. The entire codebase is Svelte 5 runes-idiomatic with Supabase as the sole backend.
+v2.2 paused 2026-03-27. Deno feasibility validated (Phase 42) but remaining evaluation/report phases (43-44) deferred. Code rolled back to avoid maintenance burden without a forcing function. Research artifacts preserved in `.planning/phases/42-runtime-validation-and-poc/`.
 
-Key v2.1 fixes: protected layout hydration (two interacting Svelte 5 bugs), candidate registration invite flow, password reset session-based flow, feedback popup timing with PopupRenderer runes-mode wrapper.
+The codebase is stable at v2.1: fully Svelte 5 runes-idiomatic, Supabase-only backend, all E2E tests passing. Ready for next milestone.
+
+Key Deno findings (v2.2): SvelteKit adapter-node runs on Deno with zero code changes, Supabase PKCE auth works identically, Turborepo/Changesets/tsup unaffected. `--unstable-bare-node-builtins` needed for Paraglide JS. See archived research for resumption details.
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
@@ -75,7 +73,7 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
-- [ ] Deno feasibility study (Node → Deno transition)
+- [ ] Deno full evaluation and go/no-go report (runtime validated in v2.2, evaluation/report deferred)
 - [ ] Admin app migration (frontend Admin App)
 - [ ] Merge app_settings and app_customization tables
 - [ ] WithAuth interface refactoring
@@ -99,13 +97,14 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 The project is a mature monorepo used for real election deployments. As of v2.1:
 
-- **Codebase:** 128 plans + 6 tasks completed across 7 milestones (26 days, 2026-03-01 to 2026-03-26)
+- **Codebase:** 130 plans + 6 tasks completed across 8 milestones (27 days, 2026-03-01 to 2026-03-27)
 - **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
 - **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
 - **Testing:** Playwright E2E (542 unit tests, 50 E2E specs — all passing), Vitest unit tests, pgTAP database tests
 - **CI:** GitHub Actions with pgTAP, E2E via supabase CLI, skill-drift-check, Turborepo remote caching
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
+- **Deno validated:** Runtime works (SvelteKit, auth, E2E), evaluation deferred — research in `.planning/phases/42-runtime-validation-and-poc/`
 - **Known issues:** Svelte 5 pushState reactivity bug (10 E2E tests skipped); context system uses Svelte 4 store patterns (CTX-01 deferred); local imgproxy crashes intermittently
 
 ## Constraints
@@ -127,7 +126,7 @@ Each major initiative is a separate milestone, executed in order:
 5. ~~**Svelte 5 Migration (Content — Candidate App)**~~ — Shipped v1.4 (2026-03-22)
 6. ~~**Branch Integration**~~ — Shipped v2.0 (2026-03-22)
 7. ~~**E2E Test Stabilization**~~ — Shipped v2.1 (2026-03-26)
-8. **Deno Investigation** — Feasibility study for Node → Deno transition
+8. ~~**Deno Feasibility Study**~~ — Paused v2.2 (2026-03-27, feasibility validated, evaluation deferred)
 9. **Idura FTN Auth** — Alternative auth handler (replaces Signicat)
 10. **Claude Skills (remaining)** — Architect, components, LLM skills
 11. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
@@ -192,6 +191,10 @@ Each major initiative is a separate milestone, executed in order:
 | PopupRenderer runes-mode wrapper | Svelte 5 legacy-mode root layout can't detect store changes from async callbacks | ✓ Good (v2.1) |
 | Invite flow redirects to login page | Session from verifyOtp doesn't reliably persist through client-side navigation | ✓ Good (v2.1) |
 | Session-based password reset (no code param) | Auth callback verifyOtp establishes session; code param was Strapi-era legacy | ✓ Good (v2.1) |
+| Deno as runtime only (not toolchain replacement) | Yarn 4 workspaces, Turborepo, ESLint unsupported on Deno; adapter-node works | ✓ Good (v2.2) |
+| Pause v2.2 after feasibility validation | No forcing function (CI/production) to maintain Deno configs; avoid drift | ✓ Good (v2.2) |
+| Roll back Deno code, preserve research | Code changes would rot without enforcement; research artifacts have lasting value | ✓ Good (v2.2) |
+| --unstable-bare-node-builtins for Paraglide JS | async_hooks import without node: prefix; Deno plans to stabilize this flag | — Pending (v2.2) |
 
 ## Evolution
 
@@ -212,4 +215,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-\_Last updated: 2026-03-26 after v2.1 E2E Test Stabilization milestone complete_
+_Last updated: 2026-03-27 after pausing v2.2 Deno Feasibility Study milestone_
