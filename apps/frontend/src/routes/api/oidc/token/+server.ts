@@ -1,48 +1,46 @@
+/**
+ * OIDC token exchange endpoint.
+ *
+ * Exchanges an authorization code for an id_token using the active identity
+ * provider. For Signicat, this uses client_secret authentication. For Idura,
+ * this uses private_key_jwt client assertion (RFC 7523).
+ *
+ * The provider abstraction handles all provider-specific token exchange logic.
+ * This endpoint validates the resulting id_token, sets it as an httpOnly cookie,
+ * and returns a success response.
+ */
+
 import { error, json } from '@sveltejs/kit';
-import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
-import { constants } from '$lib/server/constants';
-import { constants as publicConstants } from '$lib/utils/constants';
+import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import type { RequestEvent } from '@sveltejs/kit';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
-  const { authorizationCode, codeVerifier, redirectUri } = await request.json();
-  const { IDENTITY_PROVIDER_CLIENT_SECRET, IDENTITY_PROVIDER_TOKEN_ENDPOINT } = constants;
-  const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
+  try {
+    const { authorizationCode, codeVerifier, redirectUri } = await request.json();
 
-  const idpResponse = await fetch(IDENTITY_PROVIDER_TOKEN_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      code: authorizationCode,
-      code_verifier: codeVerifier,
-      redirect_uri: redirectUri,
-      client_id: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
-      client_secret: IDENTITY_PROVIDER_CLIENT_SECRET
-    }).toString()
-  });
+    const provider = getActiveProvider();
+    const { idToken } = await provider.exchangeCodeForToken({ authorizationCode, redirectUri, codeVerifier });
 
-  if (!idpResponse.ok) {
+    // Verify the token is valid by extracting claims
+    const claims = await provider.getIdTokenClaims(idToken);
+
+    if (!claims.success) {
+      return error(401, { message: 'Unauthorized' });
+    }
+
+    cookies.set('id_token', idToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/'
+    });
+
+    return json({ type: 'success' } as DataApiActionResult);
+  } catch (e) {
+    console.error('Token exchange failed:', e);
     return error(401, { message: 'Unauthorized' });
   }
-
-  const { id_token: idToken } = await idpResponse.json();
-
-  const claims = await getIdTokenClaims(idToken);
-
-  if (!claims.success) {
-    return error(401, { message: 'Unauthorized' });
-  }
-
-  cookies.set('id_token', idToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    path: '/'
-  });
-
-  return json({ type: 'success' } as DataApiActionResult);
 }
 
 export async function DELETE({ cookies }: RequestEvent): Promise<Response> {

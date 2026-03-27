@@ -9,16 +9,16 @@ export async function POST({ cookies, request, locals }) {
     error(401, { message: 'ID token has expired.' });
   }
 
-  // Call signicat-callback Edge Function with the raw id_token.
+  // Call identity-callback Edge Function with the raw id_token.
   // The Edge Function handles JWE decryption, JWT verification, user/candidate
   // creation, and returns a magic link for session establishment.
   try {
-    const { data, error: fnError } = await locals.supabase.functions.invoke('signicat-callback', {
+    const { data, error: fnError } = await locals.supabase.functions.invoke('identity-callback', {
       body: { id_token: idToken }
     });
 
     if (fnError) {
-      logDebugError(`signicat-callback Edge Function error: ${fnError.message}`);
+      logDebugError(`identity-callback Edge Function error: ${fnError.message}`);
       error(500, { message: fnError.message });
     }
 

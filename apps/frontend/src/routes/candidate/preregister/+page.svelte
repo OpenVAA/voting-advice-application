@@ -62,17 +62,50 @@
       : 'CandAppPreregisterEmail';
 
   async function redirectToIdentityProvider() {
-    if (!browser) {
-      return;
-    }
+    if (!browser) return;
 
-    const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
-    localStorage.setItem('code_verifier', codeVerifier);
-
-    const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-    const authorizationEndpointUri = constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT;
     const redirectUri = `${window.location.origin}${$getRoute('CandAppPreregisterIdentityProviderCallback')}`;
-    window.location.href = `${authorizationEndpointUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+
+    if (constants.PUBLIC_IDENTITY_PROVIDER_TYPE === 'idura') {
+      // Idura: call server-side authorize endpoint for JAR construction
+      const response = await fetch('/api/oidc/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectUri })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to get authorization URL');
+        return;
+      }
+
+      const { authorizeUrl } = await response.json();
+      window.location.href = authorizeUrl;
+    } else {
+      // Signicat: client-side PKCE redirect via provider abstraction
+      const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
+
+      // Call the authorize endpoint to get the provider-constructed URL
+      // and store state cookies server-side if the provider returns them
+      const response = await fetch('/api/oidc/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectUri, codeChallenge })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to get authorization URL');
+        return;
+      }
+
+      const { authorizeUrl } = await response.json();
+
+      // Store code_verifier in a cookie so the callback server route can access it
+      // (localStorage is client-only and not available in server routes)
+      document.cookie = `oidc_code_verifier=${codeVerifier}; path=/; max-age=600; secure; samesite=lax`;
+
+      window.location.href = authorizeUrl;
+    }
   }
 
   ////////////////////////////////////////////////////////////////////

@@ -296,6 +296,20 @@ export default defineConfig({
             dependencies: ['data-setup']
           }
         ]
+      : []),
+
+    // Bank auth (Idura/Signicat): identity-callback Edge Function integration
+    //   PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
+    ...(process.env.PLAYWRIGHT_BANK_AUTH
+      ? [
+          {
+            name: 'bank-auth',
+            testDir: './tests/specs/candidate',
+            testMatch: /candidate-bank-auth\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'] },
+            dependencies: ['data-setup']
+          }
+        ]
       : [])
   ]
 });

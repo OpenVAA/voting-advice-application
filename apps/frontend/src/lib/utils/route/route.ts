@@ -39,7 +39,7 @@ export const ROUTE = {
   CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
   CandAppQuestions: `${CANDIDATE_PROT}/questions`,
   CandAppPreregister: `${CANDIDATE}/preregister`,
-  CandAppPreregisterIdentityProviderCallback: `${CANDIDATE}/preregister/signicat/oidc/callback`, // TODO: Shorter URL, does not have to be Signicat- specific.
+  CandAppPreregisterIdentityProviderCallback: '/api/oidc/callback',
   CandAppPreregisterElection: `${CANDIDATE}/preregister/elections`,
   CandAppPreregisterConstituency: `${CANDIDATE}/preregister/constituencies`,
   CandAppPreregisterEmail: `${CANDIDATE}/preregister/email`,

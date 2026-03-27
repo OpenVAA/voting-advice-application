@@ -1,22 +1,23 @@
 /**
- * Signicat OIDC Bank Auth Callback Edge Function
+ * Provider-Agnostic Identity Callback Edge Function
  *
- * Handles the Signicat bank authentication callback by:
+ * Handles identity provider (Signicat or Idura) bank authentication callbacks by:
  * 1. Accepting a JWE-encrypted (or plain JWT) id_token from the OIDC callback
  * 2. Decrypting JWE tokens using the private JWKS from environment
- * 3. Verifying the inner JWT signature against Signicat's public JWKS
- * 4. Extracting identity claims (given_name, family_name, birthdate)
- * 5. Finding or creating a Supabase auth user matched by birthdate identifier
+ * 3. Verifying the inner JWT signature against the provider's public JWKS
+ * 4. Extracting identity claims based on provider configuration
+ * 5. Finding or creating a Supabase auth user matched by identity claim value
  * 6. Creating a candidate record and role assignment for new users
  * 7. Returning a session for immediate login
  *
- * POST /functions/v1/signicat-callback
+ * POST /functions/v1/identity-callback
  * Body: { id_token: string, project_id?: string }
  *
  * Environment variables (set via Supabase secrets):
- * - SIGNICAT_DECRYPTION_JWKS: JSON string array of private JWK objects for JWE decryption
- * - SIGNICAT_JWKS_URI: URL to Signicat's public JWKS endpoint for JWT signature verification
- * - SIGNICAT_CLIENT_ID: Expected audience in the JWT
+ * - IDENTITY_PROVIDER_TYPE: Provider type ('signicat' or 'idura', defaults to 'signicat')
+ * - IDENTITY_PROVIDER_DECRYPTION_JWKS: JSON string array of private JWK objects for JWE decryption
+ * - IDENTITY_PROVIDER_JWKS_URI: URL to the provider's public JWKS endpoint for JWT signature verification
+ * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT
  * - DEFAULT_PROJECT_ID: Project to assign self-registered candidates to
  * - SUPABASE_URL: Supabase project URL (auto-set by Supabase)
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
@@ -24,6 +25,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
+import { PROVIDER_CONFIGS, extractIdentityClaims } from './claimConfig.ts';
 
 const DEFAULT_SEED_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -47,7 +49,7 @@ function isJweToken(token: string): boolean {
  * Returns the inner JWT string (compact serialization).
  */
 async function decryptJweToken(jweToken: string): Promise<string> {
-  const privateJWKSet: jose.JWK[] = JSON.parse(Deno.env.get('SIGNICAT_DECRYPTION_JWKS')!);
+  const privateJWKSet: jose.JWK[] = JSON.parse(Deno.env.get('IDENTITY_PROVIDER_DECRYPTION_JWKS')!);
 
   const header = jose.decodeProtectedHeader(jweToken);
   const privateKey = privateJWKSet.find((jwk: jose.JWK) => jwk.kid === header.kid);
@@ -65,11 +67,11 @@ async function decryptJweToken(jweToken: string): Promise<string> {
 }
 
 /**
- * Verify a signed JWT against Signicat's public JWKS and return the payload.
+ * Verify a signed JWT against the provider's public JWKS and return the payload.
  */
 async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
-  const jwksUri = Deno.env.get('SIGNICAT_JWKS_URI')!;
-  const clientId = Deno.env.get('SIGNICAT_CLIENT_ID');
+  const jwksUri = Deno.env.get('IDENTITY_PROVIDER_JWKS_URI')!;
+  const clientId = Deno.env.get('IDENTITY_PROVIDER_CLIENT_ID');
 
   const verifyOptions: jose.JWTVerifyOptions = {};
   if (clientId) {
@@ -85,39 +87,16 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   return payload;
 }
 
-/**
- * Extract identity claims from the JWT payload.
- * Throws if required claims are missing.
- */
-function extractIdentityClaims(payload: jose.JWTPayload): {
-  given_name: string;
-  family_name: string;
-  birthdate: string;
-} {
-  const given_name = payload.given_name as string | undefined;
-  const family_name = payload.family_name as string | undefined;
-  const birthdate = payload.birthdate as string | undefined;
-
-  if (!given_name || !family_name || !birthdate) {
-    throw new Error(
-      `Missing required identity claims. ` +
-        `given_name=${given_name ? 'present' : 'missing'}, ` +
-        `family_name=${family_name ? 'present' : 'missing'}, ` +
-        `birthdate=${birthdate ? 'present' : 'missing'}`
-    );
-  }
-
-  return { given_name, family_name, birthdate };
-}
+// extractIdentityClaims is imported from claimConfig.ts (pure function, no Deno deps)
 
 /**
- * Find an existing auth user by birthdate_id in app_metadata.
+ * Find an existing auth user by identity_match_value in app_metadata.
  * Returns the user ID if found, null otherwise.
  */
-async function findUserByBirthdateId(
+async function findUserByIdentityMatch(
   // deno-lint-ignore no-explicit-any
   supabaseAdmin: any,
-  birthdateId: string
+  identityMatchValue: string
 ): Promise<string | null> {
   // listUsers returns paginated results; iterate through pages
   let page = 1;
@@ -139,7 +118,7 @@ async function findUserByBirthdateId(
 
     const matchingUser = users.find(
       // deno-lint-ignore no-explicit-any
-      (u: any) => u.app_metadata?.birthdate_id === birthdateId
+      (u: any) => u.app_metadata?.identity_match_value === identityMatchValue
     );
 
     if (matchingUser) {
@@ -172,6 +151,19 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Resolve provider configuration
+    const providerType = Deno.env.get('IDENTITY_PROVIDER_TYPE') ?? 'signicat';
+    const config = PROVIDER_CONFIGS[providerType];
+    if (!config) {
+      return new Response(
+        JSON.stringify({ error: `Unknown identity provider type: ${providerType}` }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     // 1. Parse request body
     let body: Record<string, unknown>;
     try {
@@ -212,7 +204,7 @@ Deno.serve(async (req: Request) => {
       innerJwt = id_token;
     }
 
-    // 3. Verify the JWT signature against Signicat's public JWKS
+    // 3. Verify the JWT signature against the provider's public JWKS
     let payload: jose.JWTPayload;
     try {
       payload = await verifyJwt(innerJwt);
@@ -224,10 +216,15 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 4. Extract identity claims
-    let claims: { given_name: string; family_name: string; birthdate: string };
+    // 4. Extract identity claims based on provider configuration
+    let claimResult: {
+      matchValue: string;
+      firstName: string;
+      lastName: string;
+      extraClaims: Record<string, unknown>;
+    };
     try {
-      claims = extractIdentityClaims(payload);
+      claimResult = extractIdentityClaims(payload, config);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Missing identity claims';
       return new Response(JSON.stringify({ error: 'Invalid identity claims', details: message }), {
@@ -236,7 +233,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { given_name, family_name, birthdate } = claims;
+    const { firstName, lastName, matchValue: identityMatchValue, extraClaims: extractedClaims } = claimResult;
 
     // 5. Create admin Supabase client for user/candidate operations
     const supabaseAdmin = createClient(
@@ -244,8 +241,8 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // 6. Find or create auth user by birthdate_id
-    let userId = await findUserByBirthdateId(supabaseAdmin, birthdate);
+    // 6. Find or create auth user by identity_match_value
+    let userId = await findUserByIdentityMatch(supabaseAdmin, identityMatchValue);
     let isNewUser = false;
 
     if (!userId) {
@@ -253,12 +250,14 @@ Deno.serve(async (req: Request) => {
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email_confirm: true,
         app_metadata: {
-          birthdate_id: birthdate,
-          provider: 'signicat'
+          identity_provider: providerType,
+          identity_match_prop: config.identityMatchProp,
+          identity_match_value: identityMatchValue,
+          ...extractedClaims
         },
         user_metadata: {
-          given_name,
-          family_name
+          given_name: firstName,
+          family_name: lastName
         }
       });
 
@@ -286,8 +285,8 @@ Deno.serve(async (req: Request) => {
       const { data: candidate, error: candidateError } = await supabaseAdmin
         .from('candidates')
         .insert({
-          first_name: given_name,
-          last_name: family_name,
+          first_name: firstName,
+          last_name: lastName,
           project_id: projectId,
           auth_user_id: userId
         })
@@ -340,8 +339,8 @@ Deno.serve(async (req: Request) => {
           is_new_user: isNewUser,
           session: null,
           message: 'User created/found but magic link generation failed. Frontend should prompt for email.',
-          given_name,
-          family_name
+          given_name: firstName,
+          family_name: lastName
         }),
         {
           status: 200,
@@ -363,8 +362,8 @@ Deno.serve(async (req: Request) => {
           verification_type: linkData.properties?.verification_type,
           redirect_to: linkData.properties?.redirect_to
         },
-        given_name,
-        family_name
+        given_name: firstName,
+        family_name: lastName
       }),
       {
         status: 200,
@@ -373,7 +372,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Internal server error';
-    console.error('signicat-callback error:', e);
+    console.error('identity-callback error:', e);
 
     return new Response(JSON.stringify({ error: 'Internal server error', details: message }), {
       status: 500,
