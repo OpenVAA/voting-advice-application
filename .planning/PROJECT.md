@@ -10,11 +10,13 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 ## Current State
 
-v2.2 paused 2026-03-27. Deno feasibility validated (Phase 42) but remaining evaluation/report phases (43-44) deferred. Code rolled back to avoid maintenance burden without a forcing function. Research artifacts preserved in `.planning/phases/42-runtime-validation-and-poc/`.
+v2.3 shipped 2026-03-27. Idura FTN bank authentication integrated with provider abstraction layer. Deployments can switch between Signicat and Idura via `PUBLIC_IDENTITY_PROVIDER_TYPE` env var.
 
-The codebase is stable at v2.1: fully Svelte 5 runes-idiomatic, Supabase-only backend, all E2E tests passing. Ready for next milestone.
+The codebase is stable: fully Svelte 5 runes-idiomatic, Supabase-only backend, provider-agnostic OIDC auth, 597 unit tests + 50 E2E specs passing.
 
-Key Deno findings (v2.2): SvelteKit adapter-node runs on Deno with zero code changes, Supabase PKCE auth works identically, Turborepo/Changesets/tsup unaffected. `--unstable-bare-node-builtins` needed for Paraglide JS. See archived research for resumption details.
+Key v2.3 additions: IdentityProvider interface with configurable claim mapping (`identityMatchProp`, `firstNameProp`, `lastNameProp`, `extractClaims`), server-side JAR + `private_key_jwt` for Idura, `/api/oidc/{authorize,token,callback}` routes, `identity-callback` Edge Function replacing `signicat-callback`.
+
+v2.2 paused (Deno feasibility validated, evaluation deferred). Research preserved in `.planning/milestones/v2.2-phases/`.
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
@@ -64,12 +66,18 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Candidate password reset email flow end-to-end (request, Mailpit, new password) — v2.1
 - ✓ Fresh candidate registration with protected route access — v2.1
 - ✓ Feedback popup reliable timing on results page — v2.1
+- ✓ Provider abstraction layer (IdentityProvider interface, configurable claim mapping) — v2.3
+- ✓ Idura FTN bank auth (server-side JAR, private_key_jwt token exchange) — v2.3
+- ✓ Provider-agnostic /api/oidc/{authorize,token,callback} routes — v2.3
+- ✓ identity-callback Edge Function with configurable identityMatchProp/extractClaims — v2.3
+- ✓ Signicat backward compatibility (PKCE + client_secret flow unchanged) — v2.3
+- ✓ 71 new unit tests for provider abstraction, JWE, JAR, Edge Function claims — v2.3
+- ✓ Bank-auth E2E tests with @bank-auth tag (disabled by default) — v2.3
 
 ### Active
 - [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug workaround needed)
 - [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
 - [ ] AdminWriter rename (naming cleanup)
-- [ ] Idura FTN auth handler (alternative to Signicat — plan in .planning/idura-ftn-auth-plan.md)
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -97,11 +105,12 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 
 The project is a mature monorepo used for real election deployments. As of v2.1:
 
-- **Codebase:** 130 plans + 6 tasks completed across 8 milestones (27 days, 2026-03-01 to 2026-03-27)
+- **Codebase:** 138 plans + 6 tasks completed across 9 milestones (27 days, 2026-03-01 to 2026-03-27)
 - **Tech stack:** SvelteKit 2, Svelte 5 (fully runes-idiomatic), Tailwind 4, DaisyUI 5, Paraglide JS, Node 22, Supabase, Postgres, Yarn 4.13, Turborepo 2.8, Changesets
-- **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions
+- **Backend:** Supabase with 17-table schema, 269 pgTAP tests, 79 RLS policies, 3 Edge Functions (identity-callback, invite-candidate, send-email)
+- **Auth:** Provider abstraction layer supporting Signicat (PKCE + client_secret) and Idura (JAR + private_key_jwt) via env config
 - **Build system:** Turborepo with content-based caching, tsup for publishable packages, @tailwindcss/vite
-- **Testing:** Playwright E2E (542 unit tests, 50 E2E specs — all passing), Vitest unit tests, pgTAP database tests
+- **Testing:** Playwright E2E (597 unit tests, 50 E2E specs), Vitest unit tests, pgTAP database tests, bank-auth E2E (opt-in)
 - **CI:** GitHub Actions with pgTAP, E2E via supabase CLI, skill-drift-check, Turborepo remote caching
 - **Publishing:** 4 packages (@openvaa/core, data, matching, filters) ready for npm with ESM output
 - **Deno validated:** Runtime works (SvelteKit, auth, E2E), evaluation deferred — research in `.planning/phases/42-runtime-validation-and-poc/`
@@ -127,7 +136,7 @@ Each major initiative is a separate milestone, executed in order:
 6. ~~**Branch Integration**~~ — Shipped v2.0 (2026-03-22)
 7. ~~**E2E Test Stabilization**~~ — Shipped v2.1 (2026-03-26)
 8. ~~**Deno Feasibility Study**~~ — Paused v2.2 (2026-03-27, feasibility validated, evaluation deferred)
-9. **Idura FTN Auth** — Alternative auth handler (replaces Signicat)
+9. ~~**Idura FTN Auth**~~ — Shipped v2.3 (2026-03-27)
 10. **Claude Skills (remaining)** — Architect, components, LLM skills
 11. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 12. **Security Scanning** — Automated security, secrets scanning, and testing
@@ -195,6 +204,12 @@ Each major initiative is a separate milestone, executed in order:
 | Pause v2.2 after feasibility validation | No forcing function (CI/production) to maintain Deno configs; avoid drift | ✓ Good (v2.2) |
 | Roll back Deno code, preserve research | Code changes would rot without enforcement; research artifacts have lasting value | ✓ Good (v2.2) |
 | --unstable-bare-node-builtins for Paraglide JS | async_hooks import without node: prefix; Deno plans to stabilize this flag | — Pending (v2.2) |
+| Provider abstraction over direct replacement | IdentityProvider interface lets deployments switch providers via env var | ✓ Good (v2.3) |
+| Configurable claim mapping (identityMatchProp) | Provider-agnostic identity matching — no code changes needed for new providers | ✓ Good (v2.3) |
+| /api/oidc/* route grouping | Callback, token, authorize all under /api/oidc/ — clean API boundary | ✓ Good (v2.3) |
+| Rename signicat-callback → identity-callback | Single provider-agnostic Edge Function vs parallel functions | ✓ Good (v2.3) |
+| No existing user migration on provider switch | Clean break — simpler than dual-lookup, no code maintaining legacy paths | ✓ Good (v2.3) |
+| Unit tests only for OIDC flow (no mock server) | jose generates synthetic tokens; real provider testing is manual | ✓ Good (v2.3) |
 
 ## Evolution
 
@@ -215,4 +230,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-03-27 after pausing v2.2 Deno Feasibility Study milestone_
+_Last updated: 2026-03-27 after v2.3 Idura FTN Auth milestone_

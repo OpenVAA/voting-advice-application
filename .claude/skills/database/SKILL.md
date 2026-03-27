@@ -16,7 +16,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
 - JSONB localization for all user-facing text (name, short_name, info) using locale-keyed objects
 - GoTrue authentication with 5 role types and JWT custom claims via Access Token Hook
 - 97 RLS policies (80 content + 2 auth + 15 storage) enforcing tenant isolation
-- 3 Edge Functions: `invite-candidate`, `signicat-callback`, `send-email`
+- 3 Edge Functions: `invite-candidate`, `identity-callback`, `send-email`
 - Bulk import/delete RPCs with external_id-based idempotent upsert
 - 204 pgTAP tests across 10 test files (~2,870 lines)
 - Schema files: `apps/supabase/supabase/schema/` (18 SQL files, `000-functions.sql` through `017-email-helpers.sql`)
@@ -176,8 +176,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
    for privileged operations (creating records, inviting users, reading auth.users).
    - `invite-candidate`: creates candidate + auth user + role assignment with rollback on
      failure.
-   - `signicat-callback`: handles JWE/JWT from bank auth, creates user + candidate + magic link
-     session.
+   - `identity-callback`: handles JWE/JWT from bank auth, provider-agnostic identity matching, creates user + candidate + magic link session.
    - `send-email`: resolves per-recipient email variables and sends via SMTP (nodemailer).
 
 2. **Bulk import RPC**: `bulk_import(data jsonb)` processes collections in dependency order:
@@ -276,7 +275,7 @@ All content tables reference `projects` via `project_id` FK with `ON DELETE CASC
 - Schema files: `apps/supabase/supabase/schema/000-functions.sql` through `017-email-helpers.sql` (18 files)
 - RLS policies: `apps/supabase/supabase/schema/010-rls.sql` (main), `013-auth-rls.sql` (column restrictions), `014-storage.sql` (storage policies)
 - Auth hooks: `apps/supabase/supabase/schema/012-auth-hooks.sql`
-- Edge Functions: `apps/supabase/supabase/functions/invite-candidate/`, `signicat-callback/`, `send-email/`
+- Edge Functions: `apps/supabase/supabase/functions/invite-candidate/`, `identity-callback/`, `send-email/`
 - Bulk RPCs: `apps/supabase/supabase/schema/016-bulk-operations.sql`
 - pgTAP tests: `apps/supabase/supabase/tests/database/` (10 files, `00-helpers` through `09-column-restrictions`)
 - Supabase config: `apps/supabase/supabase/config.toml`

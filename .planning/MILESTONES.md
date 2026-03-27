@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.3 Idura FTN Auth (Shipped: 2026-03-27)
+
+**Phases completed:** 4 phases, 8 plans, 14 tasks
+
+**Key accomplishments:**
+
+- Commit:
+- Signicat OIDC provider wrapping existing PKCE+client_secret auth, Idura provider with working JWE claims and Phase 46 stubs, and factory dispatching on PUBLIC_IDENTITY_PROVIDER_TYPE
+- RS256-signed JAR authorization requests and private_key_jwt token exchange for Idura FTN, with provider-abstracted server-side authorize and token endpoints
+- Provider-agnostic /api/oidc/callback with CSRF state verification, dual-provider preregister page, and cookie-based code_verifier replacing localStorage
+- Provider-agnostic identity-callback Edge Function with PROVIDER_CONFIGS mapping Signicat (birthdate) and Idura (sub) claim-based identity matching, full audit metadata in app_metadata
+- Shared JWE/JWT test fixtures with jose v6 and 36 unit tests covering both Signicat and Idura provider compliance plus RSA-OAEP/RSA-OAEP-256 decryption
+- JAR construction, private_key_jwt assertion, and Edge Function claim extraction tests with 35 new tests across 4 test files and extracted claimConfig.ts pure functions
+- Partial
+
+---
+
 ## v2.2 Deno Feasibility Study (Paused: 2026-03-27)
 
 **Phases completed:** 1 of 3 phases (Phase 42), 2 plans, 5 tasks
