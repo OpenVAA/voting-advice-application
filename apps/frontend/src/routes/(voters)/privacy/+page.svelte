@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Privacy page
@@ -82,11 +80,7 @@ Displays information about the privacy policy of the app as well as the possible
   </div>
 
   {#snippet primaryActions()}
-    <Button
-      variant="main"
-      href={$getRoute('Home')}
-      text={t('common.returnHome')}
-      data-testid="voter-privacy-return" />
+    <Button variant="main" href={$getRoute('Home')} text={t('common.returnHome')} data-testid="voter-privacy-return" />
   {/snippet}
 </MainContent>
 

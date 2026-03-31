@@ -1,12 +1,12 @@
-import type { Readable } from 'svelte/store';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export type AuthContext = {
   /**
    * Whether the user is currently authenticated (has a valid Supabase session).
+   * Reactive via `$derived` — access as a plain boolean property.
    */
-  isAuthenticated: Readable<boolean>;
+  readonly isAuthenticated: boolean;
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods

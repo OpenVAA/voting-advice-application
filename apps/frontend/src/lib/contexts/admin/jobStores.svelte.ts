@@ -1,9 +1,7 @@
-import { writable } from 'svelte/store';
 import { ADMIN_FEATURES } from '$lib/admin/features';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { logDebugError } from '$lib/utils/logger';
 import { compareDates } from '$lib/utils/sorting';
-import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { JobStores } from './jobStores.type';
@@ -42,27 +40,19 @@ export function jobStores(): JobStores {
   }
 
   /////////////////////////////////////////////////
-  // Jobs stores
+  // Jobs state
   /////////////////////////////////////////////////
 
   /**
-   * This internal store holds all job information.
+   * This internal $state holds all job information.
    */
-  const jobs = writable<Map<string, JobInfo>>(
-    new Map()
-    // TODO[Svelte 5]: Count subscriptions to stores (or $states) and automatically start and stop polling.
-    // The code below doesn't work with derived stores, which never automatically unsubscribe nor have a StartStopNotifier argument
-    // () => {
-    //   startPolling();
-    //   return () => stopPolling();
-    // }
-  );
+  let jobs = $state<Map<string, JobInfo>>(new Map());
 
-  const pastJobs = parsimoniusDerived([jobs], ([jobs]) =>
+  const _pastJobs = $derived(
     [...jobs.values().filter((j) => !isActive(j))].sort((a, b) => compareDates(a.startTime, b.startTime))
   );
 
-  const activeJobsByFeature = parsimoniusDerived([jobs], ([jobs]) => {
+  const _activeJobsByFeature = $derived.by(() => {
     const map = new Map<AdminFeature, JobInfo | undefined>();
     for (const feat of ADMIN_FEATURES) {
       const job = jobs.values().find((j) => j.jobType === feat && isActive(j));
@@ -71,10 +61,10 @@ export function jobStores(): JobStores {
     return map;
   });
 
-  const pastJobsByFeature = parsimoniusDerived([pastJobs], ([pastJobs]) => {
+  const _pastJobsByFeature = $derived.by(() => {
     const map = new Map<AdminFeature, Array<JobInfo>>();
     for (const feat of ADMIN_FEATURES) {
-      map.set(feat, [...pastJobs.filter((j) => j.jobType === feat)]);
+      map.set(feat, [..._pastJobs.filter((j) => j.jobType === feat)]);
     }
     return map;
   });
@@ -83,7 +73,7 @@ export function jobStores(): JobStores {
   // Update jobs
   /////////////////////////////////////////////////
 
-  // Fetch jobs from API and update stores
+  // Fetch jobs from API and update state
   async function fetchAndUpdateJobs() {
     try {
       logDebugError('[JobPollingService] Fetching jobs...');
@@ -106,34 +96,39 @@ export function jobStores(): JobStores {
       // Update the delta cursor for past jobs
       lastPastJobsUpdate = new Date().toISOString();
 
-      let [activeJobs, pastJobs] = (await Promise.all([activeRes.json(), pastRes.json()])) as [
+      let [activeJobs, pastJobsData] = (await Promise.all([activeRes.json(), pastRes.json()])) as [
         Array<JobInfo>,
         Array<JobInfo>
       ];
 
       // Filter by known job names
       activeJobs = activeJobs.filter(filterByKnownNames);
-      pastJobs = pastJobs.filter(filterByKnownNames);
+      pastJobsData = pastJobsData.filter(filterByKnownNames);
 
       // Handle case where a job lands in both active and past jobs (rare but possible)
-      const pastIds = new Set(pastJobs.map((j) => j.id));
+      const pastIds = new Set(pastJobsData.map((j) => j.id));
       activeJobs = activeJobs.filter((j) => !pastIds.has(j.id));
 
-      // Update the jobs store
-      jobs.update((jobs) => {
-        pastJobs.forEach((job) => jobs.set(job.id, job));
-        activeJobs.forEach((job) => jobs.set(job.id, job));
-        return jobs;
-      });
+      // Update the jobs state by creating a new Map
+      const newJobs = new Map(jobs);
+      pastJobsData.forEach((job) => newJobs.set(job.id, job));
+      activeJobs.forEach((job) => newJobs.set(job.id, job));
+      jobs = newJobs;
     } catch (error) {
       console.error('[JobPollingService] Error fetching jobs:', error);
     }
   }
 
   return {
-    activeJobsByFeature,
-    pastJobs,
-    pastJobsByFeature,
+    get activeJobsByFeature() {
+      return _activeJobsByFeature;
+    },
+    get pastJobs() {
+      return _pastJobs;
+    },
+    get pastJobsByFeature() {
+      return _pastJobsByFeature;
+    },
     startPolling,
     stopPolling
   };

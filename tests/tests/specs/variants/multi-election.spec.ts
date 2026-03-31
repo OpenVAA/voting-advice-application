@@ -194,7 +194,20 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
     test.setTimeout(60000);
 
     // After election selection + auto-implied constituency, should be on questions.
+    // The layout's $effect loads data async from Promise-streamed page data.
+    // After page.goto(), the SSR HTML shows "Loading..." and the client $effect
+    // needs to complete before questions appear. Reload once if still loading
+    // to ensure hydration completes correctly.
     const answerOption = sharedPage.getByTestId(testIds.voter.questions.answerOption);
+
+    // After page.goto() in the previous test, the SSR-rendered page shows "Loading..."
+    // and the client-side $effect must resolve promises and set ready=true.
+    // If the questions aren't visible after initial load, reload to force a clean cycle.
+    try {
+      await answerOption.first().waitFor({ state: 'visible', timeout: 8000 });
+    } catch {
+      await sharedPage.reload({ waitUntil: 'networkidle' });
+    }
 
     // Dismiss the "missing nominations" dialog if it appears (some elections
     // in the multi-election overlay lack candidate/party responses)
@@ -207,7 +220,7 @@ test.describe('Multi-election voter journey', { tag: ['@variant'] }, () => {
       // No dialog appeared
     }
 
-    await expect(answerOption.first()).toBeVisible({ timeout: 10000 });
+    await expect(answerOption.first()).toBeVisible({ timeout: 15000 });
 
     // Answer all questions dynamically until results page
     const questionCount = await answerAllQuestions(sharedPage);

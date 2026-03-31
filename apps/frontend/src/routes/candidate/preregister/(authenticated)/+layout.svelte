@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app pre-registration authenticated layout
@@ -31,7 +29,7 @@ Contains the parts of the pre-registration process taking part after a successfu
   navigationSettings.push({ hide: true });
 </script>
 
-{#if $idTokenClaims}
+{#if idTokenClaims}
   {@render children?.()}
 {:else}
   <MainContent title={t('candidateApp.preregister.status.tokenExpiredError.title')}>

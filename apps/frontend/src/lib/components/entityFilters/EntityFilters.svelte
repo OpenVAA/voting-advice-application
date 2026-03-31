@@ -15,8 +15,6 @@ Show filters for entities. This component and the individual filter components o
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { FILTER_TYPE, isEnumeratedFilter, isFilterType } from '@openvaa/filters';
   import { ErrorMessage } from '$lib/components/errorMessage';

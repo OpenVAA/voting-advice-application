@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Answer statistics - WIP!
@@ -26,7 +24,7 @@ Usually accessed by direct link only and not meant for the wide public.
     SingleChoiceCategoricalQuestion,
     SingleChoiceOrdinalQuestion
   } from '@openvaa/data';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore';
+  import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -52,7 +50,7 @@ Usually accessed by direct link only and not meant for the wide public.
       if (!nomination) return distribution;
       candidates = nomination.candidateNominations;
     } else {
-      candidates = getCandidates($matches)
+      candidates = getCandidates(matches)
         .map((m) => unwrapEntity(m).nomination)
         .filter((n) => n != null);
     }
@@ -104,9 +102,9 @@ Usually accessed by direct link only and not meant for the wide public.
   {/snippet}
 
   <div class="gap-lg grid" data-testid="voter-statistics-container">
-    {#each $opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
+    {#each opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
       {@const { id, text, choices } = question}
-      {@const voterAnswer = answers ? `${$answers?.[id]?.value}` : undefined}
+      {@const voterAnswer = answers ? `${answers.answers?.[id]?.value}` : undefined}
       {@const distAll = getAnswerDistribution(question)}
 
       <Expander title={text} variant="question">
@@ -143,7 +141,7 @@ Usually accessed by direct link only and not meant for the wide public.
           </div>
 
           <!-- Each party -->
-          {#each getOrganizations($matches) as organization}
+          {#each getOrganizations(matches) as organization}
             {@const { entity } = unwrapEntity(organization)}
             {@const dist = getAnswerDistribution(question, organization)}
             <div>

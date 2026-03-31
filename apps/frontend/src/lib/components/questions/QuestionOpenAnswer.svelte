@@ -13,8 +13,6 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';

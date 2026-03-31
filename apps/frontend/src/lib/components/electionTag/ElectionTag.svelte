@@ -18,8 +18,6 @@ Used when the application has multiple elections and question may apply to only 
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { ElectionTagProps } from './ElectionTag.type';
@@ -42,8 +40,6 @@ Used when the application has multiple elections and question may apply to only 
   });
 </script>
 
-<span
-  {...concatClass(restProps, tagStyles.classes)}
-  style={tagStyles.styles}>
+<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles}>
   {variant === 'full' ? election.name : election.shortName}
 </span>

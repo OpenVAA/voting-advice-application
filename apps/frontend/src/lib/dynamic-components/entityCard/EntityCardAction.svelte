@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 A simple utility component for possibly wrapping content in an action handler.
 

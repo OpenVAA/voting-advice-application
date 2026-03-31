@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived } from 'svelte/store';
-import { page } from '$app/stores';
+import { page } from '$app/state';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
@@ -23,7 +22,7 @@ export function getAuthContext(): AuthContext {
 export function initAuthContext(): AuthContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initAuthContext() called for a second time');
 
-  const isAuthenticated = derived(page, (p) => !!p.data.session);
+  const isAuthenticated: boolean = $derived(!!page.data.session);
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
@@ -63,7 +62,9 @@ export function initAuthContext(): AuthContext {
   ////////////////////////////////////////////////////////////
 
   return setContext<AuthContext>(CONTEXT_KEY, {
-    isAuthenticated,
+    get isAuthenticated() {
+      return isAuthenticated;
+    },
     logout,
     requestForgotPasswordEmail,
     resetPassword,

@@ -44,8 +44,6 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';

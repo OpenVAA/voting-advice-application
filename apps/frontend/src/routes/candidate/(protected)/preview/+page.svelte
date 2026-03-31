@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app preview own profile page
@@ -40,8 +38,10 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   let entity = $state<Candidate | undefined>(undefined);
 
   $effect(() => {
-    // React to locale changes
-    $locale; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    // Read locale via store subscription to create reactive dependency.
+    // Locale is constant within a page lifecycle (changes trigger full page reload),
+    // so this effect runs loadCandidate() once on mount.
+    void $locale;
     loadCandidate();
   });
 
@@ -59,6 +59,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
       return;
     }
     try {
+      // Use $locale (store subscription) to get the string value
       $dataRoot.provideEntityData([translateLocalizedCandidate(result, $locale)]);
       entity = $dataRoot.getCandidate(result.id);
       status = 'success';

@@ -20,25 +20,25 @@ Page for controlling the argument condensation feature.
   ////////////////////////////////////////////////////////////////////////
 
   const {
-    dataRoot,
+    reactiveDataRoot,
     t,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
+  const activeJobsState = fromStore(activeJobsByFeature);
 
   ////////////////////////////////////////////////////////////////////////
   // Get active job
   ////////////////////////////////////////////////////////////////////////
 
-  let argumentCondensationJob: JobInfo | undefined;
-  $: argumentCondensationJob = $activeJobsByFeature.get('ArgumentCondensation');
+  let argumentCondensationJob = $derived<JobInfo | undefined>(activeJobsByFeature.get('ArgumentCondensation'));
 
   ////////////////////////////////////////////////////////////////////////
   // Starting the job
   ////////////////////////////////////////////////////////////////////////
 
-  let selectedOption = 'all';
-  let selectedElectionId = '';
-  let status: 'idle' | 'loading' | 'success' | 'error' | 'no-selections' | 'no-election' = 'idle';
+  let selectedOption = $state('all');
+  let selectedElectionId = $state('');
+  let status = $state<'idle' | 'loading' | 'success' | 'error' | 'no-selections' | 'no-election'>('idle');
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
@@ -55,25 +55,25 @@ Page for controlling the argument condensation feature.
     }
   ];
 
-  let selectedIds: Array<string> = [];
-  let availableQuestions: Array<AnyQuestionVariant> = [];
-  let questionError: string | null = null;
+  let selectedIds = $state<Array<string>>([]);
+  let availableQuestions = $state<Array<AnyQuestionVariant>>([]);
+  let questionError = $state<string | null>(null);
 
-  $: {
+  $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = $dataRoot.getElection(selectedElectionId);
-        availableQuestions = $dataRoot.findQuestions({ type: 'opinion', elections: election });
+        const election = reactiveDataRoot.current.getElection(selectedElectionId);
+        availableQuestions = reactiveDataRoot.current.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
-      } catch (error) {
-        questionError = error instanceof Error ? error.message : 'Unknown error';
+      } catch (err) {
+        questionError = err instanceof Error ? err.message : 'Unknown error';
         availableQuestions = [];
       }
     } else {
       availableQuestions = [];
       questionError = null;
     }
-  }
+  });
 
   async function handleSubmit({ cancel }: Parameters<SubmitFunction>[0]) {
     status = 'loading';
@@ -129,10 +129,10 @@ Page for controlling the argument condensation feature.
             name="electionId"
             class="select w-full"
             bind:value={selectedElectionId}
-            on:change={() => (selectedIds = [])}
+            onchange={() => (selectedIds = [])}
             required>
             <option value="">{t('adminApp.argumentCondensation.generate.selectElectionPlaceholder')}</option>
-            {#each $dataRoot.elections as election}
+            {#each reactiveDataRoot.current.elections as election}
               <option value={election.id}>{election.name}</option>
             {/each}
           </select>
@@ -173,7 +173,7 @@ Page for controlling the argument condensation feature.
                     type="checkbox"
                     class="checkbox-primary checkbox"
                     checked={selectedIds.length === availableQuestions.length}
-                    on:change={() => {
+                    onchange={() => {
                       if (selectedIds.length === availableQuestions.length) {
                         selectedIds = [];
                       } else {

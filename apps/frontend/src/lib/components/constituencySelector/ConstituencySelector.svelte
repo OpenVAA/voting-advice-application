@@ -25,8 +25,6 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { error } from '@sveltejs/kit';

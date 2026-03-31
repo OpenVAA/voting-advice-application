@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app profile basic info page
@@ -53,8 +51,6 @@ Shows the candidate's basic information, some of which is editable.
   // State variables
   ////////////////////////////////////////////////////////////////////
 
-  const { hasUnsaved } = userData;
-
   let bypassPreventNavigation = $state(false);
   let status = $state<ActionStatus>('idle');
 
@@ -63,8 +59,8 @@ Shows the candidate's basic information, some of which is editable.
   ////////////////////////////////////////////////////////////////////
 
   let nominations = $derived(
-    $userData?.candidate
-      ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: $userData.candidate.id })
+    userData.current?.candidate
+      ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: userData.current.candidate.id })
       : []
   );
 
@@ -106,19 +102,19 @@ Shows the candidate's basic information, some of which is editable.
   let canSubmit = $derived(status !== 'loading');
 
   let allRequiredFilled = $derived(
-    !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value))
+    !requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
   );
 
   let submitRouting = $derived.by(() => {
-    if (allRequiredFilled && $unansweredOpinionQuestions.length && !$answersLocked) {
+    if (allRequiredFilled && unansweredOpinionQuestions.length && !answersLocked) {
       return {
         submitRoute: $getRoute('CandAppQuestions'),
-        submitLabel: $hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
+        submitLabel: userData.hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
       };
     }
     return {
       submitRoute: $getRoute('CandAppHome'),
-      submitLabel: $answersLocked || !$hasUnsaved ? t('common.return') : t('common.saveAndReturn')
+      submitLabel: answersLocked || !userData.hasUnsaved ? t('common.return') : t('common.saveAndReturn')
     };
   });
 
@@ -182,19 +178,19 @@ Shows the candidate's basic information, some of which is editable.
 </script>
 
 <PreventNavigation
-  active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
+  active={() => !bypassPreventNavigation && userData.hasUnsaved && !answersLocked}
   onConfirm={handleNavigationConfirm} />
 
 <MainContent title={t('candidateApp.basicInfo.title')}>
   {#snippet note()}
-    {#if $answersLocked}
+    {#if answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+        {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
-    {:else if $profileComplete}
+    {:else if profileComplete}
       <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
     {/if}
   {/snippet}
@@ -212,21 +208,21 @@ Shows the candidate's basic information, some of which is editable.
       <Input
         type="text"
         label={t('common.firstName')}
-        value={$userData?.candidate.firstName}
+        value={userData.current?.candidate.firstName}
         onShadedBg
         locked
         data-testid="profile-first-name" />
       <Input
         type="text"
         label={t('common.lastName')}
-        value={$userData?.candidate.lastName}
+        value={userData.current?.candidate.lastName}
         onShadedBg
         locked
         data-testid="profile-last-name" />
 
       <!-- Locked Info questions -->
-      {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
-        {@const answer = $userData?.candidate.answers?.[question.id]}
+      {#each infoQuestions.filter((q) => getCustomData(q).locked) as question}
+        {@const answer = userData.current?.candidate.answers?.[question.id]}
         <QuestionInput
           {question}
           {answer}
@@ -279,17 +275,17 @@ Shows the candidate's basic information, some of which is editable.
       <Input
         type="image"
         label={t('common.candidatePortrait')}
-        value={$userData?.candidate.image}
+        value={userData.current?.candidate.image}
         onChange={handleImageInputChange}
-        locked={$answersLocked}
+        locked={answersLocked}
         onShadedBg
         containerProps={{ 'data-testid': 'profile-image-upload' }} />
 
       <!-- Editable Info questions -->
 
-      {#each $infoQuestions.filter((q) => !getCustomData(q).locked) as question}
-        {@const answer = $userData?.candidate.answers?.[question.id]}
-        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={$answersLocked} onShadedBg />
+      {#each infoQuestions.filter((q) => !getCustomData(q).locked) as question}
+        {@const answer = userData.current?.candidate.answers?.[question.id]}
+        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={answersLocked} onShadedBg />
       {/each}
     </div>
   </section>
@@ -297,7 +293,7 @@ Shows the candidate's basic information, some of which is editable.
   <!-- Submit button and error messages -->
 
   {#snippet primaryActions()}
-    {#if !$answersLocked}
+    {#if !answersLocked}
       <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{t('common.required')}</span>
@@ -310,7 +306,7 @@ Shows the candidate's basic information, some of which is editable.
     {/if}
 
     <div class="grid w-full justify-items-center">
-      {#if !$answersLocked}
+      {#if !answersLocked}
         <Button
           text={submitRouting.submitLabel}
           onclick={handleSubmit}
@@ -323,7 +319,7 @@ Shows the candidate's basic information, some of which is editable.
           icon="next" />
         <Button
           text={t('common.cancel')}
-          disabled={!$hasUnsaved}
+          disabled={!userData.hasUnsaved}
           onclick={handleCancel}
           color="warning"
           data-testid="profile-cancel" />

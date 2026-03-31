@@ -8,18 +8,23 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import type { Snippet } from 'svelte';
+  import { fromStore } from 'svelte/store';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
 
+  let { children }: { children: Snippet } = $props();
+
   ////////////////////////////////////////////////////////////////////
   // Init Admin Context
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, appType, t } = initAdminContext();
-  $appType = 'admin';
+  const appSettingsState = fromStore(appSettings);
+  appType.set('admin');
 
   ////////////////////////////////////////////////////////////////////
   // Layout and top bar
@@ -33,15 +38,15 @@
   });
 
   const menuId = 'admin-app-menu';
-  let isDrawerOpen: boolean;
+  let isDrawerOpen = $state(false);
 </script>
 
-{#if !$appSettings.dataAdapter.supportsAdminApp}
+{#if !appSettingsState.current.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={t('adminApp.notSupported.title')}
     content={t('adminApp.notSupported.content')}
     emoji={t('adminApp.notSupported.heroEmoji')} />
-{:else if !$appSettings.access.adminApp}
+{:else if !appSettingsState.current.access.adminApp}
   <MaintenancePage
     title={t('adminApp.common.notAccessible.title')}
     content={t('adminApp.common.notAccessible.content')} />
@@ -50,6 +55,6 @@
     {#snippet menu()}
       <AdminNav onKeyboardFocusOut={() => navigation.close?.()} id={menuId} hidden={!isDrawerOpen} />
     {/snippet}
-    <slot />
+    {@render children?.()}
   </Layout>
 {/if}

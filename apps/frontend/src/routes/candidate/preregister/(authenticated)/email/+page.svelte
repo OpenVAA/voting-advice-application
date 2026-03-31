@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { Button } from '$lib/components/button';
@@ -28,11 +26,11 @@
     status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
-      firstName: $idTokenClaims?.firstName
+      firstName: idTokenClaims?.firstName
     };
     await preregister({
       email: email1,
-      nominations: $preregistrationNominations,
+      nominations: preregistrationNominations,
       extra: {
         emailTemplate: {
           subject: t('candidateApp.preregister.email.subject'),

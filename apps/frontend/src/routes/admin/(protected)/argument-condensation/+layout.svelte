@@ -8,45 +8,50 @@
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
-  import { getAdminContext } from '$lib/contexts/admin/adminContext.js';
+  import { getAdminContext } from '$lib/contexts/admin';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
-  export let data;
+  let { data, children }: { data: any; children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get context
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot } = getAdminContext();
+  const { reactiveDataRoot } = getAdminContext();
 
   ////////////////////////////////////////////////////////////////////
   // Provide data
   ////////////////////////////////////////////////////////////////////
 
-  let error: Error | undefined;
-  let ready: boolean;
-  $: {
+  let error = $state<Error | undefined>();
+  let ready = $state(false);
+
+  $effect(() => {
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
     Promise.all([data.questionData]).then((data) => {
       error = update(data);
     });
-  }
-  $: if (error) logDebugError(error.message);
+  });
+
+  $effect(() => {
+    if (error) logDebugError(error.message);
+  });
 
   /**
-   * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
+   * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   function update([questionData]: [DPDataType['questions'] | Error]): Error | undefined {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
-    $dataRoot.provideQuestionData(questionData);
+    reactiveDataRoot.current.provideQuestionData(questionData);
     ready = true;
   }
 </script>
@@ -57,6 +62,6 @@
   <Loading />
 {:else}
   <WithPolling>
-    <slot />
+    {@render children?.()}
   </WithPolling>
 {/if}

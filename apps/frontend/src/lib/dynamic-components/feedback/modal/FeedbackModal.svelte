@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a modal dialog for sending feedback.
@@ -32,17 +30,32 @@ Show a modal dialog for sending feedback.
   const CLOSE_DELAY = 1500;
   const { t } = getComponentContext();
   let closeTimeout: NodeJS.Timeout | undefined;
-  onDestroy(() => { if (closeTimeout) clearTimeout(closeTimeout); });
+  onDestroy(() => {
+    if (closeTimeout) clearTimeout(closeTimeout);
+  });
 
   let feedbackRef: { reset: () => void };
   let modalRef: Modal;
 
-  export function closeFeedback() { modalRef?.closeModal(); }
-  export function openFeedback() { modalRef?.openModal(); }
+  export function closeFeedback() {
+    modalRef?.closeModal();
+  }
+  export function openFeedback() {
+    modalRef?.openModal();
+  }
 
-  function onSent() { closeTimeout = setTimeout(() => { closeFeedback(); feedbackRef?.reset(); }, CLOSE_DELAY); }
+  function onSent() {
+    closeTimeout = setTimeout(() => {
+      closeFeedback();
+      feedbackRef?.reset();
+    }, CLOSE_DELAY);
+  }
 </script>
 
-<Modal title={title ?? t('feedback.title')} boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]" bind:this={modalRef} {...restProps}>
-  <Feedback onCancel={closeFeedback} onSent={onSent} bind:this={feedbackRef} />
+<Modal
+  title={title ?? t('feedback.title')}
+  boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
+  bind:this={modalRef}
+  {...restProps}>
+  <Feedback onCancel={closeFeedback} {onSent} bind:this={feedbackRef} />
 </Modal>

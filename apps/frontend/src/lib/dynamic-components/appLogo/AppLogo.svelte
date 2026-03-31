@@ -25,19 +25,12 @@ Logo files for use on a light and a dark background can be defined. If the latte
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { AppLogoProps } from './AppLogo.type';
 
-  let {
-    alt,
-    inverse = false,
-    size = 'md',
-    ...restProps
-  }: AppLogoProps = $props();
+  let { alt, inverse = false, size = 'md', ...restProps }: AppLogoProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -97,10 +90,7 @@ Logo files for use on a light and a dark background can be defined. If the latte
     <img {src} alt={effectiveAlt ?? ''} class="h-full" />
   {:else}
     {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
-      <OpenVAALogo
-        title={effectiveAlt ?? t('common.openVAA')}
-        {size}
-        color={inverse ? 'primary-content' : 'neutral'} />
+      <OpenVAALogo title={effectiveAlt ?? t('common.openVAA')} {size} color={inverse ? 'primary-content' : 'neutral'} />
     {/await}
   {/if}
 </div>

@@ -21,25 +21,27 @@ Page for controlling the question info generation feature.
   ////////////////////////////////////////////////////////////////////////
 
   const {
-    dataRoot,
+    reactiveDataRoot,
     t,
     jobs: { activeJobsByFeature }
   } = getAdminContext();
+  const activeJobsState = fromStore(activeJobsByFeature);
 
   ////////////////////////////////////////////////////////////////////////
-  // Get active jobcurrentLocale
+  // Get active job
   ////////////////////////////////////////////////////////////////////////
 
-  let questionInfoJob: JobInfo | undefined;
-  $: questionInfoJob = $activeJobsByFeature.get('QuestionInfoGeneration');
+  let questionInfoJob = $derived<JobInfo | undefined>(activeJobsByFeature.get('QuestionInfoGeneration'));
 
   ////////////////////////////////////////////////////////////////////////
   // Form state
   ////////////////////////////////////////////////////////////////////////
 
-  let selectedOption = 'all';
-  let selectedElectionId = '';
-  let status: 'idle' | 'loading' | 'success' | 'error' | 'no-selections' | 'no-election' | 'no-operations' = 'idle';
+  let selectedOption = $state('all');
+  let selectedElectionId = $state('');
+  let status = $state<'idle' | 'loading' | 'success' | 'error' | 'no-selections' | 'no-election' | 'no-operations'>(
+    'idle'
+  );
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
@@ -56,38 +58,38 @@ Page for controlling the question info generation feature.
     }
   ];
 
-  let selectedQuestionIds: Array<string> = [];
-  let availableQuestions: Array<AnyQuestionVariant> = [];
-  let questionError: string | null = null;
+  let selectedQuestionIds = $state<Array<string>>([]);
+  let availableQuestions = $state<Array<AnyQuestionVariant>>([]);
+  let questionError = $state<string | null>(null);
 
   ////////////////////////////////////////////////////////////////////////
   // Generation options state
   ////////////////////////////////////////////////////////////////////////
 
-  let selectedOperations: Array<'terms' | 'infoSections'> = ['terms', 'infoSections'];
-  let sectionTopics = '';
-  let customInstructions = '';
-  let questionContext = '';
+  let selectedOperations = $state<Array<'terms' | 'infoSections'>>(['terms', 'infoSections']);
+  let sectionTopics = $state('');
+  let customInstructions = $state('');
+  let questionContext = $state('');
 
   ////////////////////////////////////////////////////////////////////////
   // Available questions
   ////////////////////////////////////////////////////////////////////////
 
-  $: {
+  $effect(() => {
     if (selectedElectionId) {
       try {
-        const election = $dataRoot.getElection(selectedElectionId);
-        availableQuestions = $dataRoot.findQuestions({ type: 'opinion', elections: election });
+        const election = reactiveDataRoot.current.getElection(selectedElectionId);
+        availableQuestions = reactiveDataRoot.current.findQuestions({ type: 'opinion', elections: election });
         questionError = null;
-      } catch (error) {
-        questionError = error instanceof Error ? error.message : 'Unknown error';
+      } catch (err) {
+        questionError = err instanceof Error ? err.message : 'Unknown error';
         availableQuestions = [];
       }
     } else {
       availableQuestions = [];
       questionError = null;
     }
-  }
+  });
 
   ////////////////////////////////////////////////////////////////////////
   // Form handlers
@@ -150,7 +152,7 @@ Page for controlling the question info generation feature.
         </label>
         <select id="electionId" name="electionId" class="select w-full" bind:value={selectedElectionId}>
           <option value="" disabled selected>{t('adminApp.questionInfo.selectElection')}</option>
-          {#each $dataRoot.elections as election}
+          {#each reactiveDataRoot.current.elections as election}
             <option value={election.id}>{election.name}</option>
           {/each}
         </select>

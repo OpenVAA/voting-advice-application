@@ -14,8 +14,6 @@ Displays detailed information about a job, including its status, progress, and m
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import ButtonWithConfirmation from '$lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte';

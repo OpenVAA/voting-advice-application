@@ -15,8 +15,9 @@ Accesses `AppContext` and optionally `VoterContext`.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { fromStore } from 'svelte/store';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
@@ -28,69 +29,74 @@ Accesses `AppContext` and optionally `VoterContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appType, getRoute, openFeedbackModal, t } = getAppContext();
-  const resultsAvailable = $appType === 'voter' ? getVoterContext().resultsAvailable : undefined;
   const {
-    topBarSettings,
-    video: { mode: videoMode, hasContent: hasVideo, player }
-  } = getLayoutContext(onDestroy);
+    appType: appTypeStore,
+    getRoute: getRouteStore,
+    openFeedbackModal: openFeedbackModalStore,
+    t
+  } = getAppContext();
+  const appType = fromStore(appTypeStore);
+  const getRoute = fromStore(getRouteStore);
+  const openFeedbackModal = fromStore(openFeedbackModalStore);
+  const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
+  const { topBarSettings, video } = getLayoutContext(onDestroy);
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
   ? 'white'
   : 'var(--color-primary)' -->
 <div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="var(--color-primary)">
-  {#if $hasVideo}
+  {#if video.hasContent}
     <Button
-      onclick={() => $player?.toggleTranscript()}
+      onclick={() => video.player?.toggleTranscript()}
       variant="responsive-icon"
-      icon={$videoMode === 'video' ? 'videoOn' : 'videoOff'}
-      text={$videoMode === 'video' ? t('components.video.showTranscript') : t('components.video.showVideo')} />
+      icon={video.mode === 'video' ? 'videoOn' : 'videoOff'}
+      text={video.mode === 'video' ? t('components.video.showTranscript') : t('components.video.showVideo')} />
   {/if}
 
-  {#if $topBarSettings.actions.logout == 'show' && $page.data.token}
-    {#if $appType === 'candidate'}
+  {#if topBarSettings.current.actions.logout == 'show' && page.data.token}
+    {#if appType.current === 'candidate'}
       <CandidateLogoutButton variant="icon" />
-    {:else if $appType === 'admin'}
+    {:else if appType.current === 'admin'}
       <AdminLogoutButton variant="icon" redirectTo="AdminAppLogin" />
     {/if}
   {/if}
 
-  {#if $topBarSettings.actions.feedback === 'show'}
-    <Button onclick={$openFeedbackModal} variant="icon" icon="feedback" text={t('feedback.send')} />
+  {#if topBarSettings.current.actions.feedback === 'show'}
+    <Button onclick={openFeedbackModal.current} variant="icon" icon="feedback" text={t('feedback.send')} />
   {/if}
 
-  {#if $topBarSettings.actions.help === 'show'}
-    <Button href={$getRoute('Help')} variant="icon" icon="help" text={t('help.title')} />
+  {#if topBarSettings.current.actions.help === 'show'}
+    <Button href={getRoute.current('Help')} variant="icon" icon="help" text={t('help.title')} />
   {/if}
 
-  {#if $topBarSettings.actions.results === 'show'}
+  {#if topBarSettings.current.actions.results === 'show'}
     <Button
-      href={$getRoute('Results')}
-      disabled={resultsAvailable == null ? true : !$resultsAvailable}
+      href={getRoute.current('Results')}
+      disabled={voterCtx == null ? true : !voterCtx.resultsAvailable}
       variant="responsive-icon"
       icon="results"
       text={t('results.title.results')}
       data-testid="voter-banner-results" />
   {/if}
 
-  {#if $topBarSettings.actions.return === 'show'}
+  {#if topBarSettings.current.actions.return === 'show'}
     <Button
       class="!text-neutral"
       variant="icon"
       icon="close"
-      text={$topBarSettings.actions.returnButtonLabel || t('common.return')}
-      onclick={$topBarSettings.actions.returnButtonCallback ||
-        (() => goto($appType === 'voter' ? $getRoute('Home') : $getRoute('CandAppHome')))} />
+      text={topBarSettings.current.actions.returnButtonLabel || t('common.return')}
+      onclick={topBarSettings.current.actions.returnButtonCallback ||
+        (() => goto(appType.current === 'voter' ? getRoute.current('Home') : getRoute.current('CandAppHome')))} />
   {/if}
 
-  {#if $topBarSettings.actions.cancel === 'show' && $topBarSettings.actions.cancelButtonCallback}
+  {#if topBarSettings.current.actions.cancel === 'show' && topBarSettings.current.actions.cancelButtonCallback}
     <Button
       class="!text-warning"
       variant="icon"
       icon="close"
-      text={$topBarSettings.actions.cancelButtonLabel || t('common.cancel')}
-      onclick={$topBarSettings.actions.cancelButtonCallback} />
+      text={topBarSettings.current.actions.cancelButtonLabel || t('common.cancel')}
+      onclick={topBarSettings.current.actions.cancelButtonCallback} />
   {/if}
 </div>
 

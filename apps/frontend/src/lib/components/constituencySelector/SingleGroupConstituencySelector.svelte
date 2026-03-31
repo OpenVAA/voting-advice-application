@@ -24,15 +24,21 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Select } from '$lib/components/select';
   import { getComponentContext } from '$lib/contexts/component';
   import type { Constituency } from '@openvaa/data';
   import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
 
-  let { group, label, disableSorting, onShadedBg, selected = $bindable(''), onChange, ...restProps }: SingleGroupConstituencySelectorProps = $props();
+  let {
+    group,
+    label,
+    disableSorting,
+    onShadedBg,
+    selected = $bindable(''),
+    onChange,
+    ...restProps
+  }: SingleGroupConstituencySelectorProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -45,14 +51,16 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   ////////////////////////////////////////////////////////////////////
 
   // Provide a default label if not specified
-  let effectiveLabel = $derived(label ?? t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name }));
+  let effectiveLabel = $derived(
+    label ?? t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })
+  );
 
   ////////////////////////////////////////////////////////////////////
   // Sort items
   ////////////////////////////////////////////////////////////////////
 
   function sort(constituencies: Array<Constituency>): Array<Constituency> {
-    return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, $locale));
+    return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, locale));
   }
 </script>
 

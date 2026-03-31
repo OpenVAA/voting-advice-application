@@ -20,8 +20,6 @@ A button that will display the question's extended information content in a `Dra
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';

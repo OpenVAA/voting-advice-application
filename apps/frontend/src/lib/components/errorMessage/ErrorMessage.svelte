@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to display an error message. Also logs the error to the console.

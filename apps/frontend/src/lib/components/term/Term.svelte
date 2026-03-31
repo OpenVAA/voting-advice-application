@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a definition popup when hovering over a term.
@@ -30,7 +28,14 @@ Uses the `term` and `definition` roles.
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { TermProps } from './Term.type';
 
-  let { definition, position = 'bottom', showUnderline = true, forceShow = false, children, ...restProps }: TermProps = $props();
+  let {
+    definition,
+    position = 'bottom',
+    showUnderline = true,
+    forceShow = false,
+    children,
+    ...restProps
+  }: TermProps = $props();
 
   const VERTICAL_PADDING = 20;
   const definitionId = getUUID();

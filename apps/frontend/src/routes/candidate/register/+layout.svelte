@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
@@ -25,7 +23,7 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
-{#if $answersLocked}
+{#if answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}

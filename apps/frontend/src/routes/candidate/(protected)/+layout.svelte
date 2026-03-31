@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate logged in main layout
@@ -11,6 +9,7 @@
 -->
 
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { Snippet } from 'svelte';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -18,7 +17,7 @@
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
-  import { getCandidateContext } from '$lib/contexts/candidate/candidateContext';
+  import { getCandidateContext } from '$lib/contexts/candidate/candidateContext.svelte';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
@@ -81,10 +80,10 @@
    * Process loaded data. Sets `layoutState` as a single write — the only `$state`
    * mutation inside the `.then()` callback.
    */
-  function update([questionData, candidateUserData]: [
+  async function update([questionData, candidateUserData]: [
     DPDataType['questions'] | Error,
     CandidateUserData<true> | undefined
-  ]): void {
+  ]): Promise<void> {
     if (!isValidResult(questionData, { allowEmpty: true })) {
       logDebugError('Error loading question data');
       layoutState = 'error';
@@ -99,6 +98,7 @@
     $dataRoot.provideQuestionData(questionData);
     $dataRoot.provideEntityData(entities);
     $dataRoot.provideNominationData(nominations);
+    await tick();
     userData.init(candidateUserData);
     layoutState = !candidateUserData.candidate.termsOfUseAccepted ? 'terms' : 'ready';
   }

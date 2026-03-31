@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app settings page
@@ -88,7 +86,7 @@ Shows the candidate's user settings.
       type="text"
       label={t('common.email')}
       info={t('candidateApp.settings.emailDescription')}
-      value={$userData?.user.email}
+      value={userData.current?.user.email}
       onShadedBg
       locked
       data-testid="settings-email" />
@@ -97,7 +95,6 @@ Shows the candidate's user settings.
   <!-- Editable data -->
 
   <section class="self-stretch">
-
     <h2 class={subheadingClass}>{t('candidateApp.settings.password.update')}</h2>
 
     <div class="gap-md flex flex-col">

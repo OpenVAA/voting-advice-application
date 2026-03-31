@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to show an entity's basic info and their answers to `info` questions in an `EntityDetails` component.
@@ -22,7 +20,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 ### Usage
 
 ```tsx
-<EntityInfo entity={candidate} questions={$infoQuestions} />
+<EntityInfo entity={candidate} questions={infoQuestions} />
 ```
 -->
 
@@ -67,9 +65,16 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         <InfoItem label={t('common.constituency')}>{constituency.name}</InfoItem>
       {/if}
       {#if parentNomination}
-        <InfoItem label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
+        <InfoItem
+          label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
           {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
-            <a href={$getRoute({ route: 'ResultEntity', entityType: parentNomination.entityType, entityId: parentNomination.entity.id, nominationId: parentNomination.id })}>
+            <a
+              href={$getRoute({
+                route: 'ResultEntity',
+                entityType: parentNomination.entityType,
+                entityId: parentNomination.entity.id,
+                nominationId: parentNomination.id
+              })}>
               <EntityTag entity={parentNomination} variant="full" />
             </a>
           {:else}

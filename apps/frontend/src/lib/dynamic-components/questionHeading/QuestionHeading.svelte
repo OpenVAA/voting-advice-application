@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a `Question`'s text and metadata, such as category and applicable elections.
@@ -22,13 +20,12 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 ### Usage
 
 ```tsx
-<QuestionHeading id="{question.id}-heading" {question} questionBlocks={$selectedQuestionBlocks}/>
+<QuestionHeading id="{question.id}-heading" {question} questionBlocks={selectedQuestionBlocks}/>
 ```
 -->
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -41,7 +38,6 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { escapeRegExp } from '$lib/utils/regexp';
   import type { TermDefinition } from '@openvaa/app-shared';
   import type { Election } from '@openvaa/data';
-  import type { Readable } from 'svelte/store';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
 
@@ -50,10 +46,12 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   let { question, questionBlocks, onShadedBg, ...restProps }: QuestionHeadingProps = $props();
 
   const { appSettings, appType, dataRoot, t } = getAppContext();
-  let elections: Readable<Array<Election>>;
-  if ($appType === 'voter') { elections = getVoterContext().selectedElections; }
-  else if ($appType === 'candidate') { elections = getCandidateContext().selectedElections; }
-  else { elections = readable($dataRoot.elections); }
+  // Get the elections source based on app type; reading happens in reactive contexts below
+  const voterCtx = $appType === 'voter' ? getVoterContext() : undefined;
+  const candidateCtx = $appType === 'candidate' ? getCandidateContext() : undefined;
+  let elections = $derived(
+    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : $dataRoot.elections
+  );
 
   let customData = $derived(getCustomData(question));
   let titleParts: Array<TitlePart> = $derived(addTermsToTitle(customData.terms));
@@ -61,7 +59,10 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   let numQuestions = $derived(questionBlocks?.questions.length);
 
   function addTermsToTitle(terms?: Array<TermDefinition>) {
-    const triggers = terms?.flatMap((t) => t.triggers ?? [])?.sort((a, b) => b.length - a.length).map(escapeRegExp);
+    const triggers = terms
+      ?.flatMap((t) => t.triggers ?? [])
+      ?.sort((a, b) => b.length - a.length)
+      .map(escapeRegExp);
     const parts = triggers ? question.text.split(new RegExp(`(${triggers.join('|')})`)) : [question.text];
     return parts.map<TitlePart>((part) => {
       const term = terms?.find((t) => t.triggers?.includes(part));
@@ -73,12 +74,15 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 <HeadingGroup {...concatClass(restProps, 'relative')}>
   <PreHeading class="gap-sm flex flex-row flex-wrap items-center justify-center">
     {#if $appSettings.elections.showElectionTags}
-      {#each getElectionsToShow({ question, elections: $elections }) as election}
+      {#each getElectionsToShow({ question, elections }) as election}
         <ElectionTag {election} {onShadedBg} />
       {/each}
     {/if}
     {#if $appSettings.questions.showCategoryTags}
-      <CategoryTag category={question.category} suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined} {onShadedBg} />
+      <CategoryTag
+        category={question.category}
+        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
+        {onShadedBg} />
     {:else if blockWithStats}
       {t('common.question')}
       <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
@@ -86,7 +90,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   </PreHeading>
   <h1>
     {#each titleParts as { text, explanation, title }}
-      {#if explanation}<Term definition={title ? `${title}: ${explanation}` : explanation}>{text}</Term>{:else}{text}{/if}
+      {#if explanation}<Term definition={title ? `${title}: ${explanation}` : explanation}>{text}</Term
+        >{:else}{text}{/if}
     {/each}
   </h1>
 </HeadingGroup>

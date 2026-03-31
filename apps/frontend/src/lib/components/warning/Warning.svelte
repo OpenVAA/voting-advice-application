@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 A simple warning component to be used with BasicPage

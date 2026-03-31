@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a button that opens a modal describing the data the app collects.
@@ -43,12 +41,24 @@ Accesses `AppContext` to read `appSettings`.
   let modalRef: Modal;
 </script>
 
-<Button variant="icon" icon="info" iconPos="left" onclick={() => modalRef?.openModal()} text={t('privacy.dataConsentInfoButton')} {...restProps} />
+<Button
+  variant="icon"
+  icon="info"
+  iconPos="left"
+  onclick={() => modalRef?.openModal()}
+  text={t('privacy.dataConsentInfoButton')}
+  {...restProps} />
 
 <Modal bind:this={modalRef} title={t('common.privacy.dataCollection.title')}>
   {#if $appSettings.analytics?.platform?.name}
     <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
-    <p>{@html sanitizeHtml(t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`), { analyticsLink }))}</p>
+    <p>
+      {@html sanitizeHtml(
+        t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`), {
+          analyticsLink
+        })
+      )}
+    </p>
   {:else}
     {logDebugError('No analytics platform configured!')}
   {/if}

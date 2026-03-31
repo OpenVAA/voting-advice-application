@@ -2,7 +2,7 @@ import { unwrapEntity } from './entities';
 import { findNomination } from './matches';
 import type { Id } from '@openvaa/core';
 import type { AnyEntityVariant, DataRoot, EntityType } from '@openvaa/data';
-import type { MatchTree } from '$lib/contexts/voter/matchStore';
+import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
 
 /**
  * Get the relevant `entity` and `title` properties to pass to `EntityDetails` based on the inputs.

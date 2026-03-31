@@ -15,29 +15,35 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { fromStore } from 'svelte/store';
   import { Icon } from '$lib/components/icon';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AppLogo } from '$lib/dynamic-components/appLogo';
   import Banner from './Banner.svelte';
 
-  export let menuId: string;
-  export let openDrawer: () => void;
-  export let isDrawerOpen = false;
-  export let drawerOpenElement: HTMLButtonElement | undefined;
+  let {
+    menuId,
+    openDrawer,
+    isDrawerOpen = false,
+    drawerOpenElement
+  }: {
+    menuId: string;
+    openDrawer: () => void;
+    isDrawerOpen?: boolean;
+    drawerOpenElement?: HTMLButtonElement;
+  } = $props();
 
-  const { appSettings, darkMode, t } = getAppContext();
+  const { appSettings: appSettingsStore, darkMode: darkModeStore, t } = getAppContext();
+  const appSettings = fromStore(appSettingsStore);
+  const darkMode = fromStore(darkModeStore);
 
   const { navigationSettings, progress, topBarSettings } = getLayoutContext(onDestroy);
 
-  const currentProgress = progress.current;
-  const maxProgress = progress.max;
-
-  let bgColor: string | undefined;
-  $: {
-    const mode = $darkMode ? $appSettings.headerStyle.dark : $appSettings.headerStyle.light;
-    bgColor = $topBarSettings.imageSrc ? mode.overImgBgColor : mode.bgColor;
-  }
+  const bgColor = $derived.by(() => {
+    const mode = darkMode.current ? appSettings.current.headerStyle.dark : appSettings.current.headerStyle.light;
+    return topBarSettings.current.imageSrc ? mode.overImgBgColor : mode.bgColor;
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Stashed for video
@@ -53,35 +59,35 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   */
 
   /** The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. */
-  /* let invertLogo = hasVideo && screenWidth < Breakpoints.sm && !$darkMode; */
+  /* let invertLogo = hasVideo && screenWidth < Breakpoints.sm && !darkMode.current; */
 </script>
 
 <!-- {hasVideo ? '!absolute w-full bg-transparent z-10' : ''} -->
 <header
   class="pt-safet relative flex max-h-fit"
-  class:prominent-top-bar-with-background={$topBarSettings.imageSrc}
-  class:top-bar={!$topBarSettings.imageSrc}
-  style:--image={$topBarSettings.imageSrc && `url(${$topBarSettings.imageSrc})`}
-  style:--background-size={$topBarSettings.imageSrc && $appSettings.headerStyle.imgSize}
-  style:--background-position={$topBarSettings.imageSrc && $appSettings.headerStyle.imgPosition}>
-  {#if $topBarSettings.progress === 'show'}
+  class:prominent-top-bar-with-background={topBarSettings.current.imageSrc}
+  class:top-bar={!topBarSettings.current.imageSrc}
+  style:--image={topBarSettings.current.imageSrc && `url(${topBarSettings.current.imageSrc})`}
+  style:--background-size={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgSize}
+  style:--background-position={topBarSettings.current.imageSrc && appSettings.current.headerStyle.imgPosition}>
+  {#if topBarSettings.current.progress === 'show'}
     <progress
       class="progress progress-primary absolute top-0 left-0 h-2"
-      value={$currentProgress}
-      max={$maxProgress}
+      value={progress.current.current}
+      max={progress.max}
       title={t('common.progress')} />
   {/if}
   <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
-      on:click={openDrawer}
+      onclick={openDrawer}
       bind:this={drawerOpenElement}
       aria-expanded={isDrawerOpen}
       aria-controls={menuId}
       aria-label={t('common.openMenu')}
-      disabled={$navigationSettings.hide}
+      disabled={navigationSettings.current.hide}
       class="btn btn-ghost drawer-button gap-md text-neutral flex cursor-pointer items-center">
-      <Icon name="menu" class={$navigationSettings.hide ? 'hidden' : undefined} />
+      <Icon name="menu" class={navigationSettings.current.hide ? 'hidden' : undefined} />
       <!-- inverse={invertLogo} -->
       <AppLogo inverse={false} aria-hidden="true" />
     </button>

@@ -39,8 +39,6 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { Avatar } from '$lib/components/avatar';
@@ -77,7 +75,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, appType, dataRoot, getRoute, startEvent, t } = getAppContext();
-  const matches = $appType === 'voter' ? getVoterContext().matches : undefined;
+  const voterContext = $appType === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Parse components, actions, subcards and questions
@@ -98,12 +96,14 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    const effectiveAction = action ?? $getRoute({
-      route: 'ResultEntity',
-      entityType: type,
-      entityId: id,
-      nominationId: unwrapped.nomination?.id
-    });
+    const effectiveAction =
+      action ??
+      $getRoute({
+        route: 'ResultEntity',
+        entityType: type,
+        entityId: id,
+        nominationId: unwrapped.nomination?.id
+      });
 
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
@@ -128,7 +128,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
       $appSettings.results.cardContents.organization?.includes('candidates')
     ) {
-      scs = findCandidateNominations({ matches: matches ? $matches : undefined, nomination: unwrapped.nomination }).map((e) => ({
+      scs = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map((e) => ({
         entity: e
       }));
     }
@@ -244,7 +244,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
       <!-- Submatches -->
       {#if variant !== 'subcard' && parsed.match?.subMatches?.length && parsed.showSubMatches}
-        <SubMatches matches={parsed.match.subMatches} variant={variant === 'details' ? 'loose' : undefined} class="mt-6" />
+        <SubMatches
+          matches={parsed.match.subMatches}
+          variant={variant === 'details' ? 'loose' : undefined}
+          class="mt-6" />
       {/if}
 
       <!-- Featured questions and answers -->

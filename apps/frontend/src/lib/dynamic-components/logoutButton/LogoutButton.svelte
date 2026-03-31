@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Allows user to log out.

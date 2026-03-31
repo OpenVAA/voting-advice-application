@@ -26,8 +26,6 @@ Accesses `AppContext` to set and read `userPreferences`.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
@@ -39,11 +37,7 @@ Accesses `AppContext` to set and read `userPreferences`.
   import type { ConsentStatus } from '$lib/contexts/app/userPreferences.type';
   import type { DataConsentProps } from './DataConsent.type';
 
-  let {
-    description = 'modal',
-    onChange,
-    ...restProps
-  }: DataConsentProps = $props();
+  let { description = 'modal', onChange, ...restProps }: DataConsentProps = $props();
 
   const { appSettings, userPreferences, setDataConsent, t } = getAppContext();
 

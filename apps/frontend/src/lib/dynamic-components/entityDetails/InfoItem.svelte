@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to show a label-content pair in a Candidate's basic information.

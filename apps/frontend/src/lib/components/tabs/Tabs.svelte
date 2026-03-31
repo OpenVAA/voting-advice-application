@@ -23,8 +23,6 @@ Show a tab title bar that can be used to switch between different tabs.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { TabsProps } from './Tabs.type';

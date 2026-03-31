@@ -8,36 +8,38 @@
 -->
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
   import { logDebugError } from '$lib/utils/logger';
 
-  export let data;
+  let { data, children }: { data: any; children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { t, userData } = getAdminContext();
+  const adminCtx = getAdminContext();
+  const { t } = adminCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Process data
   ////////////////////////////////////////////////////////////////////
 
-  let error: Error | undefined;
-  let ready: boolean = false;
+  let error = $state<Error | undefined>();
+  let ready = $state(false);
 
-  $: {
+  $effect(() => {
     // Update admin context with user data
     if (data.userData) {
-      userData.set(data.userData);
+      adminCtx.userData = data.userData;
       ready = true;
     } else {
       error = new Error('No user data available');
       logDebugError('[Admin protected layout] Error: No user data available');
     }
-  }
+  });
 </script>
 
 {#if error}
@@ -45,5 +47,5 @@
 {:else if !ready}
   <Loading />
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}

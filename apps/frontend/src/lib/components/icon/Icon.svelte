@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 An icon component, where the `name` property defines which icon to use.

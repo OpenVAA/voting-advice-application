@@ -14,8 +14,6 @@ Reusable component for displaying informational messages with scrolling.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { DEFAULT_MAX_MESSAGES, DEFAULT_MESSAGES_HEIGHT } from '$lib/admin/components/jobs/shared';
   import { getAdminContext } from '$lib/contexts/admin';

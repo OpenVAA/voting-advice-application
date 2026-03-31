@@ -19,15 +19,20 @@ PasswordField is an input box for password that comes with a button to reveal an
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { getUUID } from '$lib/utils/components';
   import type { PasswordFieldProps } from './PasswordField.type';
 
-  let { id: idProp = undefined, password = $bindable(''), autocomplete = '', label = undefined, externalLabel = false, ...restProps }: PasswordFieldProps = $props();
+  let {
+    id: idProp = undefined,
+    password = $bindable(''),
+    autocomplete = '',
+    label = undefined,
+    externalLabel = false,
+    ...restProps
+  }: PasswordFieldProps = $props();
 
   export function focus(): void {
     input?.focus();

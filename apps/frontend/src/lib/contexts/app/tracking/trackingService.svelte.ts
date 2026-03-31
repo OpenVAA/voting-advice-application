@@ -1,9 +1,9 @@
-import { derived, get, writable } from 'svelte/store';
+import { fromStore, toStore } from 'svelte/store';
 import { browser } from '$app/environment';
 import { getUUID } from '$lib/utils/components';
 import { logDebugError } from '$lib/utils/logger';
 import { purgeNullish } from '../../../utils/purgeNullish';
-import { sessionStorageWritable } from '../../utils/storageStore';
+import { sessionStorageWritable } from '../../utils/persistedState.svelte';
 import type { Readable } from 'svelte/store';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
@@ -37,19 +37,29 @@ export function trackingService({
   let unsubmittedEvents: Array<TrackingEvent> = [];
 
   ////////////////////////////////////////////////////////////////////
-  // Stores
+  // Reactive state
   ////////////////////////////////////////////////////////////////////
 
   const sessionId = sessionStorageWritable('appContext-sessionId', getUUID());
 
-  const sendTrackingEvent = writable<TrackingHandler | null | undefined>(undefined);
-
-  const shouldTrack = derived(
-    [appSettings, userPreferences],
-    ([appSettings, userPreferences]) =>
-      browser && appSettings.analytics.trackEvents && userPreferences.dataCollection?.consent === 'granted',
-    false
+  let sendTrackingEventValue = $state<TrackingHandler | null | undefined>(undefined);
+  const sendTrackingEvent = toStore(
+    () => sendTrackingEventValue,
+    (v) => {
+      sendTrackingEventValue = v;
+    }
   );
+
+  const appSettingsReactive = fromStore(appSettings);
+  const userPrefsReactive = fromStore(userPreferences);
+  const shouldTrackValue = $derived(
+    browser &&
+      appSettingsReactive.current.analytics.trackEvents &&
+      userPrefsReactive.current.dataCollection?.consent === 'granted'
+  );
+  const shouldTrack = toStore(() => shouldTrackValue);
+
+  const sessionIdReactive = fromStore(sessionId);
 
   ////////////////////////////////////////////////////////////////////
   // Tracking functions
@@ -71,7 +81,7 @@ export function trackingService({
   }
 
   function submitAllEvents() {
-    if (get(shouldTrack) && (pageviewEvent || unsubmittedEvents?.length)) {
+    if (shouldTrackValue && (pageviewEvent || unsubmittedEvents?.length)) {
       const events: Record<string, TrackingEvent['data']> = {};
       // This shouldn't happen
       if (!pageviewEvent) {
@@ -96,10 +106,10 @@ export function trackingService({
   }
 
   function track(name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) {
-    if (!get(shouldTrack)) return;
-    const send = get(sendTrackingEvent);
+    if (!shouldTrackValue) return;
+    const send = sendTrackingEventValue;
     if (!send) return;
-    const dataToSend = purgeNullish({ vaaSessionId: get(sessionId), ...data });
+    const dataToSend = purgeNullish({ vaaSessionId: sessionIdReactive.current, ...data });
     logDebugError({ name, data: dataToSend });
     send({ name, data: dataToSend });
   }

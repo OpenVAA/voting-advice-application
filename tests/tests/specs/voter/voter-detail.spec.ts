@@ -112,9 +112,6 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     }
   });
 
-  // FIXME: [Svelte 5 reactivity] This test requires tab switching ($state mutation
-  // in handleEntityTabChange), which does not trigger template re-renders in
-  // layout components. Skipped until the Svelte 5 reactivity issue is resolved.
   test('should open party detail drawer with info, candidates, and opinions tabs', async ({
     answeredVoterPage: page
   }) => {

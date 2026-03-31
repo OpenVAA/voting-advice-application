@@ -22,8 +22,6 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
   import { DateQuestion, isChoiceQuestion, isMultipleChoiceQuestion, QUESTION_TYPE } from '@openvaa/data';

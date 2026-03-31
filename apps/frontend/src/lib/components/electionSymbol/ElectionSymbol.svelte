@@ -16,8 +16,6 @@ Display an entity's election symbol, which is usually a number but may also be a
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { ElectionSymbolProps } from './ElectionSymbol.type';

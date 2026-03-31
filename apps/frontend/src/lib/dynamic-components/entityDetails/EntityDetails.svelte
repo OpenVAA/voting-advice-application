@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
@@ -42,21 +40,20 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { CustomData, EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { Readable } from 'svelte/store';
   import type { Tab } from '$lib/components/tabs';
   import type { AnswerStore } from '$lib/contexts/voter';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore';
+  import type { MatchTree } from '$lib/contexts/voter/matchStore.svelte';
+  import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
   let { entity, ...restProps }: EntityDetailsProps = $props();
 
   const { appSettings, appType, startEvent, t } = getAppContext();
+  let voterContext: VoterContext | undefined;
   let answers: AnswerStore | undefined;
-  let matches: Readable<MatchTree> | undefined;
   if ($appType === 'voter') {
-    const context = getVoterContext();
-    answers = context.answers;
-    matches = context.matches;
+    voterContext = getVoterContext();
+    answers = voterContext.answers;
   }
 
   type ContentTab = { content: EntityDetailsContent | OrganizationDetailsContent; label: string };
@@ -76,7 +73,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const { nomination } = unwrapEntity(entity);
     const tabs = contentTabs.map((ct) => ct.content);
     if (tabs.includes('candidates') && isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
-      return findCandidateNominations({ matches: matches ? $matches : undefined, nomination });
+      return findCandidateNominations({ matches: voterContext?.matches, nomination });
     return [];
   });
 
@@ -117,9 +114,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   {#if contentTabs[activeIndex]?.content === 'info'}
     <div data-testid="voter-entity-detail-info"><EntityInfo {entity} questions={infoQuestions} /></div>
   {:else if contentTabs[activeIndex]?.content === 'opinions'}
-    <div data-testid="voter-entity-detail-opinions"><EntityOpinions {entity} questions={opinionQuestions} {answers} /></div>
+    <div data-testid="voter-entity-detail-opinions">
+      <EntityOpinions {entity} questions={opinionQuestions} {answers} />
+    </div>
   {:else if contentTabs[activeIndex]?.content === 'candidates'}
-    <div data-testid="voter-entity-detail-submatches"><EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} /></div>
+    <div data-testid="voter-entity-detail-submatches">
+      <EntityChildren entities={children} entityType={ENTITY_TYPE.Candidate} />
+    </div>
   {/if}
 </article>
 

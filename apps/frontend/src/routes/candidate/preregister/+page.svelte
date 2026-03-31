@@ -7,8 +7,6 @@
 - Shows a popup prompting the user to log in instead of preregistering again if they've already preregistered.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { browser } from '$app/environment';
@@ -37,7 +35,7 @@
 
   $effect(() => {
     // Show possible notification
-    if ($isPreregistered && !$idTokenClaims)
+    if (isPreregistered && !idTokenClaims)
       popupQueue.push({
         component: PreregisteredNotification
       });
@@ -49,15 +47,15 @@
 
   const steps = [
     t('candidateApp.preregister.identification.start.step.identification'),
-    $electionsSelectable ? t('candidateApp.preregister.identification.start.step.electionSelect') : undefined,
-    $constituenciesSelectable ? t('candidateApp.preregister.identification.start.step.constituencySelect') : undefined,
+    electionsSelectable ? t('candidateApp.preregister.identification.start.step.electionSelect') : undefined,
+    constituenciesSelectable ? t('candidateApp.preregister.identification.start.step.constituencySelect') : undefined,
     t('candidateApp.preregister.identification.start.step.emailVerification'),
     t('candidateApp.preregister.identification.start.step.passwordSelect')
   ].filter(Boolean);
 
-  const nextRoute = $electionsSelectable
+  const nextRoute = electionsSelectable
     ? 'CandAppPreregisterElection'
-    : $constituenciesSelectable
+    : constituenciesSelectable
       ? 'CandAppPreregisterConstituency'
       : 'CandAppPreregisterEmail';
 
@@ -112,11 +110,11 @@
   // Top bar
   ////////////////////////////////////////////////////////////////////
 
-  if ($idTokenClaims) navigationSettings.push({ hide: true });
+  if (idTokenClaims) navigationSettings.push({ hide: true });
 </script>
 
-{#if $idTokenClaims}
-  <MainContent title={t('candidateApp.preregister.identification.success.title', $idTokenClaims)}>
+{#if idTokenClaims}
+  <MainContent title={t('candidateApp.preregister.identification.success.title', idTokenClaims)}>
     {#snippet hero()}
       <figure role="presentation">
         <HeroEmoji emoji={t('candidateApp.preregister.identification.success.heroEmoji')} />

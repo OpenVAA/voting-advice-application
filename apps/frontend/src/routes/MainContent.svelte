@@ -26,8 +26,6 @@ The layout varies slightly based on the presence of a video player.
 - Any valid attributes of a `<div>` element.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
@@ -52,9 +50,7 @@ The layout varies slightly based on the presence of a video player.
   }: MainContentProps = $props();
 
   const { t } = getComponentContext();
-  const {
-    video: { hasContent: hasVideo }
-  } = getLayoutContext(onDestroy);
+  const { video } = getLayoutContext(onDestroy);
 </script>
 
 <svelte:head>
@@ -72,14 +68,14 @@ The layout varies slightly based on the presence of a video player.
 
   <div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
     <!-- Hero image -->
-    {#if !$hasVideo}
+    {#if !video.hasContent}
       {#if hero}
         {@render hero()}
       {/if}
     {/if}
 
     <!-- Title block -->
-    <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!$hasVideo}>
+    <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!video.hasContent}>
       {#if heading}
         {@render heading()}
       {:else}

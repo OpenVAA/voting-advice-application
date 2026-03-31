@@ -49,8 +49,6 @@ text="Add to list">
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';

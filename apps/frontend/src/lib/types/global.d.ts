@@ -68,7 +68,7 @@ declare global {
   /**
    * The possible values for the status of asking for a user's feedback or filling out a survey.
    */
-  type UserFeedbackStatus = 'received' | 'indetermined';
+  type UserFeedbackStatus = 'received' | 'dismissed' | 'indetermined';
 
   /**
    * These are all the DaisyUI colors supported by the application.

@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a popup asking for user feedback.
@@ -28,11 +26,17 @@ Show a popup asking for user feedback.
   const CLOSE_DELAY = 1500;
   const { t } = getComponentContext();
   let closeTimeout: NodeJS.Timeout | undefined;
-  onDestroy(() => { if (closeTimeout) clearTimeout(closeTimeout); });
+  onDestroy(() => {
+    if (closeTimeout) clearTimeout(closeTimeout);
+  });
 
   let alertRef: Alert;
 
-  function onClick() { closeTimeout = setTimeout(() => { alertRef?.closeAlert(); }, CLOSE_DELAY); }
+  function onClick() {
+    closeTimeout = setTimeout(() => {
+      alertRef?.closeAlert();
+    }, CLOSE_DELAY);
+  }
 </script>
 
 <Alert bind:this={alertRef} title={t('dynamic.survey.title')} {...restProps}>
@@ -41,7 +45,7 @@ Show a popup asking for user feedback.
   </div>
   {#snippet actions()}
     <div>
-      <SurveyButton onClick={onClick} variant="main" />
+      <SurveyButton {onClick} variant="main" />
       <p class="small-info my-sm">{t('dynamic.survey.popupInfo')}</p>
       <Button onclick={() => alertRef?.closeAlert()} text={t('common.thanksNo')} color="warning" />
     </div>

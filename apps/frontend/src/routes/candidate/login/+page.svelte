@@ -19,8 +19,6 @@
 
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy, tick } from 'svelte';
   import { slide } from 'svelte/transition';
@@ -43,7 +41,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, appCustomization, appSettings, darkMode, getRoute, newUserEmail, t } = getCandidateContext();
+  const candCtx = getCandidateContext();
+  const { answersLocked, appCustomization, appSettings, darkMode, getRoute, t } = candCtx;
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -67,10 +66,10 @@
   }
   if (errorMessage) status = 'error';
 
-  if ($newUserEmail != null) {
-    email = $newUserEmail;
+  if (candCtx.newUserEmail != null) {
+    email = candCtx.newUserEmail;
     showPasswordSetMessage = true;
-    $newUserEmail = undefined;
+    candCtx.newUserEmail = undefined;
   }
 
   let canSubmit = $derived(!!(status !== 'loading' && email && password));
@@ -85,7 +84,7 @@
   // If preregistration is possible, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
   /** Whether to show the login details */
   let isLoginShown = $derived(
-    !!(email || showLogin || $answersLocked || !$appSettings.preRegistration?.enabled || status === 'error')
+    !!(email || showLogin || answersLocked || !$appSettings.preRegistration?.enabled || status === 'error')
   );
 
   $effect(() => {
@@ -144,7 +143,7 @@
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
         {#if !showPasswordSetMessage}
           <p class="max-w-md text-center">
-            {$answersLocked ? t('candidateApp.login.answersLockedInfo') : t('candidateApp.login.enterEmailAndPassword')}
+            {answersLocked ? t('candidateApp.login.answersLockedInfo') : t('candidateApp.login.enterEmailAndPassword')}
           </p>
         {/if}
         <label for="email" class="hidden">{t('common.email')}</label>
@@ -180,7 +179,7 @@
       </div>
     {/if}
 
-    {#if !$answersLocked && $appSettings.preRegistration?.enabled}
+    {#if !answersLocked && $appSettings.preRegistration?.enabled}
       <div class="divider">{t('common.or')}</div>
       <Button
         href={$getRoute('CandAppPreregister')}

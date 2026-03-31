@@ -17,8 +17,9 @@
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
+  import { fromStore } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { updated } from '$app/stores';
+  import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -32,10 +33,11 @@
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
   import MaintenancePage from './MaintenancePage.svelte';
+  import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
 
-  export let data: LayoutData;
+  let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Initialize globally used contexts
@@ -44,32 +46,55 @@
   initI18nContext();
   initComponentContext();
   initDataContext();
-  const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
-    initAppContext();
+  const {
+    appSettings: appSettingsStore,
+    dataRoot: dataRootStore,
+    openFeedbackModal: openFeedbackModalStore,
+    popupQueue,
+    sendTrackingEvent: sendTrackingEventStore,
+    startPageview,
+    submitAllEvents,
+    t
+  } = initAppContext();
   initLayoutContext();
   // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
   initAuthContext();
+
+  // Bridge stores to runes reactivity
+  const appSettings = fromStore(appSettingsStore);
+  const dataRoot = fromStore(dataRootStore);
+  const openFeedbackModal = fromStore(openFeedbackModalStore);
+  const sendTrackingEvent = fromStore(sendTrackingEventStore);
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data
   ////////////////////////////////////////////////////////////////////
 
   // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
-  let error: Error | undefined;
-  let ready: boolean;
-  let underMaintenance: boolean;
-  $: {
-    // If data is updated, we want to prevent loading the slot until the promises resolve
+  let error = $state<Error | undefined>();
+  let ready = $state(false);
+  let underMaintenance = $state(false);
+
+  $effect(() => {
+    // Read data prop fields to establish dependency tracking
+    const settingsP = data.appSettingsData;
+    const customP = data.appCustomizationData;
+    const electionP = data.electionData;
+    const constituencyP = data.constituencyData;
+
+    // Reset state before async work
     error = undefined;
     ready = false;
     underMaintenance = false;
-    Promise.all([data.appSettingsData, data.appCustomizationData, data.electionData, data.constituencyData]).then(
-      (data) => {
-        error = update(data);
-      }
-    );
-  }
-  $: if (error) logDebugError(error.message);
+
+    Promise.all([settingsP, customP, electionP, constituencyP]).then((results) => {
+      error = update(results);
+    });
+  });
+
+  $effect(() => {
+    if (error) logDebugError(error.message);
+  });
 
   /**
    * Handle the update inside a function.
@@ -86,9 +111,9 @@
     if (!isValidResult(electionData)) return new Error('Error loading constituency data');
     if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
     underMaintenance = appSettingsData.access?.underMaintenance ?? false;
-    $dataRoot.update(() => {
-      $dataRoot.provideElectionData(electionData);
-      $dataRoot.provideConstituencyData(constituencyData);
+    dataRoot.current.update(() => {
+      dataRoot.current.provideElectionData(electionData);
+      dataRoot.current.provideConstituencyData(constituencyData);
     });
     // We don't do anything else with the data if they're okay, because the relevant stores will pick them up from $page.data
     ready = true;
@@ -99,12 +124,15 @@
   ////////////////////////////////////////////////////////////////////
 
   // Reference to UmamiAnalytics component to access its trackEvent export
-  let umamiRef: { trackEvent?: typeof $sendTrackingEvent };
-  $: if (umamiRef?.trackEvent) $sendTrackingEvent = umamiRef.trackEvent;
+  let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
+
+  $effect(() => {
+    if (umamiRef?.trackEvent) sendTrackingEventStore.set(umamiRef.trackEvent);
+  });
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
-    if ($updated && !willUnload && to?.url) location.href = to.url.href;
+    if (updated.current && !willUnload && to?.url) location.href = to.url.href;
   });
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
@@ -112,12 +140,25 @@
     startPageview(to?.url?.href ?? '', from?.url?.href);
   });
 
+  // Submit any possible event data if the window is closed or refreshed
+  $effect(() => {
+    if (!appSettings.current.analytics?.platform) return;
+    const handler = () => {
+      if (document.visibilityState === 'hidden') submitAllEvents();
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  });
+
   ////////////////////////////////////////////////////////////////////
   // Other global effects
   ////////////////////////////////////////////////////////////////////
 
-  let feedbackModalRef: { openFeedback: () => void };
-  $: if (feedbackModalRef) $openFeedbackModal = () => feedbackModalRef?.openFeedback();
+  let feedbackModalRef = $state<{ openFeedback: () => void }>();
+
+  $effect(() => {
+    if (feedbackModalRef) openFeedbackModalStore.set(() => feedbackModalRef?.openFeedback());
+  });
 
   // popupItem reactivity is handled by the PopupRenderer runes-mode component
 
@@ -149,25 +190,18 @@
 {:else if underMaintenance}
   <MaintenancePage />
 {:else}
-  <slot />
+  {@render children?.()}
 
   <!-- Feedback modal -->
   <FeedbackModal bind:this={feedbackModalRef} />
 
   <!-- Handle analytics loading -->
-  {#if $appSettings.analytics?.platform}
-    {#if $appSettings.analytics?.platform?.name === 'umami'}
+  {#if appSettings.current.analytics?.platform}
+    {#if appSettings.current.analytics?.platform?.name === 'umami'}
       {#await import('$lib/components/analytics/umami/UmamiAnalytics.svelte') then UmamiAnalytics}
-        <svelte:component
-          this={UmamiAnalytics.default}
-          websiteId={$appSettings.analytics.platform.code}
-          bind:this={umamiRef} />
+        <UmamiAnalytics.default websiteId={appSettings.current.analytics.platform.code} bind:this={umamiRef} />
       {/await}
     {/if}
-    {#await import('svelte-visibility-change') then VisibilityChange}
-      <!-- Submit any possible event data if the window is closed or refreshed -->
-      <svelte:component this={VisibilityChange.default} on:hidden={() => submitAllEvents()} />
-    {/await}
   {/if}
 {/if}
 

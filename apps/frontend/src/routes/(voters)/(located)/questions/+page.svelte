@@ -10,8 +10,6 @@ Display a general intro before starting answering the questions and possibly all
 - `questions.questionsIntro.show`: If `false`, this page is bypassed.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
@@ -28,18 +26,17 @@ Display a general intro before starting answering the questions and possibly all
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  const voterCtx = getVoterContext();
   const {
     appSettings,
-    firstQuestionId,
     getRoute,
     opinionQuestions,
     opinionQuestionCategories,
     selectedElections: elections,
     selectedConstituencies: constituencies,
     selectedQuestionBlocks,
-    selectedQuestionCategoryIds,
     t
-  } = getVoterContext();
+  } = voterCtx;
 
   const { progress } = getLayoutContext(onDestroy);
   progress.current.set(0);
@@ -50,16 +47,16 @@ Display a general intro before starting answering the questions and possibly all
 
   // On mount either redirect or pre-select all questionCategories and clear out the possible firstQuestionId store
   onMount(() => {
-    $firstQuestionId = null;
+    voterCtx.firstQuestionId = null;
     // Check that the selected categories are still available (because they might be specific to the election and constituency)
-    $selectedQuestionCategoryIds = $selectedQuestionCategoryIds.filter((id) =>
-      $opinionQuestionCategories.find((c) => c.id === id)
+    voterCtx.selectedQuestionCategoryIds = voterCtx.selectedQuestionCategoryIds.filter((id) =>
+      opinionQuestionCategories.find((c) => c.id === id)
     );
     // Preselect all if there's no selection yet
-    if ($selectedQuestionCategoryIds.length === 0)
-      $selectedQuestionCategoryIds = $opinionQuestionCategories.map((c) => c.id);
+    if (voterCtx.selectedQuestionCategoryIds.length === 0)
+      voterCtx.selectedQuestionCategoryIds = opinionQuestionCategories.map((c) => c.id);
     if (!$appSettings.questions.questionsIntro.show) {
-      const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+      const categoryId = selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
       return goto(
         $getRoute(
           $appSettings.questions.categoryIntros?.show && categoryId
@@ -77,14 +74,13 @@ Display a general intro before starting answering the questions and possibly all
 
   // To submit, there number of questions in the selected categories must be at least the minimum number set in the app settings or all questions if there are less than the minimum number
   let canSubmit = $derived(
-    $selectedQuestionCategoryIds.length > 0 &&
-      $selectedQuestionBlocks.questions.length >=
-        Math.min($opinionQuestions.length, $appSettings.matching.minimumAnswers)
+    voterCtx.selectedQuestionCategoryIds.length > 0 &&
+      selectedQuestionBlocks.questions.length >= Math.min(opinionQuestions.length, $appSettings.matching.minimumAnswers)
   );
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+    const categoryId = selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
     goto(
       $getRoute(
@@ -101,7 +97,7 @@ Display a general intro before starting answering the questions and possibly all
    * Count the applicable questions in a given category.
    */
   function countQuestions(category: QuestionCategory): number {
-    return category.getApplicableQuestions({ elections: $elections, constituencies: $constituencies }).length;
+    return category.getApplicableQuestions({ elections, constituencies }).length;
   }
 </script>
 
@@ -115,19 +111,19 @@ Display a general intro before starting answering the questions and possibly all
   {#if $appSettings.questions.questionsIntro.allowCategorySelection}
     <p class="text-center">
       {t('questions.intro.ingress.withCategorySelection', {
-        numCategories: $opinionQuestionCategories.length,
+        numCategories: opinionQuestionCategories.length,
         minQuestions: $appSettings.matching.minimumAnswers
       })}
     </p>
     <div class="gap-sm grid" data-testid="voter-questions-category-list">
-      {#each $opinionQuestionCategories as category}
+      {#each opinionQuestionCategories as category}
         <label class="label gap-sm cursor-pointer justify-start !p-0">
           <input
             type="checkbox"
             class="checkbox"
             name="vaa-selectedCategories"
             value={category.id}
-            bind:group={$selectedQuestionCategoryIds}
+            bind:group={voterCtx.selectedQuestionCategoryIds}
             data-testid="voter-questions-category-checkbox" />
           <CategoryTag {category} />
           <span class="text-secondary">{countQuestions(category)}</span>
@@ -137,16 +133,16 @@ Display a general intro before starting answering the questions and possibly all
   {:else}
     <p class="text-center">
       {t('questions.intro.ingress.withoutCategorySelection', {
-        numCategories: $opinionQuestionCategories.length,
-        numQuestions: $selectedQuestionBlocks.questions.length
+        numCategories: opinionQuestionCategories.length,
+        numQuestions: selectedQuestionBlocks.questions.length
       })}
     </p>
     <div
       class="
-        {$opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '}
+        {opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '}
         gap-sm justify-center justify-items-center
       ">
-      {#each $opinionQuestionCategories as category}
+      {#each opinionQuestionCategories as category}
         <CategoryTag {category} />
       {/each}
     </div>
@@ -159,7 +155,7 @@ Display a general intro before starting answering the questions and possibly all
       variant="main"
       icon="next"
       text={t('questions.intro.start', {
-        numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
+        numQuestions: voterCtx.selectedQuestionCategoryIds.length > 0 ? selectedQuestionBlocks.questions.length : 0
       })}
       data-testid="voter-questions-start" />
   {/snippet}

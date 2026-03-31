@@ -15,8 +15,6 @@ Displays jobs for a specific admin feature, showing active and past job details.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { ADMIN_FEATURE } from '$lib/admin/features';
   import { Button } from '$lib/components/button';
@@ -43,8 +41,10 @@ Displays jobs for a specific admin feature, showing active and past job details.
   // Get jobs for feature
   ////////////////////////////////////////////////////////////////////////
 
-  const activeJob: JobInfo | undefined = $derived($activeJobsByFeature.get(feature));
-  const pastJobs: Array<JobInfo> = $derived(($pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime)));
+  const activeJob: JobInfo | undefined = $derived(activeJobsByFeature.get(feature));
+  const pastJobs: Array<JobInfo> = $derived(
+    (pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime))
+  );
 
   ////////////////////////////////////////////////////////////////////////
   // Show or hide past jobs

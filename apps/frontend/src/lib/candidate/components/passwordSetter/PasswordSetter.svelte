@@ -24,8 +24,6 @@ Contains the dynamic `PasswordValidator` component.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { PasswordField } from '$candidate/components/passwordField';
   import { PasswordValidator } from '$candidate/components/passwordValidator';
@@ -33,7 +31,15 @@ Contains the dynamic `PasswordValidator` component.
   import { getUUID } from '$lib/utils/components';
   import type { PasswordSetterProps } from './PasswordSetter.type';
 
-  let { password = $bindable(''), autocomplete = 'new-password', errorMessage = $bindable(undefined), valid = $bindable(false), passwordTestId = undefined, confirmPasswordTestId = undefined, ...restProps }: PasswordSetterProps = $props();
+  let {
+    password = $bindable(''),
+    autocomplete = 'new-password',
+    errorMessage = $bindable(undefined),
+    valid = $bindable(false),
+    passwordTestId = undefined,
+    confirmPasswordTestId = undefined,
+    ...restProps
+  }: PasswordSetterProps = $props();
 
   export function reset(): void {
     password = '';

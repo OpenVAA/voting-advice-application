@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Results layout
@@ -18,7 +16,7 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   import { onMount, untrack } from 'svelte';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -67,10 +65,10 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
-    startEvent($resultsAvailable ? 'results_ranked' : 'results_browse', {
+    startEvent(resultsAvailable ? 'results_ranked' : 'results_browse', {
       election: activeElectionId,
       entityType: activeEntityType,
-      numAnswers: Object.keys($answers).length
+      numAnswers: Object.keys(answers.answers).length
     });
   });
 
@@ -100,23 +98,23 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   let entityTabs = $state<Array<EntityTab>>([]);
   let initialEntityTabIndex = $state(0);
 
-  if ($elections.length === 1) activeElectionId = $elections[0].id;
+  if (elections.length === 1) activeElectionId = elections[0].id;
 
   $effect(() => {
     if (activeElectionId) {
-      entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
+      entityTabs = Object.keys(matches[activeElectionId]).map((type) => ({
         type: type as EntityType,
         label: ucFirst(t(`common.${type as EntityType}.plural`))
       }));
       const currentType = untrack(() => activeEntityType);
-      if (!currentType || !(currentType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
-      activeElection = $elections.find((e) => e.id === activeElectionId)!;
+      if (!currentType || !(currentType in matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
+      activeElection = elections.find((e) => e.id === activeElectionId)!;
     }
   });
 
   $effect(() => {
     if (activeElectionId) {
-      activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
+      activeMatches = activeEntityType ? matches[activeElectionId][activeEntityType] : undefined;
       setInitialEntityTab();
     }
   });
@@ -149,18 +147,18 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   // Entity detail drawer (declarative, route-based)
   ////////////////////////////////////////////////////////////////////
 
-  let isEntityDetail = $derived($page.route?.id?.endsWith(ROUTE.ResultEntity) ?? false);
+  let isEntityDetail = $derived(page.route?.id?.endsWith(ROUTE.ResultEntity) ?? false);
 
   let drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
     if (!isEntityDetail) return undefined;
-    const entityType = $page.params.entityType as EntityType;
-    const entityId = $page.params.entityId;
-    const nominationId = $page.url.searchParams.get('nominationId') ?? undefined;
+    const entityType = page.params.entityType as EntityType;
+    const entityId = page.params.entityId;
+    const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
     if (!entityType || !entityId) return undefined;
     try {
       const { entity } = getEntityAndTitle({
         dataRoot: $dataRoot,
-        matches: $matches,
+        matches,
         entityType,
         entityId,
         nominationId
@@ -176,8 +174,8 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
 
   $effect(() => {
     if (!isEntityDetail || !drawerEntity) return;
-    const entityType = $page.params.entityType as EntityType;
-    const entityId = $page.params.entityId;
+    const entityType = page.params.entityType as EntityType;
+    const entityId = page.params.entityId;
     if (isMatch(drawerEntity)) {
       startEvent(`results_ranked_${entityType}`, { id: entityId, score: drawerEntity.score });
     } else {
@@ -190,12 +188,12 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   }
 </script>
 
-{#if Object.values($nominationsAvailable).some(Boolean)}
+{#if Object.values(nominationsAvailable).some(Boolean)}
   {#if isEntityDetail && drawerEntity}
     <EntityDetailsDrawer entity={drawerEntity} onClose={handleDrawerClose} />
   {/if}
 
-  <MainContent title={$resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
+  <MainContent title={resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
     {#snippet hero()}
       <figure role="presentation">
         <HeroEmoji emoji={t('dynamic.results.heroEmoji')} />
@@ -203,7 +201,7 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
     {/snippet}
 
     <div class="mb-xl text-center" data-testid="voter-results-ingress">
-      {#if $resultsAvailable}
+      {#if resultsAvailable}
         <p>{t('dynamic.results.ingress.results')}</p>
       {:else}
         <p>
@@ -216,15 +214,15 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
           )}
         </p>
       {/if}
-      {#if $elections.length > 1}
+      {#if elections.length > 1}
         <p>{t('dynamic.results.multipleElections')}</p>
       {/if}
     </div>
 
     {#if $dataRoot.elections.length > 1}
-      {@const activeIndex = $elections.findIndex((e) => e.id === activeElectionId)}
+      {@const activeIndex = elections.findIndex((e) => e.id === activeElectionId)}
       <AccordionSelect
-        options={$elections}
+        options={elections}
         {activeIndex}
         labelGetter={getName}
         onChange={handleElectionChange}
@@ -239,12 +237,10 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
     {/if}
 
     {#snippet fullWidth()}
-      <div
-        class="bg-base-300 flex min-h-[120vh] flex-col items-center"
-        data-testid="voter-results-container">
+      <div class="bg-base-300 flex min-h-[120vh] flex-col items-center" data-testid="voter-results-container">
         {#if activeElectionId}
           <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
-            {#if Object.keys($matches[activeElectionId]).length > 1}
+            {#if Object.keys(matches[activeElectionId]).length > 1}
               <Tabs
                 tabs={entityTabs}
                 activeIndex={initialEntityTabIndex}
@@ -263,10 +259,10 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
                   {#key activeMatches}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
-                      {#if $constituenciesSelectable}
+                      {#if constituenciesSelectable}
                         <span class="font-normal">
                           {t('results.inConstituency')}
-                          {activeElection?.getApplicableConstituency($constituencies)?.name || '—'}
+                          {activeElection?.getApplicableConstituency(constituencies)?.name || '—'}
                         </span>
                       {/if}
                     </h3>
@@ -287,7 +283,9 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
             {/if}
           </div>
         {:else}
-          <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>{t('results.selectElectionFirst')}</p>
+          <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>
+            {t('results.selectElectionFirst')}
+          </p>
         {/if}
       </div>
     {/snippet}

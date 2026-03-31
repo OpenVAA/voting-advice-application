@@ -1,8 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { writable } from 'svelte/store';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { jobStores } from './jobStores';
+import { jobStores } from './jobStores.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
@@ -31,7 +30,7 @@ export function initAdminContext(): AdminContext {
   // Common contents
   ////////////////////////////////////////////////////////////////////
 
-  const userData = writable<BasicUserData | undefined>(undefined);
+  let _userData = $state<BasicUserData | undefined>(undefined);
 
   ////////////////////////////////////////////////////////////////////
   // Admin functions
@@ -99,7 +98,12 @@ export function initAdminContext(): AdminContext {
   const adminContext: AdminContext = {
     ...appContext,
     ...authContext,
-    userData,
+    get userData() {
+      return _userData;
+    },
+    set userData(v) {
+      _userData = v;
+    },
     jobs,
     updateQuestion,
     getActiveJobs,

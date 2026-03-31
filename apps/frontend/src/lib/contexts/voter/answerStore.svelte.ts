@@ -1,25 +1,26 @@
+import { fromStore } from 'svelte/store';
 import { deepFreeze } from '$lib/utils/freeze';
 import { logDebugError } from '$lib/utils/logger';
-import { localStorageWritable } from '../utils/storageStore';
+import { localStorageWritable } from '../utils/persistedState.svelte';
 import type { Answer, Answers } from '@openvaa/data';
 import type { Frozen } from '$lib/utils/freeze';
 import type { TrackingService } from '../app/tracking';
 import type { AnswerStore } from './answerStore.type';
 
 /**
- * Create an extended store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read in the ordinary way, but setting and deleting them can only be done using the dedicated methods.
+ * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
  * The returned `Answers` are frozen to prevent accidental modifications.
  */
 export function answerStore({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerStore {
-  // Create the internal store for holding the answers. Only the subsribe method will be exposed, allowing reading the contents with $answerStore
-  const { update, set, subscribe } = localStorageWritable(
-    'VoterContext-answerStore',
-    Object.freeze({}) as Frozen<Answers>
-  );
+  // Create the internal store for holding the answers
+  const store = localStorageWritable('VoterContext-answerStore', Object.freeze({}) as Frozen<Answers>);
+  const storeState = fromStore(store);
 
   function setAnswer(questionId: string, value?: Answer['value']): void {
-    update((answers) => {
-      const updated = structuredClone(answers) as Answers;
+    store.update((answers) => {
+      // Use JSON round-trip instead of structuredClone because Svelte 5's
+      // $state proxy objects cannot be structurally cloned
+      const updated = JSON.parse(JSON.stringify(answers)) as Answers;
       if (value === undefined) {
         delete updated[questionId];
         startEvent('answer_delete', { questionId });
@@ -40,15 +41,17 @@ export function answerStore({ startEvent }: { startEvent: TrackingService['start
   }
 
   function reset(): void {
-    set(Object.freeze({}));
+    store.set(Object.freeze({}));
     startEvent('answer_resetAll');
     logDebugError('answerStore.reset()');
   }
 
   return {
+    get answers() {
+      return storeState.current;
+    },
     deleteAnswer,
     reset,
-    setAnswer,
-    subscribe
+    setAnswer
   };
 }

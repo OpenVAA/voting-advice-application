@@ -24,8 +24,6 @@ Accesses `LayoutContext`.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
@@ -33,15 +31,7 @@ Accesses `LayoutContext`.
   import { concatClass } from '$lib/utils/components';
   import type { NavItemProps } from './NavItem.type';
 
-  let {
-    autoCloseNav = true,
-    disabled,
-    href,
-    icon,
-    text,
-    children,
-    ...restProps
-  }: NavItemProps = $props();
+  let { autoCloseNav = true, disabled, href, icon, text, children, ...restProps }: NavItemProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
 

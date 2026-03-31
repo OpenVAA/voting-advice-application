@@ -28,41 +28,37 @@ NB. Use this component only in cases of irrecoverable errors, as the template wi
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { MaintenancePageProps } from './MaintenancePage.type';
 
-  type $$Props = MaintenancePageProps;
-
-  export let title: $$Props['title'] = undefined;
-  export let content: $$Props['content'] = undefined;
-  export let emoji: $$Props['emoji'] = undefined;
+  let { title, content, emoji, ...restProps }: MaintenancePageProps = $props();
 
   const { t, track } = getAppContext();
 
   track('maintenance_shown');
 
-  title ??= t('maintenance.title');
-  content ??= t('dynamic.maintenance.content');
-  emoji ??= t('dynamic.maintenance.heroEmoji');
+  const effectiveTitle = $derived(title ?? t('maintenance.title'));
+  const effectiveContent = $derived(content ?? t('dynamic.maintenance.content'));
+  const effectiveEmoji = $derived(emoji ?? t('dynamic.maintenance.heroEmoji'));
 </script>
 
 <!-- Page title -->
 <main
   {...concatClass(
-    $$restProps,
+    restProps,
     'flex w-full flex-grow flex-col items-center justify-center bg-base-300 pb-safelgb pl-safelgl pr-safelgr pt-lg sm:items-center'
   )}>
   <!-- Hero image -->
   <figure role="presentation">
-    <HeroEmoji emoji={emoji ?? t('dynamic.error.heroEmoji')} />
+    <HeroEmoji emoji={effectiveEmoji ?? t('dynamic.error.heroEmoji')} />
   </figure>
 
   <!-- Title block -->
   <div class="py-lg w-full max-w-xl text-center">
-    <h1>{title ?? t('error.default')}</h1>
+    <h1>{effectiveTitle ?? t('error.default')}</h1>
   </div>
 
   <!-- Main content -->
-  {#if content}
+  {#if effectiveContent}
     <div class="flex w-full max-w-xl flex-col items-center text-center">
-      {@html sanitizeHtml(content)}
+      {@html sanitizeHtml(effectiveContent)}
     </div>
   {/if}
 </main>

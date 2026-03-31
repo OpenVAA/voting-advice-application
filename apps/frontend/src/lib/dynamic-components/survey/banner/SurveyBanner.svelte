@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Display a prompt for filling out a user survey if the setting is enabled and the user has not answered the survey yet. Otherwise, nothing will be rendered.
@@ -34,7 +32,12 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
 </script>
 
 {#if clicked || ($appSettings.survey && $userPreferences.survey?.status !== 'received')}
-  <div data-testid="survey-banner" {...concatClass(restProps, 'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md'))}>
+  <div
+    data-testid="survey-banner"
+    {...concatClass(
+      restProps,
+      'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')
+    )}>
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}
       <div class="small-info text-center">{t('dynamic.survey.info')}</div>

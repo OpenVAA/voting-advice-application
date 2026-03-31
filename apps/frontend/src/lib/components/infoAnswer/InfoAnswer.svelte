@@ -18,8 +18,6 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';

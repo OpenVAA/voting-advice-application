@@ -6,15 +6,13 @@
 - Set top bar actions and initiate progess.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { Snippet } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
+  import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -38,11 +36,11 @@
   });
 
   $effect(() => {
-    progress.max.set($selectedQuestionBlocks.questions.length + 1);
+    progress.max = selectedQuestionBlocks.questions.length + 1;
   });
 </script>
 
-{#if $opinionQuestions.length > 0}
+{#if opinionQuestions.length > 0}
   {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>

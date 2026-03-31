@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 A template part that is used to show the application's common footer, shown on some pages.

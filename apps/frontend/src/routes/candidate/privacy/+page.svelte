@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app privacy page
@@ -37,7 +35,7 @@ Shows a registry and privacy statement
       icon="next"
       variant="main"
       text={t('common.home')}
-      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      href={userData.current ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
       data-testid="candidate-privacy-home" />
   {/snippet}
 </MainContent>

@@ -17,8 +17,6 @@ Defines the layout of the content of the `main` element (following the possible 
 - Any valid attributes of a `<div>` element.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';

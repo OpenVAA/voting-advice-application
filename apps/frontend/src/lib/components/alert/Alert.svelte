@@ -44,8 +44,6 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Button } from '$lib/components/button';

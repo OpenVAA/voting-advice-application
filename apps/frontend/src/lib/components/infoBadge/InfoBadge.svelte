@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Small badge component used to display information next to other components.

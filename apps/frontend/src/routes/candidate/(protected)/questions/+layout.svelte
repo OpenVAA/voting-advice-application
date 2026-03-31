@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app questions layout
@@ -34,7 +32,7 @@
   ////////////////////////////////////////////////////////////////////
 
   $effect(() => {
-    if ($unansweredRequiredInfoQuestions.length) {
+    if (unansweredRequiredInfoQuestions.length) {
       goto($getRoute('CandAppProfile'));
     }
   });
@@ -48,15 +46,15 @@
   });
 
   $effect(() => {
-    progress.max.set($opinionQuestions.length);
+    progress.max = opinionQuestions.length;
   });
 
   $effect(() => {
-    progress.current.set($opinionQuestions.length - $unansweredOpinionQuestions.length);
+    progress.current.set(opinionQuestions.length - unansweredOpinionQuestions.length);
   });
 </script>
 
-{#if $unansweredRequiredInfoQuestions.length === 0 && $opinionQuestions.length > 0}
+{#if unansweredRequiredInfoQuestions.length === 0 && opinionQuestions.length > 0}
   {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>

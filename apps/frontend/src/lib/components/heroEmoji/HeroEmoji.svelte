@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used for large emojis acting as decorative illustrations.

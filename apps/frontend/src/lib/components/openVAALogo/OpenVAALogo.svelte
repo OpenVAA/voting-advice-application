@@ -21,8 +21,6 @@ attributes of one.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { OpenVAALogoProps } from './OpenVAALogo.type';

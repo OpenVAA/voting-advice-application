@@ -17,8 +17,6 @@ Used to display a question category tag with the category's color.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { CategoryTagProps } from './CategoryTag.type';
@@ -41,9 +39,7 @@ Used to display a question category tag with the category's color.
   });
 </script>
 
-<span
-  {...concatClass(restProps, tagStyles.classes)}
-  style={tagStyles.styles}>
+<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles}>
   {variant === 'full' ? category.name : category.shortName}
   {#if suffix}
     <span>{suffix}</span>

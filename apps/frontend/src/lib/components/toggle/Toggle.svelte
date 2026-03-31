@@ -51,8 +51,6 @@ Display a short list of options as toggleable text or icon buttons from which on
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';

@@ -14,8 +14,6 @@ Display the intro to a question category and possibly a button with which to ski
 - `categoryId`: The `Id` of the category to display.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
@@ -48,13 +46,13 @@ Display the intro to a question category and possibly a button with which to ski
 
   let categoryId = $derived(parseParams(page).categoryId);
   let category = $derived(categoryId ? $dataRoot.getQuestionCategory(categoryId) : undefined);
-  let block = $derived(category ? $selectedQuestionBlocks.getByCategory(category) : undefined);
+  let block = $derived(category ? selectedQuestionBlocks.getByCategory(category) : undefined);
   let questionId = $derived<Id | undefined>(block?.block[0]?.id);
   let customData = $derived(category ? getCustomData(category) : undefined);
   let nextCategoryId = $derived.by<Id | undefined>(() => {
     if (!block) return undefined;
-    if (block.index < $selectedQuestionBlocks.blocks.length - 1) {
-      return $selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
+    if (block.index < selectedQuestionBlocks.blocks.length - 1) {
+      return selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
     }
     return undefined;
   });

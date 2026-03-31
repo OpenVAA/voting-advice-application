@@ -15,8 +15,6 @@ Defines the outer layout for the application, including the header and menu.
 - `isDrawerOpen`: a bindable boolean indicating whether the drawer is open or not. NB. To close the drawer, use the method in `LayoutContext.navigation`.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Video } from '$lib/components/video';
@@ -39,12 +37,7 @@ Defines the outer layout for the application, including the header and menu.
   ////////////////////////////////////////////////////////////////////
 
   const { startEvent, t, track } = getAppContext();
-  const {
-    pageStyles,
-    navigation,
-    navigationSettings,
-    video: { mode: videoMode, player, show: showVideo }
-  } = getLayoutContext(onDestroy);
+  const { pageStyles, navigation, navigationSettings, video } = getLayoutContext(onDestroy);
   navigation.close = closeDrawer;
 
   let drawerOpenElement: HTMLButtonElement | undefined;
@@ -54,7 +47,7 @@ Defines the outer layout for the application, including the header and menu.
    * to toggle it back when using keyboard navigation.
    */
   function openDrawer() {
-    if ($navigationSettings.hide) return;
+    if (navigationSettings.current.hide) return;
     isDrawerOpen = true;
     // We need a small timeout for drawerCloseButton to be focusable
     setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
@@ -76,7 +69,7 @@ Defines the outer layout for the application, including the header and menu.
 <a href="#{mainContentId}" tabindex="1" class="sr-only focus:not-sr-only">{t('common.skipToMain')}</a>
 
 <!-- Drawer container -->
-<div class="drawer {$pageStyles.drawer.background}">
+<div class="drawer {pageStyles.current.drawer.background}">
   <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the
     non-hidden labels in aria-labelledby should be okay for screen readers. -->
   <input
@@ -84,7 +77,7 @@ Defines the outer layout for the application, including the header and menu.
     bind:checked={isDrawerOpen}
     type="checkbox"
     class="drawer-toggle"
-    disabled={$navigationSettings.hide}
+    disabled={navigationSettings.current.hide}
     tabindex="-1"
     aria-hidden="true"
     aria-label={t('common.openCloseMenu')} />
@@ -96,14 +89,14 @@ Defines the outer layout for the application, including the header and menu.
       <!-- Video -->
       <div
         class="flex max-h-dvh w-screen justify-center overflow-hidden transition-all sm:mt-[1.75rem] sm:w-full sm:grow-0"
-        class:!max-h-[0]={!$showVideo}
-        inert={!$showVideo}>
+        class:!max-h-[0]={!video.show}
+        inert={!video.show}>
         <Video
-          bind:this={$player}
-          bind:mode={$videoMode}
+          bind:this={video.player}
+          bind:mode={video.mode}
           onTrack={({ data }) => track('video', data)}
           hideControls={['transcript']}
-          class="transition-opacity {$showVideo ? '' : 'opacity-0'}" />
+          class="transition-opacity {video.show ? '' : 'opacity-0'}" />
       </div>
 
       <!-- Default slot -->

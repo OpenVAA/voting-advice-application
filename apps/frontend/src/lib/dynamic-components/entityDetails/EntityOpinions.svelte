@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to show an entity's answers to `opinion` questions and possibly those of the voter, too, in an `EntityDetails` component.
@@ -14,7 +12,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 ### Usage
 
 ```tsx
-<EntityOpinions entity={candidate} questions={$opinionQuestions} />
+<EntityOpinions entity={candidate} questions={opinionQuestions} />
 ```
 -->
 
@@ -40,7 +38,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
-    {@const voterAnswer = $answers?.[id]}
+    {@const voterAnswer = answers?.answers?.[id]}
 
     <div class="grid">
       <HeadingGroup class="mb-lg text-center">
@@ -52,18 +50,29 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
       {#if $appType === 'candidate'}
         {#if answer == null}
-          <div class="small-label mb-16 text-center">{t('questions.answers.entityHasntAnswered', { entity: shortName })}</div>
+          <div class="small-label mb-16 text-center">
+            {t('questions.answers.entityHasntAnswered', { entity: shortName })}
+          </div>
         {/if}
       {:else if voterAnswer == null && answer == null}
-        <div class="small-label mb-16 text-center">{t('questions.answers.bothHaventAnswered', { entity: shortName })}</div>
+        <div class="small-label mb-16 text-center">
+          {t('questions.answers.bothHaventAnswered', { entity: shortName })}
+        </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">{t('questions.answers.youHaventAnswered')}</div>
       {:else if answer == null}
-        <div class="small-label mb-16 text-center">{t('questions.answers.entityHasntAnswered', { entity: shortName })}</div>
+        <div class="small-label mb-16 text-center">
+          {t('questions.answers.entityHasntAnswered', { entity: shortName })}
+        </div>
       {/if}
 
       {#if voterAnswer != null || answer != null}
-        <OpinionQuestionInput {question} mode="display" answer={voterAnswer} otherAnswer={answer} otherLabel={shortName} />
+        <OpinionQuestionInput
+          {question}
+          mode="display"
+          answer={voterAnswer}
+          otherAnswer={answer}
+          otherLabel={shortName} />
         {#if answer?.info}
           <QuestionOpenAnswer content={answer.info} class="mt-md" />
         {/if}

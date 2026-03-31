@@ -3,7 +3,9 @@ import path from 'path';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  // No preprocess array -- Svelte 5 handles TypeScript natively
+  compilerOptions: {
+    runes: true
+  },
   kit: {
     adapter: adapter({}),
     alias: {
@@ -13,6 +15,13 @@ const config = {
     },
     version: {
       pollInterval: 5 * 60 * 1000
+    }
+  },
+  vitePlugin: {
+    dynamicCompileOptions({filename}) {
+      if (!filename.includes('node_modules')) {
+        return {runes: true};
+      }
     }
   }
 };

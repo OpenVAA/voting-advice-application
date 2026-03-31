@@ -19,8 +19,6 @@ If there's only one option, it is automatically selected and no interactions are
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { scale, slide } from 'svelte/transition';
   import { Icon } from '$lib/components/icon';
@@ -29,7 +27,13 @@ If there's only one option, it is automatically selected and no interactions are
   import { DELAY } from '$lib/utils/timing';
   import type { AccordionSelectProps } from './AccordionSelect.type';
 
-  let { options = [], activeIndex = $bindable(), onChange, labelGetter = String, ...restProps }: AccordionSelectProps<unknown> = $props();
+  let {
+    options = [],
+    activeIndex = $bindable(),
+    onChange,
+    labelGetter = String,
+    ...restProps
+  }: AccordionSelectProps<unknown> = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

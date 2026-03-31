@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Voter app main layout

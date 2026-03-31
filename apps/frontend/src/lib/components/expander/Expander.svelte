@@ -43,8 +43,6 @@ You should not try to use a variant and customize at the same time.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';

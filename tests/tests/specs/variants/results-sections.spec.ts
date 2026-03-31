@@ -260,7 +260,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
     await sharedPage.close();
   });
 
-  test.fixme('should show only candidates when sections is ["candidate"]', async () => {
+  test('should show only candidates when sections is ["candidate"]', async () => {
     // CONF-05: Set results.sections to candidates only
     await client.updateAppSettings({
       ...resultsSettings(['candidate']),
@@ -287,7 +287,7 @@ test.describe('Results section variants', { tag: ['@variant'] }, () => {
     await expect(partySection).not.toBeVisible();
   });
 
-  test.fixme('should show only organizations when sections is ["organization"]', async () => {
+  test('should show only organizations when sections is ["organization"]', async () => {
     // CONF-06: Set results.sections to organizations only
     await client.updateAppSettings({
       ...resultsSettings(['organization']),

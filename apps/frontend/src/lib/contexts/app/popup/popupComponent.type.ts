@@ -12,6 +12,11 @@ export type PopupQueueItem = {
    * Optional props to be passed to the component when it is rendered.
    */
   props?: PopupComponentProps;
+  /**
+   * Optional callback invoked when the popup is closed (before being removed from the queue).
+   * Use this to persist dismissal state in user preferences.
+   */
+  onClose?: () => void;
 };
 
 /**

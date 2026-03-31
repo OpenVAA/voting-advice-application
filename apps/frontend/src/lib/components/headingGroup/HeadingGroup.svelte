@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to group the page's main headings, such as a pre-heading (kicker)

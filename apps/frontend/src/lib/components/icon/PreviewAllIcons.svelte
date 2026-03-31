@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 A utility component to see all the available icons at a glance. You can supply

@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to display a message when an action succeeds.

@@ -20,14 +20,21 @@ Show a radial or a linear score gauge for a sub-match.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { parseColors } from '$lib/utils/color/parseColors';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { ScoreGaugeProps } from './ScoreGauge.type';
 
-  let { score, label, max = 100, showScore = true, unit = '', variant = 'radial', color, ...restProps }: ScoreGaugeProps = $props();
+  let {
+    score,
+    label,
+    max = 100,
+    showScore = true,
+    unit = '',
+    variant = 'radial',
+    color,
+    ...restProps
+  }: ScoreGaugeProps = $props();
 
   const labelId = getUUID();
 
@@ -52,9 +59,7 @@ Show a radial or a linear score gauge for a sub-match.
   });
 </script>
 
-<div
-  {...concatClass(restProps, gaugeStyles.classes)}
-  style={gaugeStyles.styles}>
+<div {...concatClass(restProps, gaugeStyles.classes)} style={gaugeStyles.styles}>
   {#if variant === 'linear'}
     <progress
       role="meter"

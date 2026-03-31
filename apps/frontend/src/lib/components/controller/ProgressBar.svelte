@@ -18,8 +18,6 @@ Reusable progress bar component for displaying task progress.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import type { ProgressBarProps } from './ProgressBar.type';

@@ -23,20 +23,30 @@ text="Continue"/>
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { ConfirmationModal } from '$lib/components/modal/confirmation';
   import type { ButtonWithConfirmationProps } from './ButtonWithConfirmation.type';
 
-  let { text, onConfirm, modalTitle, onCancel, cancelLabel, confirmLabel, children, ...restProps }: ButtonWithConfirmationProps = $props();
+  let {
+    text,
+    onConfirm,
+    modalTitle,
+    onCancel,
+    cancelLabel,
+    confirmLabel,
+    children,
+    ...restProps
+  }: ButtonWithConfirmationProps = $props();
 
   let confirmModalRef: ConfirmationModal;
 </script>
 
 <Button {text} onclick={() => confirmModalRef?.openModal()} {...restProps}></Button>
 
-<ConfirmationModal bind:this={confirmModalRef} title={modalTitle} {...{ onConfirm, onCancel, cancelLabel, confirmLabel }}>
+<ConfirmationModal
+  bind:this={confirmModalRef}
+  title={modalTitle}
+  {...{ onConfirm, onCancel, cancelLabel, confirmLabel }}>
   {@render children?.()}
 </ConfirmationModal>

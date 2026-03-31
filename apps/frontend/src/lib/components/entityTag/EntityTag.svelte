@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to display an `Entity` as small tag including an icon.

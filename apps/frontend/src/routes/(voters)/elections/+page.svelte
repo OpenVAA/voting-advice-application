@@ -11,8 +11,6 @@ See `+page.ts` for possible redirects.
 - `elections.startFromConstituencyGroup`: If set, the elections shown for selection are dependent on the selected constituency. Also affects the route and its parameters onto which the Continue button directs to.
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -38,13 +36,13 @@ See `+page.ts` for possible redirects.
     let result = $dataRoot.elections;
     if ($appSettings.elections?.startFromConstituencyGroup) {
       // Only show elections for which a Constituency is available
-      result = result.filter((e) => e.getApplicableConstituency($selectedConstituencies));
+      result = result.filter((e) => e.getApplicableConstituency(selectedConstituencies));
     }
     return result;
   });
 
   $effect(() => {
-    selected = ($selectedElections.length ? $selectedElections : elections).map((e) => e.id);
+    selected = (selectedElections.length ? selectedElections : elections).map((e) => e.id);
   });
 
   ////////////////////////////////////////////////////////////////////

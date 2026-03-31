@@ -130,7 +130,8 @@ export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/
   const url = new URL(verifyLink.replace(/&amp;/g, '&'));
   const token = url.searchParams.get('token');
   const type = url.searchParams.get('type') ?? 'invite';
-  const frontendUrl = 'http://localhost:5173';
+  const frontendPort = process.env.FRONTEND_PORT ?? '5173';
+  const frontendUrl = `http://localhost:${frontendPort}`;
   return `${frontendUrl}${callbackPath}?token_hash=${token}&type=${type}`;
 }
 

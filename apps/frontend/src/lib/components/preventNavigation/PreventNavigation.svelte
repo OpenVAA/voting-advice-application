@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Functional component used to block user nagivation.

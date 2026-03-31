@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Located section main layout
@@ -17,7 +15,7 @@ Displays a warning if the selected constituency does not have nominations in all
 -->
 
 <script lang="ts">
-  import { get } from 'svelte/store';
+  import { tick, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
@@ -32,13 +30,14 @@ Displays a warning if the selected constituency does not have nominations in all
 
   let { data, children }: { data: any; children: Snippet } = $props();
 
-  const { dataRoot, getRoute, nominationsAvailable, selectedElections, t } = getVoterContext();
+  // Keep context ref for reactive getter access (destructuring captures static values)
+  const voterCtx = getVoterContext();
+  const { dataRoot, getRoute, t } = voterCtx;
 
   /**
-   * Maximum time to wait for the `nominationsAvailable` store to settle after
+   * Maximum time to wait for the `voterCtx.nominationsAvailable` value to settle after
    * providing data to the `dataRoot`. The reactive chain through multiple
-   * `parsimoniusDerived` levels may need several microtasks to propagate,
-   * especially under Svelte 5's store compatibility layer.
+   * `$derived` levels may need several microtasks to propagate.
    */
   const NOMINATIONS_SETTLE_TIMEOUT = 3000;
 
@@ -56,8 +55,9 @@ Displays a warning if the selected constituency does not have nominations in all
     // Reset state
     error = undefined;
     ready = false;
-    Promise.all([questionData, nominationData]).then(async (resolved) => {
-      error = await update(resolved);
+    Promise.all([questionData, nominationData]).then((resolved) => {
+      const updateError = updateSync(resolved);
+      error = updateError;
     });
   });
 
@@ -65,10 +65,10 @@ Displays a warning if the selected constituency does not have nominations in all
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  async function update([questionData, nominationData]: [
+  function updateSync([questionData, nominationData]: [
     DPDataType['questions'] | Error,
     DPDataType['nominations'] | Error
-  ]): Promise<Error | undefined> {
+  ]): Error | undefined {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
     $dataRoot.update(() => {
@@ -76,52 +76,68 @@ Displays a warning if the selected constituency does not have nominations in all
       $dataRoot.provideEntityData(nominationData.entities);
       $dataRoot.provideNominationData(nominationData.nominations);
     });
-    hasNominations = await awaitNominationsSettled();
-    if (hasNominations !== 'all') modalRef?.openModal();
+    // Check nominations synchronously from VoterContext
+    const nomStatus = checkNominationsSync();
+    hasNominations = nomStatus;
+    if (nomStatus !== 'all') modalRef?.openModal();
     ready = true;
+    return undefined;
   }
 
   /**
-   * Wait for the `nominationsAvailable` store to settle by subscribing and
-   * watching for changes instead of relying on fixed timeouts. Resolves
+   * Check nomination availability synchronously by reading VoterContext's
+   * reactive getter directly (bypasses the store bridge).
+   */
+  function checkNominationsSync(): NominationStatus {
+    const available = voterCtx.nominationsAvailable;
+    const elections = voterCtx.selectedElections;
+    if (!elections.length) return 'none';
+    const allAvailable = elections.every((e: { id: string }) => available[e.id]);
+    if (allAvailable) return 'all';
+    const someAvailable = elections.some((e: { id: string }) => available[e.id]);
+    return someAvailable ? 'some' : 'none';
+  }
+
+  /**
+   * Wait for the `voterCtx.nominationsAvailable` reactive value to settle by polling
+   * inside an $effect instead of using store `.subscribe()`. Resolves
    * immediately if nominations are already available, otherwise waits for the
    * reactive chain to propagate with a safety timeout.
-   *
-   * TODO[Svelte 5]: Rewrite with Svelte 5 runes ($derived / $effect) once the
-   * legacy store compatibility layer and alwaysNotifyStore workaround in
-   * dataContext.ts are replaced with native reactivity.
    */
   function awaitNominationsSettled(): Promise<NominationStatus> {
     return new Promise((resolve) => {
       let resolved = false;
       let debounceTimer: ReturnType<typeof setTimeout>;
-      let unsub: () => void;
 
       function done(status: NominationStatus) {
         if (resolved) return;
         resolved = true;
         clearTimeout(debounceTimer);
         clearTimeout(safetyTimer);
-        unsub?.();
+        cleanupEffect?.();
         resolve(status);
       }
 
       const safetyTimer = setTimeout(
-        () => done(checkNominations(get(nominationsAvailable))),
+        () => done(checkNominations(untrack(() => voterCtx.nominationsAvailable))),
         NOMINATIONS_SETTLE_TIMEOUT
       );
 
-      unsub = nominationsAvailable.subscribe((value) => {
-        const status = checkNominations(value);
-        if (status === 'all') {
-          // All nominations confirmed — defer to next microtask so unsub is assigned
-          queueMicrotask(() => done(status));
-        } else {
-          // Not all nominations yet — debounce to let the chain settle,
-          // then resolve with whatever the final status is
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => done(checkNominations(get(nominationsAvailable))), 100);
-        }
+      // Use $effect.root to create a detached reactive scope we can clean up
+      const cleanupEffect = $effect.root(() => {
+        $effect(() => {
+          const value = voterCtx.nominationsAvailable;
+          const status = checkNominations(value);
+          if (status === 'all') {
+            // All nominations confirmed — defer to next microtask so cleanup is assigned
+            queueMicrotask(() => done(status));
+          } else {
+            // Not all nominations yet — debounce to let the chain settle,
+            // then resolve with whatever the final status is
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => done(checkNominations(untrack(() => voterCtx.nominationsAvailable))), 100);
+          }
+        });
       });
     });
   }
@@ -159,8 +175,8 @@ Displays a warning if the selected constituency does not have nominations in all
     </p>
     {#if hasNominations === 'some'}
       <div class="gap-md mx-auto flex w-max flex-col items-start">
-        {#each $selectedElections as election}
-          {@const available = $nominationsAvailable[election.id]}
+        {#each voterCtx.selectedElections as election}
+          {@const available = voterCtx.nominationsAvailable[election.id]}
           <div class="gap-sm flex flex-row items-center font-bold {available ? 'text-success' : 'text-warning'}">
             <Icon name={available ? 'check' : 'close'} />
             <span>{election.name}</span>

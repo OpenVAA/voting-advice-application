@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 A video player that also includes a switcher between the video and a text transcript. The player also supports a variety of controls that mimic social media video controls.
@@ -712,7 +710,7 @@ If not provided, the `video` element will be hidden until these properties are p
       <track
         label={t('components.video.captions')}
         kind="captions"
-        srclang={$locale}
+        srclang={locale}
         src={captions}
         default={textTracksHidden ? undefined : true} />
 
@@ -767,7 +765,10 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon={textTracksHidden ? 'subtitlesOff' : 'subtitlesOn'}
-            onclick={() => { tryUnmute(); toggleCaptions(); }}
+            onclick={() => {
+              tryUnmute();
+              toggleCaptions();
+            }}
             text={t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
             class="relative rounded-full bg-white/30 active:bg-white" />
         {/if}
@@ -776,7 +777,10 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon="skipPrevious"
-            onclick={() => { tryUnmute(); jump(-1); }}
+            onclick={() => {
+              tryUnmute();
+              jump(-1);
+            }}
             text={t('components.video.jumpBack')}
             class="relative rounded-full bg-white/30 {jumpBackPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
@@ -785,7 +789,10 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon={playButtonAction}
-            onclick={() => { tryUnmute(); togglePlay(); }}
+            onclick={() => {
+              tryUnmute();
+              togglePlay();
+            }}
             text={t(`components.video.${playButtonAction}`)}
             class="relative rounded-full bg-white/30 {togglePlayPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
@@ -794,7 +801,10 @@ If not provided, the `video` element will be hidden until these properties are p
             variant="icon"
             color="white"
             icon="skipNext"
-            onclick={() => { tryUnmute(); jump(+1); }}
+            onclick={() => {
+              tryUnmute();
+              jump(+1);
+            }}
             text={t('components.video.jumpForward')}
             class="relative rounded-full bg-white/30 {jumpForwardPressed ? 'bg-white' : ''}  active:bg-white" />
         {/if}

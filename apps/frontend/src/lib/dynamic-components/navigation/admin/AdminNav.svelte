@@ -19,8 +19,6 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getAdminContext } from '$lib/contexts/admin';
@@ -38,7 +36,7 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 <Navigation {onKeyboardFocusOut} {...restProps}>
   <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
 
-  {#if $isAuthenticated}
+  {#if isAuthenticated}
     <NavGroup>
       <!-- TODO: i18n the Jobs Monitoring text -->
       <NavItem href={$getRoute('AdminAppHome')} icon="home" text={t('adminApp.common.home')} />

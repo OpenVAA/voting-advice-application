@@ -483,7 +483,7 @@ test.describe('results link visibility (VOTE-17)', { tag: ['@voter'] }, () => {
 
   });
 
-  test.fixme('should hide results link when showResultsLink is false', async ({ page }) => {
+  test('should hide results link when showResultsLink is false', async ({ page }) => {
     // Navigate Home -> start -> intro -> start -> first question
     await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
     await page.getByTestId(testIds.voter.home.startButton).click();

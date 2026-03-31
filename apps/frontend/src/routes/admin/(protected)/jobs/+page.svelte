@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fromStore } from 'svelte/store';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURES } from '$lib/admin/features';
   import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
@@ -16,13 +17,14 @@
     jobs: { activeJobsByFeature, pastJobs },
     abortAllJobs
   } = getAdminContext();
+  const activeJobsState = fromStore(activeJobsByFeature);
+  const pastJobsState = fromStore(pastJobs);
 
   ////////////////////////////////////////////////////////////////////////
   // Get jobs
   ////////////////////////////////////////////////////////////////////////
 
-  let activeJobsCount: number;
-  $: activeJobsCount = [...$activeJobsByFeature.values().filter((j) => !!j)].length;
+  let activeJobsCount = $derived([...activeJobsByFeature.values()].filter((j) => !!j).length);
 
   ////////////////////////////////////////////////////////////////////////
   // Handle aborting jobs
@@ -67,21 +69,21 @@
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.successfulJobs')}</div>
                 <div class="stat-value text-success">
-                  {$pastJobs.filter((job) => job.status === 'completed').length}
+                  {pastJobs.filter((job) => job.status === 'completed').length}
                 </div>
               </div>
 
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.failedJobs')}</div>
                 <div class="stat-value text-error">
-                  {$pastJobs.filter((job) => job.status === 'failed').length}
+                  {pastJobs.filter((job) => job.status === 'failed').length}
                 </div>
               </div>
 
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.abortedJobs')}</div>
                 <div class="stat-value text-warning">
-                  {$pastJobs.filter((job) => job.status === 'aborted').length}
+                  {pastJobs.filter((job) => job.status === 'aborted').length}
                 </div>
               </div>
             </div>

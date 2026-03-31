@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Intro page
@@ -33,13 +31,13 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   </p>
   <ol class="list-circled w-fit" data-testid="voter-intro-steps">
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
+    {#if electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
-    {#if $constituenciesSelectable}
+    {#if constituenciesSelectable}
       <li>{t('dynamic.intro.list.constituencies')}</li>
     {/if}
-    {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
     <li>{t('dynamic.intro.list.opinions')}</li>

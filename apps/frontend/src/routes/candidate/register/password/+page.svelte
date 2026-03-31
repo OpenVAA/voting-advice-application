@@ -12,8 +12,6 @@
 - `email`: The email of the user
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -29,7 +27,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, isAuthenticated, newUserEmail, register, setPassword, t, userData } = getCandidateContext();
+  const candCtx = getCandidateContext();
+  const { getRoute, isAuthenticated, register, setPassword, t, userData } = candCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Check flow type and params
@@ -40,7 +39,7 @@
   const email = page.url.searchParams.get('email') || '';
 
   // Invite flow: user has a session from auth callback verifyOtp, email is provided but no registrationKey
-  const isInviteFlow = $isAuthenticated && email !== '' && registrationKey === '';
+  const isInviteFlow = isAuthenticated && email !== '' && registrationKey === '';
 
   if (!isInviteFlow) {
     // Registration key flow: both registrationKey and email are required
@@ -49,7 +48,7 @@
     }
 
     // Redirect if logged in (only for registration key flow), that page will prompt the user to logout
-    if ($userData) goto($getRoute('CandAppRegister'));
+    if (userData.current) goto($getRoute('CandAppRegister'));
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -86,7 +85,7 @@
         return;
       }
 
-      $newUserEmail = email;
+      candCtx.newUserEmail = email;
       status = 'success';
       await goto($getRoute('CandAppLogin'));
     } else {
@@ -101,7 +100,7 @@
         return;
       }
 
-      $newUserEmail = email;
+      candCtx.newUserEmail = email;
       status = 'success';
       await goto($getRoute('CandAppLogin'));
     }

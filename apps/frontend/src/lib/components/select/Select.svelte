@@ -39,8 +39,6 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
@@ -48,7 +46,16 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   import type { Id } from '@openvaa/core';
   import type { SelectProps } from './Select.type';
 
-  let { options, label, name, onShadedBg, selected = $bindable(''), onChange, autocomplete, ...restProps }: SelectProps = $props();
+  let {
+    options,
+    label,
+    name,
+    onShadedBg,
+    selected = $bindable(''),
+    onChange,
+    autocomplete,
+    ...restProps
+  }: SelectProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -81,9 +88,11 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
       .toLowerCase();
   }
 
-  let filteredOptions = $derived(canonicalOptions.filter(function (option) {
-    return normalize(option.label).includes(normalize(inputValue));
-  }));
+  let filteredOptions = $derived(
+    canonicalOptions.filter(function (option) {
+      return normalize(option.label).includes(normalize(inputValue));
+    })
+  );
 
   $effect(() => {
     if (canonicalOptions.length === 1 && !selected) {

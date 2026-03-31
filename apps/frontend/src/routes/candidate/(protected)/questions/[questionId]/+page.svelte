@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app question page
@@ -54,8 +52,6 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // State variables
   ////////////////////////////////////////////////////////////////////
 
-  const { hasUnsaved } = userData;
-
   let bypassPreventNavigation = $state(false);
   let errorMessage = $state<string | undefined>(undefined);
   let status = $state<ActionStatus>('loading');
@@ -95,16 +91,16 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
    * A non-reactive utility set the isLastUnanswered flag, which we use to route to the Home page after answering the last one.
    */
   function getIsLastUnanswered(): boolean {
-    return $unansweredOpinionQuestions.length === 1;
+    return unansweredOpinionQuestions.length === 1;
   }
 
   /**
    * Returns the next unanswered question’s id. Wrapped in a function to not track `unansweredOpinionQuestions`.
    */
   function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
-    const index = $unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
-    return index != null && index < $unansweredOpinionQuestions.length - 1
-      ? $unansweredOpinionQuestions[index + 1]?.id
+    const index = unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
+    return index != null && index < unansweredOpinionQuestions.length - 1
+      ? unansweredOpinionQuestions[index + 1]?.id
       : undefined;
   }
 
@@ -112,7 +108,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Check if the form is dirty or empty and define button labels
   ////////////////////////////////////////////////////////////////////
 
-  let canSubmit = $derived(status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value));
+  let canSubmit = $derived(
+    status !== 'loading' && !isEmptyValue(userData.current?.candidate.answers?.[question.id]?.value)
+  );
 
   let submitRouting = $derived.by(() => {
     if (nextQuestionId) {
@@ -128,12 +126,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     }
     return {
       submitRoute: $getRoute('CandAppQuestions'),
-      submitLabel: $hasUnsaved ? t('common.saveAndReturn') : t('common.return')
+      submitLabel: userData.hasUnsaved ? t('common.saveAndReturn') : t('common.return')
     };
   });
 
   // The label is return when loading, bc saving isn't cancellable anymore
-  let cancelLabel = $derived(status === 'loading' || !$hasUnsaved ? t('common.return') : t('common.cancel'));
+  let cancelLabel = $derived(status === 'loading' || !userData.hasUnsaved ? t('common.return') : t('common.cancel'));
 
   ////////////////////////////////////////////////////////////////////
   // Handle saving answers
@@ -170,7 +168,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
    * Merge info or value with the existing answer.
    */
   function setAnswer({ value, info }: { value?: unknown; info?: LocalizedString }): void {
-    if ($answersLocked) {
+    if (answersLocked) {
       status = 'error';
       errorMessage = t('candidateApp.common.editingNotAllowed');
       logDebugError('[Candidate app question page]: setAnswer called when answersLocked');
@@ -182,7 +180,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       logDebugError('[Candidate app question page]: setAnswer called with no value nor info');
       return;
     }
-    const answer: Partial<LocalizedAnswer> = $userData?.candidate.answers?.[question.id] ?? {};
+    const answer: Partial<LocalizedAnswer> = userData.current?.candidate.answers?.[question.id] ?? {};
     if (customData.allowOpen && info) answer.info = info;
     if (value != null) answer.value = value as LocalizedAnswer['value'];
     userData.setAnswer(question.id, answer as LocalizedAnswer);
@@ -240,16 +238,16 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 {#if question}
   {@const { info, text } = question}
   {@const customData = getCustomData(question)}
-  {@const answer = $userData?.candidate.answers?.[question.id]}
+  {@const answer = userData.current?.candidate.answers?.[question.id]}
 
   {#key question.id}
     <PreventNavigation
-      active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
+      active={() => !bypassPreventNavigation && userData.hasUnsaved && !answersLocked}
       onConfirm={handleNavigationConfirm} />
 
     <MainContent title={text}>
       {#snippet note()}
-        {#if $answersLocked}
+        {#if answersLocked}
           <Warning>
             {t('candidateApp.common.editingNotAllowed')}
           </Warning>
@@ -265,7 +263,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       {/snippet}
 
       {#snippet heading()}
-        <QuestionHeading {question} questionBlocks={$questionBlocks} onShadedBg />
+        <QuestionHeading {question} {questionBlocks} onShadedBg />
       {/snippet}
 
       {#if !($appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
@@ -279,7 +277,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           <OpinionQuestionInput
             {question}
             {answer}
-            mode={$answersLocked ? 'display' : 'answer'}
+            mode={answersLocked ? 'display' : 'answer'}
             onShadedBg
             onChange={handleValueChange}
             data-testid="candidate-questions-answer" />
@@ -292,7 +290,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
               label={t('candidateApp.questions.openAnswerPrompt')}
               value={answer?.info}
               disabled={!canSubmit}
-              locked={$answersLocked}
+              locked={answersLocked}
               placeholder={canSubmit ? '' : t('candidateApp.questions.answerQuestionFirst')}
               onShadedBg
               onChange={handleInfoChange}
@@ -308,7 +306,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
           <!-- Submit or cancel -->
 
           <div class="grid w-full justify-items-center">
-            {#if !$answersLocked}
+            {#if !answersLocked}
               <Button
                 text={submitRouting.submitLabel}
                 onclick={handleSubmit}

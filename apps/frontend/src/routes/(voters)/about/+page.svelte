@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # About (the app) page
@@ -71,10 +69,6 @@ Displays information about the application.
   {/if}
 
   {#snippet primaryActions()}
-    <Button
-      variant="main"
-      href={$getRoute('Home')}
-      text={t('common.returnHome')}
-      data-testid="voter-about-return" />
+    <Button variant="main" href={$getRoute('Home')} text={t('common.returnHome')} data-testid="voter-about-return" />
   {/snippet}
 </MainContent>

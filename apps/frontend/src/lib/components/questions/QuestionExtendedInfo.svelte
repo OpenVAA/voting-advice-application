@@ -20,8 +20,6 @@ Display the question's expandable information content.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
   import { getComponentContext } from '$lib/contexts/component';

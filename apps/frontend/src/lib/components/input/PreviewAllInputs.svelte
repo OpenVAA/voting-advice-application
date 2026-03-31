@@ -15,8 +15,6 @@ Preview component displaying all available input types.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Input } from '.';
   import type { PreviewAllInputsProps } from './PreviewAllInputs.type';

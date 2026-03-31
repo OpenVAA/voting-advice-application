@@ -23,8 +23,6 @@ If there's only one option, it is automatically selected and no interactions are
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { ElectionSelectorProps } from './ElectionSelector.type';

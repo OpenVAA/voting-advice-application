@@ -15,8 +15,6 @@ Render a numeric filter for entities.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';

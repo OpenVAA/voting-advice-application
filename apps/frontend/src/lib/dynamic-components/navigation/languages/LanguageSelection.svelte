@@ -13,10 +13,8 @@ A template part that language selection options for the navigation menu if these
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getAppContext } from '$lib/contexts/app';
   import { NavGroup, NavItem } from '$lib/dynamic-components/navigation';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
@@ -30,15 +28,15 @@ A template part that language selection options for the navigation menu if these
 </script>
 
 <!-- Only show the language selection if there are multiple locales to choose from -->
-{#if $locales.length > 1}
+{#if locales.length > 1}
   <NavGroup title={t('common.language.select')}>
-    {#each $locales as loc}
+    {#each locales as loc}
       <NavItem
         data-sveltekit-reload
-        href={localizeHref($page.url.pathname, { locale: loc as (typeof paraglideLocales)[number] })}
+        href={localizeHref(page.url.pathname, { locale: loc as (typeof paraglideLocales)[number] })}
         icon="language"
         text={t(assertTranslationKey(`lang.${loc}`))}
-        disabled={loc === $currentLocale} />
+        disabled={loc === currentLocale} />
     {/each}
   </NavGroup>
 {/if}

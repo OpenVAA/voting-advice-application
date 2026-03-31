@@ -53,8 +53,6 @@ Multilingual features are only available if the `locales` store contains more th
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { isLocalizedString } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/core';
@@ -112,7 +110,7 @@ Multilingual features are only available if the `locales` store contains more th
   const isLabelOutside = multilingual || type.startsWith('textarea');
 
   /*** Extend info */
-  if (multilingual && $locales.length > 1 && multilingualInfo != '') {
+  if (multilingual && locales.length > 1 && multilingualInfo != '') {
     multilingualInfo ??= t('components.input.multilingualInfo');
     info ??= '';
     info += ` ${multilingualInfo}`;
@@ -166,7 +164,7 @@ Multilingual features are only available if the `locales` store contains more th
     }
     // Initialize the value for an empty `LocalizedString`
     if (multilingual && !isLocalizedString(value)) {
-      value = typeof value === 'string' ? { [$currentLocale]: value } : {};
+      value = typeof value === 'string' ? { [currentLocale]: value } : {};
     }
     // Ensure `select` values are present in the options
     if (type.startsWith('select') && options) {
@@ -368,8 +366,8 @@ Multilingual features are only available if the `locales` store contains more th
   {#if multilingual}
     <div class="join join-vertical items-stretch {joinGap}">
       <!-- Show the field for the current locale and for all others, if translations are visible -->
-      {#each [$currentLocale, ...$locales.filter((l) => l !== $currentLocale)] as locale, i}
-        {#if locale === $currentLocale || isTranslationsVisible}
+      {#each [currentLocale, ...locales.filter((l) => l !== currentLocale)] as locale, i}
+        {#if locale === currentLocale || isTranslationsVisible}
           {#if type === 'textarea-multilingual'}
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
@@ -389,7 +387,7 @@ Multilingual features are only available if the `locales` store contains more th
                 {...concatClass(restProps, `${textareaClass} transition-[padding]`)}
                 class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
-                class:rounded-b-none={isTranslationsVisible && i !== $locales.length - 1}
+                class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
                 bind:this={mainInputs[i]}
                 onchange={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)} />
@@ -615,14 +613,14 @@ Multilingual features are only available if the `locales` store contains more th
 
   <!-- Optional elements below the form widgets -->
 
-  {#if (multilingual && $locales.length > 1) || info}
+  {#if (multilingual && locales.length > 1) || info}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
     <div class="gap-md flex {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
       {#if info}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
         <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
       {/if}
-      {#if multilingual && $locales.length > 1}
+      {#if multilingual && locales.length > 1}
         <Button
           text={isTranslationsVisible ? t('components.input.hideTranslations') : t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}

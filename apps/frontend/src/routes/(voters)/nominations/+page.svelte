@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # All nominations page
@@ -44,7 +42,7 @@ List all nominations in the application.
         faction: ucFirst(t('common.faction.singular')),
         organization: ucFirst(t('common.organization.singular'))
       },
-      locale: $locale
+      locale
     })
   );
 </script>
@@ -57,9 +55,7 @@ List all nominations in the application.
   {/snippet}
   <p class="text-center">{@html sanitizeHtml(t('dynamic.nominations.content'))}</p>
   {#snippet fullWidth()}
-    <div
-      class="bg-base-300 flex min-h-[120vh] flex-col items-center"
-      data-testid="voter-nominations-container">
+    <div class="bg-base-300 flex min-h-[120vh] flex-col items-center" data-testid="voter-nominations-container">
       <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
         <h3 class="my-lg mx-10 text-xl">
           {t('results.candidate.numShown', { numShown: filteredEntities.length })}

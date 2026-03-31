@@ -37,8 +37,6 @@ When using this component, the `validPassword` property should be bound to a boo
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { minPasswordLength, validatePasswordDetails } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
@@ -49,7 +47,12 @@ When using this component, the `validPassword` property should be bound to a boo
   import type { ValidationDetail } from '@openvaa/app-shared';
   import type { PasswordValidatorProps } from './PasswordValidator.type';
 
-  let { password = '', username = '', validPassword = $bindable(false), ...restProps }: PasswordValidatorProps = $props();
+  let {
+    password = '',
+    username = '',
+    validPassword = $bindable(false),
+    ...restProps
+  }: PasswordValidatorProps = $props();
 
   const { t } = getComponentContext();
 

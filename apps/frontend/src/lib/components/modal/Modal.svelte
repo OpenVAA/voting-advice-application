@@ -60,22 +60,13 @@ See the `<ModalContainer>` component documentation for more information.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
 
-  let {
-    title,
-    boxClass = '',
-    isOpen = $bindable(false),
-    actions,
-    children,
-    ...restProps
-  }: ModalProps = $props();
+  let { title, boxClass = '', isOpen = $bindable(false), actions, children, ...restProps }: ModalProps = $props();
 
   let containerRef: ModalContainer | undefined = $state(undefined);
 

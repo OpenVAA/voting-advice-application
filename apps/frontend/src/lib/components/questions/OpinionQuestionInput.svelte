@@ -29,8 +29,6 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { isSingleChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
@@ -63,7 +61,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   {#if isSingleChoiceQuestion(question)}
     {@const selectedId = question.ensureValue(answer?.value)}
     {@const otherSelected = question.ensureValue(otherAnswer?.value)}
-    <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel}
+    <QuestionChoices
+      {question}
+      {mode}
+      {selectedId}
+      {otherSelected}
+      {otherLabel}
       onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined}
       {...restProps} />
   {:else}

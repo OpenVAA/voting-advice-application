@@ -37,8 +37,6 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';

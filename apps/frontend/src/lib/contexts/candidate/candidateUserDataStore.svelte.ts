@@ -1,127 +1,122 @@
 import { ENTITY_TYPE } from '@openvaa/data';
-import { derived, get, writable } from 'svelte/store';
+import { fromStore } from 'svelte/store';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import { localStorageWritable } from '../utils/storageStore';
+import { localStorageWritable } from '../utils/persistedState.svelte';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { Image } from '@openvaa/data';
-import type { Readable } from 'svelte/store';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { CandidateUserDataStore } from './candidateUserDataStore.type';
 
 /**
- * Create an extended store that holds all data owned by the user. When subscribed to, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence.
+ * Create an extended reactive object that holds all data owned by the user. When reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence.
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
- * @param answersLocked - A read-only store that indicates whether answers are locked.
+ * @param answersLocked - A getter that indicates whether answers are locked.
  * @param dataWriterPromise - A `Promise` resolving to `UniversalDataWriter` for saving data.
- * @param locale - A read-only store that indicates the current locale, used for translating some data when it's fetched.
+ * @param locale - The current locale string, used for translating some data when it's fetched.
  */
 export function candidateUserDataStore({
   answersLocked,
   dataWriterPromise,
   locale
 }: {
-  answersLocked: Readable<boolean>;
+  answersLocked: () => boolean;
   dataWriterPromise: Promise<UniversalDataWriter>;
-  locale: Readable<string>;
+  locale: () => string;
 }): CandidateUserDataStore {
   ////////////////////////////////////////////////////////////////////
   // Internals
   ////////////////////////////////////////////////////////////////////
 
-  // An internal store for holding the user data loaded from the backend
-  const savedData = writable<CandidateUserData<true> | undefined>();
+  // An internal $state for holding the user data loaded from the backend
+  let savedData = $state<CandidateUserData<true> | undefined>(undefined);
 
-  // An internal store for holding edited answers
-  const editedAnswers = localStorageWritable(
+  // An internal persisted store for holding edited answers
+  const _editedAnswersStore = localStorageWritable(
     'CandidateContext-candidateUserDataStore-editedAnswers',
     {} as LocalizedAnswers
   );
+  const editedAnswersState = fromStore(_editedAnswersStore);
 
-  // An internal store for holding the edited image
-  const editedImage = writable<ImageWithFile | undefined>();
+  // An internal $state for holding the edited image
+  let editedImage = $state<ImageWithFile | undefined>(undefined);
 
-  // An internal store for holding the edited `termsOfUseAccepted` property
-  const editedTermsOfUseAccepted = writable<string | null | undefined>();
+  // An internal $state for holding the edited `termsOfUseAccepted` property
+  let editedTermsOfUseAccepted = $state<string | null | undefined>(undefined);
 
-  // Subscribe to `answersLocked` to clear edited data
-  answersLocked.subscribe((locked) => {
-    if (locked) resetUnsaved();
+  // React to `answersLocked` to clear edited data
+  $effect(() => {
+    if (answersLocked()) resetUnsaved();
   });
 
-  // A derived internal store holding the effective user data, including unsaved data. Only its subsribe method will be exposed
-  const { subscribe } = derived(
-    [savedData, editedAnswers, editedImage, editedTermsOfUseAccepted],
-    ([savedData, editedAnswers, editedImage, editedTermsOfUseAccepted]) => {
-      if (!savedData) return undefined;
-      const {
-        user,
-        candidate: { answers = {}, image, termsOfUseAccepted, ...rest },
-        nominations
-      } = savedData;
-      // Return clone to prevent mutation of saved data
-      return structuredClone({
-        candidate: {
-          answers: { ...answers, ...editedAnswers },
-          image: editedImage ?? image,
-          termsOfUseAccepted: editedTermsOfUseAccepted ?? termsOfUseAccepted,
-          ...rest
-        },
-        user,
-        nominations
-      }) as CandidateUserData<true>;
-    }
-  );
+  // A derived value holding the effective user data, including unsaved data
+  const _current = $derived.by(() => {
+    const editedAnswers = editedAnswersState.current;
+    if (!savedData) return undefined;
+    const {
+      user,
+      candidate: { answers = {}, image, termsOfUseAccepted, ...rest },
+      nominations
+    } = savedData;
+    // Return clone to prevent mutation of saved data.
+    // Use JSON round-trip instead of structuredClone because Svelte 5's
+    // $state proxy objects cannot be structurally cloned.
+    return JSON.parse(JSON.stringify({
+      candidate: {
+        answers: { ...answers, ...editedAnswers },
+        image: editedImage ?? image,
+        termsOfUseAccepted: editedTermsOfUseAccepted ?? termsOfUseAccepted,
+        ...rest
+      },
+      user,
+      nominations
+    })) as CandidateUserData<true>;
+  });
 
   /**
    * A utility for only updating the `candidate` part of the user data.
    */
   function updateCandidateData(data: LocalizedCandidateData): void {
-    savedData.update((saved) => {
-      if (!saved) throw new Error('Cannot update candidate data before user data is loaded');
-      return {
-        ...saved,
-        candidate: data
-      };
-    });
+    if (!savedData) throw new Error('Cannot update candidate data before user data is loaded');
+    savedData = {
+      ...savedData,
+      candidate: data
+    };
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Exported stores
+  // Exported reactive values
   ////////////////////////////////////////////////////////////////////
 
-  const savedCandidateData = derived(savedData, (savedData) => savedData?.candidate);
+  const _savedCandidateData = $derived(savedData?.candidate);
 
-  const unsavedQuestionIds = derived(editedAnswers, (editedAnswers) =>
-    editedAnswers ? Object.keys(editedAnswers) : []
-  );
+  const _unsavedQuestionIds = $derived.by(() => {
+    const editedAnswers = editedAnswersState.current;
+    return editedAnswers ? Object.keys(editedAnswers) : [];
+  });
 
-  const unsavedProperties = derived(
-    [editedImage, editedTermsOfUseAccepted],
-    ([editedImage, editedTermsOfUseAccepted]) =>
+  const _unsavedProperties = $derived.by(
+    () =>
       [editedImage ? 'image' : undefined, editedTermsOfUseAccepted ? 'termsOfUseAccepted' : undefined].filter(
         (p) => p !== undefined
       ) as Array<keyof LocalizedCandidateData>
   );
 
-  const hasUnsaved = derived(
-    [unsavedQuestionIds, unsavedProperties],
-    ([unsavedQuestionIds, unsavedProperties]) => unsavedQuestionIds.length > 0 || unsavedProperties.length > 0
-  );
+  const _hasUnsaved = $derived(_unsavedQuestionIds.length > 0 || _unsavedProperties.length > 0);
 
   ////////////////////////////////////////////////////////////////////
   // Exported methods
   ////////////////////////////////////////////////////////////////////
 
   function init(data: CandidateUserData<true>): void {
-    savedData.set(data);
+    savedData = data;
   }
 
   function reset(): void {
-    savedData.set(undefined);
+    savedData = undefined;
     resetUnsaved();
   }
 
@@ -132,37 +127,37 @@ export function candidateUserDataStore({
   }
 
   function setAnswer(questionId: Id, answer: LocalizedAnswer | null): void {
-    editedAnswers.update(({ ...answers }) => {
+    _editedAnswersStore.update(({ ...answers }) => {
       answers[questionId] = answer;
       return answers;
     });
   }
 
   function resetAnswer(questionId: Id): void {
-    editedAnswers.update(({ ...answers }) => {
+    _editedAnswersStore.update(({ ...answers }) => {
       delete answers[questionId];
       return answers;
     });
   }
 
   function resetAnswers(): void {
-    editedAnswers.set({});
+    _editedAnswersStore.set({});
   }
 
   function setImage(image: Image): void {
-    editedImage.set(image);
+    editedImage = image;
   }
 
   function resetImage(): void {
-    editedImage.set(undefined);
+    editedImage = undefined;
   }
 
   function setTermsOfUseAccepted(value: string | null): void {
-    editedTermsOfUseAccepted.set(value);
+    editedTermsOfUseAccepted = value;
   }
 
   function resetTermsOfUseAccepted(): void {
-    editedTermsOfUseAccepted.set(undefined);
+    editedTermsOfUseAccepted = undefined;
   }
 
   async function reloadCandidateData(): Promise<LocalizedCandidateData> {
@@ -170,7 +165,7 @@ export function candidateUserDataStore({
     const userData = await dataWriter.getCandidateUserData({
       authToken: '',
       loadNominations: false,
-      locale: get(locale)
+      locale: locale()
     });
     if (!userData) throw new Error('Failed to load user data');
     updateCandidateData(userData.candidate);
@@ -179,17 +174,16 @@ export function candidateUserDataStore({
 
   async function save(): Promise<DataApiActionResult> {
     // Get the initial data to get target entity
-    const saved = get(savedData);
-    if (!saved) throw new Error('Save called before user data loaded');
+    if (!savedData) throw new Error('Save called before user data loaded');
 
-    const answers = get(editedAnswers);
-    const image = get(editedImage);
-    const termsOfUseAccepted = get(editedTermsOfUseAccepted);
+    const answers = editedAnswersState.current;
+    const image = editedImage;
+    const termsOfUseAccepted = editedTermsOfUseAccepted;
     const updateArgs = {
       authToken: '',
       target: {
         type: ENTITY_TYPE.Candidate,
-        id: saved.candidate.id
+        id: savedData.candidate.id
       }
     };
 
@@ -225,7 +219,21 @@ export function candidateUserDataStore({
   }
 
   return {
-    hasUnsaved,
+    get current() {
+      return _current;
+    },
+    get hasUnsaved() {
+      return _hasUnsaved;
+    },
+    get savedCandidateData() {
+      return _savedCandidateData;
+    },
+    get unsavedQuestionIds() {
+      return _unsavedQuestionIds;
+    },
+    get unsavedProperties() {
+      return _unsavedProperties;
+    },
     init,
     reloadCandidateData,
     reset,
@@ -235,12 +243,8 @@ export function candidateUserDataStore({
     resetTermsOfUseAccepted,
     resetUnsaved,
     save,
-    savedCandidateData,
     setAnswer,
     setImage,
-    setTermsOfUseAccepted,
-    subscribe,
-    unsavedProperties,
-    unsavedQuestionIds
+    setTermsOfUseAccepted
   };
 }

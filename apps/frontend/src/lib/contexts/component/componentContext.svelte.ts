@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { darkMode } from './darkMode';
+import { createDarkMode } from './darkMode.svelte';
 import { getI18nContext } from '../i18n';
 import type { ComponentContext } from './componentContext.type';
 
@@ -17,8 +17,13 @@ export function getComponentContext() {
  */
 export function initComponentContext(): ComponentContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitComponentsContext() called for a second time');
+
+  const darkModeState = createDarkMode();
+
   return setContext<ComponentContext>(CONTEXT_KEY, {
     ...getI18nContext(),
-    darkMode
+    get darkMode() {
+      return darkModeState.current;
+    }
   });
 }

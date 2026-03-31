@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Display a hero illustration.

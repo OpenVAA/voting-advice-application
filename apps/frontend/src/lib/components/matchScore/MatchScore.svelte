@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Display an entity's match score.

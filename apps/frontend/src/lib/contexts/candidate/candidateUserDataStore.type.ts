@@ -1,15 +1,18 @@
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { Readable } from 'svelte/store';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { CandidateUserData, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
 
 /**
- * An extended store that holds all data owned by the user. When subscribed to, it returns a composite of the initial data and any unsaved `Answer`s and properties. Dedicated methods are provided for loading, saving, setting or resetting data.
+ * An extended reactive object that holds all data owned by the user. When reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. Dedicated methods are provided for loading, saving, setting or resetting data.
  *
- * NB. Before using the store, its `init` method must be called with the initial `CandidateUserData`.
+ * NB. Before using the object, its `init` method must be called with the initial `CandidateUserData`.
  */
-export type CandidateUserDataStore = Readable<CandidateUserData<true> | undefined> & {
+export type CandidateUserDataStore = {
+  /**
+   * The effective user data, including any unsaved edits.
+   */
+  readonly current: CandidateUserData<true> | undefined;
   /**
    * Initialize the store with the full `CandidateUserData`.
    */
@@ -64,42 +67,42 @@ export type CandidateUserDataStore = Readable<CandidateUserData<true> | undefine
   ////////////////////////////////////////////////////////////
 
   /**
-   * Set the `Candidate`’s image.
+   * Set the `Candidate`'s image.
    */
   setImage: (image: ImageWithFile) => void;
   /**
-   * Delete the unsaved `Candidate`’s image.
+   * Delete the unsaved `Candidate`'s image.
    * NB. This does not intend to delete the image in the backend.
    */
   resetImage: () => void;
   /**
-   * Set the `Candidate`’s image.
+   * Set the `Candidate`'s image.
    */
   setTermsOfUseAccepted: (value: string | null) => void;
   /**
-   * Delete the unsaved `Candidate`’s image.
+   * Delete the unsaved `Candidate`'s image.
    * NB. This does not intend to delete the image in the backend.
    */
   resetTermsOfUseAccepted: () => void;
 
   ////////////////////////////////////////////////////////////
-  // Substores
+  // Reactive values
   ////////////////////////////////////////////////////////////
 
   /**
-   * A substore resolving to an `Array` of question ids for which there are unsaved answers.
+   * An `Array` of question ids for which there are unsaved answers.
    */
-  unsavedQuestionIds: Readable<Array<Id>>;
+  readonly unsavedQuestionIds: Array<Id>;
   /**
-   * A substore resolving to an `Array` of names of unsaved properties.
+   * An `Array` of names of unsaved properties.
    */
-  unsavedProperties: Readable<Array<keyof LocalizedCandidateData>>;
+  readonly unsavedProperties: Array<keyof LocalizedCandidateData>;
   /**
-   * A substore which is `true` if there are any unsaved data.
+   * `true` if there are any unsaved data.
    */
-  hasUnsaved: Readable<boolean>;
+  readonly hasUnsaved: boolean;
   /**
-   * A substore holding the saved `LocalizedCandidateData`.
+   * The saved `LocalizedCandidateData`.
    */
-  savedCandidateData: Readable<LocalizedCandidateData | undefined>;
+  readonly savedCandidateData: LocalizedCandidateData | undefined;
 };

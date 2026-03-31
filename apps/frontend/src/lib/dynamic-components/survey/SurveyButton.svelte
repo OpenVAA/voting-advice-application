@@ -30,19 +30,13 @@ Accesses `AppContext` to set and read the current survey status and link.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { SurveyButtonProps } from './SurveyButton.type';
 
-  let {
-    clicked = $bindable(false),
-    onClick = undefined,
-    ...restProps
-  }: SurveyButtonProps = $props();
+  let { clicked = $bindable(false), onClick = undefined, ...restProps }: SurveyButtonProps = $props();
 
   const { setSurveyStatus, startEvent, surveyLink, t } = getAppContext();
 

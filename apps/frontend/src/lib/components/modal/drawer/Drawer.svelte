@@ -32,8 +32,6 @@ See the `<ModalContainer>` component documentation for more information.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';

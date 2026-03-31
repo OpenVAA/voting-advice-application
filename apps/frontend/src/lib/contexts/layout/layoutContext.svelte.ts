@@ -1,13 +1,13 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { cubicOut } from 'svelte/easing';
-import { tweened } from 'svelte/motion';
-import { get, writable } from 'svelte/store';
+import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { mergeSettings } from '$lib/utils/merge';
 import { DELAY } from '$lib/utils/timing';
-import { stackedStore } from '../utils/stackedStore';
+import { StackedState } from '../utils/StackedState.svelte';
 import type { VideoContent } from '@openvaa/app-shared';
+import type { Video, VideoMode } from '$lib/components/video';
 import type { OptionalVideoProps } from '$lib/components/video';
 import type { DeepPartial } from '$lib/utils/merge';
 import type {
@@ -53,37 +53,70 @@ export const DEFAULT_NAVIGATION_SETTINGS: NavigationSettings = {
 export function initLayoutContext(): LayoutContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'InitLayoutContext() called for a second time');
 
-  const pageStyles = stackedStore<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (current, value) => [
+  const pageStyles = new StackedState<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (current, value) => [
     ...current,
     mergeSettings(current[current.length - 1], value)
   ]);
 
-  const topBarSettings = stackedStore<TopBarSettings, DeepPartial<TopBarSettings>>(
+  const topBarSettings = new StackedState<TopBarSettings, DeepPartial<TopBarSettings>>(
     DEFAULT_TOP_BAR_SETTINGS,
     (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
   );
 
-  const navigationSettings = stackedStore<NavigationSettings, DeepPartial<NavigationSettings>>(
+  const navigationSettings = new StackedState<NavigationSettings, DeepPartial<NavigationSettings>>(
     DEFAULT_NAVIGATION_SETTINGS,
     (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
   );
 
+  let progressMax = $state(0);
+  const progressTween = new Tween(0, {
+    duration: 400,
+    easing: cubicOut
+  });
+
   const progress: Progress = {
-    max: writable(0),
-    current: tweened(0, {
-      duration: 400,
-      easing: cubicOut
-    })
+    get max() {
+      return progressMax;
+    },
+    set max(v) {
+      progressMax = v;
+    },
+    current: progressTween
   };
 
   const navigation: Navigation = {};
 
+  let videoShow = $state(false);
+  let videoHasContent = $state(false);
+  let videoMode = $state<VideoMode>('video');
+  let videoPlayer = $state<Video | undefined>(undefined);
+
   const video: VideoController = {
     load,
-    player: writable(),
-    show: writable(false),
-    hasContent: writable(false),
-    mode: writable('video')
+    get show() {
+      return videoShow;
+    },
+    set show(v) {
+      videoShow = v;
+    },
+    get hasContent() {
+      return videoHasContent;
+    },
+    set hasContent(v) {
+      videoHasContent = v;
+    },
+    get mode() {
+      return videoMode;
+    },
+    set mode(v) {
+      videoMode = v;
+    },
+    get player() {
+      return videoPlayer;
+    },
+    set player(v) {
+      videoPlayer = v;
+    }
   };
 
   /**
@@ -95,13 +128,13 @@ export function initLayoutContext(): LayoutContext {
     props: VideoContent & OptionalVideoProps,
     { autoshow = true }: { autoshow?: boolean } = {}
   ): Promise<boolean> {
-    const player = get(video.player);
+    const player = video.player;
     if (!player) return false;
     const result = await player.load(props);
     if (!result) return false;
     shouldClearContent = false;
-    video.hasContent.set(true);
-    if (autoshow) video.show.set(true);
+    video.hasContent = true;
+    if (autoshow) video.show = true;
     return true;
   }
 
@@ -109,14 +142,14 @@ export function initLayoutContext(): LayoutContext {
   let timeout: NodeJS.Timeout | undefined;
   beforeNavigate(() => {
     shouldClearContent = true;
-    get(video.player)?.togglePlay('pause');
+    video.player?.togglePlay('pause');
   });
   afterNavigate(() => {
     // Give a little timeout for the new page to load possible video content, but if no content is forthcoming, hide the video player. The wait prevents unnecessary minimizing and maximizing of the player between two consequtive pages with video content
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      if (shouldClearContent) video.hasContent.set(false);
-      if (!get(video.hasContent)) video.show.set(false);
+      if (shouldClearContent) video.hasContent = false;
+      if (!video.hasContent) video.show = false;
     }, DELAY.sm);
   });
 

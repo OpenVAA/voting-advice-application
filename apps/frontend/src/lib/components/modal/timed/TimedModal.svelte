@@ -50,8 +50,6 @@ See the `<Modal>` component documentation for more information.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { tweened } from 'svelte/motion';

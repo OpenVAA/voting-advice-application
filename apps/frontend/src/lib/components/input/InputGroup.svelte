@@ -24,8 +24,6 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import { infoClass, joinGap, outsideLabelClass } from './shared';

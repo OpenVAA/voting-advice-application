@@ -25,8 +25,6 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -59,33 +57,33 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   <NavGroup>
     <NavItem href={$getRoute('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
+    {#if electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <NavItem href={$getRoute('Elections')} icon="election" text={t('elections.title')} />
     {/if}
-    {#if $constituenciesSelectable}
+    {#if constituenciesSelectable}
       <NavItem
-        disabled={!$appSettings.elections?.startFromConstituencyGroup && !$elections.length}
+        disabled={!$appSettings.elections?.startFromConstituencyGroup && !elections.length}
         href={$getRoute('Constituencies')}
         icon="constituency"
         text={t('constituencies.title')} />
     {/if}
-    {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
       <NavItem
-        disabled={!$constituencies.length}
+        disabled={!constituencies.length}
         href={$getRoute('Elections')}
         icon="election"
         text={t('elections.title')} />
     {/if}
     <NavItem
-      disabled={!($elections.length && $constituencies.length)}
+      disabled={!(elections.length && constituencies.length)}
       href={$getRoute('Questions')}
       icon="opinion"
       text={t('questions.title')} />
     <NavItem
-      disabled={!($elections.length && $constituencies.length)}
+      disabled={!(elections.length && constituencies.length)}
       href={$getRoute('Results')}
       icon="results"
-      text={$resultsAvailable ? t('results.title.results') : t('results.title.browse')}
+      text={resultsAvailable ? t('results.title.results') : t('results.title.browse')}
       data-testid="voter-nav-results" />
   </NavGroup>
   <NavGroup>

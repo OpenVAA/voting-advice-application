@@ -22,8 +22,6 @@ Accesses `CandidateContext`.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';

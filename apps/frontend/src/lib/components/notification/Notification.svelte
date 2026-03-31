@@ -14,8 +14,6 @@ Show a notification popup to the user.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';

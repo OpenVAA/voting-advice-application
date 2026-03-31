@@ -29,8 +29,6 @@ A modal dialog that asks for user confirmation.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';

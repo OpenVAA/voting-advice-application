@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { onDestroy } from 'svelte';
@@ -26,7 +24,7 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     actions: {
-      cancel: $idTokenClaims ? 'show' : 'hide',
+      cancel: idTokenClaims ? 'show' : 'hide',
       cancelButtonLabel: t('common.cancel'),
       cancelButtonCallback: async () => {
         await clearIdToken();
@@ -36,7 +34,7 @@
   });
 </script>
 
-{#if $userData}
+{#if userData.current}
   <MainContent title={t('candidateApp.preregister.identification.start.title')}>
     <div class="mb-md text-warning text-center">
       {@html sanitizeHtml(t('candidateApp.preregister.status.loggedInError.content'))}
@@ -46,7 +44,7 @@
       variant="main"
       onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if $answersLocked}
+{:else if answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}

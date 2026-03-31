@@ -21,8 +21,6 @@ Used to show an entity's details using the `EntityDetails` component.
 - `results_browse_${$entityType}`: { id }
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { isMatch } from '@openvaa/matching';
   import { onDestroy } from 'svelte';
@@ -72,7 +70,7 @@ Used to show an entity's details using the `EntityDetails` component.
     try {
       ({ entity, title } = getEntityAndTitle({
         dataRoot: $dataRoot,
-        matches: $matches,
+        matches,
         entityType,
         entityId,
         nominationId

@@ -1,20 +1,19 @@
 import type { VideoContent } from '@openvaa/app-shared';
-import type { Tweened } from 'svelte/motion';
-import type { Writable } from 'svelte/store';
+import type { Tween } from 'svelte/motion';
 import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
 import type { DeepPartial } from '$lib/utils/merge';
-import type { StackedStore } from '../utils/stackedStore';
+import type { StackedState } from '../utils/StackedState.svelte';
 
 export type LayoutContext = {
   /**
    * A store containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one.
    */
-  topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>;
+  topBarSettings: StackedState<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
    * A store containing CSS classes used to customize different parts of the layout.
    * NB. You should set any changes to the styles during component initialization, because if changes are pushed to the `pageStyles` stack later they may be overwritten when another component initialized after the currrent one is destroyed.
    */
-  pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>;
+  pageStyles: StackedState<PageStyles, DeepPartial<PageStyles>>;
   /**
    * Progress bar status stores.
    */
@@ -27,7 +26,7 @@ export type LayoutContext = {
    * A store containing navigation settings.
    * NB. This is not contained under `navigation` for easier store access.
    */
-  navigationSettings: StackedStore<NavigationSettings, DeepPartial<NavigationSettings>>;
+  navigationSettings: StackedState<NavigationSettings, DeepPartial<NavigationSettings>>;
   /**
    * Settings related to the video player.
    */
@@ -58,8 +57,8 @@ export interface TopBarSettings {
 }
 
 export interface Progress {
-  current: Tweened<number>;
-  max: Writable<number>;
+  current: Tween<number>;
+  max: number;
 }
 
 export interface Navigation {
@@ -94,18 +93,18 @@ export interface VideoController {
    * Whether to show the video player. @default false
    * Will be automatically set to `true` when `load` is called.
    */
-  show: Writable<boolean>;
+  show: boolean;
   /**
    * Whether the video player has content. @default false
    * NB. You do not usually need to set this manually. It will instead be automatically set to `true` when `load` is called and `false` on `afterNavigate`.
    */
-  hasContent: Writable<boolean>;
+  hasContent: boolean;
   /**
    * Whether the player is in `text` or `video` mode. This will be set internally, so it should only be read under normal circumstances. @default 'video'
    */
-  mode: Writable<VideoMode>;
+  mode: VideoMode;
   /**
    * A reference to the `Video` component. This is mainly used internally, but can be accessed for fine-grained control.
    */
-  player: Writable<Video | undefined>;
+  player: Video | undefined;
 }

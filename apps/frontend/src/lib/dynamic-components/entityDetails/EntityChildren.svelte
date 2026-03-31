@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Used to show an entity's children in an `EntityDetails` component.

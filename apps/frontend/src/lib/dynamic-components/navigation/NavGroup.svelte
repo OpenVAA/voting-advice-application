@@ -22,17 +22,11 @@ Use to group `NavItem` components. Displays a faint line above the group.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { NavGroupProps } from './NavGroup.type';
 
-  let {
-    title,
-    children,
-    ...restProps
-  }: NavGroupProps = $props();
+  let { title, children, ...restProps }: NavGroupProps = $props();
 </script>
 
 <!-- We use a <section> with an Aria role instead of a <ul> or similar

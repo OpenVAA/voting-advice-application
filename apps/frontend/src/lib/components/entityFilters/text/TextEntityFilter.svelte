@@ -16,8 +16,6 @@ Render a text filter for entities.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';

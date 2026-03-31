@@ -15,9 +15,10 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { fromStore } from 'svelte/store';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getErrorTranslationKey } from '$lib/admin/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
@@ -34,21 +35,23 @@
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, darkMode, getRoute, t } = getAdminContext();
+  const appSettingsState = fromStore(appSettings);
+  const darkModeState = fromStore(darkMode);
+  const getRouteState = fromStore(getRoute);
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Handle form and error messages
   ////////////////////////////////////////////////////////////////////
 
-  const errorParam = $page.url.searchParams.get('errorMessage') as LoginError | null;
-  const redirectTo = $page.url.searchParams.get('redirectTo');
+  const errorParam = page.url.searchParams.get('errorMessage') as LoginError | null;
+  const redirectTo = page.url.searchParams.get('redirectTo');
 
-  let canSubmit: boolean;
-  let email = '';
-  let emailInput: HTMLInputElement | undefined;
-  let errorMessage: string | undefined;
-  let password = '';
-  let status: ActionStatus = 'idle';
+  let email = $state('');
+  let emailInput = $state<HTMLInputElement | undefined>(undefined);
+  let errorMessage = $state<string | undefined>(undefined);
+  let password = $state('');
+  let status = $state<ActionStatus>('idle');
 
   if (errorParam) {
     const errorKey = getErrorTranslationKey(errorParam);
@@ -56,7 +59,7 @@
   }
   if (errorMessage) status = 'error';
 
-  $: canSubmit = !!(status !== 'loading' && email && password);
+  let canSubmit = $derived(!!(status !== 'loading' && email && password));
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -64,7 +67,7 @@
 
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
-    imageSrc: $darkMode ? '/images/hero-admin.png' : '/images/hero-admin.png'
+    imageSrc: darkModeState.current ? '/images/hero-admin.png' : '/images/hero-admin.png'
   });
 </script>
 
@@ -128,10 +131,10 @@
     </div>
 
     <div class="mt-lg">
-      {#if $appSettings.access.voterApp}
+      {#if appSettingsState.current.access.voterApp}
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
-          onclick={() => goto($getRoute('Home'), { invalidateAll: true })}
+          onclick={() => goto(getRouteState.current('Home'), { invalidateAll: true })}
           text={t('candidateApp.common.voterApp')} />
       {/if}
     </div>

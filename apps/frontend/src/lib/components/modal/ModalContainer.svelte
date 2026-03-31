@@ -42,8 +42,6 @@ A modal dialog.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';

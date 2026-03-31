@@ -15,8 +15,6 @@ Display an entity's sub-matches.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { ScoreGauge } from '$lib/components/scoreGauge';
   import { concatClass } from '$lib/utils/components';

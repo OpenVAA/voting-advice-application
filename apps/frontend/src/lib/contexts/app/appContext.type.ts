@@ -3,14 +3,35 @@ import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
 import type { AppCustomization } from './appCustomization.type';
-import type { getRoute } from './getRoute';
+import type { getRoute } from './getRoute.svelte';
 import type { PopupStore } from './popup';
 import type { TrackingService } from './tracking';
 import type { UserPreferences } from './userPreferences.type';
 
-export type AppContext = ComponentContext &
+/**
+ * The AppContext type.
+ *
+ * ComponentContext properties (`locale`, `locales`, `darkMode`) are overridden with
+ * store-wrapped versions for backward compat with downstream Phase-52 contexts
+ * (VoterContext, CandidateContext, AdminContext) which use `derived([locale, ...])`.
+ *
+ * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
+ */
+export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode'> &
   DataContext &
   TrackingService & {
+    /**
+     * The current locale as a readable store (store-wrapped for downstream context compat).
+     */
+    locale: Readable<string>;
+    /**
+     * Available locales as a readable store (store-wrapped for downstream context compat).
+     */
+    locales: Readable<readonly string[]>;
+    /**
+     * Dark mode state as a readable store (store-wrapped for downstream context compat).
+     */
+    darkMode: Readable<boolean>;
     /**
      * The application type we're using. Set this to the current type in the layout containing the app.
      */

@@ -17,8 +17,6 @@ Reusable component for selecting target language for language-based features (qu
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { Select } from '$lib/components/select';
   import { getComponentContext } from '$lib/contexts/component';
@@ -28,12 +26,19 @@ Reusable component for selecting target language for language-based features (qu
 
   const { locale, locales, t } = getComponentContext();
 
-  let { selected = $bindable($locale), name = 'language', id = getUUID(), ...restProps }: LanguageSelectorProps = $props();
+  let {
+    selected = $bindable(locale),
+    name = 'language',
+    id = getUUID(),
+    ...restProps
+  }: LanguageSelectorProps = $props();
 
-  const options = $derived($locales.map((l) => ({
-    id: l,
-    label: t(assertTranslationKey(`lang.${l}`))
-  })));
+  const options = $derived(
+    locales.map((l) => ({
+      id: l,
+      label: t(assertTranslationKey(`lang.${l}`))
+    }))
+  );
 </script>
 
 <div class="w-full">

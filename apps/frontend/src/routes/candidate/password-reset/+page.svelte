@@ -9,8 +9,6 @@ Shows a form with which to set a new password when it has been reset.
 - `code`: The reset code
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
@@ -37,7 +35,7 @@ Shows a form with which to set a new password when it has been reset.
 
   const code = page.url.searchParams.get('code');
   // Session-based flow: user arrived via auth callback with verifyOtp (recovery type)
-  const isSessionFlow = $isAuthenticated && !code;
+  const isSessionFlow = isAuthenticated && !code;
 
   // Redirect to login only if neither code nor session is available
   if (!code && !isSessionFlow) goto($getRoute('CandAppLogin'));

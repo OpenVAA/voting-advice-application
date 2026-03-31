@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
   import { browser } from '$app/environment';
   import type { TrackingEvent } from '$lib/contexts/app/tracking';

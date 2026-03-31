@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -12,7 +10,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, preregistrationElections, preregistrationConstituencyIds, t } = getCandidateContext();
+  const candCtx = getCandidateContext();
+  const { getRoute, preregistrationElections, t } = candCtx;
 
   let selectionComplete = $state(false);
 </script>
@@ -24,8 +23,8 @@
   <ConstituencySelector
     onShadedBg
     class="mb-md"
-    elections={$preregistrationElections}
-    bind:selected={$preregistrationConstituencyIds}
+    elections={preregistrationElections}
+    bind:selected={candCtx.preregistrationConstituencyIds}
     bind:selectionComplete
     data-testid="preregister-constituencies-list" />
   {#snippet primaryActions()}

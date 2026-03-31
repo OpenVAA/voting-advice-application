@@ -16,8 +16,6 @@ Display the pros and cons arguments related to a question.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { ARGUMENT_TYPE, getCustomData } from '@openvaa/app-shared';
   import { isChoiceQuestion } from '@openvaa/data';

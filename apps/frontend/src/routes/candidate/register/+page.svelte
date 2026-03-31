@@ -10,8 +10,6 @@
 - `registrationKey`: The registration key
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -90,7 +88,7 @@
     </HeadingGroup>
   {/snippet}
   <form class="flex flex-col flex-nowrap items-center">
-    {#if $userData}
+    {#if userData.current}
       <p class="text-warning text-center">{t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
         <LogoutButton variant="main" />

@@ -33,8 +33,6 @@ Create navigation menus for the application in a predefined style.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';

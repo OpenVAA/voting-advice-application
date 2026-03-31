@@ -1,6 +1,5 @@
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
-import type { Readable, Writable } from 'svelte/store';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
@@ -16,62 +15,60 @@ export type CandidateContext = AppContext &
     /**
      * Whether `Election`s can be selected.
      */
-    electionsSelectable: Readable<boolean>;
+    electionsSelectable: boolean;
     /**
      * Whether `Constituency`s can be selected.
      */
-    constituenciesSelectable: Readable<boolean>;
+    constituenciesSelectable: boolean | undefined;
     /**
      * The `Id`s ... TODO
      */
-    preregistrationElectionIds: Readable<Array<Id>>;
+    preregistrationElectionIds: Array<Id>;
     /**
      * The `Id`s ... TODO
      */
-    preregistrationConstituencyIds: Readable<{ [electionId: Id]: Id }>;
+    preregistrationConstituencyIds: { [electionId: Id]: Id };
     /**
      * The `Election`s selected or implied in the pregistration process.
      */
-    preregistrationElections: Readable<Array<Election>>;
+    preregistrationElections: Array<Election>;
     /**
      * The data for the preregistration `Nomination`s derived from selected `Constituency`s and `Election`s.
      */
-    preregistrationNominations: Readable<
-      Array<{
-        electionId: Id;
-        constituencyId: Id;
-      }>
-    >;
+    preregistrationNominations: Array<{
+      electionId: Id;
+      constituencyId: Id;
+    }>;
     /**
      * The `Election`s the `Candidate` is nominated in.
      */
-    selectedElections: Readable<Array<Election>>;
+    selectedElections: Array<Election>;
     /**
      * The `Constituency`s the `Candidate` is nominated in.
      */
-    selectedConstituencies: Readable<Array<Constituency>>;
+    selectedConstituencies: Array<Constituency>;
     /**
      * The non-opinion `QuestionCategory`s applicable to the selected `Election`s and `Constituency`s.
      * NB. When accessing the `Question`s in the categories, use the `getApplicableQuestions({election, constituency})` method.
      */
-    infoQuestionCategories: Readable<Array<QuestionCategory>>;
+    infoQuestionCategories: Array<QuestionCategory>;
     /**
      * The non-opinion `Question`s applicable to the selected `Election`s and `Constituency`s.
      */
-    infoQuestions: Readable<Array<AnyQuestionVariant>>;
+    infoQuestions: Array<AnyQuestionVariant>;
     /**
      * The matching `QuestionCategory`s applicable to the selected `Election`s and `Constituency`s.
      * NB. When accessing the `Question`s in the categories, use the `getApplicableQuestions({election, constituency})` method.
      */
-    opinionQuestionCategories: Readable<Array<QuestionCategory>>;
+    opinionQuestionCategories: Array<QuestionCategory>;
     /**
      * The matching `Question`s applicable to the selected `Election`s and `Constituency`s.
      */
-    opinionQuestions: Readable<Array<AnyQuestionVariant>>;
+    opinionQuestions: Array<AnyQuestionVariant>;
     /**
      * The applicable opinion `Question`s applicable to the selected `Election`s and `Constituency`s.
      */
-    questionBlocks: Readable<QuestionBlocks>;
+    questionBlocks: QuestionBlocks;
 
     ////////////////////////////////////////////////////////////////////
     // Wrappers for DataWriter methods
@@ -87,7 +84,7 @@ export type CandidateContext = AppContext &
     /**
      * Activate an already registered user with the provided registration key and password.
      * @param registrationKey - The registration key to check.
-     * @param password - The user’s password.
+     * @param password - The user's password.
      * @returns A `Promise` resolving to an `DataApiActionResult` object.
      */
     register: (opts: { registrationKey: string; password: string }) => ReturnType<DataWriter['register']>;
@@ -136,42 +133,42 @@ export type CandidateContext = AppContext &
     ////////////////////////////////////////////////////////////////////
 
     /**
-     * An extended store that holds all data owned by the user. When subscribed to, it returns a composite of the initial data and any unsaved `Answer`s and properties. Dedicated methods are provided for loading, saving, setting or resetting data.
+     * An extended reactive object that holds all data owned by the user.
      *
-     * NB. Before using the store, its `init` method must be called with the initial `CandidateUserData`.
+     * NB. Before using the object, its `init` method must be called with the initial `CandidateUserData`.
      */
     userData: CandidateUserDataStore;
     /**
      * Holds the ID token claims.
      */
-    idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
+    idTokenClaims: { firstName: string; lastName: string } | undefined;
     /**
-     * Holds the user’s email so it can be prefilled during password changes.
+     * Holds the user's email so it can be prefilled during password changes.
      */
-    newUserEmail: Writable<string | undefined>;
+    newUserEmail: string | undefined;
     /**
      * Whether the answers can be edited.
      */
-    answersLocked: Readable<boolean>;
+    answersLocked: boolean;
     /**
      * Required info `Question`s.
      */
-    requiredInfoQuestions: Readable<Array<AnyQuestionVariant>>;
+    requiredInfoQuestions: Array<AnyQuestionVariant>;
     /**
      * The required info `Question`s that are yet to be answered.
      */
-    unansweredRequiredInfoQuestions: Readable<Array<AnyQuestionVariant>>;
+    unansweredRequiredInfoQuestions: Array<AnyQuestionVariant>;
     /**
      * The opinion `Question`s that are yet to be answered.
      */
-    unansweredOpinionQuestions: Readable<Array<AnyQuestionVariant>>;
+    unansweredOpinionQuestions: Array<AnyQuestionVariant>;
     /**
      * Whether the profile is fully complete.
      */
-    profileComplete: Readable<boolean>;
+    profileComplete: boolean;
     /**
-     * A locally stored store set to `true` when the user has completed the preregistration process.
+     * A locally stored value set to `true` when the user has completed the preregistration process.
      * Can be used to prompt the user to log in instead of preregistering again.
      */
-    isPreregistered: Writable<boolean>;
+    isPreregistered: boolean;
   };

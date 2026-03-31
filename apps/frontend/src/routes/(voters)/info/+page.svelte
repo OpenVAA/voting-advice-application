@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Info (about the elections) page
@@ -53,10 +51,6 @@ Displays information about the elections in the VAA.
   {/if}
 
   {#snippet primaryActions()}
-    <Button
-      variant="main"
-      href={$getRoute('Home')}
-      text={t('common.returnHome')}
-      data-testid="voter-info-return" />
+    <Button variant="main" href={$getRoute('Home')} text={t('common.returnHome')} data-testid="voter-info-return" />
   {/snippet}
 </MainContent>

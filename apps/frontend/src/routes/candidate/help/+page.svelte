@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # Candidate app help page
@@ -63,7 +61,7 @@ Shows a FAQ and other support content for the candidate application.
       icon="next"
       variant="main"
       text={t('common.home')}
-      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
+      href={userData.current ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')}
       data-testid="candidate-help-home" />
   {/snippet}
 </MainContent>

@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a popup with a data consent form, if data consent has not been given yet.

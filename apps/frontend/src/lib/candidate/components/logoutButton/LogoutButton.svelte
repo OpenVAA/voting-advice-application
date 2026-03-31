@@ -23,8 +23,6 @@ Accesses `CandidateContext`.
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -58,10 +56,7 @@ Accesses `CandidateContext`.
   let timeLeft = logoutModalTimer;
 
   async function triggerLogout() {
-    if (
-      !$answersLocked &&
-      ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
-    ) {
+    if (!answersLocked && (unansweredOpinionQuestions?.length !== 0 || unansweredRequiredInfoQuestions?.length !== 0)) {
       timedModalRef?.openModal();
     } else {
       await logout();
@@ -88,20 +83,20 @@ Accesses `CandidateContext`.
   title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
-  {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
+  {#if unansweredOpinionQuestions && unansweredRequiredInfoQuestions?.length === 0}
     <p>
       {t('candidateApp.logoutModal.questionsLeft', {
-        opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
+        opinionQuestionsLeft: unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
       {t('candidateApp.logoutModal.itemsLeft', {
-        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
-        opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
+        infoQuestionsLeft: unansweredRequiredInfoQuestions?.length ?? 0,
+        opinionQuestionsLeft: unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
-    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+    {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
       <p>{t('candidateApp.common.willBeHiddenIfMissing')}</p>
     {/if}
   {/if}
@@ -111,7 +106,10 @@ Accesses `CandidateContext`.
   <!-- </div> -->
   {#snippet actions()}
     <div class="flex w-full flex-col items-center">
-      <Button onclick={() => timedModalRef?.closeModal()} text={t('candidateApp.logoutModal.continue')} variant="main" />
+      <Button
+        onclick={() => timedModalRef?.closeModal()}
+        text={t('candidateApp.logoutModal.continue')}
+        variant="main" />
       <Button
         onclick={handleLogout}
         text={t('common.logout')}

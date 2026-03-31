@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--@component
 
 # All nominations layout
@@ -12,6 +10,7 @@ Provides the data used by the nominations route.
 -->
 
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { Snippet } from 'svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -47,6 +46,7 @@ Provides the data used by the nominations route.
       $dataRoot.provideEntityData(nominationData.entities);
       $dataRoot.provideNominationData(nominationData.nominations);
     });
+    await tick();
     ready = true;
   }
 </script>

@@ -15,8 +15,6 @@ Render an enumerated filter for entities that displays a list of values to inclu
 ```
 -->
 
-<svelte:options runes />
-
 <script lang="ts">
   import { isMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';

@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <!--
 @component
 Show a list of possibly wrapped entities with pagination and defined actions.
@@ -42,7 +40,14 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   import type { EntityCardProps } from '$lib/dynamic-components/entityCard';
   import type { EntityListProps } from './EntityList.type';
 
-  let { cards, itemsPerPage = 50, itemsTolerance = 0.2, itemsShown = $bindable(0), scrollIntoView = true, ...restProps }: EntityListProps = $props();
+  let {
+    cards,
+    itemsPerPage = 50,
+    itemsTolerance = 0.2,
+    itemsShown = $bindable(0),
+    scrollIntoView = true,
+    ...restProps
+  }: EntityListProps = $props();
 
   const { t } = getComponentContext();
 
@@ -65,17 +70,27 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
     currentPage = 0;
   });
 
-  $effect(() => { itemsShown = pages.slice(0, currentPage + 1).reduce((acc, page) => acc + page.length, 0); });
+  $effect(() => {
+    itemsShown = pages.slice(0, currentPage + 1).reduce((acc, page) => acc + page.length, 0);
+  });
 
-  onDestroy(() => { if (scrollTimeout) clearTimeout(scrollTimeout); });
+  onDestroy(() => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+  });
 
-  function showPage(index: number) { currentPage = index; if (scrollIntoView) scrollToCard(index); }
+  function showPage(index: number) {
+    currentPage = index;
+    if (scrollIntoView) scrollToCard(index);
+  }
 
   function scrollToCard(index: number) {
     if (scrollTimeout) clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
       const target = div?.querySelectorAll(`.${PAGE_CLASS}`)?.[index];
-      if (target instanceof HTMLElement) { target.scrollIntoView({ behavior: 'smooth' }); target.focus(); }
+      if (target instanceof HTMLElement) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        target.focus();
+      }
     }, DELAY.md);
   }
 </script>
@@ -90,7 +105,13 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
           {/each}
         {/if}
         {#if i > 0}
-          <Button onclick={() => showPage(i)} class="mt-lg self-center {i <= currentPage ? '!sr-only' : ''}" disabled={i <= currentPage} variant="main" data-testid="entity-list-show-more" text={t('entityList.showMore')} />
+          <Button
+            onclick={() => showPage(i)}
+            class="mt-lg self-center {i <= currentPage ? '!sr-only' : ''}"
+            disabled={i <= currentPage}
+            variant="main"
+            data-testid="entity-list-show-more"
+            text={t('entityList.showMore')} />
         {/if}
       </div>
     {/if}
