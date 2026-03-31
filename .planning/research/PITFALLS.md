@@ -1,180 +1,111 @@
-# Domain Pitfalls: Deno 2.x Migration Feasibility
+# Domain Pitfalls: Svelte 5 Context System Rewrite and Global Runes Enablement
 
-**Domain:** Node.js-to-Deno runtime migration for a monorepo
-**Researched:** 2026-03-26
+**Domain:** Svelte 5 migration completion for existing SvelteKit 2 VAA framework
+**Researched:** 2026-03-27
 
 ## Critical Pitfalls
 
-Mistakes that cause significant rework or derail the migration.
+Mistakes that cause rewrites or major issues.
 
-### P1: Attempting Full Toolchain Replacement (Severity: CRITICAL)
+### Pitfall 1: DataRoot Mutable Object + Signal Equality
 
-**What goes wrong:** Replacing Yarn, Turborepo, ESLint, Prettier, and Vitest simultaneously with Deno built-ins. Each tool has gaps that individually seem "solvable" but together create an unmanageable number of regressions.
+**What goes wrong:** DataRoot from `@openvaa/data` is mutated in-place and signals changes via an imperative `subscribe()` callback. Svelte 5's `$state` uses `Object.is()` equality, so re-assigning the same reference will not trigger re-renders.
+**Why it happens:** The current `alwaysNotifyStore` workaround in `dataContext.ts` manually bypasses equality checking. A naive `$state` replacement (`let dataRoot = $state(new DataRoot(...))`) would lose reactivity on mutations because the reference never changes.
+**Consequences:** UI freezes after initial data load. Elections, constituencies, questions appear stale or empty. No error thrown -- silent failure.
+**Prevention:** Use a version counter pattern: increment a `$state` counter in DataRoot's subscribe callback. All `$derived` values that depend on DataRoot must reference the counter to establish a dependency. See ARCHITECTURE.md "DataRoot Special Case".
+**Detection:** If elections/questions do not update after initial load in dev mode, the DataRoot reactivity bridge is broken.
 
-**Why it happens:** Deno's marketing emphasizes "all-in-one toolchain" -- zero config TS, built-in test/lint/fmt. Developers extrapolate from simple examples to a 10-package monorepo with Svelte, Tailwind, and complex build pipelines.
+### Pitfall 2: Context Initialization Order Violation
 
-**Consequences:**
-- Loss of Turborepo caching (builds go from <5s to 30s+)
-- Loss of Svelte template linting (deno lint cannot parse .svelte AST)
-- Loss of Tailwind class sorting (deno fmt has no plugin for this)
-- Loss of Vitest module mocking (deno test has no vi.mock equivalent)
-- Loss of Yarn catalogs (30 shared dependency version entries)
-- All at once, making it impossible to isolate which change caused which failure
+**What goes wrong:** Contexts have strict initialization dependencies (I18n -> Component -> Data -> App -> Voter/Candidate/Admin). If the rewrite changes when/how contexts are initialized, downstream contexts will call `getContext` before the parent has called `setContext`, causing a 500 error.
+**Why it happens:** The inheritance pattern uses `...getAppContext()` inside `initVoterContext()`. If AppContext is not yet initialized at that point (e.g., due to async initialization or moved to a different layout level), the Symbol lookup fails.
+**Consequences:** Hard 500 error: "getAppContext() called before initAppContext()". App does not render.
+**Prevention:** Preserve the exact initialization order in root `+layout.svelte`. Do not make context initialization async. Do not move context init calls to different layout files.
+**Detection:** Immediate on page load -- error is thrown synchronously.
 
-**Prevention:** Use Strategy B (runtime-only). Change ONE variable: the execution runtime. Keep all build tooling.
+### Pitfall 3: Module-Level `$state` Causing SSR Data Leakage
 
-**Detection:** If a migration plan includes "replace Turborepo" AND "replace ESLint" AND "replace Vitest" in the same phase, it is too aggressive.
+**What goes wrong:** If any `$state` is declared at module scope (outside of `setContext`), it persists across server-side requests. User A's data leaks to User B.
+**Why it happens:** Node.js modules are singletons. Module-level state is shared across all SSR requests. Svelte 4 stores have the same issue, but the existing code already avoids it by using `setContext`. During the rewrite, a developer might accidentally extract state to module scope for "cleaner code".
+**Consequences:** Security vulnerability: user data leakage in production SSR.
+**Prevention:** All `$state` must be declared inside `initXxxContext()` functions or class constructors called from those functions. Code review must flag any module-level `$state`.
+**Detection:** Only visible in production SSR with concurrent users. Not detectable in dev mode (single user).
 
-### P2: Premature Removal of package.json (Severity: HIGH)
+### Pitfall 4: `$effect` for Data Loading Instead of `$derived`
 
-**What goes wrong:** Converting workspace members from package.json to deno.json-only to "fully embrace Deno."
-
-**Why it happens:** Deno workspaces use deno.json. Developers assume this means package.json should be removed.
-
-**Consequences:**
-- Turborepo stops recognizing the workspace member (turbo.json reads package.json scripts)
-- Yarn stops resolving the member's dependencies
-- Changesets cannot version the package
-- npm publishing breaks (no package.json = no name/version/exports for npm)
-- TypeScript project references may break (tsconfig.json references package paths)
-
-**Prevention:** Keep package.json in ALL workspace members. If deno.json is needed, add it alongside package.json (hybrid mode).
-
-**Detection:** Any workspace member that has deno.json but no package.json is at risk.
-
-### P3: Assuming Deno npm Workspace Support Is Production-Ready (Severity: HIGH)
-
-**What goes wrong:** Relying on Deno's npm workspace compatibility for the full monorepo workflow, including cross-package resolution.
-
-**Why it happens:** Deno docs say "supports npm workspaces." Developers take this at face value.
-
-**Consequences:** Open issue #28157 reports "hard breaking issues when trying to integrate Deno into an existing npm monorepo" -- specifier resolutions fail, manual import map entries are needed, workspace:* protocol has edge cases. The project's `workspace:^` protocol usage across 10+ packages amplifies this risk.
-
-**Prevention:** The PoC must validate cross-workspace imports (e.g., @openvaa/matching importing @openvaa/core) under Deno before any commitment. Keep Yarn as the primary workspace resolver; use Deno only as runtime.
-
-**Detection:** Import errors like "Module not found" or "Could not resolve" when running workspace packages under Deno.
+**What goes wrong:** The root `+layout.svelte` currently uses `$: {}` blocks for async data loading. If replaced with `$effect`, the timing changes: `$effect` runs after DOM update, not synchronously. This can cause a flash of empty content or double-render.
+**Why it happens:** `$:` in Svelte 4 runs synchronously before render. `$effect` in Svelte 5 runs after render. The data loading pattern in root layout sets `ready = false`, then async loads data, then sets `ready = true`. If `ready` flashes to `false` on every navigation, the loading screen flickers.
+**Consequences:** Loading screen flickers on every navigation. Possible layout shifts. Poor UX.
+**Prevention:** Use `$derived` for synchronous computed values. Use `$effect` only for the async data fetching side effect. Consider whether the root layout data loading can be moved entirely to `+layout.ts` load function (which already exists and already handles the async work). In v2.1, the `+layout.ts` was refactored to `await` all data before returning, so `page.data` already contains resolved values -- the `Promise.all` in root layout may be unnecessary.
+**Detection:** Visible in dev mode during page navigation. Loading spinner appears briefly between pages.
 
 ## Moderate Pitfalls
 
-### P4: Paraglide JS FsWatcher Failure in Dev Mode (Severity: MEDIUM)
+### Pitfall 5: Bulk Consumer Update Inconsistency
 
-**What goes wrong:** Paraglide JS 2.x Vite plugin uses file watchers that break on Deno, producing "Input watch path is neither a file nor a directory" errors during development.
+**What goes wrong:** With 141 component files to update, some files get missed or partially updated. A component uses `$answers` (store syntax) when the context now exposes `answers` as a plain `$state` property.
+**Prevention:** Grep-based verification after each batch. Search for `$` prefix on known context property names. TypeScript compiler will catch some cases (type mismatch), but template expressions may not be type-checked.
+**Detection:** Runtime error: "Cannot read property 'subscribe' of undefined" or similar. TypeScript errors in `.ts` sections.
 
-**Why it happens:** Deno's FsWatcher implementation differs from Node.js's `fs.watch()`. Vite plugins that use Node-specific file watching APIs hit incompatibilities.
+### Pitfall 6: `storageStore` Persistence Timing with `$effect`
 
-**Prevention:** Test the Vite dev server with Paraglide early in PoC. If it fails, the workaround is a custom Vite plugin wrapper using `Deno.Command` to invoke the Paraglide compiler.
+**What goes wrong:** The current `storageStore` subscribes synchronously and writes to storage on every value change. With `$effect`, storage writes happen asynchronously (after render). If the user navigates away before the effect fires, data may be lost.
+**Prevention:** Use `$effect.pre` or synchronous writes in setters instead of `$effect` for critical persistence (voter answers, user preferences). Alternatively, keep the eager subscription pattern inside the persisted state utility.
+**Detection:** Voter loses answers after navigating away from question page. Candidate edits disappear on page refresh.
 
-**Detection:** Error messages containing "FsWatcher" or "watch path" during `deno task dev`.
+### Pitfall 7: `Tweened` Store in LayoutContext
 
-### P5: Playwright Version Sensitivity (Severity: MEDIUM)
+**What goes wrong:** The progress bar uses `tweened()` from `svelte/motion`, which returns a writable store. If the context type changes to expect `$state` but the tweened store is not adapted, the progress animation breaks.
+**Prevention:** Keep `tweened()` as-is. It returns a store-compatible object that works in Svelte 5. Wrap it in the context type as-is or use the tweened value directly.
+**Detection:** Progress bar jumps instead of animating, or does not update at all.
 
-**What goes wrong:** Playwright works on some Deno versions but breaks on others. Deno 2.1.5 introduced BadResource errors with Playwright. Later patches fixed it, but future regressions are possible.
+### Pitfall 8: `getLayoutContext(onDestroy)` Revert Pattern
 
-**Why it happens:** Playwright heavily uses Node.js process and stream APIs. Deno's Node compatibility layer evolves between versions, sometimes introducing regressions.
-
-**Prevention:** Pin Deno version in CI. Run Playwright via `npx playwright test` rather than `deno run npm:playwright`. Test E2E suite immediately after any Deno version upgrade.
-
-**Detection:** Unexplained Playwright test failures after Deno upgrade; errors containing "BadResource" or socket-related messages.
-
-### P6: Turborepo in Hybrid Mode Untested (Severity: MEDIUM)
-
-**What goes wrong:** Turborepo may not work correctly when Deno-specific configuration files (deno.json, deno.lock) coexist with package.json and turbo.json.
-
-**Why it happens:** Turborepo discovers workspace members via package.json. Additional config files should be ignored, but Turborepo's file hashing for caching may include unexpected files, causing cache invalidation or confusion.
-
-**Prevention:** Test Turborepo caching behavior after adding deno.json to a workspace member. Verify cached builds still work.
-
-**Detection:** Turborepo cache misses that should be hits; or unexpected includes in turbo's inputs hash.
-
-### P7: Changesets CLI Compatibility Unknown (Severity: MEDIUM)
-
-**What goes wrong:** Changesets CLI may fail under Deno's Node compatibility layer due to usage of Node-specific APIs (child_process for git operations, fs for changeset file management).
-
-**Why it happens:** Changesets was not designed for Deno. It uses Node.js APIs extensively for git integration.
-
-**Prevention:** Test `npx changeset` and `npx changeset publish` early. If they fail under Deno, keep running them under Node (they are dev tools, not production code).
-
-**Detection:** Errors during `changeset version` or `changeset publish` commands.
-
-### P8: Docker Build Complexity Increase (Severity: MEDIUM)
-
-**What goes wrong:** Production Docker builds become more complex because both Deno AND Node may be needed -- Node for the build step (Yarn/Turborepo) and Deno for the runtime step.
-
-**Why it happens:** Strategy B keeps Yarn and Turborepo, which require Node. The built output runs on Deno. Multi-stage Docker builds need both runtimes.
-
-**Prevention:** Multi-stage Dockerfile: build stage with Node, production stage with Deno only. The adapter-node output is plain JavaScript that Deno can execute.
-
-```dockerfile
-# Build stage
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY . .
-RUN yarn install && yarn build
-
-# Production stage
-FROM denoland/deno:alpine-2.7.7
-COPY --from=build /app/apps/frontend/build /app/build
-CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "/app/build/index.js"]
-```
-
-**Detection:** Docker build failures or oversized images.
+**What goes wrong:** `getLayoutContext` takes `onDestroy` as a parameter and registers cleanup callbacks to revert stacked settings. If the `StackedState` class replacement changes the revert semantics (e.g., index-based vs count-based), components may not properly clean up their layout overrides.
+**Prevention:** Preserve the exact same index-tracking and revert API. Test with nested layouts that push and pop settings.
+**Detection:** Top bar settings or page styles "leak" from one route to another. Wrong buttons visible after navigation.
 
 ## Minor Pitfalls
 
-### P9: Deno Lock File Conflicts (Severity: LOW)
+### Pitfall 9: `export let data` in Legacy Admin Files
 
-**What goes wrong:** Deno generates a `deno.lock` file when it encounters `deno.json`. This can conflict with `yarn.lock` and confuse CI caching.
+**What goes wrong:** The 10 admin files use `export let data: PageData` (Svelte 4 syntax). When migrating to runes, this becomes `let { data } = $props()`. If the migration is incomplete, TypeScript accepts the old syntax but it will not work in runes mode.
+**Prevention:** Migrate all `export let` to `$props()` in admin files before enabling global runes.
+**Detection:** TypeScript may not catch this if the file is in legacy mode. Only fails when global runes is enabled.
 
-**Prevention:** Add `deno.lock` to `.gitignore` if using Yarn as the primary package manager. OR commit both lockfiles with clear documentation about which is the source of truth.
+### Pitfall 10: `bind:this` for FeedbackModal and UmamiAnalytics
 
-### P10: Permission Flag Verbosity (Severity: LOW)
+**What goes wrong:** Root layout uses `bind:this` to get references to FeedbackModal and UmamiAnalytics. The callback pattern (`feedbackModalRef.openFeedback`) must continue working with runes-mode components.
+**Prevention:** Ensure bound components export functions via `export function` (which works in runes mode). Verify `bind:this` gives a reference with the expected methods.
+**Detection:** Feedback modal does not open. Analytics events are not tracked.
 
-**What goes wrong:** Every `deno run` command needs explicit permission flags (--allow-net, --allow-read, etc.), making task definitions verbose compared to Node.
+### Pitfall 11: `svelte:component` Dynamic Imports in Root Layout
 
-**Prevention:** Use `--allow-all` (`-A`) for development tasks. Define granular permissions only for production Docker CMD.
-
-### P11: VSCode Extension Conflicts (Severity: LOW)
-
-**What goes wrong:** The Deno VSCode extension and the TypeScript extension can conflict, each trying to provide TS language services. In a monorepo with both Node and Deno workspaces, the extension may activate in the wrong context.
-
-**Prevention:** Configure `.vscode/settings.json` with `deno.enablePaths` to restrict Deno LSP to specific directories (e.g., Edge Functions only).
-
-### P12: esm.sh Import Pattern in Edge Functions (Severity: LOW)
-
-**What goes wrong:** Edge Functions currently import from `https://esm.sh/@supabase/supabase-js@2`. If migrating to `npm:` specifiers, the Supabase CLI's Edge Runtime may not resolve them correctly.
-
-**Prevention:** Keep esm.sh imports in Edge Functions during PoC. Only migrate to npm specifiers after validating the deploy pipeline.
+**What goes wrong:** Root layout uses `{#await import(...)} ... <svelte:component this={X.default}>` pattern for lazy-loading UmamiAnalytics and VisibilityChange. In runes mode, `svelte:component` is deprecated in favor of `<Component>` syntax.
+**Prevention:** Replace `<svelte:component this={Component}>` with `<Component>` when migrating root layout to runes.
+**Detection:** Svelte compiler warning. Component may not render.
 
 ## Phase-Specific Warnings
 
 | Phase Topic | Likely Pitfall | Mitigation |
 |-------------|---------------|------------|
-| PoC: SvelteKit dev server | P4: Paraglide FsWatcher | Test with full Vite plugin stack, not just basic pages |
-| PoC: Unit tests on Deno | P3: Workspace resolution bugs | Start with @openvaa/core (no workspace deps), then test cross-package |
-| PoC: Playwright E2E | P5: Version sensitivity | Use npx, pin Deno version, test 5-10 specs first |
-| PoC: Benchmarking | Misleading blog benchmarks | Measure THIS project, not synthetic benchmarks |
-| Deployment: Docker | P8: Dual runtime complexity | Multi-stage build, test locally before CI |
-| Integration: Edge Functions | P12: Import pattern change | Defer to after runtime validation |
-| Tooling: Turborepo hybrid | P6: Untested coexistence | Verify cache behavior with deno.json present |
-| Release: Changesets | P7: Unknown compatibility | Test npx changeset early; fallback to Node |
-
-## Rollback Strategy
-
-**Key principle:** The migration must be reversible at every stage.
-
-1. **Runtime rollback:** Change Docker CMD from `deno run` back to `node`. Change CI from `setup-deno` back to `setup-node`. All code is the same.
-2. **Config rollback:** Remove deno.json files from workspace members. package.json was never modified.
-3. **CI rollback:** Keep Node.js CI job alongside Deno CI job until fully validated. Remove Node job only after production validation.
-4. **Full rollback:** The entire migration is on a feature branch. If PoC fails, the branch is discarded.
-
-Cost of rollback: ~1 hour (revert Dockerfile + CI config). No code changes needed because Strategy B does not modify application code.
+| Core Infrastructure | Storage timing (#6) | Test persistence round-trip in voter answer flow |
+| Leaf Contexts | Tweened store (#7) | Keep tweened as-is, verify animation |
+| DataContext | DataRoot equality (#1) | Version counter pattern, test with data updates |
+| AppContext | pageDatumStore removal timing | Ensure data flow from +layout.ts -> context works without intermediate store |
+| VoterContext | 20 parsimoniusDerived -> $derived | Each conversion needs correct dependency tracking |
+| CandidateContext | candidateUserDataStore derived chain | 7 internal derived stores must maintain correct update order |
+| Consumer Updates | Missed files (#5) | Grep verification, TypeScript strict mode |
+| Root Layout Migration | $effect timing (#4) | Test loading state transitions carefully |
+| Admin Migration | export let (#9) | Batch all 10 files together |
+| Global Runes | Hidden legacy patterns (#9, #11) | Compiler will catch most; manual review for template patterns |
+| E2E Fixes | pushState reactivity | May need additional investigation if $app/state alone does not fix it |
 
 ## Sources
 
-- [Deno npm Workspace Compat Issue #28157](https://github.com/denoland/deno/issues/28157) -- "hard breaking issues"
-- [Turborepo Deno Discussion #7454](https://github.com/vercel/turborepo/discussions/7454) -- "not immediately on the roadmap"
-- [Playwright on Deno Issue #27623](https://github.com/denoland/deno/issues/27623) -- BadResource errors
-- [Paraglide FsWatcher Issue](https://questions.deno.com/m/1328508724410843136)
-- [deno compile SvelteKit Issue #26155](https://github.com/denoland/deno/issues/26155)
-- [Supabase Edge Functions in Monorepos Issue #1303](https://github.com/supabase/cli/issues/1303)
-- [Deno Workspaces Docs](https://docs.deno.com/runtime/fundamentals/workspaces/)
+- Codebase analysis of all 40 context files, 16 legacy files, 141 consumer components
+- DataRoot `alwaysNotifyStore` workaround with documented TODO: `TODO[Svelte 5]: Replace with Svelte 5 native reactivity`
+- Svelte 5 documentation on `$effect` timing and SSR state management
+- [Runes and Global State: do's and don'ts (Mainmatter)](https://mainmatter.com/blog/2025/03/11/global-state-in-svelte-5/) -- SSR data leakage warning
+- Known project issue: Svelte 5 pushState reactivity bug (10 E2E tests skipped, per PROJECT.md)
+- Known project pattern: `PopupRenderer` runes-mode wrapper (v2.1 workaround for async store updates)

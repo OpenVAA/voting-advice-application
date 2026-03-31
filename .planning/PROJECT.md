@@ -8,11 +8,22 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
+## Current Milestone: v2.4 Full Svelte 5 Rewrite
+
+**Goal:** Complete the Svelte 5 migration by rewriting the context system, migrating any remaining v4 routes, globally enabling runes mode, and fixing the 10 skipped E2E tests.
+
+**Target features:**
+- Context system rewrite ($state/$derived replacing Svelte 4 stores)
+- Migrate any remaining Svelte 4 route files to runes
+- Globally enable runes mode (compilerOptions.runes: true)
+- Remove per-file runes opt-ins
+- Fix 10 skipped E2E tests (pushState reactivity bug)
+
 ## Current State
 
 v2.3 shipped 2026-03-27. Idura FTN bank authentication integrated with provider abstraction layer. Deployments can switch between Signicat and Idura via `PUBLIC_IDENTITY_PROVIDER_TYPE` env var.
 
-The codebase is stable: fully Svelte 5 runes-idiomatic, Supabase-only backend, provider-agnostic OIDC auth, 597 unit tests + 50 E2E specs passing.
+The codebase is stable: fully Svelte 5 runes-idiomatic, Supabase-only backend, provider-agnostic OIDC auth, 613 unit tests + 50 E2E specs passing. Phase 49 complete — 3 custom store utilities (parsimoniusDerived, storageStore, stackedStore) replaced with Svelte 5 rune equivalents (persistedState.svelte.ts, StackedState.svelte.ts, memoizedDerived.ts).
 
 Key v2.3 additions: IdentityProvider interface with configurable claim mapping (`identityMatchProp`, `firstNameProp`, `lastNameProp`, `extractClaims`), server-side JAR + `private_key_jwt` for Idura, `/api/oidc/{authorize,token,callback}` routes, `identity-callback` Edge Function replacing `signicat-callback`.
 
@@ -75,8 +86,11 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Bank-auth E2E tests with @bank-auth tag (disabled by default) — v2.3
 
 ### Active
-- [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug workaround needed)
 - [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
+- [ ] Migrate any remaining Svelte 4 route files to runes
+- [ ] Globally enable runes mode (compilerOptions.runes: true)
+- [ ] Remove per-file runes opt-ins
+- [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug)
 - [ ] AdminWriter rename (naming cleanup)
 
 ### Future
@@ -230,4 +244,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-03-27 after v2.3 Idura FTN Auth milestone_
+_Last updated: 2026-03-27 after Phase 49 Core Infrastructure complete_

@@ -1,79 +1,78 @@
-# Research Summary: Deno 2.x Feasibility Study
+# Research Summary: Svelte 5 Context System Rewrite
 
-**Domain:** Runtime migration (Node.js -> Deno) for monorepo
-**Researched:** 2026-03-26
-**Overall confidence:** MEDIUM-HIGH
+**Domain:** Frontend state management migration (Svelte stores -> Svelte 5 runes)
+**Researched:** 2026-03-27
+**Overall confidence:** HIGH
 
 ## Executive Summary
 
-Deno 2.7.7 has made remarkable progress in Node.js compatibility. The runtime can execute SvelteKit with adapter-node, runs TypeScript natively without a compilation step, starts ~50% faster than Node.js for JavaScript and ~5x faster for TypeScript, and shares the same runtime as the project's existing Supabase Edge Functions. The npm package compatibility story is strong for most packages, with `npm:` specifiers and `nodeModulesDir: "auto"` enabling transparent npm usage.
+The OpenVAA frontend context system consists of 9 contexts across 40 TypeScript files, consuming 51 imports from `svelte/store`. These contexts form a hierarchical tree: I18n -> Component -> Data -> App -> Voter/Candidate/Admin, initialized in layout files and consumed by 141 Svelte components. The entire system must be rewritten from Svelte 4 store patterns (`writable`, `derived`, `Readable<T>`, `$store` subscriptions) to Svelte 5 runes (`$state`, `$derived`, direct property access).
 
-However, a **full replacement of the Node.js toolchain is not feasible today**. The two hard blockers are (1) Yarn 4 workspaces are not supported by Deno -- only npm workspaces have partial support, and even that has open bugs (#28157), and (2) Turborepo has no Deno equivalent -- Deno's task runner lacks task output caching and topological sorting, both explicitly on the roadmap but not yet shipped. These gaps mean the monorepo's build orchestration (sub-5-second cached builds, dependency-ordered compilation) would regress significantly.
+The migration is well-scoped and low-risk because: (1) the existing context API shape (`getXxxContext()` / `initXxxContext()`) can be preserved while changing only the internal implementation; (2) the consumer-side change is almost entirely mechanical (remove `$` prefix from store references); (3) Svelte 5.53.12 and SvelteKit 2.55.0 provide all required features (`$app/state` since 2.12, `createContext` since 5.40).
 
-The recommended approach is **Strategy B: Deno as runtime only**. Keep Yarn 4, Turborepo, tsup, ESLint, and Prettier. Use Deno as the execution runtime for the SvelteKit dev/production server and potentially for running unit tests. This captures Deno's DX benefits (native TypeScript, faster startup, security model, Edge Function alignment) without disrupting proven build infrastructure. A proof of concept should validate this by running @openvaa/core tests on Deno, starting the SvelteKit dev server under Deno, and running a subset of Playwright E2E tests.
-
-The Supabase Edge Function alignment is a genuine synergy -- all 3 Edge Functions already run on Deno 2.1.4, and unifying the runtime could enable direct workspace imports between frontend code and Edge Functions, eliminating the current esm.sh CDN pattern.
+Three custom store utilities (`parsimoniusDerived`, `storageStore`, `stackedStore`) serve as the foundation layer. `parsimoniusDerived` alone is used ~20 times and can be replaced entirely by native `$derived`. The `$app/stores` `page` dependency (5 files) moves to `$app/state`, which provides fine-grained reactivity that should resolve the pushState reactivity bug causing 3 skipped E2E tests. Sixteen legacy-mode files (root layout + admin app + shared layout components) must also be migrated to runes before global runes enablement.
 
 ## Key Findings
 
-**Stack:** Deno 2.7.7 as runtime-only replacement for Node 22 is low-risk and provides native TS, faster startup, and Edge Function alignment. Full toolchain replacement is blocked by Yarn/Turborepo incompatibility.
-
-**Architecture:** adapter-node on Deno is the officially recommended SvelteKit deployment pattern -- NOT community Deno adapters. Keep the existing build pipeline entirely.
-
-**Critical pitfall:** Attempting to replace Turborepo with `deno task` loses content-based caching and topological build ordering -- these features are on Deno's roadmap but not shipped.
+**Stack:** Svelte 5.53.12 + SvelteKit 2.55.0 -- all required APIs available. No dependency changes needed.
+**Architecture:** 9 contexts, 40 store files, 141 consumers, 16 legacy files, 3 custom store utilities to replace.
+**Critical pitfall:** DataRoot's mutable-in-place pattern with imperative `subscribe()` callback conflicts with Svelte 5 signal equality. Requires explicit version counter pattern.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-1. **Validation Phase** -- Prove Deno runtime works with existing toolchain
-   - Addresses: Runtime compatibility, SvelteKit adapter-node, Vitest on Deno, Playwright on Deno
-   - Avoids: Premature toolchain migration (P3: Turborepo replacement)
-   - Scope: @openvaa/core tests, SvelteKit dev server, 5-10 E2E specs
+1. **Core Infrastructure** - Rewrite utility stores (parsimoniusDerived, storageStore, stackedStore)
+   - Addresses: Foundation layer that all contexts depend on
+   - Avoids: Cascading rewrites from bottom-up dependency changes
 
-2. **Benchmarking Phase** -- Quantify actual benefits
-   - Addresses: Startup time measurement, build time comparison, Docker image size
-   - Avoids: Assuming blog benchmarks apply to this specific project
-   - Scope: Side-by-side Node vs Deno measurements
+2. **Leaf Contexts** - I18nContext, LayoutContext, AuthContext
+   - Addresses: Independent contexts with no downstream context consumers
+   - Avoids: Blocking on mid-level dependencies
 
-3. **Decision Phase** -- Go/no-go recommendation
-   - Addresses: Full findings synthesis, migration effort estimate, benefit-cost analysis
-   - Avoids: Open-ended experimentation
-   - Scope: Written recommendation document with clear criteria
+3. **Mid-Level Contexts** - ComponentContext, DataContext, AppContext
+   - Addresses: The core context inheritance chain
+   - Avoids: DataRoot reactivity pitfall (addressed with version counter)
 
-4. **Optional: Edge Function Integration** -- If go decision
-   - Addresses: Shared types between frontend and Edge Functions
-   - Avoids: Over-engineering before validation
-   - Scope: One shared type definition imported by both frontend and Edge Function
+4. **App Contexts** - VoterContext, CandidateContext, AdminContext
+   - Addresses: App-specific derived state (matching, filtering, question blocks)
+   - Avoids: Premature consumer updates before contexts stabilize
+
+5. **Consumer Updates + Legacy Migration** - 141 components + 16 legacy files
+   - Addresses: `$store` -> direct access, `$:` -> `$derived`/`$effect`
+   - Avoids: Migration fatigue by batching mechanical changes
+
+6. **Global Runes Enablement** - Remove per-file opt-ins, enable in svelte.config.js
+   - Addresses: Codebase consistency
+   - Avoids: Mixing legacy and runes mode
+
+7. **E2E Test Fixes** - Fix 3 fixme'd E2E tests
+   - Addresses: pushState reactivity, results-sections settings changes
+   - Avoids: Premature test fixes before reactivity system is stable
 
 **Phase ordering rationale:**
-- Validation before benchmarking because if the runtime does not work, benchmarks are moot
-- Benchmarking before decision because "5x faster TS startup" from blogs may not apply to SvelteKit dev server
-- Edge Function integration is optional bonus, not gating
+- Bottom-up dependency order: utilities before contexts, contexts before consumers
+- Leaf contexts before mid-level avoids rework -- AppContext depends on Component + Data
+- Consumer updates batched after all contexts are stable to avoid repeated changes
+- Global runes enablement last because it requires ALL files to be runes-compatible
+- E2E fixes last because they validate the entire migration
 
 **Research flags for phases:**
-- Phase 1: Needs hands-on testing (Paraglide FsWatcher issue, Playwright version sensitivity)
-- Phase 2: Standard benchmarking, unlikely to need research
-- Phase 3: Synthesis of phases 1-2, no new research needed
-- Phase 4: May need research on Supabase CLI limitations with workspace imports
+- Phase 3 (DataContext): The DataRoot version counter pattern needs validation -- DataRoot fires update callbacks on internal mutations, and the version counter approach must correctly trigger `$derived` re-evaluation
+- Phase 5 (Consumers): 141 files is a large batch. May need sub-batching by app section (voter components, candidate components, shared components)
+- Phase 6 (Global runes): Risk of hidden legacy patterns in admin app files that were not caught
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack compatibility | HIGH | Verified via official Deno docs, SvelteKit tutorial, multiple blog confirmations |
-| Hard blockers (Yarn, Turborepo) | HIGH | Verified via GitHub issues, Turborepo maintainer statements, Deno task docs |
-| SvelteKit on Deno | HIGH | Official tutorial exists, adapter-node recommended by both teams |
-| Playwright on Deno | MEDIUM | Works but version-sensitive; specific version regressions documented |
-| Vitest on Deno | MEDIUM | Runs but edge cases in workspace integration; needs hands-on validation |
-| Paraglide on Deno | LOW | Single community report of FsWatcher issue; workaround unverified |
-| Performance claims | MEDIUM | Multiple independent sources agree on direction; specific numbers vary |
-| Edge Function synergy | HIGH | Already running Deno; Supabase docs confirm import patterns |
+| Stack | HIGH | Svelte 5.53.12 / SvelteKit 2.55.0 verified in lockfile, all required APIs confirmed |
+| Features | HIGH | Scope is well-defined: rewrite contexts, migrate legacy files, enable runes |
+| Architecture | HIGH | Full codebase analysis of all 40 context files and their dependencies |
+| Pitfalls | HIGH | DataRoot special case and $app/stores -> $app/state implications understood from code |
 
 ## Gaps to Address
 
-- Paraglide JS FsWatcher issue needs hands-on validation (only one community report)
-- Exact Playwright Deno version compatibility matrix not fully documented
-- Changesets CLI on Deno entirely untested -- may just work via npx or may have subtle issues
-- Whether `deno compile` SvelteKit bug (#26155) is fixed in 2.7.x is unverified
-- Long-term Deno roadmap delivery reliability for caching and topology sorting is uncertain
+- **Tweened store in LayoutContext:** The `tweened()` motion store for progress bar may need special handling. Svelte 5 still supports motion stores, but integration with `$state`-based context needs testing.
+- **`$effect` timing in root layout:** The current `$: {}` block in root layout handles async data loading. The `$effect` replacement needs careful handling of the loading/ready/error state machine.
+- **Admin app scope:** The 10 admin files use `export let data` (Svelte 4 syntax). They need both runes migration AND context consumption updates simultaneously.
