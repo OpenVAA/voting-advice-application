@@ -1674,6 +1674,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/dev-tools@workspace:packages/dev-tools":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/dev-tools@workspace:packages/dev-tools"
+  dependencies:
+    "@openvaa/shared-config": "workspace:^"
+    "@types/node": "catalog:"
+    eslint: "catalog:"
+    jose: "npm:^6.2.1"
+    tsx: "catalog:"
+    typescript: "catalog:"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/docs@workspace:apps/docs":
   version: 0.0.0-use.local
   resolution: "@openvaa/docs@workspace:apps/docs"

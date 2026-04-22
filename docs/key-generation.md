@@ -12,111 +12,67 @@ Both key pairs must be RSA 2048-bit or larger, per Traficom 213/2023 Finnish Tru
 
 ## Prerequisites
 
-- **openssl** (included in macOS and most Linux distributions)
-- **Node.js** (v18+) with the `jose` library (`npm install jose`)
+- **Node.js** 22+ and Yarn 4 (already required by the monorepo)
+- `yarn install` has been run at the repo root
 
-## Step 1: Generate Signing Key Pair
+The scripts referenced below live in the `@openvaa/dev-tools` workspace (`packages/dev-tools`) and are thin CLIs over the [`jose`](https://github.com/panva/jose) library. OpenSSL is only needed if you prefer to manage PEM files manually (Step 1b).
 
-The signing key pair is used by the Idura provider for:
-- Signing JWT Authorization Requests (JAR, RFC 9101)
-- Creating `private_key_jwt` client assertions for token exchange (RFC 7523)
+## Step 1a (Recommended): Generate Key Pair In Memory
+
+This path never writes PEM files to disk. It generates the key pair, prints the private JWK already wrapped in the `[...]` shape the env var expects, and prints the public JWK ready for the provider dashboard.
 
 ```bash
-# Generate RSA 2048-bit private key
+# Signing key pair (Idura JAR + private_key_jwt)
+yarn workspace @openvaa/dev-tools keygen \
+  --type signing \
+  --kid openvaa-signing-1
+
+# Encryption key pair (Idura -- RSA-OAEP-256 by default)
+yarn workspace @openvaa/dev-tools keygen \
+  --type encryption \
+  --kid openvaa-encryption-1
+
+# Encryption key pair for Signicat (RSA-OAEP)
+yarn workspace @openvaa/dev-tools keygen \
+  --type encryption \
+  --kid my-signicat-enc-1 \
+  --alg RSA-OAEP
+```
+
+Each invocation prints two JSON blocks to stdout: the private JWK (paste into the env var) and the public JWK (register in the provider dashboard). Redirect to files or a password manager as needed.
+
+## Step 1b (Alternative): Convert Existing PEM Files
+
+Use this when you already have PEM-encoded keys (e.g., issued by your org's PKI) and need to convert them to JWK format.
+
+```bash
+# Generate PEMs (standard OpenSSL; one-time, per pair)
 openssl genrsa -out signing-private.pem 2048
-
-# Extract the public key
 openssl rsa -in signing-private.pem -pubout -out signing-public.pem
+
+# Convert private PEM -> private JWK (for env var)
+yarn workspace @openvaa/dev-tools pem-to-jwk \
+  --in "$PWD/signing-private.pem" \
+  --type signing \
+  --kid openvaa-signing-1
+
+# Convert public PEM -> public JWK (for provider dashboard)
+yarn workspace @openvaa/dev-tools pem-to-jwk \
+  --in "$PWD/signing-public.pem" \
+  --type signing \
+  --kid openvaa-signing-1
 ```
 
-### Convert to JWK Format
+For encryption keys, replace `--type signing` with `--type encryption`. Pass `--alg RSA-OAEP` when generating a Signicat encryption key.
 
-Use this Node.js script to convert the PEM private key to JWK format:
-
-```javascript
-import * as jose from 'jose';
-import { readFileSync } from 'node:fs';
-
-const pem = readFileSync('signing-private.pem', 'utf8');
-const key = await jose.importPKCS8(pem, 'RS256');
-const jwk = await jose.exportJWK(key);
-
-// Add required metadata
-jwk.kid = 'openvaa-signing-1';
-jwk.use = 'sig';
-jwk.alg = 'RS256';
-
-console.log('Private JWK (for IDURA_SIGNING_JWKS env var):');
-console.log(JSON.stringify(jwk, null, 2));
-```
-
-For the public key (to register in the provider dashboard):
-
-```javascript
-import * as jose from 'jose';
-import { readFileSync } from 'node:fs';
-
-const pem = readFileSync('signing-public.pem', 'utf8');
-const key = await jose.importSPKI(pem, 'RS256');
-const jwk = await jose.exportJWK(key);
-
-jwk.kid = 'openvaa-signing-1';
-jwk.use = 'sig';
-jwk.alg = 'RS256';
-
-console.log('Public JWK (for provider dashboard registration):');
-console.log(JSON.stringify(jwk, null, 2));
-```
-
-## Step 2: Generate Encryption Key Pair
-
-The encryption key pair is used by both providers for:
-- Decrypting JWE-encrypted id_tokens returned by the identity provider
+The `pem-to-jwk` script auto-detects private vs public from the PEM header. Pass `--help` for full usage:
 
 ```bash
-# Generate RSA 2048-bit private key
-openssl genrsa -out encryption-private.pem 2048
-
-# Extract the public key
-openssl rsa -in encryption-private.pem -pubout -out encryption-public.pem
+yarn workspace @openvaa/dev-tools pem-to-jwk --help
+yarn workspace @openvaa/dev-tools keygen --help
 ```
 
-### Convert to JWK Format
-
-```javascript
-import * as jose from 'jose';
-import { readFileSync } from 'node:fs';
-
-const pem = readFileSync('encryption-private.pem', 'utf8');
-const key = await jose.importPKCS8(pem, 'RSA-OAEP-256');
-const jwk = await jose.exportJWK(key);
-
-// Add required metadata
-jwk.kid = 'openvaa-encryption-1';
-jwk.use = 'enc';
-jwk.alg = 'RSA-OAEP-256';
-
-console.log('Private JWK (for IDENTITY_PROVIDER_DECRYPTION_JWKS env var):');
-console.log(JSON.stringify(jwk, null, 2));
-```
-
-For the public key:
-
-```javascript
-import * as jose from 'jose';
-import { readFileSync } from 'node:fs';
-
-const pem = readFileSync('encryption-public.pem', 'utf8');
-const key = await jose.importSPKI(pem, 'RSA-OAEP-256');
-const jwk = await jose.exportJWK(key);
-
-jwk.kid = 'openvaa-encryption-1';
-jwk.use = 'enc';
-jwk.alg = 'RSA-OAEP-256';
-
-console.log('Public JWK (for provider dashboard registration):');
-console.log(JSON.stringify(jwk, null, 2));
-```
+> **Note:** paths passed to `pem-to-jwk` are resolved relative to `packages/dev-tools`, so use `$PWD/...` or absolute paths when running from the repo root.
 
 ## Step 3: Create JWKS for Environment Variables
 
@@ -184,5 +140,5 @@ Public keys must be registered with the identity provider so it can verify your 
 - **Supabase deployments**: Store JWKS as Supabase secrets (`supabase secrets set IDURA_SIGNING_JWKS='...'`).
 - **SvelteKit**: Private keys are accessed via `$env/dynamic/private` which ensures they are never exposed to the client.
 - **Key rotation**: When rotating keys, generate new key pairs with incremented KIDs (e.g., `openvaa-signing-2`), register the new public keys, update env vars, then remove old keys from the provider dashboard.
-- **Minimum key size**: RSA 2048-bit per Traficom 213/2023 Finnish Trust Network specification. Using 4096-bit provides additional security margin at the cost of slightly slower operations.
-- **PEM files**: Delete the `.pem` files after converting to JWK format and storing in environment variables. Do not leave them on disk.
+- **Minimum key size**: RSA 2048-bit per Traficom 213/2023 Finnish Trust Network specification. Using 4096-bit provides additional security margin at the cost of slightly slower operations. Override the default via `--size 4096` on the `keygen` script.
+- **PEM files**: Step 1a avoids writing PEMs to disk at all. If you go through Step 1b, delete the `.pem` files after converting to JWK format. The repo's `.gitignore` excludes `*.pem` so stray files will not be committed by accident, but they are still sensitive secrets on disk.

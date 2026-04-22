@@ -4,6 +4,12 @@
 !.env.example
 node_modules
 
+# Private keys and certificates (JWKS sources, signing/encryption keys, etc.)
+*.pem
+*.key
+*.p12
+*.pfx
+
 # Claude Code local settings
 .claude/*.local.json
 
