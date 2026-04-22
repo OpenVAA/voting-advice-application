@@ -1,146 +1,82 @@
-# Roadmap: v2.4 Full Svelte 5 Rewrite
+# Roadmap: v2.5 Dev Data Seeding Toolkit
 
 ## Overview
 
-Complete the Svelte 5 migration by rewriting the entire context system from Svelte 4 stores to native runes ($state/$derived), migrating all remaining legacy files to runes syntax, globally enabling runes mode, and fixing all skipped E2E tests. The migration proceeds bottom-up: utility stores first, then contexts in dependency order (leaf -> mid-level -> app-specific), each with atomic consumer updates, then legacy files, global runes enablement, and finally E2E validation.
+Ship a template-driven, modular data generator in `@openvaa/dev-tools` that populates a freshly-reset local Supabase database with realistic OpenVAA data in one command, and retire the hand-maintained E2E JSON fixtures in favor of generator-produced data. The milestone proceeds bottom-up: generator plumbing and per-entity row builders first, then the latent-factor answer model (a focused, algorithmic slice), then the template system + CLI + built-in templates that make the generator user-facing, and finally the E2E fixture migration that proves parity with the current Playwright baseline before legacy JSON fixtures are deleted.
 
 ## Phases
 
 **Phase Numbering:**
-- Continues from v2.3 (last phase: 48)
-- Integer phases (49, 50, ...): Planned milestone work
-- Decimal phases (50.1, 50.2): Urgent insertions (marked with INSERTED)
+- Continues from v2.4 (last phase: 55)
+- Integer phases (56, 57, ...): Planned milestone work
+- Decimal phases (56.1, 56.2): Urgent insertions (marked with INSERTED)
 
-- [x] **Phase 49: Core Infrastructure** - Replace 3 custom store utilities with Svelte 5 rune equivalents (completed 2026-03-27)
-- [ ] **Phase 50: Leaf Context Rewrite** - Rewrite I18n, Layout, Auth contexts + $app/state migration + consumer updates
-- [x] **Phase 51: Mid-Level Context Rewrite** - Rewrite Component, Data (with version counter), App contexts + consumer updates (completed 2026-03-28)
-- [ ] **Phase 52: App Context Rewrite** - Rewrite Voter, Candidate, Admin contexts + all remaining consumer updates
-- [x] **Phase 53: Legacy File Migration** - Migrate root layout, admin routes, and shared layout components to runes (completed 2026-03-28)
-- [x] **Phase 54: Global Runes Enablement** - Enable runes globally via dynamicCompileOptions, remove 151 per-file opt-ins (completed 2026-03-28)
-- [x] **Phase 55: E2E Test Fixes** - Fix all skipped E2E tests and validate full migration (completed 2026-03-28)
+- [ ] **Phase 56: Generator Foundations & Plumbing** — Per-entity generator scaffolding, service-role client, external_id tagging, template schema core, bulk-upsert strategy
+- [ ] **Phase 57: Latent-Factor Answer Model** — PCA-inspired pluggable pipeline producing party-clustered candidate answers with inter-question correlations
+- [ ] **Phase 58: Templates, CLI & Default Dataset** — Default + E2E built-in templates, custom-template loading, `seed`/`seed:teardown`/`dev:reset-with-data` CLI, portrait seeding, localization flag
+- [ ] **Phase 59: E2E Fixture Migration** — Rewrite `tests/seed-test-data.ts` on top of the new generator, prove parity with current Playwright baseline, retire legacy JSON fixtures
 
 ## Phase Details
 
-### Phase 49: Core Infrastructure
-**Goal**: The 3 custom store utilities that underpin all contexts are replaced with Svelte 5 equivalents, establishing the foundation for all context rewrites
-**Depends on**: Nothing (first phase of v2.4)
-**Requirements**: R1.1, R1.2, R1.3, R1.4
+### Phase 56: Generator Foundations & Plumbing
+**Goal**: A developer can invoke each per-entity generator in isolation, get typed rows back, override any single generator, and bulk-upsert the result into a local Supabase via a service-role client — without any template DSL or CLI in place yet.
+**Depends on**: Nothing (first phase of v2.5)
+**Requirements**: GEN-01, GEN-02, GEN-03, GEN-04, GEN-05, GEN-07, GEN-08, TMPL-01, TMPL-02, TMPL-08, TMPL-09, NF-01, NF-02, NF-03, NF-05, DX-02
 **Success Criteria** (what must be TRUE):
-  1. `parsimoniusDerived` utility is removed and all its usages documented for replacement with native `$derived` during context rewrites
-  2. `storageStore` (localStorage/sessionStorage) is replaced with a `$state` + `$effect` persistence utility that correctly round-trips data (write on change, read on init)
-  3. `stackedStore` is replaced with a `$state`-based StackedState class that preserves push/pop/revert semantics
-  4. No imports of the old custom store utility files remain in the codebase
-  5. Build succeeds and all unit tests pass
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 49-01-PLAN.md — Create new rune-based utility files (persistedState, StackedState, memoizedDerived) with tests
-- [x] 49-02-PLAN.md — Migrate all consumers to new utilities and delete old files
+  1. A per-entity generator module exists for every non-system public table (accounts, projects, elections, constituency_groups, constituencies, constituency_group_constituencies, election_constituency_groups, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings, feedback); each returns rows typed against `@openvaa/supabase-types` with no inline `any` on public surfaces.
+  2. A developer can replace any single generator via a `{ [table]: (fragment) => Rows }` override map without forking the pipeline, and the replacement is picked up by the full-graph seeder.
+  3. Every generator-produced row carries an `external_id` with a configurable prefix (default `seed_`), and writes flow through the service-role `SupabaseAdminClient` (reused from `tests/tests/utils/` or moved into `@openvaa/dev-tools`, decided during implementation) with bulk RPCs chosen to stay under the NF-01 <10s budget.
+  4. The core template schema (TypeScript type + runtime validator with field-pointing error messages, optional `seed: number` honored by faker) compiles cleanly and accepts a `{}` input that produces a valid but trivial row-set across all entities.
+  5. Nominations wire candidates and parties to elections × constituencies with referential integrity enforced by the generator (no orphan FKs reach the DB); categorical-question subdimensions and `MISSING_VALUE` handling follow `@openvaa/matching` / `@openvaa/core` conventions.
+  6. Per-entity unit tests run via `yarn test:unit` and pass; the suite fails loudly when `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` are missing at runtime, and partial-insert failures either roll back via DB transactions or document the partial-write behavior explicitly.
+**Plans**: TBD
 
-### Phase 50: Leaf Context Rewrite
-**Goal**: The 3 leaf contexts (I18n, Layout, Auth) use native $state/$derived internally, $app/stores is fully migrated to $app/state, and all components consuming these contexts are updated
-**Depends on**: Phase 49
-**Requirements**: R2.1, R2.2, R2.3, R2.10, R2.11, R2.12, R4.1, R4.2, R4.3, R3.1 (partial), R3.2 (partial), R3.3 (partial)
+### Phase 57: Latent-Factor Answer Model
+**Goal**: Synthetic candidate answers exhibit visible party clustering and plausible inter-question correlations, produced by a pluggable pipeline where each sub-step (latent dimensions, centroids, spread, positions, loadings, projection+noise) can be replaced independently.
+**Depends on**: Phase 56
+**Requirements**: GEN-06, GEN-06a, GEN-06b, GEN-06c, GEN-06d, GEN-06e, GEN-06f, GEN-06g
 **Success Criteria** (what must be TRUE):
-  1. I18nContext, LayoutContext, and AuthContext use `$state`/`$derived` internally with zero `svelte/store` imports
-  2. All context files using runes are renamed from `.ts` to `.svelte.ts`
-  3. All `$app/stores` imports are replaced with `$app/state` across the entire codebase (zero `$app/stores` imports remain)
-  4. All components consuming I18n, Layout, or Auth context use direct property access (no `$store` syntax for these contexts)
-  5. SSR works correctly with no hydration mismatches for these contexts
-  6. Build succeeds and all unit tests pass
-**Plans:** 2/3 plans executed
-Plans:
-- [x] 50-01-PLAN.md — Rewrite I18nContext to plain values + update all $locale/$locales consumer components
-- [ ] 50-02-PLAN.md — Rewrite AuthContext to $derived + migrate all $app/stores to $app/state
-- [x] 50-03-PLAN.md — Rewrite LayoutContext to $state/Tween + update Layout consumers (incl. Header/Banner runes conversion)
+  1. A latent answer space with a configurable number of dimensions (with optional eigenvalues / variance weights) is constructed from template input, with sensible defaults that work without any override.
+  2. Party centroids are sampled with spread enforcement (default: farthest-point / max-min distance or Latin hypercube) so that centroids cover the latent space rather than clustering in one region, and templates can supply explicit centroids per party to override.
+  3. Candidate latent positions are sampled from each party's centroid with a per-party spread parameter as standard deviation, and question loadings (question × dimension) define inter-question correlations overridable per question.
+  4. Each candidate's answer per question is the projection of its latent position through the question loadings plus a default noise term (small magnitude relative to latent spread, reducible to zero via template), mapped to the valid range of every question type (Likert, categorical choice, etc.).
+  5. Running `@openvaa/matching` across the generated candidates shows visible party clustering (intra-party distances < inter-party distances by a measurable margin) and non-trivial inter-question correlations — verified by an integration test, not just by eye.
+  6. Each of the six sub-steps (06a-06f) is exposed as a standalone hook on the pipeline and can be swapped by a consumer without editing neighboring steps; unit tests cover each hook in isolation.
+**Plans**: TBD
 
-### Phase 51: Mid-Level Context Rewrite
-**Goal**: Component, Data, and App contexts use native $state/$derived, with DataRoot reactivity bridged via version counter, and all components consuming these contexts are updated
-**Depends on**: Phase 50
-**Requirements**: R2.4, R2.5, R2.6, R2.10, R2.11, R2.12, R3.1 (partial), R3.2 (partial), R3.3 (partial)
+### Phase 58: Templates, CLI & Default Dataset
+**Goal**: A developer runs one command (`yarn dev:reset-with-data`) against a freshly-reset local Supabase and gets a browseable, locale-complete, portrait-illustrated voting advice app — using only built-in templates. Custom templates load from arbitrary paths; `seed:teardown` cleanly reverses generator writes.
+**Depends on**: Phase 57
+**Requirements**: GEN-09, GEN-10, TMPL-03, TMPL-04, TMPL-05, TMPL-06, TMPL-07, CLI-01, CLI-02, CLI-03, CLI-04, CLI-05, NF-04, DX-01, DX-03, DX-04
 **Success Criteria** (what must be TRUE):
-  1. ComponentContext, DataContext, and AppContext use `$state`/`$derived` internally with zero `svelte/store` imports
-  2. DataRoot mutable-in-place updates trigger `$derived` re-evaluation via version counter pattern (elections, questions, candidates update correctly after data load)
-  3. AppContext correctly derives app settings, user preferences, popup queue, and survey link from $state-based dependencies
-  4. All components consuming Component, Data, or App context use direct property access (no `$store` syntax for these contexts)
-  5. Build succeeds and all unit tests pass
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 51-01-PLAN.md — Rewrite ComponentContext, darkMode, DataContext to $state/$derived + update 5 consumer components
-- [x] 51-02-PLAN.md — Rewrite AppContext + sub-modules (tracking, survey, popup) with toStore() bridges for Phase 52 compat
-
-### Phase 52: App Context Rewrite
-**Goal**: Voter, Candidate, and Admin contexts use native $state/$derived, and zero $store context references remain anywhere in the codebase
-**Depends on**: Phase 51
-**Requirements**: R2.7, R2.8, R2.9, R2.10, R2.11, R2.12, R3.1 (remaining), R3.2 (remaining), R3.3 (remaining)
-**Success Criteria** (what must be TRUE):
-  1. VoterContext, CandidateContext, and AdminContext use `$state`/`$derived` internally with zero `svelte/store` imports
-  2. VoterContext matching, filtering, question blocks, and answer persistence all work correctly with rune-based reactivity
-  3. CandidateContext auth state, data writer methods, and pre-registration flow work correctly
-  4. Zero `$store` syntax referencing context values remains anywhere in the codebase
-  5. Zero `svelte/store` imports remain in any frontend context or component file (excluding node_modules)
-  6. Build succeeds and all unit tests pass
-**Plans:** 2/3 plans executed
-Plans:
-- [x] 52-01-PLAN.md — Rewrite all sub-modules, shared utils, and 3 main contexts from svelte/store to $state/$derived
-- [x] 52-02-PLAN.md — Update all 46 voter + candidate consumer files to direct property access
-- [ ] 52-03-PLAN.md — Update 14 admin consumers, delete memoizedDerived, grep sweep validation + build/test
-
-### Phase 53: Legacy File Migration
-**Goal**: All remaining Svelte 4 syntax files are migrated to runes, making every .svelte file in the codebase runes-compatible
-**Depends on**: Phase 52
-**Requirements**: R5.1, R5.2, R5.3, R5.4, R5.5, R5.6
-**Success Criteria** (what must be TRUE):
-  1. Root `+layout.svelte` uses `$props()`, `$derived`/`$effect`, `{@render children()}` with no Svelte 4 syntax
-  2. All admin route files use `$props()` instead of `export let data` and runes for reactivity
-  3. All shared layout components (Header, Banner, MaintenancePage, error page) use runes syntax
-  4. Zero `<slot>`, `$:`, `export let`, `on:event`, or `<svelte:component>` syntax remains in any `.svelte` file
-  5. Build succeeds and all unit tests pass
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 53-01-PLAN.md — Migrate shared layout components (Header, Banner, MaintenancePage, +error, PreviewColorContrast) to runes
-- [x] 53-02-PLAN.md — Migrate all 10 admin route files to runes (mechanical bulk conversion)
-- [x] 53-03-PLAN.md — Full runes rewrite of root +layout.svelte + whole-codebase zero-legacy verification
+  1. `yarn workspace @openvaa/dev-tools seed --template default` populates a fresh local Supabase in <10s with 1 election, ~6 constituencies, ~8 parties, ~40 candidates, and ~20 questions; every seeded candidate profile renders an end-to-end portrait sourced from the curated batch in `packages/dev-tools/src/seed/assets/portraits/` (10-20 permissively-licensed images, repo-checked-in).
+  2. `yarn dev:reset-with-data` at the repo root runs `supabase db reset` followed by the default seed in one step; collections accept mixed hand-authored + synthetic rows (e.g. `organizations: { count: 8, fixed: [{name:'Vihreät'},{name:'Kokoomus'}] }`) and the `generateTranslationsForAllLocales` flag, when true, produces translations for every locale listed in `staticSettings.supportedLocales` (en/fi/sv/da).
+  3. `--template <path>` loads a `.ts`, `.js`, or `.json` template from any filesystem path and runs it without modifying the package; a built-in `e2e` template exists whose relational wiring and testIds match what existing Playwright specs depend on.
+  4. `yarn workspace @openvaa/dev-tools seed:teardown` removes only rows carrying the generator's `external_id` prefix, leaving bootstrap rows from `apps/supabase/supabase/seed.sql` (default account + project + storage_config) intact — verified by pre/post row counts.
+  5. `--help` output documents every flag, lists built-in templates, and links to a worked example of authoring a custom template; a successful run prints a rows-per-entity summary, the template applied, and the elapsed time.
+  6. Fixing `seed: <N>` in a template produces byte-identical row output across two runs (deterministic faker); an integration test applies the default template against a real local Supabase and asserts row counts + spot-checks relational wiring; `CLAUDE.md` "Common Workflows" documents the seeding command.
+**Plans**: TBD
 **UI hint**: yes
 
-### Phase 54: Global Runes Enablement
-**Goal**: Runes mode is enabled globally for all project files, all per-file opt-ins are removed, and the codebase enforces runes-only going forward
-**Depends on**: Phase 53
-**Requirements**: R6.1, R6.2, R6.3, R6.4
+### Phase 59: E2E Fixture Migration
+**Goal**: The Playwright suite runs against generator-produced data with zero regression vs the current JSON-fixture baseline, the legacy fixtures are deleted, and the `supabaseAdminClient` location reflects the cleanest dependency graph.
+**Depends on**: Phase 58
+**Requirements**: E2E-01, E2E-02, E2E-03, E2E-04
 **Success Criteria** (what must be TRUE):
-  1. `dynamicCompileOptions` in svelte.config.js enables runes for all non-node_modules files
-  2. Zero `<svelte:options runes />` directives remain in the codebase (all 151 removed)
-  3. Third-party Svelte libraries (svelte-visibility-change, etc.) work correctly under global runes
-  4. Build succeeds with zero runes-related warnings
-  5. All unit tests pass
-**Plans:** 1/1 plans complete
-Plans:
-- [x] 54-01-PLAN.md — Enable global runes in svelte.config.js and remove all 151 per-file directives
-
-### Phase 55: E2E Test Fixes
-**Goal**: All previously fixme'd E2E tests pass and the full suite validates the complete Svelte 5 migration
-**Depends on**: Phase 54
-**Requirements**: R7.1, R7.2, R7.3
-**Success Criteria** (what must be TRUE):
-  1. The 3 test.fixme'd and 1 FIXME-commented E2E tests pass
-  2. Any regressions from Phases 50-54 are fixed
-  3. `yarn test:e2e` completes with zero skipped tests and zero failures
-  4. No performance regressions observable in E2E test execution times
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 55-01-PLAN.md — Remove fixme markers, diagnose and fix all E2E test failures
-- [x] 55-02-PLAN.md — Full E2E suite validation gate
+  1. `tests/seed-test-data.ts` is rewritten to invoke `@openvaa/dev-tools` with the built-in `e2e` template; no behavioral change is visible to Playwright specs (same testIds, same relational wiring contracts).
+  2. A baseline Playwright run is captured against the current JSON fixtures (expected: 15 passed / 19 data-race failed / 55 cascade) before the swap, and a post-swap run produces the same-or-better pass/fail set — specifically, all currently-passing tests remain passing, and the 19 pre-existing data-race failures and 55 cascades are not made worse.
+  3. Only after the parity check passes are `tests/fixtures/default-dataset.json`, `tests/fixtures/voter-dataset.json`, and `tests/fixtures/candidate-addendum.json` deleted from the repo; the repo has zero remaining references to these files.
+  4. `tests/tests/utils/supabaseAdminClient.ts` either stays in `tests/` or moves to `@openvaa/dev-tools` based on a documented dependency-graph decision made during implementation, with no circular dependencies introduced.
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 49 -> 50 -> 51 -> 52 -> 53 -> 54 -> 55
+Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 49. Core Infrastructure | 2/2 | Complete    | 2026-03-27 |
-| 50. Leaf Context Rewrite | 2/3 | In Progress|  |
-| 51. Mid-Level Context Rewrite | 2/2 | Complete   | 2026-03-28 |
-| 52. App Context Rewrite | 2/3 | In Progress|  |
-| 53. Legacy File Migration | 3/3 | Complete   | 2026-03-28 |
-| 54. Global Runes Enablement | 1/1 | Complete   | 2026-03-28 |
-| 55. E2E Test Fixes | 2/2 | Complete   | 2026-03-28 |
+| 56. Generator Foundations & Plumbing | 0/0 | Not started | - |
+| 57. Latent-Factor Answer Model | 0/0 | Not started | - |
+| 58. Templates, CLI & Default Dataset | 0/0 | Not started | - |
+| 59. E2E Fixture Migration | 0/0 | Not started | - |

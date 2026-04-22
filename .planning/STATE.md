@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Dev Data Seeding Toolkit
-status: defining-requirements
-stopped_at: Milestone v2.5 started — REQUIREMENTS.md next
+status: roadmap-complete
+stopped_at: Roadmap complete — 4 phases (56-59) defined, 44/44 requirements mapped. Ready for /gsd-plan-phase 56.
 last_updated: "2026-04-22T00:00:00Z"
 last_activity: 2026-04-22
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 56 — Generator Foundations & Plumbing (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-22 — Milestone v2.5 started
+Status: Roadmap complete; awaiting phase planning
+Last activity: 2026-04-22 — ROADMAP.md written, 44/44 requirements mapped across phases 56-59
 
 ## Performance Metrics
 
@@ -56,14 +56,20 @@ Key context for v2.5:
 - Matching realism: synthetic candidate positions clustered along party ideological axes (not uniform random) so matching results are visually coherent during dev testing.
 - `@faker-js/faker` already in the Yarn catalog; `SupabaseAdminClient` helper already exists in `tests/tests/utils/`; leverage both rather than rebuild.
 - Research skipped: milestone is codebase-internal (schema + data model fully knowable from the repo).
+- Phase numbering continues from v2.4 (last phase: 55); v2.5 spans Phases 56-59.
+- Phase shape: 56 = foundations/plumbing, 57 = latent-factor answer model (algorithmic slice), 58 = templates/CLI/default dataset (user-facing surface), 59 = E2E fixture migration (parity checkpoint before JSON-fixture deletion).
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue.
 - 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over.
+- NF-01 <10s seed budget pressures the generator toward bulk RPCs vs per-row inserts — Phase 56 picks the approach.
+- E2E-03 zero-regression bar requires an explicit baseline-vs-post-swap Playwright comparison in Phase 59 before fixtures are deleted.
+- supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call.
 
 ## Session Continuity
 
 Last session: 2026-04-22T00:00:00Z
-Stopped at: Milestone v2.5 started — defining REQUIREMENTS.md
-Resume file: .planning/REQUIREMENTS.md (once created)
+Stopped at: Roadmap complete — 4 phases (56-59) defined, 44/44 requirements mapped.
+Resume file: .planning/ROADMAP.md
+Next action: `/gsd-plan-phase 56`

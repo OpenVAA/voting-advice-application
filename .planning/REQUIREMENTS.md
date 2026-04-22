@@ -151,47 +151,47 @@ A unified declarative template config with smart defaults; any collection can mi
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | — | Pending (awaiting roadmap) |
-| GEN-02 | — | Pending |
-| GEN-03 | — | Pending |
-| GEN-04 | — | Pending |
-| GEN-05 | — | Pending |
-| GEN-06 | — | Pending |
-| GEN-06a | — | Pending |
-| GEN-06b | — | Pending |
-| GEN-06c | — | Pending |
-| GEN-06d | — | Pending |
-| GEN-06e | — | Pending |
-| GEN-06f | — | Pending |
-| GEN-06g | — | Pending |
-| GEN-07 | — | Pending |
-| GEN-08 | — | Pending |
-| GEN-09 | — | Pending |
-| GEN-10 | — | Pending |
-| TMPL-01 | — | Pending |
-| TMPL-02 | — | Pending |
-| TMPL-03 | — | Pending |
-| TMPL-04 | — | Pending |
-| TMPL-05 | — | Pending |
-| TMPL-06 | — | Pending |
-| TMPL-07 | — | Pending |
-| TMPL-08 | — | Pending |
-| TMPL-09 | — | Pending |
-| CLI-01 | — | Pending |
-| CLI-02 | — | Pending |
-| CLI-03 | — | Pending |
-| CLI-04 | — | Pending |
-| CLI-05 | — | Pending |
-| E2E-01 | — | Pending |
-| E2E-02 | — | Pending |
-| E2E-03 | — | Pending |
-| E2E-04 | — | Pending |
-| DX-01 | — | Pending |
-| DX-02 | — | Pending |
-| DX-03 | — | Pending |
-| DX-04 | — | Pending |
-| NF-01 | — | Pending |
-| NF-02 | — | Pending |
-| NF-03 | — | Pending |
-| NF-04 | — | Pending |
-| NF-05 | — | Pending |
+| GEN-01 | Phase 56 | Pending |
+| GEN-02 | Phase 56 | Pending |
+| GEN-03 | Phase 56 | Pending |
+| GEN-04 | Phase 56 | Pending |
+| GEN-05 | Phase 56 | Pending |
+| GEN-06 | Phase 57 | Pending |
+| GEN-06a | Phase 57 | Pending |
+| GEN-06b | Phase 57 | Pending |
+| GEN-06c | Phase 57 | Pending |
+| GEN-06d | Phase 57 | Pending |
+| GEN-06e | Phase 57 | Pending |
+| GEN-06f | Phase 57 | Pending |
+| GEN-06g | Phase 57 | Pending |
+| GEN-07 | Phase 56 | Pending |
+| GEN-08 | Phase 56 | Pending |
+| GEN-09 | Phase 58 | Pending |
+| GEN-10 | Phase 58 | Pending |
+| TMPL-01 | Phase 56 | Pending |
+| TMPL-02 | Phase 56 | Pending |
+| TMPL-03 | Phase 58 | Pending |
+| TMPL-04 | Phase 58 | Pending |
+| TMPL-05 | Phase 58 | Pending |
+| TMPL-06 | Phase 58 | Pending |
+| TMPL-07 | Phase 58 | Pending |
+| TMPL-08 | Phase 56 | Pending |
+| TMPL-09 | Phase 56 | Pending |
+| CLI-01 | Phase 58 | Pending |
+| CLI-02 | Phase 58 | Pending |
+| CLI-03 | Phase 58 | Pending |
+| CLI-04 | Phase 58 | Pending |
+| CLI-05 | Phase 58 | Pending |
+| E2E-01 | Phase 59 | Pending |
+| E2E-02 | Phase 59 | Pending |
+| E2E-03 | Phase 59 | Pending |
+| E2E-04 | Phase 59 | Pending |
+| DX-01 | Phase 58 | Pending |
+| DX-02 | Phase 56 | Pending |
+| DX-03 | Phase 58 | Pending |
+| DX-04 | Phase 58 | Pending |
+| NF-01 | Phase 56 | Pending |
+| NF-02 | Phase 56 | Pending |
+| NF-03 | Phase 56 | Pending |
+| NF-04 | Phase 58 | Pending |
+| NF-05 | Phase 56 | Pending |
