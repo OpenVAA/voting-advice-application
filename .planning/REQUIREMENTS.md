@@ -151,10 +151,10 @@ A unified declarative template config with smart defaults; any collection can mi
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | Phase 56 | Pending |
-| GEN-02 | Phase 56 | Pending |
+| GEN-01 | Phase 56 | Complete (56-08) |
+| GEN-02 | Phase 56 | Complete (56-08) |
 | GEN-03 | Phase 56 | Pending |
-| GEN-04 | Phase 56 | Pending |
+| GEN-04 | Phase 56 | Complete (56-08) |
 | GEN-05 | Phase 56 | Pending |
 | GEN-06 | Phase 57 | Pending |
 | GEN-06a | Phase 57 | Pending |
@@ -164,8 +164,8 @@ A unified declarative template config with smart defaults; any collection can mi
 | GEN-06e | Phase 57 | Pending |
 | GEN-06f | Phase 57 | Pending |
 | GEN-06g | Phase 57 | Pending |
-| GEN-07 | Phase 56 | Pending |
-| GEN-08 | Phase 56 | Pending |
+| GEN-07 | Phase 56 | Complete (56-08) |
+| GEN-08 | Phase 56 | Complete (56-08) |
 | GEN-09 | Phase 58 | Pending |
 | GEN-10 | Phase 58 | Pending |
 | TMPL-01 | Phase 56 | Complete (56-03) |
@@ -187,7 +187,7 @@ A unified declarative template config with smart defaults; any collection can mi
 | E2E-03 | Phase 59 | Pending |
 | E2E-04 | Phase 59 | Pending |
 | DX-01 | Phase 58 | Pending |
-| DX-02 | Phase 56 | Pending |
+| DX-02 | Phase 56 | Complete (56-08) |
 | DX-03 | Phase 58 | Pending |
 | DX-04 | Phase 58 | Pending |
 | NF-01 | Phase 56 | Pending |

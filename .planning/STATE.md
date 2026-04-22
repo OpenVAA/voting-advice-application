@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-06-PLAN.md
-last_updated: "2026-04-22T14:52:45.756Z"
+stopped_at: Completed 56-08-PLAN.md
+last_updated: "2026-04-22T15:40:15.099Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 6
-  percent: 60
+  completed_plans: 8
+  percent: 80
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 7 of 10
+Plan: 8 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -75,6 +75,7 @@ Key context for v2.5:
 - Plan 56-06: Dropped legacy tests/ 'emit both candidate+organization, strip one' workaround per RESEARCH §9 — dev-seed emits only authoritative ref since party-candidate relationship is already in candidates.organization_id
 - Plan 56-06: GEN-08 assertRefsPopulated collects ALL missing ref categories into one throw (not short-circuit) for better multi-entity misconfiguration UX
 - Plan 56-06: Phase 56 generator path produces candidate-type nominations ONLY (wired to refs.elections[0] × refs.constituencies[0]); polymorphism variants via fixed[] pass-through; Phase 58 extends via nominations override hook
+- 56-08: D-22 boundary enforced via import shape (no createClient/rpc); makeCtx shared factory with overrides-last pattern avoids per-scenario factories; CandidatesGenerator D-27 seam tested both default and injected emitter paths (Phase 57 drop-in contract)
 
 ### Blockers/Concerns
 
@@ -86,8 +87,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T14:52:45.751Z
-Stopped at: Completed 56-06-PLAN.md
+Last session: 2026-04-22T15:40:12.497Z
+Stopped at: Completed 56-08-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 

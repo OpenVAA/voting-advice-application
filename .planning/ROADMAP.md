@@ -39,7 +39,7 @@ Plans:
 - [ ] 56-05-PLAN.md — 5 content generators (question_categories, questions, candidates with D-27 seam, app_settings, feedback)
 - [ ] 56-06-PLAN.md — NominationsGenerator (polymorphic, GEN-08 ref validation)
 - [ ] 56-07-PLAN.md — Pipeline + Writer + public API (D-25/D-26 bridge, D-11 routing, D-15 env enforcement)
-- [ ] 56-08-PLAN.md — 14 per-generator unit tests + shared makeCtx utils (DX-02)
+- [x] 56-08-PLAN.md — 14 per-generator unit tests + shared makeCtx utils (DX-02)
 - [ ] 56-09-PLAN.md — Cross-cutting tests (pipeline, writer, determinism, template validator)
 - [ ] 56-10-PLAN.md — Rewrite tests/tests/utils/supabaseAdminClient.ts as subclass + final verification
 
@@ -88,7 +88,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 56. Generator Foundations & Plumbing | 0/10 | Not started | - |
+| 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 0/0 | Not started | - |
 | 58. Templates, CLI & Default Dataset | 0/0 | Not started | - |
 | 59. E2E Fixture Migration | 0/0 | Not started | - |
