@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "name": "@openvaa/dev-seed",
+  "version": "0.1.0",
+  "description": "Template-driven dev data generator for OpenVAA local development.",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Nothing to build.'",
+    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@faker-js/faker": "catalog:",
+    "@openvaa/supabase-types": "workspace:^",
+    "@supabase/supabase-js": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
