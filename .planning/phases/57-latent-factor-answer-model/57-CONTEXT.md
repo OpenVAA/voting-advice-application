@@ -231,6 +231,36 @@ Explicitly **out of scope** for this phase:
 None — `gsd-sdk todo.match-phase 57` not queried. Milestone is
 codebase-internal; no cross-phase todos expected.
 
+### D-57 Interpretation Note (2026-04-22 revision)
+- **Subject:** Phase 56 D-27 carry-over: *"`CandidatesGenerator.ts` does
+  NOT change in Phase 57 — only `ctx.answerEmitter` gets populated."*
+- **Clarification (applied during Phase 57 revision, 2026-04-22):** The
+  phrase "does not change" is interpreted as **no logic/semantic changes**
+  — not as "not a single token may be added." A purely-additive adjustment
+  that forwards an already-existing field (`row.organization`) into the
+  `candidateForEmit` object passed to the emitter is the intended Phase 57
+  seam completion, not a scope violation.
+- **Evidence from Phase 56 itself:** The Phase 56 comment in
+  `packages/dev-seed/src/generators/CandidatesGenerator.ts` lines
+  128-131 explicitly reads:
+  > "Phase 56's default emitter doesn't read the candidate (`_candidate`
+  > arg); **Phase 57's latent emitter will read latent position / party
+  > ref injected onto this object.**"
+- **Rationale:** Without this forward, `findPartyIndex` in
+  `latentAnswerEmitter` can never resolve a non-negative party index for
+  synthetic candidates, and the latent pipeline silently degrades to
+  `defaultRandomValidEmit` for every candidate. The clustering test
+  passes only because it hand-constructs candidates with
+  `organization: {...}` set. The production path would produce zero
+  clustering — defeating Success Criterion 5.
+- **Scope of amendment:** One line added to `candidateForEmit` literal
+  (`organization: row.organization`). Zero logic changes. Zero behavior
+  changes to callers that do not populate `row.organization`. Locked
+  regression test in `CandidatesGenerator.test.ts` prevents future
+  narrowing drift.
+- **Applies to:** Plan 07 new task (`Task 0: Forward organization ref
+  through seam`).
+
 </decisions>
 
 <canonical_refs>
@@ -258,7 +288,9 @@ planning or implementing.**
   fall back to this stub (D-57-10).
 - `packages/dev-seed/src/generators/CandidatesGenerator.ts` — D-27 seam at
   line 93 (`const emit = this.ctx.answerEmitter ?? defaultRandomValidEmit`).
-  Phase 57 does NOT modify this file.
+  Phase 57 applies ONE purely-additive line at the `candidateForEmit`
+  literal to forward `row.organization` per the D-57 Interpretation Note
+  above; no other change.
 - `packages/dev-seed/src/template/schema.ts` — Phase 56 zod schema that
   Phase 57 extends with the `latent` block per D-18.
 - `packages/dev-seed/src/template/types.ts` — shared types barrel; the
@@ -441,3 +473,4 @@ planning or implementing.**
 
 *Phase: 57-latent-factor-answer-model*
 *Context gathered: 2026-04-22*
+*D-57 Interpretation Note appended: 2026-04-22 (Phase 57 revision)*

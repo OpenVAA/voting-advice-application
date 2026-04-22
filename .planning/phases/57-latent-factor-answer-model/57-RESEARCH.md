@@ -1039,7 +1039,7 @@ straightforward fallback path (A1 → re-derive from org ref; A2 → add
 normalizableValue to the seeded questions; A3 → tune template-level knobs in
 the test's template input, not in the emitter defaults).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **How does the latent emitter look up a candidate's party index?** Two
    options:
