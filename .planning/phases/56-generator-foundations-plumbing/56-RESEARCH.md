@@ -1172,25 +1172,27 @@ export function validateTemplate(input: unknown): Template {
 
 **Table A2 is the critical one** — it's a decision between two architectural paths for app_settings writes, and if taken wrong, every `dev:reset-with-data` run fails on first try. Planner should either lock this via discuss-phase OR include both paths in the plan with a clear selection gate.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should the generator for `app_settings` be a stub or a full generator?**
+All four questions below were resolved into locked plan tasks before the plan-checker ran. Recommendations adopted verbatim.
+
+1. **Should the generator for `app_settings` be a stub or a full generator?** — **RESOLVED: stub that returns `[]` for empty templates; writer routes any `fixed[]` rows through `updateAppSettings` (direct JSONB merge) — NOT through `bulk_import`.**
    - What we know: seed.sql already inserts one app_settings row per project. bulk_import's ON CONFLICT rule can't match it.
    - What's unclear: whether the Phase 56 scope includes setting any non-empty app_settings values (e.g., default localized strings), or whether the generator just returns `[]` (no-op) and Phase 58 handles it.
-   - Recommendation: Phase 56 generator returns `[]` for empty templates + runs `updateAppSettings` for non-empty `fixed[]` rows. Simplest path that honors D-11.
+   - Recommendation (adopted — see Plan 05 AppSettingsGenerator + Plan 07 writer routing): Phase 56 generator returns `[]` for empty templates + runs `updateAppSettings` for non-empty `fixed[]` rows. Simplest path that honors D-11.
 
-2. **Does the split admin client need a "read-only" base vs. a "write" base?**
+2. **Does the split admin client need a "read-only" base vs. a "write" base?** — **RESOLVED: write-only base in Phase 56. No read surface ported.**
    - What we know: D-24 lists bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings — all write ops.
    - What's unclear: `findData`, `query`, `update` on the current client are read/update ops used by E2E assertions. Does dev-seed need ANY read surface for the pipeline to pre-validate refs (e.g., confirm seed.sql bootstrap rows exist)?
-   - Recommendation: start with write-only surface. If the pipeline needs reads (e.g., to assert the bootstrap project exists before seeding), add a narrow `getBootstrapRefs()` method — don't port the full `findData`.
+   - Recommendation (adopted — see Plan 02 base class): start with write-only surface. If the pipeline needs reads (e.g., to assert the bootstrap project exists before seeding), add a narrow `getBootstrapRefs()` method — don't port the full `findData`.
 
-3. **Does the feedback generator ship in Phase 56 at all?**
+3. **Does the feedback generator ship in Phase 56 at all?** — **RESOLVED: stub generator that returns `[]` when `count` is 0 (default); writer skips feedback writes in Phase 56 and logs a warning if `fixed[]` rows are supplied.** See ISS-02 amendment to CONTEXT.md D-11 below for the companion decision update.
    - CONTEXT.md Claude's Discretion item. Feedback has no external_id, can't be idempotently re-seeded, has no test/demo value.
-   - Recommendation: scope out (empty generator that returns `[]`). Phase 58/59 can add it if demo use surfaces. Reduces surface area of Phase 56 and of the writer's direct-upsert special casing.
+   - Recommendation (adopted — see Plan 05 FeedbackGenerator + Plan 07 writer): scope out (empty generator that returns `[]`). Phase 58/59 can add it if demo use surfaces. Reduces surface area of Phase 56 and of the writer's direct-upsert special casing.
 
-4. **What does `ctx.answerEmitter` look like at the type level for Phase 57 handshake?**
+4. **What does `ctx.answerEmitter` look like at the type level for Phase 57 handshake?** — **RESOLVED: the `AnswerEmitter` type below is defined in `packages/dev-seed/src/types.ts` and exported from the barrel `src/index.ts`. Phase 57 imports this type and supplies a latent-factor implementation.**
    - D-27 says "single function pointer, no interface." But Phase 57 needs to know the signature to implement the latent model.
-   - Recommendation: define in Phase 56 as:
+   - Recommendation (adopted — see Plan 03 types.ts): define in Phase 56 as:
      ```ts
      type AnswerEmitter = (
        candidate: TablesInsert<'candidates'>,

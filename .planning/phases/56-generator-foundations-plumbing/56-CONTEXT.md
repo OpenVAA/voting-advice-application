@@ -115,7 +115,30 @@ Carried forward from milestone-level context (no re-asking):
     no writes from dev-seed. The refs flow into `ctx.refs` for downstream
     generators.
   - `feedback` — direct `.upsert()` in the writer (not bulk_import).
+    **Superseded in Phase 56 by D-11a — see below.**
   - Join tables — wired via `linkJoinTables`.
+- **D-11a (refines D-11, 2026-04-22 plan-checker feedback):** `feedback` is
+  **skipped** in Phase 56, not direct-upserted. The writer logs a warning when
+  a user-supplied `feedback.fixed[]` is present and discards the rows, so the
+  dev-seed base remains composed of PUBLIC `SupabaseAdminClient` methods only.
+  `FeedbackGenerator` ships as a stub that returns `[]` by default (count = 0).
+  Rationale: feedback has no `external_id`, can't be idempotently re-seeded,
+  has no automated-test value in Phase 56 (no `bulk_delete` teardown path for
+  it either). Adding a narrow `insertFeedback()` method to the base just to
+  support an edge case would widen the Phase 56 surface for no Phase-58 gain.
+  Phase 58 (CLI) is the natural home for real feedback-seeding ergonomics
+  if demand surfaces. Also resolves RESEARCH.md Open Question 3 and plan
+  checker ISS-02.
+- **D-11b (refines D-11, 2026-04-22 plan-checker feedback — same pass):**
+  `app_settings` routes through **`updateAppSettings`** (direct JSONB
+  merge via `merge_jsonb_column` RPC), **not** through `bulk_import`.
+  Rationale: seed.sql already inserts an `app_settings` row with
+  `external_id = NULL`, and `bulk_import`'s `ON CONFLICT (project_id,
+  external_id) WHERE external_id IS NOT NULL` cannot match the pre-inserted
+  row — a second insert would hit a UNIQUE violation. `AppSettingsGenerator`
+  returns `[]` for `{}` templates and emits `fixed[]` rows that the writer
+  deep-merges via `updateAppSettings`. Also resolves RESEARCH.md Pitfall 5
+  and RESEARCH.md Open Question 1.
 - **D-12:** NF-05 "rollback on partial insert" semantics: **lean on
   `bulk_import`'s single-transaction behavior** — a mid-collection FK or
   constraint violation aborts the RPC and nothing commits. Document this
