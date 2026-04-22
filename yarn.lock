@@ -1674,6 +1674,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/dev-seed@workspace:^, @openvaa/dev-seed@workspace:packages/dev-seed":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/dev-seed@workspace:packages/dev-seed"
+  dependencies:
+    "@faker-js/faker": "catalog:"
+    "@openvaa/shared-config": "workspace:^"
+    "@openvaa/supabase-types": "workspace:^"
+    "@supabase/supabase-js": "catalog:"
+    "@types/node": "catalog:"
+    eslint: "catalog:"
+    tsx: "catalog:"
+    typescript: "catalog:"
+    vitest: "catalog:"
+    zod: "catalog:"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/dev-tools@workspace:packages/dev-tools":
   version: 0.0.0-use.local
   resolution: "@openvaa/dev-tools@workspace:packages/dev-tools"
@@ -9221,6 +9238,7 @@ __metadata:
     "@changesets/changelog-github": "npm:^0.6.0"
     "@changesets/cli": "npm:^2.30.0"
     "@faker-js/faker": "catalog:"
+    "@openvaa/dev-seed": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@openvaa/supabase-types": "workspace:^"
     "@playwright/test": "catalog:"
