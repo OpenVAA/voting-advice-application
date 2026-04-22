@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-05-PLAN.md
-last_updated: "2026-04-22T14:46:02.200Z"
+stopped_at: Completed 56-06-PLAN.md
+last_updated: "2026-04-22T14:52:45.756Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 5
-  percent: 50
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -71,6 +71,10 @@ Key context for v2.5:
 - Plan 56-05: CandidatesGenerator ships the D-27 seam (`ctx.answerEmitter ?? defaultRandomValidEmit`) with candidateForEmit narrowing so Phase 57's latent emitter drops in without touching this file
 - Plan 56-05: AppSettingsGenerator clamps count to <=1 and flags for Plan 07 writer to route through updateAppSettings (merge_jsonb_column) rather than bulk_import — avoids UNIQUE(project_id) conflict with seed.sql bootstrap row
 - Plan 56-05: FeedbackGenerator is minimal stub per Claude's Discretion; fixed[] discards Fragment.external_id (feedback table has no external_id column)
+- Plan 56-06: NominationRow uses Omit<TablesInsert<'nominations'>, 'election_id'|'constituency_id'> — same ref-sentinel relaxation pattern as QuestionsGenerator's category_id (Plan 05)
+- Plan 56-06: Dropped legacy tests/ 'emit both candidate+organization, strip one' workaround per RESEARCH §9 — dev-seed emits only authoritative ref since party-candidate relationship is already in candidates.organization_id
+- Plan 56-06: GEN-08 assertRefsPopulated collects ALL missing ref categories into one throw (not short-circuit) for better multi-entity misconfiguration UX
+- Plan 56-06: Phase 56 generator path produces candidate-type nominations ONLY (wired to refs.elections[0] × refs.constituencies[0]); polymorphism variants via fixed[] pass-through; Phase 58 extends via nominations override hook
 
 ### Blockers/Concerns
 
@@ -82,8 +86,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T14:46:02.195Z
-Stopped at: Completed 56-05-PLAN.md
+Last session: 2026-04-22T14:52:45.751Z
+Stopped at: Completed 56-06-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 
