@@ -26,7 +26,7 @@ Modular per-entity generators, one per non-system public table, composable into 
 |----|-------------|----------|-------|
 | GEN-01 | One independent generator module per non-system public table | P1 | Tables: accounts, projects, elections, constituency_groups, constituencies, constituency_group_constituencies, election_constituency_groups, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings, feedback |
 | GEN-02 | Generators accept a template fragment and return typed rows ready for bulk upsert | P1 | Uses `@openvaa/supabase-types` row types; no direct DB writes inside generators |
-| GEN-03 | Any single generator is overridable by consumers without forking the pipeline | P1 | Plug-in shape: `{ [table]: (fragment) => Rows }` map merged with built-ins |
+| GEN-03 | Any single generator is overridable by consumers without forking the pipeline | P1 | Plug-in shape: `{ [table]: (fragment, ctx) => Rows[] }` map merged with built-ins (amended per D-25 — override receives ctx for seeded faker / projectId / refs access) |
 | GEN-04 | All generator-produced rows carry an `external_id` with a configurable prefix (default `seed_`) | P1 | Enables idempotent upsert via existing bulk RPCs and targeted teardown |
 | GEN-05 | Writes happen through a service-role Supabase client that bypasses RLS | P1 | Reuse existing `SupabaseAdminClient` from `tests/tests/utils/`; move into `@openvaa/dev-tools` if cross-workspace reuse is needed |
 | GEN-06 | Answer-space generative model (latent-factor / PCA-inspired) — produces realistic candidate answers with visible party clustering and plausible inter-question correlations | P1 | Broken into 6 modular sub-steps (GEN-06a..f); each sub-step is independently overridable |
