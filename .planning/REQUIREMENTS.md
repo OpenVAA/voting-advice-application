@@ -1,155 +1,149 @@
-# Requirements: v2.4 Full Svelte 5 Rewrite
+# Requirements: v2.5 Dev Data Seeding Toolkit
 
-**Milestone:** v2.4
-**Created:** 2026-03-27
+**Milestone:** v2.5
+**Created:** 2026-04-22
 **Status:** Active
 
 ## Goal
 
-Complete the Svelte 5 migration by rewriting the context system from Svelte 4 stores to native runes ($state/$derived), migrating all remaining legacy files, globally enabling runes mode, and fixing all skipped E2E tests.
+Ship a template-driven, modular data generator in `@openvaa/dev-tools` that populates a freshly-reset local Supabase database with realistic OpenVAA data in a single command, and retire the hand-maintained E2E JSON fixtures in favor of generator-produced data.
 
-**Success criteria:** Zero imports from `svelte/store` in frontend app code, global runes mode enabled, all E2E tests passing (no skips).
+**Success criteria:**
+- `yarn dev:reset-with-data` produces a browseable local app state (elections, parties, candidates, questions, nominations) across all supported locales without manual data entry.
+- `tests/seed-test-data.ts` is rewritten on top of the new generator; legacy `default-dataset.json`, `voter-dataset.json`, `candidate-addendum.json` fixtures are deleted.
+- Full E2E suite passes against generator-produced data with no regression vs current baseline (15 passing remain passing; pre-existing 19-test data-loading race is not made worse).
+- Templates are authorable by users — a custom `.ts` template file in any path invocable via `--template <path>` produces valid data.
 
 ---
 
 ## Requirements
 
-### R1: Utility Store Rewrites
+### GEN: Generator Core
 
-Replace the 3 custom store utilities that underpin all contexts with native Svelte 5 equivalents.
-
-| ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R1.1 | Replace `parsimoniusDerived` with native `$derived` | P1 | Used ~20 times across contexts |
-| R1.2 | Replace `storageStore` with `$state` + localStorage wrapper | P1 | Used for persistent user preferences |
-| R1.3 | Replace `stackedStore` with `$state`-based stack | P1 | Used for navigation/modal state |
-| R1.4 | Remove all custom store utility files after migration | P1 | Clean up dead code |
-
-**Acceptance:** No imports of custom store utilities remain. Unit tests pass.
-
-### R2: Context Module Rewrites
-
-Rewrite all 9 context modules from Svelte 4 store internals to $state/$derived.
+Modular per-entity generators, one per non-system public table, composable into a full-graph seeder. Leverages `@openvaa/data` types, `@faker-js/faker` (in catalog), and the existing `SupabaseAdminClient` helper.
 
 | ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R2.1 | Rewrite I18nContext to use $state/$derived | P1 | Leaf context, no downstream context deps |
-| R2.2 | Rewrite LayoutContext to use $state/$derived | P1 | Leaf context; includes tweened progress |
-| R2.3 | Rewrite AuthContext to use $state/$derived | P1 | Leaf context; SSR-safe required |
-| R2.4 | Rewrite ComponentContext to use $state/$derived | P1 | Mid-level; consumed by App contexts |
-| R2.5 | Rewrite DataContext with DataRoot version counter | P1 | Critical: DataRoot mutable-in-place needs version counter for $derived reactivity |
-| R2.6 | Rewrite AppContext to use $state/$derived | P1 | Depends on Component + Data contexts |
-| R2.7 | Rewrite VoterContext to use $state/$derived | P1 | ~20 derived stores; depends on App |
-| R2.8 | Rewrite CandidateContext to use $state/$derived | P1 | Depends on App |
-| R2.9 | Rewrite AdminContext to use $state/$derived | P1 | Depends on App |
-| R2.10 | Preserve existing context API shape (getXxxContext/initXxxContext) | P1 | Minimize consumer-side changes |
-| R2.11 | Rename .ts context files to .svelte.ts where runes are used | P1 | Required for $state/$derived in non-component files |
-| R2.12 | Ensure SSR safety — no module-level $state that leaks across requests | P1 | Use setContext/getContext factory pattern |
+|----|-------------|----------|-------|
+| GEN-01 | One independent generator module per non-system public table | P1 | Tables: accounts, projects, elections, constituency_groups, constituencies, constituency_group_constituencies, election_constituency_groups, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings, feedback |
+| GEN-02 | Generators accept a template fragment and return typed rows ready for bulk upsert | P1 | Uses `@openvaa/supabase-types` row types; no direct DB writes inside generators |
+| GEN-03 | Any single generator is overridable by consumers without forking the pipeline | P1 | Plug-in shape: `{ [table]: (fragment) => Rows }` map merged with built-ins |
+| GEN-04 | All generator-produced rows carry an `external_id` with a configurable prefix (default `seed_`) | P1 | Enables idempotent upsert via existing bulk RPCs and targeted teardown |
+| GEN-05 | Writes happen through a service-role Supabase client that bypasses RLS | P1 | Reuse existing `SupabaseAdminClient` from `tests/tests/utils/`; move into `@openvaa/dev-tools` if cross-workspace reuse is needed |
+| GEN-06 | Answer-space generative model (latent-factor / PCA-inspired) — produces realistic candidate answers with visible party clustering and plausible inter-question correlations | P1 | Broken into 6 modular sub-steps (GEN-06a..f); each sub-step is independently overridable |
+| GEN-06a | Configurable number of latent dimensions (optionally with eigenvalues / variance weights) defining the answer space | P1 | Constants with sensible defaults; exposed on the template for overriding |
+| GEN-06b | Party centroids sampled in the latent space with spread enforcement — centroids cover the space rather than clustering in one region | P1 | Default strategy ensures min-distance between centroids (e.g. farthest-point sampling, max-min distance, or Latin hypercube). Template can supply explicit centroids per party to override. |
+| GEN-06c | Per-party spread parameter controls avg candidate deviation from party centroid | P1 | Random or set per party in the template |
+| GEN-06d | Candidate latent positions sampled from party centroid ± spread | P1 | Normal distribution around centroid using spread as std. dev. |
+| GEN-06e | Question loadings (question × latent dimension) define inter-question correlations | P1 | Random by default; template can override loadings per question to fix specific correlations |
+| GEN-06f | Each candidate's answer per question = projection of its latent position through the question loadings, with a noise term applied by default | P1 | Noise is on by default (small magnitude relative to latent spread); template can reduce to zero for noise-free runs. Answers mapped to valid question-type range (Likert scale, categorical choice, etc.) |
+| GEN-06g | Each sub-step (06a–06f) is a standalone pluggable module the developer can replace or edit without touching neighboring steps | P1 | Pipeline exposes hooks at dimension/centroid/spread/position/loading/answer boundaries |
+| GEN-07 | Categorical-question subdimensions handled correctly | P1 | Per `@openvaa/matching` subdimension conventions; `MISSING_VALUE` from `@openvaa/core` for explicit skips |
+| GEN-08 | Nominations wire candidates and parties to elections × constituencies with valid referential integrity | P1 | Generator enforces graph constraints the schema expects |
+| GEN-09 | Candidate portrait images seeded from a small curated batch of stock portraits, cycled across generated candidates | P1 | Uploads to Supabase Storage via service-role client; `candidates.image_id` (or equivalent field) populated. If lightweight synthetic-portrait generation is viable later, swap in without changing the interface. |
+| GEN-10 | Portrait batch lives in `packages/dev-tools/src/seed/assets/portraits/` (or similar), checked into the repo | P1 | Small fixed set (~10-20 images); licensing must be permissive for distribution with the repo |
 
-**Acceptance:** All contexts use $state/$derived internally. No `writable()`, `derived()`, or `Readable<T>` imports from `svelte/store` in context files. SSR works correctly.
+**Acceptance:** Each generator has unit tests; an integration test applies the default template to a throwaway Supabase and asserts row counts + shape per entity. Matching scores across candidates show visible party clustering (not uniform noise) and plausible inter-question correlations. Candidate profile pages render portraits end-to-end.
 
-### R3: Consumer Component Updates
+### TMPL: Template System
 
-Update all components that consume contexts to use direct property access instead of store subscriptions.
-
-| ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R3.1 | Update all `$store` references to direct property access in components | P1 | ~141 consumer components |
-| R3.2 | Remove `svelte/store` imports from consumer components | P1 | Mechanical cleanup |
-| R3.3 | Update reactive declarations using context stores | P1 | `$: value = $store` -> `$derived` or direct access |
-
-**Acceptance:** Zero `$store` syntax referencing context values. All components render correctly. Unit tests pass.
-
-### R4: $app/stores Migration
-
-Migrate from deprecated `$app/stores` to `$app/state`.
+A unified declarative template config with smart defaults; any collection can mix hand-authored and synthetic rows; custom templates loadable from any path.
 
 | ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R4.1 | Replace all `$app/stores` `page` imports with `$app/state` page | P1 | 5-11 files affected |
-| R4.2 | Replace all `$app/stores` `navigating` imports with `$app/state` | P1 | If used |
-| R4.3 | Zero imports from `$app/stores` | P1 | Deprecated since SvelteKit 2.12 |
+|----|-------------|----------|-------|
+| TMPL-01 | Single template schema (TypeScript type) covers counts, distributions, relational wiring, and per-entity overrides | P1 | Everything the user can tweak is in one declarative object |
+| TMPL-02 | Every template field optional; unspecified fields fall back to smart defaults | P1 | A `{}` template produces a usable app state |
+| TMPL-03 | Collections accept hand-authored rows + generator count in the same definition | P1 | E.g. `organizations: { count: 8, fixed: [{name:'Vihreät',...}, {name:'Kokoomus',...}] }` — 2 fixed + 6 synthetic |
+| TMPL-04 | Built-in `default` template — realistic Finnish-flavored election with 1 election, ~6 constituencies, ~8 parties, ~40 candidates, ~20 questions | P1 | This is what `yarn dev:reset-with-data` uses |
+| TMPL-05 | Built-in `e2e` template — shape matches what existing E2E specs depend on (same testIds, same relational wiring contracts) | P1 | Powers the rewritten `tests/seed-test-data.ts` |
+| TMPL-06 | Custom templates loadable from arbitrary path via `--template <path>` | P1 | Accepts `.ts`, `.js`, or `.json` |
+| TMPL-07 | Flat top-level `generateTranslationsForAllLocales: boolean` honoring `staticSettings.supportedLocales` | P1 | `false` (default) = default locale only; `true` = all supported locales |
+| TMPL-08 | Optional top-level `seed: number` for reproducible faker output | P2 | Nice-to-have; cheap since faker supports seeded RNG |
+| TMPL-09 | Template-validation error messages point at the offending field | P2 | Zod or equivalent runtime validation |
 
-**Acceptance:** No imports from `$app/stores`. Fine-grained reactivity via `$app/state` confirmed working.
+**Acceptance:** Default and E2E templates produce expected row counts and pass validation; a custom user-supplied template loads and runs without modifying the package.
 
-### R5: Legacy File Migration
-
-Migrate all remaining Svelte 4 syntax files to Svelte 5 runes.
-
-| ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R5.1 | Migrate root +layout.svelte to runes ($props, $effect, {#snippet}) | P1 | Highest-risk file — initializes all contexts |
-| R5.2 | Migrate admin route files to runes | P1 | ~10 files with `export let data` |
-| R5.3 | Migrate shared layout components to runes | P1 | Files still using `<slot>`, `$:`, `export let` |
-| R5.4 | Replace all `<slot>` with `{#snippet}`/`{@render}` in remaining files | P1 | Required for global runes |
-| R5.5 | Replace all `$:` reactive declarations with `$derived`/`$effect` | P1 | Required for global runes |
-| R5.6 | Replace all `export let` with `$props()` in remaining files | P1 | Required for global runes |
-
-**Acceptance:** Zero Svelte 4 syntax in any .svelte file. All files compatible with global runes mode.
-
-### R6: Global Runes Enablement
-
-Enable runes mode globally and remove per-file opt-ins.
+### CLI: Command Surface
 
 | ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R6.1 | Enable runes via dynamicCompileOptions in svelte.config.js | P1 | Must exclude node_modules for third-party lib compat |
-| R6.2 | Remove all `<svelte:options runes />` directives | P1 | ~151 per-file opt-ins |
-| R6.3 | Verify third-party Svelte libraries work under global runes | P1 | svelte-visibility-change, others |
-| R6.4 | Build succeeds with zero warnings related to runes mode | P1 | Clean build |
+|----|-------------|----------|-------|
+| CLI-01 | `yarn workspace @openvaa/dev-tools seed --template <name-or-path>` seeds the active local Supabase | P1 | `<name>` resolves built-in templates; `<path>` loads custom |
+| CLI-02 | Root-level `yarn dev:reset-with-data` shortcut = `supabase db reset` + seed with `default` template | P1 | Added to root `package.json` scripts |
+| CLI-03 | `yarn workspace @openvaa/dev-tools seed:teardown` removes only generator-produced rows (via `external_id` prefix) | P1 | Non-destructive for bootstrap data in `seed.sql` |
+| CLI-04 | `--help` output documents flags, built-in templates, and how to author a custom template | P1 | Consistent with `keygen` / `pem-to-jwk` help style |
+| CLI-05 | CLI surfaces a concise summary after success: rows-per-entity, template applied, time elapsed | P2 | DX sugar; helps catch silent no-ops |
 
-**Acceptance:** Global runes enabled. No per-file opt-ins. Build clean. All third-party libs working.
+**Acceptance:** All three commands run successfully against a local `supabase start`; teardown leaves bootstrap rows from `seed.sql` intact.
 
-### R7: E2E Test Fixes
-
-Fix all skipped E2E tests.
+### E2E: Fixture Replacement
 
 | ID | Requirement | Priority | Notes |
-|----|------------|----------|-------|
-| R7.1 | Fix pushState reactivity E2E tests (previously fixme'd) | P1 | 3 tests; likely fixed by $app/state migration |
-| R7.2 | Fix remaining skipped E2E tests | P1 | 7 additional skipped tests |
-| R7.3 | All E2E tests passing (zero skips) | P1 | Final validation |
+|----|-------------|----------|-------|
+| E2E-01 | `tests/seed-test-data.ts` rewritten to invoke `@openvaa/dev-tools` with the `e2e` template | P1 | No behavioral change visible to Playwright specs |
+| E2E-02 | Legacy fixtures retired — `default-dataset.json`, `voter-dataset.json`, `candidate-addendum.json` deleted | P1 | After E2E parity is proven, not before |
+| E2E-03 | Full Playwright suite passes with no regression vs current baseline | P1 | Baseline: 15 passing, 19 data-race failing, 55 cascade. Post-migration: same or better |
+| E2E-04 | `tests/tests/utils/supabaseAdminClient.ts` either stays in `tests/` or moves to `@openvaa/dev-tools` based on cleanest dependency graph | P2 | Judgment call during implementation; avoid circular deps |
 
-**Acceptance:** `yarn test:e2e` passes with zero skipped tests.
+**Acceptance:** `yarn test:e2e` with seeder-produced data produces the same pass/fail set as the baseline, ±0 regressions.
+
+### DX: Developer Experience
+
+| ID | Requirement | Priority | Notes |
+|----|-------------|----------|-------|
+| DX-01 | Documentation (inline header comment or short README) explains how to author a custom template | P1 | Worked examples for mixing fixed + synthetic rows |
+| DX-02 | Unit tests for each generator (per-entity coverage) | P1 | Catches schema drift early |
+| DX-03 | Integration test: default template applied to a real local Supabase, asserts row counts and spot-checks relational wiring | P1 | Guards against breakage as schema evolves |
+| DX-04 | Documentation added to `CLAUDE.md` "Common Workflows" section (seeding command) | P2 | Keeps AI pair-programming aware of the new tool |
+
+**Acceptance:** Generator coverage via `yarn test:unit` includes the new suite and passes; a new contributor can author a template by reading only the inline docs + existing templates.
 
 ---
 
 ## Non-Functional Requirements
 
-| ID | Requirement | Priority |
-|----|------------|----------|
-| NF1 | No performance regressions — page load and interaction times maintained | P1 |
-| NF2 | SSR continues to work correctly — no hydration mismatches | P1 |
-| NF3 | No new TypeScript errors — strict mode maintained | P1 |
-| NF4 | Unit tests pass throughout migration (no regressions) | P1 |
+| ID | Requirement | Priority | Notes |
+|----|-------------|----------|-------|
+| NF-01 | Full default-template seed completes in < 10 seconds on a local Supabase | P1 | Use bulk RPCs, not row-at-a-time inserts |
+| NF-02 | Zero secrets in generator code or built-in templates | P1 | Reads `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` from env; fails loudly if missing |
+| NF-03 | TypeScript strict mode, no `any` in public surface | P1 | Consistent with rest of monorepo |
+| NF-04 | Seeder output deterministic given a fixed `seed` template field | P2 | Depends on TMPL-08 |
+| NF-05 | Fails cleanly and rolls back on partial insert errors | P2 | Use DB transactions where bulk RPCs support them; otherwise document partial-write behavior |
 
 ---
 
 ## Out of Scope
 
-- Admin app feature development (only migrating existing admin routes to runes)
-- Data adapter rewrites (Supabase adapter internals unchanged)
-- Package-level changes (core, data, matching, filters packages unchanged)
-- New component development
-- Svelte 5 `createContext()` API (preserve existing setContext/getContext pattern for now)
+| Item | Reason |
+|------|--------|
+| Admin-job seeding (`admin_jobs` table) | Operational table; no test value in synthetic jobs |
+| User role / auth seeding (`user_roles`, auth.users) | Auth is orthogonal; bootstrap candidate login handled by existing `invite-candidate` Edge Function flow |
+| General storage/object-store seeding beyond candidate portraits | Other object categories (campaign media, party logos, attached docs) out of scope; candidate portraits carved out via GEN-09 because they materially affect UI realism |
+| `storage_config` table seeding | Bootstrap-only table populated by `apps/supabase/supabase/seed.sql` |
+| Production data migration tooling | This is a dev/test tool; production deployments have their own import paths |
+| Seed-data snapshot management (save/load arbitrary DB states) | Overkill for this milestone; templates are the snapshot primitive |
+| UI for template authoring | Templates are code; no in-app editor needed |
+| Deployer-facing demo datasets ("sales demo" variants) | Out of primary audience; templates can be added later without milestone scope creep |
 
 ---
 
 ## Constraints
 
-- Migration must be bottom-up (utilities -> leaf contexts -> mid-level -> app contexts -> consumers -> global runes)
-- Context API shape (getXxxContext/initXxxContext) must be preserved to minimize consumer changes
-- DataRoot version counter pattern required for mutable-in-place reactivity bridging
-- dynamicCompileOptions needed (not compilerOptions.runes: true) to exclude node_modules
-- Root +layout.svelte is highest-risk and should be migrated last among layout files
+- Must integrate with existing monorepo tooling: Yarn 4 workspace, Turborepo, tsx runner, catalog deps.
+- No new external dependencies unless already in catalog (`@faker-js/faker`, `@supabase/supabase-js`).
+- Writes only via service-role client; no assumptions about RLS bypass in other contexts.
+- Must not break `apps/supabase/supabase/seed.sql` bootstrap (accounts + projects + storage_config).
+- Template schemas must use `@openvaa/supabase-types` + `@openvaa/data` types as sources of truth — no hand-redeclared row shapes.
 
 ---
 
 ## Dependencies
 
-- Svelte 5.53.12+ (already installed)
-- SvelteKit 2.55.0+ with $app/state (already installed)
-- No external dependency additions required
+- `@faker-js/faker` (catalog) — RNG for synthetic rows
+- `@supabase/supabase-js` (catalog) — service-role client
+- `@openvaa/data` (workspace) — entity types, `MISSING_VALUE`
+- `@openvaa/supabase-types` (workspace) — generated Supabase row types
+- `tsx` (catalog) — TS runner
+- Local Supabase via `supabase start` — target for seed writes
+- Existing `tests/tests/utils/supabaseAdminClient.ts` — bulk-import helpers
 
 ---
 
@@ -157,42 +151,47 @@ Fix all skipped E2E tests.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| R1.1 | Phase 49 | Complete |
-| R1.2 | Phase 49 | Complete |
-| R1.3 | Phase 49 | Complete |
-| R1.4 | Phase 49 | Complete |
-| R2.1 | Phase 50 | Complete |
-| R2.2 | Phase 50 | Pending |
-| R2.3 | Phase 50 | Pending |
-| R2.4 | Phase 51 | Complete |
-| R2.5 | Phase 51 | Complete |
-| R2.6 | Phase 51 | Complete |
-| R2.7 | Phase 52 | Pending |
-| R2.8 | Phase 52 | Pending |
-| R2.9 | Phase 52 | Pending |
-| R2.10 | Phase 50-52 | Complete |
-| R2.11 | Phase 50-52 | Complete |
-| R2.12 | Phase 50-52 | Complete |
-| R3.1 | Phase 50-52 | Complete |
-| R3.2 | Phase 50-52 | Complete |
-| R3.3 | Phase 50-52 | Complete |
-| R4.1 | Phase 50 | Pending |
-| R4.2 | Phase 50 | Pending |
-| R4.3 | Phase 50 | Pending |
-| R5.1 | Phase 53 | Complete |
-| R5.2 | Phase 53 | Pending |
-| R5.3 | Phase 53 | Complete |
-| R5.4 | Phase 53 | Complete |
-| R5.5 | Phase 53 | Complete |
-| R5.6 | Phase 53 | Complete |
-| R6.1 | Phase 54 | Complete |
-| R6.2 | Phase 54 | Complete |
-| R6.3 | Phase 54 | Complete |
-| R6.4 | Phase 54 | Complete |
-| R7.1 | Phase 55 | Complete |
-| R7.2 | Phase 55 | Complete |
-| R7.3 | Phase 55 | Partial (zero skips; 19 pre-existing failures unrelated to Svelte 5) |
-| NF1 | All phases | Pending |
-| NF2 | All phases | Pending |
-| NF3 | All phases | Pending |
-| NF4 | All phases | Pending |
+| GEN-01 | — | Pending (awaiting roadmap) |
+| GEN-02 | — | Pending |
+| GEN-03 | — | Pending |
+| GEN-04 | — | Pending |
+| GEN-05 | — | Pending |
+| GEN-06 | — | Pending |
+| GEN-06a | — | Pending |
+| GEN-06b | — | Pending |
+| GEN-06c | — | Pending |
+| GEN-06d | — | Pending |
+| GEN-06e | — | Pending |
+| GEN-06f | — | Pending |
+| GEN-06g | — | Pending |
+| GEN-07 | — | Pending |
+| GEN-08 | — | Pending |
+| GEN-09 | — | Pending |
+| GEN-10 | — | Pending |
+| TMPL-01 | — | Pending |
+| TMPL-02 | — | Pending |
+| TMPL-03 | — | Pending |
+| TMPL-04 | — | Pending |
+| TMPL-05 | — | Pending |
+| TMPL-06 | — | Pending |
+| TMPL-07 | — | Pending |
+| TMPL-08 | — | Pending |
+| TMPL-09 | — | Pending |
+| CLI-01 | — | Pending |
+| CLI-02 | — | Pending |
+| CLI-03 | — | Pending |
+| CLI-04 | — | Pending |
+| CLI-05 | — | Pending |
+| E2E-01 | — | Pending |
+| E2E-02 | — | Pending |
+| E2E-03 | — | Pending |
+| E2E-04 | — | Pending |
+| DX-01 | — | Pending |
+| DX-02 | — | Pending |
+| DX-03 | — | Pending |
+| DX-04 | — | Pending |
+| NF-01 | — | Pending |
+| NF-02 | — | Pending |
+| NF-03 | — | Pending |
+| NF-04 | — | Pending |
+| NF-05 | — | Pending |
