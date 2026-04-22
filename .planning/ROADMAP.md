@@ -29,7 +29,19 @@ Ship a template-driven, modular data generator in `@openvaa/dev-tools` that popu
   4. The core template schema (TypeScript type + runtime validator with field-pointing error messages, optional `seed: number` honored by faker) compiles cleanly and accepts a `{}` input that produces a valid but trivial row-set across all entities.
   5. Nominations wire candidates and parties to elections × constituencies with referential integrity enforced by the generator (no orphan FKs reach the DB); categorical-question subdimensions and `MISSING_VALUE` handling follow `@openvaa/matching` / `@openvaa/core` conventions.
   6. Per-entity unit tests run via `yarn test:unit` and pass; the suite fails loudly when `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` are missing at runtime, and partial-insert failures either roll back via DB transactions or document the partial-write behavior explicitly.
-**Plans**: TBD
+**Plans**: 10 plans
+
+Plans:
+- [ ] 56-01-PLAN.md — Package scaffolding (@openvaa/dev-seed) + root devDep + GEN-03 amendment
+- [ ] 56-02-PLAN.md — SupabaseAdminClient base (D-24 split, bulk-write surface)
+- [ ] 56-03-PLAN.md — Template schema + ctx factory + answer emitter + shared types
+- [ ] 56-04-PLAN.md — 8 foundation generators (elections, constituency_groups, constituencies, organizations, alliances, factions, accounts, projects)
+- [ ] 56-05-PLAN.md — 5 content generators (question_categories, questions, candidates with D-27 seam, app_settings, feedback)
+- [ ] 56-06-PLAN.md — NominationsGenerator (polymorphic, GEN-08 ref validation)
+- [ ] 56-07-PLAN.md — Pipeline + Writer + public API (D-25/D-26 bridge, D-11 routing, D-15 env enforcement)
+- [ ] 56-08-PLAN.md — 14 per-generator unit tests + shared makeCtx utils (DX-02)
+- [ ] 56-09-PLAN.md — Cross-cutting tests (pipeline, writer, determinism, template validator)
+- [ ] 56-10-PLAN.md — Rewrite tests/tests/utils/supabaseAdminClient.ts as subclass + final verification
 
 ### Phase 57: Latent-Factor Answer Model
 **Goal**: Synthetic candidate answers exhibit visible party clustering and plausible inter-question correlations, produced by a pluggable pipeline where each sub-step (latent dimensions, centroids, spread, positions, loadings, projection+noise) can be replaced independently.
@@ -76,7 +88,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 56. Generator Foundations & Plumbing | 0/0 | Not started | - |
+| 56. Generator Foundations & Plumbing | 0/10 | Not started | - |
 | 57. Latent-Factor Answer Model | 0/0 | Not started | - |
 | 58. Templates, CLI & Default Dataset | 0/0 | Not started | - |
 | 59. E2E Fixture Migration | 0/0 | Not started | - |
