@@ -37,10 +37,28 @@ const perEntityFragment = z.object({
   fixed: z.array(z.record(z.string(), z.unknown())).optional()
 });
 
+/**
+ * Accept any UUID-shaped string (8-4-4-4-12 hex groups).
+ *
+ * We deliberately do NOT use `z.string().uuid()` — zod v4's `.uuid()` enforces
+ * RFC 4122 version compliance (v1-v8 only, plus the nil/max sentinels). The
+ * `TEST_PROJECT_ID` fixture used throughout the codebase
+ * (`00000000-0000-0000-0000-000000000001`, from seed.sql bootstrap) carries a
+ * `0` version nibble and is rejected by the strict validator. Postgres' `uuid`
+ * column type accepts it fine — the value is a legitimate UUID-shaped
+ * identifier the database stores without complaint. Rejecting it in the
+ * template schema would mean the validator contradicts `buildCtx`'s documented
+ * default projectId.
+ *
+ * The regex below is the 8-4-4-4-12 hex shape from RFC 9562 §5 without the
+ * version nibble constraint — matches what Postgres actually accepts.
+ */
+const UUID_SHAPE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 export const TemplateSchema = z.object({
   seed: z.number().int().optional(),
   externalIdPrefix: z.string().optional(),
-  projectId: z.string().uuid().optional(),
+  projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
   elections: perEntityFragment.optional(),
   constituency_groups: perEntityFragment.optional(),
   constituencies: perEntityFragment.optional(),
