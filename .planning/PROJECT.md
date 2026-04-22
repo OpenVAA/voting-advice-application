@@ -8,26 +8,27 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-## Current Milestone: v2.4 Full Svelte 5 Rewrite
+## Current Milestone: v2.5 Dev Data Seeding Toolkit
 
-**Goal:** Complete the Svelte 5 migration by rewriting the context system, migrating any remaining v4 routes, globally enabling runes mode, and fixing the 10 skipped E2E tests.
+**Goal:** Ship a template-driven, modular data generator in `@openvaa/dev-tools` that populates a freshly-reset local database with realistic OpenVAA data in one command, and retire the hand-maintained E2E JSON fixtures in favor of generator-produced data.
 
 **Target features:**
-- Context system rewrite ($state/$derived replacing Svelte 4 stores)
-- Migrate any remaining Svelte 4 route files to runes
-- Globally enable runes mode (compilerOptions.runes: true)
-- Remove per-file runes opt-ins
-- Fix 10 skipped E2E tests (pushState reactivity bug)
+- Modular per-entity generator architecture (one small generator per non-system public table, independently overridable)
+- Unified template model — declarative config with smart defaults; hand-authored + synthetic rows mix freely in any collection
+- Built-in default and E2E templates; custom templates load from any file path
+- `generateTranslationsForAllLocales` flag honoring `staticSettings.supportedLocales`
+- CLI surface — `seed`, `seed:teardown`, root-level `yarn dev:reset-with-data`
+- `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired
+- Matching-realistic synthetic candidate positions (party-axis clustering, not uniform random)
+- Optional deterministic seed (`seed: number`) for reproducible faker output
 
 ## Current State
 
-v2.3 shipped 2026-03-27. Idura FTN bank authentication integrated with provider abstraction layer. Deployments can switch between Signicat and Idura via `PUBLIC_IDENTITY_PROVIDER_TYPE` env var.
+v2.4 shipped 2026-03-28. Full Svelte 5 rewrite complete — context system migrated end-to-end ($state/$derived), global runes mode enabled (compilerOptions.runes + dynamicCompileOptions node_modules exclusion), all 167 per-file runes directives removed, 10 admin route files + root layout migrated. 613 unit tests pass; E2E suite runs with 15 passed / 19 pre-existing data-loading race failures / 55 cascade — deferred to the "Svelte 5 Migration Cleanup" backlog milestone.
 
-The codebase is stable: fully Svelte 5 runes-idiomatic, Supabase-only backend, provider-agnostic OIDC auth, 613 unit tests + 50 E2E specs passing. Phase 49 complete — 3 custom store utilities (parsimoniusDerived, storageStore, stackedStore) replaced with Svelte 5 rune equivalents (persistedState.svelte.ts, StackedState.svelte.ts, memoizedDerived.ts).
+v2.3 delivered Idura FTN bank authentication with the IdentityProvider abstraction layer; deployments switch between Signicat and Idura via `PUBLIC_IDENTITY_PROVIDER_TYPE`. v2.2 paused (Deno feasibility validated, evaluation deferred).
 
-Key v2.3 additions: IdentityProvider interface with configurable claim mapping (`identityMatchProp`, `firstNameProp`, `lastNameProp`, `extractClaims`), server-side JAR + `private_key_jwt` for Idura, `/api/oidc/{authorize,token,callback}` routes, `identity-callback` Edge Function replacing `signicat-callback`.
-
-v2.2 paused (Deno feasibility validated, evaluation deferred). Research preserved in `.planning/milestones/v2.2-phases/`.
+Post-v2.4 housekeeping on `feat-gsd-roadmap`: `@openvaa/dev-tools` workspace added with `keygen` and `pem-to-jwk` CLIs (see `docs/key-generation.md`); `*.pem` patterns added to `.gitignore`; legacy `apps/frontend/README.md` removed.
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
@@ -84,14 +85,22 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Signicat backward compatibility (PKCE + client_secret flow unchanged) — v2.3
 - ✓ 71 new unit tests for provider abstraction, JWE, JAR, Edge Function claims — v2.3
 - ✓ Bank-auth E2E tests with @bank-auth tag (disabled by default) — v2.3
+- ✓ Context system rewrite with Svelte 5 native reactivity ($state/$derived) — v2.4
+- ✓ All remaining Svelte 4 route files migrated to runes (admin app + root layout) — v2.4
+- ✓ Global runes mode enabled (compilerOptions.runes: true + dynamicCompileOptions for node_modules) — v2.4
+- ✓ All 167 per-file runes opt-ins removed — v2.4
+- ✓ 141 consumer components migrated to direct property access — v2.4
+- ✓ @openvaa/dev-tools workspace with keygen + pem-to-jwk CLIs — post-v2.4
 
 ### Active
-- [ ] Context system rewrite with Svelte 5 native reactivity ($state/$derived)
-- [ ] Migrate any remaining Svelte 4 route files to runes
-- [ ] Globally enable runes mode (compilerOptions.runes: true)
-- [ ] Remove per-file runes opt-ins
-- [ ] Resolve 10 skipped E2E tests (Svelte 5 pushState reactivity bug)
-- [ ] AdminWriter rename (naming cleanup)
+- [ ] Modular per-entity generator architecture (`@openvaa/dev-tools/src/seed/`)
+- [ ] Unified template model with smart defaults and mixed hand-authored + synthetic rows
+- [ ] Built-in default template and E2E template; custom templates loadable from any path
+- [ ] `generateTranslationsForAllLocales` flag honoring `staticSettings.supportedLocales`
+- [ ] CLI surface — `seed`, `seed:teardown`, root-level `yarn dev:reset-with-data`
+- [ ] `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired
+- [ ] Matching-realistic synthetic candidate positions (party-axis clustering)
+- [ ] Optional deterministic `seed: number` for reproducible faker output
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -104,6 +113,10 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - [ ] Trusted publishing for npm (OIDC, deferred until after initial manual publish)
 - [ ] Changeset bot for PR reminders (deferred from v1.1)
 - [ ] SQL linting and formatting tooling
+- [ ] Svelte 5 migration cleanup — resolve 19 pre-existing data-loading race E2E failures; retire toStore/fromStore bridges
+- [ ] Settings & configuration paradigm reorganization
+- [ ] Generalize candidate app to support parties (organizations) as first-class registrants
+- [ ] AdminWriter rename (naming cleanup, carried from v2.4)
 
 ### Out of Scope
 
@@ -151,12 +164,14 @@ Each major initiative is a separate milestone, executed in order:
 7. ~~**E2E Test Stabilization**~~ — Shipped v2.1 (2026-03-26)
 8. ~~**Deno Feasibility Study**~~ — Paused v2.2 (2026-03-27, feasibility validated, evaluation deferred)
 9. ~~**Idura FTN Auth**~~ — Shipped v2.3 (2026-03-27)
-10. **Claude Skills (remaining)** — Architect, components, LLM skills
-11. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
-12. **Security Scanning** — Automated security, secrets scanning, and testing
-13. **Svelte 5 Migration Cleanup** — Resolve deferred data-loading race condition, clear remaining runes-mode TODOs, retire toStore/fromStore bridges, re-enable the 19 skipped E2E tests
-14. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
-15. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
+10. ~~**Full Svelte 5 Rewrite**~~ — Shipped v2.4 (2026-03-28)
+11. **Dev Data Seeding Toolkit** — v2.5 (in progress)
+12. **Claude Skills (remaining)** — Architect, components, LLM skills
+13. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
+14. **Security Scanning** — Automated security, secrets scanning, and testing
+15. **Svelte 5 Migration Cleanup** — Resolve deferred data-loading race condition, clear remaining runes-mode TODOs, retire toStore/fromStore bridges, re-enable the 19 skipped E2E tests
+16. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
+17. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
 
 ## Key Decisions
 
@@ -247,4 +262,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-03-27 after Phase 49 Core Infrastructure complete_
+_Last updated: 2026-04-22 at milestone v2.5 Dev Data Seeding Toolkit start_
