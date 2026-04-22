@@ -10,11 +10,12 @@
  * GEN-02: `fixed[]` pass-through re-prefixes the user-supplied external_id and
  * defaults `project_id` to `ctx.projectId`; all other user fields pass through.
  *
- * Sentinel policy: this generator does NOT emit `_constituencyGroups` — the
- * sentinel is populated by Plan 07's post-topo pass after every generator has
- * run, so the full `ctx.refs.constituency_groups` is known. Keeping generator
- * output sentinel-free also means unit tests can assert raw `TablesInsert`
- * shape without filtering sentinels.
+ * Sentinel policy: this generator does NOT emit the constituency-groups join
+ * sentinel — that sentinel (see RESEARCH §4.3) is populated by Plan 07's
+ * post-topo pass after every generator has run, so the full
+ * `ctx.refs.constituency_groups` is known. Keeping generator output
+ * sentinel-free also means unit tests can assert raw `TablesInsert` shape
+ * without filtering sentinels.
  *
  * Scope — Phase 56 emits English-only localized `name` / `short_name`; Phase 58
  * layers the `generateTranslationsForAllLocales` fan-out (TMPL-07).

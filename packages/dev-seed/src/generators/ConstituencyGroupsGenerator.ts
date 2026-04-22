@@ -2,9 +2,9 @@
  * ConstituencyGroupsGenerator — foundation generator for `constituency_groups`.
  *
  * Standard DataObject scaffolding (RESEARCH §4.4): `project_id` is the only
- * required column; no content FKs to other generated rows. The
- * `_constituencies` sentinel is populated by Plan 07's post-topo pass once
- * every generator has run (same two-pass pattern as ElectionsGenerator).
+ * required column; no content FKs to other generated rows. The constituencies
+ * join sentinel (see RESEARCH §4.4) is populated by Plan 07's post-topo pass
+ * once every generator has run (same two-pass pattern as ElectionsGenerator).
  *
  * D-04/D-26/D-08 + GEN-02/GEN-04 apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
