@@ -106,9 +106,11 @@ export class Writer {
    *   1. Strip D-11 routing-exempt tables (`accounts`, `projects`) from the
    *      bulk payload.
    *   2. Remove `feedback` and `app_settings` — handled separately.
-   *   3. `bulkImport` — single-transaction write of 10 tables (D-12 / NF-05
-   *      rollback: atomic). `bulk_import`'s internal `processing_order` resolves
-   *      ref sentinels between collections.
+   *   3. `bulkImport` — single transaction write of 10 tables (D-12 / NF-05
+   *      rollback: atomic; `bulk_import` runs inside a single transaction so
+   *      any collection-level failure rolls back the entire batch).
+   *      `bulk_import`'s internal `processing_order` resolves ref sentinels
+   *      between collections.
    *   4. `importAnswers` — stitches `candidate.answersByExternalId` →
    *      `candidate.answers` JSONB by resolving question external_ids to UUIDs
    *      (separate transaction).

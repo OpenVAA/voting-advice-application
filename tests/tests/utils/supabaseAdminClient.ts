@@ -1,52 +1,72 @@
 /**
  * Supabase Admin Client for E2E test data management.
  *
- * A stateless wrapper around `@supabase/supabase-js` initialized with the service_role key.
- * No login/dispose lifecycle needed -- the service_role key is self-authenticating.
+ * Subclasses the bulk-write base from `@openvaa/dev-seed` (per D-24 split, Phase 56).
+ * The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers,
+ * linkJoinTables, updateAppSettings). This subclass adds the auth/email +
+ * legacy E2E query helpers that tests/ needs but dev-seed does not — keeping
+ * the dev-seed surface narrow.
  *
- * Methods cover: bulk data import/delete, auth user management, app settings
- * deep merge, answer import with question UUID resolution, and M:N join table linking.
+ * Inherited from `DevSeedAdminClient`:
+ *   - `constructor(url?, serviceRoleKey?, projectId?)`
+ *   - `protected client: SupabaseClient`
+ *   - `protected projectId: string`
+ *   - `public bulkImport(data)`
+ *   - `public bulkDelete(collections)`
+ *   - `public importAnswers(data)`
+ *   - `public linkJoinTables(data)`
+ *   - `public updateAppSettings(partialSettings)`
+ *
+ * Added by this subclass:
+ *   - Auth helpers (private): `fixGoTrueNulls`, `safeListUsers`
+ *   - E2E query helpers: `findData`, `query`, `update`
+ *   - Auth actions: `setPassword`, `forceRegister`, `unregisterCandidate`,
+ *     `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
+ *
+ * Existing call sites `new SupabaseAdminClient()` or
+ * `new SupabaseAdminClient(url, key, projectId)` work unchanged — the constructor
+ * is inherited from the parent.
  *
  * @example
  * ```ts
  * const client = new SupabaseAdminClient();
- * await client.bulkImport({ elections: [...], candidates: [...] });
+ * await client.bulkImport({ elections: [...], candidates: [...] });   // inherited
  * await client.importAnswers({ candidates: [{ answersByExternalId: {...} }] });
  * await client.linkJoinTables({ elections: [...], constituency_groups: [...] });
  * await client.bulkDelete({ elections: { prefix: 'test-' } });
+ * await client.forceRegister('cand-1', 'cand-1@example.com', 'pw');    // subclass
  * ```
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseAdminClient as DevSeedAdminClient, TEST_PROJECT_ID } from '@openvaa/dev-seed';
 import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
+import type { FindDataResult } from '@openvaa/dev-seed';
 
-/**
- * Stable UUID for the default test project, from seed.sql.
- */
-export const TEST_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
+// Re-exports for backward-compat with existing E2E imports.
+// `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
+// these from `./utils/supabaseAdminClient` — preserving the path + names.
+export { TEST_PROJECT_ID };
+export type { FindDataResult };
 
 /**
  * Default Supabase URL for local development (supabase start).
+ * Used by `sendEmail`/`sendForgotPassword` for the frontend redirect URL.
  */
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 
 /**
- * Default service_role key for local development (supabase start).
- * This is the standard demo key embedded in the local Supabase CLI.
- */
-const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
-
-/**
  * Maps camelCase collection names to Supabase snake_case table names.
  * Extends TABLE_MAP with legacy/alias mappings for backward compatibility.
+ *
+ * Duplicated locally (mirrors the dev-seed base) so `findData` / `query`
+ * can translate camelCase collection names without re-exporting a private
+ * helper from the dev-seed package.
  */
 const COLLECTION_MAP: Record<string, string> = {
   ...TABLE_MAP,
   // Legacy aliases
   parties: 'organizations',
-  questionTypes: 'question_types',
+  questionTypes: 'question_types'
 };
 
 /**
@@ -56,17 +76,8 @@ const COLLECTION_MAP: Record<string, string> = {
 const FIELD_MAP: Record<string, string> = {
   ...PROPERTY_MAP,
   // Legacy aliases
-  documentId: 'id',
+  documentId: 'id'
 };
-
-/**
- * Result of a find operation.
- */
-export interface FindDataResult {
-  type: 'success' | 'failure';
-  data?: Array<Record<string, unknown>>;
-  cause?: string;
-}
 
 /**
  * Resolve a collection name: if it matches a COLLECTION_MAP entry, use that;
@@ -84,42 +95,37 @@ function resolveFieldName(field: string): string {
   return FIELD_MAP[field] ?? field;
 }
 
-export class SupabaseAdminClient {
-  private client: SupabaseClient;
-  private projectId: string;
-
-  constructor(url?: string, serviceRoleKey?: string, projectId?: string) {
-    this.client = createClient(url ?? SUPABASE_URL, serviceRoleKey ?? SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
-    this.projectId = projectId ?? TEST_PROJECT_ID;
-  }
-
+export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Fix GoTrue NULL column bug: sets empty-string defaults on auth.users columns
    * that GoTrue expects to be non-NULL. Must be called before any listUsers operation.
    * Uses a direct SQL query via the service_role client.
    */
   private async fixGoTrueNulls(): Promise<void> {
-    await this.client.rpc('merge_jsonb_column', {
-      p_table_name: '_dummy_',
-      p_column_name: '_dummy_',
-      p_row_id: '00000000-0000-0000-0000-000000000000',
-      p_partial_data: {}
-    }).then(() => {}, () => {}); // Ignore errors, just ensure connection is warm
+    await this.client
+      .rpc('merge_jsonb_column', {
+        p_table_name: '_dummy_',
+        p_column_name: '_dummy_',
+        p_row_id: '00000000-0000-0000-0000-000000000000',
+        p_partial_data: {}
+      })
+      .then(
+        () => {},
+        () => {}
+      ); // Ignore errors, just ensure connection is warm
 
     // Use raw SQL via PostgREST - this runs as service_role which has auth admin rights
     const { error } = await this.client.from('user_roles').select('id').limit(0);
     if (error) return; // Can't even read, skip
 
     // Fix NULLs via direct REST call to the database
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/merge_jsonb_column`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/rpc/merge_jsonb_column`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Prefer': 'return=minimal'
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''}`,
+        Prefer: 'return=minimal'
       },
       body: JSON.stringify({
         p_table_name: '_fix_gotrue_nulls_',
@@ -136,381 +142,15 @@ export class SupabaseAdminClient {
    * If listUsers fails, returns an empty array instead of throwing.
    */
   private async safeListUsers(): Promise<Array<{ id: string; email?: string; [key: string]: unknown }>> {
-    const { data: { users }, error } = await this.client.auth.admin.listUsers();
+    const {
+      data: { users },
+      error
+    } = await this.client.auth.admin.listUsers();
     if (error) {
       console.warn(`listUsers failed (GoTrue NULL column bug?): ${JSON.stringify(error)}`);
       return [];
     }
     return users as Array<{ id: string; email?: string; [key: string]: unknown }>;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Bulk data operations
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Bulk import data via the bulk_import RPC.
-   *
-   * @param data - Object mapping collection names to arrays of records to import
-   * @returns The bulk_import result JSON with created/updated counts per collection
-   * @throws Error if the RPC call fails
-   */
-  async bulkImport(data: Record<string, unknown[]>): Promise<Record<string, unknown>> {
-    // Non-column fields to strip (handled separately)
-    const NON_COLUMN_FIELDS = new Set(['answersByExternalId']);
-    const COLLECTION_NON_COLUMNS: Record<string, Set<string>> = {
-      candidates: new Set(['email'])
-    };
-
-    const cleaned: Record<string, unknown[]> = {};
-    for (const [collection, records] of Object.entries(data)) {
-      // Convert collection name to snake_case table name
-      const tableName = resolveCollectionName(collection);
-      const extraStrip = COLLECTION_NON_COLUMNS[tableName];
-      cleaned[tableName] = (records as Array<Record<string, unknown>>).map((record) => {
-        const stripped: Record<string, unknown> = {};
-        // Nominations are polymorphic: only one entity FK allowed (candidate OR organization).
-        // When a candidate nomination has an 'organization' field (the candidate's party),
-        // strip it to avoid check constraint violation. But for organization nominations
-        // (no 'candidate' field), keep 'organization' as it's the nominated entity.
-        const isNomination = tableName === 'nominations';
-        const hasCandidateRef = isNomination && ('candidate' in record || 'candidateExternalId' in record);
-        for (const [key, value] of Object.entries(record)) {
-          if (key.startsWith('_') || NON_COLUMN_FIELDS.has(key) || extraStrip?.has(key)) continue;
-          if (isNomination && key === 'organization' && hasCandidateRef) continue;
-          // Convert camelCase property to snake_case column
-          const snakeKey = resolveFieldName(key);
-          // Convert nested relationship reference objects: {externalId: "..."} → {external_id: "..."}
-          if (value && typeof value === 'object' && !Array.isArray(value) && 'externalId' in (value as Record<string, unknown>)) {
-            stripped[snakeKey] = { external_id: (value as Record<string, unknown>).externalId };
-          } else {
-            stripped[snakeKey] = value;
-          }
-        }
-        return stripped;
-      });
-    }
-    const { data: result, error } = await this.client.rpc('bulk_import', {
-      p_data: cleaned as Record<string, unknown>
-    });
-    if (error) throw new Error(`bulkImport failed: ${error.message}`);
-    return result as Record<string, unknown>;
-  }
-
-  /**
-   * Bulk delete data via the bulk_delete RPC.
-   *
-   * @param collections - Object mapping collection names to deletion criteria
-   * @returns The bulk_delete result JSON with deleted counts per collection
-   * @throws Error if the RPC call fails
-   */
-  async bulkDelete(
-    collections: Record<string, { prefix?: string; ids?: string[]; external_ids?: string[] }>
-  ): Promise<Record<string, unknown>> {
-    const { data: result, error } = await this.client.rpc('bulk_delete', {
-      p_data: {
-        project_id: this.projectId,
-        collections
-      }
-    });
-    if (error) throw new Error(`bulkDelete failed: ${error.message}`);
-    return result as Record<string, unknown>;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Answer import with question UUID resolution
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Import answers from dataset entries that use `answersByExternalId`.
-   *
-   * After bulk_import creates questions and candidates, this method resolves
-   * question external_ids to UUIDs, builds the `answers` JSONB, and updates
-   * each candidate record.
-   *
-   * @param data - The same dataset passed to bulkImport, containing candidates
-   *   with `answersByExternalId` fields
-   */
-  async importAnswers(data: Record<string, unknown[]>): Promise<void> {
-    const candidates = data.candidates as Array<Record<string, unknown>> | undefined;
-    if (!candidates) return;
-
-    // Collect all question external_ids referenced across all candidates
-    const questionExtIds = new Set<string>();
-    for (const candidate of candidates) {
-      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as Record<string, unknown> | undefined;
-      if (!answersByExtId) continue;
-      for (const extId of Object.keys(answersByExtId)) {
-        questionExtIds.add(extId);
-      }
-    }
-
-    if (questionExtIds.size === 0) return;
-
-    // Query question UUIDs by external_id
-    const { data: questions, error: qError } = await this.client
-      .from('questions')
-      .select('id, external_id')
-      .in('external_id', [...questionExtIds])
-      .eq('project_id', this.projectId);
-
-    if (qError) throw new Error(`importAnswers: failed to query questions: ${qError.message}`);
-    if (!questions || questions.length === 0) {
-      throw new Error(`importAnswers: no questions found for external_ids: ${[...questionExtIds].join(', ')}`);
-    }
-
-    // Build external_id -> UUID map
-    const extIdToUuid = new Map<string, string>();
-    for (const q of questions) {
-      extIdToUuid.set(q.external_id, q.id);
-    }
-
-    // For each candidate with answersByExternalId, build UUID-keyed answers and update
-    for (const candidate of candidates) {
-      const answersByExtId = (candidate.answersByExternalId ?? candidate.answers_by_external_id) as Record<string, unknown> | undefined;
-      if (!answersByExtId) continue;
-
-      const candidateExtId = (candidate.externalId ?? candidate.external_id) as string;
-      if (!candidateExtId) continue;
-
-      // Build answers JSONB keyed by question UUID
-      const answers: Record<string, unknown> = {};
-      for (const [extId, answer] of Object.entries(answersByExtId)) {
-        const uuid = extIdToUuid.get(extId);
-        if (uuid) {
-          answers[uuid] = answer;
-        }
-      }
-
-      // Look up candidate id by external_id
-      const { data: candidateRow, error: cError } = await this.client
-        .from('candidates')
-        .select('id')
-        .eq('external_id', candidateExtId)
-        .eq('project_id', this.projectId)
-        .single();
-
-      if (cError) throw new Error(`importAnswers: failed to find candidate ${candidateExtId}: ${cError.message}`);
-
-      // Update candidate answers
-      const { error: uError } = await this.client
-        .from('candidates')
-        .update({ answers })
-        .eq('id', candidateRow.id);
-
-      if (uError) {
-        throw new Error(`importAnswers: failed to update candidate ${candidateExtId} answers: ${uError.message}`);
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // M:N join table linking
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Populate M:N join tables after bulk_import.
-   *
-   * Scans imported data for:
-   * - `elections[].constituency_groups` -> election_constituency_groups
-   * - `constituency_groups[].constituencies` -> constituency_group_constituencies
-   *
-   * Resolves external_ids to UUIDs and inserts into join tables.
-   *
-   * @param data - The same dataset passed to bulkImport
-   */
-  async linkJoinTables(data: Record<string, unknown[]>): Promise<void> {
-    // Link election -> constituency_groups
-    const elections = data.elections as Array<Record<string, unknown>> | undefined;
-    if (elections) {
-      for (const election of elections) {
-        const cgRefObj =
-          (election._constituencyGroups as { externalId?: string[]; external_id?: string[] } | undefined) ??
-          (election._constituency_groups as { externalId?: string[]; external_id?: string[] } | undefined);
-        const cgRefs =
-          (cgRefObj?.externalId ?? cgRefObj?.external_id)?.map(
-            (id: string) => ({ external_id: id })
-          ) ??
-          (election.constituencyGroups as Array<Record<string, string>>) ??
-          (election.constituency_groups as Array<Record<string, string>>);
-        if (!cgRefs || !Array.isArray(cgRefs)) continue;
-
-        const electionExtId = (election.externalId ?? election.external_id) as string;
-        if (!electionExtId) continue;
-
-        // Resolve election UUID
-        const { data: electionRow, error: eError } = await this.client
-          .from('elections')
-          .select('id')
-          .eq('external_id', electionExtId)
-          .eq('project_id', this.projectId)
-          .single();
-        if (eError) throw new Error(`linkJoinTables: failed to find election ${electionExtId}: ${eError.message}`);
-
-        for (const cgRef of cgRefs) {
-          const cgExtId = cgRef.external_id ?? cgRef.externalId;
-          if (!cgExtId) continue;
-
-          // Resolve constituency_group UUID
-          const { data: cgRow, error: cgError } = await this.client
-            .from('constituency_groups')
-            .select('id')
-            .eq('external_id', cgExtId)
-            .eq('project_id', this.projectId)
-            .single();
-          if (cgError) {
-            throw new Error(
-              `linkJoinTables: failed to find constituency_group ${cgExtId}: ${cgError.message}`
-            );
-          }
-
-          // Insert join table row (ignore conflicts for idempotency)
-          const { error: insertError } = await this.client
-            .from('election_constituency_groups')
-            .upsert(
-              { election_id: electionRow.id, constituency_group_id: cgRow.id },
-              { onConflict: 'election_id,constituency_group_id' }
-            );
-          if (insertError) {
-            throw new Error(
-              `linkJoinTables: failed to insert election_constituency_groups: ${insertError.message}`
-            );
-          }
-        }
-      }
-    }
-
-    // Link constituency_group -> constituencies
-    const cgs = (data.constituencyGroups ?? data.constituency_groups) as Array<Record<string, unknown>> | undefined;
-    if (cgs) {
-      for (const cg of cgs) {
-        const constRefObj = (cg._constituencies as { externalId?: string[]; external_id?: string[] } | undefined);
-        const constRefs =
-          (constRefObj?.externalId ?? constRefObj?.external_id)?.map(
-            (id: string) => ({ external_id: id })
-          ) ??
-          (cg.constituencies as Array<Record<string, string>> | undefined);
-        if (!constRefs || !Array.isArray(constRefs)) continue;
-
-        const cgExtId = (cg.externalId ?? cg.external_id) as string;
-        if (!cgExtId) continue;
-
-        // Resolve constituency_group UUID
-        const { data: cgRow, error: cgError } = await this.client
-          .from('constituency_groups')
-          .select('id')
-          .eq('external_id', cgExtId)
-          .eq('project_id', this.projectId)
-          .single();
-        if (cgError) {
-          throw new Error(`linkJoinTables: failed to find constituency_group ${cgExtId}: ${cgError.message}`);
-        }
-
-        for (const constRef of constRefs) {
-          const constExtId = constRef.external_id ?? constRef.externalId;
-          if (!constExtId) continue;
-
-          // Resolve constituency UUID
-          const { data: constRow, error: cError } = await this.client
-            .from('constituencies')
-            .select('id')
-            .eq('external_id', constExtId)
-            .eq('project_id', this.projectId)
-            .single();
-          if (cError) {
-            throw new Error(
-              `linkJoinTables: failed to find constituency ${constExtId}: ${cError.message}`
-            );
-          }
-
-          // Insert join table row (ignore conflicts for idempotency)
-          const { error: insertError } = await this.client
-            .from('constituency_group_constituencies')
-            .upsert(
-              { constituency_group_id: cgRow.id, constituency_id: constRow.id },
-              { onConflict: 'constituency_group_id,constituency_id' }
-            );
-          if (insertError) {
-            throw new Error(
-              `linkJoinTables: failed to insert constituency_group_constituencies: ${insertError.message}`
-            );
-          }
-        }
-      }
-    }
-
-    // Link question_categories -> elections (via election_ids JSONB column)
-    const categories = (data.questionCategories ?? data.question_categories) as Array<Record<string, unknown>> | undefined;
-    if (categories) {
-      for (const category of categories) {
-        const electionRefs = (category._elections as { externalId?: string[]; external_id?: string[] } | undefined);
-        const electionExtIds = electionRefs?.externalId ?? electionRefs?.external_id;
-        if (!electionExtIds?.length) continue;
-
-        const catExtId = (category.externalId ?? category.external_id) as string;
-        if (!catExtId) continue;
-
-        // Resolve election UUIDs
-        const electionIds: string[] = [];
-        for (const elExtId of electionExtIds) {
-          const { data: elRow, error: elError } = await this.client
-            .from('elections')
-            .select('id')
-            .eq('external_id', elExtId)
-            .eq('project_id', this.projectId)
-            .single();
-          if (elError)
-            throw new Error(`linkJoinTables: failed to find election ${elExtId}: ${elError.message}`);
-          electionIds.push(elRow.id);
-        }
-
-        // Update the question_category with resolved election_ids
-        const { error: updateError } = await this.client
-          .from('question_categories')
-          .update({ election_ids: electionIds })
-          .eq('external_id', catExtId)
-          .eq('project_id', this.projectId);
-        if (updateError) {
-          throw new Error(
-            `linkJoinTables: failed to update question_category ${catExtId} election_ids: ${updateError.message}`
-          );
-        }
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // App settings
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Deep-merge partial settings into the app_settings.settings JSONB column.
-   *
-   * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only
-   * need to send the settings they want to change.
-   *
-   * @param partialSettings - Partial settings object to deep-merge
-   * @throws Error if the app_settings row is not found or the merge fails
-   */
-  async updateAppSettings(partialSettings: Record<string, unknown>): Promise<void> {
-    // Get the app_settings row ID for this project
-    const { data: row, error: fetchError } = await this.client
-      .from('app_settings')
-      .select('id')
-      .eq('project_id', this.projectId)
-      .single();
-
-    if (fetchError) throw new Error(`updateAppSettings: failed to fetch app_settings: ${fetchError.message}`);
-
-    // Deep merge via RPC
-    const { error } = await this.client.rpc('merge_jsonb_column', {
-      p_table_name: 'app_settings',
-      p_column_name: 'settings',
-      p_row_id: row.id,
-      p_partial_data: partialSettings
-    });
-
-    if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
   }
 
   // ---------------------------------------------------------------------------
@@ -527,10 +167,7 @@ export class SupabaseAdminClient {
    * @param filters - Filter object with `{ field: { $eq: value } }` syntax
    * @returns FindDataResult with matching records
    */
-  async findData(
-    collection: string,
-    filters: Record<string, unknown>
-  ): Promise<FindDataResult> {
+  async findData(collection: string, filters: Record<string, unknown>): Promise<FindDataResult> {
     const tableName = resolveCollectionName(collection);
     let query = this.client.from(tableName).select('*');
 
@@ -545,7 +182,7 @@ export class SupabaseAdminClient {
         } else if ('$ne' in filterObj) {
           query = query.neq(snakeKey, filterObj.$ne as string);
         } else if ('$in' in filterObj) {
-          query = query.in(snakeKey, filterObj.$in as string[]);
+          query = query.in(snakeKey, filterObj.$in as Array<string>);
         } else if ('$like' in filterObj) {
           query = query.like(snakeKey, filterObj.$like as string);
         } else {
@@ -705,10 +342,7 @@ export class SupabaseAdminClient {
     if (clearError) throw new Error(`unregisterCandidate: clear auth_user_id failed: ${clearError.message}`);
 
     // 3. Delete user roles
-    const { error: roleError } = await this.client
-      .from('user_roles')
-      .delete()
-      .eq('user_id', user.id);
+    const { error: roleError } = await this.client.from('user_roles').delete().eq('user_id', user.id);
     if (roleError) throw new Error(`unregisterCandidate: delete user_roles failed: ${roleError.message}`);
 
     // 4. Delete auth user
@@ -747,17 +381,16 @@ export class SupabaseAdminClient {
       .single();
 
     if (cError) {
-      throw new Error(
-        `sendEmail: failed to find candidate ${params.candidateExternalId}: ${cError.message}`
-      );
+      throw new Error(`sendEmail: failed to find candidate ${params.candidateExternalId}: ${cError.message}`);
     }
 
     if (candidate.auth_user_id) {
       // Candidate already has an auth user -- generate a magic link
       // which sends an email via Inbucket
-      const { data: { user }, error: getUserError } = await this.client.auth.admin.getUserById(
-        candidate.auth_user_id
-      );
+      const {
+        data: { user },
+        error: getUserError
+      } = await this.client.auth.admin.getUserById(candidate.auth_user_id);
       if (getUserError || !user?.email) {
         throw new Error(`sendEmail: failed to get auth user for candidate: ${getUserError?.message}`);
       }
@@ -837,16 +470,11 @@ export class SupabaseAdminClient {
   async deleteAllTestUsers(): Promise<void> {
     const users = await this.safeListUsers();
 
-    const testUsers = users.filter(
-      (u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test'))
-    );
+    const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
 
     for (const user of testUsers) {
       // Clear auth_user_id on candidates
-      await this.client
-        .from('candidates')
-        .update({ auth_user_id: null })
-        .eq('auth_user_id', user.id);
+      await this.client.from('candidates').update({ auth_user_id: null }).eq('auth_user_id', user.id);
 
       // Delete user roles
       await this.client.from('user_roles').delete().eq('user_id', user.id);
