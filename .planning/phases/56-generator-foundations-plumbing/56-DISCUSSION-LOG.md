@@ -5,7 +5,7 @@
 
 **Date:** 2026-04-22
 **Phase:** 56-generator-foundations-plumbing
-**Areas discussed:** Generator shape + override, Bulk-write path + client home, Template schema + validator, Stub answers + testing
+**Areas discussed:** Generator shape + override, Bulk-write path + client home, Template schema + validator, Stub answers + testing; refinement pass 2026-04-22 — Admin client move scope, Override signature + class/fn reconciliation, Phase 56/57 answer-emitter seam, dev-seed package shape
 
 ---
 
@@ -229,13 +229,91 @@ User redirected: "Actually, make this generator its own package @openvaa/dev-dat
 
 ---
 
+---
+
+## Refinement Pass (2026-04-22)
+
+Second pass on the committed CONTEXT.md. User opted to "update it" before
+chaining into plan+execute. Four residual gray areas surfaced and closed.
+
+### Gray Area Selection (refinement pass)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Admin client move scope | D-13 moves ALL of SupabaseAdminClient (859 lines) — including auth/email helpers and legacy E2E utilities — to dev-seed. Narrow alternative: move bulk-write surface only. | ✓ |
+| Override signature (ctx or no ctx) | GEN-03 literally says `(fragment) => Rows`; D-05 silently extended to `(fragment, ctx) => Rows[]`. Reconcile. | ✓ |
+| Phase 56/57 answer-emitter seam | Factor a replaceable hook for Phase 57 now, or refactor in place when Phase 57 lands. | ✓ |
+| dev-seed package publishability | Private workspace (like dev-tools) vs publishable (like core) vs private-now/publish-ready. | ✓ |
+
+**User's choice:** All four ("Show me all of these at once" — batched).
+
+---
+
+## Admin client move scope
+
+### Q1: How narrow should the SupabaseAdminClient move be?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Wholesale (D-13 as written) | Move the whole 859-line file to @openvaa/dev-seed. Dev-seed ends up owning auth/email helpers that aren't seeding. | |
+| Narrow (bulk-write only) | Split: dev-seed owns bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings, ctor, maps. Auth + findData/query/update stay in tests/ as a subclass or wrapper. | ✓ |
+| Defer to Phase 59 (E2E-04) | Keep SupabaseAdminClient in tests/; dev-seed imports from tests/. Zero code move in Phase 56. | |
+
+**User's choice:** Narrow (bulk-write only) — recorded as D-24.
+
+---
+
+## Override signature
+
+### Q1: Lock the public override signature and reconcile with GEN-03.
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| (fragment, ctx) => Rows[] | Keep D-05 as written; overrides receive ctx. Requires one-line REQUIREMENTS.md amendment on GEN-03. | ✓ |
+| (fragment) => Rows[] (strict GEN-03) | Honor GEN-03 literally; no ctx in overrides. | |
+| Dual API: closure helper | Public stays `(fragment) => Rows`; ship `createOverride((fragment, ctx) => ...)` helper. | |
+
+**User's choice:** (fragment, ctx) => Rows[] — recorded as D-25.
+**Notes:** "1, unless we can bake the ctx into the class instances if those are applicable there." — Resolved as D-26: class-based built-in generators capture ctx at construction (`new CandidateGenerator(ctx)`), so `generate(fragment)` uses `this.ctx`; override functions still receive ctx per call. Pipeline bridges the asymmetry.
+
+---
+
+## Phase 56/57 answer-emitter seam
+
+### Q1: How should Phase 56 pre-factor the seam for Phase 57's latent-factor model?
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Minimal ctx hook | `ctx.answerEmitter?.(candidate, questions, ctx) ?? defaultRandomValidEmit(...)`. Phase 57 supplies a different function. No class hierarchy. | ✓ |
+| Full abstraction now | AnswerEmitter interface/abstract class in Phase 56. Phase 57 ships a LatentAnswerEmitter implementation. | |
+| In-place refactor in Phase 57 | Inline stub now; Phase 57's first task is "extract, then plug in." | |
+
+**User's choice:** Minimal ctx hook — recorded as D-27.
+
+---
+
+## dev-seed package publishability
+
+### Q1: @openvaa/dev-seed package.json shape.
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Private workspace (like dev-tools) | `"private": true`, tsx runner, no build step, no exports map, no publishConfig. | ✓ |
+| Publishable (like core) | tsup build, full exports map, MIT license, publishConfig: public, files: [dist]. | |
+| Private-now, publish-ready | Private flag keeps it off npm; tsup + exports surface is already there. Flipping is a one-line change later. | |
+
+**User's choice:** Private workspace — recorded as D-28. Also closes the prior "tsup vs tsc" Claude's-Discretion item.
+
+---
+
 ## Claude's Discretion
 
 - Directory layout inside `packages/dev-seed/src/`
 - Public entry point naming (`Seeder`, `seedDatabase`, `runSeeder`, ...)
 - Ctx logger shape (callback, event emitter, console-like object)
 - Whether `feedback` ships as a real generator or a minimal stub module in Phase 56
-- tsup vs tsc vs tsx-only build config for `@openvaa/dev-seed`
+- Exact mechanics of the `tests/` admin-client shell — subclass vs composition wrapper (per D-24)
+- Whether `ctx.answerEmitter` (D-27) is top-level or nested under `ctx.emitters.answer`
 
 ## Deferred Ideas
 

@@ -185,6 +185,82 @@ Carried forward from milestone-level context (no re-asking):
   against a real local Supabase is **Phase 58's DX-03** — not required in
   Phase 56.
 
+### Refinement Pass (2026-04-22)
+
+Four residual gray areas closed before planning. Each refines an earlier
+decision; originals above stand modulo the notes below.
+
+#### Admin Client Split (refines D-13, D-14)
+- **D-24:** `SupabaseAdminClient` is **split, not wholesale-moved**.
+  `@openvaa/dev-seed` owns only the bulk-write surface: `bulkImport`,
+  `bulkDelete`, `importAnswers`, `linkJoinTables`, `updateAppSettings`, the
+  constructor, the shared `COLLECTION_MAP` / `FIELD_MAP` helpers, and the
+  `TEST_PROJECT_ID` constant. Auth/email helpers (`setPassword`,
+  `forceRegister`, `unregisterCandidate`, `sendEmail`, `sendForgotPassword`,
+  `deleteAllTestUsers`, `safeListUsers`, `fixGoTrueNulls`) and the legacy
+  E2E utilities (`findData`, `query`, `update`, `documentId` alias) stay in
+  `tests/` as a thin subclass (or composition wrapper) that extends / uses
+  the dev-seed base. Roughly: ~300-line dev-seed base + ~400-line tests-only
+  shell. Tests workspace adds `"@openvaa/dev-seed": "workspace:^"` to import
+  the base; the old `tests/tests/utils/supabaseAdminClient.ts` is rewritten
+  (not deleted) to re-export + extend the base. Supersedes D-13's wholesale
+  framing.
+
+#### Override Signature + Class ↔ Function Reconciliation (refines D-04, D-05; amends GEN-03)
+- **D-25:** **Public override signature is `(fragment, ctx) => Rows[]`.**
+  This extends GEN-03's documented `(fragment) => Rows` signature. A one-line
+  amendment to REQUIREMENTS.md GEN-03 captures the extended shape (see
+  Specifics). Rationale: overrides need `ctx` to read
+  `ctx.refs.organizations`, use the seeded faker, and see
+  `projectId` / `externalIdPrefix` without reaching into globals. A
+  fragment-only signature would make most non-trivial overrides impossible.
+- **D-26:** **Built-in generator classes capture `ctx` at construction,
+  not per call.** Pipeline instantiates each generator once with
+  `new CandidateGenerator(ctx)`; the public `generate(fragment)` method
+  operates on `this.ctx`. The pipeline bridges the asymmetry:
+  ```ts
+  const gen = new CandidateGenerator(ctx);
+  const rows = overrides.candidates?.(fragment, ctx)
+    ?? gen.generate(fragment);
+  ```
+  Class surface stays ergonomic (tests stub ctx once at construction),
+  override path stays pure-function and ctx-transparent. Reconciles the
+  D-04/D-05 asymmetry and the `defaults(ctx)` method of D-08 (which remains
+  a per-call method because template-merge happens at resolve time, not at
+  construction).
+
+#### Phase 56 → 57 Answer Emitter Seam (refines D-19, D-21)
+- **D-27:** Phase 56 candidate generator uses a **minimal ctx-level hook**
+  for answer emission:
+  ```ts
+  const emit = ctx.answerEmitter ?? defaultRandomValidEmit;
+  candidate.answers = emit(candidate, questions, ctx);
+  ```
+  `defaultRandomValidEmit` is the D-19 random-valid stub. Phase 57 supplies
+  a latent-factor implementation by setting `ctx.answerEmitter` (resolved
+  from a Phase 57 template field). **No class hierarchy, no `AnswerEmitter`
+  interface ceremony** — a single function pointer. Phase 56 exposes this
+  as a unit-test hook (inject a deterministic emitter to assert answer
+  shape / determinism). YAGNI-clean seam: Phase 57 drops a function into the
+  pipeline; the candidate generator itself does not change.
+
+#### `@openvaa/dev-seed` Package Shape (refines D-01; resolves a Claude's Discretion item)
+- **D-28:** `@openvaa/dev-seed` is a **private workspace package**, not
+  publishable. Package.json shape mirrors `@openvaa/dev-tools`:
+  - `"private": true` — no npm publish surface
+  - `"type": "module"`
+  - Scripts: `build` (echo no-op), `lint`, `typecheck`, `test:unit`
+  - No `files`, no `exports` map, no `publishConfig`, no `license`
+  - tsx-only runner; no tsup build step
+  - Workspace consumers (`tests/`, future `@openvaa/dev-seed` CLI in
+    Phase 58) import via `"@openvaa/dev-seed": "workspace:^"` and resolve
+    through tsx + Turborepo transparently.
+  Rationale: milestone intent is internal dev tooling; external
+  publishability would add a stability contract we don't need. Flipping
+  private → public post-milestone is a package.json diff, not a rewrite.
+  Supersedes D-01's "independent release cadence if ever needed" clause
+  and resolves the prior "tsup vs tsc" Claude's-Discretion item.
+
 ### Claude's Discretion
 - Exact file / directory layout inside `packages/dev-seed/src/` (e.g.
   `generators/`, `template/`, `writer.ts`, `pipeline.ts`) — planner's call.
@@ -194,9 +270,11 @@ Carried forward from milestone-level context (no re-asking):
   needs.
 - Whether `feedback` ships in Phase 56 at all or stays a stub module (D-11
   requires a direct `.upsert()` path — planner can scope it as minimal).
-- tsup vs tsc build config for the new package — match the closest existing
-  workspace (dev-tools is tsx-only; @openvaa/core uses tsup; dev-seed is not
-  publish-bound, so tsx is likely sufficient).
+- Exact mechanics of the `tests/` admin-client shell (subclass vs composition
+  wrapper per D-24) — planner picks the lighter diff given the existing
+  call sites.
+- Whether `ctx.answerEmitter` (D-27) is a top-level ctx field or a nested
+  `ctx.emitters.answer` — naming-only, no behavior impact.
 
 ### Folded Todos
 None — `gsd-sdk todo.match-phase 56` returned zero matches.
@@ -270,9 +348,13 @@ planning or implementing.**
 ## Existing Code Insights
 
 ### Reusable Assets
-- **`tests/tests/utils/supabaseAdminClient.ts`** — full bulk-write surface
-  already implemented and battle-tested by E2E. Moves to `@openvaa/dev-seed`
-  in Phase 56 per D-13 (no rewrite, just relocation + new deps).
+- **`tests/tests/utils/supabaseAdminClient.ts`** — 859-line battle-tested
+  admin surface. Per D-24 it is **split**: bulk-write methods + ctor + maps
+  + `TEST_PROJECT_ID` move to `@openvaa/dev-seed` (~300 lines); auth/email
+  helpers + legacy E2E utilities (`findData`, `query`, `update`,
+  `documentId` alias) stay in `tests/` via a subclass or composition wrapper
+  that depends on the dev-seed base (~400 lines). No rewrite of logic — just
+  a scope cut along the bulk-write / auth boundary.
 - **`bulk_import` / `bulk_delete` SQL RPCs** — dependency-ordered upsert with
   external_id resolution; single-txn rollback; already granted to
   `authenticated` + invoker-RLS. Reused verbatim per D-09.
@@ -304,12 +386,14 @@ planning or implementing.**
 
 ### Integration Points
 - **New package**: `packages/dev-seed/` — added to root `workspaces: ["packages/*", ...]`
-  automatically.
+  automatically. Shape per D-28 (private workspace, tsx runner).
 - **Tests workspace**: currently imports `SupabaseAdminClient` from
-  `./tests/utils/supabaseAdminClient`. After D-13 it imports from
-  `@openvaa/dev-seed` (add `"@openvaa/dev-seed": "workspace:^"` to tests'
-  devDependencies). The old file is deleted in the same phase to avoid two
-  copies drifting.
+  `./tests/utils/supabaseAdminClient`. After D-24 the file is **rewritten**
+  (not deleted) to re-export the dev-seed base and add the auth / E2E
+  helpers on top via subclass or composition. Tests workspace adds
+  `"@openvaa/dev-seed": "workspace:^"` to its devDependencies. Existing
+  E2E call sites keep importing `SupabaseAdminClient` from the same path —
+  the shape is preserved, only the implementation splits.
 - **Root package.json**: no new scripts in Phase 56 (CLI is Phase 58). The
   `dev:foo` naming convention (D-02) is a forward-looking note.
 
@@ -333,6 +417,16 @@ planning or implementing.**
   `@openvaa/dev-tools` (GEN-05, GEN-10, CLI-01, CLI-02, CLI-03, DX-04) need a
   pass to replace with `@openvaa/dev-seed`. This is a doc-sync chore, not a
   Phase 56 implementation task, but the planner should call it out.
+- **GEN-03 amendment needed** — the literal signature in REQUIREMENTS.md
+  (`{ [table]: (fragment) => Rows }`) is incomplete per D-25. The planner
+  should ship a one-line amendment alongside Phase 56 execution:
+  `{ [table]: (fragment, ctx) => Rows[] }`. Captured here so downstream
+  agents don't treat the rewrite as scope creep.
+- **`{ }` template coverage includes `ctx.answerEmitter` default** — a unit
+  test should assert that with no `answerEmitter` supplied, candidates still
+  receive shape-valid random answers via `defaultRandomValidEmit` (D-27).
+  Ensures Phase 57's later override path doesn't accidentally make the
+  `{}` template unusable.
 
 </specifics>
 
