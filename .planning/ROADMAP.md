@@ -54,7 +54,16 @@ Plans:
   4. Each candidate's answer per question is the projection of its latent position through the question loadings plus a default noise term (small magnitude relative to latent spread, reducible to zero via template), mapped to the valid range of every question type (Likert, categorical choice, etc.).
   5. Running `@openvaa/matching` across the generated candidates shows visible party clustering (intra-party distances < inter-party distances by a measurable margin) and non-trivial inter-question correlations — verified by an integration test, not just by eye.
   6. Each of the six sub-steps (06a-06f) is exposed as a standalone hook on the pipeline and can be swapped by a consumer without editing neighboring steps; unit tests cover each hook in isolation.
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 57-01-PLAN.md — Foundation (workspace deps + LatentHooks types + boxMuller + Ctx.latent + TemplateSchema.latent)
+- [ ] 57-02-PLAN.md — defaultDimensions (D-57-01/02) + defaultSpread (D-57-04)
+- [ ] 57-03-PLAN.md — defaultCentroids (D-57-03/05, farthest-point)
+- [ ] 57-04-PLAN.md — defaultPositions (D-57-04 isotropic Gaussian per-candidate)
+- [ ] 57-05-PLAN.md — defaultLoadings (D-57-06/07 N(0,1) matrix + per-question override)
+- [ ] 57-06-PLAN.md — defaultProject (D-57-08/09/10/11 per-type dispatch) + QuestionsGenerator A2 fix
+- [ ] 57-07-PLAN.md — latentAnswerEmitter shell + pipeline wire-in + barrel exports + clustering integration test
 
 ### Phase 58: Templates, CLI & Default Dataset
 **Goal**: A developer runs one command (`yarn dev:reset-with-data`) against a freshly-reset local Supabase and gets a browseable, locale-complete, portrait-illustrated voting advice app — using only built-in templates. Custom templates load from arbitrary paths; `seed:teardown` cleanly reverses generator writes.
@@ -89,6 +98,6 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
-| 57. Latent-Factor Answer Model | 0/0 | Not started | - |
+| 57. Latent-Factor Answer Model | 0/7 | Not started | - |
 | 58. Templates, CLI & Default Dataset | 0/0 | Not started | - |
 | 59. E2E Fixture Migration | 0/0 | Not started | - |
