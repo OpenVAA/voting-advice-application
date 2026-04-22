@@ -154,6 +154,9 @@ Each major initiative is a separate milestone, executed in order:
 10. **Claude Skills (remaining)** — Architect, components, LLM skills
 11. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 12. **Security Scanning** — Automated security, secrets scanning, and testing
+13. **Svelte 5 Migration Cleanup** — Resolve deferred data-loading race condition, clear remaining runes-mode TODOs, retire toStore/fromStore bridges, re-enable the 19 skipped E2E tests
+14. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
+15. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
 
 ## Key Decisions
 
