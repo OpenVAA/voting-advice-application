@@ -168,15 +168,15 @@ A unified declarative template config with smart defaults; any collection can mi
 | GEN-08 | Phase 56 | Pending |
 | GEN-09 | Phase 58 | Pending |
 | GEN-10 | Phase 58 | Pending |
-| TMPL-01 | Phase 56 | Pending |
-| TMPL-02 | Phase 56 | Pending |
+| TMPL-01 | Phase 56 | Complete (56-03) |
+| TMPL-02 | Phase 56 | Complete (56-03) |
 | TMPL-03 | Phase 58 | Pending |
 | TMPL-04 | Phase 58 | Pending |
 | TMPL-05 | Phase 58 | Pending |
 | TMPL-06 | Phase 58 | Pending |
 | TMPL-07 | Phase 58 | Pending |
-| TMPL-08 | Phase 56 | Pending |
-| TMPL-09 | Phase 56 | Pending |
+| TMPL-08 | Phase 56 | Complete (56-03) |
+| TMPL-09 | Phase 56 | Complete (56-03) |
 | CLI-01 | Phase 58 | Pending |
 | CLI-02 | Phase 58 | Pending |
 | CLI-03 | Phase 58 | Pending |
@@ -192,6 +192,6 @@ A unified declarative template config with smart defaults; any collection can mi
 | DX-04 | Phase 58 | Pending |
 | NF-01 | Phase 56 | Pending |
 | NF-02 | Phase 56 | Pending |
-| NF-03 | Phase 56 | Pending |
+| NF-03 | Phase 56 | Complete (56-03) |
 | NF-04 | Phase 58 | Pending |
 | NF-05 | Phase 56 | Pending |

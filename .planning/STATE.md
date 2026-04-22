@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-02-PLAN.md
-last_updated: "2026-04-22T14:00:24.006Z"
+stopped_at: Completed 56-03-PLAN.md
+last_updated: "2026-04-22T14:15:44.394Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 2
-  percent: 20
+  completed_plans: 3
+  percent: 30
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 3 of 10
+Plan: 4 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -60,6 +60,10 @@ Key context for v2.5:
 - Phase shape: 56 = foundations/plumbing, 57 = latent-factor answer model (algorithmic slice), 58 = templates/CLI/default dataset (user-facing surface), 59 = E2E fixture migration (parity checkpoint before JSON-fixture deletion).
 - Plan 56-01: @openvaa/dev-seed scaffolded as tsx-only private workspace (D-28). Follows apps/frontend precedent for supabase-types import (no TS project reference). Uses vitest --passWithNoTests for empty-src baseline.
 - 56-02: SupabaseAdminClient base split into @openvaa/dev-seed per D-24; client/projectId made protected for tests/ subclass reuse
+- Plan 56-03: Faker seeded per-instance via .seed() on fresh Faker() instance (not module-level); plan's  is not a valid @faker-js/faker v10 API.
+- Plan 56-03: defaultRandomValidEmit uses function declaration (not const-arrow) to satisfy func-style:declaration eslint rule; seam contract preserved via explicit AnswerEmitter-typed assertion.
+- Plan 56-03: Template schema stays declarative (no .default()); defaults live in per-generator defaults(ctx) per D-08 so Phase 57/58 .extend() does not fight per-field defaults.
+- Plan 56-03: Shared types barrel (types.ts) re-exports only — Ctx/AnswerEmitter/Template stay in their canonical modules to avoid circular-import hazards while still giving consumers one import path.
 
 ### Blockers/Concerns
 
@@ -71,8 +75,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T14:00:18.355Z
-Stopped at: Completed 56-02-PLAN.md
+Last session: 2026-04-22T14:15:44.390Z
+Stopped at: Completed 56-03-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 
