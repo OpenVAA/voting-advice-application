@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-03-PLAN.md
-last_updated: "2026-04-22T14:15:44.394Z"
+stopped_at: Completed 56-04-PLAN.md
+last_updated: "2026-04-22T14:33:26.799Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 3
-  percent: 30
+  completed_plans: 4
+  percent: 40
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -64,6 +64,9 @@ Key context for v2.5:
 - Plan 56-03: defaultRandomValidEmit uses function declaration (not const-arrow) to satisfy func-style:declaration eslint rule; seam contract preserved via explicit AnswerEmitter-typed assertion.
 - Plan 56-03: Template schema stays declarative (no .default()); defaults live in per-generator defaults(ctx) per D-08 so Phase 57/58 .extend() does not fight per-field defaults.
 - Plan 56-03: Shared types barrel (types.ts) re-exports only — Ctx/AnswerEmitter/Template stay in their canonical modules to avoid circular-import hazards while still giving consumers one import path.
+- Plan 56-04: Foundation generators use canonical D-04/D-08/D-26 pattern — class with ctor capturing ctx, defaults(ctx) per-call, generate(fragment) returning TablesInsert rows; sentinel enrichment (_constituencyGroups, _constituencies) is explicitly DEFERRED to Plan 07's post-topo pass so generators stay sentinel-free for clean unit tests.
+- Plan 56-04: AccountsGenerator + ProjectsGenerator are explicit pass-through per D-11 (return [] + ctx.logger warn on non-empty fragment). The pattern — class with ctor/defaults/generate — is preserved so Plan 07's pipeline class map can uniformly instantiate without a special branch for bootstrap-only tables.
+- Plan 56-04: ESLint no-unused-vars does not honor ^_ prefix by default; used eslint-disable-next-line comments on each defaults(ctx) method (matches packages/core/src/controller/controller.ts:72 codebase convention). The ctx param stays on the signature to preserve the D-08 contract for Phase 57/58 generators that read ctx.
 
 ### Blockers/Concerns
 
@@ -75,8 +78,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T14:15:44.390Z
-Stopped at: Completed 56-03-PLAN.md
+Last session: 2026-04-22T14:33:26.794Z
+Stopped at: Completed 56-04-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 
