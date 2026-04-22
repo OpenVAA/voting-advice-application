@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-04-PLAN.md
-last_updated: "2026-04-22T14:33:26.799Z"
+stopped_at: Completed 56-05-PLAN.md
+last_updated: "2026-04-22T14:46:02.200Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 4
-  percent: 40
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 5 of 10
+Plan: 6 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -67,6 +67,10 @@ Key context for v2.5:
 - Plan 56-04: Foundation generators use canonical D-04/D-08/D-26 pattern — class with ctor capturing ctx, defaults(ctx) per-call, generate(fragment) returning TablesInsert rows; sentinel enrichment (_constituencyGroups, _constituencies) is explicitly DEFERRED to Plan 07's post-topo pass so generators stay sentinel-free for clean unit tests.
 - Plan 56-04: AccountsGenerator + ProjectsGenerator are explicit pass-through per D-11 (return [] + ctx.logger warn on non-empty fragment). The pattern — class with ctor/defaults/generate — is preserved so Plan 07's pipeline class map can uniformly instantiate without a special branch for bootstrap-only tables.
 - Plan 56-04: ESLint no-unused-vars does not honor ^_ prefix by default; used eslint-disable-next-line comments on each defaults(ctx) method (matches packages/core/src/controller/controller.ts:72 codebase convention). The ctx param stays on the signature to preserve the D-08 contract for Phase 57/58 generators that read ctx.
+- Plan 56-05: QuestionsGenerator uses JSONB `name` column (migration line 608, not `text` as plan example showed); QuestionRow relaxes both `category_id` AND `type` from TablesInsert because Fragment<T>.fixed[] is Partial<T>
+- Plan 56-05: CandidatesGenerator ships the D-27 seam (`ctx.answerEmitter ?? defaultRandomValidEmit`) with candidateForEmit narrowing so Phase 57's latent emitter drops in without touching this file
+- Plan 56-05: AppSettingsGenerator clamps count to <=1 and flags for Plan 07 writer to route through updateAppSettings (merge_jsonb_column) rather than bulk_import — avoids UNIQUE(project_id) conflict with seed.sql bootstrap row
+- Plan 56-05: FeedbackGenerator is minimal stub per Claude's Discretion; fixed[] discards Fragment.external_id (feedback table has no external_id column)
 
 ### Blockers/Concerns
 
@@ -78,8 +82,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T14:33:26.794Z
-Stopped at: Completed 56-04-PLAN.md
+Last session: 2026-04-22T14:46:02.195Z
+Stopped at: Completed 56-05-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 
