@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Completed 56-08-PLAN.md
-last_updated: "2026-04-22T15:40:15.099Z"
+stopped_at: Completed 56-09-PLAN.md
+last_updated: "2026-04-22T15:51:41.058Z"
 last_activity: 2026-04-22
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 56 (generator-foundations-plumbing) — EXECUTING
-Plan: 8 of 10
+Plan: 9 of 10
 Status: Ready to execute
 Last activity: 2026-04-22
 
@@ -76,6 +76,9 @@ Key context for v2.5:
 - Plan 56-06: GEN-08 assertRefsPopulated collects ALL missing ref categories into one throw (not short-circuit) for better multi-entity misconfiguration UX
 - Plan 56-06: Phase 56 generator path produces candidate-type nominations ONLY (wired to refs.elections[0] × refs.constituencies[0]); polymorphism variants via fixed[] pass-through; Phase 58 extends via nominations override hook
 - 56-08: D-22 boundary enforced via import shape (no createClient/rpc); makeCtx shared factory with overrides-last pattern avoids per-scenario factories; CandidatesGenerator D-27 seam tested both default and injected emitter paths (Phase 57 drop-in contract)
+- Plan 56-09: Template schema projectId validator uses UUID-shape regex not zod v4 .uuid() — strict RFC 4122 v1-v8 rejects documented TEST_PROJECT_ID default
+- Plan 56-09: Writer tests use vi.mock (greenfield in this monorepo) to isolate SupabaseAdminClient — mock factory tracks instances via __getLastInstance for per-test inspection
+- Plan 56-09: ISS-05 GEN-08 end-to-end nomination integration test placed in pipeline.test.ts — only runtime proof Phase 56 Success Criterion 5 wires correctly (default {} template emits 0 nominations)
 
 ### Blockers/Concerns
 
@@ -87,8 +90,8 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-22T15:40:12.497Z
-Stopped at: Completed 56-08-PLAN.md
+Last session: 2026-04-22T15:51:41.054Z
+Stopped at: Completed 56-09-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 56`
 
