@@ -20,6 +20,10 @@
  *     composition).
  *   - `defaultRandomValidEmit` — Phase 56 answer-emitter stub (D-19). Phase 57
  *     supplies a latent-factor emitter via `ctx.answerEmitter` (D-27 seam).
+ *   - `latentAnswerEmitter` — Phase 57 latent-factor answer emitter factory
+ *     (GEN-06). Installed by the pipeline via `ctx.answerEmitter ??=
+ *     latentAnswerEmitter(template)` — customizable per-sub-step via
+ *     `ctx.latent` (D-57-12 swappable seam).
  *
  * Types:
  *   - `Template` — validated template type (`z.infer<typeof TemplateSchema>`).
@@ -30,6 +34,7 @@
  *   - `FindDataResult` — admin-client query result (consumed by tests/ subclass
  *     in Plan 10).
  *   - `TableName` — union of the 14 table names in TOPO_ORDER.
+ *   - `LatentHooks` — D-57-12 swappable seam on `ctx.latent` (GEN-06g).
  *
  * Notes:
  *   - Private workspace per D-28; no npm publish.
@@ -43,6 +48,7 @@
 // Runtime exports
 export { buildCtx } from './ctx';
 export { defaultRandomValidEmit } from './emitters/answers';
+export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
 export { runPipeline, TOPO_ORDER } from './pipeline';
 export { SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
 export { TemplateSchema, validateTemplate } from './template/schema';
@@ -51,6 +57,7 @@ export { Writer } from './writer';
 // Type exports
 export type { Ctx } from './ctx';
 export type { AnswerEmitter } from './emitters/answers';
+export type { LatentHooks } from './emitters/latent/latentTypes';
 export type { TableName } from './pipeline';
 export type { FindDataResult } from './supabaseAdminClient';
 export type { Template } from './template/types';

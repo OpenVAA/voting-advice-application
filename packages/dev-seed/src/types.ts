@@ -13,6 +13,7 @@ import type { Ctx } from './ctx';
 
 export type { Ctx } from './ctx';
 export type { AnswerEmitter } from './emitters/answers';
+export type { LatentHooks } from './emitters/latent/latentTypes';
 export type { Template } from './template/types';
 
 /**
