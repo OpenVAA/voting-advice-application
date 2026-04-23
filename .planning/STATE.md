@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Phase 59 Plan 01 complete — baseline Playwright report committed
-last_updated: "2026-04-23T19:10:00.000Z"
-last_activity: 2026-04-23 -- Phase 59 Plan 01 (baseline capture) complete
+stopped_at: Phase 59 Plan 02 complete — 8 fixture consumers migrated to e2eFixtureRefs
+last_updated: "2026-04-23T19:11:32Z"
+last_activity: 2026-04-23 -- Phase 59 Plan 02 (fixture-consumer migration) complete
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 34
-  completed_plans: 28
-  percent: 82
+  completed_plans: 29
+  percent: 85
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 59 (e2e-fixture-migration) — EXECUTING
-Plan: 1/7 complete (59-01 baseline capture)
-Status: Executing Phase 59 — next plan is 59-02 (Wave 2, fixture-consumer migration)
-Last activity: 2026-04-23 -- Phase 59 Plan 01 (baseline capture) complete
+Plan: 2/7 complete (59-02 fixture-consumer migration)
+Status: Executing Phase 59 — next plan is 59-03 (Wave 3, variant setup rewrite)
+Last activity: 2026-04-23 -- Phase 59 Plan 02 (fixture-consumer migration) complete
 
 ## Performance Metrics
 
@@ -84,6 +84,13 @@ Key context for v2.5:
 - Plan 59-01: Dropped `list` reporter from D-59-03's `--reporter=json,list` — both write stdout and corrupt the JSON. Only `--reporter=json` is load-bearing for the parity contract.
 - Plan 59-01: Added DOTENV_CONFIG_QUIET=true env var to suppress dotenv@17.3.1's `[dotenv] injecting env` banner that polluted stdout. Not in D-59-03 literally, permitted under §Claude's Discretion.
 - Plan 59-01: `yarn playwright install chromium` was a one-time Rule 3 prerequisite fix — browsers weren't installed on this machine. Not a code change; future machines may need the same.
+- Plan 59-02: tests/ has no tsconfig.json — frontend's generated .svelte-kit/tsconfig.json `include`s ../tests/**/*.ts for type-checking. Plan-text `cd tests && yarn tsc` assumption wrong; `yarn build` + `yarn playwright test --list` + eslint + tsx smoke-tests were substitute gates.
+- Plan 59-02: snake_case migration extended beyond .externalId (plan-explicit) to .firstName/.lastName/.termsOfUseAccepted — the TemplateCandidate type matches TablesInsert<'candidates'> snake_case, so all accesses migrate in lockstep. Leaving camelCase would have caused TS errors after the JSON typing disappears.
+- Plan 59-02: e2eFixtureRefs.ts asserts E2E_CANDIDATES[0].external_id === 'test-candidate-alpha' at import time — template drift surfaces loudly on first test load, not silently via wrong TEST_CANDIDATE_EMAIL (T-59-02-01 mitigation).
+- Plan 59-02: TemplateCandidate declared locally rather than importing TablesInsert<'candidates'> — template carries email / answersByExternalId / organization-sentinel handoff fields that are NOT on the candidates table.
+- Plan 59-02: Per-task atomic commits (3 × feat(59-02) commits for Tasks 1/2/3) instead of the plan's Task-4 bundle commit — matches the GSD executor task_commit_protocol.
+- Plan 59-02: voter-results.spec.ts totalPartyCount sourced from E2E_ORGANIZATIONS.length directly — the e2e template ships 4 orgs combined (58-E2E-AUDIT.md §1.1), so the prior 2+2 sum collapses to a single read.
+- Plan 59-02: 2 grep hits remain in tests/tests/utils/mergeDatasets.ts — both docstring comments, not imports; file scheduled for deletion in Plan 06. import-only grep returns 0. Out of scope to touch.
 
 ### Blockers/Concerns
 
@@ -95,9 +102,9 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-23T19:10:00.000Z
-Stopped at: Phase 59 Plan 01 complete — baseline artifacts committed (SHA 0e58dc4c3)
-Resume file: .planning/phases/59-e2e-fixture-migration/59-02-PLAN.md
-Next action: Execute 59-02 (Wave 2 — migrate 8 fixture consumers off JSON imports)
+Last session: 2026-04-23T19:11:32Z
+Stopped at: Phase 59 Plan 02 complete — 8 fixture consumers on e2eFixtureRefs (commits ba268f421 / 553b5d88b / 0b14287f3)
+Resume file: .planning/phases/59-e2e-fixture-migration/59-03-PLAN.md
+Next action: Execute 59-03 (Wave 3 — variant setup rewrite)
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 1 complete — 2026-04-23T19:10:00Z
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 2 complete — 2026-04-23T19:11:32Z
