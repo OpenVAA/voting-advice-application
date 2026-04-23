@@ -26,8 +26,11 @@ Options:
 
 Environment:
   SUPABASE_URL                      Supabase instance URL (e.g. http://127.0.0.1:54321)
+                                    Falls back to PUBLIC_SUPABASE_URL when unset.
   SUPABASE_SERVICE_ROLE_KEY         Service-role key for bypassing RLS
-  Both are set automatically by \`supabase start\`.
+                                    (from \`yarn supabase:status\`, never committed).
+  The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
+  (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.
 
 Permissive by design (D-58-17):
   seed:teardown trusts the external_id prefix as the contract. It does NOT

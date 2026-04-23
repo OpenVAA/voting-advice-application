@@ -39,6 +39,23 @@ import { Writer } from '../writer';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
+// Load repo-root .env if present (Node 22+ built-in). Silent no-op if missing.
+// The monorepo convention keeps Supabase URL/keys in the root .env, shared
+// with the frontend. SvelteKit exposes them as PUBLIC_SUPABASE_URL /
+// PUBLIC_SUPABASE_ANON_KEY; server-only tools use SUPABASE_URL /
+// SUPABASE_SERVICE_ROLE_KEY. URL is identical between the two namespaces.
+try {
+  process.loadEnvFile(new URL('../../../../.env', import.meta.url).pathname);
+} catch {
+  // no .env at repo root — env must be exported manually
+}
+// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent — the URL is
+// not sensitive, only the service_role key is. Dev ergonomics: the single
+// `.env` shared with the frontend works for seed too.
+if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
+  process.env.SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
+}
+
 const { values } = parseArgs({
   options: {
     template: { type: 'string', short: 't' },
@@ -99,7 +116,7 @@ try {
   //   Plan 04 (post-portrait): write(rows, prefix?) => Promise<{ portraits: number }>
   // The CLI defers to runtime inspection of the resolved value to stay
   // forward-compatible without re-editing this file once Plan 04 lands.
-   
+
   const writeResult: unknown = await (writer.write as (...args: Array<unknown>) => Promise<unknown>)(
     rows,
     (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_'
@@ -108,9 +125,7 @@ try {
 
   const elapsedMs = Date.now() - start;
 
-  const rowCounts = Object.fromEntries(
-    Object.entries(rows).map(([table, array]) => [table, array.length])
-  );
+  const rowCounts = Object.fromEntries(Object.entries(rows).map(([table, array]) => [table, array.length]));
 
   process.stdout.write(
     formatSummary({

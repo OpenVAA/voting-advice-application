@@ -39,6 +39,19 @@ import { parseArgs } from 'node:util';
 import { TEARDOWN_USAGE } from './teardown-help';
 import { SupabaseAdminClient } from '../supabaseAdminClient';
 
+// Load repo-root .env if present (Node 22+ built-in). Silent no-op if missing.
+try {
+  process.loadEnvFile(new URL('../../../../.env', import.meta.url).pathname);
+} catch {
+  // no .env at repo root — env must be exported manually
+}
+// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent (URL is not
+// sensitive; only the service_role key is). Dev ergonomics: root .env shared
+// with the frontend works for teardown too.
+if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
+  process.env.SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
+}
+
 /**
  * 10 tables in schema's `allowed_collections`, minus `app_settings`.
  *
@@ -92,9 +105,7 @@ export async function runTeardown(prefix: string, client: TeardownClient): Promi
   // equivalent to deleting every row with a non-null external_id across
   // all 10 content tables. Refuse with an actionable message.
   if (!prefix || prefix.length < 2) {
-    throw new Error(
-      `--prefix must be at least 2 characters to prevent accidental mass-delete (got '${prefix}').`
-    );
+    throw new Error(`--prefix must be at least 2 characters to prevent accidental mass-delete (got '${prefix}').`);
   }
 
   // Step 1: bulkDelete rows with the configured prefix (Pitfall #6 guardrail).
