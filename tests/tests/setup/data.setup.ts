@@ -1,57 +1,55 @@
 import { expect, test as setup } from '@playwright/test';
-import candidateAddendum from '../data/candidate-addendum.json' with { type: 'json' };
-import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
+import {
+  BUILT_IN_OVERRIDES,
+  BUILT_IN_TEMPLATES,
+  fanOutLocales,
+  runPipeline,
+  runTeardown,
+  Writer
+} from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
+import { TEST_UNREGISTERED_EMAILS } from '../utils/e2eFixtureRefs';
+import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD } from '../utils/testCredentials';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
- * Data setup project: imports the default test dataset via Supabase Admin Client.
+ * Data-setup project: seeds the e2e template's data via @openvaa/dev-seed,
+ * then wires auth (D-24 split: dev-seed owns rows/storage; tests/ owns auth).
  *
- * Runs before all test projects. First deletes any existing test data
- * (by external_id prefix) to ensure a clean state, then imports the
- * full default dataset with answers and join table links. Finally resets
- * the candidate password to ensure auth-setup can log in.
+ * Pre-clears prior runs via runTeardown('test-', ...) for idempotency. This
+ * replaces the legacy delete-then-import-per-fixture chain (Phase 59 E2E-01).
+ *
+ * app_settings NOTE: the Phase 58 e2e template does NOT ship an
+ * `app_settings.fixed[]` block, so the writer's Pass-5 merge_jsonb_column step
+ * is a no-op. The legacy `updateAppSettings(...)` call from the pre-Phase-59
+ * data.setup.ts is preserved here unchanged — without it, the Playwright specs
+ * regress (category intros, popups, and hideIfMissingAnswers would be at their
+ * default values). Follow-up work tracked in 59-04-SUMMARY.md: extend the e2e
+ * template with this settings block so the setup file can drop this call.
  */
 setup('import test dataset', async () => {
+  const template = BUILT_IN_TEMPLATES.e2e;
+  if (!template) throw new Error('BUILT_IN_TEMPLATES.e2e is undefined — Phase 58 regression?');
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {};
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+
   const client = new SupabaseAdminClient();
 
-  // Clean up any existing test data first (reverse import order to avoid FK issues).
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
+  // 1. Pre-clear any stale state from a prior run. runTeardown enforces its
+  //    own 2-char guard; PREFIX ('test-', 5 chars) is safe and matches what
+  //    the e2e template emits verbatim (D-58-15 + 59 prefix reconciliation).
+  await runTeardown(PREFIX, client);
 
-  // Import the default test dataset (shared foundations: election, constituency, questions, organizations)
-  await client.bulkImport(defaultDataset as Record<string, unknown[]>);
-  await client.importAnswers(defaultDataset as Record<string, unknown[]>);
-  await client.linkJoinTables(defaultDataset as Record<string, unknown[]>);
+  // 2. Seed via the package's pipeline + writer (D-59-05).
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
 
-  // Import voter-specific test data (voter questions, candidates with deterministic answers, nominations)
-  await client.bulkImport(voterDataset as Record<string, unknown[]>);
-  await client.importAnswers(voterDataset as Record<string, unknown[]>);
-  await client.linkJoinTables(voterDataset as Record<string, unknown[]>);
-
-  // Import candidate-app-specific addendum (unregistered candidates and their nominations)
-  await client.bulkImport(candidateAddendum as Record<string, unknown[]>);
-  await client.linkJoinTables(candidateAddendum as Record<string, unknown[]>);
-  // No importAnswers for addendum (unregistered candidates have no answers)
-
-  // Disable category intros and category selection for the simple voter journey path.
-  // This ensures Home -> Intro -> Questions -> Results with no category selection pages.
-  // Also disable hideIfMissingAnswers for candidates because the combined default + voter
-  // datasets create 16 opinion questions, and no single candidate answers all of them.
-  // Suppress notification and data consent popups to prevent dialog overlays from
-  // intercepting test clicks on navigation buttons across all voter specs.
+  // 3. App settings (legacy preservation; see note above). Once the e2e
+  //    template grows an `app_settings.fixed[]` block, delete this call.
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
@@ -73,16 +71,14 @@ setup('import test dataset', async () => {
     analytics: { trackEvents: false }
   });
 
-  // Unregister the "unregistered" candidates if a previous test run registered them.
-  // This removes the auth user, role assignment, and candidate link,
-  // allowing the registration tests to re-register them cleanly.
-  await client.unregisterCandidate('test.unregistered@openvaa.org');
-  await client.unregisterCandidate('test.unregistered2@openvaa.org');
-
-  // Ensure the test candidate auth user exists, is linked, and has the right password.
-  // After data-teardown + data-setup, the candidate entity is fresh (no auth_user_id)
-  // but the auth user may persist. forceRegister handles create + link + role assignment.
-  // If the user already exists, unregister first to allow forceRegister to re-create cleanly.
-  await client.unregisterCandidate('mock.candidate.2@openvaa.org');
-  await client.forceRegister('test-candidate-alpha', 'mock.candidate.2@openvaa.org', TEST_CANDIDATE_PASSWORD);
+  // 4. Auth wiring (D-24: tests/-only, subclass methods). Unregister the known
+  //    unregistered emails + alpha, then forceRegister alpha with the shared pwd.
+  for (const email of TEST_UNREGISTERED_EMAILS) {
+    await client.unregisterCandidate(email);
+  }
+  await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
+  await client.forceRegister('test-candidate-alpha', TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+  // forceRegister throws on any failure path (see supabaseAdminClient.ts:284-321);
+  // reaching here means auth wiring succeeded.
+  expect(true, 'forceRegister reached post-condition').toBe(true);
 });
