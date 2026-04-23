@@ -57,7 +57,7 @@ export async function resolveTemplate(
       builtInNames.length > 0 ? builtInNames.join(', ') : '(none registered yet)';
     throw new Error(
       `Unknown template: '${arg}'. Built-in templates: ${builtInList}. ` +
-        `For a custom template, pass a path like './my-template.ts' or '/abs/path.json'.`
+        'For a custom template, pass a path like \'./my-template.ts\' or \'/abs/path.json\'.'
     );
   }
   return builtIn;
@@ -109,7 +109,7 @@ async function loadModuleTemplate(absPath: string): Promise<Template> {
   if (candidate === undefined) {
     throw new Error(
       `Template module at ${absPath} has no default or named 'template' export. ` +
-        `Export via \`export default <template>\` or \`export const template = <template>\`.`
+        'Export via `export default <template>` or `export const template = <template>`.'
     );
   }
   return validateTemplate(candidate);

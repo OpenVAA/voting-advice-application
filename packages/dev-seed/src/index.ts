@@ -46,6 +46,9 @@
  */
 
 // Runtime exports
+export { USAGE as SEED_CLI_USAGE } from './cli/help';
+export { resolveTemplate } from './cli/resolve-template';
+export { formatSummary } from './cli/summary';
 export { buildCtx } from './ctx';
 export { defaultRandomValidEmit } from './emitters/answers';
 export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
@@ -56,6 +59,7 @@ export { TemplateSchema, validateTemplate } from './template/schema';
 export { Writer } from './writer';
 
 // Type exports
+export type { SummaryInput } from './cli/summary';
 export type { Ctx } from './ctx';
 export type { AnswerEmitter } from './emitters/answers';
 export type { LatentHooks } from './emitters/latent/latentTypes';
