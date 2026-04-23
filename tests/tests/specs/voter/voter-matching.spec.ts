@@ -18,8 +18,7 @@
 
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD, OrdinalQuestion } from '@openvaa/matching';
 import { expect, test } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
+import { E2E_DEFAULT_CANDIDATES, E2E_QUESTIONS, E2E_VOTER_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, waitForNextQuestion } from '../../utils/voterNavigation';
 import type { HasAnswers } from '@openvaa/core';
@@ -33,20 +32,22 @@ const LIKERT_SCALE = 5;
 const VOTER_ANSWER_VALUE = 5; // "Fully agree" -> choice_5
 const VOTER_ANSWER_INDEX = 4; // 0-based index for "Fully agree" (5th option)
 
-// Collect ALL opinion questions from both datasets (default + voter).
-// The default dataset has 8 opinion questions (Likert-5 type) and 4 info questions.
-// The voter dataset has 8 opinion questions. All use test-qt-likert5 question type.
+// Collect ALL opinion questions from the e2e template (default + voter cohorts).
+// The default-dataset cohort has 8 opinion questions (Likert-5 type) and 1 info question.
+// The voter-dataset cohort has 8 opinion questions. All use singleChoiceOrdinal.
 // Only include opinion (Likert-5) questions for matching.
 const allOpinionQuestions = [
-  ...defaultDataset.questions.filter((q) => q.type === 'singleChoiceOrdinal'),
-  ...voterDataset.questions
+  ...E2E_QUESTIONS.filter(
+    (q) => q.type === 'singleChoiceOrdinal' && !q.external_id.startsWith('test-voter-')
+  ),
+  ...E2E_QUESTIONS.filter((q) => q.external_id.startsWith('test-voter-'))
 ];
 
 const TOTAL_OPINION_QUESTIONS = allOpinionQuestions.length; // 16
 
 // Create OrdinalQuestion objects for matching
 const questions = allOpinionQuestions.map((q) =>
-  OrdinalQuestion.fromLikert({ id: q.externalId, scale: LIKERT_SCALE })
+  OrdinalQuestion.fromLikert({ id: q.external_id, scale: LIKERT_SCALE })
 );
 
 // Create voter answers -- all "Fully agree" (choice_5) for every opinion question
@@ -56,22 +57,22 @@ for (const q of questions) {
 }
 const voterEntity: HasAnswers = { answers: voterAnswers };
 
-// Collect ALL visible candidates from both datasets.
-// Visible = has termsOfUseAccepted set.
+// Collect ALL visible candidates from both cohorts in the e2e template.
+// Visible = has terms_of_use_accepted set.
 const allCandidates = [
-  ...defaultDataset.candidates.map((c) => ({
+  ...E2E_DEFAULT_CANDIDATES.map((c) => ({
     ...c,
     answersByExternalId: c.answersByExternalId as Record<string, { value: string }> | undefined
   })),
-  ...voterDataset.candidates.map((c) => ({
+  ...E2E_VOTER_CANDIDATES.map((c) => ({
     ...c,
     answersByExternalId: c.answersByExternalId as Record<string, { value: string }> | undefined
   }))
 ];
-const visibleCandidates = allCandidates.filter((c) => c.termsOfUseAccepted);
+const visibleCandidates = allCandidates.filter((c) => c.terms_of_use_accepted);
 
 // Build HasAnswers-compatible objects for each candidate.
-// Dataset answer values are raw numeric strings ("5", "1", etc.) which map
+// Template answer values are raw numeric strings ("5", "1", etc.) which map
 // to OrdinalQuestion.fromLikert choice IDs ("choice_5", "choice_1", etc.).
 const candidateEntities = visibleCandidates.map((c) => {
   const answers: Record<string, { value: string }> = {};
@@ -83,8 +84,8 @@ const candidateEntities = visibleCandidates.map((c) => {
     }
   }
   return {
-    name: `${c.firstName} ${c.lastName}`,
-    externalId: c.externalId,
+    name: `${c.first_name} ${c.last_name}`,
+    externalId: c.external_id,
     answers
   };
 });
@@ -117,11 +118,11 @@ for (const match of computedMatches) {
 // Flat list for total count verification
 const expectedRanking = computedMatches.map((m) => (m.target as (typeof candidateEntities)[0]).name);
 
-// Lookup helpers for specific candidates in the voter dataset
-const hiddenCandidate = voterDataset.candidates.find((c) => !c.termsOfUseAccepted)!;
-const partialCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-partial')!;
-const agreeCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-agree')!;
-const opposeCandidate = voterDataset.candidates.find((c) => c.externalId === 'test-voter-cand-oppose')!;
+// Lookup helpers for specific candidates in the voter cohort
+const hiddenCandidate = E2E_VOTER_CANDIDATES.find((c) => !c.terms_of_use_accepted)!;
+const partialCandidate = E2E_VOTER_CANDIDATES.find((c) => c.external_id === 'test-voter-cand-partial')!;
+const agreeCandidate = E2E_VOTER_CANDIDATES.find((c) => c.external_id === 'test-voter-cand-agree')!;
+const opposeCandidate = E2E_VOTER_CANDIDATES.find((c) => c.external_id === 'test-voter-cand-oppose')!;
 
 // ---------------------------------------------------------------------------
 // Helper: navigate the voter through all questions to reach results
@@ -199,7 +200,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await navigateToResults(page);
 
     const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const agreeName = `${agreeCandidate.firstName} ${agreeCandidate.lastName}`;
+    const agreeName = `${agreeCandidate.first_name} ${agreeCandidate.last_name}`;
 
     await expect(firstCard).toContainText(agreeName);
   });
@@ -209,7 +210,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
 
     const cards = page.getByTestId(testIds.voter.results.card);
     const lastCard = cards.last();
-    const opposeName = `${opposeCandidate.firstName} ${opposeCandidate.lastName}`;
+    const opposeName = `${opposeCandidate.first_name} ${opposeCandidate.last_name}`;
 
     await expect(lastCard).toContainText(opposeName);
   });
@@ -218,7 +219,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await navigateToResults(page);
 
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-    const partialName = `${partialCandidate.firstName} ${partialCandidate.lastName}`;
+    const partialName = `${partialCandidate.first_name} ${partialCandidate.last_name}`;
 
     // Partial candidate should appear in results
     await expect(candidateSection).toContainText(partialName);
@@ -231,11 +232,11 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await expect(lastCard).not.toContainText(partialName);
   });
 
-  test('should NOT show hidden candidate (no termsOfUseAccepted)', async ({ page }) => {
+  test('should NOT show hidden candidate (no terms_of_use_accepted)', async ({ page }) => {
     await navigateToResults(page);
 
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
-    const hiddenName = `${hiddenCandidate.firstName} ${hiddenCandidate.lastName}`;
+    const hiddenName = `${hiddenCandidate.first_name} ${hiddenCandidate.last_name}`;
 
     await expect(candidateSection).not.toContainText(hiddenName);
   });

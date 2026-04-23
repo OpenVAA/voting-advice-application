@@ -9,12 +9,11 @@
  * are for users who are not yet logged in.
  */
 
-import { test, expect } from '../../fixtures';
+import { expect,test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
+import { E2E_ADDENDUM_CANDIDATES, TEST_CANDIDATE_ALPHA_EMAIL } from '../../utils/e2eFixtureRefs';
+import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { countEmailsForRecipient, getLatestEmailHtml, extractLinkFromHtml, toCallbackUrl } from '../../utils/emailHelper';
-import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
-import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 
@@ -25,8 +24,8 @@ test.describe('candidate registration via email', { tag: ['@candidate'] }, () =>
   test.describe.configure({ mode: 'serial' });
 
   const client = new SupabaseAdminClient();
-  const candidateEmail = candidateAddendum.candidates[0].email;
-  const candidateExternalId = candidateAddendum.candidates[0].externalId;
+  const candidateEmail = E2E_ADDENDUM_CANDIDATES[0].email!;
+  const candidateExternalId = E2E_ADDENDUM_CANDIDATES[0].external_id;
   let registrationLink: string;
 
   test('should send registration email and extract link', async () => {
@@ -111,8 +110,8 @@ test.describe('candidate password reset', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   const client = new SupabaseAdminClient();
-  // Use an already-registered candidate from the default dataset
-  const candidateEmail = defaultDataset.candidates[0].email;
+  // Use an already-registered candidate from the default dataset (alpha candidate)
+  const candidateEmail = TEST_CANDIDATE_ALPHA_EMAIL;
   const originalPassword = TEST_CANDIDATE_PASSWORD;
 
   test('should complete forgot-password and reset flow via Inbucket email', async ({ page }) => {

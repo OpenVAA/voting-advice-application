@@ -14,18 +14,17 @@
  * (no auth needed for voter tests).
  */
 
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../../data/voter-dataset.json' with { type: 'json' };
+import { voterTest as test } from '../../fixtures/voter.fixture';
+import { E2E_DEFAULT_CANDIDATES, E2E_ORGANIZATIONS, E2E_VOTER_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 
-// Compute expected counts from datasets.
+// Compute expected counts from the e2e template.
 // Addendum candidates have unconfirmed nominations and are excluded from voter results.
-const visibleCandidateCount = [...defaultDataset.candidates, ...voterDataset.candidates].filter(
-  (c) => 'termsOfUseAccepted' in c && c.termsOfUseAccepted
+const visibleCandidateCount = [...E2E_DEFAULT_CANDIDATES, ...E2E_VOTER_CANDIDATES].filter(
+  (c) => typeof c.terms_of_use_accepted === 'string' && c.terms_of_use_accepted.length > 0
 ).length;
-const totalPartyCount = defaultDataset.organizations.length + voterDataset.organizations.length;
+const totalPartyCount = E2E_ORGANIZATIONS.length;
 
 test.describe('voter results', { tag: ['@voter'] }, () => {
   test('should display candidates section with result cards', async ({ answeredVoterPage: page }) => {
@@ -42,8 +41,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
     // - 6 from voter dataset (agree, close, neutral, oppose, mixed, partial)
     // The hidden candidate (no termsOfUseAccepted) should NOT appear (12 total - 1 hidden = 11)
     // Addendum candidates have unconfirmed nominations and are also excluded
-    const cardCount = await page.getByTestId(testIds.voter.results.card).count();
-    expect(cardCount).toBe(visibleCandidateCount);
+    const cardCount = page.getByTestId(testIds.voter.results.card);
+    await expect(cardCount).toHaveCount(visibleCandidateCount);
   });
 
   test('should display entity type tabs for switching between candidates and organizations', async ({

@@ -18,13 +18,13 @@
  * (no auth needed for voter tests).
  */
 
-import { voterTest as test } from '../../fixtures/voter.fixture';
 import { expect } from '@playwright/test';
-import defaultDataset from '../../data/default-dataset.json' with { type: 'json' };
+import { voterTest as test } from '../../fixtures/voter.fixture';
+import { E2E_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { testIds } from '../../utils/testIds';
 
 // The candidate used for detail content verification (has info answers and open answers)
-const alphaCandidate = defaultDataset.candidates.find((c) => c.externalId === 'test-candidate-alpha')!;
+const alphaCandidate = E2E_CANDIDATES.find((c) => c.external_id === 'test-candidate-alpha')!;
 const alphaAnswers = alphaCandidate.answersByExternalId as Record<
   string,
   { value: string | number | boolean | Record<string, string>; info?: Record<string, string> }
@@ -67,7 +67,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     await page.keyboard.press('Escape');
 
     // Assert drawer is closed
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeHidden();
   });
 
   test('should display candidate answers correctly in info and opinions tabs', async ({
@@ -76,7 +76,7 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
     // Open "Test Candidate Alpha" who has:
     // - Info answers: campaign slogan "Progress for all", years of experience, etc.
     // - Opinion answers with open answers on default-dataset Q1, Q3, and Q5
-    await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.lastName }).click();
+    await page.getByTestId(testIds.voter.results.card).filter({ hasText: alphaCandidate.last_name! }).click();
 
     const dialog = page.locator('dialog[open]');
     await expect(dialog).toBeVisible();
@@ -148,6 +148,6 @@ test.describe('voter entity detail', { tag: ['@voter'] }, () => {
 
     // Close the drawer
     await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeHidden();
   });
 });

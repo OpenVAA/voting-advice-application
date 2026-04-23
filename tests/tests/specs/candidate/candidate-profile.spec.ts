@@ -18,7 +18,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { expect, test } from '../../fixtures';
 import { buildRoute } from '../../utils/buildRoute';
-import candidateAddendum from '../../data/candidate-addendum.json' with { type: 'json' };
+import { E2E_ADDENDUM_CANDIDATES } from '../../utils/e2eFixtureRefs';
 import { countEmailsForRecipient, extractLinkFromHtml, getLatestEmailHtml, toCallbackUrl } from '../../utils/emailHelper';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -30,8 +30,8 @@ test.describe('candidate profile (fresh candidate)', { tag: ['@candidate'] }, ()
   test.describe.configure({ mode: 'serial' });
 
   const client = new SupabaseAdminClient();
-  const candidateEmail = candidateAddendum.candidates[1].email;
-  const candidateExternalId = candidateAddendum.candidates[1].externalId;
+  const candidateEmail = E2E_ADDENDUM_CANDIDATES[1].email!;
+  const candidateExternalId = E2E_ADDENDUM_CANDIDATES[1].external_id;
   const candidatePassword = 'ProfileTestPass1!';
 
   /**
