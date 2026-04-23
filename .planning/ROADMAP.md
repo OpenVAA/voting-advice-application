@@ -106,7 +106,7 @@ Plans:
 - [x] 59-01-PLAN.md — Baseline Playwright capture + wait-for-healthy + summary.md (E2E-03) — complete 2026-04-23, SHA `0e58dc4c3`. Actual baseline split: 41 pass / 10 data-race / 25 cascade / 13 test.skip (89 total).
 - [x] 59-02-PLAN.md — Migrate 8 fixture consumers off JSON imports (E2E-01, E2E-02) — complete 2026-04-23, commits `ba268f421` / `553b5d88b` / `0b14287f3`. 9 files touched (1 new + 8 modified); zero JSON-fixture imports remain in tests/tests/utils/ + tests/tests/specs/; yarn build exit 0.
 - [x] 59-03-PLAN.md — Author variant templates + parity diff script (E2E-02, E2E-03) — complete 2026-04-23, commits `c3c8e2bec` / `45d4d8abb` / `5b449ab73`. 4 files created (3 variant templates + diff script); every overlay external_id (67 total across 3 overlays) covered by template+base; self-identity smoke test prints PARITY GATE: PASS; yarn build exit 0.
-- [ ] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01)
+- [x] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01) — complete 2026-04-23, commits `7b2c9083d` / `7143f08ff` / `58d86fa7f` / `9c9e6363f`. 7 files modified; zero JSON-fixture imports remain in tests/seed-test-data.ts + tests/tests/setup/; runTeardown('test-', client) at all 5 call sites; yarn build exit 0; playwright test --list enumerates 89 specs with zero import errors.
 - [ ] 59-05-PLAN.md — Post-swap capture + parity diff verdict (E2E-03)
 - [ ] 59-06-PLAN.md — Delete legacy fixtures + mergeDatasets util (E2E-02)
 - [ ] 59-07-PLAN.md — VERIFICATION.md + deps-check.txt (E2E-04)
@@ -121,4 +121,4 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
-| 59. E2E Fixture Migration | 3/7 | In progress | - |
+| 59. E2E Fixture Migration | 4/7 | In progress | - |

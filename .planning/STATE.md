@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Plan 59-03 complete — 3 variant templates + parity diff script landed (commits c3c8e2bec / 45d4d8abb / 5b449ab73)
-last_updated: "2026-04-23T19:31:15.592Z"
-last_activity: 2026-04-23 -- Phase 59 Plan 03 (variant templates + parity diff script) complete
+stopped_at: Plan 59-04 complete — CORE SWAP landed (commits 7b2c9083d / 7143f08ff / 58d86fa7f / 9c9e6363f); tests/ off JSON fixtures onto @openvaa/dev-seed programmatic API
+last_updated: "2026-04-23T19:40:00.000Z"
+last_activity: 2026-04-23 -- Phase 59 Plan 04 (core swap — tests/seed-test-data.ts + 6 Playwright setup/teardown files swapped to dev-seed) complete
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 34
-  completed_plans: 30
-  percent: 88
+  completed_plans: 31
+  percent: 91
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 59 (e2e-fixture-migration) — EXECUTING
-Plan: 3/7 complete (59-03 variant templates + parity diff script)
-Status: Executing Phase 59 — next plan is 59-04 (Wave 3, variant setup rewrite — consumes 59-03's templates)
-Last activity: 2026-04-23 -- Phase 59 Plan 03 (variant templates + parity diff script) complete
+Plan: 4/7 complete (59-04 CORE SWAP — tests/ onto @openvaa/dev-seed)
+Status: Executing Phase 59 — next plan is 59-05 (Wave 4, post-swap Playwright + parity gate against Plan 01 baseline)
+Last activity: 2026-04-23 -- Phase 59 Plan 04 (core swap) complete
 
 ## Performance Metrics
 
@@ -96,6 +96,10 @@ Key context for v2.5:
 - Plan 59-03: Overlay _constituencies / _constituencyGroups / _elections per-row sentinels cannot be expressed template-side because pipeline.ts:229-255 post-topo pass overwrites them with full-fanout (T-56-37); variant specs that need narrower scoping query by external_id
 - Plan 59-03: Per-task atomic commits (3 × feat(59-03)) continue Plan 59-02 precedent — plan's Task 4 bundle commit superseded by executor task_commit_protocol
 - Plan 59-03: diff script flattenReport reads top-level t.status as fallback when results[] is empty — Playwright emits cascaded did-not-run tests with results:[] + tests[].status='skipped' (Rule 1 bug fix, caught in smoke test before Task 3 commit)
+- Plan 59-04: Core swap committed in 4 atomic feat(59-04) commits (per-task protocol, Plan 59-02/03 precedent) rather than the plan's Task-5 bundled commit. Task 5 gates (yarn build exit 0, grep=0 in code, playwright test --list=89) all pass as verification.
+- Plan 59-04: Preserved legacy updateAppSettings(...) calls in all 4 setup files (data.setup.ts + 3 variant setups) — the Phase 58 e2e template has NO app_settings.fixed[] block, so Writer Pass-5 merge_jsonb_column is a no-op. Dropping the calls would regress popup/intro/hideIfMissingAnswers defaults and fail the Plan 05 parity gate by design. Rule 2 auto-fix (missing critical functionality). Follow-up: extend e2e template with app_settings block; then delete the 4 legacy blocks (~60 lines).
+- Plan 59-04: forceRegister signature is Promise<void> (throws on any failure path). Plan draft's `expect(result).toBeTruthy()` replaced with `expect(true).toBe(true)` post-condition marker.
+- Plan 59-04: Prefix 'test-' satisfies runTeardown 2-char guard AND matches e2e template emit (externalIdPrefix '' + fixed[] literal 'test-*' ids per D-58-15). Reconciliation is D-59-06 option 3 — no e2e template change needed.
 
 ### Blockers/Concerns
 
@@ -107,9 +111,9 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-23T19:31:15.588Z
-Stopped at: Plan 59-03 complete — 3 variant templates + parity diff script landed (commits c3c8e2bec / 45d4d8abb / 5b449ab73)
-Resume file: .planning/phases/59-e2e-fixture-migration/59-04-PLAN.md
-Next action: Execute 59-04 (Wave 3 — variant setup rewrite consuming 59-03's templates)
+Last session: 2026-04-23T19:40:00.000Z
+Stopped at: Plan 59-04 complete — CORE SWAP landed (commits 7b2c9083d / 7143f08ff / 58d86fa7f / 9c9e6363f); tests/ off JSON fixtures onto @openvaa/dev-seed
+Resume file: .planning/phases/59-e2e-fixture-migration/59-05-PLAN.md
+Next action: Execute 59-05 (Wave 4 — post-swap Playwright run + parity gate vs Plan 01 baseline)
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 3 complete — 2026-04-23T19:31:15Z
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 4 complete — 2026-04-23T19:40:00Z

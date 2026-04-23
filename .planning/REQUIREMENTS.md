@@ -182,8 +182,8 @@ A unified declarative template config with smart defaults; any collection can mi
 | CLI-03 | Phase 58 | Complete |
 | CLI-04 | Phase 58 | Complete |
 | CLI-05 | Phase 58 | Complete |
-| E2E-01 | Phase 59 | Partial — Plan 59-02 migrated 8 module-level consumers off JSON imports (commits ba268f421/553b5d88b/0b14287f3); seed-test-data.ts rewrite owned by Plan 59-04 |
-| E2E-02 | Phase 59 | Partial — Plan 59-02 cleared JSON imports from 8 consumer files unblocking the delete commit; setup files owned by Plans 59-03/04; deletion in Plan 59-06 |
+| E2E-01 | Phase 59 | Complete (pending Plan 59-05 parity gate) — Plan 59-02 migrated 8 consumers; Plan 59-04 core swap (commits 7b2c9083d/7143f08ff/58d86fa7f/9c9e6363f) rewrote seed-test-data.ts + 6 Playwright setup/teardown files onto @openvaa/dev-seed programmatic API; zero JSON fixture imports remain |
+| E2E-02 | Phase 59 | Partial — Plan 59-02 cleared JSON imports from 8 consumer files; Plan 59-04 cleared the remaining 7 setup/seed files; deletion in Plan 59-06 pending Plan 59-05 green |
 | E2E-03 | Phase 59 | Partial — baseline captured in Plan 59-01 (SHA 0e58dc4c3, 41/10/25/13 split); parity gate via Plan 59-05 |
 | E2E-04 | Phase 59 | Pending |
 | DX-01 | Phase 58 | Complete |
