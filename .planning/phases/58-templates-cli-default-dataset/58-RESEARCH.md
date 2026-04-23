@@ -914,27 +914,31 @@ Minimal attack surface — Phase 58 is dev tooling, not production. Still:
 
 If any assumption is confirmed wrong during plan-check or execution, planner addresses via listed mitigation.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **thispersondoesnotexist.com licensing.** The site doesn't publish an explicit license. Web search confirms legal ambiguity around AI-generated portrait rights. Should Phase 58 switch to a clearly-licensed source (Pexels CC0 portraits, UIFaces open-source, Unsplash permissive) before committing 30 images?
    - What we know: D-58-05 locks thispersondoesnotexist.com; user committed to it in the discussion log.
    - What's unclear: legal posture for distribution (commit 30 images to a public repo).
    - Recommendation: Flag to user during plan-check. If switching, swap sources but keep 30 count + same directory layout. If keeping, add prominent LICENSE.md that explains the ambiguous basis. MVP-worthy caveat.
+   - **RESOLVED:** Keep D-58-05 (thispersondoesnotexist.com) and ship an honest `LICENSE.md` documenting the ambiguous legal basis — adopted in Plan 02 (assets download + LICENSE.md commit).
 
 2. **How to enforce non-uniform candidate-to-party distribution `[20, 18, 15, 12, 10, 10, 8, 7]` given Phase 56's CandidatesGenerator uses round-robin `i % orgCount`?** Two options: (a) `candidates` override function in the template; (b) extend CandidatesGenerator. Option (a) is cleaner (localized to Phase 58 default template) but requires the override to read ctx.refs.organizations.
    - What we know: D-25 override signature is `(fragment, ctx) => Rows[]`.
    - What's unclear: Whether to hard-code the 8-party weighting in the default template (less reusable) or add a template-level distribution config (more work).
    - Recommendation: Start with (a) — inline override in `default.ts`. Revisit if a second template needs similar weighting.
+   - **RESOLVED:** Adopted option (a) — inline `candidatesOverride` in Plan 06 (`packages/dev-seed/src/templates/defaults/candidates-override.ts`) via D-25 Overrides signature; PARTY_WEIGHTS = [20, 18, 15, 12, 10, 10, 8, 7].
 
 3. **Should the E2E template audit happen BEFORE plans are authored, or as the first plan in Phase 58?** D-58-15 mandates the audit; the Phase 58 inventory doc is the audit's deliverable. If it's plan-1, plans 2-N consume its output; if it's pre-plan, plans can be authored in parallel.
    - What we know: Phase is in-scope for the planning chain.
    - What's unclear: timing.
    - Recommendation: Treat the audit as Plan 01 of Phase 58 — gate the e2e template authoring on its completion.
+   - **RESOLVED:** Adopted — Plan 01 is the E2E audit (Wave 1), gating the e2e template authoring (Plan 08) in a later wave.
 
 4. **Locale fan-out: generate locale-specific faker names for non-JSONB fields too (candidate `first_name`/`last_name`)?** These are plain-text columns, so fan-out is structurally impossible (one row has one `first_name`). But the NAME should reflect the default locale (`en`) OR cycle locales per candidate for variety.
    - What we know: `candidates.first_name` and `last_name` are `text NOT NULL` (VERIFIED schema line 523-524).
    - What's unclear: Whether to cycle faker locales per candidate for a visually-diverse set (25 Finnish + 25 Swedish + 25 Danish + 25 English names) or keep single-locale English.
    - Recommendation: Cycle locales per candidate — adds visual variety to match the 4-locale theme. 25 candidates per locale group — planner picks.
+   - **RESOLVED:** Adopted — 25 candidates per locale block (25 en + 25 fi + 25 sv + 25 da = 100) via per-locale Faker instances in Plan 06's `candidatesOverride` (LOCALE_BLOCK_SIZE = 25).
 
 ## Sources
 
