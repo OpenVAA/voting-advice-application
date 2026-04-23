@@ -45,7 +45,20 @@
  * happens here — that is the pipeline's concern.
  */
 
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { SupabaseAdminClient } from './supabaseAdminClient';
+
+/**
+ * Absolute path to the committed portrait assets directory.
+ *
+ * Resolved once at module load time from `import.meta.url` so the path is
+ * stable whether the package is invoked via `yarn dev:seed` (root) or
+ * `yarn workspace @openvaa/dev-seed seed` (workspace). Plan 02 commits 30
+ * `portrait-NN.jpg` files at this location.
+ */
+const PORTRAITS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'assets', 'portraits');
 
 /**
  * Options passed to the `Writer` constructor.
@@ -123,7 +136,10 @@ export class Writer {
    *      `bulk_import` can't handle for this table.
    *   7. `feedback` rows are SKIPPED with a logger warning in Phase 56.
    */
-  async write(data: Record<string, Array<Record<string, unknown>>>): Promise<void> {
+  async write(
+    data: Record<string, Array<Record<string, unknown>>>,
+    externalIdPrefix = 'seed_'
+  ): Promise<{ portraits: number }> {
     const bulkData: Record<string, Array<Record<string, unknown>>> = { ...data };
 
     // D-11: strip pass-through tables. `accounts` / `projects` are bootstrapped
@@ -148,7 +164,13 @@ export class Writer {
     // Pass 3: join tables + question_category → election refs.
     await this.client.linkJoinTables(bulkData);
 
-    // Pass 4: app_settings via merge_jsonb_column (Pitfall 5).
+    // Pass 4 (Phase 58 Plan 04 — GEN-09): portrait upload.
+    // Runs AFTER linkJoinTables (candidates have UUIDs assigned by bulk_import)
+    // and BEFORE updateAppSettings. Skips silently if no candidates present;
+    // throws on upload/update errors to keep the run atomic per CONTEXT §Specifics.
+    const portraits = await this.uploadPortraits(externalIdPrefix);
+
+    // Pass 5: app_settings via merge_jsonb_column (Pitfall 5).
     if (appSettingsRows && appSettingsRows.length > 0) {
       for (const row of appSettingsRows) {
         const settings = row.settings;
@@ -158,12 +180,93 @@ export class Writer {
       }
     }
 
-    // Pass 5: feedback — SKIPPED in Phase 56 per scope boundary.
+    // Pass 6: feedback — SKIPPED in Phase 56 per scope boundary.
     if (feedbackRows && feedbackRows.length > 0) {
       this.logger(
         `[dev-seed] Writer: feedback writes skipped in Phase 56 (${feedbackRows.length} rows ignored). ` +
           'Feedback has no external_id column and is not teardown-friendly; Phase 58 may add direct upsert support.'
       );
     }
+
+    return { portraits };
+  }
+
+  /**
+   * Upload candidate portraits to Supabase Storage + populate the
+   * `candidates.image` JSONB column (Phase 58 Plan 04 — GEN-09).
+   *
+   * Sequence:
+   *   1. List portrait files from the committed assets dir (sorted — Pitfall #1
+   *      filesystem order). Throws if the dir is missing or empty.
+   *   2. Select generator-produced candidates by external_id prefix (Pitfall
+   *      #8 — bulk_import doesn't return UUIDs inline).
+   *   3. If no candidates, skip silently (templates with count=0 are valid).
+   *   4. For each candidate, upload `portraits[i % portraits.length]` to
+   *      `${projectId}/candidates/${id}/seed-portrait.jpg` and write the
+   *      image JSONB.
+   *
+   * Failure modes:
+   *   - Missing assets dir → throws `Error('No portrait assets found at ...')`.
+   *   - Upload error → rethrown with candidate-scoped message (CONTEXT
+   *     §Specifics: seed-blocking).
+   *   - Update error → rethrown similarly.
+   *
+   * Determinism:
+   *   - Candidates sorted by `external_id` ascending (SQL `ORDER BY`) so cycling
+   *     is stable across runs.
+   *   - Portrait filenames sorted alphabetically (Pitfall #1 — `fs.readdirSync`
+   *     order is platform-specific).
+   *   - Cycling is simple `i % N` — reproducible.
+   *
+   * Runs AFTER `linkJoinTables` (candidates have UUIDs assigned by
+   * `bulk_import`) and BEFORE `updateAppSettings`.
+   *
+   * @returns number of portraits uploaded (consumed by Plan 05 CLI summary).
+   */
+  private async uploadPortraits(externalIdPrefix: string): Promise<number> {
+    // 1. Enumerate portrait files (sorted for determinism).
+    let portraitFiles: Array<string>;
+    try {
+      portraitFiles = readdirSync(PORTRAITS_DIR)
+        .filter((f) => /^portrait-\d{2}\.jpg$/.test(f))
+        .sort();
+    } catch (err) {
+      throw new Error(
+        `Failed to read portrait assets at ${PORTRAITS_DIR}: ${(err as Error).message}. ` +
+          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.'
+      );
+    }
+    if (portraitFiles.length === 0) {
+      throw new Error(
+        `No portrait assets found at ${PORTRAITS_DIR}. ` +
+          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.'
+      );
+    }
+
+    // 2. Select candidates (Pitfall #8 — bulk_import doesn't return UUIDs).
+    const candidates = await this.client.selectCandidatesForPortraitUpload(externalIdPrefix);
+
+    // 3. Skip silently if no candidates (valid for count=0 templates).
+    if (candidates.length === 0) {
+      return 0;
+    }
+
+    // 4. Upload each portrait + write image JSONB (sequential — keeps order
+    //    deterministic + error messages candidate-scoped; Promise.all would
+    //    interleave logs and reshuffle cycling).
+    let uploaded = 0;
+    for (let i = 0; i < candidates.length; i++) {
+      const cand = candidates[i];
+      const portraitFile = portraitFiles[i % portraitFiles.length];
+      const bytes = readFileSync(join(PORTRAITS_DIR, portraitFile));
+      const path = await this.client.uploadPortrait(cand.id, cand.external_id, 'seed-portrait.jpg', bytes);
+      // Pitfall #4 — WCAG 2.1 AA: alt MUST be populated. Fall back to
+      // external_id when both names are empty so the field is never blank.
+      const nameAlt = `${cand.first_name ?? ''} ${cand.last_name ?? ''}`.trim();
+      const alt = nameAlt.length > 0 ? nameAlt : cand.external_id;
+      await this.client.updateCandidateImage(cand.id, cand.external_id, { path, alt });
+      uploaded++;
+    }
+    return uploaded;
   }
 }
