@@ -37,6 +37,7 @@ import { fanOutLocales } from '../locales';
 import { runPipeline } from '../pipeline';
 import { Writer } from '../writer';
 import type { Template } from '../template/types';
+import type { Overrides } from '../types';
 
 const { values } = parseArgs({
   options: {
@@ -57,10 +58,10 @@ if (values.help) {
 const templateArg = values.template ?? 'default';
 
 try {
-  // Lazy-load the built-in template map (Plan 06 provides it; Plan 05
-  // tolerates missing file via the try/catch inside loadBuiltIns).
+  // Lazy-load the built-in template map + per-template overrides map (Plan 06
+  // ships both; Plan 05 tolerated an absent module via loadBuiltIns' catch).
   const builtIns = await loadBuiltIns();
-  const template = await resolveTemplate(templateArg, builtIns);
+  const template = await resolveTemplate(templateArg, builtIns.templates);
 
   // Apply --seed override (parse string to int; reject non-numeric).
   if (values.seed !== undefined) {
@@ -82,8 +83,15 @@ try {
   // Writer constructor reads env + throws D-58-12 messages if missing.
   const writer = new Writer();
 
+  // Look up per-template overrides — built-in templates may ship paired
+  // Overrides (e.g. the `default` template's non-uniform candidate
+  // distribution). Custom filesystem templates can express the same by
+  // shipping a sibling `Overrides` export (Plan 10's authoring guide). For
+  // now, custom templates resolve to `{}` (no overrides).
+  const overrides: Overrides = builtIns.overrides[templateArg] ?? {};
+
   const start = Date.now();
-  const rows = runPipeline(template);
+  const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);
 
   // Writer.write signature evolves across plans:
@@ -106,7 +114,7 @@ try {
 
   process.stdout.write(
     formatSummary({
-      templateName: describeTemplateSource(templateArg, builtIns),
+      templateName: describeTemplateSource(templateArg, builtIns.templates),
       seed,
       elapsedMs,
       portraits,
@@ -124,25 +132,32 @@ try {
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function loadBuiltIns(): Promise<Record<string, Template>> {
+async function loadBuiltIns(): Promise<{
+  templates: Record<string, Template>;
+  overrides: Record<string, Overrides>;
+}> {
   try {
     // `.js` extension for ESM resolution at runtime (tsx transforms .ts to
-    // .js at load time). Plan 06 ships this file; Plan 05 tolerates absence.
+    // .js at load time). Plan 06 ships this file; Plan 05 tolerated absence.
     //
     // The import path is built at runtime to keep TypeScript from statically
-    // resolving it — Plan 05 ships before Plan 06, so the `templates/` module
-    // does not exist yet. Once Plan 06 lands, the import resolves normally;
-    // until then, the catch branch is exercised and returns `{}` built-ins.
+    // resolving it — Plan 05 shipped before Plan 06. Once Plan 06 lands the
+    // import resolves normally; if the module is absent (or fails to load),
+    // the catch branch returns empty maps.
     const modulePath = '../templates/index.js';
     const mod = (await import(/* @vite-ignore */ modulePath)) as {
       BUILT_IN_TEMPLATES?: Record<string, Template>;
+      BUILT_IN_OVERRIDES?: Record<string, Overrides>;
     };
-    return mod.BUILT_IN_TEMPLATES ?? {};
+    return {
+      templates: mod.BUILT_IN_TEMPLATES ?? {},
+      overrides: mod.BUILT_IN_OVERRIDES ?? {}
+    };
   } catch {
     // Plan 06 hasn't shipped yet, or the module failed to load. Treat as
     // empty built-ins — resolveTemplate's error will list "(none registered
     // yet)" which is correct in the missing-Plan-06 state.
-    return {};
+    return { templates: {}, overrides: {} };
   }
 }
 
