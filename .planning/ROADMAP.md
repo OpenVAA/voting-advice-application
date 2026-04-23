@@ -58,11 +58,11 @@ Plans:
 
 Plans:
 - [x] 57-01-PLAN.md — Foundation (workspace deps + LatentHooks types + boxMuller + Ctx.latent + TemplateSchema.latent)
-- [ ] 57-02-PLAN.md — defaultDimensions (D-57-01/02) + defaultSpread (D-57-04)
-- [ ] 57-03-PLAN.md — defaultCentroids (D-57-03/05, farthest-point)
-- [ ] 57-04-PLAN.md — defaultPositions (D-57-04 isotropic Gaussian per-candidate)
-- [ ] 57-05-PLAN.md — defaultLoadings (D-57-06/07 N(0,1) matrix + per-question override)
-- [ ] 57-06-PLAN.md — defaultProject (D-57-08/09/10/11 per-type dispatch) + QuestionsGenerator A2 fix
+- [x] 57-02-PLAN.md — defaultDimensions (D-57-01/02) + defaultSpread (D-57-04)
+- [x] 57-03-PLAN.md — defaultCentroids (D-57-03/05, farthest-point)
+- [x] 57-04-PLAN.md — defaultPositions (D-57-04 isotropic Gaussian per-candidate)
+- [x] 57-05-PLAN.md — defaultLoadings (D-57-06/07 N(0,1) matrix + per-question override)
+- [x] 57-06-PLAN.md — defaultProject (D-57-08/09/10/11 per-type dispatch) + QuestionsGenerator A2 fix
 - [ ] 57-07-PLAN.md — latentAnswerEmitter shell + pipeline wire-in + barrel exports + clustering integration test
 
 ### Phase 58: Templates, CLI & Default Dataset
