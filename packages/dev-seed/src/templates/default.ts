@@ -27,6 +27,7 @@
  */
 
 import { candidatesOverride } from './defaults/candidates-override';
+import { nominationsOverride } from './defaults/nominations-override';
 import { questionsOverride } from './defaults/questions-override';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -210,9 +211,10 @@ export const defaultTemplate: Template = {
     count: 100
   },
 
-  // One candidate-type nomination per candidate (Phase 56 pattern). Pairs
-  // 1:1 with the candidate count; nominations > candidates.length is clamped
-  // with a logger warning at generate time.
+  // One candidate-type nomination per candidate, distributed across the 13
+  // constituencies via `defaultOverrides.nominations` — linear-falloff weights
+  // give a 3:1 ratio between the largest and smallest constituency
+  // (12 / 11 / 10 / 10 / 9 / 8 / 8 / 7 / 6 / 6 / 5 / 4 / 4 = 100).
   nominations: {
     count: 100
   },
@@ -249,5 +251,6 @@ export const defaultTemplate: Template = {
  */
 export const defaultOverrides: Overrides = {
   candidates: candidatesOverride,
+  nominations: nominationsOverride,
   questions: questionsOverride
 };
