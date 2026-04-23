@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
-status: ready_to_plan
-stopped_at: Phases 57/58/59 context gathered — ready for plan+execute chain
-last_updated: "2026-04-23T07:35:03.478Z"
-last_activity: 2026-04-23 -- Phase 58 execution started
+status: executing
+stopped_at: Phase 59 Plan 01 complete — baseline Playwright report committed
+last_updated: "2026-04-23T19:10:00.000Z"
+last_activity: 2026-04-23 -- Phase 59 Plan 01 (baseline capture) complete
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 27
-  completed_plans: 17
-  percent: 75
+  total_plans: 34
+  completed_plans: 28
+  percent: 82
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-22)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 58 — templates-cli-default-dataset
+**Current focus:** Phase --phase — 59
 
 ## Current Position
 
-Phase: 59
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-04-23
+Phase: 59 (e2e-fixture-migration) — EXECUTING
+Plan: 1/7 complete (59-01 baseline capture)
+Status: Executing Phase 59 — next plan is 59-02 (Wave 2, fixture-consumer migration)
+Last activity: 2026-04-23 -- Phase 59 Plan 01 (baseline capture) complete
 
 ## Performance Metrics
 
@@ -80,20 +80,24 @@ Key context for v2.5:
 - Plan 56-09: Writer tests use vi.mock (greenfield in this monorepo) to isolate SupabaseAdminClient — mock factory tracks instances via __getLastInstance for per-test inspection
 - Plan 56-09: ISS-05 GEN-08 end-to-end nomination integration test placed in pipeline.test.ts — only runtime proof Phase 56 Success Criterion 5 wires correctly (default {} template emits 0 nominations)
 - Plan 56-10: tests/ admin client is a subclass of @openvaa/dev-seed base (D-24 complete); dev-seed package.json needed main/types/exports pointing at src/index.ts so Node ESM resolver finds entry from other workspaces (playwright/tsx)
+- Plan 59-01: Pre-swap Playwright baseline captured at SHA f09daea3498fef8fa62c430a6cd5a19535af8e5c — ACTUAL split is 41 pass / 10 data-race / 25 cascade / 13 test.skip (89 total), not CONTEXT.md's 15/19/55. Total count matches (v2.4 tally folded test.skip into cascade); distribution improved since v2.4 stabilization work. Plan 05's parity gate MUST use actual test names from baseline/summary.md, not CONTEXT.md counts.
+- Plan 59-01: Dropped `list` reporter from D-59-03's `--reporter=json,list` — both write stdout and corrupt the JSON. Only `--reporter=json` is load-bearing for the parity contract.
+- Plan 59-01: Added DOTENV_CONFIG_QUIET=true env var to suppress dotenv@17.3.1's `[dotenv] injecting env` banner that polluted stdout. Not in D-59-03 literally, permitted under §Claude's Discretion.
+- Plan 59-01: `yarn playwright install chromium` was a one-time Rule 3 prerequisite fix — browsers weren't installed on this machine. Not a code change; future machines may need the same.
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue.
-- 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over.
+- 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over. (Updated 2026-04-23 by Plan 59-01 baseline: ACTUAL pre-swap count on SHA f09daea34 is 10 data-race + 25 cascade; total 89 tests matches v2.4 tally, distribution improved. Parity gate uses actual test names, not counts.)
 - NF-01 <10s seed budget pressures the generator toward bulk RPCs vs per-row inserts — Phase 56 picks the approach.
 - E2E-03 zero-regression bar requires an explicit baseline-vs-post-swap Playwright comparison in Phase 59 before fixtures are deleted.
 - supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call.
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phases 57/58/59 context gathered — ready for plan+execute chain
-Resume file: --resume-file
-Next action: `/gsd-plan-phase 56`
+Last session: 2026-04-23T19:10:00.000Z
+Stopped at: Phase 59 Plan 01 complete — baseline artifacts committed (SHA 0e58dc4c3)
+Resume file: .planning/phases/59-e2e-fixture-migration/59-02-PLAN.md
+Next action: Execute 59-02 (Wave 2 — migrate 8 fixture consumers off JSON imports)
 
-**Planned Phase:** 58 () — 0 plans — 2026-04-23T07:34:15.014Z
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 1 complete — 2026-04-23T19:10:00Z

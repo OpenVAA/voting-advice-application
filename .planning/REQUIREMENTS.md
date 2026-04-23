@@ -184,7 +184,7 @@ A unified declarative template config with smart defaults; any collection can mi
 | CLI-05 | Phase 58 | Complete |
 | E2E-01 | Phase 59 | Pending |
 | E2E-02 | Phase 59 | Pending |
-| E2E-03 | Phase 59 | Pending |
+| E2E-03 | Phase 59 | Partial — baseline captured in Plan 59-01 (SHA 0e58dc4c3, 41/10/25/13 split); parity gate via Plan 59-05 |
 | E2E-04 | Phase 59 | Pending |
 | DX-01 | Phase 58 | Complete |
 | DX-02 | Phase 56 | Complete (56-08) |

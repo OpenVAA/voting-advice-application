@@ -103,7 +103,7 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 59-01-PLAN.md — Baseline Playwright capture + wait-for-healthy + summary.md (E2E-03)
+- [x] 59-01-PLAN.md — Baseline Playwright capture + wait-for-healthy + summary.md (E2E-03) — complete 2026-04-23, SHA `0e58dc4c3`. Actual baseline split: 41 pass / 10 data-race / 25 cascade / 13 test.skip (89 total).
 - [ ] 59-02-PLAN.md — Migrate 8 fixture consumers off JSON imports (E2E-01, E2E-02)
 - [ ] 59-03-PLAN.md — Author variant templates + parity diff script (E2E-02, E2E-03)
 - [ ] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01)
@@ -121,4 +121,4 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
-| 59. E2E Fixture Migration | 0/7 | Planned     | - |
+| 59. E2E Fixture Migration | 1/7 | In progress | - |
