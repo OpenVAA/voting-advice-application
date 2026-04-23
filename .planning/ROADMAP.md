@@ -13,7 +13,7 @@ Ship a template-driven, modular data generator in `@openvaa/dev-tools` that popu
 
 - [ ] **Phase 56: Generator Foundations & Plumbing** — Per-entity generator scaffolding, service-role client, external_id tagging, template schema core, bulk-upsert strategy
 - [x] **Phase 57: Latent-Factor Answer Model** — PCA-inspired pluggable pipeline producing party-clustered candidate answers with inter-question correlations (completed 2026-04-23)
-- [ ] **Phase 58: Templates, CLI & Default Dataset** — Default + E2E built-in templates, custom-template loading, `seed`/`seed:teardown`/`dev:reset-with-data` CLI, portrait seeding, localization flag
+- [x] **Phase 58: Templates, CLI & Default Dataset** — Default + E2E built-in templates, custom-template loading, `seed`/`seed:teardown`/`dev:reset-with-data` CLI, portrait seeding, localization flag (completed 2026-04-23)
 - [ ] **Phase 59: E2E Fixture Migration** — Rewrite `tests/seed-test-data.ts` on top of the new generator, prove parity with current Playwright baseline, retire legacy JSON fixtures
 
 ## Phase Details
@@ -111,5 +111,5 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 |-------|----------------|--------|-----------|
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
-| 58. Templates, CLI & Default Dataset | 0/10 | Planned     | - |
+| 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
 | 59. E2E Fixture Migration | 0/0 | Not started | - |
