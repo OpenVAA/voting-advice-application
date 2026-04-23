@@ -1,88 +1,37 @@
 #!/usr/bin/env npx tsx
 /**
- * Standalone script to seed the Supabase database with E2E test data.
- * Use this for manual testing and development — data persists until
- * you run this script again (it cleans before importing).
+ * Standalone manual-dev entry to seed the local Supabase database with the
+ * Phase 58 e2e built-in template.
  *
- * Usage:
- *   cd tests && npx tsx seed-test-data.ts
+ * Equivalent to `yarn dev:seed --template e2e` (from the repo root); kept as a
+ * convenience wrapper because it loads the repo-root .env the same way the
+ * Playwright harness does (dotenv.config()) and exits with a clear message on
+ * seed-path failures.
  *
- * Prerequisites:
- *   - Supabase running: cd apps/supabase && npx supabase start
- *   - Database reset (optional): cd apps/supabase && npx supabase db reset
+ * Usage:   cd tests && npx tsx seed-test-data.ts
+ * Prereqs: Supabase running (`yarn supabase:start`); env vars SUPABASE_URL +
+ *          SUPABASE_SERVICE_ROLE_KEY set (via root .env).
  */
 
-import candidateAddendum from './tests/data/candidate-addendum.json' with { type: 'json' };
-import defaultDataset from './tests/data/default-dataset.json' with { type: 'json' };
-import voterDataset from './tests/data/voter-dataset.json' with { type: 'json' };
-import { SupabaseAdminClient } from './tests/utils/supabaseAdminClient';
+import dotenv from 'dotenv';
+import { BUILT_IN_OVERRIDES, BUILT_IN_TEMPLATES, fanOutLocales, runPipeline, Writer } from '@openvaa/dev-seed';
 
-const TEST_DATA_PREFIX = 'test-';
-const TEST_CANDIDATE_EMAIL = 'mock.candidate.2@openvaa.org';
-const TEST_CANDIDATE_PASSWORD = 'TestPassword123!';
+dotenv.config();
 
 async function seed() {
-  const client = new SupabaseAdminClient();
-
-  console.log('Cleaning existing test data...');
-  await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-
-  console.log('Importing default dataset...');
-  await client.bulkImport(defaultDataset as Record<string, unknown[]>);
-  await client.importAnswers(defaultDataset as Record<string, unknown[]>);
-  await client.linkJoinTables(defaultDataset as Record<string, unknown[]>);
-
-  console.log('Importing voter dataset...');
-  await client.bulkImport(voterDataset as Record<string, unknown[]>);
-  await client.importAnswers(voterDataset as Record<string, unknown[]>);
-  await client.linkJoinTables(voterDataset as Record<string, unknown[]>);
-
-  console.log('Importing candidate addendum...');
-  await client.bulkImport(candidateAddendum as Record<string, unknown[]>);
-  await client.linkJoinTables(candidateAddendum as Record<string, unknown[]>);
-
-  console.log('Configuring app settings...');
-  await client.updateAppSettings({
-    questions: {
-      categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
-      showResultsLink: true
-    },
-    results: {
-      cardContents: {
-        candidate: ['submatches'],
-        organization: ['candidates']
-      },
-      sections: ['candidate', 'organization']
-    },
-    entities: {
-      hideIfMissingAnswers: { candidate: false },
-      showAllNominations: true
-    },
-    notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false }
-  });
-
-  console.log('Setting up test candidate auth...');
-  await client.unregisterCandidate('test.unregistered@openvaa.org');
-  await client.unregisterCandidate('test.unregistered2@openvaa.org');
-  await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
-  await client.forceRegister('test-candidate-alpha', TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
-
-  console.log('Done! Test data is ready for manual testing.');
-  console.log(`  Candidate login: ${TEST_CANDIDATE_EMAIL} / ${TEST_CANDIDATE_PASSWORD}`);
+  const template = BUILT_IN_TEMPLATES.e2e;
+  if (!template) throw new Error('BUILT_IN_TEMPLATES.e2e is undefined — Phase 58 regression?');
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {};
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
 }
 
 seed().catch((e) => {
-  console.error('Seed failed:', e);
+  const msg = (e as Error)?.message ?? String(e);
+  console.error('Seed failed:', msg);
   process.exit(1);
 });
