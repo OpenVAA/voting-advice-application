@@ -40,6 +40,7 @@
  */
 
 import { buildCtx } from './ctx';
+import { latentAnswerEmitter } from './emitters/latent/latentEmitter';
 import { AccountsGenerator } from './generators/AccountsGenerator';
 import { AlliancesGenerator } from './generators/AlliancesGenerator';
 import { AppSettingsGenerator } from './generators/AppSettingsGenerator';
@@ -166,6 +167,14 @@ export function runPipeline(
 ): Record<string, Array<Record<string, unknown>>> {
   const output: Record<string, Array<Record<string, unknown>>> = {};
   const templateFragments = template as unknown as Record<string, unknown>;
+
+  // D-27 seam: install the Phase 57 latent emitter unless a caller has already
+  // wired a custom one (test-injection path). `??=` preserves Phase 56 behavior
+  // for tests that pre-set ctx.answerEmitter on an externally-supplied ctx.
+  // The latent emitter internally falls back to `defaultRandomValidEmit` for:
+  //   - non-ordinal / non-choice question types (D-57-10)
+  //   - candidates missing an organization ref (Pitfall 4)
+  ctx.answerEmitter ??= latentAnswerEmitter(template);
 
   for (const table of TOPO_ORDER) {
     const Gen = GENERATOR_CLASSES[table];

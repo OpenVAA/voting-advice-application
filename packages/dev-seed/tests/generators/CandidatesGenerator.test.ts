@@ -128,4 +128,129 @@ describe('CandidatesGenerator', () => {
     const rows = gen.generate({ count: 1 });
     expect(rows[0]).not.toHaveProperty('answersByExternalId');
   });
+
+  it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (D-57 Interpretation Note)', () => {
+    // B1 regression test: pins the `candidateForEmit` literal to include the
+    // organization ref. Prevents future narrowing that would silently break
+    // Phase 57 latent emitter's findPartyIndex.
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, organizations: [ORG_REF], questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    gen.generate({ count: 1 });
+    const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
+    expect(mockCalls).toHaveLength(1);
+    const candidateArg = mockCalls[0][0] as { organization?: { external_id: string } };
+    expect(candidateArg.organization).toBeDefined();
+    expect(candidateArg.organization).toEqual(ORG_REF);
+  });
+
+  it('does NOT forward organization property when refs.organizations is empty (Phase 56 invariant preserved)', () => {
+    // Preserves the existing `omits organization ref when refs.organizations empty`
+    // shape on the emitter boundary too — not just on the emitted row.
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    gen.generate({ count: 1 });
+    const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
+    expect(mockCalls).toHaveLength(1);
+    const candidateArg = mockCalls[0][0] as { organization?: { external_id: string } };
+    expect(candidateArg).not.toHaveProperty('organization');
+  });
+
+  it('D-57-20 (a): fixed row with answersByExternalId is used verbatim — emitter NOT invoked', () => {
+    // Fixed rows with pre-supplied answersByExternalId must bypass the emitter
+    // entirely. D-57-20 bullet 1.
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, organizations: [ORG_REF], questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    const supplied = { seed_q_001: { value: 'hand_authored' } };
+    const rows = gen.generate({
+      count: 0,
+      fixed: [
+        {
+          external_id: 'hand_c',
+          first_name: 'Hand',
+          last_name: 'Authored',
+          // `answersByExternalId` is not on the TablesInsert<'candidates'> surface;
+          // it's a sentinel field the writer layer reads. Cast through.
+          ...({ answersByExternalId: supplied } as unknown as Record<string, unknown>)
+        }
+      ]
+    });
+    expect(rows).toHaveLength(1);
+    expect(spy).toHaveBeenCalledTimes(0); // D-57-20: emitter NOT invoked for fixed rows
+    const rowAny = rows[0] as unknown as {
+      answersByExternalId?: Record<string, { value: unknown }>;
+    };
+    expect(rowAny.answersByExternalId).toEqual(supplied);
+  });
+
+  it('D-57-20 (b): fixed row without answersByExternalId — emitter NOT invoked; row carries no synthesized answers', () => {
+    // D-57-20 bullet 2: fixed rows skip the latent pipeline entirely. The
+    // generator does NOT invoke the emitter for fixed rows. If a consumer wants
+    // answers on a fixed row, they supply answersByExternalId (branch a above).
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, organizations: [ORG_REF], questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    const rows = gen.generate({
+      count: 0,
+      fixed: [
+        {
+          external_id: 'bare_c',
+          first_name: 'Bare',
+          last_name: 'Fixed'
+          // no answersByExternalId
+        }
+      ]
+    });
+    expect(rows).toHaveLength(1);
+    expect(spy).toHaveBeenCalledTimes(0); // D-57-20: fixed row → emitter skipped
+    const rowAny = rows[0] as unknown as {
+      answersByExternalId?: Record<string, { value: unknown }>;
+    };
+    expect(rowAny.answersByExternalId).toBeUndefined();
+  });
+
+  it('D-57-20 (c): synthetic (count-generated) rows always run through the latent emitter', () => {
+    // D-57-20 bullet 3: synthetic rows always go through ctx.answerEmitter (the
+    // latent emitter in production wiring). Emitter invoked once per synthetic
+    // row; each candidate arg carries `organization` (from Task 0's amendment).
+    const spy = vi.fn(() => ({ seed_q_001: { value: false } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, organizations: [ORG_REF], questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    const rows = gen.generate({ count: 3 });
+    expect(rows).toHaveLength(3);
+    expect(spy).toHaveBeenCalledTimes(3); // D-57-20: once per synthetic row
+    const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
+    mockCalls.forEach((args) => {
+      const cand = args[0] as { organization?: { external_id: string } };
+      // Every synthetic call received the organization ref forwarded by Task 0.
+      expect(cand.organization).toEqual(ORG_REF);
+    });
+  });
 });
