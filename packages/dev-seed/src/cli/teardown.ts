@@ -84,7 +84,8 @@ interface TeardownClient {
   bulkDelete(
     collections: Record<string, { prefix?: string; ids?: Array<string>; external_ids?: Array<string> }>
   ): Promise<Record<string, unknown>>;
-  listCandidatePortraitPaths(): Promise<Array<string>>;
+  listCandidateIdsByPrefix(prefix: string): Promise<Array<string>>;
+  listCandidatePortraitPaths(candidateIds?: Array<string>): Promise<Array<string>>;
   removePortraitStorageObjects(paths: Array<string>): Promise<number>;
 }
 
@@ -108,7 +109,16 @@ export async function runTeardown(prefix: string, client: TeardownClient): Promi
     throw new Error(`--prefix must be at least 2 characters to prevent accidental mass-delete (got '${prefix}').`);
   }
 
-  // Step 1: bulkDelete rows with the configured prefix (Pitfall #6 guardrail).
+  // Step 1: collect the candidate UUIDs matching the prefix BEFORE we delete
+  // the DB rows. After bulkDelete runs, `candidates.external_id LIKE $prefix%`
+  // returns nothing, so we'd have no way to scope the storage cleanup — and
+  // enumerating all portraits under `${projectId}/candidates/` would wipe
+  // every seeded prefix's portraits, not just this one's. Running with a
+  // non-default prefix against a DB that already has rows of another prefix
+  // would silently destroy the other prefix's portraits.
+  const candidateIds = await client.listCandidateIdsByPrefix(prefix);
+
+  // Step 2: bulkDelete rows with the configured prefix (Pitfall #6 guardrail).
   const collections: Record<string, { prefix: string }> = {};
   for (const table of ALLOWED_TEARDOWN_TABLES) {
     collections[table] = { prefix };
@@ -116,10 +126,11 @@ export async function runTeardown(prefix: string, client: TeardownClient): Promi
   const deleteResult = await client.bulkDelete(collections);
   const rowsDeleted = countDeletedRows(deleteResult);
 
-  // Step 2: Storage Path 2 — explicit list + remove (RESEARCH §3 primary).
+  // Step 3: Storage Path 2 — explicit list + remove (RESEARCH §3 primary).
   // Path 1 (AFTER-DELETE trigger + pg_net) fires asynchronously; we do NOT
-  // rely on it for deterministic teardown.
-  const portraitPaths = await client.listCandidatePortraitPaths();
+  // rely on it for deterministic teardown. The UUID list from step 1 scopes
+  // the cleanup to exactly the candidates this prefix owned.
+  const portraitPaths = await client.listCandidatePortraitPaths(candidateIds);
   const storageRemoved = await client.removePortraitStorageObjects(portraitPaths);
 
   return { rowsDeleted, storageRemoved };

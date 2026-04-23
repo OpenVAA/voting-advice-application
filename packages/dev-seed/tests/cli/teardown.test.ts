@@ -47,15 +47,15 @@ vi.mock('@supabase/supabase-js', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function makeBuilder(): any {
     return {
-    // The portrait-surface tests rely on the builder terminals, but the
-    // list/remove tests only touch the storage facade below. Provide a
-    // harmless always-resolving builder for completeness.
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    like: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    then: (resolve: (v: unknown) => void) => resolve({ data: [], error: null })
+      // The portrait-surface tests rely on the builder terminals, but the
+      // list/remove tests only touch the storage facade below. Provide a
+      // harmless always-resolving builder for completeness.
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      like: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      then: (resolve: (v: unknown) => void) => resolve({ data: [], error: null })
     };
   }
 
@@ -219,6 +219,7 @@ import { TEARDOWN_USAGE } from '../../src/cli/teardown-help';
 
 interface FakeClient {
   bulkDelete: ReturnType<typeof vi.fn>;
+  listCandidateIdsByPrefix: ReturnType<typeof vi.fn>;
   listCandidatePortraitPaths: ReturnType<typeof vi.fn>;
   removePortraitStorageObjects: ReturnType<typeof vi.fn>;
 }
@@ -237,6 +238,7 @@ function makeFakeClient(overrides: Partial<FakeClient> = {}): FakeClient {
       constituency_groups: { deleted: 0 },
       elections: { deleted: 0 }
     }),
+    listCandidateIdsByPrefix: vi.fn().mockResolvedValue([]),
     listCandidatePortraitPaths: vi.fn().mockResolvedValue([]),
     removePortraitStorageObjects: vi.fn().mockResolvedValue(0),
     ...overrides
@@ -290,9 +292,13 @@ describe('runTeardown (CLI-03 / D-58-07 / D-58-17 / Pitfall #5 + #6)', () => {
     }
   });
 
-  it('invokes listCandidatePortraitPaths AFTER bulkDelete (RESEARCH §3 Path 2 primary)', async () => {
+  it('collects candidate UUIDs BEFORE bulkDelete, lists+removes portraits AFTER (UAT gap #1)', async () => {
     const order: Array<string> = [];
     const client = makeFakeClient({
+      listCandidateIdsByPrefix: vi.fn().mockImplementation(async () => {
+        order.push('listCandidateIdsByPrefix');
+        return [];
+      }),
       bulkDelete: vi.fn().mockImplementation(async () => {
         order.push('bulkDelete');
         return {};
@@ -308,17 +314,30 @@ describe('runTeardown (CLI-03 / D-58-07 / D-58-17 / Pitfall #5 + #6)', () => {
     });
 
     await runTeardown('seed_', client as unknown as SupabaseAdminClient);
-    expect(order).toEqual(['bulkDelete', 'listCandidatePortraitPaths', 'removePortraitStorageObjects']);
+    expect(order).toEqual([
+      'listCandidateIdsByPrefix',
+      'bulkDelete',
+      'listCandidatePortraitPaths',
+      'removePortraitStorageObjects'
+    ]);
+  });
+
+  it('scopes listCandidatePortraitPaths to the UUIDs returned by listCandidateIdsByPrefix (UAT gap #1 — prefix isolation)', async () => {
+    const client = makeFakeClient({
+      listCandidateIdsByPrefix: vi.fn().mockResolvedValue(['uuid-1', 'uuid-2'])
+    });
+
+    await runTeardown('uat_', client as unknown as SupabaseAdminClient);
+
+    expect(client.listCandidateIdsByPrefix).toHaveBeenCalledWith('uat_');
+    expect(client.listCandidatePortraitPaths).toHaveBeenCalledWith(['uuid-1', 'uuid-2']);
   });
 
   it('passes the listed paths through to removePortraitStorageObjects', async () => {
     const client = makeFakeClient({
       listCandidatePortraitPaths: vi
         .fn()
-        .mockResolvedValue([
-          'proj/candidates/c1/seed-portrait.jpg',
-          'proj/candidates/c2/seed-portrait.jpg'
-        ]),
+        .mockResolvedValue(['proj/candidates/c1/seed-portrait.jpg', 'proj/candidates/c2/seed-portrait.jpg']),
       removePortraitStorageObjects: vi.fn().mockResolvedValue(2)
     });
 
@@ -371,9 +390,7 @@ describe('runTeardown (CLI-03 / D-58-07 / D-58-17 / Pitfall #5 + #6)', () => {
 
   it('re-throws bulkDelete errors verbatim (CLI wrapper rephrases at process boundary)', async () => {
     const client = makeFakeClient({
-      bulkDelete: vi
-        .fn()
-        .mockRejectedValue(new Error('bulkDelete failed: Unknown collection for deletion: feedback'))
+      bulkDelete: vi.fn().mockRejectedValue(new Error('bulkDelete failed: Unknown collection for deletion: feedback'))
     });
 
     await expect(runTeardown('seed_', client as unknown as SupabaseAdminClient)).rejects.toThrow(

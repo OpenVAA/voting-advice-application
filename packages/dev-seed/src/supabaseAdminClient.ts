@@ -605,21 +605,31 @@ export class SupabaseAdminClient {
    * `supabase:reset` with no seed data yet) — only non-"not found" list
    * errors throw.
    */
-  async listCandidatePortraitPaths(): Promise<Array<string>> {
+  async listCandidatePortraitPaths(candidateIds?: Array<string>): Promise<Array<string>> {
     const rootPath = `${this.projectId}/candidates`;
-    const { data: dirs, error: dirError } = await this.client.storage
-      .from('public-assets')
-      .list(rootPath, { limit: 1000 });
-    if (dirError) {
-      const msg = (dirError as { message?: string }).message ?? String(dirError);
-      // Bucket missing or path absent — treat as empty (initial state).
-      if (/not found|does not exist/i.test(msg)) return [];
-      throw new Error(`listCandidatePortraitPaths: list dirs failed: ${msg}`);
+
+    // When a UUID list is supplied, scope the enumeration to those folders
+    // only. The storage layout is `${projectId}/candidates/${uuid}/...`, so
+    // we skip the top-level list() entirely — its only purpose is to find
+    // UUID folders, and the caller already told us which ones matter.
+    let dirs: Array<{ name?: string }>;
+    if (candidateIds) {
+      if (candidateIds.length === 0) return [];
+      dirs = candidateIds.map((id) => ({ name: id }));
+    } else {
+      const { data, error: dirError } = await this.client.storage.from('public-assets').list(rootPath, { limit: 1000 });
+      if (dirError) {
+        const msg = (dirError as { message?: string }).message ?? String(dirError);
+        // Bucket missing or path absent — treat as empty (initial state).
+        if (/not found|does not exist/i.test(msg)) return [];
+        throw new Error(`listCandidatePortraitPaths: list dirs failed: ${msg}`);
+      }
+      if (!data || data.length === 0) return [];
+      dirs = data as Array<{ name?: string }>;
     }
-    if (!dirs || dirs.length === 0) return [];
 
     const paths: Array<string> = [];
-    for (const dir of dirs as Array<{ name?: string }>) {
+    for (const dir of dirs) {
       if (!dir.name || dir.name === '.emptyFolderPlaceholder') continue;
       const subpath = `${rootPath}/${dir.name}`;
       const { data: files, error: fileError } = await this.client.storage
@@ -636,6 +646,23 @@ export class SupabaseAdminClient {
       }
     }
     return paths;
+  }
+
+  /**
+   * Return candidate UUIDs whose `external_id` matches the given prefix.
+   *
+   * Used by `runTeardown` to scope storage cleanup to exactly the candidates
+   * being deleted (Phase 58 UAT gap — see
+   * `.planning/phases/58-templates-cli-default-dataset/58-HUMAN-UAT.md`
+   * Gap #1). Must be called BEFORE `bulkDelete` — once the DB rows are gone,
+   * this query returns an empty list.
+   */
+  async listCandidateIdsByPrefix(prefix: string): Promise<Array<string>> {
+    const { data, error } = await this.client.from('candidates').select('id').like('external_id', `${prefix}%`);
+    if (error) {
+      throw new Error(`listCandidateIdsByPrefix failed: ${error.message}`);
+    }
+    return (data ?? []).map((row) => (row as { id: string }).id);
   }
 
   /**

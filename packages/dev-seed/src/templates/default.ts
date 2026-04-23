@@ -215,6 +215,30 @@ export const defaultTemplate: Template = {
   // with a logger warning at generate time.
   nominations: {
     count: 100
+  },
+
+  // Mirror the default dynamic-settings `entities` block so the voter app's
+  // `/nominations` route (and any other consumer) sees a populated
+  // `appSettings.entities` tree. Without this, route loaders that merge
+  // `staticSettings` + `appSettingsData` end up with `entities === undefined`
+  // and throw `Cannot read properties of undefined (reading 'showAllNominations')`
+  // — surfaced by Phase 58 UAT Gap #2.
+  //
+  // Writer routes this through `updateAppSettings` (merge_jsonb_column RPC),
+  // which deep-merges into seed.sql's bootstrap row.
+  app_settings: {
+    count: 0,
+    fixed: [
+      {
+        external_id: 'appsettings_default',
+        settings: {
+          entities: {
+            showAllNominations: true,
+            hideIfMissingAnswers: { candidate: true }
+          }
+        }
+      }
+    ]
   }
 };
 
