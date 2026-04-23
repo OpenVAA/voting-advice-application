@@ -1,32 +1,28 @@
 import { expect, test as teardown } from '@playwright/test';
+import { runTeardown } from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { TEST_UNREGISTERED_EMAILS } from '../utils/e2eFixtureRefs';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
- * Data teardown project: cleans up all test data after all test projects complete.
+ * Data-teardown project: cleans up all e2e-seeded rows after specs run.
  *
- * Deletes all records with the test- external_id prefix in reverse import order
- * to respect foreign key constraints (nominations first, elections last).
- * Also unregisters test candidates to remove their auth users and role assignments.
+ * Delegates data removal to @openvaa/dev-seed's runTeardown (dev-seed owns
+ * rows + portrait storage per D-24). Auth unregister stays in tests/ per
+ * the D-24 split boundary. PREFIX 'test-' matches what the e2e template
+ * emits (externalIdPrefix '' + fixed[] external_ids already prefixed with
+ * 'test-') and is >= 2 chars so runTeardown's safety guard permits it.
  */
 teardown('delete test dataset', async () => {
   const client = new SupabaseAdminClient();
 
-  // Unregister candidates that may have been registered during tests.
-  await client.unregisterCandidate('test.unregistered@openvaa.org');
-  await client.unregisterCandidate('test.unregistered2@openvaa.org');
+  // Auth unregister (D-24 tests/-only).
+  for (const email of TEST_UNREGISTERED_EMAILS) {
+    await client.unregisterCandidate(email);
+  }
 
-  // Delete in reverse import order to respect FK dependencies
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete test data').toBeTruthy();
+  // Data + storage teardown via package API (D-59-06).
+  const { rowsDeleted } = await runTeardown(PREFIX, client);
+  expect(rowsDeleted, 'runTeardown deleted zero rows — prefix mismatch?').toBeGreaterThan(0);
 });
