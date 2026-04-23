@@ -86,9 +86,9 @@ Plans:
 - [x] 58-04-PLAN.md — Writer portrait-upload extension + SupabaseAdminClient portrait methods
 - [x] 58-05-PLAN.md — CLI shell (seed.ts + resolve-template + help + summary) + package.json seed script
 - [x] 58-06-PLAN.md — Default template + non-uniform distribution override + type-mix override + BUILT_IN_TEMPLATES
-- [ ] 58-07-PLAN.md — Teardown CLI + root dev:seed / dev:seed:teardown / dev:reset-with-data scripts
-- [ ] 58-08-PLAN.md — E2E template authored from 58-E2E-AUDIT.md
-- [ ] 58-09-PLAN.md — DX-03 integration test + locale fan-out determinism extension
+- [x] 58-07-PLAN.md — Teardown CLI + root dev:seed / dev:seed:teardown / dev:reset-with-data scripts
+- [x] 58-08-PLAN.md — E2E template authored from 58-E2E-AUDIT.md
+- [x] 58-09-PLAN.md — DX-03 integration test + locale fan-out determinism extension
 - [ ] 58-10-PLAN.md — packages/dev-seed/README.md + CLAUDE.md Common Workflows extension
 
 ### Phase 59: E2E Fixture Migration
