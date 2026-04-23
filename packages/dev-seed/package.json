@@ -14,7 +14,8 @@
     "lint": "eslint --flag v10_config_lookup_from_file src/",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --passWithNoTests",
-    "seed": "tsx src/cli/seed.ts"
+    "seed": "tsx src/cli/seed.ts",
+    "seed:teardown": "tsx src/cli/teardown.ts"
   },
   "dependencies": {
     "@faker-js/faker": "catalog:",
