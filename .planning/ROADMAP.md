@@ -89,7 +89,7 @@ Plans:
 - [x] 58-07-PLAN.md — Teardown CLI + root dev:seed / dev:seed:teardown / dev:reset-with-data scripts
 - [x] 58-08-PLAN.md — E2E template authored from 58-E2E-AUDIT.md
 - [x] 58-09-PLAN.md — DX-03 integration test + locale fan-out determinism extension
-- [ ] 58-10-PLAN.md — packages/dev-seed/README.md + CLAUDE.md Common Workflows extension
+- [x] 58-10-PLAN.md — packages/dev-seed/README.md + CLAUDE.md Common Workflows extension
 
 ### Phase 59: E2E Fixture Migration
 **Goal**: The Playwright suite runs against generator-produced data with zero regression vs the current JSON-fixture baseline, the legacy fixtures are deleted, and the `supabaseAdminClient` location reflects the cleanest dependency graph.
