@@ -53,12 +53,12 @@ type QuestionRow = Omit<TablesInsert<'questions'>, 'category_id' | 'type'> & {
  * validate_question_choices requires ≥2 entries each with a string `id` key;
  * see migration lines 645–689.
  */
-const LIKERT_5: Array<{ id: string; label: { en: string } }> = [
-  { id: '1', label: { en: 'Strongly disagree' } },
-  { id: '2', label: { en: 'Disagree' } },
-  { id: '3', label: { en: 'Neutral' } },
-  { id: '4', label: { en: 'Agree' } },
-  { id: '5', label: { en: 'Strongly agree' } }
+const LIKERT_5: Array<{ id: string; label: { en: string }; normalizableValue: number }> = [
+  { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
+  { id: '2', label: { en: 'Disagree' }, normalizableValue: 2 },
+  { id: '3', label: { en: 'Neutral' }, normalizableValue: 3 },
+  { id: '4', label: { en: 'Agree' }, normalizableValue: 4 },
+  { id: '5', label: { en: 'Strongly agree' }, normalizableValue: 5 }
 ];
 
 /**
