@@ -5,7 +5,7 @@
  *   - 1 election, 1 constituency_group, 13 constituencies (D-58-02)
  *   - 8 invented parties with Finnish-cultural flavor (D-58-01)
  *   - 100 candidates non-uniformly distributed via `defaultOverrides.candidates`
- *   - 24 questions (18 ordinal + 4 categorical + 1 multi-choice + 1 boolean) via
+ *   - 24 questions (18 ordinal + 5 categorical + 1 boolean) via
  *     `defaultOverrides.questions` (D-58-03)
  *   - 4 categories
  *   - generateTranslationsForAllLocales: true (D-58-04)

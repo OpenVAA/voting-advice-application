@@ -1,33 +1,38 @@
 /**
  * Default-template questions override — enforces D-58-03 type mix.
  *
- * D-58-03: majority Likert (ordinal), some categorical, some multi-choice,
- * exactly 1 boolean. NO number/text/date/image/multipleText.
+ * D-58-03: majority Likert (ordinal), some categorical, exactly 1 boolean.
+ * NO number/text/date/image/multipleText.
  *
  * Split (Claude's Discretion, respecting "majority Likert"):
  *   - 18 singleChoiceOrdinal (5-point Likert)
- *   - 4  singleChoiceCategorical (3-5 choices each)
- *   - 1  multipleChoiceCategorical (4 choices)
+ *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
  *   Total: 24
+ *
+ * `multipleChoiceCategorical` was in this mix earlier but was dropped at
+ * user request — the default template is now single-choice only. The latent
+ * emitter still supports `multipleChoiceCategorical` for custom templates
+ * that want it (emitters/latent/project.ts).
  *
  * Questions are distributed across the 4 categories from
  * `ctx.refs.question_categories` in round-robin so every category receives
  * questions (Phase 58 D-58-02 + tests 13/14).
  *
  * Phase 57's latent emitter (installed in pipeline.ts:177) exercises the
- * latent model for ordinal + categorical + multi-choice types. Boolean falls
- * back to `defaultRandomValidEmit` per D-57-10 — same behavior as the Phase
- * 56 default generator.
+ * latent model for ordinal + categorical types. Boolean falls back to
+ * `defaultRandomValidEmit` per D-57-10 — same behavior as the Phase 56
+ * default generator.
  *
- * T-58-06-04 mitigation: `TYPE_PLAN` contains ONLY the four allowed enum
+ * T-58-06-04 mitigation: `TYPE_PLAN` contains ONLY the three allowed enum
  * values; no `number/text/date/image/multipleText` path is possible. The
  * plan's acceptance criteria greps for forbidden types and would fail the
  * plan if any appear in this file.
  */
 
+import type { Faker } from '@faker-js/faker';
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
-import type { Overrides } from '../../types';
+import type { Ctx } from '../../types';
 
 type QuestionType = Enums<'question_type'>;
 
@@ -35,8 +40,7 @@ type QuestionType = Enums<'question_type'>;
  * Per-index type plan. Length is exactly 24 (D-58-02 questions count).
  *
  *   Indices  0..17 → 18 × singleChoiceOrdinal
- *   Indices 18..21 →  4 × singleChoiceCategorical
- *   Index      22  →  1 × multipleChoiceCategorical
+ *   Indices 18..22 →  5 × singleChoiceCategorical
  *   Index      23  →  1 × boolean
  */
 const TYPE_PLAN: ReadonlyArray<QuestionType> = [
@@ -45,7 +49,7 @@ const TYPE_PLAN: ReadonlyArray<QuestionType> = [
   'singleChoiceCategorical',
   'singleChoiceCategorical',
   'singleChoiceCategorical',
-  'multipleChoiceCategorical',
+  'singleChoiceCategorical',
   'boolean'
 ];
 
@@ -74,10 +78,7 @@ const LIKERT_5 = [
  * Synthetic categorical labels therefore stay in `en` only across locales;
  * the default template tolerates this visual trade-off.
  */
-function buildCategoricalChoices(
-  faker: import('@faker-js/faker').Faker,
-  count: number
-): Array<{ id: string; label: { en: string } }> {
+function buildCategoricalChoices(faker: Faker, count: number): Array<{ id: string; label: { en: string } }> {
   return Array.from({ length: count }, (_, i) => ({
     id: `choice_${i}`,
     label: { en: capitalize(faker.word.noun()) }
@@ -95,7 +96,7 @@ function capitalize(s: string): string {
  * required, allow_open) so bulk_import + the writer's localization fan-out
  * process these rows identically to generator output.
  */
-export const questionsOverride: NonNullable<Overrides['questions']> = (_fragment, ctx) => {
+export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const { faker, projectId, externalIdPrefix } = ctx;
   const cats = ctx.refs.question_categories;
   if (cats.length === 0) {
@@ -127,9 +128,6 @@ export const questionsOverride: NonNullable<Overrides['questions']> = (_fragment
       // 3-5 choices per categorical question for variety.
       const n = 3 + faker.number.int({ min: 0, max: 2 });
       row.choices = buildCategoricalChoices(faker, n);
-    } else if (type === 'multipleChoiceCategorical') {
-      // 4 choices — DB CHECK requires >=2 entries; 4 is comfortable.
-      row.choices = buildCategoricalChoices(faker, 4);
     }
     // boolean: no choices (QuestionsGenerator pattern — boolean is schema-free).
 
@@ -137,4 +135,4 @@ export const questionsOverride: NonNullable<Overrides['questions']> = (_fragment
   }
 
   return rows as unknown as Array<Record<string, unknown> & Partial<TablesInsert<'questions'>>>;
-};
+}

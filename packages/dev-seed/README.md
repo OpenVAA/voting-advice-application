@@ -23,13 +23,13 @@ composes `yarn supabase:reset` (runs migrations + `seed.sql` bootstrap) with
 
 ## Commands
 
-| Command                                               | What it does                                                                          |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `yarn dev:reset-with-data`                            | `yarn supabase:reset && yarn dev:seed --template default` (composed)                  |
-| `yarn dev:seed --template <name-or-path>`             | Seed a local Supabase with the named built-in or the filesystem template              |
-| `yarn dev:seed:teardown`                              | Delete every generator-produced row (prefix `seed_`) + clean portrait Storage objects |
-| `yarn workspace @openvaa/dev-seed seed --help`        | Full flag reference                                                                   |
-| `yarn workspace @openvaa/dev-seed seed:teardown --help` | Teardown flag reference                                                             |
+| Command                                                 | What it does                                                                          |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `yarn dev:reset-with-data`                              | `yarn supabase:reset && yarn dev:seed --template default` (composed)                  |
+| `yarn dev:seed --template <name-or-path>`               | Seed a local Supabase with the named built-in or the filesystem template              |
+| `yarn dev:seed:teardown`                                | Delete every generator-produced row (prefix `seed_`) + clean portrait Storage objects |
+| `yarn workspace @openvaa/dev-seed seed --help`          | Full flag reference                                                                   |
+| `yarn workspace @openvaa/dev-seed seed:teardown --help` | Teardown flag reference                                                               |
 
 The three `dev:*` aliases bubble up from root `package.json` so contributors
 never have to type `yarn workspace @openvaa/dev-seed ...` for common operations
@@ -39,12 +39,12 @@ never have to type `yarn workspace @openvaa/dev-seed ...` for common operations
 
 ### `seed` (primary command)
 
-| Flag                               | Type   | Default         | Purpose                                                                                |
-| ---------------------------------- | ------ | --------------- | -------------------------------------------------------------------------------------- |
-| `-t`, `--template <name-or-path>`  | string | `default`       | Built-in name (`default`, `e2e`) OR filesystem path (`./my.ts`, `/abs.json`)           |
-| `--seed <integer>`                 | number | from template   | Faker RNG seed override (determinism)                                                  |
-| `--external-id-prefix <str>`       | string | `seed_`         | Override for the `external_id` prefix on every row (teardown filter contract)          |
-| `-h`, `--help`                     | flag   | —               | Show help and exit                                                                     |
+| Flag                              | Type   | Default       | Purpose                                                                       |
+| --------------------------------- | ------ | ------------- | ----------------------------------------------------------------------------- |
+| `-t`, `--template <name-or-path>` | string | `default`     | Built-in name (`default`, `e2e`) OR filesystem path (`./my.ts`, `/abs.json`)  |
+| `--seed <integer>`                | number | from template | Faker RNG seed override (determinism)                                         |
+| `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract) |
+| `-h`, `--help`                    | flag   | —             | Show help and exit                                                            |
 
 Template argument resolution (D-58-09, name-first, path-fallback):
 
@@ -55,10 +55,10 @@ Template argument resolution (D-58-09, name-first, path-fallback):
 
 ### `seed:teardown`
 
-| Flag               | Type   | Default | Purpose                                                |
-| ------------------ | ------ | ------- | ------------------------------------------------------ |
-| `--prefix <str>`   | string | `seed_` | `external_id` prefix to match. Must be ≥ 2 chars.      |
-| `-h`, `--help`     | flag   | —       | Show help and exit                                     |
+| Flag             | Type   | Default | Purpose                                           |
+| ---------------- | ------ | ------- | ------------------------------------------------- |
+| `--prefix <str>` | string | `seed_` | `external_id` prefix to match. Must be ≥ 2 chars. |
+| `-h`, `--help`   | flag   | —       | Show help and exit                                |
 
 Teardown is permissive by design (D-58-17): it trusts the `external_id` prefix
 as the contract and does NOT shape-check individual rows. A user who mixes
@@ -78,7 +78,7 @@ A realistic Finnish-flavored parliamentary election:
   Rural Alliance, People's Movement, Red Front, Coastal Party, Values Coalition)
 - 100 candidates non-uniformly distributed across parties (weights
   `[20, 18, 15, 12, 10, 10, 8, 7]` — sorted descending, realistic feel)
-- 24 questions (18 ordinal Likert + 4 categorical + 1 multi-choice + 1 boolean)
+- 24 questions (18 ordinal Likert + 5 single-choice categorical + 1 boolean)
   across 4 opinion categories
 - All 4 locales populated (`generateTranslationsForAllLocales: true` —
   en / fi / sv / da)
@@ -114,12 +114,12 @@ Create a file `my-template.ts`:
 import type { Template } from '@openvaa/dev-seed';
 
 const template: Template = {
-  seed: 100,                                    // deterministic — same seed = same rows
-  externalIdPrefix: 'demo_',                    // teardown filters on this
-  generateTranslationsForAllLocales: false,    // single-locale; expand to true for full 4-locale
+  seed: 100, // deterministic — same seed = same rows
+  externalIdPrefix: 'demo_', // teardown filters on this
+  generateTranslationsForAllLocales: false, // single-locale; expand to true for full 4-locale
 
   elections: {
-    count: 0,                                   // suppress synthetic; fixed[] fully describes
+    count: 0, // suppress synthetic; fixed[] fully describes
     fixed: [
       {
         external_id: 'election_2026',
@@ -136,19 +136,20 @@ const template: Template = {
   },
 
   constituencies: {
-    count: 5                                    // 5 synthetic constituencies — names generated
+    count: 5 // 5 synthetic constituencies — names generated
   },
 
   organizations: {
-    count: 4,                                   // 4 total
-    fixed: [                                    // — 2 hand-authored, 2 synthetic
+    count: 4, // 4 total
+    fixed: [
+      // — 2 hand-authored, 2 synthetic
       { external_id: 'party_a', name: { en: 'Alpha Party' }, color: '#2546a8' },
-      { external_id: 'party_b', name: { en: 'Beta Party' },  color: '#a82525' }
+      { external_id: 'party_b', name: { en: 'Beta Party' }, color: '#a82525' }
     ]
   },
 
   candidates: {
-    count: 20                                   // 20 synthetic candidates
+    count: 20 // 20 synthetic candidates
   },
 
   question_categories: {
@@ -196,7 +197,9 @@ pipeline programmatically:
 ```ts
 import { runPipeline, type Overrides, type Template } from '@openvaa/dev-seed';
 
-const template: Template = { /* ... */ };
+const template: Template = {
+  /* ... */
+};
 
 const overrides: Overrides = {
   candidates: (_fragment, ctx) => {
@@ -204,7 +207,9 @@ const overrides: Overrides = {
     // Reads ctx.faker, ctx.refs.organizations, ctx.externalIdPrefix.
     // See packages/dev-seed/src/templates/defaults/candidates-override.ts
     // for the built-in `default` template's non-uniform distribution.
-    return [/* your rows */];
+    return [
+      /* your rows */
+    ];
   }
 };
 
@@ -213,7 +218,7 @@ await runPipeline(template, overrides);
 
 The built-in `default` template ships its own overrides
 (`candidates-override.ts` for the `[20, 18, 15, 12, 10, 10, 8, 7]` party
-weighting; `questions-override.ts` for the 18/4/1/1 question-type mix) and
+weighting; `questions-override.ts` for the 18/5/1 question-type mix) and
 wires them via `BUILT_IN_OVERRIDES` (see
 [`src/templates/index.ts`](./src/templates/index.ts)).
 

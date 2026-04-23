@@ -11,9 +11,9 @@
 import { describe, expect, it } from 'vitest';
 import { runPipeline } from '../../src/pipeline';
 import { validateTemplate } from '../../src/template/schema';
+import { defaultOverrides, defaultTemplate } from '../../src/templates/default';
 import { candidatesOverride } from '../../src/templates/defaults/candidates-override';
 import { questionsOverride } from '../../src/templates/defaults/questions-override';
-import { defaultOverrides, defaultTemplate } from '../../src/templates/default';
 import { makeCtx } from '../utils';
 
 // ---------------------------------------------------------------------------
@@ -105,9 +105,7 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightParties() } });
     const rows = candidatesOverride({}, ctx);
     for (let i = 0; i < rows.length; i++) {
-      expect((rows[i] as { external_id: string }).external_id).toBe(
-        `seed_cand_${String(i).padStart(4, '0')}`
-      );
+      expect((rows[i] as { external_id: string }).external_id).toBe(`seed_cand_${String(i).padStart(4, '0')}`);
       expect((rows[i] as { sort_order?: number }).sort_order).toBe(i);
     }
   });
@@ -149,7 +147,7 @@ describe('questionsOverride — D-58-03 type mix', () => {
     expect(rows).toHaveLength(24);
   });
 
-  it('Test 12: type mix is 18 singleChoiceOrdinal + 4 singleChoiceCategorical + 1 multipleChoiceCategorical + 1 boolean', () => {
+  it('Test 12: type mix is 18 singleChoiceOrdinal + 5 singleChoiceCategorical + 1 boolean', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
@@ -160,9 +158,9 @@ describe('questionsOverride — D-58-03 type mix', () => {
       counts[t] = (counts[t] ?? 0) + 1;
     }
     expect(counts.singleChoiceOrdinal).toBe(18);
-    expect(counts.singleChoiceCategorical).toBe(4);
-    expect(counts.multipleChoiceCategorical).toBe(1);
+    expect(counts.singleChoiceCategorical).toBe(5);
     expect(counts.boolean).toBe(1);
+    expect(counts.multipleChoiceCategorical).toBeUndefined();
   });
 
   it('Test 13: every question has a category ref', () => {
