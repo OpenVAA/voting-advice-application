@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "catalog:",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/matching": "workspace:^",
     "@openvaa/supabase-types": "workspace:^",
     "@supabase/supabase-js": "catalog:",
     "zod": "catalog:"

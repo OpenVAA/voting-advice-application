@@ -24,6 +24,7 @@
 
 import { en, Faker } from '@faker-js/faker';
 import type { AnswerEmitter } from './emitters/answers';
+import type { LatentHooks } from './emitters/latent/latentTypes';
 import type { Template } from './template/types';
 
 export interface Ctx {
@@ -48,6 +49,14 @@ export interface Ctx {
   };
   logger: (msg: string) => void;
   answerEmitter?: AnswerEmitter;
+  /**
+   * D-57-12 swappable seam — per-sub-step function pointers for the latent
+   * emitter. Every field optional; unset → built-in default. Memoized space
+   * state (`SpaceBundle`) lives in the `latentAnswerEmitter` closure (Plan
+   * 57-07), NOT on ctx, per D-57-13. `buildCtx` leaves this `undefined` so
+   * Phase 56 consumers are unaffected.
+   */
+  latent?: LatentHooks;
 }
 
 /**
