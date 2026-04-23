@@ -482,4 +482,84 @@ export class SupabaseAdminClient {
 
     if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
   }
+
+  // ---------------------------------------------------------------------------
+  // Portrait upload surface (Phase 58 Plan 04 — GEN-09)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Select candidate rows for portrait upload (Pitfall #8).
+   *
+   * `bulk_import` returns aggregate counts, not inserted rows. Portrait upload
+   * needs the Postgres-assigned UUIDs + plain-text names for alt-text.
+   *
+   * Filters: `project_id = this.projectId AND external_id LIKE ${prefix}%`.
+   * Only touches generator-produced rows — never bootstrap / user-curated
+   * candidates. Deterministic order: sorted by `external_id` ascending so the
+   * portrait cycling (portraits[i % 30]) is stable across runs at a fixed
+   * seed.
+   */
+  async selectCandidatesForPortraitUpload(
+    externalIdPrefix: string
+  ): Promise<Array<{ id: string; external_id: string; first_name: string; last_name: string }>> {
+    const { data, error } = await this.client
+      .from('candidates')
+      .select('id, external_id, first_name, last_name')
+      .eq('project_id', this.projectId)
+      .like('external_id', `${externalIdPrefix}%`)
+      .order('external_id', { ascending: true });
+    if (error) throw new Error(`selectCandidatesForPortraitUpload failed: ${error.message}`);
+    return (data ?? []) as Array<{ id: string; external_id: string; first_name: string; last_name: string }>;
+  }
+
+  /**
+   * Upload a portrait JPEG to the `public-assets` bucket.
+   *
+   * Path: `${projectId}/candidates/${candidateId}/${filename}` — 3-segment
+   * RLS-compliant (VERIFIED at migration line 1934-1936).
+   *
+   * `upsert: true` makes re-runs idempotent.
+   * `contentType: 'image/jpeg'` keeps Storage metadata correct.
+   *
+   * CONTEXT §Specifics: upload failure is seed-blocking — throws with a
+   * candidate-scoped message the CLI surfaces + exits 1.
+   *
+   * @returns the storage path that was written (caller writes it into
+   *          `candidates.image.path` via `updateCandidateImage`).
+   */
+  async uploadPortrait(
+    candidateId: string,
+    externalId: string,
+    filename: string,
+    bytes: Uint8Array
+  ): Promise<string> {
+    const path = `${this.projectId}/candidates/${candidateId}/${filename}`;
+    const { error } = await this.client.storage
+      .from('public-assets')
+      .upload(path, bytes, { contentType: 'image/jpeg', upsert: true });
+    if (error) throw new Error(`Portrait upload failed for ${externalId}: ${error.message}`);
+    return path;
+  }
+
+  /**
+   * Write the `candidates.image` JSONB column for a single candidate.
+   *
+   * Column name is `image` (JSONB) — NOT `image_id` (Pitfall #2).
+   * Shape is `{ path, alt }` matching the canonical StoredImage
+   * (VERIFIED: apps/frontend/src/lib/api/adapters/supabase/utils/storageUrl.ts:9-16).
+   *
+   * `alt` MUST be populated (Pitfall #4 — WCAG 2.1 AA). Caller builds it
+   * as `"${first_name} ${last_name}".trim()`.
+   *
+   * Direct UPDATE — no merge semantics needed since Phase 58 authors the
+   * full shape.
+   */
+  async updateCandidateImage(
+    candidateId: string,
+    externalId: string,
+    image: { path: string; alt: string }
+  ): Promise<void> {
+    const { error } = await this.client.from('candidates').update({ image }).eq('id', candidateId);
+    if (error) throw new Error(`Image column update failed for ${externalId}: ${error.message}`);
+  }
 }
