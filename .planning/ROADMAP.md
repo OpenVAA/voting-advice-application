@@ -100,7 +100,16 @@ Plans:
   2. A baseline Playwright run is captured against the current JSON fixtures (expected: 15 passed / 19 data-race failed / 55 cascade) before the swap, and a post-swap run produces the same-or-better pass/fail set — specifically, all currently-passing tests remain passing, and the 19 pre-existing data-race failures and 55 cascades are not made worse.
   3. Only after the parity check passes are `tests/fixtures/default-dataset.json`, `tests/fixtures/voter-dataset.json`, and `tests/fixtures/candidate-addendum.json` deleted from the repo; the repo has zero remaining references to these files.
   4. `tests/tests/utils/supabaseAdminClient.ts` either stays in `tests/` or moves to `@openvaa/dev-tools` based on a documented dependency-graph decision made during implementation, with no circular dependencies introduced.
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 59-01-PLAN.md — Baseline Playwright capture + wait-for-healthy + summary.md (E2E-03)
+- [ ] 59-02-PLAN.md — Migrate 8 fixture consumers off JSON imports (E2E-01, E2E-02)
+- [ ] 59-03-PLAN.md — Author variant templates + parity diff script (E2E-02, E2E-03)
+- [ ] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01)
+- [ ] 59-05-PLAN.md — Post-swap capture + parity diff verdict (E2E-03)
+- [ ] 59-06-PLAN.md — Delete legacy fixtures + mergeDatasets util (E2E-02)
+- [ ] 59-07-PLAN.md — VERIFICATION.md + deps-check.txt (E2E-04)
 
 ## Progress
 
@@ -112,4 +121,4 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
-| 59. E2E Fixture Migration | 0/0 | Not started | - |
+| 59. E2E Fixture Migration | 0/7 | Planned     | - |
