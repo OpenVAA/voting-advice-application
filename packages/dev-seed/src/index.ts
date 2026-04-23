@@ -49,6 +49,7 @@
 export { buildCtx } from './ctx';
 export { defaultRandomValidEmit } from './emitters/answers';
 export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
+export { fanOutLocales, LOCALES } from './locales';
 export { runPipeline, TOPO_ORDER } from './pipeline';
 export { SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
 export { TemplateSchema, validateTemplate } from './template/schema';
@@ -58,6 +59,7 @@ export { Writer } from './writer';
 export type { Ctx } from './ctx';
 export type { AnswerEmitter } from './emitters/answers';
 export type { LatentHooks } from './emitters/latent/latentTypes';
+export type { LocaleCode } from './locales';
 export type { TableName } from './pipeline';
 export type { FindDataResult } from './supabaseAdminClient';
 export type { Template } from './template/types';
