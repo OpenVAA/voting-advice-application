@@ -1,49 +1,30 @@
-import defaultDataset from './tests/data/default-dataset.json' with { type: 'json' };
-import overlay from './tests/data/overlays/multi-election-overlay.json' with { type: 'json' };
-import voterDataset from './tests/data/voter-dataset.json' with { type: 'json' };
-import { mergeDatasets } from './tests/utils/mergeDatasets';
-import { SupabaseAdminClient } from './tests/utils/supabaseAdminClient';
+#!/usr/bin/env npx tsx
+/**
+ * Developer convenience: print a summary of what the Phase 58 e2e template
+ * will seed. Use during spec authoring to verify candidate/org/constituency
+ * counts and relational wiring are as expected.
+ *
+ * Usage:   yarn tsx tests/debug-setup.ts
+ */
 
-const TEST_DATA_PREFIX = 'test-';
+import {
+  E2E_ADDENDUM_CANDIDATES,
+  E2E_CANDIDATES,
+  E2E_DEFAULT_CANDIDATES,
+  E2E_ORGANIZATIONS,
+  E2E_QUESTIONS,
+  E2E_VOTER_CANDIDATES
+} from './tests/utils/e2eFixtureRefs';
 
-(async () => {
-  const client = new SupabaseAdminClient();
+function main() {
+  console.log('Phase 58 e2e template summary:');
+  console.log(`  candidates total:   ${E2E_CANDIDATES.length}`);
+  console.log(`    default:          ${E2E_DEFAULT_CANDIDATES.length}`);
+  console.log(`    voter:            ${E2E_VOTER_CANDIDATES.length}`);
+  console.log(`    unregistered:     ${E2E_ADDENDUM_CANDIDATES.length}`);
+  console.log(`  organizations:      ${E2E_ORGANIZATIONS.length}`);
+  console.log(`  questions:          ${E2E_QUESTIONS.length}`);
+  // TODO(Phase 60+): variant debug — switch template via env var or CLI flag.
+}
 
-  // Delete existing test data
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  console.log('Delete result:', deleteResult);
-
-  // Merge and import
-  const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-  await client.bulkImport(merged as Record<string, unknown[]>);
-  await client.importAnswers(merged as Record<string, unknown[]>);
-  await client.linkJoinTables(merged as Record<string, unknown[]>);
-  console.log('Import complete');
-
-  // Configure app settings
-  await client.updateAppSettings({
-    questions: {
-      categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
-      showResultsLink: true
-    },
-    entities: {
-      hideIfMissingAnswers: { candidate: false },
-      showAllNominations: true
-    },
-    notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false }
-  });
-  console.log('Settings configured');
-
-  console.log('Done!');
-})();
+main();
