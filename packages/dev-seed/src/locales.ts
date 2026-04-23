@@ -172,9 +172,17 @@ export function fanOutLocales(
         // Must be an object to be a localized JSONB field.
         if (typeof current !== 'object' || Array.isArray(current)) continue;
         const localized = current as Record<string, unknown>;
+        // Prefer mirroring an existing `en` value to missing locales over
+        // emitting faker noise. Hand-authored `fixed[]` rows set an `en` value
+        // that's semantically meaningful (e.g. "Uudenmaa North"); inventing a
+        // Danish company name like "Foged Smykker ApS" for the `da` slot makes
+        // the UI unreadable in non-English locales. Faker is only a fallback
+        // when no `en` value exists — preserves visual-parity signal for rows
+        // that truly have nothing to mirror.
+        const enValue = typeof localized.en === 'string' && localized.en.length > 0 ? localized.en : null;
         for (const locale of LOCALES) {
           if (localized[locale] === undefined) {
-            localized[locale] = generateLocaleValue(fakers[locale], field);
+            localized[locale] = enValue ?? generateLocaleValue(fakers[locale], field);
           }
         }
       }

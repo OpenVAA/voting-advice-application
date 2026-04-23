@@ -107,12 +107,7 @@ describe('fanOutLocales (TMPL-07)', () => {
       // Find the first localized field on the row
       for (const key of Object.keys(row)) {
         const val = row[key];
-        if (
-          val &&
-          typeof val === 'object' &&
-          !Array.isArray(val) &&
-          'en' in (val as Record<string, unknown>)
-        ) {
+        if (val && typeof val === 'object' && !Array.isArray(val) && 'en' in (val as Record<string, unknown>)) {
           const loc = val as Record<string, string>;
           expect(loc.fi).toBeDefined();
           expect(loc.sv).toBeDefined();
@@ -137,9 +132,12 @@ describe('fanOutLocales (TMPL-07)', () => {
     expect(JSON.stringify(r1)).toBe(JSON.stringify(r2));
   });
 
-  it('different seeds produce different fan-out output', () => {
-    const input1 = { elections: [{ name: { en: 'Demo' } }] };
-    const input2 = { elections: [{ name: { en: 'Demo' } }] };
+  it('different seeds produce different fan-out output when faker fallback fires', () => {
+    // Use a row with NO `en` value so fan-out can't mirror and must fall back
+    // to faker — where seed variance is observable. Rows that carry `en` are
+    // mirrored deterministically regardless of seed (the intended behavior).
+    const input1 = { elections: [{ name: { fi: 'Demo' } }] };
+    const input2 = { elections: [{ name: { fi: 'Demo' } }] };
     const r1 = fanOutLocales(input1, { generateTranslationsForAllLocales: true }, 42);
     const r2 = fanOutLocales(input2, { generateTranslationsForAllLocales: true }, 99);
     expect(JSON.stringify(r1)).not.toBe(JSON.stringify(r2));

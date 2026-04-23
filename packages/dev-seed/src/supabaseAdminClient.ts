@@ -130,11 +130,30 @@ export class SupabaseAdminClient {
       candidates: new Set(['email'])
     };
 
+    // Tables with a `published boolean NOT NULL DEFAULT false` column gated by
+    // anon RLS (`USING (published = true)`). Seeded rows must be visible to the
+    // frontend's anon client, so default `published` to `true` when the record
+    // doesn't already set it. Templates can still emit `published: false`
+    // explicitly to seed draft rows.
+    const PUBLISHABLE_TABLES = new Set([
+      'elections',
+      'constituency_groups',
+      'constituencies',
+      'organizations',
+      'candidates',
+      'factions',
+      'alliances',
+      'question_categories',
+      'questions',
+      'nominations'
+    ]);
+
     const cleaned: Record<string, Array<unknown>> = {};
     for (const [collection, records] of Object.entries(data)) {
       // Convert collection name to snake_case table name
       const tableName = resolveCollectionName(collection);
       const extraStrip = COLLECTION_NON_COLUMNS[tableName];
+      const isPublishable = PUBLISHABLE_TABLES.has(tableName);
       cleaned[tableName] = (records as Array<Record<string, unknown>>).map((record) => {
         const stripped: Record<string, unknown> = {};
         // Nominations are polymorphic: only one entity FK allowed (candidate OR organization).
@@ -159,6 +178,9 @@ export class SupabaseAdminClient {
           } else {
             stripped[snakeKey] = value;
           }
+        }
+        if (isPublishable && !('published' in stripped)) {
+          stripped.published = true;
         }
         return stripped;
       });
@@ -527,12 +549,7 @@ export class SupabaseAdminClient {
    * @returns the storage path that was written (caller writes it into
    *          `candidates.image.path` via `updateCandidateImage`).
    */
-  async uploadPortrait(
-    candidateId: string,
-    externalId: string,
-    filename: string,
-    bytes: Uint8Array
-  ): Promise<string> {
+  async uploadPortrait(candidateId: string, externalId: string, filename: string, bytes: Uint8Array): Promise<string> {
     const path = `${this.projectId}/candidates/${candidateId}/${filename}`;
     const { error } = await this.client.storage
       .from('public-assets')
