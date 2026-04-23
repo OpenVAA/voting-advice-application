@@ -562,4 +562,85 @@ export class SupabaseAdminClient {
     const { error } = await this.client.from('candidates').update({ image }).eq('id', candidateId);
     if (error) throw new Error(`Image column update failed for ${externalId}: ${error.message}`);
   }
+
+  // ---------------------------------------------------------------------------
+  // Storage cleanup surface (Phase 58 Plan 07 — CLI-03 teardown Path 2)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * List all candidate-portrait file paths under `${projectId}/candidates/` in
+   * the `public-assets` bucket — used by `seed:teardown` Path 2 explicit
+   * cleanup (D-58-07 + RESEARCH §3).
+   *
+   * Storage layout (verified by Plan 04's `uploadPortrait`):
+   *   `${projectId}/candidates/${candidateId}/${filename}`
+   *
+   * Enumeration is 2-level: first list candidate-UUID directories, then list
+   * files under each. Returns a flat array of fully-qualified paths ready to
+   * hand to `.storage.from(...).remove(paths)`.
+   *
+   * Pitfall #5 (RESEARCH §3): the AFTER-DELETE `pg_net` trigger may or may
+   * not have reclaimed these files by the time the teardown CLI gets here.
+   * Either way, the explicit list+remove is deterministic — this is the
+   * PRIMARY path; the trigger is a nice-to-have async fallback.
+   *
+   * Missing bucket / missing path is treated as empty (initial state after
+   * `supabase:reset` with no seed data yet) — only non-"not found" list
+   * errors throw.
+   */
+  async listCandidatePortraitPaths(): Promise<Array<string>> {
+    const rootPath = `${this.projectId}/candidates`;
+    const { data: dirs, error: dirError } = await this.client.storage
+      .from('public-assets')
+      .list(rootPath, { limit: 1000 });
+    if (dirError) {
+      const msg = (dirError as { message?: string }).message ?? String(dirError);
+      // Bucket missing or path absent — treat as empty (initial state).
+      if (/not found|does not exist/i.test(msg)) return [];
+      throw new Error(`listCandidatePortraitPaths: list dirs failed: ${msg}`);
+    }
+    if (!dirs || dirs.length === 0) return [];
+
+    const paths: Array<string> = [];
+    for (const dir of dirs as Array<{ name?: string }>) {
+      if (!dir.name || dir.name === '.emptyFolderPlaceholder') continue;
+      const subpath = `${rootPath}/${dir.name}`;
+      const { data: files, error: fileError } = await this.client.storage
+        .from('public-assets')
+        .list(subpath, { limit: 100 });
+      if (fileError) {
+        const msg = (fileError as { message?: string }).message ?? String(fileError);
+        throw new Error(`listCandidatePortraitPaths: list files failed at ${subpath}: ${msg}`);
+      }
+      for (const f of (files ?? []) as Array<{ name?: string }>) {
+        if (f.name && f.name !== '.emptyFolderPlaceholder') {
+          paths.push(`${subpath}/${f.name}`);
+        }
+      }
+    }
+    return paths;
+  }
+
+  /**
+   * Remove storage objects in bulk from the `public-assets` bucket.
+   *
+   * Returns the count of successfully removed objects (Supabase Storage
+   * `.remove(paths)` returns `{ data: FileObject[] }` on success; we count
+   * the entries of `data`).
+   *
+   * No-ops for an empty path list (avoids an unnecessary HTTP round-trip).
+   *
+   * Teardown uses this to reclaim portrait files that the AFTER-DELETE
+   * trigger didn't clean up (Pitfall #5 — `pg_net` async race; Path 2 is
+   * authoritative).
+   */
+  async removePortraitStorageObjects(paths: Array<string>): Promise<number> {
+    if (paths.length === 0) return 0;
+    const { data, error } = await this.client.storage.from('public-assets').remove(paths);
+    if (error) {
+      const msg = (error as { message?: string }).message ?? String(error);
+      throw new Error(`removePortraitStorageObjects failed: ${msg}`);
+    }
+    return (data ?? []).length;
+  }
 }

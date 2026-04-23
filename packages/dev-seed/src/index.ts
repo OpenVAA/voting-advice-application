@@ -49,6 +49,8 @@
 export { USAGE as SEED_CLI_USAGE } from './cli/help';
 export { resolveTemplate } from './cli/resolve-template';
 export { formatSummary } from './cli/summary';
+export { runTeardown } from './cli/teardown';
+export { TEARDOWN_USAGE } from './cli/teardown-help';
 export { buildCtx } from './ctx';
 export { defaultRandomValidEmit } from './emitters/answers';
 export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
@@ -61,6 +63,7 @@ export { Writer } from './writer';
 
 // Type exports
 export type { SummaryInput } from './cli/summary';
+export type { TeardownResult } from './cli/teardown';
 export type { Ctx } from './ctx';
 export type { AnswerEmitter } from './emitters/answers';
 export type { LatentHooks } from './emitters/latent/latentTypes';

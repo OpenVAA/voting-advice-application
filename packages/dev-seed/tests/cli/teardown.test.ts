@@ -45,7 +45,8 @@ const storageState: StorageMockState = {
 
 vi.mock('@supabase/supabase-js', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const makeBuilder = (): any => ({
+  function makeBuilder(): any {
+    return {
     // The portrait-surface tests rely on the builder terminals, but the
     // list/remove tests only touch the storage facade below. Provide a
     // harmless always-resolving builder for completeness.
@@ -55,7 +56,8 @@ vi.mock('@supabase/supabase-js', () => {
     order: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
     then: (resolve: (v: unknown) => void) => resolve({ data: [], error: null })
-  });
+    };
+  }
 
   return {
     createClient: vi.fn(() => ({
@@ -80,6 +82,7 @@ vi.mock('@supabase/supabase-js', () => {
 });
 
 // Import AFTER vi.mock so `createClient` is the mocked version.
+// eslint-disable-next-line import/first
 import { SupabaseAdminClient } from '../../src/supabaseAdminClient';
 
 function resetStorageMockState(): void {
@@ -209,7 +212,9 @@ describe('SupabaseAdminClient storage cleanup surface (Phase 58 Plan 07)', () =>
 // runTeardown orchestrator
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line import/first
 import { runTeardown } from '../../src/cli/teardown';
+// eslint-disable-next-line import/first
 import { TEARDOWN_USAGE } from '../../src/cli/teardown-help';
 
 interface FakeClient {
