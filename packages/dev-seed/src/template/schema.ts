@@ -101,6 +101,20 @@ export const TemplateSchema = z
     seed: z.number().int().optional(),
     externalIdPrefix: z.string().optional(),
     projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
+    /**
+     * TMPL-07 / D-58-04 — when `true`, the pipeline post-processes every
+     * localized JSONB field (`name`, `short_name`, `info`, question
+     * `choices[].label`, etc.) to contain keys for every locale in
+     * `staticSettings.supportedLocales` (`en`, `fi`, `sv`, `da`). When
+     * `false` or `undefined`, only the default locale (`en`) is populated.
+     *
+     * The default template (Plan 58-06) sets this to `true` so first-run
+     * developers see the app in all four locales. The e2e template
+     * (Plan 58-08) sets it to `false` per D-58-16 — Playwright specs run
+     * against a single locale and the 4x JSONB payload is pure overhead
+     * for them.
+     */
+    generateTranslationsForAllLocales: z.boolean().optional(),
     elections: perEntityFragment.optional(),
     constituency_groups: perEntityFragment.optional(),
     constituencies: perEntityFragment.optional(),
