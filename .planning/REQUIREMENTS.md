@@ -156,14 +156,14 @@ A unified declarative template config with smart defaults; any collection can mi
 | GEN-03 | Phase 56 | Pending |
 | GEN-04 | Phase 56 | Complete (56-08) |
 | GEN-05 | Phase 56 | Pending |
-| GEN-06 | Phase 57 | Pending |
-| GEN-06a | Phase 57 | Pending |
-| GEN-06b | Phase 57 | Pending |
-| GEN-06c | Phase 57 | Pending |
-| GEN-06d | Phase 57 | Pending |
-| GEN-06e | Phase 57 | Pending |
-| GEN-06f | Phase 57 | Pending |
-| GEN-06g | Phase 57 | Pending |
+| GEN-06 | Phase 57 | Complete |
+| GEN-06a | Phase 57 | Complete |
+| GEN-06b | Phase 57 | Complete |
+| GEN-06c | Phase 57 | Complete |
+| GEN-06d | Phase 57 | Complete |
+| GEN-06e | Phase 57 | Complete |
+| GEN-06f | Phase 57 | Complete |
+| GEN-06g | Phase 57 | Complete |
 | GEN-07 | Phase 56 | Complete (56-08) |
 | GEN-08 | Phase 56 | Complete (56-08) |
 | GEN-09 | Phase 58 | Pending |
