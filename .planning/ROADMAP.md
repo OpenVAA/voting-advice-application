@@ -80,9 +80,9 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 58-01-PLAN.md — E2E Playwright spec audit (58-E2E-AUDIT.md inventory doc)
-- [ ] 58-02-PLAN.md — Portrait assets + download script + LICENSE
-- [ ] 58-03-PLAN.md — Schema extension (generateTranslationsForAllLocales) + Template JSDoc + locales.ts fan-out utility
+- [x] 58-01-PLAN.md — E2E Playwright spec audit (58-E2E-AUDIT.md inventory doc)
+- [x] 58-02-PLAN.md — Portrait assets + download script + LICENSE
+- [x] 58-03-PLAN.md — Schema extension (generateTranslationsForAllLocales) + Template JSDoc + locales.ts fan-out utility
 - [ ] 58-04-PLAN.md — Writer portrait-upload extension + SupabaseAdminClient portrait methods
 - [ ] 58-05-PLAN.md — CLI shell (seed.ts + resolve-template + help + summary) + package.json seed script
 - [ ] 58-06-PLAN.md — Default template + non-uniform distribution override + type-mix override + BUILT_IN_TEMPLATES
