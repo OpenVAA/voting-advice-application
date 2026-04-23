@@ -73,4 +73,26 @@ describe('validateTemplate', () => {
     };
     expect(() => validateTemplate(allEntities)).not.toThrow();
   });
+
+  // Phase 58 Plan 03: generateTranslationsForAllLocales field (TMPL-07)
+
+  it('TMPL-07: accepts generateTranslationsForAllLocales: true', () => {
+    const result = validateTemplate({ generateTranslationsForAllLocales: true });
+    expect(result.generateTranslationsForAllLocales).toBe(true);
+  });
+
+  it('TMPL-07: accepts generateTranslationsForAllLocales: false', () => {
+    const result = validateTemplate({ generateTranslationsForAllLocales: false });
+    expect(result.generateTranslationsForAllLocales).toBe(false);
+  });
+
+  it('TMPL-07: rejects non-boolean generateTranslationsForAllLocales with field-path error', () => {
+    expect(() =>
+      validateTemplate({ generateTranslationsForAllLocales: 'yes' as unknown as boolean })
+    ).toThrow(/template\.generateTranslationsForAllLocales/);
+  });
+
+  it('TMPL-07: {} still passes (field remains optional per TMPL-02)', () => {
+    expect(() => validateTemplate({})).not.toThrow();
+  });
 });
