@@ -54,9 +54,9 @@
  * matrix do NOT propagate into the template (T-57-21 regression guard).
  */
 
+import { boxMuller } from './gaussian';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../../ctx';
-import { boxMuller } from './gaussian';
 import type { LatentHooks, LoadingMatrix } from './latentTypes';
 
 /**
