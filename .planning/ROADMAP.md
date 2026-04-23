@@ -57,7 +57,7 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 57-01-PLAN.md — Foundation (workspace deps + LatentHooks types + boxMuller + Ctx.latent + TemplateSchema.latent)
+- [x] 57-01-PLAN.md — Foundation (workspace deps + LatentHooks types + boxMuller + Ctx.latent + TemplateSchema.latent)
 - [ ] 57-02-PLAN.md — defaultDimensions (D-57-01/02) + defaultSpread (D-57-04)
 - [ ] 57-03-PLAN.md — defaultCentroids (D-57-03/05, farthest-point)
 - [ ] 57-04-PLAN.md — defaultPositions (D-57-04 isotropic Gaussian per-candidate)
