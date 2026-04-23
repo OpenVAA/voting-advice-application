@@ -161,7 +161,7 @@ export const e2eTemplate: Template = {
         external_id: 'test-party-a',
         name: { en: 'Test Party A' },
         short_name: { en: 'TPA' },
-        color: '#2546a8',
+        color: { normal: '#2546a8', dark: '#6b8dd6' },
         sort_order: 0,
         is_generated: false
       },
@@ -169,7 +169,7 @@ export const e2eTemplate: Template = {
         external_id: 'test-party-b',
         name: { en: 'Test Party B' },
         short_name: { en: 'TPB' },
-        color: '#a82525',
+        color: { normal: '#a82525', dark: '#d67070' },
         sort_order: 1,
         is_generated: false
       },
@@ -177,7 +177,7 @@ export const e2eTemplate: Template = {
         external_id: 'test-voter-party-a',
         name: { en: 'Voter Test Party Alpha' },
         short_name: { en: 'VPA' },
-        color: '#1f8bc2',
+        color: { normal: '#1f8bc2', dark: '#6bb8dc' },
         sort_order: 2,
         is_generated: false
       },
@@ -185,7 +185,7 @@ export const e2eTemplate: Template = {
         external_id: 'test-voter-party-b',
         name: { en: 'Voter Test Party Beta' },
         short_name: { en: 'VPB' },
-        color: '#d88b1e',
+        color: { normal: '#d88b1e', dark: '#f0b96b' },
         sort_order: 3,
         is_generated: false
       }

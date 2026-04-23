@@ -48,7 +48,7 @@ export class OrganizationsGenerator {
         project_id: projectId,
         name: { en: `${faker.company.name()} Party` },
         short_name: { en: `P${i + 1}` },
-        color: faker.color.rgb(),
+        color: { normal: faker.color.rgb(), dark: faker.color.rgb() },
         sort_order: i,
         is_generated: true
         // `auth_user_id` omitted — Phase 56 scope excludes auth (RESEARCH §4.8).

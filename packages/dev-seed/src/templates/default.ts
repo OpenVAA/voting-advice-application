@@ -26,10 +26,10 @@
  * wired to the single election × first constituency.
  */
 
-import type { Template } from '../template/types';
-import type { Overrides } from '../types';
 import { candidatesOverride } from './defaults/candidates-override';
 import { questionsOverride } from './defaults/questions-override';
+import type { Template } from '../template/types';
+import type { Overrides } from '../types';
 
 export const defaultTemplate: Template = {
   seed: 42,
@@ -93,14 +93,70 @@ export const defaultTemplate: Template = {
   organizations: {
     count: 0,
     fixed: [
-      { external_id: 'party_blue',   name: { en: 'Blue Coalition' },         short_name: { en: 'BC' },  color: '#2546a8', sort_order: 0, is_generated: false },
-      { external_id: 'party_green',  name: { en: 'Green Wing' },             short_name: { en: 'GW' },  color: '#0a716b', sort_order: 1, is_generated: false },
-      { external_id: 'party_social', name: { en: 'Social Democrats Union' }, short_name: { en: 'SDU' }, color: '#b42121', sort_order: 2, is_generated: false },
-      { external_id: 'party_rural',  name: { en: 'Rural Alliance' },         short_name: { en: 'RA' },  color: '#3f8f3f', sort_order: 3, is_generated: false },
-      { external_id: 'party_people', name: { en: "People's Movement" },      short_name: { en: 'PM' },  color: '#d88b1e', sort_order: 4, is_generated: false },
-      { external_id: 'party_red',    name: { en: 'Red Front' },              short_name: { en: 'RF' },  color: '#8b0000', sort_order: 5, is_generated: false },
-      { external_id: 'party_coast',  name: { en: 'Coastal Party' },          short_name: { en: 'CP' },  color: '#1f8bc2', sort_order: 6, is_generated: false },
-      { external_id: 'party_values', name: { en: 'Values Coalition' },       short_name: { en: 'VC' },  color: '#5b3f8a', sort_order: 7, is_generated: false }
+      {
+        external_id: 'party_blue',
+        name: { en: 'Blue Coalition' },
+        short_name: { en: 'BC' },
+        color: { normal: '#2546a8', dark: '#6b8dd6' },
+        sort_order: 0,
+        is_generated: false
+      },
+      {
+        external_id: 'party_green',
+        name: { en: 'Green Wing' },
+        short_name: { en: 'GW' },
+        color: { normal: '#0a716b', dark: '#4db3ad' },
+        sort_order: 1,
+        is_generated: false
+      },
+      {
+        external_id: 'party_social',
+        name: { en: 'Social Democrats Union' },
+        short_name: { en: 'SDU' },
+        color: { normal: '#b42121', dark: '#e06b6b' },
+        sort_order: 2,
+        is_generated: false
+      },
+      {
+        external_id: 'party_rural',
+        name: { en: 'Rural Alliance' },
+        short_name: { en: 'RA' },
+        color: { normal: '#3f8f3f', dark: '#7dc77d' },
+        sort_order: 3,
+        is_generated: false
+      },
+      {
+        external_id: 'party_people',
+        name: { en: "People's Movement" },
+        short_name: { en: 'PM' },
+        color: { normal: '#d88b1e', dark: '#f0b96b' },
+        sort_order: 4,
+        is_generated: false
+      },
+      {
+        external_id: 'party_red',
+        name: { en: 'Red Front' },
+        short_name: { en: 'RF' },
+        color: { normal: '#8b0000', dark: '#cc4a4a' },
+        sort_order: 5,
+        is_generated: false
+      },
+      {
+        external_id: 'party_coast',
+        name: { en: 'Coastal Party' },
+        short_name: { en: 'CP' },
+        color: { normal: '#1f8bc2', dark: '#6bb8dc' },
+        sort_order: 6,
+        is_generated: false
+      },
+      {
+        external_id: 'party_values',
+        name: { en: 'Values Coalition' },
+        short_name: { en: 'VC' },
+        color: { normal: '#5b3f8a', dark: '#9b83c4' },
+        sort_order: 7,
+        is_generated: false
+      }
     ]
   },
 
@@ -110,10 +166,34 @@ export const defaultTemplate: Template = {
   question_categories: {
     count: 0,
     fixed: [
-      { external_id: 'cat_economy',     name: { en: 'Economy & Taxation' },   category_type: 'opinion', sort_order: 0, is_generated: false },
-      { external_id: 'cat_social',      name: { en: 'Social & Welfare' },     category_type: 'opinion', sort_order: 1, is_generated: false },
-      { external_id: 'cat_environment', name: { en: 'Environment & Energy' }, category_type: 'opinion', sort_order: 2, is_generated: false },
-      { external_id: 'cat_foreign',     name: { en: 'Foreign & Defence' },    category_type: 'opinion', sort_order: 3, is_generated: false }
+      {
+        external_id: 'cat_economy',
+        name: { en: 'Economy & Taxation' },
+        category_type: 'opinion',
+        sort_order: 0,
+        is_generated: false
+      },
+      {
+        external_id: 'cat_social',
+        name: { en: 'Social & Welfare' },
+        category_type: 'opinion',
+        sort_order: 1,
+        is_generated: false
+      },
+      {
+        external_id: 'cat_environment',
+        name: { en: 'Environment & Energy' },
+        category_type: 'opinion',
+        sort_order: 2,
+        is_generated: false
+      },
+      {
+        external_id: 'cat_foreign',
+        name: { en: 'Foreign & Defence' },
+        category_type: 'opinion',
+        sort_order: 3,
+        is_generated: false
+      }
     ]
   },
 

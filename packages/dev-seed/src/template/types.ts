@@ -62,8 +62,8 @@
  *   organizations: {
  *     count: 8,                                      // 8 total organizations...
  *     fixed: [                                       // ...of which these 2 are hand-authored
- *       { external_id: 'party_vihreat', name: { en: 'Green Wing' }, color: '#0a716b' },
- *       { external_id: 'party_kokoomus', name: { en: 'Blue Coalition' }, color: '#2546a8' }
+ *       { external_id: 'party_vihreat', name: { en: 'Green Wing' }, color: { normal: '#0a716b', dark: '#4db3ad' } },
+ *       { external_id: 'party_kokoomus', name: { en: 'Blue Coalition' }, color: { normal: '#2546a8', dark: '#6b8dd6' } }
  *     ]
  *   },
  *   candidates: { count: 100 }
