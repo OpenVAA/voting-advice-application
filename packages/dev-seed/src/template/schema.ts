@@ -38,6 +38,47 @@ const perEntityFragment = z.object({
 });
 
 /**
+ * D-57-21: latent-factor emitter configuration (Phase 57).
+ *
+ * Top-level optional, every nested field optional. `.strict()` rejects typos
+ * (e.g. `latent.loading` vs `latent.loadings`) so TMPL-09 error messages point
+ * at the offending field instead of silently dropping it. `.superRefine()`
+ * enforces the D-57-02 invariant that `eigenvalues.length === dimensions` when
+ * both are provided — prevents downstream sub-steps from reading past the
+ * array bounds or operating on a degenerate space.
+ *
+ * Keyed `centroids` / `loadings` use `z.record(z.string(), ...)` because the
+ * keys are party / question `external_id`s; zod v4 requires the key type
+ * argument.
+ */
+const latentBlock = z
+  .object({
+    dimensions: z.number().int().positive().optional(),
+    eigenvalues: z.array(z.number().nonnegative()).optional(),
+    // D-57-05 + D-57-07: per-party centroid anchors keyed by party external_id.
+    centroids: z.record(z.string(), z.array(z.number())).optional(),
+    spread: z.number().nonnegative().optional(),
+    // D-57-07: per-question loading vectors keyed by question external_id.
+    loadings: z.record(z.string(), z.array(z.number())).optional(),
+    noise: z.number().nonnegative().optional()
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    // D-57-02: eigenvalues length must match dimensions when both are provided.
+    if (
+      data.eigenvalues !== undefined &&
+      data.dimensions !== undefined &&
+      data.eigenvalues.length !== data.dimensions
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['eigenvalues'],
+        message: `Expected length ${data.dimensions}, got ${data.eigenvalues.length}`
+      });
+    }
+  });
+
+/**
  * Accept any UUID-shaped string (8-4-4-4-12 hex groups).
  *
  * We deliberately do NOT use `z.string().uuid()` — zod v4's `.uuid()` enforces
@@ -55,23 +96,25 @@ const perEntityFragment = z.object({
  */
 const UUID_SHAPE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
-export const TemplateSchema = z.object({
-  seed: z.number().int().optional(),
-  externalIdPrefix: z.string().optional(),
-  projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
-  elections: perEntityFragment.optional(),
-  constituency_groups: perEntityFragment.optional(),
-  constituencies: perEntityFragment.optional(),
-  organizations: perEntityFragment.optional(),
-  alliances: perEntityFragment.optional(),
-  factions: perEntityFragment.optional(),
-  candidates: perEntityFragment.optional(),
-  question_categories: perEntityFragment.optional(),
-  questions: perEntityFragment.optional(),
-  nominations: perEntityFragment.optional(),
-  app_settings: perEntityFragment.optional(),
-  feedback: perEntityFragment.optional()
-});
+export const TemplateSchema = z
+  .object({
+    seed: z.number().int().optional(),
+    externalIdPrefix: z.string().optional(),
+    projectId: z.string().regex(UUID_SHAPE, 'Invalid UUID').optional(),
+    elections: perEntityFragment.optional(),
+    constituency_groups: perEntityFragment.optional(),
+    constituencies: perEntityFragment.optional(),
+    organizations: perEntityFragment.optional(),
+    alliances: perEntityFragment.optional(),
+    factions: perEntityFragment.optional(),
+    candidates: perEntityFragment.optional(),
+    question_categories: perEntityFragment.optional(),
+    questions: perEntityFragment.optional(),
+    nominations: perEntityFragment.optional(),
+    app_settings: perEntityFragment.optional(),
+    feedback: perEntityFragment.optional()
+  })
+  .extend({ latent: latentBlock.optional() });
 
 /**
  * Validate a template input; return the typed Template on success, throw on failure.

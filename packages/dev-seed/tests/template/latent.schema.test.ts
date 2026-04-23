@@ -8,8 +8,11 @@
  *   - Test 4 (D-57-02): mismatched lengths rejected with
  *     `template.latent.eigenvalues: Expected length 2, got 1`.
  *   - Test 5: negative `noise` rejected (`.nonnegative()` enforcement).
- *   - Test 6 (TMPL-09 + .strict): typo `loading` (singular) → error path
- *     `template.latent.loading` — proves `.strict()` catches unknown keys.
+ *   - Test 6 (TMPL-09 + .strict): typo `loading` (singular) surfaces in the
+ *     error message — proves `.strict()` catches unknown keys. zod v4 emits
+ *     `unrecognized_keys` issues with `path: []` relative to the offending
+ *     object (`template.latent`) and names the keys inside the message, so the
+ *     regex matches `template.latent: Unrecognized key: "loading"`.
  *   - Test 7: importing the `Ctx` type with `latent?: LatentHooks` compiles
  *     (smoke check — if the ctx extension drifts, this test file won't type-check).
  *
@@ -49,8 +52,14 @@ describe('template schema — latent block (D-57-21)', () => {
   });
 
   it('rejects unknown keys via .strict() (TMPL-09 typo-catching)', () => {
-    // `loading` (singular) is a typo — `loadings` is the correct key.
-    expect(() => validateTemplate({ latent: { loading: {} } })).toThrow(/template\.latent\.loading/);
+    // `loading` (singular) is a typo — `loadings` is the correct key. zod v4
+    // emits `unrecognized_keys` with path `['latent']` (not `['latent','loading']`)
+    // and lists the offending key in the message body. The validator's
+    // formatter prefixes that as `template.latent: ...`, so the regex looks
+    // for `template.latent` followed by the unknown-key name in the same line.
+    expect(() => validateTemplate({ latent: { loading: {} } })).toThrow(
+      /template\.latent:.*Unrecognized key.*"loading"/
+    );
   });
 
   it('Ctx.latent field compiles under the LatentHooks type', () => {
