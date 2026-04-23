@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Phase 59 Plan 02 complete — 8 fixture consumers migrated to e2eFixtureRefs
-last_updated: "2026-04-23T19:11:32Z"
-last_activity: 2026-04-23 -- Phase 59 Plan 02 (fixture-consumer migration) complete
+stopped_at: Plan 59-03 complete — 3 variant templates + parity diff script landed (commits c3c8e2bec / 45d4d8abb / 5b449ab73)
+last_updated: "2026-04-23T19:31:15.592Z"
+last_activity: 2026-04-23 -- Phase 59 Plan 03 (variant templates + parity diff script) complete
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 34
-  completed_plans: 29
-  percent: 85
+  completed_plans: 30
+  percent: 88
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 ## Current Position
 
 Phase: 59 (e2e-fixture-migration) — EXECUTING
-Plan: 2/7 complete (59-02 fixture-consumer migration)
-Status: Executing Phase 59 — next plan is 59-03 (Wave 3, variant setup rewrite)
-Last activity: 2026-04-23 -- Phase 59 Plan 02 (fixture-consumer migration) complete
+Plan: 3/7 complete (59-03 variant templates + parity diff script)
+Status: Executing Phase 59 — next plan is 59-04 (Wave 3, variant setup rewrite — consumes 59-03's templates)
+Last activity: 2026-04-23 -- Phase 59 Plan 03 (variant templates + parity diff script) complete
 
 ## Performance Metrics
 
@@ -91,6 +91,11 @@ Key context for v2.5:
 - Plan 59-02: Per-task atomic commits (3 × feat(59-02) commits for Tasks 1/2/3) instead of the plan's Task-4 bundle commit — matches the GSD executor task_commit_protocol.
 - Plan 59-02: voter-results.spec.ts totalPartyCount sourced from E2E_ORGANIZATIONS.length directly — the e2e template ships 4 orgs combined (58-E2E-AUDIT.md §1.1), so the prior 2+2 sum collapses to a single read.
 - Plan 59-02: 2 grep hits remain in tests/tests/utils/mergeDatasets.ts — both docstring comments, not imports; file scheduled for deletion in Plan 06. import-only grep returns 0. Out of scope to touch.
+- Plan 59-03: Three variant templates (constituency / multi-election / startfromcg) extend BUILT_IN_TEMPLATES.e2e via template composition — no mechanical JSON port, field-by-field snake_case migration with shape-drift documented inline
+- Plan 59-03: Diff script uses inline Playwright JSON type definitions (approach b, not @playwright/test import) — script lives under .planning/ outside tests/ workspace; ~35 lines of interfaces, zero any, no new deps
+- Plan 59-03: Overlay _constituencies / _constituencyGroups / _elections per-row sentinels cannot be expressed template-side because pipeline.ts:229-255 post-topo pass overwrites them with full-fanout (T-56-37); variant specs that need narrower scoping query by external_id
+- Plan 59-03: Per-task atomic commits (3 × feat(59-03)) continue Plan 59-02 precedent — plan's Task 4 bundle commit superseded by executor task_commit_protocol
+- Plan 59-03: diff script flattenReport reads top-level t.status as fallback when results[] is empty — Playwright emits cascaded did-not-run tests with results:[] + tests[].status='skipped' (Rule 1 bug fix, caught in smoke test before Task 3 commit)
 
 ### Blockers/Concerns
 
@@ -102,9 +107,9 @@ Key context for v2.5:
 
 ## Session Continuity
 
-Last session: 2026-04-23T19:11:32Z
-Stopped at: Phase 59 Plan 02 complete — 8 fixture consumers on e2eFixtureRefs (commits ba268f421 / 553b5d88b / 0b14287f3)
-Resume file: .planning/phases/59-e2e-fixture-migration/59-03-PLAN.md
-Next action: Execute 59-03 (Wave 3 — variant setup rewrite)
+Last session: 2026-04-23T19:31:15.588Z
+Stopped at: Plan 59-03 complete — 3 variant templates + parity diff script landed (commits c3c8e2bec / 45d4d8abb / 5b449ab73)
+Resume file: .planning/phases/59-e2e-fixture-migration/59-04-PLAN.md
+Next action: Execute 59-04 (Wave 3 — variant setup rewrite consuming 59-03's templates)
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 2 complete — 2026-04-23T19:11:32Z
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 3 complete — 2026-04-23T19:31:15Z
