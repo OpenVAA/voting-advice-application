@@ -14,15 +14,17 @@
  * the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
  */
 
+import { defaultOverrides, defaultTemplate } from './default';
+import { e2eTemplate } from './e2e';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
-import { defaultOverrides, defaultTemplate } from './default';
 
 /**
  * Built-in template name → Template. Plan 08 adds `e2e: e2eTemplate`.
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
-  default: defaultTemplate
+  default: defaultTemplate,
+  e2e: e2eTemplate
 };
 
 /**
@@ -32,6 +34,11 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
  *
  * Templates with no overrides register an empty object (`{}`) or are omitted
  * (`loadBuiltIns` falls back to `{}` when the key is missing).
+ *
+ * The `e2e` template (Plan 08) ships with NO overrides — every row is
+ * expressed as a `fixed[]` entry authored from 58-E2E-AUDIT.md. Phase 56's
+ * generators handle the fixed[] passthrough; no content-shaping override is
+ * needed.
  */
 export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
   default: defaultOverrides
@@ -39,3 +46,4 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
 
 // Re-exports for explicit consumer imports.
 export { defaultOverrides, defaultTemplate } from './default';
+export { e2eTemplate } from './e2e';
