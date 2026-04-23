@@ -58,9 +58,9 @@
  * layer defense.
  */
 
+import { boxMuller } from './gaussian';
 import type { Ctx } from '../../ctx';
 import type { Centroids, LatentHooks } from './latentTypes';
-import { boxMuller } from './gaussian';
 
 /**
  * Build per-party centroid vectors via farthest-point greedy max-min sampling.
