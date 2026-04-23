@@ -269,6 +269,19 @@ tsx examples/example.ts
 yarn build             # Rebuilds all packages (cached -- only changed packages rebuild)
 ```
 
+### Seeding local data
+
+```bash
+yarn dev:reset-with-data       # supabase db reset + default template (Finnish demo, 4 locales)
+yarn dev:seed --template e2e   # E2E test data for manual Playwright runs
+yarn dev:seed --template ./my-template.ts  # custom templates from filesystem
+yarn dev:seed:teardown         # remove all seed_-prefixed rows + portraits
+```
+
+See `packages/dev-seed/README.md` for authoring custom templates (mixing
+`fixed[]` hand-authored rows with synthetic `count`, 4-locale expansion,
+latent-factor answer model overrides).
+
 ## Important Implementation Notes
 
 - **Never** commit sensitive data (API keys, tokens, .env files)
