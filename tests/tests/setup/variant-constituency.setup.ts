@@ -1,45 +1,43 @@
 import { expect, test as setup } from '@playwright/test';
-import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
-import overlay from '../data/overlays/constituency-overlay.json' with { type: 'json' };
-import { mergeDatasets } from '../utils/mergeDatasets';
+import {
+  BUILT_IN_OVERRIDES,
+  fanOutLocales,
+  runPipeline,
+  runTeardown,
+  Writer
+} from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import variantConstituencyTemplate from './templates/variant-constituency';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
  * Variant data setup: constituency configuration.
  *
- * Loads the default + voter base datasets merged with the constituency overlay.
- * This creates multiple constituencies with hierarchical regions/municipalities,
- * 2 elections referencing different constituency groups, and constituency-scoped
- * questions. Triggers both election and constituency selection.
+ * Loads the Phase-59 filesystem template that extends the e2e base with a
+ * region/municipality hierarchy + Election-2 scoping. Pre-clears prior state
+ * via runTeardown to isolate from previous default + variant runs.
+ *
+ * app_settings note: see data.setup.ts — the Phase 58 e2e template has no
+ * `app_settings.fixed[]` block, so the writer's Pass-5 merge step is a no-op
+ * and the legacy `updateAppSettings(...)` call is preserved here to keep
+ * Playwright popup-suppression + category-intro defaults in place.
  */
 setup('import constituency dataset', async () => {
+  const template = variantConstituencyTemplate;
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {}; // variant reuses e2e's overrides map
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+
   const client = new SupabaseAdminClient();
+  await runTeardown(PREFIX, client);
 
-  // Delete existing test data in reverse import order to avoid FK issues.
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
 
-  // Merge base datasets with constituency overlay
-  const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-
-  // Import the merged dataset
-  await client.bulkImport(merged as Record<string, unknown[]>);
-  await client.importAnswers(merged as Record<string, unknown[]>);
-  await client.linkJoinTables(merged as Record<string, unknown[]>);
-
-  // Configure app settings with popup suppression and standard defaults
+  // App settings (legacy preservation; see header comment).
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
@@ -53,4 +51,7 @@ setup('import constituency dataset', async () => {
     notifications: { voterApp: { show: false } },
     analytics: { trackEvents: false }
   });
+
+  // Sanity check — variant must have seeded something.
+  expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);
 });

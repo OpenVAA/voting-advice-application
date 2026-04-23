@@ -1,49 +1,44 @@
 import { expect, test as setup } from '@playwright/test';
-import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
-import overlay from '../data/overlays/startfromcg-overlay.json' with { type: 'json' };
-import { mergeDatasets } from '../utils/mergeDatasets';
+import {
+  BUILT_IN_OVERRIDES,
+  fanOutLocales,
+  runPipeline,
+  runTeardown,
+  Writer
+} from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import variantStartFromCgTemplate from './templates/variant-startfromcg';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
  * Variant data setup: startFromConstituencyGroup configuration.
  *
- * Loads the default + voter base datasets merged with the startfromcg overlay.
- * Similar to the constituency overlay but includes an orphan municipality
- * (no parent region) to test the edge case of startFromConstituencyGroup
- * reversed flow where a constituency doesn't imply a parent.
+ * Loads the Phase-59 filesystem template that extends the e2e base with a
+ * region/municipality hierarchy plus an orphan-municipality edge case (no
+ * parent region). The `startFromConstituencyGroup` setting itself is NOT set
+ * here because it requires the database ID of the constituency group (not
+ * externalId). The spec file queries for the group first, then sets the
+ * setting at runtime.
  *
- * NOTE: The `startFromConstituencyGroup` setting is NOT set here because it
- * requires the database ID of the constituency group (not externalId). The
- * spec file must query for the group first, then set the setting.
+ * app_settings note: see data.setup.ts — legacy updateAppSettings call
+ * preserved until the e2e template grows an app_settings.fixed[] block.
  */
 setup('import startfromcg dataset', async () => {
+  const template = variantStartFromCgTemplate;
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {}; // variant reuses e2e's overrides map
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+
   const client = new SupabaseAdminClient();
+  await runTeardown(PREFIX, client);
 
-  // Delete existing test data in reverse import order to avoid FK issues.
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
 
-  // Merge base datasets with startfromcg overlay
-  const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-
-  // Import the merged dataset
-  await client.bulkImport(merged as Record<string, unknown[]>);
-  await client.importAnswers(merged as Record<string, unknown[]>);
-  await client.linkJoinTables(merged as Record<string, unknown[]>);
-
-  // Configure app settings with popup suppression and standard defaults.
+  // App settings (legacy preservation; see header comment).
   // The startFromConstituencyGroup setting will be applied in the spec file
   // after querying for the constituency group's database ID.
   await client.updateAppSettings({
@@ -59,4 +54,7 @@ setup('import startfromcg dataset', async () => {
     notifications: { voterApp: { show: false } },
     analytics: { trackEvents: false }
   });
+
+  // Sanity check — variant must have seeded something.
+  expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);
 });

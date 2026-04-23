@@ -1,46 +1,45 @@
 import { expect, test as setup } from '@playwright/test';
-import defaultDataset from '../data/default-dataset.json' with { type: 'json' };
-import voterDataset from '../data/voter-dataset.json' with { type: 'json' };
-import overlay from '../data/overlays/multi-election-overlay.json' with { type: 'json' };
-import { mergeDatasets } from '../utils/mergeDatasets';
+import {
+  BUILT_IN_OVERRIDES,
+  fanOutLocales,
+  runPipeline,
+  runTeardown,
+  Writer
+} from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import variantMultiElectionTemplate from './templates/variant-multi-election';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
  * Variant data setup: multi-election configuration.
  *
- * Loads the default + voter base datasets merged with the multi-election overlay.
- * This creates 2 elections, each with a single constituency, triggering election
- * selection (but not constituency selection). Election-2 has its own scoped
- * questions and candidates, plus cross-nominations for existing candidates.
+ * Loads the Phase-59 filesystem template that extends the e2e base with 2
+ * elections and cross-nominations — existing base candidates alpha/beta/gamma
+ * are re-nominated onto Election-2, plus 3 net-new e2-cand-{1,2,3} candidates
+ * are added on test-constituency-e2.
+ *
+ * app_settings note: see data.setup.ts — legacy updateAppSettings call
+ * preserved until the e2e template grows an app_settings.fixed[] block.
  */
 setup('import multi-election dataset', async () => {
+  const template = variantMultiElectionTemplate;
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {}; // variant reuses e2e's overrides map
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+
   const client = new SupabaseAdminClient();
+  await runTeardown(PREFIX, client);
 
-  // Delete existing test data in reverse import order to avoid FK issues.
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete existing test data').toBeTruthy();
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
 
-  // Merge base datasets with multi-election overlay
-  const merged = mergeDatasets(mergeDatasets(defaultDataset, voterDataset), overlay);
-
-  // Import the merged dataset
-  await client.bulkImport(merged as Record<string, unknown[]>);
-  await client.importAnswers(merged as Record<string, unknown[]>);
-  await client.linkJoinTables(merged as Record<string, unknown[]>);
-
-  // Configure app settings with popup suppression and standard defaults.
-  // Does NOT set disallowSelection -- that is tested as a toggle in the spec.
+  // App settings (legacy preservation). multi-election-specific extras:
+  // results.showFeedbackPopup + showSurveyPopup forced to 0 so multi-election
+  // specs don't trip on popup dialogs. Does NOT set disallowSelection -- that
+  // is tested as a toggle in the spec.
   await client.updateAppSettings({
     questions: {
       categoryIntros: { show: false },
@@ -58,4 +57,7 @@ setup('import multi-election dataset', async () => {
       showSurveyPopup: 0
     }
   });
+
+  // Sanity check — variant must have seeded something.
+  expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);
 });

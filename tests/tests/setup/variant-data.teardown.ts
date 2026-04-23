@@ -1,34 +1,23 @@
 import { expect, test as teardown } from '@playwright/test';
+import { runTeardown } from '@openvaa/dev-seed';
 import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import { TEST_UNREGISTERED_EMAILS } from '../utils/e2eFixtureRefs';
 
-const TEST_DATA_PREFIX = 'test-';
+const PREFIX = 'test-';
 
 /**
- * Shared variant data teardown: cleans up all test data after variant tests complete.
- *
- * This is shared across all variant setup projects (multi-election, constituency,
- * startfromcg). It deletes all records with the test- external_id prefix in reverse
- * import order, identical to the default data.teardown.ts pattern.
- *
- * Also unregisters test candidates to remove their auth users and role assignments.
+ * Shared variant data teardown: same posture as data.teardown.ts.
+ * Runs after the chain of variant-setup projects completes.
  */
 teardown('delete variant test dataset', async () => {
   const client = new SupabaseAdminClient();
 
-  // Unregister candidates that may have been registered during tests.
-  await client.unregisterCandidate('test.unregistered@openvaa.org');
-  await client.unregisterCandidate('test.unregistered2@openvaa.org');
+  // Auth unregister (D-24 tests/-only).
+  for (const email of TEST_UNREGISTERED_EMAILS) {
+    await client.unregisterCandidate(email);
+  }
 
-  // Delete in reverse import order to respect FK dependencies.
-  const deleteResult = await client.bulkDelete({
-    nominations: { prefix: TEST_DATA_PREFIX },
-    candidates: { prefix: TEST_DATA_PREFIX },
-    questions: { prefix: TEST_DATA_PREFIX },
-    question_categories: { prefix: TEST_DATA_PREFIX },
-    organizations: { prefix: TEST_DATA_PREFIX },
-    constituency_groups: { prefix: TEST_DATA_PREFIX },
-    constituencies: { prefix: TEST_DATA_PREFIX },
-    elections: { prefix: TEST_DATA_PREFIX }
-  });
-  expect(deleteResult, 'Failed to delete variant test data').toBeTruthy();
+  // Data + storage teardown via package API (D-59-06).
+  const { rowsDeleted } = await runTeardown(PREFIX, client);
+  expect(rowsDeleted, 'variant runTeardown deleted zero rows').toBeGreaterThan(0);
 });
