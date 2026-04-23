@@ -76,8 +76,20 @@ Plans:
   4. `yarn workspace @openvaa/dev-tools seed:teardown` removes only rows carrying the generator's `external_id` prefix, leaving bootstrap rows from `apps/supabase/supabase/seed.sql` (default account + project + storage_config) intact — verified by pre/post row counts.
   5. `--help` output documents every flag, lists built-in templates, and links to a worked example of authoring a custom template; a successful run prints a rows-per-entity summary, the template applied, and the elapsed time.
   6. Fixing `seed: <N>` in a template produces byte-identical row output across two runs (deterministic faker); an integration test applies the default template against a real local Supabase and asserts row counts + spot-checks relational wiring; `CLAUDE.md` "Common Workflows" documents the seeding command.
-**Plans**: TBD
+**Plans**: 10 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 58-01-PLAN.md — E2E Playwright spec audit (58-E2E-AUDIT.md inventory doc)
+- [ ] 58-02-PLAN.md — Portrait assets + download script + LICENSE
+- [ ] 58-03-PLAN.md — Schema extension (generateTranslationsForAllLocales) + Template JSDoc + locales.ts fan-out utility
+- [ ] 58-04-PLAN.md — Writer portrait-upload extension + SupabaseAdminClient portrait methods
+- [ ] 58-05-PLAN.md — CLI shell (seed.ts + resolve-template + help + summary) + package.json seed script
+- [ ] 58-06-PLAN.md — Default template + non-uniform distribution override + type-mix override + BUILT_IN_TEMPLATES
+- [ ] 58-07-PLAN.md — Teardown CLI + root dev:seed / dev:seed:teardown / dev:reset-with-data scripts
+- [ ] 58-08-PLAN.md — E2E template authored from 58-E2E-AUDIT.md
+- [ ] 58-09-PLAN.md — DX-03 integration test + locale fan-out determinism extension
+- [ ] 58-10-PLAN.md — packages/dev-seed/README.md + CLAUDE.md Common Workflows extension
 
 ### Phase 59: E2E Fixture Migration
 **Goal**: The Playwright suite runs against generator-produced data with zero regression vs the current JSON-fixture baseline, the legacy fixtures are deleted, and the `supabaseAdminClient` location reflects the cleanest dependency graph.
@@ -99,5 +111,5 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 |-------|----------------|--------|-----------|
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
-| 58. Templates, CLI & Default Dataset | 0/0 | Not started | - |
+| 58. Templates, CLI & Default Dataset | 0/10 | Planned     | - |
 | 59. E2E Fixture Migration | 0/0 | Not started | - |
