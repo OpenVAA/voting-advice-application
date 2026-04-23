@@ -128,4 +128,42 @@ describe('CandidatesGenerator', () => {
     const rows = gen.generate({ count: 1 });
     expect(rows[0]).not.toHaveProperty('answersByExternalId');
   });
+
+  it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (D-57 Interpretation Note)', () => {
+    // B1 regression test: pins the `candidateForEmit` literal to include the
+    // organization ref. Prevents future narrowing that would silently break
+    // Phase 57 latent emitter's findPartyIndex.
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, organizations: [ORG_REF], questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    gen.generate({ count: 1 });
+    const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
+    expect(mockCalls).toHaveLength(1);
+    const candidateArg = mockCalls[0][0] as { organization?: { external_id: string } };
+    expect(candidateArg.organization).toBeDefined();
+    expect(candidateArg.organization).toEqual(ORG_REF);
+  });
+
+  it('does NOT forward organization property when refs.organizations is empty (Phase 56 invariant preserved)', () => {
+    // Preserves the existing `omits organization ref when refs.organizations empty`
+    // shape on the emitter boundary too — not just on the emitted row.
+    const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(
+      makeCtx({
+        refs: { ...base.refs, questions: questionRefs },
+        answerEmitter: spy
+      })
+    );
+    gen.generate({ count: 1 });
+    const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
+    expect(mockCalls).toHaveLength(1);
+    const candidateArg = mockCalls[0][0] as { organization?: { external_id: string } };
+    expect(candidateArg).not.toHaveProperty('organization');
+  });
 });
