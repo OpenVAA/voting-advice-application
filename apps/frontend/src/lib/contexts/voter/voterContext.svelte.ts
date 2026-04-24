@@ -11,6 +11,7 @@ import { filterStore } from './filters/filterStore.svelte';
 import { matchStore } from './matchStore.svelte';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore.svelte';
 import { getAppContext } from '../../contexts/app';
+import { getFilterContext, initFilterContext } from '../filter';
 import { paramStore } from '../utils/paramStore.svelte';
 import { questionBlockStore } from '../utils/questionBlockStore.svelte';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore.svelte';
@@ -256,6 +257,14 @@ export function initVoterContext(): VoterContext {
     t: () => t
   });
 
+  // Phase 62 D-05: initialize the dedicated filterContext using a closure over
+  // the just-built FilterTree. filterContext reads page.params for its
+  // (electionId, entityTypePlural) scope key and bridges FilterGroup.onChange
+  // → $state version counter so $derived consumers (EntityListWithControls)
+  // re-run on filter mutation. Single init per voter session — re-init is
+  // guarded by initFilterContext() itself (status-500).
+  initFilterContext({ entityFilters: () => _entityFilters.value });
+
   ////////////////////////////////////////////////////////////
   // Resetting voter data
   ///////////////////////////////////////////////////////////
@@ -285,6 +294,15 @@ export function initVoterContext(): VoterContext {
     },
     get entityFilters() {
       return _entityFilters.value;
+    },
+    /**
+     * D-05 bundled accessor — delegates to `getFilterContext()` so the same
+     * Symbol-keyed context instance is exposed both directly (future LLM chat)
+     * and via the voter context (voter-flow UI). Getter delegation avoids
+     * capturing a stale reference at construction time.
+     */
+    get filterContext() {
+      return getFilterContext();
     },
     get firstQuestionId() {
       return firstQuestionIdState.current;
