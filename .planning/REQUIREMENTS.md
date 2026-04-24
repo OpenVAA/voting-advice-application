@@ -29,6 +29,7 @@
 - [ ] **QUESTION-01**: Boolean-type questions render an appropriate answer control (yes/no or equivalent binary UI) in the voter flow. Voter can answer the boolean question and advance.
 - [ ] **QUESTION-02**: Candidate result-detail page opens without error when the voter has answered a boolean question. The per-question match-breakdown component handles `type === 'boolean'` in the same switch that handles `singleChoiceOrdinal` and `singleChoiceCategorical`.
 - [ ] **QUESTION-03**: Category-selection screen has a sensible default selection (all opinion categories checked by default, or an explicit product decision documented in the component). The "questions" counter updates reactively on every category toggle — no stuck-at-0 behavior.
+- [ ] **QUESTION-04**: Candidate-app question-list reactivity is restored. The `candidate-questions-list` and `candidate-questions-start` testIds become visible within Playwright's default timeout on the candidate questions route, so the 6 direct `candidate-questions.spec.ts` tests pass and their 18 dependent cascade tests (candidate-app-mutation / candidate-app-settings / candidate-app-password / re-auth-setup) run and pass. Folded into v2.6 from Phase 60's SC-4 handoff on 2026-04-24 — same reactivity-class hypothesis as QUESTION-03.
 
 ### RESULTS — Results-page stability + filter re-enablement
 
@@ -77,10 +78,11 @@ Phase assignments mapped by `.planning/ROADMAP.md` on 2026-04-24. Success-criter
 | QUESTION-01 | Phase 61 | Phase 61 SC-1 (boolean-type questions render a binary answer control; voter can answer and advance) |
 | QUESTION-02 | Phase 61 | Phase 61 SC-2 (candidate result-detail page renders match breakdown without error for boolean answers) |
 | QUESTION-03 | Phase 61 | Phase 61 SC-3 (category-selection screen has sensible default; question counter updates reactively on toggle) |
+| QUESTION-04 | Phase 61 | Phase 61 SC-4 (candidate-questions-list / candidate-questions-start testIds visible; 6 direct + 18 cascade candidate-app tests pass) — folded from Phase 60 SC-4 handoff |
 | RESULTS-01 | Phase 62 | Phase 62 SC-1 + SC-4 (merged entity-list component; no infinite-loop symptoms; `$derived` replaces circular `$effect` chain) |
 | RESULTS-02 | Phase 62 | Phase 62 SC-2 (filters re-enabled on voter results page; toggling narrows list without layout-based regression) |
 | RESULTS-03 | Phase 62 | Phase 62 SC-3 (empty `results/+page.svelte` removed; optional `[entityType]/[entityId]` route shared; `entityType` sets active tab) |
 | E2E-01 | Phase 63 | Phase 63 SC-1 + SC-2 (carry-forward pool shrinks measurably from SHA `3c57949c8` baseline — 10 data-race + 38 cascade out of 89; residuals documented as framework-level) |
 | E2E-02 | Phase 63 | Phase 63 SC-3 + SC-4 (`app_settings.fixed[]` in e2e template; 4 legacy `updateAppSettings(...)` blocks deleted; parity gate PASS) |
 
-**Coverage:** 11 / 11 requirements mapped ✓ — no orphans, no duplicates.
+**Coverage:** 12 / 12 requirements mapped ✓ — no orphans, no duplicates. (QUESTION-04 added 2026-04-24 via Phase 61 discuss-phase fold; count bumped 11→12.)

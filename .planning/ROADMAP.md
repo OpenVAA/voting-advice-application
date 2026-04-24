@@ -50,13 +50,14 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
 **UI hint**: yes
 
 ### Phase 61: Voter-App Question Flow
-**Goal**: The voter question flow — from category selection, through boolean questions, to candidate match detail — renders and reacts correctly across all question types produced by the default seed template.
+**Goal**: The voter question flow — from category selection, through boolean questions, to candidate match detail — renders and reacts correctly across all question types produced by the default seed template. Also restores candidate-app question-list reactivity so the `candidate-questions.spec.ts` cascade surfaced by Phase 60 clears.
 **Depends on**: Phase 60 (runes-mode root layout lets downstream reactivity rely on Svelte 5 idioms end-to-end)
-**Requirements**: QUESTION-01, QUESTION-02, QUESTION-03
+**Requirements**: QUESTION-01, QUESTION-02, QUESTION-03, QUESTION-04
 **Success Criteria** (what must be TRUE):
   1. A voter encountering a boolean-type question sees an appropriate binary answer control (yes/no or equivalent), can submit an answer, and advances to the next question.
   2. Opening a candidate result-detail page after answering a boolean question renders the per-question match breakdown without error — the question-type switch handles `boolean` alongside `singleChoiceOrdinal` and `singleChoiceCategorical`.
   3. On the category-selection screen, the voter sees a sensible default selection (all opinion categories checked by default, or an explicit product decision documented at the component) and the "questions" counter updates reactively on every category toggle — no stuck-at-0 behaviour.
+  4. On the candidate app question route, the `candidate-questions-list` and `candidate-questions-start` testIds become visible within Playwright's default timeout, the 6 direct `candidate-questions.spec.ts` tests pass, and their 18 dependent cascade tests (candidate-app-mutation / candidate-app-settings / candidate-app-password / re-auth-setup) run and pass. (Folded from Phase 60 handoff 2026-04-24.)
 **Plans**: TBD
 **UI hint**: yes
 
