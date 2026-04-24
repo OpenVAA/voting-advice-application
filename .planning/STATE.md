@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
-status: executing
-stopped_at: Completed 60-04-PLAN.md
-last_updated: "2026-04-24T11:47:32.739Z"
+status: verifying
+stopped_at: "Completed 60-05-PLAN.md (PARITY GATE: FAIL documented; pending_review: true)"
+last_updated: "2026-04-24T12:02:50.819Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-04-24)
 
 Phase: 60 (Layout Runes Migration & Hydration Fix) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-24
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Items acknowledged and deferred at v2.5 milestone close on 2026-04-24. v2.6 pick
 | Phase 60 P02 | 25m 9s | 2 tasks | 2 files |
 | Phase 60 P03 | 24m 16s | 3 tasks | 1 files |
 | Phase 60 P04 | 35m | 3 tasks | 5 files |
+| Phase 60 P05 | 9m 50s | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Key context for v2.6:
 - LAYOUT-02 protected-layout hydration fix landed on primary $derived approach (no D-02 wrapper-component fallback needed) — auth-setup + candidate-auth valid-login PASS; the 2 named target tests cascade-blocked behind orthogonal candidate-questions failures handed off to Plan 60-05
 - D-14 LAYOUT-03 outcome: deleted (PopupRenderer wrapper removed; inline popup rendering via fromStore + @const Component pattern passes D-09 empirical gate)
 - Svelte 5 runes pitfall: fromStore-bridged store mutation (dataRoot.current.update()) inside $effect triggers effect_update_depth_exceeded. Workaround: get(storeName) + untrack(() => ...). Applied in root +layout.svelte (60-04) after 60-03 applied the same pattern to candidate protected layout.
+- Phase 60 SC-4 parity gate: PARITY GATE: FAIL (24 regressions) but all Category A (orthogonal, surfaced-not-introduced by LAYOUT-02 fix); Phase 60 requirements LAYOUT-01/02/03 satisfied by alternative evidence; pending_review: true flagged for user inspection
+- W-5 disposition CORRECTED in Plan 60-05: Plan 60-01's '22-test gap / DRIFT' was arithmetic error (undercounted CASCADE_TESTS as 16; actual 25); real gap is 89-76=13 which exactly matches the 13 SOURCE_SKIP tests; no drift, constants complete, no re-embed needed
+- Candidate-questions testId timeout surface (6 direct failures + 18 cascade skips) handed off to Phase 61 — root cause is candidate-questions-list/candidate-questions-start testIds never becoming visible on /candidate/questions; pre-existing but previously masked by LAYOUT-02 stuck-at-Loading symptom
 
 ### Pending Todos
 
@@ -106,8 +110,8 @@ Key context for v2.6:
 
 ## Session Continuity
 
-Last session: 2026-04-24T11:47:32.734Z
-Stopped at: Completed 60-04-PLAN.md
+Last session: 2026-04-24T12:02:50.815Z
+Stopped at: Completed 60-05-PLAN.md (PARITY GATE: FAIL documented; pending_review: true)
 Resume file: None
 Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
 

@@ -46,7 +46,7 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   - [x] 60-02-PLAN.md — Root `+layout.svelte` $derived refactor (LAYOUT-01, D-05)
   - [x] 60-03-PLAN.md — Protected `(protected)/+layout.svelte` $derived refactor + D-02 wrapper fallback gate (LAYOUT-02)
   - [x] 60-04-PLAN.md — D-08 PopupRenderer empirical removal + D-10 retention branch (LAYOUT-03)
-  - [ ] 60-05-PLAN.md — Playwright parity gate vs baseline `3c57949c8` (SC-4)
+  - [x] 60-05-PLAN.md — Playwright parity gate vs baseline `3c57949c8` (SC-4) — PARITY GATE: FAIL documented (24 regressions all Category A orthogonal, handoff to Phase 61); LAYOUT-01/02/03 satisfied by alternative evidence; `pending_review: true`
 **UI hint**: yes
 
 ### Phase 61: Voter-App Question Flow
