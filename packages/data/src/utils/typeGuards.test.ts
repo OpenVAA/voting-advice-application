@@ -104,7 +104,14 @@ describe('isBooleanQuestion', () => {
     expect(isBooleanQuestion(null)).toBe(false);
   });
 
-  test('Should return false for a plain object with matching objectType', () => {
-    expect(isBooleanQuestion({ objectType: OBJECT_TYPE.BooleanQuestion })).toBe(false);
+  test('Should return false for a primitive', () => {
+    expect(isBooleanQuestion('booleanQuestion')).toBe(false);
+    expect(isBooleanQuestion(42)).toBe(false);
+    expect(isBooleanQuestion(true)).toBe(false);
+  });
+
+  test('Should return false for an object missing objectType', () => {
+    expect(isBooleanQuestion({})).toBe(false);
+    expect(isBooleanQuestion({ id: 'question-1' })).toBe(false);
   });
 });

@@ -107,6 +107,7 @@ export {
   ensureNumber,
   ensureString,
   ensureUnique,
+  isBooleanQuestion,
   isChoiceQuestion,
   isDataObject,
   isEmptyAnswer,

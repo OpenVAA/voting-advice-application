@@ -3,6 +3,7 @@ import type {
   AnyEntityVariant,
   AnyNominationVariant,
   AnyQuestionVariant,
+  BooleanQuestion,
   DataObject,
   MultipleChoiceCategoricalQuestion,
   ObjectType,
@@ -23,6 +24,13 @@ export function isObjectType<TType extends ObjectType>(obj: unknown, type: TType
  */
 export function isQuestion(obj: unknown): obj is AnyQuestionVariant {
   return isDataObject(obj) && obj.objectType.endsWith('Question');
+}
+
+/**
+ * Check if an object is a `BooleanQuestion`.
+ */
+export function isBooleanQuestion(obj: unknown): obj is BooleanQuestion {
+  return isDataObject(obj) && obj.objectType === OBJECT_TYPE.BooleanQuestion;
 }
 
 /**
