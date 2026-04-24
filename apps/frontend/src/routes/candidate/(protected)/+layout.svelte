@@ -9,7 +9,9 @@
 -->
 
 <script lang="ts">
+  import { untrack } from 'svelte';
   import type { Snippet } from 'svelte';
+  import { get } from 'svelte/store';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { Button } from '$lib/components/button';
@@ -97,20 +99,40 @@
         : 'ready'
   );
 
-  // Side effect — applies resolved data to `$dataRoot` and initializes `userData`.
+  // Side effect — applies resolved data to `dataRoot` and initializes `userData`.
   // Reads `$derived` validity. NO `.then()`, NO microtask wait — `userData.init`
   // is a synchronous `savedData = data` assignment; the previous `tick`-wait was
   // a defensive v2.1 artifact with no remaining purpose — RESEARCH Assumption A2.
-  // Wrapped in `$dataRoot.update(() => ...)` for batched subscriber notification
-  // (canonical form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
+  //
+  // IMPORTANT: access the DataRoot instance via `get(dataRoot)` rather than the
+  // `$dataRoot` auto-subscription form. `$dataRoot.update(() => provide*(...))`
+  // inside a `$effect` creates an infinite reactive loop in Svelte 5: the
+  // auto-subscription registers the store as a dependency of this effect, and
+  // the `DataRoot.update()` call notifies subscribers — retriggering the effect.
+  // `get()` reads the current value without establishing a reactive dependency.
+  // Wrapped in `.update(() => ...)` for batched subscriber notification (canonical
+  // form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
   $effect(() => {
     if (validity.state !== 'resolved') return;
-    $dataRoot.update(() => {
-      $dataRoot.provideQuestionData(validity.questionData);
-      $dataRoot.provideEntityData(validity.entities);
-      $dataRoot.provideNominationData(validity.nominations);
+    // Snapshot validity fields inside the effect's tracked scope, then apply
+    // side-effects inside `untrack` to prevent any subscriber re-notification
+    // (from DataRoot.subscribe / candidateUserDataStore.savedData writes) from
+    // retriggering this effect (Svelte 5 `effect_update_depth_exceeded`).
+    const snapshot = {
+      questionData: validity.questionData,
+      entities: validity.entities,
+      nominations: validity.nominations,
+      userData: validity.userData
+    };
+    untrack(() => {
+      const dr = get(dataRoot);
+      dr.update(() => {
+        dr.provideQuestionData(snapshot.questionData);
+        dr.provideEntityData(snapshot.entities);
+        dr.provideNominationData(snapshot.nominations);
+      });
+      userData.init(snapshot.userData);
     });
-    userData.init(validity.userData);
   });
 
   // Error logging side-effect — parity with pre-refactor `logDebugError` calls
