@@ -74,9 +74,9 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   3. The empty `results/+page.svelte` no longer exists; the results list and the entity-detail drawer share the path `/results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]` with typed param matchers (`entityTypePlural` ∈ {candidates, organisations}; `entityTypeSingular` ∈ {candidate, organisation}). The schema supports the org-list + candidate-drawer edge case. `entityTypePlural` drives the Tabs component via `$page.params`. On full-page-load to a detail URL, drawer rendering is prioritized over list rendering for perceived performance.
   4. The filter-driven list derivation uses `$derived` — there is no `$effect` + `filterGroup.onChange` → `updateFilters` → `filterGroup.apply` circular chain in the merged `EntityListWithControls` component. `@openvaa/filters` is untouched (consumer-side refactor only).
 **Plans**: 3 plans
-  - [ ] 62-01-PLAN.md — filterContext (version-counter bridge over FilterGroup.onChange) + EntityListWithControls compound (RESULTS-01, RESULTS-02)
-  - [ ] 62-02-PLAN.md — Route collapse to 4-segment optional shape + entityTypePlural/entityTypeSingular param matchers (RESULTS-03)
-  - [ ] 62-03-PLAN.md — results/+layout.svelte URL-driven tabs + drawer + filter re-enable + drawer-first paint + E2E coverage (RESULTS-01, RESULTS-02, RESULTS-03)
+  - [x] 62-01-PLAN.md — filterContext (version-counter bridge over FilterGroup.onChange) + EntityListWithControls compound (RESULTS-01, RESULTS-02)
+  - [x] 62-02-PLAN.md — Route collapse to 4-segment optional shape + entityTypePlural/entityTypeSingular param matchers (RESULTS-03)
+  - [x] 62-03-PLAN.md — results/+layout.svelte URL-driven tabs + drawer + filter re-enable + drawer-first paint + E2E coverage (RESULTS-01, RESULTS-02, RESULTS-03)
 **UI hint**: yes
 
 ### Phase 63: E2E Template Extension & Greening
