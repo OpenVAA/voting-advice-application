@@ -770,37 +770,45 @@ const filtered = $derived.by(() => {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All 6 questions carry explicit `RESOLVED:` markers below, with planning decisions reflected in the 62-PLAN files (to be authored next).
 
 1. **American vs British spelling in URL matchers and CONTEXT.md text.**
    - What we know: Codebase uses `organization` / `organizations` uniformly (ENTITY_TYPE enum, i18n keys, app settings). CONTEXT.md D-08/D-11 use `organisations` / `organisation`.
    - What's unclear: Whether CONTEXT.md's British spelling is a deliberate product choice (unlikely — no pattern elsewhere) or a drafting typo.
    - Recommendation: **Use American spelling** in matchers, route segments, and URLs: `/results/[electionId]/organizations/organization/[id]`. Treat CONTEXT.md's British spelling as a drafting typo. Flag in Plan 62-02 for user confirmation before committing the matcher.
+   - RESOLVED: Use American spelling. The codebase is already uniform on `organization`/`organizations` (ENTITY_TYPE enum + i18n + app settings). CONTEXT.md British spelling is a drafting artifact — the planner/executor writes American throughout.
 
 2. **Existing `src/params/entityType.ts` matcher returns `candidate | party` — what does `party` refer to?**
    - What we know: `ENTITY_TYPE.Organization = 'organization'`, no `party` type exists in `@openvaa/data` `[VERIFIED: entityTypes.ts]`. i18n has `common.organization` and `results.organization`, no `results.party`. BUT Playwright tests assert on the string "parties" visible in the UI via i18n (e.g., `visibility-regression.spec.ts`, `voter-results.spec.ts:64` asserts `parties` tab label).
    - What's unclear: Is `party` a visible-to-user UI label that internally maps to `organization`? Does the existing matcher accepting `party` imply some legacy URL path uses `party` as an alias?
    - Recommendation: Grep the codebase for runtime route values matching `entityType = 'party'` — if none, the matcher is dead legacy code and the new `entityTypeSingular` matcher can safely accept `candidate | organization` (not `party`). Confirm in Plan 62-02 before authoring the new matchers. Existing matcher file `entityType.ts` should be **deleted** once the `[entityType]/[entityId]/` route folder is removed.
+   - RESOLVED: Treat as dead legacy matcher. New `entityTypeSingular` matcher accepts `candidate | organization` only. The old `entityType.ts` matcher + route folder (`[entityType]/[entityId]/`) are deleted in Plan 62-02 after grep-verifying no runtime consumer uses `party`.
 
 3. **`EntityListControls.svelte` deletion scope.**
    - What we know: D-01 says "deleted once every call site in the results layout is migrated". D-02 says `EntityListWithControls` is additive; other-surface migration is deferred. 2 external callers exist (`EntityChildren.svelte`, `nominations/+page.svelte`).
    - What's unclear: Whether "delete" in D-01 means file-level delete (breaks external callers) or import-level delete from the results layout only.
    - Recommendation: Interpret as import-level. Keep `EntityListControls.svelte` and its `.type.ts` on disk. Remove it from the results-layout import chain; leave barrel export intact. Delete in the deferred follow-up sweep when other callers migrate.
+   - RESOLVED: Import-level removal only. File stays on disk with barrel export intact; two non-results callers (`EntityChildren.svelte`, `nominations/+page.svelte`) remain untouched. Full file-level deletion is deferred to a follow-up sweep.
 
 4. **Drawer-first-paint mechanism (D-10).**
    - What we know: CONTEXT.md lists 3 mechanisms (streaming SSR, prioritized load fn, CSS paint-order). UI-SPEC says "acceptance check: manual Playwright trace or Lighthouse LCP indicates the drawer content is painted before the list body on a cold load".
    - What's unclear: Which mechanism actually produces the observable UX; whether a naïve render-order (drawer markup before list markup in the DOM) plus `content-visibility: auto` on the list is sufficient.
    - Recommendation: Plan 62-03 should start with the cheapest option (source-order + `content-visibility: auto`) and only escalate to streaming SSR if measurement shows insufficient gap. Include a Playwright trace or Lighthouse screenshot in plan verification.
+   - RESOLVED: Cheapest-first — source-order drawer-before-list markup plus `content-visibility: auto` on the list body. Planner includes a Playwright-trace acceptance gate; if the cheap approach fails measurement, escalate to streaming SSR as a follow-up, not within this phase.
 
 5. **`FilterGroup` reactivity wrapping shape (Option A vs Option B).**
    - What we know: CONTEXT.md Claude's Discretion leaves this open. Both options satisfy D-06.
    - What's unclear: Whether any existing consumer reaches into `filterGroup` state in a way that makes Option A (wrap instance in $state) break. `EntityFilters` component already assumes the FilterGroup reference is stable — Option B preserves that, Option A technically reassigns.
    - Recommendation: Use Option B. Only switch to Option A if Option B empirically fails for a specific filter type (which would indicate a bug in that filter's `doOnChange` path, not the bridge).
+   - RESOLVED: Option B (subscribe to `filterGroup.onChange` → bump a `$state` version counter → read counter inside every `$derived`). Preserves FilterGroup instance stability for `EntityFilters`. Plan 62-01 documents the bridge + adds a unit test for the version-bump-invalidates-derived contract.
 
 6. **`resultsAvailable` gating and the 4-segment route.**
    - What we know: The current `+layout.svelte` shows `results.title.results` vs `results.title.browse` based on `resultsAvailable`. The `resultsAvailable` computation (voterContext.svelte.ts:188-198) depends on `answers` + `opinionQuestions` + `minimumAnswers` setting, not on the URL.
    - What's unclear: Whether deeplinking to `/results/[electionId]/organizations/candidate/[id]` when `resultsAvailable === false` should still show the drawer, or redirect to the intro/questions flow.
    - Recommendation: Preserve current behaviour — the layout-level gate `{#if Object.values(nominationsAvailable).some(Boolean)}` wraps everything. Drawer deeplink in the no-nominations state degrades to the "no nominations" fallback page (existing behaviour). Confirm in Plan 62-02 load function.
+   - RESOLVED: Preserve current behaviour. Layout-level `nominationsAvailable` gate wraps the whole results tree; deeplink URL in the no-nominations state degrades to the existing fallback page. `resultsAvailable` is orthogonal (intro copy only) and unchanged.
 
 ---
 
