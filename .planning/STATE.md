@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
 status: executing
-stopped_at: Completed 60-03-PLAN.md
-last_updated: "2026-04-24T11:18:47.313Z"
+stopped_at: Completed 60-04-PLAN.md
+last_updated: "2026-04-24T11:47:32.739Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-24)
 ## Current Position
 
 Phase: 60 (Layout Runes Migration & Hydration Fix) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-04-24
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Items acknowledged and deferred at v2.5 milestone close on 2026-04-24. v2.6 pick
 | Phase 60 P01 | 3m 25s | 3 tasks | 3 files |
 | Phase 60 P02 | 25m 9s | 2 tasks | 2 files |
 | Phase 60 P03 | 24m 16s | 3 tasks | 1 files |
+| Phase 60 P04 | 35m | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Key context for v2.6:
 - SSR guards in client-only utilities: typeof window/navigator checks in getEmailUrl — pattern for any util called from a component that might render server-side after reactivity timing changes (Plan 60-02 Rule-3 fix)
 - Svelte 5: `$storeName.update(() => ...)` inside `$effect` causes `effect_update_depth_exceeded` infinite loop (store auto-subscription + subscribe-notify + version++ $state cycle). Workaround: `get(store)` + `untrack(() => ...)` — discovered Plan 60-03 Task 2.
 - LAYOUT-02 protected-layout hydration fix landed on primary $derived approach (no D-02 wrapper-component fallback needed) — auth-setup + candidate-auth valid-login PASS; the 2 named target tests cascade-blocked behind orthogonal candidate-questions failures handed off to Plan 60-05
+- D-14 LAYOUT-03 outcome: deleted (PopupRenderer wrapper removed; inline popup rendering via fromStore + @const Component pattern passes D-09 empirical gate)
+- Svelte 5 runes pitfall: fromStore-bridged store mutation (dataRoot.current.update()) inside $effect triggers effect_update_depth_exceeded. Workaround: get(storeName) + untrack(() => ...). Applied in root +layout.svelte (60-04) after 60-03 applied the same pattern to candidate protected layout.
 
 ### Pending Todos
 
@@ -103,8 +106,8 @@ Key context for v2.6:
 
 ## Session Continuity
 
-Last session: 2026-04-24T11:18:47.309Z
-Stopped at: Completed 60-03-PLAN.md
+Last session: 2026-04-24T11:47:32.734Z
+Stopped at: Completed 60-04-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
 
