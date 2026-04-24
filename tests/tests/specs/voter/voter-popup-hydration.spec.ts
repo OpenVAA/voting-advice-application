@@ -6,7 +6,7 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 // LAYOUT-03 / D-09 regression gate:
 //
 // Validates that a setTimeout-triggered popup.push(...) surfaces through the
-// root layout popup slot when the page is reached via FULL PAGE LOAD
+// root layout popup slot when the /results page is reached via FULL PAGE LOAD
 // (page.goto — SSR + hydration path). This is the exact reactivity path the
 // v2.1 PopupRenderer wrapper was introduced to guard.
 //
@@ -15,11 +15,28 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 //   - If FAIL with PopupRenderer inlined → PopupRenderer retained with D-10
 //     rationale comment. Inlining is reverted.
 //
-// This file is created in Plan 60-01 (Wave 0) as a SKELETON. The full seeding
-// helper is owned by Plan 60-04 Task 1 (which already finalizes the seeding).
-// The `test.skip(...)` marker below is intentional — it keeps this spec
-// discoverable by Playwright's --list without producing a silent false-GREEN
-// until Plan 60-04 lands the seeding path.
+// Seeding strategy — direct URL navigation (chosen over fixture-driven):
+//
+// 1. Discover election + constituency IDs via SupabaseAdminClient.findData
+//    using stable external_ids (`test-election-1`, first applicable
+//    constituency). Postgres-assigned UUIDs are NOT stable across runs, so
+//    external_id lookup is required.
+// 2. Seed VoterContext answerStore via addInitScript — the production shape
+//    is { version: 1, data: { [questionId]: { value } } } (see
+//    apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts line 123
+//    + staticSettings.appVersion.requireUserDataVersion=1). The key is
+//    `VoterContext-answerStore` (see answerStore.svelte.ts line 16).
+// 3. page.goto('/results?electionId=X&constituencyId=Y') — the URL carries
+//    both selectors, so the (voters)/(located)/+layout.ts loader does not
+//    need to imply (avoids the 2-election e2e-template election selector
+//    page). This exercises the FULL page load (SSR + hydration) path on
+//    /results directly.
+//
+// Popup trigger: results layout's $effect reads $appSettings.results.showFeedbackPopup
+// (set to 2 in beforeAll) and calls startFeedbackPopupCountdown(2). The
+// setTimeout fires ~2s post-hydration and pushes FeedbackPopup onto
+// popupQueue. The popup dialog must render via root layout popup slot —
+// this is the empirical gate for LAYOUT-03.
 
 test.describe.configure({ mode: 'serial', timeout: 60000 });
 test.use({ storageState: { cookies: [], origins: [] }, trace: 'off' });
@@ -55,6 +72,11 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
     ...preserveNavigationSettings
   };
 
+  // Discovered IDs for direct URL navigation (populated in beforeAll).
+  let electionId: string | undefined;
+  let constituencyId: string | undefined;
+  let questionIds: Array<string> = [];
+
   test.beforeAll(async () => {
     await client.updateAppSettings({
       results: { showFeedbackPopup: 2, showSurveyPopup: null },
@@ -62,32 +84,81 @@ test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', 
       ...preserveNavigationSettings,
       ...suppressInterferingPopups
     });
+
+    // Discover election ID via stable external_id.
+    const electionResult = await client.findData('elections', {
+      externalId: { $eq: 'test-election-1' }
+    });
+    if (electionResult.type !== 'success' || !electionResult.data?.[0])
+      throw new Error(`Could not find test-election-1: ${electionResult.cause ?? 'no data'}`);
+    electionId = electionResult.data[0].id as string;
+
+    // Discover first constituency ID. e2e template has multiple constituencies;
+    // any one that's applicable to test-election-1 will do.
+    const constituencyResult = await client.findData('constituencies', {
+      externalId: { $like: 'test-constituency-%' }
+    });
+    if (constituencyResult.type !== 'success' || !constituencyResult.data?.[0])
+      throw new Error(`Could not find test constituencies: ${constituencyResult.cause ?? 'no data'}`);
+    constituencyId = constituencyResult.data[0].id as string;
+
+    // Discover question IDs — the answerStore needs answers keyed by
+    // question ID. The results page requires answers >= minimumAnswers
+    // for resultsAvailable to be true, but even with no answers the page
+    // still renders (resultsAvailable=false, browse mode). Seed 16+ answers
+    // to match the data.setup.ts default minimum.
+    const questionResult = await client.findData('questions', {
+      externalId: { $like: 'test-question-%' }
+    });
+    if (questionResult.type !== 'success' || !questionResult.data)
+      throw new Error(`Could not find test questions: ${questionResult.cause ?? 'no data'}`);
+    questionIds = questionResult.data.map((q) => q.id as string);
   });
 
   test.afterAll(async () => {
     await client.updateAppSettings(defaultPopupSettings);
   });
 
-  // Skeleton — seeding helper + full assertion path is Plan 60-04 Task 1.
-  // Per W-2: keep this as an explicit test-skip (NOT the alternative fixme
-  // marker — the skip makes the scope handoff visible in the Playwright
-  // --list and reporter output).
-  test.skip('popup appears on full page load to /results (LAYOUT-03 hydration path) — seeding TBD in Plan 60-04 Task 1', async ({ page }) => {
+  test('popup appears on full page load to /results (LAYOUT-03 hydration path)', async ({ page }) => {
     test.setTimeout(60000);
 
-    // Plan 60-04 Task 1 replaces this body with:
-    //   (a) a seeding helper for voter answers (localStorage OR fixture-function),
-    //   (b) await page.goto('/results'),
-    //   (c) await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: 10000 }),
-    //   (d) const dialog = page.getByRole('dialog');
-    //       await dialog.waitFor({ state: 'visible', timeout: 15000 });
-    //       await expect(dialog).toBeVisible();
-    // plus removal of the `test.skip(...)` marker (replace `test.skip` with `test`).
-    //
-    // The shape below is a documentation-only reference for Plan 60-04 to follow.
-    // Leaving the reference call here keeps the spec body type-checkable and
-    // the imports live even while skipped.
-    await page.goto('/results');
-    expect(testIds.voter.results.list).toBeDefined();
+    // Fail fast if beforeAll discovery didn't populate IDs.
+    if (!electionId || !constituencyId)
+      throw new Error('electionId / constituencyId not discovered in beforeAll');
+
+    // Seed voter answerStore in localStorage before navigation. Shape
+    // matches apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts
+    // `saveItemToStorage` (localStorage branch): { version, data }.
+    // staticSettings.appVersion.version=1 per @openvaa/app-shared.
+    const answerEntries: Record<string, { value: number }> = {};
+    for (const qid of questionIds) {
+      // Likert-5 middle value — valid answer for singleChoiceOrdinal questions
+      // in the e2e template. Actual value doesn't matter for this test —
+      // only that an answer exists per question.
+      answerEntries[qid] = { value: 3 };
+    }
+    const storageSeed = { version: 1, data: answerEntries };
+    await page.addInitScript((seed) => {
+      window.localStorage.setItem('VoterContext-answerStore', JSON.stringify(seed));
+    }, storageSeed);
+
+    // Navigate directly to /results with both election + constituency carried
+    // in the URL query string. The (voters)/(located)/+layout.ts loader will
+    // read these via parseParams instead of trying (and failing) to imply
+    // from the 2-election e2e template. This is a FULL page load — the exact
+    // SSR + hydration path under test.
+    await page.goto(`/results?electionId=${electionId}&constituencyId=${constituencyId}`);
+
+    // Wait for results list to be visible — signals hydration completed and
+    // the results layout $effect fired, registering the
+    // startFeedbackPopupCountdown setTimeout (delay: 2s).
+    await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: 15000 });
+
+    // Wait for the feedback popup dialog — this is the assertion under test.
+    // The setTimeout fires ~2s post-hydration; popupQueue.push must surface
+    // through the root layout popup slot for this to pass.
+    const dialog = page.getByRole('dialog');
+    await dialog.waitFor({ state: 'visible', timeout: 15000 });
+    await expect(dialog).toBeVisible();
   });
 });

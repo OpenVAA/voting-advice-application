@@ -20,6 +20,7 @@ If there's only one option, it is automatically selected and no interactions are
 -->
 
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { scale, slide } from 'svelte/transition';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
@@ -47,8 +48,14 @@ If there's only one option, it is automatically selected and no interactions are
 
   let expanded = $state(activeIndex == null || activeIndex < 0);
 
+  // Auto-select when only one option exists. Wrap the write in `untrack` so
+  // that the `activeIndex` / `expanded` / `onChange` writes inside `activate`
+  // don't retrigger this effect when the parent re-derives `options` with
+  // different identity (Svelte 5 `effect_update_depth_exceeded` guard —
+  // mirrors the pattern used elsewhere in the codebase, e.g. Plan 60-03
+  // protected-layout $effect).
   $effect(() => {
-    if (options.length === 1) activate(0);
+    if (options.length === 1) untrack(() => activate(0));
   });
 
   function activate(index: number): void {

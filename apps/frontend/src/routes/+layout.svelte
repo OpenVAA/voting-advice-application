@@ -16,8 +16,8 @@
 <script lang="ts">
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
-  import { onDestroy } from 'svelte';
-  import { fromStore } from 'svelte/store';
+  import { onDestroy, untrack } from 'svelte';
+  import { fromStore, get } from 'svelte/store';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { updated } from '$app/state';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -104,11 +104,31 @@
   // on mount and re-runs on any `data` prop change (client-side navigation).
   // We don't do anything else with the data if it's valid, because the relevant
   // stores will pick it up from `$page.data`.
+  //
+  // IMPORTANT: access the DataRoot instance via `get(dataRootStore)` rather than
+  // the `dataRoot.current` auto-subscription form. `dataRoot.current.update(() => provide*(...))`
+  // inside a `$effect` creates an infinite reactive loop in Svelte 5: the
+  // `fromStore()` bridge tracks `dataRoot.current` as a dependency, and
+  // `DataRoot.update()` notifies subscribers (via the dataContext `version++`
+  // $state) — retriggering the effect. `get()` reads the store without
+  // establishing a reactive dependency. This mirrors the fix applied in Plan
+  // 60-03 to the candidate `(protected)/+layout.svelte`.
   $effect(() => {
     if ('error' in validity) return;
-    dataRoot.current.update(() => {
-      dataRoot.current.provideElectionData(validity.electionData);
-      dataRoot.current.provideConstituencyData(validity.constituencyData);
+    // Snapshot validity fields inside the effect's tracked scope, then apply
+    // side-effects inside `untrack` to prevent the DataRoot subscriber
+    // `version++` from retriggering this effect (Svelte 5
+    // `effect_update_depth_exceeded`).
+    const snapshot = {
+      electionData: validity.electionData,
+      constituencyData: validity.constituencyData
+    };
+    untrack(() => {
+      const dr = get(dataRootStore);
+      dr.update(() => {
+        dr.provideElectionData(snapshot.electionData);
+        dr.provideConstituencyData(snapshot.constituencyData);
+      });
     });
   });
 
