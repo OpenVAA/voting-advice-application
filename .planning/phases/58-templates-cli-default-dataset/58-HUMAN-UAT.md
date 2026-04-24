@@ -1,9 +1,10 @@
 ---
-status: partial
+status: resolved
 phase: 58-templates-cli-default-dataset
 source: [58-VERIFICATION.md]
 started: 2026-04-23T12:01:00Z
-updated: 2026-04-23T15:00:00Z
+updated: 2026-04-24T07:30:00Z
+resolved: 2026-04-24T07:30:00Z (UAT #1/#3/#4 promoted to PASS after fix-ups; UAT #1 compass clustering implicitly accepted via Phase 59's clean end-to-end Playwright pass against the e2e template's latent-factor answers)
 ---
 
 ## Fix-ups landed after initial UAT pass

@@ -11,7 +11,7 @@ Ship a template-driven, modular data generator in `@openvaa/dev-tools` that popu
 - Integer phases (56, 57, ...): Planned milestone work
 - Decimal phases (56.1, 56.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 56: Generator Foundations & Plumbing** — Per-entity generator scaffolding, service-role client, external_id tagging, template schema core, bulk-upsert strategy
+- [x] **Phase 56: Generator Foundations & Plumbing** — Per-entity generator scaffolding, service-role client, external_id tagging, template schema core, bulk-upsert strategy (completed 2026-04-23)
 - [x] **Phase 57: Latent-Factor Answer Model** — PCA-inspired pluggable pipeline producing party-clustered candidate answers with inter-question correlations (completed 2026-04-23)
 - [x] **Phase 58: Templates, CLI & Default Dataset** — Default + E2E built-in templates, custom-template loading, `seed`/`seed:teardown`/`dev:reset-with-data` CLI, portrait seeding, localization flag (completed 2026-04-23)
 - [x] **Phase 59: E2E Fixture Migration** — Rewrite `tests/seed-test-data.ts` on top of the new generator, prove parity with current Playwright baseline, retire legacy JSON fixtures
@@ -32,16 +32,16 @@ Ship a template-driven, modular data generator in `@openvaa/dev-tools` that popu
 **Plans**: 10 plans
 
 Plans:
-- [ ] 56-01-PLAN.md — Package scaffolding (@openvaa/dev-seed) + root devDep + GEN-03 amendment
-- [ ] 56-02-PLAN.md — SupabaseAdminClient base (D-24 split, bulk-write surface)
-- [ ] 56-03-PLAN.md — Template schema + ctx factory + answer emitter + shared types
-- [ ] 56-04-PLAN.md — 8 foundation generators (elections, constituency_groups, constituencies, organizations, alliances, factions, accounts, projects)
-- [ ] 56-05-PLAN.md — 5 content generators (question_categories, questions, candidates with D-27 seam, app_settings, feedback)
-- [ ] 56-06-PLAN.md — NominationsGenerator (polymorphic, GEN-08 ref validation)
-- [ ] 56-07-PLAN.md — Pipeline + Writer + public API (D-25/D-26 bridge, D-11 routing, D-15 env enforcement)
+- [x] 56-01-PLAN.md — Package scaffolding (@openvaa/dev-seed) + root devDep + GEN-03 amendment
+- [x] 56-02-PLAN.md — SupabaseAdminClient base (D-24 split, bulk-write surface)
+- [x] 56-03-PLAN.md — Template schema + ctx factory + answer emitter + shared types
+- [x] 56-04-PLAN.md — 8 foundation generators (elections, constituency_groups, constituencies, organizations, alliances, factions, accounts, projects)
+- [x] 56-05-PLAN.md — 5 content generators (question_categories, questions, candidates with D-27 seam, app_settings, feedback)
+- [x] 56-06-PLAN.md — NominationsGenerator (polymorphic, GEN-08 ref validation)
+- [x] 56-07-PLAN.md — Pipeline + Writer + public API (D-25/D-26 bridge, D-11 routing, D-15 env enforcement)
 - [x] 56-08-PLAN.md — 14 per-generator unit tests + shared makeCtx utils (DX-02)
-- [ ] 56-09-PLAN.md — Cross-cutting tests (pipeline, writer, determinism, template validator)
-- [ ] 56-10-PLAN.md — Rewrite tests/tests/utils/supabaseAdminClient.ts as subclass + final verification
+- [x] 56-09-PLAN.md — Cross-cutting tests (pipeline, writer, determinism, template validator)
+- [x] 56-10-PLAN.md — Rewrite tests/tests/utils/supabaseAdminClient.ts as subclass + final verification
 
 ### Phase 57: Latent-Factor Answer Model
 **Goal**: Synthetic candidate answers exhibit visible party clustering and plausible inter-question correlations, produced by a pluggable pipeline where each sub-step (latent dimensions, centroids, spread, positions, loadings, projection+noise) can be replaced independently.
@@ -118,7 +118,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
+| 56. Generator Foundations & Plumbing | 10/10 | Complete    | 2026-04-23 |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
 | 59. E2E Fixture Migration | 7/7 | Complete    | 2026-04-24 |

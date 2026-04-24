@@ -1,9 +1,10 @@
 ---
 phase: 58-templates-cli-default-dataset
 verified: 2026-04-23T11:59:00Z
-status: human_needed
+status: passed
 score: 6/6 success criteria verified (programmatically) + 16/16 requirements satisfied
 overrides_applied: 0
+human_accepted: 2026-04-24T07:30:00Z (implicit — Phase 59 shipped on top of Phase 58 deliverables without regressions; UAT fixups landed in HUMAN-UAT.md; formally flipped at v2.5 milestone close)
 human_verification:
   - test: "Run `yarn dev:reset-with-data` against a freshly-reset local Supabase and browse the frontend"
     expected: "VAA loads with 4 locales (en/fi/sv/da), 8 parties, 13 constituencies, 100 candidates each showing a portrait, political compass shows visible party clustering"
