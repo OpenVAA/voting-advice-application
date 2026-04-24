@@ -232,7 +232,7 @@ test.describe('matching algorithm verification', { tag: ['@voter'] }, () => {
     await expect(lastCard).not.toContainText(partialName);
   });
 
-  test('should NOT show hidden candidate (no terms_of_use_accepted)', async ({ page }) => {
+  test('should NOT show hidden candidate (no termsOfUseAccepted)', async ({ page }) => {
     await navigateToResults(page);
 
     const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
