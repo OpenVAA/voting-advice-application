@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
-status: verifying
+status: ready_to_plan
 stopped_at: "Completed 60-05-PLAN.md (PARITY GATE: FAIL documented; pending_review: true)"
 last_updated: "2026-04-24T12:02:50.819Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
   completed_plans: 5
-  percent: 100
+  percent: 50
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-24)
 
 ## Current Position
 
-Phase: 60 (Layout Runes Migration & Hydration Fix) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
+Phase: 61
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-04-24
 
 Progress: [██████████] 100%
@@ -37,7 +37,7 @@ Progress: [██████████] 100%
 **Cumulative:**
 
 - Milestones shipped: 9 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5) + 1 paused (v2.2)
-- Total plans completed: 172 + 6 tasks
+- Total plans completed: 177 + 6 tasks
 - Timeline: 28 days (2026-03-01 to 2026-03-28) + v2.5 (2 days 2026-04-23→24)
 
 ## Deferred Items

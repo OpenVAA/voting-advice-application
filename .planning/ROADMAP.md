@@ -25,7 +25,7 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
 
 **Milestone Goal:** Close out the Svelte 5 migration debt — fix hydration reactivity bugs, migrate the remaining legacy layouts to runes, resolve voter-app rendering gaps surfaced by v2.5 UAT, and drive the E2E carry-forward pool toward green.
 
-- [ ] **Phase 60: Layout Runes Migration & Hydration Fix** — Root + candidate-protected layouts run under runes mode; protected layout renders post-hydration on full page loads
+- [x] **Phase 60: Layout Runes Migration & Hydration Fix** — Root + candidate-protected layouts run under runes mode; protected layout renders post-hydration on full page loads (completed 2026-04-24)
 - [ ] **Phase 61: Voter-App Question Flow** — Boolean question rendering, candidate-result boolean handling, and category-selection reactivity restored
 - [ ] **Phase 62: Results Page Consolidation** — `EntityListControls` + `EntityList` merged; results-page filters re-enabled; entity-detail route collapsed into a single route
 - [ ] **Phase 63: E2E Template Extension & Greening** — E2E carry-forward pool shrinks from the post-v2.5 baseline; `app_settings` block in e2e template retires the legacy `updateAppSettings` workaround
@@ -94,7 +94,7 @@ Phases execute in numeric order: 60 → 61 → 62 → 63
 | 57. Latent-Factor Answer Model | v2.5 | 7/7 | Complete | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | v2.5 | 10/10 | Complete | 2026-04-23 |
 | 59. E2E Fixture Migration | v2.5 | 7/7 | Complete | 2026-04-24 |
-| 60. Layout Runes Migration & Hydration Fix | v2.6 | 2/5 | In progress | - |
+| 60. Layout Runes Migration & Hydration Fix | v2.6 | 5/5 | Complete    | 2026-04-24 |
 | 61. Voter-App Question Flow | v2.6 | 0/TBD | Not started | - |
 | 62. Results Page Consolidation | v2.6 | 0/TBD | Not started | - |
 | 63. E2E Template Extension & Greening | v2.6 | 0/TBD | Not started | - |
