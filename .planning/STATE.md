@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 59 (e2e-fixture-migration) — PAUSED (PARITY FAIL, D-59-12 fix-forward)
+Phase: 59 (e2e-fixture-migration) — PAUSED (PARITY FAIL, D-59-12 fix-forward in progress)
 Plan: 5/7 complete (59-05 POST-SWAP PARITY — FAIL, 22 regressions documented in post-swap/diff.md)
-Status: Phase 59 paused per D-59-12 — Plan 06 (fixture deletion) BLOCKED until parity flips to PASS. Fix-forward work list: (1) set externalIdPrefix:'test-' on e2e template to fix runTeardown zero-rows failure, (2) adjust e2e template opinion-question content so CAND-12 persist-comment test navigation lands on comment-allowed question, (3) update baseline/summary.md camelCase→snake_case for voter-matching source-skip ID drift.
-Last activity: 2026-04-24 -- Phase 59 Plan 05 (post-swap parity gate) complete — FAIL verdict
+Status: Phase 59 paused per D-59-12 — Plan 06 (fixture deletion) BLOCKED until parity flips to PASS. Fix-forward partial: Fix #2 (CAND-12 comment field on test-question-1..8 via custom_data.allowOpen, commit 341e4ab0d) + Fix #3 (baseline summary snake_case rename, commit b15429c54) LANDED and expected to collapse 19 of 22 regressions. Fix #1 (externalIdPrefix: 'test-' + cross-file convention refactor) BLOCKED — documented in .planning/phases/59-e2e-fixture-migration/fix-forward.md as Rule-4 architectural decision (touches 8+ files across dev-seed package tests + tests/ variant templates + e2eFixtureRefs + 2+ spec files; static analysis also contradicts the triage hypothesis about synthetic rows). Residual expected regressions post-re-run: 2 teardowns (rowsDeleted=0 assertion) awaiting Fix #1 path decision.
+Last activity: 2026-04-24 -- Phase 59 Fix-Forward partial (Fix #2 + Fix #3 committed; Fix #1 blocked per fix-forward.md)
 
 ## Performance Metrics
 
