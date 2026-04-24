@@ -17,7 +17,8 @@
 
 ### LAYOUT — Runes-mode migration + hydration bug fix
 
-- [ ] **LAYOUT-01**: Root layout (`apps/frontend/src/routes/+layout.svelte`) is migrated to Svelte 5 runes mode — no `export let`, no `$:` reactive statements, no `<slot />`. Uses `$props`, `$derived`, and `{@render children()}` consistently.
+- [x] **LAYOUT-01
+**: Root layout (`apps/frontend/src/routes/+layout.svelte`) is migrated to Svelte 5 runes mode — no `export let`, no `$:` reactive statements, no `<slot />`. Uses `$props`, `$derived`, and `{@render children()}` consistently.
 - [ ] **LAYOUT-02**: Candidate protected layout (`apps/frontend/src/routes/candidate/(protected)/+layout.svelte`) reliably renders post-hydration on full page loads. The `$effect` + `Promise.all(...).then(...)` pattern that leaves the page stuck at `<Loading />` is replaced with a pattern that re-renders correctly after SSR. The 2 blocked E2E registration tests (`candidate-registration.spec.ts:64`, `candidate-profile.spec.ts:51`) pass without workarounds.
 - [ ] **LAYOUT-03**: `PopupRenderer` runes-mode wrapper workaround is removed (direct store rendering works after root-layout migration), OR is explicitly retained with a documented rationale in-code if the underlying Svelte 5 limitation persists.
 

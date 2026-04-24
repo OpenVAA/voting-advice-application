@@ -43,7 +43,7 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   4. Existing voter-app and candidate-app E2E tests that previously passed continue to pass — the layout migration introduces no regressions to the Playwright parity baseline.
 **Plans**: 5 plans
   - [x] 60-01-PLAN.md — Wave-0 prep: restore diff-playwright-reports.ts + baseline JSON; create D-09 setTimeout-popup E2E scaffold
-  - [ ] 60-02-PLAN.md — Root `+layout.svelte` $derived refactor (LAYOUT-01, D-05)
+  - [x] 60-02-PLAN.md — Root `+layout.svelte` $derived refactor (LAYOUT-01, D-05)
   - [ ] 60-03-PLAN.md — Protected `(protected)/+layout.svelte` $derived refactor + D-02 wrapper fallback gate (LAYOUT-02)
   - [ ] 60-04-PLAN.md — D-08 PopupRenderer empirical removal + D-10 retention branch (LAYOUT-03)
   - [ ] 60-05-PLAN.md — Playwright parity gate vs baseline `3c57949c8` (SC-4)
@@ -94,7 +94,7 @@ Phases execute in numeric order: 60 → 61 → 62 → 63
 | 57. Latent-Factor Answer Model | v2.5 | 7/7 | Complete | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | v2.5 | 10/10 | Complete | 2026-04-23 |
 | 59. E2E Fixture Migration | v2.5 | 7/7 | Complete | 2026-04-24 |
-| 60. Layout Runes Migration & Hydration Fix | v2.6 | 0/TBD | Not started | - |
+| 60. Layout Runes Migration & Hydration Fix | v2.6 | 2/5 | In progress | - |
 | 61. Voter-App Question Flow | v2.6 | 0/TBD | Not started | - |
 | 62. Results Page Consolidation | v2.6 | 0/TBD | Not started | - |
 | 63. E2E Template Extension & Greening | v2.6 | 0/TBD | Not started | - |
