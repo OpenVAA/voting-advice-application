@@ -57,6 +57,52 @@
 import type { Template } from '../template/types';
 
 /**
+ * Base `app_settings.settings` JSONB payload for the e2e template (Phase 63
+ * E2E-02).
+ *
+ * Source of truth for the legacy `updateAppSettings(...)` call that lived in
+ * `tests/tests/setup/data.setup.ts:53-72` pre-Phase-63. Copied verbatim so
+ * Playwright specs that depend on the 5 top-level keys (questions, results,
+ * entities, notifications, analytics) see the same persisted state they got
+ * before the migration.
+ *
+ * Consumed by:
+ *   - This file's `e2eTemplate.app_settings.fixed[0].settings` (base).
+ *   - `tests/tests/setup/templates/variant-*.ts` — each variant composes this
+ *     base with a variant-specific overlay via
+ *     `mergeSettings(E2E_BASE_APP_SETTINGS, OVERLAY)` (D-02 + RESOLVED Q1).
+ *
+ * Writer routing: Pass-5 (`packages/dev-seed/src/writer.ts:174-181`) reads
+ * `row.settings` (Pitfall 2 — DO NOT rename to `value`). The DB column is
+ * `settings`; the `merge_jsonb_column` RPC deep-merges into the bootstrap
+ * `app_settings` row for the project (additive per Pitfall 3).
+ *
+ * `as const` keeps the literal types visible to consumers that destructure or
+ * assert against specific keys (e.g. the Phase 63 post-seed `toMatchObject`
+ * assertions).
+ */
+export const E2E_BASE_APP_SETTINGS = {
+  questions: {
+    categoryIntros: { show: false },
+    questionsIntro: { allowCategorySelection: false, show: false },
+    showResultsLink: true
+  },
+  results: {
+    cardContents: {
+      candidate: ['submatches'],
+      organization: ['candidates']
+    },
+    sections: ['candidate', 'organization']
+  },
+  entities: {
+    hideIfMissingAnswers: { candidate: false },
+    showAllNominations: true
+  },
+  notifications: { voterApp: { show: false } },
+  analytics: { trackEvents: false }
+} as const;
+
+/**
  * Shared Likert-5 choice array. Every singleChoiceOrdinal question in this
  * template uses this exact shape — satisfies the Phase 57 ordinal-dispatch
  * contract + the spec-invariant `LIKERT_SCALE = 5` read at
@@ -928,6 +974,28 @@ export const e2eTemplate: Template = {
         constituency: { external_id: 'test-constituency-alpha' },
         election_round: 1,
         unconfirmed: true
+      }
+    ]
+  },
+
+  // Phase 63 E2E-02: app_settings.fixed[] declaration (D-01 + Pitfall 2 +
+  // Pitfall 6). Single-row — app_settings is UNIQUE(project_id), so at most
+  // one row per project. External_id literal 'test-app-settings' survives
+  // the AppSettingsGenerator's `${externalIdPrefix}${fx.external_id}` pass
+  // through (externalIdPrefix is '' for the e2e template per D-58-15) and
+  // is matched by `runTeardown('test-', client)` in setup files.
+  //
+  // Field name is `settings` (NOT `value`) — writer.ts:176 reads
+  // `row.settings`; Pitfall 2 warns that a `value` field is silently dropped.
+  //
+  // Variant templates at tests/tests/setup/templates/variant-*.ts compose
+  // this base via `mergeSettings(E2E_BASE_APP_SETTINGS, OVERLAY)`.
+  app_settings: {
+    count: 0,
+    fixed: [
+      {
+        external_id: 'test-app-settings',
+        settings: E2E_BASE_APP_SETTINGS
       }
     ]
   }

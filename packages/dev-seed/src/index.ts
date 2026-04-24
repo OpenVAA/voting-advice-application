@@ -58,7 +58,13 @@ export { fanOutLocales, LOCALES } from './locales';
 export { runPipeline, TOPO_ORDER } from './pipeline';
 export { SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
 export { TemplateSchema, validateTemplate } from './template/schema';
-export { BUILT_IN_OVERRIDES, BUILT_IN_TEMPLATES, defaultOverrides, defaultTemplate } from './templates';
+export {
+  BUILT_IN_OVERRIDES,
+  BUILT_IN_TEMPLATES,
+  defaultOverrides,
+  defaultTemplate,
+  E2E_BASE_APP_SETTINGS
+} from './templates';
 export { Writer } from './writer';
 
 // Type exports

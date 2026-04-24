@@ -46,4 +46,4 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
 
 // Re-exports for explicit consumer imports.
 export { defaultOverrides, defaultTemplate } from './default';
-export { e2eTemplate } from './e2e';
+export { E2E_BASE_APP_SETTINGS, e2eTemplate } from './e2e';
