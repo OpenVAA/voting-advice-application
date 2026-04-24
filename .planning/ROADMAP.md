@@ -107,8 +107,8 @@ Plans:
 - [x] 59-02-PLAN.md — Migrate 8 fixture consumers off JSON imports (E2E-01, E2E-02) — complete 2026-04-23, commits `ba268f421` / `553b5d88b` / `0b14287f3`. 9 files touched (1 new + 8 modified); zero JSON-fixture imports remain in tests/tests/utils/ + tests/tests/specs/; yarn build exit 0.
 - [x] 59-03-PLAN.md — Author variant templates + parity diff script (E2E-02, E2E-03) — complete 2026-04-23, commits `c3c8e2bec` / `45d4d8abb` / `5b449ab73`. 4 files created (3 variant templates + diff script); every overlay external_id (67 total across 3 overlays) covered by template+base; self-identity smoke test prints PARITY GATE: PASS; yarn build exit 0.
 - [x] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01) — complete 2026-04-23, commits `7b2c9083d` / `7143f08ff` / `58d86fa7f` / `9c9e6363f`. 7 files modified; zero JSON-fixture imports remain in tests/seed-test-data.ts + tests/tests/setup/; runTeardown('test-', client) at all 5 call sites; yarn build exit 0; playwright test --list enumerates 89 specs with zero import errors.
-- [x] 59-05-PLAN.md — Post-swap capture + parity diff verdict (E2E-03) — complete 2026-04-24, commits `9d36cdb35` / `e67be2bf0`. **PARITY GATE: FAIL — 22 regressions across 3 root causes** (runTeardown prefix mismatch × 2, candidate-questions CAND-12 persist-comment timeout → 18-test cascade, baseline summary ID cosmetic drift). Data-race pool SHRANK (9 of 10 baseline flakes now pass). Post-swap HEAD `4ce228c82`; swap itself at `9c9e6363f`. Phase 59 remains OPEN per D-59-12 fix-forward; Plan 06 BLOCKED pending parity green.
-- [ ] 59-06-PLAN.md — Delete legacy fixtures + mergeDatasets util (E2E-02) — **BLOCKED by parity FAIL from 59-05; see post-swap/diff.md for 3-root-cause fix-forward work list**
+- [x] 59-05-PLAN.md — Post-swap capture + parity diff verdict (E2E-03) — complete 2026-04-24 (initial FAIL → PASS after fix-forward), commits `9d36cdb35` / `e67be2bf0` / `a3948da6d` + fix-forward `341e4ab0d` / `128bf27b6` / `070ccfb80` / `9e8388a61` / `3c57949c8`. Final verdict: **PARITY GATE: PASS** at SHA `3c57949c8` — 41p / 10f / 38c matches baseline exactly, 0 regressions. Initial FAIL had 22 regressions collapsed by 3 surgical fixes (CAND-12 comment field, teardown assertion relaxation, baseline title camelCase preservation).
+- [x] 59-06-PLAN.md — Delete legacy fixtures + mergeDatasets util (E2E-02) — complete 2026-04-24, commits `a1f3d479b` (docs scrub pre-flight) / `ff03ac53c` (delete 7 files, 3349 lines). D-59-09 three-gate verification green: grep 0 hits + yarn build exit 0 (14/14 tasks, 13 cached, 5.8s) + yarn test:unit exit 0 (18/18 tasks, 613+450 tests) + playwright --list = 89 tests in 25 files. `tests/tests/data/overlays/` auto-removed; `assets/` preserved.
 - [ ] 59-07-PLAN.md — VERIFICATION.md + deps-check.txt (E2E-04)
 
 ## Progress
@@ -121,4 +121,4 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
-| 59. E2E Fixture Migration | 5/7 | In progress (PARITY FAIL — fix-forward) | - |
+| 59. E2E Fixture Migration | 6/7 | In progress (parity PASS + legacy fixtures deleted; 59-07 VERIFICATION remains) | - |

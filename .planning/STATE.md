@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: "Plan 59-05 complete — PARITY GATE: FAIL; Plan 06 BLOCKED per D-59-12 fix-forward"
-last_updated: "2026-04-24T05:42:57.983Z"
-last_activity: 2026-04-24 -- Phase 59 Plan 05 (post-swap parity) complete — PARITY GATE: FAIL (22 regressions, D-59-12 fix-forward activated); Plan 06 BLOCKED
+stopped_at: Plan 59-06 complete — legacy JSON fixtures deleted, D-59-09 three-gate verification green, post-swap parity PASS preserved
+last_updated: "2026-04-24T06:54:56.943Z"
+last_activity: 2026-04-24 -- Phase 59 Plan 06 complete (legacy JSON fixture deletion, E2E-02 satisfied)
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 34
-  completed_plans: 32
-  percent: 94
+  completed_plans: 33
+  percent: 97
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 59 (e2e-fixture-migration) — PAUSED (PARITY FAIL, D-59-12 fix-forward in progress)
-Plan: 5/7 complete (59-05 POST-SWAP PARITY — FAIL, 22 regressions documented in post-swap/diff.md)
-Status: Phase 59 paused per D-59-12 — Plan 06 (fixture deletion) BLOCKED until parity flips to PASS. Fix-forward partial: Fix #2 (CAND-12 comment field on test-question-1..8 via custom_data.allowOpen, commit 341e4ab0d) + Fix #3 (baseline summary snake_case rename, commit b15429c54) LANDED and expected to collapse 19 of 22 regressions. Fix #1 (externalIdPrefix: 'test-' + cross-file convention refactor) BLOCKED — documented in .planning/phases/59-e2e-fixture-migration/fix-forward.md as Rule-4 architectural decision (touches 8+ files across dev-seed package tests + tests/ variant templates + e2eFixtureRefs + 2+ spec files; static analysis also contradicts the triage hypothesis about synthetic rows). Residual expected regressions post-re-run: 2 teardowns (rowsDeleted=0 assertion) awaiting Fix #1 path decision.
-Last activity: 2026-04-24 -- Phase 59 Fix-Forward partial (Fix #2 + Fix #3 committed; Fix #1 blocked per fix-forward.md)
+Phase: 59 (e2e-fixture-migration) — EXECUTING (parity PASS + legacy fixtures deleted; only 59-07 VERIFICATION.md remaining)
+Plan: 6/7 complete (59-06 DELETE — 7 files removed, D-59-09 three-gate green)
+Status: Phase 59 moved from PAUSED to EXECUTING after fix-forward flipped parity to PASS (commit 3c57949c8) and Plan 06 executed cleanly. Plan 06 committed the legacy JSON fixture deletion in 2 commits: `a1f3d479b` (docs(59-06): scrub stale refs to legacy fixtures before deletion — Rule 2 auto-added pre-flight to close the post-delete grep gate) and `ff03ac53c` (chore(59-06): delete legacy JSON fixtures + mergeDatasets util — 7 files, 3349 lines removed). `tests/tests/data/overlays/` auto-removed by git; `tests/tests/data/assets/` preserved per D-59-10. D-59-09 verification record: grep 0 hits + yarn build exit 0 (14/14 tasks, 13 cached, 5.8s) + yarn test:unit exit 0 (18/18 tasks, 613+450 tests passing) + playwright --list = 89 tests in 25 files. post-swap/diff.md PARITY GATE: PASS verdict preserved. Only Plan 07 (VERIFICATION.md + deps-check artifact, E2E-04) remains to close Phase 59.
+Last activity: 2026-04-24 -- Phase 59 Plan 06 complete (legacy JSON fixture deletion, E2E-02 satisfied)
 
 ## Performance Metrics
 
@@ -104,21 +104,26 @@ Key context for v2.5:
 - Plan 59-05: Data-race pool SHRANK post-swap — 9 of 10 baseline flakes now pass (voter-detail × 4, voter-results × 3, voter-matching ranking order, voter-journey intro start). Under D-59-04 this is acceptable flake-pool shift; parity FAIL is unrelated to concurrency variance (regressions are deterministic assertion failures + teardown zero-rows + timeout on single non-flake test). Confirms Plan 59-04 core swap improved E2E reliability for voter-side data loading.
 - Plan 59-05: Post-swap runtime 178.3s vs baseline 178.0s (+0.17%) — seed-path latency effectively unchanged. NF-01 <10s seed budget still comfortably met; extra wall time is in test bodies (the 30s timeout on CAND-12), not seeding.
 - Plan 59-05: Declared FAIL verdict + committed diff.md + left swap commit 9c9e6363f landed per D-59-12 fix-forward. Did NOT create Phase 59.1 follow-up plan — orchestrator owns that decision. Did NOT retry Playwright run — regressions are deterministic, not flake variance.
+- Plan 59-05 fix-forward (post 04-24): PARITY flipped FAIL→PASS after 3 surgical fixes landed (341e4ab0d comment field on e2e questions, 128bf27b6 teardown assertion relaxation for idempotent dual-teardown, 070ccfb80 camelCase title preservation on voter-matching hidden-candidate test) + 9e8388a61 diff.md rewrite + 3c57949c8 parity PASS verdict doc. Fix #1 (externalIdPrefix) was abandoned — the proposed teardown assertion relaxation subsumed it; documented as Rule-4 avoided in fix-forward.md.
+- Plan 59-06: Pre-flight docs/docstring scrub (commit a1f3d479b) split from the destructive delete (commit ff03ac53c) so the delete commit's diff is a pure set of D-lines — closes the D-59-09 post-delete grep gate without contaminating the chore() commit shape. 4 files scrubbed: apps/docs +page.md (live prose citing default-dataset.json) + 3 variant-*.ts docstring prologues (dropping `mergeDatasets` mention).
+- Plan 59-06: `tests/tests/data/overlays/` auto-removed by git once its last tracked child was `git rm`'d; `tests/tests/data/` preserved because `assets/` (test-poster.jpg, test-video.mp4, test-video.webm, test-captions.vtt) still lives there per D-59-10.
+- Plan 59-06: D-59-09 three-gate verification pattern pays off — grep caught 4 stale prose references pre-delete (doc + 3 docstrings); yarn build + yarn test:unit + playwright --list all green post-delete confirming zero dangling imports.
+- Plan 59-06: Pre-flight docs/docstring scrub committed separately (a1f3d479b) from the destructive delete (ff03ac53c) — keeps the chore() commit a pure set of D-lines matching the plan's Task 3 'ONLY these 7 deletions' spec, while satisfying the D-59-09 post-delete grep gate that requires zero repo-wide mentions of the retired filenames. Rule 2 auto-added scope (missing critical functionality).
+- Plan 59-06: Task 1 PASS-gate checkpoint treated as pre-approved by orchestrator (post-swap/diff.md verdict: PASS at SHA 3c57949c8 from fix-forward iteration 2). No re-prompt issued; independently re-verified verdict field in-session before any destructive action.
 
 ### Blockers/Concerns
 
 - Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue.
-- 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over. (Updated 2026-04-23 by Plan 59-01 baseline: ACTUAL pre-swap count on SHA f09daea34 is 10 data-race + 25 cascade; total 89 tests matches v2.4 tally, distribution improved. Parity gate uses actual test names, not counts.)
+- 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over. (Updated 2026-04-23 by Plan 59-01 baseline: ACTUAL pre-swap count on SHA f09daea34 is 10 data-race + 25 cascade; total 89 tests matches v2.4 tally, distribution improved. Parity gate uses actual test names, not counts. Updated 2026-04-24 post Plan 59-05 fix-forward: data-race pool stayed at 10, cascade grew to 38 due to CAND-12 fix-forward cascade acceptance — tally is the new baseline.)
 - NF-01 <10s seed budget pressures the generator toward bulk RPCs vs per-row inserts — Phase 56 picks the approach.
-- E2E-03 zero-regression bar requires an explicit baseline-vs-post-swap Playwright comparison in Phase 59 before fixtures are deleted.
+- E2E-03 zero-regression bar: post-swap parity PASS achieved via D-59-04 comparison (see post-swap/diff.md at 3c57949c8). Plan 59-06 completed the delete step — E2E-02 closed.
 - supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call.
-- **Phase 59 PARITY GATE FAILED 2026-04-24** — Plan 06 (legacy fixture deletion) is BLOCKED until 3 root-cause fixes land and Plan 59-05 Task 2+3 re-run prints PARITY GATE: PASS. See .planning/phases/59-e2e-fixture-migration/post-swap/diff.md for the fix-forward work list.
 
 ## Session Continuity
 
-Last session: 2026-04-24T05:42:57.979Z
-Stopped at: Plan 59-05 complete — PARITY GATE: FAIL; Plan 06 BLOCKED per D-59-12 fix-forward
-Resume file: .planning/phases/59-e2e-fixture-migration/post-swap/diff.md (fix-forward work list)
-Next action: Orchestrator decision required — Plan 06 BLOCKED. Triage options: (a) inline Plan 59-05.1 fixup, (b) Phase 59.1 fixup plan, (c) user-initiated fix cycle. Three fixes needed: externalIdPrefix:'test-' on e2e template, CAND-12 question-nav, baseline ID cosmetic. After fixes land, re-run Plan 59-05 Tasks 2+3 (overwrite post-swap/playwright-report.json + diff.md) until PARITY GATE: PASS.
+Last session: 2026-04-24T06:54:56.939Z
+Stopped at: Plan 59-06 complete — legacy JSON fixtures deleted, D-59-09 three-gate verification green, post-swap parity PASS preserved
+Resume file: None
+Next action: Execute Plan 59-07 — compile VERIFICATION.md (E2E migration outcomes) + deps-check artifact. No blockers; no parity gate (Plan 07 is documentation-only).
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 5 complete — 2026-04-24T05:41:11Z (PAUSED per D-59-12)
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 6 complete — 2026-04-24T09:55:00Z (EXECUTING, 1 plan remaining)
