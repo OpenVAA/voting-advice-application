@@ -30,14 +30,21 @@
 
   const { init, onReady, initSecond, onSecondInitError }: Props = $props();
 
+  // Test harness — props are read once during component init only. The
+  // `state_referenced_locally` warnings are intentional: tests pass props
+  // at mount time and do not reassign them.
+  // svelte-ignore state_referenced_locally
   const args: InitFilterContextArgs = init ?? { entityFilters: () => ({}) as FilterTree };
   const ctx = initFilterContext(args);
+  // svelte-ignore state_referenced_locally
   onReady?.(ctx);
 
+  // svelte-ignore state_referenced_locally
   if (initSecond) {
     try {
       initFilterContext(args);
     } catch (e) {
+      // svelte-ignore state_referenced_locally
       onSecondInitError?.(e);
     }
   }

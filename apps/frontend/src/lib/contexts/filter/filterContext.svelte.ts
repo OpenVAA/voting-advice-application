@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
+import { parseParams } from '$lib/utils/route';
 import type { FilterGroup } from '@openvaa/filters';
 import type { FilterContext, InitFilterContextArgs } from './filterContext.type';
 
@@ -47,12 +48,25 @@ export function initFilterContext({ entityFilters }: InitFilterContextArgs): Fil
   // read here is a defensive dependency edge — it ensures a $derived that ONLY
   // reads filterGroup (not version) still re-runs when a filter mutation bumps
   // version, which is the contract the EntityListWithControls $derived relies on.
+  //
+  // We use `parseParams(page)` (matching the `paramStore` analog in
+  // `voterContext`) instead of `page.params.X` directly, because:
+  //   1. `electionId` is a persistent search param today (URL `?electionId=...`)
+  //      and may also become a route param in Plan 62-02. `parseParams` merges
+  //      both surfaces transparently.
+  //   2. `entityTypePlural` is a future route param (added by Plan 62-02). The
+  //      `Partial<Params>` return type uses an indexed `Record<string, ...>`
+  //      fallback so accessing it before the param exists is type-safe.
+  //
   // Plural→singular mapping uses American spelling per RESEARCH Open Question 1.
   const _filterGroup = $derived.by<FilterGroup<MaybeWrappedEntityVariant> | undefined>(() => {
     void version;
     const tree = entityFilters();
-    const electionId = page.params.electionId;
-    const plural = page.params.entityTypePlural;
+    const params = parseParams(page);
+    const electionIdRaw = params.electionId;
+    const electionId = Array.isArray(electionIdRaw) ? electionIdRaw[0] : electionIdRaw;
+    const pluralRaw = params.entityTypePlural;
+    const plural = Array.isArray(pluralRaw) ? pluralRaw[0] : pluralRaw;
     const entityType =
       plural === 'candidates' ? 'candidate' : plural === 'organizations' ? 'organization' : undefined;
     if (!electionId || !entityType) return undefined;

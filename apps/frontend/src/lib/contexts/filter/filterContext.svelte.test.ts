@@ -9,6 +9,16 @@ import GetFilterContextHarness from './__tests__/GetFilterContextHarness.svelte'
 import type { FilterContext } from './filterContext.type';
 import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
 
+// Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record
+// because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to
+// the route params that exist today (no `electionId` route, no `entityTypePlural`
+// route — both arrive in Plan 62-02). filterContext reads via `parseParams`
+// which is typed `Partial<Params>` and accepts arbitrary string keys.
+type LooseParams = Record<string, string | undefined>;
+function setParams(params: LooseParams): void {
+  (mockPage as unknown as { params: LooseParams }).params = params;
+}
+
 // Stub @sveltejs/kit error to throw with status + body for assertions.
 vi.mock('@sveltejs/kit', () => ({
   error: (status: number, message: string) => {
@@ -94,7 +104,7 @@ describe('filterContext', () => {
   beforeEach(() => {
     // Reset the page-state stub between tests (the stub is a module singleton
     // — the alias means the same object is shared across tests).
-    mockPage.params = {};
+    setParams({});
   });
 
   afterEach(() => {
@@ -150,7 +160,7 @@ describe('filterContext', () => {
     const candidateGroup = new FakeGroup([new FakeFilter('cand-f')]);
     const orgGroup = new FakeGroup([new FakeFilter('org-f')]);
     const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
-    mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
+    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
 
     let observed: unknown;
     const target = mountTarget();
@@ -173,7 +183,7 @@ describe('filterContext', () => {
     const orgGroup = new FakeGroup([new FakeFilter('o')]);
     const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
 
-    mockPage.params = { electionId: 'e1', entityTypePlural: 'organizations' };
+    setParams({ electionId: 'e1', entityTypePlural: 'organizations' });
     let observed: unknown;
     const target = mountTarget();
     const component = mount(FilterContextHarness, {
@@ -194,7 +204,7 @@ describe('filterContext', () => {
     const f1 = new FakeFilter('f1');
     const group = new FakeGroup([f1]);
     const tree = { e1: { candidate: group } } as unknown as FilterTree;
-    mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
+    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
 
     let captured: FilterContext | undefined;
     const target = mountTarget();
@@ -229,7 +239,7 @@ describe('filterContext', () => {
     const group = new FakeGroup([f1]);
     const resetSpy = vi.spyOn(group, 'reset');
     const tree = { e1: { candidate: group } } as unknown as FilterTree;
-    mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
+    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
 
     let captured: FilterContext | undefined;
     const target = mountTarget();
@@ -254,7 +264,7 @@ describe('filterContext', () => {
   it('removes the onChange listener on unmount (Pitfall 2 cleanup)', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
     const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;
-    mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
+    setParams({ electionId: 'e1', entityTypePlural: 'candidates' });
 
     const target = mountTarget();
     const component = mount(FilterContextHarness, {
@@ -282,7 +292,7 @@ describe('filterContext', () => {
       e1: { candidate: new FakeGroup([new FakeFilter()]) }
     } as unknown as FilterTree;
     // No electionId, no entityTypePlural
-    mockPage.params = {};
+    setParams({});
     let observed: unknown = 'sentinel';
     const target = mountTarget();
     const component = mount(FilterContextHarness, {

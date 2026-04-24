@@ -15,6 +15,7 @@
   try {
     getFilterContext();
   } catch (e) {
+    // svelte-ignore state_referenced_locally
     onError?.(e);
   }
 </script>
