@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
-status: complete
-stopped_at: Phase 59 COMPLETE — Plan 59-07 VERIFICATION.md + deps-check.txt committed, 4/4 SCs verified, PARITY GATE: PASS carried from Plan 05, E2E-04 satisfied (D-24 split documented + zero cycles at tests/↔dev-seed boundary). Milestone v2.5 (Phases 56-59) closeable.
-last_updated: "2026-04-24T07:10:00.000Z"
-last_activity: 2026-04-24 -- Phase 59 Plan 07 complete (59-VERIFICATION.md + deps-check.txt + ROADMAP/STATE/REQUIREMENTS closeout); Phase 59 + Milestone v2.5 complete
+status: verifying
+stopped_at: Phase 59 COMPLETE — Plan 59-07 VERIFICATION.md + deps-check.txt committed; milestone v2.5 closeable
+last_updated: "2026-04-24T07:40:23.883Z"
+last_activity: 2026-04-24
 progress:
   total_phases: 4
   completed_phases: 4
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 Phase: 59 (e2e-fixture-migration) — COMPLETE (all 7 plans shipped; E2E-01..04 satisfied; PARITY GATE: PASS carried from Plan 05; D-24 split documented with zero-cycles evidence)
 Plan: 7/7 complete (59-07 VERIFICATION + deps-check — E2E-04 satisfied via documentation, no code moves per D-59-11)
 Status: Phase 59 CLOSED. Plan 07 authored 59-VERIFICATION.md (status: passed, score 4/4, parity_gate: PASS) + deps-check.txt (7.4 KB, 3 sections — yarn build 14/14 FULL TURBO, madge --circular scoped to D-24 boundary shows 2 pre-existing intra-dev-seed cycles and 0 at D-24 surface, tsconfig project-reference inventory). Commits `f2a6d72ff` (Task 1 deps-check) + `12eacf351` (Task 2 VERIFICATION.md) + forthcoming Task 3 bundle (SUMMARY + ROADMAP + STATE + REQUIREMENTS). Milestone v2.5 (Dev Data Seeding Toolkit — Phases 56, 57, 58, 59) closeable: 56 at 8/10 per ROADMAP verdict "Complete", 57/58/59 at 100%.
-Last activity: 2026-04-24 -- Phase 59 Plan 07 complete (VERIFICATION.md + deps-check.txt, E2E-04 satisfied, milestone v2.5 closeable)
+Last activity: 2026-04-24
 
 ## Performance Metrics
 
@@ -37,6 +37,33 @@ Last activity: 2026-04-24 -- Phase 59 Plan 07 complete (VERIFICATION.md + deps-c
 - Milestones shipped: 9 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4) + 1 paused (v2.2)
 - Total plans completed: 172 + 6 tasks
 - Timeline: 28 days (2026-03-01 to 2026-03-28)
+
+## Deferred Items
+
+Items acknowledged and deferred at v2.5 milestone close on 2026-04-24. These do not block v2.5 shipping; they are tracked for future milestones.
+
+| Category | Item | Status / Notes |
+|----------|------|----------------|
+| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | ui — future party-app variant |
+| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | ui — architectural investigation |
+| todo | adapter-package-loading.md | medium — tsconfig-based importable adapter (v2.x) |
+| todo | check-candidate-distribution.md | low — default seed candidate spread follow-up |
+| todo | configurable-mock-data.md | medium — Supabase GENERATE_MOCK_DATA env replacement |
+| todo | entity-list-controls-infinite-loop.md | bug — Svelte 5 cleanup milestone |
+| todo | frontend-project-id-scoping.md | architecture — multi-tenant prep |
+| todo | password-reset-code-method.md | candidate-app auth flow |
+| todo | register-page-registrationkey-method.md | candidate-app auth flow |
+| todo | rename-admin-writer.md | dev-seed internal API hygiene |
+| todo | root-layout-runes-migration.md | Svelte 5 cleanup milestone |
+| todo | session-storage-election-constituency.md | frontend session handling |
+| todo | sql-linting-formatting.md | CI hygiene |
+| todo | svelte5-cleanup.md | Svelte 5 cleanup milestone parent |
+| todo | svelte5-hydration-effect-then-bug.md | Svelte 5 cleanup milestone |
+| carry-forward | 10 data-race E2E failures (post-Phase 59 measurement) | Svelte 5 Migration Cleanup milestone |
+| carry-forward | 25 cascade E2E failures (upstream of data-race) | Svelte 5 Migration Cleanup milestone |
+| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Larger refactor candidate; scope undecided |
+
+Known deferred items at close: 18 (15 todos + 3 carry-forwards).
 
 ## Accumulated Context
 

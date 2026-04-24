@@ -1,5 +1,46 @@
 # Milestones
 
+## v2.5 Dev Data Seeding Toolkit (Shipped: 2026-04-24)
+
+**Phases completed:** 4 phases, 34 plans, 63 tasks
+
+**Key accomplishments:**
+
+- Scaffolded @openvaa/dev-seed as a private Yarn 4 workspace — package manifest, tsconfig, vitest marker, and placeholder src/index.ts — linked into root devDependencies and amended REQUIREMENTS.md GEN-03 per D-25.
+- One-liner:
+- Zod v4 TemplateSchema + `Template` (via z.infer<>) + seeded-faker Ctx factory + `defaultRandomValidEmit` across all 9 question_type variants + AnswerEmitter seam for Phase 57 — Wave 3 generators can now import their type surface from one place.
+- Eight foundation-layer generator classes (6 real + 2 pass-through per D-11) implementing the canonical D-04/D-08/D-26 pattern that Plans 05/06/07 extend.
+- 5 content generators — question_categories, questions (shape-valid LIKERT/categorical choices), candidates (D-27 answerEmitter seam), app_settings (updateAppSettings routing), feedback (stub)
+- Polymorphic nomination generator with client-side FK validation; emits exactly one of {candidate,organization,faction,alliance} per row, drops the legacy "emit both, strip one" workaround, and fails fast with a descriptive error when upstream refs are empty. 14 of 14 generators now in place — Wave 3 complete.
+- Status:
+- 14 per-generator vitest suites + shared `makeCtx` factory — 96 tests covering D-22 pure I/O, GEN-04 external_id prefix, GEN-08 ref validation, D-27 answerEmitter seam, and RESEARCH §4.13/§9 invariants.
+- 4 cross-cutting test files (33 tests) covering pipeline orchestration, writer env-enforcement + call-shape, seeded determinism, and template validation — the behaviors no single generator owns. Brings the Phase 56 test file count to 18 (14 per-generator + 4 cross-cutting) and test count to 129 total.
+- D-24 admin-client split complete: tests/tests/utils/supabaseAdminClient.ts is now a 486-line subclass of @openvaa/dev-seed's SupabaseAdminClient base, inheriting bulk-write methods while preserving auth/email + legacy E2E query helpers in tests/.
+- Box-Muller helper (Pitfall-1-safe, D-57-11 short-circuit) + LatentHooks type barrel + Ctx/TemplateSchema `.latent?` extension — ships the Wave 1 foundation that every downstream Plan 57-02..57-07 file imports.
+- Pure sub-step defaults for `LatentHooks.dimensions` (GEN-06a) and `LatentHooks.spread` (GEN-06c) — zero RNG, zero I/O, <80 lines across two files. Wave-2 parallel-safe (no overlap with Plans 03-06).
+- `defaultCentroids(dims, eigenvalues, parties, ctx, tplCentroids?)` — farthest-point greedy max-min sampler with eigenvalue-scaled Gaussian pool, D-57-05 partial-anchor merge, and T-57-14/T-57-15 defense-in-depth. Ships GEN-06b / GEN-06g.
+- `defaultPositions(partyIdx, centroids, spread, ctx)` — per-candidate isotropic Gaussian draw around a party centroid (`N(centroid, spread² · I)`). The ONLY sub-step that runs per-candidate (D-57-13); delegates to Plan 57-01's `boxMuller` for both the draw and the `spread=0` short-circuit.
+- `defaultLoadings(questions, dims, ctx, tplLoadings?)` — the GEN-06e Wave-2 sub-step default that produces a dense `(|questions| × dims)` loading matrix keyed by question `external_id`, sampled iid from N(0, 1) via Plan 01's `boxMuller`, with D-57-07 per-question template overrides (copy-safe, wrong-length fallback), a Pitfall-3 empty-questions guard, and a Phase-56-style missing-external_id skip.
+- defaultProject (GEN-06f) dispatches all 8 question_type enum variants via per-type switch: ordinal via COORDINATE inverse-normalize (D-57-08), single/multi categorical via per-choice N(0,1) argmax with ≥1 guardrail (D-57-09), non-choice types via defaultRandomValidEmit passthrough (D-57-10); per-pipeline-run choice-loading cache via WeakMap<Ctx, …>; A2 fix applied to QuestionsGenerator.LIKERT_5 so the ordinal mapping no longer needs the parseInt(id) fallback.
+- The Wave 3 capstone — assembles Plans 01-06 into `latentAnswerEmitter(template)`, wires it through the pipeline via `ctx.answerEmitter ??= …`, and proves end-to-end clustering on 4 parties × 10 candidates × 12 Likert-5 questions. Measured clustering ratio at defaults (seed 42): 0.0713 (threshold < 0.5 — ~7× headroom). Measured inter-question `|r|`: 0.993 (threshold > 0.1).
+- Grep-verified Playwright spec inventory — 21 spec files, 34 runtime external_id references catalogued, 17 relational triangles mapped, and 25 fixture-only items flagged for omission from the forthcoming e2e template (D-58-15).
+- TMPL-07 template flag + `fanOutLocales()` utility that expands `{ en: '...' }` JSONB fields to `{ en, fi, sv, da }` using per-locale Faker instances with hardcoded iteration order (NF-04 Pitfall #1 compliance)
+- Pitfall #2 (schema wording drift).
+- Node-builtin parseArgs CLI that loads a template (built-in name or filesystem path), runs the Phase 56/57 pipeline, fans out locales (Plan 03), writes to Supabase via the Writer, and prints a D-58-14 aligned-table summary — exit 0 on success, exit 1 with D-58-12 actionable messages on failure
+- TMPL-04 default template — 1 election × 13 constituencies × 8 invented parties × 100 candidates (non-uniformly distributed via PARTY_WEIGHTS [20,18,15,12,10,10,8,7]) × 24 questions (18 ordinal / 4 categorical / 1 multi-choice / 1 boolean) × 4 categories, with generateTranslationsForAllLocales: true. Registered in BUILT_IN_TEMPLATES for CLI resolution; paired Overrides wired through runPipeline.
+- `yarn workspace @openvaa/dev-seed seed:teardown` removes every row with `external_id LIKE ${prefix}%` from the 10 allowed_collections content tables (Pitfall #6 guardrail — excludes accounts/projects/feedback/app_settings), then deterministically reclaims candidate portrait objects from Storage via Path 2 list+remove (Pitfall #5 — doesn't rely on the async pg_net trigger). Three root aliases wire `dev:seed`, `dev:seed:teardown`, and `dev:reset-with-data` (= `yarn supabase:reset && yarn dev:seed --template default` per D-58-11).
+- TMPL-05 e2e template authored from 58-E2E-AUDIT.md (D-58-15 audit-driven, no mechanical JSON port) — 2 elections × 2 constituencies × 2 constituency_groups × 4 organizations × 5 question_categories × 17 questions × 14 candidates × 18 nominations × generateTranslationsForAllLocales: false (D-58-16). Registered in BUILT_IN_TEMPLATES.e2e; `--template e2e` resolves to this template. Every fixed[] entry carries an inline audit citation; 99 parity tests gate against drift.
+- DX-03 integration test against live local Supabase asserts 1 election × 13 constituencies × 8 organizations × 100 candidates × 24 questions × 4 categories × 100 nominations with all 4 locale keys on elections.name, 100 portraits uploaded, and elapsed < 10_000 ms (NF-01). Determinism suite extended with 3 new cases covering Pitfall #1 locale fan-out end-to-end (NF-04).
+- Total (89) matches exactly
+- 1. [Rule 3 - Blocking] Plan-specified tsc verification gate referenced a nonexistent tests/ tsconfig
+- Chose approach (b)
+- 1. [Rule 2 — Missing critical functionality] Preserved legacy `updateAppSettings` calls in all 4 setup files
+- PARITY GATE: FAIL. 22 surface regressions across 3 real root causes — candidate-questions CAND-12 comment-persistence timeout (cascades into 18 tests), runTeardown('test-') deleting zero rows in both teardowns, and a cosmetic baseline ID drift from the Plan 59-02 snake_case migration. Phase 59 remains OPEN; Plan 06 (fixture deletion) is BLOCKED until parity flips green.
+- 7 legacy files deleted (3 core JSON fixtures + 3 orphan overlays + mergeDatasets.ts), D-59-09 three-gate verification green, repo now has zero references to the retired filenames outside .planning/
+- Phase 59 completion gate authored — 4/4 success criteria verified (including PARITY GATE: PASS carry-forward from Plan 05 and E2E-04 dep-graph evidence), D-24 public-surface table fully enumerated from source, deps-check.txt proves zero cycles at the tests/ ↔ @openvaa/dev-seed boundary. Milestone v2.5 (Phases 56-59) closeable.
+
+---
+
 ## v2.3 Idura FTN Auth (Shipped: 2026-03-27)
 
 **Phases completed:** 4 phases, 8 plans, 14 tasks
