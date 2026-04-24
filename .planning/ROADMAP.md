@@ -58,7 +58,10 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   2. Opening a candidate result-detail page after answering a boolean question renders the per-question match breakdown without error — the question-type switch handles `boolean` alongside `singleChoiceOrdinal` and `singleChoiceCategorical`.
   3. On the category-selection screen, the voter sees a sensible default selection (all opinion categories checked by default, or an explicit product decision documented at the component) and the "questions" counter updates reactively on every category toggle — no stuck-at-0 behaviour.
   4. On the candidate app question route, the `candidate-questions-list` and `candidate-questions-start` testIds become visible within Playwright's default timeout, the 6 direct `candidate-questions.spec.ts` tests pass, and their 18 dependent cascade tests (candidate-app-mutation / candidate-app-settings / candidate-app-password / re-auth-setup) run and pass. (Folded from Phase 60 handoff 2026-04-24.)
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 61-01-PLAN.md — Boolean opinion input + auto-fix result-detail boolean match-breakdown via shared OpinionQuestionInput dispatch (QUESTION-01 + QUESTION-02)
+  - [ ] 61-02-PLAN.md — Category default + counter reactivity: migrate voterContext selectedQuestionCategoryIds to pure $state per D-11 (QUESTION-03)
+  - [ ] 61-03-PLAN.md — Candidate-questions testId visibility: diagnose-first then apply reactivity/readiness/timeout fix (QUESTION-04)
 **UI hint**: yes
 
 ### Phase 62: Results Page Consolidation
@@ -96,6 +99,6 @@ Phases execute in numeric order: 60 → 61 → 62 → 63
 | 58. Templates, CLI & Default Dataset | v2.5 | 10/10 | Complete | 2026-04-23 |
 | 59. E2E Fixture Migration | v2.5 | 7/7 | Complete | 2026-04-24 |
 | 60. Layout Runes Migration & Hydration Fix | v2.6 | 5/5 | Complete    | 2026-04-24 |
-| 61. Voter-App Question Flow | v2.6 | 0/TBD | Not started | - |
+| 61. Voter-App Question Flow | v2.6 | 0/3   | Not started | - |
 | 62. Results Page Consolidation | v2.6 | 0/TBD | Not started | - |
 | 63. E2E Template Extension & Greening | v2.6 | 0/TBD | Not started | - |
