@@ -1679,6 +1679,7 @@ __metadata:
   resolution: "@openvaa/dev-seed@workspace:packages/dev-seed"
   dependencies:
     "@faker-js/faker": "catalog:"
+    "@openvaa/app-shared": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
