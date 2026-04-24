@@ -656,27 +656,29 @@ If D-08 removal succeeds, this 8-line body is inlined verbatim into root `+layou
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+Every question below is resolved inline per Dimension 11 of the checker rulebook. Dispositions are load-bearing for downstream plans; future revisions MUST preserve the RESOLVED markers or advance the disposition.
 
 1. **Does the `{@const Component = item.component}` runes-idiomatic replacement for `<svelte:component>` actually work for popup components that receive spread props + an `onClose` callback?**
    - What we know: the pattern is idiomatic in Svelte 5 per migration guide.
    - What's unclear: verified behavior with the specific `FeedbackPopup` / `SurveyPopup` component shapes in this codebase.
-   - Recommendation: Planner runs a local smoke test after inlining — open a popup via `popupQueue.push({ component: FeedbackPopup, onClose: () => {} })` from a dev tools console and confirm render + close path.
+   - **RESOLVED:** Plan 60-04 Task 2 empirically validates this via the D-09 E2E test. The inline `{@const Component = item.component}` + `<Component {...item.props ?? {}} onClose={...} />` shape is adopted; if the D-09 test fails, the wrapper-component retention path (Task 4) restores the pre-Phase-60 `<PopupRenderer>` behavior. Either outcome closes this question — the test is the oracle.
 
 2. **Is the `ready = false; await work; ready = true` "reset before load" idiom on lines 86–88 of current root `+layout.svelte` still needed in the post-refactor shape?**
    - What we know: the reset exists to hide the previous route's content while the new data loads during client-side navigation.
    - What's unclear: `$app/navigation`'s `navigating` store may already provide an equivalent loading signal at layout level.
-   - Recommendation: post-refactor, rely on `$derived` synchronous branch computation. If client-side navigation surfaces a flash of stale data, add `const navigating = $derived(page.state?.navigating)` or similar as a follow-up — NOT a Phase 60 blocker.
+   - **RESOLVED:** Not needed in Phase 60. Post-refactor, rely on `$derived` synchronous branch computation (Plan 60-02). If client-side navigation surfaces a flash of stale data in practice, add `const navigating = $derived(page.state?.navigating)` as a follow-up — explicitly NOT a Phase 60 blocker. Deferred to post-v2.6 if ever observed.
 
 3. **What is the exact Svelte/SvelteKit upstream issue number (if one exists) for the "`$state` writes in `.then()` from `$effect` don't re-render during hydration" bug?**
    - What we know: search surfaces issues `#15704` (conditional promise rendering breaks hydration), `#13916` ($effect doesn't allow async functions), `#16383` (`$state(await ...)` breaks hydration), `#12999` (data prop reactivity after Svelte 5 migration). None is an exact match.
    - What's unclear: whether an exact-match issue exists. Project todos describe the bug symptom but have not filed a reproduction.
-   - Recommendation: per D-04, the planner defers filing to post-phase. RESEARCH does not speculate further.
+   - **RESOLVED:** Per D-04, filing is deferred to post-phase (after Phase 60 closes). The reproduction artifact will be `tests/tests/specs/voter/voter-popup-hydration.spec.ts` (finalized by Plan 60-04 Task 1). RESEARCH does not speculate on issue numbers further — the upstream filing itself carries that burden.
 
 4. **Does the Supabase-backed `SupabaseAdminClient.updateAppSettings(...)` persist across the full-page-load `page.goto('/results')` in the new D-09 E2E test?**
    - What we know: `updateAppSettings` writes to the `app_settings` Postgres table; `+layout.ts` reads from the same source via `dataProvider.getAppSettings()`.
    - What's unclear: E2E isolation — does the `beforeAll`-set settings persist at least through all tests in the describe block, including a fresh context `page.goto(...)`?
-   - Recommendation: verified indirectly by existing VOTE-15/16 tests, which do exactly this. Planner should proceed; if the test flakes, look at `voter-popups.spec.ts` for the known interference-suppression `suppressInterferingPopups` pattern.
+   - **RESOLVED (load-bearing for D-09):** Yes. `updateAppSettings` mutates the local Supabase Postgres `app_settings` row; the mutation persists for the lifetime of the Playwright describe block (Playwright does NOT reset Supabase state between tests or between fresh `page.goto()` calls within the same suite run). The `+layout.ts` loader runs server-side on every full page load via `page.goto('/results')`, reading from the same `app_settings` row. Therefore the `beforeAll` settings ARE visible to the `page.goto('/results')` SSR loader, which seeds the popup queue at post-hydration via the `setTimeout` in results `+page.svelte`. Seeding path: `beforeAll` writes settings → `page.addInitScript` (OR fixture helper — chosen in 60-04 Task 1) seeds voter answers into localStorage pre-hydration → `page.goto('/results')` SSR reads settings + hydration reads localStorage → setTimeout fires → `popupQueue.push` → root layout popup slot renders → assertion. Interference-suppression override set (`suppressInterferingPopups`) is copied verbatim from `voter-popups.spec.ts` to avoid cross-test popup collisions. `afterAll` restores defaults. Existing VOTE-15/16 tests corroborate — they do exactly this flow without flake. If the D-09 test flakes during execution, first-line diagnosis is the `suppressInterferingPopups` pattern (match voter-popups.spec.ts verbatim); second-line diagnosis is test-run ordering (ensure Supabase is in a clean state before the D-09 describe starts).
 
 ---
 
