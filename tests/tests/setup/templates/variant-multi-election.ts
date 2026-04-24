@@ -2,7 +2,7 @@
  * Multi-election variant template — 2 elections with cross-nominations.
  *
  * Replaces the legacy `tests/tests/data/overlays/multi-election-overlay`
- * JSON fixture + `mergeDatasets` per Phase 59 E2E-02. Loaded via
+ * JSON fixture per Phase 59 E2E-02 (deleted in Plan 59-06). Loaded via
  * `yarn dev:seed --template tests/tests/setup/templates/variant-multi-election.ts`.
  *
  * Spec contract:

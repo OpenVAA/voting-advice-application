@@ -2,7 +2,7 @@
  * startFromConstituencyGroup variant template — orphan-municipality edge case.
  *
  * Replaces the legacy `tests/tests/data/overlays/startfromcg-overlay` JSON
- * fixture + `mergeDatasets` per Phase 59 E2E-02. Loaded via
+ * fixture per Phase 59 E2E-02 (deleted in Plan 59-06). Loaded via
  * `yarn dev:seed --template tests/tests/setup/templates/variant-startfromcg.ts`.
  *
  * Spec contract: tests/tests/specs/variants/startfromcg.spec.ts

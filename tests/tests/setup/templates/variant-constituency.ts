@@ -3,7 +3,7 @@
  * region/municipality constituency hierarchy.
  *
  * Replaces the legacy `tests/tests/data/overlays/constituency-overlay`
- * JSON fixture + `mergeDatasets` per Phase 59 E2E-02. Loaded via
+ * JSON fixture per Phase 59 E2E-02 (deleted in Plan 59-06). Loaded via
  * `yarn dev:seed --template tests/tests/setup/templates/variant-constituency.ts`.
  *
  * Spec contract: tests/tests/specs/variants/constituency.spec.ts (CONF-03).
