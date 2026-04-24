@@ -45,16 +45,19 @@ Display a general intro before starting answering the questions and possibly all
   // Possible redirect and selection initialization
   ////////////////////////////////////////////////////////////////////
 
-  // On mount either redirect or pre-select all questionCategories and clear out the possible firstQuestionId store
+  // On mount either redirect or filter stale category IDs and clear out the possible firstQuestionId store
   onMount(() => {
     voterCtx.firstQuestionId = null;
-    // Check that the selected categories are still available (because they might be specific to the election and constituency)
-    voterCtx.selectedQuestionCategoryIds = voterCtx.selectedQuestionCategoryIds.filter((id) =>
+    // Filter stale category IDs (holdovers from a different election/constituency).
+    // Navigation-level concern — stays here. Default-seeding moved to voterContext
+    // per QUESTION-03 (Phase 61 D-09 + D-11).
+    const filtered = voterCtx.selectedQuestionCategoryIds.filter((id) =>
       opinionQuestionCategories.find((c) => c.id === id)
     );
-    // Preselect all if there's no selection yet
-    if (voterCtx.selectedQuestionCategoryIds.length === 0)
-      voterCtx.selectedQuestionCategoryIds = opinionQuestionCategories.map((c) => c.id);
+    if (filtered.length !== voterCtx.selectedQuestionCategoryIds.length) {
+      voterCtx.selectedQuestionCategoryIds = filtered;
+    }
+    // Redirect: unchanged behavior — preserve the existing logic exactly.
     if (!$appSettings.questions.questionsIntro.show) {
       const categoryId = selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
       return goto(
