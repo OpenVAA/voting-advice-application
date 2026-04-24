@@ -9,7 +9,6 @@
 -->
 
 <script lang="ts">
-  import { tick } from 'svelte';
   import type { Snippet } from 'svelte';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -21,9 +20,9 @@
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
-  import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
+  import type { LayoutData } from './$types';
 
-  let { data, children }: { data: any; children: Snippet } = $props();
+  let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get context
@@ -36,15 +35,15 @@
   ////////////////////////////////////////////////////////////////////
 
   let status = $state<ActionStatus>('idle');
-  let termsAccepted = $state(false);
+  let termsAcceptedLocal = $state(false);
 
   async function handleSubmit() {
-    if (!termsAccepted) return;
+    if (!termsAcceptedLocal) return;
     status = 'loading';
     userData.setTermsOfUseAccepted(new Date().toJSON());
     await userData.save();
-    layoutState = 'ready';
     status = 'success';
+    // layoutState recomputes automatically via $derived from termsAcceptedLocal — no explicit write.
   }
 
   async function handleCancel() {
@@ -57,51 +56,68 @@
   // Provide data and possibly show terms of use form
   ////////////////////////////////////////////////////////////////////
 
-  /**
-   * Single state variable for layout rendering. Consolidates `ready`, `error`, and
-   * `showTermsOfUse` into one write to work around a Svelte 5 hydration issue where
-   * writing to multiple `$state` variables inside `.then()` from `$effect` doesn't
-   * trigger DOM re-renders after SSR+hydration.
-   */
-  let layoutState = $state<'loading' | 'error' | 'terms' | 'ready'>('loading');
-
-  $effect(() => {
-    // Read data synchronously to register as dependency
-    const questionData = data.questionData;
-    const candidateUserData = data.candidateUserData;
-    // Reset state
-    layoutState = 'loading';
-    Promise.all([questionData, candidateUserData]).then((resolved) => {
-      update(resolved);
-    });
+  // Validation is a pure `$derived.by` over the already-resolved loader data
+  // (`+layout.server.ts` awaits both `questionData` and `candidateUserData`
+  // before returning). No `Promise.all`, no `.then()`, no microtask boundary
+  // between `$effect` and `$state` writes. This shape removes the Svelte 5
+  // SSR+hydration reactivity race that stuck the previous `$effect` +
+  // promise-chain pattern at <Loading /> on full page loads.
+  // Ref: 60-RESEARCH §Pattern 1, D-01 + D-03.
+  const validity = $derived.by(() => {
+    if (!isValidResult(data.questionData, { allowEmpty: true })) {
+      return { state: 'error' as const };
+    }
+    const ud = data.candidateUserData;
+    if (!ud?.nominations || !ud?.candidate) {
+      return { state: 'error' as const };
+    }
+    // Cast after `isValidResult` narrowing: `data.questionData` is typed as the
+    // wider loader union (`DPDataType['questions'] | Error`) due to the
+    // `.catch((e) => e)` in `+layout.server.ts`. `isValidResult` is already a
+    // type guard; the cast is safe at this boundary and mirrors the same
+    // pattern used by the root layout (Plan 60-02 decision #2).
+    return {
+      state: 'resolved' as const,
+      questionData: data.questionData as DPDataType['questions'],
+      candidate: ud.candidate,
+      entities: ud.nominations.entities,
+      nominations: ud.nominations.nominations,
+      userData: ud
+    };
   });
 
-  /**
-   * Process loaded data. Sets `layoutState` as a single write — the only `$state`
-   * mutation inside the `.then()` callback.
-   */
-  async function update([questionData, candidateUserData]: [
-    DPDataType['questions'] | Error,
-    CandidateUserData<true> | undefined
-  ]): Promise<void> {
-    if (!isValidResult(questionData, { allowEmpty: true })) {
-      logDebugError('Error loading question data');
-      layoutState = 'error';
-      return;
-    }
-    if (!candidateUserData?.nominations || !candidateUserData?.candidate) {
-      logDebugError('Error loading candidate data');
-      layoutState = 'error';
-      return;
-    }
-    const { entities, nominations } = candidateUserData.nominations;
-    $dataRoot.provideQuestionData(questionData);
-    $dataRoot.provideEntityData(entities);
-    $dataRoot.provideNominationData(nominations);
-    await tick();
-    userData.init(candidateUserData);
-    layoutState = !candidateUserData.candidate.termsOfUseAccepted ? 'terms' : 'ready';
-  }
+  // 4-way enum retained per RESEARCH §Alternatives — clean readable branch shape.
+  // `$derived` (not `$state`) — recomputes automatically when `validity` or
+  // `termsAcceptedLocal` changes, so `handleSubmit` has no explicit `layoutState = 'ready'` write.
+  const layoutState = $derived<'loading' | 'error' | 'terms' | 'ready'>(
+    validity.state === 'error'
+      ? 'error'
+      : !validity.candidate.termsOfUseAccepted && !termsAcceptedLocal
+        ? 'terms'
+        : 'ready'
+  );
+
+  // Side effect — applies resolved data to `$dataRoot` and initializes `userData`.
+  // Reads `$derived` validity. NO `.then()`, NO microtask wait — `userData.init`
+  // is a synchronous `savedData = data` assignment; the previous `tick`-wait was
+  // a defensive v2.1 artifact with no remaining purpose — RESEARCH Assumption A2.
+  // Wrapped in `$dataRoot.update(() => ...)` for batched subscriber notification
+  // (canonical form — see apps/frontend/src/lib/admin/utils/loadElectionData.ts).
+  $effect(() => {
+    if (validity.state !== 'resolved') return;
+    $dataRoot.update(() => {
+      $dataRoot.provideQuestionData(validity.questionData);
+      $dataRoot.provideEntityData(validity.entities);
+      $dataRoot.provideNominationData(validity.nominations);
+    });
+    userData.init(validity.userData);
+  });
+
+  // Error logging side-effect — parity with pre-refactor `logDebugError` calls
+  // (was inlined in the old `update()` function; now a dedicated `$effect`).
+  $effect(() => {
+    if (validity.state === 'error') logDebugError('Error loading protected-layout data');
+  });
 </script>
 
 {#if layoutState === 'error'}
@@ -115,12 +131,12 @@
         <HeroEmoji emoji={t('dynamic.candidateAppPrivacy.consent.heroEmoji')} />
       </figure>
     {/snippet}
-    <TermsOfUseForm bind:termsAccepted />
+    <TermsOfUseForm bind:termsAccepted={termsAcceptedLocal} />
     {#snippet primaryActions()}
       <Button
         text={t('common.continue')}
         variant="main"
-        disabled={!termsAccepted}
+        disabled={!termsAcceptedLocal}
         loading={status === 'loading'}
         onclick={handleSubmit} />
       <Button color="warning" text={t('common.logout')} loading={status === 'loading'} onclick={handleCancel} />
