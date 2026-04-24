@@ -131,9 +131,14 @@ export function initCandidateContext(): CandidateContext {
       selectedElections = [];
       return;
     }
-    selectedElections = removeDuplicates(
-      current.nominations.nominations.map((n) => dr.getElection(n.electionId))
-    );
+    try {
+      selectedElections = removeDuplicates(
+        current.nominations.nominations.map((n) => dr.getElection(n.electionId))
+      );
+    } catch (e) {
+      logDebugError(`[candidateContext selectedElections] Error fetching election: ${e}`);
+      selectedElections = [];
+    }
   });
 
   $effect(() => {
@@ -143,9 +148,14 @@ export function initCandidateContext(): CandidateContext {
       selectedConstituencies = [];
       return;
     }
-    selectedConstituencies = removeDuplicates(
-      current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId))
-    );
+    try {
+      selectedConstituencies = removeDuplicates(
+        current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId))
+      );
+    } catch (e) {
+      logDebugError(`[candidateContext selectedConstituencies] Error fetching constituency: ${e}`);
+      selectedConstituencies = [];
+    }
   });
 
   /**
