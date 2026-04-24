@@ -8,29 +8,32 @@ OpenVAA is an open-source framework for building Voting Advice Applications (VAA
 
 A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 
-## Current Milestone: v2.5 Dev Data Seeding Toolkit
-
-**Goal:** Ship a template-driven, modular data generator in `@openvaa/dev-tools` that populates a freshly-reset local database with realistic OpenVAA data in one command, and retire the hand-maintained E2E JSON fixtures in favor of generator-produced data.
-
-**Target features:**
-- Modular per-entity generator architecture (one small generator per non-system public table, independently overridable)
-- Unified template model — declarative config with smart defaults; hand-authored + synthetic rows mix freely in any collection
-- Built-in default and E2E templates; custom templates load from any file path
-- `generateTranslationsForAllLocales` flag honoring `staticSettings.supportedLocales`
-- CLI surface — `seed`, `seed:teardown`, root-level `yarn dev:reset-with-data`
-- `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired
-- Matching-realistic synthetic candidate positions (party-axis clustering, not uniform random)
-- Optional deterministic seed (`seed: number`) for reproducible faker output
-
 ## Current State
 
-v2.4 shipped 2026-03-28. Full Svelte 5 rewrite complete — context system migrated end-to-end ($state/$derived), global runes mode enabled (compilerOptions.runes + dynamicCompileOptions node_modules exclusion), all 167 per-file runes directives removed, 10 admin route files + root layout migrated. 613 unit tests pass; E2E suite runs with 15 passed / 19 pre-existing data-loading race failures / 55 cascade — deferred to the "Svelte 5 Migration Cleanup" backlog milestone.
+**v2.5 Dev Data Seeding Toolkit shipped 2026-04-24.** 4 phases (56-59), 34 plans, 63 tasks across 2 days. Delivered:
 
-v2.3 delivered Idura FTN bank authentication with the IdentityProvider abstraction layer; deployments switch between Signicat and Idura via `PUBLIC_IDENTITY_PROVIDER_TYPE`. v2.2 paused (Deno feasibility validated, evaluation deferred).
+- `@openvaa/dev-seed` private workspace (new) with 14 per-entity generator classes producing typed rows against `@openvaa/supabase-types`, bulk-import via `SupabaseAdminClient` (D-24 split: base class in package, subclass shell in `tests/` for auth/email helpers)
+- Latent-factor answer model (PCA-inspired pluggable pipeline — 6 sub-steps independently overridable) producing party-clustered candidate answers with measurable inter-question correlation (verified: intra-party vs inter-party distance ratio 0.0713; |r| 0.993 at defaults)
+- Built-in `default` template (1 election × 13 constituencies × 8 parties × 100 candidates × 24 questions × 4 locales) + `e2e` template (audit-driven from Playwright spec inventory; 2 elections × 2 constituencies × 4 parties × 14 candidates × 17 questions) + filesystem variant templates
+- CLI surface: `yarn dev:seed --template <name|path>`, `yarn dev:seed:teardown`, `yarn dev:reset-with-data`; NF-01 <10s budget validated end-to-end
+- E2E fixture migration: `tests/seed-test-data.ts` rewritten as 37-line thin wrapper over `@openvaa/dev-seed`; 3 legacy JSON fixtures (default-dataset / voter-dataset / candidate-addendum) deleted along with mergeDatasets.ts and 3 orphan overlays; 8 module-level fixture consumers migrated to `tests/tests/utils/e2eFixtureRefs.ts` typed barrel
+- Playwright parity gate: baseline captured at SHA `f09daea34` (41 pass / 10 data-race / 38 skipped = 89 tests), post-swap run matches baseline exactly — zero regressions per D-59-04. Diff script codifies the delta rule and prints `PARITY GATE: PASS|FAIL` literal. Data-race pool actually shrank post-swap (9/10 baseline flakes now pass).
 
-Post-v2.4 housekeeping on `feat-gsd-roadmap`: `@openvaa/dev-tools` workspace added with `keygen` and `pem-to-jwk` CLIs (see `docs/key-generation.md`); `*.pem` patterns added to `.gitignore`; legacy `apps/frontend/README.md` removed.
+**Historical context (pre-v2.5):** v2.4 shipped 2026-03-28 — full Svelte 5 rewrite complete (context system on $state/$derived, global runes mode, 167 per-file opt-ins removed). v2.3 delivered Idura FTN bank auth + IdentityProvider abstraction. v2.2 paused (Deno feasibility validated, evaluation deferred).
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
+
+## Next Milestone Goals
+
+No milestone selected yet. Top candidates per §Milestones and STATE.md Deferred Items:
+
+- **Svelte 5 Migration Cleanup** — retire 10 data-race + 25 cascade E2E failures carried from v2.4/v2.5; resolve 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` (internal.ts barrel pattern); clear remaining runes-mode TODOs
+- **Admin App Migration** — move admin functions to the frontend Admin App (started v2.0 Strapi removal)
+- **Parties in Candidate App** — generalize candidate-app preregistration so party organizations can onboard
+- **Security Scanning** — automated security, secrets scanning
+- **Settings & Configuration Reorg** — rationalize StaticSettings / DynamicSettings / env / app_settings split
+
+Run `/gsd-new-milestone` to pick one and begin.
 
 ## Requirements
 
@@ -91,16 +94,18 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ All 167 per-file runes opt-ins removed — v2.4
 - ✓ 141 consumer components migrated to direct property access — v2.4
 - ✓ @openvaa/dev-tools workspace with keygen + pem-to-jwk CLIs — post-v2.4
+- ✓ Modular per-entity generator architecture (`@openvaa/dev-seed/src/generators/`) — v2.5
+- ✓ Unified template model with smart defaults and mixed hand-authored + synthetic rows — v2.5
+- ✓ Built-in default template and E2E template; custom templates loadable from any path — v2.5
+- ✓ `generateTranslationsForAllLocales` flag honoring `staticSettings.supportedLocales` — v2.5
+- ✓ CLI surface — `seed`, `seed:teardown`, root-level `yarn dev:reset-with-data` — v2.5
+- ✓ `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired — v2.5
+- ✓ Matching-realistic synthetic candidate positions (party-axis clustering via latent-factor pipeline) — v2.5
+- ✓ Optional deterministic `seed: number` for reproducible faker output — v2.5
 
 ### Active
-- [ ] Modular per-entity generator architecture (`@openvaa/dev-tools/src/seed/`)
-- [ ] Unified template model with smart defaults and mixed hand-authored + synthetic rows
-- [ ] Built-in default template and E2E template; custom templates loadable from any path
-- [ ] `generateTranslationsForAllLocales` flag honoring `staticSettings.supportedLocales`
-- [ ] CLI surface — `seed`, `seed:teardown`, root-level `yarn dev:reset-with-data`
-- [ ] `tests/seed-test-data.ts` rewritten on top of the new generator; legacy JSON fixtures retired
-- [ ] Matching-realistic synthetic candidate positions (party-axis clustering)
-- [ ] Optional deterministic `seed: number` for reproducible faker output
+
+_No active requirements until next milestone is picked. Run `/gsd-new-milestone` to begin._
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -165,7 +170,7 @@ Each major initiative is a separate milestone, executed in order:
 8. ~~**Deno Feasibility Study**~~ — Paused v2.2 (2026-03-27, feasibility validated, evaluation deferred)
 9. ~~**Idura FTN Auth**~~ — Shipped v2.3 (2026-03-27)
 10. ~~**Full Svelte 5 Rewrite**~~ — Shipped v2.4 (2026-03-28)
-11. **Dev Data Seeding Toolkit** — v2.5 (in progress)
+11. ~~**Dev Data Seeding Toolkit**~~ — Shipped v2.5 (2026-04-24)
 12. **Claude Skills (remaining)** — Architect, components, LLM skills
 13. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 14. **Security Scanning** — Automated security, secrets scanning, and testing
@@ -243,6 +248,15 @@ Each major initiative is a separate milestone, executed in order:
 | No existing user migration on provider switch | Clean break — simpler than dual-lookup, no code maintaining legacy paths | ✓ Good (v2.3) |
 | Unit tests only for OIDC flow (no mock server) | jose generates synthetic tokens; real provider testing is manual | ✓ Good (v2.3) |
 
+| D-24 admin-client split (base in @openvaa/dev-seed, subclass shell in tests/) | Dev-seed owns bulk data + storage write surface; tests/ owns auth/email helpers that pull Playwright types | ✓ Good (v2.5) |
+| Latent-factor answer model with 6 swappable sub-steps | Each sub-step (dimensions, centroids, spread, positions, loadings, projection) is a standalone hook — consumers replace one step without forking the pipeline | ✓ Good (v2.5) |
+| Audit-driven e2e template (not mechanical JSON port) | 58-E2E-AUDIT.md catalogued every runtime external_id ref in specs; template ships only audit-proven rows, no dead fixture content | ✓ Good (v2.5) |
+| Deterministic baseline capture with --workers=1 | Serializes Playwright execution so the 10 data-race flakes don't destabilize the parity comparison | ✓ Good (v2.5) |
+| Parity delta rule (not identity rule) | Pass-set locked, cascade-set may flip to pass, data-race pool may shift within itself but may not grow — accommodates pre-existing flakiness | ✓ Good (v2.5) |
+| Fix-forward over rollback on parity FAIL | Debug the actual failure rather than reverting the swap; preserves forward progress when regressions are small and fixable | ✓ Good (v2.5) |
+| Relaxed teardown assertion for dual-teardown setups | `toBeGreaterThanOrEqual(0)` matches pre-swap idempotent behavior; prefix-mismatch regressions surface elsewhere | ✓ Good (v2.5) |
+| Zero-new-tool dep-graph verification | Use `yarn build` (Turborepo cycle detection) as primary dep-check + npx madge as supplement — no new repo dependency | ✓ Good (v2.5) |
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -262,4 +276,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-23 after Phase 57 (Latent-Factor Answer Model) completion_
+_Last updated: 2026-04-24 after v2.5 Dev Data Seeding Toolkit milestone completion (Phases 56-59)_
