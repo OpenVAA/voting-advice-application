@@ -49,10 +49,22 @@
  *     query by external_id (which they do — see results-sections.spec.ts:171
  *     and multi-election.spec.ts:135).
  */
-import { BUILT_IN_TEMPLATES, type Template } from '@openvaa/dev-seed';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
+import { mergeSettings } from '@openvaa/app-shared';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-constituency: BUILT_IN_TEMPLATES.e2e is undefined.');
+
+/**
+ * Phase 63 E2E-02 (D-02 + D-03): variant-specific `app_settings.settings`
+ * overlay. Empty because the legacy `variant-constituency.setup.ts:41-53`
+ * block carried the SAME keys as the base e2e block minus the `results.*`
+ * block — and `merge_jsonb_column` is additive (Pitfall 3), so the missing
+ * `results` keys would be inherited from the base anyway. Authoring the
+ * overlay explicitly (rather than deriving implicitly) keeps the variant's
+ * intent visible for reviewers.
+ */
+const CONSTITUENCY_APP_SETTINGS_OVERLAY = {} as const;
 
 type FixedRow = Record<string, unknown>;
 
@@ -372,6 +384,20 @@ export const variantConstituencyTemplate: Template = {
         election: { external_id: 'test-election-1' },
         constituency: { external_id: 'test-const-muni-east' },
         election_round: 1
+      }
+    ]
+  },
+
+  // Phase 63 E2E-02 (D-02 + D-03 + RESOLVED Q1): compose variant-scoped
+  // app_settings from the base + empty overlay. Writer Pass-5 (Pitfall 2)
+  // reads `row.settings`; variant-scoped external_id survives the
+  // `runTeardown('test-', ...)` filter (Pitfall 6).
+  app_settings: {
+    count: 0,
+    fixed: [
+      {
+        external_id: 'test-app-settings-constituency',
+        settings: mergeSettings(E2E_BASE_APP_SETTINGS, CONSTITUENCY_APP_SETTINGS_OVERLAY)
       }
     ]
   }

@@ -31,10 +31,20 @@
  * form; template-schema-managed fields (project id, published) dropped.
  * See variant-constituency.ts header for the full transcription recipe.
  */
-import { BUILT_IN_TEMPLATES, type Template } from '@openvaa/dev-seed';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
+import { mergeSettings } from '@openvaa/app-shared';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-startfromcg: BUILT_IN_TEMPLATES.e2e is undefined.');
+
+/**
+ * Phase 63 E2E-02 (D-02 + D-03): startFromConstituencyGroup variant overlay.
+ * Empty overlay — the legacy `variant-startfromcg.setup.ts:44-56` block
+ * carried exactly the base keys (no `results.*`), and the spec applies the
+ * `startFromConstituencyGroup` ID at runtime (variant-startfromcg.setup.ts:21
+ * describes the contract: the UUID is only known after querying the DB).
+ */
+const STARTFROMCG_APP_SETTINGS_OVERLAY = {} as const;
 
 type FixedRow = Record<string, unknown>;
 
@@ -291,6 +301,22 @@ export const variantStartFromCgTemplate: Template = {
         election: { external_id: 'test-election-1' },
         constituency: { external_id: 'test-const-region-south' },
         election_round: 1
+      }
+    ]
+  },
+
+  // Phase 63 E2E-02 (D-02 + D-03 + RESOLVED Q1): compose variant-scoped
+  // app_settings from the base + empty overlay. Writer Pass-5 (Pitfall 2)
+  // reads `row.settings`; variant-scoped external_id survives the
+  // `runTeardown('test-', ...)` filter (Pitfall 6). The spec-level call at
+  // startfromcg.spec.ts:58-81 sets `elections.startFromConstituencyGroup`
+  // to the discovered DB UUID at runtime — intentionally not templated.
+  app_settings: {
+    count: 0,
+    fixed: [
+      {
+        external_id: 'test-app-settings-startfromcg',
+        settings: mergeSettings(E2E_BASE_APP_SETTINGS, STARTFROMCG_APP_SETTINGS_OVERLAY)
       }
     ]
   }

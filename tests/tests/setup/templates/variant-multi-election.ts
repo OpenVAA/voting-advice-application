@@ -29,10 +29,27 @@
  * form; template-schema-managed fields (project id, published) dropped.
  * See variant-constituency.ts header for the full transcription recipe.
  */
-import { BUILT_IN_TEMPLATES, type Template } from '@openvaa/dev-seed';
+import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
+import { mergeSettings } from '@openvaa/app-shared';
 
 const base = BUILT_IN_TEMPLATES.e2e;
 if (!base) throw new Error('variant-multi-election: BUILT_IN_TEMPLATES.e2e is undefined.');
+
+/**
+ * Phase 63 E2E-02 (D-02 + D-03): multi-election overlay. Adds the two popup
+ * suppression flags that the legacy `variant-multi-election.setup.ts:43-59`
+ * block set on top of the base keys — `showFeedbackPopup` and
+ * `showSurveyPopup` at `results.*`. Deep merge (mergeSettings) preserves base
+ * `results.cardContents` + `results.sections`; a shallow merge would clobber
+ * them (which is why `@openvaa/app-shared#mergeSettings` is used here, NOT
+ * `mergeAppSettings` from the frontend — the latter is a SHALLOW merge).
+ */
+const MULTI_ELECTION_APP_SETTINGS_OVERLAY = {
+  results: {
+    showFeedbackPopup: 0,
+    showSurveyPopup: 0
+  }
+} as const;
 
 type FixedRow = Record<string, unknown>;
 
@@ -219,6 +236,21 @@ export const variantMultiElectionTemplate: Template = {
         election: { external_id: 'test-election-2' },
         constituency: { external_id: 'test-constituency-e2' },
         election_round: 1
+      }
+    ]
+  },
+
+  // Phase 63 E2E-02 (D-02 + D-03 + RESOLVED Q1): compose variant-scoped
+  // app_settings from the base + popup-suppression overlay. Writer Pass-5
+  // (Pitfall 2) reads `row.settings`; variant-scoped external_id survives
+  // the `runTeardown('test-', ...)` filter (Pitfall 6). Deep merge preserves
+  // base `results.cardContents` + `results.sections` (Pitfall 3 additive).
+  app_settings: {
+    count: 0,
+    fixed: [
+      {
+        external_id: 'test-app-settings-multi-election',
+        settings: mergeSettings(E2E_BASE_APP_SETTINGS, MULTI_ELECTION_APP_SETTINGS_OVERLAY)
       }
     ]
   }
