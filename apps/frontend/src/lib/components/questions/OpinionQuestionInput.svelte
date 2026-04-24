@@ -30,11 +30,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { isSingleChoiceQuestion } from '@openvaa/data';
+  import { isBooleanQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
   import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
+  import type { Choice } from '@openvaa/data';
   import type { OpinionQuestionInputProps } from './OpinionQuestionInput.type';
 
   let {
@@ -55,6 +56,29 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   ////////////////////////////////////////////////////////////////////
 
   const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // BooleanQuestion support
+  ////////////////////////////////////////////////////////////////////
+
+  // Synthesized pseudo-choices for `BooleanQuestion`. Uses existing i18n keys
+  // under `common.answer.*` (verified present in en/fi/sv/da).
+  // Order: `no` first matches the ordinal low→high left-to-right convention
+  // (see `QuestionChoices.doShowLine` default for booleans).
+  const booleanChoices = $derived<Array<Choice>>([
+    { id: 'no', label: t('common.answer.no') },
+    { id: 'yes', label: t('common.answer.yes') }
+  ]);
+
+  // Translate between stored boolean answer value and pseudo-choice id.
+  // Answers MUST be stored as boolean (`true`/`false`), never as the strings
+  // `'yes'`/`'no'`. The branch's onChange adapter maps `'yes'` → `true` and
+  // `'no'` → `false` before bubbling to the parent.
+  function booleanToChoiceId(v: unknown): string | null {
+    if (v === true) return 'yes';
+    if (v === false) return 'no';
+    return null;
+  }
 </script>
 
 <div data-testid="opinion-question-input">
@@ -68,6 +92,18 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       {otherSelected}
       {otherLabel}
       onChange={onChange ? (d) => onChange({ value: d.value, question: d.question }) : undefined}
+      {...restProps} />
+  {:else if isBooleanQuestion(question)}
+    {@const selectedId = booleanToChoiceId(answer?.value)}
+    {@const otherSelected = booleanToChoiceId(otherAnswer?.value)}
+    <QuestionChoices
+      {question}
+      choices={booleanChoices}
+      {mode}
+      {selectedId}
+      {otherSelected}
+      {otherLabel}
+      onChange={onChange ? (d) => onChange({ value: d.value === 'yes', question: d.question }) : undefined}
       {...restProps} />
   {:else}
     <ErrorMessage inline message={t('error.unsupportedQuestion')} class="text-center" />
