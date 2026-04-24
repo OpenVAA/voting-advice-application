@@ -20,13 +20,12 @@ const PREFIX = 'test-';
  * Pre-clears prior runs via runTeardown('test-', ...) for idempotency. This
  * replaces the legacy delete-then-import-per-fixture chain (Phase 59 E2E-01).
  *
- * app_settings NOTE: the Phase 58 e2e template does NOT ship an
- * `app_settings.fixed[]` block, so the writer's Pass-5 merge_jsonb_column step
- * is a no-op. The legacy `updateAppSettings(...)` call from the pre-Phase-59
- * data.setup.ts is preserved here unchanged — without it, the Playwright specs
- * regress (category intros, popups, and hideIfMissingAnswers would be at their
- * default values). Follow-up work tracked in 59-04-SUMMARY.md: extend the e2e
- * template with this settings block so the setup file can drop this call.
+ * app_settings is now declared by the dev-seed e2e template's
+ * `app_settings.fixed[]` block (Phase 63 E2E-02). Writer Pass-5 routes it
+ * through `merge_jsonb_column` automatically. The legacy
+ * `updateAppSettings(...)` call here was deleted in Plan 63-02 Task 3; a
+ * post-seed subset-match assertion (D-10 + RESOLVED Q2) verifies the
+ * persisted row matches the template's declared shape.
  */
 setup('import test dataset', async () => {
   const template = BUILT_IN_TEMPLATES.e2e;
@@ -42,34 +41,28 @@ setup('import test dataset', async () => {
   //    the e2e template emits verbatim (D-58-15 + 59 prefix reconciliation).
   await runTeardown(PREFIX, client);
 
-  // 2. Seed via the package's pipeline + writer (D-59-05).
+  // 2. Seed via the package's pipeline + writer (D-59-05). Writer Pass-5
+  //    applies the e2e template's `app_settings.fixed[]` block via
+  //    `merge_jsonb_column` (Phase 63 E2E-02).
   const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);
   const writer = new Writer();
   await writer.write(rows, prefix);
 
-  // 3. App settings (legacy preservation; see note above). Once the e2e
-  //    template grows an `app_settings.fixed[]` block, delete this call.
-  await client.updateAppSettings({
-    questions: {
-      categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
-      showResultsLink: true
-    },
-    results: {
-      cardContents: {
-        candidate: ['submatches'],
-        organization: ['candidates']
-      },
-      sections: ['candidate', 'organization']
-    },
-    entities: {
-      hideIfMissingAnswers: { candidate: false },
-      showAllNominations: true
-    },
-    notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false }
-  });
+  // 3. (D-10) Post-seed assertion — verify baseline app_settings persisted.
+  //    Subset match per RESOLVED Q2: `merge_jsonb_column` is additive
+  //    (Pitfall 3); we verify our keys made it, not exclusive equality.
+  {
+    const expected = template.app_settings?.fixed?.[0]?.settings;
+    if (!expected) {
+      throw new Error(
+        'post-seed assertion: e2e template missing app_settings.fixed[0].settings — Phase 63 regression?'
+      );
+    }
+    const persisted = await client.getAppSettings();
+    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
+    expect(persisted).toMatchObject(expected as Record<string, unknown>);
+  }
 
   // 4. Auth wiring (D-24: tests/-only, subclass methods). Unregister the known
   //    unregistered emails + alpha, then forceRegister alpha with the shared pwd.

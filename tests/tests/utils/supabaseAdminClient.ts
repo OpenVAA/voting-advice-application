@@ -7,6 +7,24 @@
  * legacy E2E query helpers that tests/ needs but dev-seed does not — keeping
  * the dev-seed surface narrow.
  *
+ * D-11 (Phase 63 E2E-02) — `updateAppSettings` (inherited) usage policy:
+ *   Baseline test-setup usage of `updateAppSettings` has migrated to the
+ *   `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block (and to
+ *   the variant templates at `tests/tests/setup/templates/variant-*.ts`).
+ *   The 4 setup-file `updateAppSettings({ ... })` blocks were deleted in
+ *   Plan 63-02 Task 3.
+ *
+ *   `updateAppSettings` is RETAINED for per-test scenario mutations:
+ *   spec files (e.g. `candidate-settings.spec.ts`,
+ *   `voter-popup-hydration.spec.ts`, `results-sections.spec.ts`,
+ *   `startfromcg.spec.ts`, `voter-popups.spec.ts`,
+ *   `voter-settings.spec.ts`, `voter-static-pages.spec.ts`,
+ *   `multi-election.spec.ts`, `constituency.spec.ts`) call it inside
+ *   `beforeAll` / `afterAll` to test behavior-under-different-settings.
+ *
+ *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline
+ *   settings — extend the appropriate template instead (D-04, D-09, D-10).
+ *
  * Inherited from `DevSeedAdminClient`:
  *   - `constructor(url?, serviceRoleKey?, projectId?)`
  *   - `protected client: SupabaseClient`
@@ -15,11 +33,11 @@
  *   - `public bulkDelete(collections)`
  *   - `public importAnswers(data)`
  *   - `public linkJoinTables(data)`
- *   - `public updateAppSettings(partialSettings)`
+ *   - `public updateAppSettings(partialSettings)` — see D-11 note above
  *
  * Added by this subclass:
  *   - Auth helpers (private): `fixGoTrueNulls`, `safeListUsers`
- *   - E2E query helpers: `findData`, `query`, `update`
+ *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`
  *   - Auth actions: `setPassword`, `forceRegister`, `unregisterCandidate`,
  *     `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
  *
@@ -246,6 +264,44 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const tableName = resolveCollectionName(collection);
     const { error } = await this.client.from(tableName).update(data).eq('id', id);
     if (error) throw new Error(`update(${tableName}, ${id}) failed: ${error.message}`);
+  }
+
+  /**
+   * Post-seed read helper (Phase 63 E2E-02 / D-10).
+   *
+   * Returns the current persisted `app_settings.settings` JSONB for this
+   * client's project, or `null` if the bootstrap row is missing.
+   *
+   * Consumed by the 4 setup files (`data.setup.ts`,
+   * `variant-constituency.setup.ts`, `variant-multi-election.setup.ts`,
+   * `variant-startfromcg.setup.ts`) immediately after `writer.write(...)` to
+   * verify the dev-seed e2e template's `app_settings.fixed[]` block actually
+   * persisted via Pass-5 (`merge_jsonb_column`). Subset match per RESOLVED Q2
+   * (`expect(...).toMatchObject(expected)`) — `merge_jsonb_column` is
+   * additive (Pitfall 3), so stale keys from a prior run do not fail the
+   * assertion.
+   *
+   * Mirrors the read shape of the inherited `updateAppSettings` method
+   * (`packages/dev-seed/src/supabaseAdminClient.ts:488-495`) but selects
+   * `settings` instead of `id`.
+   *
+   * @returns the persisted settings object, or `null` when no row exists.
+   * @throws Error if the underlying fetch fails.
+   */
+  async getAppSettings(): Promise<Record<string, unknown> | null> {
+    const { data: row, error } = await this.client
+      .from('app_settings')
+      .select('settings')
+      .eq('project_id', this.projectId)
+      .single();
+    if (error) {
+      // PGRST116 = no rows; treat as null (the bootstrap row is missing,
+      // which a setup-file caller will surface as a clearer error).
+      const code = (error as { code?: string }).code;
+      if (code === 'PGRST116') return null;
+      throw new Error(`getAppSettings: fetch failed: ${error.message}`);
+    }
+    return ((row?.settings ?? null) as Record<string, unknown> | null);
   }
 
   // ---------------------------------------------------------------------------

@@ -19,10 +19,14 @@ const PREFIX = 'test-';
  * parent region). The `startFromConstituencyGroup` setting itself is NOT set
  * here because it requires the database ID of the constituency group (not
  * externalId). The spec file queries for the group first, then sets the
- * setting at runtime.
+ * setting at runtime via `client.updateAppSettings(...)` (a legitimate
+ * scenario mutation per D-09 / D-11).
  *
- * app_settings note: see data.setup.ts — legacy updateAppSettings call
- * preserved until the e2e template grows an app_settings.fixed[] block.
+ * app_settings is now declared by this variant's filesystem template
+ * (`templates/variant-startfromcg.ts` `app_settings.fixed[]`). Phase 63
+ * (E2E-02) deleted the legacy `updateAppSettings(...)` call from this file;
+ * a post-seed subset-match assertion (D-10) verifies the persisted row
+ * matches the variant template's declared shape.
  */
 setup('import startfromcg dataset', async () => {
   const template = variantStartFromCgTemplate;
@@ -38,22 +42,20 @@ setup('import startfromcg dataset', async () => {
   const writer = new Writer();
   await writer.write(rows, prefix);
 
-  // App settings (legacy preservation; see header comment).
-  // The startFromConstituencyGroup setting will be applied in the spec file
-  // after querying for the constituency group's database ID.
-  await client.updateAppSettings({
-    questions: {
-      categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
-      showResultsLink: true
-    },
-    entities: {
-      hideIfMissingAnswers: { candidate: false },
-      showAllNominations: true
-    },
-    notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false }
-  });
+  // (D-10) Post-seed assertion — verify variant app_settings persisted.
+  // Subset match per RESOLVED Q2: `merge_jsonb_column` is additive
+  // (Pitfall 3); we verify our keys made it, not exclusive equality.
+  {
+    const expected = template.app_settings?.fixed?.[0]?.settings;
+    if (!expected) {
+      throw new Error(
+        'post-seed assertion: variantStartFromCgTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
+      );
+    }
+    const persisted = await client.getAppSettings();
+    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
+    expect(persisted).toMatchObject(expected as Record<string, unknown>);
+  }
 
   // Sanity check — variant must have seeded something.
   expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);

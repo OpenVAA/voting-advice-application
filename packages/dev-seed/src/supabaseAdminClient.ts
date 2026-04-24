@@ -481,6 +481,26 @@ export class SupabaseAdminClient {
    * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only
    * need to send the settings they want to change.
    *
+   * D-11 (Phase 63 E2E-02): baseline test-setup usage of this method has
+   * migrated to the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]`
+   * block (and to the per-variant filesystem templates at
+   * `tests/tests/setup/templates/variant-*.ts`). The 4 setup-file
+   * `updateAppSettings({ ... })` blocks in `tests/tests/setup/*.setup.ts`
+   * were deleted in Plan 63-02 Task 3.
+   *
+   * The method is RETAINED for two legitimate use cases:
+   *   1. Per-test scenario mutations from `*.spec.ts` files (e.g.
+   *      `candidate-settings.spec.ts`, `voter-popups.spec.ts`,
+   *      `results-sections.spec.ts`) that need to flip specific keys to
+   *      test behavior-under-different-settings.
+   *   2. The dev-seed Writer Pass-5 itself
+   *      (`packages/dev-seed/src/writer.ts:174-181`), which iterates
+   *      `app_settings.fixed[]` rows from any template and calls this method
+   *      per row.
+   *
+   * Do NOT call this method from a `*.setup.ts` file for baseline settings —
+   * extend the appropriate template instead (D-04, D-09, D-10).
+   *
    * @param partialSettings - Partial settings object to deep-merge
    * @throws Error if the app_settings row is not found or the merge fails
    */

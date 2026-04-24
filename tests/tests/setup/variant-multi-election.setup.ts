@@ -19,8 +19,12 @@ const PREFIX = 'test-';
  * are re-nominated onto Election-2, plus 3 net-new e2-cand-{1,2,3} candidates
  * are added on test-constituency-e2.
  *
- * app_settings note: see data.setup.ts — legacy updateAppSettings call
- * preserved until the e2e template grows an app_settings.fixed[] block.
+ * app_settings is now declared by this variant's filesystem template
+ * (`templates/variant-multi-election.ts` `app_settings.fixed[]`) — including
+ * the popup-suppression overlay (`results.showFeedbackPopup: 0`,
+ * `results.showSurveyPopup: 0`). Phase 63 (E2E-02) deleted the legacy
+ * `updateAppSettings(...)` call from this file; a post-seed subset-match
+ * assertion (D-10) verifies the persisted row matches the merged shape.
  */
 setup('import multi-election dataset', async () => {
   const template = variantMultiElectionTemplate;
@@ -36,27 +40,20 @@ setup('import multi-election dataset', async () => {
   const writer = new Writer();
   await writer.write(rows, prefix);
 
-  // App settings (legacy preservation). multi-election-specific extras:
-  // results.showFeedbackPopup + showSurveyPopup forced to 0 so multi-election
-  // specs don't trip on popup dialogs. Does NOT set disallowSelection -- that
-  // is tested as a toggle in the spec.
-  await client.updateAppSettings({
-    questions: {
-      categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
-      showResultsLink: true
-    },
-    entities: {
-      hideIfMissingAnswers: { candidate: false },
-      showAllNominations: true
-    },
-    notifications: { voterApp: { show: false } },
-    analytics: { trackEvents: false },
-    results: {
-      showFeedbackPopup: 0,
-      showSurveyPopup: 0
+  // (D-10) Post-seed assertion — verify variant app_settings persisted.
+  // Subset match per RESOLVED Q2: `merge_jsonb_column` is additive
+  // (Pitfall 3); we verify our keys made it, not exclusive equality.
+  {
+    const expected = template.app_settings?.fixed?.[0]?.settings;
+    if (!expected) {
+      throw new Error(
+        'post-seed assertion: variantMultiElectionTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
+      );
     }
-  });
+    const persisted = await client.getAppSettings();
+    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
+    expect(persisted).toMatchObject(expected as Record<string, unknown>);
+  }
 
   // Sanity check — variant must have seeded something.
   expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);
