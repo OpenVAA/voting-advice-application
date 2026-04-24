@@ -200,12 +200,9 @@ export function initCandidateContext(): CandidateContext {
     const nextOpinionCats = nextQuestionCategories.filter(
       (qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion
     );
-    const nextInfoQuestions = nextInfoCats.flatMap((c) => {
-      const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
-      if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
-        error(500, `Some opinion questions in category ${c.id} is not matchable.`);
-      return questions;
-    });
+    const nextInfoQuestions = nextInfoCats.flatMap((c) =>
+      c.getApplicableQuestions({ elections, constituencies, entityType })
+    );
     const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
       const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
       if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
