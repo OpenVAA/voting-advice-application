@@ -23,17 +23,19 @@ A reliable, well-tested VAA framework that developers can confidently extend, cu
 
 Known infrastructure issue: local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue, fix with `supabase stop && supabase start`.
 
-## Next Milestone Goals
+## Current Milestone: v2.6 Svelte 5 Migration Cleanup
 
-No milestone selected yet. Top candidates per §Milestones and STATE.md Deferred Items:
+**Goal:** Close out the Svelte 5 migration debt — fix hydration reactivity bugs, migrate the remaining legacy layouts to runes, resolve voter-app rendering gaps surfaced by v2.5 UAT, and drive the E2E carry-forward pool toward green.
 
-- **Svelte 5 Migration Cleanup** — retire 10 data-race + 25 cascade E2E failures carried from v2.4/v2.5; resolve 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` (internal.ts barrel pattern); clear remaining runes-mode TODOs
-- **Admin App Migration** — move admin functions to the frontend Admin App (started v2.0 Strapi removal)
-- **Parties in Candidate App** — generalize candidate-app preregistration so party organizations can onboard
-- **Security Scanning** — automated security, secrets scanning
-- **Settings & Configuration Reorg** — rationalize StaticSettings / DynamicSettings / env / app_settings split
+**Target features:**
 
-Run `/gsd-new-milestone` to pick one and begin.
+- Runes-mode migration for root layout (`+layout.svelte`) + candidate protected layout; drop `PopupRenderer` workaround if viable
+- Fix Svelte 5 hydration bug where `$state` writes in `$effect` + `.then()` don't trigger re-renders (unblocks 2 registration tests + 35 cascade)
+- Merge `EntityListControls` with `EntityList`; replace `$effect` + `filterGroup.onChange` loop with `$derived`; re-enable results-page filters; collapse `results/+page.svelte` into `[entityType]/[entityId]`
+- Voter-app question/results surfaces: boolean question renderer, candidate-result detail handling for boolean questions, category-selection default + reactive question-count derivation
+- E2E carry-forward: retire 10 data-race + 38 cascade failures; extend e2e template with `app_settings` block to remove the ~60-line legacy `updateAppSettings` workaround from Plan 59-04
+
+**Out of milestone scope:** 165 pre-existing intra-package circular deps in `@openvaa/data`/`matching`/`filters` — deferred to a later structural refactor.
 
 ## Requirements
 
@@ -105,7 +107,7 @@ Run `/gsd-new-milestone` to pick one and begin.
 
 ### Active
 
-_No active requirements until next milestone is picked. Run `/gsd-new-milestone` to begin._
+_v2.6 requirements are defined inline in `.planning/REQUIREMENTS.md` and traced via `.planning/ROADMAP.md`._
 
 ### Future
 - [ ] Claude Skills: architect, components, LLM (deferred to post-Svelte 5 stabilization)
@@ -174,7 +176,7 @@ Each major initiative is a separate milestone, executed in order:
 12. **Claude Skills (remaining)** — Architect, components, LLM skills
 13. **Admin App Migration** — Move admin functions from Strapi plugin to frontend Admin App
 14. **Security Scanning** — Automated security, secrets scanning, and testing
-15. **Svelte 5 Migration Cleanup** — Resolve deferred data-loading race condition, clear remaining runes-mode TODOs, retire toStore/fromStore bridges, re-enable the 19 skipped E2E tests
+15. **Svelte 5 Migration Cleanup** — In progress as v2.6 (2026-04-24). Scope: runes migration for root + candidate-protected layouts, `$effect` + `.then()` hydration bug fix, `EntityListControls` loop resolution, voter-app question/results surfaces (boolean renderer, category-selection reactivity), and E2E carry-forward greening
 16. **Settings & Configuration Reorg** — Rationalize the split between StaticSettings, DynamicSettings, env vars, and the `app_settings` / `app_customization` tables; unify the customization paradigm across voter, candidate, and admin apps
 17. **Parties in Candidate App** — Generalize the candidate-app preregistration and profile flows so party organizations (not just individual candidates) can onboard, manage members, and maintain their public-facing data
 
@@ -276,4 +278,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-04-24 after v2.5 Dev Data Seeding Toolkit milestone completion (Phases 56-59)_
+_Last updated: 2026-04-24 — milestone v2.6 Svelte 5 Migration Cleanup started_

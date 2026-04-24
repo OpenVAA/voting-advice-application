@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.5
-milestone_name: milestone
-status: verifying
-stopped_at: Phase 59 COMPLETE — Plan 59-07 VERIFICATION.md + deps-check.txt committed; milestone v2.5 closeable
-last_updated: "2026-04-24T07:40:23.883Z"
+milestone: v2.6
+milestone_name: Svelte 5 Migration Cleanup
+status: defining_requirements
+stopped_at: Milestone v2.6 started — defining requirements
+last_updated: "2026-04-24T08:00:00.000Z"
 last_activity: 2026-04-24
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 34
-  completed_plans: 34
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 59 (e2e-fixture-migration) — COMPLETE (all 7 plans shipped; E2E-01..04 satisfied; PARITY GATE: PASS carried from Plan 05; D-24 split documented with zero-cycles evidence)
-Plan: 7/7 complete (59-07 VERIFICATION + deps-check — E2E-04 satisfied via documentation, no code moves per D-59-11)
-Status: Phase 59 CLOSED. Plan 07 authored 59-VERIFICATION.md (status: passed, score 4/4, parity_gate: PASS) + deps-check.txt (7.4 KB, 3 sections — yarn build 14/14 FULL TURBO, madge --circular scoped to D-24 boundary shows 2 pre-existing intra-dev-seed cycles and 0 at D-24 surface, tsconfig project-reference inventory). Commits `f2a6d72ff` (Task 1 deps-check) + `12eacf351` (Task 2 VERIFICATION.md) + forthcoming Task 3 bundle (SUMMARY + ROADMAP + STATE + REQUIREMENTS). Milestone v2.5 (Dev Data Seeding Toolkit — Phases 56, 57, 58, 59) closeable: 56 at 8/10 per ROADMAP verdict "Complete", 57/58/59 at 100%.
-Last activity: 2026-04-24
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v2.6 Svelte 5 Migration Cleanup. Scope: runes migration for root + candidate-protected layouts, `$effect` + `.then()` hydration bug fix, `EntityListControls` infinite-loop resolution, voter-app question/results surfaces (boolean renderer, candidate-result boolean handling, category-selection reactivity), E2E carry-forward greening (10 data-race + 38 cascade), and e2e template `app_settings` block extension.
+Last activity: 2026-04-24 — Milestone v2.6 started, requirements in progress
 
 ## Performance Metrics
 
