@@ -96,12 +96,20 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
+    // Phase 62 Plan 62-03: ResultEntity now resolves to the 4-segment shape
+    // `[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]`. The singular is
+    // the entity's own `type` (candidate | organization); the plural is the
+    // parent list — defaulting to the same-type plural preserves the
+    // list-plus-matching-drawer shape. The filterContext auto-scopes per
+    // (electionId, entityTypePlural) so a candidate drawer under a
+    // candidates list continues to behave as before.
     const effectiveAction =
       action ??
       $getRoute({
         route: 'ResultEntity',
-        entityType: type,
-        entityId: id,
+        entityTypePlural: type === 'candidate' ? 'candidates' : 'organizations',
+        entityTypeSingular: type,
+        id,
         nominationId: unwrapped.nomination?.id
       });
 

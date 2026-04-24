@@ -6,14 +6,30 @@ Renders the matching results list and, when on an entity detail child route, sho
 
 Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
 
-## TODO
+## Architecture (Phase 62 Plan 62-03 refactor)
 
-- Restore EntityListControls (search + filters) — currently disabled due to infinite $effect loop when used in layout context
+- URL is the single source of truth (D-09, D-13). Tabs, drawer visibility, and
+  active entity type are pure `$derived` over `page.params.entityTypePlural` /
+  `entityTypeSingular` / `id` and the `electionId` persistent search param.
+  No local `$state` twins for URL-derivable state; no `$effect`-based sync.
+- `<EntityListWithControls>` replaces the legacy `<EntityList>` call —
+  filters are re-enabled end-to-end through the shared `filterContext`
+  (D-05), which auto-scopes per (electionId, entityTypePlural) per D-14.
+- Drawer-first paint (D-10): the `{#if drawerVisible} <EntityDetailsDrawer/>`
+  block is rendered BEFORE the list container in DOM source order; the list
+  container carries `content-visibility: auto` so the browser defers its
+  layout/paint until it scrolls into view.
+
+Sibling tracking concerns (Pitfall 6) preserved verbatim:
+- `startFeedbackPopupCountdown` via `$appSettings.results.showFeedbackPopup`
+- `startSurveyPopupCountdown` via `$appSettings.survey.showIn`
+- `onMount` `results_ranked`/`results_browse` page-entry event
+- `$effect` drawer-viewed tracking event
 -->
 
 <script lang="ts">
   import { isMatch } from '@openvaa/matching';
-  import { onMount, untrack } from 'svelte';
+  import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
@@ -24,16 +40,15 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   import { Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityDetailsDrawer } from '$lib/dynamic-components/entityDetails';
-  import { EntityList } from '$lib/dynamic-components/entityList';
+  import { EntityListWithControls } from '$lib/dynamic-components/entityList';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
   import { logDebugError } from '$lib/utils/logger';
-  import { ROUTE } from '$lib/utils/route';
+  import { parseParams } from '$lib/utils/route';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Snippet } from 'svelte';
-  import type { Id } from '@openvaa/core';
   import type { Election, EntityType } from '@openvaa/data';
   import type { Tab } from '$lib/components/tabs';
 
@@ -61,7 +76,111 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
   } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Start countdowns and track events
+  // URL-derived state (D-09, D-13)
+  ////////////////////////////////////////////////////////////////////
+  //
+  // electionId lives in the persistent search param (PERSISTENT_SEARCH_PARAMS
+  // in `$lib/utils/route/params.ts`), not in the route path. `parseParams`
+  // merges route + search params transparently, matching the paramStore +
+  // filterContext analogs.
+  //
+  // entityTypePlural + entityTypeSingular + id are route params introduced
+  // by Plan 62-02 via matcher-gated optional segments.
+  //
+  // Single-election fallback: when there is exactly one election available,
+  // auto-select it — preserves the legacy layout behaviour (line 101 of the
+  // pre-refactor file) without mutating the URL (buildRoute / $getRoute
+  // handlers continue to append electionId to the search params on the
+  // first explicit navigation).
+
+  const ENTITY_PLURALS = ['candidates', 'organizations'] as const;
+  type EntityPlural = (typeof ENTITY_PLURALS)[number];
+
+  const _parsedParams = $derived(parseParams(page));
+  const _urlElectionIdRaw = $derived(_parsedParams.electionId);
+  const _urlElectionId = $derived(
+    Array.isArray(_urlElectionIdRaw) ? _urlElectionIdRaw[0] : _urlElectionIdRaw
+  );
+
+  const activeElectionId = $derived<string | undefined>(
+    _urlElectionId ?? (elections.length === 1 ? elections[0].id : undefined)
+  );
+
+  const activeElection = $derived<Election | undefined>(
+    activeElectionId ? elections.find((e) => e.id === activeElectionId) : undefined
+  );
+
+  const _urlPluralRaw = $derived(page.params.entityTypePlural);
+  const _urlPlural = $derived<EntityPlural | undefined>(
+    _urlPluralRaw === 'candidates' || _urlPluralRaw === 'organizations' ? _urlPluralRaw : undefined
+  );
+
+  // The map of plurals available for the active election (possibly just candidates,
+  // possibly just organizations, possibly both). Computed from matches so we always
+  // render consistent tab labels without going through a separate $state twin.
+  type EntityTab = { type: EntityType; label: string };
+  const entityTabs = $derived<Array<EntityTab>>(
+    activeElectionId && matches[activeElectionId]
+      ? (Object.keys(matches[activeElectionId]) as Array<EntityType>).map((type) => ({
+          type,
+          label: ucFirst(t(`common.${type}.plural`))
+        }))
+      : []
+  );
+
+  // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
+  // RESOLVED). When the URL omits entityTypePlural we fall back to the first
+  // available tab for the active election.
+  const activeEntityType = $derived.by<EntityType | undefined>(() => {
+    if (_urlPlural === 'candidates') return 'candidate';
+    if (_urlPlural === 'organizations') return 'organization';
+    return entityTabs[0]?.type;
+  });
+
+  const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
+    activeElectionId && activeEntityType ? matches[activeElectionId]?.[activeEntityType] : undefined
+  );
+
+  // Tabs.activeIndex — non-bound, passed as a $derived value (Pitfall 3).
+  const activeTabIndex = $derived.by(() => {
+    if (!activeEntityType) return 0;
+    const i = entityTabs.findIndex((tab) => tab.type === activeEntityType);
+    return i === -1 ? 0 : i;
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Drawer visibility (D-09) — drawer renders iff both singular+id present
+  ////////////////////////////////////////////////////////////////////
+
+  const drawerVisible = $derived<boolean>(
+    !!(page.params.entityTypeSingular && page.params.id)
+  );
+
+  const drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
+    if (!drawerVisible) return undefined;
+    const entityType = page.params.entityTypeSingular as EntityType;
+    const entityId = page.params.id!;
+    const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
+    try {
+      const { entity } = getEntityAndTitle({
+        dataRoot: $dataRoot,
+        matches,
+        entityType,
+        entityId,
+        nominationId
+      });
+      return entity;
+    } catch (e) {
+      // Silent degradation — UI-SPEC Empty State Inventory "Deeplink to entity not found"
+      logDebugError(
+        `Could not get entity details for ${entityType} ${entityId}. Error: ${e instanceof Error ? e.message : '-'}`
+      );
+      return undefined;
+    }
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Start countdowns and track events (Pitfall 6 — PRESERVE VERBATIM)
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
@@ -85,97 +204,13 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
       startSurveyPopupCountdown($appSettings.results.showSurveyPopup);
   });
 
-  ////////////////////////////////////////////////////////////////////
-  // Sections
-  ////////////////////////////////////////////////////////////////////
-
-  type EntityTab = { type: EntityType; label: string };
-
-  let activeElectionId = $state<Id | undefined>(undefined);
-  let activeElection = $state<Election>();
-  let activeEntityType = $state<EntityType | undefined>(undefined);
-  let activeMatches = $state<Array<MaybeWrappedEntityVariant> | undefined>(undefined);
-  let entityTabs = $state<Array<EntityTab>>([]);
-  let initialEntityTabIndex = $state(0);
-
-  if (elections.length === 1) activeElectionId = elections[0].id;
-
+  // Drawer-view tracking — fires on drawer open transitions (covers both
+  // matched and unmatched entity pools per the legacy `results_ranked_*` /
+  // `results_browse_*` event pair).
   $effect(() => {
-    if (activeElectionId) {
-      entityTabs = Object.keys(matches[activeElectionId]).map((type) => ({
-        type: type as EntityType,
-        label: ucFirst(t(`common.${type as EntityType}.plural`))
-      }));
-      const currentType = untrack(() => activeEntityType);
-      if (!currentType || !(currentType in matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
-      activeElection = elections.find((e) => e.id === activeElectionId)!;
-    }
-  });
-
-  $effect(() => {
-    if (activeElectionId) {
-      activeMatches = activeEntityType ? matches[activeElectionId][activeEntityType] : undefined;
-      setInitialEntityTab();
-    }
-  });
-
-  function setInitialEntityTab(): void {
-    const index = entityTabs.findIndex((tab) => tab.type === activeEntityType);
-    initialEntityTabIndex = index === -1 ? 0 : index;
-  }
-
-  function getName(e: unknown): string {
-    return (e as Election).name;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // Handle selections
-  ////////////////////////////////////////////////////////////////////
-
-  function handleElectionChange(details: { option: unknown }): void {
-    const { id } = details.option as Election;
-    activeElectionId = id;
-    startEvent('results_changeElection', { election: id });
-  }
-
-  function handleEntityTabChange({ tab }: { tab: Tab }): void {
-    activeEntityType = (tab as EntityTab).type;
-    startEvent('results_changeTab', { section: activeEntityType });
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // Entity detail drawer (declarative, route-based)
-  ////////////////////////////////////////////////////////////////////
-
-  let isEntityDetail = $derived(page.route?.id?.endsWith(ROUTE.ResultEntity) ?? false);
-
-  let drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
-    if (!isEntityDetail) return undefined;
-    const entityType = page.params.entityType as EntityType;
-    const entityId = page.params.entityId;
-    const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
-    if (!entityType || !entityId) return undefined;
-    try {
-      const { entity } = getEntityAndTitle({
-        dataRoot: $dataRoot,
-        matches,
-        entityType,
-        entityId,
-        nominationId
-      });
-      return entity;
-    } catch (e) {
-      logDebugError(
-        `Could not get entity details for ${entityType} ${entityId}. Error: ${e instanceof Error ? e.message : '-'}`
-      );
-      return undefined;
-    }
-  });
-
-  $effect(() => {
-    if (!isEntityDetail || !drawerEntity) return;
-    const entityType = page.params.entityType as EntityType;
-    const entityId = page.params.entityId;
+    if (!drawerVisible || !drawerEntity) return;
+    const entityType = page.params.entityTypeSingular as EntityType;
+    const entityId = page.params.id!;
     if (isMatch(drawerEntity)) {
       startEvent(`results_ranked_${entityType}`, { id: entityId, score: drawerEntity.score });
     } else {
@@ -183,14 +218,73 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
     }
   });
 
+  ////////////////////////////////////////////////////////////////////
+  // Handlers (D-09: all selector changes push to URL)
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Build a path-only /results URL from a plural and append electionId as a search param.
+   * electionId is a PERSISTENT_SEARCH_PARAMS member in `$lib/utils/route/params.ts`;
+   * writing it as a route segment would contradict that contract and break the
+   * existing `$getRoute('Results', ...)` consumers across the app.
+   */
+  function buildListRoute(plural: EntityPlural | undefined, electionId: string | undefined): string {
+    const base = plural ? `/results/${plural}` : '/results';
+    const search = new URLSearchParams(page.url.searchParams);
+    if (electionId) search.set('electionId', electionId);
+    const qs = search.toString();
+    return qs ? `${base}?${qs}` : base;
+  }
+
+  function handleElectionChange(details: { option: unknown }): void {
+    const { id } = details.option as Election;
+    const plural = _urlPlural ?? _pluralForActiveType();
+    goto(buildListRoute(plural, id));
+    startEvent('results_changeElection', { election: id });
+  }
+
+  function handleEntityTabChange({ index, tab }: { index?: number; tab?: Tab }): void {
+    const typed = tab as EntityTab | undefined;
+    if (typed?.type === 'candidate' || index === 0) {
+      goto(buildListRoute('candidates', activeElectionId));
+      startEvent('results_changeTab', { section: 'candidate' });
+      return;
+    }
+    if (typed?.type === 'organization' || index === 1) {
+      goto(buildListRoute('organizations', activeElectionId));
+      startEvent('results_changeTab', { section: 'organization' });
+      return;
+    }
+  }
+
   function handleDrawerClose(): void {
-    goto($getRoute('Results'));
+    goto(buildListRoute(_urlPlural ?? _pluralForActiveType(), activeElectionId));
+  }
+
+  function _pluralForActiveType(): EntityPlural | undefined {
+    if (activeEntityType === 'candidate') return 'candidates';
+    if (activeEntityType === 'organization') return 'organizations';
+    return undefined;
+  }
+
+  function getName(e: unknown): string {
+    return (e as Election).name;
   }
 </script>
 
 {#if Object.values(nominationsAvailable).some(Boolean)}
-  {#if isEntityDetail && drawerEntity}
-    <EntityDetailsDrawer entity={drawerEntity} onClose={handleDrawerClose} />
+  <!--
+    DRAWER-FIRST SOURCE ORDER (D-10, Open Question 4 RESOLVED — cheapest-first).
+    Rendered before MainContent so that on a cold deeplink the drawer paints
+    before the list container below it (the list carries
+    `content-visibility: auto` so the browser defers its layout/paint until
+    in view).
+  -->
+  {#if drawerVisible && drawerEntity}
+    <EntityDetailsDrawer
+      entity={drawerEntity}
+      onClose={handleDrawerClose}
+      data-testid="voter-results-drawer" />
   {/if}
 
   <MainContent title={resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
@@ -237,13 +331,22 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
     {/if}
 
     {#snippet fullWidth()}
-      <div class="bg-base-300 flex min-h-[120vh] flex-col items-center" data-testid="voter-results-container">
+      <!--
+        LIST CONTAINER — `content-visibility: auto` defers layout/paint until
+        scrolled into view (D-10, Open Question 4 RESOLVED). Renders AFTER the
+        drawer block above in source order so the drawer wins the paint race
+        on cold deeplinks.
+      -->
+      <div
+        class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"
+        style="content-visibility: auto;"
+        data-testid="voter-results-list-container">
         {#if activeElectionId}
           <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
-            {#if Object.keys(matches[activeElectionId]).length > 1}
+            {#if entityTabs.length > 1}
               <Tabs
                 tabs={entityTabs}
-                activeIndex={initialEntityTabIndex}
+                activeIndex={activeTabIndex}
                 onChange={handleEntityTabChange}
                 data-testid="voter-results-entity-tabs" />
             {/if}
@@ -256,7 +359,7 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
                     : activeEntityType === 'organization'
                       ? 'voter-results-party-section'
                       : undefined}>
-                  {#key activeMatches}
+                  {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
                       {#if constituenciesSelectable}
@@ -266,10 +369,9 @@ Entity cards are `<a>` links — right-click opens in new tab, normal click trig
                         </span>
                       {/if}
                     </h3>
-                    <!-- TODO: Restore EntityListControls (search + filters) — disabled due to infinite $effect loop in layout context -->
-                    <EntityList
-                      cards={activeMatches.map((e) => ({ entity: e }))}
-                      class="mb-lg"
+                    <EntityListWithControls
+                      entities={activeMatches}
+                      class="mb-lg mx-10"
                       data-testid="voter-results-list" />
                   {/key}
                 </div>

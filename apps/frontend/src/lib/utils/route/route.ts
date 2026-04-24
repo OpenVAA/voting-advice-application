@@ -23,9 +23,14 @@ export const ROUTE = {
   Question: `${VOTER_LOCATED}/questions/[questionId]`,
   QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
   Questions: `${VOTER_LOCATED}/questions`,
-  ResultCandidate: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
-  ResultEntity: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
-  ResultParty: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
+  // Results routes — 4-segment optional shape introduced in Phase 62 Plan 62-02
+  // (see `src/routes/(voters)/(located)/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`).
+  // Route params: entityTypePlural (candidates | organizations), entityTypeSingular
+  // (candidate | organization), id (entity id). electionId + constituencyId travel
+  // as persistent search params (see `params.ts`).
+  ResultCandidate: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
+  ResultEntity: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
+  ResultParty: `${VOTER_LOCATED}/results/[[entityTypePlural=entityTypePlural]]/[[entityTypeSingular=entityTypeSingular]]/[[id]]`,
   Results: `${VOTER_LOCATED}/results`,
   Statistics: `${VOTER_LOCATED}/results/statistics`,
 
@@ -75,6 +80,6 @@ export const FIRST_QUESTION_ID = '__first__';
  */
 export const DEFAULT_PARAMS: Partial<Record<Route, Record<string, string>>> = {
   Question: { questionId: FIRST_QUESTION_ID },
-  ResultCandidate: { entityType: 'candidate' },
-  ResultParty: { entityType: 'organization' }
+  ResultCandidate: { entityTypePlural: 'candidates', entityTypeSingular: 'candidate' },
+  ResultParty: { entityTypePlural: 'organizations', entityTypeSingular: 'organization' }
 };
