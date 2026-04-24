@@ -157,9 +157,41 @@ No spec-side change needed. The existing `waitForLoad({ timeout: 15000 })` is ad
 
 ## Outcome
 
-_(To be filled during Task 2)_
+**Task 2 fix applied:** compound — candidateContext.svelte.ts push-based `$state + $effect` refactor AND `questions/+layout.svelte` destructure removal (read via `ctx.X` pattern). Commit `18e87f6f1`.
 
-Post-fix spec run results will go here after Task 2 applies the canonical fix.
+**Refined diagnosis during Task 2:** The root mechanism is subtler than the initial hypothesis framing. While the `$derived` chain in candidateContext.svelte.ts did fail to propagate invalidation through the helper-store function-accessor boundary (helper `questionCategoryStore._value` $derived.by captured at candidate-init scope did NOT re-run when `selectedElections` $state updated — verified by in-place DIAG probes), **the dominant consumer-side issue was destructuring**:
+
+```ts
+// questions/(protected)/+layout.svelte - broken pattern:
+const { opinionQuestions } = getCandidateContext();  // calls getter ONCE, captures initial []
+$effect(() => {
+  console.log(opinionQuestions.length);  // reads captured [], never re-runs
+});
+```
+
+Destructuring invokes the getter once and binds the returned value (the initial empty `$state`) to a plain local variable. Subsequent reads in `$effect`/template are reads of a plain reference, not reactive source invocations. Since all downstream derivations + the 15s test window saw only that initial empty reference, the `{#if opinionQuestions.length > 0}` branch stayed false for the whole timeout.
+
+The **fix applied in Task 2 uses both**:
+1. `$state + $effect` mirror in candidateContext so that the context's backing storage is itself a `$state` (Svelte's `$state` reads through context getters propagate reactively in all scopes).
+2. `ctx.opinionQuestions.length` (non-destructured) in `questions/(protected)/+layout.svelte` so the getter is invoked within each reactive scope.
+
+Both are required. With (1) alone but destructured access, consumers still see a stale snapshot. With (2) alone but keep the pull-chain `$derived`, the chain still doesn't propagate cross-helper-module.
+
+**Post-fix spec counts:**
+
+- `candidate-questions.spec.ts` — **all 8/8 tests PASS** (was 6/8 failing + 2 that didn't run beyond the setup cascade, total 0/8 passing in-session prior to the fix). Run: 13 passed in 19.0s (8 specs + 3 setup + 2 teardown).
+
+- Cascade spec `candidate-profile.spec.ts` (candidate-app-mutation project) — **15 passed, 1 failed on its own merit, 3 did not run** (the 3 that did not run are downstream of the 1 on-its-own-merit failure in a registration email-link flow, not cascade-skip on the candidate-app gate). This is the contract Plan 61-03 promised per `success_criteria` item 2 — cascade specs RUN to completion rather than cascade-skipping behind the gate. Pre-fix the same spec would have been entirely skipped.
+
+- Voter-app `voter-questions.spec.ts` — **2 pre-existing failures** (category default + counter-reactivity). Verified by stashing this plan's changes and re-running: same 2 tests failed on main, matching Plan 61-02 SUMMARY's acknowledgement that E2E was not run in that plan. Out-of-scope for 61-03 (voterContext not touched).
+
+- No new `effect_update_depth_exceeded` warnings; tsc on the modified files produces no new errors (only pre-existing SupabaseDataWriter / implicit-any issues in server routes, confirmed via pre-fix stash comparison).
+
+**Deferred items (from outcome):**
+
+- The Vite pre-bundle cache bug (surface #1) was fixed transiently by clearing `apps/frontend/node_modules/.vite`. Adding `optimizeDeps.exclude` for workspace packages in `vite.config.ts` is the idiomatic permanent fix; deferred to a hygiene follow-up (would affect dev-server startup behavior globally and deserves its own plan).
+- `voterContext.svelte.ts` uses the same helper-store pull pattern. The 2 pre-existing voter-questions failures suggest it may have the same class of issue. Deferred to Phase 63 E2E greening — not part of 61-03 contract.
+- The helper stores (`questionCategoryStore`, `questionStore`, `questionBlockStore`) are still used by the voter context. Retained as-is to keep the diff scope minimal; the inlining in candidateContext is a targeted fix, not a systemic refactor.
 
 ## Deferred Items (Out of 61-03 Scope)
 
