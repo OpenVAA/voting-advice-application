@@ -59,9 +59,9 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   3. On the category-selection screen, the voter sees a sensible default selection (all opinion categories checked by default, or an explicit product decision documented at the component) and the "questions" counter updates reactively on every category toggle — no stuck-at-0 behaviour.
   4. On the candidate app question route, the `candidate-questions-list` and `candidate-questions-start` testIds become visible within Playwright's default timeout, the 6 direct `candidate-questions.spec.ts` tests pass, and their 18 dependent cascade tests (candidate-app-mutation / candidate-app-settings / candidate-app-password / re-auth-setup) run and pass. (Folded from Phase 60 handoff 2026-04-24.)
 **Plans**: 3 plans
-  - [ ] 61-01-PLAN.md — Boolean opinion input + auto-fix result-detail boolean match-breakdown via shared OpinionQuestionInput dispatch (QUESTION-01 + QUESTION-02)
-  - [ ] 61-02-PLAN.md — Category default + counter reactivity: migrate voterContext selectedQuestionCategoryIds to pure $state per D-11 (QUESTION-03)
-  - [ ] 61-03-PLAN.md — Candidate-questions testId visibility: diagnose-first then apply reactivity/readiness/timeout fix (QUESTION-04)
+  - [x] 61-01-PLAN.md — Boolean opinion input + auto-fix result-detail boolean match-breakdown via shared OpinionQuestionInput dispatch (QUESTION-01 + QUESTION-02)
+  - [x] 61-02-PLAN.md — Category default + counter reactivity: migrate voterContext selectedQuestionCategoryIds to pure $state per D-11 (QUESTION-03)
+  - [x] 61-03-PLAN.md — Candidate-questions testId visibility: diagnose-first then apply reactivity/readiness/timeout fix (QUESTION-04)
 **UI hint**: yes
 
 ### Phase 62: Results Page Consolidation
