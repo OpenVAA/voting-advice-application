@@ -1,7 +1,7 @@
 ---
 phase: 61
 slug: voter-app-question-flow
-status: draft
+status: approved
 shadcn_initialized: false
 preset: not applicable (SvelteKit + Tailwind + daisyUI)
 created: 2026-04-24
