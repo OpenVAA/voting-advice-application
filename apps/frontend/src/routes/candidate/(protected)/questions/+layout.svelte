@@ -23,8 +23,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, opinionQuestions, t, unansweredOpinionQuestions, unansweredRequiredInfoQuestions } =
-    getCandidateContext();
+  const ctx = getCandidateContext();
+  const { getRoute, t } = ctx;
   const { progress, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@
   ////////////////////////////////////////////////////////////////////
 
   $effect(() => {
-    if (unansweredRequiredInfoQuestions.length) {
+    if (ctx.unansweredRequiredInfoQuestions.length) {
       goto($getRoute('CandAppProfile'));
     }
   });
@@ -46,15 +46,15 @@
   });
 
   $effect(() => {
-    progress.max = opinionQuestions.length;
+    progress.max = ctx.opinionQuestions.length;
   });
 
   $effect(() => {
-    progress.current.set(opinionQuestions.length - unansweredOpinionQuestions.length);
+    progress.current.set(ctx.opinionQuestions.length - ctx.unansweredOpinionQuestions.length);
   });
 </script>
 
-{#if unansweredRequiredInfoQuestions.length === 0 && opinionQuestions.length > 0}
+{#if ctx.unansweredRequiredInfoQuestions.length === 0 && ctx.opinionQuestions.length > 0}
   {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>

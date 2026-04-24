@@ -1,5 +1,5 @@
 import { getCustomData } from '@openvaa/app-shared';
-import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
+import { ENTITY_TYPE, isEmptyValue, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { fromStore } from 'svelte/store';
@@ -13,11 +13,9 @@ import { candidateUserDataStore } from './candidateUserDataStore.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import { questionBlockStore } from '../utils/questionBlockStore.svelte';
-import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore.svelte';
-import { questionStore } from '../utils/questionStore.svelte';
 import { localStorageWritable, sessionStorageWritable } from '../utils/persistedState.svelte';
 import type { Id } from '@openvaa/core';
+import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
 
@@ -105,53 +103,134 @@ export function initCandidateContext(): CandidateContext {
     }>;
   });
 
-  const selectedElections = $derived.by(() => {
+  // QUESTION-04 (Phase 61 Plan 03, Hypothesis A reactivity fix):
+  // The pull-chain `$derived.by` pattern (via helper stores) did not propagate
+  // reactive invalidation correctly to cross-module consumers — confirmed by
+  // console trace (see 61-03-DIAGNOSIS.md): selectedElections/opinionQuestions
+  // derivations evaluated ONCE at component-init with pre-data values and never
+  // re-ran after the protected layout `$effect` populated dataRoot + userData.
+  // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope,
+  // but a DESTRUCTURED context-object property (`const { opinionQuestions } = ctx`)
+  // captures the getter's INITIAL return value as a plain local binding — the
+  // consumer's `$effect` reading `opinionQuestions.length` thereafter has no
+  // live reactive source. The `$derived` chain did recompute internally, but
+  // downstream reads via the destructured property saw only the pre-data snapshot.
+  //
+  // Fix: switch selectedElections/selectedConstituencies + downstream question
+  // chain to push-based `$state` mirrors updated by a single `$effect`. `$state`
+  // reads through context getters propagate correctly (verified in this plan).
+  // Consumers that previously destructured now read `ctx.X` directly; inline
+  // derivations replace the helper-store pull chain (helpers kept for voterContext).
+  let selectedElections = $state<Array<Election>>([]);
+  let selectedConstituencies = $state<Array<Constituency>>([]);
+
+  $effect(() => {
     const dr = reactiveDataRoot.current;
     const current = userData.current;
-    if (!current) return [];
-    return removeDuplicates(current.nominations.nominations.map((n) => dr.getElection(n.electionId)));
+    if (!current || !dr.elections?.length) {
+      selectedElections = [];
+      return;
+    }
+    selectedElections = removeDuplicates(
+      current.nominations.nominations.map((n) => dr.getElection(n.electionId))
+    );
   });
 
-  const selectedConstituencies = $derived.by(() => {
+  $effect(() => {
     const dr = reactiveDataRoot.current;
     const current = userData.current;
-    if (!current) return [];
-    return removeDuplicates(current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId)));
+    if (!current || !dr.constituencies?.length) {
+      selectedConstituencies = [];
+      return;
+    }
+    selectedConstituencies = removeDuplicates(
+      current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId))
+    );
   });
 
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
-   * TODO: Reverse the order of these stores, because `questionStore` filters out some questions. We should construct the categories only after filtering all questions.
+   * QUESTION-04 (Phase 61 Plan 03): inlined the pull-chain helper-store derivations
+   * into a single push-based `$effect` that writes `$state` mirrors. Behavior is
+   * equivalent to `questionCategoryStore`/`questionStore`/`questionBlockStore` but
+   * the consumer-facing reactivity works via context getters.
    */
-  const _questionCategories = questionCategoryStore({
-    dataRoot: () => reactiveDataRoot.current,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies,
-    entityType: ENTITY_TYPE.Candidate
+  let _questionCategories = $state<Array<QuestionCategory>>([]);
+  let _infoQuestionCategories = $state<Array<QuestionCategory>>([]);
+  let _opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
+  let _infoQuestions = $state<Array<AnyQuestionVariant>>([]);
+  let _opinionQuestions = $state<Array<AnyQuestionVariant>>([]);
+  type QuestionBlocksShape = {
+    blocks: Array<Array<AnyQuestionVariant>>;
+    readonly questions: Array<AnyQuestionVariant>;
+    getByCategory: (qc: { id: Id }) => { block: Array<AnyQuestionVariant>; index: number } | undefined;
+    getByQuestion: (q: { id: Id }) => { block: Array<AnyQuestionVariant>; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
+  };
+  let _questionBlocks = $state<QuestionBlocksShape>({
+    blocks: [],
+    get questions() { return []; },
+    getByCategory: () => undefined,
+    getByQuestion: () => undefined
   });
 
-  const _infoQuestionCategories = extractInfoCategories(() => _questionCategories.value);
+  $effect(() => {
+    const dr = reactiveDataRoot.current;
+    const elections = selectedElections;
+    const constituencies = selectedConstituencies;
+    const entityType = ENTITY_TYPE.Candidate;
+    const nextQuestionCategories =
+      dr.questionCategories?.filter(
+        (c) =>
+          c.appliesTo({ elections, constituencies, entityType }) &&
+          c.getApplicableQuestions({ elections, constituencies, entityType }).length > 0
+      ) ?? [];
+    const nextInfoCats = nextQuestionCategories.filter(
+      (qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion
+    );
+    const nextOpinionCats = nextQuestionCategories.filter(
+      (qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion
+    );
+    const nextInfoQuestions = nextInfoCats.flatMap((c) => {
+      const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
+      if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
+        error(500, `Some opinion questions in category ${c.id} is not matchable.`);
+      return questions;
+    });
+    const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
+      const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
+      if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
+        error(500, `Some opinion questions in category ${c.id} is not matchable.`);
+      return questions;
+    });
+    const nextBlocks = nextOpinionCats
+      .map((c) => c.getApplicableQuestions({ elections, constituencies }))
+      .filter((b) => b.length > 0);
 
-  const _opinionQuestionCategories = extractOpinionCategories(() => _questionCategories.value);
-
-  const _infoQuestions = questionStore({
-    categories: () => _infoQuestionCategories.value,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies,
-    appType: 'candidate'
-  });
-
-  const _opinionQuestions = questionStore({
-    categories: () => _opinionQuestionCategories.value,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies,
-    appType: 'candidate'
-  });
-
-  const _questionBlocks = questionBlockStore({
-    opinionQuestionCategories: () => _opinionQuestionCategories.value,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies
+    _questionCategories = nextQuestionCategories;
+    _infoQuestionCategories = nextInfoCats;
+    _opinionQuestionCategories = nextOpinionCats;
+    _infoQuestions = nextInfoQuestions;
+    _opinionQuestions = nextOpinionQuestions;
+    _questionBlocks = {
+      blocks: nextBlocks,
+      get questions() {
+        return nextBlocks.flat();
+      },
+      getByCategory: ({ id }: { id: Id }) => {
+        const block = nextBlocks.find((b) => b[0]?.category.id === id);
+        if (!block) return undefined;
+        return { block, index: nextBlocks.indexOf(block) };
+      },
+      getByQuestion: ({ id }: { id: Id }) => {
+        const indexOfBlock = nextBlocks.findIndex((b) => b.find((q) => q.id === id));
+        if (indexOfBlock === -1) return undefined;
+        const block = nextBlocks[indexOfBlock];
+        const index = nextBlocks.flat().findIndex((q) => q.id === id);
+        const indexInBlock = block.findIndex((q) => q.id === id);
+        if (index === -1 || indexInBlock === -1) return undefined;
+        return { block, index, indexInBlock, indexOfBlock };
+      }
+    };
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -259,7 +338,7 @@ export function initCandidateContext(): CandidateContext {
   ////////////////////////////////////////////////////////////////////
 
   const requiredInfoQuestions = $derived(
-    _infoQuestions.value.filter((q) => {
+    _infoQuestions.filter((q) => {
       const customData = getCustomData(q);
       return !customData.locked && customData.required;
     })
@@ -274,7 +353,7 @@ export function initCandidateContext(): CandidateContext {
   const unansweredOpinionQuestions = $derived.by(() => {
     const savedData = userData.savedCandidateData;
     if (!savedData) return [];
-    return _opinionQuestions.value.filter((q) => isEmptyValue(savedData.answers?.[q.id]?.value));
+    return _opinionQuestions.filter((q) => isEmptyValue(savedData.answers?.[q.id]?.value));
   });
 
   const profileComplete = $derived(
@@ -306,10 +385,10 @@ export function initCandidateContext(): CandidateContext {
       return electionsSelectable;
     },
     get infoQuestionCategories() {
-      return _infoQuestionCategories.value;
+      return _infoQuestionCategories;
     },
     get infoQuestions() {
-      return _infoQuestions.value;
+      return _infoQuestions;
     },
     get isPreregistered() {
       return isPreregisteredState.current;
@@ -325,16 +404,16 @@ export function initCandidateContext(): CandidateContext {
       newUserEmail = v;
     },
     get opinionQuestionCategories() {
-      return _opinionQuestionCategories.value;
+      return _opinionQuestionCategories;
     },
     get opinionQuestions() {
-      return _opinionQuestions.value;
+      return _opinionQuestions;
     },
     get profileComplete() {
       return profileComplete;
     },
     get questionBlocks() {
-      return _questionBlocks.value;
+      return _questionBlocks;
     },
     register,
     get requiredInfoQuestions() {
