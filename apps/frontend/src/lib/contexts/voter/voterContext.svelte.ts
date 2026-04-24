@@ -1,6 +1,6 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
-import { getContext, hasContext, setContext } from 'svelte';
+import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { fromStore } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
@@ -141,8 +141,32 @@ export function initVoterContext(): VoterContext {
     appType: 'voter'
   });
 
-  const _selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
-  const selectedQuestionCategoryIdsState = fromStore(_selectedQuestionCategoryIds);
+  // QUESTION-03 fix (Phase 61 D-09 + D-11): pure $state, no sessionStorage.
+  // `bind:group` on a getter/setter context accessor backed by
+  // `fromStore(sessionStorageWritable)` intermittently failed to propagate writes
+  // (known Svelte 5 binding pitfall — see RESEARCH §Pitfall 1). Migrated to pure
+  // $state; session-only per D-11; default-all-checked seeded here rather than
+  // in the page's onMount so the counter never renders the transient 0 state.
+  let _selectedQuestionCategoryIds = $state<Array<Id>>([]);
+  let hasSeededCategorySelection = $state(false);
+
+  // Seed default-all-checked once opinion categories are available.
+  // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved
+  // when `_opinionQuestionCategories.value` later reacts to election/constituency
+  // changes (would otherwise clobber the voter's deliberate selection).
+  $effect(() => {
+    if (hasSeededCategorySelection) return;
+    const cats = _opinionQuestionCategories.value;
+    if (cats.length === 0) return;
+    // Use untrack() for the write side to match the Phase 60 canonical pattern
+    // (see +layout.svelte:116-133). This is defense-in-depth: pure $state writes
+    // don't strictly require untrack here, but it prevents `effect_update_depth_exceeded`
+    // if a later edit introduces a read-then-write cycle inside this effect.
+    untrack(() => {
+      _selectedQuestionCategoryIds = cats.map((c) => c.id);
+      hasSeededCategorySelection = true;
+    });
+  });
 
   const _firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
   const firstQuestionIdState = fromStore(_firstQuestionId);
@@ -150,7 +174,7 @@ export function initVoterContext(): VoterContext {
   const _selectedQuestionBlocks = questionBlockStore({
     firstQuestionId: () => firstQuestionIdState.current,
     opinionQuestionCategories: () => _opinionQuestionCategories.value,
-    selectedQuestionCategoryIds: () => selectedQuestionCategoryIdsState.current,
+    selectedQuestionCategoryIds: () => _selectedQuestionCategoryIds,
     selectedElections: () => selectedElections,
     selectedConstituencies: () => selectedConstituencies
   });
@@ -239,7 +263,10 @@ export function initVoterContext(): VoterContext {
   function resetVoterData(): void {
     answers.reset();
     _firstQuestionId.set(null);
-    _selectedQuestionCategoryIds.set([]);
+    // QUESTION-03: pure $state assignment + reset the seed-guard so the next
+    // render re-seeds default-all-checked via the $effect above.
+    _selectedQuestionCategoryIds = [];
+    hasSeededCategorySelection = false;
   }
 
   ////////////////////////////////////////////////////////////
@@ -297,10 +324,10 @@ export function initVoterContext(): VoterContext {
       return _selectedQuestionBlocks.value;
     },
     get selectedQuestionCategoryIds() {
-      return selectedQuestionCategoryIdsState.current;
+      return _selectedQuestionCategoryIds;
     },
     set selectedQuestionCategoryIds(v) {
-      _selectedQuestionCategoryIds.set(v);
+      _selectedQuestionCategoryIds = v;
     }
   });
 }
