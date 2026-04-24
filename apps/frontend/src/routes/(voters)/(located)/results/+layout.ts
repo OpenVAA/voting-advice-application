@@ -23,5 +23,5 @@ import type { LayoutLoad } from './$types';
 export const load: LayoutLoad = async ({ params, url }) => {
   if (params.entityTypePlural) return {};
   if (params.entityTypeSingular || params.id) return {};
-  throw redirect(307, `/results/candidates${url.search}`);
+  throw redirect(308, `/results/candidates${url.search}`);
 };
