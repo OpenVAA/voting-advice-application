@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
 status: executing
-stopped_at: Phase 60 UI-SPEC approved
-last_updated: "2026-04-24T10:10:55.070Z"
-last_activity: 2026-04-24 -- Phase --phase execution started
+stopped_at: Completed 60-01-PLAN.md
+last_updated: "2026-04-24T10:18:12.430Z"
+last_activity: 2026-04-24
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-24)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase --phase — 60
+**Current focus:** Phase 60 — Layout Runes Migration & Hydration Fix
 
 ## Current Position
 
-Phase: --phase (60) — EXECUTING
-Plan: 1 of --name
-Status: Executing Phase --phase
-Last activity: 2026-04-24 -- Phase --phase execution started
+Phase: 60 (Layout Runes Migration & Hydration Fix) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-24
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Items acknowledged and deferred at v2.5 milestone close on 2026-04-24. v2.6 pick
 | carry-forward | 10 data-race E2E failures (post-Phase 59 baseline SHA 3c57949c8) | **Active in v2.6 Phase 63 (E2E-01)** |
 | carry-forward | 38 cascade E2E failures (post-Phase 59 baseline SHA 3c57949c8) | **Active in v2.6 Phase 63 (E2E-01)** |
 | carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out-of-scope per v2.6 REQUIREMENTS.md §Future; dedicated refactor milestone |
+| Phase 60 P01 | 3m 25s | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,9 @@ Key context for v2.6:
 - E2E-01 success criterion cites the post-v2.5 baseline on SHA `3c57949c8` (10 data-race + 38 cascade out of 89 total) as the reference point — this is the tally carried forward from Plan 59-05 fix-forward, not the earlier SHA `f09daea34` pre-swap numbers.
 - E2E-02 is low-risk template-scoped work — the e2e template shape is already locked from Phase 58, so extension is additive.
 - RESULTS-01/02/03 map into one phase because entity-list-controls-infinite-loop.md explicitly describes them as a single 5-step pass (merge, $derived refactor, page.svelte removal, route params optional, filters re-enabled).
+- B-3 Option A preflight: PASS — diff script treats out-of-baseline tests as neutral/additive (Plan 60-05 no re-embed needed)
+- W-5 constant-count preflight: DRIFT (baseline=89 vs constants=67, 22-test gap) — Plan 60-05 should inspect gap before re-capture
+- D-09 voter-popup-hydration.spec.ts scaffolded as test.skip (not test.fixme per W-2) with Plan 60-04 Task 1 handoff breadcrumb
 
 ### Pending Todos
 
@@ -93,9 +97,9 @@ Key context for v2.6:
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 60 UI-SPEC approved
-Resume file: --resume-file
+Last session: 2026-04-24T10:18:04.275Z
+Stopped at: Completed 60-01-PLAN.md
+Resume file: None
 Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
 
 **Planned Phase:** 60 (Layout Runes Migration & Hydration Fix) — 5 plans — 2026-04-24T10:09:52.232Z
