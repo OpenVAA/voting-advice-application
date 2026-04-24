@@ -786,27 +786,33 @@ npx -y tsx .planning/phases/59-e2e-fixture-migration/scripts/diff-playwright-rep
 
 **If this table is empty:** N/A — 6 assumptions logged. Risks are mostly low-medium; mitigations exist for each.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All 4 questions carry explicit `RESOLVED:` markers — planning decisions are reflected in the 63-PLAN files (to be authored next).
 
 1. **Should `app_settings.fixed[]` external_id values be variant-scoped (`'test-app-settings-constituency'`) or share-scoped (`'test-app-settings'`)?**
    - What we know: Single-row UNIQUE(project_id); external_id is only a teardown-filter contract; ALL variant external_ids must start with `test-` prefix to participate in `runTeardown('test-', client)` cleanup.
    - What's unclear: Whether the planner prefers human-readable variant scoping (helps debug / triage) or shared identity (one row, less metadata noise).
    - Recommendation: Variant-scoped names — last-write-wins doesn't change semantics, but readability in the DB (and in `external_id`-filtered teardown logs) is improved.
+   - RESOLVED: Variant-scoped external_ids (e.g., `'test-app-settings-constituency'`). Planner/executor wires this in Plan 63-02 when populating the template.
 
 2. **What is the exact post-seed deep-compare tolerance (D-10)?**
    - What we know: `expect.toMatchObject` (subset) vs `expect.toEqual` (strict) is a planner choice per CONTEXT.md Claude's Discretion section.
    - What's unclear: Whether unrelated keys merged in by `merge_jsonb_column` (e.g., from a stale prior run) should fail the assertion.
    - Recommendation: Use `toMatchObject` — the assertion is checking "did our settings get written?" not "is this the only state on the row?". Strict equality would fail if any pre-existing key persists (Pitfall 3 surface).
+   - RESOLVED: Use `expect.toMatchObject` — subset assertion per Pitfall 3 mitigation. Documented in Plan 63-02 test task.
 
 3. **If Phase 62 reclaims fewer tests than expected, where does the residual budget land?**
    - What we know: D-07 budget = 2-3 small targeted fixes max; exceeding escalates.
    - What's unclear: The exact shape of "small" — is it strict LoC count, or judgment-call (e.g., a single component re-render fix vs. a layout file refactor)?
    - Recommendation: Plan adopts a decision rule: "small" = single-file change AND under ~50 LoC AND root cause is well-isolated. Anything not satisfying all three escalates.
+   - RESOLVED: Small = single-file AND <50 LoC AND well-isolated root cause. Anything outside that triple escalates to human review. Budget capped at 2-3 fixes total per D-07.
 
 4. **Should the v2.6 baseline JSON be committed even if PARITY GATE: FAIL?**
    - What we know: D-13 says Phase 63 captures the artifact; `/gsd-complete-milestone` does the re-anchor.
    - What's unclear: If FAIL, does milestone close — and if not, do we still commit the (failed) baseline?
    - Recommendation: Commit unconditionally. The artifact is evidence regardless of verdict; if FAIL is unrecoverable within budget, the artifact + diff.md document the state for retrospective. milestone close decision is upstream.
+   - RESOLVED: Commit unconditionally. The post-v2.6 baseline JSON + diff.md artifact ship with Phase 63 regardless of gate verdict; verdict is captured in the artifact frontmatter for the milestone close step to consume.
 
 ## Environment Availability
 
