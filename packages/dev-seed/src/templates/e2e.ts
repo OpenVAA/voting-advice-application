@@ -273,6 +273,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 2: Economy' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-economy' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 1,
@@ -284,6 +285,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 3: Economy' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-economy' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 2,
@@ -295,6 +297,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 4: Economy' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-economy' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 3,
@@ -307,6 +310,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 5: Social' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-social' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 4,
@@ -318,6 +322,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 6: Social' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-social' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 5,
@@ -329,6 +334,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 7: Social' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-social' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 6,
@@ -340,6 +346,7 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Opinion Question 8: Social' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-category-social' },
+        custom_data: { allowOpen: true }, // D-59-12 fix-forward: CAND-12 comment persistence
         allow_open: true,
         required: true,
         sort_order: 7,
