@@ -14,7 +14,7 @@ Ship a template-driven, modular data generator in `@openvaa/dev-tools` that popu
 - [ ] **Phase 56: Generator Foundations & Plumbing** — Per-entity generator scaffolding, service-role client, external_id tagging, template schema core, bulk-upsert strategy
 - [x] **Phase 57: Latent-Factor Answer Model** — PCA-inspired pluggable pipeline producing party-clustered candidate answers with inter-question correlations (completed 2026-04-23)
 - [x] **Phase 58: Templates, CLI & Default Dataset** — Default + E2E built-in templates, custom-template loading, `seed`/`seed:teardown`/`dev:reset-with-data` CLI, portrait seeding, localization flag (completed 2026-04-23)
-- [ ] **Phase 59: E2E Fixture Migration** — Rewrite `tests/seed-test-data.ts` on top of the new generator, prove parity with current Playwright baseline, retire legacy JSON fixtures
+- [x] **Phase 59: E2E Fixture Migration** — Rewrite `tests/seed-test-data.ts` on top of the new generator, prove parity with current Playwright baseline, retire legacy JSON fixtures
 
 ## Phase Details
 
@@ -109,7 +109,7 @@ Plans:
 - [x] 59-04-PLAN.md — Core swap: seed-test-data + data.setup/teardown + variant setups (E2E-01) — complete 2026-04-23, commits `7b2c9083d` / `7143f08ff` / `58d86fa7f` / `9c9e6363f`. 7 files modified; zero JSON-fixture imports remain in tests/seed-test-data.ts + tests/tests/setup/; runTeardown('test-', client) at all 5 call sites; yarn build exit 0; playwright test --list enumerates 89 specs with zero import errors.
 - [x] 59-05-PLAN.md — Post-swap capture + parity diff verdict (E2E-03) — complete 2026-04-24 (initial FAIL → PASS after fix-forward), commits `9d36cdb35` / `e67be2bf0` / `a3948da6d` + fix-forward `341e4ab0d` / `128bf27b6` / `070ccfb80` / `9e8388a61` / `3c57949c8`. Final verdict: **PARITY GATE: PASS** at SHA `3c57949c8` — 41p / 10f / 38c matches baseline exactly, 0 regressions. Initial FAIL had 22 regressions collapsed by 3 surgical fixes (CAND-12 comment field, teardown assertion relaxation, baseline title camelCase preservation).
 - [x] 59-06-PLAN.md — Delete legacy fixtures + mergeDatasets util (E2E-02) — complete 2026-04-24, commits `a1f3d479b` (docs scrub pre-flight) / `ff03ac53c` (delete 7 files, 3349 lines). D-59-09 three-gate verification green: grep 0 hits + yarn build exit 0 (14/14 tasks, 13 cached, 5.8s) + yarn test:unit exit 0 (18/18 tasks, 613+450 tests) + playwright --list = 89 tests in 25 files. `tests/tests/data/overlays/` auto-removed; `assets/` preserved.
-- [ ] 59-07-PLAN.md — VERIFICATION.md + deps-check.txt (E2E-04)
+- [x] 59-07-PLAN.md — VERIFICATION.md + deps-check.txt (E2E-04) — complete 2026-04-24, commits `f2a6d72ff` (deps-check.txt, 7.4 KB, 3 sections, D-24 boundary cycle-free) / `12eacf351` (59-VERIFICATION.md, 4/4 SCs VERIFIED, PARITY GATE: PASS carried from Plan 05, public-surface table of D-24 split from source). E2E-04 SATISFIED — documents + verifies the Phase 56 Plan 10 split; zero code moves per D-59-11.
 
 ## Progress
 
@@ -121,4 +121,4 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59
 | 56. Generator Foundations & Plumbing | 8/10 | In progress | - |
 | 57. Latent-Factor Answer Model | 7/7 | Complete    | 2026-04-23 |
 | 58. Templates, CLI & Default Dataset | 10/10 | Complete    | 2026-04-23 |
-| 59. E2E Fixture Migration | 6/7 | In progress (parity PASS + legacy fixtures deleted; 59-07 VERIFICATION remains) | - |
+| 59. E2E Fixture Migration | 7/7 | Complete    | 2026-04-24 |

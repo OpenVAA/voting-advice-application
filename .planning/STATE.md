@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
-status: executing
-stopped_at: Plan 59-06 complete — legacy JSON fixtures deleted, D-59-09 three-gate verification green, post-swap parity PASS preserved
-last_updated: "2026-04-24T06:54:56.943Z"
-last_activity: 2026-04-24 -- Phase 59 Plan 06 complete (legacy JSON fixture deletion, E2E-02 satisfied)
+status: complete
+stopped_at: Phase 59 COMPLETE — Plan 59-07 VERIFICATION.md + deps-check.txt committed, 4/4 SCs verified, PARITY GATE: PASS carried from Plan 05, E2E-04 satisfied (D-24 split documented + zero cycles at tests/↔dev-seed boundary). Milestone v2.5 (Phases 56-59) closeable.
+last_updated: "2026-04-24T07:10:00.000Z"
+last_activity: 2026-04-24 -- Phase 59 Plan 07 complete (59-VERIFICATION.md + deps-check.txt + ROADMAP/STATE/REQUIREMENTS closeout); Phase 59 + Milestone v2.5 complete
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 34
-  completed_plans: 33
-  percent: 97
+  completed_plans: 34
+  percent: 100
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 59 (e2e-fixture-migration) — EXECUTING (parity PASS + legacy fixtures deleted; only 59-07 VERIFICATION.md remaining)
-Plan: 6/7 complete (59-06 DELETE — 7 files removed, D-59-09 three-gate green)
-Status: Phase 59 moved from PAUSED to EXECUTING after fix-forward flipped parity to PASS (commit 3c57949c8) and Plan 06 executed cleanly. Plan 06 committed the legacy JSON fixture deletion in 2 commits: `a1f3d479b` (docs(59-06): scrub stale refs to legacy fixtures before deletion — Rule 2 auto-added pre-flight to close the post-delete grep gate) and `ff03ac53c` (chore(59-06): delete legacy JSON fixtures + mergeDatasets util — 7 files, 3349 lines removed). `tests/tests/data/overlays/` auto-removed by git; `tests/tests/data/assets/` preserved per D-59-10. D-59-09 verification record: grep 0 hits + yarn build exit 0 (14/14 tasks, 13 cached, 5.8s) + yarn test:unit exit 0 (18/18 tasks, 613+450 tests passing) + playwright --list = 89 tests in 25 files. post-swap/diff.md PARITY GATE: PASS verdict preserved. Only Plan 07 (VERIFICATION.md + deps-check artifact, E2E-04) remains to close Phase 59.
-Last activity: 2026-04-24 -- Phase 59 Plan 06 complete (legacy JSON fixture deletion, E2E-02 satisfied)
+Phase: 59 (e2e-fixture-migration) — COMPLETE (all 7 plans shipped; E2E-01..04 satisfied; PARITY GATE: PASS carried from Plan 05; D-24 split documented with zero-cycles evidence)
+Plan: 7/7 complete (59-07 VERIFICATION + deps-check — E2E-04 satisfied via documentation, no code moves per D-59-11)
+Status: Phase 59 CLOSED. Plan 07 authored 59-VERIFICATION.md (status: passed, score 4/4, parity_gate: PASS) + deps-check.txt (7.4 KB, 3 sections — yarn build 14/14 FULL TURBO, madge --circular scoped to D-24 boundary shows 2 pre-existing intra-dev-seed cycles and 0 at D-24 surface, tsconfig project-reference inventory). Commits `f2a6d72ff` (Task 1 deps-check) + `12eacf351` (Task 2 VERIFICATION.md) + forthcoming Task 3 bundle (SUMMARY + ROADMAP + STATE + REQUIREMENTS). Milestone v2.5 (Dev Data Seeding Toolkit — Phases 56, 57, 58, 59) closeable: 56 at 8/10 per ROADMAP verdict "Complete", 57/58/59 at 100%.
+Last activity: 2026-04-24 -- Phase 59 Plan 07 complete (VERIFICATION.md + deps-check.txt, E2E-04 satisfied, milestone v2.5 closeable)
 
 ## Performance Metrics
 
@@ -110,6 +110,10 @@ Key context for v2.5:
 - Plan 59-06: D-59-09 three-gate verification pattern pays off — grep caught 4 stale prose references pre-delete (doc + 3 docstrings); yarn build + yarn test:unit + playwright --list all green post-delete confirming zero dangling imports.
 - Plan 59-06: Pre-flight docs/docstring scrub committed separately (a1f3d479b) from the destructive delete (ff03ac53c) — keeps the chore() commit a pure set of D-lines matching the plan's Task 3 'ONLY these 7 deletions' spec, while satisfying the D-59-09 post-delete grep gate that requires zero repo-wide mentions of the retired filenames. Rule 2 auto-added scope (missing critical functionality).
 - Plan 59-06: Task 1 PASS-gate checkpoint treated as pre-approved by orchestrator (post-swap/diff.md verdict: PASS at SHA 3c57949c8 from fix-forward iteration 2). No re-prompt issued; independently re-verified verdict field in-session before any destructive action.
+- Plan 59-07: deps-check.txt scoped the madge probe to `packages/dev-seed/src tests/tests/utils` (the D-24 boundary) rather than the whole repo. Broader repo scan shows 165 pre-existing cycles in @openvaa/data (internal.ts barrel pattern) + @openvaa/matching + @openvaa/filters + 2 intra-dev-seed; ALL documented inline as "pre-existing, out-of-scope for E2E-04, deferred to Svelte 5 Migration Cleanup." D-24 surface is cycle-free (only 2 intra-dev-seed cycles from Phase 56 Plan 05 D-27 seam + Phase 57 Plan 01 LatentHooks seam — neither touches the tests/↔dev-seed boundary). E2E-04 claim is narrowly about the D-24 split, not whole-repo historical debt.
+- Plan 59-07: VERIFICATION.md D-24 public-surface table enumerated actual current API from source (packages/dev-seed/src/supabaseAdminClient.ts 691 LOC + tests/tests/utils/supabaseAdminClient.ts 486 LOC). Base has grown by Phase 58 portrait surface (selectCandidatesForPortraitUpload + uploadPortrait + updateCandidateImage + listCandidatePortraitPaths + listCandidateIdsByPrefix + removePortraitStorageObjects — 6 methods added post-D-24 listing). Subclass is stable from Phase 56 Plan 10 shape. VERIFICATION.md reflects current state, not the 56-CONTEXT.md D-24 listing which predates Phase 58.
+- Plan 59-07: VERIFICATION.md status=passed (not human_needed). Phase 59's entire contract is document-verifiable (baseline JSON report = post-swap JSON report proven at Plan 05; grep gates on fixture deletion proven at Plan 06; dep-graph scan proven at Plan 07 Task 1). No live-Supabase or visual-rendering step required. Contrast with Phase 58 which was status=human_needed because its primary goal required visual VAA browse confirmation.
+- Plan 59-07: Per-task atomic commits (3 × docs(59-07)) — continues Plan 59-02/03/04/06 precedent. Task 3 bundles SUMMARY + ROADMAP + STATE + REQUIREMENTS in one commit per the plan's Task 3 directive (tracking-file changes only, natural bundle).
 
 ### Blockers/Concerns
 
@@ -117,13 +121,19 @@ Key context for v2.5:
 - 19 pre-existing data-loading race E2E failures + 55 cascade failures carry over from v2.4; E2E fixture migration must not make this worse, and passing tests must remain passing after switch-over. (Updated 2026-04-23 by Plan 59-01 baseline: ACTUAL pre-swap count on SHA f09daea34 is 10 data-race + 25 cascade; total 89 tests matches v2.4 tally, distribution improved. Parity gate uses actual test names, not counts. Updated 2026-04-24 post Plan 59-05 fix-forward: data-race pool stayed at 10, cascade grew to 38 due to CAND-12 fix-forward cascade acceptance — tally is the new baseline.)
 - NF-01 <10s seed budget pressures the generator toward bulk RPCs vs per-row inserts — Phase 56 picks the approach.
 - E2E-03 zero-regression bar: post-swap parity PASS achieved via D-59-04 comparison (see post-swap/diff.md at 3c57949c8). Plan 59-06 completed the delete step — E2E-02 closed.
-- supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call.
+- supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call. **RESOLVED 2026-04-24 in Plan 59-07:** D-24 split documented at `.planning/phases/59-e2e-fixture-migration/59-VERIFICATION.md` §D-24 Admin Client Split Rationale with zero-cycles evidence at `.planning/phases/59-e2e-fixture-migration/deps-check.txt`. No code moves — the Phase 56 Plan 10 subclass pattern is the final answer.
 
 ## Session Continuity
 
-Last session: 2026-04-24T06:54:56.939Z
-Stopped at: Plan 59-06 complete — legacy JSON fixtures deleted, D-59-09 three-gate verification green, post-swap parity PASS preserved
+Last session: 2026-04-24T07:10:00.000Z
+Stopped at: Phase 59 COMPLETE — Plan 59-07 VERIFICATION.md + deps-check.txt committed; milestone v2.5 closeable
 Resume file: None
-Next action: Execute Plan 59-07 — compile VERIFICATION.md (E2E migration outcomes) + deps-check artifact. No blockers; no parity gate (Plan 07 is documentation-only).
+Next action: Orchestrator decision — run gsd-verifier on Phase 59 (if desired) + milestone v2.5 retrospective, then plan next milestone. No follow-up plan queued from Phase 59. Out-of-scope carry-forwards (10 data-race flakes, 38 cascade failures, 165 pre-existing intra-package cycles) belong to "Svelte 5 Migration Cleanup" future milestone per PROJECT.md.
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 6 complete — 2026-04-24T09:55:00Z (EXECUTING, 1 plan remaining)
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 7 complete — 2026-04-24T07:10:00Z (COMPLETE)
+
+### Performance Metrics (appended)
+
+| Phase | Plan | Duration | Tasks | Files | Completed |
+|-------|------|----------|-------|-------|-----------|
+| 59 | 07 | 7m 12s | 3 | 3 created + 3 modified | 2026-04-24 |

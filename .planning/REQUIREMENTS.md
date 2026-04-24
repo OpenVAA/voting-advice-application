@@ -185,7 +185,7 @@ A unified declarative template config with smart defaults; any collection can mi
 | E2E-01 | Phase 59 | Complete — Plan 59-02 migrated 8 consumers; Plan 59-04 core swap (commits 7b2c9083d/7143f08ff/58d86fa7f/9c9e6363f) rewrote seed-test-data.ts + 6 Playwright setup/teardown files onto @openvaa/dev-seed programmatic API; zero JSON fixture imports remain; parity PASS confirmed at SHA 3c57949c8 |
 | E2E-02 | Phase 59 | Complete — Plan 59-06 deleted all 7 legacy files (3 core JSON + 3 overlay JSON + mergeDatasets.ts) in commits a1f3d479b (docs scrub pre-flight) + ff03ac53c (delete). D-59-09 three-gate verification green (grep=0, yarn build exit 0, yarn test:unit exit 0, playwright --list=89) |
 | E2E-03 | Phase 59 | Complete — baseline captured in Plan 59-01 (SHA 0e58dc4c3, 41/10/25/13 split); Plan 59-05 parity gate: PARITY GATE: PASS at SHA 3c57949c8 (41p/10f/38c matches baseline exactly, 0 regressions) after fix-forward surgery on 3 root causes |
-| E2E-04 | Phase 59 | Pending |
+| E2E-04 | Phase 59 | Complete — Plan 59-07 authored `.planning/phases/59-e2e-fixture-migration/59-VERIFICATION.md` §D-24 Admin Client Split Rationale + `.planning/phases/59-e2e-fixture-migration/deps-check.txt` (commits f2a6d72ff + 12eacf351). D-24 split locked at Phase 56 Plan 10 (no code moves); dep-graph evidence: yarn build 14/14 FULL TURBO + madge --circular at D-24 boundary shows 0 cycles (2 pre-existing intra-dev-seed cycles from Phase 56/57 emitter seams, not at tests/↔dev-seed boundary) + tsconfig project-reference inventory shows forward-only DAG |
 | DX-01 | Phase 58 | Complete |
 | DX-02 | Phase 56 | Complete (56-08) |
 | DX-03 | Phase 58 | Complete |
