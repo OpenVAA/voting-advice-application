@@ -62,14 +62,14 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
 **UI hint**: yes
 
 ### Phase 62: Results Page Consolidation
-**Goal**: The voter results page renders through a single merged entity-list component, filters work without triggering an infinite `$effect` loop, and the results list and entity-detail drawer share one route.
+**Goal**: The voter results page renders through a single merged entity-list component, filters work without triggering an infinite `$effect` loop, the results list and entity-detail drawer share a 4-segment optional-param route that handles the org-list + candidate-drawer edge case cleanly, and filter state is exposed via a shared `filterContext` so a future LLM chat can read and mutate the voter's active filters.
 **Depends on**: Phase 60 (layout-based rendering path relied on in the consolidated results layout)
 **Requirements**: RESULTS-01, RESULTS-02, RESULTS-03
 **Success Criteria** (what must be TRUE):
   1. A voter reaching `/results` sees the merged entity list + controls render once — no infinite-loop symptoms (frozen UI, runaway re-renders) when filters are toggled.
-  2. Filters on the voter results page are enabled and functional — toggling a filter narrows the displayed candidate/organization list without regressing the layout-based render path.
-  3. The empty `results/+page.svelte` no longer exists; the results list and the entity-detail drawer share the `[entityType]/[entityId]` route with optional params, and the `entityType` param correctly sets the initially active entity tab when present.
-  4. The filter-driven list derivation uses `$derived` — there is no `$effect` + `filterGroup.onChange` → `updateFilters` → `filterGroup.apply` circular chain in `EntityListControls`.
+  2. Filters on the voter results page are enabled and functional — toggling a filter narrows the displayed candidate/organization list without regressing the layout-based render path. Filter state lives in a shared `filterContext` module (bundled through `voterContext` for ergonomic consumption), scoped per (election, plural) tuple, preserved across drawer open/close.
+  3. The empty `results/+page.svelte` no longer exists; the results list and the entity-detail drawer share the path `/results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]]` with typed param matchers (`entityTypePlural` ∈ {candidates, organisations}; `entityTypeSingular` ∈ {candidate, organisation}). The schema supports the org-list + candidate-drawer edge case. `entityTypePlural` drives the Tabs component via `$page.params`. On full-page-load to a detail URL, drawer rendering is prioritized over list rendering for perceived performance.
+  4. The filter-driven list derivation uses `$derived` — there is no `$effect` + `filterGroup.onChange` → `updateFilters` → `filterGroup.apply` circular chain in the merged `EntityListWithControls` component. `@openvaa/filters` is untouched (consumer-side refactor only).
 **Plans**: TBD
 **UI hint**: yes
 
