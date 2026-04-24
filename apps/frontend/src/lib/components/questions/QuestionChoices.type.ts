@@ -1,12 +1,24 @@
 import type { Id } from '@openvaa/core';
-import type { SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
+import type {
+  BooleanQuestion,
+  Choice,
+  SingleChoiceCategoricalQuestion,
+  SingleChoiceOrdinalQuestion
+} from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type QuestionChoicesProps = SvelteHTMLElements['fieldset'] & {
   /**
-   * The `ChoiceQuestion` object.
+   * The `ChoiceQuestion` object. `BooleanQuestion` is also accepted when an
+   * explicit `choices` prop is supplied to synthesize the Yes/No pseudo-choices.
    */
-  question: SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion;
+  question: SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion | BooleanQuestion;
+  /**
+   * Explicit choices to render. When provided, overrides `question.choices`.
+   * Required for `BooleanQuestion` (which has no native `choices`); synthesized
+   * by the caller (e.g. `OpinionQuestionInput.svelte` boolean branch). @default undefined
+   */
+  choices?: Array<Choice>;
   /**
    * Whether to disable all the buttons. @default false
    */

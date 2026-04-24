@@ -70,6 +70,7 @@ The same component can also be used to display the answers of the voter and anot
 
   let {
     question,
+    choices: explicitChoices = undefined,
     disabled = false,
     selectedId = undefined,
     otherSelected = undefined,
@@ -83,8 +84,9 @@ The same component can also be used to display the answers of the voter and anot
     ...restProps
   }: QuestionChoicesProps = $props();
 
-  // For convenience
-  let choices = $derived(question.choices);
+  // For convenience. `explicitChoices` wins when provided (required for
+  // `BooleanQuestion`, which has no native `.choices`; caller synthesizes them).
+  let choices = $derived(explicitChoices ?? ('choices' in question ? question.choices : undefined));
   let text = $derived(question.text);
 
   ////////////////////////////////////////////////////////////////////
@@ -97,10 +99,13 @@ The same component can also be used to display the answers of the voter and anot
   // Layout variants
   ////////////////////////////////////////////////////////////////////
 
-  // The is to show the line for ordinal questions and not for categorical ones.
+  // The is to show the line for ordinal and boolean questions and not for categorical ones.
   let doShowLine = $derived.by(() => {
-    if (showLine) return showLine;
-    return isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion);
+    if (showLine !== undefined) return showLine;
+    return (
+      isObjectType(question, OBJECT_TYPE.SingleChoiceOrdinalQuestion) ||
+      isObjectType(question, OBJECT_TYPE.BooleanQuestion)
+    );
   });
   // The default layout for ordinal questions is horizontal, and vertical for categorical ones.
   let vertical = $derived.by(() => {
