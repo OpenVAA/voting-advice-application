@@ -799,32 +799,39 @@ onMount(() => {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All 5 questions are resolved by the planning decisions recorded in Plans 61-01 / 61-02 / 61-03. Each item below carries an explicit `RESOLVED:` marker for downstream-agent consumption.
 
 1. **Should the boolean pseudo-choice id be `'yes'`/`'no'` (strings) or use a different scheme?**
    - What we know: Pseudo-choice ids must be `Id` type (from `@openvaa/core`, usually `string`); `'yes'`/`'no'` are simple and human-readable in devtools.
    - What's unclear: Potential conflict if a real choice question somewhere has choices `'yes'`/`'no'` as ids (should be isolated per-question though).
    - Recommendation: Use `'yes'`/`'no'`. Executor documents the mapping in an inline comment in the new boolean branch.
+   - RESOLVED: Use `'yes'`/`'no'` — implemented by Plan 61-01 Task 3 (boolean branch in `OpinionQuestionInput.svelte`).
 
 2. **Should the QUESTION-03 fix be approach 1 (context-level seeding) or approach 2 (page-level seeding, context becomes plain `$state`)?**
    - What we know: Both work; approach 1 is more robust.
    - What's unclear: Whether there are OTHER consumers of `voterContext.selectedQuestionCategoryIds` that would regress if the context-level default suddenly appeared.
    - Recommendation: Planner picks approach 1 unless discovery finds another consumer that depends on the `[]` initial value.
+   - RESOLVED: Approach 1 (context-level seeding with pure `$state`) — implemented by Plan 61-02 Task 1 (`voterContext.svelte.ts` refactor). Per CONTEXT D-11, `sessionStorage` is dropped.
 
 3. **Is QUESTION-04 actually a reactivity bug, or something else?**
    - What we know: Static review didn't surface an obvious reactivity break in `candidateContext.svelte.ts`. 6 direct + 18 cascade failures exist.
    - What's unclear: Whether the failure is a race on `userData.init`, a stale `$derived`, a spec-timing flake, or something structural.
    - Recommendation: First plan for QUESTION-04 MUST be diagnosis, not code. Trace the spec, capture layoutState + completion values, then decide.
+   - RESOLVED: Diagnosis-first plan adopted — Plan 61-03 Task 1 runs a Playwright trace and selects Hypothesis A/B/C before Task 2 applies the fix. Coding is contingent on diagnosis outcome.
 
 4. **Should `isBooleanQuestion` be added to the data package, or should the frontend use `isObjectType(q, OBJECT_TYPE.BooleanQuestion)` inline?**
    - What we know: Both are valid; existing codebase uses both styles.
    - What's unclear: Whether adding the guard is a "small polish" (preferred) or "scope creep" (rejected per CLAUDE.md YAGNI).
    - Recommendation: Add it. Trivial, aligns with existing guards, makes the callsite self-documenting.
+   - RESOLVED: Add the guard — implemented by Plan 61-01 Task 1 (new export in `packages/data/src/utils/typeGuards.ts` + test in `typeGuards.test.ts`).
 
 5. **Does the fix for QUESTION-03 regress the candidate flow if `_selectedQuestionCategoryIds` is voter-only?**
    - What we know: `selectedQuestionCategoryIds` exists only on `voterContext`, not `candidateContext`. Different contexts.
    - What's unclear: Nothing — verified by reading both contexts.
    - Recommendation: No action needed. Captured here to pre-empt planner confusion.
+   - RESOLVED: No action — plans correctly scope the fix to `voterContext` only. `candidateContext` is untouched by Plan 61-02.
 
 ---
 
