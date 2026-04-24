@@ -44,7 +44,7 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
 **Plans**: 5 plans
   - [x] 60-01-PLAN.md — Wave-0 prep: restore diff-playwright-reports.ts + baseline JSON; create D-09 setTimeout-popup E2E scaffold
   - [x] 60-02-PLAN.md — Root `+layout.svelte` $derived refactor (LAYOUT-01, D-05)
-  - [ ] 60-03-PLAN.md — Protected `(protected)/+layout.svelte` $derived refactor + D-02 wrapper fallback gate (LAYOUT-02)
+  - [x] 60-03-PLAN.md — Protected `(protected)/+layout.svelte` $derived refactor + D-02 wrapper fallback gate (LAYOUT-02)
   - [ ] 60-04-PLAN.md — D-08 PopupRenderer empirical removal + D-10 retention branch (LAYOUT-03)
   - [ ] 60-05-PLAN.md — Playwright parity gate vs baseline `3c57949c8` (SC-4)
 **UI hint**: yes

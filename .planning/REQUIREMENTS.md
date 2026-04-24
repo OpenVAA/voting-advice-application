@@ -19,7 +19,8 @@
 
 - [x] **LAYOUT-01
 **: Root layout (`apps/frontend/src/routes/+layout.svelte`) is migrated to Svelte 5 runes mode — no `export let`, no `$:` reactive statements, no `<slot />`. Uses `$props`, `$derived`, and `{@render children()}` consistently.
-- [ ] **LAYOUT-02**: Candidate protected layout (`apps/frontend/src/routes/candidate/(protected)/+layout.svelte`) reliably renders post-hydration on full page loads. The `$effect` + `Promise.all(...).then(...)` pattern that leaves the page stuck at `<Loading />` is replaced with a pattern that re-renders correctly after SSR. The 2 blocked E2E registration tests (`candidate-registration.spec.ts:64`, `candidate-profile.spec.ts:51`) pass without workarounds.
+- [x] **LAYOUT-02
+**: Candidate protected layout (`apps/frontend/src/routes/candidate/(protected)/+layout.svelte`) reliably renders post-hydration on full page loads. The `$effect` + `Promise.all(...).then(...)` pattern that leaves the page stuck at `<Loading />` is replaced with a pattern that re-renders correctly after SSR. The 2 blocked E2E registration tests (`candidate-registration.spec.ts:64`, `candidate-profile.spec.ts:51`) pass without workarounds.
 - [ ] **LAYOUT-03**: `PopupRenderer` runes-mode wrapper workaround is removed (direct store rendering works after root-layout migration), OR is explicitly retained with a documented rationale in-code if the underlying Svelte 5 limitation persists.
 
 ### QUESTION — Voter-app question flow (Phase 58 UAT gaps)
@@ -36,7 +37,8 @@
 
 ### E2E — Carry-forward greening
 
-- [ ] **E2E-01**: E2E carry-forward pool shrinks measurably from the post-v2.5 baseline (10 data-race + 38 cascade failures on SHA `3c57949c8`). LAYOUT-02 alone is expected to reclaim the 2 direct candidate-registration blocks plus ~35 cascaded tests. Any remaining residual is documented as framework-level (upstream Svelte 5 bug or structural test concurrency issue) and does not block milestone close.
+- [x] **E2E-01**: E2E carry-forward pool shrinks measurably from the post-v2.5 baseline (10 data-race + 38 cascade failures on SHA `3c57949c8`). LAYOUT-02
+ alone is expected to reclaim the 2 direct candidate-registration blocks plus ~35 cascaded tests. Any remaining residual is documented as framework-level (upstream Svelte 5 bug or structural test concurrency issue) and does not block milestone close.
 - [ ] **E2E-02**: The `e2e` template in `@openvaa/dev-seed` carries an `app_settings.fixed[]` block that matches the defaults currently applied by legacy `updateAppSettings(...)` calls. The 4 legacy calls (`data.setup.ts` + 3 variant setups, ~60 lines per Plan 59-04 Rule-2 follow-up) are deleted. Playwright parity gate remains PASS.
 
 ---
