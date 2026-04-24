@@ -397,15 +397,15 @@
               "projectName": "data-teardown-variants",
               "results": [
                 {
-                  "workerIndex": 15,
+                  "workerIndex": 18,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 143,
+                  "duration": 242,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:37:24.105Z",
+                  "startTime": "2026-04-24T06:45:47.981Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -426,7 +426,7 @@
         },
         {
           "title": "delete variant test dataset",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -437,34 +437,15 @@
               "projectName": "data-teardown",
               "results": [
                 {
-                  "workerIndex": 17,
+                  "workerIndex": 19,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 46,
-                  "error": {
-                    "message": "Error: variant runTeardown deleted zero rows\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                    "stack": "Error: variant runTeardown deleted zero rows\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/variant-data.teardown.ts:22:64",
-                    "location": {
-                      "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/variant-data.teardown.ts",
-                      "column": 64,
-                      "line": 22
-                    },
-                    "snippet": "  20 |   // Data + storage teardown via package API (D-59-06).\n  21 |   const { rowsDeleted } = await runTeardown(PREFIX, client);\n> 22 |   expect(rowsDeleted, 'variant runTeardown deleted zero rows').toBeGreaterThan(0);\n     |                                                                ^\n  23 | });\n  24 |"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/variant-data.teardown.ts",
-                        "column": 64,
-                        "line": 22
-                      },
-                      "message": "Error: variant runTeardown deleted zero rows\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  20 |   // Data + storage teardown via package API (D-59-06).\n  21 |   const { rowsDeleted } = await runTeardown(PREFIX, client);\n> 22 |   expect(rowsDeleted, 'variant runTeardown deleted zero rows').toBeGreaterThan(0);\n     |                                                                ^\n  23 | });\n  24 |\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/variant-data.teardown.ts:22:64"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 36,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:37:25.670Z",
+                  "startTime": "2026-04-24T06:45:49.038Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -472,15 +453,10 @@
                       "contentType": "application/zip",
                       "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-variant-data.teardown.ts-delete-variant-test-dataset-data-teardown/trace.zip"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/variant-data.teardown.ts",
-                    "column": 64,
-                    "line": 22
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "03c666fc1bac03ab3725-93690b532566d030e62f",
@@ -521,7 +497,7 @@
                       "workerIndex": 1,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 11162,
+                      "duration": 11171,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('voter-questions-category-list')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('voter-questions-category-list')\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:116:32",
@@ -545,7 +521,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:30.304Z",
+                      "startTime": "2026-04-24T06:42:46.003Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -592,7 +568,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -636,7 +612,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -672,7 +648,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -716,7 +692,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -760,7 +736,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -804,7 +780,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:42.200Z",
+                      "startTime": "2026-04-24T06:42:57.925Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -964,12 +940,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1622,
+                  "duration": 1090,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:34:42.918Z",
+                  "startTime": "2026-04-24T06:42:58.692Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -1012,12 +988,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 998,
+                  "duration": 992,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:34:44.994Z",
+                  "startTime": "2026-04-24T06:43:00.196Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -1047,8 +1023,28 @@
               "expectedStatus": "passed",
               "projectId": "re-auth-setup",
               "projectName": "re-auth-setup",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1088,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-04-24T06:45:26.601Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-re-auth-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "13c9519bc5ddfb3cb0d7-a2cdde9ed9f9a28a98d7",
@@ -1090,12 +1086,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1192,
+                      "duration": 1153,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:39.214Z",
+                      "startTime": "2026-04-24T06:44:54.845Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1133,12 +1129,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 898,
+                      "duration": 830,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:40.873Z",
+                      "startTime": "2026-04-24T06:44:56.399Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1192,12 +1188,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 779,
+                      "duration": 834,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:41.818Z",
+                      "startTime": "2026-04-24T06:44:57.277Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1234,12 +1230,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1117,
+                      "duration": 1140,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:42.660Z",
+                      "startTime": "2026-04-24T06:44:58.168Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1276,12 +1272,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1577,
+                      "duration": 1696,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:43.842Z",
+                      "startTime": "2026-04-24T06:44:59.372Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1318,12 +1314,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1767,
+                      "duration": 1745,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:45.527Z",
+                      "startTime": "2026-04-24T06:45:01.187Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1360,12 +1356,12 @@
                       "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2283,
+                      "duration": 2563,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:47.404Z",
+                      "startTime": "2026-04-24T06:45:03.052Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1386,7 +1382,7 @@
             },
             {
               "title": "should persist comment text on a question after page reload (CAND-12)",
-              "ok": false,
+              "ok": true,
               "tags": [
                 "candidate"
               ],
@@ -1401,36 +1397,15 @@
                     {
                       "workerIndex": 13,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30107,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/QuestionPage.ts",
-                            "column": 29,
-                            "line": 30
-                          },
-                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('candidate-questions-comment')\u001b[22m\n\n\n   at pages/candidate/QuestionPage.ts:30\n\n  28 |    */\n  29 |   async fillComment(text: string): Promise<void> {\n> 30 |     await this.commentInput.fill(text);\n     |                             ^\n  31 |   }\n  32 | }\n  33 |\n    at QuestionPage.fillComment (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/pages/candidate/QuestionPage.ts:30:29)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate/candidate-questions.spec.ts:209:24"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 2403,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:49.837Z",
+                      "startTime": "2026-04-24T06:45:05.771Z",
                       "annotations": [],
                       "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-questions-candid-698a8--after-page-reload-CAND-12--candidate-app/error-context.md"
-                        },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
@@ -1439,7 +1414,7 @@
                       ]
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "d713f3f6e6d38ac7ddeb-a7f8a27b963fa830b512",
@@ -1470,15 +1445,15 @@
                   "projectName": "candidate-app",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1082,
+                      "duration": 923,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:37:20.748Z",
+                      "startTime": "2026-04-24T06:45:08.336Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1512,15 +1487,15 @@
                   "projectName": "candidate-app",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 13,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 919,
+                      "duration": 948,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:37:22.367Z",
+                      "startTime": "2026-04-24T06:45:09.329Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -1564,13 +1539,33 @@
               ],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3871,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:11.301Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-1485d-sh-candidate-via-email-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0d629d3f780ed259d629-1ae8ef05b411f213a40f",
@@ -1591,8 +1586,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1781,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:15.588Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-c600e-ad-a-profile-image-CAND-03--candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0d629d3f780ed259d629-8fefec99018164acd587",
@@ -1613,8 +1628,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1592,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:17.488Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-97150-ds-on-profile-page-CAND-03--candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0d629d3f780ed259d629-856c393c5c0346351486",
@@ -1635,8 +1670,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2133,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:19.167Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-profile-candidat-e19ec--after-page-reload-CAND-12--candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0d629d3f780ed259d629-6edb2eb452ec0dd578b3",
@@ -1674,8 +1729,32 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 55,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=0354953c55a3cc77fcbb02c5f3cfae629e1ea9a321d32a37b67c90b6&type=invite\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:21.430Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-30e09-tion-email-and-extract-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-b226561349ab0f00c48b",
@@ -1691,13 +1770,33 @@
               ],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2031,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:21.490Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-6d26d-registration-via-email-link-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-da633b73a541226ee089",
@@ -1726,8 +1825,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-mutation",
                   "projectName": "candidate-app-mutation",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2057,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:23.602Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-registration-can-a7877-set-flow-via-Inbucket-email-candidate-app-mutation/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "433975f5accc4dc854db-21d3aaf5536ae07c2544",
@@ -1760,13 +1879,33 @@
               ],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1839,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:28.756Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-app-mod-4ff99-ing-when-answers-are-locked-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-1a350cf6ef0bf5defb5f",
@@ -1795,8 +1934,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 651,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:31.041Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-app-mod-3aca0-en-candidateApp-is-disabled-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-699c0b344632fa98fb95",
@@ -1825,8 +1984,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 915,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:31.759Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-app-mod-4644f-en-underMaintenance-is-true-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-a8679f1370dfc993326f",
@@ -1855,8 +2034,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3295,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:32.737Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-candida-9b244-fication-popup-when-enabled-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-22f3b5c5617ba6bd1006",
@@ -1885,8 +2084,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 919,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:36.104Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-help-an-e8f06--render-help-page-correctly-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-3278bdace688e053c506",
@@ -1907,8 +2126,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 894,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:37.075Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-help-an-05604-nder-privacy-page-correctly-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-5bf069f5b783b9ab9d28",
@@ -1937,8 +2176,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 983,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:38.020Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-questio-3d0b4-ro-when-hideHero-is-enabled-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-5ce6225d3cfbc722edb7",
@@ -1959,8 +2218,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-settings",
                   "projectName": "candidate-app-settings",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 998,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:39.078Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-settings-questio-48504-o-when-hideHero-is-disabled-candidate-app-settings/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "0320deef90416658bf9d-ecc0530e2c593678385d",
@@ -1998,8 +2277,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-password",
                   "projectName": "candidate-app-password",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4378,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:40.975Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-password-candida-d7a6c-and-login-with-new-password-candidate-app-password/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "1e35eaa9de9d9ce01ffe-c8a949a402590a952686",
@@ -2029,8 +2328,28 @@
                   "expectedStatus": "passed",
                   "projectId": "candidate-app-password",
                   "projectName": "candidate-app-password",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1282,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-04-24T06:45:45.838Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/candidate-password-candida-9e9ec-ut-and-return-to-login-page-candidate-app-password/trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
                 }
               ],
               "id": "1e35eaa9de9d9ce01ffe-944191d0b95067ac8879",
@@ -2501,7 +2820,7 @@
       "specs": [
         {
           "title": "delete test dataset",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -2512,34 +2831,15 @@
               "projectName": "data-teardown",
               "results": [
                 {
-                  "workerIndex": 16,
+                  "workerIndex": 19,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 47,
-                  "error": {
-                    "message": "Error: runTeardown deleted zero rows — prefix mismatch?\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                    "stack": "Error: runTeardown deleted zero rows — prefix mismatch?\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.teardown.ts:27:75",
-                    "location": {
-                      "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.teardown.ts",
-                      "column": 75,
-                      "line": 27
-                    },
-                    "snippet": "  25 |   // Data + storage teardown via package API (D-59-06).\n  26 |   const { rowsDeleted } = await runTeardown(PREFIX, client);\n> 27 |   expect(rowsDeleted, 'runTeardown deleted zero rows — prefix mismatch?').toBeGreaterThan(0);\n     |                                                                           ^\n  28 | });\n  29 |"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.teardown.ts",
-                        "column": 75,
-                        "line": 27
-                      },
-                      "message": "Error: runTeardown deleted zero rows — prefix mismatch?\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  25 |   // Data + storage teardown via package API (D-59-06).\n  26 |   const { rowsDeleted } = await runTeardown(PREFIX, client);\n> 27 |   expect(rowsDeleted, 'runTeardown deleted zero rows — prefix mismatch?').toBeGreaterThan(0);\n     |                                                                           ^\n  28 | });\n  29 |\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.teardown.ts:27:75"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 50,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:37:24.936Z",
+                  "startTime": "2026-04-24T06:45:48.955Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2547,15 +2847,10 @@
                       "contentType": "application/zip",
                       "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-data.teardown.ts-delete-test-dataset-data-teardown/trace.zip"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/data.teardown.ts",
-                    "column": 75,
-                    "line": 27
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "78126b53f91cf451d89e-5cb9b645fe370e63a6b1",
@@ -2587,12 +2882,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1091,
+                  "duration": 676,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-04-24T05:34:28.506Z",
+                  "startTime": "2026-04-24T06:42:44.610Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -2644,7 +2939,7 @@
                       "workerIndex": 3,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10858,
+                      "duration": 10781,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -2668,7 +2963,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:46.717Z",
+                      "startTime": "2026-04-24T06:43:01.947Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2715,7 +3010,7 @@
                       "workerIndex": 4,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10776,
+                      "duration": 10799,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -2739,7 +3034,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:34:58.602Z",
+                      "startTime": "2026-04-24T06:43:13.822Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2786,7 +3081,7 @@
                       "workerIndex": 5,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10846,
+                      "duration": 10801,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -2810,7 +3105,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:10.491Z",
+                      "startTime": "2026-04-24T06:43:25.757Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2857,7 +3152,7 @@
                       "workerIndex": 6,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10843,
+                      "duration": 10884,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -2881,7 +3176,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:22.635Z",
+                      "startTime": "2026-04-24T06:43:37.758Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -2946,12 +3241,12 @@
                       "workerIndex": 12,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 590,
+                      "duration": 701,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:32.215Z",
+                      "startTime": "2026-04-24T06:44:47.944Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -2983,12 +3278,12 @@
                       "workerIndex": 12,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10,
+                      "duration": 11,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:33.285Z",
+                      "startTime": "2026-04-24T06:44:48.997Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3020,7 +3315,7 @@
                       "workerIndex": 12,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 5077,
+                      "duration": 5078,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    2 × unexpected value \"http://localhost:5173/intro\"\u001b[22m\n\u001b[2m    7 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/questions/\u001b[39m\nReceived string:  \u001b[31m\"http://localhost:5173/elections\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    2 × unexpected value \"http://localhost:5173/intro\"\u001b[22m\n\u001b[2m    7 × unexpected value \"http://localhost:5173/elections\"\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:88:30",
@@ -3044,7 +3339,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:33.301Z",
+                      "startTime": "2026-04-24T06:44:49.012Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3092,7 +3387,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:38.429Z",
+                      "startTime": "2026-04-24T06:44:54.145Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3140,7 +3435,7 @@
                       "workerIndex": 7,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10816,
+                      "duration": 10797,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at navigateToResults (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:138:3)\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:172:5",
@@ -3164,7 +3459,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:34.731Z",
+                      "startTime": "2026-04-24T06:43:49.816Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3216,7 +3511,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3252,7 +3547,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3288,7 +3583,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3302,7 +3597,7 @@
               "column": 3
             },
             {
-              "title": "should NOT show hidden candidate (no terms_of_use_accepted)",
+              "title": "should NOT show hidden candidate (no termsOfUseAccepted)",
               "ok": true,
               "tags": [
                 "voter"
@@ -3324,7 +3619,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3332,7 +3627,7 @@
                   "status": "skipped"
                 }
               ],
-              "id": "1ccf1bda51fc764aadcf-aa56d74e29566cdce8ea",
+              "id": "1ccf1bda51fc764aadcf-c9c6929a6894d145209b",
               "file": "specs/voter/voter-matching.spec.ts",
               "line": 235,
               "column": 3
@@ -3360,7 +3655,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3396,7 +3691,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:45.984Z",
+                      "startTime": "2026-04-24T06:44:01.086Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -3444,7 +3739,7 @@
                       "workerIndex": 8,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10801,
+                      "duration": 10863,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -3468,7 +3763,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:46.645Z",
+                      "startTime": "2026-04-24T06:44:01.855Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3515,7 +3810,7 @@
                       "workerIndex": 9,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10864,
+                      "duration": 11071,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -3539,7 +3834,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:35:58.723Z",
+                      "startTime": "2026-04-24T06:44:13.932Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3586,7 +3881,7 @@
                       "workerIndex": 10,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 10774,
+                      "duration": 11109,
                       "error": {
                         "message": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n",
                         "stack": "TimeoutError: locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('question-choice').first().or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')) to be visible\u001b[22m\n\n    at clickThroughIntroPages (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:57:61)\n    at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:36:9)\n    at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:54:5)",
@@ -3610,7 +3905,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:10.818Z",
+                      "startTime": "2026-04-24T06:44:26.553Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3675,12 +3970,12 @@
                       "workerIndex": 11,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 651,
+                      "duration": 1036,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:22.837Z",
+                      "startTime": "2026-04-24T06:44:38.958Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3718,12 +4013,12 @@
                       "workerIndex": 11,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 700,
+                      "duration": 625,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:23.940Z",
+                      "startTime": "2026-04-24T06:44:40.473Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3761,12 +4056,12 @@
                       "workerIndex": 11,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 737,
+                      "duration": 739,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-24T05:36:24.670Z",
+                      "startTime": "2026-04-24T06:44:41.128Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -3818,12 +4113,12 @@
                           "workerIndex": 11,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 5024,
+                          "duration": 4768,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-04-24T05:36:25.438Z",
+                          "startTime": "2026-04-24T06:44:41.896Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -3868,12 +4163,12 @@
                           "workerIndex": 11,
                           "parallelIndex": 0,
                           "status": "passed",
-                          "duration": 922,
+                          "duration": 578,
                           "errors": [],
                           "stdout": [],
                           "stderr": [],
                           "retry": 0,
-                          "startTime": "2026-04-24T05:36:30.535Z",
+                          "startTime": "2026-04-24T06:44:46.728Z",
                           "annotations": [],
                           "attachments": [
                             {
@@ -4006,11 +4301,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-04-24T05:34:27.442Z",
-    "duration": 178309.876,
-    "expected": 20,
-    "skipped": 56,
-    "unexpected": 13,
+    "startTime": "2026-04-24T06:42:43.378Z",
+    "duration": 185719.92799999999,
+    "expected": 41,
+    "skipped": 38,
+    "unexpected": 10,
     "flaky": 0
   }
 }
