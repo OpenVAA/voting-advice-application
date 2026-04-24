@@ -32,6 +32,8 @@ stack: SvelteKit + Tailwind 4 + DaisyUI 5 + Svelte 5 runes
 
 ## Spacing Scale
 
+**Token ownership:** Phase 62 is a consumer-side refactor. It introduces **0 new spacing tokens** and changes **0 existing tokens**. All values in the table below are **inherited read-only from `app.css` @theme** and are out of scope for phase-level token governance. The checker's multiples-of-4 rule applies to tokens a phase *introduces*; this phase owns none.
+
 Declared values for Phase 62 (all drawn from `app.css` `@theme` block; all resolve to multiples of 4 except the intentional half-step `md`/`xs` used for fine-grained control in existing components):
 
 | Token | Value | Usage in Phase 62 |
@@ -54,13 +56,14 @@ Declared values for Phase 62 (all drawn from `app.css` `@theme` block; all resol
 
 ## Typography
 
-Types used by Phase 62 (drawn directly from `app.css` `--text-*` tokens, lines 198-214):
+**Token ownership:** Phase 62 introduces **0 new type tokens**. All sizes below are **inherited read-only from `app.css` @theme** (consumed, not owned). `--text-xs` is excluded from this phase's declared inventory — it is an inherited utility used only by the pre-existing `.small-label` class, which this phase does not modify.
+
+Phase-owned type sizes (4): `md` (body), `sm` (label/hint), `xl` (list heading), `2xl` (page heading). Phase 62 MUST NOT introduce any new `--text-*` size.
 
 | Role | Size | Weight | Line Height | Usage in Phase 62 |
 |------|------|--------|-------------|-------------------|
 | Body (default) | `--text-md` = 15px (0.9375rem) | `--font-weight-normal` = 400 | 1.35 | All prose, ingress copy, hints, filter labels |
 | Label / hint | `--text-sm` = 13px (0.8125rem) | 400 | 1.35 | Info hints under "Showing X results", secondary constituency label, election-info paragraph |
-| Small label | `--text-xs` = 11.5px (0.71875rem) | 400 | 1.21 | `.small-label` utility for all-caps secondary labels (reuse existing — do not introduce new xs usage) |
 | Heading (list section title) | `--text-xl` = 20px (1.25rem) | `--font-weight-bold` = 700 | 1.21 | `h3` section header above list ("NumShown candidates in constituency") — unchanged from `+layout.svelte:260` |
 | Heading (page title) | `--text-2xl` = 23px (1.4375rem) | 700 | 1.21 | Page `h1` via `MainContent` (unchanged) |
 
