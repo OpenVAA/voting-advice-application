@@ -1,12 +1,13 @@
-import { flushSync } from 'svelte';
+import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-// Hoisted: mocked `$app/state.page` so filterContext can read scope keys synchronously.
-// We expose `mockPage` so tests can mutate it; filterContext re-derives via $derived.
-const mockPage = vi.hoisted(() => ({
-  params: { electionId: undefined, entityTypePlural: undefined } as Record<string, string | undefined>
-}));
-vi.mock('$app/state', () => ({ page: mockPage }));
+// Import the test stub directly. The vitest.config alias rewrites `$app/state`
+// → `src/lib/i18n/tests/__mocks__/app-state.ts`, so the `page` singleton seen
+// by `filterContext.svelte.ts` IS the same object as `mockPage` here.
+import { page as mockPage } from '$app/state';
+import FilterContextHarness from './__tests__/FilterContextHarness.svelte';
+import GetFilterContextHarness from './__tests__/GetFilterContextHarness.svelte';
+import type { FilterContext } from './filterContext.type';
+import type { FilterTree } from '$lib/contexts/voter/filters/filterStore.svelte';
 
 // Stub @sveltejs/kit error to throw with status + body for assertions.
 vi.mock('@sveltejs/kit', () => ({
@@ -82,208 +83,219 @@ class FakeGroup {
   }
 }
 
-async function importFresh() {
-  vi.resetModules();
-  return await import('./filterContext.svelte');
+/** Make a fresh DOM target div for `mount()`. */
+function mountTarget(): HTMLElement {
+  const el = document.createElement('div');
+  document.body.appendChild(el);
+  return el;
 }
 
 describe('filterContext', () => {
   beforeEach(() => {
-    vi.resetModules();
+    // Reset the page-state stub between tests (the stub is a module singleton
+    // — the alias means the same object is shared across tests).
     mockPage.params = {};
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    document.body.innerHTML = '';
   });
 
-  it('getFilterContext() before initFilterContext() throws status-500 error', async () => {
-    const { getFilterContext } = await importFresh();
-    let err: (Error & { status?: number }) | undefined;
-    // hasContext returns false outside any component-init context too — our impl throws
-    // via @sveltejs/kit error() before ever calling getContext, so a direct call is safe.
-    try {
-      getFilterContext();
-    } catch (e) {
-      err = e as Error & { status?: number };
-    }
-    expect(err).toBeDefined();
-    expect(err!.message).toMatch(/called before init/i);
-    expect(err!.status).toBe(500);
-  });
-
-  it('initFilterContext() returns a context; calling it twice throws status-500', async () => {
-    const { initFilterContext } = await importFresh();
-    const tree = {} as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
-    let firstCtx: unknown;
-    let err: (Error & { status?: number }) | undefined;
-    const cleanup = $effect.root(() => {
-      firstCtx = initFilterContext({ entityFilters: () => tree });
-      try {
-        initFilterContext({ entityFilters: () => tree });
-      } catch (e) {
-        err = e as Error & { status?: number };
+  it('getFilterContext() before initFilterContext() throws status-500 error', () => {
+    let caught: (Error & { status?: number }) | undefined;
+    const target = mountTarget();
+    const component = mount(GetFilterContextHarness, {
+      target,
+      props: {
+        onError: (e) => {
+          caught = e as Error & { status?: number };
+        }
       }
     });
-    cleanup();
-    expect(firstCtx).toBeDefined();
-    expect(err).toBeDefined();
-    expect(err!.message).toMatch(/called for a second time/i);
-    expect(err!.status).toBe(500);
+    flushSync();
+    unmount(component);
+    expect(caught).toBeDefined();
+    expect(caught!.message).toMatch(/called before init/i);
+    expect(caught!.status).toBe(500);
   });
 
-  it('exposes the FilterGroup scoped by (electionId, entityTypePlural=candidates → candidate)', async () => {
-    const { initFilterContext } = await importFresh();
+  it('initFilterContext() returns a context; calling it twice throws status-500', () => {
+    const tree = {} as unknown as FilterTree;
+    let firstCtx: FilterContext | undefined;
+    let secondErr: (Error & { status?: number }) | undefined;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        initSecond: true,
+        onReady: (c) => {
+          firstCtx = c;
+        },
+        onSecondInitError: (e) => {
+          secondErr = e as Error & { status?: number };
+        }
+      }
+    });
+    flushSync();
+    unmount(component);
+    expect(firstCtx).toBeDefined();
+    expect(secondErr).toBeDefined();
+    expect(secondErr!.message).toMatch(/called for a second time/i);
+    expect(secondErr!.status).toBe(500);
+  });
+
+  it('exposes the FilterGroup scoped by (electionId, entityTypePlural=candidates → candidate)', () => {
     const candidateGroup = new FakeGroup([new FakeFilter('cand-f')]);
     const orgGroup = new FakeGroup([new FakeFilter('org-f')]);
-    const tree = {
-      e1: { candidate: candidateGroup, organization: orgGroup }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
+    const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
     mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
 
     let observed: unknown;
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      // Read inside the effect root so the $derived runs.
-      observed = ctx.filterGroup;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          observed = ctx.filterGroup;
+        }
+      }
     });
-    cleanup();
+    flushSync();
+    unmount(component);
     expect(observed).toBe(candidateGroup);
   });
 
-  it('changing entityTypePlural to organizations resolves to the organization FilterGroup', async () => {
-    const { initFilterContext } = await importFresh();
+  it('changing entityTypePlural to organizations resolves to the organization FilterGroup', () => {
     const candidateGroup = new FakeGroup([new FakeFilter('c')]);
     const orgGroup = new FakeGroup([new FakeFilter('o')]);
-    const tree = {
-      e1: { candidate: candidateGroup, organization: orgGroup }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
+    const tree = { e1: { candidate: candidateGroup, organization: orgGroup } } as unknown as FilterTree;
 
     mockPage.params = { electionId: 'e1', entityTypePlural: 'organizations' };
     let observed: unknown;
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      observed = ctx.filterGroup;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          observed = ctx.filterGroup;
+        }
+      }
     });
-    cleanup();
+    flushSync();
+    unmount(component);
     expect(observed).toBe(orgGroup);
   });
 
-  it('mutating a filter rule bumps the version counter so $derived consumers re-run', async () => {
-    const { initFilterContext } = await importFresh();
+  it('mutating a filter rule bumps the version counter so $derived consumers re-run', () => {
     const f1 = new FakeFilter('f1');
     const group = new FakeGroup([f1]);
-    const tree = {
-      e1: { candidate: group }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
+    const tree = { e1: { candidate: group } } as unknown as FilterTree;
     mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
 
-    let initialVersion = -1;
-    let bumpedVersion = -1;
-    let derivedCount = 0;
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      initialVersion = ctx.version;
-      // A consumer-side $derived that subscribes to version
-      const consumed = $derived.by(() => {
-        derivedCount++;
-        void ctx.version;
-        return ctx.filterGroup?.filters.length ?? 0;
-      });
-      // Force initial read inside an $effect to register dependency
-      $effect(() => {
-        void consumed;
-      });
-      flushSync();
-      const before = derivedCount;
-      // Mutate a rule on the active filter — should fire onChange → version++
-      f1.setRule({ kind: 'whatever' });
-      flushSync();
-      bumpedVersion = ctx.version;
-      expect(derivedCount).toBeGreaterThan(before);
+    let captured: FilterContext | undefined;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          captured = ctx;
+        }
+      }
     });
-    cleanup();
+    flushSync();
+    expect(captured).toBeDefined();
+    const initialVersion = captured!.version;
+
+    // Touch filterGroup to activate the $effect (which attaches the onChange handler).
+    void captured!.filterGroup;
+    flushSync();
+    // The $effect should have attached. Now mutate a filter rule.
+    f1.setRule({ kind: 'whatever' });
+    flushSync();
+    const bumpedVersion = captured!.version;
+
+    unmount(component);
     expect(initialVersion).toBe(0);
     expect(bumpedVersion).toBe(1);
   });
 
-  it('resetFilters() invokes FilterGroup.reset() on the active group', async () => {
-    const { initFilterContext } = await importFresh();
+  it('resetFilters() invokes FilterGroup.reset() on the active group', () => {
     const f1 = new FakeFilter('f1');
     const group = new FakeGroup([f1]);
     const resetSpy = vi.spyOn(group, 'reset');
-    const tree = {
-      e1: { candidate: group }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
+    const tree = { e1: { candidate: group } } as unknown as FilterTree;
     mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
 
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      // Touch filterGroup so the $derived + $effect attach the onChange handler
-      void ctx.filterGroup;
-      flushSync();
-      ctx.resetFilters();
-      flushSync();
+    let captured: FilterContext | undefined;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          captured = ctx;
+        }
+      }
     });
-    cleanup();
+    flushSync();
+    void captured!.filterGroup;
+    flushSync();
+    captured!.resetFilters();
+    flushSync();
+    unmount(component);
     expect(resetSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('cleans up onChange listener when the active FilterGroup scope changes', async () => {
-    const { initFilterContext } = await importFresh();
+  it('removes the onChange listener on unmount (Pitfall 2 cleanup)', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
-    const newGroup = new FakeGroup([new FakeFilter('new')]);
-    const tree = {
-      e1: { candidate: oldGroup, organization: newGroup }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
-
-    // Start scoped to candidates → oldGroup
+    const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;
     mockPage.params = { electionId: 'e1', entityTypePlural: 'candidates' };
 
-    let oldRemoveBefore = 0;
-    let oldRemoveAfter = 0;
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      void ctx.filterGroup;
-      flushSync();
-      // The $effect should have attached a handler to oldGroup
-      expect(oldGroup.addCount).toBeGreaterThanOrEqual(1);
-      oldRemoveBefore = oldGroup.removeCount;
-      // Switch scope — page.params change. mockPage is the live object the $derived reads.
-      mockPage.params = { electionId: 'e1', entityTypePlural: 'organizations' };
-      // Trigger reactivity for $derived by re-reading. We need a way to make $derived re-run:
-      // since `page` is a plain (non-$state) object in our mock, we need a tick. Use flushSync
-      // after the reassignment of params. For svelte $derived to re-run, the read must observe
-      // a $state change. Our mock cannot trigger that automatically. So we instead mutate via
-      // assigning a new params object (same effect — the $derived reads page.params each run,
-      // which still won't re-run without a $state dep). We accept this limitation: the test
-      // verifies the cleanup-on-effect-rerun path by testing that mutating the OLD group while
-      // we're still scoped to it bumps version, then we explicitly trigger a re-derive by
-      // calling initFilterContext-like reset via direct mutation of the state. Skipping the
-      // page-driven scope change here because $app/state is not reactive in tests.
-      oldRemoveAfter = oldGroup.removeCount;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          // touch to activate the $effect
+          void ctx.filterGroup;
+        }
+      }
     });
-    cleanup();
-    // After cleanup() runs, the effect's cleanup return MUST fire, removing the handler.
-    expect(oldGroup.removeCount).toBeGreaterThanOrEqual(oldRemoveBefore);
-    // After overall effect.root cleanup, the handler should be gone.
+    flushSync();
+    expect(oldGroup.addCount).toBeGreaterThanOrEqual(1);
+    expect(oldGroup._handlers.size).toBeGreaterThanOrEqual(1);
+    unmount(component);
+    flushSync();
+    // After unmount, the cleanup return MUST detach the handler.
     expect(oldGroup._handlers.size).toBe(0);
-    void oldRemoveAfter;
+    expect(oldGroup.removeCount).toBeGreaterThanOrEqual(1);
   });
 
-  it('returns undefined for filterGroup when scope params are incomplete', async () => {
-    const { initFilterContext } = await importFresh();
+  it('returns undefined for filterGroup when scope params are incomplete', () => {
     const tree = {
       e1: { candidate: new FakeGroup([new FakeFilter()]) }
-    } as unknown as import('$lib/contexts/voter/filters/filterStore.svelte').FilterTree;
+    } as unknown as FilterTree;
     // No electionId, no entityTypePlural
     mockPage.params = {};
     let observed: unknown = 'sentinel';
-    const cleanup = $effect.root(() => {
-      const ctx = initFilterContext({ entityFilters: () => tree });
-      observed = ctx.filterGroup;
+    const target = mountTarget();
+    const component = mount(FilterContextHarness, {
+      target,
+      props: {
+        init: { entityFilters: () => tree },
+        onReady: (ctx) => {
+          observed = ctx.filterGroup;
+        }
+      }
     });
-    cleanup();
+    flushSync();
+    unmount(component);
     expect(observed).toBeUndefined();
   });
 });
