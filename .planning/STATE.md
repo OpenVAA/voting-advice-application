@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: milestone
 status: executing
-stopped_at: Plan 59-04 complete — CORE SWAP landed (commits 7b2c9083d / 7143f08ff / 58d86fa7f / 9c9e6363f); tests/ off JSON fixtures onto @openvaa/dev-seed programmatic API
-last_updated: "2026-04-23T19:40:00.000Z"
-last_activity: 2026-04-23 -- Phase 59 Plan 04 (core swap — tests/seed-test-data.ts + 6 Playwright setup/teardown files swapped to dev-seed) complete
+stopped_at: "Plan 59-05 complete — PARITY GATE: FAIL; Plan 06 BLOCKED per D-59-12 fix-forward"
+last_updated: "2026-04-24T05:42:57.983Z"
+last_activity: 2026-04-24 -- Phase 59 Plan 05 (post-swap parity) complete — PARITY GATE: FAIL (22 regressions, D-59-12 fix-forward activated); Plan 06 BLOCKED
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 34
-  completed_plans: 31
-  percent: 91
+  completed_plans: 32
+  percent: 94
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: 59 (e2e-fixture-migration) — EXECUTING
-Plan: 4/7 complete (59-04 CORE SWAP — tests/ onto @openvaa/dev-seed)
-Status: Executing Phase 59 — next plan is 59-05 (Wave 4, post-swap Playwright + parity gate against Plan 01 baseline)
-Last activity: 2026-04-23 -- Phase 59 Plan 04 (core swap) complete
+Phase: 59 (e2e-fixture-migration) — PAUSED (PARITY FAIL, D-59-12 fix-forward)
+Plan: 5/7 complete (59-05 POST-SWAP PARITY — FAIL, 22 regressions documented in post-swap/diff.md)
+Status: Phase 59 paused per D-59-12 — Plan 06 (fixture deletion) BLOCKED until parity flips to PASS. Fix-forward work list: (1) set externalIdPrefix:'test-' on e2e template to fix runTeardown zero-rows failure, (2) adjust e2e template opinion-question content so CAND-12 persist-comment test navigation lands on comment-allowed question, (3) update baseline/summary.md camelCase→snake_case for voter-matching source-skip ID drift.
+Last activity: 2026-04-24 -- Phase 59 Plan 05 (post-swap parity gate) complete — FAIL verdict
 
 ## Performance Metrics
 
@@ -100,6 +100,10 @@ Key context for v2.5:
 - Plan 59-04: Preserved legacy updateAppSettings(...) calls in all 4 setup files (data.setup.ts + 3 variant setups) — the Phase 58 e2e template has NO app_settings.fixed[] block, so Writer Pass-5 merge_jsonb_column is a no-op. Dropping the calls would regress popup/intro/hideIfMissingAnswers defaults and fail the Plan 05 parity gate by design. Rule 2 auto-fix (missing critical functionality). Follow-up: extend e2e template with app_settings block; then delete the 4 legacy blocks (~60 lines).
 - Plan 59-04: forceRegister signature is Promise<void> (throws on any failure path). Plan draft's `expect(result).toBeTruthy()` replaced with `expect(true).toBe(true)` post-condition marker.
 - Plan 59-04: Prefix 'test-' satisfies runTeardown 2-char guard AND matches e2e template emit (externalIdPrefix '' + fixed[] literal 'test-*' ids per D-58-15). Reconciliation is D-59-06 option 3 — no e2e template change needed.
+- Plan 59-05: PARITY GATE: FAIL — 22 surface regressions, 3 real root causes. (1) runTeardown('test-') deletes zero rows in both data.teardown.ts + variant-data.teardown.ts (2 direct fails) — hypothesized cause: e2e template's externalIdPrefix:'' leaves synthetic rows unstamped so teardown's LIKE 'test-%' filter excludes them; fix-forward Option A is to set externalIdPrefix:'test-' on the e2e template, overriding Plan 59-04's Option-3 reconciliation (which assumed fixed[] literals were enough — they are for hand-authored rows but not synthetic count:N rows). (2) candidate-questions CAND-12 persist-comment times out at getByTestId('candidate-questions-comment'); 7 other candidate-questions tests pass so basic rendering works — navigation path lands on wrong question; cascades into 18 downstream candidate-app-mutation + re-auth-setup + candidate-app-password + candidate-app-settings tests via Playwright project deps. (3) Cosmetic: baseline summary.md uses camelCase 'termsOfUseAccepted' for voter-matching source-skip, post-swap uses snake_case 'terms_of_use_accepted' (Plan 59-02 rename artifact); diff script flags as "new test" but both are test.skip — no runtime regression.
+- Plan 59-05: Data-race pool SHRANK post-swap — 9 of 10 baseline flakes now pass (voter-detail × 4, voter-results × 3, voter-matching ranking order, voter-journey intro start). Under D-59-04 this is acceptable flake-pool shift; parity FAIL is unrelated to concurrency variance (regressions are deterministic assertion failures + teardown zero-rows + timeout on single non-flake test). Confirms Plan 59-04 core swap improved E2E reliability for voter-side data loading.
+- Plan 59-05: Post-swap runtime 178.3s vs baseline 178.0s (+0.17%) — seed-path latency effectively unchanged. NF-01 <10s seed budget still comfortably met; extra wall time is in test bodies (the 30s timeout on CAND-12), not seeding.
+- Plan 59-05: Declared FAIL verdict + committed diff.md + left swap commit 9c9e6363f landed per D-59-12 fix-forward. Did NOT create Phase 59.1 follow-up plan — orchestrator owns that decision. Did NOT retry Playwright run — regressions are deterministic, not flake variance.
 
 ### Blockers/Concerns
 
@@ -108,12 +112,13 @@ Key context for v2.5:
 - NF-01 <10s seed budget pressures the generator toward bulk RPCs vs per-row inserts — Phase 56 picks the approach.
 - E2E-03 zero-regression bar requires an explicit baseline-vs-post-swap Playwright comparison in Phase 59 before fixtures are deleted.
 - supabaseAdminClient home (stays in tests/ vs moves to dev-tools) is a Phase 59 implementation-time call.
+- **Phase 59 PARITY GATE FAILED 2026-04-24** — Plan 06 (legacy fixture deletion) is BLOCKED until 3 root-cause fixes land and Plan 59-05 Task 2+3 re-run prints PARITY GATE: PASS. See .planning/phases/59-e2e-fixture-migration/post-swap/diff.md for the fix-forward work list.
 
 ## Session Continuity
 
-Last session: 2026-04-23T19:40:00.000Z
-Stopped at: Plan 59-04 complete — CORE SWAP landed (commits 7b2c9083d / 7143f08ff / 58d86fa7f / 9c9e6363f); tests/ off JSON fixtures onto @openvaa/dev-seed
-Resume file: .planning/phases/59-e2e-fixture-migration/59-05-PLAN.md
-Next action: Execute 59-05 (Wave 4 — post-swap Playwright run + parity gate vs Plan 01 baseline)
+Last session: 2026-04-24T05:42:57.979Z
+Stopped at: Plan 59-05 complete — PARITY GATE: FAIL; Plan 06 BLOCKED per D-59-12 fix-forward
+Resume file: .planning/phases/59-e2e-fixture-migration/post-swap/diff.md (fix-forward work list)
+Next action: Orchestrator decision required — Plan 06 BLOCKED. Triage options: (a) inline Plan 59-05.1 fixup, (b) Phase 59.1 fixup plan, (c) user-initiated fix cycle. Three fixes needed: externalIdPrefix:'test-' on e2e template, CAND-12 question-nav, baseline ID cosmetic. After fixes land, re-run Plan 59-05 Tasks 2+3 (overwrite post-swap/playwright-report.json + diff.md) until PARITY GATE: PASS.
 
-**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 4 complete — 2026-04-23T19:40:00Z
+**Planned Phase:** 59 (e2e-fixture-migration) — 7 plans, 5 complete — 2026-04-24T05:41:11Z (PAUSED per D-59-12)
