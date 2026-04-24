@@ -29,7 +29,6 @@
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
-  import { PopupRenderer } from '$lib/components/popupRenderer';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
   import MaintenancePage from './MaintenancePage.svelte';
@@ -65,6 +64,7 @@
   const dataRoot = fromStore(dataRootStore);
   const openFeedbackModal = fromStore(openFeedbackModalStore);
   const sendTrackingEvent = fromStore(sendTrackingEventStore);
+  const popupQueueState = fromStore(popupQueue);
 
   ////////////////////////////////////////////////////////////////////
   // Provide globally used data and check all loaded data
@@ -178,7 +178,8 @@
     if (feedbackModalRef) openFeedbackModalStore.set(() => feedbackModalRef?.openFeedback());
   });
 
-  // popupItem reactivity is handled by the PopupRenderer runes-mode component
+  // popupItem reactivity is handled inline at the template tail via
+  // popupQueueState + {@const Component = item.component}
 
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
@@ -223,5 +224,14 @@
   {/if}
 {/if}
 
-<!-- Popup service: rendered by runes-mode component for Svelte 5 reactivity -->
-<PopupRenderer {popupQueue} />
+<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper per Phase 60 LAYOUT-03) -->
+{#if popupQueueState.current}
+  {@const item = popupQueueState.current}
+  {@const Component = item.component}
+  <Component
+    {...item.props ?? {}}
+    onClose={() => {
+      item.onClose?.();
+      popupQueue.shift();
+    }} />
+{/if}
