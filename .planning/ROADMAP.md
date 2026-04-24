@@ -41,7 +41,12 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   2. A fresh candidate arriving at a protected candidate route via full page load (not client-side navigation) sees the candidate dashboard render after data resolution — the page no longer stays stuck at `<Loading />`.
   3. The `PopupRenderer` workaround is either removed (direct store rendering now works through the migrated root layout) or retained with a documented in-code rationale that names the upstream Svelte 5 limitation it still guards against.
   4. Existing voter-app and candidate-app E2E tests that previously passed continue to pass — the layout migration introduces no regressions to the Playwright parity baseline.
-**Plans**: TBD
+**Plans**: 5 plans
+  - [ ] 60-01-PLAN.md — Wave-0 prep: restore diff-playwright-reports.ts + baseline JSON; create D-09 setTimeout-popup E2E scaffold
+  - [ ] 60-02-PLAN.md — Root `+layout.svelte` $derived refactor (LAYOUT-01, D-05)
+  - [ ] 60-03-PLAN.md — Protected `(protected)/+layout.svelte` $derived refactor + D-02 wrapper fallback gate (LAYOUT-02)
+  - [ ] 60-04-PLAN.md — D-08 PopupRenderer empirical removal + D-10 retention branch (LAYOUT-03)
+  - [ ] 60-05-PLAN.md — Playwright parity gate vs baseline `3c57949c8` (SC-4)
 **UI hint**: yes
 
 ### Phase 61: Voter-App Question Flow
