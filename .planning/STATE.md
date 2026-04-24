@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
-status: ready_to_plan
-stopped_at: Milestone v2.6 roadmap created — Phases 60-63 defined, ready to plan Phase 60
-last_updated: "2026-04-24T09:00:00.000Z"
-last_activity: 2026-04-24
+status: planning
+stopped_at: Phase 60 context gathered
+last_updated: "2026-04-24T08:51:25.319Z"
+last_activity: 2026-04-24 — v2.6 roadmap created; all 11 v2.6 requirements mapped across Phases 60-63; REQUIREMENTS.md traceability filled
 progress:
   total_phases: 4
   completed_phases: 0
@@ -93,7 +93,7 @@ Key context for v2.6:
 
 ## Session Continuity
 
-Last session: 2026-04-24T09:00:00.000Z
-Stopped at: ROADMAP.md written for v2.6 — Phases 60-63 with 11/11 requirements mapped; ready to plan Phase 60
-Resume file: None
+Last session: --stopped-at
+Stopped at: Phase 60 context gathered
+Resume file: --resume-file
 Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
