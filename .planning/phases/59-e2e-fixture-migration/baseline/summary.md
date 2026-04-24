@@ -194,7 +194,7 @@ part of the parity contract. Listed here only so the total (41+10+25+13 = 89)
 reconciles with `.stats` in `playwright-report.json`.
 
 - voter-app :: specs/voter/voter-journey.spec.ts > should answer all Likert questions with navigation
-- voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no termsOfUseAccepted)
+- voter-app :: specs/voter/voter-matching.spec.ts > should NOT show hidden candidate (no terms_of_use_accepted)
 - voter-app :: specs/voter/voter-matching.spec.ts > should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)
 - voter-app :: specs/voter/voter-matching.spec.ts > should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)
 - voter-app :: specs/voter/voter-matching.spec.ts > should show partial-answer candidate in results with valid score
