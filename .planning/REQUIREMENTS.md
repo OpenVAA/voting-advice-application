@@ -63,18 +63,20 @@ _Items tracked but not in v2.6 scope. Carry forward to a later milestone or back
 
 ## Traceability
 
-_Filled by `.planning/ROADMAP.md` when phases are created._
+Phase assignments mapped by `.planning/ROADMAP.md` on 2026-04-24. Success-criterion references point to the numbered criteria under each phase's `**Success Criteria**` block in ROADMAP.md.
 
 | REQ-ID | Phase | Success criterion reference |
 | --- | --- | --- |
-| LAYOUT-01 | TBD | — |
-| LAYOUT-02 | TBD | — |
-| LAYOUT-03 | TBD | — |
-| QUESTION-01 | TBD | — |
-| QUESTION-02 | TBD | — |
-| QUESTION-03 | TBD | — |
-| RESULTS-01 | TBD | — |
-| RESULTS-02 | TBD | — |
-| RESULTS-03 | TBD | — |
-| E2E-01 | TBD | — |
-| E2E-02 | TBD | — |
+| LAYOUT-01 | Phase 60 | Phase 60 SC-1 (root layout uses `$props` / `$derived` / `{@render children()}`; no legacy Svelte 4 patterns) |
+| LAYOUT-02 | Phase 60 | Phase 60 SC-2 (protected candidate layout renders post-hydration on full page loads — no stuck `<Loading />`) |
+| LAYOUT-03 | Phase 60 | Phase 60 SC-3 (`PopupRenderer` workaround removed or explicitly retained with documented in-code rationale) |
+| QUESTION-01 | Phase 61 | Phase 61 SC-1 (boolean-type questions render a binary answer control; voter can answer and advance) |
+| QUESTION-02 | Phase 61 | Phase 61 SC-2 (candidate result-detail page renders match breakdown without error for boolean answers) |
+| QUESTION-03 | Phase 61 | Phase 61 SC-3 (category-selection screen has sensible default; question counter updates reactively on toggle) |
+| RESULTS-01 | Phase 62 | Phase 62 SC-1 + SC-4 (merged entity-list component; no infinite-loop symptoms; `$derived` replaces circular `$effect` chain) |
+| RESULTS-02 | Phase 62 | Phase 62 SC-2 (filters re-enabled on voter results page; toggling narrows list without layout-based regression) |
+| RESULTS-03 | Phase 62 | Phase 62 SC-3 (empty `results/+page.svelte` removed; optional `[entityType]/[entityId]` route shared; `entityType` sets active tab) |
+| E2E-01 | Phase 63 | Phase 63 SC-1 + SC-2 (carry-forward pool shrinks measurably from SHA `3c57949c8` baseline — 10 data-race + 38 cascade out of 89; residuals documented as framework-level) |
+| E2E-02 | Phase 63 | Phase 63 SC-3 + SC-4 (`app_settings.fixed[]` in e2e template; 4 legacy `updateAppSettings(...)` blocks deleted; parity gate PASS) |
+
+**Coverage:** 11 / 11 requirements mapped ✓ — no orphans, no duplicates.
