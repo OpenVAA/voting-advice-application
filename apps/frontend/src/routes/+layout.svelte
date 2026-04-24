@@ -71,53 +71,51 @@
   ////////////////////////////////////////////////////////////////////
 
   // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
-  let error = $state<Error | undefined>();
-  let ready = $state(false);
-  let underMaintenance = $state(false);
+  //
+  // Validation is a pure `$derived` over the already-resolved loader data
+  // (`+layout.ts` awaits every data field before returning — see the policy
+  // comment at `+layout.ts` lines 7-12). No `Promise.all`, no `.then()`, no
+  // microtask boundary between `$effect` and `$state` writes. This shape
+  // removes the Svelte 5 SSR+hydration reactivity race that stuck the
+  // previous `$effect` + promise-chain pattern at <Loading /> on full page
+  // loads. Ref: 60-RESEARCH §Pattern 1, D-01 + D-03 + D-05.
+  const validity: { error: Error } | { appSettingsData: DPDataType['appSettings']; electionData: DPDataType['elections']; constituencyData: DPDataType['constituencies'] } = $derived.by(() => {
+    if (!isValidResult(data.appSettingsData, { allowEmpty: true }))
+      return { error: new Error('Error loading app settings data') };
+    if (!isValidResult(data.appCustomizationData, { allowEmpty: true }))
+      return { error: new Error('Error loading app customization data') };
+    if (!isValidResult(data.electionData)) return { error: new Error('Error loading election data') };
+    if (!isValidResult(data.constituencyData)) return { error: new Error('Error loading constituency data') };
+    return {
+      appSettingsData: data.appSettingsData as DPDataType['appSettings'],
+      electionData: data.electionData as DPDataType['elections'],
+      constituencyData: data.constituencyData as DPDataType['constituencies']
+    };
+  });
 
+  const error = $derived('error' in validity ? validity.error : undefined);
+  const ready = $derived(!('error' in validity));
+  const underMaintenance = $derived(
+    !('error' in validity) && (validity.appSettingsData.access?.underMaintenance ?? false)
+  );
+
+  // Side effect — applies resolved data to `$dataRoot`. Reads `$derived` validity;
+  // NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation
+  // on mount and re-runs on any `data` prop change (client-side navigation).
+  // We don't do anything else with the data if it's valid, because the relevant
+  // stores will pick it up from `$page.data`.
   $effect(() => {
-    // Read data prop fields to establish dependency tracking
-    const settingsP = data.appSettingsData;
-    const customP = data.appCustomizationData;
-    const electionP = data.electionData;
-    const constituencyP = data.constituencyData;
-
-    // Reset state before async work
-    error = undefined;
-    ready = false;
-    underMaintenance = false;
-
-    Promise.all([settingsP, customP, electionP, constituencyP]).then((results) => {
-      error = update(results);
+    if ('error' in validity) return;
+    dataRoot.current.update(() => {
+      dataRoot.current.provideElectionData(validity.electionData);
+      dataRoot.current.provideConstituencyData(validity.constituencyData);
     });
   });
 
+  // Error logging side-effect — fires once when `error` transitions from absent to present.
   $effect(() => {
     if (error) logDebugError(error.message);
   });
-
-  /**
-   * Handle the update inside a function.
-   * @returns `Error` if the data is invalid, `undefined` otherwise.
-   */
-  function update([appSettingsData, appCustomizationData, electionData, constituencyData]: [
-    DPDataType['appSettings'] | Error,
-    DPDataType['appCustomization'] | Error,
-    DPDataType['elections'] | Error,
-    DPDataType['constituencies'] | Error
-  ]): Error | undefined {
-    if (!isValidResult(appSettingsData, { allowEmpty: true })) return new Error('Error loading app settings data');
-    if (!isValidResult(appCustomizationData, { allowEmpty: true })) return new Error('Error app customization data');
-    if (!isValidResult(electionData)) return new Error('Error loading constituency data');
-    if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
-    underMaintenance = appSettingsData.access?.underMaintenance ?? false;
-    dataRoot.current.update(() => {
-      dataRoot.current.provideElectionData(electionData);
-      dataRoot.current.provideConstituencyData(constituencyData);
-    });
-    // We don't do anything else with the data if they're okay, because the relevant stores will pick them up from $page.data
-    ready = true;
-  }
 
   ////////////////////////////////////////////////////////////////////
   // Tracking
