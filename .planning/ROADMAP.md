@@ -89,8 +89,8 @@ Full details: `.planning/milestones/v2.5-ROADMAP.md`
   3. The `e2e` template in `@openvaa/dev-seed` carries an `app_settings.fixed[]` block whose emitted defaults match the values currently applied by the 4 legacy `updateAppSettings(...)` call sites (`data.setup.ts` + 3 variant setups, ~60 lines per Plan 59-04 Rule-2 follow-up).
   4. After the template change lands, the 4 legacy `updateAppSettings(...)` blocks are deleted and the Playwright parity gate prints `PARITY GATE: PASS` against the post-v2.5 baseline.
 **Plans**: 3 plans
-  - [ ] 63-01-PLAN.md — Hoist `mergeSettings` (+ `DeepPartial`) from frontend to `@openvaa/app-shared`; vitest coverage; add `@openvaa/app-shared` workspace dep to `@openvaa/dev-seed` (E2E-02 foundation)
-  - [ ] 63-02-PLAN.md — Populate e2e template `app_settings.fixed[]` + 3 variant overlays via `mergeSettings`; delete 4 legacy `updateAppSettings(...)` blocks in `tests/tests/setup/*.setup.ts`; add post-seed `toMatchObject` assertion + `getAppSettings()` helper + D-11 JSDoc update + D-09 spec-level audit (E2E-02)
+  - [x] 63-01-PLAN.md — Hoist `mergeSettings` (+ `DeepPartial`) from frontend to `@openvaa/app-shared`; vitest coverage; add `@openvaa/app-shared` workspace dep to `@openvaa/dev-seed` (E2E-02 foundation)
+  - [x] 63-02-PLAN.md — Populate e2e template `app_settings.fixed[]` + 3 variant overlays via `mergeSettings`; delete 4 legacy `updateAppSettings(...)` blocks in `tests/tests/setup/*.setup.ts`; add post-seed `toMatchObject` assertion + `getAppSettings()` helper + D-11 JSDoc update + D-09 spec-level audit (E2E-02)
   - [ ] 63-03-PLAN.md — Post-v2.6 Playwright parity gate vs baseline `3c57949c8`; commit post-v2.6 baseline JSON + diff.md unconditionally; residual classification per D-06; up to 2-3 residual fixes per D-07 (RESOLVED Q3 triple); escalate if over budget (E2E-01)
 
 ## Progress
