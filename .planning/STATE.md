@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Svelte 5 Migration Cleanup
 status: executing
-stopped_at: "Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server). REGRESSION: dev-seed default-template NF-01 perf gate failing (20s vs 10s budget) — investigate before resuming."
-last_updated: "2026-04-25T08:33:42.467Z"
+stopped_at: "Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server)."
+last_updated: "2026-04-25T10:49:35.947Z"
 last_activity: 2026-04-24 -- Phase 63 execution started
 progress:
   total_phases: 4
@@ -111,7 +111,7 @@ Key context for v2.6:
 ## Session Continuity
 
 Last session: --stopped-at
-Stopped at: Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server). REGRESSION: dev-seed default-template NF-01 perf gate failing (20s vs 10s budget) — investigate before resuming.
+Stopped at: Phase 63 partial: 63-01 + 63-02 complete; 63-03 deferred (parity gate needs live dev server).
 Resume file: --resume-file
 Next action: `/gsd-plan-phase 60` — plan Phase 60 (Layout Runes Migration & Hydration Fix, LAYOUT-01/02/03)
 
