@@ -3,7 +3,7 @@ import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
 import type { AppCustomization } from './appCustomization.type';
-import type { getRoute } from './getRoute.svelte';
+import type { RouteBuilder } from './getRoute.svelte';
 import type { PopupStore } from './popup';
 import type { TrackingService } from './tracking';
 import type { UserPreferences } from './userPreferences.type';
@@ -49,7 +49,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
     /**
      * A store for building routes.
      */
-    getRoute: typeof getRoute;
+    getRoute: Readable<RouteBuilder>;
     /**
      * A store containing the possible survey link.
      */

@@ -9,7 +9,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { idTokenClaims, preregister, preregistrationNominations, t, getRoute } = getCandidateContext();
+  // Phase 61-03 follow-up: idTokenClaims + preregistrationNominations are
+  // reactive; access via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { preregister, t, getRoute } = candCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Handle submitting
@@ -26,11 +29,11 @@
     status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
-      firstName: idTokenClaims?.firstName
+      firstName: candCtx.idTokenClaims?.firstName
     };
     await preregister({
       email: email1,
-      nominations: preregistrationNominations,
+      nominations: candCtx.preregistrationNominations,
       extra: {
         emailTemplate: {
           subject: t('candidateApp.preregister.email.subject'),

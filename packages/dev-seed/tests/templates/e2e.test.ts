@@ -41,17 +41,18 @@ import { e2eTemplate } from '../../src/templates/e2e';
 // ---------------------------------------------------------------------------
 
 const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [
-  // §1 elections
+  // §1 elections — base is single-election (auto-implied voter journey).
+  // test-election-2 is declared by the multi-election variant template at
+  // tests/tests/setup/templates/variant-multi-election.ts.
   { table: 'elections', id: 'test-election-1' },
-  { table: 'elections', id: 'test-election-2' },
 
-  // §1 constituencies
+  // §1 constituencies — single base constituency (auto-implied). Additional
+  // constituencies (-beta, -e2..-e5) live in the multi-election variant.
   { table: 'constituencies', id: 'test-constituency-alpha' },
-  { table: 'constituencies', id: 'test-constituency-e2' },
 
-  // §1 + §1.1 constituency_groups
+  // §1 + §1.1 constituency_groups — single base group; the variant adds
+  // test-cg-municipalities.
   { table: 'constituency_groups', id: 'test-cg-1' },
-  { table: 'constituency_groups', id: 'test-cg-municipalities' },
 
   // §1.1 organizations (voter-results.spec.ts:28 sums both datasets' orgs)
   { table: 'organizations', id: 'test-party-a' },
@@ -247,19 +248,9 @@ describe('e2eTemplate — §Section 2 + §2.1 display-text contracts', () => {
     expect(e?.name?.en).toBe('Test Election 2025');
   });
 
-  it('test-election-2 name is "Test Election 2026" (§2)', () => {
-    const e = (fragmentOf('elections')?.fixed ?? []).find(
-      (r) => r.external_id === 'test-election-2'
-    ) as { name?: { en?: string } } | undefined;
-    expect(e?.name?.en).toBe('Test Election 2026');
-  });
-
-  it('test-cg-municipalities name is "Municipalities" (§2, startfromcg/constituency specs)', () => {
-    const cg = (fragmentOf('constituency_groups')?.fixed ?? []).find(
-      (r) => r.external_id === 'test-cg-municipalities'
-    ) as { name?: { en?: string } } | undefined;
-    expect(cg?.name?.en).toBe('Municipalities');
-  });
+  // test-election-2 + test-cg-municipalities live in the multi-election
+  // variant template now; their display-text contracts are covered by that
+  // template's own test suite (tests/tests/setup/templates/variant-multi-election.ts).
 
   it('test-candidate-alpha has first_name "Test" and last_name "Candidate Alpha" (§2.1)', () => {
     const alpha = (fragmentOf('candidates')?.fixed ?? []).find(
@@ -390,12 +381,12 @@ describe('e2eTemplate — §Section 3 relational triangles', () => {
 });
 
 describe('e2eTemplate — §Section 7 row-count minimums', () => {
-  it('elections.fixed.length >= 2', () => {
-    expect((fragmentOf('elections')?.fixed ?? []).length).toBeGreaterThanOrEqual(2);
+  it('elections.fixed.length === 1 (single-election base; multi-election lives in variant)', () => {
+    expect((fragmentOf('elections')?.fixed ?? []).length).toBe(1);
   });
 
-  it('constituencies.fixed.length >= 2', () => {
-    expect((fragmentOf('constituencies')?.fixed ?? []).length).toBeGreaterThanOrEqual(2);
+  it('constituencies.fixed.length === 1 (single-constituency base; auto-implied)', () => {
+    expect((fragmentOf('constituencies')?.fixed ?? []).length).toBe(1);
   });
 
   it('organizations.fixed.length === 4 (voter-results.spec.ts:28 totalPartyCount)', () => {

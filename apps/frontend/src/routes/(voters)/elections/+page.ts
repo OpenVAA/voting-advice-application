@@ -50,11 +50,14 @@ export async function load({ parent, params, route, url }) {
   }
 
   // StartFromConstituencyGroup is not set, so constituency selection will come after this page
-  if (impliedElectionId) _redirect('Constituencies');
+  // Pass impliedElectionId forward so /constituencies and the voter context's
+  // selectedElections see the implied id without re-implying it on every read.
+  // (Symmetry with `(located)/+layout.ts:60-67` which also passes electionId.)
+  if (impliedElectionId) _redirect('Constituencies', { electionId: impliedElectionId });
   // Show election selector
   return;
 
-  function _redirect(target: Route): never {
-    redirect(307, buildRoute(target, { params, route, url }));
+  function _redirect(target: Route, extraParams?: Record<string, string | Array<string> | undefined>): never {
+    redirect(307, buildRoute({ route: target, ...(extraParams ?? {}) }, { params, route, url }));
   }
 }

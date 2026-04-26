@@ -129,6 +129,67 @@ describe('runPipeline', () => {
     });
   });
 
+  it('post-topo: per-row constituency_groups declaration on a fixed[] election overrides full-fanout', () => {
+    const out = runPipeline({
+      externalIdPrefix: '',
+      elections: {
+        count: 0,
+        fixed: [
+          {
+            external_id: 'el_a',
+            constituency_groups: [{ external_id: 'cg_a' }]
+          },
+          { external_id: 'el_b' }
+        ]
+      },
+      constituency_groups: {
+        count: 0,
+        fixed: [
+          { external_id: 'cg_a' },
+          { external_id: 'cg_b' }
+        ]
+      }
+    });
+
+    const elA = out.elections.find((e) => e.external_id === 'el_a') as Record<string, unknown>;
+    const elB = out.elections.find((e) => e.external_id === 'el_b') as Record<string, unknown>;
+
+    // el_a declared cg_a inline → fanout sentinel is NOT attached; the original
+    // declaration is left intact for linkJoinTables to consume.
+    expect(elA._constituencyGroups).toBeUndefined();
+    expect(elA.constituency_groups).toEqual([{ external_id: 'cg_a' }]);
+
+    // el_b declared nothing → still gets the full-fanout default.
+    const sentinel = elB._constituencyGroups as { externalId: Array<string> };
+    expect(sentinel.externalId).toEqual(['cg_a', 'cg_b']);
+  });
+
+  it('post-topo: per-row constituencies declaration on a fixed[] constituency_group overrides full-fanout', () => {
+    const out = runPipeline({
+      externalIdPrefix: '',
+      constituency_groups: {
+        count: 0,
+        fixed: [
+          { external_id: 'cg_a', constituencies: [{ external_id: 'c_a' }] },
+          { external_id: 'cg_b' }
+        ]
+      },
+      constituencies: {
+        count: 0,
+        fixed: [{ external_id: 'c_a' }, { external_id: 'c_b' }]
+      }
+    });
+
+    const cgA = out.constituency_groups.find((c) => c.external_id === 'cg_a') as Record<string, unknown>;
+    const cgB = out.constituency_groups.find((c) => c.external_id === 'cg_b') as Record<string, unknown>;
+
+    expect(cgA._constituencies).toBeUndefined();
+    expect(cgA.constituencies).toEqual([{ external_id: 'c_a' }]);
+
+    const sentinel = cgB._constituencies as { externalId: Array<string> };
+    expect(sentinel.externalId).toEqual(['c_a', 'c_b']);
+  });
+
   it('topo refinement: questions run before candidates (answersByExternalId populated)', () => {
     const out = runPipeline({});
     const firstCandidate = out.candidates[0] as Record<string, unknown>;

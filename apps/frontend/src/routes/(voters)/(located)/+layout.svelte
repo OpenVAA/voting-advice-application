@@ -55,8 +55,8 @@ Displays a warning if the selected constituency does not have nominations in all
     // Reset state
     error = undefined;
     ready = false;
-    Promise.all([questionData, nominationData]).then((resolved) => {
-      const updateError = updateSync(resolved);
+    Promise.all([questionData, nominationData]).then(async (resolved) => {
+      const updateError = await updateAsync(resolved);
       error = updateError;
     });
   });
@@ -65,10 +65,10 @@ Displays a warning if the selected constituency does not have nominations in all
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  function updateSync([questionData, nominationData]: [
+  async function updateAsync([questionData, nominationData]: [
     DPDataType['questions'] | Error,
     DPDataType['nominations'] | Error
-  ]): Error | undefined {
+  ]): Promise<Error | undefined> {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
     $dataRoot.update(() => {
@@ -76,26 +76,18 @@ Displays a warning if the selected constituency does not have nominations in all
       $dataRoot.provideEntityData(nominationData.entities);
       $dataRoot.provideNominationData(nominationData.nominations);
     });
-    // Check nominations synchronously from VoterContext
-    const nomStatus = checkNominationsSync();
+    // Wait for the reactive chain (VoterContext.selectedElections +
+    // nominationsAvailable, both $derived/$effect over dataRoot + URL params)
+    // to propagate before reading nomination status. The original sync read
+    // raced the $effect that recomputes selectedElections — without the wait,
+    // matches[activeElectionId] would still be undefined when the layout
+    // first paints, locking the results page in a "Loading…" state until the
+    // user manually navigated (variant-constituency.spec.ts:148 regression).
+    const nomStatus = await awaitNominationsSettled();
     hasNominations = nomStatus;
     if (nomStatus !== 'all') modalRef?.openModal();
     ready = true;
     return undefined;
-  }
-
-  /**
-   * Check nomination availability synchronously by reading VoterContext's
-   * reactive getter directly (bypasses the store bridge).
-   */
-  function checkNominationsSync(): NominationStatus {
-    const available = voterCtx.nominationsAvailable;
-    const elections = voterCtx.selectedElections;
-    if (!elections.length) return 'none';
-    const allAvailable = elections.every((e: { id: string }) => available[e.id]);
-    if (allAvailable) return 'all';
-    const someAvailable = elections.some((e: { id: string }) => available[e.id]);
-    return someAvailable ? 'some' : 'none';
   }
 
   /**

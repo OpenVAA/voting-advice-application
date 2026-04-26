@@ -17,14 +17,35 @@
  */
 
 import { expect, test } from '../../fixtures';
-import { buildRoute } from '../../utils/buildRoute';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
+import { walkToQuestionsIntro } from '../../utils/voterNavigation';
 
 test.describe('voter questions intro', { tag: ['@voter'] }, () => {
+  // Ensure the questionsIntro is enabled before each test. Other voter specs
+  // (popups, settings, static-pages, matching) call
+  // `client.updateAppSettings(...)` against the same shared Supabase row,
+  // and a parallel run can flip `questionsIntro.show` to false right before
+  // this spec walks the journey, bouncing past the intro and timing out on
+  // the start CTA.
+  test.beforeEach(async () => {
+    const client = new SupabaseAdminClient();
+    await client.updateAppSettings({
+      questions: {
+        categoryIntros: { show: false },
+        questionsIntro: { allowCategorySelection: true, show: true },
+        showResultsLink: true
+      }
+    });
+  });
+
   test('fresh session defaults to all opinion categories checked + counter non-zero on first paint', async ({
     page
   }) => {
-    await page.goto(buildRoute({ route: 'Questions', locale: 'en' }));
+    // The base e2e seed has 2 elections and multi-constituency groups, so a
+    // direct goto(/questions) bounces to /elections then /constituencies. Walk
+    // the journey instead so we land on the questions intro deterministically.
+    await walkToQuestionsIntro(page);
 
     // Primary CTA must be visible with a non-zero question count on first paint.
     const counterCta = page.getByTestId(testIds.voter.questions.startButton);
@@ -44,7 +65,7 @@ test.describe('voter questions intro', { tag: ['@voter'] }, () => {
   });
 
   test('counter updates reactively on category toggle', async ({ page }) => {
-    await page.goto(buildRoute({ route: 'Questions', locale: 'en' }));
+    await walkToQuestionsIntro(page);
 
     const counterCta = page.getByTestId(testIds.voter.questions.startButton);
     await expect(counterCta).toBeVisible();

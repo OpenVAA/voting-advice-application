@@ -37,15 +37,11 @@ Accesses `CandidateContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    answersLocked,
-    appSettings,
-    getRoute,
-    logout,
-    unansweredOpinionQuestions,
-    unansweredRequiredInfoQuestions,
-    t
-  } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X so
+  // updates after data load propagate (the same destructure-snapshot bug class
+  // that 61-03 fixed for candidate-questions).
+  const candCtx = getCandidateContext();
+  const { appSettings, getRoute, logout, t } = candCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Handle logout and the modal
@@ -56,7 +52,7 @@ Accesses `CandidateContext`.
   let timeLeft = logoutModalTimer;
 
   async function triggerLogout() {
-    if (!answersLocked && (unansweredOpinionQuestions?.length !== 0 || unansweredRequiredInfoQuestions?.length !== 0)) {
+    if (!candCtx.answersLocked && (candCtx.unansweredOpinionQuestions?.length !== 0 || candCtx.unansweredRequiredInfoQuestions?.length !== 0)) {
       timedModalRef?.openModal();
     } else {
       await logout();
@@ -83,20 +79,20 @@ Accesses `CandidateContext`.
   title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
-  {#if unansweredOpinionQuestions && unansweredRequiredInfoQuestions?.length === 0}
+  {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredRequiredInfoQuestions?.length === 0}
     <p>
       {t('candidateApp.logoutModal.questionsLeft', {
-        opinionQuestionsLeft: unansweredOpinionQuestions.length ?? 0
+        opinionQuestionsLeft: candCtx.unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
       {t('candidateApp.logoutModal.itemsLeft', {
-        infoQuestionsLeft: unansweredRequiredInfoQuestions?.length ?? 0,
-        opinionQuestionsLeft: unansweredOpinionQuestions?.length ?? 0
+        infoQuestionsLeft: candCtx.unansweredRequiredInfoQuestions?.length ?? 0,
+        opinionQuestionsLeft: candCtx.unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
-    {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
+    {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
       <p>{t('candidateApp.common.willBeHiddenIfMissing')}</p>
     {/if}
   {/if}

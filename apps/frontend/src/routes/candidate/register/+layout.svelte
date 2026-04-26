@@ -13,7 +13,9 @@
 
   let { children }: { children: Snippet } = $props();
 
-  const { answersLocked, getRoute, t } = getCandidateContext();
+  // Phase 61-03 follow-up: answersLocked is reactive; access via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { getRoute, t } = candCtx;
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ///////////////////////////////////////////////////////////////////
@@ -23,7 +25,7 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
-{#if answersLocked}
+{#if candCtx.answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}

@@ -194,13 +194,15 @@ test.describe('Constituency selection variant', { tag: ['@variant'] }, () => {
       }
     }
 
-    // Verify results page loaded — in multi-election mode, select an election first
+    // Verify results page loaded — in multi-election mode, select an election first.
+    // Use .first() on the union locator to satisfy strict mode when both the
+    // election accordion AND the results list end up present (multi-election shape).
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
-    await electionAccordion.or(sharedPage.getByTestId(testIds.voter.results.list)).waitFor({ state: 'visible', timeout: 10000 });
+    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
+    await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
     if (await electionAccordion.isVisible().catch(() => false)) {
       await electionAccordion.getByRole('option').first().click();
     }
-    const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
     await expect(resultsList).toBeVisible({ timeout: 10000 });
 
     // We should have answered a reasonable number of questions.

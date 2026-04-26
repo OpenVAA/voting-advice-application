@@ -56,14 +56,28 @@ describe('variant-constituency — app_settings overlay (empty; inherits base)',
     expect((row?.external_id as string).startsWith('test-')).toBe(true);
   });
 
-  test('settings deep-equals E2E_BASE_APP_SETTINGS (empty overlay)', () => {
+  // The variant-constituency template overrides `questions.questionsIntro`
+  // (allowCategorySelection + show → false) so its specs walk straight to a
+  // question page without intercepting the intro. Other keys must still
+  // deep-equal the base.
+  const CONSTITUENCY_OVERLAY = {
+    questions: {
+      questionsIntro: { allowCategorySelection: false, show: false }
+    }
+  };
+
+  test('settings deep-equals mergeSettings(base, CONSTITUENCY_OVERLAY)', () => {
     const row = appSettingsFragment(variantConstituencyTemplate)?.fixed?.[0];
-    expect(row?.settings).toEqual(E2E_BASE_APP_SETTINGS);
+    expect(row?.settings).toEqual(mergeSettings(E2E_BASE_APP_SETTINGS, CONSTITUENCY_OVERLAY));
   });
 
-  test('settings deep-equals mergeSettings(base, {}) (explicit construction)', () => {
+  test('non-questions keys preserved from base (proves deep merge, not shallow)', () => {
     const row = appSettingsFragment(variantConstituencyTemplate)?.fixed?.[0];
-    expect(row?.settings).toEqual(mergeSettings(E2E_BASE_APP_SETTINGS, {}));
+    const s = row?.settings as Record<string, unknown>;
+    expect(s.results).toEqual(E2E_BASE_APP_SETTINGS.results);
+    expect(s.entities).toEqual(E2E_BASE_APP_SETTINGS.entities);
+    expect(s.notifications).toEqual(E2E_BASE_APP_SETTINGS.notifications);
+    expect(s.analytics).toEqual(E2E_BASE_APP_SETTINGS.analytics);
   });
 
   test('uses `settings` field (NOT `value`) — Pitfall 2', () => {
@@ -112,13 +126,17 @@ describe('variant-multi-election — app_settings overlay (adds popup suppressio
     expect(results?.sections).toEqual(['candidate', 'organization']);
   });
 
-  test('questions / entities / notifications / analytics preserved from base', () => {
+  // The variant-multi-election overlay also overrides
+  // `questions.questionsIntro` to skip the intro (same rationale as
+  // variant-constituency). All other keys are preserved from base.
+  test('entities / notifications / analytics preserved from base; questions overlay skips the intro', () => {
     const row = appSettingsFragment(variantMultiElectionTemplate)?.fixed?.[0];
     const s = row?.settings as Record<string, unknown>;
-    expect(s.questions).toEqual(E2E_BASE_APP_SETTINGS.questions);
     expect(s.entities).toEqual(E2E_BASE_APP_SETTINGS.entities);
     expect(s.notifications).toEqual(E2E_BASE_APP_SETTINGS.notifications);
     expect(s.analytics).toEqual(E2E_BASE_APP_SETTINGS.analytics);
+    const q = s.questions as { questionsIntro?: { show?: boolean } };
+    expect(q.questionsIntro?.show).toBe(false);
   });
 });
 
@@ -134,9 +152,17 @@ describe('variant-startfromcg — app_settings overlay (empty; sfcg stays spec-o
     expect(row?.external_id).toBe('test-app-settings-startfromcg');
   });
 
-  test('settings deep-equals E2E_BASE_APP_SETTINGS (empty overlay)', () => {
+  // The variant-startfromcg overlay also overrides `questions.questionsIntro`
+  // (the spec walks the journey directly to a question page).
+  test('non-questions keys preserved from base; questions overlay skips the intro', () => {
     const row = appSettingsFragment(variantStartFromCgTemplate)?.fixed?.[0];
-    expect(row?.settings).toEqual(E2E_BASE_APP_SETTINGS);
+    const s = row?.settings as Record<string, unknown>;
+    expect(s.results).toEqual(E2E_BASE_APP_SETTINGS.results);
+    expect(s.entities).toEqual(E2E_BASE_APP_SETTINGS.entities);
+    expect(s.notifications).toEqual(E2E_BASE_APP_SETTINGS.notifications);
+    expect(s.analytics).toEqual(E2E_BASE_APP_SETTINGS.analytics);
+    const q = s.questions as { questionsIntro?: { show?: boolean } };
+    expect(q.questionsIntro?.show).toBe(false);
   });
 
   test('startFromConstituencyGroup NOT set in template (spec owns it — requires DB UUID)', () => {

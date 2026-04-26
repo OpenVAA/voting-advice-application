@@ -1,7 +1,7 @@
 import { DataRoot } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { toStore } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { getI18nContext } from '../i18n';
 import type { Readable } from 'svelte/store';
 import type { DataContext } from './dataContext.type';
@@ -33,23 +33,29 @@ export function initDataContext(): DataContext {
   // This bridges DataRoot's imperative subscribe() notifications to $derived reactivity.
   let version = $state(0);
 
+  // Plain Svelte writable for `$dataRoot` auto-subscribe in .svelte components.
+  // Updated imperatively in the dataRoot.subscribe callback below.
+  //
+  // Why not `toStore(() => dataRootReactive)`? Svelte 5's `toStore` wraps a
+  // getter in an internal `render_effect` whose `set(value)` short-circuits
+  // when the getter returns the same object reference across runs (the writable's
+  // `safe_not_equal` does fire, but the render_effect's tracking does not
+  // re-schedule a `set` call when the derived's identity is stable). DataRoot
+  // is a long-lived singleton — every update returns the same object reference
+  // with mutated internal state, which is exactly the pattern that breaks
+  // toStore's propagation. Imperative `dataRootStore.set(dataRoot)` from the
+  // dataRoot.subscribe callback bypasses the bridge and reliably notifies all
+  // `$dataRoot` subscribers.
+  const dataRootStore: Readable<DataRoot> = writable(dataRoot);
+
   // Subscribe to DataRoot's imperative change notifications
   dataRoot.subscribe(() => {
     version++;
+    (dataRootStore as { set: (v: DataRoot) => void }).set(dataRoot);
   });
 
-  // Derived value that re-evaluates when version changes
-  const dataRootReactive = $derived.by(() => {
-    void version; // Read version to create dependency
-    return dataRoot;
-  });
-
-  // Expose as store for .svelte file $dataRoot usage
-  const dataRootStore: Readable<DataRoot> = toStore(() => dataRootReactive);
-
-  // Direct reactive access object — bypasses toStore/fromStore bridge.
-  // Contexts (VoterContext, CandidateContext) should use this instead of
-  // fromStore(dataRoot) to avoid async propagation delays.
+  // Direct reactive access object for $derived/$state consumers
+  // (VoterContext, CandidateContext effects) — reads `version` to track changes.
   const reactiveDataRoot = {
     get current() {
       void version;

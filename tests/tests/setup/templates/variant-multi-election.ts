@@ -1,33 +1,33 @@
 /**
  * Multi-election variant template — 2 elections with cross-nominations.
  *
- * Replaces the legacy `tests/tests/data/overlays/multi-election-overlay`
- * JSON fixture per Phase 59 E2E-02 (deleted in Plan 59-06). Loaded via
- * `yarn dev:seed --template tests/tests/setup/templates/variant-multi-election.ts`.
- *
  * Spec contract:
  *   - tests/tests/specs/variants/multi-election.spec.ts (CONF-01/02/04).
  *   - tests/tests/specs/variants/results-sections.spec.ts (CONF-05/06) — the
  *     results-sections project reuses the multi-election dataset.
  *
- * Base: BUILT_IN_TEMPLATES.e2e (packages/dev-seed/src/templates/e2e.ts).
+ * Base: BUILT_IN_TEMPLATES.e2e (single-election baseline). This variant adds
+ * Election-2 + its dedicated constituency group + a single constituency,
+ * yielding 2 elections × 1 constituency-each (auto-implied at the voter
+ * journey — the spec at multi-election.spec.ts:168-171 explicitly asserts
+ * "constituency selection page is NOT shown" with single-constituency-per
+ * -election seeds).
  *
- * Overlay-row inventory (original JSON -> this template):
- *   - constituencies: 0 NEW (test-constituency-e2 already in base, skip)
- *   - constituency_groups: 1 NEW (test-cg-e2)
- *   - elections: 0 NEW (test-election-2 already in base, skip)
+ * Per-row `constituency_groups` / `constituencies` declarations override the
+ * pipeline's full-fanout default — without them every election would wire to
+ * every CG and CONFLATE the two elections' candidate pools.
+ *
+ * Overlay-row inventory:
+ *   - elections: 1 NEW (test-election-2 — Test Election 2026)
+ *   - constituency_groups: 1 NEW (test-cg-e2) — overrides base test-cg-1
+ *     to declare its single constituency too
+ *   - constituencies: 1 NEW (test-constituency-e2 — Election-2's only seat)
  *   - question_categories: 1 NEW (test-cat-e2-policy)
  *   - questions: 2 NEW (test-e2-q-1, test-e2-q-2)
  *   - candidates: 3 NEW (test-e2-cand-1, -2, -3)
  *   - nominations: 6 NEW — 3 for new e2-cand-{1,2,3} and 3 cross-nominations
  *     re-nominating base candidates alpha/beta/gamma onto Election-2 (the
- *     defining shape change of this variant: existing candidates appear on
- *     BOTH elections)
- *
- * Shape-drift corrections from the legacy JSON overlay: camelCase -> snake_case
- * on every ref object; stringified numeric choice values coerced to numeric
- * form; template-schema-managed fields (project id, published) dropped.
- * See variant-constituency.ts header for the full transcription recipe.
+ *     defining multi-election shape: candidates appear on BOTH elections)
  */
 import { BUILT_IN_TEMPLATES, E2E_BASE_APP_SETTINGS, type Template } from '@openvaa/dev-seed';
 import { mergeSettings } from '@openvaa/app-shared';
@@ -45,6 +45,13 @@ if (!base) throw new Error('variant-multi-election: BUILT_IN_TEMPLATES.e2e is un
  * `mergeAppSettings` from the frontend — the latter is a SHALLOW merge).
  */
 const MULTI_ELECTION_APP_SETTINGS_OVERLAY = {
+  // The multi-election spec walks Home → Intro → /elections → /questions and
+  // expects to land on a question page directly (no questions intro). Override
+  // the now-default `show: true` from E2E_BASE_APP_SETTINGS so the page
+  // bypasses the intro step.
+  questions: {
+    questionsIntro: { allowCategorySelection: false, show: false }
+  },
   results: {
     showFeedbackPopup: 0,
     showSurveyPopup: 0
@@ -71,11 +78,50 @@ export const variantMultiElectionTemplate: Template = {
   externalIdPrefix: base.externalIdPrefix,
   generateTranslationsForAllLocales: base.generateTranslationsForAllLocales,
 
-  // Pass-through tables (overlay adds no rows or adds only duplicates
-  // of base rows).
+  // Pass-through: organizations.
   organizations: { count: 0, fixed: baseFixed('organizations') },
-  elections: { count: 0, fixed: baseFixed('elections') },
-  constituencies: { count: 0, fixed: baseFixed('constituencies') },
+
+  // Extended: 2 elections. test-election-1 is taken from base + given an
+  // explicit `constituency_groups` ref so the pipeline doesn't fall back
+  // to full-fanout (which would wire it to test-cg-e2 too). test-election-2
+  // is new and declares its own group.
+  elections: {
+    count: 0,
+    fixed: [
+      ...baseFixed('elections').map((row) => ({
+        ...row,
+        constituency_groups: [{ external_id: 'test-cg-1' }]
+      })),
+      {
+        external_id: 'test-election-2',
+        name: { en: 'Test Election 2026' },
+        short_name: { en: 'Election 2026' },
+        election_type: 'general',
+        election_date: '2026-06-15',
+        sort_order: 1,
+        is_generated: false,
+        multiple_rounds: false,
+        current_round: 1,
+        constituency_groups: [{ external_id: 'test-cg-e2' }]
+      }
+    ]
+  },
+
+  // Extended: 1 NEW constituency for Election-2 (test-constituency-e2).
+  // Single constituency per election → /constituencies page is bypassed via
+  // auto-imply, satisfying the multi-election.spec.ts:168-171 contract.
+  constituencies: {
+    count: 0,
+    fixed: [
+      ...baseFixed('constituencies'),
+      {
+        external_id: 'test-constituency-e2',
+        name: { en: 'Test Constituency E2' },
+        sort_order: 1,
+        is_generated: false
+      }
+    ]
+  },
   candidates: {
     count: 0,
     fixed: [
@@ -122,18 +168,22 @@ export const variantMultiElectionTemplate: Template = {
     ]
   },
 
-  // Extended: 1 NEW cg for Election-2 scoping (post-topo full-fanout still
-  // wires every election to every CG; the cg exists for downstream specs
-  // that iterate by external_id — results-sections.spec.ts:171-174).
+  // Extended: 2 cgs total. test-cg-1 is from base + given an explicit
+  // `constituencies` ref (alpha only) so the pipeline doesn't full-fanout
+  // it onto test-constituency-e2. test-cg-e2 is new and declares e2.
   constituency_groups: {
     count: 0,
     fixed: [
-      ...baseFixed('constituency_groups'),
+      ...baseFixed('constituency_groups').map((row) => ({
+        ...row,
+        constituencies: [{ external_id: 'test-constituency-alpha' }]
+      })),
       {
         external_id: 'test-cg-e2',
         name: { en: 'Test CG Election 2' },
         sort_order: 20,
-        is_generated: false
+        is_generated: false,
+        constituencies: [{ external_id: 'test-constituency-e2' }]
       }
     ]
   },

@@ -84,7 +84,11 @@ import type { Template } from '../template/types';
 export const E2E_BASE_APP_SETTINGS = {
   questions: {
     categoryIntros: { show: false },
-    questionsIntro: { allowCategorySelection: false, show: false },
+    // Questions intro page is shown by default (matches the dynamicSettings
+    // default and the spec contract in voter-questions.spec.ts which gates
+    // the QUESTION-03 "Answer 0 Questions" regression). Variants that
+    // bypass the intro (multi-election etc.) override these per-variant.
+    questionsIntro: { allowCategorySelection: true, show: true },
     showResultsLink: true
   },
   results: {
@@ -124,9 +128,15 @@ export const e2eTemplate: Template = {
   externalIdPrefix: '', // D-58-15: full 'test-' literal ids pre-written in fixed[]
   generateTranslationsForAllLocales: false, // D-58-16
 
-  // §1 rows 10 + 12 — test-election-1 + test-election-2. Names per §2
-  // (constituency.spec.ts:292-293 asserts visibility of 'Test Election 2025'
-  // and 'Test Election 2026' literals).
+  // §1 row 10 — test-election-1. Name per §2 (constituency.spec.ts:292
+  // asserts visibility of 'Test Election 2025' literal).
+  //
+  // Single-election base: exercises the auto-implied path
+  // (voter-journey VOTE-02/VOTE-03 contract). Variants that need multiple
+  // elections + a hierarchy/selector flow declare their own templates —
+  // e.g. `tests/tests/setup/templates/variant-multi-election.ts` adds
+  // test-election-2 + test-cg-municipalities + the additional
+  // region/municipality constituencies and overrides per-row scoping.
   elections: {
     count: 0,
     fixed: [
@@ -140,25 +150,14 @@ export const e2eTemplate: Template = {
         is_generated: false,
         multiple_rounds: false,
         current_round: 1
-      },
-      {
-        external_id: 'test-election-2',
-        name: { en: 'Test Election 2026' },
-        short_name: { en: 'Election 2026' },
-        election_type: 'general',
-        election_date: '2026-06-15',
-        sort_order: 1,
-        is_generated: false,
-        multiple_rounds: false,
-        current_round: 1
       }
     ]
   },
 
   // §4 row "test-cg-1" — structural chain requirement (no literal assertion
   // but voter journey navigation requires election → cg → constituency).
-  // §1 row 18 — test-cg-municipalities with display name 'Municipalities'
-  // asserted by startfromcg.spec.ts:141/153/268 + constituency.spec.ts:119.
+  // Single group + single constituency in the base = auto-implied
+  // selection at the voter-app journey level.
   constituency_groups: {
     count: 0,
     fixed: [
@@ -167,18 +166,14 @@ export const e2eTemplate: Template = {
         name: { en: 'Test Constituency Group' },
         sort_order: 0,
         is_generated: false
-      },
-      {
-        external_id: 'test-cg-municipalities',
-        name: { en: 'Municipalities' },
-        sort_order: 1,
-        is_generated: false
       }
     ]
   },
 
-  // §1 rows 14 + 16 — test-constituency-alpha + test-constituency-e2.
-  // Both referenced by multi-election.spec.ts + results-sections.spec.ts.
+  // §1 row 14 — test-constituency-alpha is referenced verbatim by
+  // multi-election.spec.ts + results-sections.spec.ts. Single-constituency
+  // base; variants add additional constituencies (test-constituency-e2,
+  // -beta, -e3..e5) when their flow requires explicit selection.
   constituencies: {
     count: 0,
     fixed: [
@@ -186,12 +181,6 @@ export const e2eTemplate: Template = {
         external_id: 'test-constituency-alpha',
         name: { en: 'Test Constituency Alpha' },
         sort_order: 0,
-        is_generated: false
-      },
-      {
-        external_id: 'test-constituency-e2',
-        name: { en: 'Test Constituency E2' },
-        sort_order: 1,
         is_generated: false
       }
     ]

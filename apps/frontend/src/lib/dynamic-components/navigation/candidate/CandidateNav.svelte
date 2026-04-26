@@ -31,21 +31,14 @@ A template part that outputs the navigation menu for the Candidate App for use i
   let { onKeyboardFocusOut, ...restProps }: CandidateNavProps = $props();
 
   const { navigation } = getLayoutContext(onDestroy);
-  const {
-    answersLocked,
-    appSettings,
-    isAuthenticated,
-    getRoute,
-    openFeedbackModal,
-    t,
-    unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions
-  } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { appSettings, getRoute, openFeedbackModal, t } = candCtx;
 </script>
 
 <Navigation {onKeyboardFocusOut} {...restProps}>
   <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
-  {#if isAuthenticated}
+  {#if candCtx.isAuthenticated}
     <NavGroup>
       <NavItem
         href={$getRoute('CandAppHome')}
@@ -61,12 +54,12 @@ A template part that outputs the navigation menu for the Candidate App for use i
         href={$getRoute('CandAppQuestions')}
         icon="opinion"
         text={t('candidateApp.questions.title')}
-        disabled={unansweredRequiredInfoQuestions?.length !== 0}
+        disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
         data-testid="candidate-nav-questions">
-        {#if unansweredRequiredInfoQuestions && unansweredOpinionQuestions && unansweredOpinionQuestions.length > 0}
+        {#if candCtx.unansweredRequiredInfoQuestions && candCtx.unansweredOpinionQuestions && candCtx.unansweredOpinionQuestions.length > 0}
           <InfoBadge
-            text={String(unansweredOpinionQuestions.length)}
-            disabled={unansweredRequiredInfoQuestions.length !== 0}
+            text={String(candCtx.unansweredOpinionQuestions.length)}
+            disabled={candCtx.unansweredRequiredInfoQuestions.length !== 0}
             classes="-left-8 -top-4" />
         {/if}
       </NavItem>
@@ -88,7 +81,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   {:else}
     <NavGroup>
       <NavItem href={$getRoute('CandAppLogin')} icon="login" text={t('common.login')} />
-      {#if !answersLocked}
+      {#if !candCtx.answersLocked}
         {#if $appSettings.preRegistration?.enabled}
           <NavItem
             href={$getRoute('CandAppPreregister')}

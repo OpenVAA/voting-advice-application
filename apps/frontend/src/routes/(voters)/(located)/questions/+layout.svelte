@@ -19,7 +19,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, getRoute, opinionQuestions, selectedQuestionBlocks, t } = getVoterContext();
+  // Phase 61-03 voter-side parallel fix: opinionQuestions + selectedQuestionBlocks
+  // are reactive context getters; access via voterCtx.X (live $state).
+  const voterCtx = getVoterContext();
+  const { appSettings, getRoute, t } = voterCtx;
   const { topBarSettings, progress } = getLayoutContext(onDestroy);
 
   let { children }: { children: Snippet } = $props();
@@ -36,11 +39,11 @@
   });
 
   $effect(() => {
-    progress.max = selectedQuestionBlocks.questions.length + 1;
+    progress.max = voterCtx.selectedQuestionBlocks.questions.length + 1;
   });
 </script>
 
-{#if opinionQuestions.length > 0}
+{#if voterCtx.opinionQuestions.length > 0}
   {@render children?.()}
 {:else}
   <MainContent title={t('error.noQuestions')}>

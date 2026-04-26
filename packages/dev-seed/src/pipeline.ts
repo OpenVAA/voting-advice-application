@@ -211,20 +211,18 @@ export function runPipeline(
  * them from the SAME input dataset in a second pass (RESEARCH §2).
  *
  * Sentinels:
- *   - `election._constituencyGroups = { externalId: [all constituency_group extIds] }`
- *   - `constituency_group._constituencies = { externalId: [all constituency extIds] }`
- *   - `question_category._elections = { externalId: [all election extIds] }`
+ *   - `election._constituencyGroups = { externalId: [...constituency_group extIds] }`
+ *   - `constituency_group._constituencies = { externalId: [...constituency extIds] }`
+ *   - `question_category._elections = { externalId: [...election extIds] }`
  *
- * Phase 56 uses a full-fanout strategy: every election gets ALL
- * constituency_groups, every constituency_group gets ALL constituencies, every
- * question_category gets ALL elections. Phase 58 templates will let users
- * target specific groupings (per-election group scoping, per-category election
- * lists). The enrichment hook is isolated here so that extension lands cleanly.
- *
- * Threat T-56-37 (Integrity): this pass OVERWRITES any caller-supplied
- * `_`-prefixed sentinels on those rows. Acceptable in Phase 56 — overrides
- * (D-25) remain the documented escape hatch for users who need custom
- * sentinel shapes.
+ * Per-row scoping (delivers the Phase 58 hook the original full-fanout comment
+ * promised): a row that already declares scoping — via `_<sentinel>`,
+ * `<sentinel>`, or `<snake_case_sentinel>` (the four shapes `linkJoinTables`
+ * accepts in supabaseAdminClient.ts:324-330) — is left untouched. Only rows
+ * that lack any declaration receive the full-fanout default. Templates that
+ * want a realistic election→cg→constituency hierarchy declare the relationships
+ * inline on the relevant fixed[] rows; templates that want everything wired to
+ * everything (the Phase 56 default) omit the declarations and inherit fanout.
  */
 function attachSentinels(output: Record<string, Array<Record<string, unknown>>>): void {
   const allGroupExtIds = (output.constituency_groups ?? [])
@@ -239,17 +237,33 @@ function attachSentinels(output: Record<string, Array<Record<string, unknown>>>)
 
   if (allGroupExtIds.length > 0) {
     for (const el of output.elections ?? []) {
+      if (hasDeclaredScope(el, '_constituencyGroups', 'constituencyGroups', 'constituency_groups')) continue;
       el._constituencyGroups = { externalId: allGroupExtIds };
     }
   }
   if (allConstituencyExtIds.length > 0) {
     for (const cg of output.constituency_groups ?? []) {
+      if (hasDeclaredScope(cg, '_constituencies', 'constituencies')) continue;
       cg._constituencies = { externalId: allConstituencyExtIds };
     }
   }
   if (allElectionExtIds.length > 0) {
     for (const qc of output.question_categories ?? []) {
+      if (hasDeclaredScope(qc, '_elections', 'elections')) continue;
       qc._elections = { externalId: allElectionExtIds };
     }
   }
+}
+
+function hasDeclaredScope(row: Record<string, unknown>, ...keys: Array<string>): boolean {
+  return keys.some((k) => {
+    const v = row[k];
+    if (v == null) return false;
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === 'object') {
+      const anyV = v as { externalId?: Array<string>; external_id?: Array<string> };
+      return (anyV.externalId?.length ?? 0) > 0 || (anyV.external_id?.length ?? 0) > 0;
+    }
+    return false;
+  });
 }

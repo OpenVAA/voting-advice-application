@@ -267,9 +267,10 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
   test('deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)', async ({
     answeredVoterPage: page
   }) => {
-    // Extract a candidate id + electionId from the first rendered card
-    const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const firstCardLink = firstCard.getByRole('link').first();
+    // Extract a candidate id + electionId from the first rendered card.
+    // The entity-card-action <a> wraps the entity-card article when there
+    // are no subcards, so we query the action testid directly.
+    const firstCardLink = page.getByTestId('entity-card-action').first();
     const href = await firstCardLink.getAttribute('href');
     const parsed = parseResultHref(href);
     expect(parsed, `could not parse entity-card href (got: ${href})`).not.toBeUndefined();
@@ -287,9 +288,8 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
   test('deeplink edge case: organizations list + candidate drawer (D-08 shape 4)', async ({
     answeredVoterPage: page
   }) => {
-    // Extract a candidate id
-    const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const firstCardLink = firstCard.getByRole('link').first();
+    // Extract a candidate id (first card's wrapping action link)
+    const firstCardLink = page.getByTestId('entity-card-action').first();
     const href = await firstCardLink.getAttribute('href');
     const parsed = parseResultHref(href);
     expect(parsed).not.toBeUndefined();
@@ -341,8 +341,7 @@ test.describe('voter results', { tag: ['@voter'] }, () => {
   test('drawer paints before list on cold deeplink (D-10 source-order + content-visibility)', async ({
     answeredVoterPage: page
   }) => {
-    const firstCard = page.getByTestId(testIds.voter.results.card).first();
-    const firstCardLink = firstCard.getByRole('link').first();
+    const firstCardLink = page.getByTestId('entity-card-action').first();
     const href = await firstCardLink.getAttribute('href');
     const parsed = parseResultHref(href);
     expect(parsed).not.toBeUndefined();

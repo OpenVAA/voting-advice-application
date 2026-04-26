@@ -43,8 +43,10 @@ Display a question for answering.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Phase 61-03 voter-side parallel fix: selectedQuestionBlocks is reactive,
+  // accessed via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
-  const { answers, appSettings, dataRoot, selectedQuestionBlocks, getRoute, startEvent, t } = voterCtx;
+  const { answers, appSettings, dataRoot, getRoute, startEvent, t } = voterCtx;
   const { progress, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -60,14 +62,14 @@ Display a question for answering.
     if (!questionId) error(500, 'No questionId provided.');
     try {
       return questionId === FIRST_QUESTION_ID
-        ? selectedQuestionBlocks.blocks[0]?.[0]
+        ? voterCtx.selectedQuestionBlocks.blocks[0]?.[0]
         : $dataRoot.getQuestion(questionId);
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
   });
 
-  let questionBlock = $derived(question ? selectedQuestionBlocks.getByQuestion(question) : undefined);
+  let questionBlock = $derived(question ? voterCtx.selectedQuestionBlocks.getByQuestion(question) : undefined);
 
   // Handle side effects (progress, video, redirect) in a separate effect
   $effect(() => {
@@ -75,7 +77,7 @@ Display a question for answering.
       if (question) {
         const questionId = parseParams(page).questionId;
         logDebugError(
-          `Question with id ${questionId} not found in selectedQuestionBlocks. Rerouting to category selection.`
+          `Question with id ${questionId} not found in voterCtx.selectedQuestionBlocks. Rerouting to category selection.`
         );
         goto($getRoute('Questions'));
       }
@@ -135,17 +137,17 @@ Display a question for answering.
     if (newIndex < 0) {
       url = $getRoute($appSettings.questions.questionsIntro.show ? 'Questions' : 'Intro');
       // Go to results if moving forward from the last question
-    } else if (newIndex >= selectedQuestionBlocks.questions.length) {
+    } else if (newIndex >= voterCtx.selectedQuestionBlocks.questions.length) {
       url = $getRoute('Results');
       // Show category intro if moving forward from the first question in a category
     } else {
-      const newQuestion = selectedQuestionBlocks.questions[newIndex];
+      const newQuestion = voterCtx.selectedQuestionBlocks.questions[newIndex];
       // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
         $appSettings.questions.categoryIntros?.show &&
         steps > 0 &&
-        selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
+        voterCtx.selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
         url = $getRoute({ route: 'QuestionCategory', categoryId: newQuestion.category.id });
         // Othwerwise, just go to the new question
@@ -163,7 +165,7 @@ Display a question for answering.
 {#if question && questionBlock}
   {@const { info, text } = question}
   {@const customData = getCustomData(question)}
-  {@const questions = selectedQuestionBlocks.questions}
+  {@const questions = voterCtx.selectedQuestionBlocks.questions}
 
   <MainContent title={text}>
     {#snippet hero()}
@@ -177,7 +179,7 @@ Display a question for answering.
     {#snippet heading()}
       <QuestionHeading
         question={question!}
-        questionBlocks={selectedQuestionBlocks}
+        questionBlocks={voterCtx.selectedQuestionBlocks}
         data-testid="voter-questions-heading" />
     {/snippet}
 

@@ -14,7 +14,9 @@
 
   let { children }: { children: Snippet } = $props();
 
-  const { answersLocked, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { getRoute, t, userData, clearIdToken } = candCtx;
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ///////////////////////////////////////////////////////////////////
@@ -24,7 +26,7 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     actions: {
-      cancel: idTokenClaims ? 'show' : 'hide',
+      cancel: candCtx.idTokenClaims ? 'show' : 'hide',
       cancelButtonLabel: t('common.cancel'),
       cancelButtonCallback: async () => {
         await clearIdToken();
@@ -44,7 +46,7 @@
       variant="main"
       onclick={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if answersLocked}
+{:else if candCtx.answersLocked}
   <MainContent title={t('candidateApp.error.registrationLocked')}>
     <Button
       text={t('common.return')}

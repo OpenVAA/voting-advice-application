@@ -124,10 +124,24 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, Array<unknown>>): Promise<Record<string, unknown>> {
-    // Non-column fields to strip (handled separately)
+    // Non-column fields to strip (handled separately).
+    //
+    // - `answersByExternalId` is consumed by `importAnswers` (Pass 2).
+    // - `email` on candidates is a Phase 59 hand-off payload, not a column.
+    // - `constituency_groups` / `constituencies` (and the camelCase variants)
+    //   are M:N declarations consumed by `linkJoinTables` (Pass 3). They name
+    //   association rows in `election_constituency_groups` /
+    //   `constituency_group_constituencies` — there is no scalar column on
+    //   the parent table, so leaving them in the payload makes the
+    //   `_bulk_upsert_record` RPC reject the row with `column "x" of relation
+    //   "y" does not exist`. The `_`-prefixed sentinel form is already
+    //   stripped by the generic `key.startsWith('_')` rule below; the bare
+    //   form has to be enumerated explicitly.
     const NON_COLUMN_FIELDS = new Set(['answersByExternalId']);
     const COLLECTION_NON_COLUMNS: Record<string, Set<string>> = {
-      candidates: new Set(['email'])
+      candidates: new Set(['email']),
+      elections: new Set(['constituencyGroups', 'constituency_groups']),
+      constituency_groups: new Set(['constituencies'])
     };
 
     // Tables with a `published boolean NOT NULL DEFAULT false` column gated by

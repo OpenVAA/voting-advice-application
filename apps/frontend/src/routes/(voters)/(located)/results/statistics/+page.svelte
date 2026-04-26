@@ -30,7 +30,10 @@ Usually accessed by direct link only and not meant for the wide public.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answers, matches, opinionQuestions, t } = getVoterContext();
+  // Phase 61-03 voter-side parallel fix: matches + opinionQuestions are
+  // reactive context getters, accessed via voterCtx to avoid stale snapshots.
+  const voterCtx = getVoterContext();
+  const { answers, t } = voterCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Functions
@@ -50,7 +53,7 @@ Usually accessed by direct link only and not meant for the wide public.
       if (!nomination) return distribution;
       candidates = nomination.candidateNominations;
     } else {
-      candidates = getCandidates(matches)
+      candidates = getCandidates(voterCtx.matches)
         .map((m) => unwrapEntity(m).nomination)
         .filter((n) => n != null);
     }
@@ -102,7 +105,7 @@ Usually accessed by direct link only and not meant for the wide public.
   {/snippet}
 
   <div class="gap-lg grid" data-testid="voter-statistics-container">
-    {#each opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
+    {#each voterCtx.opinionQuestions.filter((q) => isSingleChoiceQuestion(q)) as question}
       {@const { id, text, choices } = question}
       {@const voterAnswer = answers ? `${answers.answers?.[id]?.value}` : undefined}
       {@const distAll = getAnswerDistribution(question)}
@@ -141,7 +144,7 @@ Usually accessed by direct link only and not meant for the wide public.
           </div>
 
           <!-- Each party -->
-          {#each getOrganizations(matches) as organization}
+          {#each getOrganizations(voterCtx.matches) as organization}
             {@const { entity } = unwrapEntity(organization)}
             {@const dist = getAnswerDistribution(question, organization)}
             <div>

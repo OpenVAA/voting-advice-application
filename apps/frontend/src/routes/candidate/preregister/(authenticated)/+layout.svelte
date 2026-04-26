@@ -24,12 +24,14 @@ Contains the parts of the pre-registration process taking part after a successfu
 
   let { children }: { children: Snippet } = $props();
 
-  const { getRoute, idTokenClaims, t } = getCandidateContext();
+  // Phase 61-03 follow-up: idTokenClaims is reactive; access via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { getRoute, t } = candCtx;
   const { navigationSettings } = getLayoutContext(onDestroy);
   navigationSettings.push({ hide: true });
 </script>
 
-{#if idTokenClaims}
+{#if candCtx.idTokenClaims}
   {@render children?.()}
 {:else}
   <MainContent title={t('candidateApp.preregister.status.tokenExpiredError.title')}>

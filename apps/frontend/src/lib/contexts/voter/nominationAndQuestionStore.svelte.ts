@@ -45,7 +45,22 @@ export function nominationAndQuestionStore({
     if (!types?.length) types = Object.values(ENTITY_TYPE);
     const tree: Partial<NominationAndQuestionTree> = {};
     for (const election of elecs) {
-      const constituency = election.getApplicableConstituency(constits);
+      // `getApplicableConstituency` throws when more than one constituency
+      // matches the election's groups (hierarchical selection — a municipality
+      // and its parent region both end up in the selected list for an
+      // election whose cgs include both Regions and Municipalities). Pick
+      // the FIRST match deterministically (earlier in the array — the
+      // selector pushes the implied parent ahead of the child) so the
+      // election's nomination tree still resolves
+      // (variant-startfromcg.spec.ts:145 hierarchy edge case).
+      let constituency: Constituency | undefined;
+      try {
+        constituency = election.getApplicableConstituency(constits);
+      } catch {
+        constituency = constits.find(({ id }) =>
+          election.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
+        );
+      }
       if (!constituency) continue;
 
       let candidateNominationsWithMissingAnswers: Set<Id> | undefined;

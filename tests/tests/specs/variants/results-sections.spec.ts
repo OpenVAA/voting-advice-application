@@ -103,18 +103,22 @@ async function waitForResultsList(page: Page): Promise<void> {
 
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
   const resultsList = page.getByTestId(testIds.voter.results.list);
-  // Wait for either the accordion or the results list to appear
-  await electionAccordion.or(resultsList).waitFor({ state: 'visible', timeout: 10000 });
-  // If accordion is visible, select the election with candidates (2025)
+  // Wait for either the accordion or the results list to appear.
+  // `.first()` satisfies strict mode when both end up present (multi-election shape).
+  await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
+  // If accordion is visible, select the election with candidates (2025).
+  // The accordion can render the active election BOTH as the trigger row and
+  // again inside the expanded option list, producing two `role=option` matches
+  // for the same election; `.first()` resolves the strict-mode violation.
   if (await electionAccordion.isVisible().catch(() => false)) {
-    const election2025 = electionAccordion.getByRole('option', { name: /2025/ });
+    const election2025 = electionAccordion.getByRole('option', { name: /2025/ }).first();
     if (await election2025.isVisible().catch(() => false)) {
       await election2025.click();
     } else {
       // Expand accordion and select
       await electionAccordion.getByRole('option').first().click();
       await election2025.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
-      if (await election2025.isVisible()) await election2025.click();
+      if (await election2025.isVisible().catch(() => false)) await election2025.click();
     }
   }
   await resultsList.waitFor({ state: 'visible', timeout: 10000 });

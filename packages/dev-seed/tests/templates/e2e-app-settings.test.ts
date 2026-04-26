@@ -86,10 +86,16 @@ describe('E2E_BASE_APP_SETTINGS — legacy data.setup.ts:53-72 byte-for-byte con
     );
   });
 
-  it('questions block matches legacy payload', () => {
+  it('questions block: questionsIntro defaults match dynamicSettings (intro page shown by default)', () => {
+    // The legacy data.setup.ts payload had questionsIntro.show=false +
+    // allowCategorySelection=false to bypass the intro page in the e2e
+    // journey. Reverted to the dynamicSettings defaults (true/true) so
+    // voter-questions.spec.ts (QUESTION-03 regression gate) sees the start
+    // button + category checkboxes it expects. Variants that need to bypass
+    // the intro override these per-variant.
     expect(E2E_BASE_APP_SETTINGS.questions).toEqual({
       categoryIntros: { show: false },
-      questionsIntro: { allowCategorySelection: false, show: false },
+      questionsIntro: { allowCategorySelection: true, show: true },
       showResultsLink: true
     });
   });

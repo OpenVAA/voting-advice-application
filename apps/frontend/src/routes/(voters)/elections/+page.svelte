@@ -24,7 +24,12 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, dataRoot, getRoute, selectedConstituencies, selectedElections, t } = getVoterContext();
+  // Phase 61-03 voter-side parallel fix: read selectedConstituencies +
+  // selectedElections via voterCtx.X (live $state) rather than destructured
+  // snapshots. Stable stores/functions (appSettings, dataRoot, getRoute, t)
+  // remain destructured.
+  const voterCtx = getVoterContext();
+  const { appSettings, dataRoot, getRoute, t } = voterCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Initialize elections and possible implied constituencies
@@ -35,14 +40,27 @@ See `+page.ts` for possible redirects.
   let elections = $derived.by(() => {
     let result = $dataRoot.elections;
     if ($appSettings.elections?.startFromConstituencyGroup) {
-      // Only show elections for which a Constituency is available
-      result = result.filter((e) => e.getApplicableConstituency(selectedConstituencies));
+      // Only show elections for which a Constituency is available.
+      // `getApplicableConstituency` throws when more than one of the passed
+      // constituencies maps to one of the election's groups (e.g. a municipality
+      // and its parent region both end up in selectedConstituencies for an
+      // election whose cgs include both Regions and Municipalities). Treat
+      // that throw as "applicable" — the election clearly matches *something*
+      // in the selection — so the multi-cg election still appears in the list
+      // (variant-startfromcg.spec.ts:145 hierarchy edge case).
+      result = result.filter((e) => {
+        try {
+          return !!e.getApplicableConstituency(voterCtx.selectedConstituencies);
+        } catch {
+          return true;
+        }
+      });
     }
     return result;
   });
 
   $effect(() => {
-    selected = (selectedElections.length ? selectedElections : elections).map((e) => e.id);
+    selected = (voterCtx.selectedElections.length ? voterCtx.selectedElections : elections).map((e) => e.id);
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -51,10 +69,18 @@ See `+page.ts` for possible redirects.
 
   let canSubmit = $derived(selected?.length > 0);
 
-  function handleSubmit(): void {
+  // Async + awaited so the click handler reports navigation errors instead of
+  // swallowing them. Prior implementation `function handleSubmit(): void`
+  // discarded the goto() promise — when SvelteKit's client-side navigation
+  // raced with a $effect (e.g. a stores' `.set()` triggered on first click
+  // hydration) goto() resolved to undefined and the URL never changed
+  // (multi-election.spec.ts:173 documents the same flake). The Array.from
+  // copy decouples the URL builder from the $state proxy on `selected` so
+  // qs.stringify sees a plain array.
+  async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
-    const electionId = Object.values(selected);
-    goto(
+    const electionId = Array.from(selected);
+    await goto(
       $appSettings.elections?.startFromConstituencyGroup
         ? $getRoute({ route: 'Questions', electionId })
         : // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before

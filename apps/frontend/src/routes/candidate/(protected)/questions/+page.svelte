@@ -28,28 +28,17 @@ Shows the opinion questions for the candidate to answer.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    answersLocked,
-    appSettings,
-    getRoute,
-    opinionQuestions,
-    profileComplete,
-    questionBlocks,
-    selectedElections,
-    t,
-    translate,
-    unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions,
-    userData
-  } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { appSettings, getRoute, t, translate, userData } = candCtx;
   ////////////////////////////////////////////////////////////////////
   // Choose page variant to show
   ////////////////////////////////////////////////////////////////////
 
   let completion = $derived<'empty' | 'partial' | 'full'>(
-    unansweredOpinionQuestions.length === 0
+    candCtx.unansweredOpinionQuestions.length === 0
       ? 'full'
-      : unansweredOpinionQuestions.length === opinionQuestions.length
+      : candCtx.unansweredOpinionQuestions.length === candCtx.opinionQuestions.length
         ? 'empty'
         : 'partial'
   );
@@ -78,31 +67,31 @@ Shows the opinion questions for the candidate to answer.
   <!-- Tip or notification -->
 
   {#snippet note()}
-    {#if completion === 'empty' && !answersLocked}
+    {#if completion === 'empty' && !candCtx.answersLocked}
       <Icon name="tip" />
       {t('candidateApp.questions.tip')}
     {/if}
-    {#if answersLocked}
+    {#if candCtx.answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
-    {:else if profileComplete}
+    {:else if candCtx.profileComplete}
       <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
     {/if}
   {/snippet}
 
-  {#if completion === 'empty' && !answersLocked}
+  {#if completion === 'empty' && !candCtx.answersLocked}
     <!-- Page content when no answers have yet been given -->
 
     <div class="mb-lg gap-md grid justify-items-center">
       <p class="text-center">
-        {t('candidateApp.questions.ingress.empty', { numQuestions: opinionQuestions.length })}
+        {t('candidateApp.questions.ingress.empty', { numQuestions: candCtx.opinionQuestions.length })}
       </p>
       <Button
-        href={$getRoute({ route: 'CandAppQuestion', questionId: unansweredOpinionQuestions[0]?.id })}
+        href={$getRoute({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
         variant="main"
         icon="next"
         text={t('common.continue')}
@@ -117,10 +106,10 @@ Shows the opinion questions for the candidate to answer.
           ? t('candidateApp.questions.ingress.partial')
           : t('candidateApp.questions.ingress.default')}
       </p>
-      {#if completion !== 'full' && !answersLocked}
+      {#if completion !== 'full' && !candCtx.answersLocked}
         <div class="text-warning text-center" data-testid="candidate-questions-progress">
           {t('candidateApp.questions.unansweredWarning', {
-            numUnansweredQuestions: unansweredOpinionQuestions?.length
+            numUnansweredQuestions: candCtx.unansweredOpinionQuestions?.length
           })}
           {#if $appSettings.entities?.hideIfMissingAnswers?.candidate}
             {t('candidateApp.common.willBeHiddenIfMissing')}
@@ -128,7 +117,7 @@ Shows the opinion questions for the candidate to answer.
         </div>
         <!-- Shortcut to the next unanswered question -->
         <Button
-          href={$getRoute({ route: 'CandAppQuestion', questionId: unansweredOpinionQuestions[0]?.id })}
+          href={$getRoute({ route: 'CandAppQuestion', questionId: candCtx.unansweredOpinionQuestions[0]?.id })}
           text={t('candidateApp.questions.enterMissingAnswers')}
           variant="main"
           icon="next"
@@ -137,17 +126,17 @@ Shows the opinion questions for the candidate to answer.
     </div>
 
     <div class="edgetoedge-x mt-lg gap-xs grid !px-0" data-testid="candidate-questions-list">
-      {#each questionBlocks.blocks.filter((b) => b.length) as questions}
+      {#each candCtx.questionBlocks.blocks.filter((b) => b.length) as questions}
         {@const category = questions[0].category}
         <Expander
           title={category.name}
           variant="category"
-          defaultExpanded={unansweredOpinionQuestions.some((q) => q.category.id === category.id)}
+          defaultExpanded={candCtx.unansweredOpinionQuestions.some((q) => q.category.id === category.id)}
           class="match-w-xl:rounded-md">
           <div class="gap-xxl p-lg grid">
             {#each questions as question}
               {@const { id, text } = question}
-              {@const elections = getElectionsToShow({ question, elections: selectedElections })}
+              {@const elections = getElectionsToShow({ question, elections: candCtx.selectedElections })}
               {@const answer = getSavedAnswer(question)}
 
               <div class="grid-line-x gap-lg grid">
@@ -171,13 +160,13 @@ Shows the opinion questions for the candidate to answer.
                 {/if}
 
                 <Button
-                  text={answersLocked
+                  text={candCtx.answersLocked
                     ? t('candidateApp.questions.viewAnswer')
                     : answer == null
                       ? t('candidateApp.questions.answerQuestion')
                       : t('candidateApp.questions.editAnswer')}
                   href={$getRoute({ route: 'CandAppQuestion', questionId: id })}
-                  icon={answersLocked ? 'show' : 'create'}
+                  icon={candCtx.answersLocked ? 'show' : 'create'}
                   variant={answer == null ? 'main' : undefined}
                   iconPos="left"
                   class="!w-auto place-self-center"

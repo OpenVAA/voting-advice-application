@@ -58,22 +58,25 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Phase 61-03 voter-side parallel fix: reactive context getters
+  // (constituenciesSelectable, matches, nominationsAvailable, resultsAvailable,
+  // selectedConstituencies, selectedElections) are read via voterCtx.X.
+  // Stable stores/functions/objects (appSettings, dataRoot, getRoute, t,
+  // answers, startEvent, *Countdown) remain destructured.
+  const voterCtx = getVoterContext();
   const {
     answers,
     appSettings,
-    constituenciesSelectable,
     dataRoot,
     getRoute,
-    matches,
-    nominationsAvailable,
-    resultsAvailable,
-    selectedConstituencies: constituencies,
-    selectedElections: elections,
     startEvent,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
     t
-  } = getVoterContext();
+  } = voterCtx;
+  // Re-named local aliases preserved for template readability:
+  const elections = $derived(voterCtx.selectedElections);
+  const constituencies = $derived(voterCtx.selectedConstituencies);
 
   ////////////////////////////////////////////////////////////////////
   // URL-derived state (D-09, D-13)
@@ -120,8 +123,8 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // render consistent tab labels without going through a separate $state twin.
   type EntityTab = { type: EntityType; label: string };
   const entityTabs = $derived<Array<EntityTab>>(
-    activeElectionId && matches[activeElectionId]
-      ? (Object.keys(matches[activeElectionId]) as Array<EntityType>).map((type) => ({
+    activeElectionId && voterCtx.matches[activeElectionId]
+      ? (Object.keys(voterCtx.matches[activeElectionId]) as Array<EntityType>).map((type) => ({
           type,
           label: ucFirst(t(`common.${type}.plural`))
         }))
@@ -129,16 +132,19 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   );
 
   // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
-  // RESOLVED). When the URL omits entityTypePlural we fall back to the first
-  // available tab for the active election.
+  // RESOLVED). When the URL omits entityTypePlural — OR names a plural that
+  // isn't present in the entityTabs (e.g. URL stuck at /candidates after the
+  // `results.sections` setting drops 'candidate' — variant-results-sections.spec.ts:291) —
+  // fall back to the first available tab for the active election.
   const activeEntityType = $derived.by<EntityType | undefined>(() => {
-    if (_urlPlural === 'candidates') return 'candidate';
-    if (_urlPlural === 'organizations') return 'organization';
+    const fromUrl: EntityType | undefined =
+      _urlPlural === 'candidates' ? 'candidate' : _urlPlural === 'organizations' ? 'organization' : undefined;
+    if (fromUrl && entityTabs.some((t) => t.type === fromUrl)) return fromUrl;
     return entityTabs[0]?.type;
   });
 
   const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
-    activeElectionId && activeEntityType ? matches[activeElectionId]?.[activeEntityType] : undefined
+    activeElectionId && activeEntityType ? voterCtx.matches[activeElectionId]?.[activeEntityType] : undefined
   );
 
   // Tabs.activeIndex — non-bound, passed as a $derived value (Pitfall 3).
@@ -164,7 +170,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     try {
       const { entity } = getEntityAndTitle({
         dataRoot: $dataRoot,
-        matches,
+        matches: voterCtx.matches,
         entityType,
         entityId,
         nominationId
@@ -184,7 +190,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
-    startEvent(resultsAvailable ? 'results_ranked' : 'results_browse', {
+    startEvent(voterCtx.resultsAvailable ? 'results_ranked' : 'results_browse', {
       election: activeElectionId,
       entityType: activeEntityType,
       numAnswers: Object.keys(answers.answers).length
@@ -272,7 +278,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   }
 </script>
 
-{#if Object.values(nominationsAvailable).some(Boolean)}
+{#if Object.values(voterCtx.nominationsAvailable).some(Boolean)}
   <!--
     DRAWER-FIRST SOURCE ORDER (D-10, Open Question 4 RESOLVED — cheapest-first).
     Rendered before MainContent so that on a cold deeplink the drawer paints
@@ -287,7 +293,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       data-testid="voter-results-drawer" />
   {/if}
 
-  <MainContent title={resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
+  <MainContent title={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
     {#snippet hero()}
       <figure role="presentation">
         <HeroEmoji emoji={t('dynamic.results.heroEmoji')} />
@@ -295,7 +301,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
     {/snippet}
 
     <div class="mb-xl text-center" data-testid="voter-results-ingress">
-      {#if resultsAvailable}
+      {#if voterCtx.resultsAvailable}
         <p>{t('dynamic.results.ingress.results')}</p>
       {:else}
         <p>
@@ -362,7 +368,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                   {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
-                      {#if constituenciesSelectable}
+                      {#if voterCtx.constituenciesSelectable}
                         <span class="font-normal">
                           {t('results.inConstituency')}
                           {activeElection?.getApplicableConstituency(constituencies)?.name || '—'}

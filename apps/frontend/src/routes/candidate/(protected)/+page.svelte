@@ -22,16 +22,9 @@ Shows a dynamic list of the actions the candidate should take to be included in 
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    answersLocked,
-    appSettings,
-    getRoute,
-    profileComplete,
-    t,
-    unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions,
-    userData
-  } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { appSettings, getRoute, t, userData } = candCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Create action list
@@ -40,31 +33,31 @@ Shows a dynamic list of the actions the candidate should take to be included in 
   // React to changes in language and stores
   let nextAction = $derived.by(() => {
     const username = userData.current?.candidate.firstName || '?';
-    if (profileComplete) {
+    if (candCtx.profileComplete) {
       return {
         title: t('candidateApp.home.ready'),
         explanation: t('candidateApp.home.ingress.ready'),
         tip: t('candidateApp.home.previewTip'),
-        buttonTextBasicInfo: !answersLocked
+        buttonTextBasicInfo: !candCtx.answersLocked
           ? t('candidateApp.home.basicInfo.edit')
           : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !answersLocked
+        buttonTextQuestion: !candCtx.answersLocked
           ? t('candidateApp.home.questions.edit')
           : t('candidateApp.home.questions.view'),
         buttonTextPrimaryActions: t('candidateApp.home.preview'),
         href: $getRoute('CandAppPreview')
       };
-    } else if (unansweredRequiredInfoQuestions?.length === 0 && unansweredOpinionQuestions?.length !== 0) {
+    } else if (candCtx.unansweredRequiredInfoQuestions?.length === 0 && candCtx.unansweredOpinionQuestions?.length !== 0) {
       return {
         title: t('candidateApp.common.greeting', { username }),
         explanation: t('candidateApp.home.ingress.notDone'),
-        buttonTextBasicInfo: !answersLocked
+        buttonTextBasicInfo: !candCtx.answersLocked
           ? t('candidateApp.home.basicInfo.edit')
           : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !answersLocked
+        buttonTextQuestion: !candCtx.answersLocked
           ? t('candidateApp.home.questions.enter')
           : t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: !answersLocked
+        buttonTextPrimaryActions: !candCtx.answersLocked
           ? t('candidateApp.home.questions.enter')
           : t('candidateApp.home.questions.view'),
         href: $getRoute('CandAppQuestions')
@@ -73,13 +66,13 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       return {
         title: t('candidateApp.common.greeting', { username }),
         explanation: t('candidateApp.home.ingress.notDone'),
-        buttonTextBasicInfo: !answersLocked
+        buttonTextBasicInfo: !candCtx.answersLocked
           ? t('candidateApp.home.basicInfo.enter')
           : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !answersLocked
+        buttonTextQuestion: !candCtx.answersLocked
           ? t('candidateApp.home.questions.enter')
           : t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: !answersLocked
+        buttonTextPrimaryActions: !candCtx.answersLocked
           ? t('candidateApp.home.basicInfo.enter')
           : t('candidateApp.home.basicInfo.view'),
         href: $getRoute('CandAppProfile')
@@ -90,10 +83,10 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 
 <MainContent title={nextAction.title}>
   {#snippet note()}
-    {#if answersLocked}
+    {#if candCtx.answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -102,7 +95,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 
   {#snippet hero()}
     <figure role="presentation">
-      <HeroEmoji emoji={profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
+      <HeroEmoji emoji={candCtx.profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
     </figure>
   {/snippet}
 
@@ -124,8 +117,8 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       href={$getRoute('CandAppProfile')}
       data-testid="candidate-home-profile">
       {#snippet badge()}
-        {#if unansweredRequiredInfoQuestions && unansweredRequiredInfoQuestions.length > 0}
-          <InfoBadge text={String(unansweredRequiredInfoQuestions.length)} />
+        {#if candCtx.unansweredRequiredInfoQuestions && candCtx.unansweredRequiredInfoQuestions.length > 0}
+          <InfoBadge text={String(candCtx.unansweredRequiredInfoQuestions.length)} />
         {/if}
       {/snippet}
     </Button>
@@ -133,14 +126,14 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       text={nextAction.buttonTextQuestion}
       icon="opinion"
       iconPos="left"
-      disabled={unansweredRequiredInfoQuestions?.length !== 0}
+      disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
       href={$getRoute('CandAppQuestions')}
       data-testid="candidate-home-questions">
       {#snippet badge()}
-        {#if unansweredOpinionQuestions && unansweredOpinionQuestions?.length > 0}
+        {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredOpinionQuestions?.length > 0}
           <InfoBadge
-            text={unansweredOpinionQuestions.length}
-            disabled={unansweredRequiredInfoQuestions?.length !== 0} />
+            text={candCtx.unansweredOpinionQuestions.length}
+            disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0} />
         {/if}
       {/snippet}
     </Button>
@@ -148,7 +141,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       text={t('candidateApp.home.preview')}
       icon="previewProfile"
       iconPos="left"
-      disabled={unansweredRequiredInfoQuestions?.length !== 0}
+      disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
       href={$getRoute('CandAppPreview')}
       data-testid="candidate-home-preview" />
   </div>

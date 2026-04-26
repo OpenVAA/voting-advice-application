@@ -16,7 +16,12 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../MainContent.svelte';
 
-  const { appSettings, constituenciesSelectable, electionsSelectable, getRoute, t } = getVoterContext();
+  // Phase 61-03 voter-side parallel fix: destructuring reactive context
+  // getters (electionsSelectable, constituenciesSelectable) captures the
+  // initial empty/false snapshot. Read via `voterCtx.X` instead. Stable
+  // stores (appSettings) and functions (getRoute, t) remain destructured.
+  const voterCtx = getVoterContext();
+  const { appSettings, getRoute, t } = voterCtx;
 </script>
 
 <MainContent title={t('dynamic.intro.title')}>
@@ -31,13 +36,13 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   </p>
   <ol class="list-circled w-fit" data-testid="voter-intro-steps">
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
-    {#if constituenciesSelectable}
+    {#if voterCtx.constituenciesSelectable}
       <li>{t('dynamic.intro.list.constituencies')}</li>
     {/if}
-    {#if electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
       <li>{t('dynamic.intro.list.elections')}</li>
     {/if}
     <li>{t('dynamic.intro.list.opinions')}</li>

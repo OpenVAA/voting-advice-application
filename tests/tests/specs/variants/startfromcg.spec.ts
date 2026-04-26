@@ -232,10 +232,12 @@ test.describe('startFromConstituencyGroup variant', { tag: ['@variant'] }, () =>
       }
     }
 
-    // Verify results page loaded — handle multi-election accordion if present
+    // Verify results page loaded — handle multi-election accordion if present.
+    // `.first()` on the union locator satisfies strict mode when both the
+    // accordion AND the list end up present (multi-election shape).
     const electionAccordion = sharedPage.getByTestId(testIds.voter.results.electionAccordion);
     const resultsList = sharedPage.getByTestId(testIds.voter.results.list);
-    await electionAccordion.or(resultsList).waitFor({ state: 'visible', timeout: 10000 });
+    await electionAccordion.or(resultsList).first().waitFor({ state: 'visible', timeout: 10000 });
     if (await electionAccordion.isVisible().catch(() => false)) {
       await electionAccordion.getByRole('option').first().click();
     }

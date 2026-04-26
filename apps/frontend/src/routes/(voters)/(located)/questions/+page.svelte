@@ -26,17 +26,15 @@ Display a general intro before starting answering the questions and possibly all
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
+  // Phase 61-03 voter-side parallel fix: read reactive context properties
+  // (opinionQuestions, voterCtx.opinionQuestionCategories, selectedElections,
+  // selectedConstituencies, voterCtx.selectedQuestionBlocks) via voterCtx.X. These were
+  // previously destructured into local consts and snapshot the empty initial
+  // state — the originating QUESTION-03 symptom.
   const voterCtx = getVoterContext();
-  const {
-    appSettings,
-    getRoute,
-    opinionQuestions,
-    opinionQuestionCategories,
-    selectedElections: elections,
-    selectedConstituencies: constituencies,
-    selectedQuestionBlocks,
-    t
-  } = voterCtx;
+  const { appSettings, getRoute, t } = voterCtx;
+  const elections = $derived(voterCtx.selectedElections);
+  const constituencies = $derived(voterCtx.selectedConstituencies);
 
   const { progress } = getLayoutContext(onDestroy);
   progress.current.set(0);
@@ -52,14 +50,14 @@ Display a general intro before starting answering the questions and possibly all
     // Navigation-level concern — stays here. Default-seeding moved to voterContext
     // per QUESTION-03 (Phase 61 D-09 + D-11).
     const filtered = voterCtx.selectedQuestionCategoryIds.filter((id) =>
-      opinionQuestionCategories.find((c) => c.id === id)
+      voterCtx.opinionQuestionCategories.find((c) => c.id === id)
     );
     if (filtered.length !== voterCtx.selectedQuestionCategoryIds.length) {
       voterCtx.selectedQuestionCategoryIds = filtered;
     }
     // Redirect: unchanged behavior — preserve the existing logic exactly.
     if (!$appSettings.questions.questionsIntro.show) {
-      const categoryId = selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+      const categoryId = voterCtx.selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
       return goto(
         $getRoute(
           $appSettings.questions.categoryIntros?.show && categoryId
@@ -78,12 +76,12 @@ Display a general intro before starting answering the questions and possibly all
   // To submit, there number of questions in the selected categories must be at least the minimum number set in the app settings or all questions if there are less than the minimum number
   let canSubmit = $derived(
     voterCtx.selectedQuestionCategoryIds.length > 0 &&
-      selectedQuestionBlocks.questions.length >= Math.min(opinionQuestions.length, $appSettings.matching.minimumAnswers)
+      voterCtx.selectedQuestionBlocks.questions.length >= Math.min(voterCtx.opinionQuestions.length, $appSettings.matching.minimumAnswers)
   );
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    const categoryId = selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+    const categoryId = voterCtx.selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
     goto(
       $getRoute(
@@ -114,12 +112,12 @@ Display a general intro before starting answering the questions and possibly all
   {#if $appSettings.questions.questionsIntro.allowCategorySelection}
     <p class="text-center">
       {t('questions.intro.ingress.withCategorySelection', {
-        numCategories: opinionQuestionCategories.length,
+        numCategories: voterCtx.opinionQuestionCategories.length,
         minQuestions: $appSettings.matching.minimumAnswers
       })}
     </p>
     <div class="gap-sm grid" data-testid="voter-questions-category-list">
-      {#each opinionQuestionCategories as category}
+      {#each voterCtx.opinionQuestionCategories as category}
         <label class="label gap-sm cursor-pointer justify-start !p-0">
           <input
             type="checkbox"
@@ -136,16 +134,16 @@ Display a general intro before starting answering the questions and possibly all
   {:else}
     <p class="text-center">
       {t('questions.intro.ingress.withoutCategorySelection', {
-        numCategories: opinionQuestionCategories.length,
-        numQuestions: selectedQuestionBlocks.questions.length
+        numCategories: voterCtx.opinionQuestionCategories.length,
+        numQuestions: voterCtx.selectedQuestionBlocks.questions.length
       })}
     </p>
     <div
       class="
-        {opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '}
+        {voterCtx.opinionQuestionCategories.length > 6 ? 'flex flex-wrap ' : 'grid '}
         gap-sm justify-center justify-items-center
       ">
-      {#each opinionQuestionCategories as category}
+      {#each voterCtx.opinionQuestionCategories as category}
         <CategoryTag {category} />
       {/each}
     </div>
@@ -158,7 +156,7 @@ Display a general intro before starting answering the questions and possibly all
       variant="main"
       icon="next"
       text={t('questions.intro.start', {
-        numQuestions: voterCtx.selectedQuestionCategoryIds.length > 0 ? selectedQuestionBlocks.questions.length : 0
+        numQuestions: voterCtx.selectedQuestionCategoryIds.length > 0 ? voterCtx.selectedQuestionBlocks.questions.length : 0
       })}
       data-testid="voter-questions-start" />
   {/snippet}

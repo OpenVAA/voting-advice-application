@@ -44,7 +44,13 @@ if (!base) throw new Error('variant-startfromcg: BUILT_IN_TEMPLATES.e2e is undef
  * `startFromConstituencyGroup` ID at runtime (variant-startfromcg.setup.ts:21
  * describes the contract: the UUID is only known after querying the DB).
  */
-const STARTFROMCG_APP_SETTINGS_OVERLAY = {} as const;
+const STARTFROMCG_APP_SETTINGS_OVERLAY = {
+  // Variant tests walk to a question page; bypass the now-default questions
+  // intro from E2E_BASE_APP_SETTINGS.
+  questions: {
+    questionsIntro: { allowCategorySelection: false, show: false }
+  }
+} as const;
 
 type FixedRow = Record<string, unknown>;
 
@@ -66,20 +72,65 @@ export const variantStartFromCgTemplate: Template = {
   externalIdPrefix: base.externalIdPrefix,
   generateTranslationsForAllLocales: base.generateTranslationsForAllLocales,
 
-  // Pass-through tables.
+  // Pass-through: organizations.
   organizations: { count: 0, fixed: baseFixed('organizations') },
-  elections: { count: 0, fixed: baseFixed('elections') },
 
-  // Extended: test-cg-regions NEW, test-cg-municipalities DEDUPED (base).
+  // Extended: 2 elections.
+  //   - test-election-1 (from base) → test-cg-regions + test-cg-municipalities.
+  //   - test-election-2 (NEW) → test-cg-municipalities.
+  elections: {
+    count: 0,
+    fixed: [
+      ...baseFixed('elections').map((row) => ({
+        ...row,
+        constituency_groups: [
+          { external_id: 'test-cg-regions' },
+          { external_id: 'test-cg-municipalities' }
+        ]
+      })),
+      {
+        external_id: 'test-election-2',
+        name: { en: 'Test Election 2026' },
+        short_name: { en: 'Election 2026' },
+        election_type: 'general',
+        election_date: '2026-06-15',
+        sort_order: 1,
+        is_generated: false,
+        multiple_rounds: false,
+        current_round: 1,
+        constituency_groups: [{ external_id: 'test-cg-municipalities' }]
+      }
+    ]
+  },
+
+  // Extended: 2 NEW cgs (test-cg-regions + test-cg-municipalities); the
+  // base test-cg-1 is dropped because the variant uses regions/municipalities
+  // exclusively. test-cg-municipalities is the load-bearing group for
+  // startfromcg.spec.ts:47 (queries by external_id) + line 141/153/268
+  // ("Municipalities" combobox name).
   constituency_groups: {
     count: 0,
     fixed: [
-      ...baseFixed('constituency_groups'),
       {
         external_id: 'test-cg-regions',
         name: { en: 'Regions' },
         sort_order: 10,
-        is_generated: false
+        is_generated: false,
+        constituencies: [
+          { external_id: 'test-const-region-north' },
+          { external_id: 'test-const-region-south' }
+        ]
+      },
+      {
+        external_id: 'test-cg-municipalities',
+        name: { en: 'Municipalities' },
+        sort_order: 11,
+        is_generated: false,
+        constituencies: [
+          { external_id: 'test-const-muni-north-a' },
+          { external_id: 'test-const-muni-south-a' },
+          { external_id: 'test-const-muni-orphan' }
+        ]
       }
     ]
   },

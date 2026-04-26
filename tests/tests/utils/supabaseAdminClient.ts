@@ -390,10 +390,16 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const user = users.find((u) => u.email === email);
     if (!user) return; // Already unregistered (or listUsers failed - safe to skip)
 
-    // 2. Clear auth_user_id on candidate
+    // 2. Clear auth_user_id AND terms_of_use_accepted on the candidate row.
+    //    Without resetting `terms_of_use_accepted` the candidate-registration
+    //    spec sees a stale "ToU already accepted" state on subsequent runs:
+    //    the auth user is freshly created by the test but the underlying
+    //    candidate row still carries the ToU timestamp from the prior run, so
+    //    the post-login ToU gate is bypassed and the test reaches /candidate
+    //    home directly instead of finding the ToU checkbox.
     const { error: clearError } = await this.client
       .from('candidates')
-      .update({ auth_user_id: null })
+      .update({ auth_user_id: null, terms_of_use_accepted: null })
       .eq('auth_user_id', user.id);
     if (clearError) throw new Error(`unregisterCandidate: clear auth_user_id failed: ${clearError.message}`);
 

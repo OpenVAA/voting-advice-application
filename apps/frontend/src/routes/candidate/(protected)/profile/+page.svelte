@@ -32,19 +32,9 @@ Shows the candidate's basic information, some of which is editable.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    answersLocked,
-    appSettings,
-    dataRoot,
-    getRoute,
-    infoQuestions,
-    profileComplete,
-    requiredInfoQuestions,
-    unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions,
-    t,
-    userData
-  } = getCandidateContext();
+  // Phase 61-03 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { appSettings, dataRoot, getRoute, t, userData } = candCtx;
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -102,11 +92,11 @@ Shows the candidate's basic information, some of which is editable.
   let canSubmit = $derived(status !== 'loading');
 
   let allRequiredFilled = $derived(
-    !requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
+    !candCtx.requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
   );
 
   let submitRouting = $derived.by(() => {
-    if (allRequiredFilled && unansweredOpinionQuestions.length && !answersLocked) {
+    if (allRequiredFilled && candCtx.unansweredOpinionQuestions.length && !candCtx.answersLocked) {
       return {
         submitRoute: $getRoute('CandAppQuestions'),
         submitLabel: userData.hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
@@ -114,7 +104,7 @@ Shows the candidate's basic information, some of which is editable.
     }
     return {
       submitRoute: $getRoute('CandAppHome'),
-      submitLabel: answersLocked || !userData.hasUnsaved ? t('common.return') : t('common.saveAndReturn')
+      submitLabel: candCtx.answersLocked || !userData.hasUnsaved ? t('common.return') : t('common.saveAndReturn')
     };
   });
 
@@ -178,19 +168,19 @@ Shows the candidate's basic information, some of which is editable.
 </script>
 
 <PreventNavigation
-  active={() => !bypassPreventNavigation && userData.hasUnsaved && !answersLocked}
+  active={() => !bypassPreventNavigation && userData.hasUnsaved && !candCtx.answersLocked}
   onConfirm={handleNavigationConfirm} />
 
 <MainContent title={t('candidateApp.basicInfo.title')}>
   {#snippet note()}
-    {#if answersLocked}
+    {#if candCtx.answersLocked}
       <Warning>
         {t('candidateApp.common.editingNotAllowed')}
-        {#if unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && unansweredOpinionQuestions?.length !== 0)}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
-    {:else if profileComplete}
+    {:else if candCtx.profileComplete}
       <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
     {/if}
   {/snippet}
@@ -221,7 +211,7 @@ Shows the candidate's basic information, some of which is editable.
         data-testid="profile-last-name" />
 
       <!-- Locked Info questions -->
-      {#each infoQuestions.filter((q) => getCustomData(q).locked) as question}
+      {#each candCtx.infoQuestions.filter((q) => getCustomData(q).locked) as question}
         {@const answer = userData.current?.candidate.answers?.[question.id]}
         <QuestionInput
           {question}
@@ -277,15 +267,15 @@ Shows the candidate's basic information, some of which is editable.
         label={t('common.candidatePortrait')}
         value={userData.current?.candidate.image}
         onChange={handleImageInputChange}
-        locked={answersLocked}
+        locked={candCtx.answersLocked}
         onShadedBg
         containerProps={{ 'data-testid': 'profile-image-upload' }} />
 
       <!-- Editable Info questions -->
 
-      {#each infoQuestions.filter((q) => !getCustomData(q).locked) as question}
+      {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question}
         {@const answer = userData.current?.candidate.answers?.[question.id]}
-        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={answersLocked} onShadedBg />
+        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={candCtx.answersLocked} onShadedBg />
       {/each}
     </div>
   </section>
@@ -293,7 +283,7 @@ Shows the candidate's basic information, some of which is editable.
   <!-- Submit button and error messages -->
 
   {#snippet primaryActions()}
-    {#if !answersLocked}
+    {#if !candCtx.answersLocked}
       <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{t('common.required')}</span>
@@ -306,7 +296,7 @@ Shows the candidate's basic information, some of which is editable.
     {/if}
 
     <div class="grid w-full justify-items-center">
-      {#if !answersLocked}
+      {#if !candCtx.answersLocked}
         <Button
           text={submitRouting.submitLabel}
           onclick={handleSubmit}

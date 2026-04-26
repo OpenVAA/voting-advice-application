@@ -8,7 +8,7 @@ import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings } from '$lib/utils/settings';
-import { getRoute } from './getRoute.svelte';
+import { createGetRoute } from './getRoute.svelte';
 import { popupStore } from './popup';
 import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
@@ -42,6 +42,12 @@ export function initAppContext(): AppContext {
 
   const componentCtx = getComponentContext();
   const dataCtx = getDataContext();
+
+  // `getRoute` is a Readable<RouteBuilder>. It must be created here (not at
+  // module load) because `createGetRoute` registers an `afterNavigate`
+  // callback that requires component-init context. See `getRoute.svelte.ts`
+  // header for the toStore + $app/state.page short-circuit rationale.
+  const getRoute = createGetRoute();
 
   // Wrap plain ComponentContext values as stores for downstream context backward compat
   // (VoterContext uses derived([locale, ...]), filterStore expects Readable<string>, etc.)

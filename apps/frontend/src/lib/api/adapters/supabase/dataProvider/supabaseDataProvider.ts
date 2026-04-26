@@ -229,26 +229,50 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    const { data, error } = await this.supabase.rpc('get_nominations', {
-      p_election_id: options?.electionId
-        ? Array.isArray(options.electionId)
-          ? options.electionId[0]
-          : options.electionId
-        : null,
-      p_constituency_id: options?.constituencyId
-        ? Array.isArray(options.constituencyId)
-          ? options.constituencyId[0]
-          : options.constituencyId
-        : null,
-      p_include_unconfirmed: options?.includeUnconfirmed ?? false
-    });
-    if (error) throw new Error(`getNominationData: ${error.message}`);
+    // The `get_nominations` RPC accepts a single uuid per election/constituency.
+    // When the caller passes arrays (multi-election voter flow — see
+    // `(voters)/(located)/+layout.ts` which threads URL `electionId` /
+    // `constituencyId` arrays through verbatim), fan out into one RPC per
+    // (election, constituency) pair and concatenate the results. Picking
+    // `[0]` only — the prior shape — silently dropped the other elections'
+    // nominations and broke the multi-election partial-coverage dialog gate
+    // (variant-constituency.spec.ts:237).
+    const electionIds: Array<string | null> = options?.electionId
+      ? Array.isArray(options.electionId)
+        ? (options.electionId as Array<string>)
+        : [options.electionId]
+      : [null];
+    const constituencyIds: Array<string | null> = options?.constituencyId
+      ? Array.isArray(options.constituencyId)
+        ? (options.constituencyId as Array<string>)
+        : [options.constituencyId]
+      : [null];
 
-    // Deduplicate entities using a Map keyed by entity_id
+    const includeUnconfirmed = options?.includeUnconfirmed ?? false;
+    const calls = electionIds.flatMap((eid) =>
+      constituencyIds.map((cid) =>
+        this.supabase.rpc('get_nominations', {
+          p_election_id: eid,
+          p_constituency_id: cid,
+          p_include_unconfirmed: includeUnconfirmed
+        })
+      )
+    );
+    const results = await Promise.all(calls);
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) throw new Error(`getNominationData: ${firstError.message}`);
+    const data = results.flatMap((r) => r.data ?? []);
+
+    // Deduplicate entities using a Map keyed by entity_id; nominations have
+    // unique (election_id, constituency_id) keys so the fan-out cannot produce
+    // nomination duplicates, but guard with a Set to be safe.
     const entityMap = new Map<string, AnyEntityVariantData>();
     const nominations: AnyNominationVariantPublicData[] = [];
+    const seenNominationIds = new Set<string>();
 
-    for (const row of data ?? []) {
+    for (const row of data) {
+      if (seenNominationIds.has(row.id as string)) continue;
+      seenNominationIds.add(row.id as string);
       // Build nomination object from nomination-level columns
       const nomRow = {
         id: row.id,

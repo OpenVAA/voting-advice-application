@@ -26,7 +26,12 @@ Shows a form with which to set a new password when it has been reset.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, isAuthenticated, resetPassword, setPassword, t } = getCandidateContext();
+  // Phase 61-03 follow-up: isAuthenticated is reactive; access via candCtx.X.
+  // (This page evaluates isSessionFlow once at component init, so the original
+  // destructure was effectively safe — but switching to candCtx.X future-proofs
+  // any later code that re-reads isSessionFlow inside an effect/derived.)
+  const candCtx = getCandidateContext();
+  const { getRoute, resetPassword, setPassword, t } = candCtx;
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -35,7 +40,7 @@ Shows a form with which to set a new password when it has been reset.
 
   const code = page.url.searchParams.get('code');
   // Session-based flow: user arrived via auth callback with verifyOtp (recovery type)
-  const isSessionFlow = isAuthenticated && !code;
+  const isSessionFlow = candCtx.isAuthenticated && !code;
 
   // Redirect to login only if neither code nor session is available
   if (!code && !isSessionFlow) goto($getRoute('CandAppLogin'));

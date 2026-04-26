@@ -64,7 +64,13 @@ if (!base) throw new Error('variant-constituency: BUILT_IN_TEMPLATES.e2e is unde
  * overlay explicitly (rather than deriving implicitly) keeps the variant's
  * intent visible for reviewers.
  */
-const CONSTITUENCY_APP_SETTINGS_OVERLAY = {} as const;
+const CONSTITUENCY_APP_SETTINGS_OVERLAY = {
+  // Variant tests walk the journey to a question page; bypass the now-default
+  // questions intro from E2E_BASE_APP_SETTINGS.
+  questions: {
+    questionsIntro: { allowCategorySelection: false, show: false }
+  }
+} as const;
 
 type FixedRow = Record<string, unknown>;
 
@@ -92,24 +98,65 @@ export const variantConstituencyTemplate: Template = {
   externalIdPrefix: base.externalIdPrefix,
   generateTranslationsForAllLocales: base.generateTranslationsForAllLocales,
 
-  // Pass-through: overlay doesn't touch these tables.
+  // Pass-through: overlay doesn't touch organizations.
   organizations: { count: 0, fixed: baseFixed('organizations') },
 
-  // Pass-through: elections. Overlay's test-election-1 / test-election-2
-  // replacements carry the same external_id + name as the base rows; no
-  // additive rows to add. (See header "Overlay-row inventory".)
-  elections: { count: 0, fixed: baseFixed('elections') },
+  // Extended: 2 elections.
+  //   - test-election-1 (from base) → BOTH test-cg-regions AND
+  //     test-cg-municipalities (constituency.spec.ts:109 — Regions OR
+  //     Municipalities, hierarchical).
+  //   - test-election-2 (NEW) → test-cg-municipalities only (spec line 110).
+  elections: {
+    count: 0,
+    fixed: [
+      ...baseFixed('elections').map((row) => ({
+        ...row,
+        constituency_groups: [
+          { external_id: 'test-cg-regions' },
+          { external_id: 'test-cg-municipalities' }
+        ]
+      })),
+      {
+        external_id: 'test-election-2',
+        name: { en: 'Test Election 2026' },
+        short_name: { en: 'Election 2026' },
+        election_type: 'general',
+        election_date: '2026-06-15',
+        sort_order: 1,
+        is_generated: false,
+        multiple_rounds: false,
+        current_round: 1,
+        constituency_groups: [{ external_id: 'test-cg-municipalities' }]
+      }
+    ]
+  },
 
-  // Extended: test-cg-regions NEW, test-cg-municipalities DEDUPED (base).
+  // Extended: 3 cgs total. The base test-cg-1 is dropped — variant uses
+  // its own test-cg-regions instead. test-cg-municipalities is NEW
+  // (constituency.spec.ts:119 binds to the literal "Municipalities" name).
   constituency_groups: {
     count: 0,
     fixed: [
-      ...baseFixed('constituency_groups'),
       {
         external_id: 'test-cg-regions',
         name: { en: 'Regions' },
         sort_order: 10,
-        is_generated: false
+        is_generated: false,
+        constituencies: [
+          { external_id: 'test-const-region-north' },
+          { external_id: 'test-const-region-south' }
+        ]
+      },
+      {
+        external_id: 'test-cg-municipalities',
+        name: { en: 'Municipalities' },
+        sort_order: 11,
+        is_generated: false,
+        constituencies: [
+          { external_id: 'test-const-muni-north-a' },
+          { external_id: 'test-const-muni-south-a' },
+          { external_id: 'test-const-muni-east' }
+        ]
       }
     ]
   },

@@ -16,10 +16,23 @@ export function getImpliedElectionIds({
   selectedConstituencyIds?: Array<Id>;
 }): Array<Id> | undefined {
   let elections = dataRoot.elections;
-  // Filter to applicable elections
+  // Filter to applicable elections.
+  // `getApplicableConstituency` throws when more than one of the passed
+  // constituencies match the election's groups (e.g. a municipality and its
+  // parent region both end up in selectedConstituencyIds for an election
+  // whose cgs include both Regions and Municipalities). Treat that throw as
+  // "applicable" — the election clearly matches *something* in the
+  // selection — so that variant-startfromcg's hierarchical implied flow
+  // (variant-startfromcg.spec.ts:145) doesn't blow up the implied lookup.
   if (selectedConstituencyIds?.length) {
     const constituencies = selectedConstituencyIds.map((id) => dataRoot.getConstituency(id));
-    elections = elections.filter((e) => e.getApplicableConstituency(constituencies));
+    elections = elections.filter((e) => {
+      try {
+        return !!e.getApplicableConstituency(constituencies);
+      } catch {
+        return true;
+      }
+    });
   }
   // Elections can be implied if there is only one election or if the app settings disallow selection
   if (elections.length === 1 || appSettings.elections?.disallowSelection) return elections.map((e) => e.id);

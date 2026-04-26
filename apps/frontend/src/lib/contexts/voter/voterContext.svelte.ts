@@ -1,8 +1,8 @@
+import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { fromStore } from 'svelte/store';
-import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore.svelte';
@@ -13,12 +13,11 @@ import { nominationAndQuestionStore } from './nominationAndQuestionStore.svelte'
 import { getAppContext } from '../../contexts/app';
 import { getFilterContext, initFilterContext } from '../filter';
 import { paramStore } from '../utils/paramStore.svelte';
-import { questionBlockStore } from '../utils/questionBlockStore.svelte';
-import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore.svelte';
-import { questionStore } from '../utils/questionStore.svelte';
 import { sessionStorageWritable } from '../utils/persistedState.svelte';
+import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { EntityType } from '@openvaa/data';
+import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
+import type { QuestionBlocks } from '../utils/questionBlockStore.type';
 import type { VoterContext } from './voterContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -67,12 +66,27 @@ export function initVoterContext(): VoterContext {
 
   const _constituencyId = paramStore('constituencyId');
 
-  const selectedElections = $derived.by(() => {
+  // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
+  // Push-based `$state` + `$effect` mirror, mirroring the candidateContext fix
+  // documented at .planning/phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md.
+  // The previous `$derived.by` pull-chain captured initial empty values when
+  // consumers destructured the context property; subsequent reads via the
+  // destructured local were not live reactive sources, so updates after data
+  // load did not propagate. `$state` reads through context getters propagate
+  // correctly. Side effects (goto on stale id) live naturally inside `$effect`,
+  // not inside a derivation.
+  let selectedElections = $state<Array<Election>>([]);
+  let selectedConstituencies = $state<Array<Constituency>>([]);
+
+  $effect(() => {
     const dr = reactiveDataRoot.current;
     const settings = appSettingsState.current;
     const electionId = _electionId.value;
     const constituencyId = _constituencyId.value;
-    if (!dr.elections.length) return [];
+    if (!dr.elections.length) {
+      selectedElections = [];
+      return;
+    }
     const ids = electionId?.length
       ? electionId
       : getImpliedElectionIds({
@@ -80,34 +94,52 @@ export function initVoterContext(): VoterContext {
           dataRoot: dr,
           selectedConstituencyIds: constituencyId
         });
-    if (!ids?.length) return [];
+    if (!ids?.length) {
+      selectedElections = [];
+      return;
+    }
     try {
-      return ids.map((id) => dr.getElection(id));
+      selectedElections = ids.map((id) => dr.getElection(id));
     } catch (e) {
+      // DataRoot lookup throws transiently during navigation: when the URL
+      // changes the page params arrive on the new route before the loader
+      // has finished re-providing the corresponding data. Falling back to a
+      // `goto('Elections')` here races with the in-flight navigation and
+      // boomerangs the user back to /elections — the silent-fail flake
+      // documented at multi-election.spec.ts:173. Clear the local mirror
+      // and let the route's `+page.ts` / `+layout.ts` `redirect()` decide
+      // whether a redirect is actually needed.
       logDebugError(`[selectedElections] Error fetching election: ${e}`);
-      goto(getRouteState.current({ route: 'Elections', electionId: undefined, constituencyId: undefined }));
-      return [];
+      selectedElections = [];
     }
   });
 
-  const selectedConstituencies = $derived.by(() => {
+  $effect(() => {
     const dr = reactiveDataRoot.current;
     const constituencyId = _constituencyId.value;
     const electionId = _electionId.value;
-    if (!dr.constituencies.length) return [];
+    if (!dr.constituencies.length) {
+      selectedConstituencies = [];
+      return;
+    }
     const ids = constituencyId?.length
       ? constituencyId
       : getImpliedConstituencyIds({
           dataRoot: dr,
           selectedElectionIds: electionId
         });
-    if (!ids?.length) return [];
+    if (!ids?.length) {
+      selectedConstituencies = [];
+      return;
+    }
     try {
-      return ids.map((id) => dr.getConstituency(id));
+      selectedConstituencies = ids.map((id) => dr.getConstituency(id));
     } catch (e) {
+      // See parallel selectedElections catch above — clear the local mirror
+      // and let the route loader handle redirects so we don't race the
+      // in-flight navigation.
       logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
-      goto(getRouteState.current({ route: 'Constituencies', constituencyId: undefined }));
-      return [];
+      selectedConstituencies = [];
     }
   });
 
@@ -115,31 +147,26 @@ export function initVoterContext(): VoterContext {
   // Questions and QuestionCategories
   ////////////////////////////////////////////////////////////
 
-  /**
-   * All applicable, non-empty question categories to be used as a base for the other stores.
-   */
-  const _questionCategories = questionCategoryStore({
-    dataRoot: () => reactiveDataRoot.current,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies
-  });
-
-  const _infoQuestionCategories = extractInfoCategories(() => _questionCategories.value);
-
-  const _opinionQuestionCategories = extractOpinionCategories(() => _questionCategories.value);
-
-  const _infoQuestions = questionStore({
-    categories: () => _infoQuestionCategories.value,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies,
-    appType: 'voter'
-  });
-
-  const _opinionQuestions = questionStore({
-    categories: () => _opinionQuestionCategories.value,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies,
-    appType: 'voter'
+  // QUESTION-04 follow-up (Phase 61-03 voter-side parallel fix):
+  // Inlined the previous helper-store pull-chain (`questionCategoryStore` /
+  // `questionStore` / `questionBlockStore`) into a single push-based `$effect`
+  // that writes `$state` mirrors. The helper-store derivations were declared
+  // in another module's scope and did not propagate invalidation across the
+  // function-accessor boundary on the voter side (same root-cause class as
+  // the candidate-side fix in 61-03-DIAGNOSIS.md). The behavior is
+  // equivalent; helpers remain available for any non-context consumers.
+  let _questionCategories = $state<Array<QuestionCategory>>([]);
+  let _infoQuestionCategories = $state<Array<QuestionCategory>>([]);
+  let _opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
+  let _infoQuestions = $state<Array<AnyQuestionVariant>>([]);
+  let _opinionQuestions = $state<Array<AnyQuestionVariant>>([]);
+  let _selectedQuestionBlocks = $state<QuestionBlocks>({
+    blocks: [],
+    get questions() {
+      return [];
+    },
+    getByCategory: () => undefined,
+    getByQuestion: () => undefined
   });
 
   // QUESTION-03 fix (Phase 61 D-09 + D-11): pure $state, no sessionStorage.
@@ -151,33 +178,112 @@ export function initVoterContext(): VoterContext {
   let _selectedQuestionCategoryIds = $state<Array<Id>>([]);
   let hasSeededCategorySelection = $state(false);
 
+  const _firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
+  const firstQuestionIdState = fromStore(_firstQuestionId);
+
+  // Single $effect computes the entire question chain whenever upstream
+  // state (selectedElections / selectedConstituencies / dataRoot) changes.
+  $effect(() => {
+    const dr = reactiveDataRoot.current;
+    const elections = selectedElections;
+    const constituencies = selectedConstituencies;
+    const nextQuestionCategories =
+      dr.questionCategories?.filter(
+        (c) =>
+          c.appliesTo({ elections, constituencies }) &&
+          c.getApplicableQuestions({ elections, constituencies }).length > 0
+      ) ?? [];
+    const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
+    const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
+    // Voter-app filters out hidden questions (per `questionStore` original
+    // behavior with appType: 'voter'). The opinion-question matchability check
+    // mirrors the helper's invariant.
+    const nextInfoQuestions = nextInfoCats.flatMap((c) =>
+      c
+        .getApplicableQuestions({ elections, constituencies })
+        .filter((q) => !(q.customData as CustomData['Question'])?.hidden)
+    );
+    const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
+      const questions = c
+        .getApplicableQuestions({ elections, constituencies })
+        .filter((q) => !(q.customData as CustomData['Question'])?.hidden);
+      if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
+        error(500, `Some opinion questions in category ${c.id} is not matchable.`);
+      return questions;
+    });
+
+    _questionCategories = nextQuestionCategories;
+    _infoQuestionCategories = nextInfoCats;
+    _opinionQuestionCategories = nextOpinionCats;
+    _infoQuestions = nextInfoQuestions;
+    _opinionQuestions = nextOpinionQuestions;
+  });
+
   // Seed default-all-checked once opinion categories are available.
   // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved
-  // when `_opinionQuestionCategories.value` later reacts to election/constituency
+  // when `_opinionQuestionCategories` later reacts to election/constituency
   // changes (would otherwise clobber the voter's deliberate selection).
   $effect(() => {
     if (hasSeededCategorySelection) return;
-    const cats = _opinionQuestionCategories.value;
+    const cats = _opinionQuestionCategories;
     if (cats.length === 0) return;
-    // Use untrack() for the write side to match the Phase 60 canonical pattern
-    // (see +layout.svelte:116-133). This is defense-in-depth: pure $state writes
-    // don't strictly require untrack here, but it prevents `effect_update_depth_exceeded`
-    // if a later edit introduces a read-then-write cycle inside this effect.
     untrack(() => {
       _selectedQuestionCategoryIds = cats.map((c) => c.id);
       hasSeededCategorySelection = true;
     });
   });
 
-  const _firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
-  const firstQuestionIdState = fromStore(_firstQuestionId);
+  // QuestionBlocks: filtered by the user's selected category ids and ordered
+  // optionally by `firstQuestionId`. Mirrors the original `questionBlockStore`
+  // logic verbatim; written into a `$state` for consumer reactivity.
+  $effect(() => {
+    const firstId = firstQuestionIdState.current;
+    const allOpinionCats = _opinionQuestionCategories;
+    const categoryIds = _selectedQuestionCategoryIds;
+    const elections = selectedElections;
+    const constituencies = selectedConstituencies;
 
-  const _selectedQuestionBlocks = questionBlockStore({
-    firstQuestionId: () => firstQuestionIdState.current,
-    opinionQuestionCategories: () => _opinionQuestionCategories.value,
-    selectedQuestionCategoryIds: () => _selectedQuestionCategoryIds,
-    selectedElections: () => selectedElections,
-    selectedConstituencies: () => selectedConstituencies
+    const filteredCats = categoryIds.length
+      ? allOpinionCats.filter((c) => categoryIds.includes(c.id))
+      : allOpinionCats;
+    let blocks = filteredCats
+      .map((c) => c.getApplicableQuestions({ elections, constituencies }))
+      .filter((b) => b.length > 0);
+
+    if (firstId) {
+      const indexOfBlock = blocks.findIndex((b) => b.find((q) => q.id === firstId));
+      if (indexOfBlock === -1) {
+        logDebugError(`Bypassing invalid first question id: ${firstId}.`);
+      } else {
+        const block = blocks[indexOfBlock];
+        const indexInBlock = block.findIndex((q) => q.id === firstId);
+        const newFirstBlock = [block.splice(indexInBlock, 1)[0], ...block];
+        blocks.splice(indexOfBlock, 1);
+        blocks = [newFirstBlock, ...blocks];
+      }
+    }
+
+    const finalBlocks = blocks;
+    _selectedQuestionBlocks = {
+      blocks: finalBlocks,
+      get questions() {
+        return finalBlocks.flat();
+      },
+      getByCategory: ({ id }) => {
+        const block = finalBlocks.find((b) => b[0]?.category.id === id);
+        if (!block) return undefined;
+        return { block, index: finalBlocks.indexOf(block) };
+      },
+      getByQuestion: ({ id }) => {
+        const indexOfBlock = finalBlocks.findIndex((b) => b.find((q) => q.id === id));
+        if (indexOfBlock === -1) return undefined;
+        const block = finalBlocks[indexOfBlock];
+        const index = finalBlocks.flat().findIndex((q) => q.id === id);
+        const indexInBlock = block.findIndex((q) => q.id === id);
+        if (index === -1 || indexInBlock === -1) return undefined;
+        return { block, index, indexInBlock, indexOfBlock };
+      }
+    };
   });
 
   ////////////////////////////////////////////////////////////
@@ -188,7 +294,7 @@ export function initVoterContext(): VoterContext {
 
   const resultsAvailable = $derived.by(() => {
     const settings = appSettingsState.current;
-    const questions = _opinionQuestions.value;
+    const questions = _opinionQuestions;
     const currentAnswers = answers.answers;
     // For results to be available, we need at least the specified number of answers for each election
     if (selectedElections.length === 0) return false;
@@ -311,10 +417,10 @@ export function initVoterContext(): VoterContext {
       _firstQuestionId.set(v);
     },
     get infoQuestionCategories() {
-      return _infoQuestionCategories.value;
+      return _infoQuestionCategories;
     },
     get infoQuestions() {
-      return _infoQuestions.value;
+      return _infoQuestions;
     },
     get matches() {
       return _matches.value;
@@ -323,10 +429,10 @@ export function initVoterContext(): VoterContext {
       return nominationsAvailable;
     },
     get opinionQuestionCategories() {
-      return _opinionQuestionCategories.value;
+      return _opinionQuestionCategories;
     },
     get opinionQuestions() {
-      return _opinionQuestions.value;
+      return _opinionQuestions;
     },
     resetVoterData,
     get resultsAvailable() {
@@ -339,7 +445,7 @@ export function initVoterContext(): VoterContext {
       return selectedElections;
     },
     get selectedQuestionBlocks() {
-      return _selectedQuestionBlocks.value;
+      return _selectedQuestionBlocks;
     },
     get selectedQuestionCategoryIds() {
       return _selectedQuestionCategoryIds;

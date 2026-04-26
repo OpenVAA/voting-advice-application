@@ -25,7 +25,12 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, dataRoot, getRoute, selectedConstituencies, selectedElections, t } = getVoterContext();
+  // Phase 61-03 voter-side parallel fix: read selectedConstituencies +
+  // selectedElections via voterCtx.X (live $state) rather than destructured
+  // snapshots. This was the originating bug per the user investigation —
+  // destructuring captured an empty `selectedElections` on cold deeplink.
+  const voterCtx = getVoterContext();
+  const { appSettings, dataRoot, getRoute, t } = voterCtx;
 
   ////////////////////////////////////////////////////////////////////
   // Set initial values
@@ -34,16 +39,26 @@ See `+page.ts` for possible redirects.
   /** The selected `constituencyIds` per election */
   let selected = $state<{ [electionId: Id]: Id }>({});
 
-  const useSingleGroup = $appSettings.elections?.startFromConstituencyGroup
-    ? $dataRoot.getConstituencyGroup($appSettings.elections.startFromConstituencyGroup)
-    : undefined;
+  // `useSingleGroup` MUST be `$derived` AND must safely handle the
+  // dataRoot-not-yet-populated state. The original `const` shape captured
+  // the empty `getConstituencyGroup(...)` lookup at module init when the
+  // root layout's `$effect` had not yet provided constituency data; even
+  // making it `$derived` is not enough because `getConstituencyGroup`
+  // throws when the id is missing — a synchronous throw in a `$derived`
+  // surfaces as a page error and freezes the page on its initial empty
+  // template (variant-startfromcg.spec.ts:115 hydration race).
+  const useSingleGroup = $derived.by(() => {
+    const id = $appSettings.elections?.startFromConstituencyGroup;
+    if (!id) return undefined;
+    return $dataRoot.constituencyGroups.find((g) => g.id === id);
+  });
 
-  let elections = $derived(useSingleGroup ? $dataRoot.elections : selectedElections);
+  let elections = $derived(useSingleGroup ? $dataRoot.elections : voterCtx.selectedElections);
 
   $effect(() => {
-    if (selectedConstituencies.length) {
+    if (voterCtx.selectedConstituencies.length) {
       for (const election of elections) {
-        const constituency = election.getApplicableConstituency(selectedConstituencies);
+        const constituency = election.getApplicableConstituency(voterCtx.selectedConstituencies);
         if (constituency) selected[election.id] = constituency.id;
       }
     }
@@ -58,10 +73,10 @@ See `+page.ts` for possible redirects.
 
   let canSubmit = $derived(selectionComplete);
 
-  function handleSubmit(): void {
+  async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const constituencyId = Object.values(selected).filter((id) => id);
-    goto(
+    await goto(
       $appSettings.elections?.startFromConstituencyGroup
         ? // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
           $getRoute({ route: 'Elections', constituencyId, electionId: undefined })
