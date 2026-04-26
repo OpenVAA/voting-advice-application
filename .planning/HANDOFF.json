@@ -1,42 +1,56 @@
 {
   "version": "1.0",
-  "timestamp": "2026-04-25T11:05:12.161Z",
+  "timestamp": "2026-04-26T10:38:49.000Z",
   "phase": "63",
-  "phase_name": "E2E Template Extension & Greening",
+  "phase_name": "e2e-template-extension-greening",
   "phase_dir": ".planning/phases/63-e2e-template-extension-greening",
   "plan": 3,
-  "task": 1,
-  "total_tasks": 4,
+  "task": null,
+  "total_tasks": null,
   "status": "paused",
-  "completed_tasks": [
-    {"id": "63-01", "name": "Hoist mergeSettings to @openvaa/app-shared + dev-seed workspace dep", "status": "done", "commit": "5d5cd78bd"},
-    {"id": "63-02", "name": "e2e template app_settings.fixed[] + delete 4 legacy updateAppSettings blocks + post-seed assertions", "status": "done", "commit": "e268ff3e8"},
-    {"id": "63-03/T0-prep", "name": "Plan 63-03 written, plan-checker passed; ready to execute", "status": "done", "commit": "(part of plan-phase 63 commit)"}
+  "context_summary": "Paused after committing 23 voter-suite e2e fixes as commit c9e9af9bc. Push rejected (branch diverged 350 ahead / 477 behind origin). Awaiting user decision on push strategy: force-with-lease vs pull-rebase vs pull-merge.",
+  "completed_this_session": [
+    {"area": "voter-app", "delta": "28/36 → 36/36", "fixes": "ROUTE_PARAMS for Phase 62 entity-detail params, +page.ts 404 guard, voter-results.spec.ts entity-card-action testid"},
+    {"area": "variant-multi-election", "delta": "4/5 → 6/6", "fixes": "data-provider fan-out + layout async"},
+    {"area": "variant-results-sections", "delta": "3/4 → 4/4", "fixes": "activeEntityType fallback + .first() locators"},
+    {"area": "variant-constituency", "delta": "3/6 → 6/6", "fixes": "layout async + .first() locator + same shared chain"},
+    {"area": "variant-startfromcg", "delta": "0/4 → 4/4", "fixes": "useSingleGroup $derived + safe find() + try/catch around getApplicableConstituency in 3 sites"},
+    {"area": "voter-questions combined run", "delta": "+2", "fixes": "beforeEach resets questionsIntro for parallel-run isolation"},
+    {"area": "dev-seed unit tests", "delta": "473/477 → 477/477", "fixes": "variant-app-settings.test.ts assertions match the questionsIntro overlay shape"}
   ],
-  "remaining_tasks": [
-    {"id": "63-03/T1", "name": "Run post-v2.6 Playwright parity gate; capture playwright-report.json (dotenv-banner-stripped)", "status": "not_started"},
-    {"id": "63-03/T2", "name": "Run diff-playwright-reports.ts against post-v2.5 baseline; write diff.md with reclamation table + framework-level residual classification", "status": "not_started"},
-    {"id": "63-03/T3", "name": "(Conditional, only if PARITY GATE: FAIL) Apply up to 2-3 small residual fixes per D-07 budget triple (single-file + <50 LoC + isolated); else escalate", "status": "not_started_conditional"},
-    {"id": "63-03/T4", "name": "Commit post-v2.6 baseline JSON + diff.md UNCONDITIONALLY (per RESEARCH Q4 RESOLVED) using `git -c core.hooksPath=/dev/null`", "status": "not_started"}
+  "files_changed_committed": 50,
+  "commits": [
+    {"hash": "c9e9af9bc", "message": "fix(voter-flow): resolve voter-suite e2e failures across multiple journeys"}
   ],
   "blockers": [
-    {"description": "Plan 63-03 requires live Supabase + dev server + ~15 min Playwright run; not feasible in autonomous loop", "type": "human_action", "workaround": "User runs the parity gate manually following the commands in 63-03-PLAN.md"}
+    {"description": "git push rejected — branch feat-gsd-roadmap is 350 ahead and 477 behind origin", "type": "human_action", "workaround": "user must choose between force-with-lease, pull --rebase, or pull merge"}
   ],
   "human_actions_pending": [
-    {"action": "Run `yarn dev:reset-with-data && yarn dev` in one shell, then `yarn playwright test -c ./tests/playwright.config.ts ./tests --workers=1 --reporter=json | python3 strip-banner > .planning/phases/63-e2e-template-extension-greening/post-v2.6/playwright-report.json` in another", "context": "Captures the post-v2.6 parity baseline JSON (Plan 63-03 Task 1)", "blocking": true},
-    {"action": "Run `yarn tsx apps/frontend/scripts/diff-playwright-reports.ts .planning/phases/60-layout-runes-migration-hydration-fix/post-v2.5/playwright-report.json .planning/phases/63-e2e-template-extension-greening/post-v2.6/playwright-report.json | tee .planning/phases/63-e2e-template-extension-greening/diff.md` and inspect verdict", "context": "Plan 63-03 Task 2 — produces diff.md and the PARITY GATE verdict", "blocking": true},
-    {"action": "(Optional) Manual verification of Phase 61 SC-3 — `yarn playwright test -c ./tests/playwright.config.ts tests/tests/specs/voter/voter-questions.spec.ts --workers=1` (clear `apps/frontend/node_modules/.vite` first if Vite cache hypothesis applies)", "context": "Phase 61 voter-questions.spec.ts had 2 failing tests per the 61-03 diagnosis; verifying clears the Phase 61 human_needed gate", "blocking": false},
-    {"action": "(Optional) Manual 9-step QA for Phase 62 per .planning/phases/62-results-page-consolidation/62-03-HUMAN-CHECKPOINT.md", "context": "Drawer-first paint trace, no-effect-loop console, dark-mode badge contrast, route 404, etc.", "blocking": false}
+    {"action": "decide push strategy for feat-gsd-roadmap (force-with-lease / pull --rebase / pull merge)", "context": "branch has diverged significantly from origin; force-push would overwrite 477 remote commits", "blocking": true}
   ],
   "decisions": [
-    {"decision": "Use `settings` field name in app_settings.fixed[] (not `value` per CONTEXT D-01)", "rationale": "writer.ts:177 reads row.settings; D-01 wording was a draft typo. Documented in PATTERNS.md + RESEARCH §Pitfall 2", "phase": "63"},
-    {"decision": "Variant-scoped external_ids (test-app-settings-{constituency,multi-election,startfromcg})", "rationale": "RESEARCH Q1 RESOLVED — last-write-wins semantics unchanged; readability in DB + teardown logs improved", "phase": "63"},
-    {"decision": "Post-seed assertion uses expect.toMatchObject (subset)", "rationale": "RESEARCH Q2 RESOLVED — Pitfall 3 mitigation; merge_jsonb_column doesn't delete keys not in payload, so strict toEqual would fail on stale state", "phase": "63"},
-    {"decision": "Commit post-v2.6 baseline JSON + diff.md unconditionally regardless of PARITY GATE verdict", "rationale": "RESEARCH Q4 RESOLVED — artifact is evidence regardless; milestone close decision is upstream", "phase": "63"},
-    {"decision": "Residual budget definition: small = single-file AND <50 LoC AND isolated root cause; cap at 2-3 fixes; outside triple escalates", "rationale": "RESEARCH Q3 RESOLVED — D-07 budget; prevents scope creep during greening", "phase": "63"},
-    {"decision": "Defer 63-03 manual parity gate run to user; stop autonomous loop without lifecycle", "rationale": "User explicit choice 2026-04-25 — autonomous can't spin up Supabase + dev server + 15min Playwright run", "phase": "63"}
+    {"decision": "Made supabaseDataProvider fan out get_nominations RPC over the (election, constituency) cartesian product instead of just [0]", "rationale": "single-RPC shape silently dropped all but the first electionId's nominations — broke variant-multi-election partial-coverage gate"},
+    {"decision": "Wrapped Election.getApplicableConstituency in try/catch at three call sites instead of changing the throw semantics", "rationale": "the throw is correct for stand-alone use; only the hierarchical multi-cg election case needs a fallback, and changing the API contract would propagate to other consumers"},
+    {"decision": "useSingleGroup in /constituencies must use safe .find() rather than dataRoot.getConstituencyGroup(id)", "rationale": "the latter throws on missing id, surfacing as a page error during the dataRoot-not-yet-populated hydration window"},
+    {"decision": "voter-questions.spec.ts gets a beforeEach that resets questionsIntro to true", "rationale": "other voter specs mutate app_settings against the shared Supabase row; without a defensive reset, parallel-project runs interleave and break the journey"}
   ],
-  "uncommitted_files": ["apps/frontend/tsconfig.tsbuildinfo (build artifact, ignorable)"],
-  "next_action": "Run `yarn dev:reset-with-data && yarn dev` to start Supabase + dev server, then execute Plan 63-03 Task 1 (capture post-v2.6 playwright-report.json) per the commands in 63-03-PLAN.md and HANDOFF.json human_actions_pending[0]",
-  "context_notes": "Milestone v2.6 is at 14/15 plans complete — only Plan 63-03 (parity gate measurement) remains. E2E-02 (template extension) is fully shipped: 4 legacy updateAppSettings blocks deleted from tests/tests/setup/*, app_settings.fixed[] populated in dev-seed e2e templates with mergeSettings overlays for 3 variants, post-seed toMatchObject assertion + getAppSettings helper added. After 63-03 lands, run /gsd-audit-milestone → /gsd-complete-milestone v2.6 → /gsd-cleanup."
+  "uncommitted_files": [
+    ".claude/scheduled_tasks.lock",
+    ".planning/notes/"
+  ],
+  "next_action": "Confirm push strategy with user. If force-with-lease: `git push --force-with-lease origin feat-gsd-roadmap`. If rebase: `git pull --rebase` then resolve conflicts then push. If merge: `git pull` then push.",
+  "context_notes": "Phase 63 itself (the parity gate at plan 3/3) is unchanged — this session's work is voter-flow E2E greening that runs adjacent to phase 63's theme. The 4 dev-seed unit failures (variant-app-settings) were pre-existing assertions that no longer matched the actual template shape; fixed in this commit. Branch diverged from origin so far that push needs an explicit strategy decision.",
+  "test_state": {
+    "voter-app": "36/36 (3 skipped seed-dependent)",
+    "voter-app-settings": "7/7",
+    "voter-app-popups": "4/4",
+    "voter-app+settings+popups combined": "47/47",
+    "variant-multi-election": "6/6",
+    "variant-results-sections": "4/4",
+    "variant-constituency": "6/6",
+    "variant-startfromcg": "4/4",
+    "frontend unit tests": "645/645",
+    "supabaseDataProvider unit tests": "44/44",
+    "dev-seed unit tests": "477/477 (was 473/477)"
+  }
 }
