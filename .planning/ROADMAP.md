@@ -108,3 +108,13 @@ Phases execute in numeric order: 60 → 61 → 62 → 63
 | 61. Voter-App Question Flow | v2.6 | 0/3   | Not started | - |
 | 62. Results Page Consolidation | v2.6 | 0/3   | Not started | - |
 | 63. E2E Template Extension & Greening | v2.6 | 0/3   | Not started | - |
+
+### Phase 64: Voter Results Reactivity Completion (Phase 62-bis) — close out 5 voter-results E2E failures deferred from Phase 63 parity gate (RESULTS-01/02 filter toggle, D-14 plural-tab switch, D-15 drawer survival, D-08 shape 3 list+drawer deeplink, D-08 shape 4 organizations+candidate-drawer deeplink); root cause is incomplete Phase 62 entity-list-controls reactivity refactor; goal is to flip the v2.6 parity gate to PASS so /gsd-complete-milestone can proceed without pending_review caveat. Out of scope: imgproxy infrastructure flake.
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 63
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 64 to break down)

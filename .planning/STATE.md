@@ -72,6 +72,10 @@ Items acknowledged and deferred at v2.5 milestone close on 2026-04-24. v2.6 pick
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- 2026-04-27: Phase 64 added — Voter Results Reactivity Completion (Phase 62-bis). Closes 5 voter-results E2E failures deferred from Phase 63 parity gate (RESULTS-01/02 filter toggle, D-14 plural-tab switch, D-15 drawer survival, D-08 shapes 3+4 deeplink). Out of scope: imgproxy infrastructure flake. Goal: flip v2.6 parity gate to PASS.
+
 ### Decisions
 
 Full decision log in PROJECT.md Key Decisions table.
