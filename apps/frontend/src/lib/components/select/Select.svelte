@@ -289,7 +289,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
             ? 'bg-base-100'
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- tabindex is necessary for the parents onfocusout to be able to detect focus held by the li element -->
             <li
               id="option-{optionIndex}-{id}"

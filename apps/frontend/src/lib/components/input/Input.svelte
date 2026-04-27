@@ -351,7 +351,7 @@ Multilingual features are only available if the `locales` store contains more th
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
     <div class="{outsideLabelClass} me-8 flex flex-row items-center justify-between">
-      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label">{label}</label>
       {#if showRequired}
         <div class="required-badge"><Icon name="required" /><span>{t('common.required')}</span></div>
@@ -371,7 +371,7 @@ Multilingual features are only available if the `locales` store contains more th
           {#if type === 'textarea-multilingual'}
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{locale}"
                 class="small-label left-md top-sm text-secondary absolute transition-opacity"
@@ -390,12 +390,12 @@ Multilingual features are only available if the `locales` store contains more th
                 class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
                 bind:this={mainInputs[i]}
                 onchange={(e) => handleChange(e, locale)}
-                value={getLocalizedValue(locale)} />
+                value={getLocalizedValue(locale)}></textarea>
             </div>
           {:else if type === 'text-multilingual'}
             <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y-label-has-associated-control -->
+              <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{locale}"
                 class="{inputLabelClass} transition-opacity"
@@ -433,7 +433,7 @@ Multilingual features are only available if the `locales` store contains more th
         rows="4"
         {...concatClass(restProps, `${textareaClass} vaa-group-join-item`)}
         onchange={handleChange}
-        value={`${value}`} />
+        value={`${value}`}></textarea>
     </div>
 
     <!-- 3. Select multiple -->
@@ -497,10 +497,10 @@ Multilingual features are only available if the `locales` store contains more th
   {:else if type === 'image'}
     {@const url = getImageUrl(value)}
     <div class="{inputContainerClass} vaa-group-join-item">
-      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label" class={inputLabelClass}>{label}</label>
       <div class={inputAndIconContainerClass}>
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions a11y-label-has-associated-control -->
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex a11y_no_noninteractive_element_interactions a11y_label_has_associated_control -->
         <label
           id="{id}-image-label"
           tabindex="0"

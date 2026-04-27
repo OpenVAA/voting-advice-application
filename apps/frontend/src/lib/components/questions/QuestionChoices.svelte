@@ -228,13 +228,13 @@ The same component can also be used to display the answers of the voter and anot
         aria-hidden="true"
         class="absolute left-16 w-4 -translate-x-1/2 bg-[var(--line-bg)]"
         style="grid-column: 2; height: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); top: calc(50% / {choices?.length})" />
+          1}); top: calc(50% / {choices?.length})"></div>
     {:else}
       <div
         aria-hidden="true"
         class="absolute top-16 h-4 -translate-y-1/2 bg-[var(--line-bg)]"
         style="grid-row: 2; width: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); left: calc(50% / {choices?.length})" />
+          1}); left: calc(50% / {choices?.length})"></div>
     {/if}
   {/if}
 
@@ -255,7 +255,7 @@ The same component can also be used to display the answers of the voter and anot
     {/if}
 
     <!-- The button -->
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
       <input
         type="radio"

@@ -139,10 +139,10 @@ When using this component, the `validPassword` property should be bound to a boo
 
   <!-- Display the progress bar in a different color based on validation state -->
   {#if validPassword}
-    <progress class="progress progress-primary" value={$progress} />
+    <progress class="progress progress-primary" value={$progress}></progress>
   {:else if negativeEnforcedRules.length > 0}
-    <progress class="progress progress-error" value={$progress} />
+    <progress class="progress progress-error" value={$progress}></progress>
   {:else}
-    <progress class="progress progress-secondary" value={$progress} />
+    <progress class="progress progress-secondary" value={$progress}></progress>
   {/if}
 </div>

@@ -65,7 +65,7 @@ Defines the outer layout for the application, including the header and menu.
 </script>
 
 <!-- Skip link for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
-<!-- svelte-ignore a11y-positive-tabindex -->
+<!-- svelte-ignore a11y_positive_tabindex -->
 <a href="#{mainContentId}" tabindex="1" class="sr-only focus:not-sr-only">{t('common.skipToMain')}</a>
 
 <!-- Drawer container -->
@@ -106,7 +106,7 @@ Defines the outer layout for the application, including the header and menu.
 
   <!-- Drawer side menu -->
   <div class="drawer-side z-10">
-    <div onclick={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
+    <div onclick={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer"></div>
     {@render menu?.()}
   </div>
 </div>

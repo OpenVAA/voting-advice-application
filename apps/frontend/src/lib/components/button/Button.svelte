@@ -172,7 +172,7 @@ text="Add to list">
 </script>
 
 <!-- Note that `disabled` is converted to `undefined` is `false` because DaisyUI's `[disabled]` selector will otherwise match it. -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href == null ? 'button' : 'a'}
   role="button"

@@ -68,7 +68,7 @@ Show a radial or a linear score gauge for a sub-match.
       aria-valuemax={max}
       aria-valuenow={score}
       value={score}
-      {max} />
+      {max}></progress>
   {:else}
     <div
       role="meter"

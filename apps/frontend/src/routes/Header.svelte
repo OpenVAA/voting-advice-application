@@ -75,7 +75,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       class="progress progress-primary absolute top-0 left-0 h-2"
       value={progress.current.current}
       max={progress.max}
-      title={t('common.progress')} />
+      title={t('common.progress')}></progress>
   {/if}
   <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->

@@ -157,5 +157,5 @@ See the `<Modal>` component documentation for more information.
     id="modal-progress"
     class="progress progress-error absolute right-0 bottom-0 left-0"
     value={progressBarTimer ? $progressBarTimer : 0}
-    max={timerDuration} />
+    max={timerDuration}></progress>
 </Modal>
