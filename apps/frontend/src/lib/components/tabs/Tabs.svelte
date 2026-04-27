@@ -1,0 +1,64 @@
+<!--@component
+Show a tab title bar that can be used to switch between different tabs.
+
+### Properties
+
+- `tabs`: The titles of the tabs.
+- `activeIndex`: The index of the active tab. Bind to this to change or read the active tab. @default 0
+- Any valid attributes of a `<ul>` element
+
+### Callbacks
+
+- `onChange`: Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
+
+### Accessibility
+
+- The tab can be activated by pressing `Enter` or `Space`.
+- TODO[a11y]: Add support for keyboard navigation with the arrow keys.
+
+### Usage
+
+```tsx
+<Tabs bind:activeIndex tabs={['Basic Info', 'Opinions']}/>
+```
+-->
+
+<script lang="ts">
+  import { concatClass } from '$lib/utils/components';
+  import type { TabsProps } from './Tabs.type';
+
+  let { tabs = [], activeIndex = $bindable(0), onChange, ...restProps }: TabsProps = $props();
+
+  function activate(index: number): void {
+    activeIndex = index;
+    onChange?.({ index, tab: tabs[index] });
+  }
+</script>
+
+<ul {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
+  {#each tabs as tab, index}
+    <li
+      class="btn btn-outline text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow
+       truncate rounded-sm px-12 font-bold"
+      class:text-primary={index !== activeIndex}
+      class:bg-base-100={index === activeIndex}
+      tabindex="0"
+      role="tab"
+      data-testid="tab-{index}"
+      onclick={() => activate(index)}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          // Prevent scrolling
+          e.preventDefault();
+        }
+      }}
+      onkeyup={(e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          activate(index);
+        }
+      }}>
+      <span class="uc-first">{tab.label}</span>
+    </li>
+  {/each}
+</ul>

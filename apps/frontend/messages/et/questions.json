@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Rohkem toiminguid selle küsimuse kohta",
+    "answers": {
+      "bothHaventAnswered": "Sina ja {entity} pole sellele küsimusele vastanud",
+      "entityHasntAnswered": "{entity} ei ole sellele küsimusele vastanud",
+      "youHaventAnswered": "Sa ei ole sellele küsimusele vastanud",
+      "yourAnswer": "Sina"
+    },
+    "arguments": {
+      "con": "Vastu",
+      "pro": "Poolt",
+      "proCategory": "Poolt: {option}",
+      "title": "Argumendid"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} küsimust",
+            "numQuestionsPlural=one": "1 küsimus"
+          }
+        }
+      ],
+      "skip": "Jäta see teema vahele"
+    },
+    "infoDescription": "Taustainfo selle küsimuse kohta",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestionsPlural=one": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestionsPlural=other": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. Vali siiski piisavalt teemasid, et neis oleks vähemalt {minQuestions} küsimust."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategoriesPlural=one": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategoriesPlural=other": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. Need on jagatud {numCategories} teemaks."
+            }
+          }
+        ]
+      },
+      "start": "Vasta {numQuestions} küsimusele"
+    },
+    "next": "Järgmine",
+    "previous": "Eelmine",
+    "remove": "Kustuta vastus",
+    "skip": "Jäta vahele",
+    "skipToResults": "Hüppa tulemusteni",
+    "title": "Sinu arvamused"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Daten weider aginn",
+    "ingress": "Sidd Dir sécher, datt Dir Iech auslogge wëllt? Dir gitt automatesch no {timeLeft} Sekonnen ausgeloggt.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Et si nach eng Positioun bei de Basisdaten an eng Meenung auszefëllen.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Et si nach eng Positioun bei de Basisdaten an {opinionQuestionsLeft} Meenungen auszefëllen.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Et si nach {infoQuestionsLeft} Positiounen bei de Basisdaten an eng Meenung auszefëllen.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Et si nach {infoQuestionsLeft} Positiounen bei de Basisdaten an {opinionQuestionsLeft} Meenungen auszefëllen."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Et si nach eng Meenung auszefëllen.",
+          "opinionQuestionsLeftPlural=other": "Et si nach {opinionQuestionsLeft} Meenungen auszefëllen."
+        }
+      }
+    ],
+    "title": "E puer vun Ären Donnéeë feelen nach"
+  }
+}

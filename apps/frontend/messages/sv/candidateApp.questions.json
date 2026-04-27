@@ -1,0 +1,38 @@
+{
+  "candidateApp.questions": {
+    "answerQuestion": "Besvara denna fråga",
+    "answerQuestionFirst": "Vänligen svara frågan först",
+    "answerSaveError": "Det gick inte att spara svaret",
+    "editAnswer": "Redigera ditt svar",
+    "enterMissingAnswers": "Fyll i saknade svar",
+    "error": {
+      "answerNotFound": "Svar hittades inte för frågan {questionId}",
+      "invalidAnswer": "Svaret är ogiltigt för frågan {questionId}",
+      "questionNotFound": "Fråga {questionId} hittades inte"
+    },
+    "ingress": {
+      "default": "Du kan se alla dina åsikter nedan och redigera dem.",
+      "empty": "Nästa steg är att applikationen kommer att be om dina åsikter om {numQuestions} påståenden om politiska frågor och värderingar. När väljarna använder valkompassen kommer de att besvara samma påståenden och se hur deras åsikter stämmer överens med dina.",
+      "partial": "Du kan se alla dina åsikter nedan, redigera dem och besvara de återstående."
+    },
+    "notAnswered": "Du besvarade inte denna fråga.",
+    "openAnswerPrompt": "Argument",
+    "start": "Ange dina åsikter",
+    "tip": "Du kan se alla dina svar på denna sida när du kommer tillbaka senare.",
+    "title": "Dina åsikter",
+    "unansweredWarning": [
+      {
+        "declarations": [
+          "input numUnansweredQuestions",
+          "local numUnansweredQuestionsPlural = numUnansweredQuestions: plural"
+        ],
+        "selectors": ["numUnansweredQuestionsPlural"],
+        "match": {
+          "numUnansweredQuestionsPlural=one": "Du har fortfarande en obesvarad fråga.",
+          "numUnansweredQuestionsPlural=other": "Du har fortfarande {numUnansweredQuestions} obesvarade frågor."
+        }
+      }
+    ],
+    "viewAnswer": "Visa ditt svar"
+  }
+}

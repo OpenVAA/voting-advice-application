@@ -1,0 +1,9 @@
+{
+  "links": "Länkar",
+  "memberOfOrganization": "medlem av {organization}",
+  "tabs": {
+    "candidates": "kandidater",
+    "info": "Information",
+    "opinions": "Yttranden"
+  }
+}

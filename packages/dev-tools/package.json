@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "name": "@openvaa/dev-tools",
+  "version": "0.1.0",
+  "description": "Internal developer tooling for OpenVAA maintainers (key generation, JWKS utilities).",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Nothing to build.'",
+    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "typecheck": "tsc --noEmit",
+    "pem-to-jwk": "tsx src/pem-to-jwk.ts",
+    "keygen": "tsx src/keygen.ts"
+  },
+  "dependencies": {
+    "jose": "^6.2.1"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -29,10 +29,9 @@ import type { CondensationOutputType } from './condensationType';
  *   }
  * };
  */
-export interface CondensationRunResult
-  extends LLMPipelineResult<{
-    arguments: Array<Argument>;
-  }> {
+export interface CondensationRunResult extends LLMPipelineResult<{
+  arguments: Array<Argument>;
+}> {
   /** The type of condensation run. Common types are likertCons, likertPros, categoricalPros, booleanCons and booleanPros */
   condensationType: CondensationOutputType;
 }

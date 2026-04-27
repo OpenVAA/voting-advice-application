@@ -1,0 +1,99 @@
+{
+  "components": {
+    "accordionSelect": {
+      "collapsedAriaInfo": "Tippt fir all Optiounen ze weisen"
+    },
+    "constituencySelector": {
+      "selectPrompt": "Wielt {constituencyGroup} aus"
+    },
+    "headingGroup": {
+      "roleDescription": "Iwwerschrëftgrupp"
+    },
+    "input": {
+      "addImage": "Bild derbäisetzen",
+      "allSelected": "Alles ausgewielt",
+      "changeImage": "Bild änneren",
+      "deleteOption": "{option} auswielen ophiewen",
+      "error": {
+        "fileLoadingError": "Datei konnt net geluede ginn.",
+        "invalidFile": "D’Datei ass net valabel.",
+        "invalidUrl": "D’URL ass net valabel.",
+        "oversizeFile": "D’Datei ass ze grouss. Déi maximal Gréisst ass {maxFilesize} MB."
+      },
+      "hideTranslations": "Verstoppen",
+      "imageInfo": "Déi maximal Bildgréisst ass {maxFilesize} MB. Wärt wgl. e bëssen – d’Bild kann e Moment daueren fir ze lueden.",
+      "multilingualInfo": "Dir kënnt Är Äntwert a sämtleche Sprooche vun der Applikatioun aginn, wann Dir wëllt.",
+      "noImage": "Keen Bild",
+      "selectAnother": "Aner auswielen",
+      "selectFirst": "Als éischt auswielen",
+      "selectOne": "Auswielen",
+      "showTranslations": "Iwwersetzungen"
+    },
+    "matchScore": {
+      "label": "Iwwenestëmmung",
+      "score": "{score}%"
+    },
+    "passwordInput": {
+      "hidePassword": "Passwuert verstoppen",
+      "password": "Passwuert",
+      "placeholder": "Passwuert",
+      "showPassword": "Passwuert weisen"
+    },
+    "preHeading": {
+      "roleDescription": "Vir-Iwwerschrëft"
+    },
+    "preventNavigation": {
+      "unsavedChanges": "Dir hutt ongespäichert Ännerungen. Sidd Dir sécher, datt Dir dës Säit wëllt verloossen?"
+    },
+    "select": {
+      "noMatchingOptions": "Keng entspriechend Optiounen fonnt",
+      "placeholder": "Select an option below"
+    },
+    "video": {
+      "captions": "Ënnertitelen",
+      "error": "Entschëllegt, et gëtt e Problem mat der Video. Dir kënnt probéieren d’Säit nei ze lueden oder mam Knäppchen hei drënner op d’Textversioun wiesselen.",
+      "hideCaptions": "Ënnertitelen verstoppen",
+      "jumpBack": "Zréck sprangen",
+      "jumpForward": "Weider sprangen",
+      "mute": "Stomm schalten",
+      "pause": "Pauséieren",
+      "play": "Ofspillen",
+      "progessbarLabel": "Zäit iwwereg",
+      "replay": "Nach eng Kéier spillen",
+      "showCaptions": "Ënnertitelen weisen",
+      "showTranscript": "Video als Text weisen",
+      "showVideo": "Video weisen",
+      "subtitles": "Ënnertitelen",
+      "timeLeft": [
+        {
+          "declarations": [
+            "input minutes",
+            "local minutesPlural = minutes: plural",
+            "input seconds",
+            "local secondsPlural = seconds: plural"
+          ],
+          "selectors": ["minutesPlural", "secondsPlural"],
+          "match": {
+            "minutesPlural=zero secondsPlural=zero": "Nach  ",
+            "minutesPlural=zero secondsPlural=one": "Nach  eng Sekonn",
+            "minutesPlural=zero secondsPlural=other": "Nach  {seconds} Sekonnen",
+            "minutesPlural=one secondsPlural=zero": "Nach eng Minutt ",
+            "minutesPlural=one secondsPlural=one": "Nach eng Minutt eng Sekonn",
+            "minutesPlural=one secondsPlural=other": "Nach eng Minutt {seconds} Sekonnen",
+            "minutesPlural=other secondsPlural=zero": "Nach {minutes} Minutten ",
+            "minutesPlural=other secondsPlural=one": "Nach {minutes} Minutten eng Sekonn",
+            "minutesPlural=other secondsPlural=other": "Nach {minutes} Minutten {seconds} Sekonnen"
+          }
+        }
+      ],
+      "transcript": "Text",
+      "transcriptToggleLabel": "Tëscht Video an Text wiesselen",
+      "unmute": "Toun aktivéieren",
+      "unsupportedWarning": "Leider ënnerstëtzt Äre Browser dës Zort Video net.",
+      "video": "Video"
+    },
+    "questionExtendedInfo": {
+      "title": "Méi gewuer ginn"
+    }
+  }
+}

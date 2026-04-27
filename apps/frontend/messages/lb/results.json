@@ -1,0 +1,86 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Keng Allianzen",
+            "numShownPlural=one": "1 Allianz",
+            "numShownPlural=other": "{numShown} Allianzen"
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Keng Kandidat*inne",
+            "numShownPlural=one": "1 Kandidat*in",
+            "numShownPlural=other": "{numShown} Kandidat*inne"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Keng Fraktiounen",
+            "numShownPlural=one": "1 Fraktioun",
+            "numShownPlural=other": "{numShown} Fraktiounen"
+          }
+        }
+      ]
+    },
+    "inConstituency": "am Walbezierk",
+    "ingress": {
+      "answerMinQuestions": "Wann Dir déi Parteien fannen wëllt, déi am meeschte mat Iech averstanen sinn, {questionsLink} fir d’éischt.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=one": "beäntwert op mannst eng Fro",
+            "numQuestionsPlural=other": "beäntwert op mannst {numQuestions} Froen"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Et ginn an Ärem Walbezierk keng Kandidat*inne oder Parteien, déi um Wal-Kompass geäntwert hunn",
+        "content": "Dir kënnt d’Froen duerchkucken, mee et kënne keng Resultater ugewisen ginn."
+      },
+      "someNominations": {
+        "title": "E puer Kandidat*inne oder Parteien hunn net um Wal-Kompass geäntwert",
+        "content": "Net all Wahlen an Ärem Walbezierk hunn Äntwerten. Resultater ginn nëmme fir déi gewisen, déi verfügbar sinn."
+      },
+      "noNominationsForElection": "net verfügbar"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Keng Parteien",
+            "numShownPlural=one": "1 Partei",
+            "numShownPlural=other": "{numShown} Parteien"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Wielt fir d’éischt eng Wahl",
+    "title": {
+      "browse": "Kandidat*inne a Parteien duerchsichen",
+      "results": "Resultater"
+    }
+  }
+}

@@ -1,0 +1,62 @@
+import { expect, test as setup } from '@playwright/test';
+import {
+  BUILT_IN_OVERRIDES,
+  fanOutLocales,
+  runPipeline,
+  runTeardown,
+  Writer
+} from '@openvaa/dev-seed';
+import { SupabaseAdminClient } from '../utils/supabaseAdminClient';
+import variantStartFromCgTemplate from './templates/variant-startfromcg';
+
+const PREFIX = 'test-';
+
+/**
+ * Variant data setup: startFromConstituencyGroup configuration.
+ *
+ * Loads the Phase-59 filesystem template that extends the e2e base with a
+ * region/municipality hierarchy plus an orphan-municipality edge case (no
+ * parent region). The `startFromConstituencyGroup` setting itself is NOT set
+ * here because it requires the database ID of the constituency group (not
+ * externalId). The spec file queries for the group first, then sets the
+ * setting at runtime via `client.updateAppSettings(...)` (a legitimate
+ * scenario mutation per D-09 / D-11).
+ *
+ * app_settings is now declared by this variant's filesystem template
+ * (`templates/variant-startfromcg.ts` `app_settings.fixed[]`). Phase 63
+ * (E2E-02) deleted the legacy `updateAppSettings(...)` call from this file;
+ * a post-seed subset-match assertion (D-10) verifies the persisted row
+ * matches the variant template's declared shape.
+ */
+setup('import startfromcg dataset', async () => {
+  const template = variantStartFromCgTemplate;
+  const overrides = BUILT_IN_OVERRIDES.e2e ?? {}; // variant reuses e2e's overrides map
+  const seed = template.seed ?? 42;
+  const prefix = template.externalIdPrefix ?? '';
+
+  const client = new SupabaseAdminClient();
+  await runTeardown(PREFIX, client);
+
+  const rows = runPipeline(template, overrides);
+  fanOutLocales(rows, template, seed);
+  const writer = new Writer();
+  await writer.write(rows, prefix);
+
+  // (D-10) Post-seed assertion — verify variant app_settings persisted.
+  // Subset match per RESOLVED Q2: `merge_jsonb_column` is additive
+  // (Pitfall 3); we verify our keys made it, not exclusive equality.
+  {
+    const expected = template.app_settings?.fixed?.[0]?.settings;
+    if (!expected) {
+      throw new Error(
+        'post-seed assertion: variantStartFromCgTemplate missing app_settings.fixed[0].settings — Phase 63 regression?'
+      );
+    }
+    const persisted = await client.getAppSettings();
+    expect(persisted, 'post-seed app_settings row should exist').toBeTruthy();
+    expect(persisted).toMatchObject(expected as Record<string, unknown>);
+  }
+
+  // Sanity check — variant must have seeded something.
+  expect(template.candidates?.fixed?.length ?? 0, 'variant template has no candidates').toBeGreaterThan(0);
+});

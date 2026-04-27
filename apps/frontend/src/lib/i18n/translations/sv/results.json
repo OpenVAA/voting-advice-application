@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Inga allianser} =1 {1 alliance} other {# alliances}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Inga kandidater} =1 {1 kandidat} other {# kandidater}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Inga fraktioner} =1 {1 fraktion} other {# fraktioner}}"
+  },
+  "inConstituency": "i valkretsen",
+  "ingress": {
+    "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
+    "questionsLinkText": "svara minst {numQuestions, plural, =1 {en fråga} other {# frågor}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Det finns inga kandidater eller partier i din valkrets som har svarat på valkompassen",
+      "content": "Du kan granska frågorna om du vill, men inga resultat kan visas."
+    },
+    "someNominations": {
+      "title": "Vissa kandidater eller partier har inte svarat på valkompassen",
+      "content": "Det finns inga svar från kandidater eller partier för alla val i din valkrets. Resultaten kommer endast att visa de val där svar finns tillgängliga."
+    },
+    "noNominationsForElection": "inte tillgängligt"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Inga partier} =1 {1 parti} other {# partier}}"
+  },
+  "selectElectionFirst": "Välj val först",
+  "title": {
+    "browse": "Bläddra bland kandidater och partier",
+    "results": "Resultat"
+  }
+}

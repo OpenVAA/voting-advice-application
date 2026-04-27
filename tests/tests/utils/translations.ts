@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import { TESTS_DIR } from './testsDir';
-import { locales as localeNames } from '../../../frontend/src/lib/i18n/translations';
-import type { TranslationKey } from '../../../frontend/src/lib/types';
+import { FRONTEND_DIR } from './paths';
+import { locales as localeNames } from '../../../apps/frontend/src/lib/i18n/translations';
+import type { TranslationKey } from '../../../apps/frontend/src/lib/types';
 
-const TRANSL_DIR = path.join(TESTS_DIR, '../../frontend/src/lib/i18n/translations');
+const TRANSL_DIR = path.join(FRONTEND_DIR, 'src/lib/i18n/translations');
 
 const ENCODING = 'utf8';
 

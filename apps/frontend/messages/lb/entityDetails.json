@@ -1,0 +1,11 @@
+{
+  "entityDetails": {
+    "links": "Linken",
+    "memberOfOrganization": "Member vu {organization}",
+    "tabs": {
+      "candidates": "Kandidat*inne",
+      "info": "Kommentaren",
+      "opinions": "Positiounen"
+    }
+  }
+}

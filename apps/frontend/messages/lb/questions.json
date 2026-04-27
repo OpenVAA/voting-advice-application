@@ -1,0 +1,72 @@
+{
+  "questions": {
+    "additionalActions": "Weider Aktiounen zu dëser Fro",
+    "answers": {
+      "bothHaventAnswered": "Weder Dir nach {entity} hutt dës Fro beäntwert",
+      "entityHasntAnswered": "{entity} huet dës Fro net beäntwert",
+      "youHaventAnswered": "Dir hutt dës Fro net beäntwert",
+      "yourAnswer": "Dir"
+    },
+    "arguments": {
+      "con": "Against",
+      "pro": "For",
+      "proCategory": "For {option}",
+      "title": "Arguments"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=other": "{numQuestions} Froen",
+            "numQuestionsPlural=one": "1 Fro"
+          }
+        }
+      ],
+      "skip": "Dës Kategorie iwwersprangen"
+    },
+    "infoDescription": "Hannergrondinformatioun iwwer d’Fro",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": [
+              "input minQuestions",
+              "input numCategories",
+              "local minQuestionsPlural = minQuestions: plural"
+            ],
+            "selectors": ["minQuestionsPlural"],
+            "match": {
+              "minQuestionsPlural=zero": "D’Froen sinn an {numCategories} Kategorie gedeelt. Dir kënnt se all beäntwerten oder nëmme wielt, wat Dir wëllt. ",
+              "minQuestionsPlural=one": "D’Froen sinn an {numCategories} Kategorie gedeelt. Dir kënnt se all beäntwerten oder nëmme wielt, wat Dir wëllt. ",
+              "minQuestionsPlural=other": "D’Froen sinn an {numCategories} Kategorie gedeelt. Dir kënnt se all beäntwerten oder nëmme wielt, wat Dir wëllt. Wielt awer genuch Kategorie fir op mannst {minQuestions} Froen am Ganze ze kréien."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": [
+              "input numCategories",
+              "input numQuestions",
+              "local numCategoriesPlural = numCategories: plural"
+            ],
+            "selectors": ["numCategoriesPlural"],
+            "match": {
+              "numCategoriesPlural=zero": "Beäntwert elo {numQuestions} Froen iwwer Politik a Wäerter. ",
+              "numCategoriesPlural=one": "Beäntwert elo {numQuestions} Froen iwwer Politik a Wäerter. ",
+              "numCategoriesPlural=other": "Beäntwert elo {numQuestions} Froen iwwer Politik a Wäerter. D’Froen sinn an {numCategories} Kategorie gedeelt."
+            }
+          }
+        ]
+      },
+      "start": "{numQuestions} Froen beäntwerten"
+    },
+    "next": "Nächst Fro",
+    "previous": "Zréck",
+    "remove": "Äntwert läschen",
+    "skip": "Iwwersprangen",
+    "skipToResults": "Direkt zu de Resultater goen",
+    "title": "Meenungen"
+  }
+}

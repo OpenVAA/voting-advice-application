@@ -1,0 +1,120 @@
+{
+  "about": {
+    "heroEmoji": "⚙️"
+  },
+  "appName": "Valkompassen",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Personuppgifter",
+      "ingress": "Ditt namn och några andra uppgifter har fyllts i i förväg eller kommer att kompletteras när kandidatlistorna bekräftas. Du kan inte ändra dessa uppgifter själv, men om det finns fel i dem, kontakta kandidatsupporten.",
+      "emptyPlaceholder": "Enligt kandidatlistan"
+    }
+  },
+  "candidateAppName": "Valkompassen för kandidater",
+  "candidateAppNotAccessible": {
+    "content": "Kandidaternas valkompass har ännu inte publicerats. Återkom till denna adress när den blir tillgänglig.",
+    "title": "Tyvärr är kandidaternas valkompass ännu inte tillgänglig"
+  },
+  "candidateAppPrivacy": {
+    "heroEmoji": "🛡️",
+    "consent": {
+      "acceptLabel": "Jag godkänner att mina uppgifter sparas och används i enlighet med användarvillkoren.",
+      "heroEmoji": "🖋️",
+      "ingress": "Du måste godkänna användarvillkoren innan du fortsätter att fylla i din profil. Läs dem noggrant och bocka i rutan nedan.",
+      "title": "Användarvillkor"
+    },
+    "registryStatement": {
+      "content": "<h3>1. Registeransvarig</h3><p>DATA_CONTROLLER</p><h3>2. Kontaktperson för registret</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Namn på registret</h3><p>{appName} - kandidatregister.</p><h3>4. Rättslig grund och syfte med behandlingen av personuppgifter</h3><p>Den rättsliga grunden för behandlingen av personuppgifter enligt EU:s allmänna dataskyddsförordning är individens samtycke. Syftet med behandlingen av personuppgifter är dess användning i valkompassen.</p><h3>5. Registerets innehåll</h3><p>Registret innehåller följande uppgifter: namn, politisk bakgrund, e-postadress, födelsedatum, webbadresser, adresser till sociala medieprofiler, andra frivilliga svar på valkompassens frågor samt information från offentliga vallistor.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Cookies som är nödvändiga för tjänstens funktionalitet behandlas utifrån berättigat intresse, till exempel för att säkerställa säkerheten.</p><h3>6. Regelbundna informationskällor</h3><p>Uppgifter som lagras i registret erhålls från kandidater via ett webbformulär, i samband med deras bankidentifiering samt från offentliga vallistor.</p><h3>7. Regelbunden utlämning av uppgifter och överföring utanför EU eller EES</h3><p>Uppgifter lämnas inte regelbundet ut till andra parter, men efter att valkompassen har publicerats kan uppgifterna användas för forskningsändamål och för att utveckla valkompassen.</p><h3>8. Principer för registerskydd</h3><p>Behandlingen av registret sker med omsorg, och uppgifter som behandlas genom informationssystem skyddas på lämpligt sätt. När registeruppgifter lagras på internetservrar vidtas lämpliga åtgärder för att säkerställa både fysisk och digital säkerhet. Den registeransvarige ser till att lagrade uppgifter, serverbehörigheter och annan kritisk information om personuppgifter hanteras konfidentiellt och endast av anställda vars arbetsuppgifter kräver det.</p><h3>9. Rätt till insyn och rätt att begära rättelse av uppgifter</h3><p>Varje person i registret har rätt att granska sina lagrade uppgifter och begära rättelse av eventuella felaktiga eller ofullständiga uppgifter. Om en person vill granska sina lagrade uppgifter eller begära rättelse, ska en begäran skickas via e-post till den registeransvarige. Den registeransvarige kan vid behov begära att personen verifierar sin identitet. Den registeransvarige svarar inom den tidsram som anges i EU:s allmänna dataskyddsförordning.</p><h3>10. Övriga rättigheter gällande behandling av personuppgifter</h3><p>Personer i registret har rätt att begära att deras personuppgifter raderas från registret (”rätten att bli bortglömd”). Registrerade personer har även andra rättigheter enligt EU:s allmänna dataskyddsförordning, såsom rätten att begränsa behandlingen av personuppgifter i vissa situationer. Begäran ska skickas via e-post till den registeransvarige. Den registeransvarige kan vid behov begära att personen verifierar sin identitet. Den registeransvarige svarar inom den tidsram som anges i EU:s allmänna dataskyddsförordning.</p>",
+      "title": "Register- och dataskyddsbeskrivning"
+    },
+    "otherTermsOfUse": {
+      "content": "",
+      "title": "Övriga användarvillkor"
+    }
+  },
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingress": {
+      "multipleElections": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets för varje val.",
+      "singleElection": "Kandidaterna och partierna är indelade i valkretsar. Du kan bara rösta på dem i din valkrets.",
+      "singleGroup": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets."
+    }
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": {
+      "multipleElections": "Välj de val som du vill hitta kandidater eller partier till.",
+      "singleElection": "Endast ett val hålls i din valda valkretsen."
+    }
+  },
+  "error": {
+    "heroEmoji": "🙊"
+  },
+  "frontPage": {
+    "ingress": "Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter.",
+    "startButton": "Börja!"
+  },
+  "info": {
+    "content": "Läs mer om valen.",
+    "dateInfo": "Valets datum är {electionDate, date, ::yyyyMMdd}.",
+    "heroEmoji": "🗳️"
+  },
+  "intro": {
+    "continue": "Hoppa till frågor",
+    "heroEmoji": "🚀",
+    "ingress": "Denna applikation hjälper dig att hitta den kandidater och partier som bäst matchar dina åsikter i valet.",
+    "list": {
+      "constituencies": "Välj din valkrets",
+      "details": "Studera dem i detalj",
+      "elections": "Välj ett val",
+      "opinions": "Ange dina åsikter",
+      "results": "Se de kandidater och partier som bäst överensstämmer med dig"
+    },
+    "title": "Låt oss börja!"
+  },
+  "maintenance": {
+    "content": "<p>Vi är mycket ledsna, valkompassen är för närvarande inte tillgänglig på grund av underhåll. Den bör vara tillbaka inom kort, så försök igen senare.</p> <p>Oroa dig inte om du bara var mitt i att svara. Du kan fortsätta från där du slutade när du kommer tillbaka.</p>",
+    "heroEmoji": "🛠️"
+  },
+  "nominations": {
+    "title": "Alla registrerade kandidater",
+    "content": "På denna sida hittar du alla kandidater som har fyllt i valkompassen.",
+    "heroEmoji": "🔍"
+  },
+  "privacy": {
+    "content": "Nedan beskrivs hur applikationen hanterar sekretess och datainsamling.",
+    "dataConsentIntro": {
+      "popup": "Kan vi samla in dina uppgifter helt anonymt för forskningsändamål och för att förbättra applikationen? Vi använder inte cookies, och uppgifterna kan inte kopplas till dig."
+    },
+    "heroEmoji": "🛡️"
+  },
+  "questions": {
+    "heroEmoji": "💬"
+  },
+  "results": {
+    "heroEmoji": "🎊",
+    "ingress": {
+      "browse": "Detta är kandidaterna och partierna som ställer upp i dessa val, sorterade efter valsymbol eller namn. Du kan använda filtren för att begränsa dem.",
+      "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
+    },
+    "multipleElections": "Välj nedan först vilket vals kandidater och partier du vill se och sedan om du vill se kandidater eller partier."
+  },
+  "statistics": {
+    "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
+  },
+  "survey": {
+    "button": "Ta del av användarundersökning",
+    "info": "Vill du hjälpa till att förbättra valkompasserna? Öppna enkäten i ett nytt fönster och fyll i den nu eller när det passar dig.",
+    "popupInfo": "Enkäten öppnas i ett nytt fönster. Du kan fylla i den direkt eller när det passar dig.",
+    "popupTitle": "Vill du hjälpa till att förbättra valkompasserna?",
+    "thanks": "Tack för att du fyllde i enkäten!",
+    "title": "Ta del i användarundersökningen"
+  },
+  "voterAppNotAccessible": {
+    "content": "Väljarnas valkompass har ännu inte publicerats. Återkom till denna adress när den blir tillgänglig.",
+    "title": "Tyvärr har valkompassen ännu inte publicerats"
+  }
+}

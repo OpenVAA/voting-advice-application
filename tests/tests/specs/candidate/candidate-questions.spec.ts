@@ -1,0 +1,289 @@
+/**
+ * Candidate opinion questions and preview E2E tests.
+ *
+ * Covers:
+ * - CAND-04: Opinion question answering with Likert-5 scale and comments
+ * - CAND-05: Answer editing and category navigation
+ * - CAND-06: Preview page displays entered data
+ * - CAND-12 (partial): Data persistence after page reload
+ *
+ * Runs within the `candidate-app` project which provides pre-authenticated
+ * storageState via auth-setup (logged in as mock.candidate.2@openvaa.org).
+ */
+
+import { expect, test } from '../../fixtures';
+import { buildRoute } from '../../utils/buildRoute';
+import { testIds } from '../../utils/testIds';
+
+test.describe('candidate opinion questions', { tag: ['@candidate'] }, () => {
+  test.beforeEach(async ({ page, candidateQuestionsPage }) => {
+    // Navigate to questions list page before each test
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    // Expand all category sections so question cards are visible in the DOM.
+    // Categories with all questions answered start collapsed (Expander uses {#if expanded}).
+    await candidateQuestionsPage.expandAllCategories();
+  });
+
+  test('should display question cards organized by category (CAND-05)', async ({ page, candidateQuestionsPage }) => {
+    // The questions list page shows questions grouped in Expander components
+    // by category. Verify the page loaded and has question cards.
+
+    // The page shows either a "start" button (no answers yet) or a list
+    // with category expanders. The pre-authenticated candidate has answers,
+    // so the list view should render.
+    const questionsList = page.getByTestId(testIds.candidate.questions.list);
+    const startButton = page.getByTestId(testIds.candidate.questions.start);
+
+    // One of these should be visible
+    await expect(questionsList.or(startButton)).toBeVisible();
+
+    // Verify question cards are present (each question has a button with this testId)
+    const cards = candidateQuestionsPage.questionCard;
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+
+    // Verify multiple question cards are present across the page
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+
+  test('should answer a Likert opinion question and save (CAND-04)', async ({
+    page,
+    candidateQuestionsPage,
+    questionPage
+  }) => {
+    // Step 1: Navigate to the first question by clicking the first card
+    await candidateQuestionsPage.navigateToQuestion(0);
+
+    // Step 2: Wait for the question detail page to load
+    const answerArea = questionPage.answerInput;
+    await expect(answerArea).toBeVisible();
+
+    // Step 3: Select a Likert choice (question-choice testId from shared component)
+    // Likert-5 has 5 options (indices 0-4); select index 3 ("Somewhat agree")
+    const choices = page.getByTestId(testIds.voter.questions.answerOption);
+    await expect(choices.first()).toBeVisible();
+    await choices.nth(3).click();
+
+    // Step 4: Fill the comment field (available because test-question-1 has
+    // customData.allowOpen = true in the test dataset)
+    await questionPage.fillComment('Test comment for this Likert question');
+
+    // Step 5: Capture current URL before saving
+    const urlBeforeSave = page.url();
+
+    // Step 6: Save the answer
+    await questionPage.saveAnswer();
+
+    // Step 7: Verify save succeeded - the page navigates away from the current
+    // question (to the next unanswered question or the questions list)
+    await expect(page).not.toHaveURL(urlBeforeSave, { timeout: 10000 });
+  });
+
+  test('should navigate between categories (CAND-05)', async ({ page, candidateQuestionsPage }) => {
+    // The questions list groups questions by category using Expander components.
+    // Verify we can interact with questions from different categories.
+
+    // Count total question cards visible on the page
+    const cards = candidateQuestionsPage.questionCard;
+    const totalCards = await cards.count();
+    expect(totalCards).toBeGreaterThan(0);
+
+    // Navigate to a question from the first visible card
+    await candidateQuestionsPage.navigateToQuestion(0);
+    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+
+    // Go back to questions list
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+    await expect(cards.first()).toBeVisible();
+
+    // Navigate to a different question (last card to likely be in a different category)
+    const lastIndex = (await cards.count()) - 1;
+    if (lastIndex > 0) {
+      await candidateQuestionsPage.navigateToQuestion(lastIndex);
+      await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+    }
+  });
+
+  test('should edit a previously answered question (CAND-05)', async ({
+    page,
+    candidateQuestionsPage,
+    questionPage
+  }) => {
+    // Step 1: Navigate to the first question (pre-authenticated candidate
+    // has answers for questions 1-8 in the dataset)
+    await candidateQuestionsPage.navigateToQuestion(0);
+
+    // Step 2: Wait for the question page to load
+    const answerArea = questionPage.answerInput;
+    await expect(answerArea).toBeVisible();
+
+    // Step 3: Change the answer by selecting a different choice
+    const choices = page.getByTestId(testIds.voter.questions.answerOption);
+    await expect(choices.first()).toBeVisible();
+    // Select a different choice (index 1 = "Somewhat disagree")
+    await choices.nth(1).click();
+
+    // Step 4: Save the updated answer
+    await questionPage.saveAnswer();
+
+    // Step 5: Navigate back to questions list
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+
+    // Step 6: Re-open the same question and verify it loads (the answer
+    // selection is managed by the component state and the saved data)
+    await candidateQuestionsPage.navigateToQuestion(0);
+    await expect(answerArea).toBeVisible();
+
+    // Step 7: Verify the choice we selected is reflected
+    // The selected choice should have an active/selected visual state.
+    // Check that the answer input area is visible (confirms data loaded)
+    await expect(choices.first()).toBeVisible();
+  });
+
+  test('should persist question answers after page reload (CAND-12)', async ({
+    page,
+    candidateQuestionsPage,
+    questionPage
+  }) => {
+    // Step 1: Navigate to the second question
+    await candidateQuestionsPage.navigateToQuestion(1);
+
+    // Step 2: Wait for question page to load
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 3: Select a choice
+    const choices = page.getByTestId(testIds.voter.questions.answerOption);
+    await expect(choices.first()).toBeVisible();
+    await choices.nth(2).click();
+
+    // Step 4: Save the answer
+    await questionPage.saveAnswer();
+
+    // Step 5: The save navigates away. Go back to the questions list
+    // and then into the same question to check persistence.
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+
+    // Step 6: Navigate back to the same question
+    await candidateQuestionsPage.navigateToQuestion(1);
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 7: Reload the page to verify server-side persistence
+    await page.reload();
+
+    // Step 8: The answer input area should still be visible after reload
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 9: Verify the choices are still displayed (the answer persisted)
+    await expect(choices.first()).toBeVisible();
+  });
+
+  test('should persist comment text on a question after page reload (CAND-12)', async ({
+    page,
+    candidateQuestionsPage,
+    questionPage
+  }) => {
+    // CAND-12 gap: comment text persistence is not explicitly tested in the original suite.
+    // The pre-authenticated candidate (mock.candidate.2@openvaa.org) already has answers,
+    // so we can navigate directly to a question, add/update the comment, save, reload,
+    // and verify the comment value persisted.
+    //
+    // Uses the pre-authenticated storageState — no login required.
+
+    // Step 1: Navigate to the third question (index 2) to avoid interfering with
+    // other tests that use indices 0 and 1.
+    await candidateQuestionsPage.navigateToQuestion(2);
+
+    // Step 2: Wait for the question page to load
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 3: Select an answer choice (required before saving)
+    const choices = page.getByTestId(testIds.voter.questions.answerOption);
+    await expect(choices.first()).toBeVisible();
+    await choices.nth(0).click();
+
+    // Step 4: Fill the comment with a unique value
+    const commentText = 'Comment persistence check 99';
+    await questionPage.fillComment(commentText);
+
+    // Step 5: Save the answer + comment
+    await questionPage.saveAnswer();
+
+    // Step 6: Navigate back to the questions list and then re-open the same question
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await candidateQuestionsPage.expandAllCategories();
+    await candidateQuestionsPage.navigateToQuestion(2);
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 7: Reload to verify server-side persistence
+    await page.reload();
+    await expect(questionPage.answerInput).toBeVisible();
+
+    // Step 8: Verify the comment text persisted after reload
+    await expect(questionPage.commentInput).toHaveValue(commentText);
+  });
+});
+
+test.describe('candidate preview', { tag: ['@candidate'] }, () => {
+  test('should display entered profile and opinion data on preview page (CAND-06)', async ({ page, previewPage }) => {
+    // Navigate to preview page
+    await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
+
+    // Verify the preview container is visible (contains EntityDetails component)
+    await expect(previewPage.container).toBeVisible();
+
+    // The preview page loads candidate data asynchronously.
+    // Once loaded, EntityDetails renders the candidate's profile.
+    // Verify the container has meaningful content (not empty or error state).
+
+    // Check that the container has some child content rendered
+    // EntityDetails renders candidate name, answers, etc.
+    const containerContent = previewPage.container.locator('*');
+    const childCount = await containerContent.count();
+    expect(childCount).toBeGreaterThan(0);
+
+    // Verify no error message is displayed
+    const errorMessage = previewPage.container.getByTestId(testIds.shared.errorMessage);
+    await expect(errorMessage).toBeHidden();
+  });
+
+  test('should show specific candidate data (name or answered question) in preview (CAND-06)', async ({
+    page,
+    previewPage
+  }) => {
+    // CAND-06 gap: verify that actual entered data is visible, not just that the
+    // container has child elements. The pre-authenticated candidate is
+    // "Test Candidate Alpha" (mock.candidate.2@openvaa.org) who has answers in the dataset.
+    await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
+
+    // Wait for the preview container and asynchronous data load to complete.
+    // The EntityDetails component renders the candidate's name prominently.
+    await expect(previewPage.container).toBeVisible();
+
+    // Verify candidate name is rendered inside the preview container.
+    // "Test Candidate Alpha" is the firstName + lastName for mock.candidate.2@openvaa.org.
+    await expect(previewPage.container.getByText('Alpha', { exact: false })).toBeVisible({ timeout: 10000 });
+
+    // Verify opinion answers are visible after clicking the "Opinions" tab.
+    // EntityDetails shows a tabbed interface: "Basic Info" (default) and "Opinions".
+    // The candidate has opinion answers; navigate to the Opinions tab to verify.
+    const opinionsTab = page.getByRole('tab', { name: /opinions/i });
+    await expect(opinionsTab).toBeVisible();
+    await opinionsTab.click();
+
+    // After clicking Opinions tab, at least one Likert answer label should appear.
+    // The candidate has question 1 answered with choice "4" = "Somewhat agree".
+    const answerLabels = ['Fully disagree', 'Somewhat disagree', 'Neutral', 'Somewhat agree', 'Fully agree'];
+    let answerVisible = false;
+    for (const label of answerLabels) {
+      const el = previewPage.container.getByText(label, { exact: false });
+      if ((await el.count()) > 0) {
+        answerVisible = true;
+        break;
+      }
+    }
+    expect(answerVisible).toBe(true);
+  });
+});

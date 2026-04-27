@@ -1,0 +1,22 @@
+{
+  "code": "code d’inscription",
+  "codePlaceholder": "Ex. CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Vous êtes-vous déjà inscrit·e ?",
+  "enterCode": "Saisissez le code d’inscription que vous avez reçu par e-mail pour terminer votre inscription.",
+  "goToLoginLabel": "Aller à la page de connexion",
+  "loggedInWarning": "Un utilisateur est actuellement connecté. Déconnectez-vous avant de continuer.",
+  "passwordValidation": {
+    "commonPatterns": "Contient des séquences ou motifs courants",
+    "length": "Au moins {minPasswordLength} caractères",
+    "lowercase": "Lettre minuscule",
+    "number": "Chiffre",
+    "repetition": "Contient des répétitions de caractères",
+    "symbol": "Symbole (comme !?%#€)",
+    "uppercase": "Lettre majuscule",
+    "username": "Évitez d’utiliser votre nom dans le mot de passe"
+  },
+  "register": "S’inscrire",
+  "title": "Inscription",
+  "titleWithPreregistration": "Confirmez votre adresse e-mail",
+  "wrongRegistrationCode": "Code d’inscription incorrect"
+}

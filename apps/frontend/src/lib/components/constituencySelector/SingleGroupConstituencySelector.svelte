@@ -1,0 +1,73 @@
+<!--@component
+
+# Single group constituency selection component
+
+Display constituency selection input for just one `ConstituencyGroup` which is not necessarily tied to a specific `Election`.
+
+### Properties
+
+- `group`: The `ConstituencyGroup` to be show.
+- `label`: The `aria-label` and placeholder text for the select input. Default `t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
+- `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
+- `selected`: Bindable value for the `Id` of the selected `Constituency`.
+- `onChange`: Callback triggered when the selection changes.
+- Any valid attributes of a `<select>` element.
+
+### Usage
+
+```tsx
+<SingleGroupConstituencySelector
+  group={election.constituencyGroups[0]}
+  bind:selected={selectedId}
+  onChange={(id) => console.info('Selected constituency with id', id)} />
+```
+-->
+
+<script lang="ts">
+  import { Select } from '$lib/components/select';
+  import { getComponentContext } from '$lib/contexts/component';
+  import type { Constituency } from '@openvaa/data';
+  import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
+
+  let {
+    group,
+    label,
+    disableSorting,
+    onShadedBg,
+    selected = $bindable(''),
+    onChange,
+    ...restProps
+  }: SingleGroupConstituencySelectorProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { locale, t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Intialization
+  ////////////////////////////////////////////////////////////////////
+
+  // Provide a default label if not specified
+  let effectiveLabel = $derived(
+    label ?? t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })
+  );
+
+  ////////////////////////////////////////////////////////////////////
+  // Sort items
+  ////////////////////////////////////////////////////////////////////
+
+  function sort(constituencies: Array<Constituency>): Array<Constituency> {
+    return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, locale));
+  }
+</script>
+
+<Select
+  label={effectiveLabel}
+  options={sort(group.constituencies).map((c) => ({ id: c.id, label: c.name }))}
+  bind:selected
+  {onChange}
+  {onShadedBg}
+  autocomplete={group.singleConstituency ? 'off' : 'on'} />

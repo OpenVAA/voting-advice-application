@@ -1,0 +1,93 @@
+{
+  "common": {
+    "alliance": {
+      "plural": "valallianser",
+      "singular": "valallians"
+    },
+    "answer": {
+      "no": "Nej",
+      "yes": "Ja"
+    },
+    "back": "Tillbaka",
+    "cancel": "Avbrytt",
+    "candidate": {
+      "plural": "kandidater",
+      "singular": "kandidat"
+    },
+    "candidatePortrait": "Porträtt",
+    "clear": "Klart",
+    "close": "Stäng",
+    "closeDialog": "Stäng dialogrutan",
+    "closeMenu": "Stäng menyn",
+    "confirmed": "Bekräftat",
+    "constituency": "Valkrets",
+    "continue": "Fortsätt",
+    "election": "Val",
+    "electionList": "Lista",
+    "electionSymbol": {
+      "alliance": "Valsymbol",
+      "candidate": "Valnummer",
+      "faction": "Valsymbol",
+      "organization": "Valsymbol"
+    },
+    "email": "E-post",
+    "emailPlaceholder": "E-post",
+    "expandOrCollapse": "Expandera eller kollapsa detta avsnitt",
+    "faction": {
+      "plural": "fraktioner",
+      "singular": "fraktion"
+    },
+    "firstName": "Förnamn",
+    "home": "hem",
+    "info": "Information",
+    "language": {
+      "select": "Välj språk"
+    },
+    "lastName": "Efternamn",
+    "loading": "Laddar…",
+    "locked": "Låst",
+    "login": "Registrera dig",
+    "logout": "Logga ut",
+    "madeWithPrefix": "Gjord med",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": "•",
+    "nomination": "Utnämning",
+    "openCloseMenu": "Växla meny",
+    "openMenu": "Öppna menyn",
+    "openVAA": "OpenVAA",
+    "or": "Eller",
+    "organization": {
+      "plural": "partier",
+      "singular": "parti"
+    },
+    "password": "Lösenord",
+    "passwordConfirmation": "Bekräfta lösenord",
+    "pending": "Väntar",
+    "primaryActions": "Primära åtgärder",
+    "privacy": {
+      "dataCollection": {
+        "content": "Vi skulle vilja samla in användningsdata anonymt för forskningsändamål och för att förbättra applikationen. Datan som ska samlas in inkluderar dina svar på frågorna, den tid som ägnas åt att svara på frågorna och i andra avsnitt och de visade resultaten, men data kan inte kopplas till dig.",
+        "title": "Insamling av användningsdata"
+      }
+    },
+    "progress": "Framsteg",
+    "publishedBy": "Publicerad av {publisher}",
+    "question": "Fråga",
+    "readMore": "Läs mer om",
+    "required": "Nödvändig",
+    "resetAnswers": "Klargör dina svar",
+    "return": "Returnera",
+    "returnHome": "Återvänd hem",
+    "saveAndContinue": "Spara och fortsätt",
+    "saveAndReturn": "Spara och returnera",
+    "saving": "Sparar",
+    "showFullImage": "Visa hela bilden",
+    "skipToMain": "Hoppa till huvudinnehåll",
+    "state": "Stat",
+    "success": "Åtgärden lyckades!",
+    "thanksNo": "Nej tack",
+    "unaffiliated": "Oberoende",
+    "website": "Webbsida"
+  }
+}

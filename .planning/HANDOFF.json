@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-26T10:38:49.000Z",
+  "phase": "63",
+  "phase_name": "e2e-template-extension-greening",
+  "phase_dir": ".planning/phases/63-e2e-template-extension-greening",
+  "plan": 3,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "context_summary": "Paused after committing 23 voter-suite e2e fixes as commit c9e9af9bc. Push rejected (branch diverged 350 ahead / 477 behind origin). Awaiting user decision on push strategy: force-with-lease vs pull-rebase vs pull-merge.",
+  "completed_this_session": [
+    {"area": "voter-app", "delta": "28/36 → 36/36", "fixes": "ROUTE_PARAMS for Phase 62 entity-detail params, +page.ts 404 guard, voter-results.spec.ts entity-card-action testid"},
+    {"area": "variant-multi-election", "delta": "4/5 → 6/6", "fixes": "data-provider fan-out + layout async"},
+    {"area": "variant-results-sections", "delta": "3/4 → 4/4", "fixes": "activeEntityType fallback + .first() locators"},
+    {"area": "variant-constituency", "delta": "3/6 → 6/6", "fixes": "layout async + .first() locator + same shared chain"},
+    {"area": "variant-startfromcg", "delta": "0/4 → 4/4", "fixes": "useSingleGroup $derived + safe find() + try/catch around getApplicableConstituency in 3 sites"},
+    {"area": "voter-questions combined run", "delta": "+2", "fixes": "beforeEach resets questionsIntro for parallel-run isolation"},
+    {"area": "dev-seed unit tests", "delta": "473/477 → 477/477", "fixes": "variant-app-settings.test.ts assertions match the questionsIntro overlay shape"}
+  ],
+  "files_changed_committed": 50,
+  "commits": [
+    {"hash": "c9e9af9bc", "message": "fix(voter-flow): resolve voter-suite e2e failures across multiple journeys"}
+  ],
+  "blockers": [
+    {"description": "git push rejected — branch feat-gsd-roadmap is 350 ahead and 477 behind origin", "type": "human_action", "workaround": "user must choose between force-with-lease, pull --rebase, or pull merge"}
+  ],
+  "human_actions_pending": [
+    {"action": "decide push strategy for feat-gsd-roadmap (force-with-lease / pull --rebase / pull merge)", "context": "branch has diverged significantly from origin; force-push would overwrite 477 remote commits", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "Made supabaseDataProvider fan out get_nominations RPC over the (election, constituency) cartesian product instead of just [0]", "rationale": "single-RPC shape silently dropped all but the first electionId's nominations — broke variant-multi-election partial-coverage gate"},
+    {"decision": "Wrapped Election.getApplicableConstituency in try/catch at three call sites instead of changing the throw semantics", "rationale": "the throw is correct for stand-alone use; only the hierarchical multi-cg election case needs a fallback, and changing the API contract would propagate to other consumers"},
+    {"decision": "useSingleGroup in /constituencies must use safe .find() rather than dataRoot.getConstituencyGroup(id)", "rationale": "the latter throws on missing id, surfacing as a page error during the dataRoot-not-yet-populated hydration window"},
+    {"decision": "voter-questions.spec.ts gets a beforeEach that resets questionsIntro to true", "rationale": "other voter specs mutate app_settings against the shared Supabase row; without a defensive reset, parallel-project runs interleave and break the journey"}
+  ],
+  "uncommitted_files": [
+    ".claude/scheduled_tasks.lock",
+    ".planning/notes/"
+  ],
+  "next_action": "Confirm push strategy with user. If force-with-lease: `git push --force-with-lease origin feat-gsd-roadmap`. If rebase: `git pull --rebase` then resolve conflicts then push. If merge: `git pull` then push.",
+  "context_notes": "Phase 63 itself (the parity gate at plan 3/3) is unchanged — this session's work is voter-flow E2E greening that runs adjacent to phase 63's theme. The 4 dev-seed unit failures (variant-app-settings) were pre-existing assertions that no longer matched the actual template shape; fixed in this commit. Branch diverged from origin so far that push needs an explicit strategy decision.",
+  "test_state": {
+    "voter-app": "36/36 (3 skipped seed-dependent)",
+    "voter-app-settings": "7/7",
+    "voter-app-popups": "4/4",
+    "voter-app+settings+popups combined": "47/47",
+    "variant-multi-election": "6/6",
+    "variant-results-sections": "4/4",
+    "variant-constituency": "6/6",
+    "variant-startfromcg": "4/4",
+    "frontend unit tests": "645/645",
+    "supabaseDataProvider unit tests": "44/44",
+    "dev-seed unit tests": "477/477 (was 473/477)"
+  }
+}

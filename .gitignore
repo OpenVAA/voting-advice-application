@@ -4,8 +4,17 @@
 !.env.example
 node_modules
 
+# Private keys and certificates (JWKS sources, signing/encryption keys, etc.)
+*.pem
+*.key
+*.p12
+*.pfx
+
 # Claude Code local settings
 .claude/*.local.json
+
+# Turborepo
+.turbo
 
 # Yarn 4 without Zero-installs
 .pnp.*
@@ -15,3 +24,29 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+test-results/
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+*.code-workspace
+.env.*
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/

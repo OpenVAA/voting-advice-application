@@ -1,0 +1,9 @@
+{
+  "links": "Liens",
+  "memberOfOrganization": "membre de {organization}",
+  "tabs": {
+    "candidates": "candidat·es",
+    "info": "Commentaires",
+    "opinions": "Positions"
+  }
+}

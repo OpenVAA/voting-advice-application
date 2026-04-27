@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Aucun résultat pour ces filtres. Vous pouvez les modifier.",
+      "noSearchResults": "Aucun résultat pour cette recherche. Vous pouvez la modifier.",
+      "searchPlaceholder": "Rechercher par nom",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Affichage de 1 résultat",
+            "numShownPlural=other": "Affichage de {numShown} résultats"
+          }
+        }
+      ]
+    },
+    "showMore": "Afficher plus"
+  }
+}

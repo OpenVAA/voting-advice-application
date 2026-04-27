@@ -3,28 +3,29 @@
   "name": "@openvaa/question-info",
   "version": "0.1.0",
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/",
+    "build": "tsup && tsc --emitDeclarationOnly --outDir dist && mkdir -p dist/prompts && cp -R src/prompts/* dist/prompts/",
+    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "type": "module",
-  "module": "./build/index.js",
-  "types": "./build/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./build/index.js"
+    "import": "./dist/index.js"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "@types/js-yaml": "^4.0.9",
-    "tsc-esm-fix": "^3.1.2",
-    "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "@types/js-yaml": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "@openvaa/llm": "workspace:^",
-    "js-yaml": "^4.1.0",
-    "zod": "^4.0.0"
+    "js-yaml": "catalog:",
+    "zod": "catalog:"
   }
 }

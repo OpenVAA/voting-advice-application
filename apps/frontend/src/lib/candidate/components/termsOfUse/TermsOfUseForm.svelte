@@ -1,0 +1,60 @@
+<!--
+@component
+Show the terms of use along with a checkbox for accepting them.
+
+### Dynamic component
+
+Accesses `CandidateContext`.
+
+### Properties
+
+- `termsAccepted`: Bindable: Whether the terms are accepted. Default: `false`
+- Any valid attributes of a `<section>` element
+
+### Usage
+
+```tsx
+<script lang="ts">
+  let termsAccepted: boolean;
+  $: console.info('termsAccepted:', termsAccepted);
+</script>
+<TermsOfUseForm bind:termsAccepted/>
+```
+-->
+
+<script lang="ts">
+  import { Expander } from '$lib/components/expander';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { TermsOfUse } from '.';
+  import type { TermsOfUseFormProps } from './TermsOfUseForm.type';
+
+  let { termsAccepted = $bindable(false), ...restProps }: TermsOfUseFormProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+</script>
+
+<section {...concatClass(restProps, 'flex flex-col items-center')}>
+  <div class="mb-lg text-center">
+    {@html sanitizeHtml(t('dynamic.candidateAppPrivacy.consent.ingress'))}
+  </div>
+  <Expander title={t('dynamic.candidateAppPrivacy.consent.title')} contentClass="prose bg-base-100 rounded-lg">
+    <div class="m-lg">
+      <TermsOfUse />
+    </div>
+  </Expander>
+  <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0">
+    <input
+      type="checkbox"
+      class="checkbox"
+      name="termsAccepted"
+      bind:checked={termsAccepted}
+      data-testid="terms-checkbox" />
+    <span>{t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
+  </label>
+</section>

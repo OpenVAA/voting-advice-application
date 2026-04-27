@@ -1,0 +1,86 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ingen alliancer",
+            "numShownPlural=one": "1 alliance",
+            "numShownPlural=other": "{numShown} alliancer"
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ingen kandidater",
+            "numShownPlural=one": "1 kandidat",
+            "numShownPlural=other": "{numShown} kandidater"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ingen fraktioner",
+            "numShownPlural=one": "1 fraktion",
+            "numShownPlural=other": "{numShown} fraktioner"
+          }
+        }
+      ]
+    },
+    "inConstituency": "i valgkreds",
+    "ingress": {
+      "answerMinQuestions": "Hvis du vil finde de kandidater og partier, du er mest enig med, så {questionsLink} først.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
+          "selectors": ["numQuestionsPlural"],
+          "match": {
+            "numQuestionsPlural=one": "besvar mindst ét spørgsmål",
+            "numQuestionsPlural=other": "besvar mindst {numQuestions} spørgsmål"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Der er ingen kandidater eller partier i din valgkreds, som har besvaret Valgtesten",
+        "content": "Du kan gennemgå spørgsmålene, hvis du ønsker, men resultater kan ikke vises."
+      },
+      "someNominations": {
+        "title": "Nogle kandidater eller partier har ikke besvaret Valgtesten",
+        "content": "Der findes ikke svar fra kandidater eller partier for alle valg i din valgkreds. Resultater vises kun for de valg, hvor der findes svar."
+      },
+      "noNominationsForElection": "ikke tilgængelig"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=zero": "Ingen partier",
+            "numShownPlural=one": "1 parti",
+            "numShownPlural=other": "{numShown} partier"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Vælg først et valg",
+    "title": {
+      "browse": "Gennemse kandidater og partier",
+      "results": "Resultater"
+    }
+  }
+}

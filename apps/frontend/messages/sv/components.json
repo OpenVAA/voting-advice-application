@@ -1,0 +1,99 @@
+{
+  "components": {
+    "accordionSelect": {
+      "collapsedAriaInfo": "Tryck för att visa alla alternativ"
+    },
+    "constituencySelector": {
+      "selectPrompt": "Välj {constituencyGroup}"
+    },
+    "headingGroup": {
+      "roleDescription": "Rubrikgrupp"
+    },
+    "input": {
+      "addImage": "Lägga till en bild",
+      "allSelected": "Alla valda",
+      "changeImage": "Ändra bilden",
+      "deleteOption": "Välj bort {option}",
+      "error": {
+        "fileLoadingError": "Det gick inte att ladda filen.",
+        "invalidFile": "Filen är ogiltig.",
+        "invalidUrl": "Webbadressen är inte giltig.",
+        "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."
+      },
+      "hideTranslations": "Dölja",
+      "imageInfo": "Den maximala storleken för bilden är {maxFilesize} MB. Ha tålamod vid sparande, det kan ta en stund att ladda upp bilden.",
+      "multilingualInfo": "Du kan skriva in ditt svar på alla valkomatens språk om du vill.",
+      "noImage": "Ingen bild",
+      "selectAnother": "Välj en annan",
+      "selectFirst": "Välj först",
+      "selectOne": "Välj",
+      "showTranslations": "Översättningar"
+    },
+    "matchScore": {
+      "label": "matchning",
+      "score": "{score}%"
+    },
+    "passwordInput": {
+      "hidePassword": "Dölj lösenord",
+      "password": "Lösenord",
+      "placeholder": "Lösenord",
+      "showPassword": "Visa lösenord"
+    },
+    "preHeading": {
+      "roleDescription": "Förtexter"
+    },
+    "preventNavigation": {
+      "unsavedChanges": "Du har osparade ändringar. Är du säker på att du vill lämna denna sida?"
+    },
+    "select": {
+      "noMatchingOptions": "Inga alternativ matchade din sökning",
+      "placeholder": "Välj ett alternativ nedan"
+    },
+    "video": {
+      "captions": "Bildtexter",
+      "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",
+      "hideCaptions": "Dölj undertexter",
+      "jumpBack": "Hoppa tillbaka",
+      "jumpForward": "Hoppa framåt",
+      "mute": "Mute",
+      "pause": "Paus",
+      "play": "Spela",
+      "progessbarLabel": "Återstående tid",
+      "replay": "Replay",
+      "showCaptions": "Visa undertexter",
+      "showTranscript": "Visa video som text",
+      "showVideo": "Visa video",
+      "subtitles": "Undertexter",
+      "timeLeft": [
+        {
+          "declarations": [
+            "input minuter",
+            "local minuterPlural = minuter: plural",
+            "input sekunder",
+            "local sekunderPlural = sekunder: plural"
+          ],
+          "selectors": ["minuterPlural", "sekunderPlural"],
+          "match": {
+            "minuterPlural=zero sekunderPlural=zero": "  kvar",
+            "minuterPlural=zero sekunderPlural=one": " en sekund kvar",
+            "minuterPlural=zero sekunderPlural=other": " {sekunder} sekunder kvar",
+            "minuterPlural=one sekunderPlural=zero": "en minut  kvar",
+            "minuterPlural=one sekunderPlural=one": "en minut en sekund kvar",
+            "minuterPlural=one sekunderPlural=other": "en minut {sekunder} sekunder kvar",
+            "minuterPlural=other sekunderPlural=zero": "{minuter} minuter  kvar",
+            "minuterPlural=other sekunderPlural=one": "{minuter} minuter en sekund kvar",
+            "minuterPlural=other sekunderPlural=other": "{minuter} minuter {sekunder} sekunder kvar"
+          }
+        }
+      ],
+      "transcript": "Text",
+      "transcriptToggleLabel": "Växla mellan video och text",
+      "unmute": "Avslöja",
+      "unsupportedWarning": "Tyvärr stöder inte din webbläsare den här typen av video.",
+      "video": "Video"
+    },
+    "questionExtendedInfo": {
+      "title": "Upptäck mer"
+    }
+  }
+}

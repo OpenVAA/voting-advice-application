@@ -1,0 +1,22 @@
+{
+  "code": "Aschreiwungscode",
+  "codePlaceholder": "Z. B. CP23-174a-f4%&-aHAB",
+  "didYouAlreadyRegister": "Sidd Dir scho registréiert?",
+  "enterCode": "Gitt de Code an, deen Dir per E-Mail krut, fir Är Aschreiwung ofzeschléissen.",
+  "goToLoginLabel": "Op d’Login-Säit goen",
+  "loggedInWarning": "E Benotzer ass aktuell ageloggt. Loggt Iech aus, éier Dir weidermacht.",
+  "passwordValidation": {
+    "commonPatterns": "Enthält heefeg Sequenzen oder Musteren",
+    "length": "Op d’mannst {minPasswordLength} Zeechen",
+    "lowercase": "Kleng Buschtaf",
+    "number": "Zuel",
+    "repetition": "Enthält Widderhuelungen",
+    "symbol": "Symbol (z. B. !?%#€)",
+    "uppercase": "Grouss Buschtaf",
+    "username": "Benotzt net Ären Numm am Passwuert"
+  },
+  "register": "Aschreiwen",
+  "title": "Aschreiwung",
+  "titleWithPreregistration": "Confirméiert Är E-Mail-Adress",
+  "wrongRegistrationCode": "Falsche Registréierungscode"
+}

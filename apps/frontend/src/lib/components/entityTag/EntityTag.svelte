@@ -1,0 +1,60 @@
+<!--
+@component
+Used to display an `Entity` as small tag including an icon.
+
+### Properties
+
+- `entity`: A possibly wrapped entity, e.g. candidate or a party.
+- `variant`: Whether to use an abbreviation or the full name. Default: `'default'`
+- `hideParent`: Whether to hide the possible parent nomination. Default: `false`
+- Any valid attributes of a `<div>` element.
+
+### Usage
+
+```tsx
+<EntityTag entity={organization}/>
+<EntityTag entity={nomination.parentNomination} variant="short"/>
+```
+-->
+
+<script lang="ts">
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import { unwrapEntity } from '$lib/utils/entities';
+  import EntityTag from './EntityTag.svelte';
+  import type { EntityType } from '@openvaa/data';
+  import type { IconName } from '$lib/components/icon';
+  import type { EntityTagProps } from './EntityTag.type';
+
+  let { entity, variant = 'default', hideParent, ...restProps }: EntityTagProps = $props();
+
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity = $derived(unwrapped.entity);
+  let nomination = $derived(unwrapped.nomination);
+
+  const ICONS: Record<EntityType, IconName> = {
+    alliance: 'alliance',
+    candidate: 'candidate',
+    faction: 'candidates',
+    organization: 'party'
+  };
+</script>
+
+<div {...concatClass(restProps, 'flex flex-row items-center gap-xs font-bold')}>
+  <Icon
+    name={ICONS[nakedEntity.type]}
+    customColor={nakedEntity.color?.normal}
+    customColorDark={nakedEntity.color?.dark} />
+  <span>
+    {#if variant === 'short'}
+      {nakedEntity.shortName}
+    {:else if variant === 'full' && nakedEntity.shortName !== nakedEntity.name}
+      {nakedEntity.name} ({nakedEntity.shortName})
+    {:else}
+      {nakedEntity.name}
+    {/if}
+  </span>
+  {#if !hideParent && nomination?.parentNomination}
+    <EntityTag entity={nomination?.parentNomination} variant="short" />
+  {/if}
+</div>
