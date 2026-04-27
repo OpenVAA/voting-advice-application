@@ -104,7 +104,14 @@ grep -rn '\[repro\]' apps/frontend/src tests/
 
 ## Fix Path Selected
 
-**spec-only**
+**spec-only + dev-seed extension** (revised after Task 2 verification surfaced a true seed gap)
+
+Initial path was `spec-only`. After applying Task 2's `expect.poll(...)` replacements, the
+post-Task-2 Playwright run revealed the filter button NEVER renders (5s timeout exceeded with
+`Received: 0`) — exactly the empirical signal that triggers D-04's "extend the template if a true
+seed gap is identified" branch. See `## Decision: dev-seed extension` below for the seed-gap analysis;
+the seed extension is the dev-seed work added on top of the spec-only fix to satisfy the plan's
+truth requirement that the 3 named tests pass deterministically.
 
 Rationale (citing RESEARCH §1 + §2 + Pitfall 4):
 
@@ -158,14 +165,42 @@ reproduce, so the precondition for switching is not met.
 
 ## Decision: dev-seed extension
 
-**NO**
+**YES — required per Task 2 verification outcome.**
 
-Per D-04's preferred-minimum + RESEARCH A6: the e2e template already ships 4 parties × candidate
-nominations (verified by RESEARCH §3 against `packages/dev-seed/src/templates/e2e.ts:192-228`). If the
-EnumeratedFilter for party renders within the post-Task-2 5s poll window, no seed extension is needed
-and Task 2's `expect.poll(...)` will succeed deterministically. If after Task 2 the poll consistently
-fails (filter button never appears), THAT is the trigger to revisit dev-seed; this plan does not make
-that change preemptively. The post-Task-2 verification run will be the empirical gate.
+Initial decision was NO, with the contingency that "if after Task 2 the poll consistently fails (filter
+button never appears), THAT is the trigger to revisit dev-seed". The Task 2 verification run produced
+exactly that signal: all 3 tests now FAIL with `Party filter button must render — Received: 0` after
+the 5s poll. Investigation against `packages/dev-seed/src/templates/e2e.ts:825-967` and
+`apps/frontend/src/lib/contexts/voter/filters/buildParentFilters.ts:30-62` revealed:
+
+1. The e2e seed has 4 organization nominations (`test-nom-org-party-{a,b}` + `test-voter-nom-org-party-{a,b}`)
+   — parties DO exist as nominations.
+2. But the candidate nominations (`test-nom-{alpha,beta,gamma,delta,epsilon}` + `test-voter-nom-{agree,
+   close,neutral,oppose,mixed,partial}`) carry NO `parent_nomination` linking them to any party.
+3. `buildParentFilters` reads `n.parentNomination` from each candidate nomination; with no parent links,
+   `allParents` is empty, so the function returns an empty filter array.
+4. The seed also has zero info questions flagged `customData.filterable: true`, so
+   `buildQuestionFilter` also contributes 0 filters.
+5. Net: `FilterGroup.filters.length === 0` for every candidate-tab `(electionId, entityType)` tuple,
+   which makes `EntityListWithControls` skip the `<Button data-testid="entity-list-filter">` block at
+   `EntityListWithControls.svelte:153` (`{#if activeFilterGroup?.filters.length}`).
+
+**Contradiction with RESEARCH §3:** RESEARCH §3 stated the e2e seed already has 4 parties wired through.
+That's true at the *organizations-tab* level (where the org nominations populate the parties view), but
+NOT at the *candidates-tab* level where parent-nomination wiring is required for the party EnumeratedFilter
+to populate. The plan's research overlooked this distinction.
+
+**Fix scope (D-04 explicit grant):** add `parent_nomination` references to the 11 visible candidate
+nominations, distributing them across the 4 parties (3-3-3-2 ratio). All 4 parent organization nominations
+share the same `(election=test-election-1, constituency=test-constituency-alpha, election_round=1)`
+triple as the candidate nominations, so the `validate_nomination` trigger will accept the linkages.
+The 1 hidden candidate (`test-voter-nom-hidden`, `unconfirmed: true`) and 2 addendum candidates
+(`test-nom-unregistered`, `test-nom-unregistered-2`, both `unconfirmed: true`) remain unmodified —
+adding parent-nomination links to unconfirmed nominations is unnecessary and risks coupling test
+expectations.
+
+This deviation is logged as Rule 2 (auto-add missing critical functionality — without this seed wiring,
+the test contract cannot be honored).
 
 ---
 
@@ -213,13 +248,91 @@ remedies in a follow-up plan.
 
 ---
 
-## Summary
+## Summary (post-fix outcome)
 
 - **Reproduction outcome:** Mode B deterministic (test.skip path), Mode A absent, Mode C absent.
-- **Selected fix path:** spec-only (Task 2 alone closes the failure surface).
-- **Files modified by this plan:** `tests/tests/specs/voter/voter-results.spec.ts` only.
+- **Selected fix path:** spec-only initially → expanded to **spec + dev-seed + supabase adapter**
+  after Task 2 verification surfaced two cascading defects.
+- **Final test result:** all 3 named tests PASS deterministically (5/5 consecutive targeted runs at
+  `--timeout=60000`). 646/646 frontend unit tests stay green.
+- **Files modified by this plan:**
+  - `tests/tests/specs/voter/voter-results.spec.ts` (Task 2 — 6 skip-path replacements + 2
+    dialog-close + 1 entity-card-action + 1 button-locator hardenings)
+  - `packages/dev-seed/src/templates/e2e.ts` (Rule 2 deviation — wire 11 candidate nominations to 4
+    parties via `parent_nomination`)
+  - `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts` (Rule 1
+    deviation — derive `parentNominationType` in-memory so the Nomination "either both or
+    neither" invariant holds when the seed has parent-nomination chains)
+  - `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts`
+    (test update for the adapter change — 45/45 dataProvider tests pass)
 - **Files NOT modified:** `packages/filters/src/`, `apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts`,
   `apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts`, `apps/frontend/src/routes/(voters)/(located)/questions/[questionId]/+page.svelte`,
   `tests/tests/fixtures/voter.fixture.ts`, `apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte`.
 - **D-01 acceptance gate:** PASS (0 svelte imports in `packages/filters/src/`; baseline preserved).
 - **Phase 64 D-13 boundary:** honored (no `voterContext.svelte.ts` modifications).
+- **Phase 62 Option B preserved:** `filterContext.svelte.ts` version-counter bridge unchanged;
+  filterContext unit tests (8/8) still green.
+
+## Cascading Findings (logged as deviations)
+
+The "spec-only" fix path was insufficient because the plan's research overlooked two latent defects
+that only surfaced once the silent-skip paths were converted to hard assertions:
+
+### Finding 1: dev-seed e2e template gap (Rule 2)
+
+The plan's RESEARCH §3 stated the e2e seed has 4 parties wired through. That's true at the
+*organizations-tab* level (party nominations make parties show on the Parties tab), but NOT at
+the *candidates-tab* level — candidate nominations had no `parent_nomination` linking them to any
+party. `buildParentFilters()` (`apps/frontend/src/lib/contexts/voter/filters/buildParentFilters.ts:30-62`)
+reads `n.parentNomination` from each candidate and returns an empty filter array if no candidate
+has a parent. The party EnumeratedFilter therefore had `filters.length === 0` and
+EntityListWithControls skipped rendering the filter button.
+
+**Fix:** added `parent_nomination: { external_id: 'test-nom-org-party-X' }` to the 11 visible
+candidate nominations, distributing 3-3-3-2 across the 4 parties. The hidden + addendum candidates
+(unconfirmed, never visible) intentionally stayed parent-less.
+
+### Finding 2: supabase adapter parent-type omission (Rule 1)
+
+After Finding 1's seed change, the voter app stuck on "Loading…". The data layer's
+`Nomination` base class constructor enforces "either both `parentNominationId` AND
+`parentNominationType` set, or neither" (`packages/data/src/objects/nominations/base/nomination.ts:38-45`).
+The Supabase schema only stores `parent_nomination_id` (no `_type` column — type is derived from
+the parent's polymorphic FK fields), and the frontend adapter was mapping ONLY
+`parent_nomination_id` to `parentNominationId`, leaving `parentNominationType` undefined. This
+code path was never exercised because no prior seed had candidate-with-parent chains — the e2e
+template extension above triggered it.
+
+**Fix:** in `supabaseDataProvider._getNominationData`, build an in-memory map of
+`nomination.id → entity_type` from the same fan-out result, then set `parentNominationType` from
+the parent's entry. If the parent isn't in the result (e.g., the RPC's election/constituency
+filter excluded it), clear `parentNominationId` to keep the constructor invariant intact.
+
+### Finding 3: spec hardening for actually-passing assertions
+
+After Findings 1+2, the filter button rendered but the tests still had three smaller bugs:
+
+- **Wrong dialog button:** `dialog.getByRole('button').first()` matched "Select all" inside the
+  `EnumeratedEntityFilter`, not the "Apply and close" / "Close filters" button in the modal-action
+  snippet. Fix: locate by label `getByRole('button', { name: /close filters/i })`.
+- **Modal close race:** clicking the parties tab immediately after the modal-close click failed
+  with "div from candidate-section subtree intercepts pointer events" because the dialog's
+  pointer-events-blocking phase outlasts the click. Fix: `await expect(page.locator('dialog[open]'))
+  .toHaveCount(0, { timeout: 5000 })` before the next interaction.
+- **Wrong link locator:** `firstCard.getByRole('link').first()` returned 0 hits because the
+  wrapping `<a data-testid="entity-card-action">` lives OUTSIDE the `<article data-testid="entity-card">`
+  in `EntityCard.svelte:184`. Fix: use `page.getByTestId('entity-card-action').first()` directly,
+  matching the deeplink test's existing pattern.
+- **Drawer-cycle re-render race:** after `goBack()` from the drawer URL, `entity-card` count
+  briefly desyncs from steady state. Fix: wait for `DRAWER_TESTID` to unmount, then poll the card
+  count against the pre-drawer count.
+
+## Decision: voter-app reactivity changes
+
+**NONE** (Phase 64 D-13 boundary preserved — `voterContext.svelte.ts` and the question-blocks
+`$effect` chain are out of this plan's scope).
+
+## Decision: voter.fixture.ts changes
+
+**NONE** (Mode A absent locally — the fixture's 5s budget on `voter.fixture.ts:68` is sufficient
+at the Phase 64 baseline).
