@@ -289,6 +289,11 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
             ? 'bg-base-100'
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
+            <!-- Keyboard interaction lives on the parent <input> via
+                 onkeydown={handleKeydown} (Enter selects the option at
+                 focusIndex; aria-activedescendant points the screen
+                 reader at the matching <li>). The click handler here
+                 is just the pointer-only path. -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- tabindex is necessary for the parents onfocusout to be able to detect focus held by the li element -->
             <li

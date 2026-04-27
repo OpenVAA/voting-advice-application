@@ -255,6 +255,9 @@ The same component can also be used to display the answers of the voter and anot
     {/if}
 
     <!-- The button -->
+    <!-- The label wraps a radio input (interactive); the listeners exist
+         to widen the click/key target to the entire label region.
+         Both pointer and keyboard interactions are handled. -->
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
       <input

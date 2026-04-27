@@ -349,6 +349,12 @@ Multilingual features are only available if the `locales` store contains more th
 </script>
 
 <!-- Add containarProps to the outer container and set styles for it -->
+<!-- a11y note: every <label> in this file uses an `id` referenced by an
+     `aria-labelledby` on the actual <input>/<textarea>/<select>. The
+     a11y_label_has_associated_control rule fires because the label
+     doesn't use `for=""`, but the WCAG association is still satisfied
+     via aria-labelledby. The svelte-ignore comments below are
+     intentional. -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
   style:--inputBgColor={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-300)'}>
