@@ -64,8 +64,11 @@ export const voterTest = base.extend<VoterFixtures>({
       const urlBefore = page.url();
       await answerOption.click();
 
-      // Wait for auto-advance: URL changes to the next question or results page
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 5000 });
+      // Wait for auto-advance: URL changes to the next question or results page.
+      // 10s budget (was 5s) accommodates full-suite render-time pressure
+      // post-Plan-64-01 parent_nomination wiring + supabase adapter
+      // parent-type derivation. See Phase 64-04 SUMMARY.md (Task 6).
+      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
 
       if (i < voterAnswerCount - 1) {
         // Wait for the next answer option, clicking through any category intro page
@@ -77,11 +80,15 @@ export const voterTest = base.extend<VoterFixtures>({
     // If we're not on results yet (e.g., auto-advance didn't fire), click the next button.
     if (!page.url().includes('/results')) {
       await page.getByTestId(testIds.voter.questions.nextButton).click();
-      await page.waitForURL(/\/results/, { timeout: 10000 });
+      // 30s budget (was 10s) for SSR + reactivity settle on full-suite
+      // runs. See Phase 64-04 SUMMARY.md (Task 6).
+      await page.waitForURL(/\/results/, { timeout: 30000 });
     }
 
-    // Wait for the results list to be visible
-    await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for the results list to be visible.
+    // 30s budget (was 10s) for SSR + reactivity settle on full-suite
+    // runs. See Phase 64-04 SUMMARY.md (Task 6).
+    await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 30000 });
 
     await use(page);
   }
