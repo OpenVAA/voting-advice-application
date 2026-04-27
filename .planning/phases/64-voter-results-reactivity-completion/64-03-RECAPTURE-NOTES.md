@@ -273,3 +273,73 @@ The trace is already collected. ~30 minutes of investigation should reveal wheth
 If user prefers fastest-close-with-known-debt: **Option F** — accept the cascade as fixture-instability data-race, close milestone with documented gap.
 
 Plan 64-04's earlier "Path A (timeout) + Path B (voterContext) hard split" is no longer adequate framing — the bottleneck is fixture URL-detection, NOT timeouts and NOT voterContext.
+
+---
+
+## Attempt 4 — RESOLVED via protocol fix (NOT fixture/code/timeout fix)
+
+**Date:** 2026-04-27 (post Option A3 trace investigation)
+**Verdict:** **CASCADE CLOSED. 5/5 named tests PASS. Only remaining failure is imgproxy CAND-03 (known DATA_RACE per D-09).**
+
+### Stats vs prior attempts
+
+| Metric | Phase 63 baseline | Attempt 1 | Attempt 3 (Option A) | **Attempt 4 (clean DB)** |
+|--------|-------------------|-----------|----------------------|--------------------------|
+| Expected (passed) | 62 | 30 | 30 | **67** |
+| Unexpected | 5 | 21 | 21 | **1** (imgproxy only) |
+| Skipped | 35 | 51 | 51 | **34** |
+| Duration | 970s | 493s | 950s | **673s** |
+| 5 named tests | n/a (newer) | timedOut | failed | **all PASS ✓** |
+
+Attempt 4 surpasses Phase 63 baseline by 5 passes (the 5 named voter-results tests Phase 64 was created to close).
+
+### Root cause — protocol bug, NOT fixture/code/timeout bug
+
+Option A3 (trace investigation) opened the auto-collected trace from one cascaded test and surfaced this in the page-snapshot at failure time:
+
+```
+- text: Question
+- generic [ref=e44]: 18/40
+```
+
+ALL 17 cascaded tests in voter-results + voter-detail showed identical "Question 18/40" at failure — meaning each test was on the 18th question page, not the results page. The fixture answered 16 questions (per `voterAnswerCount: [16, ...]`), the loop ended on Q17 (auto-advanced from Q16), then `nextButton.click()` moved to Q18, then `waitForURL(/\/results/)` hung 30s because the user is still on a question page with 22 questions left to answer.
+
+DB inspection revealed:
+- 24 `seed_` prefixed questions (default Finnish demo template, loaded by `yarn dev:reset-with-data`)
+- 17 `test-` prefixed questions (e2e template, loaded by playwright's data-setup project)
+- Voter UI shows 40 answerable (excludes 1 text question)
+
+`tests/tests/setup/data.setup.ts` calls `runTeardown('test-', client)` which only clears `test-` prefixed rows. The 24 `seed_` rows from `dev:reset-with-data` were left in place, polluting the e2e dataset.
+
+Phase 63's canonical capture protocol (`63-03-PLAN.md` Step 2) used `yarn supabase:reset` — drops + recreates DB **without** seeding the default template. That left only the e2e template's 17 questions visible — fixture's 16-answer default was correct.
+
+Plan 64-03 inadvertently changed this to `yarn dev:reset-with-data`, introducing the data overlap. **Plan 64-03 protocol step has been corrected** in this commit; future re-captures use `yarn supabase:reset`.
+
+### Why attempt 3's wrapper bump was necessary to surface this
+
+In attempts 1+2 (wrapper=30s), the cascade error was generic "Test timeout exceeded while setting up answeredVoterPage" — no useful trace because the wrapper kill happened mid-fixture, before Playwright's trace-on machinery had a stable failed-state DOM to snapshot. Trace files existed but error-context.md was missing the page snapshot.
+
+In attempt 3 (wrapper=90s), the inner `waitForURL` ran its full 30s budget and naturally raised — Playwright's trace machinery captured the page-at-failure DOM, including the "Question 18/40" indicator that pinpointed the bug.
+
+Option A2 (further timeout bumps) would have masked this forever. Option A (90s wrapper) was the correct first move because it surfaced the actual diagnostic. The fix is NOT timeout-related — it's a capture-protocol revert.
+
+### Files modified by this resolution
+
+- `.planning/phases/64-voter-results-reactivity-completion/64-03-PLAN.md` — Step 1 reset command corrected (`dev:reset-with-data` → `supabase:reset`) with inline rationale comment
+- `.planning/phases/64-voter-results-reactivity-completion/post-fix/playwright-report.json` — overwritten with attempt-4 capture (5/5 named tests pass)
+- `.planning/phases/64-voter-results-reactivity-completion/post-fix/playwright-report.attempt-3.json` — attempt-3 preserved for audit
+- `.planning/phases/64-voter-results-reactivity-completion/post-fix/playwright.stderr.attempt-3.txt` — attempt-3 stderr preserved
+
+### What remains in scope for Plan 64-03
+
+- ✓ Task 1 (canonical capture) — **DONE** with attempt 4
+- ⏳ Task 2 (parity-script constants regen per D-08) — **READY** to execute
+- ⏳ Task 3 (9-step manual smoke per D-10) — **READY** after Task 2
+
+### Note on the Option A wrapper bump (commit `c8a4a457e`)
+
+The 30s → 90s wrapper bump in `tests/playwright.config.ts:51` remains in place. It's not load-bearing for Phase 64 close (attempt 4 with clean DB only has 1 test exceeding 30s and that's the imgproxy CAND-03 known flake), but it provides headroom for future render-pressure scenarios and surfaced the diagnostic that resolved Phase 64. The committed rationale comment cites Plan 64-04 fixture work, which is still accurate (the wrapper IS the binding ceiling for any future fixture-internal bumps); future cleanup could refine the rationale to reference attempt-3's diagnostic role.
+
+### Note on `voter.fixture.ts:71/85/91` timeout bumps (commit `9a1843ac4`)
+
+Same as above — these provide headroom but were not the actual fix. They remain in place; reverting them is not necessary for Phase 64 close.
